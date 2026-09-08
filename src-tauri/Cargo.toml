@@ -1,7 +1,7 @@
 [package]
 name = "app"
 version = "0.1.0"
-description = "A lightweight FTP/FTPS/SFTP/WebDAV client for Windows with a peach-toned interface"
+description = "A lightweight FTP, FTPS, SFTP and WebDAV client for Windows"
 authors = ["Smooveemaan"]
 license = "Apache-2.0"
 repository = "https://github.com/Smooveemaan/ftpeach"

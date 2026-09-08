@@ -1,0 +1,30 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimum frontend permissions for the main FTPeach window",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:webview:allow-set-webview-zoom",
+    "core:window:allow-minimize",
+    "core:window:allow-hide",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "core:window:allow-is-maximized",
+    "core:window:allow-set-theme",
+    "core:window:allow-set-background-color",
+    "sensitive:allow-authorize-sensitive",
+    "sensitive:allow-sites-reveal-secret",
+    "sensitive:allow-settings-reveal-proxy-password",
+    "sensitive:allow-vault-reset",
+    "sensitive:allow-fs-delete",
+    "sensitive:allow-fs-reveal-path",
+    "sensitive:allow-fs-open-document",
+    "sensitive:allow-fs-execute-path",
+    "sensitive:allow-open-with-start",
+    "sensitive:allow-app-export-settings",
+    "sensitive:allow-app-import-settings"
+  ]
+}

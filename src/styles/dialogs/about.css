@@ -1,0 +1,47 @@
+/* ---------- AboutDialog ---------- */
+.modal-about {
+  width: fit-content;
+  min-width: 300px;
+  max-width: calc(var(--app-viewport-w) - 40px);
+}
+.about-legal {
+  margin-top: 14px;
+}
+.about-legal p {
+  margin: 0;
+}
+.about-copyright {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.about-links {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  width: max-content;
+  max-width: 100%;
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.about-link {
+  padding: 0;
+  border: 0;
+  color: var(--accent);
+  background: none;
+  font: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+.about-link:disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+.about-link:hover {
+  text-decoration: underline;
+}
+.about-link:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}

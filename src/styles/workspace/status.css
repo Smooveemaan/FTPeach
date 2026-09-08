@@ -1,0 +1,76 @@
+/* ---------- Status bar ---------- */
+
+.status-bar {
+  container-type: inline-size;
+  gap: 12px;
+  flex: 0 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--bg-base);
+
+  border-top: 1px solid var(--border-soft);
+}
+
+.status-bar .status-right {
+  min-width: 0;
+  white-space: nowrap;
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-mono);
+}
+
+.status-bar .status-left {
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+
+.status-transfers {
+  color: var(--text-faint);
+}
+.status-transfers::before {
+  content: '·';
+  margin-inline-end: 6px;
+  opacity: 0.6;
+}
+
+.status-update {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-update::before {
+  content: '·';
+  opacity: 0.6;
+}
+.status-update-action {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-faint);
+  font: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.status-update-action:hover,
+.status-update-action:focus-visible {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+@container (max-width: 900px) {
+  .status-bar .status-right { gap: 8px; overflow: hidden; }
+  .status-right > span { overflow: hidden; text-overflow: ellipsis; }
+}
+
+.status-text.state-idle { color: var(--accent-red); }
+.status-text.state-connecting,
+.status-text.state-paused { color: var(--accent-amber); }
+.status-text.state-connected { color: var(--accent-green); }

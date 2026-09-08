@@ -1,0 +1,44 @@
+node_modules/
+dist/
+/release/
+.DS_Store
+*.log
+.vs/
+
+# Local configuration and credentials. Sanitized examples may be committed.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+!*.pub
+
+# Local AI-assistant metadata must never enter the public repository.
+.claude/
+.codex/
+.agents/
+.windsurf/
+.aider/
+AGENTS.md
+CLAUDE.md
+.tmp/
+.local/
+test-results/
+playwright-report/
+
+# Rust build artifacts. Keep Cargo.lock tracked for reproducible builds.
+target/
+src-tauri/gen/
+src-tauri/tests/docker/generated-tls/*
+!src-tauri/tests/docker/generated-tls/.gitkeep
+
+# Downloaded native build tools and libraries.
+.tools/

@@ -1,0 +1,11 @@
+/*
+ * Workspace style facade.
+ *
+ * Import order is part of the cascade contract. Keep component rules in their
+ * owning file and add cross-component primitives to controls.css deliberately.
+ */
+@import './workspace/tabs.css';
+@import './workspace/panes.css';
+@import './workspace/transfers.css';
+@import './workspace/status.css';
+@import './workspace/controls.css';

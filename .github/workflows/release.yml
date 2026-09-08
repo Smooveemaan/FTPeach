@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions: {}
+
+jobs:
+  # Releases run the full shared suite without path filtering.
+  gates:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/checks.yml
+    with:
+      force-all: true
+
+  protocol-compatibility:
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/protocol-compatibility.yml
+
+  publish-windows:
+    permissions:
+      contents: write
+    needs: [gates, protocol-compatibility]
+    runs-on: windows-latest
+    timeout-minutes: 45
+    environment: release
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release configuration
+        run: npm run check:release-config
+
+      - name: Generate npm and Cargo CycloneDX SBOMs
+        run: npm run sbom:generate
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      - name: Prepare verified libsodium CRT and symbols
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -EnvironmentFile "$env:GITHUB_ENV" -Command prepare
+
+      - name: Build release notes from CHANGELOG.md
+        id: release-notes
+        run: node --experimental-strip-types scripts/release/build-release-notes.ts
+
+      - name: Build, sign updater artifacts and create draft release
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: v__VERSION__
+          releaseName: FTPeach v__VERSION__
+          releaseBody: ${{ steps.release-notes.outputs.body }}
+          releaseDraft: true
+          prerelease: false
+          args: --bundles nsis
+
+      - name: Verify every generated updater signature
+        shell: powershell
+        run: |
+          $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
+          $key = $config.plugins.updater.pubkey
+          $signatures = @(Get-ChildItem -Recurse -Path src-tauri/target/release/bundle -Filter '*.sig')
+          if ($signatures.Count -eq 0) { throw 'No signed updater artifact was generated' }
+          foreach ($signature in $signatures) {
+            $artifact = $signature.FullName.Substring(0, $signature.FullName.Length - 4)
+            if (-not (Test-Path -LiteralPath $artifact)) { throw "Missing updater artifact for $($signature.FullName)" }
+            cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $key $artifact $signature.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Attach npm and Cargo SBOMs to the draft release
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Renamed so the (alphabetically sorted) release asset list keeps the installer, its
+          # signature and latest.json ahead of these audit-only files.
+          Copy-Item release/sbom/ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-npm.cdx.json
+          Copy-Item release/sbom/ftpeach-cargo.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json
+          gh release upload "$env:GITHUB_REF_NAME" release/sbom/sbom-ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json --clobber

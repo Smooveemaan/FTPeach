@@ -1,0 +1,51 @@
+
+.modal-site-manager {
+  width: min(440px, calc(var(--app-viewport-w) - 40px));
+}
+.modal-site-manager:has(.site-edit-form) .modal-body {
+  padding: 14px 16px;
+}
+.modal-site-manager:has(.site-edit-form) .modal-footer {
+  padding: 10px 14px;
+  background: var(--bg-panel-alt);
+}
+.modal-site-manager:has(.site-manager-footer) .modal-footer {
+  padding: 5px 14px;
+  background: var(--bg-base);
+}
+
+
+.modal-site-manager:not(:has(.site-edit-form)) {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(var(--app-viewport-h) - 72px);
+}
+.modal-site-manager:not(:has(.site-edit-form)) .modal-header {
+  flex: none;
+}
+.modal-site-manager:not(:has(.site-edit-form)) .modal-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.modal-site-manager:not(:has(.site-edit-form)) .site-manage-toolbar {
+  flex: none;
+}
+
+@media (max-width: 560px) {
+  .modal-site-manager:has(.site-edit-form) .modal-body {
+    padding: 14px;
+  }
+}
+
+.site-manager-footer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.site-manager-footer.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}

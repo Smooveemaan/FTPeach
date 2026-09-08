@@ -1,0 +1,16 @@
+# Check every text file out with LF on all platforms. Prettier's endOfLine
+# defaults to "lf", so on Windows under core.autocrlf=true `npm run
+# format:check` fails on dozens of files nobody has edited, while the same
+# check passes in CI on Linux. The stored content is LF either way, so this
+# only settles what lands in the working tree.
+* text=auto eol=lf
+
+# Signed fixture and key material must survive checkout byte-for-byte on
+# every platform — line-ending normalization (e.g. Windows core.autocrlf)
+# silently rewrites a trailing LF to CRLF and breaks the ed25519 signature.
+test/fixtures/updater/dummy-update.bin binary
+test/fixtures/updater/dummy-update.bin.sig binary
+test/fixtures/updater/spike.key.pub binary
+
+# Fuzz inputs (including FTP CRLF replies and minimized crashes) are exact bytes.
+src-tauri/fuzz/corpus/** binary

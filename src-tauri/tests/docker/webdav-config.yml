@@ -1,0 +1,9 @@
+address: 0.0.0.0
+port: 6065
+prefix: /
+directory: /data
+users:
+  - username: '{env}FTPEACH_WEBDAV_USER'
+    password: '{env}FTPEACH_WEBDAV_PASSWORD'
+    scope: /
+    permissions: CRUD

@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "ingen inloggning",
+    "anonymousUser": "anonym",
+    "rootFolder": "Rotmappen",
+    "close": "Stäng",
+    "reset": "Återställ",
+    "open": "Öppna",
+    "upload": "Ladda upp",
+    "save": "Spara",
+    "create": "Skapa",
+    "cancel": "Avbryt",
+    "increase": "Öka",
+    "decrease": "Minska",
+    "showPassword": "Visa lösenordet",
+    "savedSecretProtected": "Den sparade hemligheten är skyddad och kan inte visas",
+    "hidePassword": "Dölj lösenordet"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach-säkerhetsbekräftelse",
+    "allow": "Tillåt",
+    "typeToConfirm": "Skriv {{phrase}} för att bekräfta",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Visa det sparade lösenordet för det här bokmärket?"
+      },
+      "revealProxyPassword": {
+        "message": "Visa det sparade proxylösenordet?"
+      },
+      "vaultReset": {
+        "message": "Alla sparade lösenord och lösenfraser för SSH-nycklar tas bort permanent.",
+        "approve": "Ta bort valv"
+      },
+      "executeLocalFile": {
+        "message": "Köra den här körbara filen eller det här skriptet?"
+      },
+      "executeRemoteFile": {
+        "message": "Hämta och köra den här körbara filen eller det här skriptet?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Ny mapp…",
+    "newFile": "Ny fil…",
+    "refresh": "Uppdatera",
+    "open": "Öppna",
+    "uploadToOtherPane": "Ladda upp till ett annat fönster",
+    "copyToOtherPane": "Kopiera till ett annat fönster",
+    "downloadToOtherPane": "Ladda ner till ett annat fönster",
+    "openWith": "Öppna med…",
+    "permissions": "Behörigheter…",
+    "moveTo": "Flytta till…",
+    "copyPath": "Kopiera sökvägen",
+    "delete": "Ta bort",
+    "deleteSelected_one": "Ta bort ({{count}} fil)",
+    "deleteSelected_other": "Ta bort ({{count}} filer)",
+    "deletePermanently": "Radera permanent",
+    "deleteSelectedPermanently_one": "Ta bort permanent ({{count}} fil)",
+    "deleteSelectedPermanently_other": "Ta bort permanent ({{count}} filer)"
+  },
+  "chmodDialog": {
+    "title": "SFTP-behörigheter",
+    "label": "Oktalformat för ”{{name}}” (till exempel 644 eller 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Mappen är tom",
+    "homeFolder": "Hemmapp",
+    "copyToPaneBelow": "Kopiera till rutan nedan",
+    "copyToPaneAbove": "Kopiera till rutan ovan",
+    "copyToPaneRight": "Kopiera till rutan till höger",
+    "copyToPaneLeft": "Kopiera till rutan till vänster",
+    "fileTypeFolder": "Mapp",
+    "fileTypeGeneric": "Fil",
+    "fileTypeWithExt": "{{ext}} Fil",
+    "columnSize": "Storlek",
+    "columnModifiedAt": "Ändringsdatum",
+    "columnCreatedAt": "Skapad den",
+    "columnType": "Typ",
+    "columnPermissions": "Behörigheter",
+    "columnOwner": "Ägare",
+    "columnGroup": "Grupp",
+    "columnName": "Namn",
+    "filesAriaLabel": "Filer",
+    "rename": "Byt namn på",
+    "resetColumnWidths": "Återställ kolumnbredderna",
+    "updatedAtTooltip": "Uppdaterad: {{date}}",
+    "searchTooltip": "Sök ({{shortcut}})",
+    "searchPlaceholder": "Sök… ({{shortcut}})",
+    "editPathAriaLabel": "Redigera sökväg",
+    "changeDriveTooltip": "Byt enhet",
+    "chooseColumnsTooltip": "Högerklicka för att välja kolumner",
+    "sortByNameTooltip": "Sortera efter namn",
+    "sortByColumnTooltip": "Sortera efter kolumnen ”{{column}}”",
+    "rowProbeSample": "Exempel",
+    "loading": "Laddar…",
+    "nothingFound": "Inget hittades"
+  },
+  "update": {
+    "readyToInstall": "Uppdatering v{{version}} finns nu tillgänglig – klicka på ”Starta om och installera” för att installera den.",
+    "downloadingWithPercent": "Hämtar uppdatering v{{version}}: {{percent}} %",
+    "downloadingFound": "Uppdatering v{{version}} hittad, hämtar…",
+    "restartAndInstall": "Starta om och installera",
+    "availableAction": "tillgänglig!",
+    "installAction": "installera?",
+    "downloadTooltip": "Klicka för att ladda ner",
+    "downloadingTooltip": "Laddar ner",
+    "installTooltip": "Klicka för att starta om och installera"
+  },
+  "legacyPasswordNotice": {
+    "message": "Lösenord för vissa sparade webbplatser gick inte att läsa efter uppdateringen – ange dem på nytt i webbplatshanteraren."
+  },
+  "plaintextSecretNotice": {
+    "message": "Lösenordet eller lösenfrasen för en sparad webbplats kunde inte krypteras eftersom Windows dataskydd inte är tillgängligt, och lagrades därför i klartext."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Lösenordet eller lösenfrasen kunde inte krypteras och sparades inte. En befintlig anslutning kan fortsätta tills den bryts; i annat fall måste du ange lösenordet igen nästa gång."
+  },
+  "resize": {
+    "paneSize": "Dra för att ändra storlek på rutorna (dubbelklicka för att återställa)",
+    "height": "Dra för att ändra höjden (dubbelklicka för att återställa)",
+    "ratio": "Dra för att ändra storleksförhållandet (dubbelklicka för att återställa)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} artikel",
+    "itemCount_other": "{{count}} artiklar",
+    "moveMode": "flytta"
+  },
+  "openWithChanged": {
+    "title": "Filen har ändrats",
+    "message": "”{{name}}” har ändrats i det externa programmet. Ska den uppdaterade filen laddas upp till servern?"
+  },
+  "saveSite": {
+    "title": "Spara anslutningsprofil",
+    "label": "Namn på anslutningsprofil:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Ny mapp",
+    "labelLocal": "Namn på ny mapp:",
+    "labelRemote": "Namn på den nya mappen på servern:"
+  },
+  "newFile": {
+    "title": "Ny fil",
+    "label": "Filnamn (med filändelse):"
+  },
+  "moveToDialog": {
+    "title": "Flytta till…",
+    "labelSingle": "Flytta ”{{name}}” till mappen:",
+    "labelMultiple": "Flytta de markerade objekten ({{count}}) till mappen:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Tillåt att \"{{name}}\" ersätts om filen skapas under överföringen?",
+    "resetLayout": "Återställa storlekarna på fönster och rutor, återställa standardkolumnerna och rensa gränssnittets cache?",
+    "hostKeyMismatch": "{{error}} Ska du ta bort det sparade nyckelfingeravtrycket för {{host}}:{{port}} och ansluta ändå? Gör detta endast om du är säker på att servern har installerats om eller migrerats på ett korrekt sätt – annars kan detta leda till att du ansluter till en server som eventuellt är förfalskad.",
+    "connectAnyway": "Anslut ändå",
+    "closeTabWithActiveTransfers": "Den här fliken visar pågående överföringar. Vill du stänga fliken och avbryta dem?",
+    "closeTabLabel": "Stäng fliken",
+    "overwriteSingleExists": "”{{name}}” finns redan i målmappen. Vill du skriva över den?",
+    "overwriteConflicts_one": "{{count}} fil finns redan i målmappen. Vill du skriva över den?",
+    "overwriteConflicts_other": "{{count}} Det finns redan filer i målmappen. Vill du skriva över dem?",
+    "overwriteLabel": "Skriv över",
+    "replaceConnection": "Den här rutan är redan ansluten till ”{{current}}”. Vill du ersätta länken med ”{{next}}”?",
+    "replaceConnectionLabel": "Ersätt",
+    "deleteSelected": "Vill du ta bort de markerade objekten ({{count}})? Denna åtgärd går inte att ångra.",
+    "deleteEntry": "Ta bort ”{{name}}”? Denna åtgärd kan inte ångras.",
+    "recycleSelected": "Vill du flytta de markerade objekten ({{count}}) till papperskorgen?",
+    "recycleEntry": "Ska ”{{name}}” flyttas till papperskorgen?",
+    "deletePermanentSelected": "Vill du radera de markerade objekten permanent ({{count}})? Denna åtgärd går inte att ångra.",
+    "deletePermanentEntry": "Vill du radera ”{{name}}” permanent? Denna åtgärd kan inte ångras.",
+    "deleteRemoteSelected": "Vill du radera de markerade fjärrobjekten permanent ({{count}})? Denna åtgärd går inte att ångra.",
+    "deleteRemoteEntry": "Vill du ta bort fjärrobjektet ”{{name}}” permanent? Den här åtgärden går inte att ångra."
+  },
+  "paneSide": {
+    "top": "topp",
+    "bottom": "botten",
+    "left": "vänster",
+    "right": "rätt",
+    "labelWithTab": "{{base}} (fliken {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Fil",
+      "newTab": "Ny flik",
+      "closeTab": "Stäng fliken",
+      "newConnection": "Ny anslutning",
+      "disconnect": "Koppla från",
+      "manageBookmarks": "Hantera bokmärken…",
+      "saveConnection": "Spara anslutning",
+      "saveConnectionSide": "Spara anslutning ({{side}})",
+      "saveBookmarkSide": "Spara bokmärke ({{side}})",
+      "savePathSide": "Spara sökväg ({{side}})",
+      "exportSettings": "Exportera inställningar…",
+      "importSettings": "Importera inställningar…",
+      "quit": "Avsluta"
+    },
+    "edit": {
+      "title": "Redigera",
+      "settings": "Inställningar…",
+      "resetLayout": "Återställ layout och cache…"
+    },
+    "view": {
+      "title": "Visa",
+      "darkTheme": "Mörkt tema",
+      "lightTheme": "Ljust tema",
+      "systemTheme": "Systemtema",
+      "syncBrowsing": "Synkronisera mappnavigering",
+      "showHiddenFiles": "Visa dolda filer och mappar",
+      "leftPane": "Vänsterfönster",
+      "rightPane": "Höger ruta",
+      "transferQueue": "Överföringskö",
+      "log": "Logg",
+      "stackedPanes": "Staplade rutor",
+      "refreshBothPanes": "Uppdatera båda fönstren"
+    },
+    "transfer": {
+      "title": "Överföring",
+      "copySelectedRight": "Kopiera det markerade →",
+      "copySelectedLeft": "← Kopiera det markerade",
+      "clearCompleted": "Rensa avslutade"
+    },
+    "bookmarks": {
+      "title": "Bokmärken"
+    },
+    "help": {
+      "supportProject": "Stöd projektet",
+      "title": "Hjälp",
+      "documentation": "Dokumentation",
+      "reportIssue": "Rapportera ett problem",
+      "checkUpdates": "Sök efter uppdateringar",
+      "about": "Om"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Servern avvisade anslutningen. Kontrollera adressen och porten.",
+    "serverNotFound": "Servern hittades inte. Kontrollera att adressen är korrekt.",
+    "timeout": "Servern svarar inte (anslutningen har gått ut). Kontrollera adressen, porten och nätverksanslutningen.",
+    "connectionReset": "Anslutningen till servern avbröts oväntat.",
+    "networkUnreachable": "Servern går inte att nå – kontrollera din nätverksanslutning.",
+    "loginIncorrect": "Felaktigt användarnamn eller lösenord.",
+    "invalidCertificate": "Servern visade ett ogiltigt certifikat. Om du litar på den här servern ska du inaktivera certifikatverifieringen i anslutningsinställningarna.",
+    "tlsNegotiationFailed": "TLS-förhandlingen misslyckades. Kontrollera att servern stöder explicit FTPS eller HTTPS samt en kompatibel TLS-version.",
+    "sshNegotiationFailed": "SSH-förhandlingen misslyckades. Servern och FTPeach kunde inte enas om en kompatibel SSH-algoritm eller protokollversion.",
+    "proxyFailed": "Proxyanslutningen misslyckades. Kontrollera proxytyp, adress, inloggningsuppgifter och om den kan nå målservern.",
+    "keyReadFailed": "Det gick inte att läsa nyckeln – filen är skadad eller lösenfrasen är felaktig.",
+    "accessDenied": "Du har inte behörighet att utföra den här åtgärden.",
+    "notFound": "Filen eller mappen hittades inte.",
+    "fileOrFolderExists": "Det finns redan en fil eller mapp med det namnet.",
+    "fileBusy": "Filen används av en annan process.",
+    "diskFull": "Det finns inte tillräckligt med diskutrymme.",
+    "hostKeyMismatch": "Serverns värdnyckel har ändrats.",
+    "integrityMismatch": "Den överförda filen klarade inte integritetskontrollen.",
+    "invalidInput": "Det angivna värdet är ogiltigt.",
+    "internal": "Ett oväntat fel inträffade.",
+    "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
+    "alreadyExists": "”{{name}}” finns redan"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Kopplingar",
+      "hint": "Välj ett program för filändelsen. För filer där ingen regel har angetts används systemets standardinställning.",
+      "extension": "Filändelse",
+      "extensionPlaceholder": "txt",
+      "application": "Program",
+      "applicationPlaceholder": "Sökväg",
+      "browse": "Välj program",
+      "remove": "Ta bort kopplingen",
+      "add": "Lägg till koppling"
+    },
+    "minimizeToTray": "Minimera till systemfältet",
+    "minimizeToTrayHint": "Minimeringsknappen döljer fönstret i systemfältet istället för i aktivitetsfältet.",
+    "closeToTray": "Stäng till systemfältet",
+    "closeToTrayHint": "Stängningsknappen döljer fönstret i systemfältet istället för att stänga programmet. Stäng programmet via menyn i systemfältets ikon.",
+    "title": "Inställningar",
+    "unsavedChangesTitle": "Osparade ändringar",
+    "unsavedChangesMessage": "Vill du spara ändringarna i inställningarna?",
+    "discardChanges": "Spara inte",
+    "categories": {
+      "connection": "Anslutning",
+      "transfers": "Överföringar",
+      "interface": "Gränssnitt",
+      "shortcuts": "Genvägar",
+      "updates": "Uppdateringar",
+      "logging": "Loggning",
+      "security": "Säkerhet"
+    },
+    "shortcuts": {
+      "title": "Tangentbordsgenvägar",
+      "hint": "Klicka på en genväg och tryck sedan på en ny tangentkombination för att tilldela den en ny funktion.",
+      "globalTitle": "Globalt",
+      "paneTitle": "Filfönstret",
+      "recording": "Tryck på en tangent…",
+      "unbound": "Ej tilldelad",
+      "reset": "Återställ till standardinställningarna",
+      "resetAll": "Återställ allt till standardinställningarna",
+      "unassign": "Avmarkera",
+      "conflict": "Används även av: {{action}}",
+      "actions": {
+        "search": "Sök ({{side}})",
+        "toggleHiddenFiles": "Visa/dölj dolda filer",
+        "newConnection": "Ny anslutning",
+        "save": "Spara ({{side}})",
+        "openSettings": "Öppna inställningarna",
+        "newTab": "Ny flik",
+        "closeTab": "Stäng fliken",
+        "nextTab": "Nästa flik",
+        "prevTab": "Föregående flik",
+        "refresh": "Uppdatera",
+        "selectAll": "Markera allt",
+        "delete": "Ta bort",
+        "deletePermanent": "Radera permanent",
+        "navigateUp": "Gå upp en mapp",
+        "navigateBack": "Gå tillbaka",
+        "navigateForward": "Fortsätt",
+        "navigateHome": "Gå till hemkatalogen",
+        "moveTo": "Flytta till…",
+        "newFolder": "Ny mapp…",
+        "newFile": "Ny fil…",
+        "copyToOtherPane": "Kopiera till ett annat fönster",
+        "copy": "Kopiera",
+        "cut": "Klipp",
+        "paste": "Klistra in",
+        "clearSelection": "Rensa urvalet",
+        "open": "Öppna"
+      }
+    },
+    "security": {
+      "title": "Lösenordsskydd",
+      "systemMode": "Systemskydd",
+      "systemModeHint": "Lösenorden för ditt Windows-konto är krypterade och kan visas i anslutningsinställningarna.",
+      "strongholdMode": "Förbättrat skydd",
+      "strongholdModeHint": "Kräver ett huvudlösenord. Sparade lösenord kan användas vid inloggning men kan inte visas.",
+      "loading": "Kontrollerar skyddat lagringsutrymme…",
+      "configuredLocked": "Det skyddade lagringsutrymmet är säkrat med ett huvudlösenord och låst.",
+      "configuredUnlocked": "Det skyddade lagringsutrymmet är låst med ett huvudlösenord och låses upp.",
+      "masterPassword": "Huvudlösenord",
+      "confirmPassword": "Bekräfta huvudlösenordet",
+      "oldPassword": "Nuvarande huvudlösenord",
+      "newPassword": "Nytt huvudlösenord",
+      "setup": "Skydda sparade lösenord",
+      "settingUp": "Skydda…",
+      "unlock": "Lås upp",
+      "unlocking": "Låser upp…",
+      "unlockRequired": "Låsa upp skyddat lagringsutrymme",
+      "unlockRequiredHint": "Den här anslutningen använder en sparad hemlig nyckel. Lås upp det skyddade lagringsutrymmet för att fortsätta.",
+      "lockNow": "Lås nu",
+      "autoLock": "Automatisk låsning efter, min",
+      "autoLockDisabled": "Inaktiverad",
+      "autoLockHint": "Låser lagringsutrymmet efter en viss tid utan aktivitet. Befintliga serveranslutningar förblir aktiva; värden 0 inaktiverar automatisk låsning.",
+      "changePassword": "Ändra huvudlösenord",
+      "change": "Ändra lösenord",
+      "systemUnlock": "Tillåt upplåsning av systemet",
+      "systemUnlockHint": "Använder Windows Hello (PIN-kod, ansiktsigenkänning eller fingeravtryck enligt inställningarna i Windows). Ditt huvudlösenord förblir återställningsmetoden.",
+      "unlockWithSystem": "Lås upp med systemautentisering",
+      "systemUnavailable": "Systemupplåsning är inte tillgängligt på den här plattformen.",
+      "noRecovery": "Ett glömt huvudlösenord går inte att återställa. Om du återställer valvet raderas alla sparade hemligheter.",
+      "passwordMismatch": "Lösenorden stämmer inte överens.",
+      "passwordTooShort": "Huvudlösenordet måste bestå av minst 12 tecken.",
+      "strength": {
+        "tooShort": "För kort — använd minst 12 tecken.",
+        "acceptable": "Det går bra. En längre lösenfras är säkrare.",
+        "strong": "Ett starkt huvudlösenord."
+      },
+      "reset": "Återställ skyddat lagringsutrymme",
+      "resetHint": "Tar bort det skyddade lagringsutrymmet samt alla lösenord och lösenfraser för SSH-nycklar som finns lagrade där. Det förstärkta skyddet måste konfigureras på nytt.",
+      "resetWarning": "Detta raderar alla sparade lösenord och huvudlösenfraser permanent. Ange det aktuella huvudlösenordet för att fortsätta.",
+      "confirmReset": "Ta bort sparade hemligheter",
+      "showConfirmations": "Visa säkerhetsbekräftelser",
+      "showConfirmationsHint": "Fråga innan sparade hemligheter visas eller körbara filer startas. Återställning av skyddad lagring kräver alltid bekräftelse.",
+      "unavailable": "Skyddad lagring är inte tillgänglig.",
+      "failed": "Operationen med skyddad lagring misslyckades."
+    },
+    "unlimitedPlaceholder": "Ingen gräns",
+    "connectTimeoutLabel": "Tidsgräns för anslutning, sek",
+    "connectTimeoutHint": "Hur länge ska man vänta på ett svar från servern vid anslutning innan den betraktas som oåtkomlig (0 eller tomt fält — ingen gräns). Gäller nästa anslutning.",
+    "ftpActiveMode": "Aktivt FTP-läge (i stället för passivt)",
+    "ftpActiveModeHint": "Endast FTP/FTPS — påverkar inte SFTP/WebDAV. Behövs sällan, endast i nätverk/på servrar där passivt läge inte fungerar genom NAT. Gäller för nästa anslutning.",
+    "ftpActiveModeDisabledByProxy": "Fungerar inte när en proxy är aktiverad — en proxytunnel stöder endast utgående anslutningar, vilket innebär att FTP måste förbli i passivt läge.",
+    "proxy": {
+      "enable": "Använd en proxy för anslutningar",
+      "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT – gäller för FTP, FTPS, SFTP och WebDAV. Gäller för nästa anslutning.",
+      "typeLabel": "Fullmaktsform",
+      "hostLabel": "Proxy-värd",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Port",
+      "usernameLabel": "Användarnamn",
+      "passwordLabel": "Lösenord",
+      "removeSavedPassword": "Ta bort sparat lösenord",
+      "revealFailed": "Det gick inte att dekryptera det sparade lösenordet.",
+      "testTargetLabel": "Testa mot",
+      "testTargetHostPlaceholder": "Servervärd",
+      "testTargetPortPlaceholder": "Port",
+      "test": "Testproxy",
+      "testing": "Test…",
+      "testOk": "Proxyservrarna nådde målet utan problem.",
+      "testFailed": "Proxytestet misslyckades."
+    },
+    "concurrencyLabel": "Parallella överföringar",
+    "concurrencyHint": "Hur många filer som ska laddas upp och laddas ner samtidigt (0 eller tomt fält – ingen begränsning). Gäller nästa anslutning.",
+    "speedLimitLabel": "Hastighetsbegränsning, KB/s",
+    "speedLimitHint": "Gäller den sammanlagda summan av alla samtidiga överföringar (0 eller tomt fält – ingen gräns). Träder i kraft omedelbart, utan att man behöver vänta till nästa anslutning.",
+    "notifyOnComplete": "Meddela när överföringarna är klara",
+    "notifyOnCompleteHint": "Ett systemmeddelande när överföringskön töms — endast när fönstret inte har fokus.",
+    "overwriteActionLabel": "Om namnkonflikter",
+    "overwriteAsk": "Fråga",
+    "overwriteOverwrite": "Skriv över",
+    "overwriteSkip": "Hoppa över",
+    "overwriteHint": "Vad ska man göra om den fil som kopieras redan finns i målmappen?",
+    "preventSleep": "Förhindra att systemet går i viloläge under överföringar",
+    "preventSleepHint": "Träder i kraft omedelbart, utan att vänta på nästa anslutning. Förblir aktiv så länge det pågår minst en överföring – blockerar annars inte viloläget.",
+    "themeLabel": "Tema",
+    "themeDark": "Mörkt",
+    "themeLight": "Ljus",
+    "themeSystem": "System",
+    "languageLabel": "Gränssnittsspråk",
+    "interfaceScaleLabel": "Gränssnittsskala",
+    "interfaceScaleHint": "Ändra storleken på texten och kontrollerna i hela applikationen.",
+    "dateFormatLabel": "Datum- och tidsformat",
+    "dateFormatOnlyLabel": "Datumformat",
+    "timeFormatLabel": "Tidsformat",
+    "timeFormat24Hour": "24 tim",
+    "timeFormat12Hour": "12 tim",
+    "dateFormatLocale": "Lokalt",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Standardmapp för Dator",
+    "defaultLocalPathHint": "Mappen som rutan Dator öppnar vid start och när du byter från en server. Lämna tomt för att använda systemets hemmapp.",
+    "chooseDefaultLocalPath": "Välj standardmapp",
+    "showHiddenFiles": "Visa dolda filer och mappar",
+    "showHiddenFilesHint": "Gäller både lokala och fjärranslutna filfönster.",
+    "coloredTabs": "Färgade flikar",
+    "coloredTabsHint": "Färglägger flikens namn och ikon med den sparade bokmärkesfärgen.",
+    "autoCheckUpdates": "Sök efter uppdateringar vid uppstart",
+    "autoCheckUpdatesHint": "En automatisk kontroll några sekunder efter uppstart – installation av en uppdatering kräver alltid en separat bekräftelse.",
+    "autoReconnectTabs": "Återanslut återställda flikar vid uppstart",
+    "autoReconnectTabsHint": "Avstängt som standard. När funktionen är aktiverad ansluts återställda sparade webbplatser automatiskt.",
+    "saveSessionOnExit": "Spara sessionen när du avslutar",
+    "saveSessionOnExitHint": "Återställer öppna flikar, fönstertyper och sökvägar vid nästa start. Om du inaktiverar den här funktionen raderas den sparade sessionen.",
+    "checkNow": "Kolla nu",
+    "updateStatus": {
+      "checking": "Söker efter uppdateringar…",
+      "notAvailable": "Du använder den senaste versionen.",
+      "error": "Det gick inte att söka efter uppdateringar.",
+      "notPackaged": "Finns inte i den här versionen (npm run dev/start)."
+    },
+    "logEnable": "Aktivera loggning",
+    "logShowTimestamps": "Visa tidsstämplar",
+    "logToFile": "Skriv logg till fil",
+    "logToFileHint": "När funktionen är aktiverad läggs loggen kontinuerligt till i en fil på hårddisken (%APPDATA%\\FTPeach\\logs\\ftpeach.log) – oavsett om loggpanelen är öppen eller inte. Detta skiljer sig från knappen ”Spara” i själva panelen (den sparar endast de senaste 200 raderna en gång när du klickar på den).",
+    "exportDiagnostics": "Exportera diagnostikpaket",
+    "exportDiagnosticsBusy": "Exporterar…",
+    "exportDiagnosticsHint": "Exporterar version, operativsystem och de senaste 200 loggposterna. Lösenord, token och andra hemligheter maskeras.",
+    "exportDiagnosticsFailed": "Det gick inte att exportera diagnostikpaketet."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Exportera inställningar",
+    "confirmLabel": "Exportera…",
+    "includeSettings": "Programinställningar",
+    "includeBookmarks": "Bokmärken",
+    "includeLocalPaths": "Lokala sökvägar",
+    "passwordHint": "Lösenord och lösenfraser för SSH-nycklar ingår inte i exporten – du måste ange dem på nytt efter importen till en annan dator."
+  },
+  "importSettingsDialog": {
+    "title": "Importera inställningar",
+    "confirmLabel": "Importera…",
+    "includeSettings": "Programinställningar",
+    "includeBookmarks": "Bokmärken",
+    "includeLocalPaths": "Lokala sökvägar",
+    "passwordHint": "Lösenord och lösenfraser för SSH-nycklar ingår inte i importen – du måste ange dem på nytt för varje importerad plats."
+  },
+  "openWithDialog": {
+    "title": "Öppna i programmet",
+    "downloading": "Hämtar ”{{fileName}}”…",
+    "progress": "{{loaded}} av {{total}} ({{percent}} %)",
+    "connecting": "Ansluter…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Överföringsfel",
+    "notifyCompleteTitle": "Överföringen är klar",
+    "notifySucceeded": "lyckades: {{count}}",
+    "notifyFailed": "misslyckades: {{count}}",
+    "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil."
+  },
+  "transferQueue": {
+    "title": "Överföringar",
+    "columns": {
+      "file": "Fil",
+      "size": "Storlek",
+      "transferred": "Överförd",
+      "progress": "Framsteg",
+      "speed": "Hastighet",
+      "remaining": "Återstående",
+      "status": "Status"
+    },
+    "empty": "Uppladdningar och nedladdningar visas här",
+    "newTransfers_one": "{{count}} ny överföring",
+    "newTransfers_other": "{{count}} nya överföringar",
+    "status": {
+      "queued": "I kö",
+      "done": "Klart",
+      "error": "Fel",
+      "paused": "Pausad",
+      "stopped": "Inställt",
+      "cancelling": "Avbryter…"
+    },
+    "direction": {
+      "up": "Uppladdning",
+      "down": "Nedladdning",
+      "copy": "Kopiering"
+    },
+    "directionTitleCopy": "Kopiera mellan servrar",
+    "cancelledByUser": "Avbrutet av användaren",
+    "stoppedDash": "stannade",
+    "resume": "Återuppta",
+    "retry": "Försök igen",
+    "stop": "Stopp",
+    "pauseUnsupportedCopy": "Pausfunktion stöds inte vid kopiering mellan servrar",
+    "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV"
+  },
+  "log": {
+    "connecting": "Ansluter till {{addr}}...",
+    "connectFailed": "Anslutningen misslyckades: {{error}}",
+    "connected": "Inloggad.",
+    "receivedEntries_one": "{{count}} post togs emot",
+    "receivedEntries_other": "{{count}} poster togs emot",
+    "skippedUnsafeEntry": "En post med ett osäkert namn har hoppats över: {{name}}",
+    "listFailed": "Det gick inte att hämta mapplistningen: {{error}}",
+    "tlsInit": "Initierar TLS...",
+    "tlsEstablished": "TLS-anslutningen har upprättats.",
+    "davResumeUnsupportedLocal": "WebDAV stöder inte återupptagning av uppladdning – filen skickas om från början.",
+    "davResumeUnsupportedServer": "Servern stöder inte återupptagning (förväntad status: {{expected}}, fick {{status}}) — filen kommer att laddas ner på nytt."
+  },
+  "logPanel": {
+    "showAllConnections": "Visa alla anslutningar",
+    "showOnlyThisConnection": "Visa endast denna anslutning",
+    "connectionClosedShowOnly": "Anslutningen har stängts — visa endast denna anslutning",
+    "hideTimestamps": "Dölj tidsstämplar i loggraderna",
+    "showTimestamps": "Visa tidsstämplar i loggraderna",
+    "copyToClipboard": "Kopiera loggen till urklipp",
+    "saveLastLines_one": "Spara den sista {{count}} raden till en .txt-fil",
+    "saveLastLines_other": "Spara de sista {{count}} raderna till en .txt-fil",
+    "clearLog": "Rensa loggen",
+    "copiedTooltip": "Kopierat",
+    "copyFailedTooltip": "Det gick inte att kopiera",
+    "saveFailedTooltip": "Det gick inte att spara filen",
+    "emptyFiltered": "Inga ledningar för denna anslutning",
+    "emptyDefault": "Protokollmeddelanden visas här"
+  },
+  "aboutDialog": {
+    "title": "Om",
+    "tagline": "En lättviktig FTP/FTPS/SFTP-klient.",
+    "legalInformation": "Juridisk information",
+    "sourceCode": "Källkod",
+    "reportIssue": "Rapportera ett problem",
+    "checkForUpdates": "Sök efter uppdateringar",
+    "updateDownloaded": "Uppdateringen v{{version}} har laddats ner – du kan installera den nu."
+  },
+  "siteManager": {
+    "emptyList": "Inga sparade webbplatser ännu",
+    "confirmDeleteSite": "Ta bort webbplatsen ”{{name}}”?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Nytt bokmärke",
+    "titleEdit": "Redigera bokmärke",
+    "titleList": "Hantera bokmärken",
+    "titleLocalPathList": "Hantera lokala sökvägar",
+    "manageLocalPaths": "Hantera lokala sökvägar…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Namn",
+      "icon": "Ikon",
+      "color": "Färg",
+      "protocol": "Protokoll",
+      "keyFile": "Nyckelfil",
+      "caCertFile": "CA-certifikat",
+      "remotePath": "Standardmapp",
+      "localPath": "Lokal mapp"
+    },
+    "icons": {
+      "bookmark": "Bokmärke",
+      "globe": "Webbplats",
+      "briefcase": "Arbete",
+      "house": "Hemserver",
+      "cloud": "Moln",
+      "flask": "Test / utvecklingsmiljö",
+      "gamepad": "Spelserver",
+      "clapperboard": "Mediaserver",
+      "camera": "Kamera"
+    },
+    "colors": {
+      "default": "Ingen färg",
+      "peach": "Persika",
+      "red": "Röd",
+      "amber": "Bärnsten",
+      "green": "Grön",
+      "blue": "Blå",
+      "purple": "Lila",
+      "pink": "Rosa",
+      "teal": "Teal"
+    },
+    "saveFailed": "Det gick inte att spara",
+    "revealFailed": "Det gick inte att visa den sparade hemligheten",
+    "savedSecretPlaceholder": "Sparat",
+    "savedSecretHint": "Lämna fältet tomt för att behålla det aktuella lösenordet",
+    "removeSavedPassword": "Ta bort sparat lösenord",
+    "removeSavedPassphrase": "Ta bort sparad lösenfras",
+    "secretWillBeRemoved": "Kommer att tas bort när det sparas",
+    "addBookmark": "Nytt bokmärke",
+    "addLocalBookmark": "Lägg till bokmärke för lokal mapp",
+    "chooseLocalPath": "Välj lokal mapp",
+    "importBookmarks": "Importera",
+    "exportBookmarks": "Export",
+    "importAdded_one": "{{count}} bokmärke tillagt",
+    "importAdded_other": "{{count}} bokmärken tillagda",
+    "importSkipped_one": "{{count}} dubblett överhoppad",
+    "importSkipped_other": "{{count}} dubbletter överhoppade",
+    "importNothingNew": "Inget nytt att importera",
+    "exportSuccess": "Exporterat",
+    "sortMode": "Sortering av bokmärken",
+    "sortManual": "Manuellt",
+    "sortName": "Efter namn",
+    "sortProtocol": "Enligt protokollet",
+    "duplicateWarning": "Det finns redan ett bokmärke för samma destination: ”{{name}}”. Vill du spara ett till?",
+    "saveAnyway": "Spara ändå",
+    "newFolder": "Ny mapp",
+    "folderNamePlaceholder": "Mappnamn",
+    "confirmDeleteFolder": "Ska mappen ”{{name}}” tas bort? Bokmärkena i mappen flyttas då upp en nivå.",
+    "searchPlaceholder": "Sök…",
+    "clearSearch": "Rensa sökningen",
+    "noSearchResults": "Inga bokmärken stämmer överens med din sökning",
+    "duplicate": "Duplikat",
+    "duplicateNameSuffix": " (kopia)",
+    "newBookmarkInFolder": "Lägg till nytt bokmärke här",
+    "expandFolder": "Visa ”{{name}}”",
+    "collapseFolder": "Dölj ”{{name}}”"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Adress",
+      "port": "Port",
+      "user": "Användarnamn",
+      "password": "Lösenord",
+      "passphrase": "Lösenfras",
+      "keyFilePlaceholder": "Nyckelfil…",
+      "chooseKeyFile": "Välj nyckelfil…",
+      "caCertFilePlaceholder": "CA-certifikat…",
+      "chooseCaCertFile": "Välj CA-certifikat…"
+    },
+    "secureToggle": {
+      "tooltip": "Avmarkera för att godkänna självsignerade och ogiltiga servercertifikat",
+      "label": "Verifiera certifikatet"
+    },
+    "authToggle": {
+      "tooltip": "Logga in med en privat SSH-nyckel istället för ett lösenord",
+      "label": "Logga in med SSH-nyckel"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Avbryt",
+      "connect": "Anslut",
+      "disconnect": "Koppla från"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Vanlig FTP överför ditt användarnamn, lösenord och filer i okrypterad form. Använd FTPS eller SFTP när det är möjligt."
+  },
+  "titleBar": {
+    "minimize": "Minimera",
+    "restore": "Återställ",
+    "maximize": "Maximera"
+  },
+  "tray": {
+    "show": "Visa FTPeach",
+    "quit": "Avsluta"
+  },
+  "tabStrip": {
+    "localComputer": "Dator",
+    "untitledTab": "Ny flik",
+    "newTabTooltip": "Ny flik (Ctrl+T)",
+    "rename": "Fliknamn"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Mer"
+  },
+  "statusBar": {
+    "transfers": "Överföringar: {{count}}",
+    "leftCount": "Till vänster: {{count}}",
+    "rightCount": "Höger: {{count}}",
+    "topCount": "Överst: {{count}}",
+    "bottomCount": "Nedan: {{count}}",
+    "selectedSuffix": " ({{count}} är markerat)",
+    "status": {
+      "transferring": "Överföring av fil",
+      "paused": "Pausad",
+      "connected": "Ansluten",
+      "connecting": "Ansluta",
+      "connectFailed": "Det gick inte att ansluta",
+      "disconnected": "Inte ansluten"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Visa/dölj det vänstra fönstret",
+    "toggleRightPane": "Visa/dölj högerfönsterruta",
+    "toggleTransferQueue": "Visa/dölj överföringskön",
+    "toggleLog": "Visa/dölj loggen",
+    "orientationNarrow": "Fönsterrutor staplade — fönstret är för smalt för att visa dem sida vid sida",
+    "orientationToRow": "Placera rutorna bredvid varandra",
+    "orientationToStacked": "Stapla rutorna ovanpå varandra",
+    "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV",
+    "pauseActive": "Pausa aktiva överföringar",
+    "resumeAllPaused": "Återuppta alla pausade överföringar",
+    "stopActive": "Avbryt aktiva överföringar",
+    "retryAllStopped": "Försök igen med alla avbrutna överföringar",
+    "refreshPanesTooltip": "Uppdatera båda fönstren (F5)"
+  },
+  "paneToolbar": {
+    "back": "Tillbaka",
+    "forward": "Framåt",
+    "up": "Upp",
+    "chooseFolder": "Välj mapp…",
+    "newFolder": "Ny mapp…",
+    "newFile": "Ny fil…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Dator",
+    "remote": "Server",
+    "updatedAtTooltip": "Uppdaterad: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Inga senaste anslutningar",
+    "noSavedConnectionsBody": "Ange serveradressen ovan eller lägg till en webbplats för åtkomst med ett klick.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Hantera bokmärken",
+    "quicklistLabel": "Senaste anslutningar"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Ett obehandlat FTPeach-gränssnittsfel:",
+    "title": "Något gick fel",
+    "message": "Ett oväntat gränssnittsfel har uppstått. Din aktiva anslutning och filerna på hårddisken påverkas inte – du kan försöka ladda om gränssnittet.",
+    "reload": "Ladda om gränssnittet"
+  }
+}

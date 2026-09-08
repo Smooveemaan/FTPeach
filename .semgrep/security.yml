@@ -1,0 +1,55 @@
+rules:
+  - id: rust-ipc-path-traversal
+    languages: [rust]
+    severity: ERROR
+    message: IPC input reaches a filesystem path without a containment check (CWE-22).
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              #[tauri::command]
+              async fn $FUNC(..., $INPUT: String, ...) { ... }
+          - focus-metavariable: $INPUT
+      - patterns:
+          - pattern-inside: |
+              #[tauri::command]
+              fn $FUNC(..., $INPUT: String, ...) { ... }
+          - focus-metavariable: $INPUT
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: std::fs::read($PATH)
+              - pattern: std::fs::read_to_string($PATH)
+              - pattern: std::fs::write($PATH, ...)
+              - pattern: std::fs::remove_file($PATH)
+              - pattern: tokio::fs::read($PATH)
+              - pattern: tokio::fs::read_to_string($PATH)
+              - pattern: tokio::fs::write($PATH, ...)
+              - pattern: tokio::fs::remove_file($PATH)
+          - focus-metavariable: $PATH
+    pattern-sanitizers:
+      # security/connection_guard.rs replaces separators and unsafe components.
+      - pattern: safe_temp_name(...)
+  - id: rust-disabled-tls-verification
+    languages: [rust]
+    severity: ERROR
+    message: Do not disable TLS certificate or hostname verification (CWE-295).
+    pattern-either:
+      - pattern: $CLIENT.danger_accept_invalid_certs(true)
+      - pattern: $CLIENT.danger_accept_invalid_hostnames(true)
+  - id: typescript-dynamic-code
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Do not execute strings as code in the renderer (CWE-95).
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+  - id: typescript-html-injection
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Render untrusted values as text, not HTML (CWE-79).
+    pattern-either:
+      - pattern: $ELEMENT.innerHTML = $VALUE
+      - pattern: $ELEMENT.outerHTML = $VALUE
+      - pattern: $ELEMENT.insertAdjacentHTML(...)
+      - pattern: <$TAG ... dangerouslySetInnerHTML={$VALUE} ... />

@@ -1,0 +1,9 @@
+/* SettingsDialog — wide enough for the left category nav (see
+   .settings-nav below) plus a comfortable field column next to it. */
+.modal-settings {
+  width: min(600px, calc(var(--app-viewport-w) - 80px));
+}
+
+.preview-error {
+  color: var(--accent-red);
+}

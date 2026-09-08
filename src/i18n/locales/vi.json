@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "không cần đăng nhập",
+    "anonymousUser": "ẩn danh",
+    "rootFolder": "Thư mục gốc",
+    "close": "Đóng",
+    "reset": "Đặt lại",
+    "open": "Mở",
+    "upload": "Tải lên",
+    "save": "Lưu",
+    "create": "Tạo",
+    "cancel": "Hủy",
+    "increase": "Tăng",
+    "decrease": "Giảm",
+    "showPassword": "Hiển thị mật khẩu",
+    "savedSecretProtected": "Mật khẩu đã lưu được bảo vệ và không thể xem được",
+    "hidePassword": "Ẩn mật khẩu"
+  },
+  "securityConfirmation": {
+    "title": "Xác nhận bảo mật FTPeach",
+    "allow": "Cho phép",
+    "typeToConfirm": "Nhập {{phrase}} để xác nhận",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Hiển thị mật khẩu đã lưu cho dấu trang này?"
+      },
+      "revealProxyPassword": {
+        "message": "Hiển thị mật khẩu proxy đã lưu?"
+      },
+      "vaultReset": {
+        "message": "Tất cả mật khẩu đã lưu và cụm mật khẩu khóa SSH sẽ bị xóa vĩnh viễn.",
+        "approve": "Xóa kho bảo mật"
+      },
+      "executeLocalFile": {
+        "message": "Chạy tệp thực thi hoặc tập lệnh này?"
+      },
+      "executeRemoteFile": {
+        "message": "Tải xuống và chạy tệp thực thi hoặc tập lệnh này?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Thư mục mới…",
+    "newFile": "Tệp mới…",
+    "refresh": "Làm mới",
+    "open": "Mở",
+    "uploadToOtherPane": "Tải lên khung bên cạnh",
+    "copyToOtherPane": "Sao chép sang khung khác",
+    "downloadToOtherPane": "Tải xuống sang khung khác",
+    "openWith": "Mở bằng…",
+    "permissions": "Quyền truy cập…",
+    "moveTo": "Chuyển đến…",
+    "copyPath": "Sao chép đường dẫn",
+    "delete": "Xóa",
+    "deleteSelected_one": "Xóa (tệp {{count}})",
+    "deleteSelected_other": "Xóa (các tệp {{count}})",
+    "deletePermanently": "Xóa vĩnh viễn",
+    "deleteSelectedPermanently_one": "Xóa vĩnh viễn (tệp {{count}})",
+    "deleteSelectedPermanently_other": "Xóa vĩnh viễn (các tệp {{count}})"
+  },
+  "chmodDialog": {
+    "title": "Quyền truy cập SFTP",
+    "label": "Chế độ bát phân cho các giá trị “{{name}}” (ví dụ: 644 hoặc 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Thư mục trống",
+    "homeFolder": "Thư mục chính",
+    "copyToPaneBelow": "Sao chép vào khung bên dưới",
+    "copyToPaneAbove": "Sao chép vào khung phía trên",
+    "copyToPaneRight": "Sao chép vào khung bên phải",
+    "copyToPaneLeft": "Sao chép vào khung bên trái",
+    "fileTypeFolder": "Thư mục tệp",
+    "fileTypeGeneric": "Tệp",
+    "fileTypeWithExt": "{{ext}} Tệp",
+    "columnSize": "Kích thước",
+    "columnModifiedAt": "Ngày sửa đổi",
+    "columnCreatedAt": "Ngày tạo",
+    "columnType": "Loại",
+    "columnPermissions": "Quyền truy cập",
+    "columnOwner": "Chủ sở hữu",
+    "columnGroup": "Nhóm",
+    "columnName": "Tên",
+    "filesAriaLabel": "Tệp tin",
+    "rename": "Đổi tên",
+    "resetColumnWidths": "Khôi phục độ rộng cột",
+    "updatedAtTooltip": "Cập nhật: {{date}}",
+    "searchTooltip": "Tìm kiếm ({{shortcut}})",
+    "searchPlaceholder": "Tìm kiếm… ({{shortcut}})",
+    "editPathAriaLabel": "Chỉnh sửa đường dẫn",
+    "changeDriveTooltip": "Chuyển sang ổ đĩa khác",
+    "chooseColumnsTooltip": "Nhấp chuột phải để chọn các cột",
+    "sortByNameTooltip": "Sắp xếp theo tên",
+    "sortByColumnTooltip": "Sắp xếp theo cột “{{column}}”",
+    "rowProbeSample": "Ví dụ",
+    "loading": "Đang tải…",
+    "nothingFound": "Không tìm thấy kết quả nào"
+  },
+  "update": {
+    "readyToInstall": "Bản cập nhật phiên bản {{version}} đã có sẵn — hãy nhấp vào “Khởi động lại và cài đặt” để áp dụng bản cập nhật này.",
+    "downloadingWithPercent": "Đang tải xuống bản cập nhật phiên bản {{version}}: {{percent}} %",
+    "downloadingFound": "Đã phát hiện bản cập nhật phiên bản{{version}}, đang tải xuống…",
+    "restartAndInstall": "Khởi động lại và cài đặt",
+    "availableAction": "có bản mới!",
+    "installAction": "cài đặt?",
+    "downloadTooltip": "Nhấp để tải xuống",
+    "downloadingTooltip": "Đang tải xuống",
+    "installTooltip": "Nhấp để khởi động lại và cài đặt"
+  },
+  "legacyPasswordNotice": {
+    "message": "Mật khẩu của một số trang web đã lưu không thể đọc được sau khi cập nhật — vui lòng nhập lại mật khẩu trong trình quản lý trang web."
+  },
+  "plaintextSecretNotice": {
+    "message": "Mật khẩu hoặc cụm mật khẩu của trang web đã lưu không thể được mã hóa do tính năng bảo vệ dữ liệu của Windows không khả dụng, nên đã được lưu dưới dạng văn bản thuần túy."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Mật khẩu hoặc cụm mật khẩu không thể được mã hóa và do đó không được lưu lại. Kết nối hiện tại vẫn có thể tiếp tục cho đến khi bị ngắt; nếu không, hãy nhập lại mật khẩu vào lần sau."
+  },
+  "resize": {
+    "paneSize": "Kéo để thay đổi kích thước các khung (nhấp đúp để khôi phục lại)",
+    "height": "Kéo để điều chỉnh chiều cao (nhấp đúp để khôi phục về mặc định)",
+    "ratio": "Kéo để điều chỉnh tỷ lệ (nhấp đúp để khôi phục cài đặt mặc định)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} mục",
+    "itemCount_other": "{{count}} mục",
+    "moveMode": "di chuyển"
+  },
+  "openWithChanged": {
+    "title": "Tệp đã thay đổi",
+    "message": "\"Tệp {{name}}\" đã được chỉnh sửa trong ứng dụng bên ngoài. Có nên tải tệp đã cập nhật lên máy chủ không?"
+  },
+  "saveSite": {
+    "title": "Lưu hồ sơ kết nối",
+    "label": "Tên hồ sơ kết nối:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Thư mục mới",
+    "labelLocal": "Tên thư mục mới:",
+    "labelRemote": "Tên thư mục mới trên máy chủ:"
+  },
+  "newFile": {
+    "title": "Tệp mới",
+    "label": "Tên tệp (kèm phần mở rộng):"
+  },
+  "moveToDialog": {
+    "title": "Chuyển đến…",
+    "labelSingle": "Di chuyển “{{name}}” vào thư mục:",
+    "labelMultiple": "Di chuyển các mục đã chọn ({{count}}) vào thư mục:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Cho phép thay thế \"{{name}}\" nếu tệp xuất hiện trong quá trình truyền?",
+    "resetLayout": "Đặt lại kích thước cửa sổ và khung, khôi phục các cột mặc định và xóa bộ nhớ đệm giao diện?",
+    "hostKeyMismatch": "{{error}} Xóa dấu vân tay khóa đã lưu cho {{host}}: {{port}} và vẫn tiếp tục kết nối? Chỉ thực hiện thao tác này nếu bạn chắc chắn rằng máy chủ đã được cài đặt lại hoặc di chuyển một cách hợp lệ — nếu không, việc này có thể khiến bạn kết nối với một máy chủ có khả năng bị giả mạo.",
+    "connectAnyway": "Vẫn kết nối",
+    "closeTabWithActiveTransfers": "Tab này đang có các lượt truyền diễn ra. Đóng tab này và hủy các lượt truyền đó?",
+    "closeTabLabel": "Đóng tab",
+    "overwriteSingleExists": "\"{{name}}\" đã tồn tại trong thư mục đích. Có muốn ghi đè lên tệp này không?",
+    "overwriteConflicts_one": "{{count}} Tệp này đã tồn tại trong thư mục đích. Có muốn ghi đè lên tệp này không?",
+    "overwriteConflicts_other": "{{count}} Các tệp này đã tồn tại trong thư mục đích. Có muốn ghi đè lên chúng không?",
+    "overwriteLabel": "Ghi đè",
+    "replaceConnection": "Cửa sổ này đã được kết nối với “{{current}}”. Bạn có muốn thay thế kết nối này bằng “{{next}}” không?",
+    "replaceConnectionLabel": "Thay thế",
+    "deleteSelected": "Xóa các mục đã chọn ({{count}})? Thao tác này không thể hoàn tác.",
+    "deleteEntry": "Xóa “{{name}}”? Hành động này không thể hoàn tác.",
+    "recycleSelected": "Có muốn di chuyển các mục đã chọn ({{count}}) vào Thùng rác không?",
+    "recycleEntry": "Có nên di chuyển “{{name}}” vào Thùng rác không?",
+    "deletePermanentSelected": "Xóa vĩnh viễn các mục đã chọn ({{count}})? Thao tác này không thể hoàn tác.",
+    "deletePermanentEntry": "Xóa vĩnh viễn “{{name}}”? Hành động này không thể hoàn tác.",
+    "deleteRemoteSelected": "Xóa vĩnh viễn các mục từ xa đã chọn ({{count}})? Thao tác này không thể hoàn tác.",
+    "deleteRemoteEntry": "Bạn có muốn xóa vĩnh viễn mục từ xa “{{name}}” không? Hành động này không thể hoàn tác."
+  },
+  "paneSide": {
+    "top": "đầu trang",
+    "bottom": "phần dưới cùng",
+    "left": "bên trái",
+    "right": "phải",
+    "labelWithTab": "{{base}} (tab {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Tệp",
+      "newTab": "Tab mới",
+      "closeTab": "Đóng tab",
+      "newConnection": "Kết nối mới",
+      "disconnect": "Ngắt kết nối",
+      "manageBookmarks": "Quản lý dấu trang…",
+      "saveConnection": "Lưu kết nối",
+      "saveConnectionSide": "Lưu kết nối ({{side}})",
+      "saveBookmarkSide": "Lưu dấu trang ({{side}})",
+      "savePathSide": "Lưu đường dẫn ({{side}})",
+      "exportSettings": "Cài đặt xuất…",
+      "importSettings": "Nhập cài đặt…",
+      "quit": "Thoát"
+    },
+    "edit": {
+      "title": "Chỉnh sửa",
+      "settings": "Cài đặt…",
+      "resetLayout": "Đặt lại bố cục và bộ nhớ đệm…"
+    },
+    "view": {
+      "title": "Xem",
+      "darkTheme": "Chế độ tối",
+      "lightTheme": "Chủ đề sáng",
+      "systemTheme": "Chủ đề hệ thống",
+      "syncBrowsing": "Duyệt thư mục đồng bộ",
+      "showHiddenFiles": "Hiển thị các tệp và thư mục ẩn",
+      "leftPane": "Cửa sổ bên trái",
+      "rightPane": "Cửa sổ bên phải",
+      "transferQueue": "Hàng đợi chuyển khoản",
+      "log": "Nhật ký",
+      "stackedPanes": "Các tấm kính xếp chồng lên nhau",
+      "refreshBothPanes": "Làm mới cả hai khung"
+    },
+    "transfer": {
+      "title": "Truyền tải",
+      "copySelectedRight": "Sao chép phần đã chọn →",
+      "copySelectedLeft": "← Sao chép phần đã chọn",
+      "clearCompleted": "Xóa Đã hoàn thành"
+    },
+    "bookmarks": {
+      "title": "Dấu trang"
+    },
+    "help": {
+      "supportProject": "Ủng hộ dự án",
+      "title": "Trợ giúp",
+      "documentation": "Tài liệu hướng dẫn",
+      "reportIssue": "Báo cáo sự cố",
+      "checkUpdates": "Kiểm tra các bản cập nhật",
+      "about": "Giới thiệu"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Máy chủ đã từ chối kết nối. Vui lòng kiểm tra lại địa chỉ và cổng.",
+    "serverNotFound": "Không tìm thấy máy chủ. Vui lòng kiểm tra xem địa chỉ có chính xác không.",
+    "timeout": "Máy chủ không phản hồi (hết thời gian chờ kết nối). Vui lòng kiểm tra địa chỉ, cổng và kết nối mạng.",
+    "connectionReset": "Kết nối với máy chủ đã bị ngắt một cách bất ngờ.",
+    "networkUnreachable": "Không thể kết nối với máy chủ — hãy kiểm tra kết nối mạng của bạn.",
+    "loginIncorrect": "Tên người dùng hoặc mật khẩu không chính xác.",
+    "invalidCertificate": "Máy chủ đã xuất trình một chứng chỉ không hợp lệ. Nếu bạn tin tưởng máy chủ này, hãy tắt tính năng xác minh chứng chỉ trong cài đặt kết nối.",
+    "tlsNegotiationFailed": "Quá trình thương lượng TLS không thành công. Hãy kiểm tra xem máy chủ có hỗ trợ FTPS hoặc HTTPS rõ ràng và phiên bản TLS tương thích hay không.",
+    "sshNegotiationFailed": "Quá trình thương lượng SSH đã thất bại. Máy chủ và FTPeach không thể thống nhất về một thuật toán SSH hoặc phiên bản giao thức tương thích.",
+    "proxyFailed": "Kết nối proxy không thành công. Vui lòng kiểm tra loại proxy, địa chỉ, thông tin đăng nhập và xem liệu có thể kết nối được với máy chủ đích hay không.",
+    "keyReadFailed": "Không thể đọc được khóa — tệp bị hỏng hoặc cụm mật khẩu không chính xác.",
+    "accessDenied": "Bạn không có quyền thực hiện thao tác này.",
+    "notFound": "Không tìm thấy tệp hoặc thư mục.",
+    "fileOrFolderExists": "Đã có một tệp hoặc thư mục có tên đó rồi.",
+    "fileBusy": "Tệp này đang được một tiến trình khác sử dụng.",
+    "diskFull": "Không đủ dung lượng đĩa.",
+    "hostKeyMismatch": "Khóa máy chủ đã thay đổi.",
+    "integrityMismatch": "Tệp đã truyền không vượt qua kiểm tra tính toàn vẹn.",
+    "invalidInput": "Giá trị được cung cấp không hợp lệ.",
+    "internal": "Đã xảy ra lỗi không mong muốn.",
+    "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
+    "alreadyExists": "\"{{name}}\" đã tồn tại rồi"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Liên kết ứng dụng",
+      "hint": "Chọn một ứng dụng để mở tệp. Các tệp không có quy tắc sẽ sử dụng cài đặt mặc định của hệ thống.",
+      "extension": "Phần mở rộng",
+      "extensionPlaceholder": "txt",
+      "application": "Ứng dụng",
+      "applicationPlaceholder": "Đường dẫn ứng dụng",
+      "browse": "Chọn ứng dụng",
+      "remove": "Xóa liên kết",
+      "add": "Thêm liên kết"
+    },
+    "minimizeToTray": "Thu nhỏ xuống khay hệ thống",
+    "minimizeToTrayHint": "Nút thu nhỏ sẽ ẩn cửa sổ vào khay hệ thống thay vì thanh tác vụ.",
+    "closeToTray": "Đóng xuống khay hệ thống",
+    "closeToTrayHint": "Nút đóng sẽ ẩn cửa sổ vào khay hệ thống thay vì tắt ứng dụng. Hãy chọn tùy chọn “Tắt ứng dụng” từ menu của biểu tượng trên khay hệ thống.",
+    "title": "Cài đặt",
+    "unsavedChangesTitle": "Các thay đổi chưa được lưu",
+    "unsavedChangesMessage": "Lưu các thay đổi về cài đặt?",
+    "discardChanges": "Đừng lưu",
+    "categories": {
+      "connection": "Kết nối",
+      "transfers": "Truyền tải",
+      "interface": "Giao diện",
+      "shortcuts": "Các phím tắt",
+      "updates": "Cập nhật",
+      "logging": "Ghi nhật ký",
+      "security": "An ninh"
+    },
+    "shortcuts": {
+      "title": "Phím tắt",
+      "hint": "Nhấp vào một phím tắt, sau đó nhấn tổ hợp phím mới để gán lại cho phím tắt đó.",
+      "globalTitle": "Toàn cầu",
+      "paneTitle": "Khung tệp",
+      "recording": "Nhấn một phím…",
+      "unbound": "Chưa được phân công",
+      "reset": "Khôi phục về cài đặt mặc định",
+      "resetAll": "Đặt lại tất cả về mặc định",
+      "unassign": "Hủy gán",
+      "conflict": "Cũng được sử dụng bởi: {{action}}",
+      "actions": {
+        "search": "Tìm kiếm ({{side}})",
+        "toggleHiddenFiles": "Bật/tắt hiển thị các tệp ẩn",
+        "newConnection": "Kết nối mới",
+        "save": "Lưu ({{side}})",
+        "openSettings": "Mở cài đặt",
+        "newTab": "Tab mới",
+        "closeTab": "Đóng tab",
+        "nextTab": "Tab tiếp theo",
+        "prevTab": "Tab trước",
+        "refresh": "Làm mới",
+        "selectAll": "Chọn tất cả",
+        "delete": "Xóa",
+        "deletePermanent": "Xóa vĩnh viễn",
+        "navigateUp": "Lên một thư mục",
+        "navigateBack": "Quay lại",
+        "navigateForward": "Tiến lên",
+        "navigateHome": "Chuyển đến thư mục chính",
+        "moveTo": "Chuyển đến…",
+        "newFolder": "Thư mục mới…",
+        "newFile": "Tệp mới…",
+        "copyToOtherPane": "Sao chép sang khung khác",
+        "copy": "Sao chép",
+        "cut": "Cắt",
+        "paste": "Dán",
+        "clearSelection": "Xóa lựa chọn",
+        "open": "Mở"
+      }
+    },
+    "security": {
+      "title": "Bảo vệ bằng mật khẩu",
+      "systemMode": "Bảo vệ hệ thống",
+      "systemModeHint": "Mật khẩu cho tài khoản Windows của bạn đã được mã hóa và có thể xem trong phần cài đặt kết nối.",
+      "strongholdMode": "Bảo vệ nâng cao",
+      "strongholdModeHint": "Yêu cầu mật khẩu chính. Các mật khẩu đã lưu có thể được sử dụng để kết nối nhưng không thể xem được.",
+      "loading": "Đang kiểm tra bộ nhớ được bảo vệ…",
+      "configuredLocked": "Bộ nhớ được bảo vệ được bảo mật bằng mật khẩu chính và đã được khóa.",
+      "configuredUnlocked": "Bộ nhớ được bảo vệ được bảo mật bằng mật khẩu chính và đã được mở khóa.",
+      "masterPassword": "Mật khẩu chính",
+      "confirmPassword": "Xác nhận mật khẩu chính",
+      "oldPassword": "Mật khẩu chính hiện tại",
+      "newPassword": "Mật khẩu chính mới",
+      "setup": "Bảo vệ mật khẩu đã lưu",
+      "settingUp": "Bảo vệ…",
+      "unlock": "Mở khóa",
+      "unlocking": "Đang mở khóa…",
+      "unlockRequired": "Mở khóa bộ nhớ được bảo vệ",
+      "unlockRequiredHint": "Kết nối này sử dụng một khóa bí mật đã được lưu. Vui lòng mở khóa bộ nhớ được bảo vệ để tiếp tục.",
+      "lockNow": "Khóa ngay",
+      "autoLock": "Tự động khóa sau, phút",
+      "autoLockDisabled": "Đã tắt",
+      "autoLockHint": "Chế độ khóa sẽ kích hoạt tính năng lưu trữ được bảo vệ sau một khoảng thời gian không hoạt động. Các kết nối máy chủ hiện có vẫn duy trì trạng thái hoạt động; giá trị 0 sẽ vô hiệu hóa tính năng khóa tự động.",
+      "changePassword": "Thay đổi mật khẩu chính",
+      "change": "Thay đổi mật khẩu",
+      "systemUnlock": "Cho phép mở khóa hệ thống",
+      "systemUnlockHint": "Sử dụng Windows Hello (mã PIN, nhận diện khuôn mặt hoặc vân tay tùy theo cài đặt của Windows). Mật khẩu chính của bạn vẫn là phương thức khôi phục.",
+      "unlockWithSystem": "Mở khóa bằng xác thực hệ thống",
+      "systemUnavailable": "Tính năng mở khóa hệ thống không khả dụng trên nền tảng này.",
+      "noRecovery": "Mật khẩu chính bị quên sẽ không thể khôi phục được. Việc đặt lại kho lưu trữ sẽ xóa toàn bộ thông tin bí mật đã lưu.",
+      "passwordMismatch": "Mật khẩu không khớp.",
+      "passwordTooShort": "Mật khẩu chính phải có ít nhất 12 ký tự.",
+      "strength": {
+        "tooShort": "Quá ngắn — hãy nhập ít nhất 12 ký tự.",
+        "acceptable": "Được chấp nhận. Mật khẩu dài hơn sẽ an toàn hơn.",
+        "strong": "Mật khẩu chính mạnh."
+      },
+      "reset": "Đặt lại bộ nhớ được bảo vệ",
+      "resetHint": "Xóa bộ nhớ được bảo vệ cùng với tất cả mật khẩu và cụm mật khẩu của khóa SSH được lưu trữ trong đó. Bạn sẽ cần thiết lập lại các biện pháp bảo vệ nâng cao.",
+      "resetWarning": "Thao tác này sẽ xóa vĩnh viễn tất cả mật khẩu và cụm mật khẩu đã lưu. Vui lòng nhập mật khẩu chính hiện tại để tiếp tục.",
+      "confirmReset": "Xóa các thông tin bí mật đã lưu",
+      "showConfirmations": "Hiển thị xác nhận bảo mật",
+      "showConfirmationsHint": "Yêu cầu xác nhận trước khi hiển thị thông tin bí mật đã lưu hoặc chạy tệp thực thi. Việc đặt lại bộ nhớ được bảo vệ luôn yêu cầu xác nhận.",
+      "unavailable": "Không có bộ nhớ được bảo vệ.",
+      "failed": "Hoạt động lưu trữ được bảo vệ đã thất bại."
+    },
+    "unlimitedPlaceholder": "Không giới hạn",
+    "connectTimeoutLabel": "Thời gian chờ kết nối, giây",
+    "connectTimeoutHint": "Phải đợi bao lâu để nhận được phản hồi từ máy chủ khi kết nối trước khi coi máy chủ đó là không thể truy cập được (0 hoặc để trống — không có giới hạn). Áp dụng cho lần kết nối tiếp theo.",
+    "ftpActiveMode": "Chế độ FTP chủ động (thay vì chế độ thụ động)",
+    "ftpActiveModeHint": "Chỉ áp dụng cho FTP/FTPS — không ảnh hưởng đến SFTP/WebDAV. Hiếm khi cần thiết, chỉ áp dụng cho các mạng/máy chủ mà chế độ thụ động không thể vượt qua NAT. Áp dụng cho kết nối tiếp theo.",
+    "ftpActiveModeDisabledByProxy": "Không khả dụng khi bật proxy — đường hầm proxy chỉ hỗ trợ các kết nối đi, do đó FTP phải duy trì ở chế độ thụ động.",
+    "proxy": {
+      "enable": "Sử dụng máy chủ proxy để kết nối",
+      "enableHint": "SOCKS4, SOCKS5 hoặc HTTP CONNECT — áp dụng cho FTP, FTPS, SFTP và WebDAV. Áp dụng cho kết nối tiếp theo.",
+      "typeLabel": "Loại proxy",
+      "hostLabel": "Máy chủ proxy",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Cổng",
+      "usernameLabel": "Tên người dùng",
+      "passwordLabel": "Mật khẩu",
+      "removeSavedPassword": "Xóa mật khẩu đã lưu",
+      "revealFailed": "Không thể giải mã mật khẩu đã lưu.",
+      "testTargetLabel": "Kiểm tra so với",
+      "testTargetHostPlaceholder": "Máy chủ đích",
+      "testTargetPortPlaceholder": "Cổng",
+      "test": "Kiểm tra máy chủ proxy",
+      "testing": "Đang kiểm tra…",
+      "testOk": "Proxy đã kết nối thành công với máy chủ đích.",
+      "testFailed": "Thử nghiệm proxy đã thất bại."
+    },
+    "concurrencyLabel": "Số lượt truyền đồng thời",
+    "concurrencyHint": "Số lượng tệp có thể tải lên và tải xuống cùng lúc (0 hoặc để trống — không giới hạn). Áp dụng cho lần kết nối tiếp theo.",
+    "speedLimitLabel": "Giới hạn tốc độ, KB/s",
+    "speedLimitHint": "Áp dụng cho tổng tốc độ của tất cả các lượt truyền diễn ra đồng thời (0 hoặc để trống — không có giới hạn). Có hiệu lực ngay lập tức, không cần đợi đến lần kết nối tiếp theo.",
+    "notifyOnComplete": "Thông báo khi quá trình truyền tải hoàn tất",
+    "notifyOnCompleteHint": "Hiển thị thông báo hệ thống khi hàng đợi chuyển dữ liệu trống — chỉ khi cửa sổ đó không được chọn làm cửa sổ đang hoạt động.",
+    "overwriteActionLabel": "Về xung đột tên",
+    "overwriteAsk": "Hỏi",
+    "overwriteOverwrite": "Ghi đè",
+    "overwriteSkip": "Bỏ qua",
+    "overwriteHint": "Phải làm gì khi tệp đang được sao chép đã tồn tại trong thư mục đích.",
+    "preventSleep": "Ngăn hệ thống chuyển sang chế độ ngủ trong quá trình truyền dữ liệu",
+    "preventSleepHint": "Có hiệu lực ngay lập tức, không cần đợi đến lần kết nối tiếp theo. Tính năng này sẽ hoạt động miễn là vẫn còn ít nhất một quá trình truyền dữ liệu đang diễn ra — nếu không, nó sẽ không ngăn chặn chế độ ngủ.",
+    "themeLabel": "Chủ đề",
+    "themeDark": "Tối",
+    "themeLight": "Sáng",
+    "themeSystem": "Hệ thống",
+    "languageLabel": "Ngôn ngữ giao diện",
+    "interfaceScaleLabel": "Tỷ lệ giao diện",
+    "interfaceScaleHint": "Thay đổi kích thước chữ và các nút điều khiển trong toàn bộ ứng dụng.",
+    "dateFormatLabel": "Định dạng ngày/giờ",
+    "dateFormatOnlyLabel": "Định dạng ngày",
+    "timeFormatLabel": "Định dạng giờ",
+    "timeFormat24Hour": "24 giờ",
+    "timeFormat12Hour": "12 giờ",
+    "dateFormatLocale": "Địa phương",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Thư mục mặc định cho Máy tính",
+    "defaultLocalPathHint": "Thư mục mà khung Máy tính mở khi khởi động và khi chuyển từ máy chủ. Để trống để dùng thư mục chính của hệ thống.",
+    "chooseDefaultLocalPath": "Chọn thư mục mặc định",
+    "showHiddenFiles": "Hiển thị các tệp và thư mục ẩn",
+    "showHiddenFilesHint": "Áp dụng cho cả khung tệp cục bộ và khung tệp từ xa.",
+    "coloredTabs": "Thẻ màu",
+    "coloredTabsHint": "Tô màu tên và biểu tượng của tab bằng màu đã lưu trong dấu trang.",
+    "autoCheckUpdates": "Kiểm tra các bản cập nhật khi khởi động",
+    "autoCheckUpdatesHint": "Một kiểm tra tự động diễn ra vài giây sau khi khởi động — việc cài đặt bản cập nhật luôn yêu cầu xác nhận riêng biệt.",
+    "autoReconnectTabs": "Kết nối lại các tab đã khôi phục khi khởi động",
+    "autoReconnectTabsHint": "Mặc định là tắt. Khi được bật, các trang web đã lưu sẽ được kết nối tự động.",
+    "saveSessionOnExit": "Lưu phiên làm việc khi thoát",
+    "saveSessionOnExitHint": "Khôi phục các tab đang mở, loại khung và đường dẫn khi khởi động lần tiếp theo. Tắt tính năng này sẽ xóa phiên làm việc đã lưu.",
+    "checkNow": "Kiểm tra ngay",
+    "updateStatus": {
+      "checking": "Đang kiểm tra các bản cập nhật…",
+      "notAvailable": "Bạn đang sử dụng phiên bản mới nhất.",
+      "error": "Không thể kiểm tra các bản cập nhật.",
+      "notPackaged": "Không có sẵn trong phiên bản này (npm run dev/start)."
+    },
+    "logEnable": "Bật tính năng ghi nhật ký",
+    "logShowTimestamps": "Hiển thị dấu thời gian",
+    "logToFile": "Ghi nhật ký vào tệp",
+    "logToFileHint": "Khi tính năng này được bật, nhật ký sẽ liên tục được ghi thêm vào tệp trên đĩa (%APPDATA%\\FTPeach\\logs\\ftpeach.log) — bất kể bảng nhật ký có đang mở hay không. Tính năng này khác với nút \"Lưu\" trong chính bảng nhật ký (nút này chỉ lưu 200 dòng cuối cùng một lần khi nhấp vào).",
+    "exportDiagnostics": "Xuất gói chẩn đoán",
+    "exportDiagnosticsBusy": "Đang xuất…",
+    "exportDiagnosticsHint": "Xuất phiên bản, hệ điều hành và 200 mục nhật ký gần nhất. Mật khẩu, mã thông báo và các thông tin bí mật khác sẽ được che đi.",
+    "exportDiagnosticsFailed": "Không thể xuất gói chẩn đoán."
+  },
+  "promptDialog": {
+    "confirmLabel": "Được rồi"
+  },
+  "exportSettingsDialog": {
+    "title": "Cài đặt xuất",
+    "confirmLabel": "Xuất…",
+    "includeSettings": "Cài đặt ứng dụng",
+    "includeBookmarks": "Dấu trang",
+    "includeLocalPaths": "Đường dẫn cục bộ",
+    "passwordHint": "Mật khẩu và cụm mật khẩu của khóa SSH không được bao gồm trong tệp xuất — bạn sẽ cần nhập lại chúng sau khi nhập dữ liệu vào một máy tính khác."
+  },
+  "importSettingsDialog": {
+    "title": "Cài đặt nhập",
+    "confirmLabel": "Nhập…",
+    "includeSettings": "Cài đặt ứng dụng",
+    "includeBookmarks": "Dấu trang",
+    "includeLocalPaths": "Đường dẫn cục bộ",
+    "passwordHint": "Mật khẩu và cụm mật khẩu của khóa SSH không được bao gồm khi nhập — bạn sẽ cần nhập lại chúng cho mỗi trang web đã nhập."
+  },
+  "openWithDialog": {
+    "title": "Mở trong ứng dụng",
+    "downloading": "Đang tải xuống “{{fileName}}”…",
+    "progress": "{{loaded}} trong số {{total}} ({{percent}} %)",
+    "connecting": "Đang kết nối…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Lỗi truyền tải",
+    "notifyCompleteTitle": "Truyền tải hoàn tất",
+    "notifySucceeded": "đã thành công: {{count}}",
+    "notifyFailed": "Không thành công: {{count}}",
+    "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp."
+  },
+  "transferQueue": {
+    "title": "Truyền tải",
+    "columns": {
+      "file": "Tệp",
+      "size": "Kích thước",
+      "transferred": "Đã chuyển",
+      "progress": "Tiến độ",
+      "speed": "Tốc độ",
+      "remaining": "Còn lại",
+      "status": "Tình trạng"
+    },
+    "empty": "Các tệp tải lên và tải xuống sẽ hiển thị tại đây",
+    "newTransfers_one": "{{count}} lượt truyền mới",
+    "newTransfers_other": "{{count}} lượt truyền mới",
+    "status": {
+      "queued": "Đang chờ",
+      "done": "Xong",
+      "error": "Lỗi",
+      "paused": "Tạm dừng",
+      "stopped": "Đã hủy",
+      "cancelling": "Đang hủy…"
+    },
+    "direction": {
+      "up": "Tải lên",
+      "down": "Tải xuống",
+      "copy": "Sao chép"
+    },
+    "directionTitleCopy": "Sao chép giữa các máy chủ",
+    "cancelledByUser": "Đã bị người dùng hủy bỏ",
+    "stoppedDash": "đã dừng lại",
+    "resume": "Tiếp tục",
+    "retry": "Thử lại",
+    "stop": "Dừng lại",
+    "pauseUnsupportedCopy": "Chức năng tạm dừng không được hỗ trợ khi sao chép giữa các máy chủ",
+    "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng"
+  },
+  "log": {
+    "connecting": "Đang kết nối với {{addr}}...",
+    "connectFailed": "Không kết nối được: {{error}}",
+    "connected": "Đã đăng nhập.",
+    "receivedEntries_one": "Đã nhận {{count}} mục",
+    "receivedEntries_other": "Đã nhận {{count}} mục",
+    "skippedUnsafeEntry": "Đã bỏ qua một mục danh sách có tên không an toàn: {{name}}",
+    "listFailed": "Lấy danh sách thất bại: {{error}}",
+    "tlsInit": "Đang khởi tạo TLS...",
+    "tlsEstablished": "Kết nối TLS đã được thiết lập.",
+    "davResumeUnsupportedLocal": "WebDAV không hỗ trợ tiếp tục tải lên — tệp sẽ được gửi lại từ đầu.",
+    "davResumeUnsupportedServer": "Máy chủ không hỗ trợ tính năng tiếp tục tải xuống (trạng thái dự kiến là {{expected}}, nhưng nhận được {{status}}) — tệp sẽ được tải xuống lại."
+  },
+  "logPanel": {
+    "showAllConnections": "Hiển thị tất cả các kết nối",
+    "showOnlyThisConnection": "Chỉ hiển thị kết nối này",
+    "connectionClosedShowOnly": "Kết nối đã đóng — chỉ hiển thị kết nối này",
+    "hideTimestamps": "Ẩn dấu thời gian trong các dòng nhật ký",
+    "showTimestamps": "Hiển thị dấu thời gian trong các dòng nhật ký",
+    "copyToClipboard": "Sao chép nhật ký vào khay nhớ tạm",
+    "saveLastLines_one": "Lưu {{count}} dòng cuối cùng vào tệp .txt",
+    "saveLastLines_other": "Lưu {{count}} dòng cuối cùng vào tệp .txt",
+    "clearLog": "Xóa nhật ký",
+    "copiedTooltip": "Đã sao chép",
+    "copyFailedTooltip": "Không thể sao chép",
+    "saveFailedTooltip": "Không thể lưu tệp",
+    "emptyFiltered": "Không có đường dây cho kết nối này",
+    "emptyDefault": "Các thông báo giao thức sẽ hiển thị tại đây"
+  },
+  "aboutDialog": {
+    "title": "Giới thiệu",
+    "tagline": "Một trình khách FTP/FTPS/SFTP nhẹ.",
+    "legalInformation": "Thông tin pháp lý",
+    "sourceCode": "Mã nguồn",
+    "reportIssue": "Báo cáo sự cố",
+    "checkForUpdates": "Kiểm tra các bản cập nhật",
+    "updateDownloaded": "Bản cập nhật phiên bản {{version}} đã được tải xuống — bạn có thể cài đặt ngay bây giờ."
+  },
+  "siteManager": {
+    "emptyList": "Chưa có trang web nào được lưu lại",
+    "confirmDeleteSite": "Xóa trang web \"{{name}}\"?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Dấu trang mới",
+    "titleEdit": "Chỉnh sửa dấu trang",
+    "titleList": "Quản lý dấu trang",
+    "titleLocalPathList": "Quản lý đường dẫn cục bộ",
+    "manageLocalPaths": "Quản lý đường dẫn cục bộ…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Tên",
+      "icon": "Biểu tượng",
+      "color": "Màu sắc",
+      "protocol": "Giao thức",
+      "keyFile": "Tệp khóa",
+      "caCertFile": "Chứng chỉ CA",
+      "remotePath": "Thư mục mặc định",
+      "localPath": "Thư mục cục bộ"
+    },
+    "icons": {
+      "bookmark": "Dấu trang",
+      "globe": "Trang web",
+      "briefcase": "Công việc",
+      "house": "Máy chủ gia đình",
+      "cloud": "Đám mây",
+      "flask": "Thử nghiệm / Môi trường thử nghiệm",
+      "gamepad": "Máy chủ trò chơi",
+      "clapperboard": "Máy chủ đa phương tiện",
+      "camera": "Máy ảnh"
+    },
+    "colors": {
+      "default": "Không có màu",
+      "peach": "Đào",
+      "red": "Màu đỏ",
+      "amber": "Hổ phách",
+      "green": "Màu xanh lá cây",
+      "blue": "Màu xanh",
+      "purple": "Màu tím",
+      "pink": "Màu hồng",
+      "teal": "Màu xanh lục nhạt"
+    },
+    "saveFailed": "Không thể lưu",
+    "revealFailed": "Không thể hiển thị mật khẩu đã lưu",
+    "savedSecretPlaceholder": "Đã lưu",
+    "savedSecretHint": "Để trống để giữ nguyên mật khẩu hiện tại",
+    "removeSavedPassword": "Xóa mật khẩu đã lưu",
+    "removeSavedPassphrase": "Xóa mật khẩu đã lưu",
+    "secretWillBeRemoved": "Sẽ bị xóa khi lưu",
+    "addBookmark": "Dấu trang mới",
+    "addLocalBookmark": "Thêm dấu trang thư mục cục bộ",
+    "chooseLocalPath": "Chọn thư mục cục bộ",
+    "importBookmarks": "Nhập khẩu",
+    "exportBookmarks": "Xuất khẩu",
+    "importAdded_one": "Đã thêm {{count}} dấu trang",
+    "importAdded_other": "Đã thêm {{count}} dấu trang",
+    "importSkipped_one": "đã bỏ qua {{count}} mục trùng lặp",
+    "importSkipped_other": "đã bỏ qua {{count}} mục trùng lặp",
+    "importNothingNew": "Không có gì mới để nhập khẩu",
+    "exportSuccess": "Đã xuất khẩu",
+    "sortMode": "Sắp xếp dấu trang",
+    "sortManual": "Thủ công",
+    "sortName": "Theo tên",
+    "sortProtocol": "Theo quy trình",
+    "duplicateWarning": "Đã có một dấu trang dẫn đến cùng địa chỉ này: \"{{name}}\". Bạn có muốn lưu thêm một dấu trang nữa không?",
+    "saveAnyway": "Vẫn lưu",
+    "newFolder": "Thư mục mới",
+    "folderNamePlaceholder": "Tên thư mục",
+    "confirmDeleteFolder": "Xóa thư mục “{{name}}” có được không? Các dấu trang trong thư mục đó sẽ được chuyển lên một cấp trên.",
+    "searchPlaceholder": "Tìm kiếm…",
+    "clearSearch": "Xóa kết quả tìm kiếm",
+    "noSearchResults": "Không có dấu trang nào phù hợp với tìm kiếm của bạn",
+    "duplicate": "Bản sao",
+    "duplicateNameSuffix": " (sao chép)",
+    "newBookmarkInFolder": "Thêm dấu trang mới tại đây",
+    "expandFolder": "Mở rộng “{{name}}”",
+    "collapseFolder": "Thu gọn “{{name}}”"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Địa chỉ",
+      "port": "Cổng",
+      "user": "Tên người dùng",
+      "password": "Mật khẩu",
+      "passphrase": "Cụm mật khẩu",
+      "keyFilePlaceholder": "Tệp khóa…",
+      "chooseKeyFile": "Chọn tệp khóa…",
+      "caCertFilePlaceholder": "Chứng chỉ CA…",
+      "chooseCaCertFile": "Chọn chứng chỉ CA…"
+    },
+    "secureToggle": {
+      "tooltip": "Bỏ chọn để chấp nhận các chứng chỉ máy chủ tự ký và không hợp lệ",
+      "label": "Xác minh chứng chỉ"
+    },
+    "authToggle": {
+      "tooltip": "Đăng nhập bằng tệp khóa SSH riêng tư thay vì mật khẩu",
+      "label": "Đăng nhập bằng khóa SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Hủy",
+      "connect": "Kết nối",
+      "disconnect": "Ngắt kết nối"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "FTP thông thường truyền tải tên người dùng, mật khẩu và các tệp của bạn dưới dạng không được mã hóa. Hãy sử dụng FTPS hoặc SFTP khi có thể."
+  },
+  "titleBar": {
+    "minimize": "Thu nhỏ",
+    "restore": "Khôi phục",
+    "maximize": "Tối đa hóa"
+  },
+  "tray": {
+    "show": "Hiển thị FTPeach",
+    "quit": "Thoát"
+  },
+  "tabStrip": {
+    "localComputer": "Máy tính",
+    "untitledTab": "Tab mới",
+    "newTabTooltip": "Tab mới (Ctrl+T)",
+    "rename": "Tên tab"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Xem thêm"
+  },
+  "statusBar": {
+    "transfers": "Lượt truyền: {{count}}",
+    "leftCount": "Bên trái: {{count}}",
+    "rightCount": "Bên phải: {{count}}",
+    "topCount": "Phía trên: {{count}}",
+    "bottomCount": "Phía dưới: {{count}}",
+    "selectedSuffix": " (Đã chọn {{count}})",
+    "status": {
+      "transferring": "Chuyển tệp",
+      "paused": "Tạm dừng",
+      "connected": "Kết nối",
+      "connecting": "Kết nối",
+      "connectFailed": "Không thể kết nối",
+      "disconnected": "Chưa kết nối"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Hiển thị/ẩn khung bên trái",
+    "toggleRightPane": "Hiển thị/ẩn khung bên phải",
+    "toggleTransferQueue": "Hiển thị/ẩn danh sách chờ chuyển khoản",
+    "toggleLog": "Hiển thị/ẩn nhật ký",
+    "orientationNarrow": "Các ô cửa xếp chồng lên nhau — cửa sổ quá hẹp để có thể xem song song",
+    "orientationToRow": "Sắp xếp các khung cửa sổ cạnh nhau",
+    "orientationToStacked": "Xếp các khung chồng lên nhau",
+    "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng",
+    "pauseActive": "Tạm dừng các lượt truyền đang diễn ra",
+    "resumeAllPaused": "Tiếp tục tất cả các lượt truyền đang tạm dừng",
+    "stopActive": "Dừng các lượt truyền đang thực hiện",
+    "retryAllStopped": "Thử lại tất cả các lượt truyền đã dừng",
+    "refreshPanesTooltip": "Làm mới cả hai khung (F5)"
+  },
+  "paneToolbar": {
+    "back": "Quay lại",
+    "forward": "Tiền đạo",
+    "up": "Lên",
+    "chooseFolder": "Chọn thư mục…",
+    "newFolder": "Thư mục mới…",
+    "newFile": "Tệp mới…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Máy tính",
+    "remote": "Máy chủ",
+    "updatedAtTooltip": "Cập nhật: {{date}}",
+    "connectToServer": "Máy chủ"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Không có kết nối gần đây",
+    "noSavedConnectionsBody": "Hãy điền địa chỉ máy chủ ở trên hoặc thêm một trang web để truy cập chỉ bằng một cú nhấp chuột.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Quản lý dấu trang",
+    "quicklistLabel": "Các kết nối gần đây"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Lỗi giao diện FTPeach không được xử lý:",
+    "title": "Đã xảy ra sự cố",
+    "message": "Đã xảy ra một lỗi giao diện không mong muốn. Kết nối hiện tại và các tệp trên đĩa của bạn không bị ảnh hưởng — bạn có thể thử tải lại giao diện.",
+    "reload": "Tải lại giao diện"
+  }
+}

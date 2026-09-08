@@ -1,0 +1,33 @@
+[graph]
+targets = ["x86_64-pc-windows-msvc"]
+
+[advisories]
+version = 2
+yanked = "deny"
+ignore = [
+  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; the rsa crate has no patched release. Reassess when russh adopts a constant-time implementation. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2024-0436", reason = "Transitive Stronghold dependency; no patched paste release exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0075", reason = "Transitive Tauri dependency; no safe rust-unic upgrade exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0080", reason = "Transitive Tauri dependency; no safe rust-unic upgrade exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0081", reason = "Transitive Tauri dependency; no safe rust-unic upgrade exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0098", reason = "Transitive Tauri dependency; no safe rust-unic upgrade exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0100", reason = "Transitive Tauri dependency; no safe rust-unic upgrade exists. Review by 2026-11-30; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2025-0141", reason = "Transitive Stronghold dependency; bincode 1.3.3 is considered complete and has no replacement release. Review by 2026-11-30; see docs/rust-advisories.md." },
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+  "Apache-2.0", "BSD-2-Clause",
+  "BSD-3-Clause", "CC0-1.0", "CDLA-Permissive-2.0", "ISC", "MIT",
+  "MPL-2.0", "Unicode-3.0", "Zlib"
+]
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

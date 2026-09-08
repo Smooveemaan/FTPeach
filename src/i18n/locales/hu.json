@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "bejelentkezés nélkül",
+    "anonymousUser": "névtelen",
+    "rootFolder": "Gyökérmappa",
+    "close": "Bezárás",
+    "reset": "Visszaállítás",
+    "open": "Nyitás",
+    "upload": "Feltöltés",
+    "save": "Mentés",
+    "create": "Létrehozás",
+    "cancel": "Mégse",
+    "increase": "Növelés",
+    "decrease": "Csökkentés",
+    "showPassword": "Jelszó megjelenítése",
+    "savedSecretProtected": "A mentett titok védett, és nem tekinthető meg",
+    "hidePassword": "Jelszó elrejtése"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach biztonsági megerősítés",
+    "allow": "Engedélyezés",
+    "typeToConfirm": "A megerősítéshez írja be: {{phrase}}",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Megjeleníti a könyvjelző mentett jelszavát?"
+      },
+      "revealProxyPassword": {
+        "message": "Megjeleníti a mentett proxyjelszót?"
+      },
+      "vaultReset": {
+        "message": "Minden mentett jelszó és SSH-kulcs jelmondata véglegesen törlődik.",
+        "approve": "Tároló törlése"
+      },
+      "executeLocalFile": {
+        "message": "Futtatja ezt a végrehajtható fájlt vagy parancsfájlt?"
+      },
+      "executeRemoteFile": {
+        "message": "Letölti és futtatja ezt a végrehajtható fájlt vagy parancsfájlt?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Új mappa…",
+    "newFile": "Új fájl…",
+    "refresh": "Frissítés",
+    "open": "Nyitás",
+    "uploadToOtherPane": "Feltöltés egy másik ablaktáblába",
+    "copyToOtherPane": "Másolás egy másik ablaktáblába",
+    "downloadToOtherPane": "Letöltés egy másik ablaktáblába",
+    "openWith": "Megnyitás mással…",
+    "permissions": "Jogosultságok…",
+    "moveTo": "Áthelyezés…",
+    "copyPath": "Útvonal másolása",
+    "delete": "Törlés",
+    "deleteSelected_one": "Törlés ({{count}} fájl)",
+    "deleteSelected_other": "Törlés ({{count}} fájl)",
+    "deletePermanently": "Végleges törlés",
+    "deleteSelectedPermanently_one": "Végleges törlés ({{count}} fájl)",
+    "deleteSelectedPermanently_other": "Végleges törlés ({{count}} fájl)"
+  },
+  "chmodDialog": {
+    "title": "SFTP-hozzáférési jogosultságok",
+    "label": "Oktális mód a(z) „{{name}}” elemhez (például 644 vagy 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "A mappa üres",
+    "homeFolder": "Főmappa",
+    "copyToPaneBelow": "Másolás az alatta lévő ablaktáblába",
+    "copyToPaneAbove": "Másolás a fenti ablaktáblába",
+    "copyToPaneRight": "Másolás a jobb oldali ablaktáblába",
+    "copyToPaneLeft": "Másolás a bal oldali ablaktáblába",
+    "fileTypeFolder": "Mappa",
+    "fileTypeGeneric": "Fájl",
+    "fileTypeWithExt": "{{ext}} Fájl",
+    "columnSize": "Méret",
+    "columnModifiedAt": "Módosítás dátuma",
+    "columnCreatedAt": "Létrehozás dátuma",
+    "columnType": "Típus",
+    "columnPermissions": "Jogosultságok",
+    "columnOwner": "Tulajdonos",
+    "columnGroup": "Csoport",
+    "columnName": "Név",
+    "filesAriaLabel": "Fájlok",
+    "rename": "Átnevezés",
+    "resetColumnWidths": "Az oszlopszélességek visszaállítása",
+    "updatedAtTooltip": "Frissítve: {{date}}",
+    "searchTooltip": "Keresés ({{shortcut}})",
+    "searchPlaceholder": "Keresés… ({{shortcut}})",
+    "editPathAriaLabel": "Útvonal szerkesztése",
+    "changeDriveTooltip": "Meghajtó váltása",
+    "chooseColumnsTooltip": "Kattintson a jobb gombbal az oszlopok kiválasztásához",
+    "sortByNameTooltip": "Név szerint rendezés",
+    "sortByColumnTooltip": "Rendezés a „{{column}}” oszlop szerint",
+    "rowProbeSample": "Példa",
+    "loading": "Betöltés…",
+    "nothingFound": "Nem találtam semmit"
+  },
+  "update": {
+    "readyToInstall": "Elérhető a v{{version}}-es frissítés — kattintson az „Újraindítás és telepítés” gombra a frissítés alkalmazásához.",
+    "downloadingWithPercent": "A v{{version}} frissítés letöltése: {{percent}} %",
+    "downloadingFound": "{{version}}-es verzió frissítése megtalálva, letöltés folyamatban…",
+    "restartAndInstall": "Újraindítás és telepítés",
+    "availableAction": "elérhető!",
+    "installAction": "telepítés?",
+    "downloadTooltip": "Kattintson a letöltéshez",
+    "downloadingTooltip": "Letöltés",
+    "installTooltip": "Kattintson az újraindításhoz és telepítéshez"
+  },
+  "legacyPasswordNotice": {
+    "message": "A frissítés után egyes elmentett webhelyek jelszavait nem sikerült beolvasni – kérjük, írja be őket újra a webhelykezelőben."
+  },
+  "plaintextSecretNotice": {
+    "message": "A mentett webhely jelszavát vagy jelmondatát nem lehetett titkosítani, mivel a Windows adatvédelmi funkciója nem áll rendelkezésre, ezért azt egyszerű szöveg formátumban tároltuk."
+  },
+  "secretNotPersistedNotice": {
+    "message": "A jelszót vagy a jelmondatot nem sikerült titkosítani, ezért nem került mentésre. A meglévő kapcsolat addig folytatódhat, amíg meg nem szakad; egyéb esetben legközelebb újra meg kell adnia."
+  },
+  "resize": {
+    "paneSize": "Húzza az ablakokat a méretük módosításához (kattintson duplán az alapérték visszaállításához)",
+    "height": "Húzza az egérrel a magasság módosításához (kattintson duplán az alapérték visszaállításához)",
+    "ratio": "Húzza az egérrel az arány módosításához (kattintson duplán az alapérték visszaállításához)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} tétel",
+    "itemCount_other": "{{count}} tétel",
+    "moveMode": "Áthelyezés"
+  },
+  "openWithChanged": {
+    "title": "A fájl megváltozott",
+    "message": "A „{{name}}” fájl tartalma módosult a külső alkalmazásban. Feltöltsd a frissített fájlt a szerverre?"
+  },
+  "saveSite": {
+    "title": "Kapcsolati profil mentése",
+    "label": "Kapcsolati profil neve:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Új mappa",
+    "labelLocal": "Az új mappa neve:",
+    "labelRemote": "Az új mappa neve a szerveren:"
+  },
+  "newFile": {
+    "title": "Új fájl",
+    "label": "Fájlnév (kiterjesztéssel):"
+  },
+  "moveToDialog": {
+    "title": "Áthelyezés…",
+    "labelSingle": "A(z) „{{name}}” elemet helyezze át a következő mappába:",
+    "labelMultiple": "A kijelölt elemek ({{count}}) áthelyezése a következő mappába:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Engedélyezi a(z) „{{name}}” felülírását, ha a fájl az átvitel közben létrejön?",
+    "resetLayout": "Visszaállítani az ablakok és ablaktáblák méretét, visszaállítani az alapértelmezett oszlopokat, és törölni a felület gyorsítótárát?",
+    "hostKeyMismatch": "{{error}} Törölje a(z) {{host}}:{{port}} címhez mentett kulcs-ujjlenyomatot, és így is csatlakozzon? Ezt csak akkor tegye meg, ha biztos abban, hogy a szervert jogszerűen telepítették újra vagy migrálták – ellenkező esetben ez lehetővé teheti, hogy egy potenciálisan hamisított szerverhez csatlakozzon.",
+    "connectAnyway": "Csatlakozás így is",
+    "closeTabWithActiveTransfers": "Ezen a lapon aktív átvitelek vannak. Bezárja a lapot, és leállítja őket?",
+    "closeTabLabel": "Lap bezárása",
+    "overwriteSingleExists": "A „{{name}}” fájl már létezik a célmappában. Felülírja?",
+    "overwriteConflicts_one": "{{count}} elem már létezik a célmappában. Felülírja?",
+    "overwriteConflicts_other": "{{count}} elem már létezik a célmappában. Felülírja őket?",
+    "overwriteLabel": "Felülírás",
+    "replaceConnection": "Ez az ablak már csatlakozik a „{{current}}” oldalhoz. Cserélje ki a kapcsolatot a „{{next}}” oldalra?",
+    "replaceConnectionLabel": "Csere",
+    "deleteSelected": "Törölje a kijelölt elemeket ({{count}})? Ez a művelet visszafordíthatatlan.",
+    "deleteEntry": "Törölje a „{{name}}” elemet? Ez a művelet visszafordíthatatlan.",
+    "recycleSelected": "Helyezze át a kijelölt elemeket ({{count}}) a Lomtárba?",
+    "recycleEntry": "Helyezze át a „{{name}}” elemet a Lomtárba?",
+    "deletePermanentSelected": "A kijelölt elemeket véglegesen törölje ({{count}})? Ez a művelet visszafordíthatatlan.",
+    "deletePermanentEntry": "Véglegesen törölje a „{{name}}” fájlt? Ez a művelet visszafordíthatatlan.",
+    "deleteRemoteSelected": "A kijelölt távoli elemeket véglegesen törölni kívánja ({{count}})? Ez a művelet visszafordíthatatlan.",
+    "deleteRemoteEntry": "Véglegesen törölje a „{{name}}” távoli elemet? Ez a művelet visszafordíthatatlan."
+  },
+  "paneSide": {
+    "top": "felül",
+    "bottom": "alul",
+    "left": "balra",
+    "right": "jobbra",
+    "labelWithTab": "{{base}} ({{tabNumber}} fül, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Fájl",
+      "newTab": "Új lap",
+      "closeTab": "Lap bezárása",
+      "newConnection": "Új kapcsolat",
+      "disconnect": "Kapcsolat bontása",
+      "manageBookmarks": "Könyvjelzők kezelése…",
+      "saveConnection": "Kapcsolat mentése",
+      "saveConnectionSide": "Kapcsolat mentése ({{side}})",
+      "saveBookmarkSide": "Könyvjelző mentése ({{side}})",
+      "savePathSide": "Útvonal mentése ({{side}})",
+      "exportSettings": "Beállítások exportálása…",
+      "importSettings": "Beállítások importálása…",
+      "quit": "Kilépés"
+    },
+    "edit": {
+      "title": "Szerkesztés",
+      "settings": "Beállítások…",
+      "resetLayout": "Elrendezés és gyorsítótár visszaállítása…"
+    },
+    "view": {
+      "title": "Megtekintés",
+      "darkTheme": "Sötét téma",
+      "lightTheme": "Világos téma",
+      "systemTheme": "Rendszer téma",
+      "syncBrowsing": "Szinkronizált mappaböngészés",
+      "showHiddenFiles": "Rejtett fájlok és mappák megjelenítése",
+      "leftPane": "Bal oldali ablaktábla",
+      "rightPane": "Jobb oldali ablaktábla",
+      "transferQueue": "Átviteli sor",
+      "log": "Napló",
+      "stackedPanes": "Egymásra helyezett ablaktáblák",
+      "refreshBothPanes": "Mindkét ablak frissítése"
+    },
+    "transfer": {
+      "title": "Átvitel",
+      "copySelectedRight": "Kijelöltek másolása →",
+      "copySelectedLeft": "← Kijelöltek másolása",
+      "clearCompleted": "Befejezettek törlése"
+    },
+    "bookmarks": {
+      "title": "Könyvjelzők"
+    },
+    "help": {
+      "supportProject": "A projekt támogatása",
+      "title": "Segítség",
+      "documentation": "Dokumentáció",
+      "reportIssue": "Hiba jelentése",
+      "checkUpdates": "Frissítések ellenőrzése",
+      "about": "Rólunk"
+    }
+  },
+  "errors": {
+    "connectionRefused": "A szerver elutasította a kapcsolatot. Ellenőrizze a címet és a portot.",
+    "serverNotFound": "A szerver nem található. Ellenőrizze, hogy a cím helyes-e.",
+    "timeout": "A szerver nem válaszol (a kapcsolat időtúllépése miatt). Ellenőrizze a címet, a portot és a hálózati kapcsolatot.",
+    "connectionReset": "A szerverrel való kapcsolat váratlanul megszakadt.",
+    "networkUnreachable": "A szerver nem érhető el — ellenőrizze a hálózati kapcsolatát.",
+    "loginIncorrect": "Helytelen felhasználónév vagy jelszó.",
+    "invalidCertificate": "A szerver érvénytelen tanúsítványt mutatott be. Ha megbízik ebben a szerverben, tiltsa le a tanúsítvány-ellenőrzést a kapcsolat beállításaiban.",
+    "tlsNegotiationFailed": "A TLS-tárgyalás sikertelen volt. Ellenőrizze, hogy a szerver támogatja-e az explicit FTPS-t vagy HTTPS-t, valamint egy kompatibilis TLS-verziót.",
+    "sshNegotiationFailed": "Az SSH-tárgyalás sikertelen volt. A szerver és az FTPeach nem tudott megegyezni egy kompatibilis SSH-algoritmusban vagy protokollverzióban.",
+    "proxyFailed": "A proxy-kapcsolat megszakadt. Ellenőrizze a proxy típusát, címét, hitelesítő adatait, valamint azt, hogy eléri-e a célszervert.",
+    "keyReadFailed": "Nem sikerült beolvasni a kulcsot — a fájl sérült, vagy a jelmondat helytelen.",
+    "accessDenied": "Nincs jogosultsága erre a műveletre.",
+    "notFound": "A fájl vagy mappa nem található.",
+    "fileOrFolderExists": "Már létezik ilyen nevű fájl vagy mappa.",
+    "fileBusy": "A fájlt egy másik folyamat éppen használja.",
+    "diskFull": "Nincs elegendő lemezterület.",
+    "hostKeyMismatch": "A kiszolgáló gazdagépkulcsa megváltozott.",
+    "integrityMismatch": "Az átvitt fájl nem ment át az integritás-ellenőrzésen.",
+    "invalidInput": "A megadott érték érvénytelen.",
+    "internal": "Váratlan hiba történt.",
+    "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
+    "alreadyExists": "A „{{name}}” már létezik"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Társítások",
+      "hint": "Válasszon ki egy alkalmazást a kiterjesztéshez. Azoknál a fájloknál, amelyekhez nincs szabály hozzárendelve, a rendszer alapértelmezett beállítása érvényesül.",
+      "extension": "Kiterjesztés",
+      "extensionPlaceholder": "txt",
+      "application": "Alkalmazás",
+      "applicationPlaceholder": "Az alkalmazás elérési útvonala",
+      "browse": "Válasszon alkalmazást",
+      "remove": "Kapcsolat eltávolítása",
+      "add": "Kapcsolat hozzáadása"
+    },
+    "minimizeToTray": "A tálcára minimalizálás",
+    "minimizeToTrayHint": "A minimalizálás gomb az ablakot nem a tálcára, hanem a rendszer tálcájára rejti el.",
+    "closeToTray": "A tálca közelében",
+    "closeToTrayHint": "A bezárás gomb nem az alkalmazás bezárását eredményezi, hanem az ablakot a tálcára rejti. Az alkalmazást a tálcaikon menüjéből lehet bezárni.",
+    "title": "Beállítások",
+    "unsavedChangesTitle": "Mentetlen módosítások",
+    "unsavedChangesMessage": "El akarja menteni a beállítások módosításait?",
+    "discardChanges": "Ne mentsd el",
+    "categories": {
+      "connection": "Kapcsolat",
+      "transfers": "Átvitelek",
+      "interface": "Felület",
+      "shortcuts": "Gyorsbillentyűk",
+      "updates": "Frissítések",
+      "logging": "Fakitermelés",
+      "security": "Biztonság"
+    },
+    "shortcuts": {
+      "title": "Billentyűparancsok",
+      "hint": "Kattintson egy gyorsbillentyűre, majd nyomja meg az új billentyűkombinációt a gomb újbóli hozzárendeléséhez.",
+      "globalTitle": "Globális",
+      "paneTitle": "Fájl ablaktábla",
+      "recording": "Nyomjon meg egy billentyűt…",
+      "unbound": "Nincs hozzárendelve",
+      "reset": "Alapértelmezett beállítások visszaállítása",
+      "resetAll": "Minden beállítást visszaállítani az alapértelmezett értékekre",
+      "unassign": "Hozzárendelés visszavonása",
+      "conflict": "Már használja: {{action}}",
+      "actions": {
+        "search": "Keresés ({{side}})",
+        "toggleHiddenFiles": "Rejtett fájlok megjelenítése/elrejtése",
+        "newConnection": "Új kapcsolat",
+        "save": "Mentés ({{side}})",
+        "openSettings": "Beállítások megnyitása",
+        "newTab": "Új lap",
+        "closeTab": "Lap bezárása",
+        "nextTab": "Következő fül",
+        "prevTab": "Előző lap",
+        "refresh": "Frissítés",
+        "selectAll": "Összes kijelölése",
+        "delete": "Törlés",
+        "deletePermanent": "Végleges törlés",
+        "navigateUp": "Egy mappával feljebb",
+        "navigateBack": "Vissza",
+        "navigateForward": "Előre",
+        "navigateHome": "Ugrás a kezdőlapra",
+        "moveTo": "Áthelyezés…",
+        "newFolder": "Új mappa…",
+        "newFile": "Új fájl…",
+        "copyToOtherPane": "Másolás egy másik ablaktáblába",
+        "copy": "Másolás",
+        "cut": "Vágás",
+        "paste": "Beillesztés",
+        "clearSelection": "Kiválasztás törlése",
+        "open": "Nyitás"
+      }
+    },
+    "security": {
+      "title": "Jelszóval való védelem",
+      "systemMode": "Rendszervédelem",
+      "systemModeHint": "A Windows-fiók jelszavait titkosítják, és a kapcsolatbeállításokban tekinthetők meg.",
+      "strongholdMode": "Fokozott védelem",
+      "strongholdModeHint": "Fő jelszó megadása szükséges. A mentett jelszavak felhasználhatók a csatlakozáshoz, de nem tekinthetők meg.",
+      "loading": "A védett tárhely ellenőrzése…",
+      "configuredLocked": "A védett tárhelyet fő jelszóval védik és lezárják.",
+      "configuredUnlocked": "A védett tárhelyet egy fő jelszóval védik, és azzal lehet feloldani.",
+      "masterPassword": "Fő jelszó",
+      "confirmPassword": "A fő jelszó megerősítése",
+      "oldPassword": "Jelenlegi fő jelszó",
+      "newPassword": "Új fő jelszó",
+      "setup": "A mentett jelszavak védelme",
+      "settingUp": "A védelem…",
+      "unlock": "Feloldás",
+      "unlocking": "Feloldás…",
+      "unlockRequired": "A védett tárhely feloldása",
+      "unlockRequiredHint": "Ez a kapcsolat egy elmentett titkos kulcsot használ. A folytatáshoz oldja fel a védett tárhely zárolását.",
+      "lockNow": "Zárd le most!",
+      "autoLock": "Automatikus zárolás után, perc",
+      "autoLockDisabled": "Fogyatékkal élők",
+      "autoLockHint": "Inaktivitás esetén zárolja a tárhelyet. A meglévő szerverkapcsolatok aktívak maradnak; a 0 érték kikapcsolja az automatikus zárolást.",
+      "changePassword": "A fő jelszó módosítása",
+      "change": "Jelszó módosítása",
+      "systemUnlock": "A rendszer feloldásának engedélyezése",
+      "systemUnlockHint": "A Windows Hello funkciót használja (PIN-kód, arcfelismerés vagy ujjlenyomat, a Windows beállításainak megfelelően). A fő jelszavad továbbra is a visszaállítási módszer marad.",
+      "unlockWithSystem": "Feloldás rendszeres hitelesítéssel",
+      "systemUnavailable": "A rendszer feloldása ezen a platformon nem elérhető.",
+      "noRecovery": "Az elfelejtett főjelszó nem állítható vissza. A tárhely visszaállítása az összes elmentett titkot törli.",
+      "passwordMismatch": "A jelszavak nem egyeznek.",
+      "passwordTooShort": "A fő jelszó hossza legalább 12 karakter legyen.",
+      "strength": {
+        "tooShort": "Túl rövid — legalább 12 karaktert használjon.",
+        "acceptable": "Elfogadható. A hosszabb jelszó biztonságosabb.",
+        "strong": "Erős fő jelszó."
+      },
+      "reset": "A védett tárhely visszaállítása",
+      "resetHint": "Törli a védett tárhelyet, valamint az abban tárolt összes jelszót és SSH-kulcs jelmondatot. A fokozott védelmet újra be kell állítani.",
+      "resetWarning": "Ezzel minden elmentett jelszó és kulcsjelmondat véglegesen törlődik. A folytatáshoz írja be az aktuális főjelszót.",
+      "confirmReset": "A mentett titkok törlése",
+      "showConfirmations": "Biztonsági megerősítések megjelenítése",
+      "showConfirmationsHint": "Kérjen megerősítést a mentett titkok megjelenítése vagy futtatható fájlok indítása előtt. A védett tárhely visszaállítása mindig megerősítést igényel.",
+      "unavailable": "A védett tárhely nem érhető el.",
+      "failed": "A védett tárhelyre vonatkozó művelet sikertelen volt."
+    },
+    "unlimitedPlaceholder": "Nincs korlát",
+    "connectTimeoutLabel": "Kapcsolat időtúllépése, másodperc",
+    "connectTimeoutHint": "Mennyi ideig kell várni a szerver válaszára a csatlakozás során, mielőtt elérhetetlennek minősítjük (0 vagy üres — nincs korlát). A következő csatlakozásra vonatkozik.",
+    "ftpActiveMode": "Aktív FTP-mód (a passzív helyett)",
+    "ftpActiveModeHint": "Csak FTP/FTPS — nincs hatása az SFTP-re és a WebDAV-ra. Ritkán van rá szükség, kizárólag olyan hálózatokon/szervereken, ahol a passzív mód nem jut át a NAT-on. A következő csatlakozásra vonatkozik.",
+    "ftpActiveModeDisabledByProxy": "Proxy használata esetén nem érhető el — a proxy-alagút csak a kimenő kapcsolatokat támogatja, ezért az FTP-nek passzív módban kell maradnia.",
+    "proxy": {
+      "enable": "A kapcsolatokhoz használjon proxyt",
+      "enableHint": "SOCKS4, SOCKS5 vagy HTTP CONNECT — az FTP, FTPS, SFTP és WebDAV protokollokra vonatkozik. A következő kapcsolatra vonatkozik.",
+      "typeLabel": "Proxy-típus",
+      "hostLabel": "Proxy-kiszolgáló",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Kikötő",
+      "usernameLabel": "Felhasználónév",
+      "passwordLabel": "Jelszó",
+      "removeSavedPassword": "A mentett jelszó eltávolítása",
+      "revealFailed": "A mentett jelszót nem sikerült visszafejteni.",
+      "testTargetLabel": "Ellenőrzés a következővel szemben",
+      "testTargetHostPlaceholder": "Szerver-üzemeltető",
+      "testTargetPortPlaceholder": "Kikötő",
+      "test": "Proxy tesztelése",
+      "testing": "Tesztelés…",
+      "testOk": "A proxy sikeresen elérte a célt.",
+      "testFailed": "A proxy-teszt sikertelen volt."
+    },
+    "concurrencyLabel": "Párhuzamos átvitelek",
+    "concurrencyHint": "Hány fájlt lehet egyszerre feltölteni és letölteni (0 vagy üres mező — nincs korlátozás). A beállítás a következő csatlakozásra vonatkozik.",
+    "speedLimitLabel": "Sebességkorlátozás, KB/s",
+    "speedLimitHint": "Az összes egyidejű átvitel összegére vonatkozik (0 vagy üres mező – nincs korlát). Azonnal hatályba lép, a következő kapcsolódásra való várakozás nélkül.",
+    "notifyOnComplete": "Értesítés az átvitelek befejezéséről",
+    "notifyOnCompleteHint": "Rendszerértesítés, amikor az átviteli sor kiürül — kizárólag akkor, ha az ablak nincs fókuszban.",
+    "overwriteActionLabel": "A névütközésről",
+    "overwriteAsk": "Kérdezz",
+    "overwriteOverwrite": "Felülírás",
+    "overwriteSkip": "Ugrás",
+    "overwriteHint": "Mit kell tenni, ha a másolandó fájl már létezik a célmappában?",
+    "preventSleep": "Megakadályozza, hogy a rendszer alvó módba váltson az adatátvitel során",
+    "preventSleepHint": "Azonnal hatályba lép, a következő kapcsolat létrejöttét nem várja meg. Addig aktív, amíg legalább egy adatátvitel folyamatban van – egyéb esetben nem gátolja az alvó állapotba lépést.",
+    "themeLabel": "Téma",
+    "themeDark": "Sötét",
+    "themeLight": "Fény",
+    "themeSystem": "Rendszer",
+    "languageLabel": "Felület nyelve",
+    "interfaceScaleLabel": "Felületi skála",
+    "interfaceScaleHint": "A szöveg és a vezérlőelemek méretének módosítása az alkalmazás egészében.",
+    "dateFormatLabel": "Dátum/idő formátum",
+    "dateFormatOnlyLabel": "Dátumformátum",
+    "timeFormatLabel": "Időformátum",
+    "timeFormat24Hour": "24 ó",
+    "timeFormat12Hour": "12 ó",
+    "dateFormatLocale": "Helyi",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Alapértelmezett mappa a Számítógép panelhez",
+    "defaultLocalPathHint": "Az a mappa, amelyet a Számítógép panel indításkor és szerverről való átváltáskor megnyit. Hagyja üresen a rendszer saját mappájának használatához.",
+    "chooseDefaultLocalPath": "Alapértelmezett mappa kiválasztása",
+    "showHiddenFiles": "Rejtett fájlok és mappák megjelenítése",
+    "showHiddenFilesHint": "Ez mind a helyi, mind a távoli fájlpanelekre vonatkozik.",
+    "coloredTabs": "Színes fülek",
+    "coloredTabsHint": "A lap nevét és ikonját a mentett könyvjelző színével színezi ki.",
+    "autoCheckUpdates": "Indításkor ellenőrizze a frissítéseket",
+    "autoCheckUpdatesHint": "Az indítás után néhány másodperccel végzett automatikus ellenőrzés – a frissítések telepítéséhez mindig külön megerősítésre van szükség.",
+    "autoReconnectTabs": "A helyreállított lapok újbóli megnyitása indításkor",
+    "autoReconnectTabsHint": "Alapértelmezés szerint ki van kapcsolva. Ha engedélyezve van, a visszaállított, elmentett webhelyek automatikusan csatlakoznak.",
+    "saveSessionOnExit": "A munkamenet mentése kilépéskor",
+    "saveSessionOnExitHint": "A következő indításkor visszaállítja a megnyitott lapokat, az ablaktáblák típusait és az elérési útvonalakat. Ha ezt kikapcsolod, a mentett munkamenet törlődik.",
+    "checkNow": "Ellenőrizze most",
+    "updateStatus": {
+      "checking": "Frissítések keresése…",
+      "notAvailable": "A legújabb verziót használod.",
+      "error": "Nem sikerült ellenőrizni a frissítéseket.",
+      "notPackaged": "Ebben a verzióban nem elérhető (npm run dev/start)."
+    },
+    "logEnable": "Naplózás engedélyezése",
+    "logShowTimestamps": "Időbélyegek megjelenítése",
+    "logToFile": "Napló beírása fájlba",
+    "logToFileHint": "Ha engedélyezve van, a rendszer folyamatosan hozzáfűzi a naplót a lemezen található fájlhoz (%APPDATA%\\FTPeach\\logs\\ftpeach.log) — függetlenül attól, hogy a naplópanel nyitva van-e. Ez eltér a panelben található „Mentés” gombtól (az csak az utolsó 200 sort menti el egyszer, a gombra kattintáskor).",
+    "exportDiagnostics": "Diagnosztikai csomag exportálása",
+    "exportDiagnosticsBusy": "Exportálás…",
+    "exportDiagnosticsHint": "Exportálja a verziót, az operációs rendszert és a legutóbbi 200 naplóbejegyzést. A jelszavak, tokenek és egyéb bizalmas adatok maszkolva vannak.",
+    "exportDiagnosticsFailed": "Nem sikerült exportálni a diagnosztikai csomagot."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Beállítások exportálása",
+    "confirmLabel": "Export…",
+    "includeSettings": "Alkalmazásbeállítások",
+    "includeBookmarks": "Könyvjelzők",
+    "includeLocalPaths": "Helyi elérési utak",
+    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem szerepelnek az exportált fájlban — azokat az importálás után egy másik gépen újra be kell írnod."
+  },
+  "importSettingsDialog": {
+    "title": "Beállítások importálása",
+    "confirmLabel": "Import…",
+    "includeSettings": "Alkalmazásbeállítások",
+    "includeBookmarks": "Könyvjelzők",
+    "includeLocalPaths": "Helyi elérési utak",
+    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem szerepelnek az importálásban — ezeket minden importált oldalhoz újra be kell írnod."
+  },
+  "openWithDialog": {
+    "title": "Megnyitás az alkalmazásban",
+    "downloading": "A „{{fileName}}” letöltése…",
+    "progress": "{{loaded}} / {{total}} ({{percent}} %)",
+    "connecting": "Csatlakozás…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Átviteli hiba",
+    "notifyCompleteTitle": "Az átvitel befejeződött",
+    "notifySucceeded": "sikerült: {{count}}",
+    "notifyFailed": "sikertelen: {{count}}",
+    "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet."
+  },
+  "transferQueue": {
+    "title": "Átvitelek",
+    "columns": {
+      "file": "Fájl",
+      "size": "Méret",
+      "transferred": "Áthelyezve",
+      "progress": "Előrehaladás",
+      "speed": "Sebesség",
+      "remaining": "Maradt",
+      "status": "Állapot"
+    },
+    "empty": "A feltöltések és letöltések itt jelennek meg",
+    "newTransfers_one": "{{count}} új átvitel",
+    "newTransfers_other": "{{count}} új átvitel",
+    "status": {
+      "queued": "Sorban",
+      "done": "Kész",
+      "error": "Hiba",
+      "paused": "Szüneteltetve",
+      "stopped": "Megszakítva",
+      "cancelling": "Megszakítás…"
+    },
+    "direction": {
+      "up": "Feltöltés",
+      "down": "Letöltés",
+      "copy": "Másolás"
+    },
+    "directionTitleCopy": "Másolás szerverek között",
+    "cancelledByUser": "Felhasználó által megszakítva",
+    "stoppedDash": "megállt",
+    "resume": "Folytatás",
+    "retry": "Újrapróbálás",
+    "stop": "Leállítás",
+    "pauseUnsupportedCopy": "A szünet funkció nem támogatott a szerverek közötti másolás során",
+    "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést"
+  },
+  "log": {
+    "connecting": "Csatlakozás a {{addr}} webhelyhez...",
+    "connectFailed": "A kapcsolat létrehozása nem sikerült: {{error}}",
+    "connected": "Bejelentkezett.",
+    "receivedEntries_one": "{{count}} bejegyzés érkezett",
+    "receivedEntries_other": "{{count}} bejegyzés érkezett",
+    "skippedUnsafeEntry": "Egy nem biztonságos nevű bejegyzést kihagytam: {{name}}",
+    "listFailed": "A listázás nem sikerült: {{error}}",
+    "tlsInit": "A TLS inicializálása...",
+    "tlsEstablished": "A TLS-kapcsolat létrejött.",
+    "davResumeUnsupportedLocal": "A WebDAV nem támogatja a feltöltés folytatását – a fájl az elejétől kezdve újra elküldésre kerül.",
+    "davResumeUnsupportedServer": "A szerver nem támogatja a letöltés folytatását (várható állapot: „{{expected}}”, kapott állapot: „{{status}}”) — a fájl letöltése újraindul."
+  },
+  "logPanel": {
+    "showAllConnections": "Az összes kapcsolat megjelenítése",
+    "showOnlyThisConnection": "Csak ezt a kapcsolatot mutasd",
+    "connectionClosedShowOnly": "A kapcsolat lezárult — csak ezt a kapcsolatot mutassa",
+    "hideTimestamps": "Az időbélyegek elrejtése a naplóbejegyzésekben",
+    "showTimestamps": "Időbélyegek megjelenítése a naplóbejegyzésekben",
+    "copyToClipboard": "A napló másolása a vágólapra",
+    "saveLastLines_one": "Az utolsó {{count}} sor mentése .txt fájlba",
+    "saveLastLines_other": "Az utolsó {{count}} sor mentése .txt fájlba",
+    "clearLog": "Napló törlése",
+    "copiedTooltip": "Másolva",
+    "copyFailedTooltip": "Nem sikerült másolni",
+    "saveFailedTooltip": "Nem sikerült elmenteni a fájlt",
+    "emptyFiltered": "Ehhez a csatlakozáshoz nincs sor",
+    "emptyDefault": "A protokollüzenetek itt jelennek meg"
+  },
+  "aboutDialog": {
+    "title": "Névjegy",
+    "tagline": "Egy könnyű FTP/FTPS/SFTP-kliens.",
+    "legalInformation": "Jogi információk",
+    "sourceCode": "Forráskód",
+    "reportIssue": "Hiba bejelentése",
+    "checkForUpdates": "Frissítések keresése",
+    "updateDownloaded": "A v{{version}}-es frissítés letöltődött – most már telepítheti."
+  },
+  "siteManager": {
+    "emptyList": "Még nincsenek elmentett webhelyek",
+    "confirmDeleteSite": "Törölje a „{{name}}” webhelyet?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Új könyvjelző",
+    "titleEdit": "Könyvjelző szerkesztése",
+    "titleList": "Könyvjelzők kezelése",
+    "titleLocalPathList": "Helyi elérési utak kezelése",
+    "manageLocalPaths": "Helyi elérési utak kezelése…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Név",
+      "icon": "Ikon",
+      "color": "Szín",
+      "protocol": "Protokoll",
+      "keyFile": "Kulcsfájl",
+      "caCertFile": "Hitelesítésszolgáltatói tanúsítvány",
+      "remotePath": "Alapértelmezett mappa",
+      "localPath": "Helyi mappa"
+    },
+    "icons": {
+      "bookmark": "Könyvjelző",
+      "globe": "Weboldal",
+      "briefcase": "Munka",
+      "house": "Otthoni szerver",
+      "cloud": "Felhő",
+      "flask": "Tesztelés / próbaüzem",
+      "gamepad": "Játékszerver",
+      "clapperboard": "Médiaszerver",
+      "camera": "Fényképezőgép"
+    },
+    "colors": {
+      "default": "Nincs szín",
+      "peach": "Őszibarack",
+      "red": "Piros",
+      "amber": "Borostyán",
+      "green": "Zöld",
+      "blue": "Kék",
+      "purple": "Lila",
+      "pink": "Rózsaszín",
+      "teal": "Türkiz"
+    },
+    "saveFailed": "Nem sikerült menteni",
+    "revealFailed": "A mentett titkot nem sikerült megjeleníteni",
+    "savedSecretPlaceholder": "Mentve",
+    "savedSecretHint": "Hagyja üresen a jelenlegi jelszó megtartásához",
+    "removeSavedPassword": "A mentett jelszó eltávolítása",
+    "removeSavedPassphrase": "A mentett jelmondat eltávolítása",
+    "secretWillBeRemoved": "A mentéskor eltávolításra kerül",
+    "addBookmark": "Új könyvjelző",
+    "addLocalBookmark": "Helyi mappa könyvjelző hozzáadása",
+    "chooseLocalPath": "Helyi mappa kiválasztása",
+    "importBookmarks": "Importálás",
+    "exportBookmarks": "Exportálás",
+    "importAdded_one": "{{count}} könyvjelző hozzáadva",
+    "importAdded_other": "{{count}} könyvjelző hozzáadva",
+    "importSkipped_one": "{{count}} duplikátum kihagyva",
+    "importSkipped_other": "{{count}} duplikátum kihagyva",
+    "importNothingNew": "Nincs új elem az importáláshoz",
+    "exportSuccess": "Exportálva",
+    "sortMode": "Könyvjelzők rendezése",
+    "sortManual": "Kézi",
+    "sortName": "Név szerint",
+    "sortProtocol": "A protokoll szerint",
+    "duplicateWarning": "Már létezik könyvjelző ugyanarra a célra: „{{name}}”. El akarod menteni még egyet?",
+    "saveAnyway": "Mindenképp mentés",
+    "newFolder": "Új mappa",
+    "folderNamePlaceholder": "Mappa neve",
+    "confirmDeleteFolder": "Törölje a „{{name}}” mappát? A benne található könyvjelzők egy szinttel feljebb kerülnek.",
+    "searchPlaceholder": "Keresés…",
+    "clearSearch": "Keresés törlése",
+    "noSearchResults": "A keresésednek nem találtak megfelelő könyvjelzőt",
+    "duplicate": "Duplikátum",
+    "duplicateNameSuffix": " (másolat)",
+    "newBookmarkInFolder": "Új könyvjelző itt",
+    "expandFolder": "A „{{name}}” kiterjesztése",
+    "collapseFolder": "„{{name}}” összecsukása"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Cím",
+      "port": "Kikötő",
+      "user": "Felhasználónév",
+      "password": "Jelszó",
+      "passphrase": "Jelmondat",
+      "keyFilePlaceholder": "Kulcsfájl…",
+      "chooseKeyFile": "Kulcsfájl kiválasztása…",
+      "caCertFilePlaceholder": "Hitelesítésszolgáltatói tanúsítvány…",
+      "chooseCaCertFile": "Hitelesítésszolgáltatói tanúsítvány kiválasztása…"
+    },
+    "secureToggle": {
+      "tooltip": "Törölje a jelölést, ha elfogadja az önaláírt és érvénytelen szerver-tanúsítványokat",
+      "label": "Tanúsítvány ellenőrzése"
+    },
+    "authToggle": {
+      "tooltip": "Jelentkezzen be jelszó helyett egy privát SSH-kulcsfájllal",
+      "label": "Bejelentkezés SSH-kulccsal"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Mégse",
+      "connect": "Csatlakozás",
+      "disconnect": "Kapcsolat bontása"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "A hagyományos FTP-protokoll a felhasználónevet, a jelszót és a fájlokat titkosítás nélkül továbbítja. Ha lehetséges, használjon FTPS-t vagy SFTP-t."
+  },
+  "titleBar": {
+    "minimize": "Minimalizálás",
+    "restore": "Visszaállítás",
+    "maximize": "Maximalizálás"
+  },
+  "tray": {
+    "show": "FTPeach megjelenítése",
+    "quit": "Kilépés"
+  },
+  "tabStrip": {
+    "localComputer": "Számítógép",
+    "untitledTab": "Új lap",
+    "newTabTooltip": "Új lap (Ctrl+T)",
+    "rename": "A fül neve"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Tovább"
+  },
+  "statusBar": {
+    "transfers": "Átvitelek: {{count}}",
+    "leftCount": "Bal oldalon: {{count}}",
+    "rightCount": "Jobb oldalon: {{count}}",
+    "topCount": "Felül: {{count}}",
+    "bottomCount": "Alul: {{count}}",
+    "selectedSuffix": " ({{count}} kiválasztva)",
+    "status": {
+      "transferring": "Fájl átvitele",
+      "paused": "Szüneteltetve",
+      "connected": "Csatlakoztatva",
+      "connecting": "Csatlakozás",
+      "connectFailed": "Nem sikerült a kapcsolat létrehozása",
+      "disconnected": "Nincs csatlakozva"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "A bal oldali ablaktábla megjelenítése/elrejtése",
+    "toggleRightPane": "A jobb oldali ablaktábla megjelenítése/elrejtése",
+    "toggleTransferQueue": "Átviteli sor megjelenítése/elrejtése",
+    "toggleLog": "Napló megjelenítése/elrejtése",
+    "orientationNarrow": "Egymásra helyezett ablaktáblák — az ablak túl keskeny ahhoz, hogy egymás mellett lehessen őket látni",
+    "orientationToRow": "Az ablaktáblák egymás mellé rendezése",
+    "orientationToStacked": "Az ablaktáblák egymásra helyezése",
+    "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szünet funkciót",
+    "pauseActive": "Az aktív átvitelek felfüggesztése",
+    "resumeAllPaused": "Az összes szüneteltetett átvitel folytatását",
+    "stopActive": "Az aktív átvitelek leállítása",
+    "retryAllStopped": "Az összes leállított átvitel újbóli megkísérlése",
+    "refreshPanesTooltip": "Frissítse mindkét ablakot (F5)"
+  },
+  "paneToolbar": {
+    "back": "Vissza",
+    "forward": "Előre",
+    "up": "Fel",
+    "chooseFolder": "Mappa kiválasztása…",
+    "newFolder": "Új mappa…",
+    "newFile": "Új fájl…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Számítógép",
+    "remote": "Szerver",
+    "updatedAtTooltip": "Frissítve: {{date}}",
+    "connectToServer": "Szerver"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Nincsenek friss kapcsolatok",
+    "noSavedConnectionsBody": "Írja be a fenti szervercímet, vagy adjon hozzá egy webhelyet az egykattintásos eléréshez.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Könyvjelzők kezelése",
+    "quicklistLabel": "Legutóbbi kapcsolatok"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Kezeletlen FTPeach interfész hiba:",
+    "title": "Valami hiba történt",
+    "message": "Váratlan interfészhiba történt. Az aktív kapcsolatod és a lemezen található fájlok nem érintettek — megpróbálhatod újra betölteni az interfészt.",
+    "reload": "Felület újratöltése"
+  }
+}

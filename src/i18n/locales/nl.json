@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "geen aanmelding",
+    "anonymousUser": "anoniem",
+    "rootFolder": "Hoofdmap",
+    "close": "Sluiten",
+    "reset": "Opnieuw instellen",
+    "open": "Openen",
+    "upload": "Uploaden",
+    "save": "Opslaan",
+    "create": "Aanmaken",
+    "cancel": "Annuleren",
+    "increase": "Verhogen",
+    "decrease": "Verlagen",
+    "showPassword": "Wachtwoord weergeven",
+    "savedSecretProtected": "Het opgeslagen geheim is beveiligd en kan niet worden bekeken",
+    "hidePassword": "Wachtwoord verbergen"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach-beveiligingsbevestiging",
+    "allow": "Toestaan",
+    "typeToConfirm": "Typ {{phrase}} om te bevestigen",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Het opgeslagen wachtwoord voor deze bladwijzer tonen?"
+      },
+      "revealProxyPassword": {
+        "message": "Het opgeslagen proxywachtwoord tonen?"
+      },
+      "vaultReset": {
+        "message": "Alle opgeslagen wachtwoorden en wachtwoordzinnen van SSH-sleutels worden permanent verwijderd.",
+        "approve": "Kluis verwijderen"
+      },
+      "executeLocalFile": {
+        "message": "Dit uitvoerbare bestand of script uitvoeren?"
+      },
+      "executeRemoteFile": {
+        "message": "Dit uitvoerbare bestand of script downloaden en uitvoeren?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Nieuwe map…",
+    "newFile": "Nieuw bestand…",
+    "refresh": "Vernieuwen",
+    "open": "Openen",
+    "uploadToOtherPane": "Uploaden naar een ander venster",
+    "copyToOtherPane": "Naar een ander venster kopiëren",
+    "downloadToOtherPane": "Naar een ander venster downloaden",
+    "openWith": "Openen met…",
+    "permissions": "Rechten…",
+    "moveTo": "Verplaatsen naar…",
+    "copyPath": "Pad kopiëren",
+    "delete": "Verwijderen",
+    "deleteSelected_one": "Verwijderen ({{count}} bestand)",
+    "deleteSelected_other": "Verwijderen ({{count}} bestanden)",
+    "deletePermanently": "Definitief verwijderen",
+    "deleteSelectedPermanently_one": "Definitief verwijderen ({{count}} bestand)",
+    "deleteSelectedPermanently_other": "Definitief verwijderen ({{count}} bestanden)"
+  },
+  "chmodDialog": {
+    "title": "SFTP-machtigingen",
+    "label": "Octale weergave voor ‘{{name}}’ (bijvoorbeeld 644 of 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "De map is leeg",
+    "homeFolder": "Startmap",
+    "copyToPaneBelow": "Kopieer naar het onderstaande vak",
+    "copyToPaneAbove": "Kopieer naar het bovenliggende venster",
+    "copyToPaneRight": "Kopiëren naar het paneel aan de rechterkant",
+    "copyToPaneLeft": "Kopiëren naar het linkerpaneel",
+    "fileTypeFolder": "Bestandsmap",
+    "fileTypeGeneric": "Bestand",
+    "fileTypeWithExt": "{{ext}} Bestand",
+    "columnSize": "Afmetingen",
+    "columnModifiedAt": "Datum van wijziging",
+    "columnCreatedAt": "Aanmaakdatum",
+    "columnType": "Type",
+    "columnPermissions": "Rechten",
+    "columnOwner": "Eigenaar",
+    "columnGroup": "Groep",
+    "columnName": "Naam",
+    "filesAriaLabel": "Bestanden",
+    "rename": "Naam wijzigen",
+    "resetColumnWidths": "Kolombreedtes herstellen",
+    "updatedAtTooltip": "Bijgewerkt: {{date}}",
+    "searchTooltip": "Zoeken ({{shortcut}})",
+    "searchPlaceholder": "Zoeken… ({{shortcut}})",
+    "editPathAriaLabel": "Pad bewerken",
+    "changeDriveTooltip": "Schijf wijzigen",
+    "chooseColumnsTooltip": "Klik met de rechtermuisknop om kolommen te selecteren",
+    "sortByNameTooltip": "Sorteren op naam",
+    "sortByColumnTooltip": "Sorteer op de kolom ‘{{column}}’",
+    "rowProbeSample": "Voorbeeld",
+    "loading": "Bezig met laden…",
+    "nothingFound": "Er is niets gevonden"
+  },
+  "update": {
+    "readyToInstall": "Er is een update beschikbaar (versie {{version}}) — klik op ‘Opnieuw opstarten en installeren’ om deze toe te passen.",
+    "downloadingWithPercent": "Update v{{version}} wordt gedownload: {{percent}} %",
+    "downloadingFound": "Update v{{version}} gevonden, wordt gedownload…",
+    "restartAndInstall": "Opnieuw opstarten en installeren",
+    "availableAction": "beschikbaar!",
+    "installAction": "installeren?",
+    "downloadTooltip": "Klik om te downloaden",
+    "downloadingTooltip": "Downloaden",
+    "installTooltip": "Klik om opnieuw te starten en te installeren"
+  },
+  "legacyPasswordNotice": {
+    "message": "De wachtwoorden voor sommige opgeslagen websites konden na de update niet meer worden gelezen — voer ze alstublieft opnieuw in via de sitemanager."
+  },
+  "plaintextSecretNotice": {
+    "message": "Het wachtwoord of de wachtwoordzin van een opgeslagen website kon niet worden versleuteld omdat de gegevensbeveiliging van Windows niet beschikbaar is, en is daarom in leesbare tekst opgeslagen."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Het wachtwoord of de wachtwoordzin kon niet worden versleuteld en is niet opgeslagen. Een bestaande verbinding kan doorgaan totdat deze wordt verbroken; anders moet u het wachtwoord de volgende keer opnieuw invoeren."
+  },
+  "resize": {
+    "paneSize": "Sleep om de grootte van de vensters aan te passen (dubbelklikken om de standaardinstelling te herstellen)",
+    "height": "Sleep om de hoogte aan te passen (dubbelklikken om terug te zetten)",
+    "ratio": "Sleep om de verhouding aan te passen (dubbelklikken om terug te zetten)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} artikel",
+    "itemCount_other": "{{count}} artikelen",
+    "moveMode": "verplaatsen"
+  },
+  "openWithChanged": {
+    "title": "Bestand gewijzigd",
+    "message": "\"{{name}}\" is gewijzigd in de externe applicatie. Wil je het bijgewerkte bestand naar de server uploaden?"
+  },
+  "saveSite": {
+    "title": "Verbindingsprofiel opslaan",
+    "label": "Naam van verbindingsprofiel:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Nieuwe map",
+    "labelLocal": "Naam van de nieuwe map:",
+    "labelRemote": "Nieuwe mapnaam op de server:"
+  },
+  "newFile": {
+    "title": "Nieuw bestand",
+    "label": "Bestandsnaam (met extensie):"
+  },
+  "moveToDialog": {
+    "title": "Verplaatsen naar…",
+    "labelSingle": "Verplaats \"{{name}}\" naar de map:",
+    "labelMultiple": "Verplaats de geselecteerde items ({{count}}) naar de map:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Vervanging van \"{{name}}\" toestaan als het bestand tijdens de overdracht verschijnt?",
+    "resetLayout": "De afmetingen van vensters en panelen opnieuw instellen, de standaardkolommen herstellen en de cache van de interface wissen?",
+    "hostKeyMismatch": "{{error}} De opgeslagen sleutelvingerafdruk voor {{host}}:{{port}} verwijderen en toch verbinding maken? Doe dit alleen als je zeker weet dat de server op legitieme wijze opnieuw is geïnstalleerd of gemigreerd — anders zou je hierdoor verbinding kunnen maken met een mogelijk vervalste server.",
+    "connectAnyway": "Maak toch verbinding",
+    "closeTabWithActiveTransfers": "Op dit tabblad lopen actieve overdrachten. Wilt u het tabblad sluiten en de overdrachten annuleren?",
+    "closeTabLabel": "Tabblad sluiten",
+    "overwriteSingleExists": "\"{{name}}\" bestaat al in de doelmap. Wilt u het overschrijven?",
+    "overwriteConflicts_one": "{{count}} bestand bestaat al in de doelmap. Wilt u het overschrijven?",
+    "overwriteConflicts_other": "{{count}} Er staan al bestanden in de doelmap. Wilt u deze overschrijven?",
+    "overwriteLabel": "Overschrijven",
+    "replaceConnection": "Dit venster is al gekoppeld aan \"{{current}}\". Wilt u de koppeling vervangen door \"{{next}}\"?",
+    "replaceConnectionLabel": "Vervangen",
+    "deleteSelected": "De geselecteerde items verwijderen ({{count}})? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deleteEntry": "\"{{name}}\" verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
+    "recycleSelected": "Wilt u de geselecteerde items ({{count}}) naar de Prullenbak verplaatsen?",
+    "recycleEntry": "\"{{name}}\" naar de Prullenbak verplaatsen?",
+    "deletePermanentSelected": "De geselecteerde items definitief verwijderen ({{count}})? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deletePermanentEntry": "\"{{name}}\" definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deleteRemoteSelected": "De geselecteerde items op de externe server definitief verwijderen ({{count}})? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deleteRemoteEntry": "Wilt u het externe item \"{{name}}\" definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt."
+  },
+  "paneSide": {
+    "top": "bovenaan",
+    "bottom": "onderkant",
+    "left": "links",
+    "right": "juist",
+    "labelWithTab": "{{base}} (tabblad {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Bestand",
+      "newTab": "Nieuw tabblad",
+      "closeTab": "Tabblad sluiten",
+      "newConnection": "Nieuwe verbinding",
+      "disconnect": "Verbinding verbreken",
+      "manageBookmarks": "Bladwijzers beheren…",
+      "saveConnection": "Verbinding opslaan",
+      "saveConnectionSide": "Verbinding opslaan ({{side}})",
+      "saveBookmarkSide": "Bladwijzer opslaan ({{side}})",
+      "savePathSide": "Pad opslaan ({{side}})",
+      "exportSettings": "Instellingen exporteren…",
+      "importSettings": "Instellingen importeren…",
+      "quit": "Afsluiten"
+    },
+    "edit": {
+      "title": "Bewerken",
+      "settings": "Instellingen…",
+      "resetLayout": "Lay-out en cache opnieuw instellen…"
+    },
+    "view": {
+      "title": "Bekijken",
+      "darkTheme": "Donker thema",
+      "lightTheme": "Licht thema",
+      "systemTheme": "Systeemthema",
+      "syncBrowsing": "Mapnavigatie synchroniseren",
+      "showHiddenFiles": "Verborgen bestanden en mappen weergeven",
+      "leftPane": "Linkerpaneel",
+      "rightPane": "Rechtspaneel",
+      "transferQueue": "Overdrachtswachtrij",
+      "log": "Logboek",
+      "stackedPanes": "Gestapelde ruiten",
+      "refreshBothPanes": "Beide vensters vernieuwen"
+    },
+    "transfer": {
+      "title": "Overdracht",
+      "copySelectedRight": "Geselecteerde tekst kopiëren →",
+      "copySelectedLeft": "← Geselecteerde tekst kopiëren",
+      "clearCompleted": "Wissen Voltooid"
+    },
+    "bookmarks": {
+      "title": "Bladwijzers"
+    },
+    "help": {
+      "supportProject": "Steun het project",
+      "title": "Hulp",
+      "documentation": "Documentatie",
+      "reportIssue": "Een probleem melden",
+      "checkUpdates": "Controleer op updates",
+      "about": "Over"
+    }
+  },
+  "errors": {
+    "connectionRefused": "De server heeft de verbinding geweigerd. Controleer het adres en de poort.",
+    "serverNotFound": "Server niet gevonden. Controleer of het adres correct is.",
+    "timeout": "De server reageert niet (de verbinding is verbroken vanwege het verstrijken van de tijdslimiet). Controleer het adres, de poort en de netwerkverbinding.",
+    "connectionReset": "De verbinding met de server is onverwacht verbroken.",
+    "networkUnreachable": "De server is niet bereikbaar — controleer je netwerkverbinding.",
+    "loginIncorrect": "Onjuiste gebruikersnaam of wachtwoord.",
+    "invalidCertificate": "De server heeft een ongeldig certificaat getoond. Als u deze server vertrouwt, schakel dan de certificaatcontrole uit in de verbindingsinstellingen.",
+    "tlsNegotiationFailed": "De TLS-onderhandeling is mislukt. Controleer of de server expliciete FTPS of HTTPS en een compatibele TLS-versie ondersteunt.",
+    "sshNegotiationFailed": "De SSH-onderhandeling is mislukt. De server en FTPeach konden geen overeenstemming bereiken over een compatibel SSH-algoritme of een compatibele protocolversie.",
+    "proxyFailed": "De proxyverbinding is mislukt. Controleer het proxytype, het adres en de inloggegevens, en kijk of de proxyserver de doelserver kan bereiken.",
+    "keyReadFailed": "De sleutel kon niet worden gelezen — het bestand is beschadigd of de wachtwoordzin is onjuist.",
+    "accessDenied": "Je hebt geen toestemming voor deze bewerking.",
+    "notFound": "Bestand of map niet gevonden.",
+    "fileOrFolderExists": "Er bestaat al een bestand of map met die naam.",
+    "fileBusy": "Het bestand wordt momenteel door een ander proces gebruikt.",
+    "diskFull": "Onvoldoende schijfruimte.",
+    "hostKeyMismatch": "De hostsleutel van de server is gewijzigd.",
+    "integrityMismatch": "Het overgedragen bestand heeft de integriteitscontrole niet doorstaan.",
+    "invalidInput": "De opgegeven waarde is ongeldig.",
+    "internal": "Er is een onverwachte fout opgetreden.",
+    "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
+    "alreadyExists": "\"{{name}}\" bestaat al"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Koppelingen",
+      "hint": "Kies een toepassing voor een uitbreiding. Voor bestanden waarvoor geen regel is ingesteld, geldt de standaardinstelling van het systeem.",
+      "extension": "Uitbreiding",
+      "extensionPlaceholder": "txt",
+      "application": "Toepassing",
+      "applicationPlaceholder": "Toegangsroute",
+      "browse": "Kies een toepassing",
+      "remove": "Koppeling verwijderen",
+      "add": "Verklaring toevoegen"
+    },
+    "minimizeToTray": "Naar systeemvak minimaliseren",
+    "minimizeToTrayHint": "Met de knop 'Minimaliseren' wordt het venster naar het systeemvak verplaatst in plaats van naar de taakbalk.",
+    "closeToTray": "Naar systeemvak sluiten",
+    "closeToTrayHint": "Met de knop ‘Sluiten’ wordt het venster naar het systeemvak verborgen; de app wordt hiermee niet afgesloten. Sluit de app af via het menu van het pictogram in het systeemvak.",
+    "title": "Instellingen",
+    "unsavedChangesTitle": "Nog niet opgeslagen wijzigingen",
+    "unsavedChangesMessage": "Wil je de wijzigingen in de instellingen opslaan?",
+    "discardChanges": "Niet opslaan",
+    "categories": {
+      "connection": "Verbinding",
+      "transfers": "Overdrachten",
+      "interface": "Interface",
+      "shortcuts": "Snelkoppelingen",
+      "updates": "Updates",
+      "logging": "Logboek",
+      "security": "Beveiliging"
+    },
+    "shortcuts": {
+      "title": "Sneltoetsen",
+      "hint": "Klik op een snelkoppeling en druk vervolgens op een nieuwe toetsencombinatie om deze opnieuw toe te wijzen.",
+      "globalTitle": "Wereldwijd",
+      "paneTitle": "Bestandsvenster",
+      "recording": "Druk op een toets…",
+      "unbound": "Niet toegewezen",
+      "reset": "Terugzetten naar standaardinstellingen",
+      "resetAll": "Alles terugzetten naar de standaardinstellingen",
+      "unassign": "Toewijzing ongedaan maken",
+      "conflict": "Ook gebruikt door: {{action}}",
+      "actions": {
+        "search": "Zoeken ({{side}})",
+        "toggleHiddenFiles": "Verborgen bestanden weergeven of verbergen",
+        "newConnection": "Nieuwe verbinding",
+        "save": "Opslaan ({{side}})",
+        "openSettings": "Instellingen openen",
+        "newTab": "Nieuw tabblad",
+        "closeTab": "Tabblad sluiten",
+        "nextTab": "Volgend tabblad",
+        "prevTab": "Vorige tabblad",
+        "refresh": "Vernieuwen",
+        "selectAll": "Alles selecteren",
+        "delete": "Verwijderen",
+        "deletePermanent": "Definitief verwijderen",
+        "navigateUp": "Een map hoger gaan",
+        "navigateBack": "Terug",
+        "navigateForward": "Ga verder",
+        "navigateHome": "Ga naar de thuismap",
+        "moveTo": "Verplaatsen naar…",
+        "newFolder": "Nieuwe map…",
+        "newFile": "Nieuw bestand…",
+        "copyToOtherPane": "Naar ander venster kopiëren",
+        "copy": "Kopiëren",
+        "cut": "Knippen",
+        "paste": "Plakken",
+        "clearSelection": "Selectie wissen",
+        "open": "Openen"
+      }
+    },
+    "security": {
+      "title": "Wachtwoordbeveiliging",
+      "systemMode": "Systeembescherming",
+      "systemModeHint": "Wachtwoorden voor je Windows-account worden versleuteld en kunnen worden bekeken in de verbindingsinstellingen.",
+      "strongholdMode": "Verbeterde bescherming",
+      "strongholdModeHint": "Hiervoor is een hoofdwachtwoord vereist. Opgeslagen wachtwoorden kunnen worden gebruikt om verbinding te maken, maar kunnen niet worden bekeken.",
+      "loading": "Beveiligde opslag wordt gecontroleerd…",
+      "configuredLocked": "De beveiligde opslagruimte is beveiligd met een hoofdwachtwoord en op slot.",
+      "configuredUnlocked": "De beveiligde opslagruimte is beveiligd met een hoofdwachtwoord en ontgrendeld.",
+      "masterPassword": "Hoofdwachtwoord",
+      "confirmPassword": "Bevestig het hoofdwachtwoord",
+      "oldPassword": "Huidig hoofdwachtwoord",
+      "newPassword": "Nieuw hoofdwachtwoord",
+      "setup": "Opgeslagen wachtwoorden beveiligen",
+      "settingUp": "Bescherming van…",
+      "unlock": "Ontgrendelen",
+      "unlocking": "Ontgrendelen…",
+      "unlockRequired": "Beveiligde opslag ontgrendelen",
+      "unlockRequiredHint": "Deze verbinding maakt gebruik van een opgeslagen geheim. Ontgrendel de beveiligde opslag om door te gaan.",
+      "lockNow": "Nu vergrendelen",
+      "autoLock": "Automatisch vergrendelen na, min",
+      "autoLockDisabled": "Uitgeschakeld",
+      "autoLockHint": "Vergrendelt de opslagruimte na een periode van inactiviteit. Bestaande serververbindingen blijven actief; 0 schakelt automatische vergrendeling uit.",
+      "changePassword": "Hoofdwachtwoord wijzigen",
+      "change": "Wachtwoord wijzigen",
+      "systemUnlock": "Systeemontgrendeling toestaan",
+      "systemUnlockHint": "Maakt gebruik van Windows Hello (PIN, gezichtsherkenning of vingerafdruk, zoals geconfigureerd door Windows). Uw hoofdwachtwoord blijft de herstelmethode.",
+      "unlockWithSystem": "Ontgrendelen met systeemauthenticatie",
+      "systemUnavailable": "Het ontgrendelen van het systeem is op dit platform niet mogelijk.",
+      "noRecovery": "Een vergeten hoofdwachtwoord kan niet worden hersteld. Als je de kluis reset, worden alle opgeslagen geheimen verwijderd.",
+      "passwordMismatch": "De wachtwoorden komen niet overeen.",
+      "passwordTooShort": "Gebruik minimaal 12 tekens voor het hoofdwachtwoord.",
+      "strength": {
+        "tooShort": "Te kort — gebruik minimaal 12 tekens.",
+        "acceptable": "Dat is prima. Een langere wachtzin is veiliger.",
+        "strong": "Een sterk hoofdwachtwoord."
+      },
+      "reset": "Beveiligde opslag resetten",
+      "resetHint": "Hiermee worden de beveiligde opslag en alle daarin opgeslagen wachtwoorden en wachtzinnen voor SSH-sleutels verwijderd. De uitgebreide beveiliging moet opnieuw worden ingesteld.",
+      "resetWarning": "Hiermee worden alle opgeslagen wachtwoorden en sleutelzinnen definitief verwijderd. Voer het huidige hoofdwachtwoord in om door te gaan.",
+      "confirmReset": "Opgeslagen geheimen verwijderen",
+      "showConfirmations": "Beveiligingsbevestigingen tonen",
+      "showConfirmationsHint": "Vraag bevestiging voordat opgeslagen geheimen worden getoond of uitvoerbare bestanden worden gestart. Het resetten van beveiligde opslag vereist altijd bevestiging.",
+      "unavailable": "Beveiligde opslag is niet beschikbaar.",
+      "failed": "De bewerking met beveiligde opslag is mislukt."
+    },
+    "unlimitedPlaceholder": "Geen limiet",
+    "connectTimeoutLabel": "Time-out verbinding, sec",
+    "connectTimeoutHint": "Hoe lang moet er bij het tot stand brengen van een verbinding worden gewacht op een reactie van de server voordat deze als onbereikbaar wordt beschouwd (0 of leeg — geen limiet). Geldt voor de volgende verbinding.",
+    "ftpActiveMode": "Actieve FTP-modus (in plaats van passieve)",
+    "ftpActiveModeHint": "Alleen FTP/FTPS — heeft geen invloed op SFTP/WebDAV. Wordt zelden nodig, alleen op netwerken/servers waar de passieve modus niet door NAT heen komt. Geldt voor de volgende verbinding.",
+    "ftpActiveModeDisabledByProxy": "Niet beschikbaar wanneer een proxy is ingeschakeld — een proxytunnel ondersteunt alleen uitgaande verbindingen, dus FTP moet in de passieve modus blijven.",
+    "proxy": {
+      "enable": "Gebruik een proxy voor verbindingen",
+      "enableHint": "SOCKS4, SOCKS5 of HTTP CONNECT — geldt voor FTP, FTPS, SFTP en WebDAV. Geldt voor de volgende verbinding.",
+      "typeLabel": "Type volmacht",
+      "hostLabel": "Proxy-host",
+      "hostPlaceholder": "proxy.voorbeeld.com",
+      "portLabel": "Poort",
+      "usernameLabel": "Gebruikersnaam",
+      "passwordLabel": "Wachtwoord",
+      "removeSavedPassword": "Opgeslagen wachtwoord verwijderen",
+      "revealFailed": "Het opgeslagen wachtwoord kon niet worden gedecodeerd.",
+      "testTargetLabel": "Testen tegen",
+      "testTargetHostPlaceholder": "Serverhost",
+      "testTargetPortPlaceholder": "Poort",
+      "test": "Testproxy",
+      "testing": "Test…",
+      "testOk": "De proxy heeft het doel met succes bereikt.",
+      "testFailed": "De proxy-test is mislukt."
+    },
+    "concurrencyLabel": "Gelijktijdige overdrachten",
+    "concurrencyHint": "Hoeveel bestanden er tegelijkertijd mogen worden geüpload en gedownload (0 of leeg — geen limiet). Geldt voor de volgende verbinding.",
+    "speedLimitLabel": "Snelheidslimiet, KB/s",
+    "speedLimitHint": "Geldt voor het totale bedrag van alle gelijktijdige overschrijvingen (0 of leeg — geen limiet). Treedt onmiddellijk in werking, zonder te wachten op de volgende verbinding.",
+    "notifyOnComplete": "Een melding sturen wanneer overdrachten zijn voltooid",
+    "notifyOnCompleteHint": "Een systeemmelding wanneer de overdrachtswachtrij leeg raakt — alleen als het venster niet actief is.",
+    "overwriteActionLabel": "Over naamconflicten",
+    "overwriteAsk": "Vraag",
+    "overwriteOverwrite": "Overschrijven",
+    "overwriteSkip": "Overslaan",
+    "overwriteHint": "Wat moet je doen als het bestand dat wordt gekopieerd al in de doelmap staat?",
+    "preventSleep": "Voorkom dat het systeem in de slaapstand gaat tijdens gegevensoverdrachten",
+    "preventSleepHint": "Treedt onmiddellijk in werking, zonder te wachten op de volgende verbinding. Blijft actief zolang er ten minste één overdracht gaande is — blokkeert de slaapstand anders niet.",
+    "themeLabel": "Thema",
+    "themeDark": "Donker",
+    "themeLight": "Licht",
+    "themeSystem": "Systeem",
+    "languageLabel": "Taal van de gebruikersinterface",
+    "interfaceScaleLabel": "Schaal van de interface",
+    "interfaceScaleHint": "Wijzig de grootte van tekst en bedieningselementen in de hele applicatie.",
+    "dateFormatLabel": "Datum-/tijdnotatie",
+    "dateFormatOnlyLabel": "Datumnotatie",
+    "timeFormatLabel": "Tijdnotatie",
+    "timeFormat24Hour": "24 u",
+    "timeFormat12Hour": "12 u",
+    "dateFormatLocale": "Lokaal",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Standaardmap voor Computer",
+    "defaultLocalPathHint": "De map die het venster Computer opent bij het opstarten en bij het overschakelen vanaf een server. Laat leeg om de thuismap van het systeem te gebruiken.",
+    "chooseDefaultLocalPath": "Standaardmap kiezen",
+    "showHiddenFiles": "Verborgen bestanden en mappen weergeven",
+    "showHiddenFilesHint": "Dit geldt zowel voor lokale als voor externe bestandsvensters.",
+    "coloredTabs": "Gekleurde tabbladen",
+    "coloredTabsHint": "Geeft de tabbladnaam en het pictogram de kleur van de opgeslagen bladwijzer.",
+    "autoCheckUpdates": "Bij het opstarten controleren op updates",
+    "autoCheckUpdatesHint": "Een stille controle enkele seconden na het opstarten — voor het installeren van een update is altijd een aparte bevestiging nodig.",
+    "autoReconnectTabs": "Herstelde tabbladen bij het opstarten opnieuw verbinden",
+    "autoReconnectTabsHint": "Standaard uitgeschakeld. Indien ingeschakeld, worden opgeslagen websites automatisch weergegeven.",
+    "saveSessionOnExit": "De sessie opslaan bij het afsluiten",
+    "saveSessionOnExitHint": "Hiermee worden geopende tabbladen, paneeltypen en paden bij de volgende start hersteld. Als je deze optie uitschakelt, wordt de opgeslagen sessie gewist.",
+    "checkNow": "Nu bekijken",
+    "updateStatus": {
+      "checking": "Op zoek naar updates…",
+      "notAvailable": "Je hebt de nieuwste versie.",
+      "error": "Er konden geen updates worden gecontroleerd.",
+      "notPackaged": "Niet beschikbaar in deze build (npm run dev/start)."
+    },
+    "logEnable": "Logboek inschakelen",
+    "logShowTimestamps": "Tijdstempels weergeven",
+    "logToFile": "Logboek naar bestand schrijven",
+    "logToFileHint": "Voegt het logboek continu toe aan een bestand op de schijf (%APPDATA%\\FTPeach\\logs\\ftpeach.log) zolang deze optie is ingeschakeld — ongeacht of het logboekvenster geopend is. Dit verschilt van de knop ‘Opslaan’ in het venster zelf (die slaat slechts de laatste 200 regels één keer op, wanneer erop wordt geklikt).",
+    "exportDiagnostics": "Diagnosepakket exporteren",
+    "exportDiagnosticsBusy": "Bezig met exporteren…",
+    "exportDiagnosticsHint": "Exporteert de versie, het besturingssysteem en de laatste 200 logboekvermeldingen. Wachtwoorden, tokens en andere geheime gegevens worden onleesbaar gemaakt.",
+    "exportDiagnosticsFailed": "Het diagnosepakket kon niet worden geëxporteerd."
+  },
+  "promptDialog": {
+    "confirmLabel": "Oké"
+  },
+  "exportSettingsDialog": {
+    "title": "Instellingen exporteren",
+    "confirmLabel": "Exporteren…",
+    "includeSettings": "Toepassingsinstellingen",
+    "includeBookmarks": "Bladwijzers",
+    "includeLocalPaths": "Lokale paden",
+    "passwordHint": "Wachtwoorden en wachtwoordzinnen voor SSH-sleutels worden niet meegenomen in de export — je moet ze na het importeren op een andere computer opnieuw invoeren."
+  },
+  "importSettingsDialog": {
+    "title": "Instellingen importeren",
+    "confirmLabel": "Importeren…",
+    "includeSettings": "Toepassingsinstellingen",
+    "includeBookmarks": "Bladwijzers",
+    "includeLocalPaths": "Lokale paden",
+    "passwordHint": "Wachtwoorden en wachtwoordzinnen voor SSH-sleutels worden niet meegenomen bij het importeren — je moet ze voor elke geïmporteerde site opnieuw invoeren."
+  },
+  "openWithDialog": {
+    "title": "Openen in applicatie",
+    "downloading": "\"{{fileName}}\" wordt gedownload…",
+    "progress": "{{loaded}} van {{total}} ({{percent}} %)",
+    "connecting": "Wordt verbonden…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Overdrachtsfout",
+    "notifyCompleteTitle": "Overdracht voltooid",
+    "notifySucceeded": "gelukt: {{count}}",
+    "notifyFailed": "mislukt: {{count}}",
+    "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand."
+  },
+  "transferQueue": {
+    "title": "Overdrachten",
+    "columns": {
+      "file": "Bestand",
+      "size": "Afmetingen",
+      "transferred": "Overgeplaatst",
+      "progress": "Voortgang",
+      "speed": "Snelheid",
+      "remaining": "Resterend",
+      "status": "Status"
+    },
+    "empty": "Uploads en downloads worden hier weergegeven",
+    "newTransfers_one": "{{count}} nieuwe overdracht",
+    "newTransfers_other": "{{count}} nieuwe overdrachten",
+    "status": {
+      "queued": "In wachtrij",
+      "done": "Klaar",
+      "error": "Fout",
+      "paused": "Gepauzeerd",
+      "stopped": "Geannuleerd",
+      "cancelling": "Annuleren…"
+    },
+    "direction": {
+      "up": "Uploaden",
+      "down": "Downloaden",
+      "copy": "Kopiëren"
+    },
+    "directionTitleCopy": "Kopiëren tussen servers",
+    "cancelledByUser": "Geannuleerd door de gebruiker",
+    "stoppedDash": "gestopt",
+    "resume": "Hervatten",
+    "retry": "Opnieuw proberen",
+    "stop": "Stop",
+    "pauseUnsupportedCopy": "Pauzeren wordt niet ondersteund bij het kopiëren tussen servers",
+    "pauseUnsupportedWebdav": "Pauzeren wordt niet ondersteund door WebDAV"
+  },
+  "log": {
+    "connecting": "Verbinding maken met {{addr}}...",
+    "connectFailed": "Verbinding mislukt: {{error}}",
+    "connected": "Ingelogd.",
+    "receivedEntries_one": "{{count}} item ontvangen",
+    "receivedEntries_other": "{{count}} items ontvangen",
+    "skippedUnsafeEntry": "Een vermelding met een onveilige naam is overgeslagen: {{name}}",
+    "listFailed": "Ophalen van de mapinhoud is mislukt: {{error}}",
+    "tlsInit": "TLS wordt geïnitialiseerd...",
+    "tlsEstablished": "TLS-verbinding tot stand gebracht.",
+    "davResumeUnsupportedLocal": "WebDAV ondersteunt het hervatten van uploads niet — het bestand wordt opnieuw vanaf het begin verzonden.",
+    "davResumeUnsupportedServer": "De server ondersteunt het hervatten van downloads niet (verwachte status: {{expected}}, ontvangen status: {{status}}) — het bestand wordt opnieuw gedownload."
+  },
+  "logPanel": {
+    "showAllConnections": "Alle verbindingen weergeven",
+    "showOnlyThisConnection": "Alleen deze verbinding weergeven",
+    "connectionClosedShowOnly": "Verbinding verbroken — alleen deze verbinding weergeven",
+    "hideTimestamps": "Tijdstempels in logregels verbergen",
+    "showTimestamps": "Tijdstempels weergeven in logregels",
+    "copyToClipboard": "Logboek naar klembord kopiëren",
+    "saveLastLines_one": "De laatste {{count}} regel opslaan in een .txt-bestand",
+    "saveLastLines_other": "De laatste {{count}} regels opslaan in een .txt-bestand",
+    "clearLog": "Logboek wissen",
+    "copiedTooltip": "Gekopieerd",
+    "copyFailedTooltip": "Kon niet kopiëren",
+    "saveFailedTooltip": "Het bestand kon niet worden opgeslagen",
+    "emptyFiltered": "Geen lijnen voor deze verbinding",
+    "emptyDefault": "Hier verschijnen protocolberichten"
+  },
+  "aboutDialog": {
+    "title": "Over",
+    "tagline": "Een lichtgewicht FTP/FTPS/SFTP-client.",
+    "legalInformation": "Juridische informatie",
+    "sourceCode": "Broncode",
+    "reportIssue": "Probleem melden",
+    "checkForUpdates": "Controleer of er updates beschikbaar zijn",
+    "updateDownloaded": "De update v{{version}} is gedownload — je kunt deze nu installeren."
+  },
+  "siteManager": {
+    "emptyList": "Er zijn nog geen websites opgeslagen",
+    "confirmDeleteSite": "De website \"{{name}}\" verwijderen?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Nieuwe bladwijzer",
+    "titleEdit": "Bladwijzer bewerken",
+    "titleList": "Bladwijzers beheren",
+    "titleLocalPathList": "Lokale paden beheren",
+    "manageLocalPaths": "Lokale paden beheren…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Naam",
+      "icon": "Pictogram",
+      "color": "Kleur",
+      "protocol": "Protocol",
+      "keyFile": "Sleutelbestand",
+      "caCertFile": "CA-certificaat",
+      "remotePath": "Standaardmap",
+      "localPath": "Lokale map"
+    },
+    "icons": {
+      "bookmark": "Bladwijzer",
+      "globe": "Website",
+      "briefcase": "Werk",
+      "house": "Thuis-server",
+      "cloud": "Cloud",
+      "flask": "Test / staging",
+      "gamepad": "Spelserver",
+      "clapperboard": "Mediaserver",
+      "camera": "Camera"
+    },
+    "colors": {
+      "default": "Geen kleur",
+      "peach": "Perzik",
+      "red": "Rood",
+      "amber": "Amber",
+      "green": "Groen",
+      "blue": "Blauw",
+      "purple": "Paars",
+      "pink": "Roze",
+      "teal": "Teal"
+    },
+    "saveFailed": "Kon niet opslaan",
+    "revealFailed": "Het opgeslagen geheim kon niet worden weergegeven",
+    "savedSecretPlaceholder": "Opgeslagen",
+    "savedSecretHint": "Laat leeg om het huidige wachtwoord te behouden",
+    "removeSavedPassword": "Opgeslagen wachtwoord verwijderen",
+    "removeSavedPassphrase": "Opgeslagen wachtwoordzin verwijderen",
+    "secretWillBeRemoved": "Wordt verwijderd bij het opslaan",
+    "addBookmark": "Nieuwe bladwijzer",
+    "addLocalBookmark": "Bladwijzer voor lokale map toevoegen",
+    "chooseLocalPath": "Kies een lokale map",
+    "importBookmarks": "Importeren",
+    "exportBookmarks": "Exporteren",
+    "importAdded_one": "{{count}} bladwijzer toegevoegd",
+    "importAdded_other": "{{count}} bladwijzers toegevoegd",
+    "importSkipped_one": "{{count}} duplicaat overgeslagen",
+    "importSkipped_other": "{{count}} duplicaten overgeslagen",
+    "importNothingNew": "Niets nieuws om te importeren",
+    "exportSuccess": "Geëxporteerd",
+    "sortMode": "Sorteren van bladwijzers",
+    "sortManual": "Handmatig",
+    "sortName": "Op naam",
+    "sortProtocol": "Volgens het protocol",
+    "duplicateWarning": "Er bestaat al een bladwijzer voor dezelfde bestemming: \"{{name}}\". Wil je er nog een opslaan?",
+    "saveAnyway": "Toch opslaan",
+    "newFolder": "Nieuwe map",
+    "folderNamePlaceholder": "Naam van de map",
+    "confirmDeleteFolder": "De map \"{{name}}\" verwijderen? De bladwijzers daarin worden dan één niveau hoger geplaatst.",
+    "searchPlaceholder": "Zoeken…",
+    "clearSearch": "Zoekresultaten wissen",
+    "noSearchResults": "Er zijn geen bladwijzers die aan je zoekopdracht voldoen",
+    "duplicate": "Duplicaat",
+    "duplicateNameSuffix": " (kopie)",
+    "newBookmarkInFolder": "Hier een nieuwe bladwijzer toevoegen",
+    "expandFolder": "\"{{name}}\" uitvouwen",
+    "collapseFolder": "\"{{name}}\" samenvouwen"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Adres",
+      "port": "Poort",
+      "user": "Gebruikersnaam",
+      "password": "Wachtwoord",
+      "passphrase": "Wachtwoordzin",
+      "keyFilePlaceholder": "Sleutelbestand…",
+      "chooseKeyFile": "Selecteer sleutelbestand…",
+      "caCertFilePlaceholder": "CA-certificaat…",
+      "chooseCaCertFile": "CA-certificaat kiezen…"
+    },
+    "secureToggle": {
+      "tooltip": "Schakel dit vinkje uit om zelfondertekende en ongeldige servercertificaten te accepteren",
+      "label": "Certificaat controleren"
+    },
+    "authToggle": {
+      "tooltip": "Log in met een privé-SSH-sleutelbestand in plaats van een wachtwoord",
+      "label": "Inloggen met SSH-sleutel"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Annuleren",
+      "connect": "Verbinden",
+      "disconnect": "Verbreken"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Bij gewone FTP worden uw gebruikersnaam, wachtwoord en bestanden onversleuteld verzonden. Gebruik waar mogelijk FTPS of SFTP."
+  },
+  "titleBar": {
+    "minimize": "Minimaliseren",
+    "restore": "Terugzetten",
+    "maximize": "Maximaliseren"
+  },
+  "tray": {
+    "show": "FTPeach weergeven",
+    "quit": "Afsluiten"
+  },
+  "tabStrip": {
+    "localComputer": "Computer",
+    "untitledTab": "Nieuw tabblad",
+    "newTabTooltip": "Nieuw tabblad (Ctrl+T)",
+    "rename": "Tabbladnaam"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Meer"
+  },
+  "statusBar": {
+    "transfers": "Overdrachten: {{count}}",
+    "leftCount": "Links: {{count}}",
+    "rightCount": "Rechts: {{count}}",
+    "topCount": "Boven: {{count}}",
+    "bottomCount": "Onderaan: {{count}}",
+    "selectedSuffix": " ({{count}} geselecteerd)",
+    "status": {
+      "transferring": "Bestand overzetten",
+      "paused": "Gepauzeerd",
+      "connected": "Verbonden",
+      "connecting": "Verbinding maken",
+      "connectFailed": "Er kon geen verbinding worden gemaakt",
+      "disconnected": "Geen verbinding"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Linkerpaneel weergeven/verbergen",
+    "toggleRightPane": "Rechtspaneel weergeven/verbergen",
+    "toggleTransferQueue": "Overdrachtswachtrij weergeven/verbergen",
+    "toggleLog": "Logboek weergeven/verbergen",
+    "orientationNarrow": "Gestapelde ruiten — het raam is te smal om ze naast elkaar te kunnen zien",
+    "orientationToRow": "Vensters naast elkaar plaatsen",
+    "orientationToStacked": "Paneelelementen boven elkaar stapelen",
+    "pauseUnsupportedWebdav": "Pauzeren wordt niet ondersteund door WebDAV",
+    "pauseActive": "Actieve overdrachten pauzeren",
+    "resumeAllPaused": "Alle gepauzeerde overdrachten hervatten",
+    "stopActive": "Actieve overdrachten stopzetten",
+    "retryAllStopped": "Alle gestopte overdrachten opnieuw proberen",
+    "refreshPanesTooltip": "Ververs beide vensters (F5)"
+  },
+  "paneToolbar": {
+    "back": "Terug",
+    "forward": "Vooruit",
+    "up": "Omhoog",
+    "chooseFolder": "Kies een map…",
+    "newFolder": "Nieuwe map…",
+    "newFile": "Nieuw bestand…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Computer",
+    "remote": "Server",
+    "updatedAtTooltip": "Bijgewerkt: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Geen recente verbindingen",
+    "noSavedConnectionsBody": "Vul hierboven het serveradres in, of voeg een site toe om deze met één klik te openen.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Bladwijzers beheren",
+    "quicklistLabel": "Recente verbindingen"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Onbehandelde FTPeach-interfacefout:",
+    "title": "Er is iets misgegaan",
+    "message": "Er is een onverwachte interfacefout opgetreden. Dit heeft geen invloed op je actieve verbinding en de bestanden op de schijf — je kunt proberen de interface opnieuw te laden.",
+    "reload": "Interface opnieuw laden"
+  }
+}

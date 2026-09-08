@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "ログインなし",
+    "anonymousUser": "匿名",
+    "rootFolder": "ルートフォルダ",
+    "close": "閉じる",
+    "reset": "リセット",
+    "open": "開く",
+    "upload": "アップロード",
+    "save": "保存",
+    "create": "作成",
+    "cancel": "キャンセル",
+    "increase": "増加",
+    "decrease": "減少",
+    "showPassword": "パスワードを表示",
+    "savedSecretProtected": "保存された秘密情報は保護されており、閲覧することはできません",
+    "hidePassword": "パスワードを非表示にする"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach セキュリティ確認",
+    "allow": "許可",
+    "typeToConfirm": "確認するには {{phrase}} と入力してください",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "このブックマークに保存されたパスワードを表示しますか？"
+      },
+      "revealProxyPassword": {
+        "message": "保存されたプロキシパスワードを表示しますか？"
+      },
+      "vaultReset": {
+        "message": "保存されているすべてのパスワードと SSH キーのパスフレーズが完全に削除されます。",
+        "approve": "保管庫を削除"
+      },
+      "executeLocalFile": {
+        "message": "この実行可能ファイルまたはスクリプトを実行しますか？"
+      },
+      "executeRemoteFile": {
+        "message": "この実行可能ファイルまたはスクリプトをダウンロードして実行しますか？"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "新しいフォルダ…",
+    "newFile": "新しいファイル…",
+    "refresh": "更新",
+    "open": "開く",
+    "uploadToOtherPane": "別のペインにアップロードする",
+    "copyToOtherPane": "別のペインにコピーする",
+    "downloadToOtherPane": "別のペインにダウンロード",
+    "openWith": "アプリで開く…",
+    "permissions": "権限…",
+    "moveTo": "…へ移動",
+    "copyPath": "パスをコピー",
+    "delete": "削除",
+    "deleteSelected_one": "削除（{{count}}ファイル）",
+    "deleteSelected_other": "削除（{{count}}ファイル）",
+    "deletePermanently": "完全に削除する",
+    "deleteSelectedPermanently_one": "完全に削除する（{{count}}ファイル）",
+    "deleteSelectedPermanently_other": "完全に削除する（{{count}}ファイル）"
+  },
+  "chmodDialog": {
+    "title": "SFTPの権限",
+    "label": "{{name}}の8進数モード（例：644 または 0755）"
+  },
+  "filePane": {
+    "emptyFolder": "フォルダは空です",
+    "homeFolder": "ホームフォルダ",
+    "copyToPaneBelow": "下のペインにコピーする",
+    "copyToPaneAbove": "上のペインにコピー",
+    "copyToPaneRight": "右側のペインにコピーする",
+    "copyToPaneLeft": "左側のペインにコピー",
+    "fileTypeFolder": "ファイルフォルダ",
+    "fileTypeGeneric": "ファイル",
+    "fileTypeWithExt": "{{ext}} ファイル",
+    "columnSize": "サイズ",
+    "columnModifiedAt": "最終更新日",
+    "columnCreatedAt": "作成日",
+    "columnType": "種類",
+    "columnPermissions": "権限",
+    "columnOwner": "オーナー",
+    "columnGroup": "グループ",
+    "columnName": "名前",
+    "filesAriaLabel": "ファイル",
+    "rename": "名前の変更",
+    "resetColumnWidths": "列の幅を元に戻す",
+    "updatedAtTooltip": "更新日：{{date}}",
+    "searchTooltip": "検索 ({{shortcut}})",
+    "searchPlaceholder": "検索… ({{shortcut}})",
+    "editPathAriaLabel": "パスの編集",
+    "changeDriveTooltip": "ドライブを変更する",
+    "chooseColumnsTooltip": "右クリックして列を選択してください",
+    "sortByNameTooltip": "名前順に並べ替える",
+    "sortByColumnTooltip": "「{{column}}」列で並べ替える",
+    "rowProbeSample": "サンプル",
+    "loading": "読み込み中…",
+    "nothingFound": "該当する結果はありません"
+  },
+  "update": {
+    "readyToInstall": "v{{version}}のアップデートが利用可能です。「再起動してインストールする」をクリックして適用してください。",
+    "downloadingWithPercent": "アップデート v{{version}}のダウンロード中：{{percent}} %",
+    "downloadingFound": "{{version}}のアップデートが見つかりました。ダウンロード中…",
+    "restartAndInstall": "再起動してインストールする",
+    "availableAction": "更新あり!",
+    "installAction": "インストール?",
+    "downloadTooltip": "クリックしてダウンロード",
+    "downloadingTooltip": "ダウンロード中",
+    "installTooltip": "クリックして再起動しインストール"
+  },
+  "legacyPasswordNotice": {
+    "message": "アップデート後、一部の保存済みサイトのパスワードが読み込めなくなりました。サイトマネージャーで再度入力してください。"
+  },
+  "plaintextSecretNotice": {
+    "message": "保存されたサイトのパスワードまたはパスフレーズは、Windowsのデータ保護機能が利用できないため暗号化できず、代わりに平文で保存されました。"
+  },
+  "secretNotPersistedNotice": {
+    "message": "パスワードまたはキーパスフレーズを暗号化できず、保存されませんでした。既存の接続は切断されるまで継続できます。それ以外の場合は、次回、秘密鍵を再度入力してください。"
+  },
+  "resize": {
+    "paneSize": "ペインをドラッグしてサイズを変更します（ダブルクリックでリセット）。",
+    "height": "ドラッグして高さを変更してください（ダブルクリックでリセット）。",
+    "ratio": "ドラッグしてアスペクト比を変更してください（ダブルクリックで初期状態に戻ります）"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} 項目",
+    "itemCount_other": "{{count}} 項目",
+    "moveMode": "移動"
+  },
+  "openWithChanged": {
+    "title": "ファイルが変更されました",
+    "message": "外部アプリケーションで「{{name}}」が変更されました。更新されたファイルをサーバーにアップロードしますか？"
+  },
+  "saveSite": {
+    "title": "接続プロファイルを保存",
+    "label": "接続プロファイル名:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "新しいフォルダ",
+    "labelLocal": "新しいフォルダ名：",
+    "labelRemote": "サーバー上の新しいフォルダ名："
+  },
+  "newFile": {
+    "title": "新しいファイル",
+    "label": "ファイル名（拡張子を含む）："
+  },
+  "moveToDialog": {
+    "title": "…へ移動",
+    "labelSingle": "「{{name}}」を次のフォルダに移動してください：",
+    "labelMultiple": "選択した項目（{{count}}）をフォルダに移動します："
+  },
+  "confirm": {
+    "allowReplacementRace": "転送中にファイル「{{name}}」が作成された場合、置き換えを許可しますか？",
+    "resetLayout": "ウィンドウとペインのサイズをリセットし、列のデフォルト設定に戻し、インターフェースのキャッシュをクリアしますか？",
+    "hostKeyMismatch": "{{error}} {{host}}:{{port}} の保存済み鍵フィンガープリントを削除して、それでも接続しますか？ サーバーが正当に再インストールまたは移行されたと確信している場合のみ、この操作を行ってください。そうしないと、偽装された可能性のあるサーバーに接続してしまう恐れがあります。",
+    "connectAnyway": "とにかく接続する",
+    "closeTabWithActiveTransfers": "このタブには進行中の転送があります。タブを閉じて、転送を停止しますか？",
+    "closeTabLabel": "タブを閉じる",
+    "overwriteSingleExists": "「{{name}}」は、保存先フォルダにすでに存在します。上書きしますか？",
+    "overwriteConflicts_one": "{{count}} 対象のファイルは宛先フォルダにすでに存在します。上書きしますか？",
+    "overwriteConflicts_other": "{{count}} 宛先フォルダにはすでに同じ名前のファイルが存在します。上書きしますか？",
+    "overwriteLabel": "上書き",
+    "replaceConnection": "このペインはすでに「{{current}}」に接続されています。接続先を「{{next}}」に変更しますか？",
+    "replaceConnectionLabel": "置き換え",
+    "deleteSelected": "選択した項目を削除しますか（{{count}}）？ この操作は元に戻せません。",
+    "deleteEntry": "「{{name}}」を削除しますか？この操作は元に戻せません。",
+    "recycleSelected": "選択した項目（{{count}}）をごみ箱に移動しますか？",
+    "recycleEntry": "「{{name}}」をゴミ箱に移動しますか？",
+    "deletePermanentSelected": "選択した項目を完全に削除しますか（{{count}}）？ この操作は元に戻せません。",
+    "deletePermanentEntry": "「{{name}}」を完全に削除しますか？この操作は元に戻せません。",
+    "deleteRemoteSelected": "選択したリモート項目（{{count}}）を完全に削除しますか？この操作は元に戻せません。",
+    "deleteRemoteEntry": "リモート項目「{{name}}」を完全に削除しますか？この操作は元に戻せません。"
+  },
+  "paneSide": {
+    "top": "トップ",
+    "bottom": "下部",
+    "left": "左",
+    "right": "右",
+    "labelWithTab": "{{base}} (タブ {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "ファイル",
+      "newTab": "新しいタブ",
+      "closeTab": "タブを閉じる",
+      "newConnection": "新しい接続",
+      "disconnect": "切断",
+      "manageBookmarks": "ブックマークの管理…",
+      "saveConnection": "接続を保存",
+      "saveConnectionSide": "接続を保存（{{side}}）",
+      "saveBookmarkSide": "ブックマークを保存（{{side}}）",
+      "savePathSide": "パスを保存（{{side}}）",
+      "exportSettings": "設定のエクスポート…",
+      "importSettings": "設定のインポート…",
+      "quit": "終了"
+    },
+    "edit": {
+      "title": "編集",
+      "settings": "設定…",
+      "resetLayout": "レイアウトとキャッシュをリセット…"
+    },
+    "view": {
+      "title": "表示",
+      "darkTheme": "ダークテーマ",
+      "lightTheme": "ライトテーマ",
+      "systemTheme": "システムのテーマ",
+      "syncBrowsing": "同期フォルダの閲覧",
+      "showHiddenFiles": "隠しファイルとフォルダを表示する",
+      "leftPane": "左ペイン",
+      "rightPane": "右ペイン",
+      "transferQueue": "転送キュー",
+      "log": "ログ",
+      "stackedPanes": "積み重ねペイン",
+      "refreshBothPanes": "両方のペインを更新する"
+    },
+    "transfer": {
+      "title": "転送",
+      "copySelectedRight": "選択範囲をコピー →",
+      "copySelectedLeft": "← 選択範囲をコピー",
+      "clearCompleted": "クリア　完了"
+    },
+    "bookmarks": {
+      "title": "ブックマーク"
+    },
+    "help": {
+      "supportProject": "プロジェクトを支援",
+      "title": "ヘルプ",
+      "documentation": "ドキュメント",
+      "reportIssue": "問題を報告する",
+      "checkUpdates": "更新の確認",
+      "about": "概要"
+    }
+  },
+  "errors": {
+    "connectionRefused": "サーバーが接続を拒否しました。アドレスとポートを確認してください。",
+    "serverNotFound": "サーバーが見つかりません。アドレスが正しいか確認してください。",
+    "timeout": "サーバーが応答していません（接続タイムアウト）。アドレス、ポート、およびネットワーク接続を確認してください。",
+    "connectionReset": "サーバーへの接続が予期せず切断されました。",
+    "networkUnreachable": "サーバーに接続できません。ネットワーク接続を確認してください。",
+    "loginIncorrect": "ユーザー名またはパスワードが間違っています。",
+    "invalidCertificate": "サーバーから無効な証明書が提示されました。このサーバーを信頼する場合は、接続設定で証明書の検証を無効にしてください。",
+    "tlsNegotiationFailed": "TLSネゴシエーションに失敗しました。サーバーが明示的なFTPSまたはHTTPS、および互換性のあるTLSバージョンをサポートしているか確認してください。",
+    "sshNegotiationFailed": "SSHのネゴシエーションに失敗しました。サーバーとFTPeachの間で、互換性のあるSSHアルゴリズムまたはプロトコルバージョンについて合意に至りませんでした。",
+    "proxyFailed": "プロキシ接続に失敗しました。プロキシの種類、アドレス、認証情報、およびターゲットサーバーに接続できるかどうかを確認してください。",
+    "keyReadFailed": "キーを読み取れませんでした。ファイルが破損しているか、パスフレーズが間違っています。",
+    "accessDenied": "この操作を行う権限がありません。",
+    "notFound": "ファイルまたはフォルダが見つかりません。",
+    "fileOrFolderExists": "その名前のファイルまたはフォルダはすでに存在します。",
+    "fileBusy": "このファイルは別のプロセスによって使用中です。",
+    "diskFull": "ディスク容量が不足しています。",
+    "hostKeyMismatch": "サーバーのホストキーが変更されました。",
+    "integrityMismatch": "転送されたファイルは整合性チェックに失敗しました。",
+    "invalidInput": "指定された値は無効です。",
+    "internal": "予期しないエラーが発生しました。",
+    "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
+    "alreadyExists": "「{{name}}」はすでに存在します"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "関連付け",
+      "hint": "拡張子を適用するアプリケーションを選択してください。ルールが設定されていないファイルには、システムの既定の設定が適用されます。",
+      "extension": "拡張子",
+      "extensionPlaceholder": "txt",
+      "application": "アプリケーション",
+      "applicationPlaceholder": "アプリケーションのパス",
+      "browse": "アプリケーションを選択",
+      "remove": "関連付けを解除する",
+      "add": "関連付けを追加する"
+    },
+    "minimizeToTray": "タスクトレイに最小化",
+    "minimizeToTrayHint": "最小化ボタンをクリックすると、ウィンドウはタスクバーではなくシステムトレイに隠されます。",
+    "closeToTray": "トレイの近く",
+    "closeToTrayHint": "「閉じる」ボタンをクリックすると、アプリが終了するのではなく、ウィンドウがトレイに非表示になります。アプリを終了するには、トレイアイコンのメニューから行ってください。",
+    "title": "設定",
+    "unsavedChangesTitle": "保存されていない変更",
+    "unsavedChangesMessage": "設定の変更を保存しますか？",
+    "discardChanges": "保存しないでください",
+    "categories": {
+      "connection": "接続",
+      "transfers": "転送",
+      "interface": "インターフェース",
+      "shortcuts": "ショートカット",
+      "updates": "最新情報",
+      "logging": "ログ記録",
+      "security": "セキュリティ"
+    },
+    "shortcuts": {
+      "title": "キーボードショートカット",
+      "hint": "ショートカットをクリックし、新しいキーの組み合わせを押して、そのショートカットを再割り当てします。",
+      "globalTitle": "グローバル",
+      "paneTitle": "ファイルペイン",
+      "recording": "キーを押してください…",
+      "unbound": "未割り当て",
+      "reset": "デフォルト設定にリセット",
+      "resetAll": "すべてを初期設定にリセットする",
+      "unassign": "割り当てを解除",
+      "conflict": "以下でも使用されています：{{action}}",
+      "actions": {
+        "search": "検索 ({{side}})",
+        "toggleHiddenFiles": "隠しファイルを表示／非表示に切り替える",
+        "newConnection": "新しい接続",
+        "save": "保存（{{side}}）",
+        "openSettings": "設定を開く",
+        "newTab": "新しいタブ",
+        "closeTab": "タブを閉じる",
+        "nextTab": "次のタブ",
+        "prevTab": "前のタブ",
+        "refresh": "更新",
+        "selectAll": "すべて選択",
+        "delete": "削除",
+        "deletePermanent": "完全に削除する",
+        "navigateUp": "1つ上のフォルダへ移動する",
+        "navigateBack": "戻る",
+        "navigateForward": "進む",
+        "navigateHome": "ホームフォルダに移動する",
+        "moveTo": "…へ移動",
+        "newFolder": "新しいフォルダ…",
+        "newFile": "新しいファイル…",
+        "copyToOtherPane": "別のペインにコピーする",
+        "copy": "コピー",
+        "cut": "カット",
+        "paste": "貼り付け",
+        "clearSelection": "選択を解除",
+        "open": "開く"
+      }
+    },
+    "security": {
+      "title": "パスワードによる保護",
+      "systemMode": "システムの保護",
+      "systemModeHint": "Windows アカウントのパスワードは暗号化されており、接続設定で確認することができます。",
+      "strongholdMode": "保護機能の強化",
+      "strongholdModeHint": "マスターパスワードが必要です。保存されたパスワードは接続に使用できますが、表示することはできません。",
+      "loading": "保護されたストレージを確認中…",
+      "configuredLocked": "保護されたストレージは、マスターパスワードで保護され、ロックされています。",
+      "configuredUnlocked": "保護されたストレージは、マスターパスワードによって保護されており、ロックが解除されています。",
+      "masterPassword": "マスターパスワード",
+      "confirmPassword": "マスターパスワードの確認",
+      "oldPassword": "現在のマスターパスワード",
+      "newPassword": "新しいマスターパスワード",
+      "setup": "保存済みのパスワードを保護する",
+      "settingUp": "保護…",
+      "unlock": "ロック解除",
+      "unlocking": "ロック解除中…",
+      "unlockRequired": "保護されたストレージのロックを解除する",
+      "unlockRequiredHint": "この接続では、保存済みのシークレットが使用されます。続行するには、保護されたストレージのロックを解除してください。",
+      "lockNow": "今すぐロックする",
+      "autoLock": "自動ロックまでの時間（分）",
+      "autoLockDisabled": "無効",
+      "autoLockHint": "一定時間操作がないと、ストレージをロックします。既存のサーバー接続は有効なままとなります。0 に設定すると、自動ロックが無効になります。",
+      "changePassword": "マスターパスワードの変更",
+      "change": "パスワードの変更",
+      "systemUnlock": "システムのロック解除を許可する",
+      "systemUnlockHint": "Windows Hello（Windowsの設定に応じて、PIN、顔認証、または指紋認証）を使用します。マスターパスワードは引き続き復旧手段として機能します。",
+      "unlockWithSystem": "システム認証によるロック解除",
+      "systemUnavailable": "このプラットフォームでは、システムのロック解除は利用できません。",
+      "noRecovery": "マスターパスワードを忘れてしまった場合、復元することはできません。ボールトをリセットすると、保存されているすべての秘密情報が削除されます。",
+      "passwordMismatch": "パスワードが一致しません。",
+      "passwordTooShort": "マスターパスワードには、12文字以上を使用してください。",
+      "strength": {
+        "tooShort": "文字数が少なすぎます。12文字以上入力してください。",
+        "acceptable": "問題ありません。パスフレーズは長ければ長いほど安全です。",
+        "strong": "強力なマスターパスワード。"
+      },
+      "reset": "保護されたストレージをリセットする",
+      "resetHint": "保護されたストレージおよびそこに保存されているすべてのパスワードとSSHキーのパスフレーズを削除します。強化された保護設定は、再度設定する必要があります。",
+      "resetWarning": "これにより、保存されているすべてのパスワードおよびキーのパスフレーズが完全に削除されます。続行するには、現在のマスターパスワードを入力してください。",
+      "confirmReset": "保存済みのシークレットを削除する",
+      "showConfirmations": "セキュリティ確認を表示する",
+      "showConfirmationsHint": "保存済みのシークレットを表示する前や実行可能ファイルを起動する前に確認します。保護されたストレージのリセットには常に確認が必要です。",
+      "unavailable": "保護されたストレージは利用できません。",
+      "failed": "保護されたストレージの操作に失敗しました。"
+    },
+    "unlimitedPlaceholder": "制限なし",
+    "connectTimeoutLabel": "接続タイムアウト（秒）",
+    "connectTimeoutHint": "接続時に、サーバーの応答をどのくらいの時間待ってから「接続不可」と見なすか（0 または空白 — 制限なし）。これは次の接続に適用されます。",
+    "ftpActiveMode": "アクティブFTPモード（パッシブモードではなく）",
+    "ftpActiveModeHint": "FTP/FTPSのみ — SFTP/WebDAVには影響しません。パッシブモードがNATを通過できないネットワークやサーバーでのみ、ごくまれに必要となります。次の接続から適用されます。",
+    "ftpActiveModeDisabledByProxy": "プロキシが有効になっている間は利用できません。プロキシトンネルは送信接続のみをサポートしているため、FTPはパッシブモードのままにする必要があります。",
+    "proxy": {
+      "enable": "接続にプロキシを使用する",
+      "enableHint": "SOCKS4、SOCKS5、またはHTTP CONNECT — FTP、FTPS、SFTP、およびWebDAVに適用されます。次の接続に適用されます。",
+      "typeLabel": "プロキシの種類",
+      "hostLabel": "プロキシホスト",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "ポート",
+      "usernameLabel": "ユーザー名",
+      "passwordLabel": "パスワード",
+      "removeSavedPassword": "保存済みのパスワードを削除する",
+      "revealFailed": "保存されたパスワードを復号できませんでした。",
+      "testTargetLabel": "テスト対象",
+      "testTargetHostPlaceholder": "サーバーホスト",
+      "testTargetPortPlaceholder": "ポート",
+      "test": "プロキシをテスト",
+      "testing": "テスト中…",
+      "testOk": "プロキシはターゲットへの接続に成功しました。",
+      "testFailed": "プロキシテストに失敗しました。"
+    },
+    "concurrencyLabel": "同時転送数",
+    "concurrencyHint": "同時にアップロードおよびダウンロードするファイルの数（0 または空欄 — 制限なし）。次の接続に適用されます。",
+    "speedLimitLabel": "速度制限、KB/s",
+    "speedLimitHint": "すべての同時転送の合計に適用されます（0 または空白の場合は制限なし）。次の接続を待たずに、直ちに有効になります。",
+    "notifyOnComplete": "転送が完了したら通知する",
+    "notifyOnCompleteHint": "転送キューが空になった際のシステム通知 — ただし、ウィンドウにフォーカスが当たっていない場合に限る。",
+    "overwriteActionLabel": "名前の競合について",
+    "overwriteAsk": "質問する",
+    "overwriteOverwrite": "上書き",
+    "overwriteSkip": "スキップ",
+    "overwriteHint": "コピー先のフォルダに、コピーしようとしているファイルがすでに存在する場合の対処法。",
+    "preventSleep": "転送中にシステムがスリープ状態になるのを防ぐ",
+    "preventSleepHint": "次の接続を待たずに、即座に有効になります。少なくとも1つの転送が進行している間は有効ですが、それ以外の場合はスリープを妨げません。",
+    "themeLabel": "テーマ",
+    "themeDark": "ダーク",
+    "themeLight": "ライト",
+    "themeSystem": "システム",
+    "languageLabel": "インターフェースの言語",
+    "interfaceScaleLabel": "インターフェースのスケール",
+    "interfaceScaleHint": "アプリケーション全体のテキストと操作ボタンのサイズを変更します。",
+    "dateFormatLabel": "日付・時刻の形式",
+    "dateFormatOnlyLabel": "日付形式",
+    "timeFormatLabel": "時刻形式",
+    "timeFormat24Hour": "24時間",
+    "timeFormat12Hour": "12時間",
+    "dateFormatLocale": "ローカル",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "コンピュータの既定フォルダ",
+    "defaultLocalPathHint": "起動時およびサーバーから切り替えたときに「コンピュータ」ペインが開くフォルダです。空欄にするとシステムのホームフォルダが使用されます。",
+    "chooseDefaultLocalPath": "既定フォルダを選択",
+    "showHiddenFiles": "隠しファイルとフォルダを表示する",
+    "showHiddenFilesHint": "ローカルおよびリモートのファイルペインの両方に適用されます。",
+    "coloredTabs": "色付きタブ",
+    "coloredTabsHint": "保存されたブックマークの色を使用して、タブ名とアイコンを色付けします。",
+    "autoCheckUpdates": "起動時に更新を確認する",
+    "autoCheckUpdatesHint": "起動後数秒後に自動的に確認が行われます。アップデートのインストールには、常に別途確認が必要です。",
+    "autoReconnectTabs": "起動時に復元されたタブを再接続する",
+    "autoReconnectTabsHint": "デフォルトではオフになっています。有効にすると、保存されたサイトが復元された際に自動的に接続されます。",
+    "saveSessionOnExit": "終了時にセッションを保存する",
+    "saveSessionOnExitHint": "次回起動時に、開いていたタブ、ペインの種類、およびパスを復元します。この機能をオフにすると、保存されていたセッションが消去されます。",
+    "checkNow": "今すぐ確認する",
+    "updateStatus": {
+      "checking": "更新の確認中…",
+      "notAvailable": "現在、最新バージョンをご利用中です。",
+      "error": "更新の確認ができませんでした。",
+      "notPackaged": "このビルドでは利用できません（npm run dev/start）。"
+    },
+    "logEnable": "ログを有効にする",
+    "logShowTimestamps": "タイムスタンプを表示する",
+    "logToFile": "ログをファイルに書き込む",
+    "logToFileHint": "有効になっている間、ログパネルが開いているかどうかに関係なく、ログをディスク上のファイル（%APPDATA%\\FTPeach\\logs\\ftpeach.log）に継続的に書き込みます。 これは、パネル内の「保存」ボタンとは異なります（「保存」ボタンは、クリック時に直近の200行のみを1回保存する機能です）。",
+    "exportDiagnostics": "診断パッケージをエクスポート",
+    "exportDiagnosticsBusy": "エクスポート中…",
+    "exportDiagnosticsHint": "バージョン、OS、最新の200件のログをエクスポートします。パスワード、トークン、その他の機密情報は伏せられます。",
+    "exportDiagnosticsFailed": "診断パッケージをエクスポートできませんでした。"
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "設定のエクスポート",
+    "confirmLabel": "エクスポート…",
+    "includeSettings": "アプリの設定",
+    "includeBookmarks": "ブックマーク",
+    "includeLocalPaths": "ローカルパス",
+    "passwordHint": "パスワードやSSHキーのパスフレーズはエクスポート対象に含まれていません。別のマシンにインポートした後、これらを再入力する必要があります。"
+  },
+  "importSettingsDialog": {
+    "title": "設定のインポート",
+    "confirmLabel": "インポート…",
+    "includeSettings": "アプリの設定",
+    "includeBookmarks": "ブックマーク",
+    "includeLocalPaths": "ローカルパス",
+    "passwordHint": "パスワードやSSHキーのパスフレーズはインポート対象に含まれていません。インポートしたサイトごとに再入力する必要があります。"
+  },
+  "openWithDialog": {
+    "title": "アプリケーションで開く",
+    "downloading": "「{{fileName}}」をダウンロード中…",
+    "progress": "{{loaded}} {{total}}（{{percent}}％）のうち",
+    "connecting": "接続中…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "転送エラー",
+    "notifyCompleteTitle": "転送が完了しました",
+    "notifySucceeded": "成功しました：{{count}}",
+    "notifyFailed": "失敗しました：{{count}}",
+    "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。"
+  },
+  "transferQueue": {
+    "title": "転送",
+    "columns": {
+      "file": "ファイル",
+      "size": "サイズ",
+      "transferred": "転送済み",
+      "progress": "進捗状況",
+      "speed": "速度",
+      "remaining": "残り",
+      "status": "ステータス"
+    },
+    "empty": "アップロードとダウンロードはここに表示されます",
+    "newTransfers_one": "{{count}} 件の新規転送",
+    "newTransfers_other": "{{count}} 件の新規転送",
+    "status": {
+      "queued": "待機中",
+      "done": "完了",
+      "error": "エラー",
+      "paused": "一時停止中",
+      "stopped": "中止",
+      "cancelling": "キャンセル中…"
+    },
+    "direction": {
+      "up": "アップロード",
+      "down": "ダウンロード",
+      "copy": "コピー"
+    },
+    "directionTitleCopy": "サーバー間のコピー",
+    "cancelledByUser": "ユーザーによりキャンセルされました",
+    "stoppedDash": "停止",
+    "resume": "再開",
+    "retry": "再試行",
+    "stop": "停止",
+    "pauseUnsupportedCopy": "サーバー間のコピーでは、一時停止機能はサポートされていません",
+    "pauseUnsupportedWebdav": "WebDAVでは一時停止機能はサポートされていません"
+  },
+  "log": {
+    "connecting": "{{addr}} に接続中...",
+    "connectFailed": "接続に失敗しました：{{error}}",
+    "connected": "ログインしました。",
+    "receivedEntries_one": "{{count}} 件のエントリを受信しました",
+    "receivedEntries_other": "{{count}} 件のエントリを受信しました",
+    "skippedUnsafeEntry": "安全でない名前を持つリストエントリをスキップしました: {{name}}",
+    "listFailed": "一覧の取得に失敗しました：{{error}}",
+    "tlsInit": "TLSの初期化中...",
+    "tlsEstablished": "TLS接続が確立されました。",
+    "davResumeUnsupportedLocal": "WebDAVではアップロードの再開はサポートされていません。ファイルは最初から再度送信されます。",
+    "davResumeUnsupportedServer": "サーバーは再開に対応していません（期待されるステータス：{{expected}}、実際のステータス：{{status}}）— ファイルは再度ダウンロードされます。"
+  },
+  "logPanel": {
+    "showAllConnections": "すべての接続を表示する",
+    "showOnlyThisConnection": "この接続のみを表示する",
+    "connectionClosedShowOnly": "接続が切断されました — この接続のみを表示する",
+    "hideTimestamps": "ログ行からタイムスタンプを非表示にする",
+    "showTimestamps": "ログ行にタイムスタンプを表示する",
+    "copyToClipboard": "ログをクリップボードにコピーする",
+    "saveLastLines_one": "最後の{{count}}行を.txtファイルに保存",
+    "saveLastLines_other": "最後の{{count}}行を.txtファイルに保存",
+    "clearLog": "ログを消去する",
+    "copiedTooltip": "コピーしました",
+    "copyFailedTooltip": "コピーできませんでした",
+    "saveFailedTooltip": "ファイルを保存できませんでした",
+    "emptyFiltered": "この接続に該当するログはありません",
+    "emptyDefault": "プロトコルメッセージはここに表示されます"
+  },
+  "aboutDialog": {
+    "title": "概要",
+    "tagline": "軽量なFTP/FTPS/SFTPクライアント。",
+    "legalInformation": "法的情報",
+    "sourceCode": "ソースコード",
+    "reportIssue": "問題を報告",
+    "checkForUpdates": "更新の確認",
+    "updateDownloaded": "v{{version}}のアップデートがダウンロードされました。今すぐインストールできます。"
+  },
+  "siteManager": {
+    "emptyList": "まだ保存されたサイトはありません",
+    "confirmDeleteSite": "サイト「{{name}}」を削除しますか？"
+  },
+  "siteManagerDialog": {
+    "titleNew": "新しいブックマーク",
+    "titleEdit": "ブックマークを編集",
+    "titleList": "ブックマークの管理",
+    "titleLocalPathList": "ローカルパスの管理",
+    "manageLocalPaths": "ローカルパスの管理…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "名前",
+      "icon": "アイコン",
+      "color": "色",
+      "protocol": "プロトコル",
+      "keyFile": "キーファイル",
+      "caCertFile": "CA証明書",
+      "remotePath": "デフォルトフォルダ",
+      "localPath": "ローカルフォルダ"
+    },
+    "icons": {
+      "bookmark": "ブックマーク",
+      "globe": "ウェブサイト",
+      "briefcase": "仕事",
+      "house": "ホームサーバー",
+      "cloud": "クラウド",
+      "flask": "テスト／ステージング",
+      "gamepad": "ゲームサーバー",
+      "clapperboard": "メディアサーバー",
+      "camera": "カメラ"
+    },
+    "colors": {
+      "default": "色なし",
+      "peach": "ピーチ",
+      "red": "赤",
+      "amber": "アンバー",
+      "green": "グリーン",
+      "blue": "青",
+      "purple": "パープル",
+      "pink": "ピンク",
+      "teal": "ティール"
+    },
+    "saveFailed": "保存できませんでした",
+    "revealFailed": "保存されたシークレットを表示できませんでした",
+    "savedSecretPlaceholder": "保存済み",
+    "savedSecretHint": "現在のパスワードを保持するには空欄のままにしてください",
+    "removeSavedPassword": "保存済みのパスワードを削除する",
+    "removeSavedPassphrase": "保存済みのパスフレーズを削除する",
+    "secretWillBeRemoved": "保存時に削除されます",
+    "addBookmark": "新しいブックマーク",
+    "addLocalBookmark": "ローカルフォルダのブックマークを追加",
+    "chooseLocalPath": "ローカルフォルダを選択してください",
+    "importBookmarks": "インポート",
+    "exportBookmarks": "エクスポート",
+    "importAdded_one": "{{count}} 件のブックマークを追加しました",
+    "importAdded_other": "{{count}} 件のブックマークを追加しました",
+    "importSkipped_one": "重複{{count}}件をスキップ",
+    "importSkipped_other": "重複{{count}}件をスキップ",
+    "importNothingNew": "インポートする新しい項目はありません",
+    "exportSuccess": "エクスポートしました",
+    "sortMode": "ブックマークの並べ替え",
+    "sortManual": "手動",
+    "sortName": "名前で",
+    "sortProtocol": "プロトコル順",
+    "duplicateWarning": "同じ宛先のブックマークがすでに存在します：「{{name}}」。別のブックマークを保存しますか？",
+    "saveAnyway": "とにかく保存する",
+    "newFolder": "新しいフォルダ",
+    "folderNamePlaceholder": "フォルダ名",
+    "confirmDeleteFolder": "「{{name}}」フォルダを削除しますか？そのフォルダ内のブックマークは、1つ上の階層に移動します。",
+    "searchPlaceholder": "検索…",
+    "clearSearch": "検索をクリア",
+    "noSearchResults": "検索条件に一致するブックマークはありません",
+    "duplicate": "重複",
+    "duplicateNameSuffix": " (コピー)",
+    "newBookmarkInFolder": "ここに新しいブックマークを追加",
+    "expandFolder": "「{{name}}」を展開する",
+    "collapseFolder": "「{{name}}」を折りたたむ"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "住所",
+      "port": "ポート",
+      "user": "ユーザー名",
+      "password": "パスワード",
+      "passphrase": "パスフレーズ",
+      "keyFilePlaceholder": "キーファイル…",
+      "chooseKeyFile": "キーファイルを選択してください…",
+      "caCertFilePlaceholder": "CA証明書…",
+      "chooseCaCertFile": "CA証明書を選択…"
+    },
+    "secureToggle": {
+      "tooltip": "自己署名型および無効なサーバー証明書を受け入れる場合は、このチェックボックスをオフにしてください",
+      "label": "証明書を確認する"
+    },
+    "authToggle": {
+      "tooltip": "パスワードの代わりに、秘密のSSH鍵ファイルを使用してログインする",
+      "label": "SSHキーでログインする"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "キャンセル",
+      "connect": "接続",
+      "disconnect": "切断"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "通常のFTPでは、ユーザー名、パスワード、およびファイルが暗号化されずに送信されます。可能な場合は、FTPSまたはSFTPを使用してください。"
+  },
+  "titleBar": {
+    "minimize": "最小化",
+    "restore": "復元",
+    "maximize": "最大化"
+  },
+  "tray": {
+    "show": "FTPeachを表示",
+    "quit": "終了"
+  },
+  "tabStrip": {
+    "localComputer": "コンピュータ",
+    "untitledTab": "新しいタブ",
+    "newTabTooltip": "新しいタブ (Ctrl+T)",
+    "rename": "タブ名"
+  },
+  "toolbarOverflowMenu": {
+    "more": "もっと見る"
+  },
+  "statusBar": {
+    "transfers": "転送：{{count}}",
+    "leftCount": "左：{{count}}",
+    "rightCount": "右：{{count}}",
+    "topCount": "トップ：{{count}}",
+    "bottomCount": "下段：{{count}}",
+    "selectedSuffix": " （{{count}}が選択されています）",
+    "status": {
+      "transferring": "ファイルの転送",
+      "paused": "一時停止中",
+      "connected": "接続済み",
+      "connecting": "接続中",
+      "connectFailed": "接続できませんでした",
+      "disconnected": "接続されていません"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "左ペインを表示／非表示にする",
+    "toggleRightPane": "右ペインを表示／非表示にする",
+    "toggleTransferQueue": "転送キューを表示／非表示にする",
+    "toggleLog": "ログを表示／非表示にする",
+    "orientationNarrow": "ペインが積み重なっています — ウィンドウが狭すぎて左右に並べて表示できません",
+    "orientationToRow": "ペインを並べて配置する",
+    "orientationToStacked": "ペインを積み重ねる",
+    "pauseUnsupportedWebdav": "WebDAVでは一時停止機能はサポートされていません",
+    "pauseActive": "アクティブな転送を一時停止する",
+    "resumeAllPaused": "一時停止中の転送をすべて再開する",
+    "stopActive": "アクティブな転送を停止する",
+    "retryAllStopped": "停止中のすべての転送を再実行する",
+    "refreshPanesTooltip": "両方のペインを更新する（F5）"
+  },
+  "paneToolbar": {
+    "back": "戻る",
+    "forward": "進む",
+    "up": "上へ",
+    "chooseFolder": "フォルダを選択…",
+    "newFolder": "新しいフォルダ…",
+    "newFile": "新しいファイル…"
+  },
+  "paneSourceSwitcher": {
+    "local": "コンピュータ",
+    "remote": "サーバー",
+    "updatedAtTooltip": "更新日：{{date}}",
+    "connectToServer": "サーバー"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "最近の接続履歴はありません",
+    "noSavedConnectionsBody": "上記のサーバーアドレスを入力するか、ワンクリックでアクセスできるサイトを追加してください。",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "ブックマークの管理",
+    "quicklistLabel": "最近の接続履歴"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "FTPeach インターフェースで未処理のエラーが発生しました:",
+    "title": "何か問題が発生しました",
+    "message": "予期せぬインターフェースエラーが発生しました。現在アクティブな接続やディスク上のファイルには影響はありません。インターフェースを再読み込みしてみてください。",
+    "reload": "インターフェースの再読み込み"
+  }
+}

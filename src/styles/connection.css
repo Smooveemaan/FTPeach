@@ -1,0 +1,405 @@
+/* ---------- Connection bar ---------- */
+
+.connection-bar {
+  --port-width: 56px;
+  flex: 0 0 auto;
+  display: flex;
+
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+
+  line-height: 1;
+
+  row-gap: 6px;
+  padding: 6px 14px 26.4px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.connection-bar > * {
+  flex: 0 0 auto;
+}
+
+
+.connection-bar.narrow {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.connection-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.connection-row > * {
+  flex: 0 0 auto;
+}
+
+.connection-row-credentials {
+  min-height: 28px;
+}
+
+.connection-bar input {
+  height: var(--control-height);
+
+  display: flex;
+  align-items: center;
+  background: var(--control-background);
+  border: var(--control-border);
+  border-radius: var(--control-radius);
+  padding: 0 var(--control-padding-inline);
+  outline: none;
+  transition: var(--control-transition);
+  line-height: 1;
+}
+.connection-bar input:focus {
+  border-color: var(--accent-primary);
+}
+.connection-bar input::placeholder {
+  color: var(--text-faint);
+}
+
+.connection-bar input[readonly] {
+  cursor: pointer;
+}
+
+
+.connection-bar .connect-toggle-btn,
+.connection-bar .protocol-select-trigger {
+  height: var(--control-height);
+
+  line-height: 1;
+}
+/* Square, matching .btn-icon's own min-width (26px) now that this row is
+   pinned to the same 26px height. */
+.connection-bar .connect-toggle-btn {
+  width: var(--control-height);
+  min-width: var(--control-height);
+}
+
+
+.connection-bar .field-host {
+  flex: 1 1 160px;
+  width: auto;
+  min-width: var(--port-width);
+}
+.field-port { width: var(--port-width); flex: 0 0 auto; }
+/* Replaces field-host + field-port together in WebDAV mode (a single URL,
+   no separate host/port) — sized wider than field-host alone to cover the
+   room both fields would otherwise take. */
+.connection-bar .field-webdav-url {
+  flex: 1 1 216px;
+  width: auto;
+  min-width: 0;
+}
+.connection-bar .field-user,
+.connection-bar .field-pass {
+  flex: 1 1 110px;
+  width: auto;
+  min-width: 0;
+}
+
+.password-input {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.password-input > input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  padding-inline-end: 30px;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease;
+}
+
+.password-input.is-invalid > input {
+  border-color: var(--accent-red);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-red) 35%, transparent);
+  transition-duration: 0.12s;
+}
+
+.settings-error-fade {
+  animation: settings-error-fade 1.8s ease forwards;
+}
+
+@keyframes settings-error-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* WebView2/Edge draws its own password reveal control. PasswordInput already
+   provides the same action with the app's Lucide icon, so keeping both makes
+   two overlapping eye buttons appear on Windows. */
+.password-input > input::-ms-reveal,
+.password-input > input::-ms-clear {
+  display: none;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--text-faint);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.password-visibility-toggle:hover,
+.password-visibility-toggle:focus-visible:where(html[data-keyboard-navigation] *) {
+  color: var(--text-primary);
+  outline: none;
+}
+
+.password-protected-indicator {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--text-faint);
+  transform: translateY(-50%);
+}
+
+
+.connection-bar .secure-toggle {
+  margin-inline-start: -8px;
+}
+
+.secure-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.secure-toggle input[type='checkbox'],
+.site-edit-form .settings-field input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-base);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.secure-toggle input[type='checkbox']:focus-visible:where(html[data-keyboard-navigation] *),
+.site-edit-form .settings-field input[type='checkbox']:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1.5px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+.secure-toggle input[type='checkbox']:hover:not(:disabled),
+.site-edit-form .settings-field input[type='checkbox']:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+}
+.secure-toggle input[type='checkbox']:checked,
+.site-edit-form .settings-field input[type='checkbox']:checked {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+.secure-toggle input[type='checkbox']:checked::after,
+.site-edit-form .settings-field input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 4px;
+  top: 1px;
+  width: 3px;
+  height: 7px;
+  border: solid #241407;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.secure-toggle input[type='checkbox']:disabled,
+.site-edit-form .settings-field input[type='checkbox']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* One button size app-wide: the same --control-height every other control
+   (inputs, .btn-icon, the protocol and appearance triggers) is pinned to, so a
+   dialog footer's buttons line up with SettingsDialog's Save/Cancel pair and
+   with the fields above them. Icon-only buttons re-declare their own square
+   geometry in .btn-icon; nothing else overrides the height. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  height: var(--control-height);
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn:hover { border-color: var(--text-faint); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+
+.btn-primary {
+  background: var(--accent-fill);
+  color: var(--accent-fill-text);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.btn-primary:hover {
+  background: var(--btn-fill);
+  color: var(--btn-fill-text);
+}
+
+
+.btn-primary.btn-primary-quiet {
+  background: var(--btn-fill);
+  color: var(--btn-fill-text);
+}
+.btn-primary.btn-primary-quiet:hover {
+  background: var(--accent-fill);
+  color: var(--accent-fill-text);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--accent-red);
+}
+.btn-danger:hover { background: var(--accent-red-dim); }
+
+.btn-danger-reveal {
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.btn-danger-reveal:hover,
+.btn-danger-reveal:focus-visible:where(html[data-keyboard-navigation] *) {
+  color: var(--accent-red);
+  background: var(--accent-red-dim);
+}
+
+
+.connect-toggle-btn {
+  background: var(--bg-base);
+}
+.connect-toggle-btn.state-idle {
+  border-color: color-mix(in srgb, var(--accent-red) 50%, var(--bg-base));
+  color: var(--accent-red);
+  background: var(--accent-red-dim);
+}
+.connect-toggle-btn.state-idle:hover {
+  background: color-mix(in srgb, var(--accent-red) 22%, var(--bg-base));
+}
+
+.connect-toggle-btn.state-connecting,
+.connect-toggle-btn.state-paused {
+  border-color: color-mix(in srgb, var(--accent-amber) 50%, var(--bg-base));
+  color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+}
+.connect-toggle-btn.state-connecting:hover,
+.connect-toggle-btn.state-paused:hover {
+  background: color-mix(in srgb, var(--accent-amber) 22%, var(--bg-base));
+}
+
+.connect-toggle-btn.state-connected {
+  border-color: color-mix(in srgb, var(--accent-green) 50%, var(--bg-base));
+  color: var(--accent-green);
+  background: var(--accent-green-dim);
+}
+.connect-toggle-btn.state-connected:hover {
+  background: color-mix(in srgb, var(--accent-green) 22%, var(--bg-base));
+}
+
+
+.btn-ghost {
+  background: var(--btn-fill);
+  border-color: transparent;
+  color: var(--btn-fill-text);
+  /* Inline padding only: block padding would fight .btn's shared height. */
+  padding-inline: 8px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.btn-ghost:hover { color: var(--accent-fill-text); background: var(--accent-fill); }
+
+.conn-error {
+  color: var(--accent-red);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  margin-inline-start: 4px;
+}
+
+.dismissible-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  align-self: flex-start;
+  justify-self: start;
+}
+.dismissible-error > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
+.dismissible-error-close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: currentColor;
+  opacity: 0.62;
+  cursor: pointer;
+}
+.dismissible-error-close:hover {
+  opacity: 1;
+}
+.dismissible-error-close:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+  opacity: 1;
+}

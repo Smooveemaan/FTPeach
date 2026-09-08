@@ -1,0 +1,367 @@
+/* ---------- Transfer queue + log side by side (narrow window) ---------- */
+
+.narrow-sections {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Transfer queue ---------- */
+
+.transfer-queue {
+  /* height comes from an inline style (see TransferQueue.jsx) — it's a
+     user-resizable, persisted value, not a fixed design constant. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-panel);
+  position: relative;
+}
+
+.transfer-new-items {
+  position: absolute;
+  inset-inline-end: 20px;
+  bottom: 10px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 9px;
+  border: 1px solid var(--accent-primary);
+  border-radius: 4px;
+  color: var(--text-primary);
+  background: var(--bg-panel-alt);
+  box-shadow: 0 3px 12px rgb(0 0 0 / 28%);
+  font: 600 10.5px/1 var(--font-ui);
+  cursor: pointer;
+}
+.transfer-new-items:hover {
+  background: var(--bg-hover);
+}
+
+.transfer-list {
+  flex: 1 1 auto;
+
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+
+
+.transfer-cols {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+}
+
+.transfer-cols > * {
+  min-width: 0;
+}
+
+.transfer-col-header {
+
+  /* Vertical padding moves onto .transfer-resizable-header itself (below)
+     instead of living here — see panes.css's matching .row-header comment:
+     a lone auto-sized grid row has no slack for align-items to stretch
+     into, so each column's own box only spans the full header strip if
+     that padding is what makes the box tall in the first place. */
+  padding-block: 0;
+  padding-inline: 12px 22px;
+
+  overflow-x: hidden;
+  /* Setting only overflow-x makes the browser compute overflow-y as
+     'auto', which (per the flexbox spec) zeroes this item's automatic
+     min-height in .transfer-queue's column flex layout — without this,
+     a short panel proportionally squishes the header row right along
+     with .transfer-list instead of leaving it full height and letting
+     the list (which already has its own min-height: 0 + overflow-y:
+     auto) be the only thing that scrolls. */
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-soft);
+  align-items: stretch;
+}
+.transfer-col-header > div {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.transfer-col-header > div.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+/* Offsets "File" past the direction icon so it lines up with the file name
+   below it, not the icon — the icon column itself stays unlabeled. */
+.transfer-col-header > .col-file { padding-inline-start: 19px; }
+.transfer-col-header > .col-actions { text-align: center; }
+
+
+.transfer-item {
+  padding: 0 12px;
+  min-height: 34px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.transfer-item:last-child { border-bottom: none; }
+.transfer-item:hover { background: var(--bg-panel-alt); }
+/* A column drag or resize is in progress — suppress incidental hover so
+   nothing but the dragged column itself lights up while the pointer sweeps
+   across the list below the header. */
+body.column-reorder-active .transfer-item:hover,
+body.column-resize-active .transfer-item:hover {
+  background: none;
+}
+
+.t-file { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.transfer-file-icon { flex: 0 0 auto; display: flex; align-items: center; }
+.transfer-file-icon.is-folder { color: var(--accent-primary); }
+.dir-icon { flex: 0 0 auto; display: flex; align-items: center; }
+.dir-icon.dir-up { color: var(--accent-amber); }
+.dir-icon.dir-down { color: var(--accent-primary); }
+.dir-icon.dir-copy { color: var(--accent-green); }
+
+.t-name-wrap { min-width: 0; display: flex; flex-direction: column; }
+.t-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.t-name.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.t-sub {
+  font-size: 10px;
+  color: var(--text-faint);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.t-sub.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.t-sub.err { color: var(--accent-red); }
+
+.t-size,
+.t-transferred {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.t-size > *,
+.t-transferred > * {
+  overflow: hidden;
+  max-width: 100%;
+}
+.t-size > *.truncated,
+.t-transferred > *.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.t-transferred { color: var(--text-faint); }
+
+.t-progress { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.t-progress.no-bar { color: var(--text-faint); font-size: 11px; }
+.p-track {
+  flex: 1 1 auto;
+  height: 3px;
+  background: var(--border-soft);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.p-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent-primary);
+  transition: width 0.15s ease;
+}
+.p-fill.status-paused,
+.p-fill.status-cancelling {
+  background: var(--accent-amber);
+}
+.p-fill.status-queued,
+.p-fill.status-stopped {
+  background: var(--text-faint);
+}
+.p-fill.status-done {
+  background: var(--accent-green);
+}
+.p-pct {
+  flex: 0 0 auto;
+  width: 30px;
+  /* Logical, not `right`: the percentage trails the bar it belongs to, and
+     in RTL the flex row puts it on the left with the bar to its right. */
+  text-align: end;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.dash { color: var(--text-faint); }
+
+.t-speed,
+.t-remain {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  /* `start`, matching the untouched default of the neighbouring `.t-size`
+     and `.t-transferred` columns — these mirror with the rest of the row. */
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.t-speed.truncated,
+.t-remain.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.transfer-col-header .transfer-resizable-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-block: 5px;
+  padding-inline-end: 8px;
+}
+/* Only the reorderable columns (not the pinned "File") carry this — see
+   TransferQueue.tsx's headerCell/data-reorderable. */
+.transfer-col-header .transfer-resizable-header[data-reorderable='true'] {
+  cursor: grab;
+}
+/* The highlight bleeds 10px into the gap on its leading edge (this table's
+   own column-gap, see .transfer-cols) so it reaches the divider line, which
+   is actually drawn by the *previous* column's own resize handle rather
+   than sitting at this column's own left edge. box-shadow (not a wider box)
+   keeps the row's own full height as the highlight's only vertical extent. */
+.transfer-col-header .transfer-resizable-header[data-reorderable='true']:hover {
+  background: var(--bg-raised);
+  box-shadow: -10px 0 0 0 var(--bg-raised);
+}
+:dir(rtl) .transfer-col-header .transfer-resizable-header[data-reorderable='true']:hover {
+  box-shadow: 10px 0 0 0 var(--bg-raised);
+}
+/* A column drag or resize is in progress — nothing but the dragged column
+   itself (below) should light up. */
+body.column-reorder-active
+  .transfer-col-header
+  .transfer-resizable-header[data-reorderable='true']:hover:not([data-dragging='true']),
+body.column-resize-active .transfer-col-header .transfer-resizable-header[data-reorderable='true']:hover {
+  background: transparent;
+  box-shadow: none;
+}
+/* The column actively being dragged gets its own lift, matching the file
+   browser's column headers (panes.css's [data-dragging]). Flat background
+   only — no outline; it read as a stray leftover accent once the header
+   cells themselves became full, bordered rectangles.
+   z-index lifts it above whichever header it's sliding past: the dragged
+   and displaced columns both animate via transform and briefly occupy the
+   same screen space mid-slide, so without this their text and edges
+   overlapped and read as a doubled divider. Its own opaque background then
+   fully covers the header sliding underneath for the rest of the crossing. */
+.transfer-col-header .transfer-resizable-header[data-dragging='true'] {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  box-shadow: -10px 0 0 0 var(--bg-raised);
+  z-index: 3;
+}
+:dir(rtl) .transfer-col-header .transfer-resizable-header[data-dragging='true'] {
+  box-shadow: 10px 0 0 0 var(--bg-raised);
+}
+
+.t-status { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.transfer-item .status-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.status-tag.queued { color: var(--text-secondary); background: var(--bg-raised); }
+.status-tag.progress { color: var(--accent-primary); background: var(--accent-primary-dim); }
+.status-tag.done { color: var(--accent-green); background: var(--accent-green-dim); }
+.status-tag.error { color: var(--accent-red); background: var(--accent-red-dim); }
+.status-tag.paused,
+.status-tag.cancelling { color: var(--accent-amber); background: var(--accent-amber-dim); }
+.status-tag.stopped { color: var(--text-secondary); background: var(--bg-raised); }
+
+.transfer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.transfer-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  font-family: var(--font-ui);
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 10px 12px;
+}
+
+
+.transfer-queue.narrow .transfer-queue-header {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 10px;
+}
+.transfer-queue.narrow .transfer-cols {
+  gap: 6px;
+}
+.transfer-queue.narrow .transfer-col-header {
+  padding: 3px 20px 3px 10px;
+  font-size: 9px;
+}
+.transfer-queue.narrow .transfer-item {
+  padding: 0 10px;
+  min-height: 28px;
+  font-size: 10.5px;
+}
+.transfer-queue.narrow .t-name {
+  font-size: 10.5px;
+}
+.transfer-queue.narrow .t-size,
+.transfer-queue.narrow .t-transferred {
+  font-size: 9.5px;
+}
+.transfer-queue.narrow .p-pct {
+  font-size: 9px;
+}
+.transfer-queue.narrow .status-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+}
+.transfer-queue.narrow .retry-btn,
+.transfer-queue.narrow .pause-btn,
+.transfer-queue.narrow .stop-btn {
+  width: 17px;
+  height: 17px;
+}
+.transfer-queue.narrow .transfer-empty {
+  font-size: 10.5px;
+  padding: 6px 4px;
+}

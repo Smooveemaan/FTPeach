@@ -1,0 +1,519 @@
+/* ---------- Site manager ---------- */
+
+/* Shared with SiteManagerDialog's own empty-folder state below. */
+.site-manager-empty {
+  padding: 14px 10px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+/* ---------- SiteManagerDialog (full bookmark manager, item 1) ---------- */
+.site-manage-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+
+.site-manage-search {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  width: 0;
+  overflow: hidden;
+  color: var(--text-faint);
+  /* Cancels one side of .site-manage-toolbar's own `gap`, which still
+     reserves a full gap around this zero-width flex item otherwise. */
+  margin-inline-start: -8px;
+}
+.site-manage-search input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+
+.site-manage-toolbar.search-open .site-manage-search {
+  flex: 1 1 auto;
+  width: auto;
+  height: 28px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 0 8px;
+  margin-inline-start: 0;
+}
+.site-manage-toolbar.search-open .site-manage-search:focus-within {
+  border-color: var(--accent-primary);
+}
+.site-manage-toolbar.search-open .site-manage-search input {
+  width: auto;
+  padding: 5px 0;
+}
+.site-manage-toolbar.search-open .site-manage-sort,
+.site-manage-toolbar.search-open .site-manage-actions {
+  display: none;
+}
+
+.site-manage-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  /* Pushes this group to the toolbar's opposite edge from the search
+     toggle button next to it, instead of trailing right behind it. */
+  margin-inline-start: auto;
+}
+
+.site-manage-sort .site-manage-sort-trigger {
+  height: var(--control-height-lg);
+}
+
+/* Parent-folder hint shown under a search-result bookmark's name — the flat
+   result list drops the folder grouping SiteTree normally conveys, so this
+   is the only remaining cue for which folder (if any) the match lives in. */
+.site-search-parent {
+  color: var(--text-faint);
+  font-size: 10.5px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.site-search-parent.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+.site-manage-list {
+
+  flex: 0 1 512px;
+  min-height: 0;
+  overflow-y: auto;
+
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+}
+
+.site-manage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+
+.site-manage-divider {
+  height: 0;
+  margin: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+  flex: none;
+}
+
+
+.site-manage-folder-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  z-index: 0;
+}
+.site-manage-folder-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.site-manage-folder-group:has(> .site-manage-row.is-folder:hover)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-panel-alt);
+  border-radius: var(--radius-sm);
+}
+
+.site-manage-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+
+  line-height: 1;
+}
+.site-manage-row:hover { background: var(--bg-panel-alt); }
+
+.site-manage-list.is-dragging .site-manage-row:hover { background: transparent; }
+
+.site-manage-list.is-dragging
+  .site-manage-folder-group:has(> .site-manage-row.is-folder:hover)::before {
+  content: none;
+}
+
+.site-manage-row.dragging { visibility: hidden; }
+
+.site-manage-row.dragging.collapse-source {
+  position: absolute;
+  pointer-events: none;
+}
+.site-manage-folder-group.dragging { visibility: hidden; }
+.site-manage-row.drop-target {
+  background: var(--accent-primary-dim);
+}
+
+.site-manage-row-overlay {
+  z-index: 400;
+  background: var(--bg-panel);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  cursor: grabbing;
+}
+.site-manage-folder-overlay {
+  z-index: 400;
+  background: var(--bg-panel);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  cursor: grabbing;
+}
+.site-manage-folder-overlay .site-manage-row {
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.site-manage-folder-overlay .site-manage-row-overlay {
+  box-shadow: none;
+}
+
+.site-manage-row.site-manage-row-overlay.is-site {
+  margin-inline-start: 0;
+}
+
+.site-manage-root-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-height: 24px;
+}
+.site-manage-row.is-folder .site-name {
+  font-weight: 700;
+}
+
+.site-manage-row.is-site {
+  margin-inline-start: 26px;
+}
+
+.site-manage-row .site-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.site-manage-row .site-name {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.site-manage-row .site-name.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+/* Expand/collapse toggle for a folder row — sizing matches the small
+   chevron precedent elsewhere in the app (.pane-source-chev/.crumb-drive-chev). */
+.site-manage-chevron {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.site-manage-chevron:hover { color: var(--text-primary); background: var(--bg-raised); }
+.site-manage-chevron-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Use the name column's available space so padding cannot clip short names
+   and the action buttons stay in place while editing. */
+.site-manage-row .folder-name-input {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 3px 6px;
+
+  outline: none;
+}
+
+
+.site-manage-row .site-manage-row-btn {
+  opacity: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-faint);
+}
+.site-manage-row:hover .site-manage-row-btn,
+.site-manage-row .site-manage-row-btn:focus-visible:where(html[data-keyboard-navigation] *) {
+  opacity: 1;
+}
+.site-manage-row .site-manage-row-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+}
+
+
+.site-edit-form .settings-field input:not([type='checkbox']) {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  height: 26px;
+}
+
+.site-edit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  row-gap: 14px;
+}
+.site-edit-form .settings-field {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  margin-bottom: 0;
+}
+.site-edit-form .settings-field > span {
+  flex: 0 0 auto;
+}
+.site-field-group {
+  display: grid;
+  width: 100%;
+  justify-items: stretch;
+  gap: 14px;
+}
+.site-field-group .settings-field {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+}
+.site-field-group .settings-field > span:first-child {
+  color: var(--text-primary);
+}
+.site-field-group .settings-field input:not([type='checkbox']),
+.site-field-group .saved-secret-control,
+.site-field-group .password-input {
+  width: 100%;
+  max-width: none;
+}
+
+.site-address-port-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.site-address-port-control > span {
+  flex: 0 0 auto;
+}
+.site-field-group .settings-field .site-address-port-control input:not([type='checkbox']) {
+  width: auto;
+  min-width: 0;
+}
+
+.site-field-group .settings-field .site-address-port-control input:first-child {
+  flex: 1 1 auto;
+}
+.site-field-group .settings-field .site-address-port-control input:last-child {
+  /* Exactly 5 digits (max TCP port 65535) plus the input's own 8px/side
+     padding and 1px/side border — ch sizes to the current font instead of a
+     guessed px width that leaves the box wider than the text it holds. */
+  flex: 0 0 calc(5ch + 18px);
+}
+
+.site-edit-form > .settings-field:has(input[type='checkbox']) {
+  grid-template-columns: minmax(96px, max-content) auto;
+  justify-content: start;
+}
+.site-edit-form > .settings-field:has(input[type='checkbox']) input {
+  justify-self: start;
+}
+.saved-secret-control {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+.saved-secret-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.site-edit-form .settings-field:has(> .saved-secret-field) > span:first-child {
+  align-self: start;
+  padding-block-start: 4px;
+}
+.saved-secret-hint {
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* The base bottom padding reserves the height of a file-list header. When an
+   error is present, that reserve becomes the space below the credentials
+   row for the error to sit in, so shrink it to just the error's own line
+   plus even breathing room above and below (3.2px each side of its 20px-tall
+   row) instead of adding a whole extra row; wrapped lines still grow the
+   form naturally past that. The margin-top claws back part of the row-gap
+   above the error so the row centers between the credentials row and the
+   panel's bottom edge rather than hugging one side. */
+.pane-source-wrap .connection-bar:has(> .conn-error) {
+  padding-bottom: 3.2px;
+}
+.pane-source-wrap .connection-bar > .conn-error {
+  margin-top: -2.8px;
+}
+.saved-secret-control .password-input {
+  flex: 1 1 auto;
+}
+.site-edit-form .saved-secret-control input:not([type='checkbox']) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.saved-secret-remove {
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+.site-edit-form .protocol-select-dropdown {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+.site-edit-form .conn-error {
+  display: flex;
+  margin-top: 4px;
+}
+
+
+.site-identity-fields {
+  grid-template-columns: 96px minmax(0, 1fr) 26px 26px;
+  align-items: center;
+  column-gap: 12px;
+}
+.site-identity-fields .settings-field {
+  display: contents;
+}
+.site-identity-fields .settings-field:not(.site-name-field) > span {
+  display: none;
+}
+.site-appearance-select {
+  min-width: 0;
+  width: 100%;
+}
+.site-appearance-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* Same app-wide 26px control height as .btn-icon, matching the plain
+     inputs and .protocol-select-trigger elsewhere in this same form (all
+     pinned explicitly, for the same reason — see the input rule above). */
+  height: var(--control-height);
+  padding: 0 5px;
+  gap: 0;
+  color: var(--text-primary);
+  background: var(--control-background);
+  border: var(--control-border);
+  border-radius: var(--control-radius);
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+}
+
+.site-edit-form .protocol-select-trigger {
+  height: var(--control-height);
+  padding: 5px 8px;
+  line-height: 1;
+}
+.site-appearance-trigger:hover,
+.site-appearance-trigger.active {
+  border-color: var(--accent-primary);
+}
+.site-appearance-trigger:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1.5px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.menu-dropdown.site-appearance-dropdown {
+  position: fixed;
+  /* SiteEditor supplies a clamped physical `left` coordinate inline. Clear
+     the generic logical start anchor, which becomes `right: 0` in RTL and
+     would otherwise stretch this compact grid between both window edges. */
+  inset-inline-start: auto;
+  min-width: 0;
+  width: auto;
+  padding: 5px;
+}
+.site-appearance-color {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--swatch-color, transparent);
+}
+.site-appearance-color.is-default {
+  background: var(--bg-base);
+  border-style: dashed;
+}
+.site-appearance-dropdown .menu-items {
+  display: grid;
+  grid-template-columns: repeat(3, 30px);
+  gap: 4px;
+}
+.menu-dropdown.site-icon-dropdown {
+  width: 118px;
+  overflow: hidden;
+}
+.site-icon-dropdown .menu-items {
+  height: 98px;
+  overflow-y: auto;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+}
+.site-appearance-dropdown .menu-item {
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+}
+.site-appearance-dropdown .menu-item[aria-checked='true'] {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-dim);
+}
+.site-appearance-dropdown :is(.menu-item-check, .menu-item-label) {
+  display: none;
+}

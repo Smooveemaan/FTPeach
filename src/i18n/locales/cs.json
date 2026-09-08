@@ -1,0 +1,776 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "bez přihlášení",
+    "anonymousUser": "anonymní",
+    "rootFolder": "Kořenová složka",
+    "close": "Zavřít",
+    "reset": "Obnovit",
+    "open": "Otevřít",
+    "upload": "Nahrát",
+    "save": "Uložit",
+    "create": "Vytvořit",
+    "cancel": "Zrušit",
+    "increase": "Zvýšit",
+    "decrease": "Snížit",
+    "showPassword": "Zobrazit heslo",
+    "savedSecretProtected": "Uložené heslo je chráněno a nelze jej zobrazit",
+    "hidePassword": "Skrýt heslo"
+  },
+  "securityConfirmation": {
+    "title": "Bezpečnostní potvrzení FTPeach",
+    "allow": "Povolit",
+    "typeToConfirm": "Potvrďte zadáním {{phrase}}",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Zobrazit uložené heslo pro tuto záložku?"
+      },
+      "revealProxyPassword": {
+        "message": "Zobrazit uložené heslo proxy?"
+      },
+      "vaultReset": {
+        "message": "Všechna uložená hesla a přístupové fráze klíčů SSH budou trvale odstraněny.",
+        "approve": "Odstranit trezor"
+      },
+      "executeLocalFile": {
+        "message": "Spustit tento spustitelný soubor nebo skript?"
+      },
+      "executeRemoteFile": {
+        "message": "Stáhnout a spustit tento spustitelný soubor nebo skript?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Nová složka…",
+    "newFile": "Nový soubor…",
+    "refresh": "Obnovit",
+    "open": "Otevřít",
+    "uploadToOtherPane": "Nahrát do jiného panelu",
+    "copyToOtherPane": "Kopírovat do jiného panelu",
+    "downloadToOtherPane": "Stáhnout do jiného panelu",
+    "openWith": "Otevřít pomocí…",
+    "permissions": "Oprávnění…",
+    "moveTo": "Přesunout do…",
+    "copyPath": "Zkopírovat cestu",
+    "delete": "Odstranit",
+    "deleteSelected_one": "Odstranit ({{count}} soubor)",
+    "deleteSelected_other": "Odstranit ({{count}} souborů)",
+    "deletePermanently": "Trvale smazat",
+    "deleteSelectedPermanently_one": "Trvale smazat ({{count}} soubor)",
+    "deleteSelectedPermanently_other": "Trvale smazat ({{count}} souborů)",
+    "deleteSelected_few": "Odstranit ({{count}} soubory)",
+    "deleteSelected_many": "Odstranit ({{count}} souboru)",
+    "deleteSelectedPermanently_few": "Trvale smazat ({{count}} soubory)",
+    "deleteSelectedPermanently_many": "Trvale smazat ({{count}} souboru)"
+  },
+  "chmodDialog": {
+    "title": "Oprávnění SFTP",
+    "label": "Oktalový režim pro „{{name}}“ (například 644 nebo 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Složka je prázdná",
+    "homeFolder": "Domovská složka",
+    "copyToPaneBelow": "Zkopírujte do pole níže",
+    "copyToPaneAbove": "Zkopírovat do horního panelu",
+    "copyToPaneRight": "Zkopírovat do pravého panelu",
+    "copyToPaneLeft": "Zkopírovat do levého panelu",
+    "fileTypeFolder": "Složka se soubory",
+    "fileTypeGeneric": "Soubor",
+    "fileTypeWithExt": "{{ext}} Soubor",
+    "columnSize": "Velikost",
+    "columnModifiedAt": "Datum úpravy",
+    "columnCreatedAt": "Datum vytvoření",
+    "columnType": "Typ",
+    "columnPermissions": "Oprávnění",
+    "columnOwner": "Majitel",
+    "columnGroup": "Skupina",
+    "columnName": "Název",
+    "filesAriaLabel": "Soubory",
+    "rename": "Přejmenovat",
+    "resetColumnWidths": "Obnovit šířky sloupců",
+    "updatedAtTooltip": "Aktualizováno: {{date}}",
+    "searchTooltip": "Vyhledávání ({{shortcut}})",
+    "searchPlaceholder": "Hledat… ({{shortcut}})",
+    "editPathAriaLabel": "Upravit cestu",
+    "changeDriveTooltip": "Změnit disk",
+    "chooseColumnsTooltip": "Kliknutím pravým tlačítkem myši vyberte sloupce",
+    "sortByNameTooltip": "Seřadit podle názvu",
+    "sortByColumnTooltip": "Seřadit podle sloupce „{{column}}“",
+    "rowProbeSample": "Ukázka",
+    "loading": "Načítání…",
+    "nothingFound": "Nic nalezeno"
+  },
+  "update": {
+    "readyToInstall": "Je k dispozici aktualizace v{{version}} — kliknutím na „Restartovat a nainstalovat“ ji nainstalujete.",
+    "downloadingWithPercent": "Stahování aktualizace v{{version}}: {{percent}} %",
+    "downloadingFound": "Aktualizace v{{version}} nalezena, stahování probíhá…",
+    "restartAndInstall": "Restartovat a nainstalovat",
+    "availableAction": "dostupná!",
+    "installAction": "instalovat?",
+    "downloadTooltip": "Kliknutím stáhnete",
+    "downloadingTooltip": "Stahování",
+    "installTooltip": "Kliknutím restartujete a nainstalujete"
+  },
+  "legacyPasswordNotice": {
+    "message": "Hesla k některým uloženým webům se po aktualizaci nedala načíst – zadejte je prosím znovu ve správci webů."
+  },
+  "plaintextSecretNotice": {
+    "message": "Heslo nebo heslová fráze uloženého webu nemohla být zašifrována, protože ochrana dat systému Windows není k dispozici, a byla proto uložena v prostém textu."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Heslo nebo klíčovou frázi se nepodařilo zašifrovat a nebylo uloženo. Stávající připojení může pokračovat, dokud nebude přerušeno; v opačném případě zadejte heslo při příštím přihlášení znovu."
+  },
+  "resize": {
+    "paneSize": "Změnu velikosti panelů provedete přetažením (dvojitým kliknutím se vrátíte k původnímu nastavení)",
+    "height": "Přetažením můžete změnit výšku (dvojitým kliknutím se vrátíte do původního stavu)",
+    "ratio": "Přetažením změňte poměr stran (dvojitým kliknutím obnovíte výchozí nastavení)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} položka",
+    "itemCount_other": "{{count}} položek",
+    "moveMode": "Přesunout",
+    "itemCount_few": "{{count}} položky",
+    "itemCount_many": "{{count}} položky"
+  },
+  "openWithChanged": {
+    "title": "Soubor byl změněn",
+    "message": "V externí aplikaci došlo ke změně souboru „{{name}}“. Chcete nahrát aktualizovaný soubor na server?"
+  },
+  "saveSite": {
+    "title": "Uložit profil připojení",
+    "label": "Název profilu připojení:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Nová složka",
+    "labelLocal": "Název nové složky:",
+    "labelRemote": "Název nové složky na serveru:"
+  },
+  "newFile": {
+    "title": "Nový soubor",
+    "label": "Název souboru (včetně přípony):"
+  },
+  "moveToDialog": {
+    "title": "Přesunout do…",
+    "labelSingle": "Přesuňte soubor „{{name}}“ do složky:",
+    "labelMultiple": "Přesunout vybrané položky ({{count}}) do složky:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Povolit nahrazení souboru „{{name}}“, pokud se objeví během přenosu?",
+    "resetLayout": "Obnovit velikost oken a panelů, vrátit výchozí počet sloupců a vymazat mezipaměť rozhraní?",
+    "hostKeyMismatch": "{{error}} Mám smazat uložený otisk klíče pro {{host}}: {{port}} a přesto se připojit? Tento krok proveďte pouze v případě, že máte jistotu, že byl server řádně přeinstalován nebo migrován – v opačném případě by to mohlo vést k připojení k potenciálně napodobenému serveru.",
+    "connectAnyway": "Připojte se i tak",
+    "closeTabWithActiveTransfers": "Na této záložce probíhají aktivní přenosy. Chcete záložku zavřít a přenosy zastavit?",
+    "closeTabLabel": "Zavřít kartu",
+    "overwriteSingleExists": "Soubor „{{name}}“ již v cílové složce existuje. Chcete jej přepsat?",
+    "overwriteConflicts_one": "{{count}} soubor už v cílové složce existuje. Chcete ho přepsat?",
+    "overwriteConflicts_other": "{{count}} souborů už v cílové složce existuje. Chcete je přepsat?",
+    "overwriteLabel": "Přepsat",
+    "replaceConnection": "Tento panel je již připojen k adrese „{{current}}“. Chcete toto připojení nahradit adresou „{{next}}“?",
+    "replaceConnectionLabel": "Nahradit",
+    "deleteSelected": "Chcete smazat vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
+    "deleteEntry": "Odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
+    "recycleSelected": "Chcete přesunout vybrané položky ({{count}}) do koše?",
+    "recycleEntry": "Přesunout soubor „{{name}}“ do koše?",
+    "deletePermanentSelected": "Chcete trvale smazat vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
+    "deletePermanentEntry": "Trvale odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
+    "deleteRemoteSelected": "Chcete trvale odstranit vybrané položky na vzdáleném serveru ({{count}})? Tuto akci nelze vrátit zpět.",
+    "deleteRemoteEntry": "Chcete trvale odstranit vzdálenou položku „{{name}}“? Tuto akci nelze vrátit zpět.",
+    "overwriteConflicts_few": "{{count}} soubory už v cílové složce existují. Chcete je přepsat?",
+    "overwriteConflicts_many": "{{count}} souboru už v cílové složce existuje. Chcete ho přepsat?"
+  },
+  "paneSide": {
+    "top": "nahoru",
+    "bottom": "spodní část",
+    "left": "vlevo",
+    "right": "správně",
+    "labelWithTab": "{{base}} (záložka „{{tabNumber}}“, „{{side}}“)",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Soubor",
+      "newTab": "Nová karta",
+      "closeTab": "Zavřít kartu",
+      "newConnection": "Nové připojení",
+      "disconnect": "Odpojit",
+      "manageBookmarks": "Správa záložek…",
+      "saveConnection": "Uložit připojení",
+      "saveConnectionSide": "Uložit připojení ({{side}})",
+      "saveBookmarkSide": "Uložit záložku ({{side}})",
+      "savePathSide": "Uložit cestu ({{side}})",
+      "exportSettings": "Nastavení exportu…",
+      "importSettings": "Načíst nastavení…",
+      "quit": "Ukončit"
+    },
+    "edit": {
+      "title": "Upravit",
+      "settings": "Nastavení…",
+      "resetLayout": "Obnovit rozložení a mezipaměť…"
+    },
+    "view": {
+      "title": "Zobrazit",
+      "darkTheme": "Tmavý motiv",
+      "lightTheme": "Světlý motiv",
+      "systemTheme": "Systémové téma",
+      "syncBrowsing": "Procházení synchronizovaných složek",
+      "showHiddenFiles": "Zobrazit skryté soubory a složky",
+      "leftPane": "Levý panel",
+      "rightPane": "Pravý panel",
+      "transferQueue": "Fronta přenosů",
+      "log": "Protokol",
+      "stackedPanes": "Skládané panely",
+      "refreshBothPanes": "Obnovit oba panely"
+    },
+    "transfer": {
+      "title": "Převod",
+      "copySelectedRight": "Kopírovat výběr →",
+      "copySelectedLeft": "← Zkopírovat výběr",
+      "clearCompleted": "Vymazat Dokončeno"
+    },
+    "bookmarks": {
+      "title": "Záložky"
+    },
+    "help": {
+      "supportProject": "Podpořit projekt",
+      "title": "Nápověda",
+      "documentation": "Dokumentace",
+      "reportIssue": "Nahlásit problém",
+      "checkUpdates": "Zkontrolovat dostupnost aktualizací",
+      "about": "O nás"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Server odmítl připojení. Zkontrolujte adresu a port.",
+    "serverNotFound": "Server nebyl nalezen. Zkontrolujte, zda je adresa správná.",
+    "timeout": "Server neodpovídá (vypršel časový limit připojení). Zkontrolujte adresu, port a síťové připojení.",
+    "connectionReset": "Spojení se serverem bylo neočekávaně přerušeno.",
+    "networkUnreachable": "Server je nedostupný – zkontrolujte připojení k síti.",
+    "loginIncorrect": "Nesprávné uživatelské jméno nebo heslo.",
+    "invalidCertificate": "Server předložil neplatný certifikát. Pokud tomuto serveru důvěřujete, deaktivujte ověřování certifikátu v nastavení připojení.",
+    "tlsNegotiationFailed": "Vyjednávání protokolu TLS selhalo. Zkontrolujte, zda server podporuje explicitní protokol FTPS nebo HTTPS a kompatibilní verzi protokolu TLS.",
+    "sshNegotiationFailed": "Vyjednávání SSH selhalo. Server a FTPeach se nedokázaly dohodnout na kompatibilním algoritmu SSH ani verzi protokolu.",
+    "proxyFailed": "Připojení přes proxy selhalo. Zkontrolujte typ proxy, adresu, přihlašovací údaje a zda je možné se připojit k cílovému serveru.",
+    "keyReadFailed": "Nepodařilo se přečíst klíč – soubor je poškozený nebo je přístupová fráze nesprávná.",
+    "accessDenied": "K této operaci nemáte oprávnění.",
+    "notFound": "Soubor nebo složka nebyla nalezena.",
+    "fileOrFolderExists": "Soubor nebo složka s tímto názvem již existuje.",
+    "fileBusy": "Soubor je právě používán jiným procesem.",
+    "diskFull": "Nedostatek místa na disku.",
+    "hostKeyMismatch": "Klíč hostitele serveru se změnil.",
+    "integrityMismatch": "Přenesený soubor neprošel kontrolou integrity.",
+    "invalidInput": "Zadaná hodnota není platná.",
+    "internal": "Došlo k neočekávané chybě.",
+    "connectFailedPrefix": "Nepodařilo se navázat spojení se serverem. {{raw}}",
+    "alreadyExists": "„{{name}}“ již existuje"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Přiřazení",
+      "hint": "Vyberte aplikaci pro rozšíření. U souborů, pro které není definováno žádné pravidlo, se použije výchozí nastavení systému.",
+      "extension": "Rozšíření",
+      "extensionPlaceholder": "txt",
+      "application": "Aplikace",
+      "applicationPlaceholder": "Cesta k aplikaci",
+      "browse": "Vyberte aplikaci",
+      "remove": "Odstranit přiřazení",
+      "add": "Přidat přiřazení"
+    },
+    "minimizeToTray": "Skrýt do oznamovací oblasti",
+    "minimizeToTrayHint": "Tlačítko pro minimalizaci skryje okno do oznamovací oblasti namísto na hlavní panel.",
+    "closeToTray": "Zavřít do systémové lišty",
+    "closeToTrayHint": "Tlačítko „Zavřít“ skryje okno do systémové lišty, místo aby aplikaci ukončilo. Aplikaci ukončete z nabídky ikony v systémové liště.",
+    "title": "Nastavení",
+    "unsavedChangesTitle": "Neuložené změny",
+    "unsavedChangesMessage": "Chcete změny v nastavení uložit?",
+    "discardChanges": "Neukládat",
+    "categories": {
+      "connection": "Připojení",
+      "transfers": "Přenosy",
+      "interface": "Rozhraní",
+      "shortcuts": "Zkratky",
+      "updates": "Aktualizace",
+      "logging": "Protokolování",
+      "security": "Bezpečnost"
+    },
+    "shortcuts": {
+      "title": "Klávesové zkratky",
+      "hint": "Klikněte na zástupce a poté stiskněte novou kombinaci kláves, abyste jej přiřadili nově.",
+      "globalTitle": "Celosvětově",
+      "paneTitle": "Panel souborů",
+      "recording": "Stiskněte klávesu…",
+      "unbound": "Není přiřazeno",
+      "reset": "Obnovit výchozí nastavení",
+      "resetAll": "Obnovit výchozí nastavení všech položek",
+      "unassign": "Zrušit přiřazení",
+      "conflict": "Používá také: {{action}}",
+      "actions": {
+        "search": "Vyhledávání ({{side}})",
+        "toggleHiddenFiles": "Zobrazit skryté soubory",
+        "newConnection": "Nové připojení",
+        "save": "Uložit ({{side}})",
+        "openSettings": "Otevřít nastavení",
+        "newTab": "Nová karta",
+        "closeTab": "Zavřít kartu",
+        "nextTab": "Další záložka",
+        "prevTab": "Předchozí záložka",
+        "refresh": "Obnovit",
+        "selectAll": "Vybrat vše",
+        "delete": "Odstranit",
+        "deletePermanent": "Trvale smazat",
+        "navigateUp": "Přejít o úroveň výš v adresáři",
+        "navigateBack": "Zpět",
+        "navigateForward": "Pokračujte",
+        "navigateHome": "Přejít do domovské složky",
+        "moveTo": "Přesunout do…",
+        "newFolder": "Nová složka…",
+        "newFile": "Nový soubor…",
+        "copyToOtherPane": "Kopírovat do jiného panelu",
+        "copy": "Kopírovat",
+        "cut": "Střih",
+        "paste": "Vložit",
+        "clearSelection": "Vymazat výběr",
+        "open": "Otevřít"
+      }
+    },
+    "security": {
+      "title": "Ochrana heslem",
+      "systemMode": "Ochrana systému",
+      "systemModeHint": "Hesla k vašemu účtu ve Windows jsou zašifrována a lze je zobrazit v nastavení připojení.",
+      "strongholdMode": "Vylepšená ochrana",
+      "strongholdModeHint": "Vyžaduje hlavní heslo. Uložená hesla lze použít pro připojení, nelze je však zobrazit.",
+      "loading": "Kontrola chráněného úložiště…",
+      "configuredLocked": "Chráněné úložiště je zabezpečeno hlavním heslem a uzamčeno.",
+      "configuredUnlocked": "Chráněné úložiště je zabezpečeno hlavním heslem a odemknuté.",
+      "masterPassword": "Hlavní heslo",
+      "confirmPassword": "Potvrďte hlavní heslo",
+      "oldPassword": "Aktuální hlavní heslo",
+      "newPassword": "Nové hlavní heslo",
+      "setup": "Chraňte uložená hesla",
+      "settingUp": "Ochrana…",
+      "unlock": "Odemknout",
+      "unlocking": "Odemykání…",
+      "unlockRequired": "Odemknout chráněné úložiště",
+      "unlockRequiredHint": "Toto připojení využívá uložený tajný klíč. Chcete-li pokračovat, odemkněte zabezpečené úložiště.",
+      "lockNow": "Zamknout nyní",
+      "autoLock": "Automatické uzamčení po, min",
+      "autoLockDisabled": "Vypnuto",
+      "autoLockHint": "Po určité době nečinnosti se úložiště uzamkne. Stávající připojení k serveru zůstávají aktivní; hodnota 0 vypne automatické uzamčení.",
+      "changePassword": "Změnit hlavní heslo",
+      "change": "Změnit heslo",
+      "systemUnlock": "Povolit odemknutí systému",
+      "systemUnlockHint": "Využívá funkci Windows Hello (PIN, rozpoznání obličeje nebo otisk prstu podle nastavení systému Windows). Jako způsob obnovení zůstává vaše hlavní heslo.",
+      "unlockWithSystem": "Odemknout pomocí systémového ověření",
+      "systemUnavailable": "Na této platformě není odemknutí systému k dispozici.",
+      "noRecovery": "Zapomenuté hlavní heslo nelze obnovit. Obnovení chráněného úložiště vymaže všechna uložená tajná hesla.",
+      "passwordMismatch": "Hesla se neshodují.",
+      "passwordTooShort": "Hlavní heslo musí mít alespoň 12 znaků.",
+      "strength": {
+        "tooShort": "Příliš krátké — použijte alespoň 12 znaků.",
+        "acceptable": "To je v pořádku. Delší přístupová fráze je bezpečnější.",
+        "strong": "Silné hlavní heslo."
+      },
+      "reset": "Obnovit chráněné úložiště",
+      "resetHint": "Vymaže chráněné úložiště a všechna hesla a přístupové fráze k SSH klíčům, které jsou v něm uloženy. Bude nutné znovu nastavit rozšířenou ochranu.",
+      "resetWarning": "Tím se trvale smažou všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
+      "confirmReset": "Odstranit uložená tajná hesla",
+      "showConfirmations": "Zobrazovat bezpečnostní potvrzení",
+      "showConfirmationsHint": "Vyžadovat potvrzení před zobrazením uložených tajných údajů nebo spuštěním souborů. Obnovení chráněného úložiště vyžaduje potvrzení vždy.",
+      "unavailable": "Chráněné úložiště není k dispozici.",
+      "failed": "Operace s chráněným úložištěm selhala."
+    },
+    "unlimitedPlaceholder": "Bez omezení",
+    "connectTimeoutLabel": "Časový limit připojení, v sekundách",
+    "connectTimeoutHint": "Jak dlouho se má při navazování spojení čekat na odpověď serveru, než se spojení považuje za nedostupné (0 nebo prázdné pole – bez omezení). Platí pro následující připojení.",
+    "ftpActiveMode": "Aktivní režim FTP (namísto pasivního)",
+    "ftpActiveModeHint": "Pouze FTP/FTPS – nemá žádný vliv na SFTP/WebDAV. Využívá se jen zřídka, a to pouze v sítích/na serverech, kde pasivní režim neprochází přes NAT. Platí pro další připojení.",
+    "ftpActiveModeDisabledByProxy": "Není k dispozici, pokud je zapnutý proxy server — proxy tunel podporuje pouze odchozí připojení, proto musí FTP zůstat v pasivním režimu.",
+    "proxy": {
+      "enable": "Pro připojení použijte proxy server",
+      "enableHint": "SOCKS4, SOCKS5 nebo HTTP CONNECT – platí pro protokoly FTP, FTPS, SFTP a WebDAV. Platí pro další připojení.",
+      "typeLabel": "Typ proxy",
+      "hostLabel": "Proxy server",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Přístav",
+      "usernameLabel": "Uživatelské jméno",
+      "passwordLabel": "Heslo",
+      "removeSavedPassword": "Odstranit uložené heslo",
+      "revealFailed": "Nepodařilo se dešifrovat uložené heslo.",
+      "testTargetLabel": "Testovat proti",
+      "testTargetHostPlaceholder": "Adresa serveru",
+      "testTargetPortPlaceholder": "Přístav",
+      "test": "Testovací proxy",
+      "testing": "Testování…",
+      "testOk": "Proxy se úspěšně připojilo k cíli.",
+      "testFailed": "Test proxy selhal."
+    },
+    "concurrencyLabel": "Souběžné převody",
+    "concurrencyHint": "Kolik souborů lze současně nahrávat a stahovat (0 nebo prázdné pole – bez omezení). Platí pro příští připojení.",
+    "speedLimitLabel": "Rychlostní limit, KB/s",
+    "speedLimitHint": "Vztahuje se na souhrnnou hodnotu všech souběžných převodů (0 nebo prázdné pole – bez omezení). Účinek nastává okamžitě, bez nutnosti čekat na další připojení.",
+    "notifyOnComplete": "Upozornit po dokončení převodů",
+    "notifyOnCompleteHint": "Systémové upozornění, když se fronta přenosů vyprázdní – pouze pokud okno nemá aktivní fokus.",
+    "overwriteActionLabel": "O konfliktu jmen",
+    "overwriteAsk": "Zeptejte se",
+    "overwriteOverwrite": "Přepsat",
+    "overwriteSkip": "Přeskočit",
+    "overwriteHint": "Co dělat, když soubor, který se kopíruje, již v cílové složce existuje.",
+    "preventSleep": "Zabránit přechodu systému do režimu spánku během přenosů dat",
+    "preventSleepHint": "Účinnost nastupuje okamžitě, bez nutnosti čekat na další připojení. Funguje, dokud probíhá alespoň jeden přenos – v opačném případě neblokuje režim spánku.",
+    "themeLabel": "Téma",
+    "themeDark": "Tma",
+    "themeLight": "Světlo",
+    "themeSystem": "Systém",
+    "languageLabel": "Jazyk rozhraní",
+    "interfaceScaleLabel": "Měřítko rozhraní",
+    "interfaceScaleHint": "Změnit velikost textu a ovládacích prvků v celé aplikaci.",
+    "dateFormatLabel": "Formát data a času",
+    "dateFormatOnlyLabel": "Formát data",
+    "timeFormatLabel": "Formát času",
+    "timeFormat24Hour": "24 h",
+    "timeFormat12Hour": "12 h",
+    "dateFormatLocale": "Místní",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Výchozí složka pro Počítač",
+    "defaultLocalPathHint": "Složka, kterou panel Počítač otevře při spuštění a při přepnutí ze serveru. Ponechte prázdné pro použití domovské složky systému.",
+    "chooseDefaultLocalPath": "Vybrat výchozí složku",
+    "showHiddenFiles": "Zobrazit skryté soubory a složky",
+    "showHiddenFilesHint": "Platí jak pro místní, tak pro vzdálené panely souborů.",
+    "coloredTabs": "Barevné záložky",
+    "coloredTabsHint": "Zbarví název záložky a ikonu podle barvy uložené záložky.",
+    "autoCheckUpdates": "Zkontrolovat dostupnost aktualizací při spuštění",
+    "autoCheckUpdatesHint": "Tiché ověření několik sekund po spuštění — instalace aktualizace vždy vyžaduje samostatné potvrzení.",
+    "autoReconnectTabs": "Při spuštění znovu připojit obnovené karty",
+    "autoReconnectTabsHint": "Ve výchozím nastavení je tato funkce vypnutá. Je-li zapnutá, uložené stránky se po obnovení automaticky připojí.",
+    "saveSessionOnExit": "Uložit relaci při ukončení",
+    "saveSessionOnExitHint": "Při příštím spuštění obnoví otevřené karty, typy panelů a cesty. Vypnutím této funkce dojde k vymazání uložené relace.",
+    "checkNow": "Zkontrolujte hned",
+    "updateStatus": {
+      "checking": "Hledání aktualizací…",
+      "notAvailable": "Máte nainstalovanou nejnovější verzi.",
+      "error": "Nepodařilo se zkontrolovat dostupnost aktualizací.",
+      "notPackaged": "V této verzi není k dispozici (npm run dev/start)."
+    },
+    "logEnable": "Zapnout protokolování",
+    "logShowTimestamps": "Zobrazit časová razítka",
+    "logToFile": "Zapsat protokol do souboru",
+    "logToFileHint": "Pokud je tato funkce zapnutá, průběžně přidává záznamy do souboru na disku (%APPDATA%\\FTPeach\\logs\\ftpeach.log) – bez ohledu na to, zda je panel protokolu otevřený. Toto se liší od tlačítka „Uložit“ v samotném panelu (to ukládá pouze posledních 200 řádků jednorázově po kliknutí).",
+    "exportDiagnostics": "Exportovat diagnostický balíček",
+    "exportDiagnosticsBusy": "Exportování…",
+    "exportDiagnosticsHint": "Exportuje verzi, operační systém a posledních 200 záznamů protokolu. Hesla, tokeny a další tajné údaje budou skryty.",
+    "exportDiagnosticsFailed": "Diagnostický balíček se nepodařilo exportovat."
+  },
+  "promptDialog": {
+    "confirmLabel": "Dobře"
+  },
+  "exportSettingsDialog": {
+    "title": "Nastavení exportu",
+    "confirmLabel": "Exportovat…",
+    "includeSettings": "Nastavení aplikace",
+    "includeBookmarks": "Záložky",
+    "includeLocalPaths": "Místní cesty",
+    "passwordHint": "Hesla a přístupové fráze k SSH klíčům nejsou součástí exportu – po importu na jiný počítač je budete muset zadat znovu."
+  },
+  "importSettingsDialog": {
+    "title": "Nastavení importu",
+    "confirmLabel": "Importovat…",
+    "includeSettings": "Nastavení aplikace",
+    "includeBookmarks": "Záložky",
+    "includeLocalPaths": "Místní cesty",
+    "passwordHint": "Hesla a přístupové fráze k SSH klíčům nejsou součástí importu – budete je muset znovu zadat pro každý importovaný web."
+  },
+  "openWithDialog": {
+    "title": "Otevřít v aplikaci",
+    "downloading": "Stahování souboru „{{fileName}}“…",
+    "progress": "{{loaded}} z „{{total}}“ ({{percent}} %)",
+    "connecting": "Připojuji se…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Chyba přenosu",
+    "notifyCompleteTitle": "Přenos dokončen",
+    "notifySucceeded": "úspěšné: {{count}}",
+    "notifyFailed": "selhalo: {{count}}",
+    "webdavUploadTooLarge": "Velikost souborů nahrávaných přes WebDAV je omezena na {{limit}} MiB na jeden soubor."
+  },
+  "transferQueue": {
+    "title": "Přenosy",
+    "columns": {
+      "file": "Soubor",
+      "size": "Velikost",
+      "transferred": "Převedeno",
+      "progress": "Pokrok",
+      "speed": "Rychlost",
+      "remaining": "Zbývající",
+      "status": "Stav"
+    },
+    "empty": "Zde se budou zobrazovat nahrané a stažené soubory",
+    "newTransfers_one": "{{count}} nový přenos",
+    "newTransfers_other": "{{count}} nových přenosů",
+    "status": {
+      "queued": "Ve frontě",
+      "done": "Hotovo",
+      "error": "Chyba",
+      "paused": "Pozastaveno",
+      "stopped": "Zrušeno",
+      "cancelling": "Rušení…"
+    },
+    "direction": {
+      "up": "Nahrávání",
+      "down": "Stahování",
+      "copy": "Kopírování"
+    },
+    "directionTitleCopy": "Kopírování mezi servery",
+    "cancelledByUser": "Zrušeno uživatelem",
+    "stoppedDash": "zastavil se",
+    "resume": "Pokračovat",
+    "retry": "Zkusit znovu",
+    "stop": "Zastavit",
+    "pauseUnsupportedCopy": "Při kopírování mezi servery není funkce pozastavení podporována",
+    "pauseUnsupportedWebdav": "Funkce pozastavení není v protokolu WebDAV podporována",
+    "newTransfers_few": "{{count}} nové přenosy",
+    "newTransfers_many": "{{count}} nového přenosu"
+  },
+  "log": {
+    "connecting": "Připojování k {{addr}}...",
+    "connectFailed": "Připojení se nezdařilo: {{error}}",
+    "connected": "Jste přihlášeni.",
+    "receivedEntries_one": "Přijat {{count}} záznam",
+    "receivedEntries_other": "Přijato {{count}} záznamů",
+    "skippedUnsafeEntry": "Byl přeskočen záznam v seznamu s nebezpečným názvem: {{name}}",
+    "listFailed": "Zobrazení se nezdařilo: {{error}}",
+    "tlsInit": "Inicializace TLS...",
+    "tlsEstablished": "Bylo navázáno TLS připojení.",
+    "davResumeUnsupportedLocal": "WebDAV nepodporuje obnovení nahrávání — soubor bude odeslán znovu od začátku.",
+    "davResumeUnsupportedServer": "Server nepodporuje obnovení stahování (očekávaný stav {{expected}}, obdržen {{status}}) — soubor se stáhne znovu.",
+    "receivedEntries_few": "Přijaty {{count}} záznamy",
+    "receivedEntries_many": "Přijato {{count}} záznamu"
+  },
+  "logPanel": {
+    "showAllConnections": "Zobrazit všechna propojení",
+    "showOnlyThisConnection": "Zobrazit pouze toto připojení",
+    "connectionClosedShowOnly": "Spojení uzavřeno — zobrazit pouze toto spojení",
+    "hideTimestamps": "Skrýt časová razítka v řádcích protokolu",
+    "showTimestamps": "Zobrazit časová razítka v řádcích protokolu",
+    "copyToClipboard": "Zkopírovat protokol do schránky",
+    "saveLastLines_one": "Uložit poslední {{count}} řádek do souboru .txt",
+    "saveLastLines_other": "Uložit posledních {{count}} řádků do souboru .txt",
+    "clearLog": "Vymazat protokol",
+    "copiedTooltip": "Zkopírováno",
+    "copyFailedTooltip": "Nedařilo se zkopírovat",
+    "saveFailedTooltip": "Soubor se nepodařilo uložit",
+    "emptyFiltered": "Pro toto připojení nejsou žádné fronty",
+    "emptyDefault": "Zde se budou zobrazovat zprávy protokolu",
+    "saveLastLines_few": "Uložit poslední {{count}} řádky do souboru .txt",
+    "saveLastLines_many": "Uložit poslední {{count}} řádku do souboru .txt"
+  },
+  "aboutDialog": {
+    "title": "O aplikaci",
+    "tagline": "Lehký klient pro protokoly FTP, FTPS a SFTP.",
+    "legalInformation": "Právní informace",
+    "sourceCode": "Zdrojový kód",
+    "reportIssue": "Nahlásit problém",
+    "checkForUpdates": "Zkontrolovat dostupnost aktualizací",
+    "updateDownloaded": "Byla stažena aktualizace v{{version}}. Nyní ji můžete nainstalovat."
+  },
+  "siteManager": {
+    "emptyList": "Zatím nejsou uloženy žádné stránky",
+    "confirmDeleteSite": "Smazat web „{{name}}“?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Nová záložka",
+    "titleEdit": "Upravit záložku",
+    "titleList": "Správa záložek",
+    "titleLocalPathList": "Správa místních cest",
+    "manageLocalPaths": "Správa místních cest…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Název",
+      "icon": "Ikona",
+      "color": "Barva",
+      "protocol": "Protokol",
+      "keyFile": "Soubor klíčů",
+      "caCertFile": "Certifikát certifikační autority",
+      "remotePath": "Výchozí složka",
+      "localPath": "Místní složka"
+    },
+    "icons": {
+      "bookmark": "Přidat do záložek",
+      "globe": "Webové stránky",
+      "briefcase": "Práce",
+      "house": "Domácí server",
+      "cloud": "Cloud",
+      "flask": "Testování / testovací prostředí",
+      "gamepad": "Herní server",
+      "clapperboard": "Mediální server",
+      "camera": "Fotoaparát"
+    },
+    "colors": {
+      "default": "Bez barvy",
+      "peach": "Broskev",
+      "red": "Červená",
+      "amber": "Jantar",
+      "green": "Zelená",
+      "blue": "Modrá",
+      "purple": "Fialová",
+      "pink": "Růžová",
+      "teal": "tyrkysová"
+    },
+    "saveFailed": "Nepodařilo se uložit",
+    "revealFailed": "Nelze zobrazit uložené heslo",
+    "savedSecretPlaceholder": "Uloženo",
+    "savedSecretHint": "Ponechte prázdné, chcete-li zachovat aktuální heslo",
+    "removeSavedPassword": "Odstranit uložené heslo",
+    "removeSavedPassphrase": "Odstranit uloženou přístupovou frázi",
+    "secretWillBeRemoved": "Bude odstraněno po uložení",
+    "addBookmark": "Nová záložka",
+    "addLocalBookmark": "Přidat záložku pro místní složku",
+    "chooseLocalPath": "Vyberte místní složku",
+    "importBookmarks": "Importovat",
+    "exportBookmarks": "Exportovat",
+    "importAdded_one": "Přidána {{count}} záložka",
+    "importAdded_other": "Přidáno {{count}} záložek",
+    "importAdded_few": "Přidány {{count}} záložky",
+    "importAdded_many": "Přidáno {{count}} záložky",
+    "importSkipped_one": "přeskočen {{count}} duplikát",
+    "importSkipped_other": "přeskočeno {{count}} duplikátů",
+    "importSkipped_few": "přeskočeny {{count}} duplikáty",
+    "importSkipped_many": "přeskočeny {{count}} duplikáty",
+    "importNothingNew": "Nic nového k importu",
+    "exportSuccess": "Exportováno",
+    "sortMode": "Třídění záložek",
+    "sortManual": "Ručně",
+    "sortName": "Podle jména",
+    "sortProtocol": "Podle protokolu",
+    "duplicateWarning": "Záložka pro stejnou adresu již existuje: „{{name}}“. Chcete uložit další?",
+    "saveAnyway": "Uložit i tak",
+    "newFolder": "Nová složka",
+    "folderNamePlaceholder": "Název složky",
+    "confirmDeleteFolder": "Mám smazat složku „{{name}}“? Její záložky se přesunou o úroveň výš.",
+    "searchPlaceholder": "Hledat…",
+    "clearSearch": "Vymazat výsledky vyhledávání",
+    "noSearchResults": "Žádné záložky neodpovídají vašemu vyhledávání",
+    "duplicate": "Duplikát",
+    "duplicateNameSuffix": " (kopie)",
+    "newBookmarkInFolder": "Přidat sem záložku",
+    "expandFolder": "Rozbalit „{{name}}“",
+    "collapseFolder": "Sbalit „{{name}}“"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Adresa",
+      "port": "Přístav",
+      "user": "Uživatelské jméno",
+      "password": "Heslo",
+      "passphrase": "Přístupová fráze",
+      "keyFilePlaceholder": "Klíčový soubor…",
+      "chooseKeyFile": "Vyberte soubor s klíčem…",
+      "caCertFilePlaceholder": "Certifikát certifikační autority…",
+      "chooseCaCertFile": "Vyberte certifikát certifikační autority…"
+    },
+    "secureToggle": {
+      "tooltip": "Zrušte zaškrtnutí, chcete-li povolit certifikáty s vlastním podpisem a neplatné serverové certifikáty",
+      "label": "Ověřit certifikát"
+    },
+    "authToggle": {
+      "tooltip": "Přihlaste se pomocí souboru s privátním klíčem SSH namísto hesla",
+      "label": "Přihlášení pomocí klíče SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Zrušit",
+      "connect": "Připojit se",
+      "disconnect": "Odpojit se"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Běžný protokol FTP přenáší vaše uživatelské jméno, heslo a soubory v nešifrované podobě. Pokud je to možné, používejte protokol FTPS nebo SFTP."
+  },
+  "titleBar": {
+    "minimize": "Minimalizovat",
+    "restore": "Obnovit",
+    "maximize": "Maximalizovat"
+  },
+  "tray": {
+    "show": "Zobrazit FTPeach",
+    "quit": "Ukončit"
+  },
+  "tabStrip": {
+    "localComputer": "Počítač",
+    "untitledTab": "Nová karta",
+    "newTabTooltip": "Nová karta (Ctrl+T)",
+    "rename": "Název záložky"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Více"
+  },
+  "statusBar": {
+    "transfers": "Přenosy: {{count}}",
+    "leftCount": "Vlevo: {{count}}",
+    "rightCount": "Vpravo: {{count}}",
+    "topCount": "Zdroj: {{count}}",
+    "bottomCount": "Dole: {{count}}",
+    "selectedSuffix": " (vybráno {{count}})",
+    "status": {
+      "transferring": "Přenos souboru",
+      "paused": "Pozastaveno",
+      "connected": "Připojeno",
+      "connecting": "Připojení",
+      "connectFailed": "Nepodařilo se navázat spojení",
+      "disconnected": "Není připojeno"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Zobrazit/skrýt levý panel",
+    "toggleRightPane": "Zobrazit/skrýt pravý panel",
+    "toggleTransferQueue": "Zobrazit/skrýt frontu přenosů",
+    "toggleLog": "Zobrazit/skrýt protokol",
+    "orientationNarrow": "Skládané panely – okno je příliš úzké na zobrazení vedle sebe",
+    "orientationToRow": "Uspořádat panely vedle sebe",
+    "orientationToStacked": "Skládat panely na sebe",
+    "pauseUnsupportedWebdav": "Funkce pozastavení není podporována protokolem WebDAV",
+    "pauseActive": "Pozastavit aktivní přenosy",
+    "resumeAllPaused": "Obnovit všechny pozastavené přenosy",
+    "stopActive": "Zastavit aktivní přenosy",
+    "retryAllStopped": "Zopakovat všechny pozastavené převody",
+    "refreshPanesTooltip": "Obnovit oba panely (F5)"
+  },
+  "paneToolbar": {
+    "back": "Zpět",
+    "forward": "Vpřed",
+    "up": "Nahoru",
+    "chooseFolder": "Vyberte složku…",
+    "newFolder": "Nová složka…",
+    "newFile": "Nový soubor…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Počítač",
+    "remote": "Server",
+    "updatedAtTooltip": "Aktualizováno: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Žádná nedávná připojení",
+    "noSavedConnectionsBody": "Zadejte výše uvedenou adresu serveru nebo přidejte web pro přístup jedním kliknutím.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Správa záložek",
+    "quicklistLabel": "Nedávná připojení"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Nezpracovaná chyba rozhraní FTPeach:",
+    "title": "Došlo k chybě",
+    "message": "Došlo k neočekávané chybě rozhraní. Vaše aktivní připojení a soubory na disku tím nejsou ovlivněny – můžete zkusit rozhraní znovu načíst.",
+    "reload": "Obnovit rozhraní"
+  }
+}

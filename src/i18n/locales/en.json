@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}}/s",
+    "noLoginUser": "no login",
+    "anonymousUser": "anonymous",
+    "rootFolder": "Root folder",
+    "close": "Close",
+    "reset": "Reset",
+    "open": "Open",
+    "upload": "Upload",
+    "save": "Save",
+    "create": "Create",
+    "cancel": "Cancel",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "showPassword": "Show password",
+    "savedSecretProtected": "Saved secret is protected; authenticate to view it",
+    "hidePassword": "Hide password"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach security confirmation",
+    "allow": "Allow",
+    "typeToConfirm": "Type {{phrase}} to confirm",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Show the saved password for this bookmark?"
+      },
+      "revealProxyPassword": {
+        "message": "Show the saved proxy password?"
+      },
+      "vaultReset": {
+        "message": "Every saved password and SSH key passphrase will be permanently deleted.",
+        "approve": "Delete vault"
+      },
+      "executeLocalFile": {
+        "message": "Run this executable file or script?"
+      },
+      "executeRemoteFile": {
+        "message": "Download and run this executable file or script?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "New Folder…",
+    "newFile": "New File…",
+    "refresh": "Refresh",
+    "open": "Open",
+    "uploadToOtherPane": "Upload to other pane",
+    "copyToOtherPane": "Copy to other pane",
+    "downloadToOtherPane": "Download to other pane",
+    "openWith": "Open with…",
+    "permissions": "Permissions…",
+    "moveTo": "Move to…",
+    "copyPath": "Copy path",
+    "delete": "Delete",
+    "deleteSelected_one": "Delete ({{count}} file)",
+    "deleteSelected_other": "Delete ({{count}} files)",
+    "deletePermanently": "Delete permanently",
+    "deleteSelectedPermanently_one": "Delete permanently ({{count}} file)",
+    "deleteSelectedPermanently_other": "Delete permanently ({{count}} files)"
+  },
+  "chmodDialog": {
+    "title": "SFTP permissions",
+    "label": "Octal mode for {{name}} (for example, 644 or 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Folder is empty",
+    "homeFolder": "Home folder",
+    "copyToPaneBelow": "Copy to pane below",
+    "copyToPaneAbove": "Copy to pane above",
+    "copyToPaneRight": "Copy to pane on the right",
+    "copyToPaneLeft": "Copy to pane on the left",
+    "fileTypeFolder": "File folder",
+    "fileTypeGeneric": "File",
+    "fileTypeWithExt": "{{ext}} File",
+    "columnSize": "Size",
+    "columnModifiedAt": "Date modified",
+    "columnCreatedAt": "Date created",
+    "columnType": "Type",
+    "columnPermissions": "Permissions",
+    "columnOwner": "Owner",
+    "columnGroup": "Group",
+    "columnName": "Name",
+    "filesAriaLabel": "Files",
+    "rename": "Rename",
+    "resetColumnWidths": "Restore column widths",
+    "updatedAtTooltip": "Updated: {{date}}",
+    "searchTooltip": "Search ({{shortcut}})",
+    "searchPlaceholder": "Search… ({{shortcut}})",
+    "editPathAriaLabel": "Edit path",
+    "changeDriveTooltip": "Change drive",
+    "chooseColumnsTooltip": "Right-click to choose columns",
+    "sortByNameTooltip": "Sort by name",
+    "sortByColumnTooltip": "Sort by \"{{column}}\" column",
+    "rowProbeSample": "Sample",
+    "loading": "Loading…",
+    "nothingFound": "Nothing found"
+  },
+  "update": {
+    "readyToInstall": "Update v{{version}} is available — click \"Restart and Install\" to apply it.",
+    "downloadingWithPercent": "Downloading update v{{version}}: {{percent}}%",
+    "downloadingFound": "Update v{{version}} found, downloading…",
+    "restartAndInstall": "Restart and Install",
+    "availableAction": "available!",
+    "installAction": "install?",
+    "downloadTooltip": "Click to download",
+    "downloadingTooltip": "Downloading",
+    "installTooltip": "Click to restart and install"
+  },
+  "legacyPasswordNotice": {
+    "message": "Passwords for some saved sites couldn't be read after the update — please re-enter them in the site manager."
+  },
+  "plaintextSecretNotice": {
+    "message": "A saved site's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."
+  },
+  "secretNotPersistedNotice": {
+    "message": "The password or key passphrase couldn't be encrypted and was not saved. An existing connection can continue until it is disconnected; otherwise, enter the secret again next time."
+  },
+  "resize": {
+    "paneSize": "Drag to resize the panes (double-click to reset)",
+    "height": "Drag to resize the height (double-click to reset)",
+    "ratio": "Drag to resize the ratio (double-click to reset)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} item",
+    "itemCount_other": "{{count}} items",
+    "moveMode": "move"
+  },
+  "openWithChanged": {
+    "title": "File changed",
+    "message": "\"{{name}}\" was changed in the external application. Upload the updated file to the server?"
+  },
+  "saveSite": {
+    "title": "Save connection profile",
+    "label": "Connection profile name:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "New Folder",
+    "labelLocal": "New folder name:",
+    "labelRemote": "New folder name on the server:"
+  },
+  "newFile": {
+    "title": "New File",
+    "label": "File name (with extension):"
+  },
+  "moveToDialog": {
+    "title": "Move to…",
+    "labelSingle": "Move \"{{name}}\" to folder:",
+    "labelMultiple": "Move the selected items ({{count}}) to folder:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Allow replacing \"{{name}}\" if the file appears during this transfer?",
+    "resetLayout": "Reset window and pane sizes, restore default columns, and clear the interface cache?",
+    "hostKeyMismatch": "{{error}} Delete the saved key fingerprint for {{host}}:{{port}} and connect anyway? Only do this if you're sure the server was legitimately reinstalled or migrated — otherwise this could let you connect to a potentially spoofed server.",
+    "connectAnyway": "Connect anyway",
+    "closeTabWithActiveTransfers": "This tab has active transfers. Close the tab and stop them?",
+    "closeTabLabel": "Close tab",
+    "overwriteSingleExists": "\"{{name}}\" already exists in the destination folder. Overwrite it?",
+    "overwriteConflicts_one": "{{count}} item already exists in the destination folder. Overwrite it?",
+    "overwriteConflicts_other": "{{count}} items already exist in the destination folder. Overwrite them?",
+    "overwriteLabel": "Overwrite",
+    "replaceConnection": "This pane is already connected to \"{{current}}\". Replace the connection with \"{{next}}\"?",
+    "replaceConnectionLabel": "Replace",
+    "deleteSelected": "Delete the selected items ({{count}})? This action cannot be undone.",
+    "deleteEntry": "Delete \"{{name}}\"? This action cannot be undone.",
+    "recycleSelected": "Move the selected items ({{count}}) to the Recycle Bin?",
+    "recycleEntry": "Move \"{{name}}\" to the Recycle Bin?",
+    "deletePermanentSelected": "Permanently delete the selected items ({{count}})? This action cannot be undone.",
+    "deletePermanentEntry": "Permanently delete \"{{name}}\"? This action cannot be undone.",
+    "deleteRemoteSelected": "Permanently delete the selected remote items ({{count}})? This action cannot be undone.",
+    "deleteRemoteEntry": "Permanently delete the remote item \"{{name}}\"? This action cannot be undone."
+  },
+  "paneSide": {
+    "top": "top",
+    "bottom": "bottom",
+    "left": "left",
+    "right": "right",
+    "labelWithTab": "{{base}} (tab {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "File",
+      "newTab": "New Tab",
+      "closeTab": "Close Tab",
+      "newConnection": "New Connection",
+      "disconnect": "Disconnect",
+      "manageBookmarks": "Manage Bookmarks…",
+      "saveConnection": "Save Connection",
+      "saveConnectionSide": "Save Connection ({{side}})",
+      "saveBookmarkSide": "Save Bookmark ({{side}})",
+      "savePathSide": "Save Path ({{side}})",
+      "exportSettings": "Export Settings…",
+      "importSettings": "Import Settings…",
+      "quit": "Quit"
+    },
+    "edit": {
+      "title": "Edit",
+      "settings": "Settings…",
+      "resetLayout": "Reset Layout and Cache…"
+    },
+    "view": {
+      "title": "View",
+      "darkTheme": "Dark Theme",
+      "lightTheme": "Light Theme",
+      "systemTheme": "System Theme",
+      "syncBrowsing": "Sync Pane Browsing",
+      "showHiddenFiles": "Show Hidden Files and Folders",
+      "leftPane": "Left Pane",
+      "rightPane": "Right Pane",
+      "transferQueue": "Transfer Queue",
+      "log": "Log",
+      "stackedPanes": "Stacked Panes",
+      "refreshBothPanes": "Refresh Both Panes"
+    },
+    "transfer": {
+      "title": "Transfer",
+      "copySelectedRight": "Copy Selected →",
+      "copySelectedLeft": "← Copy Selected",
+      "clearCompleted": "Clear Completed"
+    },
+    "bookmarks": {
+      "title": "Bookmarks"
+    },
+    "help": {
+      "supportProject": "Support FTPeach",
+      "title": "Help",
+      "documentation": "Documentation",
+      "reportIssue": "Report an Issue",
+      "checkUpdates": "Check for Updates",
+      "about": "About"
+    }
+  },
+  "errors": {
+    "connectionRefused": "The server refused the connection. Check the address and port.",
+    "serverNotFound": "Server not found. Check that the address is correct.",
+    "timeout": "The server is not responding (connection timed out). Check the address, port, and network connection.",
+    "connectionReset": "The connection to the server was unexpectedly closed.",
+    "networkUnreachable": "The server is unreachable — check your network connection.",
+    "loginIncorrect": "Incorrect username or password.",
+    "invalidCertificate": "The server presented an invalid certificate. If you trust this server, disable certificate verification in the connection settings.",
+    "tlsNegotiationFailed": "TLS negotiation failed. Check that the server supports explicit FTPS or HTTPS and a compatible TLS version.",
+    "sshNegotiationFailed": "SSH negotiation failed. The server and FTPeach could not agree on a compatible SSH algorithm or protocol version.",
+    "proxyFailed": "The proxy connection failed. Check the proxy type, address, credentials, and whether it can reach the target server.",
+    "keyReadFailed": "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
+    "accessDenied": "You don't have permission for this operation.",
+    "notFound": "File or folder not found.",
+    "fileOrFolderExists": "A file or folder with that name already exists.",
+    "fileBusy": "The file is in use by another process.",
+    "diskFull": "Not enough disk space.",
+    "hostKeyMismatch": "The server host key has changed.",
+    "integrityMismatch": "The transferred file failed the integrity check.",
+    "invalidInput": "The provided value is invalid.",
+    "internal": "An unexpected error occurred.",
+    "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
+    "alreadyExists": "\"{{name}}\" already exists"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Associations",
+      "hint": "Choose an application for an extension. Files without a rule use the system default.",
+      "extension": "Extension",
+      "extensionPlaceholder": "txt",
+      "application": "Application",
+      "applicationPlaceholder": "Application path",
+      "browse": "Choose application",
+      "remove": "Remove association",
+      "add": "Add association"
+    },
+    "minimizeToTray": "Minimize to tray",
+    "minimizeToTrayHint": "The minimize button hides the window to the tray instead of the taskbar.",
+    "closeToTray": "Close to tray",
+    "closeToTrayHint": "The close button hides the window to the tray instead of quitting the app. Quit from the tray icon's menu.",
+    "title": "Settings",
+    "unsavedChangesTitle": "Unsaved changes",
+    "unsavedChangesMessage": "Save changes to settings?",
+    "discardChanges": "Don't Save",
+    "categories": {
+      "connection": "Connection",
+      "transfers": "Transfers",
+      "interface": "Interface",
+      "shortcuts": "Shortcuts",
+      "updates": "Updates",
+      "logging": "Logging",
+      "security": "Security"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "hint": "Click a shortcut, then press a new key combination to reassign it.",
+      "globalTitle": "Global",
+      "paneTitle": "File pane",
+      "recording": "Press a key…",
+      "unbound": "Not assigned",
+      "reset": "Reset to default",
+      "resetAll": "Reset all to defaults",
+      "unassign": "Unassign",
+      "conflict": "Also used by: {{action}}",
+      "actions": {
+        "search": "Search ({{side}})",
+        "toggleHiddenFiles": "Toggle hidden files",
+        "newConnection": "New connection",
+        "save": "Save ({{side}})",
+        "openSettings": "Open settings",
+        "newTab": "New tab",
+        "closeTab": "Close tab",
+        "nextTab": "Next tab",
+        "prevTab": "Previous tab",
+        "refresh": "Refresh",
+        "selectAll": "Select all",
+        "delete": "Delete",
+        "deletePermanent": "Delete permanently",
+        "navigateUp": "Go up a folder",
+        "navigateBack": "Go back",
+        "navigateForward": "Go forward",
+        "navigateHome": "Go to home folder",
+        "moveTo": "Move to…",
+        "newFolder": "New folder…",
+        "newFile": "New file…",
+        "copyToOtherPane": "Copy to other pane",
+        "copy": "Copy",
+        "cut": "Cut",
+        "paste": "Paste",
+        "clearSelection": "Clear selection",
+        "open": "Open"
+      }
+    },
+    "security": {
+      "title": "Password protection",
+      "systemMode": "System protection",
+      "systemModeHint": "Passwords are encrypted for your Windows account and can be viewed in connection settings.",
+      "strongholdMode": "Enhanced protection",
+      "strongholdModeHint": "Requires a master password. Viewing a saved password requires master-password reauthentication.",
+      "loading": "Checking protected storage…",
+      "configuredLocked": "Protected storage is secured with a master password and locked.",
+      "configuredUnlocked": "Protected storage is secured with a master password and unlocked.",
+      "masterPassword": "Master password",
+      "confirmPassword": "Confirm master password",
+      "oldPassword": "Current master password",
+      "newPassword": "New master password",
+      "setup": "Protect saved passwords",
+      "settingUp": "Protecting…",
+      "unlock": "Unlock",
+      "unlocking": "Unlocking…",
+      "unlockRequired": "Unlock protected storage",
+      "unlockRequiredHint": "This connection uses a saved secret. Unlock protected storage to continue.",
+      "lockNow": "Lock now",
+      "autoLock": "Auto-lock after, min",
+      "autoLockDisabled": "Disabled",
+      "autoLockHint": "Locks protected storage after inactivity. Existing server connections remain active; 0 disables auto-lock.",
+      "changePassword": "Change master password",
+      "change": "Change password",
+      "systemUnlock": "Allow system unlock",
+      "systemUnlockHint": "Uses Windows Hello (PIN, face, or fingerprint as configured by Windows). Your master password remains the recovery method.",
+      "unlockWithSystem": "Unlock with system authentication",
+      "systemUnavailable": "System unlock is unavailable on this platform.",
+      "noRecovery": "A forgotten master password cannot be recovered. Resetting the vault deletes all saved secrets.",
+      "passwordMismatch": "The passwords do not match.",
+      "passwordTooShort": "Use at least 12 characters for the master password.",
+      "strength": {
+        "tooShort": "Too short — use at least 12 characters.",
+        "acceptable": "Acceptable. A longer passphrase is safer.",
+        "strong": "Strong master password."
+      },
+      "reset": "Reset protected storage",
+      "resetHint": "Deletes protected storage and every password and SSH key passphrase stored in it. Enhanced protection will need to be set up again.",
+      "resetWarning": "This permanently deletes every saved password and key passphrase. Enter the current master password to continue.",
+      "confirmReset": "Delete saved secrets",
+      "showConfirmations": "Show security confirmations",
+      "showConfirmationsHint": "Ask before revealing saved secrets or running executable files. Resetting protected storage always requires confirmation.",
+      "unavailable": "Protected storage is unavailable.",
+      "failed": "The protected-storage operation failed."
+    },
+    "unlimitedPlaceholder": "No limit",
+    "connectTimeoutLabel": "Connection timeout, sec",
+    "connectTimeoutHint": "How long to wait for a server response when connecting before considering it unreachable (0 or blank — no limit). Applies to the next connection.",
+    "ftpActiveMode": "Active FTP mode (instead of passive)",
+    "ftpActiveModeHint": "FTP/FTPS only — has no effect on SFTP/WebDAV. Rarely needed, only on networks/servers where passive mode doesn't get through NAT. Applies to the next connection.",
+    "ftpActiveModeDisabledByProxy": "Unavailable while a proxy is enabled — a proxy tunnel only supports outbound connections, so FTP has to stay in passive mode.",
+    "proxy": {
+      "enable": "Use a proxy for connections",
+      "enableHint": "SOCKS4, SOCKS5, or HTTP CONNECT — applies to FTP, FTPS, SFTP, and WebDAV. Applies to the next connection.",
+      "typeLabel": "Proxy type",
+      "hostLabel": "Proxy host",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Port",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "removeSavedPassword": "Remove saved password",
+      "revealFailed": "Could not decrypt the saved password.",
+      "testTargetLabel": "Test against",
+      "testTargetHostPlaceholder": "Server host",
+      "testTargetPortPlaceholder": "Port",
+      "test": "Test proxy",
+      "testing": "Testing…",
+      "testOk": "The proxy reached the target successfully.",
+      "testFailed": "The proxy test failed."
+    },
+    "concurrencyLabel": "Concurrent transfers",
+    "concurrencyHint": "How many files to upload and download at the same time (0 or blank — no limit). Applies to the next connection.",
+    "speedLimitLabel": "Speed limit, KB/s",
+    "speedLimitHint": "Applies to the combined total of all simultaneous transfers (0 or blank — no limit). Takes effect immediately, without waiting for the next connection.",
+    "notifyOnComplete": "Notify when transfers finish",
+    "notifyOnCompleteHint": "A system notification when the transfer queue empties out — only while the window is not focused.",
+    "overwriteActionLabel": "On name conflict",
+    "overwriteAsk": "Ask",
+    "overwriteOverwrite": "Overwrite",
+    "overwriteSkip": "Skip",
+    "overwriteHint": "What to do when the file being copied already exists in the destination folder.",
+    "preventSleep": "Prevent the system from sleeping during transfers",
+    "preventSleepHint": "Takes effect immediately, without waiting for the next connection. Active as long as there's at least one ongoing transfer — doesn't block sleep otherwise.",
+    "themeLabel": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "themeSystem": "System",
+    "languageLabel": "Interface language",
+    "interfaceScaleLabel": "Interface scale",
+    "interfaceScaleHint": "Change the size of text and controls throughout the application.",
+    "dateFormatLabel": "Date/time format",
+    "dateFormatOnlyLabel": "Date format",
+    "timeFormatLabel": "Time format",
+    "timeFormat24Hour": "24 h",
+    "timeFormat12Hour": "12 h",
+    "dateFormatLocale": "Local",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Default folder for Computer",
+    "defaultLocalPathHint": "The folder the Computer pane opens to on startup and when switching from a server. Leave blank to use your system's home folder.",
+    "chooseDefaultLocalPath": "Choose default folder",
+    "showHiddenFiles": "Show hidden files and folders",
+    "showHiddenFilesHint": "Applies to both local and remote file panes.",
+    "coloredTabs": "Colored tabs",
+    "coloredTabsHint": "Colors the tab name and icon using the saved bookmark color.",
+    "autoCheckUpdates": "Check for updates on startup",
+    "autoCheckUpdatesHint": "A silent check a few seconds after startup — installing an update always requires separate confirmation.",
+    "autoReconnectTabs": "Reconnect restored tabs on startup",
+    "autoReconnectTabsHint": "Off by default. When enabled, restored saved sites are connected automatically.",
+    "saveSessionOnExit": "Save the session on exit",
+    "saveSessionOnExitHint": "Restores open tabs, pane types and paths on the next launch. Turning this off clears the saved session.",
+    "checkNow": "Check Now",
+    "updateStatus": {
+      "checking": "Checking for updates…",
+      "notAvailable": "You're on the latest version.",
+      "error": "Couldn't check for updates.",
+      "notPackaged": "Not available in this build (npm run dev/start)."
+    },
+    "logEnable": "Enable log",
+    "logShowTimestamps": "Show timestamps",
+    "logToFile": "Write log to file",
+    "logToFileHint": "Continuously appends the log to a file on disk (%APPDATA%\\FTPeach\\logs\\ftpeach.log) while enabled — regardless of whether the log panel is open. This is different from the \"Save\" button in the panel itself (that one saves only the last 200 lines once, on click).",
+    "exportDiagnostics": "Export diagnostic bundle",
+    "exportDiagnosticsBusy": "Exporting…",
+    "exportDiagnosticsHint": "Exports version, OS and the latest 200 log records. Passwords, tokens and other secrets are redacted.",
+    "exportDiagnosticsFailed": "Could not export the diagnostic bundle."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Export Settings",
+    "confirmLabel": "Export…",
+    "includeSettings": "Application settings",
+    "includeBookmarks": "Bookmarks",
+    "includeLocalPaths": "Local paths",
+    "passwordHint": "Passwords and SSH key passphrases are not included in the export — you'll need to re-enter them after importing on another machine."
+  },
+  "importSettingsDialog": {
+    "title": "Import Settings",
+    "confirmLabel": "Import…",
+    "includeSettings": "Application settings",
+    "includeBookmarks": "Bookmarks",
+    "includeLocalPaths": "Local paths",
+    "passwordHint": "Passwords and SSH key passphrases are not included in the import — you'll need to enter them again for each imported site."
+  },
+  "openWithDialog": {
+    "title": "Open in Application",
+    "downloading": "Downloading \"{{fileName}}\"…",
+    "progress": "{{loaded}} of {{total}} ({{percent}}%)",
+    "connecting": "Connecting…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Transfer Error",
+    "notifyCompleteTitle": "Transfer Complete",
+    "notifySucceeded": "succeeded: {{count}}",
+    "notifyFailed": "failed: {{count}}",
+    "webdavUploadTooLarge": "WebDAV uploads are limited to {{limit}} MiB per file."
+  },
+  "transferQueue": {
+    "title": "Transfers",
+    "columns": {
+      "file": "File",
+      "size": "Size",
+      "transferred": "Transferred",
+      "progress": "Progress",
+      "speed": "Speed",
+      "remaining": "Remaining",
+      "status": "Status"
+    },
+    "empty": "Uploads and downloads will appear here",
+    "newTransfers_one": "{{count}} new transfer",
+    "newTransfers_other": "{{count}} new transfers",
+    "status": {
+      "queued": "Queued",
+      "done": "Done",
+      "error": "Error",
+      "paused": "Paused",
+      "stopped": "Cancelled",
+      "cancelling": "Cancelling…"
+    },
+    "direction": {
+      "up": "Upload",
+      "down": "Download",
+      "copy": "Copy"
+    },
+    "directionTitleCopy": "Copy between servers",
+    "cancelledByUser": "Cancelled by user",
+    "stoppedDash": "stopped",
+    "resume": "Resume",
+    "retry": "Retry",
+    "stop": "Stop",
+    "pauseUnsupportedCopy": "Pause is not supported when copying between servers",
+    "pauseUnsupportedWebdav": "Pause is not supported by WebDAV"
+  },
+  "log": {
+    "connecting": "Connecting to {{addr}}...",
+    "connectFailed": "Connection failed: {{error}}",
+    "connected": "Logged in.",
+    "receivedEntries_one": "Received {{count}} entry",
+    "receivedEntries_other": "Received {{count}} entries",
+    "skippedUnsafeEntry": "Skipped a listing entry with an unsafe name: {{name}}",
+    "listFailed": "Directory listing failed: {{error}}",
+    "tlsInit": "Initializing TLS...",
+    "tlsEstablished": "TLS connection established.",
+    "davResumeUnsupportedLocal": "WebDAV doesn't support upload resume — the file will be sent again from the start.",
+    "davResumeUnsupportedServer": "Server doesn't support resume (expected status {{expected}}, got {{status}}) — the file will be downloaded again."
+  },
+  "logPanel": {
+    "showAllConnections": "Show all connections",
+    "showOnlyThisConnection": "Show only this connection",
+    "connectionClosedShowOnly": "Connection closed — show only this connection",
+    "hideTimestamps": "Hide timestamps in log lines",
+    "showTimestamps": "Show timestamps in log lines",
+    "copyToClipboard": "Copy log to clipboard",
+    "saveLastLines_one": "Save the last {{count}} line to a .txt file",
+    "saveLastLines_other": "Save the last {{count}} lines to a .txt file",
+    "clearLog": "Clear log",
+    "copiedTooltip": "Copied",
+    "copyFailedTooltip": "Couldn't copy",
+    "saveFailedTooltip": "Couldn't save the file",
+    "emptyFiltered": "No lines for this connection",
+    "emptyDefault": "Protocol messages will appear here"
+  },
+  "aboutDialog": {
+    "title": "About",
+    "tagline": "A lightweight FTP/FTPS/SFTP/WebDAV client.",
+    "legalInformation": "Legal information",
+    "sourceCode": "Source code",
+    "reportIssue": "Report issue",
+    "checkForUpdates": "Check for Updates",
+    "updateDownloaded": "Update v{{version}} has been downloaded — you can install it now."
+  },
+  "siteManager": {
+    "emptyList": "No saved sites yet",
+    "confirmDeleteSite": "Delete site \"{{name}}\"?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "New Bookmark",
+    "titleEdit": "Edit Bookmark",
+    "titleList": "Manage Bookmarks",
+    "titleLocalPathList": "Manage Local Paths",
+    "manageLocalPaths": "Manage Local Paths…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Name",
+      "icon": "Icon",
+      "color": "Color",
+      "protocol": "Protocol",
+      "keyFile": "Key file",
+      "caCertFile": "CA certificate",
+      "remotePath": "Default folder",
+      "localPath": "Local folder"
+    },
+    "icons": {
+      "bookmark": "Bookmark",
+      "globe": "Website",
+      "briefcase": "Work",
+      "house": "Home server",
+      "cloud": "Cloud",
+      "flask": "Test / staging",
+      "gamepad": "Game server",
+      "clapperboard": "Media server",
+      "camera": "Camera"
+    },
+    "colors": {
+      "default": "No color",
+      "peach": "Peach",
+      "red": "Red",
+      "amber": "Amber",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink",
+      "teal": "Teal"
+    },
+    "saveFailed": "Couldn't save",
+    "revealFailed": "Could not show the saved secret",
+    "savedSecretPlaceholder": "Saved",
+    "savedSecretHint": "Leave blank to keep the current password",
+    "removeSavedPassword": "Remove saved password",
+    "removeSavedPassphrase": "Remove saved passphrase",
+    "secretWillBeRemoved": "Will be removed when saved",
+    "addBookmark": "New Bookmark",
+    "addLocalBookmark": "Add Local Folder Bookmark",
+    "chooseLocalPath": "Choose local folder",
+    "importBookmarks": "Import",
+    "exportBookmarks": "Export",
+    "importAdded_one": "Added {{count}} bookmark",
+    "importAdded_other": "Added {{count}} bookmarks",
+    "importSkipped_one": "skipped {{count}} duplicate",
+    "importSkipped_other": "skipped {{count}} duplicates",
+    "importNothingNew": "Nothing new to import",
+    "exportSuccess": "Exported",
+    "sortMode": "Bookmark sorting",
+    "sortManual": "Manual",
+    "sortName": "By name",
+    "sortProtocol": "By protocol",
+    "duplicateWarning": "A bookmark for the same destination already exists: \"{{name}}\". Save another one?",
+    "saveAnyway": "Save anyway",
+    "newFolder": "New Folder",
+    "folderNamePlaceholder": "Folder name",
+    "confirmDeleteFolder": "Delete folder \"{{name}}\"? Its bookmarks will move up one level.",
+    "searchPlaceholder": "Search…",
+    "clearSearch": "Clear search",
+    "noSearchResults": "No bookmarks match your search",
+    "duplicate": "Duplicate",
+    "duplicateNameSuffix": " (copy)",
+    "newBookmarkInFolder": "New Bookmark Here",
+    "expandFolder": "Expand \"{{name}}\"",
+    "collapseFolder": "Collapse \"{{name}}\""
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Address",
+      "port": "Port",
+      "user": "Username",
+      "password": "Password",
+      "passphrase": "Passphrase",
+      "keyFilePlaceholder": "Key file…",
+      "chooseKeyFile": "Choose key file…",
+      "caCertFilePlaceholder": "CA certificate…",
+      "chooseCaCertFile": "Choose CA certificate…"
+    },
+    "secureToggle": {
+      "tooltip": "Uncheck to accept self-signed and invalid server certificates",
+      "label": "Verify certificate"
+    },
+    "authToggle": {
+      "tooltip": "Log in with a private SSH key file instead of a password",
+      "label": "Log in with SSH key"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Cancel",
+      "connect": "Connect",
+      "disconnect": "Disconnect"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Plain FTP transmits your username, password, and files unencrypted. Use FTPS or SFTP when possible."
+  },
+  "titleBar": {
+    "minimize": "Minimize",
+    "restore": "Restore",
+    "maximize": "Maximize"
+  },
+  "tray": {
+    "show": "Show FTPeach",
+    "quit": "Quit"
+  },
+  "tabStrip": {
+    "localComputer": "Computer",
+    "untitledTab": "New Tab",
+    "newTabTooltip": "New Tab (Ctrl+T)",
+    "rename": "Tab name"
+  },
+  "toolbarOverflowMenu": {
+    "more": "More"
+  },
+  "statusBar": {
+    "transfers": "Transfers: {{count}}",
+    "leftCount": "Left: {{count}}",
+    "rightCount": "Right: {{count}}",
+    "topCount": "Top: {{count}}",
+    "bottomCount": "Bottom: {{count}}",
+    "selectedSuffix": " ({{count}} selected)",
+    "status": {
+      "transferring": "Transferring file",
+      "paused": "Paused",
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "connectFailed": "Couldn't connect",
+      "disconnected": "Not connected"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Show/hide left pane",
+    "toggleRightPane": "Show/hide right pane",
+    "toggleTransferQueue": "Show/hide transfer queue",
+    "toggleLog": "Show/hide log",
+    "orientationNarrow": "Panes stacked — the window is too narrow for a side-by-side view",
+    "orientationToRow": "Arrange panes side by side",
+    "orientationToStacked": "Stack panes on top of each other",
+    "pauseUnsupportedWebdav": "Pause is not supported by WebDAV",
+    "pauseActive": "Pause active transfers",
+    "resumeAllPaused": "Resume all paused transfers",
+    "stopActive": "Stop active transfers",
+    "retryAllStopped": "Retry all stopped transfers",
+    "refreshPanesTooltip": "Refresh both panes (F5)"
+  },
+  "paneToolbar": {
+    "back": "Back",
+    "forward": "Forward",
+    "up": "Up",
+    "chooseFolder": "Choose folder…",
+    "newFolder": "New Folder…",
+    "newFile": "New File…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Computer",
+    "remote": "Server",
+    "updatedAtTooltip": "Updated: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "No recent connections",
+    "noSavedConnectionsBody": "Fill in the server address above, or add a site for one-click access.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Manage Bookmarks",
+    "quicklistLabel": "Recent connections"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Unhandled FTPeach interface error:",
+    "title": "Something went wrong",
+    "message": "An unexpected interface error occurred. Your active connection and files on disk are unaffected — you can try reloading the interface.",
+    "reload": "Reload Interface"
+  }
+}

@@ -1,0 +1,17 @@
+/*
+ * Dialog style facade.
+ *
+ * The sequence mirrors the original cascade. Component-specific modal
+ * modifiers intentionally follow the shared modal primitives.
+ */
+@import './dialogs/site-manager.css';
+@import './dialogs/menus.css';
+@import './dialogs/modal.css';
+@import './dialogs/about.css';
+@import './dialogs/site-manager-modal.css';
+@import './dialogs/settings-shell.css';
+@import './dialogs/open-with.css';
+@import './dialogs/error-boundary.css';
+@import './dialogs/settings-fields.css';
+@import './dialogs/move-to.css';
+@import './dialogs/settings.css';

@@ -1,0 +1,19 @@
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+    "-C", "target-feature=+crt-static",
+    "-C", "link-args=/DEBUG:FASTLINK /WX:4098 /WX:4099",
+]
+
+# Cargo does not merge `rustflags` across the config hierarchy — whichever
+# file is closest to the invocation's working directory wins outright. Do not
+# add a second `[target.x86_64-pc-windows-msvc]` block in a nested
+# `.cargo/config.toml` (e.g. under `src-tauri/`); it would silently shadow
+# this one for any cargo/tauri invocation whose cwd resolves there, and the
+# two files drifting out of sync produces link failures whose cause is hard
+# to trace back here.
+#
+# The official static libsodium archive uses /MT. Keep Rust and C/C++ build
+# scripts on that same CRT model with `+crt-static`; `/NODEFAULTLIB` is not an
+# equivalent fix because it can leave native dependencies with unresolved CRT
+# symbols. LNK4098 and LNK4099 are errors so CRT or symbol drift cannot enter a
+# release unnoticed. `scripts/with-libsodium.ps1` supplies the matching PDB.

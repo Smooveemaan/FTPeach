@@ -1,0 +1,173 @@
+/* ---------- Menu bar ---------- */
+
+.menu-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 28px;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.menu-bar-item {
+  position: relative;
+}
+
+/* Top-level application menus size themselves from their longest complete
+   row (label + optional shortcut). Unlike constrained in-pane dropdowns,
+   these are intentionally uncapped and never truncate or fade their text. */
+.menu-bar-item > .menu-dropdown {
+  min-width: 0;
+  width: max-content;
+  max-width: none;
+}
+.menu-bar-item > .menu-dropdown .menu-item-label {
+  overflow: visible;
+  text-overflow: clip;
+}
+.menu-bar-item > .menu-dropdown .menu-item-shortcut {
+  /* Adds to .menu-item's regular 6px gap, leaving a clear 24px minimum
+     separation between the action label and its keyboard shortcut. */
+  margin-inline-start: 18px;
+}
+
+.menu-bar-trigger {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+}
+.menu-bar-trigger:hover,
+.menu-bar-trigger.active {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.menu-dropdown,
+.context-menu {
+  background: var(--bg-panel);
+  border: var(--control-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--popover-shadow);
+  padding: 4px;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  inset-inline-start: 0;
+  min-width: 0;
+  width: max-content;
+  z-index: 100;
+}
+
+.context-menu {
+  position: fixed;
+  min-width: 200px;
+  z-index: 200;
+}
+
+/* Drive labels are only a letter and colon. The generic context menu's
+   200px minimum leaves mostly empty space, so this dedicated picker stays
+   compact while retaining room for its check slot and item padding. */
+.context-menu.drive-select-menu {
+  min-width: 84px;
+}
+
+/* Reserve the menu's intrinsic width, including its check slot and padding,
+   before opening it. Translated labels automatically update the layout. */
+.select-menu-fit {
+  display: grid;
+  width: max-content;
+}
+.select-menu-fit > button {
+  grid-area: 1 / 1;
+  width: 100%;
+}
+.select-menu-fit > .select-menu-sizer {
+  position: static;
+  grid-area: 1 / 1;
+  height: 0;
+  padding-block: 0;
+  border-block-width: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+.select-menu-fit > .menu-dropdown:not(.select-menu-sizer) {
+  width: 100%;
+}
+
+.menu-items,
+.menu-items-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12.5px;
+  /* Match the menu's writing direction. Flex order already mirrors the
+     check/icon slot in RTL; logical text alignment keeps the label beside
+     that slot instead of pinning Hebrew text to the physical left edge. */
+  text-align: start;
+  width: 100%;
+}
+.menu-item:hover:not(:disabled) { background: var(--bg-raised); }
+.menu-item:disabled { color: var(--text-faint); cursor: not-allowed; }
+.menu-item.danger { color: var(--accent-red); }
+
+.menu-item-check {
+  width: 12px;
+  flex: 0 0 auto;
+  color: var(--accent-primary);
+  font-size: 11px;
+}
+
+/* Only present on items that opt in (PaneSourceSwitcher's own saved-site
+   rows) — color comes from the Icon element itself (site.color), so this
+   just stops it from stretching/shrinking like .menu-item-label does. */
+.menu-item-icon {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--text-faint);
+}
+
+.menu-item-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.menu-item-label.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+.menu-item-shortcut {
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+
+  position: relative;
+  top: 1px;
+}
+
+.menu-separator {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 4px 2px;
+}

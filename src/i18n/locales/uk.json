@@ -1,0 +1,776 @@
+{
+  "common": {
+    "units": {
+      "byte": "Б",
+      "kb": "КБ",
+      "mb": "МБ",
+      "gb": "ГБ",
+      "tb": "ТБ"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "без входу",
+    "anonymousUser": "анонімний",
+    "rootFolder": "Головна папка",
+    "close": "Закрити",
+    "reset": "Скинути",
+    "open": "Відкрити",
+    "upload": "Вивантажити",
+    "save": "Зберегти",
+    "create": "Створити",
+    "cancel": "Скасувати",
+    "increase": "Збільшити",
+    "decrease": "Зменшити",
+    "showPassword": "Показати пароль",
+    "savedSecretProtected": "Збережений секрет захищений і його неможливо переглянути",
+    "hidePassword": "Приховати пароль"
+  },
+  "securityConfirmation": {
+    "title": "Підтвердження безпеки FTPeach",
+    "allow": "Дозволити",
+    "typeToConfirm": "Введіть {{phrase}} для підтвердження",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Показати збережений пароль цієї закладки?"
+      },
+      "revealProxyPassword": {
+        "message": "Показати збережений пароль проксі?"
+      },
+      "vaultReset": {
+        "message": "Усі збережені паролі та парольні фрази ключів SSH буде видалено без можливості відновлення.",
+        "approve": "Видалити сховище"
+      },
+      "executeLocalFile": {
+        "message": "Запустити цей виконуваний файл або скрипт?"
+      },
+      "executeRemoteFile": {
+        "message": "Завантажити й запустити цей виконуваний файл або скрипт?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Нова папка…",
+    "newFile": "Новий файл…",
+    "refresh": "Оновити",
+    "open": "Відкрити",
+    "uploadToOtherPane": "Вивантажити в іншу панель",
+    "copyToOtherPane": "Скопіювати в іншу панель",
+    "downloadToOtherPane": "Завантажити в іншу панель",
+    "openWith": "Відкрити за допомогою…",
+    "permissions": "Права доступу…",
+    "moveTo": "Перемістити до…",
+    "copyPath": "Скопіювати шлях",
+    "delete": "Видалити",
+    "deleteSelected_one": "Видалити ({{count}} файл)",
+    "deleteSelected_other": "Видалити ({{count}} файлу)",
+    "deletePermanently": "Видалити назавжди",
+    "deleteSelectedPermanently_one": "Остаточно видалити ({{count}} файл)",
+    "deleteSelectedPermanently_other": "Остаточно видалити ({{count}} файлу)",
+    "deleteSelected_few": "Видалити ({{count}} файли)",
+    "deleteSelected_many": "Видалити ({{count}} файлів)",
+    "deleteSelectedPermanently_few": "Остаточно видалити ({{count}} файли)",
+    "deleteSelectedPermanently_many": "Остаточно видалити ({{count}} файлів)"
+  },
+  "chmodDialog": {
+    "title": "Права доступу до SFTP",
+    "label": "Вісімковий режим для «{{name}}» (наприклад, 644 або 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Папка порожня",
+    "homeFolder": "Домашня папка",
+    "copyToPaneBelow": "Скопіювати в поле нижче",
+    "copyToPaneAbove": "Скопіювати у верхню панель",
+    "copyToPaneRight": "Скопіювати у праву панель",
+    "copyToPaneLeft": "Скопіювати в ліву панель",
+    "fileTypeFolder": "Папка з файлами",
+    "fileTypeGeneric": "Файл",
+    "fileTypeWithExt": "{{ext}} Файл",
+    "columnSize": "Розмір",
+    "columnModifiedAt": "Дата останнього оновлення",
+    "columnCreatedAt": "Дата створення",
+    "columnType": "Тип",
+    "columnPermissions": "Права доступу",
+    "columnOwner": "Власник",
+    "columnGroup": "Група",
+    "columnName": "Ім'я",
+    "filesAriaLabel": "Файли",
+    "rename": "Перейменувати",
+    "resetColumnWidths": "Відновити ширину стовпців",
+    "updatedAtTooltip": "Оновлено: {{date}}",
+    "searchTooltip": "Пошук ({{shortcut}})",
+    "searchPlaceholder": "Пошук… ({{shortcut}})",
+    "editPathAriaLabel": "Редагувати шлях",
+    "changeDriveTooltip": "Змінити диск",
+    "chooseColumnsTooltip": "Клацніть правою кнопкою миші, щоб вибрати стовпці",
+    "sortByNameTooltip": "Сортувати за назвою",
+    "sortByColumnTooltip": "Відсортувати за стовпцем «{{column}}»",
+    "rowProbeSample": "Приклад",
+    "loading": "Завантаження…",
+    "nothingFound": "Нічого не знайдено"
+  },
+  "update": {
+    "readyToInstall": "Доступне оновлення версії {{version}} — натисніть «Перезапустити та встановити», щоб застосувати його.",
+    "downloadingWithPercent": "Завантаження оновлення версії {{version}}: {{percent}} %",
+    "downloadingFound": "Знайдено оновлення версії {{version}}, завантаження триває…",
+    "restartAndInstall": "Перезапустити та встановити",
+    "availableAction": "доступне!",
+    "installAction": "встановити?",
+    "downloadTooltip": "Натисніть, щоб завантажити",
+    "downloadingTooltip": "Завантаження",
+    "installTooltip": "Натисніть, щоб перезапустити й установити"
+  },
+  "legacyPasswordNotice": {
+    "message": "Після оновлення не вдалося зчитати паролі для деяких збережених сайтів — будь ласка, введіть їх заново в диспетчері сайтів."
+  },
+  "plaintextSecretNotice": {
+    "message": "Пароль або парольну фразу збереженого веб-сайту не вдалося зашифрувати, оскільки функція захисту даних Windows недоступна, тому вони були збережені у вигляді звичайного тексту."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Пароль або ключову фразу не вдалося зашифрувати, і вони не були збережені. Існуюче з'єднання може продовжувати працювати до моменту його розриву; в іншому разі наступного разу потрібно буде ввести секрет ще раз."
+  },
+  "resize": {
+    "paneSize": "Перетягніть, щоб змінити розмір панелей (двічі клацніть, щоб повернути початковий стан)",
+    "height": "Перетягніть, щоб змінити висоту (двічі клацніть, щоб скинути налаштування)",
+    "ratio": "Перетягніть, щоб змінити пропорції (двічі клацніть, щоб повернути початкові розміри)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} позиція",
+    "itemCount_other": "{{count}} позиції",
+    "moveMode": "переміститися",
+    "itemCount_few": "{{count}} позиції",
+    "itemCount_many": "{{count}} позицій"
+  },
+  "openWithChanged": {
+    "title": "Файл змінено",
+    "message": "У зовнішній програмі було змінено файл «{{name}}». Чи потрібно завантажити оновлений файл на сервер?"
+  },
+  "saveSite": {
+    "title": "Зберегти профіль підключення",
+    "label": "Назва профілю підключення:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Нова папка",
+    "labelLocal": "Назва нової папки:",
+    "labelRemote": "Нова назва папки на сервері:"
+  },
+  "newFile": {
+    "title": "Новий файл",
+    "label": "Назва файлу (з розширенням):"
+  },
+  "moveToDialog": {
+    "title": "Перемістити до…",
+    "labelSingle": "Перемістити «{{name}}» до папки:",
+    "labelMultiple": "Перемістити вибрані елементи ({{count}}) до папки:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Дозволити заміну «{{name}}», якщо файл з’явиться під час передавання?",
+    "resetLayout": "Скинути розміри вікон і панелей, відновити стовпці за замовчуванням та очистити кеш інтерфейсу?",
+    "hostKeyMismatch": "{{error}} Видалити збережений відбиток ключа для {{host}}: {{port}} і все одно підключитися? Робіть це лише в тому випадку, якщо ви впевнені, що сервер було переінстальовано або перенесено законним чином — інакше це може призвести до підключення до потенційно підробленого сервера.",
+    "connectAnyway": "Підключитися все одно",
+    "closeTabWithActiveTransfers": "На цій вкладці відображаються активні перекази. Закрити вкладку та зупинити їх?",
+    "closeTabLabel": "Закрити вкладку",
+    "overwriteSingleExists": "Файл «{{name}}» вже існує у папці призначення. Записати його?",
+    "overwriteConflicts_one": "{{count}} файл уже існує у папці призначення. Перезаписати його?",
+    "overwriteConflicts_other": "{{count}} файлу вже існує у папці призначення. Перезаписати його?",
+    "overwriteLabel": "Перезаписати",
+    "replaceConnection": "Ця панель уже підключена до «{{current}}». Чи замінити це підключення на «{{next}}»?",
+    "replaceConnectionLabel": "Замінити",
+    "deleteSelected": "Видалити вибрані елементи ({{count}})? Цю дію неможливо скасувати.",
+    "deleteEntry": "Видалити «{{name}}»? Цю дію неможливо скасувати.",
+    "recycleSelected": "Перемістити вибрані елементи ({{count}}) до кошика?",
+    "recycleEntry": "Перемістити «{{name}}» у кошик?",
+    "deletePermanentSelected": "Остаточно видалити вибрані елементи ({{count}})? Цю дію неможливо скасувати.",
+    "deletePermanentEntry": "Остаточно видалити «{{name}}»? Цю дію неможливо скасувати.",
+    "deleteRemoteSelected": "Остаточно видалити вибрані віддалені елементи ({{count}})? Цю дію неможливо скасувати.",
+    "deleteRemoteEntry": "Чи видалити назавжди віддалений об’єкт «{{name}}»? Цю дію неможливо скасувати.",
+    "overwriteConflicts_few": "{{count}} файли вже існують у папці призначення. Перезаписати їх?",
+    "overwriteConflicts_many": "{{count}} файлів вже існують у папці призначення. Перезаписати їх?"
+  },
+  "paneSide": {
+    "top": "нагору",
+    "bottom": "внизу",
+    "left": "ліворуч",
+    "right": "правильно",
+    "labelWithTab": "{{base}} (вкладка «{{tabNumber}}», {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Файл",
+      "newTab": "Нова вкладка",
+      "closeTab": "Закрити вкладку",
+      "newConnection": "Нове з'єднання",
+      "disconnect": "Відключити",
+      "manageBookmarks": "Керування закладками…",
+      "saveConnection": "Зберегти з'єднання",
+      "saveConnectionSide": "Зберегти з’єднання ({{side}})",
+      "saveBookmarkSide": "Зберегти закладку ({{side}})",
+      "savePathSide": "Зберегти шлях ({{side}})",
+      "exportSettings": "Налаштування експорту…",
+      "importSettings": "Імпортувати налаштування…",
+      "quit": "Вийти"
+    },
+    "edit": {
+      "title": "Редагувати",
+      "settings": "Налаштування…",
+      "resetLayout": "Скинути макет і кеш…"
+    },
+    "view": {
+      "title": "Переглянути",
+      "darkTheme": "Темна тема",
+      "lightTheme": "Світла тема",
+      "systemTheme": "Тема системи",
+      "syncBrowsing": "Перегляд папок синхронізації",
+      "showHiddenFiles": "Показати приховані файли та папки",
+      "leftPane": "Ліва панель",
+      "rightPane": "Права панель",
+      "transferQueue": "Черга передачі",
+      "log": "Журнал",
+      "stackedPanes": "Складені панелі",
+      "refreshBothPanes": "Оновити обидві панелі"
+    },
+    "transfer": {
+      "title": "Переказ",
+      "copySelectedRight": "Копіювати виділене →",
+      "copySelectedLeft": "← Скопіювати виділене",
+      "clearCompleted": "Очистити Завершено"
+    },
+    "bookmarks": {
+      "title": "Закладки"
+    },
+    "help": {
+      "supportProject": "Підтримати FTPeach",
+      "title": "Допомога",
+      "documentation": "Документація",
+      "reportIssue": "Повідомити про проблему",
+      "checkUpdates": "Перевірити наявність оновлень",
+      "about": "Про"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Сервер відхилив з'єднання. Перевірте адресу та порт.",
+    "serverNotFound": "Сервер не знайдено. Перевірте, чи правильна адреса.",
+    "timeout": "Сервер не відповідає (час очікування з’єднання вичерпано). Перевірте адресу, порт та мережеве з’єднання.",
+    "connectionReset": "З'єднання з сервером було несподівано розірвано.",
+    "networkUnreachable": "Сервер недоступний — перевірте мережеве з'єднання.",
+    "loginIncorrect": "Неправильний логін або пароль.",
+    "invalidCertificate": "Сервер надав недійсний сертифікат. Якщо ви довіряєте цьому серверу, вимкніть перевірку сертифіката в налаштуваннях з’єднання.",
+    "tlsNegotiationFailed": "Помилка під час встановлення з'єднання TLS. Перевірте, чи сервер підтримує явне використання FTPS або HTTPS та сумісну версію TLS.",
+    "sshNegotiationFailed": "Помилка під час встановлення з’єднання SSH. Сервер і FTPeach не змогли домовитися щодо сумісного алгоритму SSH або версії протоколу.",
+    "proxyFailed": "Помилка підключення до проксі-сервера. Перевірте тип проксі-сервера, його адресу, облікові дані та можливість підключення до цільового сервера.",
+    "keyReadFailed": "Не вдалося прочитати ключ — файл пошкоджено або невірно вказано парольну фразу.",
+    "accessDenied": "У вас немає дозволу на виконання цієї операції.",
+    "notFound": "Файл або папка не знайдено.",
+    "fileOrFolderExists": "Файл або папка з такою назвою вже існує.",
+    "fileBusy": "Файл використовується іншим процесом.",
+    "diskFull": "Недостатньо місця на диску.",
+    "hostKeyMismatch": "Ключ сервера змінився.",
+    "integrityMismatch": "Переданий файл не пройшов перевірку цілісності.",
+    "invalidInput": "Вказано неприпустиме значення.",
+    "internal": "Сталася непередбачена помилка.",
+    "connectFailedPrefix": "Не вдалося встановити з'єднання з сервером. {{raw}}",
+    "alreadyExists": "«{{name}}» вже існує"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Асоціації",
+      "hint": "Виберіть програму для розширення. Для файлів, для яких не визначено правило, застосовується системне значення за замовчуванням.",
+      "extension": "Розширення",
+      "extensionPlaceholder": "txt",
+      "application": "Заявка",
+      "applicationPlaceholder": "Шлях до програми",
+      "browse": "Виберіть програму",
+      "remove": "Видалити асоціацію",
+      "add": "Додати асоціацію"
+    },
+    "minimizeToTray": "Згорнути в трей",
+    "minimizeToTrayHint": "Кнопка «Згорнути» приховує вікно у системний лоток, а не на панель завдань.",
+    "closeToTray": "Закрити в трей",
+    "closeToTrayHint": "Кнопка «Закрити» приховує вікно в системному треї, а не закриває програму. Закрийте програму через меню, що відкривається з іконки в системному треї.",
+    "title": "Налаштування",
+    "unsavedChangesTitle": "Незбережені зміни",
+    "unsavedChangesMessage": "Зберегти зміни в налаштуваннях?",
+    "discardChanges": "Не зберігати",
+    "categories": {
+      "connection": "З'єднання",
+      "transfers": "Передавання",
+      "interface": "Інтерфейс",
+      "shortcuts": "Швидкі посилання",
+      "updates": "Оновлення",
+      "logging": "Ведення журналу",
+      "security": "Безпека"
+    },
+    "shortcuts": {
+      "title": "Комбінації клавіш",
+      "hint": "Клацніть на ярлик, а потім натисніть нову комбінацію клавіш, щоб перепризначити його.",
+      "globalTitle": "Глобальний",
+      "paneTitle": "Панель файлів",
+      "recording": "Натисніть клавішу…",
+      "unbound": "Не призначено",
+      "reset": "Скинути до заводських налаштувань",
+      "resetAll": "Скинути всі налаштування до заводських",
+      "unassign": "Скасувати призначення",
+      "conflict": "Також використовується на сайті: {{action}}",
+      "actions": {
+        "search": "Пошук ({{side}})",
+        "toggleHiddenFiles": "Увімкнути/вимкнути приховані файли",
+        "newConnection": "Нове підключення",
+        "save": "Зберегти ({{side}})",
+        "openSettings": "Відкрити налаштування",
+        "newTab": "Нова вкладка",
+        "closeTab": "Закрити вкладку",
+        "nextTab": "Наступна вкладка",
+        "prevTab": "Попередня вкладка",
+        "refresh": "Оновити",
+        "selectAll": "Виділити все",
+        "delete": "Видалити",
+        "deletePermanent": "Видалити назавжди",
+        "navigateUp": "Перейти на рівень вище",
+        "navigateBack": "Повернутися",
+        "navigateForward": "Рухатися вперед",
+        "navigateHome": "Перейти до домашньої папки",
+        "moveTo": "Перемістити до…",
+        "newFolder": "Нова папка…",
+        "newFile": "Новий файл…",
+        "copyToOtherPane": "Скопіювати в іншу панель",
+        "copy": "Копіювати",
+        "cut": "Вирізати",
+        "paste": "Вставити",
+        "clearSelection": "Очистити вибір",
+        "open": "Відкрити"
+      }
+    },
+    "security": {
+      "title": "Захист паролем",
+      "systemMode": "Захист системи",
+      "systemModeHint": "Паролі до вашого облікового запису Windows зашифровані, і їх можна переглянути в налаштуваннях підключення.",
+      "strongholdMode": "Посилений захист",
+      "strongholdModeHint": "Потрібен головний пароль. Збережені паролі можна використовувати для входу, але їх неможливо переглянути.",
+      "loading": "Перевірка захищеного сховища…",
+      "configuredLocked": "Захищене сховище захищене головним паролем і заблоковано.",
+      "configuredUnlocked": "Захищене сховище захищене головним паролем і розблоковано.",
+      "masterPassword": "Головний пароль",
+      "confirmPassword": "Підтвердіть головний пароль",
+      "oldPassword": "Поточний головний пароль",
+      "newPassword": "Новий головний пароль",
+      "setup": "Захист збережених паролів",
+      "settingUp": "Захист…",
+      "unlock": "Розблокувати",
+      "unlocking": "Розблокування…",
+      "unlockRequired": "Розблокувати захищене сховище",
+      "unlockRequiredHint": "Для цього з'єднання використовується збережений секрет. Розблокуйте захищене сховище, щоб продовжити.",
+      "lockNow": "Заблокувати зараз",
+      "autoLock": "Автоматичне блокування через, хв",
+      "autoLockDisabled": "Вимкнено",
+      "autoLockHint": "Блокує доступ до сховища після певного часу бездіяльності. Існуючі з’єднання з сервером залишаються активними; значення 0 вимикає автоматичне блокування.",
+      "changePassword": "Змінити головний пароль",
+      "change": "Змінити пароль",
+      "systemUnlock": "Дозволити розблокування системи",
+      "systemUnlockHint": "Використовує Windows Hello (PIN-код, розпізнавання обличчя або відбиток пальця відповідно до налаштувань Windows). Ваш головний пароль залишається способом відновлення доступу.",
+      "unlockWithSystem": "Розблокувати за допомогою системної аутентифікації",
+      "systemUnavailable": "На цій платформі функція розблокування системи недоступна.",
+      "noRecovery": "Забутий головний пароль неможливо відновити. Скидання налаштувань сховища призводить до видалення всіх збережених секретів.",
+      "passwordMismatch": "Паролі не збігаються.",
+      "passwordTooShort": "Головний пароль повинен містити щонайменше 12 символів.",
+      "strength": {
+        "tooShort": "Занадто коротко — вкажіть щонайменше 12 символів.",
+        "acceptable": "Прийнятно. Довша парольна фраза є безпечнішою.",
+        "strong": "Надійний головний пароль."
+      },
+      "reset": "Скинути захищене сховище",
+      "resetHint": "Видаляє захищене сховище та всі паролі й парольні фрази SSH-ключів, що зберігаються в ньому. Потрібно буде знову налаштувати розширений захист.",
+      "resetWarning": "Це призведе до остаточного видалення всіх збережених паролів та ключових фраз. Введіть поточний головний пароль, щоб продовжити.",
+      "confirmReset": "Видалити збережені секретні дані",
+      "showConfirmations": "Показувати підтвердження безпеки",
+      "showConfirmationsHint": "Запитувати підтвердження перед показом збережених секретів або запуском виконуваних файлів. Скидання захищеного сховища завжди потребує підтвердження.",
+      "unavailable": "Захищене сховище недоступне.",
+      "failed": "Операція з захищеною пам’яттю завершилася невдало."
+    },
+    "unlimitedPlaceholder": "Без обмежень",
+    "connectTimeoutLabel": "Тайм-аут з'єднання, сек.",
+    "connectTimeoutHint": "Скільки часу слід чекати на відповідь сервера під час підключення, перш ніж вважати його недоступним (0 або порожнє поле — обмеження відсутнє). Застосовується до наступного підключення.",
+    "ftpActiveMode": "Активний режим FTP (замість пасивного)",
+    "ftpActiveModeHint": "Тільки для FTP/FTPS — не впливає на SFTP/WebDAV. Потрібно вкрай рідко, лише в мережах/на серверах, де пасивний режим не проходить через NAT. Застосовується до наступного з’єднання.",
+    "ftpActiveModeDisabledByProxy": "Недоступно, якщо увімкнено проксі — проксі-тунель підтримує лише вихідні з’єднання, тому FTP має працювати в пасивному режимі.",
+    "proxy": {
+      "enable": "Використовуйте проксі-сервер для підключення",
+      "enableHint": "SOCKS4, SOCKS5 або HTTP CONNECT — застосовується до FTP, FTPS, SFTP та WebDAV. Застосовується до наступного з’єднання.",
+      "typeLabel": "Тип проксі-сервера",
+      "hostLabel": "Хост-проксі",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Порт",
+      "usernameLabel": "Ім'я користувача",
+      "passwordLabel": "Пароль",
+      "removeSavedPassword": "Видалити збережений пароль",
+      "revealFailed": "Не вдалося розшифрувати збережений пароль.",
+      "testTargetLabel": "Перевірка щодо",
+      "testTargetHostPlaceholder": "Хост сервера",
+      "testTargetPortPlaceholder": "Порт",
+      "test": "Тестовий проксі-сервер",
+      "testing": "Тестування…",
+      "testOk": "Проксі-сервер успішно підключився до цільового сервера.",
+      "testFailed": "Тест проксі-сервера завершився невдало."
+    },
+    "concurrencyLabel": "Паралельні перекази",
+    "concurrencyHint": "Скільки файлів можна завантажувати та викачувати одночасно (0 або порожнє поле — без обмежень). Застосовується до наступного підключення.",
+    "speedLimitLabel": "Обмеження швидкості, КБ/с",
+    "speedLimitHint": "Застосовується до сумарної суми всіх одночасних переказів (0 або порожнє поле — обмеження відсутнє). Набирає чинності негайно, без очікування наступного підключення.",
+    "notifyOnComplete": "Повідомляти про завершення переказів",
+    "notifyOnCompleteHint": "Системне сповіщення про те, що черга передачі порожня — лише тоді, коли вікно не має фокусу.",
+    "overwriteActionLabel": "Про конфлікт імен",
+    "overwriteAsk": "Запитати",
+    "overwriteOverwrite": "Перезаписати",
+    "overwriteSkip": "Пропустити",
+    "overwriteHint": "Що робити, якщо файл, який копіюється, вже існує у папці призначення.",
+    "preventSleep": "Запобігати переходу системи в режим сну під час передачі даних",
+    "preventSleepHint": "Набирає чинності негайно, не чекаючи наступного з’єднання. Діє, доки триває хоча б один переказ — в іншому разі не блокує режим сну.",
+    "themeLabel": "Тема",
+    "themeDark": "Темний",
+    "themeLight": "Світло",
+    "themeSystem": "Система",
+    "languageLabel": "Мова інтерфейсу",
+    "interfaceScaleLabel": "Масштаб інтерфейсу",
+    "interfaceScaleHint": "Змінити розмір тексту та елементів керування у всьому додатку.",
+    "dateFormatLabel": "Формат дати та часу",
+    "dateFormatOnlyLabel": "Формат дати",
+    "timeFormatLabel": "Формат часу",
+    "timeFormat24Hour": "24 год",
+    "timeFormat12Hour": "12 год",
+    "dateFormatLocale": "Місцеві",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Типова папка для Комп'ютера",
+    "defaultLocalPathHint": "Папка, яку панель «Комп'ютер» відкриває під час запуску та під час перемикання із сервера. Залиште порожнім, щоб використати домашню папку системи.",
+    "chooseDefaultLocalPath": "Вибрати типову папку",
+    "showHiddenFiles": "Показати приховані файли та папки",
+    "showHiddenFilesHint": "Це стосується як локальних, так і віддалених панелей файлів.",
+    "coloredTabs": "Кольорові вкладки",
+    "coloredTabsHint": "Забарвлює назву вкладки та піктограму у колір, збережений для закладки.",
+    "autoCheckUpdates": "Перевіряти наявність оновлень під час запуску",
+    "autoCheckUpdatesHint": "Тиха перевірка через кілька секунд після запуску — для встановлення оновлення завжди потрібно окреме підтвердження.",
+    "autoReconnectTabs": "Відновлювати вкладки під час запуску",
+    "autoReconnectTabsHint": "За замовчуванням вимкнено. Якщо цю опцію увімкнено, збережені сайти підключаються автоматично після відновлення.",
+    "saveSessionOnExit": "Зберегти сесію при виході",
+    "saveSessionOnExitHint": "Відновлює відкриті вкладки, типи панелей та шляхи під час наступного запуску. Вимкнення цієї функції призведе до очищення збереженої сесії.",
+    "checkNow": "Перевірити зараз",
+    "updateStatus": {
+      "checking": "Перевірка наявності оновлень…",
+      "notAvailable": "Ви використовуєте найновішу версію.",
+      "error": "Не вдалося перевірити наявність оновлень.",
+      "notPackaged": "Недоступно в цій збірці (npm run dev/start)."
+    },
+    "logEnable": "Увімкнути журнал",
+    "logShowTimestamps": "Показати часові мітки",
+    "logToFile": "Записати журнал у файл",
+    "logToFileHint": "Постійно додає записи до файлу журналу на диску (%APPDATA%\\FTPeach\\logs\\ftpeach.log), якщо ця функція увімкнена — незалежно від того, чи відкрита панель журналу. Це відрізняється від кнопки «Зберегти» у самій панелі (вона зберігає лише останні 200 рядків один раз, після натискання).",
+    "exportDiagnostics": "Експортувати пакет діагностики",
+    "exportDiagnosticsBusy": "Експортування…",
+    "exportDiagnosticsHint": "Експортує версію, операційну систему й останні 200 записів журналу. Паролі, токени та інші секретні дані приховуються.",
+    "exportDiagnosticsFailed": "Не вдалося експортувати пакет діагностики."
+  },
+  "promptDialog": {
+    "confirmLabel": "Гаразд"
+  },
+  "exportSettingsDialog": {
+    "title": "Налаштування експорту",
+    "confirmLabel": "Експорт…",
+    "includeSettings": "Налаштування застосунку",
+    "includeBookmarks": "Закладки",
+    "includeLocalPaths": "Локальні шляхи",
+    "passwordHint": "Паролі та парольні фрази для SSH-ключів не включаються в експорт — вам доведеться ввести їх заново після імпорту на інший комп’ютер."
+  },
+  "importSettingsDialog": {
+    "title": "Налаштування імпорту",
+    "confirmLabel": "Імпорт…",
+    "includeSettings": "Налаштування застосунку",
+    "includeBookmarks": "Закладки",
+    "includeLocalPaths": "Локальні шляхи",
+    "passwordHint": "Паролі та парольні фрази для SSH-ключів не включаються в імпорт — їх потрібно буде ввести заново для кожного імпортованого сайту."
+  },
+  "openWithDialog": {
+    "title": "Відкрити в програмі",
+    "downloading": "Завантаження «{{fileName}}»…",
+    "progress": "{{loaded}} з «{{total}}» ({{percent}} %)",
+    "connecting": "Підключення…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Помилка передачі даних",
+    "notifyCompleteTitle": "Передача завершена",
+    "notifySucceeded": "вдалося: {{count}}",
+    "notifyFailed": "Помилка: {{count}}",
+    "webdavUploadTooLarge": "Розмір файлів, що завантажуються через WebDAV, обмежено {{limit}} МІБ на файл."
+  },
+  "transferQueue": {
+    "title": "Передавання",
+    "columns": {
+      "file": "Файл",
+      "size": "Розмір",
+      "transferred": "Перенесено",
+      "progress": "Прогрес",
+      "speed": "Швидкість",
+      "remaining": "Залишок",
+      "status": "Статус"
+    },
+    "empty": "Тут з’являтимуться завантаження та вивантаження",
+    "newTransfers_one": "{{count}} нове передавання",
+    "newTransfers_other": "{{count}} нові передавання",
+    "status": {
+      "queued": "У черзі",
+      "done": "Готово",
+      "error": "Помилка",
+      "paused": "Призупинено",
+      "stopped": "Скасовано",
+      "cancelling": "Скасування…"
+    },
+    "direction": {
+      "up": "Вивантаження",
+      "down": "Завантаження",
+      "copy": "Копіювання"
+    },
+    "directionTitleCopy": "Копіювання між серверами",
+    "cancelledByUser": "Скасовано користувачем",
+    "stoppedDash": "зупинився",
+    "resume": "Резюме",
+    "retry": "Спробувати ще раз",
+    "stop": "Стоп",
+    "pauseUnsupportedCopy": "Під час копіювання між серверами функція паузи не підтримується",
+    "pauseUnsupportedWebdav": "WebDAV не підтримує функцію паузи",
+    "newTransfers_few": "{{count}} нові передавання",
+    "newTransfers_many": "{{count}} нових передавань"
+  },
+  "log": {
+    "connecting": "Підключення до {{addr}}...",
+    "connectFailed": "Помилка підключення: {{error}}",
+    "connected": "Увійшли в систему.",
+    "receivedEntries_one": "Отримано {{count}} запис",
+    "receivedEntries_other": "Отримано {{count}} запису",
+    "skippedUnsafeEntry": "Пропущено запис у списку з небезпечною назвою: {{name}}",
+    "listFailed": "Помилка під час розміщення оголошення: {{error}}",
+    "tlsInit": "Ініціалізація TLS...",
+    "tlsEstablished": "З'єднання TLS встановлено.",
+    "davResumeUnsupportedLocal": "WebDAV не підтримує відновлення завантаження — файл буде надіслано знову з самого початку.",
+    "davResumeUnsupportedServer": "Сервер не підтримує відновлення завантаження (очікуваний статус {{expected}}, отримано {{status}}) — файл буде завантажено заново.",
+    "receivedEntries_few": "Отримано {{count}} записи",
+    "receivedEntries_many": "Отримано {{count}} записів"
+  },
+  "logPanel": {
+    "showAllConnections": "Показати всі зв’язки",
+    "showOnlyThisConnection": "Показати лише це з'єднання",
+    "connectionClosedShowOnly": "З'єднання закрито — показувати лише це з'єднання",
+    "hideTimestamps": "Приховати позначки часу в рядках журналу",
+    "showTimestamps": "Показувати часові мітки у рядках журналу",
+    "copyToClipboard": "Скопіювати журнал у буфер обміну",
+    "saveLastLines_one": "Збережіть останній {{count}} рядок у файл .txt",
+    "saveLastLines_other": "Збережіть останній {{count}} рядка у файл .txt",
+    "clearLog": "Очистити журнал",
+    "copiedTooltip": "Скопійовано",
+    "copyFailedTooltip": "Не вдалося скопіювати",
+    "saveFailedTooltip": "Не вдалося зберегти файл",
+    "emptyFiltered": "Для цього з'єднання черги немає",
+    "emptyDefault": "Тут з’являтимуться повідомлення протоколу",
+    "saveLastLines_few": "Збережіть останні {{count}} рядки у файл .txt",
+    "saveLastLines_many": "Збережіть останні {{count}} рядків у файл .txt"
+  },
+  "aboutDialog": {
+    "title": "Про програму",
+    "tagline": "Легкий клієнт FTP/FTPS/SFTP.",
+    "legalInformation": "Правова інформація",
+    "sourceCode": "Вихідний код",
+    "reportIssue": "Повідомити про проблему",
+    "checkForUpdates": "Перевірити наявність оновлень",
+    "updateDownloaded": "Оновлення версії {{version}} завантажено — тепер його можна встановити."
+  },
+  "siteManager": {
+    "emptyList": "Збережених сайтів поки що немає",
+    "confirmDeleteSite": "Видалити сайт «{{name}}»?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Нова закладка",
+    "titleEdit": "Редагувати закладку",
+    "titleList": "Керування закладками",
+    "titleLocalPathList": "Керування локальними шляхами",
+    "manageLocalPaths": "Керування локальними шляхами…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Назва",
+      "icon": "Піктограма",
+      "color": "Колір",
+      "protocol": "Протокол",
+      "keyFile": "Файл ключів",
+      "caCertFile": "Сертифікат центру сертифікації",
+      "remotePath": "Папка за замовчуванням",
+      "localPath": "Локальна папка"
+    },
+    "icons": {
+      "bookmark": "Додати до закладок",
+      "globe": "Веб-сайт",
+      "briefcase": "Робота",
+      "house": "Домашній сервер",
+      "cloud": "Хмара",
+      "flask": "Тестування / проміжна версія",
+      "gamepad": "Ігровий сервер",
+      "clapperboard": "Медіасервер",
+      "camera": "Камера"
+    },
+    "colors": {
+      "default": "Без кольору",
+      "peach": "Персик",
+      "red": "Червоний",
+      "amber": "Бурштин",
+      "green": "Зелений",
+      "blue": "Синій",
+      "purple": "Фіолетовий",
+      "pink": "Рожевий",
+      "teal": "Бірюзовий"
+    },
+    "saveFailed": "Не вдалося зберегти",
+    "revealFailed": "Не вдалося відобразити збережений секрет",
+    "savedSecretPlaceholder": "Збережено",
+    "savedSecretHint": "Залиште поле порожнім, щоб зберегти поточний пароль",
+    "removeSavedPassword": "Видалити збережений пароль",
+    "removeSavedPassphrase": "Видалити збережену парольну фразу",
+    "secretWillBeRemoved": "Буде видалено після збереження",
+    "addBookmark": "Нова закладка",
+    "addLocalBookmark": "Додати закладку «Місцева папка»",
+    "chooseLocalPath": "Виберіть локальну папку",
+    "importBookmarks": "Імпорт",
+    "exportBookmarks": "Експорт",
+    "importAdded_one": "Додано {{count}} закладку",
+    "importAdded_few": "Додано {{count}} закладки",
+    "importAdded_many": "Додано {{count}} закладок",
+    "importAdded_other": "Додано {{count}} закладки",
+    "importSkipped_one": "пропущено {{count}} дублікат",
+    "importSkipped_few": "пропущено {{count}} дублікати",
+    "importSkipped_many": "пропущено {{count}} дублікатів",
+    "importSkipped_other": "пропущено {{count}} дублікати",
+    "importNothingNew": "Немає нічого нового для імпорту",
+    "exportSuccess": "Експортовано",
+    "sortMode": "Сортування закладок",
+    "sortManual": "Вручну",
+    "sortName": "За назвою",
+    "sortProtocol": "Згідно з протоколом",
+    "duplicateWarning": "Закладка з таким самим адресом уже існує: «{{name}}». Зберегти ще одну?",
+    "saveAnyway": "Зберегти все одно",
+    "newFolder": "Нова папка",
+    "folderNamePlaceholder": "Назва папки",
+    "confirmDeleteFolder": "Видалити папку «{{name}}»? Її закладки будуть переміщені на один рівень вище.",
+    "searchPlaceholder": "Пошук…",
+    "clearSearch": "Очистити результати пошуку",
+    "noSearchResults": "За запитом не знайдено жодних закладок",
+    "duplicate": "Дублікат",
+    "duplicateNameSuffix": " (копія)",
+    "newBookmarkInFolder": "Додати нову закладку тут",
+    "expandFolder": "Розгорнути «{{name}}»",
+    "collapseFolder": "Сховати «{{name}}»"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Адреса",
+      "port": "Порт",
+      "user": "Ім'я користувача",
+      "password": "Пароль",
+      "passphrase": "Пароль-фраза",
+      "keyFilePlaceholder": "Файл ключів…",
+      "chooseKeyFile": "Виберіть файл ключа…",
+      "caCertFilePlaceholder": "Сертифікат центру сертифікації…",
+      "chooseCaCertFile": "Вибрати сертифікат центру сертифікації…"
+    },
+    "secureToggle": {
+      "tooltip": "Зніміть галочку, щоб дозволити використання самопідписаних та недійсних сертифікатів сервера",
+      "label": "Перевірити сертифікат"
+    },
+    "authToggle": {
+      "tooltip": "Увійти за допомогою файлу приватного SSH-ключа замість пароля",
+      "label": "Увійти за допомогою SSH-ключа"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Скасувати",
+      "connect": "Підключитися",
+      "disconnect": "Відключитися"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Звичайний FTP передає ваше ім’я користувача, пароль та файли у незашифрованому вигляді. За можливості використовуйте FTPS або SFTP."
+  },
+  "titleBar": {
+    "minimize": "Згорнути",
+    "restore": "Відновити",
+    "maximize": "Максимізувати"
+  },
+  "tray": {
+    "show": "Показати FTPeach",
+    "quit": "Вийти"
+  },
+  "tabStrip": {
+    "localComputer": "Комп'ютер",
+    "untitledTab": "Нова вкладка",
+    "newTabTooltip": "Нова вкладка (Ctrl+T)",
+    "rename": "Назва вкладки"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Більше"
+  },
+  "statusBar": {
+    "transfers": "Передавання: {{count}}",
+    "leftCount": "Ліворуч: {{count}}",
+    "rightCount": "Праворуч: {{count}}",
+    "topCount": "Посилання: {{count}}",
+    "bottomCount": "Внизу: {{count}}",
+    "selectedSuffix": " (Вибрано {{count}})",
+    "status": {
+      "transferring": "Передача файлу",
+      "paused": "Призупинено",
+      "connected": "Підключено",
+      "connecting": "Підключення",
+      "connectFailed": "Не вдалося встановити з'єднання",
+      "disconnected": "Не підключено"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Показати/приховати ліву панель",
+    "toggleRightPane": "Показати/приховати праву панель",
+    "toggleTransferQueue": "Показати/приховати чергу передачі",
+    "toggleLog": "Показати/приховати журнал",
+    "orientationNarrow": "Склопакети розташовані один над одним — вікно занадто вузьке, щоб їх можна було побачити поруч",
+    "orientationToRow": "Розташувати панелі поруч",
+    "orientationToStacked": "Розмістити панелі одна над одною",
+    "pauseUnsupportedWebdav": "WebDAV не підтримує функцію паузи",
+    "pauseActive": "Призупинити активні передачі",
+    "resumeAllPaused": "Відновити всі призупинені перекази",
+    "stopActive": "Припинити активні перекази",
+    "retryAllStopped": "Повторити всі зупинені перекази",
+    "refreshPanesTooltip": "Оновити обидві панелі (F5)"
+  },
+  "paneToolbar": {
+    "back": "Назад",
+    "forward": "Вперед",
+    "up": "Вгору",
+    "chooseFolder": "Вибрати папку…",
+    "newFolder": "Нова папка…",
+    "newFile": "Новий файл…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Комп'ютер",
+    "remote": "Сервер",
+    "updatedAtTooltip": "Оновлено: {{date}}",
+    "connectToServer": "Сервер"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Немає нещодавніх підключень",
+    "noSavedConnectionsBody": "Введіть адресу сервера у полі вище або додайте сайт для доступу одним кліком.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Керування закладками",
+    "quicklistLabel": "Останні з'єднання"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Необроблена помилка інтерфейсу FTPeach:",
+    "title": "Сталася помилка",
+    "message": "Сталася несподівана помилка інтерфейсу. Це не вплинуло на ваше активне з’єднання та файли на диску — ви можете спробувати перезавантажити інтерфейс.",
+    "reload": "Оновити інтерфейс"
+  }
+}

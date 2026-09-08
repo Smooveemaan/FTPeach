@@ -1,0 +1,133 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A lightweight FTP/FTPS/SFTP/WebDAV client for Windows with a peach-toned interface"
+authors = ["Smooveemaan"]
+license = "Apache-2.0"
+repository = "https://github.com/Smooveemaan/ftpeach"
+edition = "2024"
+rust-version = "1.89"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# Exposes cfg(test)-only helpers (Store::new_at) to tests/docker_integration.rs,
+# which is its own crate and doesn't get this lib's --cfg test. Not for
+# production use — enable only when running that suite.
+test-utils = []
+smoke-test = []
+
+# Lint policy lives here rather than only in the CI command line, so that
+# rust-analyzer in the editor, a bare `cargo clippy`, and CI all see the same
+# rules. `scripts/with-libsodium.ps1` still passes `-D warnings` as a fallback
+# for toolchains older than the Cargo 1.74 that introduced this table.
+[lints.rust]
+# Two modules carry ~19 `unsafe` blocks each (native_drag/windows.rs,
+# security/system_unlock.rs). At that volume every unsafe operation should be
+# marked at its own call site instead of inheriting safety from the enclosing
+# fn's signature.
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+# Equivalent to the `-D warnings` the clippy script passes: correctness, style,
+# complexity, perf and suspicious all become hard errors.
+all = { level = "deny", priority = -1 }
+# Chosen individually rather than by enabling a whole group. `pedantic` and
+# `nursery` as groups are mostly stylistic noise here; this one catches real
+# waste. `needless_pass_by_value` was evaluated and rejected: 10 of its 12
+# findings were `#[tauri::command]` signatures, where `AppHandle`, `State<'_, T>`
+# and owned `String` parameters are required by the framework, so the rule would
+# only buy a scattering of `#[allow]` attributes.
+redundant_clone = "deny"
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+serde_json = "1.0.151"
+serde = { version = "1.0.229", features = ["derive"] }
+log = "0.4.34"
+tauri = { version = "2.11.5", features = ["tray-icon"] }
+tauri-plugin-log = "2.9.1"
+tauri-plugin-updater = "2.11.0"
+tauri-plugin-dialog = "2.7.3"
+tauri-plugin-notification = "2.4.0"
+tauri-plugin-opener = "2.5.5"
+tauri-plugin-single-instance = "2.4.4"
+raw-window-handle = "0.6.2"
+base64 = "0.23.1"
+tokio = { version = "1.53.1", features = ["fs", "sync", "rt", "rt-multi-thread", "macros", "net", "io-util", "time"] }
+uuid = { version = "1.26.0", features = ["v4"] }
+chrono = "0.4.45"
+anyhow = "1.0.104"
+suppaftp = { version = "11.0.0", default-features = false, features = ["tokio-rustls-ring"] }
+rustls = { version = "0.23.43", default-features = false, features = ["logging", "ring", "std", "tls12"] }
+rustls-pki-types = { version = "1.15.1", features = ["std"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring"] }
+webpki-roots = "1.0.9"
+async-trait = "0.1"
+tokio-util = "0.7"
+regex = "1"
+russh = { version = "0.63.1", default-features = false, features = ["ring", "rsa", "flate2"] }
+russh-sftp = "2.4.0"
+sha2 = "0.11"
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "http2", "stream", "socks"] }
+quick-xml = "0.42.0"
+percent-encoding = "2.3.2"
+zeroize = "1.9.0"
+iota_stronghold = "=2.1.0"
+argon2 = "=0.6.0"
+chacha20poly1305 = "=0.11.0"
+getrandom = "=0.4.3"
+
+# Windows-only: kept out of the default [dependencies] table so the crate
+# (and its docker_integration test) still compiles on the Linux CI runners
+# used for protocol-compatibility testing.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61.3", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Power", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_System_WinRT", "Security_Credentials_UI"] }
+windows-core = "0.61"
+windows-future = "0.2.1"
+webview2-com = "0.38.2"
+
+[dev-dependencies]
+rand = "0.10.2"
+# Signature verification fixture in examples/verify_updater.rs.
+minisign-verify = "0.2.5"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+
+# Argon2id is intentionally expensive, but an entirely unoptimized debug
+# build turns a normal unlock into a minute-long wait. Optimize only the KDF
+# and its compression primitive; the application itself remains a debug build
+# and the production security parameters stay unchanged.
+[profile.dev.package."blake2:0.10.6"]
+opt-level = 3
+
+# The app and Stronghold now share the current Argon2 implementation.
+[profile.dev.package."argon2:0.6.0"]
+opt-level = 3
+
+[profile.dev.package."blake2:0.11.0"]
+opt-level = 3
+
+# Snapshot encryption and Stronghold's protected-memory machinery are also
+# prohibitively slow at opt-level 0, even for a sub-kilobyte vault.
+[profile.dev.package.iota_stronghold]
+opt-level = 3
+
+[profile.dev.package.stronghold_engine]
+opt-level = 3
+
+[profile.dev.package.stronghold-runtime]
+opt-level = 3

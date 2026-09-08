@@ -1,0 +1,20 @@
+name: CI
+
+permissions: {}
+
+on:
+  # Tags use release.yml; feature branches are checked through pull requests.
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The suite itself lives in checks.yml, shared with release.yml.
+  checks:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/checks.yml

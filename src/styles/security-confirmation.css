@@ -1,0 +1,137 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg-panel);
+}
+
+.security-confirmation {
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 38px 1fr 54px;
+  width: 100%;
+  height: 100%;
+  color: var(--text-primary);
+  background: var(--bg-panel);
+  border: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.security-confirmation::after {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  content: '';
+  border: 1px solid var(--border);
+  border-radius: inherit;
+}
+
+.security-confirmation__titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.security-confirmation__title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.security-confirmation__title.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+.security-confirmation__close {
+  padding: 2px 6px;
+  color: var(--text-faint);
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.security-confirmation__close:hover {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+}
+
+.security-confirmation__close:disabled { opacity: 0.45; cursor: default; }
+
+.security-confirmation__content {
+  padding: 18px 14px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.security-confirmation__content p {
+  width: max-content;
+  max-width: min(680px, calc(100vw - 28px));
+  margin: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.security-confirmation__confirmation {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+  color: var(--text-primary);
+}
+
+.security-confirmation__confirmation span {
+  font-weight: 500;
+}
+
+.security-confirmation__confirmation input {
+  width: 100%;
+  height: var(--control-height);
+  box-sizing: border-box;
+  padding: 0 var(--control-padding-inline);
+  color: var(--text-primary);
+  background: var(--control-background);
+  border: var(--control-border);
+  border-radius: var(--control-radius);
+  outline: none;
+  line-height: 1;
+  transition: var(--control-transition);
+}
+
+/* WebView2's native password-reveal icon is transient and does not match the
+   application's controls. Reauthentication intentionally has no reveal UI. */
+.security-confirmation__confirmation input[type='password']::-ms-reveal,
+.security-confirmation__confirmation input[type='password']::-ms-clear {
+  display: none;
+}
+
+.security-confirmation__confirmation input:focus {
+  border-color: var(--accent-primary);
+}
+
+.security-confirmation__confirmation input::placeholder {
+  color: var(--text-faint);
+}
+
+/* Same trailing alignment and 8px gap as .modal-footer — this prompt is a
+   dialog footer too, it just lives outside the shared Modal. */
+.security-confirmation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-soft);
+}

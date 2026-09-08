@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a defect (not a security vulnerability)
+title: '[Bug]: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 'Report vulnerabilities privately according to SECURITY.md.'
+  - type: input
+    id: version
+    attributes:
+      label: FTPeach and Windows versions
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol
+      options: [Not applicable, FTP, FTPS, SFTP, WebDAV]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Remove secrets, personal paths, and addresses.

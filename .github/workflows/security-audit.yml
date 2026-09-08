@@ -1,0 +1,78 @@
+name: Weekly security audit
+
+permissions: {}
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  rust-advisories:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - run: npm run check:rust-advisories
+      - name: Install pinned Rust toolchain
+        run: rustup show
+      - name: Report current RSA chain, russh release and ignored advisory fixes
+        if: ${{ !cancelled() }}
+        timeout-minutes: 8
+        run: node --experimental-strip-types scripts/release/report-rust-advisories.ts
+      - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check advisories licenses
+
+  fuzz-parsers:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [list_parse, ftp_response, webdav_propfind]
+    env:
+      RUSTUP_TOOLCHAIN: nightly-2026-09-01
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install fixed nightly and cargo-fuzz
+        run: |
+          rustup toolchain install nightly-2026-09-01 --profile minimal
+          cargo install cargo-fuzz --version 0.13.2 --locked
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri/fuzz
+          key: fuzz-${{ matrix.target }}
+      - name: Replay saved regression inputs
+        working-directory: src-tauri/fuzz
+        run: cargo test --locked --lib
+      - name: Fuzz server responses for 60 seconds
+        working-directory: src-tauri
+        env:
+          # The preceding locked test fetched dependencies; fuzz must not resolve new ones.
+          CARGO_NET_OFFLINE: 'true'
+        run: |
+          cargo fuzz run ${{ matrix.target }} -- -max_total_time=60 -timeout=5 -rss_limit_mb=2048 -max_len=65536
+          git diff --exit-code -- fuzz/Cargo.lock
+      - name: Preserve crashes and evolved corpus
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-${{ matrix.target }}-${{ github.run_id }}
+          path: |
+            src-tauri/fuzz/artifacts/${{ matrix.target }}/
+            src-tauri/fuzz/corpus/${{ matrix.target }}/
+          retention-days: 30
+          if-no-files-found: warn

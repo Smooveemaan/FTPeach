@@ -1,0 +1,12 @@
+{
+  "app": {
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["http://127.0.0.1:17890/latest.json"]
+    }
+  }
+}

@@ -1,0 +1,258 @@
+name: Checks
+
+permissions: {}
+
+# Shared verification suite for CI and releases.
+on:
+  workflow_call:
+    inputs:
+      force-all:
+        description: >-
+          Run every job regardless of changed paths. Enabled for releases.
+        type: boolean
+        default: false
+
+jobs:
+  changes:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      rust: ${{ steps.classify.outputs.rust }}
+      frontend: ${{ steps.classify.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The git diff below needs the base commit, which a shallow clone lacks.
+          fetch-depth: 0
+
+      - id: classify
+        env:
+          FORCE_ALL: ${{ inputs.force-all }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          everything() {
+            echo "Running the full suite: $1"
+            echo "rust=true" >>"$GITHUB_OUTPUT"
+            echo "frontend=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          # Run everything when a trustworthy comparison is unavailable.
+          if [ "$FORCE_ALL" = "true" ]; then everything "the caller asked for it"; fi
+          if [ -z "$BASE_SHA" ]; then everything "no base commit to compare against"; fi
+          if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then everything "the base ref is new"; fi
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then everything "the base commit is unreachable (force push?)"; fi
+
+          changed_paths="$RUNNER_TEMP/changed-paths"
+          if ! git diff --no-renames --name-only -z "$BASE_SHA" "$HEAD_SHA" >"$changed_paths"; then
+            everything "the diff failed"
+          fi
+
+          rust=false
+          frontend=false
+          while IFS= read -r -d '' path; do
+            case "$path" in
+              '') ;;
+              src-tauri/*) rust=true ;;
+              src/* | index.html | vite.config.ts | tsconfig*.json | playwright.config.ts | test/visual/*)
+                frontend=true
+                ;;
+              # Documentation drives neither build. Anything else unrecognized —
+              # workflows, scripts, manifests, lockfiles — conservatively counts
+              # as touching both.
+              *.md | LICENSE | .gitattributes | .gitignore | .editorconfig) ;;
+              *)
+                rust=true
+                frontend=true
+                ;;
+            esac
+          done < "$changed_paths"
+
+          echo "rust=$rust" >>"$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >>"$GITHUB_OUTPUT"
+          echo "rust=$rust frontend=$frontend"
+
+  supply-chain:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run check:tracked-secrets
+      - run: npm run check:rust-advisories
+      - run: npm run check:no-cyrillic
+      - run: npm run i18n:check
+      - name: Install pinned Rust toolchain
+        run: rustup show
+      - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check advisories licenses
+
+  sast:
+    # Blocking from the start: findings and scanner errors fail Checks.
+    # Repository branch protection must require this check to enforce merge blocking.
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: semgrep/semgrep@sha256:34ab619bf1391a24bfda3f05debd0d8a6ce3093c2d5f9d39cfc00f83c1397823 # 1.176.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify vulnerable and safe SAST fixtures
+        run: semgrep scan --test .semgrep --metrics=off --disable-version-check
+      - name: Scan Rust and renderer sources
+        run: semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src
+
+  lint-test-build:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check:suite-coverage
+      - run: npm run check:release-config
+      - run: npm run licenses:check
+      - run: npm run check:rust-boundaries
+      - run: npm run check:duplicates
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  rust-test:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    # This crate has unconditional Windows and WebView2 dependencies.
+    runs-on: windows-latest
+    # Allow headroom for a cold Rust build and cache save.
+    timeout-minutes: 25
+    env:
+      # Share compiler results across jobs when the workspace cache misses.
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install pinned Rust toolchain
+        run: rustup component add clippy rustfmt
+
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      - run: cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check
+      - name: Clippy (verified libsodium CRT)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command clippy
+      - name: Test (verified libsodium CRT)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command test
+      # Check both valid and damaged updater artifacts.
+      - name: Verify valid and damaged updater fixtures independently
+        run: npm run test:updater-fixtures
+
+  visual-regression:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run test:visual
+
+  packaged-smoke:
+    permissions:
+      contents: read
+    needs: changes
+    # The packaged application includes both Rust and frontend changes.
+    if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      # Share compiler results with the Rust test job.
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+          # smoke-build writes to this target directory instead of src-tauri/target.
+          cache-directories: .tools/smoke-target
+
+      - run: npm ci
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+      - name: Build packaged smoke target (verified libsodium CRT)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command smoke-build
+      - run: npm run test:packaged-smoke

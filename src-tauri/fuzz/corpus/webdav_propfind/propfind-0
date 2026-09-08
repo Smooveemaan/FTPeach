@@ -1,0 +1,4 @@
+<multistatus><response><href>/file</href>
+      <propstat><prop><getcontentlength>0</getcontentlength></prop><status>HTTP/1.1 200 OK</status></propstat>
+      <propstat><prop><getcontentlength>999</getcontentlength><resourcetype><collection/></resourcetype></prop><status>HTTP/1.1 404 Not Found</status></propstat>
+      </response></multistatus>

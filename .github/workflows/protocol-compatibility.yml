@@ -1,0 +1,105 @@
+name: Protocol compatibility
+
+permissions: {}
+
+on:
+  schedule:
+    - cron: '43 3 * * 3'
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  docker-round-trips:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: src-tauri
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Linux build dependencies
+        run: >-
+          sudo apt-get update && sudo apt-get install --yes
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Start disposable protocol servers
+        run: docker compose -f tests/docker/docker-compose.yml up --detach
+
+      - name: Wait for protocol ports
+        run: |
+          timeout 90 bash -c 'until
+            printf "QUIT\r\n" | nc -w 2 127.0.0.1 2131 | grep -q "^220" &&
+            nc -z 127.0.0.1 2222 &&
+            nc -z 127.0.0.1 6065 &&
+            nc -z 127.0.0.1 6443 &&
+            nc -z 127.0.0.1 6444;
+          do sleep 2; done'
+
+      - name: Verify strict TLS version endpoints
+        run: |
+          openssl_image='alpine/openssl@sha256:42c7389ef077aed0eb4e96d0abbd094083d701bbaff1313073b061c0c9cd8278'
+          docker run --rm --network ftpeach-test-servers_default "${openssl_image}" \
+            s_client -connect webdav-tls12:443 -tls1_2 -brief </dev/null
+          ! docker run --rm --network ftpeach-test-servers_default "${openssl_image}" \
+            s_client -connect webdav-tls12:443 -tls1_3 -brief </dev/null
+          docker run --rm --network ftpeach-test-servers_default "${openssl_image}" \
+            s_client -connect webdav-tls13:443 -tls1_3 -brief </dev/null
+          ! docker run --rm --network ftpeach-test-servers_default "${openssl_image}" \
+            s_client -connect webdav-tls13:443 -tls1_2 -brief </dev/null
+
+      - name: Run ignored protocol compatibility tests
+        run: |
+          set -o pipefail
+          cargo test --locked --features test-utils --test docker_integration -- --ignored 2>&1 | tee compatibility-results.log
+
+      - name: Publish compatibility outcome including ignored counts
+        if: always()
+        run: |
+          echo '### Protocol compatibility' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f compatibility-results.log ]; then
+            grep -E 'test result:|FAILED|ignored' compatibility-results.log >> "$GITHUB_STEP_SUMMARY" || true
+          else
+            echo 'NOT RUN: server setup or build prerequisites failed; see job logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Collect server logs
+        if: failure()
+        run: docker compose -f tests/docker/docker-compose.yml logs --no-color
+
+      - name: Stop disposable protocol servers
+        if: always()
+        run: docker compose -f tests/docker/docker-compose.yml down --volumes
+
+  notify-regression:
+    if: ${{ always() && github.event_name == 'schedule' && needs.docker-round-trips.result == 'failure' }}
+    needs: docker-round-trips
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update compatibility regression issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title='Scheduled protocol compatibility tests failed'
+          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number')"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --body "The scheduled protocol compatibility tests failed again: ${RUN_URL}"
+          else
+            gh issue create --title "${title}" --body "The scheduled FTP/FTPS/SFTP/WebDAV compatibility tests failed: ${RUN_URL}"
+          fi

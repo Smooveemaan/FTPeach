@@ -1,0 +1,767 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "fără autentificare",
+    "anonymousUser": "anonim",
+    "rootFolder": "Dosarul rădăcină",
+    "close": "Închide",
+    "reset": "Resetare",
+    "open": "Deschide",
+    "upload": "Încărcare",
+    "save": "Salvare",
+    "create": "Creează",
+    "cancel": "Anulează",
+    "increase": "Crește",
+    "decrease": "Scade",
+    "showPassword": "Afișează parola",
+    "savedSecretProtected": "Secretul salvat este protejat și nu poate fi vizualizat",
+    "hidePassword": "Ascunde parola"
+  },
+  "securityConfirmation": {
+    "title": "Confirmare de securitate FTPeach",
+    "allow": "Permite",
+    "typeToConfirm": "Tastați {{phrase}} pentru confirmare",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Afișați parola salvată pentru acest marcaj?"
+      },
+      "revealProxyPassword": {
+        "message": "Afișați parola proxy salvată?"
+      },
+      "vaultReset": {
+        "message": "Toate parolele salvate și frazele de acces ale cheilor SSH vor fi șterse definitiv.",
+        "approve": "Șterge seiful"
+      },
+      "executeLocalFile": {
+        "message": "Rulați acest fișier executabil sau script?"
+      },
+      "executeRemoteFile": {
+        "message": "Descărcați și rulați acest fișier executabil sau script?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Dosar nou…",
+    "newFile": "Fișier nou…",
+    "refresh": "Reîmprospătează",
+    "open": "Deschide",
+    "uploadToOtherPane": "Încărcare în celălalt panou",
+    "copyToOtherPane": "Copiază în celălalt panou",
+    "downloadToOtherPane": "Descărcare în celălalt panou",
+    "openWith": "Deschide cu…",
+    "permissions": "Permisiuni…",
+    "moveTo": "Mută în…",
+    "copyPath": "Copiază calea",
+    "delete": "Șterge",
+    "deleteSelected_one": "Șterge (fișierul {{count}})",
+    "deleteSelected_other": "Șterge ({{count}} de fișiere)",
+    "deletePermanently": "Șterge definitiv",
+    "deleteSelectedPermanently_one": "Ștergere definitivă (fișier {{count}})",
+    "deleteSelectedPermanently_other": "Ștergere definitivă ({{count}} de fișiere)",
+    "deleteSelected_few": "Șterge ({{count}} fișiere)",
+    "deleteSelectedPermanently_few": "Ștergere definitivă ({{count}} fișiere)"
+  },
+  "chmodDialog": {
+    "title": "Permisiuni SFTP",
+    "label": "Mod octal pentru „{{name}}” (de exemplu, 644 sau 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Dosarul este gol",
+    "homeFolder": "Dosarul de bază",
+    "copyToPaneBelow": "Copiați în caseta de mai jos",
+    "copyToPaneAbove": "Copiază în panoul de mai sus",
+    "copyToPaneRight": "Copiază în panoul din dreapta",
+    "copyToPaneLeft": "Copiază în panoul din stânga",
+    "fileTypeFolder": "Dosar",
+    "fileTypeGeneric": "Fișier",
+    "fileTypeWithExt": "{{ext}} Fișier",
+    "columnSize": "Dimensiune",
+    "columnModifiedAt": "Data modificării",
+    "columnCreatedAt": "Data creării",
+    "columnType": "Tip",
+    "columnPermissions": "Permisiuni",
+    "columnOwner": "Proprietar",
+    "columnGroup": "Grup",
+    "columnName": "Nume",
+    "filesAriaLabel": "Fișiere",
+    "rename": "Redenumire",
+    "resetColumnWidths": "Restabilirea lățimilor coloanelor",
+    "updatedAtTooltip": "Actualizat: {{date}}",
+    "searchTooltip": "Căutare ({{shortcut}})",
+    "searchPlaceholder": "Căutare… ({{shortcut}})",
+    "editPathAriaLabel": "Editează calea",
+    "changeDriveTooltip": "Schimbă unitatea de stocare",
+    "chooseColumnsTooltip": "Faceți clic dreapta pentru a selecta coloanele",
+    "sortByNameTooltip": "Sortează după nume",
+    "sortByColumnTooltip": "Sortează după coloana „{{column}}”",
+    "rowProbeSample": "Exemplu",
+    "loading": "Se încarcă…",
+    "nothingFound": "Nu s-a găsit nimic"
+  },
+  "update": {
+    "readyToInstall": "Este disponibilă actualizarea v{{version}} — faceți clic pe „Repornire și instalare” pentru a o aplica.",
+    "downloadingWithPercent": "Se descarcă actualizarea v{{version}}ă: {{percent}} %",
+    "downloadingFound": "Actualizare v{{version}} găsită, se descarcă…",
+    "restartAndInstall": "Repornire și instalare",
+    "availableAction": "disponibilă!",
+    "installAction": "instalezi?",
+    "downloadTooltip": "Clic pentru descărcare",
+    "downloadingTooltip": "Se descarcă",
+    "installTooltip": "Clic pentru repornire și instalare"
+  },
+  "legacyPasswordNotice": {
+    "message": "Parolele pentru unele site-uri salvate nu au putut fi citite după actualizare — vă rugăm să le introduceți din nou în managerul de site-uri."
+  },
+  "plaintextSecretNotice": {
+    "message": "Parola sau fraza de acces a unui site salvat nu a putut fi criptată deoarece funcția de protecție a datelor din Windows nu este disponibilă și, în schimb, a fost stocată în format text simplu."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Parola sau fraza de acces nu a putut fi criptată și nu a fost salvată. O conexiune existentă poate continua până la deconectare; în caz contrar, introduceți din nou parola data viitoare."
+  },
+  "resize": {
+    "paneSize": "Trageți pentru a redimensiona panourile (faceți dublu clic pentru a reveni la setările inițiale)",
+    "height": "Trageți pentru a modifica înălțimea (faceți dublu clic pentru a reveni la setările inițiale)",
+    "ratio": "Trageți pentru a modifica proporțiile (faceți dublu clic pentru a reveni la setările inițiale)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} articol",
+    "itemCount_other": "{{count}} de articole",
+    "moveMode": "mișcare",
+    "itemCount_few": "{{count}} articole"
+  },
+  "openWithChanged": {
+    "title": "Fișierul a fost modificat",
+    "message": "„{{name}}” a fost modificat în aplicația externă. Să încărcăm fișierul actualizat pe server?"
+  },
+  "saveSite": {
+    "title": "Salvează profilul conexiunii",
+    "label": "Numele profilului conexiunii:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Dosar nou",
+    "labelLocal": "Numele noului dosar:",
+    "labelRemote": "Numele noului dosar de pe server:"
+  },
+  "newFile": {
+    "title": "Fișier nou",
+    "label": "Numele fișierului (cu extensie):"
+  },
+  "moveToDialog": {
+    "title": "Mută în…",
+    "labelSingle": "Mută „{{name}}” în folderul:",
+    "labelMultiple": "Mută elementele selectate ({{count}}) în folderul:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Permiteți înlocuirea fișierului „{{name}}” dacă apare în timpul transferului?",
+    "resetLayout": "Să resetezi dimensiunile ferestrelor și panourilor, să restabilești coloanele implicite și să golești memoria cache a interfeței?",
+    "hostKeyMismatch": "{{error}} Să ștergi amprenta cheii salvate pentru {{host}}: {{port}} și să te conectezi oricum? Fă acest lucru doar dacă ești sigur că serverul a fost reinstalat sau migrat în mod legitim — altfel, acest lucru ți-ar putea permite să te conectezi la un server care ar putea fi falsificat.",
+    "connectAnyway": "Conectează-te oricum",
+    "closeTabWithActiveTransfers": "Această filă conține transferuri în curs. Doriți să închideți fila și să le opriți?",
+    "closeTabLabel": "Închide fila",
+    "overwriteSingleExists": "„{{name}}” există deja în folderul de destinație. Doriți să îl suprascrieți?",
+    "overwriteConflicts_one": "{{count}} element există deja în folderul de destinație. Doriți să îl suprascrieți?",
+    "overwriteConflicts_other": "{{count}} de elemente există deja în folderul de destinație. Doriți să le suprascrieți?",
+    "overwriteLabel": "Suprascrie",
+    "replaceConnection": "Acest panou este deja conectat la „{{current}}”. Doriți să înlocuiți conexiunea cu „{{next}}”?",
+    "replaceConnectionLabel": "Înlocuiește",
+    "deleteSelected": "Doriți să ștergeți elementele selectate ({{count}})? Această acțiune nu poate fi anulată.",
+    "deleteEntry": "Să ștergi „{{name}}”? Această acțiune nu poate fi anulată.",
+    "recycleSelected": "Doriți să mutați elementele selectate ({{count}}) în Coșul de gunoi?",
+    "recycleEntry": "Să mut fișierul „{{name}}” în Coșul de gunoi?",
+    "deletePermanentSelected": "Doriți să ștergeți definitiv elementele selectate ({{count}})? Această acțiune nu poate fi anulată.",
+    "deletePermanentEntry": "Doriți să ștergeți definitiv „{{name}}”? Această acțiune nu poate fi anulată.",
+    "deleteRemoteSelected": "Doriți să ștergeți definitiv elementele la distanță selectate ({{count}})? Această acțiune nu poate fi anulată.",
+    "deleteRemoteEntry": "Doriți să ștergeți definitiv elementul de la distanță „{{name}}”? Această acțiune nu poate fi anulată.",
+    "overwriteConflicts_few": "{{count}} elemente există deja în folderul de destinație. Doriți să le suprascrieți?"
+  },
+  "paneSide": {
+    "top": "sus",
+    "bottom": "jos",
+    "left": "stânga",
+    "right": "dreapta",
+    "labelWithTab": "{{base}} (fila „{{tabNumber}}”, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Fișier",
+      "newTab": "Filă nouă",
+      "closeTab": "Închide fila",
+      "newConnection": "Conexiune nouă",
+      "disconnect": "Deconectare",
+      "manageBookmarks": "Gestionare marcaje…",
+      "saveConnection": "Salvare conexiune",
+      "saveConnectionSide": "Salvare conexiune ({{side}})",
+      "saveBookmarkSide": "Salvare marcaj ({{side}})",
+      "savePathSide": "Salvare cale ({{side}})",
+      "exportSettings": "Setări de export…",
+      "importSettings": "Setări de import…",
+      "quit": "Ieși"
+    },
+    "edit": {
+      "title": "Editare",
+      "settings": "Setări…",
+      "resetLayout": "Resetează aspectul și memoria cache…"
+    },
+    "view": {
+      "title": "Vizualizare",
+      "darkTheme": "Tema întunecată",
+      "lightTheme": "Tema deschisă",
+      "systemTheme": "Tema sistemului",
+      "syncBrowsing": "Răsfoirea folderului de sincronizare",
+      "showHiddenFiles": "Afișează fișierele și folderele ascunse",
+      "leftPane": "Panoul din stânga",
+      "rightPane": "Panoul din dreapta",
+      "transferQueue": "Coada de transferuri",
+      "log": "Jurnal",
+      "stackedPanes": "Panouri suprapuse",
+      "refreshBothPanes": "Reîmprospătează ambele panouri"
+    },
+    "transfer": {
+      "title": "Transfer",
+      "copySelectedRight": "Copierea elementelor selectate →",
+      "copySelectedLeft": "← Copierea elementelor selectate",
+      "clearCompleted": "Șterge Finalizat"
+    },
+    "bookmarks": {
+      "title": "Marcaje"
+    },
+    "help": {
+      "supportProject": "Susține proiectul",
+      "title": "Ajutor",
+      "documentation": "Documentație",
+      "reportIssue": "Raportează o problemă",
+      "checkUpdates": "Verificați dacă există actualizări",
+      "about": "Despre"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Serverul a refuzat conexiunea. Verificați adresa și portul.",
+    "serverNotFound": "Serverul nu a fost găsit. Verificați dacă adresa este corectă.",
+    "timeout": "Serverul nu răspunde (a expirat timpul de așteptare pentru conexiune). Verificați adresa, portul și conexiunea la rețea.",
+    "connectionReset": "Conexiunea la server a fost întreruptă în mod neașteptat.",
+    "networkUnreachable": "Serverul nu poate fi accesat — verificați conexiunea la rețea.",
+    "loginIncorrect": "Numele de utilizator sau parola sunt incorecte.",
+    "invalidCertificate": "Serverul a prezentat un certificat nevalid. Dacă aveți încredere în acest server, dezactivați verificarea certificatului în setările conexiunii.",
+    "tlsNegotiationFailed": "Negocierea TLS a eșuat. Verificați dacă serverul acceptă FTPS sau HTTPS explicit și o versiune TLS compatibilă.",
+    "sshNegotiationFailed": "Negocierea SSH a eșuat. Serverul și FTPeach nu au reușit să ajungă la un acord cu privire la un algoritm SSH compatibil sau la o versiune compatibilă a protocolului.",
+    "proxyFailed": "Conexiunea prin proxy a eșuat. Verificați tipul de proxy, adresa, datele de autentificare și dacă se poate stabili conexiunea cu serverul țintă.",
+    "keyReadFailed": "Nu s-a putut citi cheia — fișierul este corupt sau fraza de acces este incorectă.",
+    "accessDenied": "Nu aveți permisiunea necesară pentru această operațiune.",
+    "notFound": "Fișierul sau folderul nu a fost găsit.",
+    "fileOrFolderExists": "Există deja un fișier sau un dosar cu acest nume.",
+    "fileBusy": "Fișierul este utilizat de un alt proces.",
+    "diskFull": "Spațiu insuficient pe disc.",
+    "hostKeyMismatch": "Cheia gazdă a serverului s-a schimbat.",
+    "integrityMismatch": "Fișierul transferat nu a trecut verificarea integrității.",
+    "invalidInput": "Valoarea furnizată nu este validă.",
+    "internal": "A apărut o eroare neașteptată.",
+    "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
+    "alreadyExists": "„{{name}}” există deja"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Asociații",
+      "hint": "Alegeți o aplicație pentru o extensie. Fișierele pentru care nu există o regulă vor folosi setarea implicită a sistemului.",
+      "extension": "Extensie",
+      "extensionPlaceholder": "txt",
+      "application": "Aplicație",
+      "applicationPlaceholder": "Calea de acces a aplicației",
+      "browse": "Alegeți aplicația",
+      "remove": "Elimină asocierea",
+      "add": "Adăugare asociere"
+    },
+    "minimizeToTray": "Minimizează în bara de sistem",
+    "minimizeToTrayHint": "Butonul de minimizare ascunde fereastra în bara de sistem, nu în bara de activități.",
+    "closeToTray": "Închide în bara de sistem",
+    "closeToTrayHint": "Butonul de închidere ascunde fereastra în bara de sistem, în loc să închidă aplicația. Închideți aplicația din meniul pictogramei din bara de sistem.",
+    "title": "Setări",
+    "unsavedChangesTitle": "Modificări nesalvate",
+    "unsavedChangesMessage": "Doriți să salvați modificările aduse setărilor?",
+    "discardChanges": "Nu salvați",
+    "categories": {
+      "connection": "Conexiune",
+      "transfers": "Transferuri",
+      "interface": "Interfață",
+      "shortcuts": "Comenzi rapide",
+      "updates": "Actualizări",
+      "logging": "Jurnalizare",
+      "security": "Securitate"
+    },
+    "shortcuts": {
+      "title": "Comenzi rapide de la tastatură",
+      "hint": "Faceți clic pe o comandă rapidă, apoi apăsați o nouă combinație de taste pentru a o reatribui.",
+      "globalTitle": "Globale",
+      "paneTitle": "Panoul de fișiere",
+      "recording": "Apăsați o tastă…",
+      "unbound": "Nealocat",
+      "reset": "Restaurare la setările implicite",
+      "resetAll": "Resetează totul la setările implicite",
+      "unassign": "Anulează atribuirea",
+      "conflict": "Folosit și de: {{action}}",
+      "actions": {
+        "search": "Căutare ({{side}})",
+        "toggleHiddenFiles": "Afișează/ascunde fișierele ascunse",
+        "newConnection": "Conexiune nouă",
+        "save": "Salvează ({{side}})",
+        "openSettings": "Deschide setările",
+        "newTab": "Filă nouă",
+        "closeTab": "Închide fila",
+        "nextTab": "Fila următoare",
+        "prevTab": "Fila anterioară",
+        "refresh": "Reîmprospătează",
+        "selectAll": "Selectează tot",
+        "delete": "Șterge",
+        "deletePermanent": "Șterge definitiv",
+        "navigateUp": "Urcă cu un nivel în structura de foldere",
+        "navigateBack": "Înapoi",
+        "navigateForward": "Mergi mai departe",
+        "navigateHome": "Mergi la folderul principal",
+        "moveTo": "Mută în…",
+        "newFolder": "Dosar nou…",
+        "newFile": "Fișier nou…",
+        "copyToOtherPane": "Copiază în celălalt panou",
+        "copy": "Copiere",
+        "cut": "Tăiere",
+        "paste": "Lipiți",
+        "clearSelection": "Șterge selecția",
+        "open": "Deschide"
+      }
+    },
+    "security": {
+      "title": "Protecție prin parolă",
+      "systemMode": "Protecția sistemului",
+      "systemModeHint": "Parolele sunt criptate pentru contul dvs. Windows și pot fi vizualizate în setările de conexiune.",
+      "strongholdMode": "Protecție îmbunătățită",
+      "strongholdModeHint": "Este necesară o parolă principală. Parolele salvate pot fi utilizate pentru conectare, dar nu pot fi vizualizate.",
+      "loading": "Se verifică spațiul de stocare protejat…",
+      "configuredLocked": "Spațiul de stocare protejat este securizat cu o parolă principală și este blocat.",
+      "configuredUnlocked": "Spațiul de stocare protejat este securizat cu o parolă principală și se deblochează.",
+      "masterPassword": "Parola principală",
+      "confirmPassword": "Confirmă parola principală",
+      "oldPassword": "Parola principală actuală",
+      "newPassword": "Noua parolă principală",
+      "setup": "Protejați parolele salvate",
+      "settingUp": "Protejarea…",
+      "unlock": "Deblochează",
+      "unlocking": "Se deblochează…",
+      "unlockRequired": "Deblochează spațiul de stocare protejat",
+      "unlockRequiredHint": "Această conexiune utilizează o cheie secretă salvată. Deblochează spațiul de stocare protejat pentru a continua.",
+      "lockNow": "Blochează acum",
+      "autoLock": "Blocare automată după, min",
+      "autoLockDisabled": "Dezactivat",
+      "autoLockHint": "Blochează spațiul de stocare după o perioadă de inactivitate. Conexiunile existente la server rămân active; valoarea 0 dezactivează blocarea automată.",
+      "changePassword": "Modificarea parolei principale",
+      "change": "Schimbă parola",
+      "systemUnlock": "Permite deblocarea sistemului",
+      "systemUnlockHint": "Utilizează Windows Hello (cod PIN, recunoaștere facială sau amprentă digitală, conform configurării din Windows). Parola principală rămâne metoda de recuperare.",
+      "unlockWithSystem": "Deblocare prin autentificare de sistem",
+      "systemUnavailable": "Funcția de deblocare a sistemului nu este disponibilă pe această platformă.",
+      "noRecovery": "O parolă principală uitată nu poate fi recuperată. Resetarea seifului duce la ștergerea tuturor secretelor salvate.",
+      "passwordMismatch": "Parolele nu se potrivesc.",
+      "passwordTooShort": "Folosiți cel puțin 12 caractere pentru parola principală.",
+      "strength": {
+        "tooShort": "Prea scurt — folosește cel puțin 12 caractere.",
+        "acceptable": "Este acceptabil. O frază de acces mai lungă este mai sigură.",
+        "strong": "O parolă principală puternică."
+      },
+      "reset": "Resetare spațiu de stocare protejat",
+      "resetHint": "Șterge spațiul de stocare protejat și toate parolele și frazele de acces pentru cheile SSH stocate în acesta. Protecția avansată va trebui configurată din nou.",
+      "resetWarning": "Această acțiune va șterge definitiv toate parolele și frazele-cheie salvate. Introduceți parola principală curentă pentru a continua.",
+      "confirmReset": "Șterge secretele salvate",
+      "showConfirmations": "Afișează confirmările de securitate",
+      "showConfirmationsHint": "Solicită confirmare înainte de afișarea secretelor salvate sau rularea fișierelor executabile. Resetarea stocării protejate necesită întotdeauna confirmare.",
+      "unavailable": "Spațiul de stocare protejat nu este disponibil.",
+      "failed": "Operațiunea de stocare protejată a eșuat."
+    },
+    "unlimitedPlaceholder": "Fără limită",
+    "connectTimeoutLabel": "Timp de așteptare pentru conexiune, sec",
+    "connectTimeoutHint": "Cât timp trebuie așteptat un răspuns al serverului la conectare înainte de a-l considera inaccesibil (0 sau câmp gol — fără limită). Se aplică următoarei conexiuni.",
+    "ftpActiveMode": "Modul FTP activ (în loc de cel pasiv)",
+    "ftpActiveModeHint": "Numai pentru FTP/FTPS — nu are niciun efect asupra SFTP/WebDAV. Este necesară rar, doar în rețelele/pe serverele în care modul pasiv nu trece prin NAT. Se aplică la următoarea conexiune.",
+    "ftpActiveModeDisabledByProxy": "Indisponibil atâta timp cât este activat un proxy — un tunel proxy acceptă doar conexiunile de ieșire, așa că FTP-ul trebuie să rămână în modul pasiv.",
+    "proxy": {
+      "enable": "Folosiți un server proxy pentru conexiuni",
+      "enableHint": "SOCKS4, SOCKS5 sau HTTP CONNECT — se aplică pentru FTP, FTPS, SFTP și WebDAV. Se aplică la următoarea conexiune.",
+      "typeLabel": "Tipul proxy-ului",
+      "hostLabel": "Gazdă proxy",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Port",
+      "usernameLabel": "Nume de utilizator",
+      "passwordLabel": "Parolă",
+      "removeSavedPassword": "Șterge parola salvată",
+      "revealFailed": "Nu s-a putut decripta parola salvată.",
+      "testTargetLabel": "Testare în comparație cu",
+      "testTargetHostPlaceholder": "Gazda serverului",
+      "testTargetPortPlaceholder": "Port",
+      "test": "Testează proxy-ul",
+      "testing": "Testare…",
+      "testOk": "Proxy-ul a ajuns cu succes la destinație.",
+      "testFailed": "Testul de proxy a eșuat."
+    },
+    "concurrencyLabel": "Transferuri simultane",
+    "concurrencyHint": "Câte fișiere se pot încărca și descărca simultan (0 sau lăsat necompletat — fără limită). Se aplică la următoarea conexiune.",
+    "speedLimitLabel": "Limita de viteză, KB/s",
+    "speedLimitHint": "Se aplică la suma totală a tuturor transferurilor simultane (0 sau necompletat — fără limită). Intră în vigoare imediat, fără a mai aștepta următoarea conexiune.",
+    "notifyOnComplete": "Notifică la finalizarea transferurilor",
+    "notifyOnCompleteHint": "O notificare de sistem atunci când coada de transfer se golește — numai atunci când fereastra nu are focalizarea.",
+    "overwriteActionLabel": "Despre conflictele de nume",
+    "overwriteAsk": "Întreabă",
+    "overwriteOverwrite": "Suprascrie",
+    "overwriteSkip": "Sari peste",
+    "overwriteHint": "Ce trebuie făcut atunci când fișierul copiat există deja în folderul de destinație.",
+    "preventSleep": "Împiedicați sistemul să intre în modul de repaus în timpul transferurilor",
+    "preventSleepHint": "Intră în vigoare imediat, fără a mai aștepta următoarea conexiune. Rămâne activă atâta timp cât există cel puțin un transfer în curs — în caz contrar, nu blochează starea de repaus.",
+    "themeLabel": "Tema",
+    "themeDark": "Întunecată",
+    "themeLight": "Deschisă",
+    "themeSystem": "Sistem",
+    "languageLabel": "Limba interfeței",
+    "interfaceScaleLabel": "Scara de interfață",
+    "interfaceScaleHint": "Modificați dimensiunea textului și a elementelor de control din întreaga aplicație.",
+    "dateFormatLabel": "Formatul datei și orei",
+    "dateFormatOnlyLabel": "Format dată",
+    "timeFormatLabel": "Format oră",
+    "timeFormat24Hour": "24 h",
+    "timeFormat12Hour": "12 h",
+    "dateFormatLocale": "Local",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Dosar implicit pentru Calculator",
+    "defaultLocalPathHint": "Dosarul pe care panoul Calculator îl deschide la pornire și la comutarea de la un server. Lăsați gol pentru a folosi dosarul principal al sistemului.",
+    "chooseDefaultLocalPath": "Alegeți dosarul implicit",
+    "showHiddenFiles": "Afișează fișierele și folderele ascunse",
+    "showHiddenFilesHint": "Se aplică atât panourilor de fișiere locale, cât și celor de la distanță.",
+    "coloredTabs": "Filete colorate",
+    "coloredTabsHint": "Culoarea numelui și a pictogramei filei este stabilită în funcție de culoarea marcajului salvat.",
+    "autoCheckUpdates": "Verifică dacă există actualizări la pornire",
+    "autoCheckUpdatesHint": "O verificare silențioasă la câteva secunde după pornire — instalarea unei actualizări necesită întotdeauna o confirmare separată.",
+    "autoReconnectTabs": "Reconectarea filelor restaurate la pornire",
+    "autoReconnectTabsHint": "Dezactivată în mod implicit. Când este activată, site-urile salvate și restaurate se conectează automat.",
+    "saveSessionOnExit": "Salvează sesiunea la ieșire",
+    "saveSessionOnExitHint": "Restaurează filele deschise, tipurile de panouri și căile la următoarea pornire. Dezactivarea acestei opțiuni șterge sesiunea salvată.",
+    "checkNow": "Verifică acum",
+    "updateStatus": {
+      "checking": "Se verifică dacă există actualizări…",
+      "notAvailable": "Folosești cea mai recentă versiune.",
+      "error": "Nu s-au putut verifica actualizările.",
+      "notPackaged": "Nu este disponibil în această versiune (npm run dev/start)."
+    },
+    "logEnable": "Activează jurnalul",
+    "logShowTimestamps": "Afișează marcajele de timp",
+    "logToFile": "Înregistrează jurnalul într-un fișier",
+    "logToFileHint": "Atunci când această opțiune este activată, jurnalul este adăugat continuu la un fișier de pe disc (%APPDATA%\\FTPeach\\logs\\ftpeach.log) — indiferent dacă panoul de jurnal este deschis sau nu. Aceasta este o funcție diferită de butonul „Salvare” din panoul propriu-zis (acesta salvează doar ultimele 200 de linii o singură dată, la apăsare).",
+    "exportDiagnostics": "Exportă pachetul de diagnosticare",
+    "exportDiagnosticsBusy": "Se exportă…",
+    "exportDiagnosticsHint": "Exportă versiunea, sistemul de operare și ultimele 200 de înregistrări din jurnal. Parolele, tokenurile și alte date secrete sunt ascunse.",
+    "exportDiagnosticsFailed": "Pachetul de diagnosticare nu a putut fi exportat."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Setări de export",
+    "confirmLabel": "Export…",
+    "includeSettings": "Setări ale aplicației",
+    "includeBookmarks": "Marcaje",
+    "includeLocalPaths": "Căi locale",
+    "passwordHint": "Parolele și frazele de acces pentru cheile SSH nu sunt incluse în export — va trebui să le reintroduceți după importarea datelor pe un alt computer."
+  },
+  "importSettingsDialog": {
+    "title": "Setări de import",
+    "confirmLabel": "Import…",
+    "includeSettings": "Setări ale aplicației",
+    "includeBookmarks": "Marcaje",
+    "includeLocalPaths": "Căi locale",
+    "passwordHint": "Parolele și frazele de acces pentru cheile SSH nu sunt incluse în import — va trebui să le reintroduceți pentru fiecare site importat."
+  },
+  "openWithDialog": {
+    "title": "Deschide în aplicație",
+    "downloading": "Se descarcă „{{fileName}}”…",
+    "progress": "{{loaded}} din {{total}} ({{percent}} %)",
+    "connecting": "Se conectează…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Eroare de transfer",
+    "notifyCompleteTitle": "Transfer finalizat",
+    "notifySucceeded": "a reușit: {{count}}",
+    "notifyFailed": "eșec: {{count}}",
+    "webdavUploadTooLarge": "Încărcările prin WebDAV sunt limitate la {{limit}} MiB pe fișier."
+  },
+  "transferQueue": {
+    "title": "Transferuri",
+    "columns": {
+      "file": "Fișier",
+      "size": "Dimensiune",
+      "transferred": "Transferat",
+      "progress": "Progres",
+      "speed": "Viteză",
+      "remaining": "Rămase",
+      "status": "Stare"
+    },
+    "empty": "Încărcările și descărcările vor apărea aici",
+    "newTransfers_one": "{{count}} transfer nou",
+    "newTransfers_other": "{{count}} de transferuri noi",
+    "status": {
+      "queued": "În așteptare",
+      "done": "Gata",
+      "error": "Eroare",
+      "paused": "În pauză",
+      "stopped": "Anulat",
+      "cancelling": "Se anulează…"
+    },
+    "direction": {
+      "up": "Încărcare",
+      "down": "Descărcare",
+      "copy": "Copiere"
+    },
+    "directionTitleCopy": "Copiere între servere",
+    "cancelledByUser": "Anulat de utilizator",
+    "stoppedDash": "s-a oprit",
+    "resume": "Reia",
+    "retry": "Reîncearcă",
+    "stop": "Oprește-te",
+    "pauseUnsupportedCopy": "Funcția de pauză nu este acceptată atunci când se copiază între servere",
+    "pauseUnsupportedWebdav": "Funcția „Pauză” nu este acceptată de WebDAV",
+    "newTransfers_few": "{{count}} transferuri noi"
+  },
+  "log": {
+    "connecting": "Se stabilește conexiunea la {{addr}}...",
+    "connectFailed": "Eroare de conexiune: {{error}}",
+    "connected": "Autentificat.",
+    "receivedEntries_one": "S-a primit {{count}} înregistrare",
+    "receivedEntries_other": "S-au primit {{count}} de înregistrări",
+    "skippedUnsafeEntry": "S-a omis o intrare din listă cu un nume nesigur: {{name}}",
+    "listFailed": "Listarea a eșuat: {{error}}",
+    "tlsInit": "Se inițializează TLS...",
+    "tlsEstablished": "S-a stabilit conexiunea TLS.",
+    "davResumeUnsupportedLocal": "WebDAV nu acceptă reluarea încărcării — fișierul va fi trimis din nou de la început.",
+    "davResumeUnsupportedServer": "Serverul nu acceptă reluarea descărcării (starea așteptată: {{expected}}, s-a primit {{status}}) — fișierul va fi descărcat din nou.",
+    "receivedEntries_few": "S-au primit {{count}} înregistrări"
+  },
+  "logPanel": {
+    "showAllConnections": "Afișează toate conexiunile",
+    "showOnlyThisConnection": "Afișează doar această conexiune",
+    "connectionClosedShowOnly": "Conexiune închisă — afișează numai această conexiune",
+    "hideTimestamps": "Ascunde marcajele de timp din rândurile jurnalului",
+    "showTimestamps": "Afișează marcajele de timp în rândurile jurnalului",
+    "copyToClipboard": "Copiază jurnalul în clipboard",
+    "saveLastLines_one": "Salvează ultima {{count}} linie într-un fișier .txt",
+    "saveLastLines_other": "Salvează ultimele {{count}} de linii într-un fișier .txt",
+    "clearLog": "Șterge jurnalul",
+    "copiedTooltip": "Copiat",
+    "copyFailedTooltip": "Nu s-a putut copia",
+    "saveFailedTooltip": "Nu s-a putut salva fișierul",
+    "emptyFiltered": "Nu există linii pentru această conexiune",
+    "emptyDefault": "Mesajele de protocol vor apărea aici",
+    "saveLastLines_few": "Salvează ultimele {{count}} linii într-un fișier .txt"
+  },
+  "aboutDialog": {
+    "title": "Despre",
+    "tagline": "Un client FTP/FTPS/SFTP ușor.",
+    "legalInformation": "Informații juridice",
+    "sourceCode": "Cod sursă",
+    "reportIssue": "Raportează o problemă",
+    "checkForUpdates": "Verificați dacă există actualizări",
+    "updateDownloaded": "S-a descărcat actualizarea v{{version}} — o puteți instala acum."
+  },
+  "siteManager": {
+    "emptyList": "Nu există încă site-uri salvate",
+    "confirmDeleteSite": "Să șterg site-ul „{{name}}”?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Marcaj nou",
+    "titleEdit": "Editează marcajul",
+    "titleList": "Gestionarea marcajelor",
+    "titleLocalPathList": "Gestionarea căilor locale",
+    "manageLocalPaths": "Gestionare căi locale…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Nume",
+      "icon": "Icoană",
+      "color": "Culoare",
+      "protocol": "Protocol",
+      "keyFile": "Fișier cheie",
+      "caCertFile": "Certificat CA",
+      "remotePath": "Dosar implicit",
+      "localPath": "Dosar local"
+    },
+    "icons": {
+      "bookmark": "Marcaj",
+      "globe": "Site web",
+      "briefcase": "Muncă",
+      "house": "Server de acasă",
+      "cloud": "Cloud",
+      "flask": "Testare / staging",
+      "gamepad": "Server de jocuri",
+      "clapperboard": "Server media",
+      "camera": "Cameră foto"
+    },
+    "colors": {
+      "default": "Fără culoare",
+      "peach": "Piersică",
+      "red": "Roșu",
+      "amber": "Chihlimbar",
+      "green": "Verde",
+      "blue": "Albastru",
+      "purple": "Violet",
+      "pink": "Roz",
+      "teal": "Albastru-verde"
+    },
+    "saveFailed": "Nu s-a putut salva",
+    "revealFailed": "Nu s-a putut afișa secretul salvat",
+    "savedSecretPlaceholder": "Salvat",
+    "savedSecretHint": "Lăsați necompletat pentru a păstra parola actuală",
+    "removeSavedPassword": "Șterge parola salvată",
+    "removeSavedPassphrase": "Ștergeți fraza de acces salvată",
+    "secretWillBeRemoved": "Va fi eliminat la salvare",
+    "addBookmark": "Marcaj nou",
+    "addLocalBookmark": "Adăugare marcaj pentru folder local",
+    "chooseLocalPath": "Alegeți un dosar local",
+    "importBookmarks": "Import",
+    "exportBookmarks": "Export",
+    "importAdded_one": "Adăugat {{count}} marcaj",
+    "importAdded_few": "Adăugate {{count}} marcaje",
+    "importAdded_other": "Adăugate {{count}} de marcaje",
+    "importSkipped_one": "omis {{count}} duplicat",
+    "importSkipped_few": "omise {{count}} duplicate",
+    "importSkipped_other": "omise {{count}} de duplicate",
+    "importNothingNew": "Nimic nou de importat",
+    "exportSuccess": "Exportat",
+    "sortMode": "Sortarea marcajelor",
+    "sortManual": "Manual",
+    "sortName": "După nume",
+    "sortProtocol": "După protocol",
+    "duplicateWarning": "Există deja un marcaj pentru aceeași destinație: „{{name}}”. Doriți să salvați încă unul?",
+    "saveAnyway": "Salvează oricum",
+    "newFolder": "Dosar nou",
+    "folderNamePlaceholder": "Numele dosarului",
+    "confirmDeleteFolder": "Să ștergem folderul „{{name}}”? Marcajele din acesta vor fi mutate cu un nivel mai sus.",
+    "searchPlaceholder": "Căutare…",
+    "clearSearch": "Șterge căutarea",
+    "noSearchResults": "Nu există marcaje care să corespundă căutării tale",
+    "duplicate": "Duplică",
+    "duplicateNameSuffix": " (copie)",
+    "newBookmarkInFolder": "Adaugă un marcaj nou aici",
+    "expandFolder": "Extindeți „{{name}}”",
+    "collapseFolder": "Ascunde „{{name}}”"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Adresă",
+      "port": "Port",
+      "user": "Nume de utilizator",
+      "password": "Parolă",
+      "passphrase": "Frază de acces",
+      "keyFilePlaceholder": "Fișier cheie…",
+      "chooseKeyFile": "Alegeți fișierul cheie…",
+      "caCertFilePlaceholder": "Certificat CA…",
+      "chooseCaCertFile": "Alegeți certificatul CA…"
+    },
+    "secureToggle": {
+      "tooltip": "Debifați această opțiune pentru a accepta certificatele de server autosemnate și nevalide",
+      "label": "Verifică certificatul"
+    },
+    "authToggle": {
+      "tooltip": "Autentificați-vă folosind un fișier cu cheia SSH privată, în loc de parolă",
+      "label": "Autentificare cu cheie SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Anulează",
+      "connect": "Conectează-te",
+      "disconnect": "Deconectează-te"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "FTP-ul simplu transmite numele de utilizator, parola și fișierele fără criptare. Folosiți FTPS sau SFTP ori de câte ori este posibil."
+  },
+  "titleBar": {
+    "minimize": "Minimizează",
+    "restore": "Restaurare",
+    "maximize": "Maximizează"
+  },
+  "tray": {
+    "show": "Afișează FTPeach",
+    "quit": "Ieșire"
+  },
+  "tabStrip": {
+    "localComputer": "Calculator",
+    "untitledTab": "Filă nouă",
+    "newTabTooltip": "Filă nouă (Ctrl+T)",
+    "rename": "Numele filei"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Mai multe"
+  },
+  "statusBar": {
+    "transfers": "Transferuri: {{count}}",
+    "leftCount": "Stânga: {{count}}",
+    "rightCount": "Dreapta: {{count}}",
+    "topCount": "Sus: {{count}}",
+    "bottomCount": "Jos: {{count}}",
+    "selectedSuffix": " ({{count}} selectate)",
+    "status": {
+      "transferring": "Transferul fișierului",
+      "paused": "În pauză",
+      "connected": "Conectat",
+      "connecting": "Conectare",
+      "connectFailed": "Nu s-a putut stabili conexiunea",
+      "disconnected": "Nu este conectat"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Afișează/ascunde panoul din stânga",
+    "toggleRightPane": "Afișează/ascunde panoul din dreapta",
+    "toggleTransferQueue": "Afișează/ascunde coada de transferuri",
+    "toggleLog": "Afișează/ascunde jurnalul",
+    "orientationNarrow": "Panouri suprapuse — fereastra este prea îngustă pentru afișare unul lângă celălalt",
+    "orientationToRow": "Aranjați ferestrele una lângă alta",
+    "orientationToStacked": "Așează panourile unul peste altul",
+    "pauseUnsupportedWebdav": "Funcția „Pauză” nu este acceptată de WebDAV",
+    "pauseActive": "Suspendă transferurile active",
+    "resumeAllPaused": "Reia toate transferurile puse în așteptare",
+    "stopActive": "Opriți transferurile active",
+    "retryAllStopped": "Reîncearcă toate transferurile oprite",
+    "refreshPanesTooltip": "Reîmprospătează ambele panouri (F5)"
+  },
+  "paneToolbar": {
+    "back": "Înapoi",
+    "forward": "Înainte",
+    "up": "Sus",
+    "chooseFolder": "Alegeți un dosar…",
+    "newFolder": "Dosar nou…",
+    "newFile": "Fișier nou…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Calculator",
+    "remote": "Server",
+    "updatedAtTooltip": "Actualizat: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Nu există conexiuni recente",
+    "noSavedConnectionsBody": "Introduceți adresa serverului de mai sus sau adăugați un site pentru acces cu un singur clic.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Gestionarea marcajelor",
+    "quicklistLabel": "Conexiuni recente"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Eroare neprelucrată a interfeței FTPeach:",
+    "title": "A apărut o problemă",
+    "message": "A apărut o eroare neașteptată la nivelul interfeței. Conexiunea ta activă și fișierele de pe disc nu sunt afectate — poți încerca să reîncarci interfața.",
+    "reload": "Reîncărcare interfață"
+  }
+}

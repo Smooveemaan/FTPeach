@@ -1,0 +1,47 @@
+[package]
+name = "ftpeach-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+# Compile the production parser sources without the desktop/Tauri dependency graph.
+[workspace]
+
+[dependencies]
+libfuzzer-sys = "=0.4.10"
+anyhow = "1.0.104"
+chrono = "0.4.45"
+regex = "1"
+serde = { version = "1.0.229", features = ["derive"] }
+reqwest = { version = "0.13.4", default-features = false }
+quick-xml = "0.42.0"
+percent-encoding = "2.3.2"
+suppaftp = { version = "=11.0.0", default-features = false, features = ["tokio"] }
+tokio = { version = "1.53.1", features = ["rt", "net", "io-util", "time", "macros"] }
+
+[dev-dependencies]
+serde_json = "1.0.151"
+
+[[bin]]
+name = "list_parse"
+path = "fuzz_targets/list_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ftp_response"
+path = "fuzz_targets/ftp_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "webdav_propfind"
+path = "fuzz_targets/webdav_propfind.rs"
+test = false
+doc = false
+bench = false

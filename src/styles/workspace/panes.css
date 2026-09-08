@@ -1,0 +1,899 @@
+/* ---------- Panes ---------- */
+
+.panes {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 68px;
+  overflow: hidden;
+}
+.panes.vertical {
+  flex-direction: column;
+}
+
+
+.pane {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  min-height: 68px;
+  overflow: hidden;
+}
+
+
+.pane-resizer {
+  flex: 0 0 6px;
+  position: relative;
+  cursor: col-resize;
+  background: var(--divider-track);
+}
+.pane-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 2px;
+  width: 2px;
+  background: var(--divider-color);
+  transition: background 0.1s ease;
+}
+.pane-resizer:hover::after,
+.pane-resizer.dragging::after {
+  background: var(--accent-primary);
+}
+/* Panes stacked top/bottom instead of side by side — the resizer between
+   them drags vertically, so it's a horizontal bar (like .section-resizer)
+   rather than a vertical one. */
+.pane-resizer.vertical {
+  flex: 0 0 6px;
+  cursor: row-resize;
+}
+.pane-resizer.vertical::after {
+  top: 2px;
+  bottom: auto;
+  inset-inline: 0;
+  width: auto;
+  height: 2px;
+}
+
+.section-resizer {
+  flex: 0 0 6px;
+  position: relative;
+  cursor: row-resize;
+  background: var(--divider-track);
+}
+.section-resizer::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 2px;
+  height: 2px;
+  background: var(--divider-color);
+  transition: background 0.1s ease;
+}
+.section-resizer:hover::after,
+.section-resizer.dragging::after {
+  background: var(--accent-primary);
+}
+
+
+.pane-titlebar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.pane-title {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+
+
+.pane-source-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pane-source-wrap.form-open {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pane-source-anchor {
+  position: relative;
+  flex: 0 0 auto;
+}
+.pane-source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 3px 7px 3px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  /* <button>'s own UA-stylesheet line-height wins over anything inherited
+     (see .connection-bar input's line-height comment) — without this the
+     label text renders visibly above center. */
+  line-height: 1;
+}
+.pane-source:hover { color: var(--text-primary); background: var(--bg-raised); }
+.pane-source.open { color: var(--text-primary); border-color: var(--border); background: var(--bg-raised); }
+
+.pane-source-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--accent-red);
+}
+.pane-source-dot.state-connecting { background: var(--accent-amber); }
+.pane-source-dot.state-connected { background: var(--accent-green); }
+
+.pane-source-label {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 22ch;
+}
+.pane-source-label.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+.pane-source-chev {
+  font-size: 8px;
+  opacity: 0.7;
+  transform: translateY(1px);
+}
+
+
+.pane-source-menu.menu-dropdown {
+  position: fixed;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.pane-source-menu .menu-items-scroll {
+  max-height: min(124px, calc(var(--app-viewport-h) - 160px));
+  overflow-y: auto;
+}
+.menu-item.new-connection { color: var(--accent-primary); font-weight: 600; }
+
+
+
+.pane-source-wrap .connection-bar {
+  border-bottom: 1px solid var(--border-soft);
+
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+
+
+.pane-filter {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  width: 0;
+  overflow: hidden;
+
+  margin-inline-start: -6px;
+}
+.pane-filter input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text-primary);
+}
+
+.pane-titlebar.search-open .pane-title,
+.pane-titlebar.search-open .pane-toolbar {
+  display: none;
+}
+.pane-titlebar.search-open .pane-filter {
+  flex: 1 1 auto;
+  width: auto;
+  height: 26px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  /* Expanded, it's a real-width box again — the collapsed rule's
+     gap-cancelling margin-left would otherwise pull it a full 6px under
+     the search toggle. */
+  margin-inline-start: 0;
+}
+.pane-titlebar.search-open .pane-filter:focus-within {
+  border-color: var(--accent-primary);
+}
+
+
+.pane-titlebar.form-open .pane-search-toggle,
+.pane-titlebar.form-open .pane-filter,
+.pane-titlebar.form-open .pane-toolbar {
+  display: none;
+}
+
+.pane-titlebar.form-open {
+  padding: 0;
+  border-bottom: none;
+}
+.pane-titlebar.search-open .pane-filter input {
+  width: auto;
+  padding: 5px 0;
+}
+
+
+.pane:has(.pane-titlebar.form-open) {
+  min-width: 366px;
+}
+
+/* Its own row below .pane-titlebar again — merging it in with the search
+   box left neither one enough room once the toolbar icons were added
+   alongside them too, especially with both panes open side by side. */
+.pane-path {
+  flex: 0 0 auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-base);
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: text;
+}
+.pane-path .crumb {
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 3px;
+  /* inline-flex so the root crumb's icon (FilePane.jsx, crumb.icon) lines up
+     on the same baseline as every plain-text crumb next to it, instead of
+     sitting at the SVG's own default inline alignment. */
+  display: inline-flex;
+  align-items: center;
+}
+.pane-path .crumb:hover { color: var(--text-primary); background: var(--bg-raised); }
+.pane-path .sep { color: var(--text-faint); }
+.pane-path .crumb-ellipsis { cursor: text; }
+.pane-path .crumb-ellipsis:hover { color: inherit; background: none; }
+
+
+.crumb-drive {
+  position: relative;
+}
+.crumb-drive-chev {
+  margin-inline-start: 2px;
+  padding: 1px 2px;
+  border-radius: 2px;
+  font-size: 8px;
+  opacity: 0.65;
+  /* The ▾ glyph sits near the top of its own em box in var(--font-mono),
+     so flex-centering the crumb alone leaves it looking too high. */
+  position: relative;
+  top: 1px;
+}
+.crumb-drive:hover .crumb-drive-chev { opacity: 1; }
+/* Half the drive tile's own width, not just the tiny chevron glyph —
+   the glyph alone was too small a target to hit reliably. */
+.crumb-drive-hitzone {
+  position: absolute;
+  inset: 0;
+  inset-inline-start: 50%;
+  cursor: pointer;
+}
+
+/* Rendered off-screen to measure the untruncated trail's real widths
+   (FilePane.jsx) — never visible, never interactive. */
+.pane-path-measure {
+  position: absolute;
+  top: -9999px;
+  inset-inline-start: -9999px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.path-input {
+  flex: 1 1 auto;
+  height: 20px;
+  background: var(--bg-base);
+  border: 1px solid var(--accent-primary);
+  border-radius: 3px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.pane-list {
+  position: relative;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-panel);
+  transition: background-color 0ms;
+}
+
+
+.pane-list-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+
+.pane-list.pane-list-empty {
+  overflow-y: hidden;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  align-items: center;
+  gap: 8px;
+
+  padding-block: 5px;
+  padding-inline: 12px 0;
+  cursor: default;
+}
+.row:hover { background: var(--bg-panel-alt); }
+.row.selected {
+  background: var(--accent-primary-dim);
+}
+/* Hidden entries remain readable when explicitly enabled, but are visually
+   distinct from regular files and folders. */
+.row.is-hidden {
+  opacity: 0.75;
+}
+
+body.drag-move-active .row:hover:not(.selected) {
+  background: none;
+}
+/* A column drag or resize is in progress — nothing should light up under
+   the cursor except the one thing actually being manipulated (the dragged
+   column keeps its own [data-dragging] background regardless; a resize
+   highlights nothing at all). Covers the file rows below the header too,
+   since a fast pointer sweeping across a reorder can pass right over them. */
+body.column-reorder-active .row:hover:not(.selected),
+body.column-resize-active .row:hover:not(.selected) {
+  background: none;
+}
+
+
+.marquee-select {
+  position: fixed;
+  display: none;
+  z-index: 5;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  border: 1px solid var(--accent-primary);
+}
+
+
+
+
+.row.is-dir::before {
+  content: '';
+  position: absolute;
+
+  inset-inline-start: -3px;
+  top: 0;
+  bottom: 0;
+
+  width: calc(var(--name-cell-width, 0px) + 12px + 3px);
+  pointer-events: none;
+  /* Square on the left (it bleeds off the pane's edge anyway, so a rounded
+     corner there had nothing to round off against), kept only on the right
+     where the tint actually ends mid-row. */
+  border-radius: 0;
+  border-start-end-radius: 5px;
+  border-end-end-radius: 5px;
+  /* Flat fill only, no ring/glow — same token .row.selected already uses,
+     so a drop target reads as "this is what's selected/targeted" via one
+     consistent flat language instead of its own separate glowing treatment. */
+  background: var(--accent-primary-dim);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0ms;
+}
+.row.drag-target::before {
+  opacity: 1;
+}
+
+.row.is-dir.drag-no-transition::before {
+  transition: none;
+}
+
+
+body.drag-move-active .app-shell {
+  pointer-events: none;
+}
+body.drag-move-active .pane-list {
+  pointer-events: auto;
+}
+
+
+.pane-list.drag-wash {
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-panel));
+}
+
+.pane-list.drag-wash-invalid {
+  background: var(--bg-base);
+  filter: saturate(0.4);
+}
+
+/* The row(s) actually being picked up — dimmed in place for the same
+   reason a native drag ghost leaves its source looking "lifted": makes
+   it obvious this is the thing following the cursor, not a duplicate. */
+.row.drag-source-row {
+  opacity: 0.4;
+}
+
+.drag-move-ghost {
+  position: fixed;
+  top: 0;
+  /* useDragMove translates from the physical viewport X coordinate. Using
+     inline-start here moved the origin to the right edge in RTL. */
+  left: 0;
+  z-index: 500;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-primary);
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0ms;
+  white-space: nowrap;
+}
+.drag-move-ghost.active {
+  opacity: 1;
+}
+/* Hovering a target that would no-op on drop — same "inert, not wrong" idea
+   as .pane-list.drag-wash-invalid. Needs the extra .active in the selector
+   to outrank that rule's own opacity: 1. */
+.drag-move-ghost.active.invalid {
+  opacity: 0.55;
+}
+/* Ctrl held during the drag — see useDragMove.js's isMove tracking. */
+.drag-move-ghost.move {
+  border-color: var(--accent-primary);
+}
+.drag-move-ghost .icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+}
+.drag-move-ghost .mode {
+  color: var(--accent-primary);
+  font-size: 10.5px;
+}
+
+.row .icon {
+
+  color: var(--text-faint);
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+}
+.row .name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+.row .name.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.row.is-dir .icon { color: var(--accent-primary); }
+.row [class^='col-'] {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.row [class^='col-'].truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.row .col-modifiedAt,
+.row .col-permissions,
+.row .col-owner,
+.row .col-group { color: var(--text-faint); }
+
+
+.pane-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.row-header {
+
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Vertical breathing room moves onto .col-header itself (below) instead of
+     living here: a lone auto-sized grid row has no slack for align-items to
+     stretch into, so the only way to make each column's own box — not just
+     its text — span the full header strip is to let that padding be what
+     makes the box tall in the first place. */
+  padding: 0 12px;
+  /* Same shade as a pane's own resting (unfocused) titlebar — previously no
+     background at all here, just whatever showed through from an ancestor,
+     which read as darker/flatter than intended. */
+  background: var(--bg-panel);
+
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  overflow: hidden;
+  align-items: stretch;
+}
+/* .row-header also carries the plain .row class for layout, but it isn't a
+   data row — cancel .row:hover's full-width tint so only an individual
+   column (below) ever highlights, never the whole header strip. */
+.row-header:hover {
+  background: var(--bg-panel);
+}
+
+.row-header .col-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  text-align: start;
+  overflow: hidden;
+  white-space: nowrap;
+
+  padding-block: 6px;
+  padding-inline-end: 8px;
+
+}
+.row-header .col-header.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+/* Only the reorderable columns (not the pinned "Name") carry this — see
+   FilePane.jsx's column onMouseDown/data-reorderable. */
+.row-header .col-header[data-reorderable='true'] {
+  cursor: grab;
+}
+.col-header.sortable {
+  cursor: pointer;
+}
+/* The highlight bleeds 8px into the gap on its leading edge (exactly the
+   grid's own column-gap) so it reaches the divider line, which is actually
+   drawn by the *previous* column's own resize handle rather than sitting at
+   this column's own left edge — without the bleed, the highlight visibly
+   stopped short of it. box-shadow (not a wider box) so the row's own full
+   height stays the highlight's only vertical extent. */
+.col-header.sortable:hover {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  box-shadow: -8px 0 0 0 var(--bg-raised);
+}
+:dir(rtl) .col-header.sortable:hover {
+  box-shadow: 8px 0 0 0 var(--bg-raised);
+}
+
+.col-header:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: none;
+}
+
+.col-header-label {
+  padding: 0 2px;
+  margin-inline-end: -2px;
+  border-radius: 2px;
+}
+.col-header:focus-visible:where(html[data-keyboard-navigation] *) .col-header-label {
+  outline: 1.5px solid var(--accent-primary);
+
+  outline-offset: -1px;
+}
+
+/* Capture pointer hit-testing across the window while document listeners
+   continue reordering by clientX. Underlying controls cannot hover. */
+body.column-reorder-active::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: auto;
+  cursor: grabbing;
+}
+
+body.column-reorder-active {
+  user-select: none;
+}
+
+/* A column drag or resize is in progress — nothing but the dragged column
+   itself (below) should light up, so a fast pointer sweeping across the
+   other headers on its way to a target doesn't flash their hover state. */
+body.column-reorder-active .col-header.sortable:hover:not([data-dragging='true']),
+body.column-resize-active .col-header.sortable:hover {
+  color: var(--text-faint);
+  background: transparent;
+  box-shadow: none;
+}
+/* The column actively being dragged gets its own lift so the swap under the
+   cursor reads clearly, independent of the FLIP slide the other headers do.
+   Flat background only — no outline; it read as a stray leftover accent
+   once the header cells themselves became full, bordered rectangles.
+   z-index lifts it above whichever header it's sliding past: the dragged
+   and displaced columns both animate via transform and briefly occupy the
+   same screen space mid-slide, so without this their text and edges
+   overlapped and read as a doubled divider. Its own opaque background then
+   fully covers the header sliding underneath for the rest of the crossing. */
+.col-header[data-dragging='true'] {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  border-radius: 0;
+  box-shadow: -8px 0 0 0 var(--bg-raised);
+  z-index: 3;
+}
+:dir(rtl) .col-header[data-dragging='true'] {
+  box-shadow: 8px 0 0 0 var(--bg-raised);
+}
+.sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 3px;
+  color: var(--accent-primary);
+  vertical-align: -1px;
+}
+.sort-indicator.desc {
+  transform: rotate(180deg);
+}
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 2;
+}
+.col-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: 0;
+  width: 1px;
+  background: var(--border);
+}
+.col-resize-handle:hover::after {
+  background: var(--accent-primary);
+  width: 2px;
+}
+/* A column reorder drag is in progress — a resize handle the pointer sweeps
+   over on the way to a drop target shouldn't light up; that accent is for
+   an actual resize grab, not incidental hover mid-drag. */
+body.column-reorder-active .col-resize-handle:hover::after {
+  background: var(--border);
+  width: 1px;
+}
+
+.pane-empty {
+  padding: 24px 16px;
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+
+.pane-list.pane-list-empty.pane-list-empty-scrollable {
+  overflow-y: auto;
+}
+
+
+.pane-connect-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.pane-connect-onboard {
+  gap: 8px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.pane-connect-onboard svg {
+  opacity: 0.55;
+}
+.pane-connect-onboard-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.pane-connect-onboard-body {
+  font-size: 12px;
+  line-height: 1.5;
+  /* Hard 2-line cap instead of hand-fitting each locale's translation to a
+     character budget (fragile — font metrics vary by platform). See
+     .floating-tooltip's line-clamp above for the same pattern. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pane-connect-cta {
+  margin-top: 4px;
+}
+
+.pane-connect-quicklist {
+  gap: 6px;
+  max-width: 340px;
+  margin: 0 auto;
+  text-align: start;
+}
+.pane-quicklist-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  align-self: stretch;
+  text-align: center;
+  margin-bottom: 2px;
+}
+.pane-quicklist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+  cursor: pointer;
+}
+.pane-quicklist-row:hover {
+  border-color: var(--accent-primary);
+}
+.pane-quicklist-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+.pane-quicklist-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pane-quicklist-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pane-quicklist-meta {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.pane-quicklist-meta.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+.pane-quicklist-connect {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pane-quicklist-row:hover .pane-quicklist-connect {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-dim);
+  color: var(--accent-primary);
+}
+.pane-quicklist-more {
+  margin-top: 4px;
+}
+
+
+.pane-toolbar {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+
+.toolbar-overflow-anchor {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.pane-toolbar .toolbar-overflow-anchor {
+  margin-inline-end: 10px;
+}
+
+.pane-toolbar.has-overflow > .toolbar-divider:first-child {
+  margin-inline: auto;
+}
+.toolbar-overflow-menu.menu-dropdown {
+  position: fixed;
+}
+
+
+.toolbar-divider {
+  align-self: stretch;
+  flex-shrink: 0;
+  width: 1px;
+  margin: 5px 2px;
+  background: var(--border-soft);
+}
+
+.btn-icon {
+  min-width: var(--control-height);
+  height: var(--control-height);
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+}
+
+
+.orientation-toggle {
+  transition: none;
+}

@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "로그인 없음",
+    "anonymousUser": "익명",
+    "rootFolder": "루트 폴더",
+    "close": "닫기",
+    "reset": "초기화",
+    "open": "열기",
+    "upload": "업로드",
+    "save": "저장",
+    "create": "만들기",
+    "cancel": "취소",
+    "increase": "증가",
+    "decrease": "감소",
+    "showPassword": "비밀번호 표시",
+    "savedSecretProtected": "저장된 비밀은 보호되어 있어 볼 수 없습니다.",
+    "hidePassword": "비밀번호 숨기기"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach 보안 확인",
+    "allow": "허용",
+    "typeToConfirm": "확인하려면 {{phrase}}을(를) 입력하세요",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "이 즐겨찾기에 저장된 비밀번호를 표시할까요?"
+      },
+      "revealProxyPassword": {
+        "message": "저장된 프록시 비밀번호를 표시할까요?"
+      },
+      "vaultReset": {
+        "message": "저장된 모든 비밀번호와 SSH 키 암호가 영구적으로 삭제됩니다.",
+        "approve": "보관소 삭제"
+      },
+      "executeLocalFile": {
+        "message": "이 실행 파일 또는 스크립트를 실행할까요?"
+      },
+      "executeRemoteFile": {
+        "message": "이 실행 파일 또는 스크립트를 다운로드하여 실행할까요?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "새 폴더…",
+    "newFile": "새 파일…",
+    "refresh": "새로 고침",
+    "open": "열기",
+    "uploadToOtherPane": "다른 창에 업로드",
+    "copyToOtherPane": "다른 창에 복사",
+    "downloadToOtherPane": "다른 창으로 다운로드",
+    "openWith": "다른 앱으로 열기…",
+    "permissions": "권한…",
+    "moveTo": "…로 이동",
+    "copyPath": "경로 복사",
+    "delete": "삭제",
+    "deleteSelected_one": "삭제 ({{count}} 파일)",
+    "deleteSelected_other": "삭제 ({{count}} 파일)",
+    "deletePermanently": "영구적으로 삭제",
+    "deleteSelectedPermanently_one": "영구 삭제 ({{count}} 파일)",
+    "deleteSelectedPermanently_other": "영구적으로 삭제 ({{count}} 파일)"
+  },
+  "chmodDialog": {
+    "title": "SFTP 권한",
+    "label": "{{name}}의 8진수 모드 (예: 644 또는 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "폴더가 비어 있습니다",
+    "homeFolder": "홈 폴더",
+    "copyToPaneBelow": "아래 창에 복사",
+    "copyToPaneAbove": "위쪽 창에 복사",
+    "copyToPaneRight": "오른쪽 창에 복사",
+    "copyToPaneLeft": "왼쪽 창에 복사",
+    "fileTypeFolder": "파일 폴더",
+    "fileTypeGeneric": "파일",
+    "fileTypeWithExt": "{{ext}} 파일",
+    "columnSize": "크기",
+    "columnModifiedAt": "수정일",
+    "columnCreatedAt": "생성 날짜",
+    "columnType": "유형",
+    "columnPermissions": "권한",
+    "columnOwner": "소유자",
+    "columnGroup": "그룹",
+    "columnName": "이름",
+    "filesAriaLabel": "파일",
+    "rename": "이름 변경",
+    "resetColumnWidths": "열 너비 복원",
+    "updatedAtTooltip": "업데이트: {{date}}",
+    "searchTooltip": "검색 ({{shortcut}})",
+    "searchPlaceholder": "검색… ({{shortcut}})",
+    "editPathAriaLabel": "경로 편집",
+    "changeDriveTooltip": "드라이브 변경",
+    "chooseColumnsTooltip": "마우스 오른쪽 버튼을 클릭하여 열을 선택하세요",
+    "sortByNameTooltip": "이름순으로 정렬",
+    "sortByColumnTooltip": "“{{column}}” 열 기준으로 정렬",
+    "rowProbeSample": "예시",
+    "loading": "로딩 중…",
+    "nothingFound": "결과가 없습니다."
+  },
+  "update": {
+    "readyToInstall": "{{version}} 버전의 업데이트가 제공됩니다. 적용하려면 “재시작 및 설치”를 클릭하세요.",
+    "downloadingWithPercent": "{{version}} 버전 업데이트 다운로드 중: {{percent}} %",
+    "downloadingFound": "{{version}} 버전이 발견되었습니다. 다운로드 중…",
+    "restartAndInstall": "재시작 및 설치",
+    "availableAction": "업데이트 있음!",
+    "installAction": "설치할까요?",
+    "downloadTooltip": "클릭하여 다운로드",
+    "downloadingTooltip": "다운로드 중",
+    "installTooltip": "클릭하여 다시 시작하고 설치"
+  },
+  "legacyPasswordNotice": {
+    "message": "업데이트 후 일부 저장된 사이트의 비밀번호를 읽을 수 없게 되었습니다. 사이트 관리자에서 비밀번호를 다시 입력해 주세요."
+  },
+  "plaintextSecretNotice": {
+    "message": "저장된 사이트의 암호 또는 암호 문구가 Windows의 데이터 보호 기능을 사용할 수 없어 암호화되지 못했으며, 대신 일반 텍스트로 저장되었습니다."
+  },
+  "secretNotPersistedNotice": {
+    "message": "비밀번호 또는 키 암호 문구를 암호화할 수 없어 저장되지 않았습니다. 기존 연결은 연결이 끊어질 때까지 계속 사용할 수 있으며, 그렇지 않은 경우 다음 번에 비밀번호를 다시 입력해야 합니다."
+  },
+  "resize": {
+    "paneSize": "창 크기를 조정하려면 드래그하세요(다시 초기화하려면 더블 클릭하세요).",
+    "height": "높이를 조정하려면 드래그하세요 (다시 초기화하려면 두 번 클릭하세요).",
+    "ratio": "드래그하여 비율을 조정하세요 (더블 클릭하면 초기값으로 돌아갑니다)."
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} 항목",
+    "itemCount_other": "{{count}} 항목",
+    "moveMode": "이동"
+  },
+  "openWithChanged": {
+    "title": "파일이 변경되었습니다.",
+    "message": "외부 애플리케이션에서 “{{name}}” 파일이 변경되었습니다. 업데이트된 파일을 서버에 업로드하시겠습니까?"
+  },
+  "saveSite": {
+    "title": "연결 프로필 저장",
+    "label": "연결 프로필 이름:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "새 폴더",
+    "labelLocal": "새 폴더 이름:",
+    "labelRemote": "서버의 새 폴더 이름:"
+  },
+  "newFile": {
+    "title": "새 파일",
+    "label": "파일 이름 (확장자 포함):"
+  },
+  "moveToDialog": {
+    "title": "…로 이동",
+    "labelSingle": "\"{{name}}\"을 다음 폴더로 이동:",
+    "labelMultiple": "선택한 항목({{count}})을 다음 폴더로 이동합니다:"
+  },
+  "confirm": {
+    "allowReplacementRace": "전송 중 \"{{name}}\" 파일이 생성되면 덮어쓰기를 허용하시겠습니까?",
+    "resetLayout": "창 및 패널 크기를 초기화하고, 기본 열을 복원하며, 인터페이스 캐시를 지울까요?",
+    "hostKeyMismatch": "{{error}} {{host}}:{{port}}의 저장된 키 지문을 삭제하고 어쨌든 연결하시겠습니까? 서버가 정상적으로 재설치되거나 마이그레이션되었다고 확신하는 경우에만 이 작업을 수행하십시오. 그렇지 않으면 잠재적으로 위조된 서버에 연결될 수 있습니다.",
+    "connectAnyway": "어쨌든 연결하기",
+    "closeTabWithActiveTransfers": "이 탭에는 진행 중인 전송이 있습니다. 탭을 닫고 전송을 중지하시겠습니까?",
+    "closeTabLabel": "탭 닫기",
+    "overwriteSingleExists": "대상 폴더에 “{{name}}” 파일이 이미 존재합니다. 덮어쓰시겠습니까?",
+    "overwriteConflicts_one": "{{count}} 대상 폴더에 해당 파일이 이미 있습니다. 덮어쓰시겠습니까?",
+    "overwriteConflicts_other": "{{count}} 대상 폴더에 이미 해당 파일이 있습니다. 덮어쓰시겠습니까?",
+    "overwriteLabel": "덮어쓰기",
+    "replaceConnection": "이 창은 이미 “{{current}}”에 연결되어 있습니다. 이 연결을 “{{next}}”로 변경하시겠습니까?",
+    "replaceConnectionLabel": "교체",
+    "deleteSelected": "선택한 항목을 삭제하시겠습니까({{count}})? 이 작업은 되돌릴 수 없습니다.",
+    "deleteEntry": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "recycleSelected": "선택한 항목({{count}})을 휴지통으로 이동하시겠습니까?",
+    "recycleEntry": "\"{{name}}\"을 휴지통으로 이동하시겠습니까?",
+    "deletePermanentSelected": "선택한 항목을 영구적으로 삭제하시겠습니까({{count}})? 이 작업은 되돌릴 수 없습니다.",
+    "deletePermanentEntry": "\"{{name}}\"을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "deleteRemoteSelected": "선택한 원격 항목({{count}})을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "deleteRemoteEntry": "\"{{name}}\" 원격 항목을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+  },
+  "paneSide": {
+    "top": "맨 위",
+    "bottom": "하단",
+    "left": "왼쪽",
+    "right": "오른쪽",
+    "labelWithTab": "{{base}} ({{tabNumber}} 탭, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "파일",
+      "newTab": "새 탭",
+      "closeTab": "탭 닫기",
+      "newConnection": "새로운 연결",
+      "disconnect": "연결 해제",
+      "manageBookmarks": "북마크 관리…",
+      "saveConnection": "연결 저장",
+      "saveConnectionSide": "연결 저장 ({{side}})",
+      "saveBookmarkSide": "북마크 저장 ({{side}})",
+      "savePathSide": "경로 저장 ({{side}})",
+      "exportSettings": "설정 내보내기…",
+      "importSettings": "설정 가져오기…",
+      "quit": "종료"
+    },
+    "edit": {
+      "title": "편집",
+      "settings": "설정…",
+      "resetLayout": "레이아웃 및 캐시 초기화…"
+    },
+    "view": {
+      "title": "보기",
+      "darkTheme": "다크 테마",
+      "lightTheme": "밝은 테마",
+      "systemTheme": "시스템 테마",
+      "syncBrowsing": "동기화 폴더 탐색",
+      "showHiddenFiles": "숨겨진 파일 및 폴더 표시",
+      "leftPane": "왼쪽 창",
+      "rightPane": "오른쪽 창",
+      "transferQueue": "전송 대기열",
+      "log": "로그",
+      "stackedPanes": "겹쳐진 창",
+      "refreshBothPanes": "두 창 모두 새로 고침"
+    },
+    "transfer": {
+      "title": "전송",
+      "copySelectedRight": "선택 항목 복사 →",
+      "copySelectedLeft": "← 선택한 내용 복사",
+      "clearCompleted": "지우기 완료"
+    },
+    "bookmarks": {
+      "title": "즐겨찾기"
+    },
+    "help": {
+      "supportProject": "프로젝트 후원",
+      "title": "도움말",
+      "documentation": "문서",
+      "reportIssue": "문제 신고하기",
+      "checkUpdates": "업데이트 확인",
+      "about": "소개"
+    }
+  },
+  "errors": {
+    "connectionRefused": "서버에서 연결을 거부했습니다. 주소와 포트를 확인해 주세요.",
+    "serverNotFound": "서버를 찾을 수 없습니다. 주소가 올바른지 확인해 주세요.",
+    "timeout": "서버가 응답하지 않습니다(연결 시간 초과). 주소, 포트 및 네트워크 연결을 확인해 주십시오.",
+    "connectionReset": "서버와의 연결이 예기치 않게 끊어졌습니다.",
+    "networkUnreachable": "서버에 연결할 수 없습니다. 네트워크 연결을 확인해 주세요.",
+    "loginIncorrect": "사용자 이름이나 비밀번호가 잘못되었습니다.",
+    "invalidCertificate": "서버에서 유효하지 않은 인증서를 제시했습니다. 이 서버를 신뢰하는 경우, 연결 설정에서 인증서 확인 기능을 비활성화하십시오.",
+    "tlsNegotiationFailed": "TLS 협상 실패. 서버가 명시적 FTPS 또는 HTTPS와 호환되는 TLS 버전을 지원하는지 확인하십시오.",
+    "sshNegotiationFailed": "SSH 협상 실패. 서버와 FTPeach가 호환되는 SSH 알고리즘이나 프로토콜 버전에 대해 합의하지 못했습니다.",
+    "proxyFailed": "프록시 연결에 실패했습니다. 프록시 유형, 주소, 인증 정보를 확인하고, 대상 서버에 연결이 가능한지 확인하십시오.",
+    "keyReadFailed": "키를 읽을 수 없습니다. 파일이 손상되었거나 암호 문구가 올바르지 않습니다.",
+    "accessDenied": "이 작업에 대한 권한이 없습니다.",
+    "notFound": "파일 또는 폴더를 찾을 수 없습니다.",
+    "fileOrFolderExists": "해당 이름의 파일이나 폴더가 이미 존재합니다.",
+    "fileBusy": "이 파일은 다른 프로세스에서 사용 중입니다.",
+    "diskFull": "디스크 공간이 부족합니다.",
+    "hostKeyMismatch": "서버 호스트 키가 변경되었습니다.",
+    "integrityMismatch": "전송된 파일이 무결성 검사를 통과하지 못했습니다.",
+    "invalidInput": "제공된 값이 올바르지 않습니다.",
+    "internal": "예기치 않은 오류가 발생했습니다.",
+    "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",
+    "alreadyExists": "\"{{name}}\"는 이미 존재합니다."
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "연결 프로그램",
+      "hint": "확장자를 적용할 애플리케이션을 선택하십시오. 규칙이 지정되지 않은 파일에는 시스템 기본값이 적용됩니다.",
+      "extension": "확장자",
+      "extensionPlaceholder": "txt",
+      "application": "애플리케이션",
+      "applicationPlaceholder": "애플리케이션 경로",
+      "browse": "애플리케이션 선택",
+      "remove": "연결 해제",
+      "add": "연관성 추가"
+    },
+    "minimizeToTray": "트레이로 최소화",
+    "minimizeToTrayHint": "최소화 버튼을 누르면 창이 작업 표시줄이 아닌 시스템 트레이로 숨겨집니다.",
+    "closeToTray": "트레이 근처",
+    "closeToTrayHint": "닫기 버튼을 누르면 앱이 종료되는 것이 아니라 창이 숨겨지고 트레이로 이동합니다. 트레이 아이콘의 메뉴를 통해 앱을 종료하십시오.",
+    "title": "설정",
+    "unsavedChangesTitle": "저장되지 않은 변경 사항",
+    "unsavedChangesMessage": "설정 변경 사항을 저장하시겠습니까?",
+    "discardChanges": "저장하지 마세요",
+    "categories": {
+      "connection": "연결",
+      "transfers": "전송",
+      "interface": "인터페이스",
+      "shortcuts": "바로가기",
+      "updates": "최신 정보",
+      "logging": "로그 기록",
+      "security": "보안"
+    },
+    "shortcuts": {
+      "title": "키보드 단축키",
+      "hint": "바로가기를 클릭한 다음, 새로운 키 조합을 눌러 해당 바로가기에 키를 다시 할당하세요.",
+      "globalTitle": "글로벌",
+      "paneTitle": "파일 창",
+      "recording": "키를 하나 누르세요…",
+      "unbound": "미지정",
+      "reset": "기본값으로 재설정",
+      "resetAll": "모두 기본값으로 재설정",
+      "unassign": "할당 해제",
+      "conflict": "이미 사용 중: {{action}}",
+      "actions": {
+        "search": "검색 ({{side}})",
+        "toggleHiddenFiles": "숨겨진 파일 표시/숨기기",
+        "newConnection": "새로운 연결",
+        "save": "저장 ({{side}})",
+        "openSettings": "설정 열기",
+        "newTab": "새 탭",
+        "closeTab": "탭 닫기",
+        "nextTab": "다음 탭",
+        "prevTab": "이전 탭",
+        "refresh": "새로 고침",
+        "selectAll": "모두 선택",
+        "delete": "삭제",
+        "deletePermanent": "영구적으로 삭제",
+        "navigateUp": "한 단계 위의 폴더로 이동",
+        "navigateBack": "뒤로 가기",
+        "navigateForward": "앞으로 이동",
+        "navigateHome": "홈 폴더로 이동",
+        "moveTo": "…로 이동",
+        "newFolder": "새 폴더…",
+        "newFile": "새 파일…",
+        "copyToOtherPane": "다른 창에 복사",
+        "copy": "복사",
+        "cut": "자르기",
+        "paste": "붙여넣기",
+        "clearSelection": "선택 항목 지우기",
+        "open": "열기"
+      }
+    },
+    "security": {
+      "title": "비밀번호 보호",
+      "systemMode": "시스템 보호",
+      "systemModeHint": "Windows 계정의 비밀번호는 암호화되어 있으며, 연결 설정에서 확인할 수 있습니다.",
+      "strongholdMode": "강화된 보호 기능",
+      "strongholdModeHint": "마스터 비밀번호가 필요합니다. 저장된 비밀번호는 접속 시 사용할 수 있지만, 직접 확인하는 것은 불가능합니다.",
+      "loading": "보호된 저장소 확인 중…",
+      "configuredLocked": "보안 저장소는 마스터 비밀번호로 보호되고 잠겨 있습니다.",
+      "configuredUnlocked": "보호된 저장 공간은 마스터 비밀번호로 보안이 설정되어 있으며, 잠금이 해제된 상태입니다.",
+      "masterPassword": "마스터 비밀번호",
+      "confirmPassword": "마스터 비밀번호 확인",
+      "oldPassword": "현재 마스터 비밀번호",
+      "newPassword": "새로운 마스터 비밀번호",
+      "setup": "저장된 비밀번호 보호하기",
+      "settingUp": "보호하기…",
+      "unlock": "잠금 해제",
+      "unlocking": "잠금 해제 중…",
+      "unlockRequired": "보호된 저장소 잠금 해제",
+      "unlockRequiredHint": "이 연결에는 저장된 비밀 키가 사용됩니다. 계속하려면 보호된 저장소의 잠금을 해제하세요.",
+      "lockNow": "지금 잠그기",
+      "autoLock": "자동 잠금 시작 시간 (분)",
+      "autoLockDisabled": "비활성화됨",
+      "autoLockHint": "일정 시간 동안 활동이 없으면 저장소를 잠급니다. 기존 서버 연결은 활성화된 상태로 유지되며, 0을 설정하면 자동 잠금 기능이 비활성화됩니다.",
+      "changePassword": "마스터 비밀번호 변경",
+      "change": "비밀번호 변경",
+      "systemUnlock": "시스템 잠금 해제 허용",
+      "systemUnlockHint": "Windows Hello(Windows에서 설정한 PIN, 얼굴 또는 지문)를 사용합니다. 마스터 비밀번호는 여전히 복구 수단으로 유지됩니다.",
+      "unlockWithSystem": "시스템 인증을 통해 잠금 해제",
+      "systemUnavailable": "이 플랫폼에서는 시스템 잠금 해제가 불가능합니다.",
+      "noRecovery": "잊어버린 마스터 비밀번호는 복구할 수 없습니다. 볼트를 재설정하면 저장된 모든 비밀 정보가 삭제됩니다.",
+      "passwordMismatch": "비밀번호가 일치하지 않습니다.",
+      "passwordTooShort": "마스터 비밀번호는 12자 이상으로 설정하십시오.",
+      "strength": {
+        "tooShort": "너무 짧습니다. 최소 12자 이상 입력해 주세요.",
+        "acceptable": "괜찮습니다. 패스프레이즈가 길수록 더 안전합니다.",
+        "strong": "강력한 마스터 비밀번호."
+      },
+      "reset": "보호된 저장소 초기화",
+      "resetHint": "보호된 저장소와 그 안에 저장된 모든 비밀번호 및 SSH 키 암호 문구를 삭제합니다. 강화된 보호 기능을 다시 설정해야 합니다.",
+      "resetWarning": "이렇게 하면 저장된 모든 비밀번호와 키 암호 문구가 영구적으로 삭제됩니다. 계속하려면 현재 마스터 비밀번호를 입력하십시오.",
+      "confirmReset": "저장된 비밀 정보 삭제",
+      "showConfirmations": "보안 확인 표시",
+      "showConfirmationsHint": "저장된 비밀 정보를 표시하거나 실행 파일을 시작하기 전에 확인합니다. 보호된 저장소 초기화는 항상 확인이 필요합니다.",
+      "unavailable": "보호된 저장소를 사용할 수 없습니다.",
+      "failed": "보호된 저장소 작업이 실패했습니다."
+    },
+    "unlimitedPlaceholder": "제한 없음",
+    "connectTimeoutLabel": "연결 시간 초과, 초",
+    "connectTimeoutHint": "연결 시 서버 응답을 기다리는 시간(이 값이 0이거나 비어 있으면 제한 없음). 다음 연결에 적용됩니다.",
+    "ftpActiveMode": "능동 FTP 모드 (수동 모드 대신)",
+    "ftpActiveModeHint": "FTP/FTPS 전용 — SFTP/WebDAV에는 영향을 미치지 않습니다. 패시브 모드가 NAT를 통과하지 못하는 네트워크나 서버에서만 드물게 필요합니다. 다음 연결부터 적용됩니다.",
+    "ftpActiveModeDisabledByProxy": "프록시가 활성화된 상태에서는 사용할 수 없습니다. 프록시 터널은 아웃바운드 연결만 지원하므로, FTP는 패시브 모드로 유지되어야 합니다.",
+    "proxy": {
+      "enable": "연결 시 프록시 사용",
+      "enableHint": "SOCKS4, SOCKS5 또는 HTTP CONNECT — FTP, FTPS, SFTP 및 WebDAV에 적용됩니다. 다음 연결에 적용됩니다.",
+      "typeLabel": "프록시 유형",
+      "hostLabel": "프록시 호스트",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "포트",
+      "usernameLabel": "사용자 이름",
+      "passwordLabel": "비밀번호",
+      "removeSavedPassword": "저장된 비밀번호 삭제",
+      "revealFailed": "저장된 비밀번호를 해독할 수 없습니다.",
+      "testTargetLabel": "테스트 대상",
+      "testTargetHostPlaceholder": "서버 호스트",
+      "testTargetPortPlaceholder": "포트",
+      "test": "프록시 테스트",
+      "testing": "테스트 중…",
+      "testOk": "프록시가 대상에 성공적으로 도달했습니다.",
+      "testFailed": "프록시 테스트가 실패했습니다."
+    },
+    "concurrencyLabel": "동시 전송",
+    "concurrencyHint": "동시에 업로드 및 다운로드할 파일 수 (0 또는 공백 — 제한 없음). 다음 연결부터 적용됩니다.",
+    "speedLimitLabel": "속도 제한, KB/s",
+    "speedLimitHint": "동시에 이루어지는 모든 전송의 합계에 적용됩니다(0 또는 공란 — 제한 없음). 다음 연결을 기다리지 않고 즉시 적용됩니다.",
+    "notifyOnComplete": "전송이 완료되면 알림 보내기",
+    "notifyOnCompleteHint": "전송 대기열이 비워졌을 때 시스템 알림이 표시됩니다. 단, 창에 포커스가 맞춰져 있지 않은 경우에만 해당됩니다.",
+    "overwriteActionLabel": "이름 충돌에 관하여",
+    "overwriteAsk": "물어보세요",
+    "overwriteOverwrite": "덮어쓰기",
+    "overwriteSkip": "건너뛰기",
+    "overwriteHint": "복사하려는 파일이 대상 폴더에 이미 존재할 때 어떻게 해야 할까요?",
+    "preventSleep": "데이터 전송 중 시스템이 절전 모드로 전환되는 것을 방지합니다",
+    "preventSleepHint": "다음 연결을 기다리지 않고 즉시 적용됩니다. 진행 중인 전송이 하나 이상 있는 동안에는 활성 상태를 유지하며, 그렇지 않은 경우에는 절전 모드를 차단하지 않습니다.",
+    "themeLabel": "주제",
+    "themeDark": "다크",
+    "themeLight": "라이트",
+    "themeSystem": "시스템",
+    "languageLabel": "인터페이스 언어",
+    "interfaceScaleLabel": "인터페이스 규모",
+    "interfaceScaleHint": "애플리케이션 전체에서 텍스트와 컨트롤의 크기를 변경합니다.",
+    "dateFormatLabel": "날짜/시간 형식",
+    "dateFormatOnlyLabel": "날짜 형식",
+    "timeFormatLabel": "시간 형식",
+    "timeFormat24Hour": "24시간",
+    "timeFormat12Hour": "12시간",
+    "dateFormatLocale": "지역",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "컴퓨터의 기본 폴더",
+    "defaultLocalPathHint": "시작할 때와 서버에서 전환할 때 컴퓨터 창이 여는 폴더입니다. 비워 두면 시스템의 홈 폴더를 사용합니다.",
+    "chooseDefaultLocalPath": "기본 폴더 선택",
+    "showHiddenFiles": "숨겨진 파일 및 폴더 표시",
+    "showHiddenFilesHint": "로컬 및 원격 파일 창 모두에 적용됩니다.",
+    "coloredTabs": "색상별 탭",
+    "coloredTabsHint": "저장된 북마크 색상을 사용하여 탭 이름과 아이콘을 색칠합니다.",
+    "autoCheckUpdates": "시작 시 업데이트 확인",
+    "autoCheckUpdatesHint": "시작 후 몇 초 후에 자동으로 확인이 이루어집니다. 업데이트를 설치할 때는 항상 별도의 확인이 필요합니다.",
+    "autoReconnectTabs": "시작 시 복원된 탭 다시 연결하기",
+    "autoReconnectTabsHint": "기본적으로 비활성화되어 있습니다. 이 기능을 활성화하면 저장된 사이트가 복원될 때 자동으로 연결됩니다.",
+    "saveSessionOnExit": "종료 시 세션 저장",
+    "saveSessionOnExitHint": "다음에 프로그램을 실행할 때 열려 있던 탭, 창 유형 및 경로를 복원합니다. 이 기능을 비활성화하면 저장된 세션이 삭제됩니다.",
+    "checkNow": "지금 확인하기",
+    "updateStatus": {
+      "checking": "업데이트 확인 중…",
+      "notAvailable": "현재 최신 버전을 사용 중입니다.",
+      "error": "업데이트를 확인할 수 없습니다.",
+      "notPackaged": "이 빌드에서는 사용할 수 없습니다 (npm run dev/start)."
+    },
+    "logEnable": "로그 활성화",
+    "logShowTimestamps": "타임스탬프 표시",
+    "logToFile": "파일에 로그 기록하기",
+    "logToFileHint": "이 기능이 활성화된 동안에는 로그 패널이 열려 있는지 여부와 관계없이 로그를 디스크의 파일(%APPDATA%\\FTPeach\\logs\\ftpeach.log)에 지속적으로 추가합니다. 이는 패널 내의 “저장” 버튼과는 다릅니다(해당 버튼은 클릭 시 마지막 200줄만 한 번 저장합니다).",
+    "exportDiagnostics": "진단 패키지 내보내기",
+    "exportDiagnosticsBusy": "내보내는 중…",
+    "exportDiagnosticsHint": "버전, 운영 체제 및 최근 200개의 로그 항목을 내보냅니다. 비밀번호, 토큰 및 기타 비밀 정보는 가려집니다.",
+    "exportDiagnosticsFailed": "진단 패키지를 내보낼 수 없습니다."
+  },
+  "promptDialog": {
+    "confirmLabel": "알겠습니다"
+  },
+  "exportSettingsDialog": {
+    "title": "내보내기 설정",
+    "confirmLabel": "내보내기…",
+    "includeSettings": "앱 설정",
+    "includeBookmarks": "북마크",
+    "includeLocalPaths": "로컬 경로",
+    "passwordHint": "비밀번호와 SSH 키 암호 문구는 내보내기 대상에 포함되지 않으므로, 다른 컴퓨터에 가져온 후에는 이를 다시 입력해야 합니다."
+  },
+  "importSettingsDialog": {
+    "title": "가져오기 설정",
+    "confirmLabel": "가져오기…",
+    "includeSettings": "앱 설정",
+    "includeBookmarks": "북마크",
+    "includeLocalPaths": "로컬 경로",
+    "passwordHint": "비밀번호와 SSH 키 암호 문구는 가져오기에 포함되지 않으므로, 가져온 사이트마다 다시 입력해야 합니다."
+  },
+  "openWithDialog": {
+    "title": "앱에서 열기",
+    "downloading": "“{{fileName}}” 다운로드 중…",
+    "progress": "{{loaded}} {{total}}의 ({{percent}} %)",
+    "connecting": "연결 중…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "전송 오류",
+    "notifyCompleteTitle": "전송 완료",
+    "notifySucceeded": "성공: {{count}}",
+    "notifyFailed": "실패: {{count}}",
+    "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다."
+  },
+  "transferQueue": {
+    "title": "전송",
+    "columns": {
+      "file": "파일",
+      "size": "크기",
+      "transferred": "전송됨",
+      "progress": "진행 상황",
+      "speed": "속도",
+      "remaining": "남은",
+      "status": "상태"
+    },
+    "empty": "업로드 및 다운로드 내역은 여기에 표시됩니다",
+    "newTransfers_one": "새 전송 {{count}}개",
+    "newTransfers_other": "새 전송 {{count}}개",
+    "status": {
+      "queued": "대기 중",
+      "done": "완료",
+      "error": "오류",
+      "paused": "일시 중지됨",
+      "stopped": "취소됨",
+      "cancelling": "취소 중…"
+    },
+    "direction": {
+      "up": "업로드",
+      "down": "다운로드",
+      "copy": "복사"
+    },
+    "directionTitleCopy": "서버 간 복사",
+    "cancelledByUser": "사용자에 의해 취소됨",
+    "stoppedDash": "중지됨",
+    "resume": "재개",
+    "retry": "다시 시도",
+    "stop": "중지",
+    "pauseUnsupportedCopy": "서버 간 복사 시 일시 중지 기능은 지원되지 않습니다.",
+    "pauseUnsupportedWebdav": "WebDAV에서는 일시 정지 기능이 지원되지 않습니다."
+  },
+  "log": {
+    "connecting": "{{addr}}에 연결 중...",
+    "connectFailed": "연결에 실패했습니다: {{error}}",
+    "connected": "로그인했습니다.",
+    "receivedEntries_one": "{{count}}개 항목을 수신했습니다",
+    "receivedEntries_other": "{{count}}개 항목을 수신했습니다",
+    "skippedUnsafeEntry": "안전하지 않은 이름을 가진 목록 항목을 건너뛰었습니다: {{name}}",
+    "listFailed": "목록 가져오기에 실패했습니다: {{error}}",
+    "tlsInit": "TLS 초기화 중...",
+    "tlsEstablished": "TLS 연결이 설정되었습니다.",
+    "davResumeUnsupportedLocal": "WebDAV는 업로드 재개 기능을 지원하지 않으므로, 파일이 처음부터 다시 전송됩니다.",
+    "davResumeUnsupportedServer": "서버가 재개 기능을 지원하지 않습니다(예상 상태: {{expected}}, 실제 상태: {{status}}). — 파일이 다시 다운로드됩니다."
+  },
+  "logPanel": {
+    "showAllConnections": "모든 연결 보기",
+    "showOnlyThisConnection": "이 연결만 표시",
+    "connectionClosedShowOnly": "연결이 종료되었습니다 — 이 연결만 표시",
+    "hideTimestamps": "로그 행에서 타임스탬프 숨기기",
+    "showTimestamps": "로그 행에 타임스탬프 표시",
+    "copyToClipboard": "로그를 클립보드에 복사",
+    "saveLastLines_one": "마지막 {{count}}줄을 .txt 파일에 저장",
+    "saveLastLines_other": "마지막 {{count}}줄을 .txt 파일에 저장",
+    "clearLog": "로그 지우기",
+    "copiedTooltip": "복사됨",
+    "copyFailedTooltip": "복사할 수 없습니다",
+    "saveFailedTooltip": "파일을 저장할 수 없습니다",
+    "emptyFiltered": "이 연결에 해당하는 로그가 없습니다",
+    "emptyDefault": "프로토콜 메시지가 여기에 표시됩니다"
+  },
+  "aboutDialog": {
+    "title": "소개",
+    "tagline": "가벼운 FTP/FTPS/SFTP 클라이언트입니다.",
+    "legalInformation": "법적 정보",
+    "sourceCode": "소스 코드",
+    "reportIssue": "문제 신고",
+    "checkForUpdates": "업데이트 확인",
+    "updateDownloaded": "{{version}} 버전의 업데이트가 다운로드되었습니다. 지금 설치할 수 있습니다."
+  },
+  "siteManager": {
+    "emptyList": "아직 저장된 사이트가 없습니다",
+    "confirmDeleteSite": "\"{{name}}\" 사이트를 삭제하시겠습니까?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "새 북마크",
+    "titleEdit": "북마크 편집",
+    "titleList": "북마크 관리",
+    "titleLocalPathList": "로컬 경로 관리",
+    "manageLocalPaths": "로컬 경로 관리…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "이름",
+      "icon": "아이콘",
+      "color": "색상",
+      "protocol": "프로토콜",
+      "keyFile": "키 파일",
+      "caCertFile": "CA 인증서",
+      "remotePath": "기본 폴더",
+      "localPath": "로컬 폴더"
+    },
+    "icons": {
+      "bookmark": "즐겨찾기",
+      "globe": "웹사이트",
+      "briefcase": "일",
+      "house": "홈 서버",
+      "cloud": "클라우드",
+      "flask": "테스트 / 스테이징",
+      "gamepad": "게임 서버",
+      "clapperboard": "미디어 서버",
+      "camera": "카메라"
+    },
+    "colors": {
+      "default": "색상 없음",
+      "peach": "복숭아",
+      "red": "빨강",
+      "amber": "앰버",
+      "green": "녹색",
+      "blue": "파랑",
+      "purple": "보라색",
+      "pink": "핑크",
+      "teal": "청록색"
+    },
+    "saveFailed": "저장할 수 없습니다",
+    "revealFailed": "저장된 비밀 정보를 표시할 수 없습니다.",
+    "savedSecretPlaceholder": "저장됨",
+    "savedSecretHint": "현재 비밀번호를 유지하려면 비워 두세요",
+    "removeSavedPassword": "저장된 비밀번호 삭제",
+    "removeSavedPassphrase": "저장된 암호 문구 삭제",
+    "secretWillBeRemoved": "저장 시 삭제됩니다",
+    "addBookmark": "새 북마크",
+    "addLocalBookmark": "로컬 폴더 북마크 추가",
+    "chooseLocalPath": "로컬 폴더 선택",
+    "importBookmarks": "가져오기",
+    "exportBookmarks": "내보내기",
+    "importAdded_one": "북마크 {{count}}개 추가됨",
+    "importAdded_other": "북마크 {{count}}개 추가됨",
+    "importSkipped_one": "중복 {{count}}개 건너뜀",
+    "importSkipped_other": "중복 {{count}}개 건너뜀",
+    "importNothingNew": "새로 가져올 항목이 없습니다",
+    "exportSuccess": "내보내기 완료",
+    "sortMode": "북마크 정렬",
+    "sortManual": "수동",
+    "sortName": "이름별로",
+    "sortProtocol": "프로토콜별로",
+    "duplicateWarning": "동일한 목적지에 대한 북마크가 이미 존재합니다: \"{{name}}\". 다른 북마크를 저장하시겠습니까?",
+    "saveAnyway": "어쨌든 저장하기",
+    "newFolder": "새 폴더",
+    "folderNamePlaceholder": "폴더 이름",
+    "confirmDeleteFolder": "\"{{name}}\" 폴더를 삭제하시겠습니까? 이 폴더에 있는 북마크는 한 단계 위로 이동됩니다.",
+    "searchPlaceholder": "검색…",
+    "clearSearch": "검색 내용 지우기",
+    "noSearchResults": "검색 조건에 맞는 북마크가 없습니다.",
+    "duplicate": "중복",
+    "duplicateNameSuffix": " (복사)",
+    "newBookmarkInFolder": "여기에 새 북마크 추가",
+    "expandFolder": "“{{name}}” 확장",
+    "collapseFolder": "“{{name}}” 접기"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "주소",
+      "port": "포트",
+      "user": "사용자 이름",
+      "password": "비밀번호",
+      "passphrase": "암호 문구",
+      "keyFilePlaceholder": "키 파일…",
+      "chooseKeyFile": "키 파일 선택…",
+      "caCertFilePlaceholder": "CA 인증서…",
+      "chooseCaCertFile": "CA 인증서 선택…"
+    },
+    "secureToggle": {
+      "tooltip": "자체 서명된 인증서 및 유효하지 않은 서버 인증서를 허용하려면 이 항목의 선택을 해제하십시오.",
+      "label": "인증서 확인"
+    },
+    "authToggle": {
+      "tooltip": "비밀번호 대신 개인 SSH 키 파일을 사용하여 로그인하기",
+      "label": "SSH 키로 로그인하기"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "취소",
+      "connect": "연결하기",
+      "disconnect": "연결 해제"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "일반 FTP는 사용자 이름, 비밀번호 및 파일을 암호화하지 않은 상태로 전송합니다. 가능하면 FTPS나 SFTP를 사용하십시오."
+  },
+  "titleBar": {
+    "minimize": "최소화",
+    "restore": "복원",
+    "maximize": "최대화"
+  },
+  "tray": {
+    "show": "FTPeach 표시",
+    "quit": "종료"
+  },
+  "tabStrip": {
+    "localComputer": "컴퓨터",
+    "untitledTab": "새 탭",
+    "newTabTooltip": "새 탭 (Ctrl+T)",
+    "rename": "탭 이름"
+  },
+  "toolbarOverflowMenu": {
+    "more": "더 보기"
+  },
+  "statusBar": {
+    "transfers": "전송: {{count}}",
+    "leftCount": "왼쪽: {{count}}",
+    "rightCount": "오른쪽: {{count}}",
+    "topCount": "상단: {{count}}",
+    "bottomCount": "하단: {{count}}",
+    "selectedSuffix": " (‘{{count}}’ 선택됨)",
+    "status": {
+      "transferring": "파일 전송",
+      "paused": "일시 중지됨",
+      "connected": "연결됨",
+      "connecting": "연결",
+      "connectFailed": "연결할 수 없습니다",
+      "disconnected": "연결되지 않음"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "왼쪽 창 표시/숨기기",
+    "toggleRightPane": "오른쪽 창 표시/숨기기",
+    "toggleTransferQueue": "전송 대기열 표시/숨기기",
+    "toggleLog": "로그 표시/숨기기",
+    "orientationNarrow": "창이 겹쳐져 있습니다 — 창이 너무 좁아서 나란히 볼 수 없습니다",
+    "orientationToRow": "창을 나란히 배치하기",
+    "orientationToStacked": "창을 서로 겹쳐 배치하기",
+    "pauseUnsupportedWebdav": "WebDAV에서는 일시 정지 기능이 지원되지 않습니다.",
+    "pauseActive": "활성 전송 일시 중지",
+    "resumeAllPaused": "일시 중지된 모든 전송 재개",
+    "stopActive": "활성 전송 중지",
+    "retryAllStopped": "중단된 모든 전송 다시 시도",
+    "refreshPanesTooltip": "두 창 모두 새로 고침 (F5)"
+  },
+  "paneToolbar": {
+    "back": "뒤로",
+    "forward": "앞으로",
+    "up": "위로",
+    "chooseFolder": "폴더 선택…",
+    "newFolder": "새 폴더…",
+    "newFile": "새 파일…"
+  },
+  "paneSourceSwitcher": {
+    "local": "컴퓨터",
+    "remote": "서버",
+    "updatedAtTooltip": "업데이트: {{date}}",
+    "connectToServer": "서버"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "최근 연결 기록 없음",
+    "noSavedConnectionsBody": "위의 서버 주소를 입력하거나, 원클릭 접속을 위해 사이트를 추가하세요.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "북마크 관리",
+    "quicklistLabel": "최근 접속 내역"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "처리되지 않은 FTPeach 인터페이스 오류:",
+    "title": "문제가 발생했습니다.",
+    "message": "예기치 않은 인터페이스 오류가 발생했습니다. 현재 활성화된 연결과 디스크에 있는 파일에는 영향을 미치지 않으므로, 인터페이스를 다시 불러와 보시기 바랍니다.",
+    "reload": "인터페이스 다시 불러오기"
+  }
+}

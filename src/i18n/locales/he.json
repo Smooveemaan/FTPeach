@@ -1,0 +1,767 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "ללא התחברות",
+    "anonymousUser": "אנונימי",
+    "rootFolder": "תיקיית השורש",
+    "close": "סגור",
+    "reset": "איפוס",
+    "open": "פתח",
+    "upload": "העלה",
+    "save": "שמור",
+    "create": "צור",
+    "cancel": "ביטול",
+    "increase": "עלייה",
+    "decrease": "ירידה",
+    "showPassword": "הצג סיסמה",
+    "savedSecretProtected": "הסוד שנשמר מוגן ואינו ניתן לצפייה",
+    "hidePassword": "הסתר סיסמה"
+  },
+  "securityConfirmation": {
+    "title": "אישור אבטחה של FTPeach",
+    "allow": "אפשר",
+    "typeToConfirm": "יש להקליד {{phrase}} לאישור",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "להציג את הסיסמה השמורה עבור סימנייה זו?"
+      },
+      "revealProxyPassword": {
+        "message": "להציג את סיסמת שרת ה־Proxy השמורה?"
+      },
+      "vaultReset": {
+        "message": "כל הסיסמאות השמורות וביטויי הסיסמה של מפתחות SSH יימחקו לצמיתות.",
+        "approve": "מחיקת הכספת"
+      },
+      "executeLocalFile": {
+        "message": "להפעיל קובץ הפעלה או סקריפט זה?"
+      },
+      "executeRemoteFile": {
+        "message": "להוריד ולהפעיל קובץ הפעלה או סקריפט זה?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "תיקייה חדשה…",
+    "newFile": "קובץ חדש…",
+    "refresh": "רענן",
+    "open": "פתח",
+    "uploadToOtherPane": "העלה לחלונית אחרת",
+    "copyToOtherPane": "העתק לחלונית אחרת",
+    "downloadToOtherPane": "הורדה לחלונית אחרת",
+    "openWith": "פתח באמצעות…",
+    "permissions": "הרשאות…",
+    "moveTo": "העבר אל…",
+    "copyPath": "העתק את הנתיב",
+    "delete": "מחק",
+    "deleteSelected_one": "מחיקה (קובץ {{count}})",
+    "deleteSelected_other": "מחיקה (קבצים {{count}})",
+    "deletePermanently": "מחיקה לצמיתות",
+    "deleteSelectedPermanently_one": "מחיקה לצמיתות (קובץ {{count}})",
+    "deleteSelectedPermanently_other": "מחיקה לצמיתות (קבצים {{count}})",
+    "deleteSelected_two": "מחיקה (קבצים {{count}})",
+    "deleteSelectedPermanently_two": "מחיקה לצמיתות (קבצים {{count}})"
+  },
+  "chmodDialog": {
+    "title": "הרשאות SFTP",
+    "label": "מצב אוקטלי עבור {{name}} (לדוגמה, 644 או 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "התיקייה ריקה",
+    "homeFolder": "תיקיית הבית",
+    "copyToPaneBelow": "העתק לחלונית שלמטה",
+    "copyToPaneAbove": "העתק לחלונית שלמעלה",
+    "copyToPaneRight": "העתק לחלונית מימין",
+    "copyToPaneLeft": "העתק לחלונית משמאל",
+    "fileTypeFolder": "תיקיית קבצים",
+    "fileTypeGeneric": "קובץ",
+    "fileTypeWithExt": "{{ext}} קובץ",
+    "columnSize": "גודל",
+    "columnModifiedAt": "תאריך השינוי האחרון",
+    "columnCreatedAt": "תאריך יצירה",
+    "columnType": "סוג",
+    "columnPermissions": "הרשאות",
+    "columnOwner": "בעלים",
+    "columnGroup": "קבוצה",
+    "columnName": "שם",
+    "filesAriaLabel": "קבצים",
+    "rename": "שינוי שם",
+    "resetColumnWidths": "שחזור רוחב העמודות",
+    "updatedAtTooltip": "עודכן: {{date}}",
+    "searchTooltip": "חיפוש ({{shortcut}})",
+    "searchPlaceholder": "חיפוש… ({{shortcut}})",
+    "editPathAriaLabel": "ערוך נתיב",
+    "changeDriveTooltip": "החלף כונן",
+    "chooseColumnsTooltip": "לחץ לחיצה ימנית כדי לבחור עמודות",
+    "sortByNameTooltip": "מיין לפי שם",
+    "sortByColumnTooltip": "מיין לפי העמודה \"{{column}}\"",
+    "rowProbeSample": "דוגמה",
+    "loading": "טוען…",
+    "nothingFound": "לא נמצא דבר"
+  },
+  "update": {
+    "readyToInstall": "העדכון בגרסה {{version}} זמין — לחצו על \"הפעל מחדש והתקן\" כדי להחיל אותו.",
+    "downloadingWithPercent": "הורדת העדכון גרסה {{version}}: {{percent}} %",
+    "downloadingFound": "נמצא עדכון בגרסה {{version}}, מתבצע הורדה…",
+    "restartAndInstall": "הפעלה מחדש והתקנה",
+    "availableAction": "זמין!",
+    "installAction": "להתקין?",
+    "downloadTooltip": "לחצו להורדה",
+    "downloadingTooltip": "מוריד",
+    "installTooltip": "לחצו להפעלה מחדש ולהתקנה"
+  },
+  "legacyPasswordNotice": {
+    "message": "לא ניתן היה לקרוא את הסיסמאות של חלק מהאתרים השמורים לאחר העדכון — אנא הזן אותן מחדש במנהל האתרים."
+  },
+  "plaintextSecretNotice": {
+    "message": "לא ניתן היה להצפין את הסיסמה או את ביטוי הסיסמה של האתר שנשמר, מכיוון שההגנה על נתונים של Windows אינה זמינה, ולכן הן נשמרו במקום זאת בטקסט רגיל."
+  },
+  "secretNotPersistedNotice": {
+    "message": "לא ניתן היה להצפין את הסיסמה או את ביטוי הסיסמה, ולכן הן לא נשמרו. חיבור קיים יכול להמשיך עד שינותק; אחרת, הזן את הסיסמה שוב בפעם הבאה."
+  },
+  "resize": {
+    "paneSize": "גרור כדי לשנות את גודל החלוניות (לחץ פעמיים כדי לאפס)",
+    "height": "גרור כדי לשנות את גובה התצוגה (לחץ פעמיים כדי לאפס)",
+    "ratio": "גרור כדי לשנות את יחס הגודל (לחץ פעמיים כדי לאפס)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} פריט",
+    "itemCount_other": "{{count}} פריטים",
+    "moveMode": "העברה",
+    "itemCount_two": "{{count}} פריטים"
+  },
+  "openWithChanged": {
+    "title": "הקבץ שונה",
+    "message": "\"{{name}}\" שונה ביישום החיצוני. האם להעלות את הקובץ המעודכן לשרת?"
+  },
+  "saveSite": {
+    "title": "שמירת פרופיל חיבור",
+    "label": "שם פרופיל החיבור:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "תיקייה חדשה",
+    "labelLocal": "שם התיקייה החדשה:",
+    "labelRemote": "שם התיקייה החדשה בשרת:"
+  },
+  "newFile": {
+    "title": "קובץ חדש",
+    "label": "שם הקובץ (כולל סיומת):"
+  },
+  "moveToDialog": {
+    "title": "העבר אל…",
+    "labelSingle": "העבר את \"{{name}}\" לתיקייה:",
+    "labelMultiple": "העבר את הפריטים שנבחרו ({{count}}) לתיקייה:"
+  },
+  "confirm": {
+    "allowReplacementRace": "לאפשר החלפה של \"{{name}}\" אם הקובץ יופיע במהלך ההעברה?",
+    "resetLayout": "לאפס את גודל החלונות והחלוניות, להחזיר את העמודות לברירת המחדל ולנקות את מטמון הממשק?",
+    "hostKeyMismatch": "{{error}} למחוק את טביעת האצבע של המפתח השמור עבור {{host}}: {{port}} ולהתחבר בכל זאת? בצע פעולה זו רק אם אתה בטוח שהשרת הותקן מחדש או הועבר כראוי — אחרת הדבר עלול לאפשר לך להתחבר לשרת שעשוי להיות מזויף.",
+    "connectAnyway": "התחבר בכל מקרה",
+    "closeTabWithActiveTransfers": "בלשונית זו מופיעים העברות פעילות. לסגור את הלשונית ולעצור אותן?",
+    "closeTabLabel": "סגור את הכרטיסייה",
+    "overwriteSingleExists": "\"{{name}}\" כבר קיים בתיקיית היעד. האם ברצונך להחליף אותו?",
+    "overwriteConflicts_one": "{{count}} הפריט כבר קיים בתיקיית היעד. האם ברצונך להחליף אותו?",
+    "overwriteConflicts_other": "{{count}} הפריטים כבר קיימים בתיקיית היעד. האם ברצונך להחליף אותם?",
+    "overwriteLabel": "החלפה",
+    "replaceConnection": "חלונית זו כבר מחוברת ל-\"{{current}}\". האם להחליף את החיבור ל-\"{{next}}\"?",
+    "replaceConnectionLabel": "החלפה",
+    "deleteSelected": "האם ברצונך למחוק את הפריטים שנבחרו ({{count}})? לא ניתן לבטל פעולה זו.",
+    "deleteEntry": "להסיר את \"{{name}}\"? לא ניתן לבטל פעולה זו.",
+    "recycleSelected": "האם להעביר את הפריטים שנבחרו ({{count}}) לסל המיחזור?",
+    "recycleEntry": "להעביר את \"{{name}}\" לסל המיחזור?",
+    "deletePermanentSelected": "האם ברצונך למחוק לצמיתות את הפריטים שנבחרו ({{count}})? לא ניתן לבטל פעולה זו.",
+    "deletePermanentEntry": "האם ברצונך למחוק לצמיתות את \"{{name}}\"? לא ניתן לבטל פעולה זו.",
+    "deleteRemoteSelected": "האם ברצונך למחוק לצמיתות את הפריטים המרוחקים שנבחרו ({{count}})? לא ניתן לבטל פעולה זו.",
+    "deleteRemoteEntry": "האם ברצונך למחוק לצמיתות את הפריט המרוחק \"{{name}}\"? לא ניתן לבטל פעולה זו.",
+    "overwriteConflicts_two": "{{count}} הפריטים כבר קיימים בתיקיית היעד. האם ברצונך להחליף אותם?"
+  },
+  "paneSide": {
+    "top": "למעלה",
+    "bottom": "תחתית",
+    "left": "שמאל",
+    "right": "ימין",
+    "labelWithTab": "{{base}} (הכרטיסייה \"{{tabNumber}}\", {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "קובץ",
+      "newTab": "כרטיסייה חדשה",
+      "closeTab": "סגור את הכרטיסייה",
+      "newConnection": "חיבור חדש",
+      "disconnect": "התנתק",
+      "manageBookmarks": "ניהול סימניות…",
+      "saveConnection": "שמור חיבור",
+      "saveConnectionSide": "שמור חיבור ({{side}})",
+      "saveBookmarkSide": "שמור סימנייה ({{side}})",
+      "savePathSide": "שמור נתיב ({{side}})",
+      "exportSettings": "הגדרות ייצוא…",
+      "importSettings": "ייבוא הגדרות…",
+      "quit": "לצאת"
+    },
+    "edit": {
+      "title": "ערוך",
+      "settings": "הגדרות…",
+      "resetLayout": "איפוס הפריסה והמטמון…"
+    },
+    "view": {
+      "title": "הצג",
+      "darkTheme": "ערכת נושא כהה",
+      "lightTheme": "ערכת נושא בהירה",
+      "systemTheme": "ערכת נושא של המערכת",
+      "syncBrowsing": "גלישה בתיקיית הסנכרון",
+      "showHiddenFiles": "הצג קבצים ותיקיות מוסתרים",
+      "leftPane": "החלונית השמאלית",
+      "rightPane": "החלונית הימנית",
+      "transferQueue": "תור העברות",
+      "log": "יומן",
+      "stackedPanes": "חלוניות מוערמות",
+      "refreshBothPanes": "רענן את שתי החלוניות"
+    },
+    "transfer": {
+      "title": "העברה",
+      "copySelectedRight": "העתק את הנבחר →",
+      "copySelectedLeft": "← העתק את הנבחר",
+      "clearCompleted": "נקה הושלמו"
+    },
+    "bookmarks": {
+      "title": "סימניות"
+    },
+    "help": {
+      "supportProject": "תמיכה בפרויקט",
+      "title": "עזרה",
+      "documentation": "תיעוד",
+      "reportIssue": "דווח על בעיה",
+      "checkUpdates": "בדוק אם יש עדכונים",
+      "about": "אודות"
+    }
+  },
+  "errors": {
+    "connectionRefused": "השרת דחה את החיבור. בדוק את הכתובת והיציאה.",
+    "serverNotFound": "לא נמצא שרת. ודא שהכתובת נכונה.",
+    "timeout": "השרת אינו מגיב (החיבור פקע). בדוק את הכתובת, היציאה וחיבור הרשת.",
+    "connectionReset": "החיבור לשרת נסגר באופן בלתי צפוי.",
+    "networkUnreachable": "לא ניתן להתחבר לשרת — בדוק את חיבור הרשת שלך.",
+    "loginIncorrect": "שם משתמש או סיסמה שגויים.",
+    "invalidCertificate": "השרת הציג תעודה לא חוקית. אם אתה סומך על שרת זה, השבת את אימות התעודה בהגדרות החיבור.",
+    "tlsNegotiationFailed": "משא ומתן TLS נכשל. יש לוודא שהשרת תומך ב-FTPS או ב-HTTPS מפורש ובגרסת TLS תואמת.",
+    "sshNegotiationFailed": "משא ומתן ה-SSH נכשל. השרת ו-FTPeach לא הצליחו להגיע להסכמה על אלגוריתם SSH תואם או על גרסת פרוטוקול תואמת.",
+    "proxyFailed": "החיבור לפרוקסי נכשל. בדוק את סוג הפרוקסי, הכתובת, פרטי ההזדהות, והאם הוא מצליח ליצור קשר עם השרת היעד.",
+    "keyReadFailed": "לא ניתן לקרוא את המפתח — הקובץ פגום או שסיסמת הגישה שגויה.",
+    "accessDenied": "אין לך הרשאה לבצע פעולה זו.",
+    "notFound": "לא נמצא הקובץ או התיקייה.",
+    "fileOrFolderExists": "קובץ או תיקייה בשם זה כבר קיימים.",
+    "fileBusy": "הקובץ נמצא בשימוש על ידי תהליך אחר.",
+    "diskFull": "אין מספיק מקום בדיסק.",
+    "hostKeyMismatch": "מפתח המארח של השרת השתנה.",
+    "integrityMismatch": "הקובץ שהועבר נכשל בבדיקת התקינות.",
+    "invalidInput": "הערך שסופק אינו חוקי.",
+    "internal": "אירעה שגיאה בלתי צפויה.",
+    "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
+    "alreadyExists": "\"{{name}}\" כבר קיים"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "שיוכי קבצים",
+      "hint": "בחר יישום עבור סיומת קובץ. קבצים שאין להם כלל ישתמשו בברירת המחדל של המערכת.",
+      "extension": "סיומת",
+      "extensionPlaceholder": "txt",
+      "application": "יישום",
+      "applicationPlaceholder": "נתיב היישום",
+      "browse": "בחר יישום",
+      "remove": "הסר שיוך",
+      "add": "הוסף שיוך"
+    },
+    "minimizeToTray": "לצמצם למגש",
+    "minimizeToTrayHint": "כפתור המיזעור מסתיר את החלון למגש במקום לשורת המשימות.",
+    "closeToTray": "סגירה למגש",
+    "closeToTrayHint": "כפתור הסגירה מסתיר את החלון למגש במקום לסגור את האפליקציה. יש לסגור את האפליקציה מתפריט סמל המגש.",
+    "title": "הגדרות",
+    "unsavedChangesTitle": "שינויים שלא נשמרו",
+    "unsavedChangesMessage": "לשמור את השינויים בהגדרות?",
+    "discardChanges": "אל תשמור",
+    "categories": {
+      "connection": "חיבור",
+      "transfers": "העברות",
+      "interface": "ממשק",
+      "shortcuts": "קיצורי דרך",
+      "updates": "עדכונים",
+      "logging": "רישום",
+      "security": "אבטחה"
+    },
+    "shortcuts": {
+      "title": "קיצורי מקלדת",
+      "hint": "לחץ על קיצור דרך, ולאחר מכן הקש על צירוף מקשים חדש כדי להקצות לו פעולה חדשה.",
+      "globalTitle": "עולמי",
+      "paneTitle": "חלונית הקבצים",
+      "recording": "לחץ על מקש…",
+      "unbound": "לא הוקצה",
+      "reset": "איפוס להגדרות ברירת המחדל",
+      "resetAll": "אפס את הכל להגדרות ברירת המחדל",
+      "unassign": "ביטול הקצאה",
+      "conflict": "משמש גם ב: {{action}}",
+      "actions": {
+        "search": "חיפוש ({{side}})",
+        "toggleHiddenFiles": "הצג/הסתר קבצים מוסתרים",
+        "newConnection": "חיבור חדש",
+        "save": "שמור ({{side}})",
+        "openSettings": "פתח הגדרות",
+        "newTab": "כרטיסייה חדשה",
+        "closeTab": "סגור את הכרטיסייה",
+        "nextTab": "הכרטיסייה הבאה",
+        "prevTab": "הכרטיסייה הקודמת",
+        "refresh": "רענן",
+        "selectAll": "בחר הכל",
+        "delete": "מחק",
+        "deletePermanent": "מחיקה לצמיתות",
+        "navigateUp": "עלה לתיקייה אחת למעלה",
+        "navigateBack": "חזור",
+        "navigateForward": "המשך קדימה",
+        "navigateHome": "עבור לתיקיית הבית",
+        "moveTo": "העבר אל…",
+        "newFolder": "תיקייה חדשה…",
+        "newFile": "קובץ חדש…",
+        "copyToOtherPane": "העתק לחלונית אחרת",
+        "copy": "העתק",
+        "cut": "חתוך",
+        "paste": "הדבק",
+        "clearSelection": "נקה את הבחירה",
+        "open": "פתח"
+      }
+    },
+    "security": {
+      "title": "הגנה באמצעות סיסמה",
+      "systemMode": "הגנה על המערכת",
+      "systemModeHint": "הסיסמאות של חשבון Windows שלך מוצפנות, וניתן לצפות בהן בהגדרות החיבור.",
+      "strongholdMode": "הגנה משופרת",
+      "strongholdModeHint": "נדרשת סיסמת מאסטר. ניתן להשתמש בסיסמאות השמורות לצורך התחברות, אך לא ניתן לצפות בהן.",
+      "loading": "בודקים את האחסון המוגן…",
+      "configuredLocked": "אחסון מוגן מאובטח באמצעות סיסמת מאסטר ונעול.",
+      "configuredUnlocked": "אחסון מוגן מאובטח באמצעות סיסמת מאסטר והוא פתוח.",
+      "masterPassword": "סיסמת מאסטר",
+      "confirmPassword": "אשר את סיסמת המאסטר",
+      "oldPassword": "סיסמת המאסטר הנוכחית",
+      "newPassword": "סיסמת מאסטר חדשה",
+      "setup": "הגנה על סיסמאות שמורות",
+      "settingUp": "הגנה על…",
+      "unlock": "ביטול נעילה",
+      "unlocking": "פתיחת נעילה…",
+      "unlockRequired": "ביטול נעילת האחסון המוגן",
+      "unlockRequiredHint": "חיבור זה משתמש בסוד שנשמר. בטל את נעילת האחסון המוגן כדי להמשיך.",
+      "lockNow": "נעל עכשיו",
+      "autoLock": "נעילה אוטומטית לאחר, דקות",
+      "autoLockDisabled": "מושבת",
+      "autoLockHint": "נעילת האחסון לאחר חוסר פעילות. חיבורי השרת הקיימים נשארים פעילים; הערך 0 מבטל את הנעילה האוטומטית.",
+      "changePassword": "שינוי סיסמת המאסטר",
+      "change": "שינוי סיסמה",
+      "systemUnlock": "אפשר נעילת המערכת",
+      "systemUnlockHint": "משתמש ב-Windows Hello (קוד PIN, זיהוי פנים או טביעת אצבע, בהתאם להגדרות של Windows). סיסמת המאסטר שלך נשארת שיטת השחזור.",
+      "unlockWithSystem": "פתיחה באמצעות אימות מערכת",
+      "systemUnavailable": "אפשרות נעילת המערכת אינה זמינה בפלטפורמה זו.",
+      "noRecovery": "לא ניתן לשחזר סיסמת מאסטר שנשכחה. איפוס הכספת מוחק את כל הסודות השמורים.",
+      "passwordMismatch": "הסיסמאות אינן תואמות.",
+      "passwordTooShort": "השתמש בסיסמת מאסטר בת 12 תווים לפחות.",
+      "strength": {
+        "tooShort": "קצר מדי — יש להשתמש ב-12 תווים לפחות.",
+        "acceptable": "מקובל. סיסמה ארוכה יותר היא בטוחה יותר.",
+        "strong": "סיסמת מאסטר חזקה."
+      },
+      "reset": "איפוס אחסון מוגן",
+      "resetHint": "מחיקת אחסון מוגן וכל הסיסמאות וסיסמאות המפתחות של SSH המאוחסנות בו. יהיה צורך להגדיר מחדש את ההגנה המשופרת.",
+      "resetWarning": "פעולה זו תמחק לצמיתות את כל הסיסמאות והביטויים הסודיים שנשמרו. הזן את סיסמת המאסטר הנוכחית כדי להמשיך.",
+      "confirmReset": "מחיקת סודות שנשמרו",
+      "showConfirmations": "הצגת אישורי אבטחה",
+      "showConfirmationsHint": "בקש אישור לפני הצגת סודות שמורים או הפעלת קובצי הרצה. איפוס האחסון המוגן תמיד דורש אישור.",
+      "unavailable": "אחסון מוגן אינו זמין.",
+      "failed": "פעולת האחסון המוגן נכשלה."
+    },
+    "unlimitedPlaceholder": "ללא הגבלה",
+    "connectTimeoutLabel": "זמן המתנה לחיבור, שניות",
+    "connectTimeoutHint": "כמה זמן יש להמתין לתגובת השרת בעת ההתחברות לפני שיש להחשיב אותו כבלתי נגיש (0 או ריק — ללא הגבלה). חל על ההתחברות הבאה.",
+    "ftpActiveMode": "מצב FTP פעיל (במקום פסיבי)",
+    "ftpActiveModeHint": "FTP/FTPS בלבד — אין לכך השפעה על SFTP/WebDAV. נדרש לעיתים נדירות, רק ברשתות/שרתים שבהם המצב הפסיבי אינו עובר דרך NAT. חל על החיבור הבא.",
+    "ftpActiveModeDisabledByProxy": "לא זמין כאשר פרוקסי מופעל — מנהרת הפרוקסי תומכת רק בחיבורים יוצאים, ולכן ה-FTP חייב להישאר במצב פסיבי.",
+    "proxy": {
+      "enable": "השתמש בפרוקסי לצורך החיבורים",
+      "enableHint": "SOCKS4, SOCKS5 או HTTP CONNECT — חל על FTP, FTPS, SFTP ו-WebDAV. חל על החיבור הבא.",
+      "typeLabel": "סוג הפרוקסי",
+      "hostLabel": "שרת פרוקסי",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "פורט",
+      "usernameLabel": "שם משתמש",
+      "passwordLabel": "סיסמה",
+      "removeSavedPassword": "הסר סיסמה שמורה",
+      "revealFailed": "לא ניתן היה לפענח את הסיסמה השמורה.",
+      "testTargetLabel": "בדיקה מול",
+      "testTargetHostPlaceholder": "שרת מארח",
+      "testTargetPortPlaceholder": "פורט",
+      "test": "פרוקסי בדיקה",
+      "testing": "בדיקה…",
+      "testOk": "הפרוקסי הגיע ליעד בהצלחה.",
+      "testFailed": "מבחן הפרוקסי נכשל."
+    },
+    "concurrencyLabel": "העברות במקביל",
+    "concurrencyHint": "כמה קבצים להעלות ולהוריד בו-זמנית (0 או ריק — ללא הגבלה). חל על החיבור הבא.",
+    "speedLimitLabel": "מגבלת מהירות, KB/s",
+    "speedLimitHint": "חל על הסכום הכולל של כל ההעברות המתבצעות במקביל (0 או ריק — אין הגבלה). נכנס לתוקף באופן מיידי, ללא צורך להמתין לחיבור הבא.",
+    "notifyOnComplete": "הודעה עם סיום ההעברות",
+    "notifyOnCompleteHint": "התראה מערכתית כאשר תור ההעברה מתרוקן — אך ורק כאשר החלון אינו נמצא בפוקוס.",
+    "overwriteActionLabel": "על התנגשות שמות",
+    "overwriteAsk": "שאל",
+    "overwriteOverwrite": "החלפה",
+    "overwriteSkip": "דלג",
+    "overwriteHint": "מה לעשות כאשר הקובץ המועתק כבר קיים בתיקיית היעד.",
+    "preventSleep": "למנוע מהמערכת להיכנס למצב שינה במהלך העברות",
+    "preventSleepHint": "נכנס לתוקף באופן מיידי, ללא צורך להמתין לחיבור הבא. נשאר פעיל כל עוד מתבצע לפחות העברה אחת — אחרת, אינו חוסם את מצב השינה.",
+    "themeLabel": "נושא",
+    "themeDark": "חושך",
+    "themeLight": "אור",
+    "themeSystem": "מערכת",
+    "languageLabel": "שפת הממשק",
+    "interfaceScaleLabel": "סולם הממשק",
+    "interfaceScaleHint": "שנה את גודל הטקסט והאלמנטים לשליטה בכל רחבי היישום.",
+    "dateFormatLabel": "פורמט תאריך ושעה",
+    "dateFormatOnlyLabel": "תבנית תאריך",
+    "timeFormatLabel": "תבנית שעה",
+    "timeFormat24Hour": "24 שעות",
+    "timeFormat12Hour": "12 שעות",
+    "dateFormatLocale": "מקומי",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "תיקיית ברירת המחדל עבור מחשב",
+    "defaultLocalPathHint": "התיקייה שבה חלונית המחשב נפתחת בעת ההפעלה ובעת מעבר משרת. השאר ריק כדי להשתמש בתיקיית הבית של המערכת.",
+    "chooseDefaultLocalPath": "בחר תיקיית ברירת מחדל",
+    "showHiddenFiles": "הצג קבצים ותיקיות מוסתרים",
+    "showHiddenFilesHint": "הדבר חל הן על חלוניות קבצים מקומיות והן על חלוניות קבצים מרוחקות.",
+    "coloredTabs": "כרטיסיות צבעוניות",
+    "coloredTabsHint": "צובע את שם הכרטיסייה ואת הסמל בצבע הסימנייה השמורה.",
+    "autoCheckUpdates": "בדוק אם יש עדכונים בעת ההפעלה",
+    "autoCheckUpdatesHint": "בדיקה שקטה מספר שניות לאחר ההפעלה — התקנת עדכון מחייבת תמיד אישור נפרד.",
+    "autoReconnectTabs": "חיבור מחדש של הכרטיסיות ששוחזרו בעת ההפעלה",
+    "autoReconnectTabsHint": "מוגדר ככבוי כברירת מחדל. כאשר האפשרות מופעלת, אתרים שנשמרו ושוחזרו מתחברים באופן אוטומטי.",
+    "saveSessionOnExit": "שמור את ההפעלה בעת היציאה",
+    "saveSessionOnExitHint": "משחזר את הכרטיסיות הפתוחות, סוגי החלוניות והנתיבים בהפעלה הבאה. כיבוי אפשרות זו מוחק את ההפעלה השמורה.",
+    "checkNow": "בדוק עכשיו",
+    "updateStatus": {
+      "checking": "בודק אם יש עדכונים…",
+      "notAvailable": "אתה משתמש בגרסה העדכנית ביותר.",
+      "error": "לא ניתן היה לבדוק אם יש עדכונים.",
+      "notPackaged": "לא זמין בגרסה זו (npm run dev/start)."
+    },
+    "logEnable": "הפעל יומן",
+    "logShowTimestamps": "הצג חותמות זמן",
+    "logToFile": "כתיבת יומן לקובץ",
+    "logToFileHint": "ממשיך להוסיף את היומן לקובץ בדיסק (%APPDATA%\\FTPeach\\logs\\ftpeach.log) כל עוד האפשרות מופעלת — בין אם לוח היומן פתוח ובין אם לאו. זה שונה מהכפתור \"שמור\" בלוח עצמו (ששומר רק את 200 השורות האחרונות פעם אחת, בלחיצה).",
+    "exportDiagnostics": "ייצוא חבילת אבחון",
+    "exportDiagnosticsBusy": "מתבצע ייצוא…",
+    "exportDiagnosticsHint": "מייצא את הגרסה, מערכת ההפעלה ו-200 רשומות היומן האחרונות. סיסמאות, אסימונים וסודות אחרים מוסתרים.",
+    "exportDiagnosticsFailed": "לא ניתן לייצא את חבילת האבחון."
+  },
+  "promptDialog": {
+    "confirmLabel": "בסדר"
+  },
+  "exportSettingsDialog": {
+    "title": "הגדרות ייצוא",
+    "confirmLabel": "ייצא…",
+    "includeSettings": "הגדרות האפליקציה",
+    "includeBookmarks": "סימניות",
+    "includeLocalPaths": "נתיבים מקומיים",
+    "passwordHint": "סיסמאות וסיסמאות מפתח SSH אינן כלולות בייצוא — יהיה עליך להזין אותן מחדש לאחר הייבוא למחשב אחר."
+  },
+  "importSettingsDialog": {
+    "title": "הגדרות ייבוא",
+    "confirmLabel": "ייבא…",
+    "includeSettings": "הגדרות האפליקציה",
+    "includeBookmarks": "סימניות",
+    "includeLocalPaths": "נתיבים מקומיים",
+    "passwordHint": "סיסמאות וסיסמאות מפתח SSH אינן כלולות בייבוא — יהיה עליך להזין אותן מחדש עבור כל אתר שיובא."
+  },
+  "openWithDialog": {
+    "title": "פתח ביישום",
+    "downloading": "הורדת \"{{fileName}}\"…",
+    "progress": "{{loaded}} מתוך {{total}} ({{percent}} %)",
+    "connecting": "מתחבר…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "שגיאת העברה",
+    "notifyCompleteTitle": "ההעברה הושלמה",
+    "notifySucceeded": "הצלחה: {{count}}",
+    "notifyFailed": "נכשל: {{count}}",
+    "webdavUploadTooLarge": "העלאות באמצעות WebDAV מוגבלות ל-{{limit}} MiB לכל קובץ."
+  },
+  "transferQueue": {
+    "title": "העברות",
+    "columns": {
+      "file": "קובץ",
+      "size": "גודל",
+      "transferred": "הועבר",
+      "progress": "התקדמות",
+      "speed": "מהירות",
+      "remaining": "הנותרים",
+      "status": "סטטוס"
+    },
+    "empty": "ההעלאות וההורדות יופיעו כאן",
+    "newTransfers_one": "{{count}} העברה חדשה",
+    "newTransfers_other": "{{count}} העברות חדשות",
+    "status": {
+      "queued": "בתור",
+      "done": "בוצע",
+      "error": "שגיאה",
+      "paused": "בהשהיה",
+      "stopped": "בוטל",
+      "cancelling": "מבטל…"
+    },
+    "direction": {
+      "up": "העלאה",
+      "down": "הורדה",
+      "copy": "העתקה"
+    },
+    "directionTitleCopy": "העתקה בין שרתים",
+    "cancelledByUser": "בוטל על ידי המשתמש",
+    "stoppedDash": "נעצר",
+    "resume": "המשך",
+    "retry": "נסה שוב",
+    "stop": "עצור",
+    "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",
+    "pauseUnsupportedWebdav": "WebDAV אינו תומך בפונקציית ההשהיה",
+    "newTransfers_two": "{{count}} העברות חדשות"
+  },
+  "log": {
+    "connecting": "מתחבר ל-{{addr}}...",
+    "connectFailed": "החיבור נכשל: {{error}}",
+    "connected": "נכנסת למערכת.",
+    "receivedEntries_one": "התקבלה {{count}} רשומה",
+    "receivedEntries_other": "התקבלו {{count}} רשומות",
+    "skippedUnsafeEntry": "דילג על ערך ברשימה בעל שם לא בטוח: {{name}}",
+    "listFailed": "הרישום נכשל: {{error}}",
+    "tlsInit": "מאתחל את TLS...",
+    "tlsEstablished": "נוצר חיבור TLS.",
+    "davResumeUnsupportedLocal": "WebDAV אינו תומך בהמשך העלאה — הקובץ יישלח מחדש מההתחלה.",
+    "davResumeUnsupportedServer": "השרת אינו תומך בהמשך ההורדה (הסטטוס הצפוי הוא {{expected}}, התקבל {{status}}) — הקובץ יורד מחדש.",
+    "receivedEntries_two": "התקבלו {{count}} רשומות"
+  },
+  "logPanel": {
+    "showAllConnections": "הצג את כל הקשרים",
+    "showOnlyThisConnection": "הצג רק את החיבור הזה",
+    "connectionClosedShowOnly": "החיבור נסגר — הצג רק חיבור זה",
+    "hideTimestamps": "הסתרת חותמות זמן בשורות היומן",
+    "showTimestamps": "הצגת חותמות זמן בשורות היומן",
+    "copyToClipboard": "העתק את היומן ללוח",
+    "saveLastLines_one": "שמור את {{count}} השורה האחרונה בקובץ .txt",
+    "saveLastLines_other": "שמור את {{count}} השורות האחרונות בקובץ .txt",
+    "clearLog": "נקה את יומן הרישום",
+    "copiedTooltip": "הועתק",
+    "copyFailedTooltip": "לא הצלחתי להעתיק",
+    "saveFailedTooltip": "לא ניתן לשמור את הקובץ",
+    "emptyFiltered": "אין שורות בחיבור זה",
+    "emptyDefault": "הודעות הפרוטוקול יופיעו כאן",
+    "saveLastLines_two": "שמור את {{count}} השורות האחרונות בקובץ .txt"
+  },
+  "aboutDialog": {
+    "title": "אודות",
+    "tagline": "לקוח FTP/FTPS/SFTP קל משקל.",
+    "legalInformation": "מידע משפטי",
+    "sourceCode": "קוד מקור",
+    "reportIssue": "דיווח על בעיה",
+    "checkForUpdates": "בדוק אם יש עדכונים",
+    "updateDownloaded": "העדכון בגרסה {{version}} הורד — ניתן להתקין אותו כעת."
+  },
+  "siteManager": {
+    "emptyList": "עדיין אין אתרים שמורים",
+    "confirmDeleteSite": "למחוק את האתר \"{{name}}\"?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "סימנייה חדשה",
+    "titleEdit": "ערוך סימנייה",
+    "titleList": "ניהול סימניות",
+    "titleLocalPathList": "ניהול נתיבים מקומיים",
+    "manageLocalPaths": "ניהול נתיבים מקומיים…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "שם",
+      "icon": "סמל",
+      "color": "צבע",
+      "protocol": "פרוטוקול",
+      "keyFile": "קובץ מפתח",
+      "caCertFile": "אישור של רשות אישורים",
+      "remotePath": "תיקיית ברירת מחדל",
+      "localPath": "תיקייה מקומית"
+    },
+    "icons": {
+      "bookmark": "סימנייה",
+      "globe": "אתר אינטרנט",
+      "briefcase": "עבודה",
+      "house": "שרת ביתי",
+      "cloud": "ענן",
+      "flask": "בדיקה / סביבת ביניים",
+      "gamepad": "שרת משחקים",
+      "clapperboard": "שרת מדיה",
+      "camera": "מצלמה"
+    },
+    "colors": {
+      "default": "ללא צבע",
+      "peach": "אפרסק",
+      "red": "אדום",
+      "amber": "ענבר",
+      "green": "ירוק",
+      "blue": "כחול",
+      "purple": "סגול",
+      "pink": "ורוד",
+      "teal": "טורקיז"
+    },
+    "saveFailed": "לא ניתן לשמור",
+    "revealFailed": "לא ניתן להציג את הסיסמה השמורה",
+    "savedSecretPlaceholder": "נשמר",
+    "savedSecretHint": "השאר ריק כדי לשמור את הסיסמה הנוכחית",
+    "removeSavedPassword": "הסר סיסמה שמורה",
+    "removeSavedPassphrase": "הסר את סיסמת הגישה השמורה",
+    "secretWillBeRemoved": "יוסר לאחר השמירה",
+    "addBookmark": "סימנייה חדשה",
+    "addLocalBookmark": "הוסף סימנייה לתיקייה מקומית",
+    "chooseLocalPath": "בחר תיקייה מקומית",
+    "importBookmarks": "ייבוא",
+    "exportBookmarks": "ייצוא",
+    "importAdded_one": "נוספה {{count}} סימנייה",
+    "importAdded_other": "נוספו {{count}} סימניות",
+    "importAdded_two": "נוספו {{count}} סימניות",
+    "importSkipped_one": "דולגה {{count}} כפילות",
+    "importSkipped_other": "דולגו {{count}} כפילויות",
+    "importSkipped_two": "דולגו {{count}} כפילויות",
+    "importNothingNew": "אין חדש לייבוא",
+    "exportSuccess": "הייצוא הושלם",
+    "sortMode": "מיון סימניות",
+    "sortManual": "ידני",
+    "sortName": "לפי שם",
+    "sortProtocol": "על פי הפרוטוקול",
+    "duplicateWarning": "כבר קיים סימנייה לאותו יעד: \"{{name}}\". לשמור סימנייה נוספת?",
+    "saveAnyway": "שמור בכל מקרה",
+    "newFolder": "תיקייה חדשה",
+    "folderNamePlaceholder": "שם התיקייה",
+    "confirmDeleteFolder": "האם למחוק את התיקייה \"{{name}}\"? הסימניות שבה יועברו רמה אחת למעלה.",
+    "searchPlaceholder": "חיפוש…",
+    "clearSearch": "נקה את תוצאות החיפוש",
+    "noSearchResults": "אין סימניות התואמות לחיפוש שלך",
+    "duplicate": "שכפול",
+    "duplicateNameSuffix": " (העתק)",
+    "newBookmarkInFolder": "הוסף סימנייה חדשה כאן",
+    "expandFolder": "הרחב את \"{{name}}\"",
+    "collapseFolder": "קפל את \"{{name}}\""
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "כתובת",
+      "port": "פורט",
+      "user": "שם משתמש",
+      "password": "סיסמה",
+      "passphrase": "סיסמת גישה",
+      "keyFilePlaceholder": "קובץ מפתח…",
+      "chooseKeyFile": "בחר קובץ מפתח…",
+      "caCertFilePlaceholder": "אישור של רשות אישורים…",
+      "chooseCaCertFile": "בחר אישור של רשות אישורים…"
+    },
+    "secureToggle": {
+      "tooltip": "בטל את הסימון כדי לאשר תעודות שרת חתומות עצמית ובלתי תקפות",
+      "label": "אמת את האישור"
+    },
+    "authToggle": {
+      "tooltip": "התחבר באמצעות קובץ מפתח SSH פרטי במקום סיסמה",
+      "label": "התחבר באמצעות מפתח SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "ביטול",
+      "connect": "התחבר",
+      "disconnect": "התנתק"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "ב-FTP רגיל, שם המשתמש, הסיסמה והקבצים מועברים ללא הצפנה. השתמש ב-FTPS או ב-SFTP במידת האפשר."
+  },
+  "titleBar": {
+    "minimize": "צמצם",
+    "restore": "שחזור",
+    "maximize": "מקסם"
+  },
+  "tray": {
+    "show": "הצג את FTPeach",
+    "quit": "לצאת"
+  },
+  "tabStrip": {
+    "localComputer": "מחשב",
+    "untitledTab": "כרטיסייה חדשה",
+    "newTabTooltip": "כרטיסייה חדשה (Ctrl+T)",
+    "rename": "שם הכרטיסייה"
+  },
+  "toolbarOverflowMenu": {
+    "more": "עוד"
+  },
+  "statusBar": {
+    "transfers": "העברות: {{count}}",
+    "leftCount": "משמאל: {{count}}",
+    "rightCount": "מימין: {{count}}",
+    "topCount": "למעלה: {{count}}",
+    "bottomCount": "בתחתית: {{count}}",
+    "selectedSuffix": " (נבחר: {{count}})",
+    "status": {
+      "transferring": "העברת קובץ",
+      "paused": "בהשהיה",
+      "connected": "מחובר",
+      "connecting": "חיבור",
+      "connectFailed": "לא הצלחתי להתחבר",
+      "disconnected": "לא מחובר"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "הצג/הסתר את החלונית השמאלית",
+    "toggleRightPane": "הצג/הסתר את החלונית הימנית",
+    "toggleTransferQueue": "הצג/הסתר את תור ההעברות",
+    "toggleLog": "הצג/הסתר יומן",
+    "orientationNarrow": "חלוניות מוערמות — החלון צר מדי מכדי לאפשר תצוגה זה לצד זה",
+    "orientationToRow": "סידור חלוניות זו לצד זו",
+    "orientationToStacked": "לערום חלוניות זו על גבי זו",
+    "pauseUnsupportedWebdav": "WebDAV אינו תומך בפונקציית ההשהיה",
+    "pauseActive": "השהיית העברות פעילות",
+    "resumeAllPaused": "להמשיך את כל ההעברות שהושעו",
+    "stopActive": "הפסק את ההעברות הפעילות",
+    "retryAllStopped": "נסה שוב לבצע את כל ההעברות שהופסקו",
+    "refreshPanesTooltip": "רענן את שתי החלוניות (F5)"
+  },
+  "paneToolbar": {
+    "back": "חזרה",
+    "forward": "קדימה",
+    "up": "למעלה",
+    "chooseFolder": "בחר תיקייה…",
+    "newFolder": "תיקייה חדשה…",
+    "newFile": "קובץ חדש…"
+  },
+  "paneSourceSwitcher": {
+    "local": "מחשב",
+    "remote": "שרת",
+    "updatedAtTooltip": "עודכן: {{date}}",
+    "connectToServer": "שרת"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "אין חיבורים אחרונים",
+    "noSavedConnectionsBody": "הזן את כתובת השרת שלעיל, או הוסף אתר לגישה בלחיצה אחת.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "ניהול סימניות",
+    "quicklistLabel": "חיבורים אחרונים"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "שגיאה בלתי מטופלת בממשק FTPeach:",
+    "title": "משהו השתבש",
+    "message": "אירעה שגיאה בלתי צפויה בממשק. החיבור הפעיל והקבצים בדיסק לא נפגעו — ניתן לנסות לטעון מחדש את הממשק.",
+    "reload": "טעינה מחדש של הממשק"
+  }
+}

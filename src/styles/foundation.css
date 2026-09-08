@@ -1,0 +1,205 @@
+:root {
+  /* Peach — dark. Soft dark leaf-green base (the twig, not the fruit),
+     coral-peach accent (the fruit itself) — same idea as the app icon. */
+  --bg-base: #141312;
+  --bg-panel: #1a1917;
+  --bg-panel-alt: #211f1c;
+  --bg-raised: #2b2824;
+  --border: #504a42;
+  --border-soft: #292622;
+  --text-primary: #f3eee7;
+  --text-secondary: #bcb5ad;
+  --text-faint: #817a73;
+
+  --accent-primary: #ff9d72;
+  --accent-primary-hover: #ffab85;
+  --accent-primary-active: #ed8b63;
+  --accent-primary-dim: rgba(255, 157, 114, 0.12);
+  --accent-primary-border: rgba(255, 157, 114, 0.24);
+
+
+  --accent-fill: #ff9d72;
+  --accent-fill-text: #28150d;
+
+  --accent-amber: #ffc98f;
+  --accent-amber-dim: rgba(255, 209, 95, 0.12);
+  --accent-red: #ff7565;
+  --accent-red-dim: rgba(255, 117, 101, 0.12);
+  --accent-green: #8fba91;
+  --accent-green-dim: rgba(143, 186, 145, 0.12);
+
+
+  --btn-fill: #302923;
+  --btn-fill-text: #f5eee7;
+
+
+  --file-spreadsheet: #8dcebe;
+  --file-archive: #8dc0ce;
+  --file-text: #8da3ce;
+  --file-audio: #958dce;
+  --file-code: #b38dce;
+  --file-video: #ce8dcb;
+  --file-image: #ce8dad;
+
+  --font-ui: 'Segoe UI', Inter, -apple-system, system-ui, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 7px;
+
+  /* Shared control geometry. Components consume these tokens instead of
+     carrying independent copies of the same dimensions. */
+  --title-bar-height: 28.8px;
+  --control-height: 26px;
+  --control-height-lg: 28px;
+  --control-radius: var(--radius-sm);
+  --control-padding-inline: 9px;
+  --control-border: 1px solid var(--border);
+  --control-background: var(--bg-base);
+  --control-transition: border-color 0.15s ease;
+  --divider-track: var(--bg-base);
+  --divider-color: var(--bg-raised);
+  --modal-scrim: rgba(0, 0, 0, 0.45);
+
+  /* The 1px border Windows paints outside the client area. It is the app's
+     own edge against the desktop, not one of its internal dividers, so it
+     gets its own token rather than borrowing --border: the light theme needs
+     real contrast against a bright desktop, while the dark theme only needs
+     to be found, and --border's dark value read as a bright outline.
+     Neither CSS nor the scrim can reach the border, so the dimmed variant
+     is composited here and pushed to Windows by platform/windowFrame.ts --
+     see the scrim that .title-bar::after paints for the same reason. */
+  --window-border: #292622;
+  --window-border-dimmed: color-mix(in srgb, black 45%, var(--window-border));
+  --popover-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --dialog-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
+
+  /* The fade every `.truncated` label paints over its clipped edge. CSS
+     gradients have no logical `to inline-end`, so the direction has to be
+     physical and mirrored for RTL -- which is why it lives here as one token
+     instead of being spelled out (and re-broken) at each call site. */
+  --truncate-fade: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
+
+
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+
+  --bg-base: #f2f0ed;
+  --bg-panel: #faf9f7;
+  --bg-panel-alt: #ebe8e4;
+  --bg-raised: #e2ded8;
+  --border: #c9c3bc;
+  --border-soft: #ddd8d2;
+  --window-border: #c9c3bc;
+  --text-primary: #27231f;
+  --text-secondary: #665f58;
+  --text-faint: #8e867e;
+
+  --accent-primary: #e87852;
+  --accent-primary-hover: #ef8964;
+  --accent-primary-active: #d96845;
+  --accent-primary-dim: rgba(232, 120, 82, 0.11);
+  --accent-primary-border: rgba(232, 120, 82, 0.3);
+
+
+  --accent-fill: #e87852;
+  --accent-fill-text: #28130c;
+
+  --accent-amber: #b8860b;
+  --accent-amber-dim: rgba(184, 134, 11, 0.12);
+  --accent-red: #d95d51;
+  --accent-red-dim: rgba(217, 93, 81, 0.11);
+  --accent-green: #4f9162;
+  --accent-green-dim: rgba(79, 145, 98, 0.11);
+
+
+  --btn-fill: #e5e1dc;
+  --btn-fill-text: #302b26;
+
+  --file-spreadsheet: #31977f;
+  --file-archive: #397f96;
+  --file-text: #5271a4;
+  --file-audio: #7167a5;
+  --file-code: #9364a5;
+  --file-video: #a96099;
+  --file-image: #a9607d;
+
+  color-scheme: light;
+}
+
+/* In RTL the clipped edge of a truncated label is its left edge, so the fade
+   has to run the other way -- see --truncate-fade above. */
+[dir='rtl'] {
+  --truncate-fade: linear-gradient(to left, #000 calc(100% - 16px), transparent 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Focus remains functional for shortcuts and dialog restoration in every mode. */
+:focus {
+  outline: none;
+}
+
+:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1.5px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.btn-primary:focus-visible:where(html[data-keyboard-navigation] *) {
+  /* A small gap separates the theme's accent ring from the filled surface. */
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border) 25%, transparent);
+  background-clip: padding-box;
+  border-radius: 999px;
+  border: 2px solid var(--bg-panel);
+  transition: background-color 0.15s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+/* Without this, the browser paints its own opaque (light) square wherever a
+   vertical and horizontal scrollbar meet — e.g. the transfer queue's list —
+   standing out against this app's dark theme. */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Keep close glyphs out of the inline baseline flow so every flex-based
+   button centers them geometrically, regardless of surrounding line-height. */
+.icon-window-close {
+  display: block;
+}

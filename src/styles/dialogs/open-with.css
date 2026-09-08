@@ -1,0 +1,27 @@
+/* «Open with…» download dialog progress bar. */
+.openwith-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 320px;
+}
+.openwith-message {
+  margin: 0;
+}
+.openwith-progress-track {
+  height: 4px;
+  max-width: 420px;
+  border-radius: 2px;
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+.openwith-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent-primary);
+  transition: width 0.15s ease;
+}
+.openwith-progress-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}

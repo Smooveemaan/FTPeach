@@ -1,0 +1,274 @@
+/* ---------- View toolbar ---------- */
+
+.view-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: var(--bg-panel);
+
+  overflow: hidden;
+}
+
+
+.tab-strip {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  padding: 6px 0 0;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-soft);
+}
+.tab-strip.disabled { opacity: 0.6; pointer-events: none; }
+
+
+.tab-strip-scroll {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 0 0 10px;
+  overflow: hidden;
+  cursor: grab;
+}
+.tab-strip-scroll.overflow {
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Scrolling still works (wheel remap + drag-pan below, plus keyboard
+     scrollIntoView) — just without a visible scrollbar riding along. */
+  scrollbar-width: none;
+}
+.tab-strip-scroll.overflow::-webkit-scrollbar { display: none; }
+.tab-strip-scroll.panning { cursor: grabbing; }
+
+.tab-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 7px 10px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  cursor: pointer;
+  font-size: 12px;
+  position: relative;
+  top: 1px;
+}
+.tab-strip-item:hover { color: var(--text-primary); }
+.tab-strip-item.active {
+  background: var(--bg-panel);
+  border-color: var(--border-soft);
+  color: var(--text-primary);
+}
+.tab-strip-item.active::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--bg-panel);
+}
+
+/* Inactive tabs use one short, centered divider. Around the active tab its
+   own border already marks the edge, so an extra line would look doubled. */
+.tab-strip-item:not(.active) + .tab-strip-item:not(.active)::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -2px;
+  top: 11px;
+  bottom: 10px;
+  width: 1px;
+  border-radius: 1px;
+  background: var(--border-soft);
+}
+
+
+.tab-strip-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+
+.tab-strip-item.compact.active .tab-strip-label { padding-inline-end: 20px; }
+
+.tab-strip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  /* Neutral by default — "nothing connected yet" isn't an error and
+     shouldn't read as one. .error below is the only state that uses red. */
+  background: var(--text-faint);
+}
+.tab-strip-dot.connecting { background: var(--accent-amber); }
+.tab-strip-dot.connected { background: var(--accent-green); }
+.tab-strip-dot.error { background: var(--accent-red); }
+
+.tab-strip-label {
+  overflow: hidden;
+  white-space: nowrap;
+
+  min-width: 0;
+
+  max-width: 14ch;
+}
+.tab-strip-label.idle { color: var(--text-faint); }
+.tab-strip-item.active .tab-strip-label.idle { color: var(--text-secondary); }
+.tab-strip-item.muted-identity .tab-strip-label,
+.tab-strip-item.muted-identity .tab-strip-content > svg {
+  color: var(--text-faint);
+}
+.tab-strip-item.active.muted-identity .tab-strip-label,
+.tab-strip-item.active.muted-identity .tab-strip-content > svg {
+  color: var(--text-secondary);
+}
+.tab-strip-rename-input {
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: 22ch;
+  height: 18px;
+  padding: 1px 4px;
+  border: 1px solid var(--accent-primary);
+  border-radius: 3px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font: inherit;
+  outline: none;
+}
+
+.tab-strip-label.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+.tab-strip-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  color: var(--text-faint);
+  font-size: 12px;
+  line-height: 1;
+  position: relative;
+  top: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.tab-strip-item:hover .tab-strip-close {
+  opacity: 1;
+  pointer-events: auto;
+}
+.tab-strip-close:hover { background: var(--bg-raised); color: var(--accent-red); }
+
+.tab-strip-close.floating {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-panel);
+}
+.tab-strip-close-glyph {
+  position: relative;
+  top: -1px;
+}
+
+
+.tab-strip-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 0 0 auto;
+  margin: 0 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: var(--bg-base);
+  color: var(--text-faint);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+.tab-strip-add:hover { background: var(--bg-raised); color: var(--text-primary); }
+
+
+.app-error-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-panel);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.app-error-bar-close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.app-error-bar-close:hover { background: var(--bg-raised); color: var(--accent-red); }
+
+
+.pane-area-divider {
+  flex: 0 0 6px;
+  position: relative;
+  background: var(--divider-track);
+}
+.pane-area-divider::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 2px;
+  height: 2px;
+  background: var(--divider-color);
+}
+
+
+.btn-icon.active {
+  background: var(--accent-fill);
+  border-color: var(--accent-primary);
+  color: var(--accent-fill-text);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+}
+
+.btn-icon.active:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline-color: var(--accent-fill-text);
+}
+
+
+.btn-icon.armed {
+  color: var(--text-primary);
+  border-color: var(--border);
+}

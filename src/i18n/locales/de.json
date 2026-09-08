@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "Keine Anmeldung",
+    "anonymousUser": "anonym",
+    "rootFolder": "Stammverzeichnis",
+    "close": "Schließen",
+    "reset": "Zurücksetzen",
+    "open": "Öffnen",
+    "upload": "Hochladen",
+    "save": "Speichern",
+    "create": "Erstellen",
+    "cancel": "Abbrechen",
+    "increase": "Erhöhen",
+    "decrease": "Verringern",
+    "showPassword": "Passwort anzeigen",
+    "savedSecretProtected": "Das gespeicherte Geheimnis ist geschützt und kann nicht eingesehen werden",
+    "hidePassword": "Passwort ausblenden"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach-Sicherheitsbestätigung",
+    "allow": "Zulassen",
+    "typeToConfirm": "Geben Sie zur Bestätigung {{phrase}} ein",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Gespeichertes Passwort für dieses Lesezeichen anzeigen?"
+      },
+      "revealProxyPassword": {
+        "message": "Gespeichertes Proxy-Passwort anzeigen?"
+      },
+      "vaultReset": {
+        "message": "Alle gespeicherten Passwörter und Passphrasen für SSH-Schlüssel werden unwiderruflich gelöscht.",
+        "approve": "Tresor löschen"
+      },
+      "executeLocalFile": {
+        "message": "Diese ausführbare Datei oder dieses Skript ausführen?"
+      },
+      "executeRemoteFile": {
+        "message": "Diese ausführbare Datei oder dieses Skript herunterladen und ausführen?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Neuer Ordner…",
+    "newFile": "Neue Datei…",
+    "refresh": "Aktualisieren",
+    "open": "Öffnen",
+    "uploadToOtherPane": "In einen anderen Bereich hochladen",
+    "copyToOtherPane": "In einen anderen Bereich kopieren",
+    "downloadToOtherPane": "In einen anderen Bereich herunterladen",
+    "openWith": "Öffnen mit…",
+    "permissions": "Berechtigungen…",
+    "moveTo": "Verschieben nach…",
+    "copyPath": "Pfad kopieren",
+    "delete": "Löschen",
+    "deleteSelected_one": "Löschen ({{count}} Datei)",
+    "deleteSelected_other": "Löschen ({{count}} Dateien)",
+    "deletePermanently": "Endgültig löschen",
+    "deleteSelectedPermanently_one": "Endgültig löschen ({{count}} Datei)",
+    "deleteSelectedPermanently_other": "Endgültig löschen ({{count}} Dateien)"
+  },
+  "chmodDialog": {
+    "title": "SFTP-Berechtigungen",
+    "label": "Oktalmodus für „{{name}}“ (zum Beispiel 644 oder 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "Der Ordner ist leer",
+    "homeFolder": "Home-Ordner",
+    "copyToPaneBelow": "In das darunterliegende Feld kopieren",
+    "copyToPaneAbove": "In den oberen Bereich kopieren",
+    "copyToPaneRight": "In den rechten Bereich kopieren",
+    "copyToPaneLeft": "In den linken Bereich kopieren",
+    "fileTypeFolder": "Aktenordner",
+    "fileTypeGeneric": "Datei",
+    "fileTypeWithExt": "{{ext}} Datei",
+    "columnSize": "Größe",
+    "columnModifiedAt": "Änderungsdatum",
+    "columnCreatedAt": "Erstellungsdatum",
+    "columnType": "Typ",
+    "columnPermissions": "Berechtigungen",
+    "columnOwner": "Eigentümer",
+    "columnGroup": "Gruppe",
+    "columnName": "Name",
+    "filesAriaLabel": "Dateien",
+    "rename": "Umbenennen",
+    "resetColumnWidths": "Spaltenbreiten wiederherstellen",
+    "updatedAtTooltip": "Aktualisiert: {{date}}",
+    "searchTooltip": "Suche ({{shortcut}})",
+    "searchPlaceholder": "Suche… ({{shortcut}})",
+    "editPathAriaLabel": "Pfad bearbeiten",
+    "changeDriveTooltip": "Laufwerk wechseln",
+    "chooseColumnsTooltip": "Rechtsklick, um Spalten auszuwählen",
+    "sortByNameTooltip": "Nach Namen sortieren",
+    "sortByColumnTooltip": "Nach der Spalte „{{column}}“ sortieren",
+    "rowProbeSample": "Beispiel",
+    "loading": "Wird geladen…",
+    "nothingFound": "Es wurde nichts gefunden"
+  },
+  "update": {
+    "readyToInstall": "Das Update v{{version}} ist verfügbar – klicken Sie auf „Neustart und Installation“, um es zu installieren.",
+    "downloadingWithPercent": "Update v{{version}} wird heruntergeladen: {{percent}} %",
+    "downloadingFound": "Update v{{version}} gefunden, wird heruntergeladen…",
+    "restartAndInstall": "Neustart und Installation",
+    "availableAction": "verfügbar!",
+    "installAction": "installieren?",
+    "downloadTooltip": "Zum Herunterladen klicken",
+    "downloadingTooltip": "Wird heruntergeladen",
+    "installTooltip": "Zum Neustarten und Installieren klicken"
+  },
+  "legacyPasswordNotice": {
+    "message": "Die Passwörter für einige gespeicherte Websites konnten nach dem Update nicht mehr gelesen werden – bitte geben Sie diese im Website-Manager erneut ein."
+  },
+  "plaintextSecretNotice": {
+    "message": "Das Passwort oder die Passphrase einer gespeicherten Website konnte nicht verschlüsselt werden, da der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Das Passwort oder die Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung kann so lange fortgesetzt werden, bis sie getrennt wird; andernfalls müssen Sie das Passwort beim nächsten Mal erneut eingeben."
+  },
+  "resize": {
+    "paneSize": "Zum Ändern der Größe der Fensterbereiche ziehen (zum Zurücksetzen doppelklicken)",
+    "height": "Zum Ändern der Höhe ziehen (zum Zurücksetzen doppelklicken)",
+    "ratio": "Zum Ändern des Seitenverhältnisses ziehen (zum Zurücksetzen doppelklicken)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} Element",
+    "itemCount_other": "{{count}} Elemente",
+    "moveMode": "verschieben"
+  },
+  "openWithChanged": {
+    "title": "Datei geändert",
+    "message": "„{{name}}“ wurde in der externen Anwendung geändert. Soll die aktualisierte Datei auf den Server hochgeladen werden?"
+  },
+  "saveSite": {
+    "title": "Verbindungsprofil speichern",
+    "label": "Name des Verbindungsprofils:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Neuer Ordner",
+    "labelLocal": "Name des neuen Ordners:",
+    "labelRemote": "Name des neuen Ordners auf dem Server:"
+  },
+  "newFile": {
+    "title": "Neue Datei",
+    "label": "Dateiname (mit Dateiendung):"
+  },
+  "moveToDialog": {
+    "title": "Verschieben nach…",
+    "labelSingle": "„{{name}}“ in den Ordner verschieben:",
+    "labelMultiple": "Die ausgewählten Elemente ({{count}}) in den Ordner verschieben:"
+  },
+  "confirm": {
+    "allowReplacementRace": "„{{name}}“ ersetzen, falls die Datei während der Übertragung erstellt wird?",
+    "resetLayout": "Fenster- und Bereichsgrößen zurücksetzen, Standardspalten wiederherstellen und den Schnittstellen-Cache leeren?",
+    "hostKeyMismatch": "{{error}} Den gespeicherten Schlüssel-Fingerabdruck für {{host}}:{{port}} löschen und trotzdem verbinden? Tun Sie dies nur, wenn Sie sicher sind, dass der Server ordnungsgemäß neu installiert oder migriert wurde – andernfalls könnten Sie eine Verbindung zu einem möglicherweise gefälschten Server herstellen.",
+    "connectAnyway": "Trotzdem verbinden",
+    "closeTabWithActiveTransfers": "Auf dieser Registerkarte laufen aktive Übertragungen. Möchten Sie die Registerkarte schließen und die Übertragungen abbrechen?",
+    "closeTabLabel": "Registerkarte schließen",
+    "overwriteSingleExists": "„{{name}}“ ist im Zielordner bereits vorhanden. Möchten Sie die Datei überschreiben?",
+    "overwriteConflicts_one": "{{count}} Element ist im Zielordner bereits vorhanden. Möchten Sie es überschreiben?",
+    "overwriteConflicts_other": "{{count}} Im Zielordner sind bereits Dateien vorhanden. Möchten Sie diese überschreiben?",
+    "overwriteLabel": "Überschreiben",
+    "replaceConnection": "Dieser Bereich ist bereits mit „{{current}}“ verbunden. Möchten Sie die Verbindung durch „{{next}}“ ersetzen?",
+    "replaceConnectionLabel": "Ersetzen",
+    "deleteSelected": "Die ausgewählten Elemente löschen ({{count}})? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteEntry": "„{{name}}“ löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "recycleSelected": "Sollen die ausgewählten Elemente ({{count}}) in den Papierkorb verschoben werden?",
+    "recycleEntry": "„{{name}}“ in den Papierkorb verschieben?",
+    "deletePermanentSelected": "Die ausgewählten Elemente dauerhaft löschen ({{count}})? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deletePermanentEntry": "„{{name}}“ endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteRemoteSelected": "Die ausgewählten Remote-Elemente ({{count}}) endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteRemoteEntry": "Möchten Sie das Remote-Element „{{name}}“ endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+  },
+  "paneSide": {
+    "top": "nach oben",
+    "bottom": "unten",
+    "left": "links",
+    "right": "richtig",
+    "labelWithTab": "{{base}} (Registerkarte „{{tabNumber}}“, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "Datei",
+      "newTab": "Neuer Tab",
+      "closeTab": "Registerkarte schließen",
+      "newConnection": "Neue Verbindung",
+      "disconnect": "Trennen",
+      "manageBookmarks": "Lesezeichen verwalten…",
+      "saveConnection": "Verbindung speichern",
+      "saveConnectionSide": "Verbindung speichern ({{side}})",
+      "saveBookmarkSide": "Lesezeichen speichern ({{side}})",
+      "savePathSide": "Pfad speichern ({{side}})",
+      "exportSettings": "Exporteinstellungen…",
+      "importSettings": "Einstellungen importieren…",
+      "quit": "Beenden"
+    },
+    "edit": {
+      "title": "Bearbeiten",
+      "settings": "Einstellungen…",
+      "resetLayout": "Layout und Cache zurücksetzen…"
+    },
+    "view": {
+      "title": "Anzeigen",
+      "darkTheme": "Dunkles Design",
+      "lightTheme": "Helles Design",
+      "systemTheme": "Systemdesign",
+      "syncBrowsing": "Ordnernavigation synchronisieren",
+      "showHiddenFiles": "Versteckte Dateien und Ordner anzeigen",
+      "leftPane": "Linker Bereich",
+      "rightPane": "Rechter Bereich",
+      "transferQueue": "Übertragungswarteschlange",
+      "log": "Protokoll",
+      "stackedPanes": "Gestapelte Bereiche",
+      "refreshBothPanes": "Beide Fenster aktualisieren"
+    },
+    "transfer": {
+      "title": "Übertragung",
+      "copySelectedRight": "Ausgewählte kopieren →",
+      "copySelectedLeft": "← Auswahl kopieren",
+      "clearCompleted": "Löschen Abgeschlossen"
+    },
+    "bookmarks": {
+      "title": "Lesezeichen"
+    },
+    "help": {
+      "supportProject": "Projekt unterstützen",
+      "title": "Hilfe",
+      "documentation": "Dokumentation",
+      "reportIssue": "Ein Problem melden",
+      "checkUpdates": "Nach Updates suchen",
+      "about": "Über"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Der Server hat die Verbindung abgelehnt. Überprüfen Sie die Adresse und den Port.",
+    "serverNotFound": "Server nicht gefunden. Bitte überprüfen Sie, ob die Adresse korrekt ist.",
+    "timeout": "Der Server reagiert nicht (Zeitüberschreitung bei der Verbindung). Überprüfen Sie die Adresse, den Port und die Netzwerkverbindung.",
+    "connectionReset": "Die Verbindung zum Server wurde unerwartet unterbrochen.",
+    "networkUnreachable": "Der Server ist nicht erreichbar – bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "loginIncorrect": "Falscher Benutzername oder falsches Passwort.",
+    "invalidCertificate": "Der Server hat ein ungültiges Zertifikat vorgelegt. Wenn Sie diesem Server vertrauen, deaktivieren Sie die Zertifikatsprüfung in den Verbindungseinstellungen.",
+    "tlsNegotiationFailed": "Die TLS-Aushandlung ist fehlgeschlagen. Überprüfen Sie, ob der Server explizites FTPS oder HTTPS sowie eine kompatible TLS-Version unterstützt.",
+    "sshNegotiationFailed": "Die SSH-Verhandlung ist fehlgeschlagen. Der Server und FTPeach konnten sich nicht auf einen kompatiblen SSH-Algorithmus oder eine kompatible Protokollversion einigen.",
+    "proxyFailed": "Die Proxy-Verbindung ist fehlgeschlagen. Überprüfen Sie den Proxy-Typ, die Adresse und die Anmeldedaten und stellen Sie sicher, dass der Zielserver erreichbar ist.",
+    "keyReadFailed": "Der Schlüssel konnte nicht gelesen werden – entweder ist die Datei beschädigt oder die Passphrase ist falsch.",
+    "accessDenied": "Sie haben keine Berechtigung für diesen Vorgang.",
+    "notFound": "Datei oder Ordner nicht gefunden.",
+    "fileOrFolderExists": "Eine Datei oder ein Ordner mit diesem Namen existiert bereits.",
+    "fileBusy": "Die Datei wird gerade von einem anderen Prozess verwendet.",
+    "diskFull": "Nicht genügend Speicherplatz.",
+    "hostKeyMismatch": "Der Hostschlüssel des Servers hat sich geändert.",
+    "integrityMismatch": "Die übertragene Datei hat die Integritätsprüfung nicht bestanden.",
+    "invalidInput": "Der angegebene Wert ist ungültig.",
+    "internal": "Ein unerwarteter Fehler ist aufgetreten.",
+    "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
+    "alreadyExists": "„{{name}}“ existiert bereits"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Zuordnungen",
+      "hint": "Wählen Sie eine Anwendung für eine Dateiendung aus. Für Dateien, für die keine Regel festgelegt ist, wird die Systemstandardeinstellung verwendet.",
+      "extension": "Erweiterung",
+      "extensionPlaceholder": "txt",
+      "application": "Anwendung",
+      "applicationPlaceholder": "Anwendungspfad",
+      "browse": "Anwendung auswählen",
+      "remove": "Zuordnung aufheben",
+      "add": "Zuordnung hinzufügen"
+    },
+    "minimizeToTray": "In den Infobereich minimieren",
+    "minimizeToTrayHint": "Die Minimieren-Schaltfläche blendet das Fenster in den Infobereich aus, anstatt es in der Taskleiste zu behalten.",
+    "closeToTray": "In den Infobereich schließen",
+    "closeToTrayHint": "Über die Schaltfläche „Schließen“ wird das Fenster in den Infobereich verschoben, anstatt die App zu beenden. Beenden Sie die App über das Menü des Infobereich-Symbols.",
+    "title": "Einstellungen",
+    "unsavedChangesTitle": "Nicht gespeicherte Änderungen",
+    "unsavedChangesMessage": "Änderungen an den Einstellungen speichern?",
+    "discardChanges": "Nicht speichern",
+    "categories": {
+      "connection": "Verbindung",
+      "transfers": "Übertragungen",
+      "interface": "Schnittstelle",
+      "shortcuts": "Tastenkombinationen",
+      "updates": "Aktualisierungen",
+      "logging": "Protokollierung",
+      "security": "Sicherheit"
+    },
+    "shortcuts": {
+      "title": "Tastaturkürzel",
+      "hint": "Klicken Sie auf eine Tastenkombination und drücken Sie anschließend eine neue Tastenkombination, um sie neu zuzuweisen.",
+      "globalTitle": "Weltweit",
+      "paneTitle": "Dateifenster",
+      "recording": "Drücken Sie eine Taste…",
+      "unbound": "Nicht zugewiesen",
+      "reset": "Auf Standardwerte zurücksetzen",
+      "resetAll": "Alle Einstellungen auf die Standardwerte zurücksetzen",
+      "unassign": "Zuweisung aufheben",
+      "conflict": "Wird auch verwendet von: {{action}}",
+      "actions": {
+        "search": "Suche ({{side}})",
+        "toggleHiddenFiles": "Versteckte Dateien ein- bzw. ausblenden",
+        "newConnection": "Neue Verbindung",
+        "save": "Speichern ({{side}})",
+        "openSettings": "Einstellungen öffnen",
+        "newTab": "Neuer Reiter",
+        "closeTab": "Registerkarte schließen",
+        "nextTab": "Nächste Registerkarte",
+        "prevTab": "Vorherige Registerkarte",
+        "refresh": "Aktualisieren",
+        "selectAll": "Alles auswählen",
+        "delete": "Löschen",
+        "deletePermanent": "Endgültig löschen",
+        "navigateUp": "Einen Ordner höher gehen",
+        "navigateBack": "Zurück",
+        "navigateForward": "Weiter",
+        "navigateHome": "Zum Home-Ordner wechseln",
+        "moveTo": "Verschieben nach…",
+        "newFolder": "Neuer Ordner…",
+        "newFile": "Neue Datei…",
+        "copyToOtherPane": "In einen anderen Bereich kopieren",
+        "copy": "Kopieren",
+        "cut": "Schnitt",
+        "paste": "Einfügen",
+        "clearSelection": "Auswahl löschen",
+        "open": "Öffnen"
+      }
+    },
+    "security": {
+      "title": "Passwortschutz",
+      "systemMode": "Systemschutz",
+      "systemModeHint": "Passwörter für Ihr Windows-Konto sind verschlüsselt und können in den Verbindungseinstellungen eingesehen werden.",
+      "strongholdMode": "Verbesserter Schutz",
+      "strongholdModeHint": "Erfordert ein Hauptpasswort. Gespeicherte Passwörter können für Verbindungen verwendet, aber nicht eingesehen werden.",
+      "loading": "Geschützter Speicher wird überprüft…",
+      "configuredLocked": "Der geschützte Speicher ist durch ein Master-Passwort gesichert und gesperrt.",
+      "configuredUnlocked": "Der geschützte Speicher ist durch ein Hauptpasswort gesichert und wird damit entsperrt.",
+      "masterPassword": "Hauptpasswort",
+      "confirmPassword": "Hauptpasswort bestätigen",
+      "oldPassword": "Aktuelles Master-Passwort",
+      "newPassword": "Neues Hauptpasswort",
+      "setup": "Gespeicherte Passwörter schützen",
+      "settingUp": "Schutz von…",
+      "unlock": "Entsperren",
+      "unlocking": "Entsperren…",
+      "unlockRequired": "Geschützten Speicher entsperren",
+      "unlockRequiredHint": "Für diese Verbindung wird ein gespeichertes Passwort verwendet. Entsperren Sie den geschützten Speicher, um fortzufahren.",
+      "lockNow": "Jetzt sperren",
+      "autoLock": "Automatische Sperre nach, Min.",
+      "autoLockDisabled": "Deaktiviert",
+      "autoLockHint": "Sperrt den Speicher nach einer bestimmten Zeit der Inaktivität. Bestehende Serververbindungen bleiben aktiv; der Wert 0 deaktiviert die automatische Sperre.",
+      "changePassword": "Hauptpasswort ändern",
+      "change": "Passwort ändern",
+      "systemUnlock": "Systementsperrung zulassen",
+      "systemUnlockHint": "Verwendet Windows Hello (PIN, Gesichtserkennung oder Fingerabdruck, je nach Windows-Konfiguration). Ihr Hauptpasswort bleibt weiterhin die Wiederherstellungsmethode.",
+      "unlockWithSystem": "Mit Systemauthentifizierung entsperren",
+      "systemUnavailable": "Die Systemfreischaltung ist auf dieser Plattform nicht verfügbar.",
+      "noRecovery": "Ein vergessenes Master-Passwort kann nicht wiederhergestellt werden. Durch das Zurücksetzen des Tresors werden alle gespeicherten Geheimnisse gelöscht.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+      "passwordTooShort": "Das Master-Passwort muss aus mindestens 12 Zeichen bestehen.",
+      "strength": {
+        "tooShort": "Zu kurz – bitte mindestens 12 Zeichen verwenden.",
+        "acceptable": "In Ordnung. Eine längere Passphrase ist sicherer.",
+        "strong": "Ein sicheres Hauptpasswort."
+      },
+      "reset": "Geschützten Speicher zurücksetzen",
+      "resetHint": "Löscht den geschützten Speicher sowie alle darin gespeicherten Passwörter und Passphrasen für SSH-Schlüssel. Der erweiterte Schutz muss erneut eingerichtet werden.",
+      "resetWarning": "Dadurch werden alle gespeicherten Passwörter und Schlüsselphrasen endgültig gelöscht. Geben Sie das aktuelle Master-Passwort ein, um fortzufahren.",
+      "confirmReset": "Gespeicherte Geheimnisse löschen",
+      "showConfirmations": "Sicherheitsbestätigungen anzeigen",
+      "showConfirmationsHint": "Vor dem Anzeigen gespeicherter Geheimnisse oder dem Ausführen ausführbarer Dateien nachfragen. Das Zurücksetzen des geschützten Speichers muss immer bestätigt werden.",
+      "unavailable": "Geschützter Speicher ist nicht verfügbar.",
+      "failed": "Der Vorgang im geschützten Speicherbereich ist fehlgeschlagen."
+    },
+    "unlimitedPlaceholder": "Keine Begrenzung",
+    "connectTimeoutLabel": "Zeitüberschreitung bei der Verbindung, Sek.",
+    "connectTimeoutHint": "Wie lange soll bei einer Verbindung auf eine Serverantwort gewartet werden, bevor der Server als nicht erreichbar gilt (0 oder leer – keine Begrenzung). Gilt für die nächste Verbindung.",
+    "ftpActiveMode": "Aktiver FTP-Modus (anstelle des passiven)",
+    "ftpActiveModeHint": "Nur FTP/FTPS – hat keine Auswirkungen auf SFTP/WebDAV. Wird selten benötigt, nur in Netzwerken/auf Servern, in denen der passive Modus das NAT nicht durchläuft. Gilt für die nächste Verbindung.",
+    "ftpActiveModeDisabledByProxy": "Nicht verfügbar, solange ein Proxy aktiviert ist – ein Proxy-Tunnel unterstützt nur ausgehende Verbindungen, daher muss FTP im passiven Modus bleiben.",
+    "proxy": {
+      "enable": "Verwenden Sie für Verbindungen einen Proxy",
+      "enableHint": "SOCKS4, SOCKS5 oder HTTP CONNECT – gilt für FTP, FTPS, SFTP und WebDAV. Gilt für die nächste Verbindung.",
+      "typeLabel": "Proxy-Typ",
+      "hostLabel": "Proxy-Host",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Port",
+      "usernameLabel": "Benutzername",
+      "passwordLabel": "Passwort",
+      "removeSavedPassword": "Gespeichertes Passwort entfernen",
+      "revealFailed": "Das gespeicherte Passwort konnte nicht entschlüsselt werden.",
+      "testTargetLabel": "Gegen … testen",
+      "testTargetHostPlaceholder": "Server-Host",
+      "testTargetPortPlaceholder": "Port",
+      "test": "Test-Proxy",
+      "testing": "Test…",
+      "testOk": "Der Proxy hat das Ziel erfolgreich erreicht.",
+      "testFailed": "Der Proxy-Test ist fehlgeschlagen."
+    },
+    "concurrencyLabel": "Parallele Übertragungen",
+    "concurrencyHint": "Anzahl der Dateien, die gleichzeitig hoch- und heruntergeladen werden sollen (0 oder leer – keine Begrenzung). Gilt für die nächste Verbindung.",
+    "speedLimitLabel": "Geschwindigkeitsbegrenzung, KB/s",
+    "speedLimitHint": "Gilt für die Gesamtsumme aller gleichzeitigen Übertragungen (0 oder leer – keine Begrenzung). Tritt sofort in Kraft, ohne dass auf die nächste Verbindung gewartet werden muss.",
+    "notifyOnComplete": "Benachrichtigung bei Abschluss von Übertragungen",
+    "notifyOnCompleteHint": "Eine Systembenachrichtigung, wenn die Übertragungswarteschlange leer wird – jedoch nur, solange das Fenster nicht im Fokus ist.",
+    "overwriteActionLabel": "Zum Thema Namenskonflikte",
+    "overwriteAsk": "Fragen",
+    "overwriteOverwrite": "Überschreiben",
+    "overwriteSkip": "Überspringen",
+    "overwriteHint": "Was ist zu tun, wenn die zu kopierende Datei bereits im Zielordner vorhanden ist?",
+    "preventSleep": "Verhindern, dass das System während der Datenübertragung in den Ruhezustand wechselt",
+    "preventSleepHint": "Tritt sofort in Kraft, ohne auf die nächste Verbindung zu warten. Bleibt aktiv, solange mindestens eine Übertragung läuft – blockiert den Ruhezustand ansonsten nicht.",
+    "themeLabel": "Thema",
+    "themeDark": "Dunkel",
+    "themeLight": "Licht",
+    "themeSystem": "System",
+    "languageLabel": "Sprache der Benutzeroberfläche",
+    "interfaceScaleLabel": "Schnittstellenmaßstab",
+    "interfaceScaleHint": "Ändern Sie die Größe von Text und Steuerelementen in der gesamten Anwendung.",
+    "dateFormatLabel": "Datums- und Zeitformat",
+    "dateFormatOnlyLabel": "Datumsformat",
+    "timeFormatLabel": "Zeitformat",
+    "timeFormat24Hour": "24 Std.",
+    "timeFormat12Hour": "12 Std.",
+    "dateFormatLocale": "Lokal",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Standardordner für Computer",
+    "defaultLocalPathHint": "Der Ordner, den das Computer-Fenster beim Start und beim Wechsel von einem Server öffnet. Leer lassen, um den Basisordner des Systems zu verwenden.",
+    "chooseDefaultLocalPath": "Standardordner auswählen",
+    "showHiddenFiles": "Versteckte Dateien und Ordner anzeigen",
+    "showHiddenFilesHint": "Gilt sowohl für lokale als auch für Remote-Dateifenster.",
+    "coloredTabs": "Farbige Registerkarten",
+    "coloredTabsHint": "Färbt den Tab-Namen und das Symbol mit der für das Lesezeichen gespeicherten Farbe ein.",
+    "autoCheckUpdates": "Beim Start nach Updates suchen",
+    "autoCheckUpdatesHint": "Eine automatische Überprüfung wenige Sekunden nach dem Start – die Installation eines Updates erfordert stets eine gesonderte Bestätigung.",
+    "autoReconnectTabs": "Wiederhergestellte Registerkarten beim Start erneut verbinden",
+    "autoReconnectTabsHint": "Standardmäßig deaktiviert. Wenn diese Option aktiviert ist, werden gespeicherte Websites automatisch verbunden.",
+    "saveSessionOnExit": "Sitzung beim Beenden speichern",
+    "saveSessionOnExitHint": "Stellt beim nächsten Start die geöffneten Registerkarten, die Fenstertypen und die Pfade wieder her. Wenn Sie diese Option deaktivieren, wird die gespeicherte Sitzung gelöscht.",
+    "checkNow": "Jetzt prüfen",
+    "updateStatus": {
+      "checking": "Nach Updates suchen…",
+      "notAvailable": "Sie nutzen die aktuellste Version.",
+      "error": "Es konnten keine Updates gefunden werden.",
+      "notPackaged": "In dieser Version nicht verfügbar (npm run dev/start)."
+    },
+    "logEnable": "Protokollierung aktivieren",
+    "logShowTimestamps": "Zeitstempel anzeigen",
+    "logToFile": "Protokoll in Datei schreiben",
+    "logToFileHint": "Fügt das Protokoll kontinuierlich an eine Datei auf der Festplatte an (%APPDATA%\\FTPeach\\logs\\ftpeach.log), solange diese Funktion aktiviert ist – unabhängig davon, ob das Protokollfenster geöffnet ist. Dies unterscheidet sich von der Schaltfläche „Speichern“ im Fenster selbst (diese speichert nur die letzten 200 Zeilen einmalig beim Klicken).",
+    "exportDiagnostics": "Diagnosepaket exportieren",
+    "exportDiagnosticsBusy": "Wird exportiert…",
+    "exportDiagnosticsHint": "Exportiert Version, Betriebssystem und die letzten 200 Protokolleinträge. Passwörter, Token und andere vertrauliche Daten werden unkenntlich gemacht.",
+    "exportDiagnosticsFailed": "Das Diagnosepaket konnte nicht exportiert werden."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Exporteinstellungen",
+    "confirmLabel": "Exportieren…",
+    "includeSettings": "Anwendungseinstellungen",
+    "includeBookmarks": "Lesezeichen",
+    "includeLocalPaths": "Lokale Pfade",
+    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Export nicht enthalten – Sie müssen diese nach dem Import auf einem anderen Rechner erneut eingeben."
+  },
+  "importSettingsDialog": {
+    "title": "Importeinstellungen",
+    "confirmLabel": "Importieren…",
+    "includeSettings": "Anwendungseinstellungen",
+    "includeBookmarks": "Lesezeichen",
+    "includeLocalPaths": "Lokale Pfade",
+    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Import nicht enthalten – Sie müssen sie für jede importierte Site erneut eingeben."
+  },
+  "openWithDialog": {
+    "title": "In der Anwendung öffnen",
+    "downloading": "„{{fileName}}“ wird heruntergeladen…",
+    "progress": "{{loaded}} von „{{total}}“ ({{percent}} %)",
+    "connecting": "Wird verbunden…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Übertragungsfehler",
+    "notifyCompleteTitle": "Übertragung abgeschlossen",
+    "notifySucceeded": "gelungen: {{count}}",
+    "notifyFailed": "Fehlgeschlagen: {{count}}",
+    "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt."
+  },
+  "transferQueue": {
+    "title": "Übertragungen",
+    "columns": {
+      "file": "Datei",
+      "size": "Größe",
+      "transferred": "Übertragen",
+      "progress": "Fortschritt",
+      "speed": "Geschwindigkeit",
+      "remaining": "Verbleibend",
+      "status": "Status"
+    },
+    "empty": "Hier werden Uploads und Downloads angezeigt",
+    "newTransfers_one": "{{count}} neue Übertragung",
+    "newTransfers_other": "{{count}} neue Übertragungen",
+    "status": {
+      "queued": "In Warteschlange",
+      "done": "Fertig",
+      "error": "Fehler",
+      "paused": "Angehalten",
+      "stopped": "Abgesagt",
+      "cancelling": "Wird abgebrochen…"
+    },
+    "direction": {
+      "up": "Hochladen",
+      "down": "Herunterladen",
+      "copy": "Kopieren"
+    },
+    "directionTitleCopy": "Kopieren zwischen Servern",
+    "cancelledByUser": "Vom Benutzer storniert",
+    "stoppedDash": "angehalten",
+    "resume": "Fortsetzen",
+    "retry": "Erneut versuchen",
+    "stop": "Stopp",
+    "pauseUnsupportedCopy": "Beim Kopieren zwischen Servern wird die Pause-Funktion nicht unterstützt",
+    "pauseUnsupportedWebdav": "Die Funktion „Pause“ wird von WebDAV nicht unterstützt."
+  },
+  "log": {
+    "connecting": "Verbindung zu {{addr}} wird hergestellt...",
+    "connectFailed": "Verbindung fehlgeschlagen: {{error}}",
+    "connected": "Angemeldet.",
+    "receivedEntries_one": "{{count}} Eintrag empfangen",
+    "receivedEntries_other": "{{count}} Einträge empfangen",
+    "skippedUnsafeEntry": "Ein Eintrag mit einem unsicheren Namen wurde übersprungen: {{name}}",
+    "listFailed": "Die Auflistung ist fehlgeschlagen: {{error}}",
+    "tlsInit": "TLS wird initialisiert...",
+    "tlsEstablished": "TLS-Verbindung hergestellt.",
+    "davResumeUnsupportedLocal": "WebDAV unterstützt keine Wiederaufnahme von Uploads – die Datei wird erneut von Anfang an übertragen.",
+    "davResumeUnsupportedServer": "Der Server unterstützt die Wiederaufnahme des Downloads nicht (erwarteter Status: „{{expected}}“, erhaltener Status: „{{status}}“) – die Datei wird erneut heruntergeladen."
+  },
+  "logPanel": {
+    "showAllConnections": "Alle Verbindungen anzeigen",
+    "showOnlyThisConnection": "Nur diese Verbindung anzeigen",
+    "connectionClosedShowOnly": "Verbindung geschlossen – nur diese Verbindung anzeigen",
+    "hideTimestamps": "Zeitstempel in Protokollzeilen ausblenden",
+    "showTimestamps": "Zeitstempel in Protokollzeilen anzeigen",
+    "copyToClipboard": "Protokoll in die Zwischenablage kopieren",
+    "saveLastLines_one": "Die letzte {{count}} Zeile in einer .txt-Datei speichern",
+    "saveLastLines_other": "Die letzten {{count}} Zeilen in einer .txt-Datei speichern",
+    "clearLog": "Protokoll löschen",
+    "copiedTooltip": "Kopiert",
+    "copyFailedTooltip": "Konnte nicht kopieren",
+    "saveFailedTooltip": "Die Datei konnte nicht gespeichert werden",
+    "emptyFiltered": "Für diese Verbindung gibt es keine Leitungen",
+    "emptyDefault": "Hier werden Protokollmeldungen angezeigt"
+  },
+  "aboutDialog": {
+    "title": "Über",
+    "tagline": "Ein schlanker FTP/FTPS/SFTP-Client.",
+    "legalInformation": "Rechtliche Hinweise",
+    "sourceCode": "Quellcode",
+    "reportIssue": "Problem melden",
+    "checkForUpdates": "Nach Updates suchen",
+    "updateDownloaded": "Das Update v{{version}} wurde heruntergeladen – Sie können es jetzt installieren."
+  },
+  "siteManager": {
+    "emptyList": "Noch keine gespeicherten Websites",
+    "confirmDeleteSite": "Die Website „{{name}}“ löschen?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Neues Lesezeichen",
+    "titleEdit": "Lesezeichen bearbeiten",
+    "titleList": "Lesezeichen verwalten",
+    "titleLocalPathList": "Lokale Pfade verwalten",
+    "manageLocalPaths": "Lokale Pfade verwalten…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Name",
+      "icon": "Symbol",
+      "color": "Farbe",
+      "protocol": "Protokoll",
+      "keyFile": "Schlüsseldatei",
+      "caCertFile": "CA-Zertifikat",
+      "remotePath": "Standardordner",
+      "localPath": "Lokaler Ordner"
+    },
+    "icons": {
+      "bookmark": "Lesezeichen",
+      "globe": "Website",
+      "briefcase": "Arbeit",
+      "house": "Heimserver",
+      "cloud": "Cloud",
+      "flask": "Test / Staging",
+      "gamepad": "Spielserver",
+      "clapperboard": "Medienserver",
+      "camera": "Kamera"
+    },
+    "colors": {
+      "default": "Keine Farbe",
+      "peach": "Pfirsich",
+      "red": "Rot",
+      "amber": "Bernstein",
+      "green": "Grün",
+      "blue": "Blau",
+      "purple": "Lila",
+      "pink": "Rosa",
+      "teal": "Blaugrün"
+    },
+    "saveFailed": "Konnte nicht speichern",
+    "revealFailed": "Das gespeicherte Passwort konnte nicht angezeigt werden",
+    "savedSecretPlaceholder": "Gespeichert",
+    "savedSecretHint": "Leer lassen, um das aktuelle Passwort beizubehalten",
+    "removeSavedPassword": "Gespeichertes Passwort entfernen",
+    "removeSavedPassphrase": "Gespeicherte Passphrase entfernen",
+    "secretWillBeRemoved": "Wird beim Speichern entfernt",
+    "addBookmark": "Neues Lesezeichen",
+    "addLocalBookmark": "Lokalen Ordner als Lesezeichen hinzufügen",
+    "chooseLocalPath": "Lokalen Ordner auswählen",
+    "importBookmarks": "Importieren",
+    "exportBookmarks": "Exportieren",
+    "importAdded_one": "{{count}} Lesezeichen hinzugefügt",
+    "importAdded_other": "{{count}} Lesezeichen hinzugefügt",
+    "importSkipped_one": "{{count}} Duplikat übersprungen",
+    "importSkipped_other": "{{count}} Duplikate übersprungen",
+    "importNothingNew": "Nichts Neues zum Importieren",
+    "exportSuccess": "Exportiert",
+    "sortMode": "Lesezeichen sortieren",
+    "sortManual": "Manuell",
+    "sortName": "Nach Namen",
+    "sortProtocol": "Gemäß Protokoll",
+    "duplicateWarning": "Es gibt bereits ein Lesezeichen für dieses Ziel: „{{name}}“. Möchten Sie ein weiteres speichern?",
+    "saveAnyway": "Trotzdem speichern",
+    "newFolder": "Neuer Ordner",
+    "folderNamePlaceholder": "Ordnername",
+    "confirmDeleteFolder": "Den Ordner „{{name}}“ löschen? Die darin enthaltenen Lesezeichen werden eine Ebene höher verschoben.",
+    "searchPlaceholder": "Suchen…",
+    "clearSearch": "Suche löschen",
+    "noSearchResults": "Es wurden keine Lesezeichen gefunden, die Ihrer Suche entsprechen",
+    "duplicate": "Duplikat",
+    "duplicateNameSuffix": " (Kopie)",
+    "newBookmarkInFolder": "Hier neues Lesezeichen setzen",
+    "expandFolder": "„{{name}}“ erweitern",
+    "collapseFolder": "„{{name}}“ ausblenden"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Adresse",
+      "port": "Port",
+      "user": "Benutzername",
+      "password": "Passwort",
+      "passphrase": "Passphrase",
+      "keyFilePlaceholder": "Schlüsseldatei…",
+      "chooseKeyFile": "Schlüsseldatei auswählen…",
+      "caCertFilePlaceholder": "CA-Zertifikat…",
+      "chooseCaCertFile": "CA-Zertifikat auswählen…"
+    },
+    "secureToggle": {
+      "tooltip": "Deaktivieren Sie dieses Kontrollkästchen, um selbstsignierte und ungültige Serverzertifikate zu akzeptieren.",
+      "label": "Zertifikat überprüfen"
+    },
+    "authToggle": {
+      "tooltip": "Mit einer privaten SSH-Schlüsseldatei statt mit einem Passwort anmelden",
+      "label": "Mit SSH-Schlüssel anmelden"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Abbrechen",
+      "connect": "Verbinden",
+      "disconnect": "Trennen"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Beim einfachen FTP werden Ihr Benutzername, Ihr Passwort und Ihre Dateien unverschlüsselt übertragen. Verwenden Sie nach Möglichkeit FTPS oder SFTP."
+  },
+  "titleBar": {
+    "minimize": "Minimieren",
+    "restore": "Wiederherstellen",
+    "maximize": "Maximieren"
+  },
+  "tray": {
+    "show": "FTPeach anzeigen",
+    "quit": "Beenden"
+  },
+  "tabStrip": {
+    "localComputer": "Computer",
+    "untitledTab": "Neuer Tab",
+    "newTabTooltip": "Neuer Tab (Strg+T)",
+    "rename": "Registerkartenbezeichnung"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Mehr"
+  },
+  "statusBar": {
+    "transfers": "Übertragungen: {{count}}",
+    "leftCount": "Links: {{count}}",
+    "rightCount": "Rechts: {{count}}",
+    "topCount": "Oben: {{count}}",
+    "bottomCount": "Unten: {{count}}",
+    "selectedSuffix": " (Ausgewählt: {{count}})",
+    "status": {
+      "transferring": "Datei übertragen",
+      "paused": "Angehalten",
+      "connected": "Verbunden",
+      "connecting": "Verbinden",
+      "connectFailed": "Verbindung konnte nicht hergestellt werden",
+      "disconnected": "Nicht verbunden"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Linken Bereich ein-/ausblenden",
+    "toggleRightPane": "Rechten Bereich ein-/ausblenden",
+    "toggleTransferQueue": "Übertragungswarteschlange anzeigen/ausblenden",
+    "toggleLog": "Protokoll anzeigen/ausblenden",
+    "orientationNarrow": "Fenster nebeneinander angeordnet – das Fenster ist zu schmal für eine nebeneinander angeordnete Ansicht",
+    "orientationToRow": "Fenster nebeneinander anordnen",
+    "orientationToStacked": "Fensterbereiche übereinander stapeln",
+    "pauseUnsupportedWebdav": "Die Funktion „Pause“ wird von WebDAV nicht unterstützt.",
+    "pauseActive": "Aktive Übertragungen anhalten",
+    "resumeAllPaused": "Alle angehaltenen Übertragungen fortsetzen",
+    "stopActive": "Aktive Übertragungen stoppen",
+    "retryAllStopped": "Alle angehaltenen Übertragungen erneut versuchen",
+    "refreshPanesTooltip": "Beide Fenster aktualisieren (F5)"
+  },
+  "paneToolbar": {
+    "back": "Zurück",
+    "forward": "Weiter",
+    "up": "Nach oben",
+    "chooseFolder": "Ordner auswählen…",
+    "newFolder": "Neuer Ordner…",
+    "newFile": "Neue Datei…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Computer",
+    "remote": "Server",
+    "updatedAtTooltip": "Aktualisiert: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Keine aktuellen Verbindungen",
+    "noSavedConnectionsBody": "Geben Sie oben die Serveradresse ein oder fügen Sie eine Website für den Zugriff mit einem Klick hinzu.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Lesezeichen verwalten",
+    "quicklistLabel": "Zuletzt hergestellte Verbindungen"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Nicht behandelter Fehler der FTPeach-Schnittstelle:",
+    "title": "Es ist ein Fehler aufgetreten",
+    "message": "Es ist ein unerwarteter Schnittstellenfehler aufgetreten. Ihre aktive Verbindung und die Dateien auf der Festplatte sind davon nicht betroffen – Sie können versuchen, die Schnittstelle neu zu laden.",
+    "reload": "Schnittstelle neu laden"
+  }
+}

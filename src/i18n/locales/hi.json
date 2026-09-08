@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "बी",
+      "kb": "KB",
+      "mb": "एमबी",
+      "gb": "जीबी",
+      "tb": "टीबी"
+    },
+    "perSecond": "{{value}}/s",
+    "noLoginUser": "कोई लॉगिन नहीं",
+    "anonymousUser": "अज्ञात",
+    "rootFolder": "रूट फ़ोल्डर",
+    "close": "बंद करें",
+    "reset": "रीसेट करें",
+    "open": "खोलें",
+    "upload": "अपलोड करें",
+    "save": "सहेजें",
+    "create": "बनाएं",
+    "cancel": "रद्द करें",
+    "increase": "वृद्धि",
+    "decrease": "कमी",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "savedSecretProtected": "सहेजा गया रहस्य सुरक्षित है और उसे देखा नहीं जा सकता",
+    "hidePassword": "पासवर्ड छुपाएं"
+  },
+  "securityConfirmation": {
+    "title": "FTPeach सुरक्षा पुष्टि",
+    "allow": "अनुमति दें",
+    "typeToConfirm": "पुष्टि करने के लिए {{phrase}} लिखें",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "इस बुकमार्क का सहेजा गया पासवर्ड दिखाएँ?"
+      },
+      "revealProxyPassword": {
+        "message": "सहेजा गया प्रॉक्सी पासवर्ड दिखाएँ?"
+      },
+      "vaultReset": {
+        "message": "सहेजे गए सभी पासवर्ड और SSH कुंजी पासफ़्रेज़ स्थायी रूप से हटा दिए जाएँगे।",
+        "approve": "वॉल्ट हटाएँ"
+      },
+      "executeLocalFile": {
+        "message": "इस निष्पादन योग्य फ़ाइल या स्क्रिप्ट को चलाएँ?"
+      },
+      "executeRemoteFile": {
+        "message": "इस निष्पादन योग्य फ़ाइल या स्क्रिप्ट को डाउनलोड करके चलाएँ?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "नया फ़ोल्डर…",
+    "newFile": "नई फ़ाइल…",
+    "refresh": "ताज़ा करें",
+    "open": "खोलें",
+    "uploadToOtherPane": "अन्य फलक पर अपलोड करें",
+    "copyToOtherPane": "अन्य फलक पर कॉपी करें",
+    "downloadToOtherPane": "अन्य फलक पर डाउनलोड करें",
+    "openWith": "इसके साथ खोलें...",
+    "permissions": "अनुमतियाँ…",
+    "moveTo": "यहां ले जाएं...",
+    "copyPath": "पथ कॉपी करें",
+    "delete": "हटाएं",
+    "deleteSelected_one": "हटाएं ({{count}} फ़ाइल)",
+    "deleteSelected_other": "हटाएं ({{count}} फ़ाइलें)",
+    "deletePermanently": "स्थायी रूप से हटाएं",
+    "deleteSelectedPermanently_one": "स्थायी रूप से हटाएं ({{count}} फ़ाइल)",
+    "deleteSelectedPermanently_other": "स्थायी रूप से हटाएं ({{count}} फ़ाइलें)"
+  },
+  "chmodDialog": {
+    "title": "SFTP अनुमतियाँ",
+    "label": "{{name}} के लिए ऑक्टल मोड (उदाहरण के लिए, 644 या 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "फ़ोल्डर खाली है",
+    "homeFolder": "होम फ़ोल्डर",
+    "copyToPaneBelow": "नीचे फलक पर कॉपी करें",
+    "copyToPaneAbove": "ऊपर फलक पर कॉपी करें",
+    "copyToPaneRight": "दाईं ओर फलक पर कॉपी करें",
+    "copyToPaneLeft": "बाईं ओर फलक पर कॉपी करें",
+    "fileTypeFolder": "फ़ाइल फ़ोल्डर",
+    "fileTypeGeneric": "फ़ाइल",
+    "fileTypeWithExt": "{{ext}} फ़ाइल",
+    "columnSize": "आकार",
+    "columnModifiedAt": "दिनांक संशोधित",
+    "columnCreatedAt": "निर्माण तिथि",
+    "columnType": "प्रकार",
+    "columnPermissions": "अनुमतियाँ",
+    "columnOwner": "स्वामी",
+    "columnGroup": "समूह",
+    "columnName": "नाम",
+    "filesAriaLabel": "फ़ाइलें",
+    "rename": "नाम बदलें",
+    "resetColumnWidths": "कॉलम की चौड़ाई पुनर्स्थापित करें",
+    "updatedAtTooltip": "अपडेट किया गया: {{date}}",
+    "searchTooltip": "खोजें ({{shortcut}})",
+    "searchPlaceholder": "खोजें... ({{shortcut}})",
+    "editPathAriaLabel": "पथ संपादित करें",
+    "changeDriveTooltip": "ड्राइव बदलें",
+    "chooseColumnsTooltip": "कॉलम चुनने के लिए राइट-क्लिक करें",
+    "sortByNameTooltip": "नाम के अनुसार क्रमबद्ध करें",
+    "sortByColumnTooltip": "\"{{column}}\" कॉलम के अनुसार क्रमबद्ध करें",
+    "rowProbeSample": "नमूना",
+    "loading": "लोड हो रहा है...",
+    "nothingFound": "कुछ नहीं मिला"
+  },
+  "update": {
+    "readyToInstall": "अद्यतन v{{version}} उपलब्ध है - इसे लागू करने के लिए \"पुनः प्रारंभ करें और इंस्टॉल करें\" पर क्लिक करें।",
+    "downloadingWithPercent": "डाउनलोड हो रहा अपडेट v{{version}}: {{percent}}%",
+    "downloadingFound": "अद्यतन v{{version}} मिला, डाउनलोड हो रहा है...",
+    "restartAndInstall": "पुनरारंभ करें और इंस्टॉल करें",
+    "availableAction": "उपलब्ध!",
+    "installAction": "इंस्टॉल करें?",
+    "downloadTooltip": "डाउनलोड करने के लिए क्लिक करें",
+    "downloadingTooltip": "डाउनलोड हो रहा है",
+    "installTooltip": "रीस्टार्ट और इंस्टॉल करने के लिए क्लिक करें"
+  },
+  "legacyPasswordNotice": {
+    "message": "अपडेट के बाद कुछ सहेजी गई साइटों के पासवर्ड पढ़े नहीं जा सके - कृपया उन्हें साइट प्रबंधक में पुनः दर्ज करें।"
+  },
+  "plaintextSecretNotice": {
+    "message": "किसी सहेजी गई साइट का पासवर्ड या पासफ़्रेज़ एन्क्रिप्ट नहीं किया जा सका क्योंकि विंडोज़ की डेटा सुरक्षा अनुपलब्ध है, और इसके बजाय सादे पाठ में संग्रहीत किया गया था।"
+  },
+  "secretNotPersistedNotice": {
+    "message": "पासवर्ड या कुंजी पासफ़्रेज़ एन्क्रिप्ट नहीं किया जा सका और सहेजा नहीं गया। कोई मौजूदा कनेक्शन तब तक जारी रह सकता है जब तक वह डिस्कनेक्ट न हो जाए; अन्यथा, अगली बार फिर से रहस्य दर्ज करें।"
+  },
+  "resize": {
+    "paneSize": "पैनल का आकार बदलने के लिए खींचें (रीसेट करने के लिए डबल-क्लिक करें)",
+    "height": "ऊंचाई का आकार बदलने के लिए खींचें (रीसेट करने के लिए डबल-क्लिक करें)",
+    "ratio": "अनुपात का आकार बदलने के लिए खींचें (रीसेट करने के लिए डबल-क्लिक करें)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} आइटम",
+    "itemCount_other": "{{count}} आइटम",
+    "moveMode": "चाल"
+  },
+  "openWithChanged": {
+    "title": "फ़ाइल बदल गई",
+    "message": "बाहरी एप्लिकेशन में \"{{name}}\" बदल दिया गया था। अद्यतन फ़ाइल को सर्वर पर अपलोड करें?"
+  },
+  "saveSite": {
+    "title": "कनेक्शन प्रोफ़ाइल सहेजें",
+    "label": "कनेक्शन प्रोफ़ाइल नाम:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "नया फ़ोल्डर",
+    "labelLocal": "नया फ़ोल्डर नाम:",
+    "labelRemote": "सर्वर पर नया फ़ोल्डर नाम:"
+  },
+  "newFile": {
+    "title": "नई फ़ाइल",
+    "label": "फ़ाइल का नाम (एक्सटेंशन के साथ):"
+  },
+  "moveToDialog": {
+    "title": "यहां ले जाएं...",
+    "labelSingle": "\"{{name}}\" को फ़ोल्डर में ले जाएं:",
+    "labelMultiple": "चयनित आइटम ({{count}}) को फ़ोल्डर में ले जाएं:"
+  },
+  "confirm": {
+    "allowReplacementRace": "यदि स्थानांतरण के दौरान \"{{name}}\" फ़ाइल बनती है, तो उसे बदलने की अनुमति दें?",
+    "resetLayout": "विंडो और फलक आकार रीसेट करें, डिफ़ॉल्ट कॉलम पुनर्स्थापित करें, और इंटरफ़ेस कैश साफ़ करें?",
+    "hostKeyMismatch": "{{error}} {{host}}:{{port}} के लिए सहेजी गई कुंजी फ़िंगरप्रिंट हटाएं और फिर भी कनेक्ट करें? ऐसा केवल तभी करें जब आप आश्वस्त हों कि सर्वर वैध रूप से पुनः स्थापित या माइग्रेट किया गया था - अन्यथा यह आपको संभावित रूप से नकली सर्वर से कनेक्ट करने की अनुमति दे सकता है।",
+    "connectAnyway": "फिर भी कनेक्ट करें",
+    "closeTabWithActiveTransfers": "इस टैब में सक्रिय स्थानांतरण हैं। टैब बंद करें और उन्हें रोकें?",
+    "closeTabLabel": "टैब बंद करें",
+    "overwriteSingleExists": "\"{{name}}\" गंतव्य फ़ोल्डर में पहले से मौजूद है। इसे अधिलेखित करें?",
+    "overwriteConflicts_one": "{{count}} आइटम पहले से ही गंतव्य फ़ोल्डर में मौजूद है। इसे अधिलेखित करें?",
+    "overwriteConflicts_other": "{{count}} आइटम पहले से ही गंतव्य फ़ोल्डर में मौजूद हैं। उन्हें अधिलेखित करें?",
+    "overwriteLabel": "अधिलेखित करें",
+    "replaceConnection": "यह फलक पहले से ही \"{{current}}\" से जुड़ा हुआ है। कनेक्शन को \"{{next}}\" से बदलें?",
+    "replaceConnectionLabel": "बदलें",
+    "deleteSelected": "चयनित आइटम हटाएं ({{count}})? इस एक्शन को वापस नहीं किया जा सकता।",
+    "deleteEntry": "\"{{name}}\" हटाएं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "recycleSelected": "चयनित आइटम ({{count}}) को रीसायकल बिन में ले जाएं?",
+    "recycleEntry": "\"{{name}}\" को रीसायकल बिन में ले जाएं?",
+    "deletePermanentSelected": "चयनित आइटम को स्थायी रूप से हटाएं ({{count}})? इस एक्शन को वापस नहीं किया जा सकता।",
+    "deletePermanentEntry": "\"{{name}}\" को स्थायी रूप से हटाएं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "deleteRemoteSelected": "चयनित दूरस्थ आइटम को स्थायी रूप से हटाएं ({{count}})? इस एक्शन को वापस नहीं किया जा सकता।",
+    "deleteRemoteEntry": "दूरस्थ आइटम \"{{name}}\" को स्थायी रूप से हटाएं? इस एक्शन को वापस नहीं किया जा सकता।"
+  },
+  "paneSide": {
+    "top": "शीर्ष",
+    "bottom": "नीचे",
+    "left": "बाएँ",
+    "right": "ठीक है",
+    "labelWithTab": "{{base}} (टैब {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "फ़ाइल",
+      "newTab": "नया टैब",
+      "closeTab": "टैब बंद करें",
+      "newConnection": "नया कनेक्शन",
+      "disconnect": "डिस्कनेक्ट करें",
+      "manageBookmarks": "बुकमार्क प्रबंधित करें...",
+      "saveConnection": "कनेक्शन सहेजें",
+      "saveConnectionSide": "कनेक्शन सहेजें ({{side}})",
+      "saveBookmarkSide": "बुकमार्क सहेजें ({{side}})",
+      "savePathSide": "पथ सहेजें ({{side}})",
+      "exportSettings": "निर्यात सेटिंग...",
+      "importSettings": "आयात सेटिंग्स…",
+      "quit": "छोड़ें"
+    },
+    "edit": {
+      "title": "संपादित करें",
+      "settings": "सेटिंग्स…",
+      "resetLayout": "लेआउट और कैश रीसेट करें..."
+    },
+    "view": {
+      "title": "देखें",
+      "darkTheme": "डार्क थीम",
+      "lightTheme": "लाइट थीम",
+      "systemTheme": "सिस्टम थीम",
+      "syncBrowsing": "सिंक पेन ब्राउजिंग",
+      "showHiddenFiles": "छुपी हुई फ़ाइलें और फ़ोल्डर दिखाएं",
+      "leftPane": "बायां फलक",
+      "rightPane": "दायां फलक",
+      "transferQueue": "स्थानांतरण कतार",
+      "log": "लॉग करें",
+      "stackedPanes": "स्टैक्ड पैन",
+      "refreshBothPanes": "दोनों फलकों को ताज़ा करें"
+    },
+    "transfer": {
+      "title": "स्थानांतरण",
+      "copySelectedRight": "प्रतिलिपि चयनित →",
+      "copySelectedLeft": "← कॉपी चयनित",
+      "clearCompleted": "पूर्ण हो चुके स्थानांतरण हटाएँ"
+    },
+    "bookmarks": {
+      "title": "बुकमार्क"
+    },
+    "help": {
+      "supportProject": "परियोजना का समर्थन करें",
+      "title": "सहायता",
+      "documentation": "दस्तावेज़ीकरण",
+      "reportIssue": "किसी समस्या की रिपोर्ट करें",
+      "checkUpdates": "अपडेट की जांच करें",
+      "about": "के बारे में"
+    }
+  },
+  "errors": {
+    "connectionRefused": "सर्वर ने कनेक्शन से इनकार कर दिया। पता और पोर्ट की जाँच करें.",
+    "serverNotFound": "सर्वर नहीं मिला. जांचें कि पता सही है.",
+    "timeout": "सर्वर प्रतिसाद नहीं दे रहा है (कनेक्शन का समय समाप्त हो गया है)। पता, पोर्ट और नेटवर्क कनेक्शन की जाँच करें।",
+    "connectionReset": "सर्वर से कनेक्शन अप्रत्याशित रूप से बंद हो गया था।",
+    "networkUnreachable": "सर्वर पहुंच योग्य नहीं है - अपना नेटवर्क कनेक्शन जांचें।",
+    "loginIncorrect": "गलत उपयोगकर्ता नाम या पासवर्ड।",
+    "invalidCertificate": "सर्वर ने एक अमान्य प्रमाणपत्र प्रस्तुत किया। यदि आप इस सर्वर पर भरोसा करते हैं, तो कनेक्शन सेटिंग्स में प्रमाणपत्र सत्यापन अक्षम करें।",
+    "tlsNegotiationFailed": "टीएलएस वार्ता विफल रही। जांचें कि सर्वर स्पष्ट एफटीपीएस या एचटीटीपीएस और एक संगत टीएलएस संस्करण का समर्थन करता है।",
+    "sshNegotiationFailed": "SSH वार्ता विफल रही। सर्वर और FTPeach संगत SSH एल्गोरिदम या प्रोटोकॉल संस्करण पर सहमत नहीं हो सके।",
+    "proxyFailed": "प्रॉक्सी कनेक्शन विफल रहा। प्रॉक्सी प्रकार, पता, क्रेडेंशियल्स की जाँच करें और क्या यह लक्ष्य सर्वर तक पहुँच सकता है।",
+    "keyReadFailed": "कुंजी नहीं पढ़ सका - फ़ाइल दूषित है या पासफ़्रेज़ गलत है।",
+    "accessDenied": "आपके पास इस ऑपरेशन की अनुमति नहीं है।",
+    "notFound": "फ़ाइल या फ़ोल्डर नहीं मिला.",
+    "fileOrFolderExists": "उस नाम की एक फ़ाइल या फ़ोल्डर पहले से मौजूद है।",
+    "fileBusy": "फ़ाइल किसी अन्य प्रक्रिया द्वारा उपयोग में है।",
+    "diskFull": "पर्याप्त डिस्क स्थान नहीं।",
+    "hostKeyMismatch": "सर्वर होस्ट कुंजी बदल गई है।",
+    "integrityMismatch": "स्थानांतरित फ़ाइल अखंडता जाँच में विफल रही।",
+    "invalidInput": "दिया गया मान अमान्य है।",
+    "internal": "एक अनपेक्षित त्रुटि हुई।",
+    "connectFailedPrefix": "सर्वर से कनेक्ट नहीं हो सका। {{raw}}",
+    "alreadyExists": "\"{{name}}\" पहले से मौजूद है"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "एसोसिएशन",
+      "hint": "एक्सटेंशन के लिए एक एप्लिकेशन चुनें। बिना नियम वाली फ़ाइलें सिस्टम डिफ़ॉल्ट का उपयोग करती हैं।",
+      "extension": "एक्सटेंशन",
+      "extensionPlaceholder": "txt",
+      "application": "अनुप्रयोग",
+      "applicationPlaceholder": "अनुप्रयोग पथ",
+      "browse": "एप्लिकेशन चुनें",
+      "remove": "संबद्धता हटाएं",
+      "add": "संबद्धता जोड़ें"
+    },
+    "minimizeToTray": "ट्रे को छोटा करें",
+    "minimizeToTrayHint": "मिनिमम बटन विंडो को टास्कबार के बजाय ट्रे में छिपा देता है।",
+    "closeToTray": "ट्रे के करीब",
+    "closeToTrayHint": "बंद करें बटन ऐप को छोड़ने के बजाय विंडो को ट्रे में छिपा देता है। ट्रे आइकन के मेनू से बाहर निकलें.",
+    "title": "सेटिंग्स",
+    "unsavedChangesTitle": "सहेजे न गए परिवर्तन",
+    "unsavedChangesMessage": "सेटिंग्स में परिवर्तन सहेजें?",
+    "discardChanges": "सहेजें मत",
+    "categories": {
+      "connection": "कनेक्शन",
+      "transfers": "स्थानान्तरण",
+      "interface": "इंटरफ़ेस",
+      "shortcuts": "शॉर्टकट",
+      "updates": "अपडेट",
+      "logging": "लॉगिंग",
+      "security": "सुरक्षा"
+    },
+    "shortcuts": {
+      "title": "कीबोर्ड शॉर्टकट",
+      "hint": "शॉर्टकट पर क्लिक करें, फिर उसे पुन: असाइन करने के लिए एक नया कुंजी संयोजन दबाएँ।",
+      "globalTitle": "वैश्विक",
+      "paneTitle": "फ़ाइल फलक",
+      "recording": "एक कुंजी दबाएँ...",
+      "unbound": "असाइन नहीं किया गया",
+      "reset": "डिफ़ॉल्ट पर रीसेट करें",
+      "resetAll": "सभी को डिफ़ॉल्ट पर रीसेट करें",
+      "unassign": "असाइन करें",
+      "conflict": "इनके द्वारा भी उपयोग किया जाता है: {{action}}",
+      "actions": {
+        "search": "खोजें ({{side}})",
+        "toggleHiddenFiles": "छुपी हुई फ़ाइलें टॉगल करें",
+        "newConnection": "नया कनेक्शन",
+        "save": "सहेजें ({{side}})",
+        "openSettings": "सेटिंग्स खोलें",
+        "newTab": "नया टैब",
+        "closeTab": "टैब बंद करें",
+        "nextTab": "अगला टैब",
+        "prevTab": "पिछला टैब",
+        "refresh": "ताज़ा करें",
+        "selectAll": "सभी का चयन करें",
+        "delete": "हटाएं",
+        "deletePermanent": "स्थायी रूप से हटाएं",
+        "navigateUp": "किसी फ़ोल्डर पर ऊपर जाएं",
+        "navigateBack": "वापस जाएं",
+        "navigateForward": "आगे बढ़ें",
+        "navigateHome": "होम फोल्डर पर जाएं",
+        "moveTo": "यहां ले जाएं...",
+        "newFolder": "नया फ़ोल्डर...",
+        "newFile": "नई फ़ाइल...",
+        "copyToOtherPane": "अन्य फलक पर कॉपी करें",
+        "copy": "प्रतिलिपि",
+        "cut": "कट करें",
+        "paste": "चिपकाएँ",
+        "clearSelection": "चयन साफ़ करें",
+        "open": "खोलें"
+      }
+    },
+    "security": {
+      "title": "पासवर्ड सुरक्षा",
+      "systemMode": "सिस्टम सुरक्षा",
+      "systemModeHint": "पासवर्ड आपके विंडोज़ खाते के लिए एन्क्रिप्ट किए गए हैं और कनेक्शन सेटिंग्स में देखे जा सकते हैं।",
+      "strongholdMode": "बढ़ी हुई सुरक्षा",
+      "strongholdModeHint": "एक मास्टर पासवर्ड की आवश्यकता है। सहेजे गए पासवर्ड का उपयोग कनेक्शन के लिए किया जा सकता है लेकिन देखा नहीं जा सकता।",
+      "loading": "संरक्षित भंडारण की जाँच की जा रही है...",
+      "configuredLocked": "संरक्षित भंडारण को मास्टर पासवर्ड से सुरक्षित किया जाता है और लॉक किया जाता है।",
+      "configuredUnlocked": "संरक्षित भंडारण को मास्टर पासवर्ड से सुरक्षित किया जाता है और अनलॉक किया जाता है।",
+      "masterPassword": "मास्टर पासवर्ड",
+      "confirmPassword": "मास्टर पासवर्ड की पुष्टि करें",
+      "oldPassword": "वर्तमान मास्टर पासवर्ड",
+      "newPassword": "नया मास्टर पासवर्ड",
+      "setup": "सहेजे गए पासवर्ड को सुरक्षित रखें",
+      "settingUp": "सुरक्षा करना...",
+      "unlock": "अनलॉक करें",
+      "unlocking": "अनलॉक हो रहा है...",
+      "unlockRequired": "संरक्षित भंडारण अनलॉक करें",
+      "unlockRequiredHint": "यह कनेक्शन एक सहेजे गए रहस्य का उपयोग करता है। जारी रखने के लिए संरक्षित भंडारण को अनलॉक करें।",
+      "lockNow": "अभी लॉक करें",
+      "autoLock": "ऑटो-लॉक के बाद, न्यूनतम",
+      "autoLockDisabled": "अक्षम",
+      "autoLockHint": "निष्क्रियता के बाद संरक्षित भंडारण को लॉक कर देता है। मौजूदा सर्वर कनेक्शन सक्रिय रहते हैं; 0 ऑटो-लॉक अक्षम करता है।",
+      "changePassword": "मास्टर पासवर्ड बदलें",
+      "change": "पासवर्ड बदलें",
+      "systemUnlock": "सिस्टम अनलॉक की अनुमति दें",
+      "systemUnlockHint": "विंडोज़ हैलो (विंडोज़ द्वारा कॉन्फ़िगर किया गया पिन, चेहरा या फ़िंगरप्रिंट) का उपयोग करता है। आपका मास्टर पासवर्ड पुनर्प्राप्ति विधि बना हुआ है।",
+      "unlockWithSystem": "सिस्टम प्रमाणीकरण के साथ अनलॉक करें",
+      "systemUnavailable": "इस प्लेटफ़ॉर्म पर सिस्टम अनलॉक उपलब्ध नहीं है।",
+      "noRecovery": "भूला हुआ मास्टर पासवर्ड पुनर्प्राप्त नहीं किया जा सकता। वॉल्ट को रीसेट करने से सभी सहेजे गए रहस्य नष्ट हो जाते हैं।",
+      "passwordMismatch": "पासवर्ड मेल नहीं खाते।",
+      "passwordTooShort": "मास्टर पासवर्ड के लिए कम से कम 12 अक्षरों का उपयोग करें।",
+      "strength": {
+        "tooShort": "बहुत छोटा - कम से कम 12 वर्णों का उपयोग करें।",
+        "acceptable": "स्वीकार्य। लंबा पासफ़्रेज़ अधिक सुरक्षित है.",
+        "strong": "मजबूत मास्टर पासवर्ड।"
+      },
+      "reset": "संरक्षित भंडारण रीसेट करें",
+      "resetHint": "संरक्षित भंडारण और उसमें संग्रहीत प्रत्येक पासवर्ड और SSH कुंजी पासफ़्रेज़ को हटा देता है। बढ़ी हुई सुरक्षा को फिर से स्थापित करने की आवश्यकता होगी।",
+      "resetWarning": "यह प्रत्येक सहेजे गए पासवर्ड और कुंजी पासफ़्रेज़ को स्थायी रूप से हटा देता है। जारी रखने के लिए वर्तमान मास्टर पासवर्ड दर्ज करें।",
+      "confirmReset": "सहेजे गए रहस्य हटाएं",
+      "showConfirmations": "सुरक्षा पुष्टिकरण दिखाएँ",
+      "showConfirmationsHint": "सहेजे गए रहस्य दिखाने या निष्पादन योग्य फ़ाइलें चलाने से पहले पुष्टि माँगें। सुरक्षित स्टोरेज रीसेट करने के लिए हमेशा पुष्टि आवश्यक है।",
+      "unavailable": "संरक्षित भंडारण अनुपलब्ध है।",
+      "failed": "संरक्षित-भंडारण कार्रवाई विफल रही।"
+    },
+    "unlimitedPlaceholder": "कोई सीमा नहीं",
+    "connectTimeoutLabel": "कनेक्शन टाइमआउट, सेकंड",
+    "connectTimeoutHint": "कनेक्ट करते समय सर्वर प्रतिक्रिया को पहुंच से बाहर (0 या रिक्त - कोई सीमा नहीं) मानने से पहले कितनी देर तक प्रतीक्षा करनी होगी। अगले कनेक्शन पर लागू होता है.",
+    "ftpActiveMode": "सक्रिय एफ़टीपी मोड (निष्क्रिय के बजाय)",
+    "ftpActiveModeHint": "केवल FTP/FTPS - SFTP/WebDAV पर कोई प्रभाव नहीं पड़ता है। शायद ही कभी इसकी आवश्यकता होती है, केवल नेटवर्क/सर्वर पर जहां निष्क्रिय मोड NAT के माध्यम से नहीं मिलता है। अगले कनेक्शन पर लागू होता है.",
+    "ftpActiveModeDisabledByProxy": "प्रॉक्सी सक्षम होने पर अनुपलब्ध - एक प्रॉक्सी सुरंग केवल आउटबाउंड कनेक्शन का समर्थन करती है, इसलिए एफ़टीपी को निष्क्रिय मोड में रहना पड़ता है।",
+    "proxy": {
+      "enable": "कनेक्शन के लिए प्रॉक्सी का उपयोग करें",
+      "enableHint": "SOCKS4, SOCKS5, या HTTP CONNECT - FTP, FTPS, SFTP और WebDAV पर लागू होता है। अगले कनेक्शन पर लागू होता है.",
+      "typeLabel": "प्रॉक्सी प्रकार",
+      "hostLabel": "प्रॉक्सी होस्ट",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "पोर्ट",
+      "usernameLabel": "उपयोक्तानाम",
+      "passwordLabel": "पासवर्ड",
+      "removeSavedPassword": "सहेजा गया पासवर्ड हटाएं",
+      "revealFailed": "सहेजे गए पासवर्ड को डिक्रिप्ट नहीं किया जा सका।",
+      "testTargetLabel": "विरुद्ध परीक्षण करें",
+      "testTargetHostPlaceholder": "सर्वर होस्ट",
+      "testTargetPortPlaceholder": "पोर्ट",
+      "test": "प्रॉक्सी का परीक्षण करें",
+      "testing": "परीक्षण...",
+      "testOk": "प्रॉक्सी सफलतापूर्वक लक्ष्य तक पहुंच गया।",
+      "testFailed": "प्रॉक्सी परीक्षण विफल रहा।"
+    },
+    "concurrencyLabel": "समवर्ती स्थानांतरण",
+    "concurrencyHint": "एक ही समय में कितनी फ़ाइलें अपलोड और डाउनलोड करनी हैं (0 या रिक्त - कोई सीमा नहीं)। अगले कनेक्शन पर लागू होता है.",
+    "speedLimitLabel": "गति सीमा, KB/s",
+    "speedLimitHint": "सभी एक साथ स्थानांतरणों के संयुक्त योग पर लागू होता है (0 या रिक्त - कोई सीमा नहीं)। अगले कनेक्शन की प्रतीक्षा किए बिना, तुरंत प्रभाव से लागू होता है।",
+    "notifyOnComplete": "स्थानांतरण समाप्त होने पर सूचित करें",
+    "notifyOnCompleteHint": "एक सिस्टम अधिसूचना जब स्थानांतरण कतार खाली हो जाती है - केवल तब जब विंडो केंद्रित न हो।",
+    "overwriteActionLabel": "नाम विवाद पर",
+    "overwriteAsk": "पूछें",
+    "overwriteOverwrite": "अधिलेखित करें",
+    "overwriteSkip": "छोड़ें",
+    "overwriteHint": "जब कॉपी की जा रही फ़ाइल पहले से ही गंतव्य फ़ोल्डर में मौजूद हो तो क्या करें।",
+    "preventSleep": "स्थानांतरण के दौरान सिस्टम को निष्क्रिय होने से रोकें",
+    "preventSleepHint": "अगले कनेक्शन की प्रतीक्षा किए बिना तुरंत प्रभावी होता है। जब तक कम से कम एक स्थानांतरण चल रहा है तब तक सक्रिय है - अन्यथा नींद को अवरुद्ध नहीं करता है।",
+    "themeLabel": "थीम",
+    "themeDark": "अंधेरा",
+    "themeLight": "प्रकाश",
+    "themeSystem": "प्रणाली",
+    "languageLabel": "इंटरफ़ेस भाषा",
+    "interfaceScaleLabel": "इंटरफ़ेस स्केल",
+    "interfaceScaleHint": "पूरे एप्लिकेशन में टेक्स्ट और नियंत्रण का आकार बदलें।",
+    "dateFormatLabel": "दिनांक/समय प्रारूप",
+    "dateFormatOnlyLabel": "दिनांक स्वरूप",
+    "timeFormatLabel": "समय प्रारूप",
+    "timeFormat24Hour": "24 घंटे",
+    "timeFormat12Hour": "12 घंटे",
+    "dateFormatLocale": "स्थानीय",
+    "dateFormatIso": "आईएसओ 8601",
+    "defaultLocalPathLabel": "कंप्यूटर के लिए डिफ़ॉल्ट फ़ोल्डर",
+    "defaultLocalPathHint": "वह फ़ोल्डर जिसे कंप्यूटर पैनल स्टार्टअप पर और सर्वर से स्विच करने पर खोलता है। अपने सिस्टम के होम फ़ोल्डर का उपयोग करने के लिए इसे खाली छोड़ दें।",
+    "chooseDefaultLocalPath": "डिफ़ॉल्ट फ़ोल्डर चुनें",
+    "showHiddenFiles": "छुपी हुई फ़ाइलें और फ़ोल्डर्स दिखाएं",
+    "showHiddenFilesHint": "स्थानीय और दूरस्थ फ़ाइल पैन दोनों पर लागू होता है।",
+    "coloredTabs": "रंगीन टैब",
+    "coloredTabsHint": "सहेजे गए बुकमार्क रंग का उपयोग करके टैब नाम और आइकन को रंग दें।",
+    "autoCheckUpdates": "स्टार्टअप पर अपडेट की जांच करें",
+    "autoCheckUpdatesHint": "स्टार्टअप के कुछ सेकंड बाद एक मौन जांच - अपडेट इंस्टॉल करने के लिए हमेशा अलग पुष्टि की आवश्यकता होती है।",
+    "autoReconnectTabs": "स्टार्टअप पर पुनर्स्थापित टैब को पुनः कनेक्ट करें",
+    "autoReconnectTabsHint": "डिफ़ॉल्ट रूप से बंद। सक्षम होने पर, पुनर्स्थापित सहेजी गई साइटें स्वचालित रूप से कनेक्ट हो जाती हैं।",
+    "saveSessionOnExit": "बाहर निकलने पर सत्र सहेजें",
+    "saveSessionOnExitHint": "अगले लॉन्च पर खुले टैब, फलक प्रकार और पथ पुनर्स्थापित करता है। इसे बंद करने से सहेजा गया सत्र साफ़ हो जाता है।",
+    "checkNow": "अभी जांचें",
+    "updateStatus": {
+      "checking": "अपडेट की जांच की जा रही है...",
+      "notAvailable": "आप नवीनतम संस्करण पर हैं।",
+      "error": "अपडेट की जांच नहीं की जा सकी.",
+      "notPackaged": "इस बिल्ड में उपलब्ध नहीं है (npm run dev/start)।"
+    },
+    "logEnable": "लॉग सक्षम करें",
+    "logShowTimestamps": "टाइमस्टैम्प दिखाएँ",
+    "logToFile": "फ़ाइल में लॉग लिखें",
+    "logToFileHint": "सक्षम होने पर डिस्क पर फ़ाइल में लॉग को लगातार जोड़ता रहता है (%APPDATA%\\FTPeach\\logs\\ftpeach.log) - चाहे लॉग पैनल खुला हो। यह पैनल में मौजूद \"सेव\" बटन से अलग है (जो कि क्लिक करने पर केवल अंतिम 200 पंक्तियों को एक बार सेव करता है)।",
+    "exportDiagnostics": "डायग्नोस्टिक बंडल निर्यात करें",
+    "exportDiagnosticsBusy": "निर्यात हो रहा है...",
+    "exportDiagnosticsHint": "निर्यात संस्करण, ओएस और नवीनतम 200 लॉग रिकॉर्ड। पासवर्ड, टोकन और अन्य रहस्यों को संशोधित किया जाता है।",
+    "exportDiagnosticsFailed": "डायग्नोस्टिक बंडल निर्यात नहीं किया जा सका।"
+  },
+  "promptDialog": {
+    "confirmLabel": "ठीक है"
+  },
+  "exportSettingsDialog": {
+    "title": "निर्यात सेटिंग्स",
+    "confirmLabel": "निर्यात करें...",
+    "includeSettings": "ऐप सेटिंग्स",
+    "includeBookmarks": "बुकमार्क",
+    "includeLocalPaths": "स्थानीय पथ",
+    "passwordHint": "पासवर्ड और SSH कुंजी पासफ़्रेज़ निर्यात में शामिल नहीं हैं - आपको किसी अन्य मशीन पर आयात करने के बाद उन्हें फिर से दर्ज करना होगा।"
+  },
+  "importSettingsDialog": {
+    "title": "आयात सेटिंग्स",
+    "confirmLabel": "आयात करें...",
+    "includeSettings": "ऐप सेटिंग्स",
+    "includeBookmarks": "बुकमार्क",
+    "includeLocalPaths": "स्थानीय पथ",
+    "passwordHint": "पासवर्ड और SSH कुंजी पासफ़्रेज़ आयात में शामिल नहीं हैं - आपको प्रत्येक आयातित साइट के लिए उन्हें फिर से दर्ज करना होगा।"
+  },
+  "openWithDialog": {
+    "title": "एप्लिकेशन में खोलें",
+    "downloading": "\"{{fileName}}\" डाउनलोड हो रहा है…",
+    "progress": "{{total}} में से {{loaded}} ({{percent}}%)",
+    "connecting": "कनेक्ट हो रहा है..."
+  },
+  "transfers": {
+    "notifyErrorTitle": "स्थानांतरण त्रुटि",
+    "notifyCompleteTitle": "स्थानांतरण पूर्ण",
+    "notifySucceeded": "सफल हुआ: {{count}}",
+    "notifyFailed": "विफल: {{count}}",
+    "webdavUploadTooLarge": "WebDAV अपलोड प्रति फ़ाइल {{limit}} MiB तक सीमित हैं।"
+  },
+  "transferQueue": {
+    "title": "स्थानान्तरण",
+    "columns": {
+      "file": "फ़ाइल",
+      "size": "आकार",
+      "transferred": "स्थानांतरित",
+      "progress": "प्रगति",
+      "speed": "गति",
+      "remaining": "शेष",
+      "status": "स्थिति"
+    },
+    "empty": "अपलोड और डाउनलोड यहां दिखाई देंगे",
+    "newTransfers_one": "{{count}} नया स्थानांतरण",
+    "newTransfers_other": "{{count}} नए स्थानान्तरण",
+    "status": {
+      "queued": "कतार में",
+      "done": "हो गया",
+      "error": "त्रुटि",
+      "paused": "रोका गया",
+      "stopped": "रद्द किया गया",
+      "cancelling": "रद्द किया जा रहा है…"
+    },
+    "direction": {
+      "up": "अपलोड",
+      "down": "डाउनलोड",
+      "copy": "कॉपी"
+    },
+    "directionTitleCopy": "सर्वरों के बीच कॉपी करें",
+    "cancelledByUser": "उपयोगकर्ता द्वारा रद्द कर दिया गया",
+    "stoppedDash": "रुक गया",
+    "resume": "फिर से शुरू करें",
+    "retry": "पुनः प्रयास करें",
+    "stop": "रुकें",
+    "pauseUnsupportedCopy": "सर्वरों के बीच कॉपी करते समय रोकना समर्थित नहीं है",
+    "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है"
+  },
+  "log": {
+    "connecting": "{{addr}} से कनेक्ट हो रहा है...",
+    "connectFailed": "कनेक्शन विफल: {{error}}",
+    "connected": "लॉग इन किया गया।",
+    "receivedEntries_one": "को {{count}} प्रविष्टि प्राप्त हुई",
+    "receivedEntries_other": "को {{count}} प्रविष्टियाँ प्राप्त हुईं",
+    "skippedUnsafeEntry": "एक असुरक्षित नाम वाली सूची प्रविष्टि छोड़ दी गई: {{name}}",
+    "listFailed": "निर्देशिका सूची विफल: {{error}}",
+    "tlsInit": "टीएलएस प्रारंभ किया जा रहा है...",
+    "tlsEstablished": "टीएलएस कनेक्शन स्थापित।",
+    "davResumeUnsupportedLocal": "WebDAV अपलोड को फिर से शुरू करने का समर्थन नहीं करता — फ़ाइल आरंभ से दोबारा भेजी जाएगी।",
+    "davResumeUnsupportedServer": "सर्वर डाउनलोड को फिर से शुरू करने का समर्थन नहीं करता (अपेक्षित स्थिति {{expected}}, प्राप्त {{status}}) — फ़ाइल दोबारा डाउनलोड की जाएगी।"
+  },
+  "logPanel": {
+    "showAllConnections": "सभी कनेक्शन दिखाएं",
+    "showOnlyThisConnection": "केवल यह कनेक्शन दिखाएं",
+    "connectionClosedShowOnly": "कनेक्शन बंद - केवल यह कनेक्शन दिखाएं",
+    "hideTimestamps": "लॉग लाइनों में टाइमस्टैम्प छुपाएं",
+    "showTimestamps": "लॉग लाइनों में टाइमस्टैम्प दिखाएं",
+    "copyToClipboard": "लॉग को क्लिपबोर्ड पर कॉपी करें",
+    "saveLastLines_one": "अंतिम {{count}} पंक्ति को .txt फ़ाइल में सहेजें",
+    "saveLastLines_other": "अंतिम {{count}} पंक्तियों को .txt फ़ाइल में सहेजें",
+    "clearLog": "लॉग साफ़ करें",
+    "copiedTooltip": "कॉपी किया गया",
+    "copyFailedTooltip": "कॉपी नहीं किया जा सका",
+    "saveFailedTooltip": "फ़ाइल सहेजी नहीं जा सकी",
+    "emptyFiltered": "इस कनेक्शन के लिए कोई पंक्ति नहीं",
+    "emptyDefault": "प्रोटोकॉल संदेश यहां दिखाई देंगे"
+  },
+  "aboutDialog": {
+    "title": "के बारे में",
+    "tagline": "एक हल्का FTP/FTPS/SFTP/WebDAV क्लाइंट।",
+    "legalInformation": "कानूनी जानकारी",
+    "sourceCode": "स्रोत कोड",
+    "reportIssue": "रिपोर्ट समस्या",
+    "checkForUpdates": "अपडेट की जांच करें",
+    "updateDownloaded": "अपडेट v{{version}} डाउनलोड हो गया है — अब आप इसे इंस्टॉल कर सकते हैं।"
+  },
+  "siteManager": {
+    "emptyList": "अभी तक कोई सहेजी गई साइट नहीं",
+    "confirmDeleteSite": "साइट \"{{name}}\" हटाएं?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "नया बुकमार्क",
+    "titleEdit": "बुकमार्क संपादित करें",
+    "titleList": "बुकमार्क प्रबंधित करें",
+    "titleLocalPathList": "स्थानीय पथ प्रबंधित करें",
+    "manageLocalPaths": "स्थानीय पथ प्रबंधित करें...",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "नाम",
+      "icon": "चिह्न",
+      "color": "रंग",
+      "protocol": "प्रोटोकॉल",
+      "keyFile": "कुंजी फ़ाइल",
+      "caCertFile": "CA प्रमाणपत्र",
+      "remotePath": "डिफ़ॉल्ट फ़ोल्डर",
+      "localPath": "स्थानीय फ़ोल्डर"
+    },
+    "icons": {
+      "bookmark": "बुकमार्क",
+      "globe": "वेबसाइट",
+      "briefcase": "कार्य",
+      "house": "होम सर्वर",
+      "cloud": "बादल",
+      "flask": "परीक्षण/स्टेजिंग",
+      "gamepad": "गेम सर्वर",
+      "clapperboard": "मीडिया सर्वर",
+      "camera": "कैमरा"
+    },
+    "colors": {
+      "default": "कोई रंग नहीं",
+      "peach": "आड़ू",
+      "red": "लाल",
+      "amber": "एम्बर",
+      "green": "हरा",
+      "blue": "नीला",
+      "purple": "बैंगनी",
+      "pink": "गुलाबी",
+      "teal": "चैती"
+    },
+    "saveFailed": "सहेजा नहीं जा सका",
+    "revealFailed": "सहेजा गया रहस्य नहीं दिखाया जा सका",
+    "savedSecretPlaceholder": "सहेजा गया",
+    "savedSecretHint": "मौजूदा पासवर्ड रखने के लिए खाली छोड़ें",
+    "removeSavedPassword": "सहेजा गया पासवर्ड हटाएं",
+    "removeSavedPassphrase": "सहेजे गए पासफ़्रेज़ को हटाएँ",
+    "secretWillBeRemoved": "सहेजे जाने पर हटा दिया जाएगा",
+    "addBookmark": "नया बुकमार्क",
+    "addLocalBookmark": "स्थानीय फ़ोल्डर बुकमार्क जोड़ें",
+    "chooseLocalPath": "स्थानीय फ़ोल्डर चुनें",
+    "importBookmarks": "आयात",
+    "exportBookmarks": "निर्यात करें",
+    "importAdded_one": "{{count}} बुकमार्क जोड़ा गया",
+    "importAdded_other": "{{count}} बुकमार्क जोड़े गए",
+    "importSkipped_one": "{{count}} डुप्लिकेट छोड़ा गया",
+    "importSkipped_other": "{{count}} डुप्लिकेट छोड़े गए",
+    "importNothingNew": "आयात करने के लिए कुछ भी नया नहीं है",
+    "exportSuccess": "निर्यात किया गया",
+    "sortMode": "बुकमार्क सॉर्टिंग",
+    "sortManual": "मैनुअल",
+    "sortName": "नाम से",
+    "sortProtocol": "प्रोटोकॉल द्वारा",
+    "duplicateWarning": "उसी गंतव्य के लिए एक बुकमार्क पहले से मौजूद है: \"{{name}}\"। एक और सहेजें?",
+    "saveAnyway": "फिर भी सहेजें",
+    "newFolder": "नया फ़ोल्डर",
+    "folderNamePlaceholder": "फ़ोल्डर का नाम",
+    "confirmDeleteFolder": "फ़ोल्डर \"{{name}}\" हटाएं? इसके बुकमार्क एक स्तर ऊपर चले जायेंगे.",
+    "searchPlaceholder": "खोजें...",
+    "clearSearch": "खोज साफ़ करें",
+    "noSearchResults": "कोई बुकमार्क आपकी खोज से मेल नहीं खाता",
+    "duplicate": "डुप्लिकेट",
+    "duplicateNameSuffix": "(प्रतिलिपि)",
+    "newBookmarkInFolder": "यहां नया बुकमार्क",
+    "expandFolder": "\"{{name}}\" का विस्तार करें",
+    "collapseFolder": "\"{{name}}\" को संक्षिप्त करें"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "पता",
+      "port": "पोर्ट",
+      "user": "उपयोक्तानाम",
+      "password": "पासवर्ड",
+      "passphrase": "पासफ़्रेज़",
+      "keyFilePlaceholder": "कुंजी फ़ाइल…",
+      "chooseKeyFile": "कुंजी फ़ाइल चुनें...",
+      "caCertFilePlaceholder": "CA प्रमाणपत्र...",
+      "chooseCaCertFile": "CA प्रमाणपत्र चुनें..."
+    },
+    "secureToggle": {
+      "tooltip": "स्व-हस्ताक्षरित और अमान्य सर्वर प्रमाणपत्र स्वीकार करने के लिए अनचेक करें",
+      "label": "प्रमाणपत्र सत्यापित करें"
+    },
+    "authToggle": {
+      "tooltip": "पासवर्ड के बजाय निजी SSH कुंजी फ़ाइल से लॉग इन करें",
+      "label": "SSH कुंजी से लॉग इन करें"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "रद्द करें",
+      "connect": "कनेक्ट करें",
+      "disconnect": "डिस्कनेक्ट करें"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "सादा एफ़टीपी आपके उपयोगकर्ता नाम, पासवर्ड और फ़ाइलों को अनएन्क्रिप्टेड रूप से प्रसारित करता है। जब संभव हो तो एफटीपीएस या एसएफटीपी का उपयोग करें।"
+  },
+  "titleBar": {
+    "minimize": "छोटा करें",
+    "restore": "पुनर्स्थापित करें",
+    "maximize": "अधिकतम करें"
+  },
+  "tray": {
+    "show": "FTPeach दिखाएँ",
+    "quit": "छोड़ें"
+  },
+  "tabStrip": {
+    "localComputer": "कंप्यूटर",
+    "untitledTab": "नया टैब",
+    "newTabTooltip": "नया टैब (Ctrl+T)",
+    "rename": "टैब का नाम"
+  },
+  "toolbarOverflowMenu": {
+    "more": "और अधिक"
+  },
+  "statusBar": {
+    "transfers": "स्थानान्तरण: {{count}}",
+    "leftCount": "बायां: {{count}}",
+    "rightCount": "दाएँ: {{count}}",
+    "topCount": "शीर्ष: {{count}}",
+    "bottomCount": "निचला: {{count}}",
+    "selectedSuffix": "({{count}} चयनित)",
+    "status": {
+      "transferring": "फ़ाइल स्थानांतरित हो रही है",
+      "paused": "रोका गया",
+      "connected": "कनेक्टेड",
+      "connecting": "कनेक्ट हो रहा है",
+      "connectFailed": "कनेक्ट नहीं हो सका",
+      "disconnected": "कनेक्ट नहीं है"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "बायां फलक दिखाएँ/छिपाएँ",
+    "toggleRightPane": "दायाँ फलक दिखाएँ/छिपाएँ",
+    "toggleTransferQueue": "स्थानांतरण कतार दिखाएँ/छिपाएँ",
+    "toggleLog": "लॉग दिखाएँ/छिपाएँ",
+    "orientationNarrow": "शीशे आपस में जुड़े हुए हैं - अगल-बगल के दृश्य के लिए खिड़की बहुत संकरी है",
+    "orientationToRow": "पैन को अगल-बगल व्यवस्थित करें",
+    "orientationToStacked": "पैन को एक दूसरे के ऊपर रखें",
+    "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है",
+    "pauseActive": "सक्रिय स्थानांतरण रोकें",
+    "resumeAllPaused": "सभी रुके हुए स्थानांतरण फिर से शुरू करें",
+    "stopActive": "सक्रिय स्थानांतरण रोकें",
+    "retryAllStopped": "सभी रुके हुए स्थानांतरण पुनः प्रयास करें",
+    "refreshPanesTooltip": "दोनों फलकों को ताज़ा करें (F5)"
+  },
+  "paneToolbar": {
+    "back": "वापस",
+    "forward": "अग्रेषित करें",
+    "up": "ऊपर",
+    "chooseFolder": "फ़ोल्डर चुनें...",
+    "newFolder": "नया फ़ोल्डर…",
+    "newFile": "नई फ़ाइल…"
+  },
+  "paneSourceSwitcher": {
+    "local": "कंप्यूटर",
+    "remote": "सर्वर",
+    "updatedAtTooltip": "अपडेट किया गया: {{date}}",
+    "connectToServer": "सर्वर"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "कोई हालिया कनेक्शन नहीं",
+    "noSavedConnectionsBody": "ऊपर सर्वर पता भरें, या एक-क्लिक पहुंच के लिए एक साइट जोड़ें।",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "बुकमार्क प्रबंधित करें",
+    "quicklistLabel": "हाल के कनेक्शन"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "हैंडल न किया गया FTPeach इंटरफ़ेस त्रुटि:",
+    "title": "कुछ गलत हो गया",
+    "message": "एक अप्रत्याशित इंटरफ़ेस त्रुटि उत्पन्न हुई। आपका सक्रिय कनेक्शन और डिस्क पर फ़ाइलें अप्रभावित हैं - आप इंटरफ़ेस को पुनः लोड करने का प्रयास कर सकते हैं।",
+    "reload": "इंटरफ़ेस पुनः लोड करें"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "FTPeach",
+  "version": "0.1.0",
+  "identifier": "com.smooveemaan.ftpeach",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:5173",
+    "beforeDevCommand": "npm run dev:renderer",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "FTPeach",
+        "width": 1180,
+        "height": 740,
+        "minWidth": 480,
+        "minHeight": 520,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "backgroundColor": "#141312",
+        "zoomHotkeysEnabled": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' data:; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://ipc.localhost https://ipc.localhost;"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU0NjgzNTJEODhCNzU5ODkKUldTSldiZUlMVFZvVk95b2FUTlJyUFFTb09PZDU4UG9ObDFGd3ZJZ085M0lUcUF3Qjd4aW5hWVgK",
+      "endpoints": ["https://github.com/Smooveemaan/ftpeach/releases/latest/download/latest.json"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "copyright": "Copyright © 2026 Leonid Lozovskii (Smooveemaan)",
+    "license": "Apache-2.0",
+    "licenseFile": "../LICENSE",
+    "resources": {
+      "../NOTICE": "NOTICE",
+      "../docs/legal/ASSET_PROVENANCE.md": "licenses/ASSET_PROVENANCE.md",
+      "../docs/legal/THIRD_PARTY_NOTICES.txt": "licenses/THIRD_PARTY_NOTICES.txt",
+      "../docs/legal/NPM_THIRD_PARTY_LICENSES.txt": "licenses/NPM_THIRD_PARTY_LICENSES.txt",
+      "../docs/legal/RUST_THIRD_PARTY_LICENSES.txt": "licenses/RUST_THIRD_PARTY_LICENSES.txt"
+    },
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    },
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
+      }
+    }
+  }
+}

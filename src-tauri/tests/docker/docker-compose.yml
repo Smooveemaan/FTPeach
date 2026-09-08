@@ -1,0 +1,119 @@
+name: ftpeach-test-servers
+
+# Real FTP/FTPS/SFTP server implementations for src-tauri/tests/docker_integration.rs.
+# These are genuine third-party servers (pure-ftpd, OpenSSH sftp-server), not this
+# repo's hand-rolled protocol-mock test doubles (protocol/*.rs's
+# `local_integration_tests`/`live_tests`) — the whole point is to catch real-world
+# protocol quirks the hand-rolled mocks can't (see docs/native-validation.md).
+#
+# Usage:
+#   docker compose -f src-tauri/tests/docker/docker-compose.yml up -d
+#   cd src-tauri && cargo test --features test-utils --test docker_integration -- --ignored
+#   docker compose -f src-tauri/tests/docker/docker-compose.yml down
+
+services:
+  tls-certificates:
+    image: alpine/openssl@sha256:42c7389ef077aed0eb4e96d0abbd094083d701bbaff1313073b061c0c9cd8278
+    entrypoint: /bin/sh
+    volumes:
+      - ./generated-tls:/tls
+    command:
+      - -c
+      - |
+        rm -f /tls/ca.key /tls/ca.pem /tls/server.key /tls/server.csr /tls/server.pem /tls/ca.srl
+        openssl req -x509 -newkey rsa:2048 -nodes -days 2 -sha256 \
+          -subj '/CN=FTPeach disposable test CA' \
+          -keyout /tls/ca.key -out /tls/ca.pem
+        openssl req -newkey rsa:2048 -nodes -sha256 \
+          -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost' \
+          -keyout /tls/server.key -out /tls/server.csr
+        openssl x509 -req -days 2 -sha256 \
+          -in /tls/server.csr -CA /tls/ca.pem -CAkey /tls/ca.key -CAcreateserial \
+          -copy_extensions copy -out /tls/server.pem
+        chmod 644 /tls/ca.pem /tls/server.pem
+        chmod 600 /tls/ca.key /tls/server.key
+
+  ftp:
+    # Not :hardened — that variant hardcodes -G/--norename into its own
+    # startup flags (confirmed via `docker exec ... pure-ftpd --help` plus
+    # the printed launch command), which unconditionally rejects RNFR/RNTO
+    # regardless of ADDED_FLAGS. This client supports rename, so the test
+    # needs a server that does too.
+    image: stilliard/pure-ftpd@sha256:83fdc47e6b912a16aa2bbb30c9f577af64705331acbf7d87ab83aabfa4701089
+    container_name: ftpeach-test-ftp
+    ports:
+      - '2131:21'
+      - '30000-30009:30000-30009'
+    environment:
+      PUBLICHOST: '127.0.0.1'
+      FTP_USER_NAME: testuser
+      FTP_USER_PASS: testpass
+      FTP_USER_HOME: /home/testuser
+      FTP_PASSIVE_PORTS: '30000:30009'
+      # --tls=1: TLS optional (plain FTP and FTPS both accepted on the same
+      # port) so the same container serves both the ftp:// and ftps:// tests
+      # below. Self-signed cert, hence allowInvalidCert=true client-side.
+      # TLS_CN/ORG/C: without these the image has no cert to serve and
+      # pure-ftpd refuses to start at all with --tls set (exits immediately).
+      ADDED_FLAGS: '--tls=1'
+      TLS_CN: 'ftpeach-test'
+      TLS_ORG: 'FTPeach'
+      TLS_C: 'US'
+
+  sftp:
+    image: atmoz/sftp@sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475
+    container_name: ftpeach-test-sftp
+    ports:
+      - '2222:22'
+    # SFTP chroot requires the chroot root itself to be root-owned and
+    # non-writable, so the image can't just hand testuser its home dir — the
+    # trailing "upload" arg makes it carve out /upload as a testuser-owned,
+    # writable subdirectory instead. See atmoz/sftp's README for the
+    # user:pass:uid:gid:dir1 command syntax.
+    command: testuser:testpass:1001:1001:upload
+
+  webdav:
+    image: hacdias/webdav@sha256:ec929cdb51f884a0ea826679258bbf8edd28b66c9dc93614a5a60fa71e0ada19
+    container_name: ftpeach-test-webdav
+    ports:
+      - '6065:6065'
+    environment:
+      FTPEACH_WEBDAV_USER: testuser
+      FTPEACH_WEBDAV_PASSWORD: testpass
+    volumes:
+      - ./webdav-config.yml:/config.yml:ro
+      - webdav-data:/data
+    command: --config /config.yml
+
+  webdav-tls12:
+    image: nginx@sha256:30f1c0d78e0ad60901648be663a710bdadf19e4c10ac6782c235200619158284
+    ports:
+      - '6443:443'
+    environment:
+      TLS_PROTOCOL: TLSv1.2
+    volumes:
+      - ./nginx-webdav-tls.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./generated-tls:/tls:ro
+    depends_on:
+      tls-certificates:
+        condition: service_completed_successfully
+      webdav:
+        condition: service_started
+
+  webdav-tls13:
+    image: nginx@sha256:30f1c0d78e0ad60901648be663a710bdadf19e4c10ac6782c235200619158284
+    ports:
+      - '6444:443'
+    environment:
+      TLS_PROTOCOL: TLSv1.3
+    volumes:
+      - ./nginx-webdav-tls.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./generated-tls:/tls:ro
+    depends_on:
+      tls-certificates:
+        condition: service_completed_successfully
+      webdav:
+        condition: service_started
+
+volumes:
+  webdav-data:

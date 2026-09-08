@@ -1,0 +1,102 @@
+/* ---------- Modal ---------- */
+
+
+.modal-overlay {
+  position: fixed;
+  top: var(--title-bar-height);
+  inset-inline: 0;
+  bottom: 0;
+  background: var(--modal-scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.modal,
+.error-boundary-card {
+  background: var(--bg-panel);
+  border: var(--control-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--dialog-shadow);
+}
+
+.modal {
+  width: 340px;
+
+  max-width: calc(var(--app-viewport-w) - 40px);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--border-soft);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.modal-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.modal-title.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.modal-close:hover { color: var(--text-primary); background: var(--bg-raised); }
+
+.modal-body {
+  padding: 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.modal-body p { margin: 0 0 8px; }
+
+/* Every dialog's actions sit here, trailing-aligned with the confirming
+   button last, whether the footer holds two buttons or the unsaved-changes
+   prompt's three. Wrapping keeps a long translated label set from pushing
+   past the dialog edge. */
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-soft);
+}
+
+
+
+.modal-confirm {
+  width: fit-content;
+  min-width: 260px;
+  max-width: min(420px, calc(var(--app-viewport-w) - 40px));
+}
+
+.modal-export-settings {
+  width: min(420px, calc(var(--app-viewport-w) - 40px));
+}

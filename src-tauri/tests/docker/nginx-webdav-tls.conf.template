@@ -1,0 +1,21 @@
+map $http_destination $upstream_destination {
+    ~^https://[^/]+(?<destination_path>/.*)$ http://webdav:6065$destination_path;
+    default $http_destination;
+}
+
+server {
+    listen 443 ssl;
+    server_name localhost;
+
+    ssl_certificate /tls/server.pem;
+    ssl_certificate_key /tls/server.key;
+    ssl_protocols ${TLS_PROTOCOL};
+
+    location / {
+        proxy_pass http://webdav:6065;
+        proxy_set_header Host webdav:6065;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Destination $upstream_destination;
+        proxy_request_buffering off;
+    }
+}

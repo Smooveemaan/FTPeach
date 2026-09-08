@@ -1,0 +1,97 @@
+/* ---------- Title bar controls ---------- */
+
+.title-bar-spacer {
+  flex: 1 1 auto;
+  -webkit-app-region: drag;
+}
+
+
+.title-bar-controls {
+  display: flex;
+  align-self: stretch;
+  flex: 0 0 auto;
+
+  -webkit-app-region: no-drag;
+}
+
+.title-bar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.title-bar-btn:hover {
+  background: var(--bg-hover, rgba(127, 127, 127, 0.12));
+  color: var(--text-primary);
+}
+
+.title-bar-btn-close:hover {
+  background: var(--accent-red);
+  color: var(--accent-fill-text);
+}
+
+/* ---------- Protocol select ---------- */
+
+.protocol-select {
+  position: relative;
+}
+
+.protocol-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--control-background);
+  color: var(--text-primary);
+  border: var(--control-border);
+  border-radius: var(--control-radius);
+  padding: 6px 9px;
+  outline: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: var(--control-transition);
+}
+.protocol-select-trigger:hover:not(:disabled),
+.protocol-select-trigger.active {
+  border-color: var(--accent-primary);
+}
+
+.protocol-select-trigger:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1.5px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+.protocol-select-trigger:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.protocol-select-caret {
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+
+.protocol-select-insecure {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-amber);
+  cursor: default;
+}
+
+
+.protocol-select .protocol-select-dropdown {
+  min-width: 0;
+  width: max-content;
+  padding: 3px;
+}
+.protocol-select .protocol-select-dropdown .menu-item {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.protocol-select .protocol-select-dropdown .menu-item-check {
+  width: 10px;
+  font-size: 10px;
+}

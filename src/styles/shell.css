@@ -1,0 +1,78 @@
+/* ---------- Shell ---------- */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+}
+
+.title-bar {
+  height: var(--title-bar-height);
+  flex: 0 0 var(--title-bar-height);
+  display: flex;
+  align-items: center;
+
+  padding-block: 0;
+  padding-inline: 14px 0;
+  background: var(--bg-base);
+  position: relative;
+
+  -webkit-app-region: drag;
+  gap: 8px;
+}
+
+/* A dialog's scrim starts below the title bar so the window stays draggable and
+   its minimize/maximize/close buttons keep working while the dialog is open.
+   Give the bar a matching, click-through scrim of its own so the whole window
+   reads as backgrounded, not just the area under the bar. */
+.title-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--modal-scrim);
+  pointer-events: none;
+  opacity: 0;
+}
+
+body:has(.modal-overlay) .title-bar::after {
+  opacity: 1;
+}
+
+.title-bar .wordmark {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.title-bar .wordmark b {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+
+.line-pulse {
+  flex: 0 0 auto;
+  opacity: 0.3;
+}
+.line-pulse.state-idle { color: var(--accent-red); }
+.line-pulse.state-connecting,
+.line-pulse.state-paused { color: var(--accent-amber); }
+.line-pulse.state-connected { color: var(--accent-green); }
+
+.line-pulse.lit {
+  animation: lamp-flash 0.8s ease;
+}
+
+@keyframes lamp-flash {
+  0% {
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}

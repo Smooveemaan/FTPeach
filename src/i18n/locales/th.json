@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "ไม่ต้องเข้าสู่ระบบ",
+    "anonymousUser": "ไม่ระบุชื่อ",
+    "rootFolder": "โฟลเดอร์หลัก",
+    "close": "ปิด",
+    "reset": "ตั้งใหม่",
+    "open": "เปิด",
+    "upload": "อัปโหลด",
+    "save": "บันทึก",
+    "create": "สร้าง",
+    "cancel": "ยกเลิก",
+    "increase": "เพิ่ม",
+    "decrease": "ลด",
+    "showPassword": "แสดงรหัสผ่าน",
+    "savedSecretProtected": "ข้อมูลลับที่บันทึกไว้ได้รับการปกป้องและไม่สามารถดูได้",
+    "hidePassword": "ซ่อนรหัสผ่าน"
+  },
+  "securityConfirmation": {
+    "title": "การยืนยันความปลอดภัยของ FTPeach",
+    "allow": "อนุญาต",
+    "typeToConfirm": "พิมพ์ {{phrase}} เพื่อยืนยัน",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "แสดงรหัสผ่านที่บันทึกไว้สำหรับบุ๊กมาร์กนี้หรือไม่"
+      },
+      "revealProxyPassword": {
+        "message": "แสดงรหัสผ่านพร็อกซีที่บันทึกไว้หรือไม่"
+      },
+      "vaultReset": {
+        "message": "รหัสผ่านที่บันทึกไว้และวลีรหัสผ่านของคีย์ SSH ทั้งหมดจะถูกลบอย่างถาวร",
+        "approve": "ลบคลังนิรภัย"
+      },
+      "executeLocalFile": {
+        "message": "เรียกใช้ไฟล์ปฏิบัติการหรือสคริปต์นี้หรือไม่"
+      },
+      "executeRemoteFile": {
+        "message": "ดาวน์โหลดและเรียกใช้ไฟล์ปฏิบัติการหรือสคริปต์นี้หรือไม่"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "โฟลเดอร์ใหม่…",
+    "newFile": "ไฟล์ใหม่…",
+    "refresh": "รีเฟรช",
+    "open": "เปิด",
+    "uploadToOtherPane": "อัปโหลดไปยังส่วนอื่น",
+    "copyToOtherPane": "คัดลอกไปยังหน้าต่างอื่น",
+    "downloadToOtherPane": "ดาวน์โหลดไปยังหน้าต่างอื่น",
+    "openWith": "เปิดด้วย…",
+    "permissions": "สิทธิ์…",
+    "moveTo": "ย้ายไปยัง…",
+    "copyPath": "คัดลอกเส้นทาง",
+    "delete": "ลบ",
+    "deleteSelected_one": "ลบ (ไฟล์ {{count}})",
+    "deleteSelected_other": "ลบ (ไฟล์ {{count}})",
+    "deletePermanently": "ลบอย่างถาวร",
+    "deleteSelectedPermanently_one": "ลบอย่างถาวร (ไฟล์ {{count}})",
+    "deleteSelectedPermanently_other": "ลบอย่างถาวร (ไฟล์ {{count}})"
+  },
+  "chmodDialog": {
+    "title": "สิทธิ์การเข้าถึง SFTP",
+    "label": "โหมดเลขฐานแปดสำหรับสิทธิ์การเข้าถึงไฟล์ ({{name}}) (เช่น 644 หรือ 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "โฟลเดอร์ว่าง",
+    "homeFolder": "โฟลเดอร์หลัก",
+    "copyToPaneBelow": "คัดลอกไปยังช่องด้านล่าง",
+    "copyToPaneAbove": "คัดลอกไปยังช่องด้านบน",
+    "copyToPaneRight": "คัดลอกไปยังช่องด้านขวา",
+    "copyToPaneLeft": "คัดลอกไปยังช่องด้านซ้าย",
+    "fileTypeFolder": "โฟลเดอร์ไฟล์",
+    "fileTypeGeneric": "ไฟล์",
+    "fileTypeWithExt": "{{ext}} ไฟล์",
+    "columnSize": "ขนาด",
+    "columnModifiedAt": "วันที่แก้ไข",
+    "columnCreatedAt": "วันที่สร้าง",
+    "columnType": "ประเภท",
+    "columnPermissions": "สิทธิ์",
+    "columnOwner": "เจ้าของ",
+    "columnGroup": "กลุ่ม",
+    "columnName": "ชื่อ",
+    "filesAriaLabel": "ไฟล์",
+    "rename": "เปลี่ยนชื่อ",
+    "resetColumnWidths": "คืนค่าความกว้างของคอลัมน์",
+    "updatedAtTooltip": "อัปเดต: {{date}}",
+    "searchTooltip": "ค้นหา ({{shortcut}})",
+    "searchPlaceholder": "ค้นหา… ({{shortcut}})",
+    "editPathAriaLabel": "แก้ไขเส้นทาง",
+    "changeDriveTooltip": "เปลี่ยนไดรฟ์",
+    "chooseColumnsTooltip": "คลิกขวาเพื่อเลือกคอลัมน์",
+    "sortByNameTooltip": "จัดเรียงตามชื่อ",
+    "sortByColumnTooltip": "จัดเรียงตามคอลัมน์ \"{{column}}\"",
+    "rowProbeSample": "ตัวอย่าง",
+    "loading": "กำลังโหลด…",
+    "nothingFound": "ไม่พบอะไร"
+  },
+  "update": {
+    "readyToInstall": "อัปเดตเวอร์ชัน{{version}} พร้อมใช้งานแล้ว — คลิก \"รีสตาร์ทและติดตั้ง\" เพื่อติดตั้งอัปเดตนี้",
+    "downloadingWithPercent": "กำลังดาวน์โหลดการอัปเดตเวอร์ชัน{{version}}: {{percent}} %",
+    "downloadingFound": "อัปเดตเวอร์ชัน{{version}} พบแล้ว กำลังดาวน์โหลด…",
+    "restartAndInstall": "รีสตาร์ทและติดตั้ง",
+    "availableAction": "พร้อมแล้ว!",
+    "installAction": "ติดตั้งไหม?",
+    "downloadTooltip": "คลิกเพื่อดาวน์โหลด",
+    "downloadingTooltip": "กำลังดาวน์โหลด",
+    "installTooltip": "คลิกเพื่อเริ่มใหม่และติดตั้ง"
+  },
+  "legacyPasswordNotice": {
+    "message": "รหัสผ่านของบางเว็บไซต์ที่บันทึกไว้ไม่สามารถอ่านได้หลังการอัปเดต — โปรดป้อนรหัสผ่านใหม่ในตัวจัดการเว็บไซต์"
+  },
+  "plaintextSecretNotice": {
+    "message": "ไม่สามารถเข้ารหัสคำผ่านหรือวลีผ่านของเว็บไซต์ที่บันทึกไว้ได้ เนื่องจากระบบการปกป้องข้อมูลของ Windows ไม่สามารถใช้งานได้ จึงถูกเก็บไว้ในรูปแบบข้อความธรรมดาแทน"
+  },
+  "secretNotPersistedNotice": {
+    "message": "ไม่สามารถเข้ารหัสคำผ่านหรือวลีผ่านได้ และจึงไม่ถูกบันทึกไว้ การเชื่อมต่อที่มีอยู่สามารถดำเนินต่อไปได้จนกว่าจะถูกตัดการเชื่อมต่อ หากไม่เช่นนั้น ให้ป้อนคำผ่านลับอีกครั้งในครั้งต่อไป"
+  },
+  "resize": {
+    "paneSize": "ลากเพื่อปรับขนาดช่อง (คลิกสองครั้งเพื่อคืนค่าเดิม)",
+    "height": "ลากเพื่อปรับขนาดความสูง (คลิกสองครั้งเพื่อคืนค่าเดิม)",
+    "ratio": "ลากเพื่อปรับขนาดตามสัดส่วน (คลิกสองครั้งเพื่อคืนค่าเดิม)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} รายการ",
+    "itemCount_other": "{{count}} รายการ",
+    "moveMode": "ย้าย"
+  },
+  "openWithChanged": {
+    "title": "ไฟล์ถูกแก้ไข",
+    "message": "\"{{name}}\" ได้ถูกแก้ไขในแอปพลิเคชันภายนอกแล้ว ควรอัปโหลดไฟล์ที่อัปเดตแล้วไปยังเซิร์ฟเวอร์หรือไม่?"
+  },
+  "saveSite": {
+    "title": "บันทึกโปรไฟล์การเชื่อมต่อ",
+    "label": "ชื่อโปรไฟล์การเชื่อมต่อ:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "โฟลเดอร์ใหม่",
+    "labelLocal": "ชื่อโฟลเดอร์ใหม่:",
+    "labelRemote": "ชื่อโฟลเดอร์ใหม่บนเซิร์ฟเวอร์:"
+  },
+  "newFile": {
+    "title": "ไฟล์ใหม่",
+    "label": "ชื่อไฟล์ (พร้อมส่วนขยาย):"
+  },
+  "moveToDialog": {
+    "title": "ย้ายไปยัง…",
+    "labelSingle": "ย้าย \"{{name}}\" ไปยังโฟลเดอร์:",
+    "labelMultiple": "ย้ายรายการที่เลือก ({{count}}) ไปยังโฟลเดอร์:"
+  },
+  "confirm": {
+    "allowReplacementRace": "อนุญาตให้แทนที่ \"{{name}}\" หากไฟล์ปรากฏขึ้นระหว่างการถ่ายโอนหรือไม่?",
+    "resetLayout": "ตั้งขนาดหน้าต่างและช่องใหม่, คืนค่าคอลัมน์เป็นค่าเริ่มต้น และล้างแคชของอินเทอร์เฟซ?",
+    "hostKeyMismatch": "{{error}} ลบลายนิ้วมือกุญแจที่บันทึกไว้สำหรับ {{host}}: {{port}} แล้วเชื่อมต่อต่อไปได้หรือไม่? ทำเช่นนี้เฉพาะเมื่อคุณมั่นใจว่าเซิร์ฟเวอร์ได้ถูกติดตั้งใหม่หรือย้ายมาอย่างถูกต้อง — หากไม่เช่นนั้น การทำเช่นนี้อาจทำให้คุณเชื่อมต่อกับเซิร์ฟเวอร์ที่ถูกปลอมแปลงได้",
+    "connectAnyway": "เชื่อมต่อต่อไป",
+    "closeTabWithActiveTransfers": "แท็บนี้มีรายการโอนที่กำลังดำเนินการอยู่ จะปิดแท็บนี้และหยุดรายการเหล่านั้นหรือไม่?",
+    "closeTabLabel": "ปิดแท็บ",
+    "overwriteSingleExists": "\"{{name}}\" มีอยู่แล้วในโฟลเดอร์ปลายทาง จะเขียนทับหรือไม่?",
+    "overwriteConflicts_one": "{{count}} ไฟล์นี้อยู่ในโฟลเดอร์ปลายทางแล้ว จะเขียนทับหรือไม่?",
+    "overwriteConflicts_other": "{{count}} มีไฟล์ดังกล่าวอยู่ในโฟลเดอร์ปลายทางแล้ว จะเขียนทับหรือไม่?",
+    "overwriteLabel": "เขียนทับ",
+    "replaceConnection": "หน้าต่างนี้ได้เชื่อมต่อกับ \"{{current}}\" แล้ว ต้องการเปลี่ยนการเชื่อมต่อเป็น \"{{next}}\" หรือไม่?",
+    "replaceConnectionLabel": "แทนที่",
+    "deleteSelected": "จะลบรายการที่เลือกไว้ ({{count}}) หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "deleteEntry": "จะลบ \"{{name}}\" หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "recycleSelected": "จะย้ายรายการที่เลือก ({{count}}) ไปยังถังขยะหรือไม่?",
+    "recycleEntry": "จะย้าย \"{{name}}\" ไปยังถังขยะหรือไม่?",
+    "deletePermanentSelected": "จะลบรายการที่เลือกไว้อย่างถาวร ({{count}}) หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "deletePermanentEntry": "จะลบ \"{{name}}\" อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "deleteRemoteSelected": "จะลบรายการระยะไกลที่เลือกไว้ ({{count}}) อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "deleteRemoteEntry": "จะลบรายการระยะไกล \"{{name}}\" อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+  },
+  "paneSide": {
+    "top": "ด้านบน",
+    "bottom": "ด้านล่าง",
+    "left": "ซ้าย",
+    "right": "ขวา",
+    "labelWithTab": "{{base}} (แท็บ {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "ไฟล์",
+      "newTab": "แท็บใหม่",
+      "closeTab": "ปิดแท็บ",
+      "newConnection": "การเชื่อมต่อใหม่",
+      "disconnect": "ตัดการเชื่อมต่อ",
+      "manageBookmarks": "จัดการบุ๊กมาร์ก…",
+      "saveConnection": "บันทึกการเชื่อมต่อ",
+      "saveConnectionSide": "บันทึกการเชื่อมต่อ ({{side}})",
+      "saveBookmarkSide": "บันทึกบุ๊กมาร์ก ({{side}})",
+      "savePathSide": "บันทึกเส้นทาง ({{side}})",
+      "exportSettings": "ตั้งค่าการส่งออก…",
+      "importSettings": "นำเข้าการตั้งค่า…",
+      "quit": "ออกจากโปรแกรม"
+    },
+    "edit": {
+      "title": "แก้ไข",
+      "settings": "การตั้งค่า…",
+      "resetLayout": "ตั้งใหม่การจัดวางและแคช…"
+    },
+    "view": {
+      "title": "ดู",
+      "darkTheme": "ธีมสีมืด",
+      "lightTheme": "ธีมสีอ่อน",
+      "systemTheme": "ธีมระบบ",
+      "syncBrowsing": "การซิงค์การเรียกดูโฟลเดอร์",
+      "showHiddenFiles": "แสดงไฟล์และโฟลเดอร์ที่ซ่อนอยู่",
+      "leftPane": "ส่วนซ้าย",
+      "rightPane": "ส่วนขวา",
+      "transferQueue": "คิวการโอน",
+      "log": "บันทึก",
+      "stackedPanes": "กระจกซ้อน",
+      "refreshBothPanes": "รีเฟรชทั้งสองหน้าต่าง"
+    },
+    "transfer": {
+      "title": "โอน",
+      "copySelectedRight": "คัดลอกที่เลือก →",
+      "copySelectedLeft": "← คัดลอกส่วนที่เลือก",
+      "clearCompleted": "เสร็จสิ้นแล้ว"
+    },
+    "bookmarks": {
+      "title": "บุ๊กมาร์ก"
+    },
+    "help": {
+      "supportProject": "สนับสนุนโครงการ",
+      "title": "ความช่วยเหลือ",
+      "documentation": "เอกสาร",
+      "reportIssue": "แจ้งปัญหา",
+      "checkUpdates": "ตรวจสอบการอัปเดต",
+      "about": "เกี่ยวกับ"
+    }
+  },
+  "errors": {
+    "connectionRefused": "เซิร์ฟเวอร์ปฏิเสธการเชื่อมต่อ โปรดตรวจสอบที่อยู่และพอร์ต",
+    "serverNotFound": "ไม่พบเซิร์ฟเวอร์ โปรดตรวจสอบว่าที่อยู่ถูกต้องหรือไม่",
+    "timeout": "เซิร์ฟเวอร์ไม่ตอบสนอง (การเชื่อมต่อหมดเวลาแล้ว) โปรดตรวจสอบที่อยู่ พอร์ต และการเชื่อมต่อเครือข่าย",
+    "connectionReset": "การเชื่อมต่อกับเซิร์ฟเวอร์ถูกปิดลงอย่างไม่คาดคิด",
+    "networkUnreachable": "ไม่สามารถติดต่อกับเซิร์ฟเวอร์ได้ — โปรดตรวจสอบการเชื่อมต่อเครือข่ายของคุณ",
+    "loginIncorrect": "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+    "invalidCertificate": "เซิร์ฟเวอร์ได้แสดงใบรับรองที่ไม่ถูกต้อง หากคุณเชื่อถือเซิร์ฟเวอร์นี้ ให้ปิดการตรวจสอบใบรับรองในตั้งค่าการเชื่อมต่อ",
+    "tlsNegotiationFailed": "การเจรจา TLS ไม่สำเร็จ โปรดตรวจสอบว่าเซิร์ฟเวอร์รองรับ FTPS หรือ HTTPS แบบชัดเจน และเวอร์ชัน TLS ที่เข้ากันได้",
+    "sshNegotiationFailed": "การเจรจา SSH ไม่สำเร็จ เซิร์ฟเวอร์และ FTPeach ไม่สามารถตกลงกันได้เกี่ยวกับอัลกอริทึม SSH หรือเวอร์ชันโปรโตคอลที่เข้ากันได้",
+    "proxyFailed": "การเชื่อมต่อผ่านพร็อกซีไม่สำเร็จ โปรดตรวจสอบประเภทพร็อกซี ที่อยู่ ข้อมูลการเข้าสู่ระบบ และตรวจสอบว่าสามารถเชื่อมต่อกับเซิร์ฟเวอร์เป้าหมายได้หรือไม่",
+    "keyReadFailed": "ไม่สามารถอ่านคีย์ได้ — ไฟล์ถูกเสียหาย หรือรหัสผ่านไม่ถูกต้อง",
+    "accessDenied": "คุณไม่มีสิทธิ์ดำเนินการนี้",
+    "notFound": "ไม่พบไฟล์หรือโฟลเดอร์",
+    "fileOrFolderExists": "มีไฟล์หรือโฟลเดอร์ที่มีชื่อนั้นอยู่แล้ว",
+    "fileBusy": "ไฟล์นี้กำลังถูกใช้โดยกระบวนการอื่น",
+    "diskFull": "พื้นที่ดิสก์ไม่เพียงพอ",
+    "hostKeyMismatch": "คีย์โฮสต์ของเซิร์ฟเวอร์มีการเปลี่ยนแปลง",
+    "integrityMismatch": "ไฟล์ที่ถ่ายโอนไม่ผ่านการตรวจสอบความสมบูรณ์",
+    "invalidInput": "ค่าที่ระบุไม่ถูกต้อง",
+    "internal": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+    "connectFailedPrefix": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ {{raw}}",
+    "alreadyExists": "\"{{name}}\" มีอยู่แล้ว"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "การเชื่อมโยงแอปพลิเคชัน",
+      "hint": "เลือกโปรแกรมสำหรับการขยายเวลา ไฟล์ที่ไม่มีกฎจะถูกใช้ค่าเริ่มต้นของระบบ",
+      "extension": "ส่วนขยาย",
+      "extensionPlaceholder": "txt",
+      "application": "แอปพลิเคชัน",
+      "applicationPlaceholder": "เส้นทางของแอปพลิเคชัน",
+      "browse": "เลือกแอปพลิเคชัน",
+      "remove": "ยกเลิกการเชื่อมโยง",
+      "add": "เพิ่มการเชื่อมโยง"
+    },
+    "minimizeToTray": "ย่อลงสู่ถาดระบบ",
+    "minimizeToTrayHint": "ปุ่มลดขนาดจะซ่อนหน้าต่างไปยังพื้นที่ระบบ (system tray) แทนที่จะซ่อนไปยังแถบงาน (taskbar)",
+    "closeToTray": "ปิดลงถาดระบบ",
+    "closeToTrayHint": "ปุ่มปิดจะซ่อนหน้าต่างไปยังพื้นที่ระบบแทนที่จะออกจากแอป ให้ออกจากแอปโดยใช้เมนูของไอคอนในพื้นที่ระบบ",
+    "title": "การตั้งค่า",
+    "unsavedChangesTitle": "การเปลี่ยนแปลงที่ยังไม่บันทึก",
+    "unsavedChangesMessage": "จะบันทึกการเปลี่ยนแปลงการตั้งค่าหรือไม่?",
+    "discardChanges": "อย่าบันทึก",
+    "categories": {
+      "connection": "การเชื่อมต่อ",
+      "transfers": "การโอนไฟล์",
+      "interface": "อินเทอร์เฟซ",
+      "shortcuts": "ทางลัด",
+      "updates": "ข่าวล่าสุด",
+      "logging": "การบันทึก",
+      "security": "ความปลอดภัย"
+    },
+    "shortcuts": {
+      "title": "คำสั่งลัดบนคีย์บอร์ด",
+      "hint": "คลิกที่ทางลัด แล้วกดชุดปุ่มใหม่เพื่อกำหนดฟังก์ชันใหม่ให้ทางลัดนั้น",
+      "globalTitle": "ทั่วโลก",
+      "paneTitle": "ส่วนแสดงไฟล์",
+      "recording": "กดปุ่ม…",
+      "unbound": "ยังไม่ได้กำหนด",
+      "reset": "ตั้งกลับเป็นค่าเริ่มต้น",
+      "resetAll": "ตั้งกลับเป็นค่าเริ่มต้นทั้งหมด",
+      "unassign": "ยกเลิกการกำหนด",
+      "conflict": "ยังถูกใช้โดย: {{action}}",
+      "actions": {
+        "search": "ค้นหา ({{side}})",
+        "toggleHiddenFiles": "เปิด/ปิดไฟล์ที่ซ่อน",
+        "newConnection": "การเชื่อมต่อใหม่",
+        "save": "บันทึก ({{side}})",
+        "openSettings": "เปิดการตั้งค่า",
+        "newTab": "แท็บใหม่",
+        "closeTab": "ปิดแท็บ",
+        "nextTab": "แท็บถัดไป",
+        "prevTab": "แท็บก่อนหน้า",
+        "refresh": "รีเฟรช",
+        "selectAll": "เลือกทั้งหมด",
+        "delete": "ลบ",
+        "deletePermanent": "ลบอย่างถาวร",
+        "navigateUp": "ขึ้นไปยังโฟลเดอร์ข้างบน",
+        "navigateBack": "กลับ",
+        "navigateForward": "ไปข้างหน้า",
+        "navigateHome": "ไปที่โฟลเดอร์หลัก",
+        "moveTo": "ย้ายไปยัง…",
+        "newFolder": "โฟลเดอร์ใหม่…",
+        "newFile": "ไฟล์ใหม่…",
+        "copyToOtherPane": "คัดลอกไปยังหน้าต่างอื่น",
+        "copy": "คัดลอก",
+        "cut": "ตัด",
+        "paste": "วาง",
+        "clearSelection": "ล้างการเลือก",
+        "open": "เปิด"
+      }
+    },
+    "security": {
+      "title": "การป้องกันด้วยรหัสผ่าน",
+      "systemMode": "การป้องกันระบบ",
+      "systemModeHint": "รหัสผ่านของบัญชี Windows ของคุณได้รับการเข้ารหัส และสามารถดูได้ในส่วนการตั้งค่าการเชื่อมต่อ",
+      "strongholdMode": "การป้องกันที่ได้รับการปรับปรุง",
+      "strongholdModeHint": "ต้องใช้รหัสผ่านหลัก รหัสผ่านที่บันทึกไว้สามารถใช้เพื่อเชื่อมต่อได้ แต่ไม่สามารถดูได้",
+      "loading": "กำลังตรวจสอบพื้นที่เก็บข้อมูลที่ได้รับการป้องกัน…",
+      "configuredLocked": "พื้นที่จัดเก็บข้อมูลที่ได้รับการคุ้มครองถูกป้องกันด้วยรหัสผ่านหลักและถูกล็อกไว้",
+      "configuredUnlocked": "พื้นที่จัดเก็บข้อมูลที่ได้รับการป้องกันถูกตั้งรหัสผ่านหลักและถูกปลดล็อก",
+      "masterPassword": "รหัสผ่านหลัก",
+      "confirmPassword": "ยืนยันรหัสผ่านหลัก",
+      "oldPassword": "รหัสผ่านหลักปัจจุบัน",
+      "newPassword": "รหัสผ่านหลักใหม่",
+      "setup": "ปกป้องรหัสผ่านที่บันทึกไว้",
+      "settingUp": "การคุ้มครอง…",
+      "unlock": "ปลดล็อก",
+      "unlocking": "กำลังปลดล็อก…",
+      "unlockRequired": "ปลดล็อกพื้นที่เก็บข้อมูลที่ได้รับการป้องกัน",
+      "unlockRequiredHint": "การเชื่อมต่อนี้ใช้รหัสลับที่บันทึกไว้ โปรดปลดล็อกพื้นที่เก็บข้อมูลที่ได้รับการป้องกันเพื่อดำเนินการต่อ",
+      "lockNow": "ล็อคทันที",
+      "autoLock": "ล็อคอัตโนมัติหลังจาก, นาที",
+      "autoLockDisabled": "ไม่สามารถใช้งานได้",
+      "autoLockHint": "ล็อกพื้นที่จัดเก็บข้อมูลเมื่อไม่มีการใช้งาน การเชื่อมต่อกับเซิร์ฟเวอร์ที่มีอยู่จะยังคงทำงานอยู่; 0 เพื่อปิดการล็อกอัตโนมัติ",
+      "changePassword": "เปลี่ยนรหัสผ่านหลัก",
+      "change": "เปลี่ยนรหัสผ่าน",
+      "systemUnlock": "อนุญาตให้ปลดล็อกระบบ",
+      "systemUnlockHint": "ใช้ Windows Hello (รหัส PIN, ใบหน้า หรือลายนิ้วมือ ตามที่ Windows ได้กำหนดไว้) รหัสผ่านหลักของคุณยังคงเป็นวิธีการกู้คืนบัญชี",
+      "unlockWithSystem": "ปลดล็อกด้วยการยืนยันตัวตนของระบบ",
+      "systemUnavailable": "การปลดล็อกระบบไม่สามารถใช้งานได้บนแพลตฟอร์มนี้",
+      "noRecovery": "หากลืมรหัสผ่านหลักแล้ว จะไม่สามารถกู้คืนได้ การตั้งรหัสผ่านใหม่จะทำให้ข้อมูลลับที่เก็บไว้ทั้งหมดถูกลบไป",
+      "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+      "passwordTooShort": "ใช้รหัสผ่านหลักที่มีอย่างน้อย 12 ตัวอักษร",
+      "strength": {
+        "tooShort": "สั้นเกินไป — ใช้อย่างน้อย 12 ตัวอักษร",
+        "acceptable": "ยอมรับได้ แต่รหัสผ่านที่ยาวกว่าจะปลอดภัยกว่า",
+        "strong": "รหัสผ่านหลักที่ปลอดภัย"
+      },
+      "reset": "รีเซตพื้นที่จัดเก็บข้อมูลที่ได้รับการป้องกัน",
+      "resetHint": "ลบพื้นที่เก็บข้อมูลที่ได้รับการป้องกัน รวมถึงรหัสผ่านและวลีผ่านสำหรับกุญแจ SSH ทั้งหมดที่เก็บไว้ในนั้น การตั้งค่าการป้องกันที่ได้รับการปรับปรุงจะต้องดำเนินการใหม่",
+      "resetWarning": "การนี้จะลบรหัสผ่านและวลีรหัสหลักที่บันทึกไว้ทั้งหมดอย่างถาวร โปรดป้อนรหัสผ่านหลักปัจจุบันเพื่อดำเนินการต่อ",
+      "confirmReset": "ลบข้อมูลลับที่เก็บไว้",
+      "showConfirmations": "แสดงการยืนยันความปลอดภัย",
+      "showConfirmationsHint": "ขอการยืนยันก่อนแสดงข้อมูลลับที่บันทึกไว้หรือเรียกใช้ไฟล์ปฏิบัติการ การรีเซ็ตพื้นที่จัดเก็บที่มีการป้องกันต้องได้รับการยืนยันเสมอ",
+      "unavailable": "พื้นที่จัดเก็บที่ได้รับการป้องกันไม่สามารถใช้งานได้",
+      "failed": "การดำเนินการจัดเก็บข้อมูลแบบปลอดภัยล้มเหลว"
+    },
+    "unlimitedPlaceholder": "ไม่มีขีดจำกัด",
+    "connectTimeoutLabel": "หมดเวลาการเชื่อมต่อ, วินาที",
+    "connectTimeoutHint": "ต้องรอการตอบกลับจากเซิร์ฟเวอร์นานเท่าใดเมื่อเชื่อมต่อ ก่อนที่จะถือว่าไม่สามารถติดต่อได้ (0 หรือว่าง — ไม่มีขีดจำกัด) ใช้กับการเชื่อมต่อครั้งต่อไป",
+    "ftpActiveMode": "โหมด FTP แบบแอคทีฟ (แทนแบบพาสซีฟ)",
+    "ftpActiveModeHint": "ใช้กับ FTP/FTPS เท่านั้น — ไม่มีผลต่อ SFTP/WebDAV ใช้ในกรณีที่จำเป็นน้อยมาก และเฉพาะในเครือข่าย/เซิร์ฟเวอร์ที่โหมดพาสซีฟไม่สามารถผ่าน NAT ได้ ใช้กับการเชื่อมต่อครั้งต่อไป",
+    "ftpActiveModeDisabledByProxy": "ไม่สามารถใช้งานได้เมื่อเปิดใช้งานพร็อกซี — ทันเนลพร็อกซีรองรับการเชื่อมต่อขาออกเท่านั้น ดังนั้น FTP จึงต้องอยู่ในโหมดพาสซีฟ",
+    "proxy": {
+      "enable": "ใช้พร็อกซีในการเชื่อมต่อ",
+      "enableHint": "SOCKS4, SOCKS5 หรือ HTTP CONNECT — ใช้ได้กับ FTP, FTPS, SFTP และ WebDAV ใช้ได้กับการเชื่อมต่อครั้งต่อไป",
+      "typeLabel": "ประเภทพร็อกซี",
+      "hostLabel": "เซิร์ฟเวอร์พร็อกซี",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "พอร์ต",
+      "usernameLabel": "ชื่อผู้ใช้",
+      "passwordLabel": "รหัสผ่าน",
+      "removeSavedPassword": "ลบรหัสผ่านที่บันทึกไว้",
+      "revealFailed": "ไม่สามารถถอดรหัสผ่านที่บันทึกไว้ได้",
+      "testTargetLabel": "ทดสอบกับ",
+      "testTargetHostPlaceholder": "เซิร์ฟเวอร์โฮสต์",
+      "testTargetPortPlaceholder": "พอร์ต",
+      "test": "ทดสอบพร็อกซี",
+      "testing": "กำลังทดสอบ…",
+      "testOk": "พร็อกซีได้เข้าถึงเป้าหมายสำเร็จแล้ว",
+      "testFailed": "การทดสอบพร็อกซีไม่สำเร็จ"
+    },
+    "concurrencyLabel": "การโอนไฟล์พร้อมกัน",
+    "concurrencyHint": "จำนวนไฟล์ที่สามารถอัปโหลดและดาวน์โหลดพร้อมกันได้ (0 หรือเว้นว่าง — ไม่จำกัด) ใช้สำหรับการเชื่อมต่อครั้งต่อไป",
+    "speedLimitLabel": "ความเร็วสูงสุด, KB/s",
+    "speedLimitHint": "ใช้กับยอดรวมของการโอนเงินทั้งหมดที่เกิดขึ้นพร้อมกัน (0 หรือว่าง — ไม่มีข้อจำกัด) มีผลทันที โดยไม่ต้องรอการเชื่อมต่อครั้งต่อไป",
+    "notifyOnComplete": "แจ้งเตือนเมื่อการโอนเสร็จสิ้น",
+    "notifyOnCompleteHint": "การแจ้งเตือนจากระบบเมื่อคิวการโอนว่าง — เฉพาะเมื่อหน้าต่างนั้นไม่ได้เป็นหน้าต่างที่ใช้งานอยู่",
+    "overwriteActionLabel": "เกี่ยวกับปัญหาชื่อทับซ้อน",
+    "overwriteAsk": "ถาม",
+    "overwriteOverwrite": "เขียนทับ",
+    "overwriteSkip": "ข้าม",
+    "overwriteHint": "ควรทำอย่างไรเมื่อไฟล์ที่กำลังคัดลอกมีอยู่แล้วในโฟลเดอร์ปลายทาง",
+    "preventSleep": "ป้องกันไม่ให้ระบบเข้าสู่โหมดพักระหว่างการถ่ายโอนข้อมูล",
+    "preventSleepHint": "มีผลทันที โดยไม่ต้องรอการเชื่อมต่อครั้งต่อไป จะทำงานอยู่ตลอดเวลาที่มีการถ่ายโอนข้อมูลอย่างน้อยหนึ่งรายการ — หากไม่มี จะไม่ขัดขวางโหมดพักเครื่อง",
+    "themeLabel": "ธีม",
+    "themeDark": "มืด",
+    "themeLight": "สว่าง",
+    "themeSystem": "ระบบ",
+    "languageLabel": "ภาษาของอินเทอร์เฟซ",
+    "interfaceScaleLabel": "ระดับอินเทอร์เฟซ",
+    "interfaceScaleHint": "เปลี่ยนขนาดตัวอักษรและปุ่มควบคุมในทุกส่วนของแอปพลิเคชัน",
+    "dateFormatLabel": "รูปแบบวันที่/เวลา",
+    "dateFormatOnlyLabel": "รูปแบบวันที่",
+    "timeFormatLabel": "รูปแบบเวลา",
+    "timeFormat24Hour": "24 ชม.",
+    "timeFormat12Hour": "12 ชม.",
+    "dateFormatLocale": "ท้องถิ่น",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "โฟลเดอร์เริ่มต้นสำหรับคอมพิวเตอร์",
+    "defaultLocalPathHint": "โฟลเดอร์ที่แผงคอมพิวเตอร์เปิดเมื่อเริ่มต้นและเมื่อสลับจากเซิร์ฟเวอร์ ปล่อยว่างไว้เพื่อใช้โฟลเดอร์หลักของระบบ",
+    "chooseDefaultLocalPath": "เลือกโฟลเดอร์เริ่มต้น",
+    "showHiddenFiles": "แสดงไฟล์และโฟลเดอร์ที่ซ่อนอยู่",
+    "showHiddenFilesHint": "ใช้ได้กับทั้งหน้าต่างไฟล์ในเครื่องและหน้าต่างไฟล์ระยะไกล",
+    "coloredTabs": "แท็บสี",
+    "coloredTabsHint": "ใช้สีของบุ๊กมาร์กที่บันทึกไว้เพื่อกำหนดสีของชื่อแท็บและไอคอน",
+    "autoCheckUpdates": "ตรวจสอบการอัปเดตเมื่อเปิดเครื่อง",
+    "autoCheckUpdatesHint": "การตรวจสอบอัตโนมัติอย่างเงียบๆ ภายในไม่กี่วินาทีหลังการเปิดเครื่อง — การติดตั้งการอัปเดตต้องได้รับการยืนยันแยกต่างหากเสมอ",
+    "autoReconnectTabs": "เชื่อมต่อแท็บที่ได้รับการกู้คืนอีกครั้งเมื่อเปิดโปรแกรม",
+    "autoReconnectTabsHint": "ปิดตามค่าเริ่มต้น เมื่อเปิดใช้งาน เว็บไซต์ที่บันทึกไว้จะถูกเชื่อมต่อโดยอัตโนมัติ",
+    "saveSessionOnExit": "บันทึกเซสชันเมื่อปิดโปรแกรม",
+    "saveSessionOnExitHint": "จะคืนค่าแท็บที่เปิดอยู่ ประเภทของหน้าต่าง และเส้นทางเมื่อเปิดโปรแกรมครั้งต่อไป การปิดตัวเลือกนี้จะลบเซสชันที่บันทึกไว้",
+    "checkNow": "ตรวจสอบทันที",
+    "updateStatus": {
+      "checking": "กำลังตรวจสอบการอัปเดต…",
+      "notAvailable": "คุณกำลังใช้เวอร์ชันล่าสุดแล้ว",
+      "error": "ไม่สามารถตรวจสอบการอัปเดตได้",
+      "notPackaged": "ไม่มีในเวอร์ชันนี้ (npm run dev/start)"
+    },
+    "logEnable": "เปิดบันทึก",
+    "logShowTimestamps": "แสดงเวลา",
+    "logToFile": "บันทึกข้อมูลลงในไฟล์",
+    "logToFileHint": "จะเพิ่มบันทึกเข้าไปในไฟล์บนดิสก์ (%APPDATA%\\FTPeach\\logs\\ftpeach.log) อย่างต่อเนื่องเมื่อเปิดใช้งาน ไม่ว่าแผงบันทึกจะเปิดอยู่หรือไม่ ซึ่งแตกต่างจากปุ่ม “บันทึก” ในแผง (ปุ่มนี้จะบันทึกเฉพาะ 200 บรรทัดล่าสุดหนึ่งครั้งเมื่อคลิก)",
+    "exportDiagnostics": "ส่งออกชุดข้อมูลวินิจฉัย",
+    "exportDiagnosticsBusy": "กำลังส่งออก…",
+    "exportDiagnosticsHint": "ส่งออกเวอร์ชัน ระบบปฏิบัติการ และบันทึกล่าสุด 200 รายการ รหัสผ่าน โทเค็น และข้อมูลลับอื่น ๆ จะถูกปกปิด",
+    "exportDiagnosticsFailed": "ไม่สามารถส่งออกชุดข้อมูลวินิจฉัยได้"
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "การตั้งค่าการส่งออก",
+    "confirmLabel": "ส่งออก…",
+    "includeSettings": "การตั้งค่าแอปพลิเคชัน",
+    "includeBookmarks": "บุ๊กมาร์ก",
+    "includeLocalPaths": "เส้นทางท้องถิ่น",
+    "passwordHint": "รหัสผ่านและวลีผ่านของกุญแจ SSH ไม่ถูกรวมอยู่ในการส่งออก — คุณจะต้องป้อนข้อมูลเหล่านี้ใหม่หลังจากนำเข้าข้อมูลไปยังเครื่องอื่น"
+  },
+  "importSettingsDialog": {
+    "title": "การตั้งค่าการนำเข้า",
+    "confirmLabel": "นำเข้า…",
+    "includeSettings": "การตั้งค่าแอปพลิเคชัน",
+    "includeBookmarks": "บุ๊กมาร์ก",
+    "includeLocalPaths": "เส้นทางท้องถิ่น",
+    "passwordHint": "รหัสผ่านและวลีผ่านของกุญแจ SSH ไม่ถูกรวมอยู่ในการนำเข้า — คุณจะต้องป้อนข้อมูลเหล่านี้ใหม่สำหรับแต่ละไซต์ที่นำเข้า"
+  },
+  "openWithDialog": {
+    "title": "เปิดในแอปพลิเคชัน",
+    "downloading": "กำลังดาวน์โหลด \"{{fileName}}\"…",
+    "progress": "{{loaded}} จากหนังสือ \"{{total}}\" ({{percent}} %)",
+    "connecting": "กำลังเชื่อมต่อ…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "ข้อผิดพลาดในการโอน",
+    "notifyCompleteTitle": "การโอนเสร็จสิ้นแล้ว",
+    "notifySucceeded": "สำเร็จแล้ว: {{count}}",
+    "notifyFailed": "ไม่สำเร็จ: {{count}}",
+    "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์"
+  },
+  "transferQueue": {
+    "title": "การโอน",
+    "columns": {
+      "file": "ไฟล์",
+      "size": "ขนาด",
+      "transferred": "โอนแล้ว",
+      "progress": "ความก้าวหน้า",
+      "speed": "ความเร็ว",
+      "remaining": "ที่เหลือ",
+      "status": "สถานะ"
+    },
+    "empty": "การอัปโหลดและดาวน์โหลดจะปรากฏที่นี่",
+    "newTransfers_one": "{{count}} การโอนใหม่",
+    "newTransfers_other": "{{count}} การโอนใหม่",
+    "status": {
+      "queued": "อยู่ในคิว",
+      "done": "เสร็จแล้ว",
+      "error": "ข้อผิดพลาด",
+      "paused": "หยุดชั่วคราว",
+      "stopped": "ถูกยกเลิก",
+      "cancelling": "กำลังยกเลิก…"
+    },
+    "direction": {
+      "up": "อัปโหลด",
+      "down": "ดาวน์โหลด",
+      "copy": "คัดลอก"
+    },
+    "directionTitleCopy": "คัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
+    "cancelledByUser": "ถูกยกเลิกโดยผู้ใช้",
+    "stoppedDash": "หยุดแล้ว",
+    "resume": "ดำเนินการต่อ",
+    "retry": "ลองอีกครั้ง",
+    "stop": "หยุด",
+    "pauseUnsupportedCopy": "ไม่สนับสนุนการหยุดชั่วคราวเมื่อคัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
+    "pauseUnsupportedWebdav": "WebDAV ไม่สนับสนุนฟังก์ชัน Pause"
+  },
+  "log": {
+    "connecting": "กำลังเชื่อมต่อกับ {{addr}}...",
+    "connectFailed": "การเชื่อมต่อไม่สำเร็จ: {{error}}",
+    "connected": "เข้าสู่ระบบแล้ว",
+    "receivedEntries_one": "ได้รับ {{count}} รายการ",
+    "receivedEntries_other": "ได้รับ {{count}} รายการ",
+    "skippedUnsafeEntry": "ข้ามรายการที่มีชื่อไม่ปลอดภัย: {{name}}",
+    "listFailed": "การลงรายการไม่สำเร็จ: {{error}}",
+    "tlsInit": "กำลังเริ่มต้น TLS...",
+    "tlsEstablished": "การเชื่อมต่อ TLS ได้ถูกสร้างขึ้นแล้ว",
+    "davResumeUnsupportedLocal": "WebDAV ไม่สนับสนุนการอัปโหลดต่อ — ไฟล์จะถูกส่งใหม่ตั้งแต่ต้น",
+    "davResumeUnsupportedServer": "เซิร์ฟเวอร์ไม่สนับสนุนการดาวน์โหลดต่อ (สถานะที่คาดไว้คือ {{expected}} แต่ได้รับ {{status}}) — ไฟล์จะถูกดาวน์โหลดใหม่"
+  },
+  "logPanel": {
+    "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",
+    "showOnlyThisConnection": "แสดงการเชื่อมต่อนี้เท่านั้น",
+    "connectionClosedShowOnly": "การเชื่อมต่อถูกปิด — แสดงเฉพาะการเชื่อมต่อนี้เท่านั้น",
+    "hideTimestamps": "ซ่อนเวลาในบรรทัดบันทึก",
+    "showTimestamps": "แสดงเวลาในบรรทัดบันทึก",
+    "copyToClipboard": "คัดลอกบันทึกไปยังคลิปบอร์ด",
+    "saveLastLines_one": "บันทึก {{count}} บรรทัดสุดท้ายลงในไฟล์ .txt",
+    "saveLastLines_other": "บันทึก {{count}} บรรทัดสุดท้ายลงในไฟล์ .txt",
+    "clearLog": "ล้างบันทึก",
+    "copiedTooltip": "คัดลอกแล้ว",
+    "copyFailedTooltip": "ไม่สามารถคัดลอกได้",
+    "saveFailedTooltip": "ไม่สามารถบันทึกไฟล์ได้",
+    "emptyFiltered": "ไม่มีการเชื่อมต่อสำหรับสายนี้",
+    "emptyDefault": "ข้อความตามโปรโตคอลจะปรากฏที่นี่"
+  },
+  "aboutDialog": {
+    "title": "เกี่ยวกับ",
+    "tagline": "โปรแกรมไคลเอนต์ FTP/FTPS/SFTP ที่มีน้ำหนักเบา",
+    "legalInformation": "ข้อมูลทางกฎหมาย",
+    "sourceCode": "ซอร์สโค้ด",
+    "reportIssue": "รายงานปัญหา",
+    "checkForUpdates": "ตรวจสอบการอัปเดต",
+    "updateDownloaded": "ได้ดาวน์โหลดการอัปเดตเวอร์ชัน{{version}}แล้ว — คุณสามารถติดตั้งได้ทันที"
+  },
+  "siteManager": {
+    "emptyList": "ยังไม่มีเว็บไซต์ที่บันทึกไว้",
+    "confirmDeleteSite": "จะลบเว็บไซต์ \"{{name}}\" หรือไม่?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "บุ๊กมาร์กใหม่",
+    "titleEdit": "แก้ไขบุ๊กมาร์ก",
+    "titleList": "จัดการบุ๊กมาร์ก",
+    "titleLocalPathList": "จัดการเส้นทางในเครื่อง",
+    "manageLocalPaths": "จัดการเส้นทางในเครื่อง…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "ชื่อ",
+      "icon": "ไอคอน",
+      "color": "สี",
+      "protocol": "โปรโตคอล",
+      "keyFile": "ไฟล์กุญแจ",
+      "caCertFile": "ใบรับรอง CA",
+      "remotePath": "โฟลเดอร์เริ่มต้น",
+      "localPath": "โฟลเดอร์ท้องถิ่น"
+    },
+    "icons": {
+      "bookmark": "บุ๊กมาร์ก",
+      "globe": "เว็บไซต์",
+      "briefcase": "งาน",
+      "house": "เซิร์ฟเวอร์ที่บ้าน",
+      "cloud": "คลาวด์",
+      "flask": "การทดสอบ / การจัดเตรียม",
+      "gamepad": "เซิร์ฟเวอร์เกม",
+      "clapperboard": "เซิร์ฟเวอร์สื่อ",
+      "camera": "กล้อง"
+    },
+    "colors": {
+      "default": "ไม่มีสี",
+      "peach": "พีช",
+      "red": "สีแดง",
+      "amber": "แอมเบอร์",
+      "green": "สีเขียว",
+      "blue": "สีฟ้า",
+      "purple": "สีม่วง",
+      "pink": "สีชมพู",
+      "teal": "สีเทล"
+    },
+    "saveFailed": "ไม่สามารถบันทึกได้",
+    "revealFailed": "ไม่สามารถแสดงข้อมูลลับที่บันทึกไว้ได้",
+    "savedSecretPlaceholder": "บันทึกแล้ว",
+    "savedSecretHint": "เว้นว่างไว้เพื่อเก็บรหัสผ่านปัจจุบันไว้",
+    "removeSavedPassword": "ลบรหัสผ่านที่บันทึกไว้",
+    "removeSavedPassphrase": "ลบวลีรหัสที่บันทึกไว้",
+    "secretWillBeRemoved": "จะถูกลบเมื่อบันทึก",
+    "addBookmark": "บุ๊กมาร์กใหม่",
+    "addLocalBookmark": "เพิ่มบุ๊กมาร์กโฟลเดอร์ท้องถิ่น",
+    "chooseLocalPath": "เลือกโฟลเดอร์ท้องถิ่น",
+    "importBookmarks": "นำเข้า",
+    "exportBookmarks": "ส่งออก",
+    "importAdded_one": "เพิ่ม {{count}} บุ๊กมาร์กแล้ว",
+    "importAdded_other": "เพิ่ม {{count}} บุ๊กมาร์กแล้ว",
+    "importSkipped_one": "ข้าม {{count}} รายการที่ซ้ำ",
+    "importSkipped_other": "ข้าม {{count}} รายการที่ซ้ำ",
+    "importNothingNew": "ไม่มีรายการใหม่ให้นำเข้า",
+    "exportSuccess": "ส่งออกแล้ว",
+    "sortMode": "การจัดเรียงบุ๊กมาร์ก",
+    "sortManual": "กำหนดเอง",
+    "sortName": "ตามชื่อ",
+    "sortProtocol": "ตามระเบียบ",
+    "duplicateWarning": "มีบุ๊กมาร์กสำหรับปลายทางเดียวกันอยู่แล้ว: \"{{name}}\". จะบันทึกอีกอันหนึ่งหรือไม่?",
+    "saveAnyway": "บันทึกไว้ก่อน",
+    "newFolder": "โฟลเดอร์ใหม่",
+    "folderNamePlaceholder": "ชื่อโฟลเดอร์",
+    "confirmDeleteFolder": "จะลบโฟลเดอร์ \"{{name}}\" หรือไม่? บุ๊กมาร์กในโฟลเดอร์นั้นจะถูกย้ายขึ้นหนึ่งระดับ",
+    "searchPlaceholder": "ค้นหา…",
+    "clearSearch": "ล้างผลการค้นหา",
+    "noSearchResults": "ไม่มีบุ๊กมาร์กที่ตรงกับคำค้นหาของคุณ",
+    "duplicate": "ซ้ำ",
+    "duplicateNameSuffix": " (คัดลอก)",
+    "newBookmarkInFolder": "เพิ่มบุ๊กมาร์กใหม่ที่นี่",
+    "expandFolder": "ขยาย \"{{name}}\"",
+    "collapseFolder": "ซ่อน \"{{name}}\""
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "ที่อยู่",
+      "port": "พอร์ต",
+      "user": "ชื่อผู้ใช้",
+      "password": "รหัสผ่าน",
+      "passphrase": "วลีรหัสผ่าน",
+      "keyFilePlaceholder": "ไฟล์สำคัญ…",
+      "chooseKeyFile": "เลือกไฟล์คีย์…",
+      "caCertFilePlaceholder": "ใบรับรอง CA…",
+      "chooseCaCertFile": "เลือกใบรับรอง CA…"
+    },
+    "secureToggle": {
+      "tooltip": "ยกเลิกการเลือกเพื่อยอมรับใบรับรองเซิร์ฟเวอร์ที่ลงนามเองและใบรับรองเซิร์ฟเวอร์ที่ไม่ถูกต้อง",
+      "label": "ตรวจสอบใบรับรอง"
+    },
+    "authToggle": {
+      "tooltip": "เข้าสู่ระบบด้วยไฟล์กุญแจ SSH ส่วนตัว แทนที่จะใช้รหัสผ่าน",
+      "label": "เข้าสู่ระบบด้วยกุญแจ SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "ยกเลิก",
+      "connect": "เชื่อมต่อ",
+      "disconnect": "ตัดการเชื่อมต่อ"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "FTP แบบธรรมดาจะส่งชื่อผู้ใช้ รหัสผ่าน และไฟล์ของคุณโดยไม่เข้ารหัส ดังนั้นควรใช้ FTPS หรือ SFTP เมื่อเป็นไปได้"
+  },
+  "titleBar": {
+    "minimize": "ลดขนาด",
+    "restore": "กู้คืน",
+    "maximize": "เพิ่มประสิทธิภาพให้สูงสุด"
+  },
+  "tray": {
+    "show": "แสดง FTPeach",
+    "quit": "ออกจากโปรแกรม"
+  },
+  "tabStrip": {
+    "localComputer": "คอมพิวเตอร์",
+    "untitledTab": "แท็บใหม่",
+    "newTabTooltip": "แท็บใหม่ (Ctrl+T)",
+    "rename": "ชื่อแท็บ"
+  },
+  "toolbarOverflowMenu": {
+    "more": "เพิ่มเติม"
+  },
+  "statusBar": {
+    "transfers": "การโอน: {{count}}",
+    "leftCount": "ด้านซ้าย: {{count}}",
+    "rightCount": "ด้านขวา: {{count}}",
+    "topCount": "ด้านบน: {{count}}",
+    "bottomCount": "ด้านล่าง: {{count}}",
+    "selectedSuffix": " (เลือก {{count}})",
+    "status": {
+      "transferring": "การโอนไฟล์",
+      "paused": "หยุดชั่วคราว",
+      "connected": "เชื่อมต่อ",
+      "connecting": "การเชื่อมต่อ",
+      "connectFailed": "ไม่สามารถเชื่อมต่อได้",
+      "disconnected": "ไม่เชื่อมต่อ"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "แสดง/ซ่อนส่วนซ้าย",
+    "toggleRightPane": "แสดง/ซ่อนส่วนขวา",
+    "toggleTransferQueue": "แสดง/ซ่อนคิวการโอน",
+    "toggleLog": "แสดง/ซ่อนบันทึก",
+    "orientationNarrow": "หน้าต่างถูกจัดเรียงซ้อนกัน — หน้าต่างแคบเกินไปที่จะแสดงภาพแบบข้างกัน",
+    "orientationToRow": "จัดวางหน้าต่างให้อยู่ข้างกัน",
+    "orientationToStacked": "จัดวางหน้าต่างซ้อนกัน",
+    "pauseUnsupportedWebdav": "WebDAV ไม่สนับสนุนฟังก์ชัน Pause",
+    "pauseActive": "หยุดการโอนที่กำลังดำเนินการไว้ชั่วคราว",
+    "resumeAllPaused": "ดำเนินการต่อทุกการโอนที่ถูกหยุดชั่วคราว",
+    "stopActive": "หยุดการโอนที่กำลังดำเนินการ",
+    "retryAllStopped": "ลองโอนใหม่ทั้งหมดที่ถูกหยุด",
+    "refreshPanesTooltip": "รีเฟรชทั้งสองหน้าต่าง (F5)"
+  },
+  "paneToolbar": {
+    "back": "กลับ",
+    "forward": "ส่งต่อ",
+    "up": "ขึ้น",
+    "chooseFolder": "เลือกโฟลเดอร์…",
+    "newFolder": "โฟลเดอร์ใหม่…",
+    "newFile": "ไฟล์ใหม่…"
+  },
+  "paneSourceSwitcher": {
+    "local": "คอมพิวเตอร์",
+    "remote": "เซิร์ฟเวอร์",
+    "updatedAtTooltip": "อัปเดต: {{date}}",
+    "connectToServer": "เซิร์ฟเวอร์"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "ไม่มีการเชื่อมต่อล่าสุด",
+    "noSavedConnectionsBody": "กรอกที่อยู่เซิร์ฟเวอร์ด้านบน หรือเพิ่มเว็บไซต์เพื่อเข้าถึงด้วยคลิกเดียว",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "จัดการบุ๊กมาร์ก",
+    "quicklistLabel": "การเชื่อมต่อล่าสุด"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "ข้อผิดพลาดของอินเทอร์เฟซ FTPeach ที่ไม่ได้รับการจัดการ:",
+    "title": "เกิดข้อผิดพลาด",
+    "message": "เกิดข้อผิดพลาดของอินเทอร์เฟซที่ไม่คาดคิด การเชื่อมต่อที่กำลังใช้งานอยู่และไฟล์บนดิสก์ไม่ได้รับผลกระทบ — คุณสามารถลองโหลดอินเทอร์เฟซใหม่ได้",
+    "reload": "รีโหลดอินเทอร์เฟซ"
+  }
+}

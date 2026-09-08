@@ -1,0 +1,758 @@
+{
+  "common": {
+    "units": {
+      "byte": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB",
+      "tb": "TB"
+    },
+    "perSecond": "{{value}} /s",
+    "noLoginUser": "nessun accesso",
+    "anonymousUser": "anonimo",
+    "rootFolder": "Cartella principale",
+    "close": "Chiudi",
+    "reset": "Reimposta",
+    "open": "Apri",
+    "upload": "Carica",
+    "save": "Salva",
+    "create": "Crea",
+    "cancel": "Annulla",
+    "increase": "Aumentare",
+    "decrease": "Diminuisci",
+    "showPassword": "Mostra password",
+    "savedSecretProtected": "Il segreto salvato è protetto e non può essere visualizzato",
+    "hidePassword": "Nascondi password"
+  },
+  "securityConfirmation": {
+    "title": "Conferma di sicurezza FTPeach",
+    "allow": "Consenti",
+    "typeToConfirm": "Digita {{phrase}} per confermare",
+    "operations": {
+      "revealSiteSecret": {
+        "message": "Mostrare la password salvata per questo segnalibro?"
+      },
+      "revealProxyPassword": {
+        "message": "Mostrare la password proxy salvata?"
+      },
+      "vaultReset": {
+        "message": "Tutte le password salvate e le passphrase delle chiavi SSH verranno eliminate definitivamente.",
+        "approve": "Elimina cassaforte"
+      },
+      "executeLocalFile": {
+        "message": "Eseguire questo file eseguibile o script?"
+      },
+      "executeRemoteFile": {
+        "message": "Scaricare ed eseguire questo file eseguibile o script?"
+      }
+    }
+  },
+  "paneMenu": {
+    "newFolder": "Nuova cartella…",
+    "newFile": "Nuovo file…",
+    "refresh": "Aggiorna",
+    "open": "Apri",
+    "uploadToOtherPane": "Carica nell’altro riquadro",
+    "copyToOtherPane": "Copia nell’altro riquadro",
+    "downloadToOtherPane": "Scarica nell'altro riquadro",
+    "openWith": "Apri con…",
+    "permissions": "Autorizzazioni…",
+    "moveTo": "Vai a…",
+    "copyPath": "Copia percorso",
+    "delete": "Elimina",
+    "deleteSelected_one": "Elimina (file {{count}})",
+    "deleteSelected_other": "Elimina (file {{count}})",
+    "deletePermanently": "Elimina definitivamente",
+    "deleteSelectedPermanently_one": "Elimina definitivamente (file {{count}})",
+    "deleteSelectedPermanently_other": "Elimina definitivamente (file {{count}})"
+  },
+  "chmodDialog": {
+    "title": "Autorizzazioni SFTP",
+    "label": "Modalità ottale per \"{{name}}\" (ad esempio, 644 o 0755)"
+  },
+  "filePane": {
+    "emptyFolder": "La cartella è vuota",
+    "homeFolder": "Cartella Home",
+    "copyToPaneBelow": "Copia nel riquadro sottostante",
+    "copyToPaneAbove": "Copia nel riquadro sopra",
+    "copyToPaneRight": "Copia nel riquadro a destra",
+    "copyToPaneLeft": "Copia nel riquadro a sinistra",
+    "fileTypeFolder": "Cartella di file",
+    "fileTypeGeneric": "File",
+    "fileTypeWithExt": "{{ext}} File",
+    "columnSize": "Dimensioni",
+    "columnModifiedAt": "Data di modifica",
+    "columnCreatedAt": "Data di creazione",
+    "columnType": "Tipo",
+    "columnPermissions": "Autorizzazioni",
+    "columnOwner": "Proprietario",
+    "columnGroup": "Gruppo",
+    "columnName": "Nome",
+    "filesAriaLabel": "File",
+    "rename": "Rinomina",
+    "resetColumnWidths": "Ripristina le larghezze delle colonne",
+    "updatedAtTooltip": "Aggiornato: {{date}}",
+    "searchTooltip": "Cerca ({{shortcut}})",
+    "searchPlaceholder": "Cerca… ({{shortcut}})",
+    "editPathAriaLabel": "Modifica percorso",
+    "changeDriveTooltip": "Cambia unità",
+    "chooseColumnsTooltip": "Fai clic con il tasto destro del mouse per selezionare le colonne",
+    "sortByNameTooltip": "Ordina per nome",
+    "sortByColumnTooltip": "Ordina in base alla colonna “{{column}}”",
+    "rowProbeSample": "Esempio",
+    "loading": "Caricamento in corso…",
+    "nothingFound": "Nessun risultato trovato"
+  },
+  "update": {
+    "readyToInstall": "È disponibile l'aggiornamento v{{version}}: fare clic su \"Riavvia e installa\" per applicarlo.",
+    "downloadingWithPercent": "Scaricamento dell'aggiornamento v{{version}}o: {{percent}} %",
+    "downloadingFound": "Aggiornamento alla versione {{version}} trovato, in fase di download…",
+    "restartAndInstall": "Riavvia e installa",
+    "availableAction": "disponibile!",
+    "installAction": "installare?",
+    "downloadTooltip": "Fai clic per scaricare",
+    "downloadingTooltip": "Download in corso",
+    "installTooltip": "Fai clic per riavviare e installare"
+  },
+  "legacyPasswordNotice": {
+    "message": "Dopo l'aggiornamento, non è stato possibile leggere le password di alcuni siti salvati: ti preghiamo di inserirle nuovamente nel gestore dei siti."
+  },
+  "plaintextSecretNotice": {
+    "message": "Non è stato possibile crittografare la password o la passphrase di un sito salvato poiché la protezione dei dati di Windows non è disponibile; pertanto, è stata memorizzata in chiaro."
+  },
+  "secretNotPersistedNotice": {
+    "message": "Non è stato possibile crittografare la password o la passphrase, che non è stata salvata. Una connessione già in corso può proseguire fino alla sua interruzione; in caso contrario, sarà necessario inserire nuovamente la password la prossima volta."
+  },
+  "resize": {
+    "paneSize": "Trascina per ridimensionare i riquadri (fai doppio clic per ripristinare le impostazioni predefinite)",
+    "height": "Trascina per modificare l'altezza (fai doppio clic per ripristinare le impostazioni predefinite)",
+    "ratio": "Trascina per ridimensionare il rapporto (fai doppio clic per ripristinare le impostazioni predefinite)"
+  },
+  "dragMove": {
+    "itemCount_one": "{{count}} articolo",
+    "itemCount_other": "{{count}} articoli",
+    "moveMode": "spostare"
+  },
+  "openWithChanged": {
+    "title": "File modificato",
+    "message": "\"{{name}}\" è stato modificato nell'applicazione esterna. Caricare il file aggiornato sul server?"
+  },
+  "saveSite": {
+    "title": "Salva profilo di connessione",
+    "label": "Nome profilo di connessione:"
+  },
+  "saveLocalPath": {
+    "title": "Save Local Path",
+    "label": "Name",
+    "tooltip": "Save current path"
+  },
+  "newFolder": {
+    "title": "Nuova cartella",
+    "labelLocal": "Nome della nuova cartella:",
+    "labelRemote": "Nome della nuova cartella sul server:"
+  },
+  "newFile": {
+    "title": "Nuovo file",
+    "label": "Nome del file (con estensione):"
+  },
+  "moveToDialog": {
+    "title": "Vai a…",
+    "labelSingle": "Sposta \"{{name}}\" nella cartella:",
+    "labelMultiple": "Sposta gli elementi selezionati ({{count}}) nella cartella:"
+  },
+  "confirm": {
+    "allowReplacementRace": "Consentire la sostituzione di «{{name}}» se il file compare durante il trasferimento?",
+    "resetLayout": "Reimpostare le dimensioni delle finestre e dei riquadri, ripristinare le colonne predefinite e svuotare la cache dell'interfaccia?",
+    "hostKeyMismatch": "{{error}} Eliminare l'impronta digitale della chiave salvata per {{host}}: {{port}} e connettersi comunque? Eseguire questa operazione solo se si è certi che il server sia stato reinstallato o migrato in modo legittimo; in caso contrario, ciò potrebbe consentire la connessione a un server potenzialmente contraffatto.",
+    "connectAnyway": "Connettiti comunque",
+    "closeTabWithActiveTransfers": "Questa scheda contiene trasferimenti in corso. Chiudere la scheda e interromperli?",
+    "closeTabLabel": "Chiudi scheda",
+    "overwriteSingleExists": "\"{{name}}\" esiste già nella cartella di destinazione. Vuoi sovrascriverlo?",
+    "overwriteConflicts_one": "Esiste già {{count}} elemento nella cartella di destinazione. Vuoi sovrascriverlo?",
+    "overwriteConflicts_other": "Esistono già {{count}} elementi nella cartella di destinazione. Vuoi sovrascriverli?",
+    "overwriteLabel": "Sovrascrivi",
+    "replaceConnection": "Questo riquadro è già collegato a \"{{current}}\". Sostituire il collegamento con \"{{next}}\"?",
+    "replaceConnectionLabel": "Sostituisci",
+    "deleteSelected": "Elimina gli elementi selezionati ({{count}})? Questa operazione non può essere annullata.",
+    "deleteEntry": "Eliminare “{{name}}”? Questa azione non può essere annullata.",
+    "recycleSelected": "Vuoi spostare gli elementi selezionati ({{count}}) nel Cestino?",
+    "recycleEntry": "Spostare “{{name}}” nel Cestino?",
+    "deletePermanentSelected": "Elimina definitivamente gli elementi selezionati ({{count}})? Questa operazione non può essere annullata.",
+    "deletePermanentEntry": "Elimina definitivamente “{{name}}”? Questa operazione non può essere annullata.",
+    "deleteRemoteSelected": "Elimina definitivamente gli elementi remoti selezionati ({{count}})? Questa azione non può essere annullata.",
+    "deleteRemoteEntry": "Elimina definitivamente l'elemento remoto \"{{name}}\"? Questa azione non può essere annullata."
+  },
+  "paneSide": {
+    "top": "in alto",
+    "bottom": "in fondo",
+    "left": "sinistra",
+    "right": "destra",
+    "labelWithTab": "{{base}} (scheda {{tabNumber}}, {{side}})",
+    "labelWithSide": "{{base}} ({{side}})"
+  },
+  "menu": {
+    "file": {
+      "title": "File",
+      "newTab": "Nuova scheda",
+      "closeTab": "Chiudi scheda",
+      "newConnection": "Nuova connessione",
+      "disconnect": "Disconnetti",
+      "manageBookmarks": "Gestisci i segnalibri…",
+      "saveConnection": "Salva connessione",
+      "saveConnectionSide": "Salva connessione ({{side}})",
+      "saveBookmarkSide": "Salva segnalibro ({{side}})",
+      "savePathSide": "Salva percorso ({{side}})",
+      "exportSettings": "Impostazioni di esportazione…",
+      "importSettings": "Importa impostazioni…",
+      "quit": "Esci"
+    },
+    "edit": {
+      "title": "Modifica",
+      "settings": "Impostazioni…",
+      "resetLayout": "Ripristina layout e cache…"
+    },
+    "view": {
+      "title": "Visualizza",
+      "darkTheme": "Tema scuro",
+      "lightTheme": "Tema chiaro",
+      "systemTheme": "Tema di sistema",
+      "syncBrowsing": "Navigazione nella cartella di sincronizzazione",
+      "showHiddenFiles": "Mostra file e cartelle nascosti",
+      "leftPane": "Riquadro sinistro",
+      "rightPane": "Riquadro destro",
+      "transferQueue": "Coda di trasferimento",
+      "log": "Registro",
+      "stackedPanes": "Vetri sovrapposti",
+      "refreshBothPanes": "Aggiorna entrambi i riquadri"
+    },
+    "transfer": {
+      "title": "Trasferimento",
+      "copySelectedRight": "Copia selezione →",
+      "copySelectedLeft": "← Copia selezione",
+      "clearCompleted": "Cancella Completato"
+    },
+    "bookmarks": {
+      "title": "Segnalibri"
+    },
+    "help": {
+      "supportProject": "Sostieni il progetto",
+      "title": "Aiuto",
+      "documentation": "Documentazione",
+      "reportIssue": "Segnala un problema",
+      "checkUpdates": "Verifica la disponibilità di aggiornamenti",
+      "about": "Informazioni su"
+    }
+  },
+  "errors": {
+    "connectionRefused": "Il server ha rifiutato la connessione. Controlla l'indirizzo e la porta.",
+    "serverNotFound": "Server non trovato. Verifica che l'indirizzo sia corretto.",
+    "timeout": "Il server non risponde (timeout della connessione). Verificare l'indirizzo, la porta e la connessione di rete.",
+    "connectionReset": "La connessione al server è stata interrotta in modo imprevisto.",
+    "networkUnreachable": "Il server non è raggiungibile: controlla la connessione di rete.",
+    "loginIncorrect": "Nome utente o password errati.",
+    "invalidCertificate": "Il server ha presentato un certificato non valido. Se ti fidi di questo server, disattiva la verifica del certificato nelle impostazioni di connessione.",
+    "tlsNegotiationFailed": "La negoziazione TLS non è andata a buon fine. Verificare che il server supporti FTPS o HTTPS esplicito e una versione TLS compatibile.",
+    "sshNegotiationFailed": "Negoziazione SSH non riuscita. Il server e FTPeach non sono riusciti a trovare un accordo su un algoritmo SSH o una versione del protocollo compatibili.",
+    "proxyFailed": "La connessione al proxy non è riuscita. Verificare il tipo di proxy, l'indirizzo, le credenziali e se è possibile raggiungere il server di destinazione.",
+    "keyReadFailed": "Impossibile leggere la chiave: il file è danneggiato oppure la passphrase non è corretta.",
+    "accessDenied": "Non disponi dei permessi necessari per eseguire questa operazione.",
+    "notFound": "File o cartella non trovati.",
+    "fileOrFolderExists": "Esiste già un file o una cartella con quel nome.",
+    "fileBusy": "Il file è in uso da parte di un altro processo.",
+    "diskFull": "Spazio su disco insufficiente.",
+    "hostKeyMismatch": "La chiave host del server è cambiata.",
+    "integrityMismatch": "Il file trasferito non ha superato il controllo di integrità.",
+    "invalidInput": "Il valore fornito non è valido.",
+    "internal": "Si è verificato un errore imprevisto.",
+    "connectFailedPrefix": "Impossibile connettersi al server. {{raw}}",
+    "alreadyExists": "\"{{name}}\" esiste già"
+  },
+  "settings": {
+    "openWithAssociations": {
+      "title": "Associazioni",
+      "hint": "Scegli un'applicazione per l'estensione. Per i file senza una regola, viene utilizzata l'impostazione predefinita del sistema.",
+      "extension": "Estensione",
+      "extensionPlaceholder": "txt",
+      "application": "Applicazione",
+      "applicationPlaceholder": "Percorso dell'applicazione",
+      "browse": "Scegli l'applicazione",
+      "remove": "Rimuovi associazione",
+      "add": "Aggiungi associazione"
+    },
+    "minimizeToTray": "Riduci a icona nell'area di notifica",
+    "minimizeToTrayHint": "Il pulsante di riduzione a icona nasconde la finestra nell'area di notifica invece che nella barra delle applicazioni.",
+    "closeToTray": "Chiudi nell'area di notifica",
+    "closeToTrayHint": "Il pulsante di chiusura nasconde la finestra nell'area di notifica invece di chiudere l'applicazione. Per chiuderla, utilizzare il menu dell'icona nell'area di notifica.",
+    "title": "Impostazioni",
+    "unsavedChangesTitle": "Modifiche non salvate",
+    "unsavedChangesMessage": "Salvare le modifiche alle impostazioni?",
+    "discardChanges": "Non salvare",
+    "categories": {
+      "connection": "Connessione",
+      "transfers": "Trasferimenti",
+      "interface": "Interfaccia",
+      "shortcuts": "Scorciatoie",
+      "updates": "Aggiornamenti",
+      "logging": "Registrazione",
+      "security": "Sicurezza"
+    },
+    "shortcuts": {
+      "title": "Scorciatoie da tastiera",
+      "hint": "Fai clic su un collegamento, quindi premi una nuova combinazione di tasti per riassegnarlo.",
+      "globalTitle": "A livello globale",
+      "paneTitle": "Riquadro dei file",
+      "recording": "Premi un tasto…",
+      "unbound": "Non assegnato",
+      "reset": "Ripristina impostazioni predefinite",
+      "resetAll": "Ripristina tutte le impostazioni predefinite",
+      "unassign": "Annulla assegnazione",
+      "conflict": "Utilizzato anche da: {{action}}",
+      "actions": {
+        "search": "Cerca ({{side}})",
+        "toggleHiddenFiles": "Mostra/nascondi i file nascosti",
+        "newConnection": "Nuova connessione",
+        "save": "Salva ({{side}})",
+        "openSettings": "Apri le impostazioni",
+        "newTab": "Nuova scheda",
+        "closeTab": "Chiudi scheda",
+        "nextTab": "Scheda successiva",
+        "prevTab": "Scheda precedente",
+        "refresh": "Aggiorna",
+        "selectAll": "Seleziona tutto",
+        "delete": "Elimina",
+        "deletePermanent": "Elimina definitivamente",
+        "navigateUp": "Sali di una cartella",
+        "navigateBack": "Torna indietro",
+        "navigateForward": "Vai avanti",
+        "navigateHome": "Vai alla cartella home",
+        "moveTo": "Sposta in…",
+        "newFolder": "Nuova cartella…",
+        "newFile": "Nuovo file…",
+        "copyToOtherPane": "Copia nell'altro riquadro",
+        "copy": "Copia",
+        "cut": "Taglia",
+        "paste": "Incolla",
+        "clearSelection": "Deseleziona",
+        "open": "Apri"
+      }
+    },
+    "security": {
+      "title": "Protezione con password",
+      "systemMode": "Protezione del sistema",
+      "systemModeHint": "Le password relative al tuo account Windows sono crittografate e possono essere visualizzate nelle impostazioni di connessione.",
+      "strongholdMode": "Protezione potenziata",
+      "strongholdModeHint": "Richiede una password principale. Le password salvate possono essere utilizzate per effettuare connessioni, ma non possono essere visualizzate.",
+      "loading": "Verifica della memoria protetta…",
+      "configuredLocked": "L'archivio protetto è protetto da una password principale e bloccato.",
+      "configuredUnlocked": "L'area di archiviazione protetta è protetta da una password principale e sbloccata.",
+      "masterPassword": "Password principale",
+      "confirmPassword": "Conferma la password principale",
+      "oldPassword": "Password principale attuale",
+      "newPassword": "Nuova password principale",
+      "setup": "Proteggi le password salvate",
+      "settingUp": "Protezione in corso…",
+      "unlock": "Sblocca",
+      "unlocking": "Sblocco in corso…",
+      "unlockRequired": "Sblocca lo spazio di archiviazione protetto",
+      "unlockRequiredHint": "Questa connessione utilizza una chiave segreta salvata. Sblocca l'archivio protetto per continuare.",
+      "lockNow": "Blocca ora",
+      "autoLock": "Blocco automatico dopo, min",
+      "autoLockDisabled": "Disattivato",
+      "autoLockHint": "Blocca l'area di archiviazione dopo un periodo di inattività. Le connessioni al server già in corso rimangono attive; il valore 0 disattiva il blocco automatico.",
+      "changePassword": "Modifica della password principale",
+      "change": "Cambia password",
+      "systemUnlock": "Consenti lo sblocco del sistema",
+      "systemUnlockHint": "Utilizza Windows Hello (PIN, riconoscimento facciale o impronta digitale, a seconda delle impostazioni di Windows). La password principale rimane il metodo di ripristino.",
+      "unlockWithSystem": "Sblocca tramite autenticazione di sistema",
+      "systemUnavailable": "Su questa piattaforma non è possibile sbloccare il sistema.",
+      "noRecovery": "Una password principale dimenticata non può essere recuperata. Il ripristino del vault comporta la cancellazione di tutti i dati riservati salvati.",
+      "passwordMismatch": "Le password non corrispondono.",
+      "passwordTooShort": "Utilizza almeno 12 caratteri per la password principale.",
+      "strength": {
+        "tooShort": "Troppo breve: usa almeno 12 caratteri.",
+        "acceptable": "Va bene. Una passphrase più lunga è più sicura.",
+        "strong": "Una password principale sicura."
+      },
+      "reset": "Reimposta l'archiviazione protetta",
+      "resetHint": "Elimina l'archivio protetto e tutte le password e le passphrase delle chiavi SSH in esso contenute. Sarà necessario configurare nuovamente la protezione avanzata.",
+      "resetWarning": "Questa operazione cancella definitivamente tutte le password e le passphrase salvate. Inserisci la password principale attuale per continuare.",
+      "confirmReset": "Elimina i segreti salvati",
+      "showConfirmations": "Mostra conferme di sicurezza",
+      "showConfirmationsHint": "Chiedi conferma prima di mostrare segreti salvati o eseguire file. Il ripristino dell’archivio protetto richiede sempre conferma.",
+      "unavailable": "Lo spazio di archiviazione protetto non è disponibile.",
+      "failed": "L'operazione di archiviazione protetta non è andata a buon fine."
+    },
+    "unlimitedPlaceholder": "Senza limiti",
+    "connectTimeoutLabel": "Timeout della connessione, sec",
+    "connectTimeoutHint": "Quanto tempo attendere la risposta del server durante la connessione prima di considerarlo irraggiungibile (0 o vuoto — nessun limite). Si applica alla connessione successiva.",
+    "ftpActiveMode": "Modalità FTP attiva (anziché passiva)",
+    "ftpActiveModeHint": "Solo FTP/FTPS — non ha alcun effetto su SFTP/WebDAV. Raramente necessario, solo su reti/server in cui la modalità passiva non supera il NAT. Si applica alla connessione successiva.",
+    "ftpActiveModeDisabledByProxy": "Non disponibile quando è attivo un proxy: un tunnel proxy supporta solo le connessioni in uscita, quindi FTP deve rimanere in modalità passiva.",
+    "proxy": {
+      "enable": "Utilizza un proxy per le connessioni",
+      "enableHint": "SOCKS4, SOCKS5 o HTTP CONNECT — vale per FTP, FTPS, SFTP e WebDAV. Si applica alla connessione successiva.",
+      "typeLabel": "Tipo di proxy",
+      "hostLabel": "Host proxy",
+      "hostPlaceholder": "proxy.example.com",
+      "portLabel": "Porta",
+      "usernameLabel": "Nome utente",
+      "passwordLabel": "Password",
+      "removeSavedPassword": "Rimuovi la password salvata",
+      "revealFailed": "Impossibile decriptare la password salvata.",
+      "testTargetLabel": "Verifica rispetto a",
+      "testTargetHostPlaceholder": "Host del server",
+      "testTargetPortPlaceholder": "Porta",
+      "test": "Proxy di prova",
+      "testing": "Test in corso…",
+      "testOk": "Il proxy ha raggiunto correttamente la destinazione.",
+      "testFailed": "Il test di delega non è andato a buon fine."
+    },
+    "concurrencyLabel": "Trasferimenti simultanei",
+    "concurrencyHint": "Numero di file da caricare e scaricare contemporaneamente (0 o campo vuoto — nessun limite). Si applica alla prossima connessione.",
+    "speedLimitLabel": "Limite di velocità, KB/s",
+    "speedLimitHint": "Si applica al totale complessivo di tutti i trasferimenti simultanei (0 o spazio vuoto: nessun limite). Ha effetto immediato, senza attendere la connessione successiva.",
+    "notifyOnComplete": "Avvisa al termine dei trasferimenti",
+    "notifyOnCompleteHint": "Una notifica di sistema quando la coda di trasferimento si svuota — solo quando la finestra non è attiva.",
+    "overwriteActionLabel": "Sul conflitto di nomi",
+    "overwriteAsk": "Chiedi",
+    "overwriteOverwrite": "Sovrascrivi",
+    "overwriteSkip": "Salta",
+    "overwriteHint": "Cosa fare quando il file che si sta copiando esiste già nella cartella di destinazione.",
+    "preventSleep": "Impedire che il sistema entri in modalità di sospensione durante i trasferimenti",
+    "preventSleepHint": "Ha effetto immediato, senza attendere la connessione successiva. Rimane attivo finché è in corso almeno un trasferimento; in caso contrario, non blocca la modalità di sospensione.",
+    "themeLabel": "Tema",
+    "themeDark": "Scuro",
+    "themeLight": "Chiaro",
+    "themeSystem": "Sistema",
+    "languageLabel": "Lingua dell'interfaccia",
+    "interfaceScaleLabel": "Scala dell'interfaccia",
+    "interfaceScaleHint": "Modifica le dimensioni del testo e dei comandi in tutta l'applicazione.",
+    "dateFormatLabel": "Formato data/ora",
+    "dateFormatOnlyLabel": "Formato data",
+    "timeFormatLabel": "Formato ora",
+    "timeFormat24Hour": "24 h",
+    "timeFormat12Hour": "12 h",
+    "dateFormatLocale": "Locale",
+    "dateFormatIso": "ISO 8601",
+    "defaultLocalPathLabel": "Cartella predefinita per Computer",
+    "defaultLocalPathHint": "La cartella che il pannello Computer apre all'avvio e quando si passa da un server. Lascia vuoto per usare la cartella home del sistema.",
+    "chooseDefaultLocalPath": "Scegli la cartella predefinita",
+    "showHiddenFiles": "Mostra file e cartelle nascosti",
+    "showHiddenFilesHint": "Si applica sia ai riquadri dei file locali che a quelli remoti.",
+    "coloredTabs": "Schede colorate",
+    "coloredTabsHint": "Colora il nome e l'icona della scheda utilizzando il colore del segnalibro salvato.",
+    "autoCheckUpdates": "Verifica la presenza di aggiornamenti all'avvio",
+    "autoCheckUpdatesHint": "Una verifica silenziosa pochi secondi dopo l'avvio — l'installazione di un aggiornamento richiede sempre una conferma separata.",
+    "autoReconnectTabs": "Riconnettere le schede ripristinate all'avvio",
+    "autoReconnectTabsHint": "Disattivata per impostazione predefinita. Se abilitata, i siti salvati e ripristinati vengono collegati automaticamente.",
+    "saveSessionOnExit": "Salva la sessione all'uscita",
+    "saveSessionOnExitHint": "Ripristina le schede aperte, i tipi di riquadro e i percorsi al prossimo avvio. Disattivando questa opzione, la sessione salvata viene cancellata.",
+    "checkNow": "Verifica ora",
+    "updateStatus": {
+      "checking": "Verifica della disponibilità di aggiornamenti…",
+      "notAvailable": "Stai utilizzando l'ultima versione.",
+      "error": "Non è stato possibile verificare la disponibilità di aggiornamenti.",
+      "notPackaged": "Non disponibile in questa build (npm run dev/start)."
+    },
+    "logEnable": "Abilita il registro",
+    "logShowTimestamps": "Mostra i timestamp",
+    "logToFile": "Scrivere il log su file",
+    "logToFileHint": "Se abilitata, aggiunge continuamente le voci del log a un file su disco (%APPDATA%\\FTPeach\\logs\\ftpeach.log), indipendentemente dal fatto che il pannello del log sia aperto o meno. Questa funzione è diversa dal pulsante \"Salva\" presente nel pannello stesso (quest'ultimo salva solo le ultime 200 righe una volta, al momento del clic).",
+    "exportDiagnostics": "Esporta pacchetto diagnostico",
+    "exportDiagnosticsBusy": "Esportazione…",
+    "exportDiagnosticsHint": "Esporta la versione, il sistema operativo e le ultime 200 voci del registro. Password, token e altri dati segreti vengono oscurati.",
+    "exportDiagnosticsFailed": "Impossibile esportare il pacchetto diagnostico."
+  },
+  "promptDialog": {
+    "confirmLabel": "OK"
+  },
+  "exportSettingsDialog": {
+    "title": "Impostazioni di esportazione",
+    "confirmLabel": "Esporta…",
+    "includeSettings": "Impostazioni dell'applicazione",
+    "includeBookmarks": "Segnalibri",
+    "includeLocalPaths": "Percorsi locali",
+    "passwordHint": "Le password e le passphrase delle chiavi SSH non sono incluse nell'esportazione: dovrai reinserirle dopo l'importazione su un altro computer."
+  },
+  "importSettingsDialog": {
+    "title": "Impostazioni di importazione",
+    "confirmLabel": "Importa…",
+    "includeSettings": "Impostazioni dell'applicazione",
+    "includeBookmarks": "Segnalibri",
+    "includeLocalPaths": "Percorsi locali",
+    "passwordHint": "Le password e le passphrase delle chiavi SSH non sono incluse nell'importazione: dovrai reinserirle per ogni sito importato."
+  },
+  "openWithDialog": {
+    "title": "Apri nell'applicazione",
+    "downloading": "Scaricamento di “{{fileName}}”…",
+    "progress": "{{loaded}} di {{total}} ({{percent}} %)",
+    "connecting": "Connessione in corso…"
+  },
+  "transfers": {
+    "notifyErrorTitle": "Errore di trasferimento",
+    "notifyCompleteTitle": "Trasferimento completato",
+    "notifySucceeded": "ha avuto successo: {{count}}",
+    "notifyFailed": "Errore: {{count}}",
+    "webdavUploadTooLarge": "I caricamenti tramite WebDAV sono limitati a {{limit}} MiB per file."
+  },
+  "transferQueue": {
+    "title": "Trasferimenti",
+    "columns": {
+      "file": "File",
+      "size": "Dimensioni",
+      "transferred": "Trasferito",
+      "progress": "Progressi",
+      "speed": "Velocità",
+      "remaining": "Rimanenti",
+      "status": "Stato"
+    },
+    "empty": "Qui verranno visualizzati i file caricati e scaricati",
+    "newTransfers_one": "{{count}} nuovo trasferimento",
+    "newTransfers_other": "{{count}} nuovi trasferimenti",
+    "status": {
+      "queued": "In coda",
+      "done": "Fatto",
+      "error": "Errore",
+      "paused": "In pausa",
+      "stopped": "Annullato",
+      "cancelling": "Annullamento…"
+    },
+    "direction": {
+      "up": "Caricamento",
+      "down": "Scaricamento",
+      "copy": "Copia"
+    },
+    "directionTitleCopy": "Copia tra server",
+    "cancelledByUser": "Annullato dall'utente",
+    "stoppedDash": "fermato",
+    "resume": "Riprendi",
+    "retry": "Riprova",
+    "stop": "Basta",
+    "pauseUnsupportedCopy": "La funzione di pausa non è supportata durante la copia tra server",
+    "pauseUnsupportedWebdav": "La funzione \"Pausa\" non è supportata da WebDAV"
+  },
+  "log": {
+    "connecting": "Connessione a {{addr}}...",
+    "connectFailed": "Connessione non riuscita: {{error}}",
+    "connected": "Hai effettuato l'accesso.",
+    "receivedEntries_one": "Ricevuta {{count}} voce",
+    "receivedEntries_other": "Ricevute {{count}} voci",
+    "skippedUnsafeEntry": "È stata saltata una voce dell’elenco con un nome non sicuro: {{name}}",
+    "listFailed": "Errore durante la pubblicazione: {{error}}",
+    "tlsInit": "Inizializzazione di TLS...",
+    "tlsEstablished": "Connessione TLS stabilita.",
+    "davResumeUnsupportedLocal": "WebDAV non supporta la ripresa del caricamento: il file verrà inviato nuovamente dall'inizio.",
+    "davResumeUnsupportedServer": "Il server non supporta la ripresa del download (stato previsto: {{expected}}, stato ricevuto: {{status}}) — il file verrà scaricato nuovamente."
+  },
+  "logPanel": {
+    "showAllConnections": "Mostra tutte le connessioni",
+    "showOnlyThisConnection": "Mostra solo questa connessione",
+    "connectionClosedShowOnly": "Connessione chiusa — mostra solo questa connessione",
+    "hideTimestamps": "Nascondi i timestamp nelle righe del log",
+    "showTimestamps": "Mostra i timestamp nelle righe del log",
+    "copyToClipboard": "Copia il log negli appunti",
+    "saveLastLines_one": "Salva l'ultima {{count}} riga in un file .txt",
+    "saveLastLines_other": "Salva le ultime {{count}} righe in un file .txt",
+    "clearLog": "Cancella il registro",
+    "copiedTooltip": "Copiato",
+    "copyFailedTooltip": "Impossibile copiare",
+    "saveFailedTooltip": "Impossibile salvare il file",
+    "emptyFiltered": "Nessuna linea per questa connessione",
+    "emptyDefault": "Qui verranno visualizzati i messaggi di protocollo"
+  },
+  "aboutDialog": {
+    "title": "Informazioni su",
+    "tagline": "Un client FTP/FTPS/SFTP leggero.",
+    "legalInformation": "Informazioni legali",
+    "sourceCode": "Codice sorgente",
+    "reportIssue": "Segnala un problema",
+    "checkForUpdates": "Verifica la presenza di aggiornamenti",
+    "updateDownloaded": "L'aggiornamento v{{version}} è stato scaricato: ora puoi installarlo."
+  },
+  "siteManager": {
+    "emptyList": "Non ci sono ancora siti salvati",
+    "confirmDeleteSite": "Eliminare il sito \"{{name}}\"?"
+  },
+  "siteManagerDialog": {
+    "titleNew": "Nuovo segnalibro",
+    "titleEdit": "Modifica segnalibro",
+    "titleList": "Gestisci i segnalibri",
+    "titleLocalPathList": "Gestisci i percorsi locali",
+    "manageLocalPaths": "Gestisci i percorsi locali…",
+    "titleNewLocalPath": "New Local Path",
+    "titleEditLocalPath": "Edit Local Path",
+    "fields": {
+      "name": "Nome",
+      "icon": "Icona",
+      "color": "Colore",
+      "protocol": "Protocollo",
+      "keyFile": "File chiave",
+      "caCertFile": "Certificato CA",
+      "remotePath": "Cartella predefinita",
+      "localPath": "Cartella locale"
+    },
+    "icons": {
+      "bookmark": "Segnalibro",
+      "globe": "Sito web",
+      "briefcase": "Lavoro",
+      "house": "Server domestico",
+      "cloud": "Cloud",
+      "flask": "Test / ambiente di staging",
+      "gamepad": "Server di gioco",
+      "clapperboard": "Server multimediale",
+      "camera": "Fotocamera"
+    },
+    "colors": {
+      "default": "Senza colore",
+      "peach": "Pesca",
+      "red": "Rosso",
+      "amber": "Ambra",
+      "green": "Verde",
+      "blue": "Blu",
+      "purple": "Viola",
+      "pink": "Rosa",
+      "teal": "Verde acqua"
+    },
+    "saveFailed": "Impossibile salvare",
+    "revealFailed": "Impossibile visualizzare la chiave segreta salvata",
+    "savedSecretPlaceholder": "Salvato",
+    "savedSecretHint": "Lascia vuoto per mantenere la password attuale",
+    "removeSavedPassword": "Rimuovi la password salvata",
+    "removeSavedPassphrase": "Rimuovi la passphrase salvata",
+    "secretWillBeRemoved": "Verrà rimosso al momento del salvataggio",
+    "addBookmark": "Nuovo segnalibro",
+    "addLocalBookmark": "Aggiungi segnalibro alla cartella locale",
+    "chooseLocalPath": "Scegli una cartella locale",
+    "importBookmarks": "Importa",
+    "exportBookmarks": "Esporta",
+    "importAdded_one": "Aggiunto {{count}} segnalibro",
+    "importAdded_other": "Aggiunti {{count}} segnalibri",
+    "importSkipped_one": "saltato {{count}} duplicato",
+    "importSkipped_other": "saltati {{count}} duplicati",
+    "importNothingNew": "Niente di nuovo da importare",
+    "exportSuccess": "Esportato",
+    "sortMode": "Ordinamento dei segnalibri",
+    "sortManual": "Manuale",
+    "sortName": "Per nome",
+    "sortProtocol": "Secondo il protocollo",
+    "duplicateWarning": "Esiste già un segnalibro con la stessa destinazione: \"{{name}}\". Vuoi salvarne un altro?",
+    "saveAnyway": "Salva comunque",
+    "newFolder": "Nuova cartella",
+    "folderNamePlaceholder": "Nome della cartella",
+    "confirmDeleteFolder": "Eliminare la cartella “{{name}}”? I suoi segnalibri verranno spostati al livello superiore.",
+    "searchPlaceholder": "Cerca…",
+    "clearSearch": "Cancella ricerca",
+    "noSearchResults": "Non ci sono segnalibri corrispondenti alla tua ricerca",
+    "duplicate": "Duplicato",
+    "duplicateNameSuffix": " (copia)",
+    "newBookmarkInFolder": "Aggiungi un nuovo segnalibro qui",
+    "expandFolder": "Espandi “{{name}}”",
+    "collapseFolder": "Nascondi “{{name}}”"
+  },
+  "connectionBar": {
+    "fields": {
+      "address": "Indirizzo",
+      "port": "Porta",
+      "user": "Nome utente",
+      "password": "Password",
+      "passphrase": "Passphrase",
+      "keyFilePlaceholder": "File chiave…",
+      "chooseKeyFile": "Scegli il file chiave…",
+      "caCertFilePlaceholder": "Certificato CA…",
+      "chooseCaCertFile": "Scegli certificato CA…"
+    },
+    "secureToggle": {
+      "tooltip": "Deseleziona questa opzione per accettare certificati autofirmati e certificati server non validi",
+      "label": "Verifica certificato"
+    },
+    "authToggle": {
+      "tooltip": "Accedi utilizzando un file di chiave SSH privata anziché una password",
+      "label": "Accedi con la chiave SSH"
+    },
+    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "connectTooltip": {
+      "cancel": "Annulla",
+      "connect": "Connettiti",
+      "disconnect": "Disconnettiti"
+    }
+  },
+  "protocolSelect": {
+    "insecureWarning": "Il protocollo FTP standard trasmette il nome utente, la password e i file in chiaro. Quando possibile, utilizza FTPS o SFTP."
+  },
+  "titleBar": {
+    "minimize": "Riduci a icona",
+    "restore": "Ripristina",
+    "maximize": "Ottimizza"
+  },
+  "tray": {
+    "show": "Mostra FTPeach",
+    "quit": "Esci"
+  },
+  "tabStrip": {
+    "localComputer": "Computer",
+    "untitledTab": "Nuova scheda",
+    "newTabTooltip": "Nuova scheda (Ctrl+T)",
+    "rename": "Nome della scheda"
+  },
+  "toolbarOverflowMenu": {
+    "more": "Altro"
+  },
+  "statusBar": {
+    "transfers": "Trasferimenti: {{count}}",
+    "leftCount": "A sinistra: {{count}}",
+    "rightCount": "A destra: {{count}}",
+    "topCount": "In alto: {{count}}",
+    "bottomCount": "In basso: {{count}}",
+    "selectedSuffix": " ({{count}} selezionati)",
+    "status": {
+      "transferring": "Trasferimento del file",
+      "paused": "In pausa",
+      "connected": "Connesso",
+      "connecting": "Connessione",
+      "connectFailed": "Impossibile connettersi",
+      "disconnected": "Non connesso"
+    }
+  },
+  "viewToolbar": {
+    "toggleLeftPane": "Mostra/nascondi il riquadro di sinistra",
+    "toggleRightPane": "Mostra/nascondi il riquadro destro",
+    "toggleTransferQueue": "Mostra/nascondi la coda dei trasferimenti",
+    "toggleLog": "Mostra/nascondi registro",
+    "orientationNarrow": "Vetri sovrapposti — la finestra è troppo stretta per una visuale affiancata",
+    "orientationToRow": "Disporre i riquadri uno accanto all'altro",
+    "orientationToStacked": "Sovrapporre i riquadri l'uno sull'altro",
+    "pauseUnsupportedWebdav": "La funzione \"Pausa\" non è supportata da WebDAV",
+    "pauseActive": "Metti in pausa i trasferimenti attivi",
+    "resumeAllPaused": "Riprendi tutti i trasferimenti messi in pausa",
+    "stopActive": "Interrompi i trasferimenti attivi",
+    "retryAllStopped": "Riprova tutti i trasferimenti interrotti",
+    "refreshPanesTooltip": "Aggiorna entrambi i riquadri (F5)"
+  },
+  "paneToolbar": {
+    "back": "Indietro",
+    "forward": "Avanti",
+    "up": "Su",
+    "chooseFolder": "Scegli una cartella…",
+    "newFolder": "Nuova cartella…",
+    "newFile": "Nuovo file…"
+  },
+  "paneSourceSwitcher": {
+    "local": "Computer",
+    "remote": "Server",
+    "updatedAtTooltip": "Aggiornato: {{date}}",
+    "connectToServer": "Server"
+  },
+  "paneConnectEmptyState": {
+    "noSavedConnectionsTitle": "Nessuna connessione recente",
+    "noSavedConnectionsBody": "Inserisci l'indirizzo del server qui sopra oppure aggiungi un sito per accedervi con un solo clic.",
+    "manageBookmarksCta": "{{label}}",
+    "manageBookmarksLink": "Gestisci i segnalibri",
+    "quicklistLabel": "Connessioni recenti"
+  },
+  "errorBoundary": {
+    "consoleLogPrefix": "Errore non gestito dell'interfaccia FTPeach:",
+    "title": "Si è verificato un errore",
+    "message": "Si è verificato un errore imprevisto nell'interfaccia. La connessione attiva e i file presenti sul disco non sono stati interessati; è possibile provare a ricaricare l'interfaccia.",
+    "reload": "Ricarica interfaccia"
+  }
+}

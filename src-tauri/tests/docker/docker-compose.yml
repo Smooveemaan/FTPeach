@@ -55,7 +55,12 @@ services:
       # below. Self-signed cert, hence allowInvalidCert=true client-side.
       # TLS_CN/ORG/C: without these the image has no cert to serve and
       # pure-ftpd refuses to start at all with --tls set (exits immediately).
-      ADDED_FLAGS: '--tls=1'
+      # -H/--dontresolve: pure-ftpd otherwise reverse-resolves every client
+      # address before it even prints its 220 banner. Inside this container
+      # the Docker gateway address has no PTR record and no reachable
+      # resolver, so that lookup runs to its timeout and every connect —
+      # the app's and the integration tests' alike — stalls ~8s for nothing.
+      ADDED_FLAGS: '--tls=1 -H'
       TLS_CN: 'ftpeach-test'
       TLS_ORG: 'FTPeach'
       TLS_C: 'US'

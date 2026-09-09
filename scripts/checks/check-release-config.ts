@@ -13,6 +13,7 @@ const npmLicensesPath = new URL('../../docs/legal/NPM_THIRD_PARTY_LICENSES.txt',
 const rustLicensesPath = new URL('../../docs/legal/RUST_THIRD_PARTY_LICENSES.txt', import.meta.url);
 const releaseWorkflowPath = new URL('../../.github/workflows/release.yml', import.meta.url);
 const checksWorkflowPath = new URL('../../.github/workflows/checks.yml', import.meta.url);
+const installerHooksPath = new URL('../../src-tauri/installer/hooks.nsh', import.meta.url);
 const [
   configSource,
   capabilitiesSource,
@@ -24,6 +25,7 @@ const [
   thirdPartyNotices,
   releaseWorkflow,
   checksWorkflow,
+  installerHooks,
 ] = await Promise.all([
   readFile(configPath, 'utf8'),
   readFile(capabilitiesPath, 'utf8'),
@@ -35,6 +37,7 @@ const [
   readFile(thirdPartyNoticesPath, 'utf8'),
   readFile(releaseWorkflowPath, 'utf8'),
   readFile(checksWorkflowPath, 'utf8'),
+  readFile(installerHooksPath, 'utf8'),
   readFile(npmLicensesPath, 'utf8'),
   readFile(rustLicensesPath, 'utf8'),
 ]);
@@ -78,6 +81,39 @@ for (const resource of [
 ]) {
   assert.ok(resource in resources, `Bundle must include ${resource}`);
 }
+// The stock Tauri uninstaller shows a "delete the application data" checkbox,
+// but its own cleanup only clears $APPDATA and $LOCALAPPDATA under the bundle
+// id. FTPeach stores everything under %APPDATA%\FTPeach, so without the hook
+// that checkbox is a no-op and an uninstall strands settings, sites and vault.
+assert.equal(
+  config?.bundle?.windows?.nsis?.installerHooks,
+  'installer/hooks.nsh',
+  'The uninstaller must run the FTPeach NSIS hooks so the delete-app-data checkbox works',
+);
+assert.ok(
+  installerHooks.includes('!macro NSIS_HOOK_POSTUNINSTALL'),
+  'The NSIS hooks must define the post-uninstall hook',
+);
+assert.ok(
+  installerHooks.includes(String.raw`RMDir /r "$APPDATA\FTPeach"`),
+  'The post-uninstall hook must remove the FTPeach data directory when deletion is chosen',
+);
+assert.ok(
+  installerHooks.includes('$DeleteAppDataCheckboxState = 1') &&
+    installerHooks.includes('$UpdateMode <> 1'),
+  'The post-uninstall hook must keep user data unless the box is ticked on a real uninstall',
+);
+
+// A release ships the NSIS installer and nothing else, so bundling anything
+// else only produces installers no one tests. The MSI in particular has no
+// uninstall-time prompt at all, so it would answer the app-data question
+// differently from the installer users actually get.
+assert.deepEqual(
+  config?.bundle?.targets,
+  ['nsis'],
+  'Local bundles must match the release: NSIS only',
+);
+
 assert.equal(typeof updaterPublicKey, 'string', 'Updater public key must be configured');
 assert.ok(updaterPublicKey.trim().length > 0, 'Updater public key must not be empty');
 assert.notEqual(
@@ -133,6 +169,8 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '      force-all: true'],
   [releaseWorkflow, 'release.yml', '    needs: [gates, protocol-compatibility]'],
   [releaseWorkflow, 'release.yml', '    environment: release'],
+  // Pairs with the bundle.targets assertion above.
+  [releaseWorkflow, 'release.yml', 'args: --bundles nsis'],
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every generated updater signature'],
   [releaseWorkflow, 'release.yml', 'ftpeach-npm.cdx.json'],
@@ -161,5 +199,5 @@ assert.match(
 );
 
 console.log(
-  `Release config OK: signed updater artifacts, ${endpoints.length} HTTPS updater endpoint(s), minimal capabilities and strict CSP`,
+  `Release config OK: signed updater artifacts, ${endpoints.length} HTTPS updater endpoint(s), minimal capabilities, strict CSP and an opt-in app-data uninstall`,
 );

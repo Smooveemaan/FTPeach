@@ -2,6 +2,14 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- Honor the uninstaller’s “delete the application data” checkbox: ticking it now removes
+  %APPDATA%\FTPeach (settings, sites, known hosts, saved session, logs and the
+  vault), and leaving it unticked keeps that data for a reinstall. Updates never delete it.
+
 ## [0.1.1] - 2026-09-09
 
 ### Changed

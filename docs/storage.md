@@ -35,6 +35,26 @@ clears the saved tabs without affecting current connections or transfers and
 prevents further session writes. “Reset Layout and Cache” independently resets
 window and layout values.
 
+## Uninstall
+
+The uninstaller’s confirmation page carries a “Delete the application data”
+checkbox. It is unticked by default, so an ordinary uninstall leaves %APPDATA%\FTPeach
+in place and a later reinstall picks the settings, sites, known hosts,
+saved session and vault back up. Ticking it removes that directory in full,
+including the vault and its `*.last-good.bak` snapshots, which cannot be
+recovered afterwards — export settings first if the data is still wanted.
+
+The choice is only offered on a real uninstall. An updater-driven uninstall
+and a silent uninstall (`/P`) both keep the data, because neither shows the
+page that asks. The stock Tauri checkbox only clears the bundle-id
+directories, so `src-tauri/installer/hooks.nsh` removes the FTPeach data
+directory itself; `npm run check:release-config` fails if that wiring is lost.
+
+One thing outlives the directory: when Windows Hello system unlock was
+enabled, the persisted key in the Microsoft Platform Crypto Provider is not
+reachable from the uninstaller and stays behind. It is inert without
+`vault.json`, which the deletion removes.
+
 ## Portable mode
 
 Portable storage beside the executable is not currently supported. A portable

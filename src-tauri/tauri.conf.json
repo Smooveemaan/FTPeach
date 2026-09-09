@@ -48,7 +48,7 @@
       "../docs/legal/NPM_THIRD_PARTY_LICENSES.txt": "licenses/NPM_THIRD_PARTY_LICENSES.txt",
       "../docs/legal/RUST_THIRD_PARTY_LICENSES.txt": "licenses/RUST_THIRD_PARTY_LICENSES.txt"
     },
-    "targets": "all",
+    "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -62,7 +62,8 @@
     "windows": {
       "nsis": {
         "installerIcon": "icons/icon.ico",
-        "uninstallerIcon": "icons/icon.ico"
+        "uninstallerIcon": "icons/icon.ico",
+        "installerHooks": "installer/hooks.nsh"
       }
     }
   }

@@ -35,11 +35,17 @@ impl Sessions {
         guard.as_ref().map(|session| session.transfer_pool.clone())
     }
 
-    /// Snapshot of every slot currently known — used only for cross-session
-    /// sweeps (e.g. app shutdown), never for a single connectionId's
-    /// operation (that always goes through `slot_for` + lock).
-    pub fn all_slots(&self) -> Vec<SessionSlot> {
-        self.inner.lock().unwrap().values().cloned().collect()
+    /// Snapshot of every slot currently known, with the connection it belongs
+    /// to — used only for cross-session sweeps (e.g. app shutdown), never for a
+    /// single connectionId's operation (that always goes through `slot_for` +
+    /// lock).
+    pub fn all_slots(&self) -> Vec<(String, SessionSlot)> {
+        self.inner
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|(id, slot)| (id.clone(), slot.clone()))
+            .collect()
     }
 
     /// Removes an empty slot once the operation that owned it has released
@@ -87,8 +93,9 @@ mod tests {
     }
 }
 
-pub async fn teardown_session(slot: &mut Option<Session>) {
+pub async fn teardown_session(slot: &mut Option<Session>, connection_id: &str) {
     if let Some(mut session) = slot.take() {
+        discard_paused_staging(&mut session, connection_id).await;
         let _ = session.browse_client.disconnect().await;
         session.transfer_pool.destroy().await;
     }
@@ -97,12 +104,24 @@ pub async fn teardown_session(slot: &mut Option<Session>) {
 /// Shutdown-specific ordering: cancel transfers first, wait for their tasks
 /// to settle, then close the browsing connection. The outer coordinator owns
 /// the hard timeout, so an uncooperative backend still cannot block exit.
-pub async fn teardown_session_for_shutdown(slot: &mut Option<Session>) {
+pub async fn teardown_session_for_shutdown(slot: &mut Option<Session>, connection_id: &str) {
     if let Some(mut session) = slot.take() {
         session.transfer_pool.destroy().await;
         session.transfer_pool.wait_until_idle().await;
+        discard_paused_staging(&mut session, connection_id).await;
         let _ = session.browse_client.disconnect().await;
     }
+}
+
+/// A paused upload leaves a staging file on the server for its next attempt.
+/// Once the session goes, that attempt can never come, so the file has to go
+/// with it — and only while the connection can still reach it.
+async fn discard_paused_staging(session: &mut Session, connection_id: &str) {
+    crate::application::upload_resume::discard_for_connection(
+        session.browse_client.as_mut(),
+        connection_id,
+    )
+    .await;
 }
 
 #[derive(Clone, Default)]

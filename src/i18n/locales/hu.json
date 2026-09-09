@@ -529,7 +529,8 @@
     "retry": "Újrapróbálás",
     "stop": "Leállítás",
     "pauseUnsupportedCopy": "A szünet funkció nem támogatott a szerverek közötti másolás során",
-    "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést"
+    "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést",
+    "retryUnsupportedConnection": "Az újrapróbálkozás nem érhető el: a kapcsolat lezárult"
   },
   "log": {
     "connecting": "Csatlakozás a {{addr}} webhelyhez...",
@@ -542,7 +543,11 @@
     "tlsInit": "A TLS inicializálása...",
     "tlsEstablished": "A TLS-kapcsolat létrejött.",
     "davResumeUnsupportedLocal": "A WebDAV nem támogatja a feltöltés folytatását – a fájl az elejétől kezdve újra elküldésre kerül.",
-    "davResumeUnsupportedServer": "A szerver nem támogatja a letöltés folytatását (várható állapot: „{{expected}}”, kapott állapot: „{{status}}”) — a fájl letöltése újraindul."
+    "davResumeUnsupportedServer": "A szerver nem támogatja a letöltés folytatását (várható állapot: „{{expected}}”, kapott állapot: „{{status}}”) — a fájl letöltése újraindul.",
+    "uploadResumed": "A(z) {{path}} feltöltésének folytatása a(z) {{offset}}. bájttól.",
+    "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
+    "uploadRestartedMismatch": "A kiszolgálón lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
+    "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől."
   },
   "logPanel": {
     "showAllConnections": "Az összes kapcsolat megjelenítése",

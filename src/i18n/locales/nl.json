@@ -529,7 +529,8 @@
     "retry": "Opnieuw proberen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pauzeren wordt niet ondersteund bij het kopiëren tussen servers",
-    "pauseUnsupportedWebdav": "Pauzeren wordt niet ondersteund door WebDAV"
+    "pauseUnsupportedWebdav": "Pauzeren wordt niet ondersteund door WebDAV",
+    "retryUnsupportedConnection": "Opnieuw proberen is niet beschikbaar: de verbinding is gesloten"
   },
   "log": {
     "connecting": "Verbinding maken met {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "TLS wordt geïnitialiseerd...",
     "tlsEstablished": "TLS-verbinding tot stand gebracht.",
     "davResumeUnsupportedLocal": "WebDAV ondersteunt het hervatten van uploads niet — het bestand wordt opnieuw vanaf het begin verzonden.",
-    "davResumeUnsupportedServer": "De server ondersteunt het hervatten van downloads niet (verwachte status: {{expected}}, ontvangen status: {{status}}) — het bestand wordt opnieuw gedownload."
+    "davResumeUnsupportedServer": "De server ondersteunt het hervatten van downloads niet (verwachte status: {{expected}}, ontvangen status: {{status}}) — het bestand wordt opnieuw gedownload.",
+    "uploadResumed": "Uploaden van {{path}} wordt hervat op {{offset}} bytes.",
+    "uploadRestartedSourceChanged": "Het lokale bestand komt niet meer overeen met de gepauzeerde upload van {{path}} — het wordt opnieuw vanaf het begin verzonden.",
+    "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
+    "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden."
   },
   "logPanel": {
     "showAllConnections": "Alle verbindingen weergeven",

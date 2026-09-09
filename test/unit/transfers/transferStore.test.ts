@@ -8,6 +8,8 @@ import {
   COMPLETED_RETENTION,
   transferForAttempt,
   activeTransferForTarget,
+  canRetryTransfer,
+  markConnectionDead,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 
@@ -42,6 +44,54 @@ test('retention limits completed history while preserving active and retryable r
   }));
   assert.equal(transferForAttempt('attempt-active'), undefined);
   assert.equal(activeTransferForTarget('local:c:\\target\\active'), undefined);
+  resetTransfersStoreForTests();
+});
+
+test('a connection marked dead can never be retried into again, on either side of a copy', () => {
+  resetTransfersStoreForTests();
+  const upload: TransferRow = {
+    id: 'up',
+    direction: 'up',
+    protocol: 'sftp',
+    name: 'up',
+    connectionId: 'gone',
+    localFile: 'C:\\local\\up',
+    remoteTarget: '/up',
+    status: 'stopped',
+    bytes: 0,
+    startedAt: 0,
+  };
+  const copy: TransferRow = {
+    id: 'copy',
+    direction: 'copy',
+    protocol: 'sftp',
+    name: 'copy',
+    sourceConnectionId: 'alive',
+    targetConnectionId: 'gone',
+    sourcePath: '/src',
+    remoteTarget: '/dst',
+    status: 'stopped',
+    bytes: 0,
+    startedAt: 0,
+  };
+  assert.equal(canRetryTransfer(upload), true);
+  assert.equal(canRetryTransfer(copy), true);
+
+  let notifications = 0;
+  const unsubscribe = subscribeTransfers(() => {
+    notifications += 1;
+  });
+  markConnectionDead('gone');
+
+  assert.equal(canRetryTransfer(upload), false);
+  // Dead on either end is enough to sink it, even though 'alive' never was.
+  assert.equal(canRetryTransfer(copy), false);
+  // Rows already sitting at error/stopped are untouched by the teardown, so the
+  // set growing is the only thing that can tell them to grey out their Retry.
+  assert.equal(notifications, 1);
+  markConnectionDead('gone');
+  assert.equal(notifications, 1, 'remarking a known-dead connection redraws nothing');
+  unsubscribe();
   resetTransfersStoreForTests();
 });
 

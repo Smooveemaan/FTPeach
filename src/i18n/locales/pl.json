@@ -538,6 +538,7 @@
     "stop": "Stop",
     "pauseUnsupportedCopy": "Podczas kopiowania danych między serwerami funkcja wstrzymania nie jest obsługiwana",
     "pauseUnsupportedWebdav": "Funkcja pauzy nie jest obsługiwana przez WebDAV",
+    "retryUnsupportedConnection": "Ponowienie jest niedostępne: połączenie zostało zamknięte",
     "newTransfers_few": "{{count}} nowe transfery",
     "newTransfers_many": "{{count}} nowych transferów"
   },
@@ -553,6 +554,10 @@
     "tlsEstablished": "Połączono się za pomocą protokołu TLS.",
     "davResumeUnsupportedLocal": "WebDAV nie obsługuje wznowienia przesyłania — plik zostanie wysłany ponownie od początku.",
     "davResumeUnsupportedServer": "Serwer nie obsługuje wznowienia pobierania (oczekiwany status: {{expected}}, otrzymano: {{status}}) — plik zostanie pobrany ponownie.",
+    "uploadResumed": "Wznawianie wysyłania {{path}} od {{offset}} bajtów.",
+    "uploadRestartedSourceChanged": "Plik lokalny nie odpowiada już wstrzymanemu wysyłaniu {{path}} — zostanie wysłany ponownie od początku.",
+    "uploadRestartedMismatch": "Dane znajdujące się już na serwerze nie odpowiadają plikowi lokalnemu — {{path}} zostanie wysłany ponownie od początku.",
+    "uploadRestartedUnverified": "Nie udało się zweryfikować wstrzymanego wysyłania {{path}} ({{error}}) — plik zostanie wysłany ponownie od początku.",
     "receivedEntries_few": "Otrzymano {{count}} wpisy",
     "receivedEntries_many": "Otrzymano {{count}} wpisów"
   },

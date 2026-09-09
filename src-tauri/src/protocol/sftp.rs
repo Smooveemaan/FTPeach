@@ -364,6 +364,10 @@ impl ProtocolBackend for SftpBackend {
         self.logger.set_sink(sink);
     }
 
+    fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
+        self.log_key(key, params, kind);
+    }
+
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
         let target = if path.is_empty() {
             "/".to_string()
@@ -521,6 +525,46 @@ impl ProtocolBackend for SftpBackend {
             .await
             .ok()
             .and_then(|a| a.attrs.size)
+    }
+
+    async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
+        let raw = self.sftp()?;
+        let handle = raw
+            .open(path.to_string(), OpenFlags::READ, FileAttributes::empty())
+            .await
+            .context("opening remote file")?
+            .handle;
+        let read = async {
+            let mut buf: Vec<u8> = Vec::with_capacity(len.min(CHUNK_SIZE));
+            while buf.len() < len {
+                let want = (len - buf.len()).min(CHUNK_SIZE) as u32;
+                match raw
+                    .read(handle.as_str(), offset + buf.len() as u64, want)
+                    .await
+                {
+                    // A short read is not EOF; only an empty one ends the range.
+                    Ok(data) if data.data.is_empty() => break,
+                    Ok(data) => {
+                        buf.extend_from_slice(&data.data);
+                        // Verification bytes cross the wire like any others, so
+                        // they are paced by the same bandwidth limit.
+                        crate::transfer::rate_limiter::shared()
+                            .acquire(data.data.len() as u64)
+                            .await;
+                    }
+                    Err(SftpClientError::Status(status))
+                        if status.status_code == StatusCode::Eof =>
+                    {
+                        break;
+                    }
+                    Err(err) => return Err(err).context("reading from server"),
+                }
+            }
+            Ok(buf)
+        }
+        .await;
+        let _ = raw.close(handle.as_str()).await;
+        read
     }
 
     async fn upload(

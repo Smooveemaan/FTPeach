@@ -529,7 +529,8 @@
     "retry": "Försök igen",
     "stop": "Stopp",
     "pauseUnsupportedCopy": "Pausfunktion stöds inte vid kopiering mellan servrar",
-    "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV"
+    "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV",
+    "retryUnsupportedConnection": "Att försöka igen är inte tillgängligt: anslutningen har stängts"
   },
   "log": {
     "connecting": "Ansluter till {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "Initierar TLS...",
     "tlsEstablished": "TLS-anslutningen har upprättats.",
     "davResumeUnsupportedLocal": "WebDAV stöder inte återupptagning av uppladdning – filen skickas om från början.",
-    "davResumeUnsupportedServer": "Servern stöder inte återupptagning (förväntad status: {{expected}}, fick {{status}}) — filen kommer att laddas ner på nytt."
+    "davResumeUnsupportedServer": "Servern stöder inte återupptagning (förväntad status: {{expected}}, fick {{status}}) — filen kommer att laddas ner på nytt.",
+    "uploadResumed": "Återupptar uppladdningen av {{path}} vid {{offset}} byte.",
+    "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
+    "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
+    "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början."
   },
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",

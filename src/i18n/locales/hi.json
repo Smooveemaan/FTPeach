@@ -529,7 +529,8 @@
     "retry": "पुनः प्रयास करें",
     "stop": "रुकें",
     "pauseUnsupportedCopy": "सर्वरों के बीच कॉपी करते समय रोकना समर्थित नहीं है",
-    "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है"
+    "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है",
+    "retryUnsupportedConnection": "पुनः प्रयास उपलब्ध नहीं है: कनेक्शन बंद हो गया है"
   },
   "log": {
     "connecting": "{{addr}} से कनेक्ट हो रहा है...",
@@ -542,7 +543,11 @@
     "tlsInit": "टीएलएस प्रारंभ किया जा रहा है...",
     "tlsEstablished": "टीएलएस कनेक्शन स्थापित।",
     "davResumeUnsupportedLocal": "WebDAV अपलोड को फिर से शुरू करने का समर्थन नहीं करता — फ़ाइल आरंभ से दोबारा भेजी जाएगी।",
-    "davResumeUnsupportedServer": "सर्वर डाउनलोड को फिर से शुरू करने का समर्थन नहीं करता (अपेक्षित स्थिति {{expected}}, प्राप्त {{status}}) — फ़ाइल दोबारा डाउनलोड की जाएगी।"
+    "davResumeUnsupportedServer": "सर्वर डाउनलोड को फिर से शुरू करने का समर्थन नहीं करता (अपेक्षित स्थिति {{expected}}, प्राप्त {{status}}) — फ़ाइल दोबारा डाउनलोड की जाएगी।",
+    "uploadResumed": "{{path}} का अपलोड {{offset}} बाइट से फिर से शुरू किया जा रहा है।",
+    "uploadRestartedSourceChanged": "स्थानीय फ़ाइल अब {{path}} के रोके गए अपलोड से मेल नहीं खाती — इसे शुरू से फिर से भेजा जाएगा।",
+    "uploadRestartedMismatch": "सर्वर पर पहले से मौजूद डेटा स्थानीय फ़ाइल से मेल नहीं खाता — {{path}} को शुरू से फिर से भेजा जाएगा।",
+    "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।"
   },
   "logPanel": {
     "showAllConnections": "सभी कनेक्शन दिखाएं",

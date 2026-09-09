@@ -529,7 +529,8 @@
     "retry": "ลองอีกครั้ง",
     "stop": "หยุด",
     "pauseUnsupportedCopy": "ไม่สนับสนุนการหยุดชั่วคราวเมื่อคัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
-    "pauseUnsupportedWebdav": "WebDAV ไม่สนับสนุนฟังก์ชัน Pause"
+    "pauseUnsupportedWebdav": "WebDAV ไม่สนับสนุนฟังก์ชัน Pause",
+    "retryUnsupportedConnection": "ไม่สามารถลองใหม่ได้: การเชื่อมต่อถูกปิดแล้ว"
   },
   "log": {
     "connecting": "กำลังเชื่อมต่อกับ {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "กำลังเริ่มต้น TLS...",
     "tlsEstablished": "การเชื่อมต่อ TLS ได้ถูกสร้างขึ้นแล้ว",
     "davResumeUnsupportedLocal": "WebDAV ไม่สนับสนุนการอัปโหลดต่อ — ไฟล์จะถูกส่งใหม่ตั้งแต่ต้น",
-    "davResumeUnsupportedServer": "เซิร์ฟเวอร์ไม่สนับสนุนการดาวน์โหลดต่อ (สถานะที่คาดไว้คือ {{expected}} แต่ได้รับ {{status}}) — ไฟล์จะถูกดาวน์โหลดใหม่"
+    "davResumeUnsupportedServer": "เซิร์ฟเวอร์ไม่สนับสนุนการดาวน์โหลดต่อ (สถานะที่คาดไว้คือ {{expected}} แต่ได้รับ {{status}}) — ไฟล์จะถูกดาวน์โหลดใหม่",
+    "uploadResumed": "กำลังอัปโหลด {{path}} ต่อจากไบต์ที่ {{offset}}",
+    "uploadRestartedSourceChanged": "ไฟล์ในเครื่องไม่ตรงกับการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้แล้ว — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
+    "uploadRestartedMismatch": "ข้อมูลที่มีอยู่บนเซิร์ฟเวอร์ไม่ตรงกับไฟล์ในเครื่อง — จะส่ง {{path}} ใหม่ตั้งแต่ต้น",
+    "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น"
   },
   "logPanel": {
     "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",

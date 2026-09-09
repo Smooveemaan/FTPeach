@@ -19,7 +19,7 @@ pub async fn log_set_enabled(
     enabled: bool,
 ) -> CommandResult<OkFlag> {
     state.enabled.store(enabled, Ordering::Relaxed);
-    for slot in sessions.all_slots() {
+    for (_, slot) in sessions.all_slots() {
         let mut guard = slot.lock().await;
         if let Some(session) = guard.as_mut() {
             session.browse_client.set_log_enabled(enabled);

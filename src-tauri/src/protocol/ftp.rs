@@ -506,6 +506,10 @@ impl ProtocolBackend for FtpBackend {
         self.logger.set_sink(sink);
     }
 
+    fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
+        self.log_key(key, params, kind);
+    }
+
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
         let target = if path.is_empty() {
             "/".to_string()
@@ -608,6 +612,58 @@ impl ProtocolBackend for FtpBackend {
 
     async fn size(&mut self, path: &str) -> u64 {
         self.known_size(path).await.unwrap_or(0)
+    }
+
+    async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
+        let path = path.to_string();
+        self.with_stream(move |s| {
+            Box::pin(async move {
+                // REST only positions the next RETR, so the transfer runs to end
+                // of file. That is deliberately the whole contract: stopping a
+                // RETR early means ABOR, and a mishandled abort desynchronises
+                // the control channel for every command after it.
+                if offset > 0 {
+                    s.resume_transfer(offset as usize).await?;
+                }
+                let mut data_stream = s.retr_as_stream(&path).await?;
+                let mut bytes: Vec<u8> = Vec::with_capacity(len);
+                let read: BackendResult<()> = async {
+                    let mut buf = vec![0u8; COPY_CHUNK_SIZE];
+                    loop {
+                        let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
+                        let n = tokio::time::timeout(
+                            TRANSFER_STALL_TIMEOUT,
+                            data_stream.read(&mut buf[..read_len]),
+                        )
+                        .await
+                        .context("stalled while reading from server")?
+                        .context("reading from server")?;
+                        if n == 0 {
+                            return Ok(());
+                        }
+                        bytes.extend_from_slice(&buf[..n]);
+                        // Verification bytes cross the wire like any others, so
+                        // they are paced by the same bandwidth limit.
+                        crate::transfer::rate_limiter::shared()
+                            .acquire(n as u64)
+                            .await;
+                        anyhow::ensure!(
+                            bytes.len() <= len,
+                            "The server sent more than the requested range"
+                        );
+                    }
+                }
+                .await;
+                // A failed read leaves the data connection to be dropped rather
+                // than finalised: the remainder length is unknown, so there is
+                // nothing safe to drain. Only a read that reached EOF can settle
+                // the transfer and keep the control channel in step.
+                read?;
+                s.finalize_retr_stream(data_stream).await?;
+                Ok(bytes)
+            })
+        })
+        .await
     }
 
     async fn known_size(&mut self, path: &str) -> Option<u64> {

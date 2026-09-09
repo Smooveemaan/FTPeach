@@ -66,7 +66,7 @@ export default function OpenWithDialog({
       unsubscribe();
       // The dialog is unmounting because the user dismissed it; a failed
       // cancel has no surface left to report to and nothing they could do.
-      if (!settled) void api.transfer.cancel(connectionId, id);
+      if (!settled) void api.transfer.cancel(connectionId, id, 'stop');
     };
     // connectionId omitted because this download started against whichever
     // connectionId was current when it ran, and cancelling/reporting it

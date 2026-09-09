@@ -100,14 +100,14 @@ pub async fn session_list(
             error: CommandError::from_anyhow(&err),
         }),
         BrowseOutcome::TimedOut => {
-            teardown_session(&mut guard).await;
+            teardown_session(&mut guard, &connection_id).await;
             Ok(SessionListResult::Err {
                 ok: false,
                 error: CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG),
             })
         }
         BrowseOutcome::Cancelled => {
-            teardown_session(&mut guard).await;
+            teardown_session(&mut guard, &connection_id).await;
             Ok(SessionListResult::Err {
                 ok: false,
                 error: CommandError::new(ErrorCode::Cancelled, "Operation cancelled"),
@@ -145,14 +145,14 @@ macro_rules! run_unit_browse_operation {
                 error: CommandError::from_anyhow(&err),
             }),
             BrowseOutcome::TimedOut => {
-                teardown_session(&mut guard).await;
+                teardown_session(&mut guard, &$connection_id).await;
                 Ok(OkResult::Err {
                     ok: false,
                     error: CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG),
                 })
             }
             BrowseOutcome::Cancelled => {
-                teardown_session(&mut guard).await;
+                teardown_session(&mut guard, &$connection_id).await;
                 Ok(OkResult::Err {
                     ok: false,
                     error: CommandError::new(ErrorCode::Cancelled, "Operation cancelled"),

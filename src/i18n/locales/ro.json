@@ -534,6 +534,7 @@
     "stop": "Oprește-te",
     "pauseUnsupportedCopy": "Funcția de pauză nu este acceptată atunci când se copiază între servere",
     "pauseUnsupportedWebdav": "Funcția „Pauză” nu este acceptată de WebDAV",
+    "retryUnsupportedConnection": "Reîncercarea nu este disponibilă: conexiunea a fost închisă",
     "newTransfers_few": "{{count}} transferuri noi"
   },
   "log": {
@@ -548,6 +549,10 @@
     "tlsEstablished": "S-a stabilit conexiunea TLS.",
     "davResumeUnsupportedLocal": "WebDAV nu acceptă reluarea încărcării — fișierul va fi trimis din nou de la început.",
     "davResumeUnsupportedServer": "Serverul nu acceptă reluarea descărcării (starea așteptată: {{expected}}, s-a primit {{status}}) — fișierul va fi descărcat din nou.",
+    "uploadResumed": "Se reia încărcarea {{path}} de la {{offset}} octeți.",
+    "uploadRestartedSourceChanged": "Fișierul local nu mai corespunde încărcării întrerupte a {{path}} — va fi trimis din nou de la început.",
+    "uploadRestartedMismatch": "Ceea ce se află deja pe server nu corespunde fișierului local — {{path}} va fi trimis din nou de la început.",
+    "uploadRestartedUnverified": "Încărcarea întreruptă a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
     "receivedEntries_few": "S-au primit {{count}} înregistrări"
   },
   "logPanel": {

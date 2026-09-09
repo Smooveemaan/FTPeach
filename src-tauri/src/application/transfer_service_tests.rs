@@ -154,6 +154,7 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
             std::path::Path::new("unused"),
             &partial,
             "/target",
+            false,
             Arc::new(move |event| events_for_sink.lock().unwrap().push(event)),
         )
         .await;
@@ -196,6 +197,7 @@ async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_o
                     std::path::Path::new("unused"),
                     &task_partial,
                     "/target",
+                    false,
                     Arc::new(|_| {}),
                 )
                 .await

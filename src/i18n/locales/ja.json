@@ -529,7 +529,8 @@
     "retry": "再試行",
     "stop": "停止",
     "pauseUnsupportedCopy": "サーバー間のコピーでは、一時停止機能はサポートされていません",
-    "pauseUnsupportedWebdav": "WebDAVでは一時停止機能はサポートされていません"
+    "pauseUnsupportedWebdav": "WebDAVでは一時停止機能はサポートされていません",
+    "retryUnsupportedConnection": "再試行はできません: 接続が閉じられました"
   },
   "log": {
     "connecting": "{{addr}} に接続中...",
@@ -542,7 +543,11 @@
     "tlsInit": "TLSの初期化中...",
     "tlsEstablished": "TLS接続が確立されました。",
     "davResumeUnsupportedLocal": "WebDAVではアップロードの再開はサポートされていません。ファイルは最初から再度送信されます。",
-    "davResumeUnsupportedServer": "サーバーは再開に対応していません（期待されるステータス：{{expected}}、実際のステータス：{{status}}）— ファイルは再度ダウンロードされます。"
+    "davResumeUnsupportedServer": "サーバーは再開に対応していません（期待されるステータス：{{expected}}、実際のステータス：{{status}}）— ファイルは再度ダウンロードされます。",
+    "uploadResumed": "{{path}} のアップロードを {{offset}} バイト目から再開します。",
+    "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
+    "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
+    "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。"
   },
   "logPanel": {
     "showAllConnections": "すべての接続を表示する",

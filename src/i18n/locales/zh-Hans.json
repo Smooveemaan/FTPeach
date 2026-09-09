@@ -529,7 +529,8 @@
     "retry": "重试",
     "stop": "停止",
     "pauseUnsupportedCopy": "在服务器之间复制时不支持暂停功能",
-    "pauseUnsupportedWebdav": "WebDAV 不支持暂停功能"
+    "pauseUnsupportedWebdav": "WebDAV 不支持暂停功能",
+    "retryUnsupportedConnection": "无法重试：连接已关闭"
   },
   "log": {
     "connecting": "正在连接到 {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "正在初始化 TLS...",
     "tlsEstablished": "TLS 连接已建立。",
     "davResumeUnsupportedLocal": "WebDAV 不支持上传续传——文件将从头开始重新发送。",
-    "davResumeUnsupportedServer": "服务器不支持断点续传（预期状态为{{expected}}，实际返回{{status}}）——该文件将重新下载。"
+    "davResumeUnsupportedServer": "服务器不支持断点续传（预期状态为{{expected}}，实际返回{{status}}）——该文件将重新下载。",
+    "uploadResumed": "正在从第 {{offset}} 字节继续上传 {{path}}。",
+    "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
+    "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
+    "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。"
   },
   "logPanel": {
     "showAllConnections": "显示所有连接",

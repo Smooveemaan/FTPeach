@@ -529,7 +529,8 @@
     "retry": "Retry",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause is not supported when copying between servers",
-    "pauseUnsupportedWebdav": "Pause is not supported by WebDAV"
+    "pauseUnsupportedWebdav": "Pause is not supported by WebDAV",
+    "retryUnsupportedConnection": "Retry is not available: the connection has been closed"
   },
   "log": {
     "connecting": "Connecting to {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "Initializing TLS...",
     "tlsEstablished": "TLS connection established.",
     "davResumeUnsupportedLocal": "WebDAV doesn't support upload resume — the file will be sent again from the start.",
-    "davResumeUnsupportedServer": "Server doesn't support resume (expected status {{expected}}, got {{status}}) — the file will be downloaded again."
+    "davResumeUnsupportedServer": "Server doesn't support resume (expected status {{expected}}, got {{status}}) — the file will be downloaded again.",
+    "uploadResumed": "Resuming the upload of {{path}} at {{offset}} bytes.",
+    "uploadRestartedSourceChanged": "The local file no longer matches the paused upload of {{path}} — sending it again from the start.",
+    "uploadRestartedMismatch": "What is already on the server doesn't match the local file — sending {{path}} again from the start.",
+    "uploadRestartedUnverified": "The paused upload of {{path}} couldn't be verified ({{error}}) — sending it again from the start."
   },
   "logPanel": {
     "showAllConnections": "Show all connections",

@@ -68,10 +68,10 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
         let persist = persister.persist_now(&window);
         let disconnect = async {
             let mut tasks = tokio::task::JoinSet::new();
-            for slot in sessions.all_slots() {
+            for (connection_id, slot) in sessions.all_slots() {
                 tasks.spawn(async move {
                     let mut guard = slot.lock().await;
-                    session::teardown_session_for_shutdown(&mut guard).await;
+                    session::teardown_session_for_shutdown(&mut guard, &connection_id).await;
                 });
             }
             while tasks.join_next().await.is_some() {}

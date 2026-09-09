@@ -538,6 +538,7 @@
     "stop": "Стоп",
     "pauseUnsupportedCopy": "Під час копіювання між серверами функція паузи не підтримується",
     "pauseUnsupportedWebdav": "WebDAV не підтримує функцію паузи",
+    "retryUnsupportedConnection": "Повторити не можна: з'єднання закрито",
     "newTransfers_few": "{{count}} нові передавання",
     "newTransfers_many": "{{count}} нових передавань"
   },
@@ -553,6 +554,10 @@
     "tlsEstablished": "З'єднання TLS встановлено.",
     "davResumeUnsupportedLocal": "WebDAV не підтримує відновлення завантаження — файл буде надіслано знову з самого початку.",
     "davResumeUnsupportedServer": "Сервер не підтримує відновлення завантаження (очікуваний статус {{expected}}, отримано {{status}}) — файл буде завантажено заново.",
+    "uploadResumed": "Відновлення надсилання {{path}} з позиції {{offset}} байт.",
+    "uploadRestartedSourceChanged": "Локальний файл більше не збігається з призупиненим надсиланням {{path}} — файл буде надіслано наново.",
+    "uploadRestartedMismatch": "Дані на сервері не збігаються з локальним файлом — {{path}} буде надіслано наново.",
+    "uploadRestartedUnverified": "Не вдалося перевірити призупинене надсилання {{path}} ({{error}}) — файл буде надіслано наново.",
     "receivedEntries_few": "Отримано {{count}} записи",
     "receivedEntries_many": "Отримано {{count}} записів"
   },

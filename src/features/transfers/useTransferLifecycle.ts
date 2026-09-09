@@ -9,11 +9,15 @@ import { reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/types.ts';
-import type { TransferInput, TransferRow, TransferStatus } from './transferStore.ts';
+import type { TransferInput, TransferStatus } from './transferStore.ts';
 import {
   activeTransferForTarget,
+  canPauseTransfer,
+  canRetryTransfer,
   getTransfersSnapshot,
+  markConnectionDead,
   setTransfersStore,
+  transferTouchesConnection,
 } from './transferStore.ts';
 import { validateWindowsDownloadName } from './transferWalk.ts';
 import { useTransferNotifications } from './useTransferNotifications.ts';
@@ -175,7 +179,8 @@ export function useTransferLifecycle(
       // Reuse the queue row only after its current upload has settled.
       return { ok: false, alreadyRunning: true };
     }
-    // Each upload attempt owns fresh remote staging; retries start at zero.
+    // Starting an upload always stages fresh, superseding anything a previous
+    // paused attempt left for this destination. Resuming is retryTransfer's.
     const resume = false;
 
     const id =
@@ -358,7 +363,8 @@ export function useTransferLifecycle(
     if (
       !transfer ||
       transfer.dragOut ||
-      ['queued', 'progress', 'cancelling', 'done'].includes(transfer.status)
+      ['queued', 'progress', 'cancelling', 'done'].includes(transfer.status) ||
+      !canRetryTransfer(transfer)
     )
       return;
     delete cancelIntentRef.current[id];
@@ -367,10 +373,14 @@ export function useTransferLifecycle(
       refreshTarget?.();
       return;
     }
+    // An upload resumes only from a deliberate pause: every other ending has
+    // already discarded its staging file on the server, so there is nothing
+    // left to append to and the attempt would silently restart anyway.
     const resume =
-      transfer.direction === 'down' &&
-      (transfer.status === 'paused' ||
-        (transfer.status === 'error' && transfer.errorCode !== 'integrityMismatch'));
+      transfer.direction === 'down'
+        ? transfer.status === 'paused' ||
+          (transfer.status === 'error' && transfer.errorCode !== 'integrityMismatch')
+        : transfer.direction === 'up' && canPauseTransfer(transfer) && transfer.status === 'paused';
     setTransfersStore((previous) => {
       const row = previous[id];
       if (!row) return previous;
@@ -479,52 +489,57 @@ export function useTransferLifecycle(
           current.attemptId || id,
         );
       } else {
-        await api.transfer.cancel(current.connectionId, current.attemptId || id);
+        await api.transfer.cancel(
+          current.connectionId,
+          current.attemptId || id,
+          intent === 'paused' ? 'pause' : 'stop',
+        );
       }
     }
   };
 
-  const pauseTransfer = (id: string) => requestCancel(id, 'paused');
+  // canPauseTransfer is the only authority on this: a row may end up marked "paused"
+  // only if it can genuinely be resumed, whoever asked. Anything else degrades
+  // to a stop instead of offering a resume that would silently start over.
+  const pauseTransfer = (id: string) => {
+    const transfer = getTransfersSnapshot()[id];
+    return requestCancel(id, transfer && canPauseTransfer(transfer) ? 'paused' : 'stopped');
+  };
   const stopTransfer = (id: string) => requestCancel(id, 'stopped');
 
   // Disconnecting a pane tears down its session out from under any transfer
-  // still using it. Cancel those transfers the same way "Stop"/"Pause" would
-  // first, so they resolve as user-cancelled instead of racing the teardown
-  // and surfacing as a spurious connection-lost error.
-  const stopTransfersForConnection = (connectionId: string) =>
-    Promise.all(
+  // still using it. Cancel those transfers the same way "Stop" would first, so
+  // they resolve as user-cancelled instead of racing the teardown and
+  // surfacing as a spurious connection-lost error.
+  //
+  // Everything settles as stopped, including rows already sitting at "paused":
+  // a connection id is never reissued — reconnecting mints a fresh one — so
+  // nothing bound to this one can be resumed once it is gone. The server side
+  // agrees: teardown deletes the staging file every paused upload would append
+  // to. A row left claiming "paused" would be a promise to resume that can only
+  // fail, so the honest ending is a stop.
+  const stopTransfersForConnection = (connectionId: string) => {
+    markConnectionDead(connectionId);
+    return Promise.all(
       Object.values(getTransfersSnapshot())
         .filter(
           (transfer) =>
-            (transfer.status === 'progress' || transfer.status === 'queued') &&
-            (transfer.direction === 'recursive'
-              ? [transfer.intent.source, transfer.intent.target].some(
-                  (endpoint) =>
-                    endpoint.kind === 'remote' && endpoint.connectionId === connectionId,
-                )
-              : transfer.direction === 'copy'
-                ? transfer.sourceConnectionId === connectionId ||
-                  transfer.targetConnectionId === connectionId
-                : transfer.connectionId === connectionId),
+            !['done', 'error', 'stopped'].includes(transfer.status) &&
+            transferTouchesConnection(transfer, connectionId),
         )
-        .map((transfer) => requestCancel(transfer.id, canPause(transfer) ? 'paused' : 'stopped')),
+        .map((transfer) => requestCancel(transfer.id, 'stopped')),
     );
+  };
 
   const idsWithStatus = (...statuses: TransferStatus[]) =>
     Object.values(getTransfersSnapshot())
       .filter((transfer) => statuses.includes(transfer.status))
       .map((transfer) => transfer.id);
-  const canPause = (transfer: TransferRow) =>
-    !transfer.dragOut &&
-    transfer.direction !== 'recursive' &&
-    transfer.direction !== 'copy' &&
-    !(transfer.direction === 'up' && transfer.protocol === 'webdav');
-
   const pauseAllTransfers = () =>
     idsWithStatus('progress', 'queued')
       .filter((id) => {
         const transfer = getTransfersSnapshot()[id];
-        return transfer !== undefined && canPause(transfer);
+        return transfer !== undefined && canPauseTransfer(transfer);
       })
       .forEach((id) => reportRejection(pauseTransfer(id)));
   const stopAllTransfers = () =>

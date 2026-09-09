@@ -183,7 +183,7 @@ pub(crate) async fn connect(
 ) -> Result<(), ConnectFailure> {
     let slot = sessions.slot_for(connection_id);
     let mut guard = slot.lock().await;
-    teardown_session(&mut guard).await;
+    teardown_session(&mut guard, connection_id).await;
 
     let mut config = resolve_config(store, vault, config)
         .await
@@ -272,7 +272,7 @@ pub(crate) async fn disconnect(
     connecting.cancel(connection_id);
     let slot = sessions.slot_for(connection_id);
     let mut guard = slot.lock().await;
-    teardown_session(&mut guard).await;
+    teardown_session(&mut guard, connection_id).await;
     drop(guard);
     sessions.remove_if_empty(connection_id, &slot);
 }

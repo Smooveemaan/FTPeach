@@ -1,6 +1,11 @@
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 import type { TransferState } from './transferStore.ts';
-import { getTransfersSnapshot, subscribeTransfers } from './transferStore.ts';
+import {
+  canPauseTransfer,
+  canRetryTransfer,
+  getTransfersSnapshot,
+  subscribeTransfers,
+} from './transferStore.ts';
 
 export interface TransferSummary {
   transfersEmpty: boolean;
@@ -28,15 +33,12 @@ export function computeTransferSummary(transfers: TransferState): TransferSummar
         item.status === 'progress' || item.status === 'queued' || item.status === 'cancelling',
     ).length,
     hasPausableTransfers: values.some(
-      (item) =>
-        (item.status === 'progress' || item.status === 'queued') &&
-        !item.dragOut &&
-        item.direction !== 'recursive' &&
-        item.direction !== 'copy' &&
-        !(item.direction === 'up' && item.protocol === 'webdav'),
+      (item) => (item.status === 'progress' || item.status === 'queued') && canPauseTransfer(item),
     ),
     hasPausedTransfers: values.some((item) => item.status === 'paused'),
-    hasRetryableTransfers: values.some((item) => ['error', 'stopped'].includes(item.status)),
+    hasRetryableTransfers: values.some(
+      (item) => ['error', 'stopped'].includes(item.status) && canRetryTransfer(item),
+    ),
   };
 }
 

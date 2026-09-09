@@ -529,7 +529,8 @@
     "retry": "重試",
     "stop": "停止",
     "pauseUnsupportedCopy": "在伺服器之間複製時不支援暫停",
-    "pauseUnsupportedWebdav": "WebDAV 不支援暫停"
+    "pauseUnsupportedWebdav": "WebDAV 不支援暫停",
+    "retryUnsupportedConnection": "無法重試：連線已關閉"
   },
   "log": {
     "connecting": "正在連接到 {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "正在初始化 TLS...",
     "tlsEstablished": "TLS 連線已建立。",
     "davResumeUnsupportedLocal": "WebDAV 不支援繼續上傳 — 檔案將從頭開始重新發送。",
-    "davResumeUnsupportedServer": "伺服器不支援復原（預期狀態 {{expected}}，得到 {{status}}） — 將再次下載檔案。"
+    "davResumeUnsupportedServer": "伺服器不支援復原（預期狀態 {{expected}}，得到 {{status}}） — 將再次下載檔案。",
+    "uploadResumed": "正在從第 {{offset}} 位元組繼續上傳 {{path}}。",
+    "uploadRestartedSourceChanged": "本機檔案與已暫停的 {{path}} 上傳不再相符，將從頭重新傳送。",
+    "uploadRestartedMismatch": "伺服器上已有的資料與本機檔案不相符，將從頭重新傳送 {{path}}。",
+    "uploadRestartedUnverified": "無法驗證已暫停的 {{path}} 上傳（{{error}}），將從頭重新傳送該檔案。"
   },
   "logPanel": {
     "showAllConnections": "顯示所有連接",

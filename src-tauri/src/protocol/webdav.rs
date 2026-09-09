@@ -408,6 +408,10 @@ impl ProtocolBackend for WebDavBackend {
         self.logger.set_sink(sink);
     }
 
+    fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
+        self.log_key(key, params, kind);
+    }
+
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
         let target = if path.is_empty() {
             "/".to_string()

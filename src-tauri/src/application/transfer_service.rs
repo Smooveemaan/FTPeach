@@ -1,3 +1,4 @@
+use crate::application::upload_resume;
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validate_read_source, validate_write_destination,
@@ -57,6 +58,7 @@ async fn upload_staged(
     local: &std::path::Path,
     partial: &str,
     target: &str,
+    resume: bool,
     sink: ProgressSink,
 ) -> anyhow::Result<()> {
     let progress_sink = sink.clone();
@@ -66,7 +68,7 @@ async fn upload_staged(
         }
     });
     let result = async {
-        backend.upload(local, partial, false, staged_sink).await?;
+        backend.upload(local, partial, resume, staged_sink).await?;
         // Unsupported replacement is an error, never delete-then-rename.
         if crate::protocol::overwrite_allowed() {
             backend.rename(partial, target).await
@@ -232,13 +234,6 @@ pub async fn transfer_upload(
 ) -> CommandResult<OkResult> {
     let reservation = crate::local_fs::target_reservation::Reservation::acquire(&remote_path)
         .map_err(CommandError::from)?;
-    // Resume cannot safely reuse a remote file without source/attempt metadata.
-    let _ = resume;
-    let partial = remote_partial_path(&remote_path);
-    let partial_for_task = partial.clone();
-    let cleanup_connection = connection_id.clone();
-    let started = Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let started_for_task = started.clone();
     let local = PathBuf::from(local_path);
     if let Err(error) = validate_read_source(&local).await {
         return Ok(OkResult::Err {
@@ -246,11 +241,39 @@ pub async fn transfer_upload(
             error: CommandError::new(ErrorCode::InvalidInput, error.to_string()),
         });
     }
+    // Pin the source before a byte moves. A later attempt may only append to
+    // this attempt's staging file by proving it is still reading the same file.
+    let Some(pin) = upload_resume::pin(&local).await else {
+        return Ok(OkResult::Err {
+            ok: false,
+            error: CommandError::new(ErrorCode::InvalidInput, "Cannot read the local file"),
+        });
+    };
+    let key = upload_resume::Key {
+        connection_id: connection_id.clone(),
+        remote_path: remote_path.clone(),
+    };
+    let adopted = if resume {
+        upload_resume::resolve(sessions, &key, &local, pin).await
+    } else {
+        // A fresh upload supersedes whatever was staged for this destination.
+        upload_resume::discard(sessions, &key).await;
+        None
+    };
+    let resumed = adopted.is_some();
+    let partial = adopted
+        .map(|(staging, _)| staging)
+        .unwrap_or_else(|| remote_partial_path(&remote_path));
+    let partial_for_task = partial.clone();
+    let local_for_resume = local.to_string_lossy().into_owned();
+    let cleanup_connection = connection_id.clone();
+    let started = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let started_for_task = started.clone();
     let result = run_pool_task(
         sessions,
         progress,
         connection_id,
-        transfer_id,
+        transfer_id.clone(),
         &remote_path.clone(),
         move |sink| {
             Box::new(move |backend| {
@@ -262,7 +285,14 @@ pub async fn transfer_upload(
                     crate::protocol::ALLOW_OVERWRITE
                         .scope(
                             overwrite.unwrap_or(false),
-                            upload_staged(backend, &local, &partial_for_task, &remote_path, sink),
+                            upload_staged(
+                                backend,
+                                &local,
+                                &partial_for_task,
+                                &remote_path,
+                                resumed,
+                                sink,
+                            ),
                         )
                         .await
                 })
@@ -270,10 +300,18 @@ pub async fn transfer_upload(
         },
     )
     .await;
-    if started.load(std::sync::atomic::Ordering::SeqCst)
-        && !matches!(&result, Ok(OkResult::Ok { ok: true }))
+    // The staging file exists on the server if this attempt adopted one or got
+    // far enough to create its own. A pause hands it to the next attempt; every
+    // other unfinished ending abandons it.
+    let paused = upload_resume::take_pause_mark(&transfer_id);
+    if !matches!(&result, Ok(OkResult::Ok { ok: true }))
+        && (resumed || started.load(std::sync::atomic::Ordering::SeqCst))
     {
-        cleanup_remote_partial(sessions, &cleanup_connection, &partial).await;
+        if paused {
+            upload_resume::remember(key, partial, local_for_resume, pin);
+        } else {
+            cleanup_remote_partial(sessions, &cleanup_connection, &partial).await;
+        }
     }
     result
 }
@@ -326,11 +364,27 @@ pub async fn transfer_download(
     .await
 }
 
+/// Why a transfer is being cancelled. The pool cancels a task the same way
+/// either way; the difference is what the aborted transfer is allowed to leave
+/// behind, which is the transfer's decision to make rather than the caller's.
+#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum CancelIntent {
+    Pause,
+    Stop,
+}
+
 pub async fn transfer_cancel(
     sessions: &Sessions,
     connection_id: String,
     transfer_id: String,
+    intent: CancelIntent,
 ) -> CommandResult<OkResult> {
+    // Marked before the pool is told to cancel, so the upload this aborts is
+    // guaranteed to observe the mark when it unwinds.
+    if intent == CancelIntent::Pause {
+        upload_resume::mark_paused(&transfer_id);
+    }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
         return Ok(OkResult::Err {
             ok: false,

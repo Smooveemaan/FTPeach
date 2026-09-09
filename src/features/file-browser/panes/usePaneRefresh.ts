@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
 import { commandResultError } from '../../../shared/errorMessages.ts';
+import { isConnectionDead } from '../../transfers/index.ts';
 import { backendFor } from './paneBackend.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 
@@ -93,8 +94,13 @@ export function usePaneRefresh({
           setErrorMessage('');
         } else {
           updatePane(id, { loading: false }, tabId);
+          // A listing that lands after the user closed this session failed for
+          // exactly the reason they asked for. Reporting it would blame the
+          // server for a disconnect the user performed themselves.
+          const closedOnPurpose =
+            pane.kind === 'remote' && !!pane.connectionId && isConnectionDead(pane.connectionId);
           // Initial listing failures are shown by connectPane in the remote pane.
-          if (pane.kind !== 'remote' || pane.status !== 'connecting') {
+          if (!closedOnPurpose && (pane.kind !== 'remote' || pane.status !== 'connecting')) {
             reportError(commandResultError(result));
           }
         }

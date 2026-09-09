@@ -529,7 +529,8 @@
     "retry": "Coba lagi",
     "stop": "Berhenti",
     "pauseUnsupportedCopy": "Fitur jeda tidak didukung saat menyalin data antar server",
-    "pauseUnsupportedWebdav": "Fitur jeda tidak didukung oleh WebDAV"
+    "pauseUnsupportedWebdav": "Fitur jeda tidak didukung oleh WebDAV",
+    "retryUnsupportedConnection": "Coba lagi tidak tersedia: koneksi telah ditutup"
   },
   "log": {
     "connecting": "Sedang terhubung ke {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "Sedang menginisialisasi TLS...",
     "tlsEstablished": "Koneksi TLS telah terjalin.",
     "davResumeUnsupportedLocal": "WebDAV tidak mendukung kelanjutan pengunggahan — file tersebut akan dikirim ulang dari awal.",
-    "davResumeUnsupportedServer": "Server tidak mendukung fitur melanjutkan unduhan (status yang diharapkan: {{expected}}, namun yang diterima: {{status}}) — berkas tersebut akan diunduh ulang."
+    "davResumeUnsupportedServer": "Server tidak mendukung fitur melanjutkan unduhan (status yang diharapkan: {{expected}}, namun yang diterima: {{status}}) — berkas tersebut akan diunduh ulang.",
+    "uploadResumed": "Melanjutkan unggahan {{path}} dari {{offset}} byte.",
+    "uploadRestartedSourceChanged": "Berkas lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — berkas akan dikirim ulang dari awal.",
+    "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan berkas lokal — {{path}} akan dikirim ulang dari awal.",
+    "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — berkas akan dikirim ulang dari awal."
   },
   "logPanel": {
     "showAllConnections": "Tampilkan semua koneksi",

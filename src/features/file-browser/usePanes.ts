@@ -7,7 +7,11 @@ import { reportRejection } from '../../shared/asyncFailure.ts';
 import { isolate } from '../../shared/bidi.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
 import type { FileEntry, ManagedSite } from '../../shared/types.ts';
-import { getTransfersSnapshot, isTransferNameConflict } from '../transfers/index.ts';
+import {
+  getTransfersSnapshot,
+  isTransferNameConflict,
+  transferTouchesConnection,
+} from '../transfers/index.ts';
 import type { PathCrumb } from './components/PathBar.tsx';
 import { createPaneFileOperations } from './panes/createPaneFileOperations.ts';
 import type { NavigateOptions } from './panes/createPaneNavigation.ts';
@@ -253,16 +257,9 @@ export function usePanes({
     const connectionIds = PANE_IDS.map((id) => tab.panes[id].connectionId).filter(
       (id): id is string => Boolean(id),
     );
-    const idSet = new Set(connectionIds);
     const hasActive = Object.values(getTransfersSnapshot()).some(
       (t) =>
-        (t.direction === 'recursive'
-          ? [t.intent.source, t.intent.target].some(
-              (endpoint) => endpoint.kind === 'remote' && idSet.has(endpoint.connectionId),
-            )
-          : t.direction === 'copy'
-            ? idSet.has(t.sourceConnectionId) || idSet.has(t.targetConnectionId)
-            : idSet.has(t.connectionId)) &&
+        connectionIds.some((cid) => transferTouchesConnection(t, cid)) &&
         (t.status === 'progress' || t.status === 'queued' || t.status === 'paused'),
     );
     const proceed = () => {
@@ -275,7 +272,13 @@ export function usePanes({
       }
       delete requestIdsRef.current[tabId];
       delete syncAnchorsRef.current[tabId];
-      connectionIds.forEach((cid) => reportRejection(api.session.disconnect(cid)));
+      // The queue outlives the tab, so settle its transfers the same way a pane
+      // disconnect does before tearing the sessions down: cancelled on purpose
+      // rather than racing the teardown into a spurious connection-lost error,
+      // and with the connection marked gone so nothing offers a dead Retry.
+      connectionIds.forEach((cid) =>
+        reportRejection(stopTransfersForConnection(cid).then(() => api.session.disconnect(cid))),
+      );
     };
     if (hasActive) {
       requestConfirm(t('confirm.closeTabWithActiveTransfers'), proceed, {

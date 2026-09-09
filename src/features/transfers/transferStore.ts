@@ -70,6 +70,80 @@ export const COMPLETED_RETENTION = 1000;
 const attempts = new Map<string, string>();
 const targets = new Map<string, string>();
 
+/**
+ * Uploads can only resume where the protocol can both append at an offset and
+ * read the overlap back to prove appending is safe: SFTP writes and reads at an
+ * offset, FTP and FTPS append with APPE and read with REST over the same
+ * backend. WebDAV can do neither, because PUT has no standard partial write.
+ */
+const RESUMABLE_UPLOAD_PROTOCOLS: ReadonlySet<SiteProtocol> = new Set(['ftp', 'ftps', 'sftp']);
+
+/**
+ * Whether a transfer can be paused rather than only stopped.
+ *
+ * A pause promises the transfer will pick up where it left off, so it is
+ * offered only where that can be honoured. Downloads resume from their local
+ * partial on every protocol; uploads depend on the protocol above. Relay copies
+ * and recursive walks have no single resumable stream at all, and a drag-out
+ * has no destination of ours to resume into.
+ */
+export function canPauseTransfer(row: TransferRow): boolean {
+  return (
+    !row.dragOut &&
+    row.direction !== 'recursive' &&
+    row.direction !== 'copy' &&
+    (row.direction !== 'up' || RESUMABLE_UPLOAD_PROTOCOLS.has(row.protocol))
+  );
+}
+
+export function transferConnectionIds(row: TransferRow): string[] {
+  if (row.direction === 'recursive') {
+    return [row.intent.source, row.intent.target]
+      .filter((endpoint) => endpoint.kind === 'remote')
+      .map((endpoint) => endpoint.connectionId);
+  }
+  return row.direction === 'copy'
+    ? [row.sourceConnectionId, row.targetConnectionId]
+    : [row.connectionId];
+}
+
+export function transferTouchesConnection(row: TransferRow, connectionId: string): boolean {
+  return transferConnectionIds(row).includes(connectionId);
+}
+
+/**
+ * Connection ids are minted fresh by every connect (`createPaneSessionLifecycle`
+ * never reissues one), so once a connection is torn down nothing bound to it
+ * can ever come back to life. Recorded here so a row stuck pointing at a dead
+ * connection can be told apart from one that can still be retried into a live
+ * session.
+ */
+const deadConnectionIds = new Set<string>();
+
+export function markConnectionDead(connectionId: string): void {
+  if (deadConnectionIds.has(connectionId)) return;
+  deadConnectionIds.add(connectionId);
+  // Rows read this set through canRetryTransfer while rendering, so growing it
+  // has to reach subscribers the way a row change would. A row already sitting
+  // at error/stopped is not touched by the teardown that got us here, and would
+  // otherwise keep offering a Retry until some unrelated transfer redrew it.
+  setTransfersStore((previous) => ({ ...previous }));
+}
+
+/**
+ * Whether this connection was torn down on purpose. Also the answer to "did
+ * the server drop us, or did we hang up?" for anything that fails against a
+ * connection afterwards — a listing that lands after the teardown failed for
+ * the reason the user asked for, not for one worth reporting.
+ */
+export function isConnectionDead(connectionId: string): boolean {
+  return deadConnectionIds.has(connectionId);
+}
+
+export function canRetryTransfer(row: TransferRow): boolean {
+  return !transferConnectionIds(row).some(isConnectionDead);
+}
+
 export function transferTargetKey(row: TransferRow): string | undefined {
   if (row.dragOut) return undefined;
   if (row.direction === 'recursive') {
@@ -129,4 +203,5 @@ export function resetTransfersStoreForTests(): void {
   state = {};
   attempts.clear();
   targets.clear();
+  deadConnectionIds.clear();
 }

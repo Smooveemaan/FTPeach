@@ -322,6 +322,11 @@ pub trait ProtocolBackend: Send {
     fn is_connected(&self) -> bool;
     fn set_log_enabled(&mut self, enabled: bool);
     fn set_log_sink(&mut self, sink: Option<Arc<dyn Fn(LogText, LogKind) + Send + Sync>>);
+    /// Writes a translated line into this connection's log panel, for callers
+    /// above the protocol layer that have something to tell the user about a
+    /// connection they only hold as a `dyn ProtocolBackend`. Defaults to
+    /// discarding it, so a backend with no log sink of its own needs no impl.
+    fn log_event(&self, _key: &'static str, _params: serde_json::Value, _kind: LogKind) {}
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>>;
     async fn mkdir(&mut self, path: &str) -> BackendResult<()>;
@@ -353,6 +358,30 @@ pub trait ProtocolBackend: Send {
     /// zero-byte file for transfer integrity checks.
     async fn known_size(&mut self, path: &str) -> Option<u64> {
         Some(self.size(path).await)
+    }
+
+    /// Reads at most `len` bytes at `offset`, returning fewer only at EOF.
+    ///
+    /// A resumed upload appends to bytes an earlier attempt wrote, so it must
+    /// prove those bytes still match the local source before extending them.
+    /// Protocols that cannot read a range have no way to prove it, and the
+    /// default keeps them from resuming at all rather than trusting a length.
+    ///
+    /// Callers must request a range that ends at end of file. FTP can only
+    /// position a read, not bound it, so bounding one there would mean aborting
+    /// a transfer mid-stream and risking a desynchronised control channel. Since
+    /// the only caller verifies the tail of a staging file, the restriction
+    /// costs nothing and keeps every implementation to one safe shape.
+    async fn read_range(
+        &mut self,
+        _path: &str,
+        _offset: u64,
+        _len: usize,
+    ) -> BackendResult<Vec<u8>> {
+        Err(fail(
+            crate::ipc::ErrorCode::InvalidInput,
+            "This protocol cannot read a byte range",
+        ))
     }
 
     async fn upload(

@@ -106,9 +106,15 @@ pub async fn transfer_cancel(
     sessions: State<'_, Sessions>,
     connection_id: String,
     transfer_id: String,
+    intent: crate::application::transfer_service::CancelIntent,
 ) -> CommandResult<OkResult> {
-    crate::application::transfer_service::transfer_cancel(&sessions, connection_id, transfer_id)
-        .await
+    crate::application::transfer_service::transfer_cancel(
+        &sessions,
+        connection_id,
+        transfer_id,
+        intent,
+    )
+    .await
 }
 
 #[tauri::command]

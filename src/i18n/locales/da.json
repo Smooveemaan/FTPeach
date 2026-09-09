@@ -529,7 +529,8 @@
     "retry": "Prøv igen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause-funktionen understøttes ikke ved kopiering mellem servere",
-    "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV"
+    "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
+    "retryUnsupportedConnection": "Prøv igen er ikke tilgængelig: forbindelsen er blevet lukket"
   },
   "log": {
     "connecting": "Opretter forbindelse til {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "Initialiserer TLS...",
     "tlsEstablished": "TLS-forbindelsen er oprettet.",
     "davResumeUnsupportedLocal": "WebDAV understøtter ikke genoptagelse af upload — filen vil blive sendt igen fra starten.",
-    "davResumeUnsupportedServer": "Serveren understøtter ikke genoptagelse (forventet status: {{expected}}, modtaget: {{status}}) — filen vil blive downloadet igen."
+    "davResumeUnsupportedServer": "Serveren understøtter ikke genoptagelse (forventet status: {{expected}}, modtaget: {{status}}) — filen vil blive downloadet igen.",
+    "uploadResumed": "Genoptager upload af {{path}} ved {{offset}} byte.",
+    "uploadRestartedSourceChanged": "Den lokale fil svarer ikke længere til den pausede upload af {{path}} – den sendes igen fra begyndelsen.",
+    "uploadRestartedMismatch": "Det, der allerede ligger på serveren, svarer ikke til den lokale fil – {{path}} sendes igen fra begyndelsen.",
+    "uploadRestartedUnverified": "Den pausede upload af {{path}} kunne ikke verificeres ({{error}}) – filen sendes igen fra begyndelsen."
   },
   "logPanel": {
     "showAllConnections": "Vis alle forbindelser",

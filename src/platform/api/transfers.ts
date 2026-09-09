@@ -133,8 +133,8 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
         resume,
         overwrite,
       }),
-    cancel: (connectionId: string, transferId: string) =>
-      invoke('transfer_cancel', { connectionId, transferId }),
+    cancel: (connectionId: string, transferId: string, intent: 'pause' | 'stop') =>
+      invoke('transfer_cancel', { connectionId, transferId, intent }),
     remoteCopy: (
       sourceConnectionId: string,
       targetConnectionId: string,

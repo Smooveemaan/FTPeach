@@ -534,6 +534,7 @@
     "stop": "עצור",
     "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",
     "pauseUnsupportedWebdav": "WebDAV אינו תומך בפונקציית ההשהיה",
+    "retryUnsupportedConnection": "ניסיון חוזר אינו זמין: החיבור נסגר",
     "newTransfers_two": "{{count}} העברות חדשות"
   },
   "log": {
@@ -548,6 +549,10 @@
     "tlsEstablished": "נוצר חיבור TLS.",
     "davResumeUnsupportedLocal": "WebDAV אינו תומך בהמשך העלאה — הקובץ יישלח מחדש מההתחלה.",
     "davResumeUnsupportedServer": "השרת אינו תומך בהמשך ההורדה (הסטטוס הצפוי הוא {{expected}}, התקבל {{status}}) — הקובץ יורד מחדש.",
+    "uploadResumed": "ההעלאה של {{path}} מתחדשת ממיקום {{offset}} בתים.",
+    "uploadRestartedSourceChanged": "הקובץ המקומי כבר אינו תואם להעלאה המושהית של {{path}} — הוא יישלח שוב מההתחלה.",
+    "uploadRestartedMismatch": "מה שכבר נמצא בשרת אינו תואם לקובץ המקומי — {{path}} יישלח שוב מההתחלה.",
+    "uploadRestartedUnverified": "לא ניתן היה לאמת את ההעלאה המושהית של {{path}} ({{error}}) — הקובץ יישלח שוב מההתחלה.",
     "receivedEntries_two": "התקבלו {{count}} רשומות"
   },
   "logPanel": {

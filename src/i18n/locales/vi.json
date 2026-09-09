@@ -529,7 +529,8 @@
     "retry": "Thử lại",
     "stop": "Dừng lại",
     "pauseUnsupportedCopy": "Chức năng tạm dừng không được hỗ trợ khi sao chép giữa các máy chủ",
-    "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng"
+    "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng",
+    "retryUnsupportedConnection": "Không thể thử lại: kết nối đã bị đóng"
   },
   "log": {
     "connecting": "Đang kết nối với {{addr}}...",
@@ -542,7 +543,11 @@
     "tlsInit": "Đang khởi tạo TLS...",
     "tlsEstablished": "Kết nối TLS đã được thiết lập.",
     "davResumeUnsupportedLocal": "WebDAV không hỗ trợ tiếp tục tải lên — tệp sẽ được gửi lại từ đầu.",
-    "davResumeUnsupportedServer": "Máy chủ không hỗ trợ tính năng tiếp tục tải xuống (trạng thái dự kiến là {{expected}}, nhưng nhận được {{status}}) — tệp sẽ được tải xuống lại."
+    "davResumeUnsupportedServer": "Máy chủ không hỗ trợ tính năng tiếp tục tải xuống (trạng thái dự kiến là {{expected}}, nhưng nhận được {{status}}) — tệp sẽ được tải xuống lại.",
+    "uploadResumed": "Đang tiếp tục tải {{path}} lên từ byte {{offset}}.",
+    "uploadRestartedSourceChanged": "Tệp cục bộ không còn khớp với phiên tải lên đang tạm dừng của {{path}} — tệp sẽ được gửi lại từ đầu.",
+    "uploadRestartedMismatch": "Dữ liệu đã có trên máy chủ không khớp với tệp cục bộ — {{path}} sẽ được gửi lại từ đầu.",
+    "uploadRestartedUnverified": "Không thể xác minh phiên tải lên đang tạm dừng của {{path}} ({{error}}) — tệp sẽ được gửi lại từ đầu."
   },
   "logPanel": {
     "showAllConnections": "Hiển thị tất cả các kết nối",

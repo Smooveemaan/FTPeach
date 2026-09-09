@@ -538,6 +538,7 @@
     "stop": "Zastavit",
     "pauseUnsupportedCopy": "Při kopírování mezi servery není funkce pozastavení podporována",
     "pauseUnsupportedWebdav": "Funkce pozastavení není v protokolu WebDAV podporována",
+    "retryUnsupportedConnection": "Opakování není k dispozici: připojení bylo uzavřeno",
     "newTransfers_few": "{{count}} nové přenosy",
     "newTransfers_many": "{{count}} nového přenosu"
   },
@@ -553,6 +554,10 @@
     "tlsEstablished": "Bylo navázáno TLS připojení.",
     "davResumeUnsupportedLocal": "WebDAV nepodporuje obnovení nahrávání — soubor bude odeslán znovu od začátku.",
     "davResumeUnsupportedServer": "Server nepodporuje obnovení stahování (očekávaný stav {{expected}}, obdržen {{status}}) — soubor se stáhne znovu.",
+    "uploadResumed": "Pokračování v odesílání {{path}} od {{offset}} bajtů.",
+    "uploadRestartedSourceChanged": "Místní soubor už neodpovídá pozastavenému odesílání {{path}} – bude odeslán znovu od začátku.",
+    "uploadRestartedMismatch": "Data, která už jsou na serveru, neodpovídají místnímu souboru – {{path}} bude odeslán znovu od začátku.",
+    "uploadRestartedUnverified": "Pozastavené odesílání {{path}} se nepodařilo ověřit ({{error}}) – soubor bude odeslán znovu od začátku.",
     "receivedEntries_few": "Přijaty {{count}} záznamy",
     "receivedEntries_many": "Přijato {{count}} záznamu"
   },

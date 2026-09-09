@@ -534,6 +534,7 @@
     "stop": "Detener",
     "pauseUnsupportedCopy": "No se admite la función de pausa al copiar entre servidores",
     "pauseUnsupportedWebdav": "WebDAV no admite la función de pausa",
+    "retryUnsupportedConnection": "Reintentar no está disponible: la conexión se ha cerrado",
     "newTransfers_many": "{{count}} nuevas transferencias"
   },
   "log": {
@@ -548,6 +549,10 @@
     "tlsEstablished": "Se ha establecido la conexión TLS.",
     "davResumeUnsupportedLocal": "WebDAV no admite la reanudación de la subida; el archivo se volverá a enviar desde el principio.",
     "davResumeUnsupportedServer": "El servidor no admite la reanudación (estado esperado: «{{expected}}», pero se ha obtenido «{{status}}»): el archivo se volverá a descargar.",
+    "uploadResumed": "Reanudando el envío de {{path}} en {{offset}} bytes.",
+    "uploadRestartedSourceChanged": "El archivo local ya no coincide con el envío en pausa de {{path}}: se enviará de nuevo desde el principio.",
+    "uploadRestartedMismatch": "Lo que ya está en el servidor no coincide con el archivo local: {{path}} se enviará de nuevo desde el principio.",
+    "uploadRestartedUnverified": "No se pudo verificar el envío en pausa de {{path}} ({{error}}): el archivo se enviará de nuevo desde el principio.",
     "receivedEntries_many": "Se han recibido {{count}} entradas"
   },
   "logPanel": {

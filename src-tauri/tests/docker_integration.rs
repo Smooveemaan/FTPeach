@@ -132,6 +132,31 @@ async fn resume_round_trip(
             .upload(&partial_source, &remote_path, false, noop_progress())
             .await
             .expect("seed partial remote upload");
+
+        // Before appending, production proves the staged bytes still match the
+        // source by reading them back. On FTP that read is REST + RETR over a
+        // data connection, so the returned bytes are only half of what is being
+        // tested: an unfinalised data transfer leaves the control channel one
+        // response out of step, and that damage surfaces on the *next* command
+        // — here, the resumed upload immediately below.
+        let window = 4_096usize;
+        let tail_at = (split - window) as u64;
+        let staged_tail = backend
+            .read_range(&remote_path, tail_at, window)
+            .await
+            .expect("read the staged tail");
+        assert_eq!(
+            staged_tail,
+            content[tail_at as usize..split],
+            "the staged tail must match the bytes the source holds there"
+        );
+        // Offset zero takes the branch that sends no REST at all.
+        let staged_whole = backend
+            .read_range(&remote_path, 0, split)
+            .await
+            .expect("read the whole staged file");
+        assert_eq!(staged_whole, content[..split]);
+
         backend
             .upload(&full_source, &remote_path, true, noop_progress())
             .await

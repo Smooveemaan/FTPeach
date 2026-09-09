@@ -7,7 +7,7 @@ import Icon from '../../../components/Icon.tsx';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 import { updateSpeedSample } from '../transferSpeed.ts';
 import type { SpeedSamples } from '../transferSpeed.ts';
-import type { TransferRow } from '../transferStore.ts';
+import { canRetryTransfer, type TransferRow } from '../transferStore.ts';
 import type { ReorderableColumnKey } from '../transferColumns.ts';
 import {
   STATUS_LABEL_KEY,
@@ -66,6 +66,7 @@ export default function TransferItemRow({
     item.direction === 'copy' ||
     item.direction === 'recursive' ||
     (item.direction === 'up' && item.protocol === 'webdav');
+  const retryUnsupported = !canRetryTransfer(item);
   const speed = updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
   const remaining =
     item.status === 'progress' && hasTotal && speed && speed > 0
@@ -236,7 +237,12 @@ export default function TransferItemRow({
               <button
                 type="button"
                 className="retry-btn"
-                data-tooltip={t('transferQueue.retry')}
+                data-tooltip={
+                  retryUnsupported
+                    ? t('transferQueue.retryUnsupportedConnection')
+                    : t('transferQueue.retry')
+                }
+                disabled={retryUnsupported}
                 onClick={() => onRetry(item.id)}
               >
                 <Icon name="play" size={11} />

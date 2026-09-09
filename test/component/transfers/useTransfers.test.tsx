@@ -7,6 +7,7 @@ import {
   setTransfersStore,
   useTransfers,
 } from '../../../src/features/transfers/index.ts';
+import { resetTransfersStoreForTests } from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import type {
   CommandResult,
@@ -237,7 +238,7 @@ interface DownloadCall {
 interface MockCalls {
   upload: UploadCall[];
   download: DownloadCall[];
-  cancel: Array<{ connectionId: string; id: string }>;
+  cancel: Array<{ connectionId: string; id: string; intent: 'pause' | 'stop' }>;
   sessionDelete: Array<{ connectionId: string; path: string; isDir: boolean }>;
   fsLocalDelete: Array<{ path: string }>;
   notifyTransfersComplete: Array<
@@ -341,8 +342,8 @@ function makeMockApi() {
         calls.download.push({ connectionId, id, remoteFile, localTarget, resume });
         return api._nextDownload.promise;
       },
-      cancel: (connectionId, id) => {
-        calls.cancel.push({ connectionId, id });
+      cancel: (connectionId, id, intent) => {
+        calls.cancel.push({ connectionId, id, intent });
         return Promise.resolve({ ok: true });
       },
     },
@@ -382,7 +383,10 @@ async function withHarness(
   fn: (_context: HarnessContext) => Promise<void>,
   options: Partial<Parameters<typeof useTransfers>[0]> = {},
 ) {
-  setTransfersStore(() => ({}));
+  // A full reset, not just an empty state: dead-connection marks and the
+  // attempt/target indexes are module state too, and 'c1'-style fixture ids
+  // get reused across tests in this file, unlike real connection ids.
+  resetTransfersStoreForTests();
   const { api: mockApi, calls, emitProgress, emitDragOutStarted } = makeMockApi();
   const previousApi = window.api;
   window.api = {
@@ -771,7 +775,7 @@ test('dropping a download that is already running does not start a second writer
   });
 });
 
-test('retryTransfer restarts staged uploads and resumes paused downloads', async () => {
+test('retryTransfer resumes paused uploads and downloads, but restarts stopped ones', async () => {
   await withHarness(async ({ getApi, getSnapshot, setSnapshot, mockApi, calls }) => {
     setSnapshot(() => ({
       pausedRow: makeTransferRow({
@@ -793,8 +797,35 @@ test('retryTransfer restarts staged uploads and resumes paused downloads', async
     await act(async () => {
       await getApi().retryTransfer('pausedRow', () => {});
     });
-    assert.equal(calls.upload.at(-1)?.resume, false);
-    assert.equal(getSnapshot().pausedRow?.bytes, 0, 'fresh upload staging starts at zero');
+    assert.equal(calls.upload.at(-1)?.resume, true, 'FTP appends to the staging a pause kept');
+    assert.equal(getSnapshot().pausedRow?.bytes, 500, 'a resumed upload keeps its progress');
+
+    setSnapshot((prev) => ({
+      ...prev,
+      davRow: makeTransferRow({
+        id: 'davRow',
+        direction: 'up',
+        protocol: 'webdav',
+        name: 'w',
+        bytes: 400,
+        total: 1000,
+        status: 'paused',
+        connectionId: 'c1',
+        localFile: 'L3',
+        remoteTarget: 'R3',
+        startedAt: 3,
+      }),
+    }));
+    mockApi._nextUpload = resolvedDeferred<CommandResult>({ ok: true });
+    await act(async () => {
+      await getApi().retryTransfer('davRow', () => {});
+    });
+    assert.equal(
+      calls.upload.at(-1)?.resume,
+      false,
+      'WebDAV cannot append, so even a paused row starts over',
+    );
+    assert.equal(getSnapshot().davRow?.bytes, 0);
 
     setSnapshot((prev) => ({
       ...prev,
@@ -876,15 +907,15 @@ test('cancelling a transfer that already reached a terminal state is a no-op (st
   });
 });
 
-test('pauseAllTransfers skips WebDAV uploads (no resume support) but stopAllTransfers reaches everything active', async () => {
+test('pauseAllTransfers only pauses uploads that can prove a resume, but stopAllTransfers reaches everything active', async () => {
   await withHarness(async ({ getApi, getSnapshot, calls, mockApi }) => {
-    const { id: ftpId, runPromise: ftpRun } = await startStuckUpload(
+    const { id: sftpId, runPromise: sftpRun } = await startStuckUpload(
       getApi,
       getSnapshot,
       'c1',
-      'ftp',
+      'sftp',
     );
-    const { id: webdavId, runPromise: webdavRun } = await startStuckUpload(
+    const { id: davId, runPromise: davRun } = await startStuckUpload(
       getApi,
       getSnapshot,
       'c2',
@@ -894,35 +925,174 @@ test('pauseAllTransfers skips WebDAV uploads (no resume support) but stopAllTran
     await act(async () => {
       getApi().pauseAllTransfers();
     });
-    assert.equal(getSnapshot()[ftpId]?.status, 'cancelling');
-    assert.equal(getSnapshot()[webdavId]?.status, 'queued', 'WebDAV upload is not pausable');
-    assert.equal(calls.cancel.length, 1);
+    assert.equal(getSnapshot()[sftpId]?.status, 'cancelling');
+    assert.equal(
+      getSnapshot()[davId]?.status,
+      'queued',
+      'a WebDAV upload cannot append to staging at all, so it is never offered a pause',
+    );
+    assert.deepEqual(calls.cancel, [
+      { connectionId: 'c1', id: getSnapshot()[sftpId]?.attemptId, intent: 'pause' },
+    ]);
 
     await act(async () => {
       getApi().stopAllTransfers();
     });
     assert.equal(
-      getSnapshot()[ftpId]?.status,
+      getSnapshot()[sftpId]?.status,
       'cancelling',
       'stop also reaches an already-paused row',
     );
     assert.equal(
-      getSnapshot()[webdavId]?.status,
+      getSnapshot()[davId]?.status,
       'cancelling',
       'stop reaches a still-running WebDAV upload too',
     );
+    assert.deepEqual(
+      calls.cancel.map((call) => call.intent),
+      ['pause', 'stop'],
+      'a stop is never sent as a pause: only a pause may keep staging on the server',
+    );
     await act(async () => {
       mockApi._nextUpload.resolve({ ok: false, errorCode: 'cancelled' });
-      await Promise.all([ftpRun, webdavRun]);
+      await Promise.all([sftpRun, davRun]);
     });
-    assert.equal(getSnapshot()[ftpId]?.status, 'stopped');
-    assert.equal(getSnapshot()[webdavId]?.status, 'stopped');
+    assert.equal(getSnapshot()[sftpId]?.status, 'stopped');
+    assert.equal(getSnapshot()[davId]?.status, 'stopped');
+  });
+});
+
+test('an upload asks to resume only after a pause, never after a stop', async () => {
+  await withHarness(async ({ getApi, getSnapshot, calls, mockApi }) => {
+    const { id, runPromise } = await startStuckUpload(getApi, getSnapshot, 'c1', 'sftp');
+    assert.equal(calls.upload[0]?.resume, false, 'a first attempt has no staging to append to');
+
+    await act(async () => {
+      await getApi().pauseTransfer(id);
+      mockApi._nextUpload.resolve({ ok: false, errorCode: 'cancelled' });
+      await runPromise;
+    });
+    assert.equal(getSnapshot()[id]?.status, 'paused');
+
+    mockApi._nextUpload = createDeferred<CommandResult>();
+    let resumed!: Promise<void>;
+    await act(async () => {
+      resumed = getApi().retryTransfer(id);
+      await Promise.resolve();
+    });
+    assert.equal(
+      calls.upload.at(-1)?.resume,
+      true,
+      'resuming a paused upload appends to the staging it left behind',
+    );
+
+    await act(async () => {
+      await getApi().stopTransfer(id);
+      mockApi._nextUpload.resolve({ ok: false, errorCode: 'cancelled' });
+      await resumed;
+    });
+    assert.equal(getSnapshot()[id]?.status, 'stopped');
+
+    mockApi._nextUpload = createDeferred<CommandResult>();
+    let restarted!: Promise<void>;
+    await act(async () => {
+      restarted = getApi().retryTransfer(id);
+      await Promise.resolve();
+    });
+    assert.equal(
+      calls.upload.at(-1)?.resume,
+      false,
+      'a stop discards the staging server-side, so its retry has to start over',
+    );
+    await act(async () => {
+      mockApi._nextUpload.resolve({ ok: true });
+      await restarted;
+    });
+  });
+});
+
+test('disconnecting settles every transfer on that connection, paused ones included', async () => {
+  await withHarness(async ({ getApi, getSnapshot, setSnapshot, calls, mockApi }) => {
+    const { id: running, runPromise } = await startStuckUpload(getApi, getSnapshot, 'c1', 'sftp');
+    setSnapshot((previous) => ({
+      ...previous,
+      pausedUpload: makeTransferRow({
+        id: 'pausedUpload',
+        direction: 'up',
+        name: 'paused.bin',
+        status: 'paused',
+        protocol: 'sftp',
+        connectionId: 'c1',
+        localFile: 'C:\\local\\paused.bin',
+        remoteTarget: '/remote/dir/paused.bin',
+        bytes: 500,
+      }),
+      pausedDownload: makeTransferRow({
+        id: 'pausedDownload',
+        direction: 'down',
+        name: 'grab.bin',
+        status: 'paused',
+        protocol: 'sftp',
+        connectionId: 'c1',
+        remoteFile: '/remote/dir/grab.bin',
+        localTarget: 'C:\\local\\grab.bin',
+      }),
+      elsewhere: makeTransferRow({
+        id: 'elsewhere',
+        direction: 'up',
+        name: 'other.bin',
+        status: 'paused',
+        protocol: 'sftp',
+        connectionId: 'c2',
+        localFile: 'C:\\local\\other.bin',
+        remoteTarget: '/remote/dir/other.bin',
+      }),
+    }));
+
+    await act(async () => {
+      await getApi().stopTransfersForConnection('c1');
+    });
+
+    assert.equal(getSnapshot()[running]?.status, 'cancelling');
+    assert.deepEqual(
+      calls.cancel,
+      [{ connectionId: 'c1', id: getSnapshot()[running]?.attemptId, intent: 'stop' }],
+      'a teardown never asks the backend to keep staging it is about to delete',
+    );
+    assert.equal(
+      getSnapshot().pausedUpload?.status,
+      'stopped',
+      'the connection id dies here and is never reissued, so a paused row would promise a resume that can only fail',
+    );
+    assert.equal(getSnapshot().pausedDownload?.status, 'stopped');
+    assert.equal(
+      getSnapshot().elsewhere?.status,
+      'paused',
+      'another connection keeps its own paused rows',
+    );
+
+    await act(async () => {
+      mockApi._nextUpload.resolve({ ok: false, errorCode: 'cancelled' });
+      await runPromise;
+    });
+    assert.equal(getSnapshot()[running]?.status, 'stopped');
+
+    const uploadsBeforeRetry = calls.upload.length;
+    await act(async () => {
+      await getApi().retryTransfer('pausedUpload');
+    });
+    assert.equal(
+      calls.upload.length,
+      uploadsBeforeRetry,
+      'the connection this row named is gone for good, so retrying it must not even try',
+    );
+    assert.equal(getSnapshot().pausedUpload?.status, 'stopped');
   });
 });
 
 test('summary flags (hasActiveTransfers/hasPausedTransfers/hasRetryableTransfers/...) track the lifecycle', async () => {
   await withHarness(async ({ getApi, getSnapshot, mockApi }) => {
-    const { id, runPromise } = await startStuckUpload(getApi, getSnapshot);
+    const { id, runPromise } = await startStuckUpload(getApi, getSnapshot, 'c1', 'sftp');
 
     assert.equal(getApi().hasActiveTransfers, true);
     assert.equal(getApi().activeTransfersCount, 1);
@@ -957,7 +1127,7 @@ test('summary flags (hasActiveTransfers/hasPausedTransfers/hasRetryableTransfers
 
 test('buffered progress and error events cannot settle a cancelling attempt before its command returns', async () => {
   await withHarness(async ({ getApi, getSnapshot, emitProgress, mockApi }) => {
-    const { id, runPromise } = await startStuckUpload(getApi, getSnapshot);
+    const { id, runPromise } = await startStuckUpload(getApi, getSnapshot, 'c1', 'sftp');
 
     await act(async () => {
       await getApi().pauseTransfer(id);
@@ -1048,7 +1218,7 @@ test('a native drag-out download announced by the backend gets a queue row that 
     await act(async () => {
       await getApi().stopTransfer('dragout-1');
     });
-    assert.deepEqual(calls.cancel, [{ connectionId: 'c1', id: 'dragout-1' }]);
+    assert.deepEqual(calls.cancel, [{ connectionId: 'c1', id: 'dragout-1', intent: 'stop' }]);
     assert.equal(getSnapshot()['dragout-1']?.status, 'cancelling');
     assert.equal(calls.fsLocalDelete.length, 0, 'no local partial of ours to clean up');
 

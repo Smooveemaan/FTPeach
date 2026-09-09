@@ -193,7 +193,16 @@ export function useFileBrowserPaneModel(
     switchToLocal: switchPaneToLocal,
     startConnect: startPaneConnect,
     setForm: setPaneForm,
-    connect: connectPane,
+    // A pane can still carry `siteId` after a disconnect, or after restoring a
+    // saved tab layout, while its `form` is a snapshot from whenever it was
+    // last built. Reconnecting through the plain form would silently drop the
+    // bookmark's current remotePath (and any other edits) back to '/' — route
+    // through siteConnectPane so a still-known bookmark stays authoritative.
+    connect: (id) => {
+      const pane = panes[id];
+      const site = pane.siteId ? sites.find((candidate) => candidate.id === pane.siteId) : null;
+      return site ? () => siteConnectPane(id, site) : connectPane(id);
+    },
     disconnect: disconnectPane,
     cancelConnect: cancelConnectPane,
     connectSite: siteConnectPane,

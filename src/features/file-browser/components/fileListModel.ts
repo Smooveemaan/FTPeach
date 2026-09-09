@@ -81,7 +81,7 @@ export const COLUMN_DEFS = {
     sortValue: (e) => (e.isDirectory ? -1 : (e.size ?? 0)),
   },
   modifiedAt: {
-    defaultWidth: 122,
+    defaultWidth: 121,
     render: (e, _t, formatDate) => formatDate(e.modifiedAt),
     sortValue: (e) => (e.modifiedAt ? new Date(e.modifiedAt).getTime() : 0),
   },

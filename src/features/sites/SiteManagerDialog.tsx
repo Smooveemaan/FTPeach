@@ -24,7 +24,7 @@ import { useSiteSecrets } from './useSiteSecrets.ts';
 import { useTruncated } from '../../hooks/useTruncated.ts';
 import { entriesForManager, sortManagedEntries } from './siteManagerModel.ts';
 import type { SiteManagerKind, SiteSortMode } from './siteManagerModel.ts';
-import type { ManagedSite, SiteProtocol, Translate } from '../../shared/types.ts';
+import type { ManagedSite, SiteForm, SiteProtocol, Translate } from '../../shared/types.ts';
 import type { SavedSite, SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 import { api } from '../../platform/api/index.ts';
@@ -36,6 +36,7 @@ interface ImportSummary {
 
 export interface SiteManagerDialogProps {
   managerKind?: SiteManagerKind;
+  initialForm?: SiteForm;
   entries: ManagedSite[];
   onSave: (payload: SavedSite) => Promise<SiteMutationResult | undefined>;
   onDelete: (id: string) => Promise<SiteMutationResult | undefined>;
@@ -69,6 +70,7 @@ const errorMessage = (cause: unknown): string =>
 
 export default function SiteManagerDialog({
   managerKind = 'bookmarks',
+  initialForm,
   entries,
   onSave,
   onDelete,
@@ -117,7 +119,7 @@ export default function SiteManagerDialog({
     () => sortManagedEntries(managedEntries, sortMode),
     [managedEntries, sortMode],
   );
-  const dialog = useSiteManagerDialogState();
+  const dialog = useSiteManagerDialogState(initialForm);
   const {
     addingFolder,
     editingId,
@@ -145,6 +147,7 @@ export default function SiteManagerDialog({
   const { keyPassphraseRef, passwordRef, readSecrets, resetSecrets, revealSavedSecret } =
     useSiteSecrets({
       editingId,
+      initialSecrets: initialForm,
       revealFailedMessage: t('siteManagerDialog.revealFailed'),
       setError,
     });
@@ -221,7 +224,7 @@ export default function SiteManagerDialog({
       addingFolder: false,
       editingId: '__new__',
       error: '',
-      form: { ...createSiteForm(), kind: 'local', icon: 'folder', parentId },
+      form: { ...createSiteForm(), kind: 'local', parentId },
       renamingFolderId: null,
       renamingSiteId: null,
     });
@@ -247,6 +250,10 @@ export default function SiteManagerDialog({
 
   const cancelEdit = () => {
     if (saving) return;
+    if (initialForm) {
+      onClose();
+      return;
+    }
     setRsaKeySelected(false);
     patch({ editingId: null, error: '', saving: false });
   };
@@ -529,6 +536,7 @@ export default function SiteManagerDialog({
         {editing ? (
           <SiteEditor
             form={form}
+            folders={displayEntries.filter((entry) => entry.kind === 'folder')}
             setForm={setForm}
             error={error}
             onDismissError={() => setError('')}

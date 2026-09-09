@@ -148,9 +148,9 @@
     "label": "Název profilu připojení:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Uložit místní cestu",
+    "label": "Název",
+    "tooltip": "Uložit aktuální cestu"
   },
   "newFolder": {
     "title": "Nová složka",
@@ -593,8 +593,8 @@
     "titleList": "Správa záložek",
     "titleLocalPathList": "Správa místních cest",
     "manageLocalPaths": "Správa místních cest…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Nová místní cesta",
+    "titleEditLocalPath": "Upravit místní cestu",
     "fields": {
       "name": "Název",
       "icon": "Ikona",
@@ -603,7 +603,8 @@
       "keyFile": "Soubor klíčů",
       "caCertFile": "Certifikát certifikační autority",
       "remotePath": "Výchozí složka",
-      "localPath": "Místní složka"
+      "localPath": "Místní složka",
+      "folder": "Složka"
     },
     "icons": {
       "bookmark": "Přidat do záložek",
@@ -665,7 +666,8 @@
     "duplicateNameSuffix": " (kopie)",
     "newBookmarkInFolder": "Přidat sem záložku",
     "expandFolder": "Rozbalit „{{name}}“",
-    "collapseFolder": "Sbalit „{{name}}“"
+    "collapseFolder": "Sbalit „{{name}}“",
+    "noFolder": "Bez složky"
   },
   "connectionBar": {
     "fields": {
@@ -687,7 +689,7 @@
       "tooltip": "Přihlaste se pomocí souboru s privátním klíčem SSH namísto hesla",
       "label": "Přihlášení pomocí klíče SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Soukromé klíče RSA mají známé riziko útoku postranním kanálem založeného na měření času. Pro nové klíče SSH upřednostněte Ed25519.",
     "connectTooltip": {
       "cancel": "Zrušit",
       "connect": "Připojit se",

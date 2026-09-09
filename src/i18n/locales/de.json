@@ -142,9 +142,9 @@
     "label": "Name des Verbindungsprofils:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
+    "title": "Lokalen Pfad speichern",
     "label": "Name",
-    "tooltip": "Save current path"
+    "tooltip": "Aktuellen Pfad speichern"
   },
   "newFolder": {
     "title": "Neuer Ordner",
@@ -579,8 +579,8 @@
     "titleList": "Lesezeichen verwalten",
     "titleLocalPathList": "Lokale Pfade verwalten",
     "manageLocalPaths": "Lokale Pfade verwalten…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Neuer lokaler Pfad",
+    "titleEditLocalPath": "Lokalen Pfad bearbeiten",
     "fields": {
       "name": "Name",
       "icon": "Symbol",
@@ -589,7 +589,8 @@
       "keyFile": "Schlüsseldatei",
       "caCertFile": "CA-Zertifikat",
       "remotePath": "Standardordner",
-      "localPath": "Lokaler Ordner"
+      "localPath": "Lokaler Ordner",
+      "folder": "Ordner"
     },
     "icons": {
       "bookmark": "Lesezeichen",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (Kopie)",
     "newBookmarkInFolder": "Hier neues Lesezeichen setzen",
     "expandFolder": "„{{name}}“ erweitern",
-    "collapseFolder": "„{{name}}“ ausblenden"
+    "collapseFolder": "„{{name}}“ ausblenden",
+    "noFolder": "Kein Ordner"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Mit einer privaten SSH-Schlüsseldatei statt mit einem Passwort anmelden",
       "label": "Mit SSH-Schlüssel anmelden"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Bei privaten RSA-Schlüsseln besteht ein bekanntes Risiko für zeitbasierte Seitenkanalangriffe. Bevorzugen Sie Ed25519 für neue SSH-Schlüssel.",
     "connectTooltip": {
       "cancel": "Abbrechen",
       "connect": "Verbinden",

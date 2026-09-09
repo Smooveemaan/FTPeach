@@ -142,9 +142,9 @@
     "label": "Naam van verbindingsprofiel:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Lokaal pad opslaan",
+    "label": "Naam",
+    "tooltip": "Huidig pad opslaan"
   },
   "newFolder": {
     "title": "Nieuwe map",
@@ -579,8 +579,8 @@
     "titleList": "Bladwijzers beheren",
     "titleLocalPathList": "Lokale paden beheren",
     "manageLocalPaths": "Lokale paden beheren…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Nieuw lokaal pad",
+    "titleEditLocalPath": "Lokaal pad bewerken",
     "fields": {
       "name": "Naam",
       "icon": "Pictogram",
@@ -589,7 +589,8 @@
       "keyFile": "Sleutelbestand",
       "caCertFile": "CA-certificaat",
       "remotePath": "Standaardmap",
-      "localPath": "Lokale map"
+      "localPath": "Lokale map",
+      "folder": "Map"
     },
     "icons": {
       "bookmark": "Bladwijzer",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (kopie)",
     "newBookmarkInFolder": "Hier een nieuwe bladwijzer toevoegen",
     "expandFolder": "\"{{name}}\" uitvouwen",
-    "collapseFolder": "\"{{name}}\" samenvouwen"
+    "collapseFolder": "\"{{name}}\" samenvouwen",
+    "noFolder": "Geen map"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Log in met een privé-SSH-sleutelbestand in plaats van een wachtwoord",
       "label": "Inloggen met SSH-sleutel"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Bij RSA-privésleutels bestaat een bekend risico op zijkanaalaanvallen op basis van tijdmetingen. Gebruik bij voorkeur Ed25519 voor nieuwe SSH-sleutels.",
     "connectTooltip": {
       "cancel": "Annuleren",
       "connect": "Verbinden",

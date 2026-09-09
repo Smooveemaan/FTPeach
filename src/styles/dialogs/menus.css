@@ -50,7 +50,7 @@
 .menu-dropdown,
 .context-menu {
   background: var(--bg-panel);
-  border: var(--control-border);
+  border: 1px solid var(--window-border);
   border-radius: var(--radius-md);
   box-shadow: var(--popover-shadow);
   padding: 4px;

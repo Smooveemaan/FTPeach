@@ -64,7 +64,9 @@
     "deleteSelected_other": "Eliminar ({{count}} archivos)",
     "deletePermanently": "Eliminar definitivamente",
     "deleteSelectedPermanently_one": "Eliminar definitivamente (archivo {{count}})",
-    "deleteSelectedPermanently_other": "Eliminar definitivamente ({{count}} archivos)"
+    "deleteSelectedPermanently_other": "Eliminar definitivamente ({{count}} archivos)",
+    "deleteSelected_many": "Eliminar ({{count}} archivos)",
+    "deleteSelectedPermanently_many": "Eliminar definitivamente ({{count}} archivos)"
   },
   "chmodDialog": {
     "title": "Permisos de SFTP",
@@ -131,7 +133,8 @@
   "dragMove": {
     "itemCount_one": "{{count}} artículo",
     "itemCount_other": "{{count}} artículos",
-    "moveMode": "moverse"
+    "moveMode": "moverse",
+    "itemCount_many": "{{count}} artículos"
   },
   "openWithChanged": {
     "title": "El archivo ha cambiado",
@@ -142,9 +145,9 @@
     "label": "Nombre del perfil de conexión:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Guardar ruta local",
+    "label": "Nombre",
+    "tooltip": "Guardar ruta actual"
   },
   "newFolder": {
     "title": "Nueva carpeta",
@@ -180,7 +183,8 @@
     "deletePermanentSelected": "¿Desea eliminar definitivamente los elementos seleccionados ({{count}})? Esta acción no se puede deshacer.",
     "deletePermanentEntry": "¿Deseas eliminar definitivamente «{{name}}»? Esta acción no se puede deshacer.",
     "deleteRemoteSelected": "¿Deseas eliminar definitivamente los elementos remotos seleccionados ({{count}})? Esta acción no se puede deshacer.",
-    "deleteRemoteEntry": "¿Deseas eliminar definitivamente el elemento remoto «{{name}}»? Esta acción no se puede deshacer."
+    "deleteRemoteEntry": "¿Deseas eliminar definitivamente el elemento remoto «{{name}}»? Esta acción no se puede deshacer.",
+    "overwriteConflicts_many": "Ya existen {{count}} elementos en la carpeta de destino. ¿Quieres sobrescribirlos?"
   },
   "paneSide": {
     "top": "arriba",
@@ -529,7 +533,8 @@
     "retry": "Volver a intentarlo",
     "stop": "Detener",
     "pauseUnsupportedCopy": "No se admite la función de pausa al copiar entre servidores",
-    "pauseUnsupportedWebdav": "WebDAV no admite la función de pausa"
+    "pauseUnsupportedWebdav": "WebDAV no admite la función de pausa",
+    "newTransfers_many": "{{count}} nuevas transferencias"
   },
   "log": {
     "connecting": "Conectando a {{addr}}...",
@@ -542,7 +547,8 @@
     "tlsInit": "Inicializando TLS...",
     "tlsEstablished": "Se ha establecido la conexión TLS.",
     "davResumeUnsupportedLocal": "WebDAV no admite la reanudación de la subida; el archivo se volverá a enviar desde el principio.",
-    "davResumeUnsupportedServer": "El servidor no admite la reanudación (estado esperado: «{{expected}}», pero se ha obtenido «{{status}}»): el archivo se volverá a descargar."
+    "davResumeUnsupportedServer": "El servidor no admite la reanudación (estado esperado: «{{expected}}», pero se ha obtenido «{{status}}»): el archivo se volverá a descargar.",
+    "receivedEntries_many": "Se han recibido {{count}} entradas"
   },
   "logPanel": {
     "showAllConnections": "Mostrar todas las conexiones",
@@ -558,7 +564,8 @@
     "copyFailedTooltip": "No se ha podido copiar",
     "saveFailedTooltip": "No se ha podido guardar el archivo",
     "emptyFiltered": "No hay líneas para esta conexión",
-    "emptyDefault": "Los mensajes del protocolo aparecerán aquí"
+    "emptyDefault": "Los mensajes del protocolo aparecerán aquí",
+    "saveLastLines_many": "Guardar las últimas {{count}} líneas en un archivo .txt"
   },
   "aboutDialog": {
     "title": "Acerca de",
@@ -579,8 +586,8 @@
     "titleList": "Gestionar marcadores",
     "titleLocalPathList": "Gestionar rutas locales",
     "manageLocalPaths": "Gestionar rutas locales…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Nueva ruta local",
+    "titleEditLocalPath": "Editar ruta local",
     "fields": {
       "name": "Nombre",
       "icon": "Icono",
@@ -589,7 +596,8 @@
       "keyFile": "Archivo de claves",
       "caCertFile": "Certificado de CA",
       "remotePath": "Carpeta predeterminada",
-      "localPath": "Carpeta local"
+      "localPath": "Carpeta local",
+      "folder": "Carpeta"
     },
     "icons": {
       "bookmark": "Marcador",
@@ -647,7 +655,10 @@
     "duplicateNameSuffix": " (copia)",
     "newBookmarkInFolder": "Nuevo marcador aquí",
     "expandFolder": "Despliegar «{{name}}»",
-    "collapseFolder": "Ocultar «{{name}}»"
+    "collapseFolder": "Ocultar «{{name}}»",
+    "noFolder": "Sin carpeta",
+    "importAdded_many": "Se añadieron {{count}} marcadores",
+    "importSkipped_many": "se omitieron {{count}} duplicados"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +680,7 @@
       "tooltip": "Iniciar sesión con un archivo de clave SSH privada en lugar de una contraseña",
       "label": "Iniciar sesión con una clave SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Las claves privadas RSA presentan un riesgo conocido de ataques de canal lateral basados en el tiempo. Es preferible usar Ed25519 para las nuevas claves SSH.",
     "connectTooltip": {
       "cancel": "Cancelar",
       "connect": "Conectar",

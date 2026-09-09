@@ -142,9 +142,9 @@
     "label": "Navn på forbindelsesprofil:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Gem lokal sti",
+    "label": "Navn",
+    "tooltip": "Gem den aktuelle sti"
   },
   "newFolder": {
     "title": "Ny mappe",
@@ -579,8 +579,8 @@
     "titleList": "Administrer bogmærker",
     "titleLocalPathList": "Administrer lokale stier",
     "manageLocalPaths": "Administrer lokale stier…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Ny lokal sti",
+    "titleEditLocalPath": "Rediger lokal sti",
     "fields": {
       "name": "Navn",
       "icon": "Ikon",
@@ -589,7 +589,8 @@
       "keyFile": "Nøglefil",
       "caCertFile": "CA-certifikat",
       "remotePath": "Standardmappe",
-      "localPath": "Lokal mappe"
+      "localPath": "Lokal mappe",
+      "folder": "Mappe"
     },
     "icons": {
       "bookmark": "Bogmærke",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (kopi)",
     "newBookmarkInFolder": "Opret nyt bogmærke her",
     "expandFolder": "Udvid »{{name}}«",
-    "collapseFolder": "Skjul »{{name}}«"
+    "collapseFolder": "Skjul »{{name}}«",
+    "noFolder": "Ingen mappe"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Log ind med en privat SSH-nøglefil i stedet for en adgangskode",
       "label": "Log ind med SSH-nøgle"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Private RSA-nøgler har en kendt risiko for sidekanalangreb baseret på tidsmålinger. Brug helst Ed25519 til nye SSH-nøgler.",
     "connectTooltip": {
       "cancel": "Annuller",
       "connect": "Opret forbindelse",

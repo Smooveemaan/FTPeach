@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 import type { MenuItem } from '../components/MenuItems.tsx';
-import type { FileEntry, PaneId } from '../shared/types.ts';
+import type { FileEntry, PaneId, SiteForm } from '../shared/types.ts';
 
 interface ConfirmState {
   message: string;
@@ -28,7 +28,7 @@ export interface DriveMenu {
 export interface DialogState {
   showSettings: boolean;
   showAbout: boolean;
-  showSaveSite: PaneId | false;
+  showSaveSite: SiteForm | false;
   showSiteManagerDialog: PaneId | true | false;
   showLocalPathManagerDialog: PaneId | true | false;
   showExportSettings: boolean;

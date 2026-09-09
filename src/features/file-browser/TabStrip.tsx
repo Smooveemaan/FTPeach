@@ -114,8 +114,8 @@ function describeTab(
 const PAN_CLICK_THRESHOLD = 4;
 
 const MIN_TAB_WIDTH = 76;
-const MIN_TAB_WIDTH_COMPACT = 32;
 const MAX_TAB_WIDTH = 134;
+const MIN_TAB_WIDTH_COMPACT = MAX_TAB_WIDTH / 2;
 const TAB_GAP = 3;
 const SCROLL_PADDING = 10; // .tab-strip-scroll's own left padding (no right padding — the "+" button's own margin provides that gap)
 const ADD_BUTTON_SPACE = 40; // "+" button width + its margins on both sides
@@ -233,8 +233,8 @@ export default function TabStrip({
     }
     const font = getComputedStyle(el).font;
     const textWidth = measureTextWidth(editingValue || ' ', font);
-    // padding (4px * 2) + border (1px * 2) + a little caret room.
-    setRenameWidth(Math.max(40, textWidth + 16));
+    // Match the input's padding (4px * 2) and border (1px * 2).
+    setRenameWidth(Math.ceil(textWidth) + 10);
   }, [editingId, editingValue]);
 
   const finishRename = (save: boolean) => {

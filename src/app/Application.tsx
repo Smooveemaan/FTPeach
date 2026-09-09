@@ -287,8 +287,6 @@ export default function Application() {
     connectableSites: flatSites,
     orderedSites,
     localPaths,
-    savePaneSite,
-    saveLocalPath,
     saveSite: handleSiteManagerSave,
     deleteSite: handleSiteDelete,
     saveFolder: handleSaveFolder,
@@ -305,12 +303,9 @@ export default function Application() {
   const { exportSettings: handleExportSettings, importSettings: handleImportSettings } =
     useSettingsTransfer({ applySettings, refreshSites, reportError });
 
-  const { handleSaveSite, submitSaveSite } = useSiteSaveWorkflow({
+  const { handleSaveSite } = useSiteSaveWorkflow({
     panes,
-    showSaveSite,
     setShowSaveSite,
-    savePaneSite,
-    saveLocalPath,
   });
 
   const {
@@ -579,7 +574,6 @@ export default function Application() {
       deleteFolder: handleDeleteFolder,
       applyLayout: handleApplyLayout,
       connect: connectSavedSite,
-      submitPaneSite: submitSaveSite,
     },
     panes,
     activeTabId,

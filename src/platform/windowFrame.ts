@@ -35,7 +35,7 @@ let openDialogs = 0;
  * change could reach. A custom property reads back as authored (a hex string
  * today, a `color-mix()` tomorrow), so the value goes through a throwaway
  * element instead: the browser resolves the `var()` and normalizes whatever
- * it finds down to rgb() channels.
+ * it finds to rgb() or color(srgb ...) channels.
  */
 function resolveThemeColor(value: string, fallback: Channels): Channels {
   const probe = document.createElement('span');
@@ -47,13 +47,20 @@ function resolveThemeColor(value: string, fallback: Channels): Channels {
   return parseThemeColor(color, fallback);
 }
 
-/** Parse browser-normalized rgb/rgba independently of DOM and IPC. */
+/** Parse browser-normalized RGB and sRGB independently of DOM and IPC. */
 export function parseThemeColor(color: string, fallback: Channels): Channels {
-  const channels = color.match(
-    /^rgba?\(\s*([+-]?[\d.]+)[,\s]+([+-]?[\d.]+)[,\s]+([+-]?[\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)$/i,
+  // color-mix(in srgb, ...) stays in color(srgb ...) form in the webview.
+  // Its channels are normalized to 0..1 rather than RGB's 0..255.
+  const srgb = color.match(
+    /^color\(srgb\s+([+-]?[\d.eE+-]+)\s+([+-]?[\d.eE+-]+)\s+([+-]?[\d.eE+-]+)(?:\s*\/\s*([\d.]+))?\s*\)$/i,
   );
+  const channels =
+    srgb ??
+    color.match(
+      /^rgba?\(\s*([+-]?[\d.]+)[,\s]+([+-]?[\d.]+)[,\s]+([+-]?[\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)$/i,
+    );
   if (!channels || Number(channels[4] ?? 1) === 0) return fallback;
-  const values = channels.slice(1, 4).map(Number);
+  const values = channels.slice(1, 4).map((value) => Number(value) * (srgb ? 255 : 1));
   if (!values.every(Number.isFinite)) return fallback;
   const channel = (index: number) => Math.min(255, Math.max(0, Math.round(values[index]!)));
   return [channel(0), channel(1), channel(2)];

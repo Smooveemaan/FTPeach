@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { SiteManagerDialog } from '../../../src/features/sites/ui.ts';
 import type { SiteManagerDialogProps } from '../../../src/features/sites/SiteManagerDialog.tsx';
 import type { ManagedSite } from '../../../src/shared/types.ts';
+import { createPaneSiteForm, createSiteForm } from '../../../src/features/sites/siteForm.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
@@ -103,6 +104,92 @@ describe('Site Manager workflows', () => {
     installSiteManagerApiMocks();
   });
 
+  test.each(['ftp', 'ftps', 'sftp', 'webdav'] as const)(
+    'prefills and saves a %s connection using the manager form',
+    async (protocol) => {
+      const user = userEvent.setup();
+      const useKeyAuth = protocol === 'sftp';
+      const initialForm = createPaneSiteForm({
+        kind: 'remote',
+        path: '/uploads/current',
+        form: {
+          ...createSiteForm(),
+          protocol,
+          host: 'draft.example.test',
+          port: '2222',
+          webdavUrl: 'https://draft.example.test/dav',
+          user: 'draft-user',
+          password: 'draft-password',
+          useKeyAuth,
+          keyPath: 'C:\\keys\\private-key',
+          keyPassphrase: 'draft-passphrase',
+          caCertPath: 'C:\\certs\\ca.pem',
+          allowInvalidCert: true,
+        },
+      });
+      const { props } = renderManager({ initialForm });
+      expect(screen.queryByRole('tree')).toBeNull();
+      expect(screen.getByLabelText<HTMLInputElement>('siteManagerDialog.fields.name').value).toBe(
+        protocol === 'webdav' ? initialForm.webdavUrl : initialForm.host,
+      );
+      expect(screen.getByLabelText<HTMLInputElement>('connectionBar.fields.address').value).toBe(
+        protocol === 'webdav' ? initialForm.webdavUrl : initialForm.host,
+      );
+      expect(screen.getByLabelText<HTMLInputElement>('connectionBar.fields.user').value).toBe(
+        'draft-user',
+      );
+      expect(
+        screen.getByLabelText<HTMLInputElement>('siteManagerDialog.fields.remotePath').value,
+      ).toBe('/uploads/current');
+      const secret = screen.getByLabelText<HTMLInputElement>(
+        useKeyAuth ? 'connectionBar.fields.passphrase' : 'connectionBar.fields.password',
+      );
+      expect(secret.value).toBe(useKeyAuth ? 'draft-passphrase' : 'draft-password');
+      expect(secret.type).toBe('password');
+      await user.click(screen.getByRole('button', { name: 'siteManagerDialog.fields.folder' }));
+      await user.click(screen.getByRole('option', { name: 'Servers' }));
+      await user.click(screen.getByRole('button', { name: 'common.save' }));
+      expect(props.onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          protocol,
+          host: initialForm.host,
+          port: 2222,
+          webdavUrl: initialForm.webdavUrl,
+          user: 'draft-user',
+          remotePath: '/uploads/current',
+          password: useKeyAuth ? '' : 'draft-password',
+          keyPassphrase: useKeyAuth ? 'draft-passphrase' : '',
+          useKeyAuth,
+          keyPath: initialForm.keyPath,
+          caCertPath: initialForm.caCertPath,
+          allowInvalidCert: true,
+          parentId: 'folder-1',
+        }),
+      );
+    },
+  );
+
+  test('opens a prefilled local path and closes on cancel without saving', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager({
+      managerKind: 'localPaths',
+      initialForm: createPaneSiteForm({
+        kind: 'local',
+        path: 'C:\\Projects',
+        form: createSiteForm(),
+      }),
+    });
+    expect(screen.getByLabelText<HTMLInputElement>('siteManagerDialog.fields.name').value).toBe(
+      'Projects',
+    );
+    expect(
+      screen.getByLabelText<HTMLInputElement>('siteManagerDialog.fields.localPath').value,
+    ).toBe('C:\\Projects');
+    await user.click(screen.getByRole('button', { name: 'common.cancel' }));
+    expect(props.onClose).toHaveBeenCalledOnce();
+    expect(props.onSave).not.toHaveBeenCalled();
+  });
+
   test('creates and edits a bookmark through the form', async () => {
     const user = userEvent.setup();
     const { props } = renderManager();
@@ -113,9 +200,12 @@ describe('Site Manager workflows', () => {
       screen.getByRole('textbox', { name: 'connectionBar.fields.address' }),
       'test.example',
     );
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.fields.folder' }));
+    expect(screen.queryByRole('option', { name: 'Projects' })).toBeNull();
+    await user.click(screen.getByRole('option', { name: 'Servers' }));
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Test', host: 'test.example' }),
+      expect.objectContaining({ name: 'Test', host: 'test.example', parentId: 'folder-1' }),
     );
     // A new bookmark carries no `id` key at all — that absence is what tells
     // the backend to create rather than update.
@@ -128,9 +218,40 @@ describe('Site Manager workflows', () => {
     const name = screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' });
     await user.clear(name);
     await user.type(name, 'Production 2');
+    const editFolder = screen.getByRole('button', {
+      name: 'siteManagerDialog.fields.folder',
+    });
+    expect(editFolder.textContent).toContain('Servers');
+    await user.click(editFolder);
+    await user.click(screen.getByRole('option', { name: 'siteManagerDialog.noFolder' }));
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenLastCalledWith(
-      expect.objectContaining({ id: 'site-1', name: 'Production 2', password: '' }),
+      expect.objectContaining({ id: 'site-1', name: 'Production 2', password: '', parentId: null }),
+    );
+  });
+
+  test('creates a local path in a selected local-path folder', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager({ managerKind: 'localPaths' });
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addLocalBookmark' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }),
+      'New path',
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'siteManagerDialog.fields.localPath' }),
+      'C:\\New',
+    );
+    const folder = screen.getByRole('button', {
+      name: 'siteManagerDialog.fields.folder',
+    });
+    expect(folder.textContent).toContain('siteManagerDialog.noFolder');
+    await user.click(folder);
+    expect(screen.queryByRole('option', { name: 'Servers' })).toBeNull();
+    await user.click(screen.getByRole('option', { name: 'Projects' }));
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'local', localPath: 'C:\\New', parentId: 'local-folder-1' }),
     );
   });
 

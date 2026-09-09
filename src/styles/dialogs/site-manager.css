@@ -428,6 +428,18 @@
 .site-identity-fields .settings-field:not(.site-name-field) > span {
   display: none;
 }
+.site-folder-select {
+  min-width: 0;
+}
+.site-folder-select .language-select-trigger {
+  width: 100%;
+  min-width: 0;
+}
+.site-folder-select .site-folder-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
 .site-appearance-select {
   min-width: 0;
   width: 100%;

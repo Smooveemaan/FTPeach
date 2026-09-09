@@ -142,9 +142,9 @@
     "label": "Nama profil koneksi:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Simpan jalur lokal",
+    "label": "Nama",
+    "tooltip": "Simpan jalur saat ini"
   },
   "newFolder": {
     "title": "Folder Baru",
@@ -579,8 +579,8 @@
     "titleList": "Kelola Bookmark",
     "titleLocalPathList": "Kelola Jalur Lokal",
     "manageLocalPaths": "Kelola Jalur Lokal…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Jalur lokal baru",
+    "titleEditLocalPath": "Edit jalur lokal",
     "fields": {
       "name": "Nama",
       "icon": "Ikon",
@@ -589,7 +589,8 @@
       "keyFile": "File kunci",
       "caCertFile": "Sertifikat CA",
       "remotePath": "Folder default",
-      "localPath": "Folder lokal"
+      "localPath": "Folder lokal",
+      "folder": "Folder"
     },
     "icons": {
       "bookmark": "Penanda",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (salin)",
     "newBookmarkInFolder": "Tambahkan Bookmark Baru di Sini",
     "expandFolder": "Perluas \"{{name}}\"",
-    "collapseFolder": "Sembunyikan \"{{name}}\""
+    "collapseFolder": "Sembunyikan \"{{name}}\"",
+    "noFolder": "Tanpa folder"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Masuk menggunakan berkas kunci SSH pribadi, bukan kata sandi",
       "label": "Masuk menggunakan kunci SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Kunci privat RSA memiliki risiko serangan kanal samping berbasis waktu yang telah diketahui. Utamakan Ed25519 untuk kunci SSH baru.",
     "connectTooltip": {
       "cancel": "Batal",
       "connect": "Terhubung",

@@ -142,9 +142,9 @@
     "label": "ชื่อโปรไฟล์การเชื่อมต่อ:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "บันทึกพาธภายในเครื่อง",
+    "label": "ชื่อ",
+    "tooltip": "บันทึกพาธปัจจุบัน"
   },
   "newFolder": {
     "title": "โฟลเดอร์ใหม่",
@@ -579,8 +579,8 @@
     "titleList": "จัดการบุ๊กมาร์ก",
     "titleLocalPathList": "จัดการเส้นทางในเครื่อง",
     "manageLocalPaths": "จัดการเส้นทางในเครื่อง…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "พาธภายในเครื่องใหม่",
+    "titleEditLocalPath": "แก้ไขพาธภายในเครื่อง",
     "fields": {
       "name": "ชื่อ",
       "icon": "ไอคอน",
@@ -589,7 +589,8 @@
       "keyFile": "ไฟล์กุญแจ",
       "caCertFile": "ใบรับรอง CA",
       "remotePath": "โฟลเดอร์เริ่มต้น",
-      "localPath": "โฟลเดอร์ท้องถิ่น"
+      "localPath": "โฟลเดอร์ท้องถิ่น",
+      "folder": "โฟลเดอร์"
     },
     "icons": {
       "bookmark": "บุ๊กมาร์ก",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (คัดลอก)",
     "newBookmarkInFolder": "เพิ่มบุ๊กมาร์กใหม่ที่นี่",
     "expandFolder": "ขยาย \"{{name}}\"",
-    "collapseFolder": "ซ่อน \"{{name}}\""
+    "collapseFolder": "ซ่อน \"{{name}}\"",
+    "noFolder": "ไม่มีโฟลเดอร์"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "เข้าสู่ระบบด้วยไฟล์กุญแจ SSH ส่วนตัว แทนที่จะใช้รหัสผ่าน",
       "label": "เข้าสู่ระบบด้วยกุญแจ SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "คีย์ส่วนตัว RSA มีความเสี่ยงที่ทราบแล้วต่อการโจมตีช่องทางข้างโดยอาศัยการวัดเวลา แนะนำให้ใช้ Ed25519 สำหรับคีย์ SSH ใหม่",
     "connectTooltip": {
       "cancel": "ยกเลิก",
       "connect": "เชื่อมต่อ",

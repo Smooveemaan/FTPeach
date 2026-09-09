@@ -589,7 +589,8 @@
       "keyFile": "Key file",
       "caCertFile": "CA certificate",
       "remotePath": "Default folder",
-      "localPath": "Local folder"
+      "localPath": "Local folder",
+      "folder": "Folder"
     },
     "icons": {
       "bookmark": "Bookmark",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (copy)",
     "newBookmarkInFolder": "New Bookmark Here",
     "expandFolder": "Expand \"{{name}}\"",
-    "collapseFolder": "Collapse \"{{name}}\""
+    "collapseFolder": "Collapse \"{{name}}\"",
+    "noFolder": "No folder"
   },
   "connectionBar": {
     "fields": {

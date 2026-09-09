@@ -142,9 +142,9 @@
     "label": "Όνομα προφίλ σύνδεσης:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Αποθήκευση τοπικής διαδρομής",
+    "label": "Όνομα",
+    "tooltip": "Αποθήκευση τρέχουσας διαδρομής"
   },
   "newFolder": {
     "title": "Νέος φάκελος",
@@ -579,8 +579,8 @@
     "titleList": "Διαχείριση σελιδοδεικτών",
     "titleLocalPathList": "Διαχείριση τοπικών διαδρομών",
     "manageLocalPaths": "Διαχείριση τοπικών διαδρομών…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Νέα τοπική διαδρομή",
+    "titleEditLocalPath": "Επεξεργασία τοπικής διαδρομής",
     "fields": {
       "name": "Όνομα",
       "icon": "Εικονίδιο",
@@ -589,7 +589,8 @@
       "keyFile": "Αρχείο κλειδιών",
       "caCertFile": "Πιστοποιητικό αρχής πιστοποίησης",
       "remotePath": "Προεπιλεγμένος φάκελος",
-      "localPath": "Τοπικός φάκελος"
+      "localPath": "Τοπικός φάκελος",
+      "folder": "Φάκελος"
     },
     "icons": {
       "bookmark": "Σελιδοδείκτης",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (αντίγραφο)",
     "newBookmarkInFolder": "Προσθήκη νέου σελιδοδείκτη εδώ",
     "expandFolder": "Ανάπτυξη «{{name}}»",
-    "collapseFolder": "Σύμπτυξη «{{name}}»"
+    "collapseFolder": "Σύμπτυξη «{{name}}»",
+    "noFolder": "Χωρίς φάκελο"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Συνδεθείτε χρησιμοποιώντας ένα αρχείο ιδιωτικού κλειδιού SSH αντί για κωδικό πρόσβασης",
       "label": "Σύνδεση με κλειδί SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Τα ιδιωτικά κλειδιά RSA ενέχουν γνωστό κίνδυνο επιθέσεων πλευρικού καναλιού μέσω μετρήσεων χρόνου. Προτιμήστε το Ed25519 για νέα κλειδιά SSH.",
     "connectTooltip": {
       "cancel": "Ακύρωση",
       "connect": "Σύνδεση",

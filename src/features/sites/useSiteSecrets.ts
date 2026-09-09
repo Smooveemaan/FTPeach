@@ -9,6 +9,7 @@ type SecretField = keyof SiteFormSecrets;
 
 interface UseSiteSecretsOptions {
   editingId: string | null;
+  initialSecrets?: SiteFormSecrets | undefined;
   revealFailedMessage: string;
   setError: Dispatch<SetStateAction<string>>;
 }
@@ -26,6 +27,7 @@ const causeMessage = (cause: unknown): string =>
 
 export function useSiteSecrets({
   editingId,
+  initialSecrets,
   revealFailedMessage,
   setError,
 }: UseSiteSecretsOptions): SiteSecretsController {
@@ -42,7 +44,15 @@ export function useSiteSecrets({
     setNativeInputValue(keyPassphraseRef.current, '');
   }, []);
 
-  useEffect(() => resetSecrets(), [editingId, resetSecrets]);
+  const initialPassword = initialSecrets?.password || '';
+  const initialKeyPassphrase = initialSecrets?.keyPassphrase || '';
+  useEffect(() => {
+    resetSecrets();
+    if (editingId === '__new__') {
+      setNativeInputValue(passwordRef.current, initialPassword);
+      setNativeInputValue(keyPassphraseRef.current, initialKeyPassphrase);
+    }
+  }, [editingId, initialPassword, initialKeyPassphrase, resetSecrets]);
 
   useEffect(() => {
     const clearWhenHidden = () => {

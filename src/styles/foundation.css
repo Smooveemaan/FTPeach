@@ -61,7 +61,8 @@
   --divider-color: var(--bg-raised);
   --modal-scrim: rgba(0, 0, 0, 0.45);
 
-  /* The 1px border Windows paints outside the client area. It is the app's
+  /* Shared by popup outlines and the 1px border Windows paints outside the
+     client area. It is the app's
      own edge against the desktop, not one of its internal dividers, so it
      gets its own token rather than borrowing --border: the light theme needs
      real contrast against a bright desktop, while the dark theme only needs
@@ -137,6 +138,11 @@
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background-color: var(--accent-fill);
+  color: var(--accent-fill-text);
 }
 
 html, body, #root {

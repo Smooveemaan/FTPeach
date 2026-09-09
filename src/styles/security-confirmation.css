@@ -28,7 +28,7 @@ body,
   z-index: 10;
   pointer-events: none;
   content: '';
-  border: 1px solid var(--border);
+  border: 1px solid var(--window-border);
   border-radius: inherit;
 }
 

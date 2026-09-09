@@ -603,7 +603,8 @@
       "keyFile": "Файл ключей",
       "caCertFile": "CA-сертификат",
       "remotePath": "Папка по умолчанию",
-      "localPath": "Локальная папка"
+      "localPath": "Локальная папка",
+      "folder": "Папка"
     },
     "icons": {
       "bookmark": "Закладка",
@@ -665,7 +666,8 @@
     "duplicateNameSuffix": " (копия)",
     "newBookmarkInFolder": "Добавить закладку здесь",
     "expandFolder": "Развернуть «{{name}}»",
-    "collapseFolder": "Свернуть «{{name}}»"
+    "collapseFolder": "Свернуть «{{name}}»",
+    "noFolder": "Без папки"
   },
   "connectionBar": {
     "fields": {

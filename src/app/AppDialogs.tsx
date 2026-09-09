@@ -102,7 +102,6 @@ export interface AppDialogsModel {
     saveFolder: SiteManagerProps['onSaveFolder'];
     deleteFolder: SiteManagerProps['onDeleteFolder'];
     connect: (site: SiteManagerProps['entries'][number], paneId?: PaneId) => unknown;
-    submitPaneSite: (name: string) => unknown;
   };
   panes: Record<PaneId, PaneState>;
   activeTabId: string;
@@ -295,23 +294,25 @@ export default function AppDialogs({ model }: AppDialogsProps) {
         />
       )}
       {dialogs.showSaveSite && (
-        <PromptDialog
-          title={t(
-            panes[dialogs.showSaveSite].kind === 'local' ? 'saveLocalPath.title' : 'saveSite.title',
-          )}
-          label={t(
-            panes[dialogs.showSaveSite].kind === 'local' ? 'saveLocalPath.label' : 'saveSite.label',
-          )}
-          defaultValue={
-            panes[dialogs.showSaveSite].kind === 'local'
-              ? panes[dialogs.showSaveSite].path.split(/[\\/]/).filter(Boolean).at(-1) ||
-                panes[dialogs.showSaveSite].path
-              : panes[dialogs.showSaveSite].form.protocol === 'webdav'
-                ? panes[dialogs.showSaveSite].form.webdavUrl
-                : panes[dialogs.showSaveSite].form.host
+        <SiteManagerDialog
+          managerKind={dialogs.showSaveSite.kind === 'local' ? 'localPaths' : 'bookmarks'}
+          initialForm={dialogs.showSaveSite}
+          entries={siteActions.sites}
+          onSave={async (payload) => {
+            const result = await siteActions.save(payload);
+            if (result?.ok) dialogs.setShowSaveSite(false);
+            return result;
+          }}
+          onDelete={siteActions.delete}
+          onApplyLayout={siteActions.applyLayout}
+          onSaveFolder={siteActions.saveFolder}
+          onDeleteFolder={siteActions.deleteFolder}
+          onImport={settings.import}
+          onExport={settings.export}
+          onConnect={siteActions.connect}
+          onVaultUnlockRequired={(retry) =>
+            dialogs.setVaultUnlockRetries((current) => [...current, retry])
           }
-          confirmLabel={t('common.save')}
-          onSubmit={siteActions.submitPaneSite}
           onClose={() => dialogs.setShowSaveSite(false)}
         />
       )}

@@ -33,9 +33,9 @@ type SiteManagerSetters = {
   >;
 };
 
-const initialState = (): SiteManagerDialogState => ({
-  editingId: null,
-  form: createSiteForm(),
+const initialState = (form?: SiteForm): SiteManagerDialogState => ({
+  editingId: form ? '__new__' : null,
+  form: form ? { ...form, password: '', keyPassphrase: '' } : createSiteForm(),
   error: '',
   saving: false,
   pendingDelete: null,
@@ -67,8 +67,8 @@ export interface SiteManagerDialogModel extends SiteManagerDialogState, SiteMana
   patch: (value: Partial<SiteManagerDialogState>) => void;
 }
 
-export function useSiteManagerDialogState(): SiteManagerDialogModel {
-  const [state, dispatch] = useReducer(siteManagerDialogReducer, undefined, initialState);
+export function useSiteManagerDialogState(initialForm?: SiteForm): SiteManagerDialogModel {
+  const [state, dispatch] = useReducer(siteManagerDialogReducer, initialForm, initialState);
   const set = useCallback(
     <Key extends keyof SiteManagerDialogState>(key: Key) =>
       (value: SetStateAction<SiteManagerDialogState[Key]>) =>

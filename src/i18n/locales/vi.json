@@ -142,9 +142,9 @@
     "label": "Tên hồ sơ kết nối:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Lưu đường dẫn cục bộ",
+    "label": "Tên",
+    "tooltip": "Lưu đường dẫn hiện tại"
   },
   "newFolder": {
     "title": "Thư mục mới",
@@ -579,8 +579,8 @@
     "titleList": "Quản lý dấu trang",
     "titleLocalPathList": "Quản lý đường dẫn cục bộ",
     "manageLocalPaths": "Quản lý đường dẫn cục bộ…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Đường dẫn cục bộ mới",
+    "titleEditLocalPath": "Chỉnh sửa đường dẫn cục bộ",
     "fields": {
       "name": "Tên",
       "icon": "Biểu tượng",
@@ -589,7 +589,8 @@
       "keyFile": "Tệp khóa",
       "caCertFile": "Chứng chỉ CA",
       "remotePath": "Thư mục mặc định",
-      "localPath": "Thư mục cục bộ"
+      "localPath": "Thư mục cục bộ",
+      "folder": "Thư mục"
     },
     "icons": {
       "bookmark": "Dấu trang",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (sao chép)",
     "newBookmarkInFolder": "Thêm dấu trang mới tại đây",
     "expandFolder": "Mở rộng “{{name}}”",
-    "collapseFolder": "Thu gọn “{{name}}”"
+    "collapseFolder": "Thu gọn “{{name}}”",
+    "noFolder": "Không có thư mục"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Đăng nhập bằng tệp khóa SSH riêng tư thay vì mật khẩu",
       "label": "Đăng nhập bằng khóa SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Khóa riêng RSA có nguy cơ đã biết về tấn công kênh bên dựa trên thời gian xử lý. Ưu tiên Ed25519 cho khóa SSH mới.",
     "connectTooltip": {
       "cancel": "Hủy",
       "connect": "Kết nối",

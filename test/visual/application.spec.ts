@@ -80,6 +80,83 @@ test('site manager dialog', async ({ page }) => {
   await expect(page).toHaveScreenshot('site-manager-dialog.png');
 });
 
+test('Save connection opens the prefilled bookmark form and saves edits', async ({ page }) => {
+  await openHarness(page, 'en');
+  await page.evaluate(() => {
+    window.api.sites.save = async (payload) => {
+      Reflect.set(window, 'savedSitePayload', payload);
+      return { ok: true };
+    };
+  });
+  await page.locator(`button[data-tooltip="${en.menu.file.saveConnection}"]`).click();
+  const dialog = page.getByRole('dialog', { name: en.siteManagerDialog.titleNew });
+  await expect(
+    dialog.getByRole('textbox', { name: en.siteManagerDialog.fields.name, exact: true }),
+  ).toHaveValue('sftp.example.com');
+  await expect(
+    dialog.getByRole('textbox', { name: en.connectionBar.fields.address, exact: true }),
+  ).toHaveValue('sftp.example.com');
+  await expect(
+    dialog.getByRole('textbox', { name: en.connectionBar.fields.port, exact: true }),
+  ).toHaveValue('22');
+  await expect(
+    dialog.getByRole('textbox', { name: en.connectionBar.fields.user, exact: true }),
+  ).toHaveValue('deploy');
+  await expect(
+    dialog.getByRole('textbox', { name: en.siteManagerDialog.fields.remotePath, exact: true }),
+  ).toHaveValue('/var/www');
+  await dialog
+    .getByRole('textbox', { name: en.connectionBar.fields.address, exact: true })
+    .fill('new.example.com');
+  await dialog.getByRole('button', { name: 'Folder', exact: true }).click();
+  await expect(dialog.getByRole('option', { name: 'No folder' })).toBeVisible();
+  await dialog.getByRole('option', { name: 'No folder' }).click();
+  await dialog.getByRole('button', { name: en.common.save, exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await page.evaluate(() => Reflect.get(window, 'savedSitePayload'))).toMatchObject({
+    protocol: 'sftp',
+    host: 'new.example.com',
+    port: 22,
+    user: 'deploy',
+    remotePath: '/var/www',
+    parentId: null,
+  });
+});
+
+test('Save path opens the prefilled local-path form and keeps save errors visible', async ({
+  page,
+}) => {
+  await openHarness(page, 'en');
+  await page.evaluate(() => {
+    window.api.sites.save = async () => ({ ok: false, error: 'Test save failed' });
+  });
+  await page.locator(`button[data-tooltip="${en.saveLocalPath.tooltip}"]`).click();
+  const dialog = page.getByRole('dialog', { name: en.siteManagerDialog.titleNewLocalPath });
+  await expect(
+    dialog.getByRole('textbox', { name: en.siteManagerDialog.fields.name, exact: true }),
+  ).toHaveValue('Projects');
+  await expect(
+    dialog.getByRole('textbox', { name: en.siteManagerDialog.fields.localPath, exact: true }),
+  ).toHaveValue('C:\\Users\\developer\\Projects');
+  await dialog.getByRole('button', { name: en.common.save, exact: true }).click();
+  await expect(dialog.getByText('Test save failed')).toBeVisible();
+  await page.evaluate(() => {
+    window.api.sites.save = async (payload) => {
+      Reflect.set(window, 'savedSitePayload', payload);
+      return { ok: true };
+    };
+  });
+  await dialog.getByRole('button', { name: en.common.save, exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await page.evaluate(() => Reflect.get(window, 'savedSitePayload'))).toMatchObject({
+    kind: 'local',
+    name: 'Projects',
+    localPath: 'C:\\Users\\developer\\Projects',
+    icon: 'bookmark',
+    parentId: null,
+  });
+});
+
 test('icon picker shows a scrollable 3 by 3 grid', async ({ page }) => {
   await openHarness(page);
   await page.getByRole('menuitem', { name: 'Bookmarks' }).click();

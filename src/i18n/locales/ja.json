@@ -142,9 +142,9 @@
     "label": "接続プロファイル名:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "ローカルパスを保存",
+    "label": "名前",
+    "tooltip": "現在のパスを保存"
   },
   "newFolder": {
     "title": "新しいフォルダ",
@@ -579,8 +579,8 @@
     "titleList": "ブックマークの管理",
     "titleLocalPathList": "ローカルパスの管理",
     "manageLocalPaths": "ローカルパスの管理…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "新しいローカルパス",
+    "titleEditLocalPath": "ローカルパスを編集",
     "fields": {
       "name": "名前",
       "icon": "アイコン",
@@ -589,7 +589,8 @@
       "keyFile": "キーファイル",
       "caCertFile": "CA証明書",
       "remotePath": "デフォルトフォルダ",
-      "localPath": "ローカルフォルダ"
+      "localPath": "ローカルフォルダ",
+      "folder": "フォルダー"
     },
     "icons": {
       "bookmark": "ブックマーク",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (コピー)",
     "newBookmarkInFolder": "ここに新しいブックマークを追加",
     "expandFolder": "「{{name}}」を展開する",
-    "collapseFolder": "「{{name}}」を折りたたむ"
+    "collapseFolder": "「{{name}}」を折りたたむ",
+    "noFolder": "フォルダーなし"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "パスワードの代わりに、秘密のSSH鍵ファイルを使用してログインする",
       "label": "SSHキーでログインする"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "RSA秘密鍵には、処理時間を利用するサイドチャネル攻撃の既知のリスクがあります。新しいSSH鍵にはEd25519を推奨します。",
     "connectTooltip": {
       "cancel": "キャンセル",
       "connect": "接続",

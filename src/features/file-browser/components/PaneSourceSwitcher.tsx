@@ -170,7 +170,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                         label: site.name,
                         icon: (
                           <Icon
-                            name={(site.icon || 'folder') as IconName}
+                            name={(site.icon || 'bookmark') as IconName}
                             size={13}
                             color={site.color || undefined}
                           />

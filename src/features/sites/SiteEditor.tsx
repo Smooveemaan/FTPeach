@@ -9,6 +9,7 @@ import type {
   SetStateAction,
 } from 'react';
 import PasswordInput from '../../components/PasswordInput.tsx';
+import SelectMenu from '../../components/SelectMenu.tsx';
 import { ProtocolSelect } from '../connections/index.ts';
 import Icon from '../../components/Icon.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
@@ -16,7 +17,7 @@ import type { IconName } from '../../components/Icon.tsx';
 import { SITE_COLORS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
-import type { SiteForm, SiteProtocol, Translate } from '../../shared/types.ts';
+import type { ManagedSite, SiteForm, SiteProtocol, Translate } from '../../shared/types.ts';
 import useDismissableOverlay from '../../hooks/useDismissableOverlay.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 
@@ -30,6 +31,7 @@ type SecretRemovalField = 'removePassword' | 'removeKeyPassphrase';
 
 interface SiteEditorProps {
   form: SiteForm;
+  folders: readonly ManagedSite[];
   setForm: Dispatch<SetStateAction<SiteForm>>;
   error: string;
   onDismissError: () => void;
@@ -47,6 +49,7 @@ interface SiteEditorProps {
 
 export default function SiteEditor({
   form,
+  folders,
   setForm,
   error,
   onDismissError,
@@ -275,6 +278,23 @@ export default function SiteEditor({
             )}
           </div>
         </div>
+      </div>
+      <div className="settings-field">
+        <span>{t('siteManagerDialog.fields.folder')}</span>
+        <SelectMenu
+          label={t('siteManagerDialog.fields.folder')}
+          value={form.parentId ?? ''}
+          onChange={(value) => setForm((current) => ({ ...current, parentId: value || null }))}
+          options={[
+            { value: '', label: t('siteManagerDialog.noFolder') },
+            ...folders.map((folder) => ({ value: folder.id, label: folder.name })),
+          ]}
+          rootClassName="language-select site-folder-select"
+          triggerClassName="language-select-trigger"
+          dropdownClassName="language-select-dropdown site-folder-dropdown"
+          valueClassName="language-select-value"
+          caretClassName="language-select-caret"
+        />
       </div>
       {form.kind === 'local' && (
         <div className="settings-field">

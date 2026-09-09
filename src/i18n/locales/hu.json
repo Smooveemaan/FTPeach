@@ -142,9 +142,9 @@
     "label": "Kapcsolati profil neve:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Helyi útvonal mentése",
+    "label": "Név",
+    "tooltip": "Jelenlegi útvonal mentése"
   },
   "newFolder": {
     "title": "Új mappa",
@@ -579,8 +579,8 @@
     "titleList": "Könyvjelzők kezelése",
     "titleLocalPathList": "Helyi elérési utak kezelése",
     "manageLocalPaths": "Helyi elérési utak kezelése…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Új helyi útvonal",
+    "titleEditLocalPath": "Helyi útvonal szerkesztése",
     "fields": {
       "name": "Név",
       "icon": "Ikon",
@@ -589,7 +589,8 @@
       "keyFile": "Kulcsfájl",
       "caCertFile": "Hitelesítésszolgáltatói tanúsítvány",
       "remotePath": "Alapértelmezett mappa",
-      "localPath": "Helyi mappa"
+      "localPath": "Helyi mappa",
+      "folder": "Mappa"
     },
     "icons": {
       "bookmark": "Könyvjelző",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (másolat)",
     "newBookmarkInFolder": "Új könyvjelző itt",
     "expandFolder": "A „{{name}}” kiterjesztése",
-    "collapseFolder": "„{{name}}” összecsukása"
+    "collapseFolder": "„{{name}}” összecsukása",
+    "noFolder": "Nincs mappa"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Jelentkezzen be jelszó helyett egy privát SSH-kulcsfájllal",
       "label": "Bejelentkezés SSH-kulccsal"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Az RSA privát kulcsoknál ismert az időmérésen alapuló oldalcsatornás támadások kockázata. Új SSH-kulcsokhoz az Ed25519 használata ajánlott.",
     "connectTooltip": {
       "cancel": "Mégse",
       "connect": "Csatlakozás",

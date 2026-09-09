@@ -142,9 +142,9 @@
     "label": "Namn på anslutningsprofil:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Spara lokal sökväg",
+    "label": "Namn",
+    "tooltip": "Spara aktuell sökväg"
   },
   "newFolder": {
     "title": "Ny mapp",
@@ -579,8 +579,8 @@
     "titleList": "Hantera bokmärken",
     "titleLocalPathList": "Hantera lokala sökvägar",
     "manageLocalPaths": "Hantera lokala sökvägar…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Ny lokal sökväg",
+    "titleEditLocalPath": "Redigera lokal sökväg",
     "fields": {
       "name": "Namn",
       "icon": "Ikon",
@@ -589,7 +589,8 @@
       "keyFile": "Nyckelfil",
       "caCertFile": "CA-certifikat",
       "remotePath": "Standardmapp",
-      "localPath": "Lokal mapp"
+      "localPath": "Lokal mapp",
+      "folder": "Mapp"
     },
     "icons": {
       "bookmark": "Bokmärke",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (kopia)",
     "newBookmarkInFolder": "Lägg till nytt bokmärke här",
     "expandFolder": "Visa ”{{name}}”",
-    "collapseFolder": "Dölj ”{{name}}”"
+    "collapseFolder": "Dölj ”{{name}}”",
+    "noFolder": "Ingen mapp"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Logga in med en privat SSH-nyckel istället för ett lösenord",
       "label": "Logga in med SSH-nyckel"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Privata RSA-nycklar har en känd risk för sidokanalsattacker baserade på tidsmätning. Använd helst Ed25519 för nya SSH-nycklar.",
     "connectTooltip": {
       "cancel": "Avbryt",
       "connect": "Anslut",

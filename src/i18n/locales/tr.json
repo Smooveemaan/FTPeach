@@ -142,9 +142,9 @@
     "label": "Bağlantı profili adı:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Yerel yolu kaydet",
+    "label": "Ad",
+    "tooltip": "Geçerli yolu kaydet"
   },
   "newFolder": {
     "title": "Yeni Klasör",
@@ -579,8 +579,8 @@
     "titleList": "Yer imlerini yönet",
     "titleLocalPathList": "Yerel yolları yönet",
     "manageLocalPaths": "Yerel yolları yönet…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Yeni yerel yol",
+    "titleEditLocalPath": "Yerel yolu düzenle",
     "fields": {
       "name": "Ad",
       "icon": "Simge",
@@ -589,7 +589,8 @@
       "keyFile": "Anahtar dosyası",
       "caCertFile": "CA sertifikası",
       "remotePath": "Varsayılan klasör",
-      "localPath": "Yerel klasör"
+      "localPath": "Yerel klasör",
+      "folder": "Klasör"
     },
     "icons": {
       "bookmark": "Yer imi",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (kopya)",
     "newBookmarkInFolder": "Buraya Yeni Yer İmi Ekle",
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
-    "collapseFolder": "\"{{name}}\" klasörünü daralt"
+    "collapseFolder": "\"{{name}}\" klasörünü daralt",
+    "noFolder": "Klasör yok"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "Şifre yerine özel bir SSH anahtar dosyasıyla oturum açın",
       "label": "SSH anahtarıyla oturum aç"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "RSA özel anahtarlarında zaman ölçümüne dayalı yan kanal saldırılarına karşı bilinen bir risk vardır. Yeni SSH anahtarları için Ed25519 tercih edin.",
     "connectTooltip": {
       "cancel": "İptal et",
       "connect": "Bağlan",

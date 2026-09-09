@@ -145,9 +145,9 @@
     "label": "שם פרופיל החיבור:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "שמירת נתיב מקומי",
+    "label": "שם",
+    "tooltip": "שמירת הנתיב הנוכחי"
   },
   "newFolder": {
     "title": "תיקייה חדשה",
@@ -586,8 +586,8 @@
     "titleList": "ניהול סימניות",
     "titleLocalPathList": "ניהול נתיבים מקומיים",
     "manageLocalPaths": "ניהול נתיבים מקומיים…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "נתיב מקומי חדש",
+    "titleEditLocalPath": "עריכת נתיב מקומי",
     "fields": {
       "name": "שם",
       "icon": "סמל",
@@ -596,7 +596,8 @@
       "keyFile": "קובץ מפתח",
       "caCertFile": "אישור של רשות אישורים",
       "remotePath": "תיקיית ברירת מחדל",
-      "localPath": "תיקייה מקומית"
+      "localPath": "תיקייה מקומית",
+      "folder": "תיקייה"
     },
     "icons": {
       "bookmark": "סימנייה",
@@ -656,7 +657,8 @@
     "duplicateNameSuffix": " (העתק)",
     "newBookmarkInFolder": "הוסף סימנייה חדשה כאן",
     "expandFolder": "הרחב את \"{{name}}\"",
-    "collapseFolder": "קפל את \"{{name}}\""
+    "collapseFolder": "קפל את \"{{name}}\"",
+    "noFolder": "ללא תיקייה"
   },
   "connectionBar": {
     "fields": {
@@ -678,7 +680,7 @@
       "tooltip": "התחבר באמצעות קובץ מפתח SSH פרטי במקום סיסמה",
       "label": "התחבר באמצעות מפתח SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "למפתחות RSA פרטיים יש סיכון מוכר להתקפות ערוץ צד המבוססות על מדידת זמן. מומלץ להשתמש ב־Ed25519 עבור מפתחות SSH חדשים.",
     "connectTooltip": {
       "cancel": "ביטול",
       "connect": "התחבר",

@@ -142,9 +142,9 @@
     "label": "连接配置名称："
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "保存本地路径",
+    "label": "名称",
+    "tooltip": "保存当前路径"
   },
   "newFolder": {
     "title": "新建文件夹",
@@ -579,8 +579,8 @@
     "titleList": "管理书签",
     "titleLocalPathList": "管理本地路径",
     "manageLocalPaths": "管理本地路径……",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "新建本地路径",
+    "titleEditLocalPath": "编辑本地路径",
     "fields": {
       "name": "名称",
       "icon": "图标",
@@ -589,7 +589,8 @@
       "keyFile": "密钥文件",
       "caCertFile": "CA 证书",
       "remotePath": "默认文件夹",
-      "localPath": "本地文件夹"
+      "localPath": "本地文件夹",
+      "folder": "文件夹"
     },
     "icons": {
       "bookmark": "添加书签",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (复制)",
     "newBookmarkInFolder": "在此添加新书签",
     "expandFolder": "展开“{{name}}”",
-    "collapseFolder": "折叠“{{name}}”"
+    "collapseFolder": "折叠“{{name}}”",
+    "noFolder": "无文件夹"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "使用私有 SSH 密钥文件而非密码登录",
       "label": "使用 SSH 密钥登录"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "RSA 私钥存在已知的计时侧信道攻击风险。建议新 SSH 密钥优先使用 Ed25519。",
     "connectTooltip": {
       "cancel": "取消",
       "connect": "连接",

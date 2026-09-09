@@ -145,9 +145,9 @@
     "label": "Numele profilului conexiunii:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "Salvează calea locală",
+    "label": "Nume",
+    "tooltip": "Salvează calea curentă"
   },
   "newFolder": {
     "title": "Dosar nou",
@@ -586,8 +586,8 @@
     "titleList": "Gestionarea marcajelor",
     "titleLocalPathList": "Gestionarea căilor locale",
     "manageLocalPaths": "Gestionare căi locale…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "Cale locală nouă",
+    "titleEditLocalPath": "Editează calea locală",
     "fields": {
       "name": "Nume",
       "icon": "Icoană",
@@ -596,7 +596,8 @@
       "keyFile": "Fișier cheie",
       "caCertFile": "Certificat CA",
       "remotePath": "Dosar implicit",
-      "localPath": "Dosar local"
+      "localPath": "Dosar local",
+      "folder": "Dosar"
     },
     "icons": {
       "bookmark": "Marcaj",
@@ -656,7 +657,8 @@
     "duplicateNameSuffix": " (copie)",
     "newBookmarkInFolder": "Adaugă un marcaj nou aici",
     "expandFolder": "Extindeți „{{name}}”",
-    "collapseFolder": "Ascunde „{{name}}”"
+    "collapseFolder": "Ascunde „{{name}}”",
+    "noFolder": "Fără dosar"
   },
   "connectionBar": {
     "fields": {
@@ -678,7 +680,7 @@
       "tooltip": "Autentificați-vă folosind un fișier cu cheia SSH privată, în loc de parolă",
       "label": "Autentificare cu cheie SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "Cheile private RSA prezintă un risc cunoscut de atacuri pe canal lateral bazate pe măsurarea timpului. Preferă Ed25519 pentru cheile SSH noi.",
     "connectTooltip": {
       "cancel": "Anulează",
       "connect": "Conectează-te",

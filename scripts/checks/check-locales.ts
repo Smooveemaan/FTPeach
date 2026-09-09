@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import ts from 'typescript';
 
 const localeDirectory = path.resolve('src/i18n/locales');
 const referenceLocale = 'en.json';
@@ -48,7 +49,6 @@ const referencePlaceholders = new Map(
 const problems: string[] = [];
 
 for (const fileName of files) {
-  if (fileName === referenceLocale) continue;
   const locale = await loadLocale(fileName);
 
   for (const [key, expectedPlaceholders] of referencePlaceholders) {
@@ -62,6 +62,22 @@ for (const fileName of files) {
     }
   }
 
+  const categories = new Intl.PluralRules(fileName.replace(/\.json$/, '')).resolvedOptions()
+    .pluralCategories;
+  for (const key of reference.keys()) {
+    if (!key.endsWith('_other')) continue;
+    const base = key.slice(0, -6);
+    for (const category of categories) {
+      const pluralKey = base + '_' + category;
+      const value = locale.get(pluralKey);
+      if (value === undefined || !value.trim()) {
+        problems.push(fileName + ': missing or empty plural ' + pluralKey);
+      } else if (placeholders(value).join('|') !== referencePlaceholders.get(key)) {
+        problems.push(fileName + ': placeholders differ for ' + pluralKey);
+      }
+    }
+  }
+
   for (const key of locale.keys()) {
     if (!reference.has(key) && !isLocaleSpecificPluralKey(key, reference)) {
       problems.push(`${fileName}: unexpected key ${key}`);
@@ -69,11 +85,53 @@ for (const fileName of files) {
   }
 }
 
+// Inspect literal translation calls, including ones with English default values.
+async function checkSource(directory: string): Promise<void> {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await checkSource(file);
+      continue;
+    }
+    if (!/\.tsx?$/.test(entry.name)) continue;
+    const source = ts.createSourceFile(
+      file,
+      await readFile(file, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    function visit(node: ts.Node): void {
+      if (ts.isCallExpression(node)) {
+        const callee = node.expression;
+        const isTranslation =
+          (ts.isIdentifier(callee) && callee.text === 't') ||
+          (ts.isPropertyAccessExpression(callee) && callee.name.text === 't');
+        const key = node.arguments[0];
+        if (
+          isTranslation &&
+          key &&
+          ts.isStringLiteral(key) &&
+          !reference.has(key.text) &&
+          !reference.has(key.text + '_other')
+        ) {
+          const location = source.getLineAndCharacterOfPosition(key.getStart(source));
+          problems.push(file + ':' + (location.line + 1) + ': unknown translation key ' + key.text);
+        }
+      }
+      ts.forEachChild(node, visit);
+    }
+    visit(source);
+  }
+}
+await checkSource(path.resolve('src'));
+
 if (problems.length > 0) {
   console.error(
     `Locale validation failed:\n${problems.map((problem) => `- ${problem}`).join('\n')}`,
   );
   process.exitCode = 1;
 } else {
-  console.log(`${files.length - 1} translations match ${referenceLocale} keys and placeholders.`);
+  console.log(
+    `${files.length - 1} translations match ${referenceLocale}; source keys, placeholders and plural forms are valid.`,
+  );
 }

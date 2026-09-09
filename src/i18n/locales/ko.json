@@ -142,9 +142,9 @@
     "label": "연결 프로필 이름:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "로컬 경로 저장",
+    "label": "이름",
+    "tooltip": "현재 경로 저장"
   },
   "newFolder": {
     "title": "새 폴더",
@@ -579,8 +579,8 @@
     "titleList": "북마크 관리",
     "titleLocalPathList": "로컬 경로 관리",
     "manageLocalPaths": "로컬 경로 관리…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "새 로컬 경로",
+    "titleEditLocalPath": "로컬 경로 편집",
     "fields": {
       "name": "이름",
       "icon": "아이콘",
@@ -589,7 +589,8 @@
       "keyFile": "키 파일",
       "caCertFile": "CA 인증서",
       "remotePath": "기본 폴더",
-      "localPath": "로컬 폴더"
+      "localPath": "로컬 폴더",
+      "folder": "폴더"
     },
     "icons": {
       "bookmark": "즐겨찾기",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": " (복사)",
     "newBookmarkInFolder": "여기에 새 북마크 추가",
     "expandFolder": "“{{name}}” 확장",
-    "collapseFolder": "“{{name}}” 접기"
+    "collapseFolder": "“{{name}}” 접기",
+    "noFolder": "폴더 없음"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "비밀번호 대신 개인 SSH 키 파일을 사용하여 로그인하기",
       "label": "SSH 키로 로그인하기"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "RSA 개인 키에는 실행 시간 측정을 이용한 부채널 공격의 알려진 위험이 있습니다. 새 SSH 키에는 Ed25519를 권장합니다.",
     "connectTooltip": {
       "cancel": "취소",
       "connect": "연결하기",

@@ -142,9 +142,9 @@
     "label": "कनेक्शन प्रोफ़ाइल नाम:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "स्थानीय पथ सहेजें",
+    "label": "नाम",
+    "tooltip": "वर्तमान पथ सहेजें"
   },
   "newFolder": {
     "title": "नया फ़ोल्डर",
@@ -579,8 +579,8 @@
     "titleList": "बुकमार्क प्रबंधित करें",
     "titleLocalPathList": "स्थानीय पथ प्रबंधित करें",
     "manageLocalPaths": "स्थानीय पथ प्रबंधित करें...",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "नया स्थानीय पथ",
+    "titleEditLocalPath": "स्थानीय पथ संपादित करें",
     "fields": {
       "name": "नाम",
       "icon": "चिह्न",
@@ -589,7 +589,8 @@
       "keyFile": "कुंजी फ़ाइल",
       "caCertFile": "CA प्रमाणपत्र",
       "remotePath": "डिफ़ॉल्ट फ़ोल्डर",
-      "localPath": "स्थानीय फ़ोल्डर"
+      "localPath": "स्थानीय फ़ोल्डर",
+      "folder": "फ़ोल्डर"
     },
     "icons": {
       "bookmark": "बुकमार्क",
@@ -647,7 +648,8 @@
     "duplicateNameSuffix": "(प्रतिलिपि)",
     "newBookmarkInFolder": "यहां नया बुकमार्क",
     "expandFolder": "\"{{name}}\" का विस्तार करें",
-    "collapseFolder": "\"{{name}}\" को संक्षिप्त करें"
+    "collapseFolder": "\"{{name}}\" को संक्षिप्त करें",
+    "noFolder": "कोई फ़ोल्डर नहीं"
   },
   "connectionBar": {
     "fields": {
@@ -669,7 +671,7 @@
       "tooltip": "पासवर्ड के बजाय निजी SSH कुंजी फ़ाइल से लॉग इन करें",
       "label": "SSH कुंजी से लॉग इन करें"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "RSA निजी कुंजियों में समय मापन पर आधारित साइड-चैनल हमलों का ज्ञात जोखिम है। नई SSH कुंजियों के लिए Ed25519 को प्राथमिकता दें।",
     "connectTooltip": {
       "cancel": "रद्द करें",
       "connect": "कनेक्ट करें",

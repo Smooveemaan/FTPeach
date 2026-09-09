@@ -158,11 +158,6 @@
   cursor: text;
 }
 
-.log-panel-body ::selection {
-  background: var(--accent-green-dim);
-  color: var(--text-primary);
-}
-
 .log-line {
   white-space: pre-wrap;
   word-break: break-all;
@@ -228,7 +223,7 @@
   left: 0;
   background: var(--bg-raised);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--window-border);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
   font-size: 11px;

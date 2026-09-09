@@ -14,8 +14,24 @@ test('frame colors parse RGB/RGBA, round and clamp channels', () => {
     'rgba(1, 2, 3, 0)',
     'rgb(1, 2)',
     'rgb(1..2, 2, 3)',
-    'color(srgb 1 0 0)',
+    'color(srgb 1 0 0 / 0)',
+    'color(srgb 1..2 0 0)',
+    'color(display-p3 1 0 0)',
   ]) {
     assert.deepEqual(parseThemeColor(color, fallback), fallback);
   }
+});
+
+test('frame colors parse sRGB returned by color-mix for dimmed theme borders', () => {
+  const fallback: [number, number, number] = [41, 38, 34];
+  assert.deepEqual(
+    parseThemeColor('color(srgb 0.433529 0.420588 0.40549)', fallback),
+    [111, 107, 103],
+  );
+  assert.deepEqual(
+    parseThemeColor('color(srgb 0.0884314 0.0819608 0.0733333)', fallback),
+    [23, 21, 19],
+  );
+  assert.deepEqual(parseThemeColor('color(srgb 1 0 0 / 1)', fallback), [255, 0, 0]);
+  assert.deepEqual(parseThemeColor('color(srgb -0.1 5e-1 1.2)', fallback), [0, 128, 255]);
 });

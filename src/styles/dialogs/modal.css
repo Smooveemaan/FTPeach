@@ -16,7 +16,7 @@
 .modal,
 .error-boundary-card {
   background: var(--bg-panel);
-  border: var(--control-border);
+  border: 1px solid var(--window-border);
   border-radius: var(--radius-md);
   box-shadow: var(--dialog-shadow);
 }

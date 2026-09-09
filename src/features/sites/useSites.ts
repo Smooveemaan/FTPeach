@@ -148,7 +148,7 @@ export function useSites({
           name,
           localPath: path,
           parentId: existing?.parentId || null,
-          icon: existing?.icon || 'folder',
+          icon: existing?.icon || 'bookmark',
           color: existing?.color || '',
         }),
         { returnResult: true },

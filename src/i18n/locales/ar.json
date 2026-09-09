@@ -154,9 +154,9 @@
     "label": "اسم ملف تعريف الاتصال:"
   },
   "saveLocalPath": {
-    "title": "Save Local Path",
-    "label": "Name",
-    "tooltip": "Save current path"
+    "title": "حفظ المسار المحلي",
+    "label": "الاسم",
+    "tooltip": "حفظ المسار الحالي"
   },
   "newFolder": {
     "title": "مجلد جديد",
@@ -607,8 +607,8 @@
     "titleList": "إدارة الإشارات المرجعية",
     "titleLocalPathList": "إدارة المسارات المحلية",
     "manageLocalPaths": "إدارة المسارات المحلية…",
-    "titleNewLocalPath": "New Local Path",
-    "titleEditLocalPath": "Edit Local Path",
+    "titleNewLocalPath": "مسار محلي جديد",
+    "titleEditLocalPath": "تعديل المسار المحلي",
     "fields": {
       "name": "الاسم",
       "icon": "أيقونة",
@@ -617,7 +617,8 @@
       "keyFile": "ملف المفتاح",
       "caCertFile": "شهادة سلطة التصديق",
       "remotePath": "المجلد الافتراضي",
-      "localPath": "المجلد المحلي"
+      "localPath": "المجلد المحلي",
+      "folder": "مجلد"
     },
     "icons": {
       "bookmark": "إشارة مرجعية",
@@ -683,7 +684,8 @@
     "duplicateNameSuffix": " (نسخة)",
     "newBookmarkInFolder": "إضافة إشارة مرجعية جديدة هنا",
     "expandFolder": "توسيع «{{name}}»",
-    "collapseFolder": "طي «{{name}}»"
+    "collapseFolder": "طي «{{name}}»",
+    "noFolder": "بدون مجلد"
   },
   "connectionBar": {
     "fields": {
@@ -705,7 +707,7 @@
       "tooltip": "تسجيل الدخول باستخدام ملف مفتاح SSH خاص بدلاً من كلمة المرور",
       "label": "تسجيل الدخول باستخدام مفتاح SSH"
     },
-    "rsaKeyWarning": "RSA private keys have a known timing-side-channel risk. Prefer Ed25519 for new SSH keys.",
+    "rsaKeyWarning": "تنطوي مفاتيح RSA الخاصة على خطر معروف لهجمات القنوات الجانبية القائمة على التوقيت. يُفضّل استخدام Ed25519 لمفاتيح SSH الجديدة.",
     "connectTooltip": {
       "cancel": "إلغاء",
       "connect": "اتصل",

@@ -1,4 +1,4 @@
-import type { ManagedSite, SiteForm, SiteProtocol } from '../../shared/types.ts';
+import type { ConnectionForm, ManagedSite, SiteForm, SiteProtocol } from '../../shared/types.ts';
 
 export type NormalizedSitePayload = Record<string, unknown> & { id?: string; name: string };
 
@@ -35,6 +35,27 @@ export function createSiteForm(site?: ManagedSite | null): SiteForm {
   };
 }
 
+export function createPaneSiteForm(pane: {
+  kind?: 'local' | 'remote';
+  form: ConnectionForm;
+  path: string;
+}): SiteForm {
+  if (pane.kind === 'local') {
+    return {
+      ...createSiteForm(),
+      kind: 'local',
+      name: pane.path.split(/[\\/]/).filter(Boolean).at(-1) || pane.path,
+      localPath: pane.path,
+    };
+  }
+  return {
+    ...createSiteForm(),
+    ...pane.form,
+    name: pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host,
+    remotePath: pane.path,
+  };
+}
+
 export interface SiteFormSecrets {
   password: string;
   keyPassphrase: string;
@@ -56,7 +77,7 @@ export function normalizeSiteForm(
       name: form.name.trim(),
       localPath: form.localPath.trim(),
       parentId: form.parentId,
-      icon: form.icon || 'folder',
+      icon: form.icon || 'bookmark',
       color: form.color,
     };
   }

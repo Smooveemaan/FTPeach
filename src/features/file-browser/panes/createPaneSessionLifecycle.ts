@@ -150,7 +150,13 @@ export function createPaneSessionLifecycle({
     reportRejection(refreshPane(id, targetPath, nextPane, tabId));
   };
 
-  const setPaneForm = (id: PaneId, form: ConnectionForm) => updatePane(id, { form, siteId: null });
+  // Hand-editing the form detaches the pane from whatever bookmark filled it
+  // in, so the bookmark's *name* has to go with its id: `siteLabel` is what
+  // the source button, the tab title and the transfer rows display, and a
+  // stale one would caption an ad-hoc connection with the bookmark the user
+  // just edited away from (e.g. "SFTP" over a hand-typed 127.0.0.1 FTP host).
+  const setPaneForm = (id: PaneId, form: ConnectionForm) =>
+    updatePane(id, { form, siteId: null, siteLabel: '' });
 
   const connectPane =
     (

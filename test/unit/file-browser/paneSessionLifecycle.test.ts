@@ -246,3 +246,17 @@ test('late first listing cannot overwrite a replacement connection', async () =>
   assert.equal(h.tab.panes.b.errorMessage, '');
   await replacement;
 });
+
+test('editing a bookmark-filled form drops the bookmark caption along with its id', () => {
+  const h = harness();
+  h.tab.panes.b.siteLabel = 'SFTP';
+  h.tab.panes.b.siteId = 'site-1';
+  h.lifecycle.setPaneForm('b', {
+    ...h.tab.panes.b.form,
+    protocol: 'ftp',
+    host: '127.0.0.1',
+    port: '2131',
+  });
+  assert.equal(h.tab.panes.b.siteId, null);
+  assert.equal(h.tab.panes.b.siteLabel, '');
+});

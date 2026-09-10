@@ -63,7 +63,7 @@ export function useFileClipboard({
       targetPane,
       undefined,
       [...sourcePane.selected],
-      (namesToUse: string[]) =>
+      (namesToUse: string[], overwriteApproved: boolean) =>
         copyEntries({
           sourcePane,
           targetPane,
@@ -71,6 +71,7 @@ export function useFileClipboard({
           move: false,
           refreshSource,
           refreshTarget,
+          overwriteApproved,
         }),
       sourcePane.entries,
     );
@@ -88,7 +89,7 @@ export function useFileClipboard({
         targetPane,
         undefined,
         [...sourcePane.selected],
-        (namesToUse: string[]) =>
+        (namesToUse: string[], overwriteApproved: boolean) =>
           copyEntries({
             sourcePane,
             targetPane,
@@ -96,6 +97,7 @@ export function useFileClipboard({
             move: mode === 'cut',
             refreshSource: () => refreshPane(sourceId, sourcePane.path),
             refreshTarget: () => refreshPane(targetId, targetPane.path),
+            overwriteApproved,
           })
             .then(() => {
               if (mode === 'cut') setClipboard(null);
@@ -142,6 +144,26 @@ export function useFileClipboard({
     }
   };
 
+  // The local counterpart: the files are already on disk, so the shell does
+  // the copying and there is nothing to stream, report or cancel. Still
+  // marked outbound, for the same reason the remote drag is -- the cursor
+  // re-entering the window mid-drag must not read as an inbound OS drop.
+  const startLocalDragOut = async (pane: PaneState, names: string[]) => {
+    const paths = names
+      .filter((name) => pane.entries.some((entry) => entry.name === name))
+      .map((name) => paneJoin(pane, name));
+    if (paths.length !== names.length || paths.length === 0) return;
+    outboundDragRef.current = true;
+    try {
+      const result = await api.dragOut.startLocal(paths);
+      if (!result.ok) reportAsyncFailure(commandResultError(result));
+    } catch (error) {
+      reportAsyncFailure(error);
+    } finally {
+      outboundDragRef.current = false;
+    }
+  };
+
   const dragMove = useDragMove(
     ({ sourceSide, names, targetSide, targetFolder, isMove }) => {
       const sourcePane = panes[sourceSide];
@@ -155,7 +177,7 @@ export function useFileClipboard({
         );
         return;
       }
-      const proceed = (namesToUse: string[]) =>
+      const proceed = (namesToUse: string[], overwriteApproved: boolean) =>
         copyEntries({
           sourcePane,
           targetPane,
@@ -164,6 +186,7 @@ export function useFileClipboard({
           move: isMove,
           refreshSource: () => refreshPane(sourceSide, sourcePane.path),
           refreshTarget: () => refreshPane(targetSide, targetPane.path),
+          overwriteApproved,
         });
       reportRejection(
         confirmOverwriteIfNeeded(
@@ -179,7 +202,13 @@ export function useFileClipboard({
       isValidDropTarget: (sourceId, targetId) => canCopyBetween(panes[sourceId], panes[targetId]),
       onDragLeaveWindow: ({ side, names }) => {
         const pane = panes[side];
-        if (pane.kind !== 'remote' || !pane.connectionId) return;
+        if (pane.kind === 'local') {
+          if (!pane.path) return;
+          dragMove.cancelDrag();
+          void startLocalDragOut(pane, names);
+          return;
+        }
+        if (!pane.connectionId) return;
         dragMove.cancelDrag();
         void startNativeDragOut(pane, names);
       },

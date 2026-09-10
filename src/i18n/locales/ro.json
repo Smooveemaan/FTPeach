@@ -74,6 +74,7 @@
   },
   "filePane": {
     "emptyFolder": "Dosarul este gol",
+    "connectFirst": "Conectați-vă mai întâi",
     "homeFolder": "Dosarul de bază",
     "copyToPaneBelow": "Copiați în caseta de mai jos",
     "copyToPaneAbove": "Copiază în panoul de mai sus",

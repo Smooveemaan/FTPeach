@@ -266,12 +266,13 @@ export function useFileBrowserPaneModel(
         pane,
         targetFolder ?? undefined,
         files.map((file) => file.name),
-        (names) =>
+        (names, overwriteApproved) =>
           handleOsDropFiles(
             pane,
             files.filter((file) => names.includes(file.name)),
             targetFolder,
             () => refreshPane(paneId, pane.path),
+            overwriteApproved,
           ),
         files,
       ),

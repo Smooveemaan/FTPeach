@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Ο φάκελος είναι άδειος",
+    "connectFirst": "Συνδεθείτε πρώτα",
     "homeFolder": "Αρχικός φάκελος",
     "copyToPaneBelow": "Αντιγραφή στο παρακάτω πλαίσιο",
     "copyToPaneAbove": "Αντιγραφή στο παραπάνω πλαίσιο",

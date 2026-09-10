@@ -107,6 +107,7 @@ declare global {
           protocol: SiteProtocol,
           files: DragOutFile[],
         ) => Promise<CommandResult>;
+        startLocal: (paths: string[]) => Promise<CommandResult>;
       };
     };
   }

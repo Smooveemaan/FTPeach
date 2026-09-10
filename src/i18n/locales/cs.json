@@ -76,6 +76,7 @@
   },
   "filePane": {
     "emptyFolder": "Složka je prázdná",
+    "connectFirst": "Nejprve se připojte",
     "homeFolder": "Domovská složka",
     "copyToPaneBelow": "Zkopírujte do pole níže",
     "copyToPaneAbove": "Zkopírovat do horního panelu",

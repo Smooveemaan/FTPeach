@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Klasör boş",
+    "connectFirst": "Önce bağlanın",
     "homeFolder": "Ana klasör",
     "copyToPaneBelow": "Aşağıdaki bölmeye kopyala",
     "copyToPaneAbove": "Yukarıdaki bölmeye kopyala",

@@ -16,5 +16,8 @@ export function createDragOutApi(invoke: InvokeFn) {
     // backend has no other cheap way to know it.
     start: (connectionId: string, protocol: SiteProtocol, files: DragOutFile[]) =>
       commandOutcome(invoke, 'drag_out_start', { connectionId, protocol, files }),
+    // Local files are already on disk, so the shell copies them itself: no
+    // session, no protocol and no Transfers row, just the paths.
+    startLocal: (paths: string[]) => commandOutcome(invoke, 'drag_out_start_local', { paths }),
   };
 }

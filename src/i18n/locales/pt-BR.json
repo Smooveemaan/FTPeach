@@ -74,6 +74,7 @@
   },
   "filePane": {
     "emptyFolder": "A pasta está vazia",
+    "connectFirst": "Conecte-se primeiro",
     "homeFolder": "Pasta pessoal",
     "copyToPaneBelow": "Copiar para o painel abaixo",
     "copyToPaneAbove": "Copiar para o painel acima",

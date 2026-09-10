@@ -76,6 +76,7 @@
   },
   "filePane": {
     "emptyFolder": "Папка порожня",
+    "connectFirst": "Спочатку підключіться",
     "homeFolder": "Домашня папка",
     "copyToPaneBelow": "Скопіювати в поле нижче",
     "copyToPaneAbove": "Скопіювати у верхню панель",

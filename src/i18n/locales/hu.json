@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "A mappa üres",
+    "connectFirst": "Előbb csatlakozzon",
     "homeFolder": "Főmappa",
     "copyToPaneBelow": "Másolás az alatta lévő ablaktáblába",
     "copyToPaneAbove": "Másolás a fenti ablaktáblába",

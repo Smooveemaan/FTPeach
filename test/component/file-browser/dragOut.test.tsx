@@ -48,3 +48,42 @@ test('dragging a remote folder and file out of the window starts native drag wit
   ]);
   expect(result.current.outboundDragRef.current).toBe(false);
 });
+
+test('dragging local entries out of the window hands the shell their full paths', async () => {
+  const tab = makeTab('tab');
+  Object.assign(tab.panes.a, {
+    kind: 'local',
+    path: 'D:\\work',
+    entries: [
+      { name: 'folder', isDirectory: true, size: 0 },
+      { name: 'file.txt', isDirectory: false, size: 42 },
+    ],
+  });
+  const start = vi.fn().mockResolvedValue({ ok: true });
+  const startLocal = vi.fn().mockResolvedValue({ ok: true });
+  window.api = { dragOut: { start, startLocal } } as unknown as Window['api'];
+  const { result } = renderHook(() =>
+    useFileClipboard({
+      panes: tab.panes,
+      confirmOverwriteIfNeeded: vi.fn(),
+      copyEntries: vi.fn(),
+      canCopyBetween: vi.fn(),
+      refreshPane: vi.fn(),
+      movePaneSamePane: vi.fn(),
+    }),
+  );
+  await act(async () => {
+    vi.mocked(useDragMove)
+      .mock.calls.at(-1)?.[1]
+      ?.onDragLeaveWindow?.({
+        side: 'a',
+        entryName: 'folder',
+        names: ['folder', 'file.txt'],
+        isDir: true,
+      });
+  });
+  // No session is involved, so the remote drag-out must stay out of it.
+  expect(start).not.toHaveBeenCalled();
+  expect(startLocal).toHaveBeenCalledWith(['D:\\work\\folder', 'D:\\work\\file.txt']);
+  expect(result.current.outboundDragRef.current).toBe(false);
+});

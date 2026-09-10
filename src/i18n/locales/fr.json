@@ -74,6 +74,7 @@
   },
   "filePane": {
     "emptyFolder": "Le dossier est vide",
+    "connectFirst": "Connectez-vous d'abord",
     "homeFolder": "Dossier personnel",
     "copyToPaneBelow": "Copier dans le volet ci-dessous",
     "copyToPaneAbove": "Copier dans le volet du dessus",

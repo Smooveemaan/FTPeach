@@ -80,6 +80,7 @@
   },
   "filePane": {
     "emptyFolder": "المجلد فارغ",
+    "connectFirst": "اتصل أولاً",
     "homeFolder": "المجلد الرئيسي",
     "copyToPaneBelow": "نسخ إلى الجزء أدناه",
     "copyToPaneAbove": "نسخ إلى الجزء أعلاه",

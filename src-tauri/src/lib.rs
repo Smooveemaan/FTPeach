@@ -150,6 +150,7 @@ pub fn run() {
             commands::transfer::transfer_cancel_remote_copy,
             commands::open_with::open_with_stop,
             commands::drag_out::drag_out_start,
+            commands::drag_out::drag_out_start_local,
             commands::updater::updater_check,
             commands::updater::updater_download,
             commands::updater::updater_install,

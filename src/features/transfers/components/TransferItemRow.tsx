@@ -79,7 +79,7 @@ export default function TransferItemRow({
         ? t('transferQueue.cancelledByUser')
         : null;
   const statusLabel = t(
-    item.status === 'progress' ? PROGRESS_LABEL_KEY[item.direction] : STATUS_LABEL_KEY[item.status],
+    item.status === 'progress' ? PROGRESS_LABEL_KEY[direction] : STATUS_LABEL_KEY[item.status],
   );
 
   const [nameRef, nameTruncated] = useTruncated<HTMLSpanElement>([item.name]);

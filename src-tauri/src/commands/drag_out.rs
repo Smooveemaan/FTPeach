@@ -84,6 +84,48 @@ pub async fn drag_out_start(
     }
 }
 
+/// Starts a native OS drag-and-drop session for files that already exist on
+/// disk, so a local pane's selection can be dropped onto Explorer, the
+/// desktop, or any other drop target. Nothing is transferred through us —
+/// the shell copies the paths itself — so unlike `drag_out_start` there is
+/// no session, no lazy download and no Transfers row.
+///
+/// Resolves once the drag gesture completes (dropped or cancelled).
+#[tauri::command]
+pub async fn drag_out_start_local(
+    window: Window,
+    paths: Vec<String>,
+) -> CommandResult<DragOutStartResult> {
+    if paths.is_empty() {
+        return Ok(DragOutStartResult::Err {
+            ok: false,
+            error: CommandError::new(ErrorCode::InvalidInput, "No files to drag"),
+        });
+    }
+
+    #[cfg(windows)]
+    {
+        match crate::native_drag::windows::start_local_drag(window, paths).await {
+            Ok(()) => Ok(DragOutStartResult::Ok { ok: true }),
+            Err(err) => Ok(DragOutStartResult::Err {
+                ok: false,
+                error: CommandError::from_anyhow(&err),
+            }),
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (window, paths);
+        Ok(DragOutStartResult::Err {
+            ok: false,
+            error: CommandError::new(
+                ErrorCode::InvalidInput,
+                "Dragging files out to the OS file explorer isn't supported on this platform yet",
+            ),
+        })
+    }
+}
+
 // See commands/preview.rs's serde_field_casing module for why this needs
 // its own per-variant rename_all and a test guarding it.
 #[cfg(test)]

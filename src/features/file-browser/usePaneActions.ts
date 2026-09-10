@@ -26,6 +26,8 @@ interface CopyEntriesOptions {
   targetFolder?: string;
   move: boolean;
   refreshTarget: () => unknown;
+  /** The user already approved overwriting whatever collides at the target. */
+  overwriteApproved?: boolean;
 }
 interface PaneActionsOptions {
   t: Translate;
@@ -40,7 +42,7 @@ interface PaneActionsOptions {
     target: PaneState,
     targetFolder: string | undefined,
     names: string[],
-    proceed: (names: string[]) => unknown,
+    proceed: (names: string[], overwriteApproved: boolean) => unknown,
     entries: FileEntry[],
   ) => unknown;
   copyEntries: (options: CopyEntriesOptions) => unknown;
@@ -155,13 +157,14 @@ export function usePaneActions({
               otherPane,
               undefined,
               [entry.name],
-              (names) =>
+              (names, overwriteApproved) =>
                 copyEntries({
                   sourcePane: pane,
                   targetPane: otherPane,
                   names,
                   move: false,
                   refreshTarget: () => refreshPane(otherId, otherPane.path),
+                  overwriteApproved,
                 }),
               [entry],
             ),

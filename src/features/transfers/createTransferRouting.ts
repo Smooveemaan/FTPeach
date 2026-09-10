@@ -21,6 +21,13 @@ interface CopyEntriesOptions {
   move?: boolean;
   refreshSource?: RefreshCallback;
   refreshTarget?: RefreshCallback;
+  /**
+   * The caller already asked about every name that collides at the destination
+   * (see usePanes' confirmOverwriteIfNeeded) and the user said yes. Without
+   * this the per-destination approval below asks a second time about the very
+   * same file, one dialog behind the other.
+   */
+  overwriteApproved?: boolean;
 }
 interface OsDropFile {
   path: string;
@@ -42,6 +49,7 @@ export interface TransferRoutingModel {
     files: OsDropFile[],
     targetFolder?: string | null,
     refreshTarget?: RefreshCallback,
+    overwriteApproved?: boolean,
   ) => Promise<void>;
 }
 
@@ -63,10 +71,12 @@ export function createTransferRouting(
     sourcePath: string,
     targetPath: string,
     moving = false,
+    overwriteApproved = false,
   ) => {
-    const approved =
-      overwriteAction === 'skip' &&
-      !(moving && source.kind === 'remote' && target.kind === 'remote')
+    const approved = overwriteApproved
+      ? true
+      : overwriteAction === 'skip' &&
+          !(moving && source.kind === 'remote' && target.kind === 'remote')
         ? false
         : await approveTarget({
             kind: target.kind,
@@ -92,44 +102,59 @@ export function createTransferRouting(
     return report.ok;
   };
 
+  // A dropped path has no pane behind it, so the walk gets a stand-in built
+  // from the path alone; recursiveFolder only reads the endpoint kinds and
+  // their session details.
+  const localEndpoint = (path: string): TransferPane => ({
+    kind: 'local',
+    status: 'connected',
+    connectionId: null,
+    protocol: null,
+    path,
+    entries: [],
+  });
+
   const uploadFolderEntry = (
     connectionId: string,
     protocol: SiteProtocol,
     sourcePath: string,
     name: string,
     targetDir: string,
+    overwriteApproved = false,
   ) =>
     recursiveFolder(
-      {
-        kind: 'local',
-        status: 'connected',
-        connectionId: null,
-        protocol: null,
-        path: sourcePath,
-        entries: [],
-      },
+      localEndpoint(sourcePath),
       { kind: 'remote', status: 'connected', connectionId, protocol, path: targetDir, entries: [] },
       sourcePath,
       joinRemotePath(targetDir, name),
+      false,
+      overwriteApproved,
     );
 
   // Pane-to-pane routing
-  const copyLocalEntry = async (sourceDir: string, entry: FileEntry, targetDir: string) => {
-    const source = joinLocalPath(sourceDir, entry.name);
-    const destination = joinLocalPath(targetDir, entry.name);
+  const copyLocalFile = async (source: string, destination: string, overwriteApproved: boolean) => {
     await requireSuccess(api.fsLocal.validateCopy(source, destination), destination);
-    if (!entry.isDirectory) {
-      const overwrite = await approveTarget({ kind: 'local', path: destination });
-      if (overwrite === null) return false;
-      const res = await api.fsLocal.copyFile(
-        joinLocalPath(sourceDir, entry.name),
-        joinLocalPath(targetDir, entry.name),
-        overwrite,
-      );
-      if (!res.ok) throw new Error(`${source}: ${res.error || 'Copy failed'}`);
-      return true;
-    }
-    throw new Error('Folders must use the recursive backend operation');
+    const overwrite = overwriteApproved
+      ? true
+      : await approveTarget({ kind: 'local', path: destination });
+    if (overwrite === null) return false;
+    const res = await api.fsLocal.copyFile(source, destination, overwrite);
+    if (!res.ok) throw new Error(`${source}: ${res.error || 'Copy failed'}`);
+    return true;
+  };
+
+  const copyLocalEntry = async (
+    sourceDir: string,
+    entry: FileEntry,
+    targetDir: string,
+    overwriteApproved = false,
+  ) => {
+    if (entry.isDirectory) throw new Error('Folders must use the recursive backend operation');
+    return copyLocalFile(
+      joinLocalPath(sourceDir, entry.name),
+      joinLocalPath(targetDir, entry.name),
+      overwriteApproved,
+    );
   };
 
   const copyEntriesUnchecked = async ({
@@ -140,6 +165,7 @@ export function createTransferRouting(
     move,
     refreshSource,
     refreshTarget,
+    overwriteApproved = false,
   }: CopyEntriesOptions) => {
     if (names.length === 0) return;
     const sourceEntriesByName = new Map(sourcePane.entries.map((entry) => [entry.name, entry]));
@@ -159,7 +185,14 @@ export function createTransferRouting(
         targetPane.kind === 'local'
           ? joinLocalPath(targetDir, name)
           : joinRemotePath(targetDir, name);
-      await recursiveFolder(sourcePane, targetPane, sourcePath, targetPath, move);
+      await recursiveFolder(
+        sourcePane,
+        targetPane,
+        sourcePath,
+        targetPath,
+        move,
+        overwriteApproved,
+      );
     }
     if (folders.length > 0) {
       refreshTarget?.();
@@ -172,7 +205,10 @@ export function createTransferRouting(
       const results = await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return { entry, ok: false };
-        return { entry, ok: await copyLocalEntry(sourcePane.path, entry, targetDir) };
+        return {
+          entry,
+          ok: await copyLocalEntry(sourcePane.path, entry, targetDir, overwriteApproved),
+        };
       });
       refreshTarget?.();
       if (move) {
@@ -209,12 +245,14 @@ export function createTransferRouting(
           const sourceFull = joinRemotePath(sourcePane.path, name);
           const destFull = joinRemotePath(targetDir, name);
           if (move) {
-            const overwrite = await approveTarget({
-              kind: 'remote',
-              path: destFull,
-              connectionId: sourcePane.connectionId!,
-              protocol: sourcePane.protocol!,
-            });
+            const overwrite = overwriteApproved
+              ? true
+              : await approveTarget({
+                  kind: 'remote',
+                  path: destFull,
+                  connectionId: sourcePane.connectionId!,
+                  protocol: sourcePane.protocol!,
+                });
             if (overwrite === null) return { entry, ok: false };
             // Native rename lets the server enforce directory identity and
             // aliases without a recursive copy followed by destructive delete.
@@ -233,6 +271,7 @@ export function createTransferRouting(
             targetPane.protocol!,
             name,
             targetDir,
+            overwriteApproved,
           )
         ).ok;
         return { entry, ok };
@@ -268,6 +307,7 @@ export function createTransferRouting(
             name,
             targetDir,
             entry.size,
+            overwriteApproved,
           )
         ).ok;
       } else {
@@ -278,6 +318,8 @@ export function createTransferRouting(
             joinRemotePath(sourcePane.path, name),
             name,
             targetDir,
+            true,
+            overwriteApproved,
           )
         ).ok;
       }
@@ -309,8 +351,34 @@ export function createTransferRouting(
     files: OsDropFile[],
     targetFolder?: string | null,
     refreshTarget?: RefreshCallback,
+    overwriteApproved = false,
   ) => {
-    if (targetPane.kind !== 'remote') return;
+    // A local pane takes an OS drop the same way it takes a pane-to-pane copy:
+    // the shell hands us paths that are already on disk, so files are copied
+    // straight across and folders go through the recursive walk. Nothing here
+    // needs a session, which is why this works with no server connected.
+    if (targetPane.kind === 'local') {
+      const targetDir = targetFolder
+        ? joinLocalPath(targetPane.path, targetFolder)
+        : targetPane.path;
+      await mapWithConcurrency(files, RENDERER_FANOUT_LIMIT, async (file) => {
+        const destination = joinLocalPath(targetDir, file.name);
+        if (file.isDirectory) {
+          await recursiveFolder(
+            localEndpoint(file.path),
+            localEndpoint(targetDir),
+            file.path,
+            destination,
+            false,
+            overwriteApproved,
+          );
+        } else {
+          await copyLocalFile(file.path, destination, overwriteApproved);
+        }
+      });
+      refreshTarget?.();
+      return;
+    }
     const targetDir = targetFolder
       ? joinRemotePath(targetPane.path, targetFolder)
       : targetPane.path;
@@ -322,6 +390,7 @@ export function createTransferRouting(
           file.path,
           file.name,
           targetDir,
+          overwriteApproved,
         );
       } else {
         await runUpload(
@@ -331,6 +400,7 @@ export function createTransferRouting(
           file.name,
           targetDir,
           file.size,
+          overwriteApproved,
         );
       }
     });

@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Der Ordner ist leer",
+    "connectFirst": "Zuerst verbinden",
     "homeFolder": "Home-Ordner",
     "copyToPaneBelow": "In das darunterliegende Feld kopieren",
     "copyToPaneAbove": "In den oberen Bereich kopieren",

@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Folder ini kosong",
+    "connectFirst": "Hubungkan dulu",
     "homeFolder": "Folder Beranda",
     "copyToPaneBelow": "Salin ke panel di bawah ini",
     "copyToPaneAbove": "Salin ke panel di atas",

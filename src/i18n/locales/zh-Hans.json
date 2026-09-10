@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "文件夹为空",
+    "connectFirst": "请先连接",
     "homeFolder": "主文件夹",
     "copyToPaneBelow": "复制到下方的区域",
     "copyToPaneAbove": "复制到上方区域",

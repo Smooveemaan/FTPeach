@@ -48,6 +48,8 @@ export interface TransferLifecycleModel {
     name: string,
     remoteTargetDir: string,
     _localSize?: number,
+    /** The destination was already approved for overwrite; don't ask again. */
+    overwriteApproved?: boolean,
   ) => Promise<
     | CommandResult
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
@@ -60,6 +62,8 @@ export interface TransferLifecycleModel {
     name: string,
     localTargetDir: string,
     resume?: boolean,
+    /** The destination was already approved for overwrite; don't ask again. */
+    overwriteApproved?: boolean,
   ) => Promise<
     | CommandResult
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
@@ -72,6 +76,8 @@ export interface TransferLifecycleModel {
     targetProtocol: SiteProtocol,
     name: string,
     targetTargetDir: string,
+    /** The destination was already approved for overwrite; don't ask again. */
+    overwriteApproved?: boolean,
   ) => Promise<
     | CommandResult
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
@@ -152,16 +158,19 @@ export function useTransferLifecycle(
     name: string,
     remoteTargetDir: string,
     _localSize?: number,
+    overwriteApproved = false,
   ) => {
     const remoteTarget = joinRemotePath(remoteTargetDir, name);
     if (activeTransferForTarget(`remote:${connectionId}:${remoteTarget}`))
       return { ok: false, alreadyRunning: true };
-    const overwrite = await approveTarget({
-      kind: 'remote',
-      connectionId,
-      path: remoteTarget,
-      protocol,
-    });
+    const overwrite = overwriteApproved
+      ? true
+      : await approveTarget({
+          kind: 'remote',
+          connectionId,
+          path: remoteTarget,
+          protocol,
+        });
     if (overwrite === null) return { ok: false, skipped: true };
     const existing = Object.values(getTransfersSnapshot()).find(
       (item) =>
@@ -227,12 +236,15 @@ export function useTransferLifecycle(
     name: string,
     localTargetDir: string,
     resume = true,
+    overwriteApproved = false,
   ) => {
     validateWindowsDownloadName(name);
     const localTarget = joinLocalPath(localTargetDir, name);
     if (activeTransferForTarget(`local:${localTarget.replaceAll('/', '\\').toLowerCase()}`))
       return { ok: false, alreadyRunning: true };
-    const overwrite = await approveTarget({ kind: 'local', path: localTarget });
+    const overwrite = overwriteApproved
+      ? true
+      : await approveTarget({ kind: 'local', path: localTarget });
     if (overwrite === null) return { ok: false, skipped: true };
     const existing = Object.values(getTransfersSnapshot()).find(
       (item) =>
@@ -286,16 +298,19 @@ export function useTransferLifecycle(
     targetProtocol: SiteProtocol,
     name: string,
     targetTargetDir: string,
+    overwriteApproved = false,
   ) => {
     const targetPath = joinRemotePath(targetTargetDir, name);
     if (activeTransferForTarget(`remote:${targetConnectionId}:${targetPath}`))
       return { ok: false, alreadyRunning: true };
-    const overwrite = await approveTarget({
-      kind: 'remote',
-      connectionId: targetConnectionId,
-      protocol: targetProtocol,
-      path: targetPath,
-    });
+    const overwrite = overwriteApproved
+      ? true
+      : await approveTarget({
+          kind: 'remote',
+          connectionId: targetConnectionId,
+          protocol: targetProtocol,
+          path: targetPath,
+        });
     if (overwrite === null) return { ok: false, skipped: true };
     const id = startTransfer({
       direction: 'copy',

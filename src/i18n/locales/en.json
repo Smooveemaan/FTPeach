@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Folder is empty",
+    "connectFirst": "Connect first",
     "homeFolder": "Home folder",
     "copyToPaneBelow": "Copy to pane below",
     "copyToPaneAbove": "Copy to pane above",

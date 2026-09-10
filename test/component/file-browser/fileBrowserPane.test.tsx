@@ -130,3 +130,23 @@ describe('FileBrowserPane entries identity', () => {
     expect(lastFilePaneProps?.entries.map((entry) => entry.name)).toEqual(['NewFile.txt']);
   });
 });
+
+describe('FileBrowserPane drop targets', () => {
+  test('a Server pane offers to take an OS drop only while connected', () => {
+    const remote = (status: PaneState['status']) =>
+      makePane({ kind: 'remote', status, path: '/', connectionId: 'session', protocol: 'sftp' });
+
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(remote('connected'))} />);
+    expect(lastFilePaneProps?.onDropFiles).toBeTypeOf('function');
+
+    // Dropping into a pane with no session used to reach the backend and come
+    // back as a connection error the user had no way to see coming.
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(remote('idle'))} />);
+    expect(lastFilePaneProps?.onDropFiles).toBeUndefined();
+
+    // A local pane copies the paths itself, so no session is involved and the
+    // other pane's state has no say in it.
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(makePane())} />);
+    expect(lastFilePaneProps?.onDropFiles).toBeTypeOf('function');
+  });
+});

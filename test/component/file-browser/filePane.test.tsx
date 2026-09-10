@@ -341,6 +341,32 @@ describe('FilePane interactions', () => {
     expect(props.onSelectionChange).toHaveBeenCalledWith(new Set(['Zoo.txt', 'Alpha', 'beta.txt']));
   });
 
+  test('a pane that cannot take an OS drop says so instead of swallowing it', () => {
+    const { container } = renderPane({ onDropFiles: undefined });
+    const list = requireHtml(container.querySelector('.pane-list'));
+    const dataTransfer = { dropEffect: 'copy', files: [], items: [] };
+
+    fireEvent.dragOver(list, { dataTransfer });
+    expect(list.classList.contains('drag-wash-invalid')).toBe(true);
+    expect(list.classList.contains('drag-wash')).toBe(false);
+    expect(dataTransfer.dropEffect).toBe('none');
+    // Blurring the list is CSS's half of the answer; the reason is this one.
+    expect(container.querySelector('.pane-drop-refusal')?.textContent).toBe(
+      'filePane.connectFirst',
+    );
+  });
+
+  test('a pane that can take an OS drop keeps the accepting wash', () => {
+    const { container } = renderPane();
+    const list = requireHtml(container.querySelector('.pane-list'));
+    const dataTransfer = { dropEffect: 'none', files: [], items: [] };
+
+    fireEvent.dragOver(list, { dataTransfer });
+    expect(list.classList.contains('drag-wash')).toBe(true);
+    expect(list.classList.contains('drag-wash-invalid')).toBe(false);
+    expect(dataTransfer.dropEffect).toBe('copy');
+  });
+
   test('starts a pane-to-pane drag with the current multi-selection', () => {
     const { props } = renderPane({ selectedNames: new Set(['Zoo.txt', 'beta.txt']) });
     const row = within(screen.getByRole('listbox')).getByRole('option', { name: /Zoo\.txt/ });

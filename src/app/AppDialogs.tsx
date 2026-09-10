@@ -113,7 +113,7 @@ export interface AppDialogsModel {
       pane: PaneState,
       folderName: string,
       names: string[],
-      proceed: (names: string[]) => unknown,
+      proceed: (names: string[], overwriteApproved: boolean) => unknown,
       entries: PaneState['entries'],
     ) => unknown;
     movePaneSamePane: (

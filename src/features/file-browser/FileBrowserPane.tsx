@@ -216,9 +216,11 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
         }
       }}
       onDropFiles={
-        pane.kind === 'remote'
-          ? (files, targetFolder) => actions.dropFiles(id, pane, files, targetFolder)
-          : undefined
+        // A local pane copies what the shell hands it and needs no session; a
+        // Server pane has nowhere to put it until one exists.
+        disconnected
+          ? undefined
+          : (files, targetFolder) => actions.dropFiles(id, pane, files, targetFolder)
       }
       dragMoveStart={dragMoveStart}
       outboundDragRef={outboundDragRef}

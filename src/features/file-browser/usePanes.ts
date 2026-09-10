@@ -118,7 +118,7 @@ export interface PanesModel {
     targetPane: PaneState,
     targetFolder: string | undefined,
     names: string[],
-    proceed: (names: string[]) => unknown,
+    proceed: (names: string[], overwriteApproved: boolean) => unknown,
     sourceEntries?: FileEntry[],
   ) => Promise<void>;
   canCopyBetween: (source: PaneState, target: PaneState) => boolean;
@@ -294,7 +294,7 @@ export function usePanes({
     targetPane: PaneState,
     targetFolder: string | undefined,
     names: string[],
-    proceed: (names: string[]) => unknown,
+    proceed: (names: string[], overwriteApproved: boolean) => unknown,
     sourceEntries: FileEntry[] = [],
   ) => {
     let destEntries;
@@ -317,24 +317,29 @@ export function usePanes({
       );
       return isTransferNameConflict(source, destination);
     });
+    // Whether the caller may treat the destination as approved: nothing to
+    // overwrite, or the user has just said to overwrite it. The operation this
+    // hands off to asks per destination path of its own accord, and without
+    // this answer it would put a second dialog about the same file straight
+    // after this one.
     if (conflicts.length === 0) {
-      proceed(names);
+      proceed(names, false);
       return;
     }
     if (overwriteAction === 'overwrite') {
-      proceed(names);
+      proceed(names, true);
       return;
     }
     if (overwriteAction === 'skip') {
       const remaining = names.filter((name) => !conflicts.includes(name));
-      if (remaining.length > 0) proceed(remaining);
+      if (remaining.length > 0) proceed(remaining, false);
       return;
     }
     const message =
       conflicts.length === 1
         ? t('confirm.overwriteSingleExists', { name: isolate(conflicts[0]!) })
         : t('confirm.overwriteConflicts', { count: conflicts.length });
-    requestConfirm(message, () => proceed(names), {
+    requestConfirm(message, () => proceed(names, true), {
       confirmLabel: t('confirm.overwriteLabel'),
       danger: true,
     });

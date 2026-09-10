@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "폴더가 비어 있습니다",
+    "connectFirst": "먼저 연결하세요",
     "homeFolder": "홈 폴더",
     "copyToPaneBelow": "아래 창에 복사",
     "copyToPaneAbove": "위쪽 창에 복사",

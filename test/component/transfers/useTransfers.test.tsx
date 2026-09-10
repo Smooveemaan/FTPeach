@@ -15,6 +15,7 @@ import type {
   TransferProgress,
 } from '../../../src/platform/ipcContracts.ts';
 import type { SiteProtocol } from '../../../src/shared/types.ts';
+import type { RecursiveIntent } from '../../../src/platform/api/transfers.ts';
 import type {
   TransferRow,
   TransferState,
@@ -516,6 +517,84 @@ test('declining an existing recursive destination never submits a destructive op
         confirmOverwrite: async (path) => {
           prompts.push(path);
           return false;
+        },
+      },
+    );
+  }
+});
+
+const localDropTarget: Parameters<TransfersApi['handleOsDropFiles']>[0] = {
+  kind: 'local',
+  status: 'connected',
+  connectionId: null,
+  protocol: null,
+  path: 'C:\\target',
+  entries: [],
+};
+
+test('an OS drop onto a local pane is copied there without a session', async () => {
+  await withHarness(async ({ getApi, mockApi, errors }) => {
+    const copies: string[][] = [];
+    const intents: RecursiveIntent[] = [];
+    mockApi.fsLocal.validateCopy = async () => ({ ok: true });
+    mockApi.fsLocal.copyFile = async (source, destination) => {
+      copies.push([source, destination]);
+      return { ok: true };
+    };
+    mockApi.transfer.recursive = async (intent) => {
+      intents.push(intent);
+      return { ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] };
+    };
+    await act(async () => {
+      await getApi().handleOsDropFiles(localDropTarget, [
+        { path: 'D:\\drop\\file.txt', name: 'file.txt', isDirectory: false },
+        { path: 'D:\\drop\\folder', name: 'folder', isDirectory: true },
+      ]);
+    });
+    assert.deepEqual(copies, [['D:\\drop\\file.txt', 'C:\\target\\file.txt']]);
+    assert.equal(intents.length, 1);
+    assert.deepEqual(intents[0]?.source, { kind: 'local', path: 'D:\\drop\\folder' });
+    assert.deepEqual(intents[0]?.target, { kind: 'local', path: 'C:\\target\\folder' });
+    assert.deepEqual(errors, []);
+  });
+});
+
+test('a destination the caller already approved is not asked about a second time', async () => {
+  for (const approvedAlready of [false, true]) {
+    const prompts: string[] = [];
+    await withHarness(
+      async ({ getApi, mockApi, calls }) => {
+        mockApi.session.list = async () => ({
+          ok: true,
+          entries: [{ name: 'file.bin', isDirectory: false, size: 1 }],
+        });
+        mockApi._nextUpload.resolve({ ok: true });
+        await act(async () => {
+          await getApi().handleOsDropFiles(
+            {
+              kind: 'remote',
+              status: 'connected',
+              connectionId: 'c1',
+              protocol: 'sftp',
+              path: '/upload',
+              entries: [],
+            },
+            [{ path: 'D:\\drop\\file.bin', name: 'file.bin', isDirectory: false }],
+            null,
+            undefined,
+            approvedAlready,
+          );
+        });
+        // Without the answer carried down, the pane's own "overwrite it?"
+        // dialog is followed by this one about the same file.
+        assert.deepEqual(prompts, approvedAlready ? [] : ['/upload/file.bin']);
+        assert.equal(calls.upload.length, 1);
+      },
+      {
+        overwriteAction: 'ask',
+        confirmOverwrite: async (path) => {
+          prompts.push(path);
+          return true;
         },
       },
     );
@@ -1273,5 +1352,34 @@ test('OS notification fires once per queue drain, tallying succeeded/failed, not
     assert.equal(calls.notifyTransfersComplete.length, 2);
     assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
     assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+  });
+});
+
+test('a progress event flushed after a folder walk settles cannot strand its row', async () => {
+  await withHarness(async ({ getApi, mockApi, getSnapshot, emitProgress }) => {
+    let attemptId = '';
+    mockApi.transfer.recursive = async (intent) => {
+      attemptId = intent.id;
+      return { ok: true, outcome: 'complete', scanned: 2, completed: 2, errors: [] };
+    };
+    await act(async () => {
+      await getApi().copyEntries(localFolderMove());
+    });
+    const id = Object.keys(getSnapshot())[0]!;
+    assert.equal(getSnapshot()[id]!.status, 'done');
+
+    // The backend batches in-progress payloads behind a flush timer, so the
+    // walk's last one arrives after the command that sent it has resolved.
+    act(() => {
+      emitProgress({ id: attemptId, connectionId: '', status: 'progress', bytes: 8, total: 8 });
+    });
+    assert.equal(getSnapshot()[id]!.status, 'done');
+
+    // Stop would otherwise mark a revived row 'cancelling' and wait forever
+    // for an attempt the backend has already forgotten.
+    await act(async () => {
+      await getApi().stopTransfer(id);
+    });
+    assert.equal(getSnapshot()[id]!.status, 'done');
   });
 });

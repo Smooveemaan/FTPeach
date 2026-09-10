@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "De map is leeg",
+    "connectFirst": "Maak eerst verbinding",
     "homeFolder": "Startmap",
     "copyToPaneBelow": "Kopieer naar het onderstaande vak",
     "copyToPaneAbove": "Kopieer naar het bovenliggende venster",

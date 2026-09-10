@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Mappen är tom",
+    "connectFirst": "Anslut först",
     "homeFolder": "Hemmapp",
     "copyToPaneBelow": "Kopiera till rutan nedan",
     "copyToPaneAbove": "Kopiera till rutan ovan",

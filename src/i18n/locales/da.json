@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Mappen er tom",
+    "connectFirst": "Opret forbindelse først",
     "homeFolder": "Hjemmemappe",
     "copyToPaneBelow": "Kopier til feltet nedenfor",
     "copyToPaneAbove": "Kopier til feltet ovenfor",

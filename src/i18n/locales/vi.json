@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "Thư mục trống",
+    "connectFirst": "Kết nối trước",
     "homeFolder": "Thư mục chính",
     "copyToPaneBelow": "Sao chép vào khung bên dưới",
     "copyToPaneAbove": "Sao chép vào khung phía trên",

@@ -211,6 +211,7 @@ function FilePane({
   });
   const {
     dragOver,
+    dragRejected,
     dragOverRowName,
     handleRowMouseDown,
     handleDragOver,
@@ -372,7 +373,7 @@ function FilePane({
 
   const paneListClassName = `pane-list ${sorted.length === 0 ? 'pane-list-empty' : ''} ${
     emptyScrollable ? 'pane-list-empty-scrollable' : ''
-  } ${dragOver ? 'drag-wash' : ''}`;
+  } ${dragOver ? (dragRejected ? 'drag-wash-invalid' : 'drag-wash') : ''}`;
 
   const activeRowId =
     activeIndexRef.current != null ? `file-row-${side}-${activeIndexRef.current}` : undefined;
@@ -492,6 +493,15 @@ function FilePane({
           emptyMessage={emptyMessage}
           t={t}
         />
+
+        {/* Named over the blurred list while a drag hovers a pane that cannot
+            take it — a Server pane with no session. Always mounted and shown
+            by CSS off the same class that blurs the list, so a drag from
+            Explorer and one between panes answer alike without either path
+            knowing this element is here. */}
+        <div className="pane-drop-refusal" aria-hidden="true">
+          <span>{t('filePane.connectFirst')}</span>
+        </div>
       </div>
 
       {contextMenu.menu && (

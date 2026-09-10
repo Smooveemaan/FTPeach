@@ -74,6 +74,7 @@
   },
   "filePane": {
     "emptyFolder": "התיקייה ריקה",
+    "connectFirst": "התחבר תחילה",
     "homeFolder": "תיקיית הבית",
     "copyToPaneBelow": "העתק לחלונית שלמטה",
     "copyToPaneAbove": "העתק לחלונית שלמעלה",

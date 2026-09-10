@@ -76,6 +76,7 @@
   },
   "filePane": {
     "emptyFolder": "Folder jest pusty",
+    "connectFirst": "Najpierw połącz",
     "homeFolder": "Folder domowy",
     "copyToPaneBelow": "Skopiuj do poniższego pola",
     "copyToPaneAbove": "Skopiuj do okienka powyżej",

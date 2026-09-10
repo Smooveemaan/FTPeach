@@ -154,12 +154,36 @@ async fn run_inner(
         }
         let total_bytes = manifest.entries.iter().fold(0u64, |total, entry| total.saturating_add(entry.size));
         let mut completed_bytes = 0u64;
+        // The scan is the first moment the size of the job is known; without
+        // this the row shows "0 B / 0 B" until a file finishes.
+        if let Some(progress) = progress {
+            progress.send(TransferProgressPayload {
+                id: intent.id.clone(),
+                connection_id: intent.target.connection().into(),
+                status: "progress",
+                bytes: Some(0),
+                total: Some(total_bytes),
+                error: None,
+                error_code: None,
+            });
+        }
         for entry in manifest.entries.iter().filter(|e| !e.directory) {
             check_cancel(&token)?;
             if existing_targets.contains(&target_key(&entry.relative)) {
                 report.skipped += 1;
                 continue;
             }
+            // Roll this file's own byte reports into the walk's row, so a
+            // single large file no longer looks frozen between boundaries.
+            let _aggregate = progress.map(|progress| {
+                progress.aggregate_into(
+                    format!("{}:file", intent.id),
+                    intent.id.clone(),
+                    intent.target.connection().into(),
+                    completed_bytes,
+                    total_bytes,
+                )
+            });
             let copy = copy_file(sessions, progress, &intent, &entry.relative, &token);
             tokio::pin!(copy);
             let result = tokio::select! {
@@ -211,6 +235,22 @@ async fn run_inner(
         "failed"
     }
     .into();
+    // Progress payloads are batched behind a 100ms flush timer, so the walk's
+    // last one would otherwise be emitted after this command has returned and
+    // the renderer has already settled the row — reviving it as "in progress"
+    // with nothing left running to finish it. A terminal payload supersedes
+    // the pending one and carries the final byte count across.
+    if let Some(progress) = progress {
+        progress.send(TransferProgressPayload {
+            id: intent.id.clone(),
+            connection_id: intent.target.connection().into(),
+            status: if report.ok { "done" } else { "error" },
+            bytes: None,
+            total: None,
+            error: None,
+            error_code: None,
+        });
+    }
     report
 }
 

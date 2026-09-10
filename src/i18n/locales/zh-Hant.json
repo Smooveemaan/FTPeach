@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "資料夾為空",
+    "connectFirst": "請先連線",
     "homeFolder": "主資料夾",
     "copyToPaneBelow": "複製到下面的窗格",
     "copyToPaneAbove": "複製到上面的窗格",

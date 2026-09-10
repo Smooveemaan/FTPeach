@@ -72,6 +72,7 @@
   },
   "filePane": {
     "emptyFolder": "フォルダは空です",
+    "connectFirst": "先に接続してください",
     "homeFolder": "ホームフォルダ",
     "copyToPaneBelow": "下のペインにコピーする",
     "copyToPaneAbove": "上のペインにコピー",

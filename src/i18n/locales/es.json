@@ -74,6 +74,7 @@
   },
   "filePane": {
     "emptyFolder": "La carpeta está vacía",
+    "connectFirst": "Conéctate primero",
     "homeFolder": "Carpeta de inicio",
     "copyToPaneBelow": "Copiar al panel de abajo",
     "copyToPaneAbove": "Copiar al recuadro de arriba",

@@ -2,12 +2,13 @@ import { render } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import TransferItemRow from '../../../src/features/transfers/components/TransferItemRow.tsx';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
+import type { ReorderableColumnKey } from '../../../src/features/transfers/transferColumns.ts';
 
-function renderRow(item: TransferRow) {
+function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = []) {
   return render(
     <TransferItemRow
       item={item}
-      columnOrder={[]}
+      columnOrder={columnOrder}
       gridTemplateColumns="1fr"
       speedSamples={{}}
       onRetry={vi.fn()}
@@ -82,3 +83,37 @@ test('dragged folders retain a download arrow beside the orange folder icon', ()
   expect(container.querySelector('.t-name')?.textContent).toBe('Folder');
   expect(container.querySelector('.t-name')?.getAttribute('data-tooltip')).toBe('/parent/Folder');
 });
+
+test.each([
+  ['local', 'remote', 'up', 'Upload'],
+  ['remote', 'local', 'down', 'Download'],
+  ['remote', 'remote', 'copy', 'Copy'],
+] as const)(
+  'a running %s to %s folder walk reports the direction it is actually going',
+  (from, to, icon, label) => {
+    const endpoint = (kind: 'local' | 'remote') =>
+      kind === 'local'
+        ? ({ kind, path: 'D:\\Folder' } as const)
+        : ({ kind, path: '/Folder', connectionId: 'session' } as const);
+    const { container } = renderRow(
+      {
+        id: 'walk',
+        name: 'Folder',
+        direction: 'recursive',
+        status: 'progress',
+        bytes: 1,
+        startedAt: 1,
+        intent: {
+          id: 'walk',
+          source: endpoint(from),
+          target: endpoint(to),
+          moving: false,
+          overwrite: false,
+        },
+      },
+      ['status'],
+    );
+    expect(container.querySelector('.status-tag')?.textContent).toBe(label);
+    expect(container.querySelector(`.dir-icon.dir-${icon}`)).not.toBeNull();
+  },
+);

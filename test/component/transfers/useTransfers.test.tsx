@@ -1382,12 +1382,14 @@ test('summary flags (hasActiveTransfers/hasPausedTransfers/hasRetryableTransfers
       await getApi().pauseTransfer(id);
     });
     assert.equal(getApi().hasActiveTransfers, true, 'cancelling still owns its worker');
+    assert.equal(getApi().canResumeAllTransfers, false);
     await act(async () => {
       mockApi._nextUpload.resolve({ ok: false, errorCode: 'cancelled' });
       await runPromise;
     });
     assert.equal(getApi().hasActiveTransfers, false);
     assert.equal(getApi().hasPausedTransfers, true);
+    assert.equal(getApi().canResumeAllTransfers, true);
 
     await act(async () => {
       await getApi().stopTransfer(id);

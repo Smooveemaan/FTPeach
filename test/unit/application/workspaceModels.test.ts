@@ -55,7 +55,37 @@ test('transfer summary ignores byte-only detail and exposes command capabilities
   assert.equal(summary.hasActiveTransfers, true);
   assert.equal(summary.hasPausableTransfers, false);
   assert.equal(summary.hasPausedTransfers, true);
+  assert.equal(summary.canResumeAllTransfers, true);
   assert.equal(summary.hasRetryableTransfers, true);
+});
+
+test('resume-all takes the shared button once nothing left running can pause', () => {
+  const webdav = transfer({
+    id: 'webdav',
+    status: 'progress',
+    direction: 'up',
+    protocol: 'webdav',
+  });
+  const ftp = transfer({ id: 'ftp', status: 'paused', direction: 'up', protocol: 'ftp' });
+  const sftp = (status: 'paused' | 'progress' | 'cancelling') =>
+    transfer({ id: 'sftp', status, direction: 'up', protocol: 'sftp' });
+
+  assert.equal(
+    computeTransferSummary({ webdav, ftp, sftp: sftp('paused') }).canResumeAllTransfers,
+    true,
+    'a WebDAV upload still running must not lock the paused rows out',
+  );
+  assert.equal(
+    computeTransferSummary({ webdav, ftp, sftp: sftp('progress') }).canResumeAllTransfers,
+    false,
+    'a row pause-all can still reach keeps the button on Pause',
+  );
+  assert.equal(
+    computeTransferSummary({ webdav, ftp, sftp: sftp('cancelling') }).canResumeAllTransfers,
+    false,
+    'a pause still winding down would be skipped by resume-all',
+  );
+  assert.equal(computeTransferSummary({ webdav }).canResumeAllTransfers, false);
 });
 
 test('section resize reducer keeps one active gesture and durable touched flags', () => {

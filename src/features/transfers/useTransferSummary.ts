@@ -14,11 +14,16 @@ export interface TransferSummary {
   activeTransfersCount: number;
   hasPausableTransfers: boolean;
   hasPausedTransfers: boolean;
+  canResumeAllTransfers: boolean;
   hasRetryableTransfers: boolean;
 }
 
 export function computeTransferSummary(transfers: TransferState): TransferSummary {
   const values = Object.values(transfers);
+  const hasPausableTransfers = values.some(
+    (item) => (item.status === 'progress' || item.status === 'queued') && canPauseTransfer(item),
+  );
+  const hasPausedTransfers = values.some((item) => item.status === 'paused');
   return {
     transfersEmpty: values.length === 0,
     hasCompletedTransfers: values.some((item) =>
@@ -32,10 +37,17 @@ export function computeTransferSummary(transfers: TransferState): TransferSummar
       (item) =>
         item.status === 'progress' || item.status === 'queued' || item.status === 'cancelling',
     ).length,
-    hasPausableTransfers: values.some(
-      (item) => (item.status === 'progress' || item.status === 'queued') && canPauseTransfer(item),
-    ),
-    hasPausedTransfers: values.some((item) => item.status === 'paused'),
+    hasPausableTransfers,
+    hasPausedTransfers,
+    // Resume-all takes the shared pause button over as soon as nothing still
+    // running can be paused, even while such transfers carry on: a WebDAV
+    // upload beside the paused rows must not lock them out of resuming. A
+    // pause still winding down holds it back, since resume-all would skip that
+    // row and leave it to land paused on its own afterwards.
+    canResumeAllTransfers:
+      hasPausedTransfers &&
+      !hasPausableTransfers &&
+      !values.some((item) => item.status === 'cancelling'),
     hasRetryableTransfers: values.some(
       (item) => ['error', 'stopped'].includes(item.status) && canRetryTransfer(item),
     ),

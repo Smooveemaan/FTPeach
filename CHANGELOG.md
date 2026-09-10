@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   bookmark, instead of leaving the server address there.
 - A folder upload to a WebDAV server can no longer be paused, the same as a single file.
   WebDAV can’t continue a file that was cut short, so resuming started that file over.
+- The Resume all button in the toolbar works again while a WebDAV transfer is still
+  running beside transfers you paused. Before, it stayed greyed out until the WebDAV
+  transfer finished.
 - The Pause and Retry buttons in the transfer list no longer light up under the pointer
   when they are unavailable, so they no longer look clickable.
 - Sending the same file or folder to several servers at once no longer fails with

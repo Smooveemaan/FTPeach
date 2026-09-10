@@ -174,6 +174,7 @@ export default function Application() {
     hasCompletedTransfers,
     hasActiveTransfers,
     hasPausableTransfers,
+    canResumeAllTransfers,
     activeTransfersCount,
     hasPausedTransfers,
     hasRetryableTransfers,
@@ -638,6 +639,7 @@ export default function Application() {
         hasActiveTransfers={hasActiveTransfers}
         hasPausedTransfers={hasPausedTransfers}
         hasPausableTransfers={hasPausableTransfers}
+        canResumeAllTransfers={canResumeAllTransfers}
         pauseAllTransfers={pauseAllTransfers}
         resumeAllTransfers={resumeAllTransfers}
         hasRetryableTransfers={hasRetryableTransfers}

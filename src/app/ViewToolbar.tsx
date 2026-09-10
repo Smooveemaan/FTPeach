@@ -28,6 +28,7 @@ interface ViewToolbarProps {
   hasActiveTransfers: boolean;
   hasPausedTransfers: boolean;
   hasPausableTransfers: boolean;
+  canResumeAllTransfers: boolean;
   pauseAllTransfers: Action;
   resumeAllTransfers: (refreshTargets?: RefreshAction) => unknown;
   hasRetryableTransfers: boolean;
@@ -53,6 +54,7 @@ export default function ViewToolbar({
   hasActiveTransfers,
   hasPausedTransfers,
   hasPausableTransfers,
+  canResumeAllTransfers,
   pauseAllTransfers,
   resumeAllTransfers,
   hasRetryableTransfers,
@@ -199,7 +201,7 @@ export default function ViewToolbar({
         </button>
       )}
       {showDivider && <span className="toolbar-divider" />}
-      {hasActiveTransfers || !hasPausedTransfers ? (
+      {!canResumeAllTransfers ? (
         <button
           type="button"
           className={`btn btn-ghost btn-icon ${hasActiveTransfers && hasPausableTransfers ? 'armed' : ''}`}

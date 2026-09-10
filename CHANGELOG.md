@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Check for updates as FTPeach starts and download them right away. A downloaded update
+  installs silently, with no installer window, the next time FTPeach starts — or at once
+  from **Install update** in the status bar.
+
 ### Fixed
 
 - Honor the uninstaller’s “delete the application data” checkbox: ticking it now removes

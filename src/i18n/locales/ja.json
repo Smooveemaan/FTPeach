@@ -110,10 +110,10 @@
     "downloadingFound": "{{version}}のアップデートが見つかりました。ダウンロード中…",
     "restartAndInstall": "再起動してインストールする",
     "availableAction": "更新あり!",
-    "installAction": "インストール?",
+    "installAction": "更新をインストール",
     "downloadTooltip": "クリックしてダウンロード",
     "downloadingTooltip": "ダウンロード中",
-    "installTooltip": "クリックして再起動しインストール"
+    "installTooltip": "今すぐ再起動してインストールします。再起動しない場合は、次回 FTPeach の起動時にインストールされます。"
   },
   "legacyPasswordNotice": {
     "message": "アップデート後、一部の保存済みサイトのパスワードが読み込めなくなりました。サイトマネージャーで再度入力してください。"
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "ローカルおよびリモートのファイルペインの両方に適用されます。",
     "coloredTabs": "色付きタブ",
     "coloredTabsHint": "保存されたブックマークの色を使用して、タブ名とアイコンを色付けします。",
-    "autoCheckUpdates": "起動時に更新を確認する",
-    "autoCheckUpdatesHint": "起動後数秒後に自動的に確認が行われます。アップデートのインストールには、常に別途確認が必要です。",
+    "autoCheckUpdates": "自動的に更新する",
+    "autoCheckUpdatesHint": "起動時と 1 日 1 回更新を確認し、バックグラウンドでダウンロードします。ダウンロードした更新は、次回 FTPeach の起動時に自動でインストールされます。ステータスバーからすぐにインストールすることもできます。",
     "autoReconnectTabs": "起動時に復元されたタブを再接続する",
     "autoReconnectTabsHint": "デフォルトではオフになっています。有効にすると、保存されたサイトが復元された際に自動的に接続されます。",
     "saveSessionOnExit": "終了時にセッションを保存する",

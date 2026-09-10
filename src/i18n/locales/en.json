@@ -110,10 +110,10 @@
     "downloadingFound": "Update v{{version}} found, downloading…",
     "restartAndInstall": "Restart and Install",
     "availableAction": "available!",
-    "installAction": "install?",
+    "installAction": "Install update",
     "downloadTooltip": "Click to download",
     "downloadingTooltip": "Downloading",
-    "installTooltip": "Click to restart and install"
+    "installTooltip": "Restart now to install. Otherwise the update installs the next time FTPeach starts."
   },
   "legacyPasswordNotice": {
     "message": "Passwords for some saved sites couldn't be read after the update — please re-enter them in the site manager."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Applies to both local and remote file panes.",
     "coloredTabs": "Colored tabs",
     "coloredTabsHint": "Colors the tab name and icon using the saved bookmark color.",
-    "autoCheckUpdates": "Check for updates on startup",
-    "autoCheckUpdatesHint": "A silent check a few seconds after startup — installing an update always requires separate confirmation.",
+    "autoCheckUpdates": "Update automatically",
+    "autoCheckUpdatesHint": "Checks for updates at startup and once a day, and downloads them in the background. A downloaded update installs silently the next time FTPeach starts, or right away from the status bar.",
     "autoReconnectTabs": "Reconnect restored tabs on startup",
     "autoReconnectTabsHint": "Off by default. When enabled, restored saved sites are connected automatically.",
     "saveSessionOnExit": "Save the session on exit",

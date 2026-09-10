@@ -112,10 +112,10 @@
     "downloadingFound": "Atualização v{{version}} encontrada, baixando…",
     "restartAndInstall": "Reiniciar e instalar",
     "availableAction": "disponível!",
-    "installAction": "instalar?",
+    "installAction": "Instalar atualização",
     "downloadTooltip": "Clique para baixar",
     "downloadingTooltip": "Baixando",
-    "installTooltip": "Clique para reiniciar e instalar"
+    "installTooltip": "Reinicie agora para instalar. Caso contrário, a atualização será instalada na próxima vez que o FTPeach for iniciado."
   },
   "legacyPasswordNotice": {
     "message": "As senhas de alguns sites salvos não puderam ser lidas após a atualização — insira-as novamente no gerenciador de sites."
@@ -446,8 +446,8 @@
     "showHiddenFilesHint": "Aplica-se tanto aos painéis de arquivos locais quanto aos remotos.",
     "coloredTabs": "Guias coloridas",
     "coloredTabsHint": "Colora o nome e o ícone da aba usando a cor do favorito salvo.",
-    "autoCheckUpdates": "Verificar se há atualizações na inicialização",
-    "autoCheckUpdatesHint": "Uma verificação silenciosa alguns segundos após a inicialização — a instalação de uma atualização sempre requer uma confirmação separada.",
+    "autoCheckUpdates": "Atualizar automaticamente",
+    "autoCheckUpdatesHint": "Verifica se há atualizações na inicialização e uma vez por dia, e as baixa em segundo plano. Uma atualização baixada é instalada silenciosamente na próxima vez que o FTPeach for iniciado, ou imediatamente pela barra de status.",
     "autoReconnectTabs": "Reconectar as guias restauradas na inicialização",
     "autoReconnectTabsHint": "Desativado por padrão. Quando ativado, os sites salvos e restaurados são conectados automaticamente.",
     "saveSessionOnExit": "Salvar a sessão ao sair",

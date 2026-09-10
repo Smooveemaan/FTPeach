@@ -110,10 +110,10 @@
     "downloadingFound": "{{version}} 버전이 발견되었습니다. 다운로드 중…",
     "restartAndInstall": "재시작 및 설치",
     "availableAction": "업데이트 있음!",
-    "installAction": "설치할까요?",
+    "installAction": "업데이트 설치",
     "downloadTooltip": "클릭하여 다운로드",
     "downloadingTooltip": "다운로드 중",
-    "installTooltip": "클릭하여 다시 시작하고 설치"
+    "installTooltip": "지금 다시 시작하여 설치합니다. 그렇지 않으면 다음에 FTPeach를 시작할 때 업데이트가 설치됩니다."
   },
   "legacyPasswordNotice": {
     "message": "업데이트 후 일부 저장된 사이트의 비밀번호를 읽을 수 없게 되었습니다. 사이트 관리자에서 비밀번호를 다시 입력해 주세요."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "로컬 및 원격 파일 창 모두에 적용됩니다.",
     "coloredTabs": "색상별 탭",
     "coloredTabsHint": "저장된 북마크 색상을 사용하여 탭 이름과 아이콘을 색칠합니다.",
-    "autoCheckUpdates": "시작 시 업데이트 확인",
-    "autoCheckUpdatesHint": "시작 후 몇 초 후에 자동으로 확인이 이루어집니다. 업데이트를 설치할 때는 항상 별도의 확인이 필요합니다.",
+    "autoCheckUpdates": "자동으로 업데이트",
+    "autoCheckUpdatesHint": "시작할 때와 하루에 한 번 업데이트를 확인하고 백그라운드에서 다운로드합니다. 다운로드한 업데이트는 다음에 FTPeach를 시작할 때 조용히 설치되며, 상태 표시줄에서 바로 설치할 수도 있습니다.",
     "autoReconnectTabs": "시작 시 복원된 탭 다시 연결하기",
     "autoReconnectTabsHint": "기본적으로 비활성화되어 있습니다. 이 기능을 활성화하면 저장된 사이트가 복원될 때 자동으로 연결됩니다.",
     "saveSessionOnExit": "종료 시 세션 저장",

@@ -110,10 +110,10 @@
     "downloadingFound": "{{version}}-es verzió frissítése megtalálva, letöltés folyamatban…",
     "restartAndInstall": "Újraindítás és telepítés",
     "availableAction": "elérhető!",
-    "installAction": "telepítés?",
+    "installAction": "Frissítés telepítése",
     "downloadTooltip": "Kattintson a letöltéshez",
     "downloadingTooltip": "Letöltés",
-    "installTooltip": "Kattintson az újraindításhoz és telepítéshez"
+    "installTooltip": "Indítsa újra most a telepítéshez. Ellenkező esetben a frissítés az FTPeach következő indításakor települ."
   },
   "legacyPasswordNotice": {
     "message": "A frissítés után egyes elmentett webhelyek jelszavait nem sikerült beolvasni – kérjük, írja be őket újra a webhelykezelőben."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Ez mind a helyi, mind a távoli fájlpanelekre vonatkozik.",
     "coloredTabs": "Színes fülek",
     "coloredTabsHint": "A lap nevét és ikonját a mentett könyvjelző színével színezi ki.",
-    "autoCheckUpdates": "Indításkor ellenőrizze a frissítéseket",
-    "autoCheckUpdatesHint": "Az indítás után néhány másodperccel végzett automatikus ellenőrzés – a frissítések telepítéséhez mindig külön megerősítésre van szükség.",
+    "autoCheckUpdates": "Automatikus frissítés",
+    "autoCheckUpdatesHint": "Indításkor és naponta egyszer frissítéseket keres, és a háttérben letölti őket. A letöltött frissítés csendben települ az FTPeach következő indításakor, vagy azonnal az állapotsorról.",
     "autoReconnectTabs": "A helyreállított lapok újbóli megnyitása indításkor",
     "autoReconnectTabsHint": "Alapértelmezés szerint ki van kapcsolva. Ha engedélyezve van, a visszaállított, elmentett webhelyek automatikusan csatlakoznak.",
     "saveSessionOnExit": "A munkamenet mentése kilépéskor",

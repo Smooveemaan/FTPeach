@@ -110,10 +110,10 @@
     "downloadingFound": "Đã phát hiện bản cập nhật phiên bản{{version}}, đang tải xuống…",
     "restartAndInstall": "Khởi động lại và cài đặt",
     "availableAction": "có bản mới!",
-    "installAction": "cài đặt?",
+    "installAction": "Cài đặt bản cập nhật",
     "downloadTooltip": "Nhấp để tải xuống",
     "downloadingTooltip": "Đang tải xuống",
-    "installTooltip": "Nhấp để khởi động lại và cài đặt"
+    "installTooltip": "Khởi động lại ngay để cài đặt. Nếu không, bản cập nhật sẽ được cài vào lần khởi động FTPeach tiếp theo."
   },
   "legacyPasswordNotice": {
     "message": "Mật khẩu của một số trang web đã lưu không thể đọc được sau khi cập nhật — vui lòng nhập lại mật khẩu trong trình quản lý trang web."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Áp dụng cho cả khung tệp cục bộ và khung tệp từ xa.",
     "coloredTabs": "Thẻ màu",
     "coloredTabsHint": "Tô màu tên và biểu tượng của tab bằng màu đã lưu trong dấu trang.",
-    "autoCheckUpdates": "Kiểm tra các bản cập nhật khi khởi động",
-    "autoCheckUpdatesHint": "Một kiểm tra tự động diễn ra vài giây sau khi khởi động — việc cài đặt bản cập nhật luôn yêu cầu xác nhận riêng biệt.",
+    "autoCheckUpdates": "Tự động cập nhật",
+    "autoCheckUpdatesHint": "Kiểm tra bản cập nhật khi khởi động và mỗi ngày một lần, rồi tải xuống trong nền. Bản cập nhật đã tải sẽ được cài đặt âm thầm vào lần khởi động FTPeach tiếp theo, hoặc ngay lập tức từ thanh trạng thái.",
     "autoReconnectTabs": "Kết nối lại các tab đã khôi phục khi khởi động",
     "autoReconnectTabsHint": "Mặc định là tắt. Khi được bật, các trang web đã lưu sẽ được kết nối tự động.",
     "saveSessionOnExit": "Lưu phiên làm việc khi thoát",

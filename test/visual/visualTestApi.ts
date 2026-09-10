@@ -180,6 +180,7 @@ export const visualTestApi = {
     onDragOutStarted: () => unsubscribe,
   },
   updater: {
+    status: () => resolved(null),
     check: () => resolved(ok),
     download: () => {
       emitUpdate({ state: 'downloading', version: '0.3.2', percent: 0 });

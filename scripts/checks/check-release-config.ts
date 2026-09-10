@@ -103,6 +103,13 @@ assert.ok(
     installerHooks.includes('$UpdateMode <> 1'),
   'The post-uninstall hook must keep user data unless the box is ticked on a real uninstall',
 );
+// The updater leaves a downloaded installer for the next launch; an uninstall
+// that forgets it strands the installer after the app is gone.
+assert.match(
+  installerHooks,
+  /RMDir \/r "\$LOCALAPPDATA\\\$\{BUNDLEID\}\\updates"/,
+  'A real uninstall must remove the staged update the next launch would have installed',
+);
 
 // A release ships the NSIS installer and nothing else, so bundling anything
 // else only produces installers no one tests. The MSI in particular has no

@@ -47,6 +47,8 @@ FTPS and WebDAV verify TLS certificates by default. SFTP uses TOFU: the first fi
 
 The production endpoint must use HTTPS, cannot target loopback, and is checked automatically. Tauri also verifies artifact signatures with the configured public key. The private signing key must never be included in the repository or user builds.
 
+A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates` until the next launch or an explicit **Install update**. The installer is verified against the same public key again immediately before it runs, so a file changed or truncated on disk is discarded rather than executed. An install that does not complete is not retried from the same download, so a broken installer cannot turn every launch into another failed install.
+
 ### FTPeach and external applications
 
 **Open with** downloads an untrusted remote file to a temporary directory and passes it to the Windows-registered application. FTPeach removes its temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server.

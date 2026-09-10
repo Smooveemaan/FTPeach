@@ -110,10 +110,10 @@
     "downloadingFound": "Uppdatering v{{version}} hittad, hämtar…",
     "restartAndInstall": "Starta om och installera",
     "availableAction": "tillgänglig!",
-    "installAction": "installera?",
+    "installAction": "Installera uppdatering",
     "downloadTooltip": "Klicka för att ladda ner",
     "downloadingTooltip": "Laddar ner",
-    "installTooltip": "Klicka för att starta om och installera"
+    "installTooltip": "Starta om nu för att installera. Annars installeras uppdateringen nästa gång FTPeach startar."
   },
   "legacyPasswordNotice": {
     "message": "Lösenord för vissa sparade webbplatser gick inte att läsa efter uppdateringen – ange dem på nytt i webbplatshanteraren."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Gäller både lokala och fjärranslutna filfönster.",
     "coloredTabs": "Färgade flikar",
     "coloredTabsHint": "Färglägger flikens namn och ikon med den sparade bokmärkesfärgen.",
-    "autoCheckUpdates": "Sök efter uppdateringar vid uppstart",
-    "autoCheckUpdatesHint": "En automatisk kontroll några sekunder efter uppstart – installation av en uppdatering kräver alltid en separat bekräftelse.",
+    "autoCheckUpdates": "Uppdatera automatiskt",
+    "autoCheckUpdatesHint": "Söker efter uppdateringar vid uppstart och en gång om dagen och laddar ned dem i bakgrunden. En nedladdad uppdatering installeras tyst nästa gång FTPeach startar, eller direkt från statusfältet.",
     "autoReconnectTabs": "Återanslut återställda flikar vid uppstart",
     "autoReconnectTabsHint": "Avstängt som standard. När funktionen är aktiverad ansluts återställda sparade webbplatser automatiskt.",
     "saveSessionOnExit": "Spara sessionen när du avslutar",

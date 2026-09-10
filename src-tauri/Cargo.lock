@@ -172,6 +172,7 @@ dependencies = [
  "russh-sftp",
  "rustls",
  "rustls-pki-types",
+ "semver",
  "serde",
  "serde_json",
  "sha2 0.11.0",

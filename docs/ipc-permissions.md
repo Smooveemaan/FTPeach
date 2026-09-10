@@ -5,7 +5,7 @@ The `main` WebView receives only the core window/event permissions in
 
 - Read: `fs_list`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
-  `vault_status`, `app_version`, `session_list`, `updater_check`.
+  `vault_status`, `app_version`, `session_list`, `updater_status`, `updater_check`.
 - Write: `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `sites_save`,
   `sites_save_folder`, `sites_apply_layout`, `settings_set`, `tabs_set`, `proxy_test`,
   session/transfer commands, logging, notifications and tray labels.

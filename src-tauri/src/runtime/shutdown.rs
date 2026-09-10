@@ -49,6 +49,14 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
 }
 
 pub async fn run(app: AppHandle, window: WebviewWindow) {
+    wind_down(app.clone(), window).await;
+    app.exit(0);
+}
+
+/// Everything `run` does short of exiting: connections closed, window bounds
+/// saved, temporary copies removed and the vault locked. Installing an update
+/// needs the same tidy state before it hands over to the installer.
+pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
@@ -88,7 +96,6 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
     // A stuck network operation or locked temp file must never make the app
     // impossible to close. Dropping cleanup after the deadline is deliberate.
     let _ = tokio::time::timeout(SHUTDOWN_TIMEOUT, cleanup).await;
-    app.exit(0);
 }
 
 #[cfg(test)]

@@ -18,10 +18,12 @@ for (const width of [1440, 900, 480]) {
         await expect(update.getByRole('button')).toHaveCount(0);
       } else {
         const button = update.getByRole('button');
-        await expect(button).toHaveText(state === 'available' ? 'available!' : 'install?');
+        await expect(button).toHaveText(state === 'available' ? 'available!' : 'Install update');
         await expect(button).toHaveAttribute(
           'data-tooltip',
-          state === 'available' ? 'Click to download' : 'Click to restart and install',
+          state === 'available'
+            ? 'Click to download'
+            : 'Restart now to install. Otherwise the update installs the next time FTPeach starts.',
         );
         await expect(button).toHaveCSS('text-decoration-line', 'none');
         const color = await button.evaluate((el) => getComputedStyle(el).color);
@@ -52,7 +54,7 @@ test('available update waits for a click, downloads, then offers installation', 
   await page.clock.runFor(2250);
   await expect(update.getByRole('status')).toHaveText('45%');
   await page.clock.runFor(2750);
-  await expect(update.getByRole('button')).toHaveText('install?');
+  await expect(update.getByRole('button')).toHaveText('Install update');
   await update.getByRole('button').click();
-  await expect(update.getByRole('button')).toHaveText('install?');
+  await expect(update.getByRole('button')).toHaveText('Install update');
 });

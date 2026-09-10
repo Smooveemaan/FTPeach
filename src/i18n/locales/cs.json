@@ -114,10 +114,10 @@
     "downloadingFound": "Aktualizace v{{version}} nalezena, stahování probíhá…",
     "restartAndInstall": "Restartovat a nainstalovat",
     "availableAction": "dostupná!",
-    "installAction": "instalovat?",
+    "installAction": "Nainstalovat aktualizaci",
     "downloadTooltip": "Kliknutím stáhnete",
     "downloadingTooltip": "Stahování",
-    "installTooltip": "Kliknutím restartujete a nainstalujete"
+    "installTooltip": "Restartujte nyní a nainstalujte. Jinak se aktualizace nainstaluje při příštím spuštění FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Hesla k některým uloženým webům se po aktualizaci nedala načíst – zadejte je prosím znovu ve správci webů."
@@ -450,8 +450,8 @@
     "showHiddenFilesHint": "Platí jak pro místní, tak pro vzdálené panely souborů.",
     "coloredTabs": "Barevné záložky",
     "coloredTabsHint": "Zbarví název záložky a ikonu podle barvy uložené záložky.",
-    "autoCheckUpdates": "Zkontrolovat dostupnost aktualizací při spuštění",
-    "autoCheckUpdatesHint": "Tiché ověření několik sekund po spuštění — instalace aktualizace vždy vyžaduje samostatné potvrzení.",
+    "autoCheckUpdates": "Aktualizovat automaticky",
+    "autoCheckUpdatesHint": "Kontroluje aktualizace při spuštění a jednou denně a stahuje je na pozadí. Stažená aktualizace se tiše nainstaluje při příštím spuštění FTPeach nebo hned ze stavového řádku.",
     "autoReconnectTabs": "Při spuštění znovu připojit obnovené karty",
     "autoReconnectTabsHint": "Ve výchozím nastavení je tato funkce vypnutá. Je-li zapnutá, uložené stránky se po obnovení automaticky připojí.",
     "saveSessionOnExit": "Uložit relaci při ukončení",

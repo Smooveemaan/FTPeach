@@ -110,10 +110,10 @@
     "downloadingFound": "{{version}}'deki güncelleme bulundu, indiriliyor…",
     "restartAndInstall": "Yeniden Başlat ve Yükle",
     "availableAction": "mevcut!",
-    "installAction": "yüklensin mi?",
+    "installAction": "Güncellemeyi yükle",
     "downloadTooltip": "İndirmek için tıklayın",
     "downloadingTooltip": "İndiriliyor",
-    "installTooltip": "Yeniden başlatıp yüklemek için tıklayın"
+    "installTooltip": "Yüklemek için şimdi yeniden başlatın. Aksi takdirde güncelleme FTPeach bir sonraki açılışında yüklenir."
   },
   "legacyPasswordNotice": {
     "message": "Güncellemeden sonra bazı kaydedilmiş sitelerin şifreleri okunamadı — lütfen bunları site yöneticisinde yeniden girin."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Hem yerel hem de uzak dosya pencereleri için geçerlidir.",
     "coloredTabs": "Renkli sekmeler",
     "coloredTabsHint": "Sekme adını ve simgesini, kaydedilmiş yer imi rengini kullanarak renklendirir.",
-    "autoCheckUpdates": "Başlangıçta güncellemeleri kontrol et",
-    "autoCheckUpdatesHint": "Başlatma işleminden birkaç saniye sonra sessiz bir kontrol yapılır — bir güncellemenin yüklenmesi her zaman ayrı bir onay gerektirir.",
+    "autoCheckUpdates": "Otomatik olarak güncelle",
+    "autoCheckUpdatesHint": "Başlangıçta ve günde bir kez güncellemeleri denetler ve arka planda indirir. İndirilen güncelleme, FTPeach bir sonraki açılışında sessizce yüklenir ya da durum çubuğundan hemen yüklenebilir.",
     "autoReconnectTabs": "Başlangıçta geri yüklenen sekmeleri yeniden bağla",
     "autoReconnectTabsHint": "Varsayılan olarak kapalıdır. Etkinleştirildiğinde, geri yüklenen kaydedilmiş sitelere otomatik olarak bağlanılır.",
     "saveSessionOnExit": "Çıkışta oturumu kaydet",

@@ -110,10 +110,10 @@
     "downloadingFound": "Opdatering v{{version}} fundet, henter…",
     "restartAndInstall": "Genstart og installation",
     "availableAction": "tilgængelig!",
-    "installAction": "installer?",
+    "installAction": "Installer opdatering",
     "downloadTooltip": "Klik for at hente",
     "downloadingTooltip": "Henter",
-    "installTooltip": "Klik for at genstarte og installere"
+    "installTooltip": "Genstart nu for at installere. Ellers installeres opdateringen, næste gang FTPeach starter."
   },
   "legacyPasswordNotice": {
     "message": "Adgangskoder til visse gemte websteder kunne ikke læses efter opdateringen — indtast dem venligst igen i webstedsadministratoren."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Gælder både lokale og eksterne filpaneler.",
     "coloredTabs": "Farvede faner",
     "coloredTabsHint": "Farvelægger fanebladets navn og ikon med den farve, der er gemt for bogmærket.",
-    "autoCheckUpdates": "Kontroller for opdateringer ved opstart",
-    "autoCheckUpdatesHint": "En automatisk kontrol få sekunder efter opstart — installation af en opdatering kræver altid en separat bekræftelse.",
+    "autoCheckUpdates": "Opdater automatisk",
+    "autoCheckUpdatesHint": "Søger efter opdateringer ved opstart og én gang dagligt og henter dem i baggrunden. En hentet opdatering installeres lydløst, næste gang FTPeach starter, eller med det samme fra statuslinjen.",
     "autoReconnectTabs": "Genopret genoprettede faner ved opstart",
     "autoReconnectTabsHint": "Slukket som standard. Når funktionen er aktiveret, oprettes der automatisk forbindelse til de gendannede gemte hjemmesider.",
     "saveSessionOnExit": "Gem sessionen ved afslutning",

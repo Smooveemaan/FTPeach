@@ -110,10 +110,10 @@
     "downloadingFound": "已找到更新 v{{version}}，正在下載...",
     "restartAndInstall": "重新啟動並安裝",
     "availableAction": "可更新！",
-    "installAction": "安裝？",
+    "installAction": "安裝更新",
     "downloadTooltip": "點擊下載",
     "downloadingTooltip": "正在下載",
-    "installTooltip": "點擊重新啟動並安裝"
+    "installTooltip": "立即重新啟動以安裝。否則，更新將在下次啟動 FTPeach 時安裝。"
   },
   "legacyPasswordNotice": {
     "message": "更新後無法讀取某些已儲存網站的密碼 - 請在網站管理員中重新輸入密碼。"
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "適用於本機和遠端檔案窗格。",
     "coloredTabs": "彩色選項卡",
     "coloredTabsHint": "使用儲存的書籤顏色為選項卡名稱和圖示著色。",
-    "autoCheckUpdates": "啟動時檢查更新",
-    "autoCheckUpdatesHint": "啟動後幾秒鐘進行靜默檢查 - 安裝更新始終需要單獨確認。",
+    "autoCheckUpdates": "自動更新",
+    "autoCheckUpdatesHint": "在啟動時及每天檢查一次更新，並在背景下載。已下載的更新會在下次啟動 FTPeach 時靜默安裝，也可以從狀態列立即安裝。",
     "autoReconnectTabs": "在啟動時重新連接恢復的選項卡",
     "autoReconnectTabsHint": "預設關閉。啟用後，將自動連線恢復的已儲存網站。",
     "saveSessionOnExit": "退出時保存會話",

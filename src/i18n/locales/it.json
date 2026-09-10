@@ -112,10 +112,10 @@
     "downloadingFound": "Aggiornamento alla versione {{version}} trovato, in fase di download…",
     "restartAndInstall": "Riavvia e installa",
     "availableAction": "disponibile!",
-    "installAction": "installare?",
+    "installAction": "Installa aggiornamento",
     "downloadTooltip": "Fai clic per scaricare",
     "downloadingTooltip": "Download in corso",
-    "installTooltip": "Fai clic per riavviare e installare"
+    "installTooltip": "Riavvia ora per installare. Altrimenti l'aggiornamento verrà installato al prossimo avvio di FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Dopo l'aggiornamento, non è stato possibile leggere le password di alcuni siti salvati: ti preghiamo di inserirle nuovamente nel gestore dei siti."
@@ -446,8 +446,8 @@
     "showHiddenFilesHint": "Si applica sia ai riquadri dei file locali che a quelli remoti.",
     "coloredTabs": "Schede colorate",
     "coloredTabsHint": "Colora il nome e l'icona della scheda utilizzando il colore del segnalibro salvato.",
-    "autoCheckUpdates": "Verifica la presenza di aggiornamenti all'avvio",
-    "autoCheckUpdatesHint": "Una verifica silenziosa pochi secondi dopo l'avvio — l'installazione di un aggiornamento richiede sempre una conferma separata.",
+    "autoCheckUpdates": "Aggiorna automaticamente",
+    "autoCheckUpdatesHint": "Cerca aggiornamenti all'avvio e una volta al giorno e li scarica in background. Un aggiornamento scaricato viene installato in modo silenzioso al prossimo avvio di FTPeach, oppure subito dalla barra di stato.",
     "autoReconnectTabs": "Riconnettere le schede ripristinate all'avvio",
     "autoReconnectTabsHint": "Disattivata per impostazione predefinita. Se abilitata, i siti salvati e ripristinati vengono collegati automaticamente.",
     "saveSessionOnExit": "Salva la sessione all'uscita",

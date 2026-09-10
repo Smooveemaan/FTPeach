@@ -112,10 +112,10 @@
     "downloadingFound": "Actualizare v{{version}} găsită, se descarcă…",
     "restartAndInstall": "Repornire și instalare",
     "availableAction": "disponibilă!",
-    "installAction": "instalezi?",
+    "installAction": "Instalează actualizarea",
     "downloadTooltip": "Clic pentru descărcare",
     "downloadingTooltip": "Se descarcă",
-    "installTooltip": "Clic pentru repornire și instalare"
+    "installTooltip": "Repornește acum pentru a instala. Altfel, actualizarea se instalează la următoarea pornire a FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Parolele pentru unele site-uri salvate nu au putut fi citite după actualizare — vă rugăm să le introduceți din nou în managerul de site-uri."
@@ -446,8 +446,8 @@
     "showHiddenFilesHint": "Se aplică atât panourilor de fișiere locale, cât și celor de la distanță.",
     "coloredTabs": "Filete colorate",
     "coloredTabsHint": "Culoarea numelui și a pictogramei filei este stabilită în funcție de culoarea marcajului salvat.",
-    "autoCheckUpdates": "Verifică dacă există actualizări la pornire",
-    "autoCheckUpdatesHint": "O verificare silențioasă la câteva secunde după pornire — instalarea unei actualizări necesită întotdeauna o confirmare separată.",
+    "autoCheckUpdates": "Actualizează automat",
+    "autoCheckUpdatesHint": "Verifică actualizările la pornire și o dată pe zi și le descarcă în fundal. O actualizare descărcată se instalează silențios la următoarea pornire a FTPeach sau imediat din bara de stare.",
     "autoReconnectTabs": "Reconectarea filelor restaurate la pornire",
     "autoReconnectTabsHint": "Dezactivată în mod implicit. Când este activată, site-urile salvate și restaurate se conectează automat.",
     "saveSessionOnExit": "Salvează sesiunea la ieșire",

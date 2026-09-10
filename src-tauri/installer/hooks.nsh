@@ -7,11 +7,23 @@
 ; %APPDATA%\FTPeach (see docs/storage.md), so leaving the checkbox to the
 ; template would tick a box that removes nothing the user cares about.
 ;
+; The updater also keeps a downloaded installer under
+; $LOCALAPPDATA\<bundle id>\updates until the next launch installs it. That
+; belongs to the installation rather than to the user, so a real uninstall
+; removes it whether or not the box is ticked.
+;
 ; $DeleteAppDataCheckboxState and $UpdateMode are declared by the Tauri
 ; installer template; this macro is expanded inside its `Section Uninstall`,
 ; after the template's own app-data cleanup.
 
 !macro NSIS_HOOK_POSTUNINSTALL
+  ; An updater-driven uninstall runs while that very installer may be the
+  ; file in the updates directory, and the new version clears it on launch.
+  ${If} $UpdateMode <> 1
+    SetShellVarContext current
+    RMDir /r "$LOCALAPPDATA\${BUNDLEID}\updates"
+  ${EndIf}
+
   ; Unticked, or an updater-driven uninstall: keep the user's data. A silent
   ; uninstall (/P) skips the confirm page entirely, so the state stays empty
   ; and compares as 0 -- data is kept unless somebody asked for it to go.

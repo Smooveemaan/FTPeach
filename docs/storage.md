@@ -35,6 +35,14 @@ clears the saved tabs without affecting current connections or transfers and
 prevents further session writes. “Reset Layout and Cache” independently resets
 window and layout values.
 
+## Updates
+
+A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates`:
+the installer and a small `pending.json` with its version and signature. The
+next launch verifies it and installs it silently before any window appears,
+and the updated FTPeach removes the directory. An update never touches
+`%APPDATA%\FTPeach`.
+
 ## Uninstall
 
 The uninstaller’s confirmation page carries a “Delete the application data”
@@ -49,6 +57,9 @@ and a silent uninstall (`/P`) both keep the data, because neither shows the
 page that asks. The stock Tauri checkbox only clears the bundle-id
 directories, so `src-tauri/installer/hooks.nsh` removes the FTPeach data
 directory itself; `npm run check:release-config` fails if that wiring is lost.
+
+A real uninstall always removes the downloaded-update directory, ticked or not:
+it belongs to the installation, not to the user.
 
 One thing outlives the directory: when Windows Hello system unlock was
 enabled, the persisted key in the Microsoft Platform Crypto Provider is not

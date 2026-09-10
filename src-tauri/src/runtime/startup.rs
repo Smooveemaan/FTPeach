@@ -1,6 +1,6 @@
 //! Runtime initialization after Tauri installs managed state and plugins.
 use super::log_emitter::LogEmitter;
-use super::{settings_apply, shutdown, tray, window_bounds};
+use super::{settings_apply, shutdown, tray, updater, window_bounds};
 #[cfg(feature = "smoke-test")]
 use crate::commands;
 use crate::local_fs::{self, preview::PreviewPaths};
@@ -39,6 +39,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                 .build(),
         )?;
     }
+    // Ahead of the tray, the window and everything else the user could see:
+    // an update downloaded last session installs now, and when its installer
+    // starts this process ends here and the new version opens instead.
+    updater::install_staged_at_startup(app.handle());
     app.manage(ProgressEmitter::new(app.handle().clone()));
     let preview_paths = app.state::<PreviewPaths>().inner().clone();
     tauri::async_runtime::spawn(async move {
@@ -82,6 +86,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     tauri::async_runtime::spawn(async move {
         settings_apply::apply_at_startup(&store, &log_emitter_for_apply).await;
     });
+    updater::check_at_startup(app.handle());
 
     Ok(())
 }

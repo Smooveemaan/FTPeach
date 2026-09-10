@@ -15,10 +15,10 @@ mod transfer;
 #[cfg(feature = "test-utils")]
 pub use transfer::transfer_pool;
 
-use commands::updater::UpdaterState;
 use local_fs::open_with::OpenWithWatchers;
 use local_fs::{local_open::ApprovedLocalPaths, preview::PreviewPaths};
 use runtime::log_emitter::LogState;
+use runtime::updater::UpdaterState;
 use runtime::{sensitive_plugin, shutdown};
 use security::sensitive::AuthorizationState;
 use security::{vault, vault_guard};
@@ -152,6 +152,7 @@ pub fn run() {
             commands::open_with::open_with_stop,
             commands::drag_out::drag_out_start,
             commands::drag_out::drag_out_start_local,
+            commands::updater::updater_status,
             commands::updater::updater_check,
             commands::updater::updater_download,
             commands::updater::updater_install,

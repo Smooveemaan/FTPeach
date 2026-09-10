@@ -83,6 +83,10 @@ iota_stronghold = "=2.1.0"
 argon2 = "=0.6.0"
 chacha20poly1305 = "=0.11.0"
 getrandom = "=0.4.3"
+# A staged update is verified against the release key again before it runs
+# (runtime/update_staging.rs); examples/verify_updater.rs uses it as well.
+minisign-verify = "0.2.5"
+semver = "1.0.28"
 
 # Windows-only: kept out of the default [dependencies] table so the crate
 # (and its docker_integration test) still compiles on the Linux CI runners
@@ -95,8 +99,6 @@ webview2-com = "0.38.2"
 
 [dev-dependencies]
 rand = "0.10.2"
-# Signature verification fixture in examples/verify_updater.rs.
-minisign-verify = "0.2.5"
 
 [profile.dev]
 debug = "line-tables-only"

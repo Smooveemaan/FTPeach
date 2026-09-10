@@ -114,10 +114,10 @@
     "downloadingFound": "Znaleziono aktualizację w wersji {{version}}, trwa pobieranie…",
     "restartAndInstall": "Uruchom ponownie i zainstaluj",
     "availableAction": "dostępna!",
-    "installAction": "zainstalować?",
+    "installAction": "Zainstaluj aktualizację",
     "downloadTooltip": "Kliknij, aby pobrać",
     "downloadingTooltip": "Pobieranie",
-    "installTooltip": "Kliknij, aby uruchomić ponownie i zainstalować"
+    "installTooltip": "Uruchom ponownie teraz, aby zainstalować. W przeciwnym razie aktualizacja zostanie zainstalowana przy następnym uruchomieniu FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Po aktualizacji nie można było odczytać haseł do niektórych zapisanych stron — prosimy o ponowne wprowadzenie ich w menedżerze stron."
@@ -450,8 +450,8 @@
     "showHiddenFilesHint": "Dotyczy zarówno lokalnych, jak i zdalnych paneli plików.",
     "coloredTabs": "Kolorowe zakładki",
     "coloredTabsHint": "Zmienia kolor nazwy zakładki i ikony na kolor zapisany dla zakładki.",
-    "autoCheckUpdates": "Sprawdzaj dostępność aktualizacji przy uruchomieniu systemu",
-    "autoCheckUpdatesHint": "Ciche sprawdzenie kilka sekund po uruchomieniu — instalacja aktualizacji zawsze wymaga osobnego potwierdzenia.",
+    "autoCheckUpdates": "Aktualizuj automatycznie",
+    "autoCheckUpdatesHint": "Sprawdza dostępność aktualizacji przy uruchomieniu i raz dziennie oraz pobiera je w tle. Pobrana aktualizacja instaluje się po cichu przy następnym uruchomieniu FTPeach albo od razu z paska stanu.",
     "autoReconnectTabs": "Ponowne podłączanie przywróconych kart podczas uruchamiania",
     "autoReconnectTabsHint": "Domyślnie wyłączone. Po włączeniu tej opcji przywrócone zapisane strony są automatycznie łączone.",
     "saveSessionOnExit": "Zapisz sesję przy zamykaniu",

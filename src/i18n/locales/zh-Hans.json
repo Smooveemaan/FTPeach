@@ -110,10 +110,10 @@
     "downloadingFound": "已找到更新版本{{version}}，正在下载……",
     "restartAndInstall": "重新启动并安装",
     "availableAction": "可更新！",
-    "installAction": "安装？",
+    "installAction": "安装更新",
     "downloadTooltip": "点击下载",
     "downloadingTooltip": "正在下载",
-    "installTooltip": "点击重启并安装"
+    "installTooltip": "立即重启以安装。否则，更新将在下次启动 FTPeach 时安装。"
   },
   "legacyPasswordNotice": {
     "message": "更新后，部分已保存网站的密码无法读取——请在网站管理器中重新输入这些密码。"
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "适用于本地和远程文件窗格。",
     "coloredTabs": "彩色标签",
     "coloredTabsHint": "使用已保存的书签颜色为标签页名称和图标上色。",
-    "autoCheckUpdates": "启动时检查更新",
-    "autoCheckUpdatesHint": "启动后几秒钟内会进行一次静默检查——安装更新时总是需要单独确认。",
+    "autoCheckUpdates": "自动更新",
+    "autoCheckUpdatesHint": "在启动时以及每天检查一次更新，并在后台下载。已下载的更新会在下次启动 FTPeach 时静默安装，也可以从状态栏立即安装。",
     "autoReconnectTabs": "启动时重新连接已恢复的标签页",
     "autoReconnectTabsHint": "默认处于关闭状态。启用后，已恢复的收藏网站将自动连接。",
     "saveSessionOnExit": "退出时保存会话",

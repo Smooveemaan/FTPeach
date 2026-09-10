@@ -110,10 +110,10 @@
     "downloadingFound": "Update v{{version}} gefunden, wird heruntergeladen…",
     "restartAndInstall": "Neustart und Installation",
     "availableAction": "verfügbar!",
-    "installAction": "installieren?",
+    "installAction": "Update installieren",
     "downloadTooltip": "Zum Herunterladen klicken",
     "downloadingTooltip": "Wird heruntergeladen",
-    "installTooltip": "Zum Neustarten und Installieren klicken"
+    "installTooltip": "Jetzt neu starten und installieren. Andernfalls wird das Update beim nächsten Start von FTPeach installiert."
   },
   "legacyPasswordNotice": {
     "message": "Die Passwörter für einige gespeicherte Websites konnten nach dem Update nicht mehr gelesen werden – bitte geben Sie diese im Website-Manager erneut ein."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Gilt sowohl für lokale als auch für Remote-Dateifenster.",
     "coloredTabs": "Farbige Registerkarten",
     "coloredTabsHint": "Färbt den Tab-Namen und das Symbol mit der für das Lesezeichen gespeicherten Farbe ein.",
-    "autoCheckUpdates": "Beim Start nach Updates suchen",
-    "autoCheckUpdatesHint": "Eine automatische Überprüfung wenige Sekunden nach dem Start – die Installation eines Updates erfordert stets eine gesonderte Bestätigung.",
+    "autoCheckUpdates": "Automatisch aktualisieren",
+    "autoCheckUpdatesHint": "Sucht beim Start und einmal täglich nach Updates und lädt sie im Hintergrund herunter. Ein heruntergeladenes Update wird beim nächsten Start von FTPeach unbemerkt installiert – oder sofort über die Statusleiste.",
     "autoReconnectTabs": "Wiederhergestellte Registerkarten beim Start erneut verbinden",
     "autoReconnectTabsHint": "Standardmäßig deaktiviert. Wenn diese Option aktiviert ist, werden gespeicherte Websites automatisch verbunden.",
     "saveSessionOnExit": "Sitzung beim Beenden speichern",

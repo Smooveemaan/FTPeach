@@ -112,10 +112,10 @@
     "downloadingFound": "Se ha encontrado la actualización v{{version}}, descargando…",
     "restartAndInstall": "Reiniciar e instalar",
     "availableAction": "¡disponible!",
-    "installAction": "¿instalar?",
+    "installAction": "Instalar actualización",
     "downloadTooltip": "Haz clic para descargar",
     "downloadingTooltip": "Descargando",
-    "installTooltip": "Haz clic para reiniciar e instalar"
+    "installTooltip": "Reinicia ahora para instalarla. Si no, la actualización se instalará la próxima vez que se inicie FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Las contraseñas de algunos sitios guardados no se podían leer tras la actualización; vuelve a introducirlas en el gestor de sitios."
@@ -446,8 +446,8 @@
     "showHiddenFilesHint": "Se aplica tanto a los paneles de archivos locales como a los remotos.",
     "coloredTabs": "Pestañas de colores",
     "coloredTabsHint": "Colorea el nombre y el icono de la pestaña con el color del marcador guardado.",
-    "autoCheckUpdates": "Comprobar si hay actualizaciones al iniciar el sistema",
-    "autoCheckUpdatesHint": "Una comprobación silenciosa unos segundos después del arranque; la instalación de una actualización siempre requiere una confirmación independiente.",
+    "autoCheckUpdates": "Actualizar automáticamente",
+    "autoCheckUpdatesHint": "Busca actualizaciones al iniciar y una vez al día, y las descarga en segundo plano. Una actualización descargada se instala de forma silenciosa la próxima vez que se inicie FTPeach, o al instante desde la barra de estado.",
     "autoReconnectTabs": "Vuelve a conectar las pestañas restauradas al iniciar el sistema",
     "autoReconnectTabsHint": "Desactivado por defecto. Cuando está activado, los sitios guardados que se restauran se conectan automáticamente.",
     "saveSessionOnExit": "Guardar la sesión al salir",

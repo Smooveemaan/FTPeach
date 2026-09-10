@@ -110,10 +110,10 @@
     "downloadingFound": "Update v{{version}} gevonden, wordt gedownload…",
     "restartAndInstall": "Opnieuw opstarten en installeren",
     "availableAction": "beschikbaar!",
-    "installAction": "installeren?",
+    "installAction": "Update installeren",
     "downloadTooltip": "Klik om te downloaden",
     "downloadingTooltip": "Downloaden",
-    "installTooltip": "Klik om opnieuw te starten en te installeren"
+    "installTooltip": "Start nu opnieuw om te installeren. Anders wordt de update geïnstalleerd wanneer FTPeach de volgende keer start."
   },
   "legacyPasswordNotice": {
     "message": "De wachtwoorden voor sommige opgeslagen websites konden na de update niet meer worden gelezen — voer ze alstublieft opnieuw in via de sitemanager."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Dit geldt zowel voor lokale als voor externe bestandsvensters.",
     "coloredTabs": "Gekleurde tabbladen",
     "coloredTabsHint": "Geeft de tabbladnaam en het pictogram de kleur van de opgeslagen bladwijzer.",
-    "autoCheckUpdates": "Bij het opstarten controleren op updates",
-    "autoCheckUpdatesHint": "Een stille controle enkele seconden na het opstarten — voor het installeren van een update is altijd een aparte bevestiging nodig.",
+    "autoCheckUpdates": "Automatisch bijwerken",
+    "autoCheckUpdatesHint": "Controleert bij het opstarten en eenmaal per dag op updates en downloadt ze op de achtergrond. Een gedownloade update wordt stil geïnstalleerd wanneer FTPeach de volgende keer start, of meteen via de statusbalk.",
     "autoReconnectTabs": "Herstelde tabbladen bij het opstarten opnieuw verbinden",
     "autoReconnectTabsHint": "Standaard uitgeschakeld. Indien ingeschakeld, worden opgeslagen websites automatisch weergegeven.",
     "saveSessionOnExit": "De sessie opslaan bij het afsluiten",

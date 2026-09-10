@@ -112,10 +112,10 @@
     "downloadingFound": "Mise à jour v{{version}} trouvée, téléchargement en cours…",
     "restartAndInstall": "Redémarrer et installer",
     "availableAction": "disponible !",
-    "installAction": "installer ?",
+    "installAction": "Installer la mise à jour",
     "downloadTooltip": "Cliquer pour télécharger",
     "downloadingTooltip": "Téléchargement",
-    "installTooltip": "Cliquer pour redémarrer et installer"
+    "installTooltip": "Redémarrer maintenant pour installer. Sinon, la mise à jour s'installera au prochain démarrage de FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "Les mots de passe de certains sites enregistrés n'ont pas pu être lus après la mise à jour ; veuillez les saisir à nouveau dans le gestionnaire de sites."
@@ -446,8 +446,8 @@
     "showHiddenFilesHint": "S'applique aussi bien aux volets de fichiers locaux qu'aux volets de fichiers distants.",
     "coloredTabs": "Onglets colorés",
     "coloredTabsHint": "Colore le nom et l'icône de l'onglet en utilisant la couleur du signet enregistré.",
-    "autoCheckUpdates": "Rechercher les mises à jour au démarrage",
-    "autoCheckUpdatesHint": "Une vérification silencieuse quelques secondes après le démarrage — l'installation d'une mise à jour nécessite toujours une confirmation distincte.",
+    "autoCheckUpdates": "Mettre à jour automatiquement",
+    "autoCheckUpdatesHint": "Recherche les mises à jour au démarrage et une fois par jour, et les télécharge en arrière-plan. Une mise à jour téléchargée s'installe silencieusement au prochain démarrage de FTPeach, ou immédiatement depuis la barre d'état.",
     "autoReconnectTabs": "Rétablir la connexion des onglets restaurés au démarrage",
     "autoReconnectTabsHint": "Désactivé par défaut. Lorsque cette option est activée, les sites enregistrés sont connectés automatiquement après leur restauration.",
     "saveSessionOnExit": "Enregistrer la session à la fermeture",

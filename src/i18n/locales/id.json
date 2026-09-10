@@ -110,10 +110,10 @@
     "downloadingFound": "Pembaruan v{{version}}, ditemukan, sedang diunduh…",
     "restartAndInstall": "Mulai Ulang dan Instal",
     "availableAction": "tersedia!",
-    "installAction": "instal?",
+    "installAction": "Instal pembaruan",
     "downloadTooltip": "Klik untuk mengunduh",
     "downloadingTooltip": "Mengunduh",
-    "installTooltip": "Klik untuk memulai ulang dan menginstal"
+    "installTooltip": "Mulai ulang sekarang untuk menginstal. Jika tidak, pembaruan akan diinstal saat FTPeach dijalankan berikutnya."
   },
   "legacyPasswordNotice": {
     "message": "Kata sandi untuk beberapa situs yang tersimpan tidak dapat dibaca setelah pembaruan — silakan masukkan kembali kata sandi tersebut di pengelola situs."
@@ -442,8 +442,8 @@
     "showHiddenFilesHint": "Berlaku untuk panel file lokal maupun jarak jauh.",
     "coloredTabs": "Tab berwarna",
     "coloredTabsHint": "Mewarnai nama tab dan ikonnya menggunakan warna bookmark yang telah disimpan.",
-    "autoCheckUpdates": "Periksa pembaruan saat aplikasi dimulai",
-    "autoCheckUpdatesHint": "Pemeriksaan otomatis beberapa detik setelah sistem dinyalakan — pemasangan pembaruan selalu memerlukan konfirmasi terpisah.",
+    "autoCheckUpdates": "Perbarui secara otomatis",
+    "autoCheckUpdatesHint": "Memeriksa pembaruan saat aplikasi dimulai dan sekali sehari, lalu mengunduhnya di latar belakang. Pembaruan yang telah diunduh diinstal secara diam-diam saat FTPeach dijalankan berikutnya, atau langsung dari bilah status.",
     "autoReconnectTabs": "Hubungkan kembali tab yang telah dipulihkan saat aplikasi dimulai",
     "autoReconnectTabsHint": "Secara default, fitur ini dinonaktifkan. Jika diaktifkan, situs yang telah disimpan dan dipulihkan akan terhubung secara otomatis.",
     "saveSessionOnExit": "Simpan sesi saat keluar",

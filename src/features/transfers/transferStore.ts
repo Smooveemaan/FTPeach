@@ -11,6 +11,8 @@ interface TransferBase {
   status: TransferStatus;
   bytes: number;
   total?: number | undefined;
+  /** What a folder walk last reported putting in place on its target. */
+  landed?: number | undefined;
   startedAt: number;
   errorMessage?: string | undefined;
   // Widened to `string` on purpose, and not narrowed to `CommandErrorCode`:
@@ -83,14 +85,19 @@ const RESUMABLE_UPLOAD_PROTOCOLS: ReadonlySet<SiteProtocol> = new Set(['ftp', 'f
  *
  * A pause promises the transfer will pick up where it left off, so it is
  * offered only where that can be honoured. Downloads resume from their local
- * partial on every protocol; uploads depend on the protocol above. Relay copies
- * and recursive walks have no single resumable stream at all, and a drag-out
- * has no destination of ours to resume into.
+ * partial on every protocol; uploads depend on the protocol above. A folder
+ * walk keeps a journal of what it has delivered and carries on past it, in any
+ * direction, except a move within one server: that is a single rename, with
+ * nothing to pause. Relay copies have no resumable stream at all, and a
+ * drag-out has no destination of ours to resume into.
  */
 export function canPauseTransfer(row: TransferRow): boolean {
+  if (row.dragOut) return false;
+  if (row.direction === 'recursive') {
+    const { moving, source, target } = row.intent;
+    return !(moving && source.kind === 'remote' && target.kind === 'remote');
+  }
   return (
-    !row.dragOut &&
-    row.direction !== 'recursive' &&
     row.direction !== 'copy' &&
     (row.direction !== 'up' || RESUMABLE_UPLOAD_PROTOCOLS.has(row.protocol))
   );

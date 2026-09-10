@@ -532,7 +532,6 @@
     "retry": "Försök igen",
     "stop": "Stopp",
     "pauseUnsupportedCopy": "Pausfunktion stöds inte vid kopiering mellan servrar",
-    "pauseUnsupportedFolder": "Paus stöds inte vid överföring av mappar",
     "pauseUnsupportedServerCopy": "Paus stöds inte vid kopiering på servern",
     "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV",
     "retryUnsupportedConnection": "Att försöka igen är inte tillgängligt: anslutningen har stängts"

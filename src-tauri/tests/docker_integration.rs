@@ -685,3 +685,168 @@ async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
         .expect("disconnect resume backend");
     let _ = tokio::fs::remove_dir_all(root).await;
 }
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore]
+async fn sftp_cancel_preserves_resumable_partial_against_docker_server() {
+    let config = json!({
+        "protocol": "sftp",
+        "host": "127.0.0.1",
+        "port": 2222,
+        "user": "testuser",
+        "password": "testpass",
+    })
+    .as_object()
+    .unwrap()
+    .clone();
+    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let store_dir = std::env::temp_dir().join(format!(
+        "ftpeach-docker-sftp-cancel-store-{}",
+        uuid::Uuid::new_v4()
+    ));
+    let store = Arc::new(Store::new_at(store_dir.clone()));
+    let root = std::env::temp_dir().join(format!(
+        "ftpeach-docker-sftp-cancel-{}",
+        uuid::Uuid::new_v4()
+    ));
+    tokio::fs::create_dir_all(&root)
+        .await
+        .expect("create cancel fixture directory");
+    let source = root.join("source.bin");
+    let destination = root.join("cancelled.bin");
+    let content: Vec<u8> = (0..32 * 1024 * 1024)
+        .map(|index| (index % 251) as u8)
+        .collect();
+    tokio::fs::write(&source, &content)
+        .await
+        .expect("write cancel fixture");
+    let remote = format!("/upload/cancel-sftp-{}.bin", uuid::Uuid::new_v4());
+
+    let mut setup = SftpBackend::new(store.clone());
+    setup.connect(&config).await.expect("connect setup backend");
+    setup
+        .upload(&source, &remote, false, noop_progress())
+        .await
+        .expect("upload cancel fixture");
+    setup.disconnect().await.expect("disconnect setup backend");
+
+    let factory_config = config.clone();
+    let factory_store = store.clone();
+    let factory: BackendFactory = Arc::new(move || {
+        let config = factory_config.clone();
+        let store = factory_store.clone();
+        Box::pin(async move {
+            let mut backend = SftpBackend::new(store);
+            backend.connect(&config).await?;
+            Ok(Box::new(backend) as BoxBackend)
+        })
+    });
+    let pool = TransferPool::new(factory, PoolSize::Fixed(1));
+    // Well into the file, so a restart from zero cannot pass for a resume.
+    const CANCEL_AFTER: u64 = 4 * 1024 * 1024;
+    let far_enough = Arc::new(tokio::sync::Notify::new());
+    let notified = Arc::new(AtomicBool::new(false));
+    let progress: ProgressSink = {
+        let far_enough = far_enough.clone();
+        let notified = notified.clone();
+        Arc::new(move |info| {
+            if matches!(info, ProgressInfo::Progress { bytes, .. } if bytes >= CANCEL_AFTER)
+                && !notified.swap(true, Ordering::SeqCst)
+            {
+                far_enough.notify_one();
+            }
+        })
+    };
+    let task_destination = destination.clone();
+    let task_remote = remote.clone();
+    let task: TaskFn = Box::new(move |backend| {
+        Box::pin(async move {
+            backend
+                .download(&task_remote, &task_destination, false, progress)
+                .await
+        })
+    });
+    let run_pool = pool.clone();
+    let run = tokio::spawn(async move { run_pool.run("sftp-cancel-download".into(), task).await });
+
+    tokio::time::timeout(Duration::from_secs(20), far_enough.notified())
+        .await
+        .expect("real download should get well under way before cancellation");
+    assert!(pool.cancel("sftp-cancel-download"));
+    let error = run
+        .await
+        .expect("cancel task should join")
+        .expect_err("cancelled transfer must fail");
+    assert!(format!("{error:#}").contains("Canceled by user"));
+    assert!(tokio::fs::metadata(&destination).await.is_err());
+    let mut artifacts = tokio::fs::read_dir(&root)
+        .await
+        .expect("read isolated artifacts");
+    let mut partials = Vec::new();
+    while let Some(entry) = artifacts.next_entry().await.expect("read artifact entry") {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with(".ftpeach-") && name.ends_with(".part") {
+            partials.push(entry.path());
+        }
+    }
+    assert_eq!(
+        partials.len(),
+        1,
+        "cancel retains exactly its owned partial"
+    );
+    let partial = &partials[0];
+    let partial_size = tokio::fs::metadata(partial)
+        .await
+        .expect("cancelled download should retain its partial")
+        .len();
+    assert!(partial_size > 0 && partial_size < content.len() as u64);
+    pool.destroy().await;
+
+    let first_progress = Arc::new(std::sync::Mutex::new(None::<u64>));
+    let observed = first_progress.clone();
+    let resumed_progress: ProgressSink = Arc::new(move |info| {
+        if let ProgressInfo::Progress { bytes, .. } = info {
+            observed.lock().unwrap().get_or_insert(bytes);
+        }
+    });
+    let mut resume = SftpBackend::new(store);
+    resume
+        .connect(&config)
+        .await
+        .expect("connect resume backend");
+    resume
+        .download(&remote, &destination, true, resumed_progress)
+        .await
+        .expect("resume cancelled download");
+    let first = first_progress
+        .lock()
+        .unwrap()
+        .expect("resumed download reports progress");
+    assert!(
+        first > partial_size,
+        "resume must carry on from the {partial_size}-byte partial, not restart (first progress at {first})"
+    );
+    assert!(
+        tokio::fs::read(&destination)
+            .await
+            .expect("read resumed cancellation fixture")
+            == content,
+        "resumed download must match the source"
+    );
+    assert!(
+        tokio::fs::metadata(partial).await.is_err(),
+        "successful resume commits its owned artifact"
+    );
+
+    resume
+        .remove(&remote, false)
+        .await
+        .expect("remove remote cancel fixture");
+    resume
+        .disconnect()
+        .await
+        .expect("disconnect resume backend");
+    let _ = tokio::fs::remove_dir_all(root).await;
+    let _ = tokio::fs::remove_dir_all(store_dir).await;
+}

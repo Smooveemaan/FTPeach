@@ -140,6 +140,7 @@ fn make_progress_sink(
                 total: Some(total),
                 error: None,
                 error_code: None,
+                landed: None,
             },
             ProgressInfo::Done => TransferProgressPayload {
                 id: transfer_id.clone(),
@@ -149,6 +150,7 @@ fn make_progress_sink(
                 total: None,
                 error: None,
                 error_code: None,
+                landed: None,
             },
             ProgressInfo::Error { error, code } => TransferProgressPayload {
                 id: transfer_id.clone(),
@@ -158,6 +160,7 @@ fn make_progress_sink(
                 total: None,
                 error_code: Some(transfer_error_kind(code)),
                 error: Some(error),
+                landed: None,
             },
         };
         emitter.send(payload);
@@ -217,6 +220,7 @@ fn dispatch_notifier(
             total: None,
             error: None,
             error_code: None,
+            landed: None,
         });
     }
 }
@@ -261,6 +265,12 @@ pub async fn transfer_upload(
         None
     };
     let resumed = adopted.is_some();
+    // How far the staging file has come. A pause records it, so a folder
+    // walk's row can show it before the next attempt has reported anything.
+    let staged = Arc::new(std::sync::atomic::AtomicU64::new(
+        adopted.as_ref().map_or(0, |(_, offset)| *offset),
+    ));
+    let staged_for_task = staged.clone();
     let partial = adopted
         .map(|(staging, _)| staging)
         .unwrap_or_else(|| remote_partial_path(&remote_path));
@@ -276,6 +286,12 @@ pub async fn transfer_upload(
         transfer_id.clone(),
         &remote_path.clone(),
         move |sink| {
+            let sink: ProgressSink = Arc::new(move |info| {
+                if let ProgressInfo::Progress { bytes, .. } = &info {
+                    staged_for_task.store(*bytes, std::sync::atomic::Ordering::SeqCst);
+                }
+                sink(info);
+            });
             Box::new(move |backend| {
                 Box::pin(async move {
                     let _reservation = reservation;
@@ -308,7 +324,13 @@ pub async fn transfer_upload(
         && (resumed || started.load(std::sync::atomic::Ordering::SeqCst))
     {
         if paused {
-            upload_resume::remember(key, partial, local_for_resume, pin);
+            upload_resume::remember(
+                key,
+                partial,
+                local_for_resume,
+                pin,
+                staged.load(std::sync::atomic::Ordering::SeqCst),
+            );
         } else {
             cleanup_remote_partial(sessions, &cleanup_connection, &partial).await;
         }
@@ -451,6 +473,7 @@ pub async fn transfer_remote_copy(
                     total: None,
                     error: None,
                     error_code: None,
+                    landed: None,
                 });
             }
         }

@@ -540,7 +540,6 @@
     "retry": "Spróbuj ponownie",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Podczas kopiowania danych między serwerami funkcja wstrzymania nie jest obsługiwana",
-    "pauseUnsupportedFolder": "Wstrzymywanie nie jest obsługiwane przy przesyłaniu folderów",
     "pauseUnsupportedServerCopy": "Wstrzymywanie nie jest obsługiwane podczas kopiowania na serwerze",
     "pauseUnsupportedWebdav": "Funkcja pauzy nie jest obsługiwana przez WebDAV",
     "retryUnsupportedConnection": "Ponowienie jest niedostępne: połączenie zostało zamknięte",

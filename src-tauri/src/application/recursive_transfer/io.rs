@@ -8,7 +8,14 @@ use crate::protocol::{EntryInfo, transfer_file};
 use crate::session::Sessions;
 use crate::transfer::progress::ProgressEmitter;
 use anyhow::{Context, Result};
-use std::{path::Path, time::Duration};
+use std::{
+    path::Path,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+    time::Duration,
+};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_util::sync::CancellationToken;
 
@@ -100,23 +107,29 @@ pub(super) async fn remote_task(
     }
 }
 
+/// Makes one target directory, answering whether this call created it rather
+/// than finding it already there.
 pub(super) async fn mkdir(
     sessions: &Sessions,
     target: &Endpoint,
     relative: &str,
     token: &CancellationToken,
-) -> Result<()> {
+) -> Result<bool> {
     let path = target.path(relative);
     match target {
         Endpoint::Local { .. } => {
             let _guard = tokio::select! { guard = mutations::guard().lock() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
             safety::validate_write_destination(Path::new(&path)).await?;
             safety::ensure_path_no_reparse_points_now(Path::new(&path))?;
+            let existed = tokio::fs::symlink_metadata(&path).await.is_ok();
             tokio::fs::create_dir_all(&path).await?;
             safety::ensure_path_no_reparse_points_now(Path::new(&path))?;
+            Ok(!existed)
         }
         Endpoint::Remote { connection_id, .. } => {
             crate::protocol::validate_remote_path(&path)?;
+            let created = Arc::new(AtomicBool::new(false));
+            let created_by_task = created.clone();
             remote_task(
                 sessions,
                 connection_id,
@@ -142,7 +155,9 @@ pub(super) async fn mkdir(
                                 );
                                 return Ok(());
                             }
-                            backend.mkdir(&path).await
+                            let made = backend.mkdir(&path).await;
+                            created_by_task.store(made.is_ok(), Ordering::SeqCst);
+                            made
                         })
                         .await??;
                         Ok(())
@@ -150,9 +165,9 @@ pub(super) async fn mkdir(
                 }),
             )
             .await?;
+            Ok(created.load(Ordering::SeqCst))
         }
     }
-    Ok(())
 }
 
 async fn copy_local(
@@ -199,18 +214,24 @@ async fn copy_local(
     result
 }
 
+/// Copies one file of the walk. `overwrite` may reach further than the
+/// intent's, since the walk can always replace a file it wrote itself, and
+/// `resume` carries a download on from the partial an interrupted attempt
+/// kept, or an upload from its staging file.
 pub(super) async fn copy_file(
     sessions: &Sessions,
     progress: Option<&ProgressEmitter>,
     intent: &Intent,
     relative: &str,
+    overwrite: bool,
+    resume: bool,
     token: &CancellationToken,
 ) -> Result<()> {
     let source = intent.source.path(relative);
     let target = intent.target.path(relative);
     match (&intent.source, &intent.target) {
         (Endpoint::Local { .. }, Endpoint::Local { .. }) => {
-            copy_local(&source, &target, intent.overwrite, token).await
+            copy_local(&source, &target, overwrite, token).await
         }
         (Endpoint::Local { .. }, Endpoint::Remote { connection_id, .. }) => unit(
             transfer_service::transfer_upload(
@@ -220,8 +241,8 @@ pub(super) async fn copy_file(
                 format!("{}:file", intent.id),
                 source,
                 target,
-                false,
-                Some(intent.overwrite),
+                resume,
+                Some(overwrite),
             )
             .await?,
         ),
@@ -233,8 +254,8 @@ pub(super) async fn copy_file(
                 format!("{}:file", intent.id),
                 source,
                 target,
-                false,
-                Some(intent.overwrite),
+                resume,
+                Some(overwrite),
             )
             .await?,
         ),
@@ -256,7 +277,7 @@ pub(super) async fn copy_file(
                 format!("{}:file", intent.id),
                 source,
                 target,
-                Some(intent.overwrite),
+                Some(overwrite),
             )
             .await?,
         ),
@@ -315,4 +336,63 @@ pub(super) async fn remove_entry(
         }
     }
     Ok(())
+}
+
+/// Removes one entry a stopped walk created on its target. A directory goes
+/// only while it is empty, so nothing that appeared in it since is lost, and
+/// an entry that is already gone is left that way.
+pub(super) async fn remove_created(
+    sessions: &Sessions,
+    target: &Endpoint,
+    relative: &str,
+    directory: bool,
+) -> Result<()> {
+    let path = target.path(relative);
+    match target {
+        Endpoint::Local { .. } => {
+            let _guard = mutations::guard().lock().await;
+            let Some((path, is_dir)) = safety::validated_delete_target(Path::new(&path)).await?
+            else {
+                return Ok(());
+            };
+            anyhow::ensure!(is_dir == directory, "{} was replaced", path.display());
+            safety::ensure_path_no_reparse_points_now(&path)?;
+            if is_dir {
+                tokio::fs::remove_dir(path).await?;
+            } else {
+                tokio::fs::remove_file(path).await?;
+            }
+            Ok(())
+        }
+        Endpoint::Remote { connection_id, .. } => {
+            remote_task(
+                sessions,
+                connection_id,
+                uuid::Uuid::new_v4().to_string(),
+                &CancellationToken::new(),
+                Box::new(move |backend| {
+                    Box::pin(async move {
+                        tokio::time::timeout(Duration::from_secs(60), async {
+                            if !directory {
+                                backend.remove(&path, false).await
+                            } else if backend.supports_empty_directory_remove() {
+                                backend.remove_empty_directory(&path).await
+                            } else {
+                                // WebDAV deletes a collection along with all
+                                // it holds, so only one still empty may go.
+                                let entries = backend.list(&path).await?;
+                                anyhow::ensure!(
+                                    entries.is_empty(),
+                                    "Folder is no longer empty: {path}"
+                                );
+                                backend.remove(&path, true).await
+                            }
+                        })
+                        .await?
+                    })
+                }),
+            )
+            .await
+        }
+    }
 }

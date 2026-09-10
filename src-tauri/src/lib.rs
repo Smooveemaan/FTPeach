@@ -143,6 +143,7 @@ pub fn run() {
             commands::transfer::transfer_upload,
             commands::transfer::transfer_recursive,
             commands::transfer::transfer_cancel_recursive,
+            commands::transfer::transfer_discard_recursive,
             commands::transfer::transfer_download,
             commands::transfer::transfer_cancel,
             commands::transfer::transfer_remote_copy,

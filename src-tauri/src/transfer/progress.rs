@@ -20,6 +20,11 @@ pub struct TransferProgressPayload {
     pub error: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error_code: Option<&'static str>,
+    /// How many folders and files a folder walk has put in place on its target
+    /// so far. The pane showing that target lists it again when this moves, so
+    /// what the walk writes shows up while it runs, not only once it ends.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub landed: Option<u64>,
 }
 
 /// Where a child transfer's byte count belongs in its parent's running total.
@@ -30,6 +35,8 @@ struct Aggregate {
     /// Bytes the parent had already finished before this child started.
     base: u64,
     total: u64,
+    /// What the parent had put in place before this child started.
+    landed: u64,
 }
 
 /// The children currently reporting on some parent's behalf.
@@ -55,18 +62,22 @@ impl AggregateIndex {
     /// one. Only in-progress payloads roll up: a child's terminal event says
     /// nothing about whether the parent is finished.
     fn rolled_up(&self, payload: &TransferProgressPayload) -> Option<TransferProgressPayload> {
-        if payload.status != "progress" {
-            return None;
-        }
+        // Nor does a child's notice that it has started, which carries no byte
+        // count: read as nothing done, it would drop the parent back to its base
+        // just as a resumed file is about to carry on from its partial.
+        let bytes = payload.bytes.filter(|_| payload.status == "progress")?;
         let aggregate = self.0.lock().unwrap().get(&payload.id).cloned()?;
         Some(TransferProgressPayload {
             id: aggregate.parent_id,
             connection_id: aggregate.connection_id,
             status: "progress",
-            bytes: Some(aggregate.base.saturating_add(payload.bytes.unwrap_or(0))),
+            bytes: Some(aggregate.base.saturating_add(bytes)),
             total: Some(aggregate.total),
             error: None,
             error_code: None,
+            // Carried along, or a child's report overtaking the parent's own
+            // in the flush window would lose the count the parent just sent.
+            landed: Some(aggregate.landed),
         })
     }
 }
@@ -85,23 +96,39 @@ impl Drop for AggregateGuard {
 
 #[derive(Clone)]
 pub struct ProgressEmitter {
-    app: AppHandle,
+    emit: Arc<dyn Fn(TransferProgressPayload) + Send + Sync>,
     pending: Arc<Mutex<HashMap<String, TransferProgressPayload>>>,
     aggregates: AggregateIndex,
 }
 
 impl ProgressEmitter {
     pub fn new(app: AppHandle) -> Self {
+        Self::emitting(move |payload| {
+            let _ = app.emit("transfer:progress", payload);
+        })
+    }
+
+    /// An emitter that hands its payloads to `emit`, for tests that drive a
+    /// transfer with no window to report to.
+    #[cfg(test)]
+    pub(crate) fn for_tests(
+        emit: impl Fn(TransferProgressPayload) + Send + Sync + 'static,
+    ) -> Self {
+        Self::emitting(emit)
+    }
+
+    fn emitting(emit: impl Fn(TransferProgressPayload) + Send + Sync + 'static) -> Self {
         Self {
-            app,
+            emit: Arc::new(emit),
             pending: Arc::new(Mutex::new(HashMap::new())),
             aggregates: AggregateIndex::default(),
         }
     }
 
     /// Starts folding progress sent under `child_id` into `parent_id`'s own
-    /// running total, `base` bytes into a transfer of `total` bytes. The guard
-    /// stops it again, so an early return cannot leave a stale entry behind.
+    /// running total, `base` bytes into a transfer of `total` bytes, with
+    /// `landed` entries already in place. The guard stops it again, so an early
+    /// return cannot leave a stale entry behind.
     pub fn aggregate_into(
         &self,
         child_id: String,
@@ -109,6 +136,7 @@ impl ProgressEmitter {
         connection_id: String,
         base: u64,
         total: u64,
+        landed: u64,
     ) -> AggregateGuard {
         self.aggregates.track(
             child_id,
@@ -117,6 +145,7 @@ impl ProgressEmitter {
                 connection_id,
                 base,
                 total,
+                landed,
             },
         )
     }
@@ -132,12 +161,11 @@ impl ProgressEmitter {
     fn enqueue(&self, mut payload: TransferProgressPayload) {
         if payload.status != "progress" {
             let carried = self.pending.lock().unwrap().remove(&payload.id);
-            if payload.bytes.is_none()
-                && let Some(prev) = carried
-            {
-                payload.bytes = prev.bytes;
+            if let Some(prev) = carried {
+                payload.bytes = payload.bytes.or(prev.bytes);
+                payload.landed = payload.landed.or(prev.landed);
             }
-            let _ = self.app.emit("transfer:progress", payload);
+            (self.emit)(payload);
             return;
         }
 
@@ -160,7 +188,7 @@ impl ProgressEmitter {
             tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS)).await;
             let latest = this.pending.lock().unwrap().remove(&id);
             if let Some(latest) = latest {
-                let _ = this.app.emit("transfer:progress", latest);
+                (this.emit)(latest);
             }
         });
     }
@@ -179,6 +207,7 @@ mod tests {
             total: Some(10),
             error: None,
             error_code: None,
+            landed: None,
         }
     }
 
@@ -188,6 +217,7 @@ mod tests {
             connection_id: "walk-connection".into(),
             base: 100,
             total: 900,
+            landed: 3,
         }
     }
 
@@ -202,6 +232,7 @@ mod tests {
         assert_eq!(rolled_up.connection_id, "walk-connection");
         assert_eq!(rolled_up.bytes, Some(150));
         assert_eq!(rolled_up.total, Some(900));
+        assert_eq!(rolled_up.landed, Some(3));
     }
 
     #[test]
@@ -211,6 +242,17 @@ mod tests {
         assert!(
             index
                 .rolled_up(&payload("walk:file", "done", None))
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn a_childs_notice_that_it_started_leaves_the_parent_where_it_is() {
+        let index = AggregateIndex::default();
+        let _guard = index.track("walk:file".into(), aggregate());
+        assert!(
+            index
+                .rolled_up(&payload("walk:file", "progress", None))
                 .is_none()
         );
     }

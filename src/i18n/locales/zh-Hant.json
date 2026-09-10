@@ -532,7 +532,6 @@
     "retry": "重試",
     "stop": "停止",
     "pauseUnsupportedCopy": "在伺服器之間複製時不支援暫停",
-    "pauseUnsupportedFolder": "資料夾傳輸不支援暫停",
     "pauseUnsupportedServerCopy": "在伺服器上複製時不支援暫停",
     "pauseUnsupportedWebdav": "WebDAV 不支援暫停",
     "retryUnsupportedConnection": "無法重試：連線已關閉"

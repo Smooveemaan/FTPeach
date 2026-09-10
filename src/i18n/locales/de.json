@@ -532,7 +532,6 @@
     "retry": "Erneut versuchen",
     "stop": "Stopp",
     "pauseUnsupportedCopy": "Beim Kopieren zwischen Servern wird die Pause-Funktion nicht unterstützt",
-    "pauseUnsupportedFolder": "Pausieren wird bei Ordnerübertragungen nicht unterstützt",
     "pauseUnsupportedServerCopy": "Pausieren wird beim Kopieren auf dem Server nicht unterstützt",
     "pauseUnsupportedWebdav": "Die Funktion „Pause“ wird von WebDAV nicht unterstützt.",
     "retryUnsupportedConnection": "Wiederholen ist nicht verfügbar: Die Verbindung wurde geschlossen"

@@ -41,6 +41,8 @@ export interface TransferProgress {
   total?: number;
   error?: string;
   errorCode?: string;
+  /** How many folders and files a folder walk has put in place on its target so far. */
+  landed?: number;
 }
 /**
  * A remote file dropped onto Explorer (native drag-out) has started
@@ -290,7 +292,8 @@ export function isTransferProgress(value: unknown): value is TransferProgress {
     typeof value.connectionId === 'string' &&
     ['progress', 'done', 'error'].includes(String(value.status)) &&
     (value.bytes == null || (typeof value.bytes === 'number' && Number.isFinite(value.bytes))) &&
-    (value.total == null || (typeof value.total === 'number' && Number.isFinite(value.total)))
+    (value.total == null || (typeof value.total === 'number' && Number.isFinite(value.total))) &&
+    (value.landed == null || (typeof value.landed === 'number' && Number.isFinite(value.landed)))
   );
 }
 

@@ -532,7 +532,6 @@
     "retry": "重试",
     "stop": "停止",
     "pauseUnsupportedCopy": "在服务器之间复制时不支持暂停功能",
-    "pauseUnsupportedFolder": "文件夹传输不支持暂停",
     "pauseUnsupportedServerCopy": "在服务器上复制时不支持暂停",
     "pauseUnsupportedWebdav": "WebDAV 不支持暂停功能",
     "retryUnsupportedConnection": "无法重试：连接已关闭"

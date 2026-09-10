@@ -17,6 +17,8 @@ export interface RecursiveIntent {
   moving: boolean;
   overwrite: boolean;
   skipExisting?: boolean;
+  /** The paused attempt whose journal this walk carries on from. */
+  resumeFrom?: string;
 }
 export interface RecursiveReport {
   ok: boolean;
@@ -25,6 +27,8 @@ export interface RecursiveReport {
   completed: number;
   skipped?: number;
   errors: { message: string; code?: string }[];
+  /** The walk was paused and kept its journal for the next attempt. */
+  paused?: boolean;
 }
 function isRecursiveReport(value: unknown): value is RecursiveReport {
   return (
@@ -86,7 +90,11 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
         }),
       );
     },
-    cancelRecursive: (id: string) => invoke('transfer_cancel_recursive', { id }),
+    /** A pause keeps what the walk has written for a resume; a stop takes it back. */
+    cancelRecursive: (id: string, intent: 'pause' | 'stop' = 'stop') =>
+      invoke('transfer_cancel_recursive', { id, intent }),
+    /** Takes back what a paused walk wrote, once a stop rules out resuming it. */
+    discardRecursive: (id: string) => invoke('transfer_discard_recursive', { id }),
     validateRemoteCopy: (
       sourcePath: string,
       targetPath: string,

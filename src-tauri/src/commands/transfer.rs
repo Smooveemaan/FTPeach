@@ -28,8 +28,24 @@ pub async fn transfer_recursive(
 }
 
 #[tauri::command]
-pub fn transfer_cancel_recursive(id: String) {
-    crate::application::recursive_transfer::cancel(&id);
+pub fn transfer_cancel_recursive(
+    id: String,
+    intent: Option<crate::application::transfer_service::CancelIntent>,
+) {
+    // Naming no intent means Stop, as it always has.
+    crate::application::recursive_transfer::cancel(
+        &id,
+        intent.unwrap_or(crate::application::transfer_service::CancelIntent::Stop),
+    );
+}
+
+#[tauri::command]
+pub async fn transfer_discard_recursive(
+    sessions: State<'_, Sessions>,
+    id: String,
+) -> CommandResult<()> {
+    crate::application::recursive_transfer::discard(&sessions, &id).await;
+    Ok(())
 }
 
 #[tauri::command]

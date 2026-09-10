@@ -46,8 +46,8 @@ use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
 use crate::transfer::transfer_pool::{TaskFn, TransferPool};
 use serde::Serialize;
 use std::mem::ManuallyDrop;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Mutex as StdMutex, Once, OnceLock, mpsc};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex as StdMutex, Once, OnceLock, mpsc};
 use tauri::{AppHandle, Emitter};
 use tokio::io::{AsyncReadExt, DuplexStream};
 use tokio::sync::oneshot;
@@ -159,11 +159,12 @@ impl IDropSource_Impl for DropSource_Impl {
     }
 }
 
-/// Emitted once per file the moment a drop target starts pulling its bytes
-/// (i.e. the drop actually happened and this file's download began) so the
-/// Transfers panel can add a row for it — the frontend only tracks rows it
-/// knows about, and unlike every other transfer, it isn't the frontend that
-/// starts this one. Subsequent updates ride the ordinary `transfer:progress`
+/// Emitted once per row the moment a drop target starts pulling bytes (i.e.
+/// the drop actually happened and the download began) so the Transfers panel
+/// can add it — the frontend only tracks rows it knows about, and unlike
+/// every other transfer, it isn't the frontend that starts this one. A file
+/// dragged out on its own gets a row; one inside a folder dragged out whole
+/// reports through that folder's row instead (see `FolderRow`). Subsequent updates ride the ordinary `transfer:progress`
 /// event under the same id.
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -203,7 +204,7 @@ impl TransferReporter {
         }
     }
 
-    fn started(&self, id: &str, file: &DragOutFile) {
+    fn started(&self, id: &str, file: &DragOutFile, total: Option<u64>) {
         let _ = self.app.emit(
             "transfer:dragOutStarted",
             DragOutStartedPayload {
@@ -218,7 +219,7 @@ impl TransferReporter {
                     .unwrap_or(&file.name)
                     .to_string(),
                 remote_file: file.remote_path.clone(),
-                total: file.size,
+                total,
             },
         );
     }
@@ -232,6 +233,7 @@ impl TransferReporter {
             total,
             error: None,
             error_code: None,
+            landed: None,
         });
     }
 
@@ -244,6 +246,7 @@ impl TransferReporter {
             total,
             error: None,
             error_code: None,
+            landed: None,
         });
     }
 
@@ -258,6 +261,7 @@ impl TransferReporter {
             // The raw text when we have it (it names the server reply), the
             // safe sentence otherwise; the renderer localizes the code anyway.
             error: Some(failure.details.unwrap_or(failure.message)),
+            landed: None,
         });
     }
 }
@@ -281,18 +285,27 @@ struct VirtualFileStream {
     task_id: String,
     pool: TransferPool,
     reporter: TransferReporter,
+    /// The row of the folder this file was dragged out inside, which reports
+    /// for it; `None` for a file dragged out on its own, with a row of its own.
+    folder: Option<Arc<FolderRow>>,
 }
 
 impl VirtualFileStream {
     fn finish_ok(&self, bytes: u64) {
         if !self.finished.swap(true, Ordering::SeqCst) {
-            self.reporter.done(&self.task_id, bytes, self.size);
+            match &self.folder {
+                Some(folder) => folder.file_done(),
+                None => self.reporter.done(&self.task_id, bytes, self.size),
+            }
         }
     }
 
     fn finish_err(&self, failure: CommandError) {
         if !self.finished.swap(true, Ordering::SeqCst) {
-            self.reporter.error(&self.task_id, failure);
+            match &self.folder {
+                Some(folder) => folder.fail(failure),
+                None => self.reporter.error(&self.task_id, failure),
+            }
         }
     }
 }
@@ -398,7 +411,13 @@ impl VirtualFileStream_Impl {
                         }
                     };
                 }
-                self.reporter.progress(&self.task_id, position, self.size);
+                match &self.folder {
+                    Some(folder) => {
+                        self.reporter
+                            .progress(&folder.id, folder.add(n as u64), Some(folder.total))
+                    }
+                    None => self.reporter.progress(&self.task_id, position, self.size),
+                }
                 if (n as u32) < cb { S_FALSE } else { S_OK }
             }
             Err(err) => {
@@ -484,6 +503,84 @@ impl IStream_Impl for VirtualFileStream_Impl {
     }
 }
 
+/// The Transfers row of one folder dragged out whole. Explorer pulls the
+/// folder's files one stream at a time, and each used to show up as a row of
+/// its own while the folder's row sat at nothing; now they all add up here,
+/// the way a folder upload reports as one row.
+struct FolderRow {
+    id: String,
+    /// `folder\`, which every file inside it starts with in the manifest.
+    prefix: String,
+    /// What its files come to. The folder's own listed size is none of it.
+    total: u64,
+    files: usize,
+    bytes: AtomicU64,
+    completed: AtomicUsize,
+    /// The first of its files to fail, which says best why the folder did.
+    failure: StdMutex<Option<CommandError>>,
+}
+
+impl FolderRow {
+    fn new(folder: &DragOutFile, manifest: &[DragOutFile]) -> Self {
+        let prefix = format!("{}\\", folder.name);
+        let (files, total) = manifest
+            .iter()
+            .filter(|file| !file.is_directory && file.name.starts_with(&prefix))
+            .fold((0, 0u64), |(files, total), file| {
+                (files + 1, total.saturating_add(file.size.unwrap_or(0)))
+            });
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            prefix,
+            total,
+            files,
+            bytes: AtomicU64::new(0),
+            completed: AtomicUsize::new(0),
+            failure: StdMutex::new(None),
+        }
+    }
+
+    fn holds(&self, file: &DragOutFile) -> bool {
+        file.name.starts_with(&self.prefix)
+    }
+
+    /// Counts `n` more bytes read from one of its files, answering how far
+    /// the folder as a whole has come.
+    fn add(&self, n: u64) -> u64 {
+        self.bytes.fetch_add(n, Ordering::SeqCst) + n
+    }
+
+    fn file_done(&self) {
+        self.completed.fetch_add(1, Ordering::SeqCst);
+    }
+
+    fn fail(&self, failure: CommandError) {
+        self.failure.lock().unwrap().get_or_insert(failure);
+    }
+
+    /// How the folder's copy ended: as the drop target said it did, or, when
+    /// it let go without saying, by whether every file inside came across.
+    fn outcome(&self, ended: Option<HRESULT>) -> std::result::Result<(), CommandError> {
+        let failure = self.failure.lock().unwrap().take();
+        let complete = match ended {
+            Some(result) => result.is_ok(),
+            None => failure.is_none() && self.completed.load(Ordering::SeqCst) == self.files,
+        };
+        if complete {
+            return Ok(());
+        }
+        Err(failure.unwrap_or_else(|| {
+            let code = match ended {
+                Some(result) if result != HRESULT_CANCELLED && result != E_ABORT => {
+                    ErrorCode::Internal
+                }
+                _ => ErrorCode::Cancelled,
+            };
+            CommandError::new(code, "Explorer folder copy did not complete")
+        }))
+    }
+}
+
 /// The drag payload: announces the file list via `CFSTR_FILEDESCRIPTORW`
 /// and, lazily, streams each file's bytes via `CFSTR_FILECONTENTS` — the
 /// actual remote download only starts once a drop target asks for a given
@@ -494,7 +591,7 @@ impl IStream_Impl for VirtualFileStream_Impl {
 #[implement(IDataObject, IDataObjectAsyncCapability)]
 struct VirtualDataObject {
     files: Vec<DragOutFile>,
-    folder_transfers: OnceLock<Vec<String>>,
+    folder_transfers: OnceLock<Vec<Arc<FolderRow>>>,
     folders_finished: AtomicBool,
     manifest: OnceLock<std::result::Result<Vec<DragOutFile>, String>>,
     pool: TransferPool,
@@ -510,41 +607,39 @@ struct VirtualDataObject {
 }
 
 impl VirtualDataObject {
-    fn start_folders(&self) {
+    /// The rows of the folders dragged out whole, announced the first time
+    /// anything needs them: the drop target starting its copy, or, for one
+    /// that copies without saying so, the first file it pulls.
+    fn start_folders(&self) -> &[Arc<FolderRow>] {
         self.folder_transfers.get_or_init(|| {
+            let manifest = self.expanded_files().unwrap_or(&[]);
             self.files
                 .iter()
                 .filter(|file| file.is_directory)
-                .map(|file| {
-                    let id = uuid::Uuid::new_v4().to_string();
-                    self.reporter.started(&id, file);
-                    id
+                .map(|folder| {
+                    let row = FolderRow::new(folder, manifest);
+                    self.reporter.started(&row.id, folder, Some(row.total));
+                    Arc::new(row)
                 })
                 .collect()
-        });
+        })
     }
 
-    fn finish_folders(&self, result: HRESULT) {
+    /// Settles the folder rows; `ended` is what the drop target said of its
+    /// copy, or `None` when it let go of us without saying.
+    fn finish_folders(&self, ended: Option<HRESULT>) {
         if self.folders_finished.swap(true, Ordering::SeqCst) {
             return;
         }
         if let Some(folders) = self.folder_transfers.get() {
-            for id in folders {
-                if result.is_ok() {
-                    // Child file rows own byte accounting; this row tracks the folder operation.
-                    self.reporter.done(id, 0, None);
-                } else {
-                    self.reporter.error(
-                        id,
-                        CommandError::new(
-                            if result == HRESULT_CANCELLED || result == E_ABORT {
-                                ErrorCode::Cancelled
-                            } else {
-                                ErrorCode::Internal
-                            },
-                            "Explorer folder copy did not complete",
-                        ),
-                    );
+            for folder in folders {
+                match folder.outcome(ended) {
+                    Ok(()) => self.reporter.done(
+                        &folder.id,
+                        folder.bytes.load(Ordering::SeqCst),
+                        Some(folder.total),
+                    ),
+                    Err(failure) => self.reporter.error(&folder.id, failure),
                 }
             }
         }
@@ -586,7 +681,16 @@ impl VirtualDataObject {
         let pool = self.pool.clone();
         let remote_path = file.remote_path.clone();
         let task_id = uuid::Uuid::new_v4().to_string();
-        self.reporter.started(&task_id, file);
+        // A file inside a folder dragged out whole reports as part of that
+        // folder's row, not as a row of its own.
+        let folder = self
+            .start_folders()
+            .iter()
+            .find(|folder| folder.holds(file))
+            .cloned();
+        if folder.is_none() {
+            self.reporter.started(&task_id, file, file.size);
+        }
         let run_id = task_id.clone();
         tauri::async_runtime::spawn(async move {
             let mut writer = writer;
@@ -610,6 +714,7 @@ impl VirtualDataObject {
             task_id,
             pool: self.pool.clone(),
             reporter: self.reporter.clone(),
+            folder,
         }
         .into()
     }
@@ -617,8 +722,9 @@ impl VirtualDataObject {
 
 impl Drop for VirtualDataObject {
     fn drop(&mut self) {
-        // A target can release the object without completing its operation.
-        self.finish_folders(HRESULT_CANCELLED);
+        // A target can release the object without saying how its operation
+        // ended; the folders' own files then tell.
+        self.finish_folders(None);
     }
 }
 
@@ -768,7 +874,7 @@ impl IDataObjectAsyncCapability_Impl for VirtualDataObject_Impl {
         _pbcreserved: windows::core::Ref<'_, IBindCtx>,
         _dweffects: u32,
     ) -> windows::core::Result<()> {
-        self.finish_folders(hresult);
+        self.finish_folders(Some(hresult));
         self.in_operation.store(false, Ordering::SeqCst);
         log::debug!("drag-out: drop target finished its async copy with {hresult}");
         Ok(())
@@ -983,5 +1089,84 @@ mod descriptor_tests {
             // GlobalFree returns NULL on success, which windows 0.61 maps to Err.
             let _ = GlobalFree(Some(handle));
         }
+    }
+}
+
+#[cfg(test)]
+mod folder_row_tests {
+    use super::*;
+
+    fn entry(name: &str, size: Option<u64>, is_directory: bool) -> DragOutFile {
+        DragOutFile {
+            remote_path: format!("/{}", name.replace('\\', "/")),
+            name: name.into(),
+            size,
+            is_directory,
+        }
+    }
+
+    fn folder_row() -> FolderRow {
+        let manifest = [
+            entry("folder", Some(4096), true),
+            entry("folder\\empty", None, true),
+            entry("folder\\file.txt", Some(42), false),
+            entry("folder\\sub\\deep.bin", Some(8), false),
+            entry("folderish\\other.txt", Some(1000), false),
+            entry("loose.txt", Some(5), false),
+        ];
+        FolderRow::new(&manifest[0], &manifest)
+    }
+
+    #[test]
+    fn a_dragged_folder_adds_up_only_the_files_inside_it() {
+        let row = folder_row();
+        // Not the 4096 its listing gave: no one downloads a folder's own size.
+        assert_eq!(row.total, 50);
+        assert_eq!(row.files, 2);
+        assert!(row.holds(&entry("folder\\sub\\deep.bin", Some(8), false)));
+        assert!(!row.holds(&entry("folderish\\other.txt", Some(1000), false)));
+        assert!(!row.holds(&entry("loose.txt", Some(5), false)));
+        assert_eq!(row.add(42), 42);
+        assert_eq!(row.add(8), 50);
+    }
+
+    #[test]
+    fn a_folder_row_ends_the_way_its_copy_did() {
+        assert!(folder_row().outcome(Some(S_OK)).is_ok());
+
+        let released_whole = folder_row();
+        released_whole.file_done();
+        released_whole.file_done();
+        assert!(
+            released_whole.outcome(None).is_ok(),
+            "every file came across before the target let go"
+        );
+
+        let released_early = folder_row();
+        released_early.file_done();
+        assert_eq!(
+            released_early.outcome(None).unwrap_err().code,
+            ErrorCode::Cancelled
+        );
+
+        let failed = folder_row();
+        failed.fail(CommandError::new(ErrorCode::ConnectionLost, "gone"));
+        failed.fail(CommandError::new(ErrorCode::Internal, "later"));
+        assert_eq!(
+            failed.outcome(Some(E_FAIL)).unwrap_err().code,
+            ErrorCode::ConnectionLost,
+            "the first file to fail says why"
+        );
+        assert_eq!(
+            folder_row().outcome(Some(E_FAIL)).unwrap_err().code,
+            ErrorCode::Internal
+        );
+        assert_eq!(
+            folder_row()
+                .outcome(Some(HRESULT_CANCELLED))
+                .unwrap_err()
+                .code,
+            ErrorCode::Cancelled
+        );
     }
 }

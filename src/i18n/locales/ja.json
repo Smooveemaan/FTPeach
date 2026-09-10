@@ -532,7 +532,6 @@
     "retry": "再試行",
     "stop": "停止",
     "pauseUnsupportedCopy": "サーバー間のコピーでは、一時停止機能はサポートされていません",
-    "pauseUnsupportedFolder": "フォルダーの転送では一時停止はサポートされていません",
     "pauseUnsupportedServerCopy": "サーバー上でのコピーでは一時停止はサポートされていません",
     "pauseUnsupportedWebdav": "WebDAVでは一時停止機能はサポートされていません",
     "retryUnsupportedConnection": "再試行はできません: 接続が閉じられました"

@@ -120,13 +120,35 @@ test.each([
     expect(container.querySelector(`.dir-icon.dir-${icon}`)?.getAttribute('data-tooltip')).toBe(
       title,
     );
-    // No folder walk can pause, and the reason given must not mistake this
-    // computer for a server.
+    // Every folder walk keeps a journal it can resume from, whichever way it goes.
     const pause = container.querySelector('.pause-btn');
-    expect(pause).toHaveProperty('disabled', true);
-    expect(pause?.getAttribute('data-tooltip')).toBe('Pause is not supported for folder transfers');
+    expect(pause).toHaveProperty('disabled', false);
+    expect(pause?.getAttribute('data-tooltip')).toBe('Paused');
   },
 );
+
+test('a folder moved within one server is a single rename, so it cannot pause', () => {
+  const { container } = renderRow({
+    id: 'rename',
+    name: 'Folder',
+    direction: 'recursive',
+    status: 'progress',
+    bytes: 0,
+    startedAt: 1,
+    intent: {
+      id: 'rename',
+      source: { kind: 'remote', path: '/Folder', connectionId: 'a' },
+      target: { kind: 'remote', path: '/Moved/Folder', connectionId: 'a' },
+      moving: true,
+      overwrite: false,
+    },
+  });
+  const pause = container.querySelector('.pause-btn');
+  expect(pause).toHaveProperty('disabled', true);
+  expect(pause?.getAttribute('data-tooltip')).toBe(
+    'Pause is not supported when copying on the server',
+  );
+});
 
 test.each([
   ['a', 'b', 'Copy between servers', 'Pause is not supported when copying between servers'],

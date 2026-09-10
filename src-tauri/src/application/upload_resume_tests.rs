@@ -2,6 +2,7 @@ use super::*;
 use crate::protocol::{BackendResult, EntryInfo, ProgressSink, ProtocolBackend};
 use crate::session::Session;
 use crate::transfer::transfer_pool::{PoolSize, TransferPool};
+use crate::transfer::upload_staging::{MARK_CAP, discard_for_connection};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -194,6 +195,7 @@ impl Fixture {
             self.staging.clone(),
             self.local.to_string_lossy().into_owned(),
             pin(&self.local).await.unwrap(),
+            0,
         );
     }
 
@@ -203,7 +205,11 @@ impl Fixture {
     }
 
     fn staging_exists(&self) -> bool {
-        self.remote.files.lock().unwrap().contains_key(&self.staging)
+        self.remote
+            .files
+            .lock()
+            .unwrap()
+            .contains_key(&self.staging)
     }
 
     fn logged(&self) -> Vec<String> {

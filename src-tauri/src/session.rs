@@ -117,7 +117,7 @@ pub async fn teardown_session_for_shutdown(slot: &mut Option<Session>, connectio
 /// Once the session goes, that attempt can never come, so the file has to go
 /// with it — and only while the connection can still reach it.
 async fn discard_paused_staging(session: &mut Session, connection_id: &str) {
-    crate::application::upload_resume::discard_for_connection(
+    crate::transfer::upload_staging::discard_for_connection(
         session.browse_client.as_mut(),
         connection_id,
     )

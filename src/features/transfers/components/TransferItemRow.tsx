@@ -7,7 +7,7 @@ import Icon from '../../../components/Icon.tsx';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 import { updateSpeedSample } from '../transferSpeed.ts';
 import type { SpeedSamples } from '../transferSpeed.ts';
-import { canRetryTransfer, type TransferRow } from '../transferStore.ts';
+import { canPauseTransfer, canRetryTransfer, type TransferRow } from '../transferStore.ts';
 import type { ReorderableColumnKey } from '../transferColumns.ts';
 import {
   STATUS_LABEL_KEY,
@@ -56,19 +56,16 @@ export default function TransferItemRow({
   const hasTotal = total > 0;
   const percent = hasTotal ? Math.min(100, Math.round((item.bytes / total) * 100)) : null;
   const showBar = hasTotal && item.status !== 'error';
-  // Why Pause is greyed out, named for what the row really is: a folder walk
-  // has no pause whichever way it goes, so it must not claim to be a copy
-  // between servers.
-  const pauseUnsupportedKey =
-    item.direction === 'recursive'
-      ? 'transferQueue.pauseUnsupportedFolder'
-      : route === 'server-copy'
-        ? 'transferQueue.pauseUnsupportedServerCopy'
-        : route === 'copy'
-          ? 'transferQueue.pauseUnsupportedCopy'
-          : item.direction === 'up' && item.protocol === 'webdav'
-            ? 'transferQueue.pauseUnsupportedWebdav'
-            : null;
+  // Why Pause is greyed out, named for what the row really is: a folder moved
+  // within one server is a single rename, a relay copy has no resumable
+  // stream, and what is left is an upload over WebDAV.
+  const pauseUnsupportedKey = canPauseTransfer(item)
+    ? null
+    : route === 'server-copy'
+      ? 'transferQueue.pauseUnsupportedServerCopy'
+      : route === 'copy'
+        ? 'transferQueue.pauseUnsupportedCopy'
+        : 'transferQueue.pauseUnsupportedWebdav';
   const retryUnsupported = !canRetryTransfer(item);
   const speed = updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
   const remaining =

@@ -1,8 +1,9 @@
-//! Session-scoped resume state for paused uploads.
+//! Resuming paused uploads.
 //!
 //! An upload writes into a randomly named staging file and renames it onto the
-//! destination only once complete. Pausing keeps that staging file behind so
-//! the next attempt can append to it instead of re-sending everything.
+//! destination only once complete. Pausing keeps that staging file behind,
+//! recorded in `transfer::upload_staging`, so the next attempt can append to it
+//! instead of re-sending everything.
 //!
 //! Appending means trusting bytes some earlier attempt wrote, so an entry here
 //! is a claim to be proven rather than a fact. The local source is pinned when
@@ -15,12 +16,13 @@
 #[path = "upload_resume_tests.rs"]
 mod tests;
 
-use crate::protocol::{LogKind, ProtocolBackend};
+use crate::protocol::LogKind;
 use crate::session::Sessions;
-use std::collections::HashMap;
+pub(crate) use crate::transfer::upload_staging::{
+    Key, mark_paused, pin, remember, staged_len, take_pause_mark,
+};
+use crate::transfer::upload_staging::{Paused, SourcePin, remove_staging_on, take};
 use std::path::Path;
-use std::sync::{Mutex as StdMutex, OnceLock};
-use std::time::SystemTime;
 
 /// Read back at most this much of the staging tail to prove the overlap.
 ///
@@ -39,101 +41,6 @@ use std::time::SystemTime;
 /// window of a real file betrays those. The source pin covers the rest.
 const VERIFY_WINDOW: u64 = 8 * 1024;
 
-/// Pause marks are set by cancellation and consumed by the upload it aborts.
-/// A mark for anything else (a download, an upload whose task already failed)
-/// has no consumer, so the set is bounded the way the pool bounds cancelled ids.
-const MARK_CAP: usize = 256;
-
-/// Identifies the destination a staging file is staged for. Keyed by
-/// destination rather than by transfer id because every retry mints a fresh
-/// attempt id, while the destination is what the staging file actually belongs
-/// to — and what a competing upload would collide with.
-#[derive(PartialEq, Eq, Hash, Clone)]
-pub struct Key {
-    pub connection_id: String,
-    pub remote_path: String,
-}
-
-/// What the local source looked like when the paused attempt was reading it.
-/// Size and mtime are the same quick check rsync trusts by default; here it is
-/// only the first of two gates, never the last word.
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub struct SourcePin {
-    size: u64,
-    mtime: Option<SystemTime>,
-}
-
-pub async fn pin(local_path: &Path) -> Option<SourcePin> {
-    let metadata = tokio::fs::metadata(local_path).await.ok()?;
-    Some(SourcePin {
-        size: metadata.len(),
-        mtime: metadata.modified().ok(),
-    })
-}
-
-struct Paused {
-    staging_path: String,
-    local_path: String,
-    pin: SourcePin,
-}
-
-#[derive(Default)]
-struct State {
-    paused: HashMap<Key, Paused>,
-    marks: Vec<String>,
-}
-
-fn state() -> &'static StdMutex<State> {
-    static STATE: OnceLock<StdMutex<State>> = OnceLock::new();
-    STATE.get_or_init(Default::default)
-}
-
-/// Records that this attempt is being cancelled to pause it, not to abandon it.
-/// Must be set before the pool is told to cancel, so the upload it unblocks
-/// always observes the mark.
-pub fn mark_paused(transfer_id: &str) {
-    let mut state = state().lock().unwrap();
-    if state.marks.iter().any(|id| id == transfer_id) {
-        return;
-    }
-    state.marks.push(transfer_id.to_string());
-    if state.marks.len() > MARK_CAP {
-        state.marks.remove(0);
-    }
-}
-
-pub fn take_pause_mark(transfer_id: &str) -> bool {
-    let mut state = state().lock().unwrap();
-    if let Some(index) = state.marks.iter().position(|id| id == transfer_id) {
-        state.marks.remove(index);
-        return true;
-    }
-    false
-}
-
-pub fn remember(key: Key, staging_path: String, local_path: String, pin: SourcePin) {
-    state().lock().unwrap().paused.insert(
-        key,
-        Paused {
-            staging_path,
-            local_path,
-            pin,
-        },
-    );
-}
-
-/// Claiming an entry removes it: from here on the caller owns that staging file
-/// and must either finish it, hand it back with [`remember`], or delete it.
-fn take(key: &Key) -> Option<Paused> {
-    state().lock().unwrap().paused.remove(key)
-}
-
-async fn remove_staging_on(browse: &mut (dyn ProtocolBackend + Send), staging_path: &str) {
-    if let Err(error) = browse.remove(staging_path, false).await {
-        log::warn!("Could not remove staging file {staging_path}: {error}");
-    }
-}
-
 async fn remove_staging(sessions: &Sessions, connection_id: &str, staging_path: &str) {
     let slot = sessions.slot_for(connection_id);
     let mut guard = slot.lock().await;
@@ -146,32 +53,6 @@ async fn remove_staging(sessions: &Sessions, connection_id: &str, staging_path: 
 pub async fn discard(sessions: &Sessions, key: &Key) {
     if let Some(entry) = take(key) {
         remove_staging(sessions, &key.connection_id, &entry.staging_path).await;
-    }
-}
-
-/// Abandons everything held for a connection. Takes the browsing backend
-/// directly because teardown already owns the session: the deletions have to
-/// happen while the connection can still reach the server, and once it is
-/// closed no route to those files is left.
-pub async fn discard_for_connection(
-    browse: &mut (dyn ProtocolBackend + Send),
-    connection_id: &str,
-) {
-    let abandoned: Vec<String> = {
-        let mut state = state().lock().unwrap();
-        let keys: Vec<Key> = state
-            .paused
-            .keys()
-            .filter(|key| key.connection_id == connection_id)
-            .cloned()
-            .collect();
-        keys.iter()
-            .filter_map(|key| state.paused.remove(key))
-            .map(|entry| entry.staging_path)
-            .collect()
-    };
-    for staging_path in abandoned {
-        remove_staging_on(browse, &staging_path).await;
     }
 }
 
@@ -230,7 +111,7 @@ pub async fn resolve(
     let restart = if entry.local_path != local_path.to_string_lossy() || entry.pin != now {
         Restart::SourceChanged
     } else {
-        match verify_overlap(sessions, key, &entry, local_path, now.size).await {
+        match verify_overlap(sessions, key, &entry, local_path, now.size()).await {
             Ok(Some(offset)) => {
                 log_event(
                     sessions,
@@ -273,7 +154,9 @@ async fn log_event(
     let slot = sessions.slot_for(connection_id);
     let guard = slot.lock().await;
     if let Some(session) = guard.as_ref() {
-        session.browse_client.log_event(key, params, LogKind::Status);
+        session
+            .browse_client
+            .log_event(key, params, LogKind::Status);
     }
 }
 

@@ -5,7 +5,7 @@ import { api } from '../../platform/api/index.ts';
 import type { RecursiveIntent, RecursiveReport } from '../../platform/api/transfers.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { isCommandErrorCode } from '../../platform/ipcContracts.ts';
-import { reportRejection } from '../../shared/asyncFailure.ts';
+import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/types.ts';
@@ -17,6 +17,7 @@ import {
   getTransfersSnapshot,
   markConnectionDead,
   setTransfersStore,
+  subscribeTransfers,
   transferTouchesConnection,
 } from './transferStore.ts';
 import { validateWindowsDownloadName } from './transferWalk.ts';
@@ -37,10 +38,50 @@ function nextTransferId() {
   return id;
 }
 
+/** How often, at most, a running folder walk lists its target again. */
+const LANDED_REFRESH_INTERVAL_MS = 1000;
+
+/**
+ * Lists a folder walk's target again whenever the walk reports putting more in
+ * place there, so its folders and finished files show up while it runs rather
+ * than only once it ends. Spaced out, or a folder of many small files would
+ * list the target once per file. Returns what stops following.
+ */
+function followLanded(id: string, attemptId: string, refresh: RefreshCallback | undefined) {
+  if (!refresh) return () => {};
+  let seen = getTransfersSnapshot()[id]?.landed;
+  let lastRefresh = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const unsubscribe = subscribeTransfers(() => {
+    const row = getTransfersSnapshot()[id];
+    if (row?.attemptId !== attemptId || row.landed === undefined || row.landed === seen) return;
+    seen = row.landed;
+    timer ??= setTimeout(
+      () => {
+        timer = undefined;
+        lastRefresh = Date.now();
+        refresh();
+      },
+      Math.max(0, lastRefresh + LANDED_REFRESH_INTERVAL_MS - Date.now()),
+    );
+  });
+  return () => {
+    unsubscribe();
+    clearTimeout(timer);
+  };
+}
+
 /** Owns individual transfer state, retries, cancellation and queue-wide actions. */
 
 export interface TransferLifecycleModel {
-  runRecursive: (intent: RecursiveIntent, existingId?: string) => Promise<RecursiveReport>;
+  runRecursive: (
+    intent: RecursiveIntent,
+    existingId?: string,
+    /** The paused attempt whose journal this walk carries on from. */
+    resumeFrom?: string,
+    /** Lists the target again as the walk puts folders and files in place there. */
+    refreshTarget?: RefreshCallback,
+  ) => Promise<RecursiveReport>;
   runUpload: (
     connectionId: string,
     protocol: SiteProtocol,
@@ -338,7 +379,12 @@ export function useTransferLifecycle(
     return result;
   };
 
-  const runRecursive = async (intent: RecursiveIntent, existingId?: string) => {
+  const runRecursive = async (
+    intent: RecursiveIntent,
+    existingId?: string,
+    resumeFrom?: string,
+    refreshTarget?: RefreshCallback,
+  ) => {
     const id =
       existingId || startTransfer({ direction: 'recursive', name: intent.source.path, intent });
     const attemptId = beginAttempt(id);
@@ -346,9 +392,14 @@ export function useTransferLifecycle(
       ...previous,
       [id]: { ...previous[id]!, status: 'progress' },
     }));
+    const stopFollowing = followLanded(id, attemptId, refreshTarget);
     let report: RecursiveReport;
     try {
-      report = await api.transfer.recursive({ ...intent, id: attemptId });
+      report = await api.transfer.recursive({
+        ...intent,
+        id: attemptId,
+        ...(resumeFrom === undefined ? {} : { resumeFrom }),
+      });
     } catch (error) {
       report = {
         ok: false,
@@ -357,6 +408,18 @@ export function useTransferLifecycle(
         completed: 0,
         errors: [{ message: String(error) }],
       };
+    } finally {
+      // Whoever started the walk lists the target once more when it ends.
+      stopFollowing();
+    }
+    // A stop that overtook the pause reached the walk too late to change how
+    // it ended: it kept what it wrote for a resume that will now never come.
+    if (report.paused && cancelIntentRef.current[id] === 'stopped') {
+      try {
+        await api.transfer.discardRecursive(attemptId);
+      } catch (error) {
+        reportAsyncFailure(error);
+      }
     }
     settleTransferResult(
       id,
@@ -384,7 +447,14 @@ export function useTransferLifecycle(
       return;
     delete cancelIntentRef.current[id];
     if (transfer.direction === 'recursive') {
-      await runRecursive(transfer.intent, id);
+      // A paused walk carries on from the journal its attempt kept; any other
+      // ending starts over.
+      await runRecursive(
+        transfer.intent,
+        id,
+        transfer.status === 'paused' ? transfer.attemptId : undefined,
+        refreshTarget,
+      );
       refreshTarget?.();
       return;
     }
@@ -485,19 +555,44 @@ export function useTransferLifecycle(
     const current = getTransfersSnapshot()[id];
     if (!current || ['done', 'error', 'stopped'].includes(current.status)) return;
     const wasRunning = current.status === 'progress' || current.status === 'queued';
+    // A paused folder walk still holds what it wrote, kept for a resume a stop
+    // now rules out. The row reads "cancelling" while that is taken back.
+    const discarding =
+      intent === 'stopped' && current.direction === 'recursive' && current.status === 'paused';
     cancelIntentRef.current[id] = intent;
     setTransfersStore((previous) =>
       previous[id] &&
       (previous[id].status === 'progress' ||
         previous[id].status === 'queued' ||
         previous[id].status === 'paused')
-        ? { ...previous, [id]: { ...previous[id], status: wasRunning ? 'cancelling' : intent } }
+        ? {
+            ...previous,
+            [id]: { ...previous[id], status: wasRunning || discarding ? 'cancelling' : intent },
+          }
         : previous,
     );
-    if (wasRunning) {
-      if (current.direction === 'recursive') {
-        await api.transfer.cancelRecursive(current.attemptId || id);
-      } else if (current.direction === 'copy') {
+    if (current.direction === 'recursive') {
+      const attemptId = current.attemptId || id;
+      if (wasRunning) {
+        await api.transfer.cancelRecursive(attemptId, intent === 'paused' ? 'pause' : 'stop');
+      } else if (discarding) {
+        try {
+          await api.transfer.discardRecursive(attemptId);
+        } finally {
+          setTransfersStore((previous) => {
+            const row = previous[id];
+            return row?.status === 'cancelling'
+              ? { ...previous, [id]: { ...row, status: 'stopped' } }
+              : previous;
+          });
+        }
+      } else if (current.status === 'cancelling' && intent === 'stopped') {
+        // A stop overtaking a pause still winding down: the walk takes back
+        // what it wrote instead of keeping it.
+        await api.transfer.cancelRecursive(attemptId, 'stop');
+      }
+    } else if (wasRunning) {
+      if (current.direction === 'copy') {
         await api.transfer.cancelRemoteCopy(
           current.sourceConnectionId,
           current.targetConnectionId,

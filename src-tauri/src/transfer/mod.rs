@@ -6,3 +6,4 @@ pub(crate) mod relay;
 pub(crate) mod transfer_pool;
 #[cfg(feature = "test-utils")]
 pub mod transfer_pool;
+pub(crate) mod upload_staging;

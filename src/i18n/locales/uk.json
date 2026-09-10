@@ -540,7 +540,6 @@
     "retry": "Спробувати ще раз",
     "stop": "Стоп",
     "pauseUnsupportedCopy": "Під час копіювання між серверами функція паузи не підтримується",
-    "pauseUnsupportedFolder": "Під час передавання папок функція «Пауза» не підтримується",
     "pauseUnsupportedServerCopy": "Під час копіювання на сервері функція «Пауза» не підтримується",
     "pauseUnsupportedWebdav": "WebDAV не підтримує функцію паузи",
     "retryUnsupportedConnection": "Повторити не можна: з'єднання закрито",

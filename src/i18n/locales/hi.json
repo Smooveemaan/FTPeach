@@ -532,7 +532,6 @@
     "retry": "पुनः प्रयास करें",
     "stop": "रुकें",
     "pauseUnsupportedCopy": "सर्वरों के बीच कॉपी करते समय रोकना समर्थित नहीं है",
-    "pauseUnsupportedFolder": "फ़ोल्डर स्थानांतरण के लिए रोकना समर्थित नहीं है",
     "pauseUnsupportedServerCopy": "सर्वर पर कॉपी करते समय रोकना समर्थित नहीं है",
     "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है",
     "retryUnsupportedConnection": "पुनः प्रयास उपलब्ध नहीं है: कनेक्शन बंद हो गया है"

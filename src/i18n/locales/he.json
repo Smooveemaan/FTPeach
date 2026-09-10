@@ -536,7 +536,6 @@
     "retry": "נסה שוב",
     "stop": "עצור",
     "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",
-    "pauseUnsupportedFolder": "השהיה אינה נתמכת בהעברת תיקיות",
     "pauseUnsupportedServerCopy": "השהיה אינה נתמכת בהעתקה בשרת",
     "pauseUnsupportedWebdav": "WebDAV אינו תומך בפונקציית ההשהיה",
     "retryUnsupportedConnection": "ניסיון חוזר אינו זמין: החיבור נסגר",

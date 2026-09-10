@@ -532,7 +532,6 @@
     "retry": "Thử lại",
     "stop": "Dừng lại",
     "pauseUnsupportedCopy": "Chức năng tạm dừng không được hỗ trợ khi sao chép giữa các máy chủ",
-    "pauseUnsupportedFolder": "Không hỗ trợ tạm dừng khi truyền thư mục",
     "pauseUnsupportedServerCopy": "Không hỗ trợ tạm dừng khi sao chép trên máy chủ",
     "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng",
     "retryUnsupportedConnection": "Không thể thử lại: kết nối đã bị đóng"

@@ -536,7 +536,6 @@
     "retry": "Tentar novamente",
     "stop": "Parar",
     "pauseUnsupportedCopy": "A função “Pausar” não é compatível ao copiar entre servidores",
-    "pauseUnsupportedFolder": "A pausa não é compatível com transferências de pastas",
     "pauseUnsupportedServerCopy": "A pausa não é compatível ao copiar no servidor",
     "pauseUnsupportedWebdav": "A função “Pausar” não é compatível com o WebDAV",
     "retryUnsupportedConnection": "Repetir não está disponível: a conexão foi encerrada",

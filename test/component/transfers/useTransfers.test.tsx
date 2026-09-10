@@ -15,7 +15,7 @@ import type {
   TransferProgress,
 } from '../../../src/platform/ipcContracts.ts';
 import type { SiteProtocol } from '../../../src/shared/types.ts';
-import type { RecursiveIntent } from '../../../src/platform/api/transfers.ts';
+import type { RecursiveIntent, RecursiveReport } from '../../../src/platform/api/transfers.ts';
 import type {
   TransferRow,
   TransferState,
@@ -186,6 +186,157 @@ test('recursive cancellation waits for the backend report and rejects immediate 
       pending.resolve({ ok: false, outcome: 'partial', scanned: 1, completed: 0, errors: [] });
       await running;
     });
+    assert.equal(getSnapshot()[row.id]?.status, 'stopped');
+  });
+});
+
+const pausedWalkReport: RecursiveReport = {
+  ok: false,
+  outcome: 'partial',
+  scanned: 3,
+  completed: 1,
+  paused: true,
+  errors: [{ message: 'Recursive operation cancelled', code: 'cancelled' }],
+};
+
+/** Starts a folder walk the test finishes by hand, and pauses it once running. */
+async function startAndPauseWalk({ getApi, mockApi, getSnapshot }: HarnessContext) {
+  const walk = createDeferred<RecursiveReport>();
+  const submitted: RecursiveIntent[] = [];
+  const cancels: Array<[string, string | undefined]> = [];
+  mockApi.transfer.recursive = (intent) => {
+    submitted.push(intent);
+    return walk.promise;
+  };
+  mockApi.transfer.cancelRecursive = async (id, intent) => {
+    cancels.push([id, intent]);
+  };
+  let running!: Promise<void>;
+  await act(async () => {
+    running = getApi().copyEntries(localFolderMove());
+    await Promise.resolve();
+  });
+  const row = Object.values(getSnapshot())[0]!;
+  await act(async () => {
+    await getApi().pauseTransfer(row.id);
+  });
+  return { row, walk, running, submitted, cancels };
+}
+
+test('a paused folder walk resumes from the attempt that kept its journal', async () => {
+  await withHarness(async (context) => {
+    const { getApi, getSnapshot, mockApi } = context;
+    const { row, walk, running, submitted, cancels } = await startAndPauseWalk(context);
+    assert.deepEqual(cancels, [[row.attemptId, 'pause']]);
+    await act(async () => {
+      walk.resolve(pausedWalkReport);
+      await running;
+    });
+    assert.equal(getSnapshot()[row.id]?.status, 'paused');
+    mockApi.transfer.recursive = async (intent) => {
+      submitted.push(intent);
+      return { ok: true, outcome: 'complete', scanned: 3, completed: 3, errors: [] };
+    };
+    await act(async () => {
+      await getApi().retryTransfer(row.id);
+    });
+    assert.equal(submitted[0]?.resumeFrom, undefined);
+    assert.equal(submitted[1]?.resumeFrom, row.attemptId);
+    assert.notEqual(submitted[1]?.id, row.attemptId);
+    assert.equal(getSnapshot()[row.id]?.status, 'done');
+  });
+});
+
+test('a running folder walk lists its target again as it puts entries in place', async () => {
+  await withHarness(async ({ getApi, mockApi, emitProgress }) => {
+    const walk = createDeferred<RecursiveReport>();
+    let attemptId = '';
+    mockApi.transfer.recursive = (intent) => {
+      attemptId = intent.id;
+      return walk.promise;
+    };
+    let refreshed = 0;
+    let running!: Promise<void>;
+    await act(async () => {
+      running = getApi().copyEntries({
+        ...localFolderMove(),
+        refreshTarget: () => {
+          refreshed += 1;
+        },
+      });
+      await Promise.resolve();
+    });
+    const report = async (landed: number) => {
+      await act(async () => {
+        emitProgress({ id: attemptId, connectionId: '', status: 'progress', total: 10, landed });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    };
+    await report(1);
+    assert.equal(refreshed, 1, 'the folder shows up as soon as the walk makes it');
+    await report(1);
+    assert.equal(refreshed, 1, 'nothing new landed, so nothing is listed again');
+    await report(2);
+    assert.equal(refreshed, 1, 'listings are spaced out');
+    await act(async () => {
+      walk.resolve({ ok: true, outcome: 'complete', scanned: 3, completed: 1, errors: [] });
+      await running;
+    });
+    // Only the listing the finished walk asks for; the spaced-out one is dropped.
+    assert.equal(refreshed, 2);
+  });
+});
+
+test('stopping a paused folder walk takes back what it kept, reading cancelling meanwhile', async () => {
+  await withHarness(async (context) => {
+    const { getApi, getSnapshot, mockApi } = context;
+    const { row, walk, running } = await startAndPauseWalk(context);
+    await act(async () => {
+      walk.resolve(pausedWalkReport);
+      await running;
+    });
+    const discard = createDeferred<unknown>();
+    const discarded: string[] = [];
+    mockApi.transfer.discardRecursive = (id) => {
+      discarded.push(id);
+      return discard.promise;
+    };
+    let stopping!: Promise<void>;
+    await act(async () => {
+      stopping = getApi().stopTransfer(row.id);
+      await Promise.resolve();
+    });
+    assert.deepEqual(discarded, [row.attemptId]);
+    assert.equal(getSnapshot()[row.id]?.status, 'cancelling');
+    await act(async () => {
+      discard.resolve(undefined);
+      await stopping;
+    });
+    assert.equal(getSnapshot()[row.id]?.status, 'stopped');
+  });
+});
+
+test('a stop that overtakes a pause still takes the folder walk back', async () => {
+  await withHarness(async (context) => {
+    const { getApi, getSnapshot, mockApi } = context;
+    const { row, walk, running, cancels } = await startAndPauseWalk(context);
+    const discarded: string[] = [];
+    mockApi.transfer.discardRecursive = async (id) => {
+      discarded.push(id);
+    };
+    await act(async () => {
+      await getApi().stopTransfer(row.id);
+    });
+    assert.deepEqual(cancels, [
+      [row.attemptId, 'pause'],
+      [row.attemptId, 'stop'],
+    ]);
+    // The backend had already kept its journal by the time the stop landed.
+    await act(async () => {
+      walk.resolve(pausedWalkReport);
+      await running;
+    });
+    assert.deepEqual(discarded, [row.attemptId]);
     assert.equal(getSnapshot()[row.id]?.status, 'stopped');
   });
 });

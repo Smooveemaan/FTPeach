@@ -226,18 +226,72 @@ pub async fn commit(partial: &Path, destination: &Path) -> Result<()> {
     if super::overwrite_allowed() {
         tokio::fs::rename(partial, destination)
             .await
-            .context("committing verified download")
+            .context("committing verified download")?;
     } else {
         rename_no_replace(partial, destination)
             .await
-            .context("committing download without replacement")
+            .context("committing download without replacement")?;
     }
+    // The destination now holds the whole file, so the record kept to resume
+    // it is spent; left behind, one would sit beside every downloaded file.
+    forget_resume_record(partial, destination).await;
+    Ok(())
 }
 
 pub async fn remove_empty_new_partial(path: &Path, started_at: u64) {
     if started_at == 0 && tokio::fs::metadata(path).await.is_ok_and(|m| m.len() == 0) {
         let _ = tokio::fs::remove_file(path).await;
     }
+}
+
+/// The resume record kept beside a destination, if one can be read.
+fn read_record(metadata: &Path) -> Option<ResumeRecord> {
+    use std::io::Read;
+    let mut bytes = Vec::new();
+    open_artifact(metadata, false)
+        .ok()?
+        .take(16 * 1024)
+        .read_to_end(&mut bytes)
+        .ok()?;
+    serde_json::from_slice(&bytes).ok()
+}
+
+/// Forgets the record naming `partial` once `partial` has become the
+/// destination. A record naming any other artifact is not this download's.
+async fn forget_resume_record(partial: &Path, destination: &Path) {
+    let metadata = sidecar(destination);
+    if read_record(&metadata)
+        .is_some_and(|record| artifact_path(destination, record.artifact) == partial)
+    {
+        let _ = tokio::fs::remove_file(&metadata).await;
+    }
+}
+
+/// How far into `destination` a download could carry on from: the length of
+/// the partial its resume record names, when both are there.
+pub fn resumable_len(destination: &Path) -> Option<u64> {
+    let record = read_record(&sidecar(destination))?;
+    std::fs::symlink_metadata(artifact_path(destination, record.artifact))
+        .ok()
+        .filter(|metadata| metadata.is_file())
+        .map(|metadata| metadata.len())
+}
+
+/// Removes what a download keeps beside `destination` to resume: its sidecar
+/// and the partial the sidecar names. For a stopped folder walk taking back
+/// what it wrote; the destination itself is never touched, and a sidecar that
+/// cannot be read is left alone along with whatever it might point at.
+pub async fn discard_resume_artifacts(destination: &Path) {
+    let metadata = sidecar(destination);
+    let Some(record) = read_record(&metadata) else {
+        return;
+    };
+    let artifact = artifact_path(destination, record.artifact);
+    // The same proof every open demands: an unlinked regular file of ours.
+    if open_artifact(&artifact, false).is_ok() {
+        let _ = tokio::fs::remove_file(&artifact).await;
+    }
+    let _ = tokio::fs::remove_file(&metadata).await;
 }
 
 #[cfg(test)]
@@ -312,6 +366,56 @@ mod tests {
         assert_eq!(offset, 0);
         assert_ne!(fresh, partial);
         assert_eq!(std::fs::read(root.join("user-file")).unwrap(), b"keep");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_committed_download_forgets_only_its_own_resume_record() {
+        let root = std::env::temp_dir().join(format!("ftpeach-resume-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let destination = root.join("file.bin");
+        let source = SourceIdentity {
+            endpoint: "server".into(),
+            remote_path: "/file".into(),
+            size: Some(8),
+            version: Some("v1".into()),
+        };
+        let (partial, _) = prepare(&destination, false, source.clone()).await.unwrap();
+        std::fs::write(&partial, b"complete").unwrap();
+        commit(&partial, &destination).await.unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
+        assert!(!sidecar(&destination).exists());
+        // A local copy committing its own temporary leaves a download's record be.
+        let (downloading, _) = prepare(&destination, false, source).await.unwrap();
+        let copied = root.join(".ftpeach-copy.part");
+        std::fs::write(&copied, b"replaced").unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&copied, &destination))
+            .await
+            .unwrap();
+        assert!(sidecar(&destination).exists());
+        assert!(downloading.exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn discarding_resume_artifacts_leaves_the_destination_alone() {
+        let root = std::env::temp_dir().join(format!("ftpeach-discard-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let destination = root.join("file.bin");
+        std::fs::write(&destination, b"user").unwrap();
+        let source = SourceIdentity {
+            endpoint: "server".into(),
+            remote_path: "/file".into(),
+            size: Some(8),
+            version: Some("v1".into()),
+        };
+        let (partial, _) = prepare(&destination, false, source).await.unwrap();
+        std::fs::write(&partial, b"half").unwrap();
+        discard_resume_artifacts(&destination).await;
+        assert!(!partial.exists());
+        assert!(!sidecar(&destination).exists());
+        assert_eq!(std::fs::read(&destination).unwrap(), b"user");
         std::fs::remove_dir_all(root).unwrap();
     }
 

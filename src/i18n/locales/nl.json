@@ -532,7 +532,6 @@
     "retry": "Opnieuw proberen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pauzeren wordt niet ondersteund bij het kopiëren tussen servers",
-    "pauseUnsupportedFolder": "Pauzeren wordt niet ondersteund bij mapoverdrachten",
     "pauseUnsupportedServerCopy": "Pauzeren wordt niet ondersteund bij kopiëren op de server",
     "pauseUnsupportedWebdav": "Pauzeren wordt niet ondersteund door WebDAV",
     "retryUnsupportedConnection": "Opnieuw proberen is niet beschikbaar: de verbinding is gesloten"

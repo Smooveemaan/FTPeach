@@ -540,7 +540,6 @@
     "retry": "Zkusit znovu",
     "stop": "Zastavit",
     "pauseUnsupportedCopy": "Při kopírování mezi servery není funkce pozastavení podporována",
-    "pauseUnsupportedFolder": "Pozastavení není podporováno při přenosu složek",
     "pauseUnsupportedServerCopy": "Pozastavení není podporováno při kopírování na serveru",
     "pauseUnsupportedWebdav": "Funkce pozastavení není v protokolu WebDAV podporována",
     "retryUnsupportedConnection": "Opakování není k dispozici: připojení bylo uzavřeno",

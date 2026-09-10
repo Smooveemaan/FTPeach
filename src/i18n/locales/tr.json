@@ -532,7 +532,6 @@
     "retry": "Tekrar dene",
     "stop": "Durdur",
     "pauseUnsupportedCopy": "Sunucular arasında kopyalama işlemi sırasında duraklatma özelliği desteklenmemektedir",
-    "pauseUnsupportedFolder": "Klasör aktarımlarında duraklatma desteklenmiyor",
     "pauseUnsupportedServerCopy": "Sunucuda kopyalarken duraklatma desteklenmiyor",
     "pauseUnsupportedWebdav": "WebDAV, duraklatma özelliğini desteklemiyor",
     "retryUnsupportedConnection": "Yeniden deneme kullanılamıyor: bağlantı kapatıldı"

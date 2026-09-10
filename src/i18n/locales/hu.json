@@ -532,7 +532,6 @@
     "retry": "Újrapróbálás",
     "stop": "Leállítás",
     "pauseUnsupportedCopy": "A szünet funkció nem támogatott a szerverek közötti másolás során",
-    "pauseUnsupportedFolder": "A szüneteltetés mappák átvitelénél nem támogatott",
     "pauseUnsupportedServerCopy": "A szüneteltetés a szerveren belüli másolásnál nem támogatott",
     "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést",
     "retryUnsupportedConnection": "Az újrapróbálkozás nem érhető el: a kapcsolat lezárult"

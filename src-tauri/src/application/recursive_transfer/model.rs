@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokio_util::sync::CancellationToken;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Endpoint {
     Local {
@@ -41,7 +41,7 @@ impl Endpoint {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Intent {
     pub id: String,
@@ -51,6 +51,10 @@ pub struct Intent {
     pub overwrite: bool,
     #[serde(default)]
     pub skip_existing: bool,
+    /// The paused attempt this one carries on from. Its journal says what is
+    /// already in place, so this attempt copies only the rest.
+    #[serde(default)]
+    pub resume_from: Option<String>,
 }
 
 #[derive(Default, Serialize)]
@@ -62,6 +66,8 @@ pub struct Report {
     pub skipped: usize,
     pub scanned: usize,
     pub errors: Vec<CommandError>,
+    /// The walk was paused and kept its journal for the next attempt.
+    pub paused: bool,
 }
 
 pub(super) fn check_cancel(token: &CancellationToken) -> Result<()> {

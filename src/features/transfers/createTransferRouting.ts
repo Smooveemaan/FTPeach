@@ -72,6 +72,7 @@ export function createTransferRouting(
     targetPath: string,
     moving = false,
     overwriteApproved = false,
+    refreshTarget?: RefreshCallback,
   ) => {
     const approved = overwriteApproved
       ? true
@@ -85,20 +86,25 @@ export function createTransferRouting(
             ...(target.protocol ? { protocol: target.protocol } : {}),
           });
     if (approved === null) return false;
-    const report = await runRecursive({
-      id: crypto.randomUUID(),
-      source:
-        source.kind === 'local'
-          ? { kind: 'local', path: sourcePath }
-          : { kind: 'remote', path: sourcePath, connectionId: source.connectionId! },
-      target:
-        target.kind === 'local'
-          ? { kind: 'local', path: targetPath }
-          : { kind: 'remote', path: targetPath, connectionId: target.connectionId! },
-      moving,
-      overwrite: approved,
-      skipExisting: overwriteAction === 'skip',
-    });
+    const report = await runRecursive(
+      {
+        id: crypto.randomUUID(),
+        source:
+          source.kind === 'local'
+            ? { kind: 'local', path: sourcePath }
+            : { kind: 'remote', path: sourcePath, connectionId: source.connectionId! },
+        target:
+          target.kind === 'local'
+            ? { kind: 'local', path: targetPath }
+            : { kind: 'remote', path: targetPath, connectionId: target.connectionId! },
+        moving,
+        overwrite: approved,
+        skipExisting: overwriteAction === 'skip',
+      },
+      undefined,
+      undefined,
+      refreshTarget,
+    );
     return report.ok;
   };
 
@@ -121,6 +127,7 @@ export function createTransferRouting(
     name: string,
     targetDir: string,
     overwriteApproved = false,
+    refreshTarget?: RefreshCallback,
   ) =>
     recursiveFolder(
       localEndpoint(sourcePath),
@@ -129,6 +136,7 @@ export function createTransferRouting(
       joinRemotePath(targetDir, name),
       false,
       overwriteApproved,
+      refreshTarget,
     );
 
   // Pane-to-pane routing
@@ -192,6 +200,7 @@ export function createTransferRouting(
         targetPath,
         move,
         overwriteApproved,
+        refreshTarget,
       );
     }
     if (folders.length > 0) {
@@ -371,6 +380,7 @@ export function createTransferRouting(
             destination,
             false,
             overwriteApproved,
+            refreshTarget,
           );
         } else {
           await copyLocalFile(file.path, destination, overwriteApproved);
@@ -391,6 +401,7 @@ export function createTransferRouting(
           file.name,
           targetDir,
           overwriteApproved,
+          refreshTarget,
         );
       } else {
         await runUpload(

@@ -259,6 +259,7 @@
     "notFound": "File atau folder tidak ditemukan.",
     "fileOrFolderExists": "File atau folder dengan nama tersebut sudah ada.",
     "fileBusy": "Berkas tersebut sedang digunakan oleh proses lain.",
+    "locationBusy": "Operasi lain sedang menggunakan berkas atau folder ini. Coba lagi setelah operasi itu selesai.",
     "diskFull": "Ruang disk tidak cukup.",
     "hostKeyMismatch": "Kunci host server telah berubah.",
     "integrityMismatch": "Berkas yang ditransfer gagal dalam pemeriksaan integritas.",

@@ -97,6 +97,28 @@ async fn skip_merges_missing_files_and_retains_move_source() {
 }
 
 #[tokio::test]
+async fn walks_share_a_source_that_only_a_move_needs_to_itself() {
+    for moving in [false, true] {
+        let (root, mut intent) = fixture();
+        intent.moving = moving;
+        std::fs::write(root.join("source/a"), b"a").unwrap();
+        // Another walk sending the same folder somewhere else.
+        let other = Reservation::acquire_local(&intent.source.path(""), Access::Read).unwrap();
+        let report = run(&Sessions::default(), None, intent).await;
+        drop(other);
+        if moving {
+            assert!(!report.ok);
+            assert_eq!(report.errors[0].code, ErrorCode::Busy);
+            assert!(root.join("source/a").is_file());
+        } else {
+            assert!(report.ok, "{:?}", report.errors);
+            assert_eq!(std::fs::read(root.join("target/a")).unwrap(), b"a");
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[tokio::test]
 async fn empty_directories_move_only_after_creation() {
     let (root, intent) = fixture();
     std::fs::create_dir(root.join("source/empty")).unwrap();
@@ -597,6 +619,7 @@ async fn serve(server: &Arc<Server>) -> (Sessions, String) {
     );
     *sessions.slot_for(&connection_id).lock().await = Some(crate::session::Session {
         browse_client: Box::new(FakeBackend(server.clone())),
+        server: connection_id.clone(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,
     });

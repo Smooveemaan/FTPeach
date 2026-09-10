@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   WebDAV can’t continue a file that was cut short, so resuming started that file over.
 - The Pause and Retry buttons in the transfer list no longer light up under the pointer
   when they are unavailable, so they no longer look clickable.
+- Sending the same file or folder to several servers at once no longer fails with
+  “Command failed” for every transfer but the first. When two transfers really do need
+  the same file or folder, the message now says so.
 
 ## [0.1.2] - 2026-09-10
 

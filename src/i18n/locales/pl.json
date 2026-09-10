@@ -267,6 +267,7 @@
     "notFound": "Nie znaleziono pliku lub folderu.",
     "fileOrFolderExists": "Plik lub folder o tej nazwie już istnieje.",
     "fileBusy": "Plik jest aktualnie używany przez inny proces.",
+    "locationBusy": "Inna operacja już korzysta z tego pliku lub folderu. Spróbuj ponownie, gdy się zakończy.",
     "diskFull": "Za mało miejsca na dysku.",
     "hostKeyMismatch": "Klucz hosta serwera uległ zmianie.",
     "integrityMismatch": "Przesłany plik nie przeszedł kontroli integralności.",

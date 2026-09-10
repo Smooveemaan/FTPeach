@@ -259,6 +259,7 @@
     "notFound": "未找到檔案或資料夾。",
     "fileOrFolderExists": "具有該名稱的檔案或資料夾已存在。",
     "fileBusy": "該文件正在被另一個程序使用。",
+    "locationBusy": "另一個操作正在使用此檔案或資料夾。請在其完成後再試一次。",
     "diskFull": "磁碟空間不足。",
     "hostKeyMismatch": "伺服器主機金鑰已變更。",
     "integrityMismatch": "傳輸的檔案未通過完整性檢查。",

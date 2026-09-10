@@ -1,4 +1,5 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
+use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::protocol::EntryInfo;
 use crate::session::{ConnectingClients, Sessions, teardown_session};
 use tauri::State;
@@ -182,8 +183,10 @@ pub async fn session_mkdir(
     if !is_safe_path(&remote_path) {
         return invalid_path_result();
     }
-    let _target = crate::local_fs::target_reservation::Reservation::acquire(&remote_path)
-        .map_err(CommandError::from)?;
+    let _target =
+        Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
+            .await
+            .map_err(CommandError::from)?;
     run_unit_browse_operation!(sessions, connecting, connection_id, mkdir, &remote_path)
 }
 
@@ -197,8 +200,10 @@ pub async fn session_create_file(
     if !is_safe_path(&remote_path) {
         return invalid_path_result();
     }
-    let _target = crate::local_fs::target_reservation::Reservation::acquire(&remote_path)
-        .map_err(CommandError::from)?;
+    let _target =
+        Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
+            .await
+            .map_err(CommandError::from)?;
     run_unit_browse_operation!(
         sessions,
         connecting,
@@ -219,8 +224,10 @@ pub async fn session_delete(
     if !is_safe_path(&remote_path) {
         return invalid_path_result();
     }
-    let _target = crate::local_fs::target_reservation::Reservation::acquire(&remote_path)
-        .map_err(CommandError::from)?;
+    let _target =
+        Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
+            .await
+            .map_err(CommandError::from)?;
     run_unit_browse_operation!(
         sessions,
         connecting,
@@ -249,9 +256,11 @@ pub async fn session_rename(
             error: CommandError::from_anyhow(&error),
         });
     }
-    let _source = crate::local_fs::target_reservation::Reservation::acquire(&old_path)
+    let _source = Reservation::acquire_remote(&sessions, &connection_id, &old_path, Access::Write)
+        .await
         .map_err(CommandError::from)?;
-    let _target = crate::local_fs::target_reservation::Reservation::acquire(&new_path)
+    let _target = Reservation::acquire_remote(&sessions, &connection_id, &new_path, Access::Write)
+        .await
         .map_err(CommandError::from)?;
     if overwrite == Some(false) {
         return run_unit_browse_operation!(

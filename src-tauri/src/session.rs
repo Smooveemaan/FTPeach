@@ -7,6 +7,9 @@ use tokio_util::sync::CancellationToken;
 
 pub struct Session {
     pub browse_client: Box<dyn ProtocolBackend + Send>,
+    /// The server this session is connected to, as
+    /// [`crate::protocol::config::ConnectionConfig::server`] names it.
+    pub server: String,
     pub transfer_pool: TransferPool,
     pub browse_timeout_ms: u64,
 }
@@ -33,6 +36,17 @@ impl Sessions {
         let slot = self.slot_for(connection_id);
         let guard = slot.lock().await;
         guard.as_ref().map(|session| session.transfer_pool.clone())
+    }
+
+    /// The server a live session is connected to. With no session there is
+    /// nothing to tell its server by, so the connection stands in for it.
+    pub async fn server_for(&self, connection_id: &str) -> String {
+        let slot = self.slot_for(connection_id);
+        let guard = slot.lock().await;
+        guard.as_ref().map_or_else(
+            || connection_id.to_owned(),
+            |session| session.server.clone(),
+        )
     }
 
     /// Snapshot of every slot currently known, with the connection it belongs

@@ -259,6 +259,7 @@
     "notFound": "Bestand of map niet gevonden.",
     "fileOrFolderExists": "Er bestaat al een bestand of map met die naam.",
     "fileBusy": "Het bestand wordt momenteel door een ander proces gebruikt.",
+    "locationBusy": "Een andere bewerking werkt al met dit bestand of deze map. Probeer het opnieuw zodra die klaar is.",
     "diskFull": "Onvoldoende schijfruimte.",
     "hostKeyMismatch": "De hostsleutel van de server is gewijzigd.",
     "integrityMismatch": "Het overgedragen bestand heeft de integriteitscontrole niet doorstaan.",

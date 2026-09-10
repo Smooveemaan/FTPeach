@@ -263,6 +263,7 @@
     "notFound": "Fișierul sau folderul nu a fost găsit.",
     "fileOrFolderExists": "Există deja un fișier sau un dosar cu acest nume.",
     "fileBusy": "Fișierul este utilizat de un alt proces.",
+    "locationBusy": "O altă operațiune folosește deja acest fișier sau folder. Încercați din nou după ce se termină.",
     "diskFull": "Spațiu insuficient pe disc.",
     "hostKeyMismatch": "Cheia gazdă a serverului s-a schimbat.",
     "integrityMismatch": "Fișierul transferat nu a trecut verificarea integrității.",

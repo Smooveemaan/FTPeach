@@ -259,6 +259,7 @@
     "notFound": "Dosya veya klasör bulunamadı.",
     "fileOrFolderExists": "Bu isimde bir dosya veya klasör zaten mevcut.",
     "fileBusy": "Dosya başka bir işlem tarafından kullanılıyor.",
+    "locationBusy": "Başka bir işlem zaten bu dosya veya klasörle çalışıyor. Bittiğinde tekrar deneyin.",
     "diskFull": "Yeterli disk alanı yok.",
     "hostKeyMismatch": "Sunucunun ana bilgisayar anahtarı değişti.",
     "integrityMismatch": "Aktarılan dosya bütünlük kontrolünden geçemedi.",

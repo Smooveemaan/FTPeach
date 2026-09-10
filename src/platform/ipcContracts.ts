@@ -19,6 +19,7 @@ export type CommandErrorCode =
   | 'connectionLost'
   | 'invalidInput'
   | 'resourceLimit'
+  | 'busy'
   | 'vaultLocked'
   | 'internal';
 
@@ -146,7 +147,7 @@ export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
   return (
     typeof value === 'string' &&
     (ERROR_PATTERNS.some(([code]) => code === value) ||
-      ['invalidInput', 'resourceLimit', 'internal'].includes(value))
+      ['invalidInput', 'resourceLimit', 'busy', 'internal'].includes(value))
   );
 }
 

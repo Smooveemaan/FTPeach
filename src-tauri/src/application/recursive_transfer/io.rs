@@ -3,6 +3,7 @@ use super::manifest::Entry;
 use super::model::{Endpoint, Intent, check_cancel, unit};
 use crate::application::transfer_service;
 use crate::ipc::{CommandError, ErrorCode};
+use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::local_fs::{filesystem_safety as safety, mutations};
 use crate::protocol::{EntryInfo, transfer_file};
 use crate::session::Sessions;
@@ -84,6 +85,22 @@ pub(super) async fn listing(
             let entries = result?;
             crate::protocol::validate_listing(&entries)?;
             Ok(entries)
+        }
+    }
+}
+
+/// Leases a walk's root on `endpoint`: a place on the local disk, or on the
+/// server a remote endpoint's session is connected to.
+pub(super) async fn reserve(
+    sessions: &Sessions,
+    endpoint: &Endpoint,
+    access: Access,
+) -> Result<Reservation> {
+    let path = endpoint.path("");
+    match endpoint {
+        Endpoint::Local { .. } => Reservation::acquire_local(&path, access),
+        Endpoint::Remote { connection_id, .. } => {
+            Reservation::acquire_remote(sessions, connection_id, &path, access).await
         }
     }
 }

@@ -259,6 +259,7 @@
     "notFound": "找不到该文件或文件夹。",
     "fileOrFolderExists": "已经存在一个同名的文件或文件夹。",
     "fileBusy": "该文件正在被另一个进程使用。",
+    "locationBusy": "另一个操作正在使用此文件或文件夹。请在其完成后重试。",
     "diskFull": "磁盘空间不足。",
     "hostKeyMismatch": "服务器主机密钥已更改。",
     "integrityMismatch": "传输的文件未通过完整性检查。",

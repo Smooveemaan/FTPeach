@@ -3,6 +3,7 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validate_read_source, validate_write_destination,
 };
+use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::protocol::{ProgressInfo, ProgressSink};
 use crate::session::Sessions;
 use crate::transfer::error_kind::transfer_error_kind;
@@ -236,8 +237,10 @@ pub async fn transfer_upload(
     resume: bool,
     overwrite: Option<bool>,
 ) -> CommandResult<OkResult> {
-    let reservation = crate::local_fs::target_reservation::Reservation::acquire(&remote_path)
-        .map_err(CommandError::from)?;
+    let reservation =
+        Reservation::acquire_remote(sessions, &connection_id, &remote_path, Access::Write)
+            .await
+            .map_err(CommandError::from)?;
     let local = PathBuf::from(local_path);
     if let Err(error) = validate_read_source(&local).await {
         return Ok(OkResult::Err {
@@ -436,7 +439,8 @@ pub async fn transfer_remote_copy(
         });
     }
     let reservation = Arc::new(
-        crate::local_fs::target_reservation::Reservation::acquire(&target_path)
+        Reservation::acquire_remote(sessions, &target_connection_id, &target_path, Access::Write)
+            .await
             .map_err(CommandError::from)?,
     );
     let Some(source_pool) = sessions.pool_for(&source_connection_id).await else {

@@ -23,6 +23,8 @@ pub enum ErrorCode {
     ConnectionLost,
     InvalidInput,
     ResourceLimit,
+    /// Another operation is already reading or writing the same place.
+    Busy,
     VaultLocked,
     Internal,
 }
@@ -245,6 +247,7 @@ impl CommandError {
             ErrorCode::ConnectionLost => "Connection lost",
             ErrorCode::InvalidInput => "Invalid input",
             ErrorCode::ResourceLimit => "Resource limit exceeded",
+            ErrorCode::Busy => "Another operation is using this location",
             ErrorCode::VaultLocked => "Vault is locked",
             ErrorCode::Internal => "Command failed",
         };
@@ -278,6 +281,7 @@ mod tests {
             (ErrorCode::ConnectionLost, "connectionLost"),
             (ErrorCode::InvalidInput, "invalidInput"),
             (ErrorCode::ResourceLimit, "resourceLimit"),
+            (ErrorCode::Busy, "busy"),
             (ErrorCode::VaultLocked, "vaultLocked"),
             (ErrorCode::Internal, "internal"),
         ];

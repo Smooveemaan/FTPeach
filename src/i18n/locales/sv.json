@@ -259,6 +259,7 @@
     "notFound": "Filen eller mappen hittades inte.",
     "fileOrFolderExists": "Det finns redan en fil eller mapp med det namnet.",
     "fileBusy": "Filen används av en annan process.",
+    "locationBusy": "En annan åtgärd arbetar redan med den här filen eller mappen. Försök igen när den är klar.",
     "diskFull": "Det finns inte tillräckligt med diskutrymme.",
     "hostKeyMismatch": "Serverns värdnyckel har ändrats.",
     "integrityMismatch": "Den överförda filen klarade inte integritetskontrollen.",

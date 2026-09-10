@@ -259,6 +259,7 @@
     "notFound": "Không tìm thấy tệp hoặc thư mục.",
     "fileOrFolderExists": "Đã có một tệp hoặc thư mục có tên đó rồi.",
     "fileBusy": "Tệp này đang được một tiến trình khác sử dụng.",
+    "locationBusy": "Một thao tác khác đang sử dụng tệp hoặc thư mục này. Vui lòng thử lại sau khi thao tác đó hoàn tất.",
     "diskFull": "Không đủ dung lượng đĩa.",
     "hostKeyMismatch": "Khóa máy chủ đã thay đổi.",
     "integrityMismatch": "Tệp đã truyền không vượt qua kiểm tra tính toàn vẹn.",

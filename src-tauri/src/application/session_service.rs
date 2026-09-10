@@ -203,6 +203,7 @@ pub(crate) async fn connect(
     let protocol = typed_config.protocol();
     let concurrency = typed_config.common().concurrency;
     let browse_timeout_ms = typed_config.common().timeout_ms;
+    let server = typed_config.server();
 
     let token = connecting.start(connection_id);
     let mut browse_client = create_backend(
@@ -256,6 +257,7 @@ pub(crate) async fn connect(
 
     *guard = Some(Session {
         browse_client,
+        server,
         transfer_pool: TransferPool::new(factory, pool_size),
         browse_timeout_ms,
     });

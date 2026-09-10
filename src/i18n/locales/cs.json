@@ -267,6 +267,7 @@
     "notFound": "Soubor nebo složka nebyla nalezena.",
     "fileOrFolderExists": "Soubor nebo složka s tímto názvem již existuje.",
     "fileBusy": "Soubor je právě používán jiným procesem.",
+    "locationBusy": "S tímto souborem nebo složkou už pracuje jiná operace. Zkuste to znovu, až skončí.",
     "diskFull": "Nedostatek místa na disku.",
     "hostKeyMismatch": "Klíč hostitele serveru se změnil.",
     "integrityMismatch": "Přenesený soubor neprošel kontrolou integrity.",

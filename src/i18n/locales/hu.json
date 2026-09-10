@@ -259,6 +259,7 @@
     "notFound": "A fájl vagy mappa nem található.",
     "fileOrFolderExists": "Már létezik ilyen nevű fájl vagy mappa.",
     "fileBusy": "A fájlt egy másik folyamat éppen használja.",
+    "locationBusy": "Egy másik művelet már használja ezt a fájlt vagy mappát. Próbálja újra, ha befejeződött.",
     "diskFull": "Nincs elegendő lemezterület.",
     "hostKeyMismatch": "A kiszolgáló gazdagépkulcsa megváltozott.",
     "integrityMismatch": "Az átvitt fájl nem ment át az integritás-ellenőrzésen.",

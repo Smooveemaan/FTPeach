@@ -5,7 +5,7 @@ mod manifest;
 mod model;
 mod scan;
 
-use self::io::{copy_file, listing, mkdir, remote_task, remove_entry};
+use self::io::{copy_file, listing, mkdir, remote_task, remove_entry, reserve};
 use self::journal::{Journal, Paused};
 use self::manifest::Entry;
 pub use self::model::{Endpoint, Intent, Report};
@@ -14,7 +14,7 @@ use self::scan::scan;
 use crate::application::transfer_service::{self, CancelIntent};
 use crate::application::upload_resume;
 use crate::ipc::{CommandError, ErrorCode};
-use crate::local_fs::target_reservation::Reservation;
+use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::local_fs::{filesystem_safety as safety, mutations};
 use crate::session::Sessions;
 use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
@@ -83,7 +83,7 @@ pub async fn discard(sessions: &Sessions, id: &str) {
     let _ = tokio::spawn(async move {
         // Something else may have started writing there since the pause, and
         // taking files back from under it could remove what it just wrote.
-        match Reservation::acquire(&paused.target.path("")) {
+        match reserve(&sessions, &paused.target, Access::Write).await {
             Ok(_lease) => journal::take_back(&sessions, &paused.target, &paused.journal).await,
             Err(error) => log::warn!("Kept a stopped folder transfer's files: {error:#}"),
         }
@@ -211,7 +211,9 @@ async fn run_inner(
         if let (Endpoint::Remote { path: source, connection_id: a }, Endpoint::Remote { path: target, connection_id: b }) = (&intent.source, &intent.target) {
             unit(transfer_service::transfer_validate_remote_copy(source.clone(), target.clone(), a.clone(), b.clone(), intent.moving))?;
             if intent.moving {
-                let _lease = Reservation::acquire(target)?;
+                // A move takes the source away as well as filling the target.
+                let _source = reserve(sessions, &intent.source, Access::Write).await?;
+                let _target = reserve(sessions, &intent.target, Access::Write).await?;
                 let source = source.clone(); let target = target.clone(); let overwrite = intent.overwrite;
                 remote_task(sessions, a, intent.id.clone(), &token, Box::new(move |backend| Box::pin(async move {
                     tokio::time::timeout(Duration::from_secs(60), async {
@@ -227,8 +229,11 @@ async fn run_inner(
             let guard = slot.lock().await;
             anyhow::ensure!(guard.as_ref().is_some_and(|session| session.browse_client.supports_empty_directory_remove()), "Source protocol cannot safely remove only empty folders; use Copy instead");
         }
-        leases.push(Reservation::acquire(&intent.target.path(""))?);
-        leases.push(Reservation::acquire(&intent.source.path(""))?);
+        leases.push(reserve(sessions, &intent.target, Access::Write).await?);
+        // Any number of walks may send the same source at once; only a move,
+        // which takes the source away, needs it to itself.
+        let source_access = if intent.moving { Access::Write } else { Access::Read };
+        leases.push(reserve(sessions, &intent.source, source_access).await?);
         let mut manifest = scan(sessions, &intent.source, &token).await?;
         report.scanned = manifest.entries.len();
         if intent.moving && matches!(intent.source, Endpoint::Remote { .. }) {

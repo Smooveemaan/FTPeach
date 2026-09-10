@@ -113,6 +113,7 @@ test('friendlyError localizes every structured command error code', () => {
     connectionLost: 'The connection to the server was unexpectedly closed.',
     invalidInput: 'The provided value is invalid.',
     resourceLimit: 'The provided value is invalid.',
+    busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
     vaultLocked: 'Unlock protected storage',
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;

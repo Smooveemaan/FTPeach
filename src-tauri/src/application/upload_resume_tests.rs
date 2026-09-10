@@ -139,6 +139,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
         browse_client: Box::new(Backend {
             remote: remote.clone(),
         }),
+        server: connection_id.clone(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,
     });

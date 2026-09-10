@@ -187,6 +187,23 @@ impl ConnectionConfig {
             Self::Webdav(config) => &config.common,
         }
     }
+
+    /// Tells one server account apart from another. Two sessions opened with
+    /// the same details reach the same files, whichever pane opened them;
+    /// anything else may be a different server, even at the same address.
+    pub fn server(&self) -> String {
+        match self {
+            // FTPS is the same server as plain FTP on that port.
+            Self::Ftp(config) => {
+                serde_json::json!(["ftp", config.host.to_lowercase(), config.port, config.user])
+            }
+            Self::Sftp(config) => {
+                serde_json::json!(["sftp", config.host.to_lowercase(), config.port, config.user])
+            }
+            Self::Webdav(config) => serde_json::json!(["webdav", config.url, config.user]),
+        }
+        .to_string()
+    }
 }
 
 impl Drop for ConnectionConfig {

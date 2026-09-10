@@ -259,6 +259,7 @@
     "notFound": "Filen eller mappen blev ikke fundet.",
     "fileOrFolderExists": "Der findes allerede en fil eller mappe med det navn.",
     "fileBusy": "Filen er i brug af en anden proces.",
+    "locationBusy": "En anden handling arbejder allerede med denne fil eller mappe. Prøv igen, når den er færdig.",
     "diskFull": "Der er ikke nok diskplads.",
     "hostKeyMismatch": "Serverens værtsnøgle er blevet ændret.",
     "integrityMismatch": "Den overførte fil bestod ikke integritetskontrollen.",

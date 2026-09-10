@@ -19,6 +19,7 @@ const ERROR_CODE_KEYS = {
   connectionLost: 'errors.connectionReset',
   invalidInput: 'errors.invalidInput',
   resourceLimit: 'errors.invalidInput',
+  busy: 'errors.locationBusy',
   vaultLocked: 'settings.security.unlockRequired',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;

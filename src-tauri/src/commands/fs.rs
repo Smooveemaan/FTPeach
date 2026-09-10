@@ -105,7 +105,13 @@ pub async fn fs_drives() -> Vec<Drive> {
 pub async fn fs_mkdir(local_path: String) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _mutation = mutation_guard().lock().await;
     if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
@@ -132,11 +138,23 @@ pub async fn fs_mkdir(local_path: String) -> OkResult {
 pub async fn fs_rename(old_path: String, new_path: String) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&old_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _lease1 = match crate::local_fs::target_reservation::Reservation::acquire(&new_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _mutation = mutation_guard().lock().await;
     if let Err(error) = validate_copy_relationship(Path::new(&old_path), Path::new(&new_path)) {
@@ -180,7 +198,13 @@ pub async fn fs_copy_file(
 ) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&dest_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _mutation = mutation_guard().lock().await;
     if let Err(error) = validate_copy_relationship(Path::new(&source_path), Path::new(&dest_path)) {
@@ -248,7 +272,13 @@ pub async fn fs_delete(
 async fn fs_delete_authorized(local_path: String, permanent: bool) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _mutation = mutation_guard().lock().await;
     if permanent {
@@ -400,7 +430,13 @@ pub async fn fs_create_file(local_path: String) -> OkResult {
     use tokio::io::AsyncWriteExt;
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
-        Err(error) => return err(error),
+        // Kept typed: `err` would flatten the "busy" code into prose.
+        Err(error) => {
+            return OkResult::Err {
+                ok: false,
+                error: error.into(),
+            };
+        }
     };
     let _mutation = mutation_guard().lock().await;
     if let Err(error) = validate_write_destination(Path::new(&local_path)).await {

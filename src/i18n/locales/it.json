@@ -263,6 +263,7 @@
     "notFound": "File o cartella non trovati.",
     "fileOrFolderExists": "Esiste già un file o una cartella con quel nome.",
     "fileBusy": "Il file è in uso da parte di un altro processo.",
+    "locationBusy": "Un'altra operazione sta già usando questo file o questa cartella. Riprova quando sarà terminata.",
     "diskFull": "Spazio su disco insufficiente.",
     "hostKeyMismatch": "La chiave host del server è cambiata.",
     "integrityMismatch": "Il file trasferito non ha superato il controllo di integrità.",

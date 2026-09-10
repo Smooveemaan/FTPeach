@@ -31,7 +31,7 @@
     "check:rust-advisories": "node --experimental-strip-types scripts/checks/check-rust-advisory-policy.ts",
     "check:no-cyrillic": "node --experimental-strip-types scripts/checks/check-no-cyrillic.ts",
     "check:rust-boundaries": "node --experimental-strip-types scripts/checks/check-rust-boundaries.ts",
-    "check:duplicates": "jscpd src --threshold 2 --min-tokens 60",
+    "check:duplicates": "jscpd src --threshold 2 --min-tokens 60 --no-tips",
     "i18n:check": "node --experimental-strip-types scripts/checks/check-locales.ts",
     "check:suite-coverage": "node --experimental-strip-types scripts/checks/check-suite-coverage.ts",
     "check": "npm run check:suite-coverage && npm run check:release-config && npm run licenses:check && npm run check:tracked-secrets && npm run check:rust-advisories && npm run check:no-cyrillic && npm run check:rust-boundaries && npm run check:duplicates && npm run i18n:check && npm test && npm run lint && npm run format:check && npm run build && npm run test:visual && cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check && npm run rust:clippy && npm run rust:test && npm run test:updater-fixtures",

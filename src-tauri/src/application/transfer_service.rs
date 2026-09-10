@@ -54,6 +54,15 @@ fn remote_partial_path(target: &str) -> String {
     format!("{parent}/.ftpeach-{}.part", uuid::Uuid::new_v4())
 }
 
+/// Whether `name` is one of the staging files an upload writes before
+/// renaming it into place. Randomly named, so it never stands for anything
+/// the user made.
+pub(crate) fn is_staging_name(name: &str) -> bool {
+    name.strip_prefix(".ftpeach-")
+        .and_then(|rest| rest.strip_suffix(".part"))
+        .is_some_and(|id| uuid::Uuid::parse_str(id).is_ok())
+}
+
 async fn upload_staged(
     backend: &mut crate::transfer::transfer_pool::BoxBackend,
     local: &std::path::Path,
@@ -120,9 +129,43 @@ async fn cleanup_remote_partial(sessions: &Sessions, connection_id: &str, partia
     };
     if tokio::time::timeout(std::time::Duration::from_secs(5), cleanup)
         .await
-        .is_err()
+        .is_ok()
     {
-        log::warn!("Timed out cleaning transfer staging file {partial}");
+        return;
+    }
+    // The browsing connection is busy or no longer answering. A transfer
+    // connection is free to try, now that this upload has let go of its own.
+    log::warn!(
+        "Timed out cleaning transfer staging file {partial}; retrying on a transfer connection"
+    );
+    let retry = async {
+        let pool = sessions.pool_for(connection_id).await?;
+        let path = partial.to_owned();
+        let task: crate::transfer::transfer_pool::TaskFn = Box::new(move |backend| {
+            Box::pin(async move {
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(20),
+                    backend.remove(&path, false),
+                )
+                .await
+                {
+                    Ok(result) => result,
+                    Err(elapsed) => {
+                        // Cut off mid-reply, the connection must not serve again.
+                        let _ = backend.disconnect().await;
+                        Err(elapsed.into())
+                    }
+                }
+            })
+        });
+        Some(pool.run(uuid::Uuid::new_v4().to_string(), task).await)
+    };
+    match tokio::time::timeout(std::time::Duration::from_secs(30), retry).await {
+        Ok(Some(Err(error))) => {
+            log::warn!("Could not clean transfer staging file {partial}: {error}");
+        }
+        Err(_) => log::warn!("Timed out cleaning transfer staging file {partial}"),
+        Ok(_) => {}
     }
 }
 

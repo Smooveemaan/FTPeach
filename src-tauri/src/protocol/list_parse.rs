@@ -114,6 +114,71 @@ pub fn parse_line(line: &str, now: DateTime<Utc>) -> Option<RawEntry> {
     None
 }
 
+/// Reads one line of an MLSD listing (RFC 3659): `fact=value;...; name`.
+/// Unlike LIST, whose output is whatever the server chooses to print, MLSD
+/// names every entry in the folder, dot-files included. The folder itself and
+/// its parent are listed too, and come back as `None`.
+pub fn parse_mlsd_line(line: &str) -> Option<RawEntry> {
+    let (facts, name) = line.split_once(' ')?;
+    if name.is_empty() || name == "." || name == ".." {
+        return None;
+    }
+    let mut kind = None;
+    let mut size = 0;
+    let mut modified_at = None;
+    let mut mode = None;
+    let (mut owner_name, mut owner_id) = (None, None);
+    let (mut group_name, mut group_id) = (None, None);
+    for fact in facts.split(';') {
+        let Some((key, value)) = fact.split_once('=') else {
+            continue;
+        };
+        match key.to_ascii_lowercase().as_str() {
+            "type" => kind = Some(value.to_ascii_lowercase()),
+            "size" => size = value.parse().unwrap_or(0),
+            "modify" => modified_at = parse_mlsd_time(value),
+            "unix.mode" => mode = u32::from_str_radix(value, 8).ok(),
+            "unix.ownername" | "unix.owner" => owner_name = Some(value.to_string()),
+            "unix.uid" => owner_id = Some(value.to_string()),
+            "unix.groupname" | "unix.group" => group_name = Some(value.to_string()),
+            "unix.gid" => group_id = Some(value.to_string()),
+            _ => {}
+        }
+    }
+    let is_directory = match kind?.as_str() {
+        "cdir" | "pdir" => return None,
+        "dir" => true,
+        _ => false,
+    };
+    Some(RawEntry {
+        name: name.to_string(),
+        is_directory,
+        size: if is_directory { 0 } else { size },
+        modified_at,
+        permissions: mode.map(mode_string),
+        owner: owner_name.or(owner_id),
+        group: group_name.or(group_id),
+    })
+}
+
+/// `YYYYMMDDHHMMSS`, in UTC, with optional fractional seconds.
+fn parse_mlsd_time(value: &str) -> Option<DateTime<Utc>> {
+    let parsed = NaiveDateTime::parse_from_str(value.get(..14)?, "%Y%m%d%H%M%S").ok()?;
+    Some(DateTime::from_naive_utc_and_offset(parsed, Utc))
+}
+
+fn mode_string(mode: u32) -> String {
+    (0..9)
+        .map(|bit| {
+            if mode & (0o400 >> bit) == 0 {
+                '-'
+            } else {
+                ['r', 'w', 'x'][bit % 3]
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -257,6 +322,88 @@ mod permission_tests {
     fn rejects_invalid_length_and_non_ascii() {
         for raw in ["", "rwx", "rwxrwxrwxr", "é-------"] {
             assert!(permissions_string(raw).is_none());
+        }
+    }
+}
+
+#[cfg(test)]
+mod mlsd_tests {
+    use super::*;
+    use chrono::TimeZone;
+
+    #[test]
+    fn reads_a_hidden_file_as_pure_ftpd_lists_it() {
+        let entry = parse_mlsd_line(
+            "type=file;size=33792;modify=20260910195812;UNIX.mode=0644;UNIX.uid=1000;UNIX.gid=1000;unique=7bg6efc; .ftpeach-4e0c2019-7ae4-4528-a828-3c3993027c55.part",
+        )
+        .unwrap();
+        assert_eq!(
+            entry.name,
+            ".ftpeach-4e0c2019-7ae4-4528-a828-3c3993027c55.part"
+        );
+        assert!(!entry.is_directory);
+        assert_eq!(entry.size, 33792);
+        assert_eq!(
+            entry.modified_at,
+            Some(Utc.with_ymd_and_hms(2026, 9, 10, 19, 58, 12).unwrap())
+        );
+        assert_eq!(entry.permissions.as_deref(), Some("rw-r--r--"));
+        assert_eq!(entry.owner.as_deref(), Some("1000"));
+        assert_eq!(entry.group.as_deref(), Some("1000"));
+    }
+
+    #[test]
+    fn skips_the_listed_folder_and_its_parent() {
+        for line in [
+            "type=cdir;sizd=4096;modify=20260910203307;UNIX.mode=0755; .",
+            "type=pdir;sizd=4096;modify=20260910203330;UNIX.mode=0755; ..",
+            "type=cdir; /home/testuser/1",
+        ] {
+            assert!(parse_mlsd_line(line).is_none(), "{line}");
+        }
+    }
+
+    #[test]
+    fn reads_folders_names_with_spaces_and_fact_case_freely() {
+        let entry = parse_mlsd_line(
+            "Type=Dir;Sizd=4096;Modify=20181105000000.123;UNIX.ownername=anna; my folder ",
+        )
+        .unwrap();
+        assert_eq!(entry.name, "my folder ");
+        assert!(entry.is_directory);
+        assert_eq!(entry.size, 0);
+        assert_eq!(entry.owner.as_deref(), Some("anna"));
+        assert_eq!(
+            entry.modified_at,
+            Some(Utc.with_ymd_and_hms(2018, 11, 5, 0, 0, 0).unwrap())
+        );
+    }
+
+    #[test]
+    fn a_line_without_a_type_or_a_name_is_not_an_entry() {
+        for line in [
+            "size=5; file.txt",
+            "type=file;size=5;",
+            "type=file;size=5; ",
+            "",
+        ] {
+            assert!(parse_mlsd_line(line).is_none(), "{line:?}");
+        }
+    }
+
+    #[test]
+    fn arbitrary_generated_mlsd_input_never_panics() {
+        let mut state = 0xfeed_u64;
+        for case in 0..2_000_u64 {
+            let mut input = String::from("type=file;modify=");
+            for _ in 0..(case % 64) {
+                state = state
+                    .wrapping_mul(2862933555777941757)
+                    .wrapping_add(3037000493);
+                let ch = char::from_u32(1 + (state % 0x10ffff) as u32).unwrap_or('\u{fffd}');
+                input.push(ch);
+            }
+            assert!(std::panic::catch_unwind(|| parse_mlsd_line(&input)).is_ok());
         }
     }
 }

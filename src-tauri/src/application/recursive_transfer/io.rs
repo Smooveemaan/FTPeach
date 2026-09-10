@@ -391,17 +391,29 @@ pub(super) async fn remove_created(
                     Box::pin(async move {
                         tokio::time::timeout(Duration::from_secs(60), async {
                             if !directory {
-                                backend.remove(&path, false).await
-                            } else if backend.supports_empty_directory_remove() {
+                                return backend.remove(&path, false).await;
+                            }
+                            // An upload the stop cut short may have left its
+                            // staging file here. It is the walk's own, and it
+                            // would keep the folder from going.
+                            let mut others = 0;
+                            for entry in backend.list(&path).await? {
+                                if !entry.is_directory
+                                    && transfer_service::is_staging_name(&entry.name)
+                                {
+                                    let staging =
+                                        format!("{}/{}", path.trim_end_matches('/'), entry.name);
+                                    backend.remove(&staging, false).await?;
+                                } else {
+                                    others += 1;
+                                }
+                            }
+                            if backend.supports_empty_directory_remove() {
                                 backend.remove_empty_directory(&path).await
                             } else {
                                 // WebDAV deletes a collection along with all
                                 // it holds, so only one still empty may go.
-                                let entries = backend.list(&path).await?;
-                                anyhow::ensure!(
-                                    entries.is_empty(),
-                                    "Folder is no longer empty: {path}"
-                                );
+                                anyhow::ensure!(others == 0, "Folder is no longer empty: {path}");
                                 backend.remove(&path, true).await
                             }
                         })

@@ -488,6 +488,549 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
 }
 
 #[cfg(test)]
+mod recursive_stop_tests {
+    //! Uploads stopped partway, and the folders they leave behind, against a
+    //! server that behaves like pure-ftpd: LIST leaves out the names that
+    //! start with a dot, MLSD lists everything, and a data connection that
+    //! closes simply ends the file.
+    use super::*;
+    use crate::application::recursive_transfer::{self, Endpoint, Intent, Report};
+    use crate::application::transfer_service::CancelIntent;
+    use crate::session::{Session, Sessions};
+    use crate::transfer::progress::ProgressEmitter;
+    use crate::transfer::transfer_pool::{BackendFactory, BoxBackend, PoolSize, TransferPool};
+    use serde_json::json;
+    use std::collections::{BTreeMap, BTreeSet};
+    use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::tcp::OwnedWriteHalf;
+    use tokio::net::{TcpListener, TcpStream};
+
+    /// About the size of the file in the report.
+    const FILE_SIZE: usize = 330_000;
+
+    #[derive(Default)]
+    struct Disk {
+        dirs: BTreeSet<String>,
+        files: BTreeMap<String, Vec<u8>>,
+        /// FEAT announces MLST...
+        offers_mlst: bool,
+        /// ...and MLSD is turned away all the same.
+        refuses_mlsd: bool,
+        /// DELEs to refuse before honouring them again.
+        deletes_to_refuse: usize,
+        /// How long the server takes over each 4 KiB it receives.
+        pace: Duration,
+    }
+
+    type Shared = Arc<std::sync::Mutex<Disk>>;
+
+    fn disk(configure: impl FnOnce(&mut Disk)) -> Shared {
+        let mut disk = Disk {
+            offers_mlst: true,
+            ..Default::default()
+        };
+        disk.dirs.insert("/".to_string());
+        configure(&mut disk);
+        Arc::new(std::sync::Mutex::new(disk))
+    }
+
+    fn parent(path: &str) -> &str {
+        match path.trim_end_matches('/').rsplit_once('/') {
+            Some((parent, _)) if !parent.is_empty() => parent,
+            _ => "/",
+        }
+    }
+
+    fn name(path: &str) -> &str {
+        path.rsplit('/').next().unwrap_or(path)
+    }
+
+    fn resolve(cwd: &str, argument: &str) -> String {
+        let joined = if argument.starts_with('/') {
+            argument.to_string()
+        } else {
+            format!("{}/{argument}", cwd.trim_end_matches('/'))
+        };
+        match joined.trim_end_matches('/') {
+            "" => "/".to_string(),
+            trimmed => trimmed.to_string(),
+        }
+    }
+
+    impl Disk {
+        /// Everything directly in `dir`, with each file's size.
+        fn children(&self, dir: &str) -> Vec<(String, Option<usize>)> {
+            let dirs = self
+                .dirs
+                .iter()
+                .filter(|path| path.as_str() != dir && parent(path) == dir)
+                .map(|path| (name(path).to_string(), None));
+            let files = self
+                .files
+                .iter()
+                .filter(|(path, _)| parent(path) == dir)
+                .map(|(path, bytes)| (name(path).to_string(), Some(bytes.len())));
+            dirs.chain(files).collect()
+        }
+
+        fn list(&self, dir: &str) -> String {
+            self.children(dir)
+                .into_iter()
+                .filter(|(name, _)| !name.starts_with('.'))
+                .map(|(name, size)| match size {
+                    None => format!("drwxr-xr-x 1 owner group 0 Nov 05 2018 {name}\r\n"),
+                    Some(size) => format!("-rw-r--r-- 1 owner group {size} Nov 05 2018 {name}\r\n"),
+                })
+                .collect()
+        }
+
+        fn mlsd(&self, dir: &str) -> String {
+            let mut listing = "type=cdir;modify=20181105000000; .\r\n".to_string();
+            for (name, size) in self.children(dir) {
+                listing.push_str(&match size {
+                    None => format!("type=dir;modify=20181105000000; {name}\r\n"),
+                    Some(size) => {
+                        format!("type=file;size={size};modify=20181105000000; {name}\r\n")
+                    }
+                });
+            }
+            listing
+        }
+
+        fn is_empty_dir(&self, dir: &str) -> bool {
+            self.children(dir).is_empty()
+        }
+    }
+
+    async fn accept(passive: &mut Option<TcpListener>) -> Option<TcpStream> {
+        let listener = passive.take()?;
+        let (socket, _) = tokio::time::timeout(Duration::from_secs(5), listener.accept())
+            .await
+            .ok()?
+            .ok()?;
+        Some(socket)
+    }
+
+    /// Takes a file in over a slow link. Closed, the data connection ends the
+    /// file, the way stream mode defines it; reset, the upload was abandoned.
+    async fn store(
+        disk: &Shared,
+        path: String,
+        append: bool,
+        passive: &mut Option<TcpListener>,
+        writer: &mut OwnedWriteHalf,
+    ) -> String {
+        {
+            let mut disk = disk.lock().unwrap();
+            if !disk.dirs.contains(parent(&path)) {
+                return "553 Cannot store".to_string();
+            }
+            let file = disk.files.entry(path.clone()).or_default();
+            if !append {
+                file.clear();
+            }
+        }
+        if writer.write_all(b"150 Ok to send data\r\n").await.is_err() {
+            return String::new();
+        }
+        let Some(mut data) = accept(passive).await else {
+            return "425 No data connection".to_string();
+        };
+        let pace = disk.lock().unwrap().pace;
+        let mut buf = vec![0u8; 4096];
+        loop {
+            match data.read(&mut buf).await {
+                Ok(0) => return "226 Transfer complete".to_string(),
+                Ok(n) => {
+                    if let Some(file) = disk.lock().unwrap().files.get_mut(&path) {
+                        file.extend_from_slice(&buf[..n]);
+                    }
+                }
+                Err(_) => return "426 Transfer aborted".to_string(),
+            }
+            tokio::time::sleep(pace).await;
+        }
+    }
+
+    async fn send_listing(
+        listing: String,
+        passive: &mut Option<TcpListener>,
+        writer: &mut OwnedWriteHalf,
+    ) -> String {
+        if writer
+            .write_all(b"150 Here comes the listing\r\n")
+            .await
+            .is_err()
+        {
+            return String::new();
+        }
+        let Some(mut data) = accept(passive).await else {
+            return "425 No data connection".to_string();
+        };
+        let _ = data.write_all(listing.as_bytes()).await;
+        let _ = data.shutdown().await;
+        "226 Transfer complete".to_string()
+    }
+
+    async fn serve(socket: TcpStream, disk: Shared) {
+        let (reader, mut writer) = socket.into_split();
+        let mut lines = BufReader::new(reader).lines();
+        let mut passive: Option<TcpListener> = None;
+        let mut renaming: Option<String> = None;
+        let mut cwd = "/".to_string();
+        if writer.write_all(b"220 ready\r\n").await.is_err() {
+            return;
+        }
+        while let Ok(Some(line)) = lines.next_line().await {
+            let (command, argument) = line.split_once(' ').unwrap_or((line.as_str(), ""));
+            let command = command.to_ascii_uppercase();
+            let path = resolve(&cwd, argument);
+            let reply = match command.as_str() {
+                "OPTS" | "TYPE" | "NOOP" => "200 OK".to_string(),
+                "USER" => "331 Password required".to_string(),
+                "PASS" => "230 Logged in".to_string(),
+                "SYST" => "215 UNIX Type: L8".to_string(),
+                "FEAT" => if disk.lock().unwrap().offers_mlst {
+                    "211-Features\r\n EPSV\r\n SIZE\r\n MLST type*;size*;modify*;\r\n211 End"
+                } else {
+                    "211-Features\r\n EPSV\r\n SIZE\r\n211 End"
+                }
+                .to_string(),
+                "EPSV" | "PASV" => {
+                    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+                    let port = listener.local_addr().unwrap().port();
+                    passive = Some(listener);
+                    if command == "EPSV" {
+                        format!("229 Entering Extended Passive Mode (|||{port}|)")
+                    } else {
+                        format!(
+                            "227 Entering Passive Mode (127,0,0,1,{},{})",
+                            port / 256,
+                            port % 256
+                        )
+                    }
+                }
+                "CWD" => {
+                    if disk.lock().unwrap().dirs.contains(&path) {
+                        cwd = path;
+                        "250 OK".to_string()
+                    } else {
+                        "550 No such directory".to_string()
+                    }
+                }
+                "MKD" => {
+                    let mut disk = disk.lock().unwrap();
+                    if disk.dirs.contains(&path)
+                        || disk.files.contains_key(&path)
+                        || !disk.dirs.contains(parent(&path))
+                    {
+                        "550 Cannot create".to_string()
+                    } else {
+                        disk.dirs.insert(path.clone());
+                        format!("257 \"{path}\" created")
+                    }
+                }
+                "RMD" => {
+                    let mut disk = disk.lock().unwrap();
+                    if disk.dirs.contains(&path) && disk.is_empty_dir(&path) {
+                        disk.dirs.remove(&path);
+                        "250 Removed".to_string()
+                    } else {
+                        "550 Directory not empty".to_string()
+                    }
+                }
+                "DELE" => {
+                    let mut disk = disk.lock().unwrap();
+                    if disk.deletes_to_refuse > 0 {
+                        disk.deletes_to_refuse -= 1;
+                        "550 Cannot delete".to_string()
+                    } else if disk.files.remove(&path).is_some() {
+                        "250 Deleted".to_string()
+                    } else {
+                        "550 No such file".to_string()
+                    }
+                }
+                "SIZE" => match disk.lock().unwrap().files.get(&path) {
+                    Some(bytes) => format!("213 {}", bytes.len()),
+                    None => "550 No such file".to_string(),
+                },
+                "RNFR" => {
+                    renaming = Some(path);
+                    "350 Ready for RNTO".to_string()
+                }
+                "RNTO" => {
+                    let from = renaming.take().unwrap_or_default();
+                    let mut disk = disk.lock().unwrap();
+                    match disk.files.remove(&from) {
+                        Some(bytes) => {
+                            disk.files.insert(path, bytes);
+                            "250 Renamed".to_string()
+                        }
+                        None => "550 No such file".to_string(),
+                    }
+                }
+                "LIST" | "MLSD" => {
+                    let dir = if argument.is_empty() {
+                        cwd.clone()
+                    } else {
+                        path
+                    };
+                    let listing = {
+                        let disk = disk.lock().unwrap();
+                        if !disk.dirs.contains(&dir) {
+                            Err("550 No such directory")
+                        } else if command == "LIST" {
+                            Ok(disk.list(&dir))
+                        } else if disk.refuses_mlsd {
+                            Err("502 Command not implemented")
+                        } else {
+                            Ok(disk.mlsd(&dir))
+                        }
+                    };
+                    match listing {
+                        Ok(listing) => send_listing(listing, &mut passive, &mut writer).await,
+                        Err(reply) => reply.to_string(),
+                    }
+                }
+                "STOR" | "APPE" => {
+                    store(&disk, path, command == "APPE", &mut passive, &mut writer).await
+                }
+                "QUIT" => {
+                    let _ = writer.write_all(b"221 Goodbye\r\n").await;
+                    return;
+                }
+                _ => "502 Not implemented".to_string(),
+            };
+            if writer
+                .write_all(format!("{reply}\r\n").as_bytes())
+                .await
+                .is_err()
+            {
+                return;
+            }
+        }
+    }
+
+    async fn spawn_server(disk: Shared) -> u16 {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move {
+            while let Ok((socket, _)) = listener.accept().await {
+                tokio::spawn(serve(socket, disk.clone()));
+            }
+        });
+        port
+    }
+
+    fn config(port: u16) -> crate::protocol::config::ConnectionConfig {
+        let map = json!({
+            "protocol": "ftp",
+            "host": "127.0.0.1",
+            "port": port,
+            "user": "local",
+            "password": "test"
+        });
+        crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap()).unwrap()
+    }
+
+    /// A live session on a server holding `disk`, reached as a real one is.
+    async fn connected(disk: &Shared) -> (Sessions, String) {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let config = config(spawn_server(disk.clone()).await);
+        let mut browse = FtpBackend::new();
+        browse.connect(&config).await.unwrap();
+        let factory_config = config.clone();
+        let factory: BackendFactory = Arc::new(move || {
+            let config = factory_config.clone();
+            Box::pin(async move {
+                let mut backend = FtpBackend::new();
+                backend.connect(&config).await?;
+                Ok(Box::new(backend) as BoxBackend)
+            })
+        });
+        let sessions = Sessions::default();
+        let connection_id = uuid::Uuid::new_v4().to_string();
+        *sessions.slot_for(&connection_id).lock().await = Some(Session {
+            browse_client: Box::new(browse),
+            server: config.server(),
+            transfer_pool: TransferPool::new(factory, PoolSize::Fixed(2)),
+            browse_timeout_ms: 20_000,
+        });
+        (sessions, connection_id)
+    }
+
+    /// A local folder "1" holding a single file.
+    fn source_folder() -> std::path::PathBuf {
+        let root = std::env::temp_dir().join(format!("ftpeach-ftp-stop-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("1")).unwrap();
+        std::fs::write(root.join("1/File.docx"), vec![7u8; FILE_SIZE]).unwrap();
+        root
+    }
+
+    fn upload(root: &std::path::Path, connection_id: &str) -> Intent {
+        Intent {
+            id: uuid::Uuid::new_v4().to_string(),
+            source: Endpoint::Local {
+                path: root.join("1").to_string_lossy().into_owned(),
+            },
+            target: Endpoint::Remote {
+                path: "/1".into(),
+                connection_id: connection_id.to_owned(),
+            },
+            moving: false,
+            overwrite: false,
+            skip_existing: false,
+            resume_from: None,
+        }
+    }
+
+    async fn run(sessions: &Sessions, intent: Intent) -> Report {
+        let progress = ProgressEmitter::for_tests(|_| {});
+        recursive_transfer::run(sessions, Some(&progress), intent).await
+    }
+
+    /// Uploads the folder and stops it once its file is partway onto the
+    /// server, answering with how long the stop took to settle.
+    async fn stop_midway(disk: &Shared) -> (Duration, Report) {
+        let (sessions, connection_id) = connected(disk).await;
+        let root = source_folder();
+        let intent = upload(&root, &connection_id);
+        let id = intent.id.clone();
+        let walk = tokio::spawn(async move { run(&sessions, intent).await });
+        tokio::time::timeout(Duration::from_secs(10), async {
+            while !disk
+                .lock()
+                .unwrap()
+                .files
+                .iter()
+                .any(|(path, bytes)| path.starts_with("/1/") && !bytes.is_empty())
+            {
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .expect("the upload never reached the server");
+        let stopped = std::time::Instant::now();
+        recursive_transfer::cancel(&id, CancelIntent::Stop);
+        let report = tokio::time::timeout(Duration::from_secs(30), walk)
+            .await
+            .expect("the stopped walk never settled")
+            .unwrap();
+        let took = stopped.elapsed();
+        let _ = std::fs::remove_dir_all(root);
+        (took, report)
+    }
+
+    fn assert_nothing_left(disk: &Shared) {
+        let disk = disk.lock().unwrap();
+        assert!(disk.files.is_empty(), "{:?}", disk.files.keys());
+        assert_eq!(disk.dirs.iter().collect::<Vec<_>>(), ["/"]);
+    }
+
+    #[tokio::test]
+    async fn a_folder_holding_only_hidden_files_is_listed_and_removed_whole() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let disk = disk(|disk| {
+            disk.dirs.insert("/1".to_string());
+            disk.files
+                .insert("/1/.hidden".to_string(), b"left".to_vec());
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+        let names: Vec<String> = backend
+            .list("/1")
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+        assert_eq!(names, [".hidden"]);
+        backend.remove("/1", true).await.unwrap();
+        backend.disconnect().await.unwrap();
+        assert_nothing_left(&disk);
+    }
+
+    #[tokio::test]
+    async fn a_server_that_turns_mlsd_away_is_listed_by_list() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let disk = disk(|disk| {
+            disk.refuses_mlsd = true;
+            disk.dirs.insert("/1".to_string());
+            disk.files
+                .insert("/1/visible".to_string(), b"here".to_vec());
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk).await))
+            .await
+            .unwrap();
+        for _ in 0..2 {
+            let names: Vec<String> = backend
+                .list("/1")
+                .await
+                .unwrap()
+                .into_iter()
+                .map(|entry| entry.name)
+                .collect();
+            assert_eq!(names, ["visible"]);
+        }
+        backend.disconnect().await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn a_stopped_folder_upload_settles_at_once_and_takes_back_what_it_wrote() {
+        // Slow enough that the whole file takes seconds to arrive.
+        let disk = disk(|disk| disk.pace = Duration::from_millis(50));
+        let (took, report) = stop_midway(&disk).await;
+        assert_eq!(
+            report.errors[0].code,
+            ErrorCode::Cancelled,
+            "{:?}",
+            report.errors
+        );
+        // Closed rather than reset, the data connection went on delivering
+        // the file, and the server answered QUIT only once all of it was in.
+        assert!(took < Duration::from_secs(2), "the stop took {took:?}");
+        assert_nothing_left(&disk);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn a_staging_file_the_stop_could_not_delete_goes_with_its_folder() {
+        let disk = disk(|disk| {
+            disk.pace = Duration::from_millis(50);
+            disk.deletes_to_refuse = 1;
+        });
+        let (_, report) = stop_midway(&disk).await;
+        assert_eq!(
+            report.errors[0].code,
+            ErrorCode::Cancelled,
+            "{:?}",
+            report.errors
+        );
+        assert_nothing_left(&disk);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn an_uninterrupted_folder_upload_lands_whole() {
+        let disk = disk(|_| {});
+        let (sessions, connection_id) = connected(&disk).await;
+        let root = source_folder();
+        let report = run(&sessions, upload(&root, &connection_id)).await;
+        assert!(report.ok, "{:?}", report.errors);
+        let disk = disk.lock().unwrap();
+        let landed = &disk.files["/1/File.docx"];
+        assert_eq!(landed.len(), FILE_SIZE);
+        assert!(landed.iter().all(|&byte| byte == 7));
+        assert_eq!(disk.files.len(), 1, "{:?}", disk.files.keys());
+        drop(disk);
+        let _ = std::fs::remove_dir_all(root);
+    }
+}
+
+#[cfg(test)]
 mod live_tests {
     use super::*;
     use serde_json::json;

@@ -23,6 +23,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Sending the same file or folder to several servers at once no longer fails with
   “Command failed” for every transfer but the first. When two transfers really do need
   the same file or folder, the message now says so.
+- Stopping an upload to an FTP server takes effect at once. Before, the transfer could
+  sit on “Cancelling…” for several seconds while the server went on receiving the file.
+- A stopped folder upload to an FTP server no longer leaves a hidden, half-sent file
+  behind, which kept the folder from being deleted or replaced.
+- On FTP servers that hide files whose names start with a dot, FTPeach now shows those
+  files, and deleting a folder removes them too. Before, such a folder could look empty
+  and still refuse to be deleted.
 
 ## [0.1.2] - 2026-09-10
 

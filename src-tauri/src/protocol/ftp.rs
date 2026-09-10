@@ -17,7 +17,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 use suppaftp::Status;
-use suppaftp::tokio::{AsyncRustlsConnector, AsyncRustlsFtpStream};
+use suppaftp::tokio::{
+    AsyncDataStream, AsyncRustlsConnector, AsyncRustlsFtpStream, AsyncRustlsStream,
+};
 use suppaftp::types::FileType as FtpFileType;
 use suppaftp::types::Mode as FtpMode;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
@@ -69,9 +71,79 @@ impl Drop for BusyGuard {
     }
 }
 
+/// A STOR's data connection, reset rather than closed if it goes before the
+/// upload finished — the pool cancelling it, most of all. A plain close lets
+/// the kernel go on delivering whatever was still queued, which the server
+/// takes as the rest of the file: it keeps writing it after the stop, and
+/// answers nothing on the control connection, QUIT included, until the last
+/// byte is in.
+struct UploadData(Option<AsyncDataStream<AsyncRustlsStream>>);
+
+impl UploadData {
+    fn stream(&mut self) -> &mut AsyncDataStream<AsyncRustlsStream> {
+        self.0
+            .as_mut()
+            .expect("upload data connection already handed over")
+    }
+
+    /// Ends the upload the ordinary way, once the whole file is written: the
+    /// FIN goes out behind the last byte, then the server confirms the file.
+    /// Until it has, dropping this still resets the connection, so a stop
+    /// that lands while the last bytes are in flight still takes effect.
+    async fn finish(mut self, control: &mut AsyncRustlsFtpStream) -> BackendResult<()> {
+        self.stream()
+            .shutdown()
+            .await
+            .context("closing the upload data connection")?;
+        // The data connection is already shut; this only reads the verdict.
+        control.finalize_put_stream(tokio::io::sink()).await?;
+        // The server has the whole file, so closing takes nothing back now.
+        self.0 = None;
+        Ok(())
+    }
+}
+
+impl Drop for UploadData {
+    fn drop(&mut self) {
+        if let Some(stream) = &self.0 {
+            let _ = stream.get_ref().set_zero_linger();
+        }
+    }
+}
+
+/// Whether FEAT announced RFC 3659 machine listings. A server lists MLST
+/// there for the pair; MLSD comes with it.
+fn feat_offers_mlsd(feat: &str) -> bool {
+    feat.lines().any(|line| {
+        let feature = line.split_whitespace().next().unwrap_or_default();
+        feature.eq_ignore_ascii_case("MLST") || feature.eq_ignore_ascii_case("MLSD")
+    })
+}
+
+/// Whether the server turned a command away as one it does not implement,
+/// rather than failing it over what it was asked to do.
+fn command_refused(error: &anyhow::Error) -> bool {
+    error.chain().any(|cause| {
+        matches!(
+            cause.downcast_ref::<suppaftp::FtpError>(),
+            Some(suppaftp::FtpError::UnexpectedResponse(response))
+                if matches!(
+                    response.status,
+                    Status::BadCommand
+                        | Status::BadArguments
+                        | Status::NotImplemented
+                        | Status::NotImplementedParameter
+                )
+        )
+    })
+}
+
 pub struct FtpBackend {
     stream: Arc<AsyncMutex<Option<AsyncRustlsFtpStream>>>,
     connected: Arc<AtomicBool>,
+    /// Listings come by MLSD, which names every entry, rather than by LIST,
+    /// which many servers print without the names that start with a dot.
+    mlsd: bool,
     busy: Arc<AtomicUsize>,
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
     logger: BackendLogger,
@@ -83,6 +155,7 @@ impl Default for FtpBackend {
         Self {
             stream: Arc::new(AsyncMutex::new(None)),
             connected: Arc::new(AtomicBool::new(false)),
+            mlsd: false,
             busy: Arc::new(AtomicUsize::new(0)),
             keep_alive_handle: None,
             logger: BackendLogger::default(),
@@ -152,12 +225,18 @@ impl FtpBackend {
         }
     }
 
-    async fn logged_feat(&self, stream: &mut AsyncRustlsFtpStream) {
+    /// Asks for the server's features, answering with whatever it listed.
+    async fn logged_feat(&self, stream: &mut AsyncRustlsFtpStream) -> String {
         self.log_kind("FEAT".to_string(), LogKind::Command);
         match stream.custom_command("FEAT".to_string(), &[]).await {
-            Ok(resp) => self.log_response_body(&resp.body),
-            Err(suppaftp::FtpError::UnexpectedResponse(resp)) => self.log_response_body(&resp.body),
-            Err(err) => self.log_kind(format!("{err}"), LogKind::Error),
+            Ok(resp) | Err(suppaftp::FtpError::UnexpectedResponse(resp)) => {
+                self.log_response_body(&resp.body);
+                String::from_utf8_lossy(&resp.body).into_owned()
+            }
+            Err(err) => {
+                self.log_kind(format!("{err}"), LogKind::Error);
+                String::new()
+            }
         }
     }
 
@@ -203,17 +282,23 @@ impl FtpBackend {
         Ok(())
     }
 
-    async fn list_raw(stream: &mut AsyncRustlsFtpStream, path: &str) -> BackendResult<Vec<String>> {
+    /// Runs a listing `command` — LIST or MLSD — for `path`, answering with
+    /// the lines the server sent.
+    async fn list_raw(
+        stream: &mut AsyncRustlsFtpStream,
+        command: &str,
+        path: &str,
+    ) -> BackendResult<Vec<String>> {
         let (_, mut data_stream) = tokio::time::timeout(
             GRACEFUL_IO_TIMEOUT,
             stream.custom_data_command(
-                format!("LIST {path}"),
+                format!("{command} {path}"),
                 &[Status::AboutToSend, Status::AlreadyOpen],
             ),
         )
         .await
-        .context("FTP LIST command timed out")?
-        .context("LIST command failed")?;
+        .with_context(|| format!("FTP {command} command timed out"))?
+        .with_context(|| format!("{command} command failed"))?;
 
         let raw = read_list_data(&mut data_stream, DATA_IDLE_TIMEOUT).await?;
 
@@ -222,8 +307,8 @@ impl FtpBackend {
             stream.close_data_connection(data_stream),
         )
         .await
-        .context("FTP LIST completion timed out")?
-        .context("closing LIST data connection")?;
+        .with_context(|| format!("FTP {command} completion timed out"))?
+        .with_context(|| format!("closing {command} data connection"))?;
 
         let text = String::from_utf8_lossy(&raw);
         Ok(text
@@ -309,6 +394,17 @@ impl FtpBackend {
             .await?
             .iter()
             .any(|entry| entry.name == name))
+    }
+
+    /// The lines of `target`'s listing, by MLSD where the server offers it.
+    async fn fetch_listing(&self, target: &str) -> BackendResult<Vec<String>> {
+        let command = if self.mlsd { "MLSD" } else { "LIST" };
+        self.log_kind(format!("{command} {target}"), LogKind::Command);
+        let target = target.to_owned();
+        self.with_stream(move |s| {
+            Box::pin(async move { Self::list_raw(s, command, &target).await })
+        })
+        .await
     }
 
     fn remove_with_depth<'a>(
@@ -464,7 +560,7 @@ impl ProtocolBackend for FtpBackend {
 
             this.logged_best_effort(&mut stream, "SYST", &[Status::Name])
                 .await;
-            this.logged_feat(&mut stream).await;
+            let feat = this.logged_feat(&mut stream).await;
             this.logged_best_effort(&mut stream, "OPTS UTF8 ON", &[Status::CommandOk])
                 .await;
 
@@ -472,7 +568,7 @@ impl ProtocolBackend for FtpBackend {
                 .transfer_type(FtpFileType::Binary)
                 .await
                 .context("setting binary transfer type failed")?;
-            Ok::<_, anyhow::Error>(stream)
+            Ok::<_, anyhow::Error>((stream, feat))
         };
 
         let outcome = if timeout_ms > 0 {
@@ -486,8 +582,8 @@ impl ProtocolBackend for FtpBackend {
         } else {
             connect_fut.await
         };
-        let stream = match outcome {
-            Ok(stream) => stream,
+        let (stream, feat) = match outcome {
+            Ok(connected) => connected,
             Err(err) => {
                 self.log_key(
                     "connectFailed",
@@ -499,6 +595,7 @@ impl ProtocolBackend for FtpBackend {
         };
 
         self.log_key("connected", serde_json::json!({}), LogKind::Response);
+        self.mlsd = feat_offers_mlsd(&feat);
         *self.stream.lock().await = Some(stream);
         self.connected.store(true, Ordering::SeqCst);
         self.keep_alive_handle = Some(Self::spawn_keep_alive(
@@ -543,11 +640,13 @@ impl ProtocolBackend for FtpBackend {
         } else {
             path.to_string()
         };
-        self.log_kind(format!("LIST {target}"), LogKind::Command);
-        let raw_lines = match self
-            .with_stream(move |s| Box::pin(async move { Self::list_raw(s, &target).await }))
-            .await
-        {
+        let mut listing = self.fetch_listing(&target).await;
+        // A server may announce MLST and still turn MLSD away; LIST answers.
+        if self.mlsd && listing.as_ref().is_err_and(command_refused) {
+            self.mlsd = false;
+            listing = self.fetch_listing(&target).await;
+        }
+        let raw_lines = match listing {
             Ok(lines) => lines,
             Err(err) => {
                 self.log_key(
@@ -569,7 +668,12 @@ impl ProtocolBackend for FtpBackend {
         let now = Utc::now();
         let mut entries = Vec::with_capacity(raw_lines.len());
         for line in raw_lines {
-            let Some(raw) = list_parse::parse_line(&line, now) else {
+            let parsed = if self.mlsd {
+                list_parse::parse_mlsd_line(&line)
+            } else {
+                list_parse::parse_line(&line, now)
+            };
+            let Some(raw) = parsed else {
                 continue;
             };
             if !is_safe_path_segment(&raw.name) {
@@ -753,11 +857,11 @@ impl ProtocolBackend for FtpBackend {
                             .await
                             .context("seeking local file")?;
                     }
-                    let mut data_stream = if resume && remote_size > 0 {
+                    let mut data_stream = UploadData(Some(if resume && remote_size > 0 {
                         s.append_with_stream(&remote_path_for_op).await?
                     } else {
                         s.put_with_stream(&remote_path_for_op).await?
-                    };
+                    }));
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
                     let mut transferred = remote_size;
                     loop {
@@ -771,7 +875,7 @@ impl ProtocolBackend for FtpBackend {
                         }
                         tokio::time::timeout(
                             TRANSFER_STALL_TIMEOUT,
-                            data_stream.write_all(&buf[..n]),
+                            data_stream.stream().write_all(&buf[..n]),
                         )
                         .await
                         .context("stalled while writing to server")?
@@ -785,7 +889,7 @@ impl ProtocolBackend for FtpBackend {
                             total: local_size,
                         });
                     }
-                    s.finalize_put_stream(data_stream).await?;
+                    data_stream.finish(s).await?;
                     Ok(())
                 })
             })
@@ -986,7 +1090,7 @@ impl ProtocolBackend for FtpBackend {
                 "No active connection to the server",
             )
         })?;
-        let mut data_stream = s.put_with_stream(remote_path).await?;
+        let mut data_stream = UploadData(Some(s.put_with_stream(remote_path).await?));
         let mut buf = vec![0u8; COPY_CHUNK_SIZE];
         loop {
             let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
@@ -997,15 +1101,18 @@ impl ProtocolBackend for FtpBackend {
             if n == 0 {
                 break;
             }
-            tokio::time::timeout(TRANSFER_STALL_TIMEOUT, data_stream.write_all(&buf[..n]))
-                .await
-                .context("stalled while writing to server")?
-                .context("writing to server")?;
+            tokio::time::timeout(
+                TRANSFER_STALL_TIMEOUT,
+                data_stream.stream().write_all(&buf[..n]),
+            )
+            .await
+            .context("stalled while writing to server")?
+            .context("writing to server")?;
             crate::transfer::rate_limiter::shared()
                 .acquire(n as u64)
                 .await;
         }
-        s.finalize_put_stream(data_stream).await?;
+        data_stream.finish(s).await?;
         Ok(())
     }
 }

@@ -524,12 +524,16 @@
       "copy": "Αντιγραφή"
     },
     "directionTitleCopy": "Αντιγραφή μεταξύ διακομιστών",
+    "directionTitleLocal": "Αντιγραφή σε αυτόν τον υπολογιστή",
+    "directionTitleServer": "Αντιγραφή στον διακομιστή",
     "cancelledByUser": "Ακυρώθηκε από τον χρήστη",
     "stoppedDash": "σταμάτησε",
     "resume": "Συνέχιση",
     "retry": "Επανάληψη",
     "stop": "Διακοπή",
     "pauseUnsupportedCopy": "Η λειτουργία παύσης δεν υποστηρίζεται κατά την αντιγραφή μεταξύ διακομιστών",
+    "pauseUnsupportedFolder": "Η παύση δεν υποστηρίζεται για μεταφορές φακέλων",
+    "pauseUnsupportedServerCopy": "Η παύση δεν υποστηρίζεται κατά την αντιγραφή στον διακομιστή",
     "pauseUnsupportedWebdav": "Η λειτουργία παύσης δεν υποστηρίζεται από το WebDAV",
     "retryUnsupportedConnection": "Η επανάληψη δεν είναι διαθέσιμη: η σύνδεση έχει κλείσει"
   },

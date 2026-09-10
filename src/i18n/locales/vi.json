@@ -524,12 +524,16 @@
       "copy": "Sao chép"
     },
     "directionTitleCopy": "Sao chép giữa các máy chủ",
+    "directionTitleLocal": "Sao chép trên máy tính này",
+    "directionTitleServer": "Sao chép trên máy chủ",
     "cancelledByUser": "Đã bị người dùng hủy bỏ",
     "stoppedDash": "đã dừng lại",
     "resume": "Tiếp tục",
     "retry": "Thử lại",
     "stop": "Dừng lại",
     "pauseUnsupportedCopy": "Chức năng tạm dừng không được hỗ trợ khi sao chép giữa các máy chủ",
+    "pauseUnsupportedFolder": "Không hỗ trợ tạm dừng khi truyền thư mục",
+    "pauseUnsupportedServerCopy": "Không hỗ trợ tạm dừng khi sao chép trên máy chủ",
     "pauseUnsupportedWebdav": "WebDAV không hỗ trợ tính năng tạm dừng",
     "retryUnsupportedConnection": "Không thể thử lại: kết nối đã bị đóng"
   },

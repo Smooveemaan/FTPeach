@@ -528,12 +528,16 @@
       "copy": "העתקה"
     },
     "directionTitleCopy": "העתקה בין שרתים",
+    "directionTitleLocal": "העתקה במחשב זה",
+    "directionTitleServer": "העתקה בשרת",
     "cancelledByUser": "בוטל על ידי המשתמש",
     "stoppedDash": "נעצר",
     "resume": "המשך",
     "retry": "נסה שוב",
     "stop": "עצור",
     "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",
+    "pauseUnsupportedFolder": "השהיה אינה נתמכת בהעברת תיקיות",
+    "pauseUnsupportedServerCopy": "השהיה אינה נתמכת בהעתקה בשרת",
     "pauseUnsupportedWebdav": "WebDAV אינו תומך בפונקציית ההשהיה",
     "retryUnsupportedConnection": "ניסיון חוזר אינו זמין: החיבור נסגר",
     "newTransfers_two": "{{count}} העברות חדשות"

@@ -528,12 +528,16 @@
       "copy": "Copiere"
     },
     "directionTitleCopy": "Copiere între servere",
+    "directionTitleLocal": "Copiere pe acest computer",
+    "directionTitleServer": "Copiere pe server",
     "cancelledByUser": "Anulat de utilizator",
     "stoppedDash": "s-a oprit",
     "resume": "Reia",
     "retry": "Reîncearcă",
     "stop": "Oprește-te",
     "pauseUnsupportedCopy": "Funcția de pauză nu este acceptată atunci când se copiază între servere",
+    "pauseUnsupportedFolder": "Pauza nu este acceptată pentru transferurile de foldere",
+    "pauseUnsupportedServerCopy": "Pauza nu este acceptată la copierea pe server",
     "pauseUnsupportedWebdav": "Funcția „Pauză” nu este acceptată de WebDAV",
     "retryUnsupportedConnection": "Reîncercarea nu este disponibilă: conexiunea a fost închisă",
     "newTransfers_few": "{{count}} transferuri noi"

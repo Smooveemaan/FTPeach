@@ -524,12 +524,16 @@
       "copy": "Kopiering"
     },
     "directionTitleCopy": "Kopiering mellem servere",
+    "directionTitleLocal": "Kopiering på denne computer",
+    "directionTitleServer": "Kopiering på serveren",
     "cancelledByUser": "Annulleret af brugeren",
     "stoppedDash": "stoppede",
     "resume": "Genoptag",
     "retry": "Prøv igen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause-funktionen understøttes ikke ved kopiering mellem servere",
+    "pauseUnsupportedFolder": "Pause understøttes ikke ved overførsel af mapper",
+    "pauseUnsupportedServerCopy": "Pause understøttes ikke ved kopiering på serveren",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
     "retryUnsupportedConnection": "Prøv igen er ikke tilgængelig: forbindelsen er blevet lukket"
   },

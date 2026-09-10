@@ -524,12 +524,16 @@
       "copy": "복사"
     },
     "directionTitleCopy": "서버 간 복사",
+    "directionTitleLocal": "이 컴퓨터에서 복사",
+    "directionTitleServer": "서버에서 복사",
     "cancelledByUser": "사용자에 의해 취소됨",
     "stoppedDash": "중지됨",
     "resume": "재개",
     "retry": "다시 시도",
     "stop": "중지",
     "pauseUnsupportedCopy": "서버 간 복사 시 일시 중지 기능은 지원되지 않습니다.",
+    "pauseUnsupportedFolder": "폴더 전송에서는 일시 중지가 지원되지 않습니다",
+    "pauseUnsupportedServerCopy": "서버에서 복사할 때는 일시 중지가 지원되지 않습니다",
     "pauseUnsupportedWebdav": "WebDAV에서는 일시 정지 기능이 지원되지 않습니다.",
     "retryUnsupportedConnection": "재시도할 수 없습니다: 연결이 닫혔습니다"
   },

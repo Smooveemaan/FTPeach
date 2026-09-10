@@ -528,12 +528,16 @@
       "copy": "Copie"
     },
     "directionTitleCopy": "Copier entre serveurs",
+    "directionTitleLocal": "Copier sur cet ordinateur",
+    "directionTitleServer": "Copier sur le serveur",
     "cancelledByUser": "Annulé par l'utilisateur",
     "stoppedDash": "arrêté",
     "resume": "Reprendre",
     "retry": "Réessayer",
     "stop": "Arrêter",
     "pauseUnsupportedCopy": "La mise en pause n'est pas prise en charge lors de la copie entre serveurs",
+    "pauseUnsupportedFolder": "La pause n'est pas prise en charge pour les transferts de dossiers",
+    "pauseUnsupportedServerCopy": "La pause n'est pas prise en charge lors d'une copie sur le serveur",
     "pauseUnsupportedWebdav": "La fonction « Pause » n'est pas prise en charge par WebDAV",
     "retryUnsupportedConnection": "La reprise n'est pas disponible : la connexion a été fermée",
     "newTransfers_many": "{{count}} nouveaux transferts"

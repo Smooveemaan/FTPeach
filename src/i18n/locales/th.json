@@ -524,12 +524,16 @@
       "copy": "คัดลอก"
     },
     "directionTitleCopy": "คัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
+    "directionTitleLocal": "คัดลอกในคอมพิวเตอร์เครื่องนี้",
+    "directionTitleServer": "คัดลอกบนเซิร์ฟเวอร์",
     "cancelledByUser": "ถูกยกเลิกโดยผู้ใช้",
     "stoppedDash": "หยุดแล้ว",
     "resume": "ดำเนินการต่อ",
     "retry": "ลองอีกครั้ง",
     "stop": "หยุด",
     "pauseUnsupportedCopy": "ไม่สนับสนุนการหยุดชั่วคราวเมื่อคัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
+    "pauseUnsupportedFolder": "ไม่รองรับการหยุดชั่วคราวสำหรับการถ่ายโอนโฟลเดอร์",
+    "pauseUnsupportedServerCopy": "ไม่รองรับการหยุดชั่วคราวเมื่อคัดลอกบนเซิร์ฟเวอร์",
     "pauseUnsupportedWebdav": "WebDAV ไม่สนับสนุนฟังก์ชัน Pause",
     "retryUnsupportedConnection": "ไม่สามารถลองใหม่ได้: การเชื่อมต่อถูกปิดแล้ว"
   },

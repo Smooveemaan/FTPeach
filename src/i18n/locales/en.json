@@ -524,12 +524,16 @@
       "copy": "Copy"
     },
     "directionTitleCopy": "Copy between servers",
+    "directionTitleLocal": "Copy on this computer",
+    "directionTitleServer": "Copy on the server",
     "cancelledByUser": "Cancelled by user",
     "stoppedDash": "stopped",
     "resume": "Resume",
     "retry": "Retry",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause is not supported when copying between servers",
+    "pauseUnsupportedFolder": "Pause is not supported for folder transfers",
+    "pauseUnsupportedServerCopy": "Pause is not supported when copying on the server",
     "pauseUnsupportedWebdav": "Pause is not supported by WebDAV",
     "retryUnsupportedConnection": "Retry is not available: the connection has been closed"
   },

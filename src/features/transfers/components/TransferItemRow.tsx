@@ -14,6 +14,7 @@ import {
   PROGRESS_LABEL_KEY,
   DIR_ICON,
   DIR_TITLE_KEY,
+  transferRoute,
 } from '../transferPresentation.ts';
 interface TransferItemRowProps {
   item: TransferRow;
@@ -36,14 +37,7 @@ export default function TransferItemRow({
 }: TransferItemRowProps) {
   const { t } = useTranslation();
   const isDirectory = item.direction === 'recursive' || (item.dragOut && item.isDirectory);
-  const direction =
-    item.direction === 'recursive'
-      ? item.intent.source.kind === 'local' && item.intent.target.kind === 'remote'
-        ? 'up'
-        : item.intent.source.kind === 'remote' && item.intent.target.kind === 'local'
-          ? 'down'
-          : 'copy'
-      : item.direction;
+  const route = transferRoute(item);
   const fullPath =
     item.direction === 'recursive'
       ? item.intent.source.path
@@ -62,10 +56,19 @@ export default function TransferItemRow({
   const hasTotal = total > 0;
   const percent = hasTotal ? Math.min(100, Math.round((item.bytes / total) * 100)) : null;
   const showBar = hasTotal && item.status !== 'error';
-  const pauseUnsupported =
-    item.direction === 'copy' ||
-    item.direction === 'recursive' ||
-    (item.direction === 'up' && item.protocol === 'webdav');
+  // Why Pause is greyed out, named for what the row really is: a folder walk
+  // has no pause whichever way it goes, so it must not claim to be a copy
+  // between servers.
+  const pauseUnsupportedKey =
+    item.direction === 'recursive'
+      ? 'transferQueue.pauseUnsupportedFolder'
+      : route === 'server-copy'
+        ? 'transferQueue.pauseUnsupportedServerCopy'
+        : route === 'copy'
+          ? 'transferQueue.pauseUnsupportedCopy'
+          : item.direction === 'up' && item.protocol === 'webdav'
+            ? 'transferQueue.pauseUnsupportedWebdav'
+            : null;
   const retryUnsupported = !canRetryTransfer(item);
   const speed = updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
   const remaining =
@@ -79,7 +82,7 @@ export default function TransferItemRow({
         ? t('transferQueue.cancelledByUser')
         : null;
   const statusLabel = t(
-    item.status === 'progress' ? PROGRESS_LABEL_KEY[direction] : STATUS_LABEL_KEY[item.status],
+    item.status === 'progress' ? PROGRESS_LABEL_KEY[route] : STATUS_LABEL_KEY[item.status],
   );
 
   const [nameRef, nameTruncated] = useTruncated<HTMLSpanElement>([item.name]);
@@ -177,8 +180,8 @@ export default function TransferItemRow({
       aria-label={`${isolate(item.name)}: ${statusLabel}${percent == null ? '' : `, ${percent}%`}`}
     >
       <div className="t-file">
-        <span className={`dir-icon dir-${direction}`} data-tooltip={t(DIR_TITLE_KEY[direction])}>
-          <Icon name={DIR_ICON[direction]} size={13} />
+        <span className={`dir-icon dir-${route}`} data-tooltip={t(DIR_TITLE_KEY[route])}>
+          <Icon name={DIR_ICON[route]} size={13} />
         </span>
         <span className={`transfer-file-icon${isDirectory ? ' is-folder' : ''}`}>
           <Icon name={fileIconName({ name: displayName, isDirectory: !!isDirectory })} size={13} />
@@ -220,14 +223,8 @@ export default function TransferItemRow({
               <button
                 type="button"
                 className="pause-btn"
-                data-tooltip={
-                  item.direction === 'copy' || item.direction === 'recursive'
-                    ? t('transferQueue.pauseUnsupportedCopy')
-                    : pauseUnsupported
-                      ? t('transferQueue.pauseUnsupportedWebdav')
-                      : t('transferQueue.status.paused')
-                }
-                disabled={pauseUnsupported}
+                data-tooltip={t(pauseUnsupportedKey ?? 'transferQueue.status.paused')}
+                disabled={pauseUnsupportedKey !== null}
                 onClick={() => onPause(item.id)}
               >
                 <Icon name="pause" size={11} />

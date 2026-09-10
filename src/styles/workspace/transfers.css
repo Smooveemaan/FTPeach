@@ -125,7 +125,9 @@ body.column-resize-active .transfer-item:hover {
 .dir-icon { flex: 0 0 auto; display: flex; align-items: center; }
 .dir-icon.dir-up { color: var(--accent-amber); }
 .dir-icon.dir-down { color: var(--accent-primary); }
-.dir-icon.dir-copy { color: var(--accent-green); }
+.dir-icon.dir-copy,
+.dir-icon.dir-local-copy,
+.dir-icon.dir-server-copy { color: var(--accent-green); }
 
 .t-name-wrap { min-width: 0; display: flex; flex-direction: column; }
 .t-name {

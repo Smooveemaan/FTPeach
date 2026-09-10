@@ -85,16 +85,19 @@ test('dragged folders retain a download arrow beside the orange folder icon', ()
 });
 
 test.each([
-  ['local', 'remote', 'up', 'Upload'],
-  ['remote', 'local', 'down', 'Download'],
-  ['remote', 'remote', 'copy', 'Copy'],
+  ['local', 'remote:a', 'up', 'Upload', 'Upload'],
+  ['remote:a', 'local', 'down', 'Download', 'Download'],
+  ['remote:a', 'remote:b', 'copy', 'Copy', 'Copy between servers'],
+  ['remote:a', 'remote:a', 'server-copy', 'Copy', 'Copy on the server'],
+  // A folder dropped from Explorer onto the local pane never touches a server.
+  ['local', 'local', 'local-copy', 'Copy', 'Copy on this computer'],
 ] as const)(
   'a running %s to %s folder walk reports the direction it is actually going',
-  (from, to, icon, label) => {
-    const endpoint = (kind: 'local' | 'remote') =>
+  (from, to, icon, label, title) => {
+    const endpoint = (kind: 'local' | 'remote:a' | 'remote:b') =>
       kind === 'local'
         ? ({ kind, path: 'D:\\Folder' } as const)
-        : ({ kind, path: '/Folder', connectionId: 'session' } as const);
+        : ({ kind: 'remote', path: '/Folder', connectionId: kind.slice(7) } as const);
     const { container } = renderRow(
       {
         id: 'walk',
@@ -114,6 +117,37 @@ test.each([
       ['status'],
     );
     expect(container.querySelector('.status-tag')?.textContent).toBe(label);
-    expect(container.querySelector(`.dir-icon.dir-${icon}`)).not.toBeNull();
+    expect(container.querySelector(`.dir-icon.dir-${icon}`)?.getAttribute('data-tooltip')).toBe(
+      title,
+    );
+    // No folder walk can pause, and the reason given must not mistake this
+    // computer for a server.
+    const pause = container.querySelector('.pause-btn');
+    expect(pause).toHaveProperty('disabled', true);
+    expect(pause?.getAttribute('data-tooltip')).toBe('Pause is not supported for folder transfers');
+  },
+);
+
+test.each([
+  ['a', 'b', 'Copy between servers', 'Pause is not supported when copying between servers'],
+  ['a', 'a', 'Copy on the server', 'Pause is not supported when copying on the server'],
+])(
+  'a relay copy from session %s to session %s is told apart from a copy on one server',
+  (sourceConnectionId, targetConnectionId, title, pauseTooltip) => {
+    const { container } = renderRow({
+      id: 'relay',
+      name: 'photo.png',
+      direction: 'copy',
+      status: 'progress',
+      bytes: 1,
+      startedAt: 1,
+      protocol: 'sftp',
+      sourceConnectionId,
+      targetConnectionId,
+      sourcePath: '/photo.png',
+      remoteTarget: '/backup/photo.png',
+    });
+    expect(container.querySelector('.dir-icon')?.getAttribute('data-tooltip')).toBe(title);
+    expect(container.querySelector('.pause-btn')?.getAttribute('data-tooltip')).toBe(pauseTooltip);
   },
 );

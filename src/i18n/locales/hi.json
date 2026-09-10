@@ -524,12 +524,16 @@
       "copy": "कॉपी"
     },
     "directionTitleCopy": "सर्वरों के बीच कॉपी करें",
+    "directionTitleLocal": "इस कंप्यूटर पर कॉपी करें",
+    "directionTitleServer": "सर्वर पर कॉपी करें",
     "cancelledByUser": "उपयोगकर्ता द्वारा रद्द कर दिया गया",
     "stoppedDash": "रुक गया",
     "resume": "फिर से शुरू करें",
     "retry": "पुनः प्रयास करें",
     "stop": "रुकें",
     "pauseUnsupportedCopy": "सर्वरों के बीच कॉपी करते समय रोकना समर्थित नहीं है",
+    "pauseUnsupportedFolder": "फ़ोल्डर स्थानांतरण के लिए रोकना समर्थित नहीं है",
+    "pauseUnsupportedServerCopy": "सर्वर पर कॉपी करते समय रोकना समर्थित नहीं है",
     "pauseUnsupportedWebdav": "रोकें WebDAV द्वारा समर्थित नहीं है",
     "retryUnsupportedConnection": "पुनः प्रयास उपलब्ध नहीं है: कनेक्शन बंद हो गया है"
   },

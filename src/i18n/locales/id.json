@@ -524,12 +524,16 @@
       "copy": "Menyalin"
     },
     "directionTitleCopy": "Menyalin antar server",
+    "directionTitleLocal": "Menyalin di komputer ini",
+    "directionTitleServer": "Menyalin di server",
     "cancelledByUser": "Dibatalkan oleh pengguna",
     "stoppedDash": "berhenti",
     "resume": "Lanjutkan",
     "retry": "Coba lagi",
     "stop": "Berhenti",
     "pauseUnsupportedCopy": "Fitur jeda tidak didukung saat menyalin data antar server",
+    "pauseUnsupportedFolder": "Jeda tidak didukung untuk transfer folder",
+    "pauseUnsupportedServerCopy": "Jeda tidak didukung saat menyalin di server",
     "pauseUnsupportedWebdav": "Fitur jeda tidak didukung oleh WebDAV",
     "retryUnsupportedConnection": "Coba lagi tidak tersedia: koneksi telah ditutup"
   },

@@ -524,12 +524,16 @@
       "copy": "Kopyalama"
     },
     "directionTitleCopy": "Sunucular arasında kopyalama",
+    "directionTitleLocal": "Bu bilgisayarda kopyalama",
+    "directionTitleServer": "Sunucuda kopyalama",
     "cancelledByUser": "Kullanıcı tarafından iptal edildi",
     "stoppedDash": "durdu",
     "resume": "Devam et",
     "retry": "Tekrar dene",
     "stop": "Durdur",
     "pauseUnsupportedCopy": "Sunucular arasında kopyalama işlemi sırasında duraklatma özelliği desteklenmemektedir",
+    "pauseUnsupportedFolder": "Klasör aktarımlarında duraklatma desteklenmiyor",
+    "pauseUnsupportedServerCopy": "Sunucuda kopyalarken duraklatma desteklenmiyor",
     "pauseUnsupportedWebdav": "WebDAV, duraklatma özelliğini desteklemiyor",
     "retryUnsupportedConnection": "Yeniden deneme kullanılamıyor: bağlantı kapatıldı"
   },

@@ -165,7 +165,6 @@
     "labelMultiple": "Mover los elementos seleccionados ({{count}}) a la carpeta:"
   },
   "confirm": {
-    "allowReplacementRace": "¿Permitir reemplazar «{{name}}» si el archivo aparece durante la transferencia?",
     "resetLayout": "¿Restablecer el tamaño de la ventana y de los paneles, recuperar las columnas predeterminadas y borrar la caché de la interfaz?",
     "hostKeyMismatch": "{{error}} ¿Eliminar la huella digital de la clave guardada para {{host}}: {{port}} y conectarse de todos modos? Hazlo solo si estás seguro de que el servidor se ha reinstalado o migrado de forma legítima; de lo contrario, esto podría permitirte conectarte a un servidor que podría ser falso.",
     "connectAnyway": "Conectar de todos modos",

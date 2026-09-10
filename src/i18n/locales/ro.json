@@ -165,7 +165,6 @@
     "labelMultiple": "Mută elementele selectate ({{count}}) în folderul:"
   },
   "confirm": {
-    "allowReplacementRace": "Permiteți înlocuirea fișierului „{{name}}” dacă apare în timpul transferului?",
     "resetLayout": "Să resetezi dimensiunile ferestrelor și panourilor, să restabilești coloanele implicite și să golești memoria cache a interfeței?",
     "hostKeyMismatch": "{{error}} Să ștergi amprenta cheii salvate pentru {{host}}: {{port}} și să te conectezi oricum? Fă acest lucru doar dacă ești sigur că serverul a fost reinstalat sau migrat în mod legitim — altfel, acest lucru ți-ar putea permite să te conectezi la un server care ar putea fi falsificat.",
     "connectAnyway": "Conectează-te oricum",

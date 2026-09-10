@@ -162,7 +162,6 @@
     "labelMultiple": "Move the selected items ({{count}}) to folder:"
   },
   "confirm": {
-    "allowReplacementRace": "Allow replacing \"{{name}}\" if the file appears during this transfer?",
     "resetLayout": "Reset window and pane sizes, restore default columns, and clear the interface cache?",
     "hostKeyMismatch": "{{error}} Delete the saved key fingerprint for {{host}}:{{port}} and connect anyway? Only do this if you're sure the server was legitimately reinstalled or migrated — otherwise this could let you connect to a potentially spoofed server.",
     "connectAnyway": "Connect anyway",

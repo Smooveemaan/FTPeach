@@ -162,7 +162,6 @@
     "labelMultiple": "Di chuyển các mục đã chọn ({{count}}) vào thư mục:"
   },
   "confirm": {
-    "allowReplacementRace": "Cho phép thay thế \"{{name}}\" nếu tệp xuất hiện trong quá trình truyền?",
     "resetLayout": "Đặt lại kích thước cửa sổ và khung, khôi phục các cột mặc định và xóa bộ nhớ đệm giao diện?",
     "hostKeyMismatch": "{{error}} Xóa dấu vân tay khóa đã lưu cho {{host}}: {{port}} và vẫn tiếp tục kết nối? Chỉ thực hiện thao tác này nếu bạn chắc chắn rằng máy chủ đã được cài đặt lại hoặc di chuyển một cách hợp lệ — nếu không, việc này có thể khiến bạn kết nối với một máy chủ có khả năng bị giả mạo.",
     "connectAnyway": "Vẫn kết nối",

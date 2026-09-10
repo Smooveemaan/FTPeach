@@ -165,7 +165,6 @@
     "labelMultiple": "Sposta gli elementi selezionati ({{count}}) nella cartella:"
   },
   "confirm": {
-    "allowReplacementRace": "Consentire la sostituzione di «{{name}}» se il file compare durante il trasferimento?",
     "resetLayout": "Reimpostare le dimensioni delle finestre e dei riquadri, ripristinare le colonne predefinite e svuotare la cache dell'interfaccia?",
     "hostKeyMismatch": "{{error}} Eliminare l'impronta digitale della chiave salvata per {{host}}: {{port}} e connettersi comunque? Eseguire questa operazione solo se si è certi che il server sia stato reinstallato o migrato in modo legittimo; in caso contrario, ciò potrebbe consentire la connessione a un server potenzialmente contraffatto.",
     "connectAnyway": "Connettiti comunque",

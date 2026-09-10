@@ -162,7 +162,6 @@
     "labelMultiple": "将选中的项目（{{count}}）移动到文件夹："
   },
   "confirm": {
-    "allowReplacementRace": "如果传输期间出现文件“{{name}}”，是否允许替换？",
     "resetLayout": "重置窗口和窗格大小、恢复默认列，并清除界面缓存？",
     "hostKeyMismatch": "{{error}} 删除 {{host}}:{{port}} 的已保存密钥指纹，并继续连接？请仅在确信服务器已合法重新安装或迁移的情况下执行此操作——否则可能会导致您连接到潜在的伪造服务器。",
     "connectAnyway": "无论如何都要连接",

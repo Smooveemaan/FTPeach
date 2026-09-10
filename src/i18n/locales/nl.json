@@ -162,7 +162,6 @@
     "labelMultiple": "Verplaats de geselecteerde items ({{count}}) naar de map:"
   },
   "confirm": {
-    "allowReplacementRace": "Vervanging van \"{{name}}\" toestaan als het bestand tijdens de overdracht verschijnt?",
     "resetLayout": "De afmetingen van vensters en panelen opnieuw instellen, de standaardkolommen herstellen en de cache van de interface wissen?",
     "hostKeyMismatch": "{{error}} De opgeslagen sleutelvingerafdruk voor {{host}}:{{port}} verwijderen en toch verbinding maken? Doe dit alleen als je zeker weet dat de server op legitieme wijze opnieuw is geïnstalleerd of gemigreerd — anders zou je hierdoor verbinding kunnen maken met een mogelijk vervalste server.",
     "connectAnyway": "Maak toch verbinding",

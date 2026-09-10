@@ -162,7 +162,6 @@
     "labelMultiple": "Flytta de markerade objekten ({{count}}) till mappen:"
   },
   "confirm": {
-    "allowReplacementRace": "Tillåt att \"{{name}}\" ersätts om filen skapas under överföringen?",
     "resetLayout": "Återställa storlekarna på fönster och rutor, återställa standardkolumnerna och rensa gränssnittets cache?",
     "hostKeyMismatch": "{{error}} Ska du ta bort det sparade nyckelfingeravtrycket för {{host}}:{{port}} och ansluta ändå? Gör detta endast om du är säker på att servern har installerats om eller migrerats på ett korrekt sätt – annars kan detta leda till att du ansluter till en server som eventuellt är förfalskad.",
     "connectAnyway": "Anslut ändå",

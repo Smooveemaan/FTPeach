@@ -165,7 +165,6 @@
     "labelMultiple": "Déplacer les éléments sélectionnés ({{count}}) vers le dossier :"
   },
   "confirm": {
-    "allowReplacementRace": "Autoriser le remplacement de « {{name}} » si le fichier apparaît pendant le transfert ?",
     "resetLayout": "Réinitialiser la taille de la fenêtre et des volets, rétablir les colonnes par défaut et vider le cache de l'interface ?",
     "hostKeyMismatch": "{{error}} Supprimer l'empreinte de clé enregistrée pour {{host}} : {{port}} et vous connecter quand même ? Ne procédez ainsi que si vous êtes certain que le serveur a bien été réinstallé ou migré — sinon, cela pourrait vous permettre de vous connecter à un serveur potentiellement falsifié.",
     "connectAnyway": "Se connecter quand même",

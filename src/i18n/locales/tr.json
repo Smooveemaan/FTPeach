@@ -162,7 +162,6 @@
     "labelMultiple": "Seçili öğeleri ({{count}}) şu klasöre taşı:"
   },
   "confirm": {
-    "allowReplacementRace": "Aktarım sırasında \"{{name}}\" dosyası oluşursa üzerine yazılmasına izin verilsin mi?",
     "resetLayout": "Pencere ve bölme boyutlarını sıfırlamak, varsayılan sütunları geri yüklemek ve arayüz önbelleğini temizlemek istiyor musunuz?",
     "hostKeyMismatch": "{{error}} {{host}}:{{port}} için kaydedilmiş anahtar parmak izi silinip yine de bağlanılsın mı? Bunu yalnızca sunucunun gerçekten yeniden kurulduğundan veya taşındığından eminseniz yapın — aksi takdirde bu, sahte olabilecek bir sunucuya bağlanmanıza yol açabilir.",
     "connectAnyway": "Yine de bağlan",

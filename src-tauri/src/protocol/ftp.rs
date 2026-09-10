@@ -284,6 +284,33 @@ impl FtpBackend {
         f(stream).await
     }
 
+    /// Whether a file stands at `path`. SIZE answers in one control-channel
+    /// round trip, with 550 for a name that is free — or a folder, which a file
+    /// cannot be renamed over anyway. A server that does not implement SIZE is
+    /// asked for the parent's listing instead.
+    async fn exists(&mut self, path: &str) -> BackendResult<bool> {
+        let probe = path.to_string();
+        let size = self
+            .with_stream(move |s| Box::pin(async move { Ok(s.size(&probe).await) }))
+            .await?;
+        match size {
+            Ok(_) => return Ok(true),
+            Err(suppaftp::FtpError::UnexpectedResponse(response))
+                if response.status == Status::FileUnavailable =>
+            {
+                return Ok(false);
+            }
+            Err(_) => {}
+        }
+        let (parent, name) = path.rsplit_once('/').unwrap_or(("", path));
+        let parent = if parent.is_empty() { "/" } else { parent };
+        Ok(self
+            .list(parent)
+            .await?
+            .iter()
+            .any(|entry| entry.name == name))
+    }
+
     fn remove_with_depth<'a>(
         &'a mut self,
         path: &'a str,
@@ -608,6 +635,18 @@ impl ProtocolBackend for FtpBackend {
             Box::pin(async move { Ok(s.rename(&old_path, &new_path).await?) })
         })
         .await
+    }
+
+    /// FTP has no conditional rename, and RNTO replaces an existing file on
+    /// most servers. Looking at the target right before RNFR leaves only the
+    /// moment between the two for a racing file to be replaced in, instead of
+    /// the whole upload that staged it.
+    async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
+        anyhow::ensure!(
+            !self.exists(new_path).await?,
+            "{new_path} already exists on the server; it was not replaced"
+        );
+        self.rename(old_path, new_path).await
     }
 
     async fn size(&mut self, path: &str) -> u64 {

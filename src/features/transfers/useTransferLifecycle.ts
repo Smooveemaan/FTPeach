@@ -210,7 +210,6 @@ export function useTransferLifecycle(
           kind: 'remote',
           connectionId,
           path: remoteTarget,
-          protocol,
         });
     if (overwrite === null) return { ok: false, skipped: true };
     const existing = Object.values(getTransfersSnapshot()).find(
@@ -349,7 +348,6 @@ export function useTransferLifecycle(
       : await approveTarget({
           kind: 'remote',
           connectionId: targetConnectionId,
-          protocol: targetProtocol,
           path: targetPath,
         });
     if (overwrite === null) return { ok: false, skipped: true };
@@ -488,7 +486,6 @@ export function useTransferLifecycle(
           ? { kind: 'local', path: transfer.localTarget }
           : {
               kind: 'remote',
-              protocol: transfer.protocol,
               connectionId:
                 transfer.direction === 'up' ? transfer.connectionId : transfer.targetConnectionId,
               path: transfer.remoteTarget,

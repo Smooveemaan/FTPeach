@@ -162,7 +162,6 @@
     "labelMultiple": "Die ausgewählten Elemente ({{count}}) in den Ordner verschieben:"
   },
   "confirm": {
-    "allowReplacementRace": "„{{name}}“ ersetzen, falls die Datei während der Übertragung erstellt wird?",
     "resetLayout": "Fenster- und Bereichsgrößen zurücksetzen, Standardspalten wiederherstellen und den Schnittstellen-Cache leeren?",
     "hostKeyMismatch": "{{error}} Den gespeicherten Schlüssel-Fingerabdruck für {{host}}:{{port}} löschen und trotzdem verbinden? Tun Sie dies nur, wenn Sie sicher sind, dass der Server ordnungsgemäß neu installiert oder migriert wurde – andernfalls könnten Sie eine Verbindung zu einem möglicherweise gefälschten Server herstellen.",
     "connectAnyway": "Trotzdem verbinden",

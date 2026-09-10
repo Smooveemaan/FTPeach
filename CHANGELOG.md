@@ -2,6 +2,16 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- Uploading to an FTP or FTPS server no longer asks whether to replace a file that isn’t
+  there. If a file with the same name turns up on the server while you upload, FTPeach
+  still leaves it alone and tells you.
+- The “Connect first” hint, shown when you drop files onto a Server pane that isn’t
+  connected, is easier to read.
+
 ## [0.1.2] - 2026-09-10
 
 ### Added

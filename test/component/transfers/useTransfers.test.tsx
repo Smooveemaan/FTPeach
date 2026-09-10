@@ -379,6 +379,7 @@ interface UploadCall {
   localFile: string;
   remoteTarget: string;
   resume: boolean;
+  overwrite: boolean | undefined;
 }
 interface DownloadCall {
   connectionId: string;
@@ -486,8 +487,8 @@ function makeMockApi() {
           dragOutListener = null;
         };
       },
-      upload: (connectionId, id, localFile, remoteTarget, resume) => {
-        calls.upload.push({ connectionId, id, localFile, remoteTarget, resume });
+      upload: (connectionId, id, localFile, remoteTarget, resume, overwrite) => {
+        calls.upload.push({ connectionId, id, localFile, remoteTarget, resume, overwrite });
         return api._nextUpload.promise;
       },
       download: (connectionId, id, remoteFile, localTarget, resume) => {
@@ -750,6 +751,48 @@ test('a destination the caller already approved is not asked about a second time
       },
     );
   }
+});
+
+test('uploads to free names on an FTP server ask nothing and commit without replacing', async () => {
+  const prompts: string[] = [];
+  await withHarness(
+    async ({ getApi, mockApi, calls }) => {
+      const intents: RecursiveIntent[] = [];
+      mockApi.transfer.recursive = async (intent) => {
+        intents.push(intent);
+        return { ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] };
+      };
+      mockApi._nextUpload.resolve({ ok: true });
+      await act(async () => {
+        await getApi().handleOsDropFiles(
+          {
+            kind: 'remote',
+            status: 'connected',
+            connectionId: 'c1',
+            protocol: 'ftp',
+            path: '/',
+            entries: [],
+          },
+          [
+            { path: 'D:\\drop\\file.bin', name: 'file.bin', isDirectory: false },
+            { path: 'D:\\drop\\1', name: '1', isDirectory: true },
+          ],
+        );
+      });
+      // An empty server used to ask whether each of these might be replaced
+      // if it appeared meanwhile; the backend now refuses that case itself.
+      assert.deepEqual(prompts, []);
+      assert.equal(calls.upload[0]?.overwrite, false);
+      assert.equal(intents[0]?.overwrite, false);
+    },
+    {
+      overwriteAction: 'ask',
+      confirmOverwrite: async (path) => {
+        prompts.push(path);
+        return true;
+      },
+    },
+  );
 });
 
 async function startStuckUpload(

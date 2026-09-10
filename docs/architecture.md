@@ -162,7 +162,7 @@ Closed pools reject admission; replacement failure settles queued callers, and p
 
 Zero concurrency means unlimited demand-driven workers; zero connect timeout is valid and uses a 60-second transfer idle default. Zero speed limit disables pacing. A known file length of zero means empty; missing metadata stays None, and relay skips only the unavailable size comparison. See settings schema tests, rate_limiter tests, transfer_file::tests::known_zero_is_not_unknown and relay tests. Metadata agreement is not a content hash.
 
-Protocol capabilities differ: FTP final replacement needs explicit permission because portable no-replace rename is unavailable; SFTP uses v3 RENAME; WebDAV uses Overwrite: F for no-replace. Unknown-length WebDAV uploads stream without a buffered fallback. WebDAV remote-to-local directory move is refused because recursive DELETE cannot preserve newly appearing children. These contracts and residual alias/race risks require real server validation before release.
+Protocol capabilities differ: FTP has no portable no-replace rename, so its no-replace commit checks the target just before RNFR/RNTO and refuses one that exists; SFTP uses v3 RENAME; WebDAV uses Overwrite: F for no-replace. Unknown-length WebDAV uploads stream without a buffered fallback. WebDAV remote-to-local directory move is refused because recursive DELETE cannot preserve newly appearing children. These contracts and residual alias/race risks require real server validation before release.
 
 ## Comment conventions
 

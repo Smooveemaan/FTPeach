@@ -162,7 +162,6 @@
     "labelMultiple": "A kijelölt elemek ({{count}}) áthelyezése a következő mappába:"
   },
   "confirm": {
-    "allowReplacementRace": "Engedélyezi a(z) „{{name}}” felülírását, ha a fájl az átvitel közben létrejön?",
     "resetLayout": "Visszaállítani az ablakok és ablaktáblák méretét, visszaállítani az alapértelmezett oszlopokat, és törölni a felület gyorsítótárát?",
     "hostKeyMismatch": "{{error}} Törölje a(z) {{host}}:{{port}} címhez mentett kulcs-ujjlenyomatot, és így is csatlakozzon? Ezt csak akkor tegye meg, ha biztos abban, hogy a szervert jogszerűen telepítették újra vagy migrálták – ellenkező esetben ez lehetővé teheti, hogy egy potenciálisan hamisított szerverhez csatlakozzon.",
     "connectAnyway": "Csatlakozás így is",

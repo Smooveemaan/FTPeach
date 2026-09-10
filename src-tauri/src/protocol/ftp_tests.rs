@@ -133,10 +133,69 @@ mod local_integration_tests {
         (port, handle)
     }
 
-    async fn serve_control(socket: TcpStream) {
+    /// What the local test server holds: file paths, each five bytes long.
+    #[derive(Clone)]
+    struct TestServer {
+        files: Arc<std::sync::Mutex<std::collections::BTreeSet<String>>>,
+        /// Off, SIZE is refused the way servers without RFC 3659 refuse it.
+        size_supported: bool,
+    }
+
+    impl TestServer {
+        fn holding(paths: &[&str], size_supported: bool) -> Self {
+            let files = paths.iter().map(|path| path.to_string()).collect();
+            Self {
+                files: Arc::new(std::sync::Mutex::new(files)),
+                size_supported,
+            }
+        }
+
+        fn has(&self, path: &str) -> bool {
+            self.files.lock().unwrap().contains(path)
+        }
+
+        fn paths(&self) -> Vec<String> {
+            self.files.lock().unwrap().iter().cloned().collect()
+        }
+
+        fn listing(&self, dir: &str) -> String {
+            let prefix = format!("{}/", dir.trim_end_matches('/'));
+            self.files
+                .lock()
+                .unwrap()
+                .iter()
+                .filter_map(|path| path.strip_prefix(&prefix))
+                .filter(|name| !name.contains('/'))
+                .map(|name| format!("-rw-r--r-- 1 owner group 5 Nov 05 2018 {name}\r\n"))
+                .collect()
+        }
+
+        fn rename(&self, from: &str, to: &str) {
+            let mut files = self.files.lock().unwrap();
+            files.remove(from);
+            files.insert(to.to_owned());
+        }
+    }
+
+    fn local_config(port: u16) -> crate::protocol::config::ConnectionConfig {
+        let config = json!({
+            "protocol": "ftp",
+            "host": "127.0.0.1",
+            "port": port,
+            "user": "local",
+            "password": "test"
+        })
+        .as_object()
+        .unwrap()
+        .clone();
+        crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap()
+    }
+
+    async fn serve_control(socket: TcpStream, server: TestServer) {
         let (reader, mut writer) = socket.into_split();
         let mut lines = BufReader::new(reader).lines();
         let mut passive_listener: Option<TcpListener> = None;
+        let mut renaming: Option<String> = None;
         writer
             .write_all(b"220 FTPeach local test server\r\n")
             .await
@@ -190,21 +249,38 @@ mod local_integration_tests {
                         .unwrap();
                 }
                 "LIST" => {
-                    assert!(argument.is_empty() || argument == "/");
+                    let listing = server.listing(if argument.is_empty() { "/" } else { argument });
                     writer
                         .write_all(b"150 Opening data connection\r\n")
                         .await
                         .unwrap();
                     let listener = passive_listener.take().expect("PASV/EPSV before LIST");
                     let (mut data, _) = listener.accept().await.unwrap();
-                    data.write_all(b"-rw-r--r-- 1 owner group 5 Nov 05 2018 hello.txt\r\n")
-                        .await
-                        .unwrap();
+                    data.write_all(listing.as_bytes()).await.unwrap();
                     data.shutdown().await.unwrap();
                     writer
                         .write_all(b"226 Transfer complete\r\n")
                         .await
                         .unwrap();
+                }
+                "SIZE" => {
+                    let reply: &[u8] = if !server.size_supported {
+                        b"502 Command not implemented\r\n"
+                    } else if server.has(argument) {
+                        b"213 5\r\n"
+                    } else {
+                        b"550 No such file\r\n"
+                    };
+                    writer.write_all(reply).await.unwrap();
+                }
+                "RNFR" => {
+                    renaming = Some(argument.to_owned());
+                    writer.write_all(b"350 Ready for RNTO\r\n").await.unwrap();
+                }
+                "RNTO" => {
+                    // Like most servers, a rename replaces whatever stood there.
+                    server.rename(&renaming.take().expect("RNFR before RNTO"), argument);
+                    writer.write_all(b"250 Renamed\r\n").await.unwrap();
                 }
                 "QUIT" => {
                     writer.write_all(b"221 Goodbye\r\n").await.unwrap();
@@ -216,7 +292,7 @@ mod local_integration_tests {
         }
     }
 
-    async fn spawn_ftp_server() -> (u16, tokio::task::JoinHandle<()>) {
+    async fn spawn_ftp_server(server: TestServer) -> (u16, tokio::task::JoinHandle<()>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
         let handle = tokio::spawn(async move {
@@ -224,27 +300,44 @@ mod local_integration_tests {
                 let Ok((socket, _)) = listener.accept().await else {
                     return;
                 };
-                tokio::spawn(serve_control(socket));
+                tokio::spawn(serve_control(socket, server.clone()));
             }
         });
         (port, handle)
     }
 
     #[tokio::test]
+    async fn no_replace_rename_refuses_a_taken_target_and_moves_onto_a_free_one() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        for size_supported in [true, false] {
+            let files = TestServer::holding(&["/staged.part", "/taken.txt"], size_supported);
+            let (port, server) = spawn_ftp_server(files.clone()).await;
+            let mut backend = FtpBackend::new();
+            backend.connect(&local_config(port)).await.unwrap();
+
+            // RNTO would replace it; the check before RNFR is all that stops it.
+            let error = backend
+                .rename_no_replace("/staged.part", "/taken.txt")
+                .await
+                .unwrap_err();
+            assert!(format!("{error:#}").contains("already exists"), "{error:#}");
+            assert_eq!(files.paths(), ["/staged.part", "/taken.txt"]);
+
+            backend
+                .rename_no_replace("/staged.part", "/free.txt")
+                .await
+                .unwrap();
+            assert_eq!(files.paths(), ["/free.txt", "/taken.txt"]);
+            backend.disconnect().await.unwrap();
+            server.abort();
+        }
+    }
+
+    #[tokio::test]
     async fn local_server_supports_connect_list_disconnect_and_reconnect() {
         let _ = rustls::crypto::ring::default_provider().install_default();
-        let (port, server) = spawn_ftp_server().await;
-        let config = json!({
-            "protocol": "ftp",
-            "host": "127.0.0.1",
-            "port": port,
-            "user": "local",
-            "password": "test"
-        })
-        .as_object()
-        .unwrap()
-        .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/hello.txt"], true)).await;
+        let config = local_config(port);
         let mut backend = FtpBackend::new();
 
         backend.connect(&config).await.unwrap();

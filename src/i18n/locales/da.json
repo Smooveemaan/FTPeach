@@ -162,7 +162,6 @@
     "labelMultiple": "Flyt de valgte emner ({{count}}) til mappen:"
   },
   "confirm": {
-    "allowReplacementRace": "Tillad erstatning af \"{{name}}\", hvis filen oprettes under overførslen?",
     "resetLayout": "Skal vindues- og rudeformater nulstilles, standardkolonnerne gendannes og brugergrænsefladens cache ryddes?",
     "hostKeyMismatch": "{{error}} Skal du slette det gemte nøgleaftryk for {{host}}:{{port}} og alligevel oprette forbindelse? Gør kun dette, hvis du er sikker på, at serveren er blevet geninstalleret eller migreret på korrekt vis — ellers kan det medføre, at du opretter forbindelse til en server, der muligvis er forfalsket.",
     "connectAnyway": "Opret forbindelse alligevel",

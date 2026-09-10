@@ -50,9 +50,10 @@ This favors correctness over local-download parallelism. Remote reservations als
 ignore connection IDs and fold case, so independent servers with the same target path can
 conflict. Server aliases that do not have the same normalized path are not proven equivalent.
 
-FTP has no portable atomic no-replace rename. Ask mode requests explicit replacement permission
-before an FTP upload/relay even if the file is currently absent. Without that permission, including
-Skip mode, the backend refuses the final FTP commit rather than risking a racing file. SFTP uses
+FTP has no portable atomic no-replace rename. Its no-replace commit checks the target (SIZE, or the
+parent's listing where SIZE is unsupported) immediately before RNFR/RNTO and refuses a target that
+exists, so a racing file can still be replaced only if it appears between that check and RNTO —
+not at any point during the upload. SFTP uses
 standard v3 RENAME, never the overwriting posix-rename extension; WebDAV uses Overwrite: F.
 These server semantics still require the real compatibility matrix before release.
 

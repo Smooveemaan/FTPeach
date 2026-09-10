@@ -165,7 +165,6 @@
     "labelMultiple": "Mover os itens selecionados ({{count}}) para a pasta:"
   },
   "confirm": {
-    "allowReplacementRace": "Permitir substituir \"{{name}}\" se o arquivo aparecer durante a transferência?",
     "resetLayout": "Redefinir os tamanhos da janela e dos painéis, restaurar as colunas padrão e limpar o cache da interface?",
     "hostKeyMismatch": "{{error}} Excluir a impressão digital da chave salva para {{host}}: {{port}} e conectar-se mesmo assim? Faça isso apenas se tiver certeza de que o servidor foi reinstalado ou migrado de forma legítima — caso contrário, isso poderia permitir que você se conectasse a um servidor potencialmente falsificado.",
     "connectAnyway": "Conectar-se mesmo assim",

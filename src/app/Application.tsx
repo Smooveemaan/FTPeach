@@ -181,19 +181,13 @@ export default function Application() {
   } = useTransfers({
     setErrorMessage: reportError,
     overwriteAction: settings.transfers.overwriteAction,
-    confirmOverwrite: (path, exists) =>
+    confirmOverwrite: (path) =>
       new Promise<boolean>((resolve) =>
-        requestConfirm(
-          exists
-            ? t('confirm.overwriteSingleExists', { name: path })
-            : t('confirm.allowReplacementRace', { name: path }),
-          () => resolve(true),
-          {
-            confirmLabel: t('confirm.overwriteLabel'),
-            danger: true,
-            onCancel: () => resolve(false),
-          },
-        ),
+        requestConfirm(t('confirm.overwriteSingleExists', { name: path }), () => resolve(true), {
+          confirmLabel: t('confirm.overwriteLabel'),
+          danger: true,
+          onCancel: () => resolve(false),
+        }),
       ),
   });
 

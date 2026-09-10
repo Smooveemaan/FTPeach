@@ -168,7 +168,6 @@
     "labelMultiple": "Przenieś zaznaczone elementy ({{count}}) do folderu:"
   },
   "confirm": {
-    "allowReplacementRace": "Zezwolić na zastąpienie pliku „{{name}}”, jeśli pojawi się podczas transferu?",
     "resetLayout": "Czy chcesz zresetować rozmiary okien i paneli, przywrócić domyślne kolumny oraz wyczyścić pamięć podręczną interfejsu?",
     "hostKeyMismatch": "{{error}} Czy usunąć zapisany odcisk klucza dla {{host}}: {{port}} i mimo to nawiązać połączenie? Należy to zrobić tylko wtedy, gdy masz pewność, że serwer został prawidłowo ponownie zainstalowany lub przeniesiony — w przeciwnym razie może to spowodować nawiązanie połączenia z potencjalnie sfałszowanym serwerem.",
     "connectAnyway": "Połącz się mimo wszystko",

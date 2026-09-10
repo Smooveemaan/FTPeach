@@ -83,7 +83,6 @@ export function createTransferRouting(
             kind: target.kind,
             path: targetPath,
             ...(target.connectionId ? { connectionId: target.connectionId } : {}),
-            ...(target.protocol ? { protocol: target.protocol } : {}),
           });
     if (approved === null) return false;
     const report = await runRecursive(
@@ -260,7 +259,6 @@ export function createTransferRouting(
                   kind: 'remote',
                   path: destFull,
                   connectionId: sourcePane.connectionId!,
-                  protocol: sourcePane.protocol!,
                 });
             if (overwrite === null) return { entry, ok: false };
             // Native rename lets the server enforce directory identity and

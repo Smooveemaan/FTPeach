@@ -168,7 +168,6 @@
     "labelMultiple": "Přesunout vybrané položky ({{count}}) do složky:"
   },
   "confirm": {
-    "allowReplacementRace": "Povolit nahrazení souboru „{{name}}“, pokud se objeví během přenosu?",
     "resetLayout": "Obnovit velikost oken a panelů, vrátit výchozí počet sloupců a vymazat mezipaměť rozhraní?",
     "hostKeyMismatch": "{{error}} Mám smazat uložený otisk klíče pro {{host}}: {{port}} a přesto se připojit? Tento krok proveďte pouze v případě, že máte jistotu, že byl server řádně přeinstalován nebo migrován – v opačném případě by to mohlo vést k připojení k potenciálně napodobenému serveru.",
     "connectAnyway": "Připojte se i tak",

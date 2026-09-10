@@ -162,7 +162,6 @@
     "labelMultiple": "將所選項目 ({{count}}) 移至資料夾："
   },
   "confirm": {
-    "allowReplacementRace": "如果傳輸期間出現檔案「{{name}}」，是否允許取代？",
     "resetLayout": "重設視窗和窗格大小、恢復預設列並清除介面快取？",
     "hostKeyMismatch": "{{error}} 刪除 {{host}}:{{port}} 儲存的密鑰指紋並繼續連接嗎？僅當您確定伺服器已合法重新安裝或遷移時才執行此操作 - 否則這可能會讓您連接到潛在的欺騙伺服器。",
     "connectAnyway": "仍然連接",

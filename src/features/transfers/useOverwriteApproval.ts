@@ -1,16 +1,14 @@
 import { useRef } from 'react';
 import { api } from '../../platform/api/index.ts';
-import type { SiteProtocol } from '../../shared/types.ts';
 
 export interface TransferTarget {
   kind: 'local' | 'remote';
   path: string;
   connectionId?: string;
-  protocol?: SiteProtocol;
 }
 export interface TransferOverwriteOptions {
   overwriteAction?: 'ask' | 'skip' | 'overwrite';
-  confirmOverwrite?: (path: string, exists: boolean) => Promise<boolean>;
+  confirmOverwrite?: (path: string) => Promise<boolean>;
 }
 export type OverwriteApproval = (target: TransferTarget) => Promise<boolean | null>;
 
@@ -36,11 +34,11 @@ export function useOverwriteApproval({
         ? entry.name.toLowerCase() === name.toLowerCase()
         : entry.name === name,
     );
-    if (!exists && !(target.protocol === 'ftp' || target.protocol === 'ftps')) return false;
-    if (!exists && overwriteAction === 'skip') return false;
-    if (!exists && !confirmOverwrite) return false;
+    // A free name needs no permission: every backend commits without
+    // replacing, so a file that appears there meanwhile is refused, not lost.
+    if (!exists) return false;
     if (overwriteAction === 'skip' || !confirmOverwrite) return null;
-    const decision = confirmations.current.then(() => confirmOverwrite(target.path, exists));
+    const decision = confirmations.current.then(() => confirmOverwrite(target.path));
     // Keep later confirmations running; the awaited decision below propagates
     // this failure to the operation that requested it.
     confirmations.current = decision.catch(() => {});

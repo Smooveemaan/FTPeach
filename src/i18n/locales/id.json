@@ -162,7 +162,6 @@
     "labelMultiple": "Pindahkan item yang dipilih ({{count}}) ke folder:"
   },
   "confirm": {
-    "allowReplacementRace": "Izinkan penggantian \"{{name}}\" jika file muncul selama transfer?",
     "resetLayout": "Mengatur ulang ukuran jendela dan panel, mengembalikan kolom ke pengaturan default, dan menghapus cache antarmuka?",
     "hostKeyMismatch": "{{error}} Hapus sidik jari kunci yang tersimpan untuk {{host}}: {{port}} dan tetap terhubung? Lakukan ini hanya jika Anda yakin bahwa server tersebut benar-benar telah diinstal ulang atau dimigrasikan — jika tidak, hal ini dapat membuat Anda terhubung ke server yang berpotensi dipalsukan.",
     "connectAnyway": "Tetap terhubung",

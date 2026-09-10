@@ -297,9 +297,12 @@ export default function Application() {
   const { exportSettings: handleExportSettings, importSettings: handleImportSettings } =
     useSettingsTransfer({ applySettings, refreshSites, reportError });
 
-  const { handleSaveSite } = useSiteSaveWorkflow({
+  const { handleSaveSite, saveFromPane: handleSaveSiteFromPane } = useSiteSaveWorkflow({
     panes,
+    activeTabId,
     setShowSaveSite,
+    saveSite: handleSiteManagerSave,
+    updatePane,
   });
 
   const {
@@ -563,6 +566,7 @@ export default function Application() {
     siteActions: {
       sites,
       save: handleSiteManagerSave,
+      saveFromPane: handleSaveSiteFromPane,
       delete: handleSiteDelete,
       saveFolder: handleSaveFolder,
       deleteFolder: handleDeleteFolder,

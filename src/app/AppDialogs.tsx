@@ -97,6 +97,7 @@ export interface AppDialogsModel {
   siteActions: {
     sites: SiteManagerProps['entries'];
     save: SiteManagerProps['onSave'];
+    saveFromPane: SiteManagerProps['onSave'];
     delete: SiteManagerProps['onDelete'];
     applyLayout: SiteManagerProps['onApplyLayout'];
     saveFolder: SiteManagerProps['onSaveFolder'];
@@ -299,7 +300,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           initialForm={dialogs.showSaveSite}
           entries={siteActions.sites}
           onSave={async (payload) => {
-            const result = await siteActions.save(payload);
+            const result = await siteActions.saveFromPane(payload);
             if (result?.ok) dialogs.setShowSaveSite(false);
             return result;
           }}

@@ -13,7 +13,7 @@ export interface SiteLayoutEntry {
   parentId: string | null;
 }
 export type SiteLayout = SiteLayoutEntry[];
-export type SiteMutationResult = CommandResult & { secretNotPersisted?: boolean };
+export type SiteMutationResult = CommandResult & { id?: string; secretNotPersisted?: boolean };
 export type RevealSecretResult = CommandResult & { value?: string };
 
 function isManagedSiteArray(value: unknown): value is ManagedSite[] {
@@ -25,6 +25,7 @@ function isManagedSiteArray(value: unknown): value is ManagedSite[] {
 function isSiteMutationResult(value: unknown): value is SiteMutationResult {
   return (
     hasCommandOutcome(value) &&
+    (value.id === undefined || typeof value.id === 'string') &&
     (value.secretNotPersisted === undefined || typeof value.secretNotPersisted === 'boolean')
   );
 }

@@ -103,6 +103,7 @@ export function createTransferRouting(
       undefined,
       undefined,
       refreshTarget,
+      target.protocol ?? undefined,
     );
     return report.ok;
   };

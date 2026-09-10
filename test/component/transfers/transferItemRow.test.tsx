@@ -106,6 +106,7 @@ test.each([
         status: 'progress',
         bytes: 1,
         startedAt: 1,
+        ...(to === 'local' ? {} : { targetProtocol: 'sftp' as const }),
         intent: {
           id: 'walk',
           source: endpoint(from),
@@ -120,10 +121,38 @@ test.each([
     expect(container.querySelector(`.dir-icon.dir-${icon}`)?.getAttribute('data-tooltip')).toBe(
       title,
     );
-    // Every folder walk keeps a journal it can resume from, whichever way it goes.
+    // A folder walk keeps a journal it can resume from, whichever way it goes.
     const pause = container.querySelector('.pause-btn');
     expect(pause).toHaveProperty('disabled', false);
     expect(pause?.getAttribute('data-tooltip')).toBe('Paused');
+  },
+);
+
+test.each(['local', 'remote'] as const)(
+  'a %s folder walk into WebDAV cannot pause, since the file it cuts short would start over',
+  (from) => {
+    const { container } = renderRow({
+      id: 'walk',
+      name: 'Folder',
+      direction: 'recursive',
+      status: 'progress',
+      bytes: 1,
+      startedAt: 1,
+      targetProtocol: 'webdav',
+      intent: {
+        id: 'walk',
+        source:
+          from === 'local'
+            ? { kind: 'local', path: 'D:\\Folder' }
+            : { kind: 'remote', path: '/Folder', connectionId: 'a' },
+        target: { kind: 'remote', path: '/Folder', connectionId: 'b' },
+        moving: false,
+        overwrite: false,
+      },
+    });
+    const pause = container.querySelector('.pause-btn');
+    expect(pause).toHaveProperty('disabled', true);
+    expect(pause?.getAttribute('data-tooltip')).toBe('Pause is not supported by WebDAV');
   },
 );
 

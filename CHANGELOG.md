@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   connected, is easier to read.
 - Saving the current connection as a bookmark now names its pane and tab after the
   bookmark, instead of leaving the server address there.
+- A folder upload to a WebDAV server can no longer be paused, the same as a single file.
+  WebDAV can’t continue a file that was cut short, so resuming started that file over.
+- The Pause and Retry buttons in the transfer list no longer light up under the pointer
+  when they are unavailable, so they no longer look clickable.
 
 ## [0.1.2] - 2026-09-10
 

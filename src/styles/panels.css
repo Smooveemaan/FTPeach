@@ -69,9 +69,13 @@
   cursor: pointer;
   flex: 0 0 auto;
 }
+/* A disabled action keeps its slot, so Stop never slides under the pointer
+   where Pause or Retry sits on the neighbouring rows, and its tooltip still
+   says why. It must not light up on hover, or it reads as clickable. */
+.transfer-item .retry-btn:disabled,
 .transfer-item .pause-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.transfer-item .retry-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-.transfer-item .pause-btn:hover { border-color: var(--accent-amber); color: var(--accent-amber); }
+.transfer-item .retry-btn:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }
+.transfer-item .pause-btn:hover:not(:disabled) { border-color: var(--accent-amber); color: var(--accent-amber); }
 .transfer-item .stop-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
 
 /* ---------- Log panel ---------- */

@@ -81,6 +81,8 @@ export interface TransferLifecycleModel {
     resumeFrom?: string,
     /** Lists the target again as the walk puts folders and files in place there. */
     refreshTarget?: RefreshCallback,
+    /** The remote target's protocol, which decides whether the walk can pause. */
+    targetProtocol?: SiteProtocol,
   ) => Promise<RecursiveReport>;
   runUpload: (
     connectionId: string,
@@ -382,9 +384,11 @@ export function useTransferLifecycle(
     existingId?: string,
     resumeFrom?: string,
     refreshTarget?: RefreshCallback,
+    targetProtocol?: SiteProtocol,
   ) => {
     const id =
-      existingId || startTransfer({ direction: 'recursive', name: intent.source.path, intent });
+      existingId ||
+      startTransfer({ direction: 'recursive', name: intent.source.path, intent, targetProtocol });
     const attemptId = beginAttempt(id);
     setTransfersStore((previous) => ({
       ...previous,

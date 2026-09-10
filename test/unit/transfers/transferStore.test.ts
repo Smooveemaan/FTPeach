@@ -8,10 +8,42 @@ import {
   COMPLETED_RETENTION,
   transferForAttempt,
   activeTransferForTarget,
+  canPauseTransfer,
   canRetryTransfer,
   markConnectionDead,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
+
+test('a folder walk pauses only where the file it cuts short can carry on', () => {
+  const walk = (
+    target: 'local' | 'remote',
+    targetProtocol?: 'sftp' | 'webdav',
+    moving = false,
+  ): TransferRow => ({
+    id: 'walk',
+    name: 'Folder',
+    direction: 'recursive',
+    status: 'progress',
+    bytes: 0,
+    startedAt: 0,
+    targetProtocol,
+    intent: {
+      id: 'walk',
+      source: { kind: 'remote', path: '/Folder', connectionId: 'a' },
+      target:
+        target === 'local'
+          ? { kind: 'local', path: 'C:\\Folder' }
+          : { kind: 'remote', path: '/Moved', connectionId: 'a' },
+      moving,
+      overwrite: false,
+    },
+  });
+  assert.equal(canPauseTransfer(walk('local')), true, 'a download keeps its partial file');
+  assert.equal(canPauseTransfer(walk('remote', 'sftp')), true);
+  assert.equal(canPauseTransfer(walk('remote', 'webdav')), false, 'WebDAV restarts the file');
+  assert.equal(canPauseTransfer(walk('remote')), false, 'an unknown target promises nothing');
+  assert.equal(canPauseTransfer(walk('remote', 'sftp', true)), false, 'a move is one rename');
+});
 
 test('retention limits completed history while preserving active and retryable rows and indexes', () => {
   const row = (id: string, status: TransferRow['status']): TransferRow => ({

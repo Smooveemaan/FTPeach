@@ -1,4 +1,4 @@
-import type { TransferRow, TransferStatus } from './transferStore.ts';
+import { canPauseTransfer, type TransferRow, type TransferStatus } from './transferStore.ts';
 import type { IconName } from '../../components/Icon.tsx';
 
 /**
@@ -19,6 +19,21 @@ export function transferRoute(row: TransferRow): TransferRoute {
   if (source.kind === 'local') return target.kind === 'local' ? 'local-copy' : 'up';
   if (target.kind === 'local') return 'down';
   return source.connectionId === target.connectionId ? 'server-copy' : 'copy';
+}
+
+/**
+ * Why a row's Pause is greyed out, named for what the row really is, or null
+ * when it can pause: a relay copy has no resumable stream, a folder moved
+ * within one server is a single rename, and what is left writes to WebDAV.
+ */
+export function pauseUnsupportedKey(row: TransferRow): string | null {
+  if (canPauseTransfer(row)) return null;
+  const route = transferRoute(row);
+  const relayOrMove =
+    row.direction === 'copy' || (row.direction === 'recursive' && row.intent.moving);
+  if (relayOrMove && route === 'server-copy') return 'transferQueue.pauseUnsupportedServerCopy';
+  if (relayOrMove && route === 'copy') return 'transferQueue.pauseUnsupportedCopy';
+  return 'transferQueue.pauseUnsupportedWebdav';
 }
 
 export const STATUS_LABEL_KEY: Record<Exclude<TransferStatus, 'progress'>, string> = {

@@ -22,7 +22,13 @@ interface TransferBase {
 }
 export type TransferRow = TransferBase &
   (
-    | { direction: 'recursive'; dragOut?: false; intent: RecursiveIntent }
+    | {
+        direction: 'recursive';
+        dragOut?: false;
+        intent: RecursiveIntent;
+        /** The remote target's protocol, which decides whether a pause can carry on. */
+        targetProtocol?: SiteProtocol | undefined;
+      }
     | {
         direction: 'up';
         protocol: SiteProtocol;
@@ -86,16 +92,22 @@ const RESUMABLE_UPLOAD_PROTOCOLS: ReadonlySet<SiteProtocol> = new Set(['ftp', 'f
  * A pause promises the transfer will pick up where it left off, so it is
  * offered only where that can be honoured. Downloads resume from their local
  * partial on every protocol; uploads depend on the protocol above. A folder
- * walk keeps a journal of what it has delivered and carries on past it, in any
- * direction, except a move within one server: that is a single rename, with
- * nothing to pause. Relay copies have no resumable stream at all, and a
- * drag-out has no destination of ours to resume into.
+ * walk keeps a journal of what it has delivered and carries on past it, but the
+ * file the pause cut short carries on only where uploads resume, so a walk into
+ * a WebDAV server cannot pause either. Nor can a move within one server: that
+ * is a single rename, with nothing to pause. Relay copies have no resumable
+ * stream at all, and a drag-out has no destination of ours to resume into.
  */
 export function canPauseTransfer(row: TransferRow): boolean {
   if (row.dragOut) return false;
   if (row.direction === 'recursive') {
     const { moving, source, target } = row.intent;
-    return !(moving && source.kind === 'remote' && target.kind === 'remote');
+    if (target.kind === 'local') return true;
+    return (
+      !(moving && source.kind === 'remote') &&
+      row.targetProtocol !== undefined &&
+      RESUMABLE_UPLOAD_PROTOCOLS.has(row.targetProtocol)
+    );
   }
   return (
     row.direction !== 'copy' &&

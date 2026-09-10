@@ -120,7 +120,7 @@ test('a rejected recursive IPC settles its row instead of leaving progress activ
 
 test('folder upload, download and relay submit endpoint intent without per-file IPC', async () => {
   for (const direction of ['upload', 'download', 'relay']) {
-    await withHarness(async ({ getApi, mockApi, calls, errors }) => {
+    await withHarness(async ({ getApi, mockApi, calls, errors, getSnapshot }) => {
       let submitted = false;
       mockApi.transfer.recursive = async (intent) => {
         submitted = true;
@@ -157,6 +157,12 @@ test('folder upload, download and relay submit endpoint intent without per-file 
       assert.ok(submitted);
       assert.equal(calls.fsLocalDelete.length + calls.sessionDelete.length, 0);
       assert.equal(calls.upload.length + calls.download.length, 0);
+      const row = Object.values(getSnapshot())[0];
+      assert.equal(
+        row?.direction === 'recursive' ? row.targetProtocol : null,
+        direction === 'download' ? undefined : 'sftp',
+        'the row keeps the protocol that decides whether it can pause',
+      );
       assert.match(errors[0]!, /Nested mkdir denied/);
     });
   }

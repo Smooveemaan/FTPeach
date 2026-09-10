@@ -7,13 +7,14 @@ import Icon from '../../../components/Icon.tsx';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 import { updateSpeedSample } from '../transferSpeed.ts';
 import type { SpeedSamples } from '../transferSpeed.ts';
-import { canPauseTransfer, canRetryTransfer, type TransferRow } from '../transferStore.ts';
+import { canRetryTransfer, type TransferRow } from '../transferStore.ts';
 import type { ReorderableColumnKey } from '../transferColumns.ts';
 import {
   STATUS_LABEL_KEY,
   PROGRESS_LABEL_KEY,
   DIR_ICON,
   DIR_TITLE_KEY,
+  pauseUnsupportedKey,
   transferRoute,
 } from '../transferPresentation.ts';
 interface TransferItemRowProps {
@@ -56,16 +57,7 @@ export default function TransferItemRow({
   const hasTotal = total > 0;
   const percent = hasTotal ? Math.min(100, Math.round((item.bytes / total) * 100)) : null;
   const showBar = hasTotal && item.status !== 'error';
-  // Why Pause is greyed out, named for what the row really is: a folder moved
-  // within one server is a single rename, a relay copy has no resumable
-  // stream, and what is left is an upload over WebDAV.
-  const pauseUnsupportedKey = canPauseTransfer(item)
-    ? null
-    : route === 'server-copy'
-      ? 'transferQueue.pauseUnsupportedServerCopy'
-      : route === 'copy'
-        ? 'transferQueue.pauseUnsupportedCopy'
-        : 'transferQueue.pauseUnsupportedWebdav';
+  const pauseUnsupported = pauseUnsupportedKey(item);
   const retryUnsupported = !canRetryTransfer(item);
   const speed = updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
   const remaining =
@@ -220,8 +212,8 @@ export default function TransferItemRow({
               <button
                 type="button"
                 className="pause-btn"
-                data-tooltip={t(pauseUnsupportedKey ?? 'transferQueue.status.paused')}
-                disabled={pauseUnsupportedKey !== null}
+                data-tooltip={t(pauseUnsupported ?? 'transferQueue.status.paused')}
+                disabled={pauseUnsupported !== null}
                 onClick={() => onPause(item.id)}
               >
                 <Icon name="pause" size={11} />

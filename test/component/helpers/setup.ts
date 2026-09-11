@@ -1,4 +1,4 @@
-/* global HTMLElement, window */
+/* global HTMLCanvasElement, HTMLElement, window */
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
@@ -25,6 +25,15 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
 Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
   configurable: true,
   value: () => new DOMRect(),
+});
+
+// Without the native `canvas` package jsdom has no 2D context: getContext()
+// returns null and reports "Not implemented" on the console, once per call.
+// The text-measuring callers already fall back without a context, so return
+// the same null without the report.
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  configurable: true,
+  value: () => null,
 });
 
 Object.defineProperty(globalThis, 'crypto', {

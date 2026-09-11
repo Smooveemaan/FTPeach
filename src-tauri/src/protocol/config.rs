@@ -212,6 +212,37 @@ impl ConnectionConfig {
         }
         .to_string()
     }
+
+    /// How the log file and the diagnostic bundle name this server: address
+    /// and port, never the user name or anything else from the account, so
+    /// the file can be attached to a bug report as it is.
+    pub fn log_label(&self) -> String {
+        fn host_port(host: &str, port: u16) -> String {
+            if host.contains(':') && !host.starts_with('[') {
+                format!("[{host}]:{port}")
+            } else {
+                format!("{host}:{port}")
+            }
+        }
+        match self {
+            Self::Ftp(config) => format!(
+                "{}://{}",
+                if config.secure { "ftps" } else { "ftp" },
+                host_port(&config.host, config.port)
+            ),
+            Self::Sftp(config) => format!("sftp://{}", host_port(&config.host, config.port)),
+            Self::Webdav(config) => reqwest::Url::parse(&config.url)
+                .ok()
+                .and_then(|url| {
+                    let host = url.host_str()?;
+                    Some(match url.port() {
+                        Some(port) => format!("{}://{host}:{port}", url.scheme()),
+                        None => format!("{}://{host}", url.scheme()),
+                    })
+                })
+                .unwrap_or_else(|| "webdav".to_string()),
+        }
+    }
 }
 
 impl Drop for ConnectionConfig {
@@ -331,6 +362,31 @@ mod tests {
             let error = ConnectionConfig::from_json_map(&map(value)).unwrap_err();
             assert!(error.downcast_ref::<crate::ipc::CommandError>().is_some());
         }
+    }
+
+    #[test]
+    fn log_label_names_the_server_without_the_account() {
+        let label = |value: serde_json::Value| {
+            ConnectionConfig::from_json_map(&map(value))
+                .unwrap()
+                .log_label()
+        };
+        assert_eq!(
+            label(json!({"protocol":"ftps", "host":"example.test", "user":"alice"})),
+            "ftps://example.test:21"
+        );
+        assert_eq!(
+            label(json!({"protocol":"sftp", "host":"::1", "port":2222, "user":"alice"})),
+            "sftp://[::1]:2222"
+        );
+        assert_eq!(
+            label(json!({
+                "protocol":"webdav",
+                "webdavUrl":"https://alice:secret@dav.example.test:8443/remote.php/dav?token=x",
+                "user":"alice"
+            })),
+            "https://dav.example.test:8443"
+        );
     }
 
     #[test]

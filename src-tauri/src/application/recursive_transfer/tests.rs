@@ -410,7 +410,6 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
     fn is_connected(&self) -> bool {
         true
     }
-    fn set_log_enabled(&mut self, _: bool) {}
     fn set_log_sink(
         &mut self,
         _: Option<Arc<dyn Fn(crate::protocol::LogText, crate::protocol::LogKind) + Send + Sync>>,

@@ -58,6 +58,63 @@ export function createDateFormatter(
 }
 
 /**
+ * Log timestamps: `time` for the panel, down to the millisecond — a protocol
+ * exchange is over within one second — and `dateTime` for copied and saved
+ * text, which may span days. Both follow the preference's 12- or 24-hour clock
+ * and, for `dateTime`, its date order.
+ */
+export interface LogTimeFormatter {
+  time: (timestamp: number) => string;
+  dateTime: (timestamp: number) => string;
+}
+
+export function createLogTimeFormatter(
+  preference: unknown,
+  hourCycle: 'h12' | 'h23' | null,
+): LogTimeFormatter {
+  const resolved = typeof preference === 'string' ? preference : 'locale';
+  const pad = (n: number, width = 2) => String(n).padStart(width, '0');
+  if (resolved === 'locale') {
+    const time = new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      fractionalSecondDigits: 3,
+      ...(hourCycle ? { hourCycle } : {}),
+    });
+    const date = new Intl.DateTimeFormat(undefined, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    return {
+      time: (timestamp) => time.format(timestamp),
+      dateTime: (timestamp) => `${date.format(timestamp)} ${time.format(timestamp)}`,
+    };
+  }
+  const twelveHour = resolved.includes('hh');
+  const datePattern = resolved === 'iso' ? 'yyyy-MM-dd' : (resolved.split(' ')[0] ?? 'yyyy-MM-dd');
+  const time = (timestamp: number) => {
+    const value = new Date(timestamp);
+    const hours = value.getHours();
+    const clock = `${pad(twelveHour ? hours % 12 || 12 : hours)}:${pad(value.getMinutes())}:${pad(
+      value.getSeconds(),
+    )}.${pad(value.getMilliseconds(), 3)}`;
+    return twelveHour ? `${clock} ${hours < 12 ? 'AM' : 'PM'}` : clock;
+  };
+  const date = (timestamp: number) => {
+    const value = new Date(timestamp);
+    const parts: Record<string, string> = {
+      yyyy: String(value.getFullYear()),
+      MM: pad(value.getMonth() + 1),
+      dd: pad(value.getDate()),
+    };
+    return datePattern.replace(/yyyy|MM|dd/g, (token) => parts[token] ?? token);
+  };
+  return { time, dateTime: (timestamp) => `${date(timestamp)} ${time(timestamp)}` };
+}
+
+/**
  * The live formatter, owned by settings because the preference is a setting.
  *
  * It is a subscribable store rather than a value threaded through props: the
@@ -75,6 +132,7 @@ export function createDateFormatter(
  * without touching this store at all.
  */
 let formatter: DateFormatter = createDateFormatter('locale', null);
+let logTimeFormatter: LogTimeFormatter = createLogTimeFormatter('locale', null);
 let preference = 'locale';
 let systemHourCycle: 'h12' | 'h23' | null = null;
 const subscribers = new Set<() => void>();
@@ -88,6 +146,7 @@ export function setDateFormatPreference(
   preference = resolved;
   systemHourCycle = hourCycle;
   formatter = createDateFormatter(preference, systemHourCycle);
+  logTimeFormatter = createLogTimeFormatter(preference, systemHourCycle);
   for (const notify of subscribers) notify();
 }
 
@@ -104,5 +163,14 @@ export function useDateFormatter(): DateFormatter {
     subscribe,
     () => formatter,
     () => formatter,
+  );
+}
+
+/** The log timestamp formatter for the current preference. */
+export function useLogTimeFormatter(): LogTimeFormatter {
+  return useSyncExternalStore(
+    subscribe,
+    () => logTimeFormatter,
+    () => logTimeFormatter,
   );
 }

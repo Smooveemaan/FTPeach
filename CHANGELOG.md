@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   or show columns.
 - Double-click a column divider in the transfer list to fit the column to its contents.
 - Set the most connections a bookmark may open to its server in the Site Manager.
+- Search the log, and choose which kinds of messages it shows by Filter button.
 
 ### Changed
 
@@ -20,6 +21,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - SFTP downloads are faster.
 - Transfers start sooner, without waiting for every extra connection to log in.
 - Dropping many files at once starts faster.
+- The log records even while its panel is closed, so opening it shows what already happened.
+- Writing the log to a file no longer needs the log panel open.
+- The log panel keeps more lines and shows times to the millisecond, in your time format.
+- The log shows the time of each line by default. You can turn this off in Settings.
+- Log files are named by date, name the server, and old ones are removed once they take
+  too much space.
+- The diagnostic bundle includes the recent log and the app's own error log.
 
 ### Fixed
 
@@ -41,6 +49,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Saving a connection as a bookmark renames its pane and tab to match.
 - The “Connect first” hint is easier to read.
 - A finished transfer always shows 100%.
+- Showing the log no longer waits for a connection that is stuck.
+- Log lines no longer come out of order during busy transfers.
+- Reset Layout and Cache no longer opens or closes the log.
 - Tooltips near the window's edge no longer wrap onto two lines when one would fit.
 
 ## [0.1.2] - 2026-09-10

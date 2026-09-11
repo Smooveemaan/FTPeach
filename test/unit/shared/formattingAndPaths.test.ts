@@ -83,7 +83,7 @@ test('formatting supports a secondary Unicode locale', async () => {
   assert.equal(formatBytes(1024), '1.0 \u041a\u0411');
   assert.equal(
     remoteCrumbs('/a')[0]?.label,
-    '\u0413\u043b\u0430\u0432\u043d\u0430\u044f \u043f\u0430\u043f\u043a\u0430',
+    '\u041a\u043e\u0440\u043d\u0435\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430',
   );
 });
 

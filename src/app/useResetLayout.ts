@@ -5,7 +5,7 @@ import type { AppSettings } from '../platform/api/settings.ts';
 import { commandResultError } from '../shared/errorMessages.ts';
 
 interface ResetLayoutOptions {
-  update: Pick<SettingsUpdaters, 'layout' | 'logging'>;
+  update: Pick<SettingsUpdaters, 'layout'>;
   confirm: (message: string, action: () => Promise<void>, options: object) => void;
   confirmMessage: string;
   confirmLabel: string;
@@ -21,20 +21,12 @@ export function useResetLayout(options: ResetLayoutOptions): () => void {
       async () => {
         const result = await resetLayoutFromApi(api.app, {
           updateLayout: options.update.layout,
-          updateLogging: options.update.logging,
           hydrateSectionResizeFromSettings: options.hydrateLayout,
         });
         if (!result.ok) {
           options.reportError(commandResultError(result));
           return;
         }
-        // The renderer-side log stream (api.log) is a separate live
-        // toggle from the `logEnabled` setting — normally kept in sync by
-        // whatever changed the setting (see useWorkspaceLayout's toggleLog).
-        // A layout reset changes `logEnabled` by writing straight to the
-        // backend store, bypassing that pairing, so it has to stop the
-        // stream itself here.
-        api.log.setEnabled(!!result.settings?.logEnabled);
         options.onReset?.();
       },
       { confirmLabel: options.confirmLabel, danger: false },

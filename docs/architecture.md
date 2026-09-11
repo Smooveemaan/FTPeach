@@ -63,9 +63,15 @@ Each worker is a separate authenticated `ProtocolBackend`. A fixed pool limits c
 
 Tasks wait in a FIFO queue. Canceling a queued task removes it; an active task receives a `CancellationToken`, while non-interruptible I/O is stopped by disconnecting its worker. Lost workers are replaced. Destroying the pool rejects new tasks and closes workers. Server-to-server copies reserve workers from the source and target pools and relay bytes through a bounded in-memory pipe; relay transfers do not support resume.
 
-Protocol backends share `protocol::backend_logger::BackendLogger` for enablement, sink ownership,
+Protocol backends share `protocol::backend_logger::BackendLogger` for sink ownership,
 thread-safe emission, and structured events. FTP, SFTP, and WebDAV keep wire-level formatting in
-their own modules while relying on the shared component for logging lifecycle state.
+their own modules while relying on the shared component for logging lifecycle state. Logging has
+no on/off switch: every line reaches `runtime::log_emitter::LogEmitter`, which keeps the last
+5,000 records in memory whether or not the log panel is open. A single writer task sends them to
+the panel as `protocol:log` batches and, when the user turns it on, appends them to a daily
+`ftpeach-YYYY-MM-DD.log`. The panel reads the history with `log_recent` when it opens, and the
+diagnostic bundle is built from the same records plus the end of the application log
+(`ftpeach-app.log`, written by `runtime::app_log` in every build).
 
 WebDAV connection and file-operation orchestration stays in `protocol/webdav.rs`. Parsing of
 PROPFIND responses, href normalization, HTTP dates, and resumed-response range validation lives in
@@ -130,7 +136,7 @@ cycle between crate modules however long the path.
 
 Command modules do not see each other, so anything two of them need lives with its owner:
 `pool_for` is a method on `Sessions`, `NO_SESSION` sits with the response envelopes in `ipc`,
-`LogState` with the emitter in `runtime`, `classify_transfer_error` in `transfer`,
+`LogEmitter` in `runtime`, `classify_transfer_error` in `transfer`,
 `DragOutFile` in `native_drag`, and `apply_speed_limit`/`apply_prevent_sleep`/
 `apply_log_date_format` in `runtime/settings_apply.rs`.
 

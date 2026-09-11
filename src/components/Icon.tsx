@@ -221,6 +221,9 @@ const PATHS = {
       <circle cx="11" cy="11" r="8" />
     </>
   ),
+  funnel: (
+    <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
+  ),
   power: (
     <>
       <path d="M12 2v10" />
@@ -268,12 +271,6 @@ const PATHS = {
     <>
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-    </>
-  ),
-  clock: (
-    <>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
     </>
   ),
   gripVertical: (

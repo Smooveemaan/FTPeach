@@ -4,6 +4,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { Theme } from '@tauri-apps/api/window';
 import { createDragOutApi } from './api/dragOut.ts';
+import { installConsoleForwarding } from './consoleForwarding.ts';
 import { createFilesystemApi } from './api/filesystem.ts';
 import { createProxyApi } from './api/proxy.ts';
 import { createSessionApi } from './api/session.ts';
@@ -201,8 +202,9 @@ export const tauriApi: Window['api'] = {
   },
   dragOut: createDragOutApi(invoke),
   log: {
-    setEnabled: (enabled: boolean | undefined) => invoke('log_set_enabled', { enabled }),
     setFileLogging: (enabled: boolean | undefined) => invoke('log_set_file_logging', { enabled }),
+    recent: (): Promise<LogEntry[]> =>
+      checkedResponse('log_recent', invoke('log_recent'), isLogEntryArray, (): LogEntry[] => []),
     save: (content: string): Promise<SaveFileResult> =>
       checkedResponse(
         'log_save',
@@ -210,10 +212,10 @@ export const tauriApi: Window['api'] = {
         isSaveFileResult,
         (raw): SaveFileResult => commandFailure('log_save', raw),
       ),
-    exportDiagnostics: (content: string): Promise<SaveFileResult> =>
+    exportDiagnostics: (): Promise<SaveFileResult> =>
       checkedResponse(
         'log_export_diagnostics',
-        invoke('log_export_diagnostics', { content }),
+        invoke('log_export_diagnostics'),
         isSaveFileResult,
         (raw): SaveFileResult => commandFailure('log_export_diagnostics', raw),
       ),
@@ -321,6 +323,10 @@ export const tauriApi: Window['api'] = {
  * this, and only inside Tauri; keeping the assignment here is what lets the
  * boundary checker say `window.api` appears nowhere outside `platform/`.
  */
+let disposeConsoleForwarding: (() => void) | null = null;
+
 export function installTauriApi(): void {
   window.api = tauriApi;
+  disposeConsoleForwarding?.();
+  disposeConsoleForwarding = installConsoleForwarding(rawInvoke);
 }

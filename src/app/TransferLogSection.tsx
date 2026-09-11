@@ -50,7 +50,7 @@ interface TransferLogSectionProps {
     activeConnectionIds: LogPanelProps['activeConnectionIds'];
     connectionLabels: LogPanelProps['connectionLabels'];
     showTimestamps: boolean;
-    onToggleTimestamps: () => unknown;
+    formatTime: LogPanelProps['formatTime'];
   };
 }
 
@@ -133,7 +133,7 @@ export default function TransferLogSection({
             activeConnectionIds={log.activeConnectionIds}
             connectionLabels={log.connectionLabels}
             showTimestamps={log.showTimestamps}
-            onToggleTimestamps={log.onToggleTimestamps}
+            formatTime={log.formatTime}
           />
         </div>
       </>
@@ -186,7 +186,7 @@ export default function TransferLogSection({
             activeConnectionIds={log.activeConnectionIds}
             connectionLabels={log.connectionLabels}
             showTimestamps={log.showTimestamps}
-            onToggleTimestamps={log.onToggleTimestamps}
+            formatTime={log.formatTime}
           />
         </>
       )}

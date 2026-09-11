@@ -320,7 +320,6 @@ pub trait ProtocolBackend: Send {
     async fn connect(&mut self, config: &config::ConnectionConfig) -> BackendResult<()>;
     async fn disconnect(&mut self) -> BackendResult<()>;
     fn is_connected(&self) -> bool;
-    fn set_log_enabled(&mut self, enabled: bool);
     fn set_log_sink(&mut self, sink: Option<Arc<dyn Fn(LogText, LogKind) + Send + Sync>>);
     /// Writes a translated line into this connection's log panel, for callers
     /// above the protocol layer that have something to tell the user about a

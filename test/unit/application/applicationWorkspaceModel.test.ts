@@ -16,7 +16,7 @@ test('workspace model derives status counters and section emptiness from domain 
   right.entries = [{ name: 'docs', isDirectory: true }];
 
   const noop = () => undefined;
-  const logLines = [{ id: 1, kind: 'info', ts: 1, connectionId: 'remote', line: 'connected' }];
+  const logLines = [{ seq: 1, kind: 'info', ts: 1, connectionId: 'remote', line: 'connected' }];
   const model = buildApplicationWorkspaceModel({
     effectivePaneOrientation: 'horizontal',
     showLocalPane: true,
@@ -64,7 +64,7 @@ test('workspace model derives status counters and section emptiness from domain 
       activeConnectionIds: new Set(['remote']),
       connectionLabels: new Map([['remote', 'Server']]),
       showTimestamps: true,
-      onToggleTimestamps: noop,
+      formatTime: { time: String, dateTime: String },
     },
     panes: { a: left, b: right },
     status: {

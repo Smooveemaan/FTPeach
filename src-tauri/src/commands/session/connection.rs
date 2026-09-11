@@ -7,7 +7,7 @@
 use crate::application::session_service;
 use crate::domain::ConnectionConfig as IpcConnectionConfig;
 use crate::ipc::{CommandError, CommandResult, OkResult};
-use crate::runtime::log_emitter::{LogEmitter, LogState};
+use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Sessions};
 use crate::store::Store;
@@ -41,7 +41,6 @@ pub enum SessionConnectResult {
 pub async fn session_connect(
     sessions: State<'_, Sessions>,
     connecting: State<'_, ConnectingClients>,
-    log_state: State<'_, LogState>,
     log_emitter: State<'_, LogEmitter>,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
@@ -52,7 +51,6 @@ pub async fn session_connect(
     let outcome = session_service::connect(
         &sessions,
         &connecting,
-        &log_state,
         &log_emitter,
         &store,
         &vault,

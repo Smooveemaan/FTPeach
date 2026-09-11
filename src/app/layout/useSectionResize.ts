@@ -30,8 +30,9 @@ const PANE_MIN_WIDTH_FALLBACK = 120;
 
 const PANE_MIN_HEIGHT_HORIZONTAL = 200;
 
+// The log starts as tall as the transfer list, narrow or not.
 const NARROW_TRANSFER_QUEUE_MAX = 96;
-const NARROW_LOG_PANEL_MAX = 84;
+const NARROW_LOG_PANEL_MAX = 96;
 
 export interface SectionResizeModel {
   hydrateFromSettings: (s: AppSettings) => void;

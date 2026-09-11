@@ -659,7 +659,6 @@ async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
     let mut resume = WebDavBackend::new();
     let resumed_range = Arc::new(AtomicBool::new(false));
     let observed_range = resumed_range.clone();
-    resume.set_log_enabled(true);
     resume.set_log_sink(Some(Arc::new(move |text, _| {
         if let app_lib::protocol::LogText::Raw(text) = text
             && text.contains(&format!("Range: bytes={partial_size}-"))

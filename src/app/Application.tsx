@@ -3,7 +3,7 @@ import TitleBar from './TitleBar.tsx';
 import MenuBar from '../components/MenuBar.tsx';
 import ViewToolbar from './ViewToolbar.tsx';
 import { rememberConnectionLabels, useTransfers } from '../features/transfers/index.ts';
-import { useLogLines } from '../features/logs/index.ts';
+import { useLogLines, useRememberedConnectionLabels } from '../features/logs/index.ts';
 import { useTranslation } from 'react-i18next';
 import { useTooltip } from '../hooks/useTooltip.ts';
 import {
@@ -21,7 +21,12 @@ import { useWorkspaceLayout } from './useWorkspaceLayout.ts';
 import { useFileBrowserPaneModel } from './useFileBrowserPaneModel.tsx';
 import AppBanners from './AppBanners.tsx';
 import Workspace from './Workspace.tsx';
-import { settingsValues, useSettings, useSettingsTransfer } from '../features/settings/index.ts';
+import {
+  settingsValues,
+  useLogTimeFormatter,
+  useSettings,
+  useSettingsTransfer,
+} from '../features/settings/index.ts';
 import { useSites, useSiteSaveWorkflow } from '../features/sites/index.ts';
 import AppDialogs from './AppDialogs.tsx';
 import { useApplicationSettings } from './useApplicationSettings.ts';
@@ -79,7 +84,8 @@ export default function Application() {
     persistSettingsDialogPatch,
   } = useSettings();
   const { layout, logging } = settings;
-  const { lines: logLines, clear: clearLogLines } = useLogLines();
+  const { lines: logLines, clear: clearLogLines } = useLogLines(logging.logEnabled);
+  const formatLogTime = useLogTimeFormatter();
 
   const searchInputARef = useRef<FileSearchHandle | null>(null);
   const searchInputBRef = useRef<FileSearchHandle | null>(null);
@@ -111,7 +117,6 @@ export default function Application() {
     toggleTransferQueue,
     toggleHiddenFiles,
     toggleLog,
-    toggleLogTimestamps,
     togglePaneOrientation,
   } = useWorkspaceLayout({ layout, logging, update: updateSettings });
 
@@ -255,6 +260,7 @@ export default function Application() {
     onVaultUnlockRequired: handler(handleVaultUnlockRequired),
     stopTransfersForConnection,
   });
+  const logConnectionLabels = useRememberedConnectionLabels(connectionLabels);
   const routeConnectionLabels = useMemo(
     () =>
       new Map(
@@ -382,7 +388,13 @@ export default function Application() {
     confirmMessage: t('confirm.resetLayout'),
     confirmLabel: t('common.reset'),
     reportError,
-    hydrateLayout: hydrateSectionResizeFromSettings,
+    hydrateLayout: (resetSettings) => {
+      hydrateSectionResizeFromSettings(resetSettings);
+      // The transfer list and log come out as a double-click on their
+      // dividers leaves them, narrow or not.
+      resetSectionHeight('transfers')();
+      resetSectionHeight('log')();
+    },
     update: updateSettings,
   });
 
@@ -568,9 +580,9 @@ export default function Application() {
       lines: logLines,
       onClear: clearLogLines,
       activeConnectionIds: openConnectionIds,
-      connectionLabels,
+      connectionLabels: logConnectionLabels,
       showTimestamps: logging.logShowTimestamps,
-      onToggleTimestamps: toggleLogTimestamps,
+      formatTime: formatLogTime,
     },
     panes,
     status: {
@@ -622,7 +634,6 @@ export default function Application() {
       registerOpened: handleOpenWithOpened,
     },
     openWithAssociations: settings.transfers.openWithAssociations,
-    logLines,
     runUpload,
     refreshPane,
     windowNarrow,

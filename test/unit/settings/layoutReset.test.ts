@@ -8,20 +8,15 @@ type LayoutResetTargets = Parameters<typeof resetLayoutFromApi>[1];
 
 interface Recorded {
   layout: Record<string, unknown>;
-  logging: Record<string, unknown>;
   hydrated: unknown;
   touched: boolean;
 }
 
 function recordingTargets(): { targets: LayoutResetTargets; recorded: Recorded } {
-  const recorded: Recorded = { layout: {}, logging: {}, hydrated: undefined, touched: false };
+  const recorded: Recorded = { layout: {}, hydrated: undefined, touched: false };
   const targets: LayoutResetTargets = {
     updateLayout: (patch) => {
       Object.assign(recorded.layout, patch);
-      recorded.touched = true;
-    },
-    updateLogging: (patch) => {
-      Object.assign(recorded.logging, patch);
       recorded.touched = true;
     },
     hydrateSectionResizeFromSettings: (settings) => {
@@ -46,7 +41,6 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
     showTransferQueue: false,
     paneOrientation: 'vertical',
     splitRatio: 0.4,
-    logEnabled: true,
   };
   const { targets, recorded } = recordingTargets();
 
@@ -69,7 +63,6 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
   assert.equal(recorded.layout.showRemotePane, true);
   assert.equal(recorded.layout.showTransferQueue, false);
   assert.equal(recorded.layout.paneOrientation, 'vertical');
-  assert.equal(recorded.logging.logEnabled, true);
   assert.equal(recorded.hydrated, settings);
 });
 
@@ -97,5 +90,4 @@ test('reset layout falls back to frontend defaults for missing layout fields', a
   assert.equal(recorded.layout.showRemotePane, true);
   assert.equal(recorded.layout.showTransferQueue, true);
   assert.equal(recorded.layout.paneOrientation, SETTINGS_DEFAULTS.paneOrientation);
-  assert.equal(recorded.logging.logEnabled, SETTINGS_DEFAULTS.logEnabled);
 });

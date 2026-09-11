@@ -54,4 +54,22 @@ describe('ContextMenu scale-aware positioning', () => {
     expect(parseFloat(style.left)).toBeCloseTo(localWidth - 220, 5);
     expect(parseFloat(style.top)).toBeCloseTo(localHeight - ITEMS.length * 28 - 40, 5);
   });
+
+  test('a button menu without room below opens upward from the button', () => {
+    setViewport(1000, 800);
+    const { container } = render(
+      <ContextMenu x={100} y={782} aboveY={756} items={ITEMS} onClose={() => {}} />,
+    );
+    const style = menuStyle(container);
+    expect(style.top).toBe('');
+    expect(style.bottom).toBe(`${800 - 756}px`);
+  });
+
+  test('a button menu with room below still opens downward', () => {
+    setViewport(1000, 800);
+    const { container } = render(
+      <ContextMenu x={100} y={120} aboveY={94} items={ITEMS} onClose={() => {}} />,
+    );
+    expect(menuStyle(container).top).toBe('120px');
+  });
 });

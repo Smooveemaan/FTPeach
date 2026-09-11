@@ -485,19 +485,6 @@ impl TransferPool {
         self.drain();
     }
 
-    /// Forwarded to every *currently idle* worker's backend — new workers
-    /// already pick up the setting via the factory closure, an
-    /// already-connected idle one needs telling directly. A worker mid
-    /// transfer when this is called won't see the change until it goes
-    /// idle again (its backend is temporarily owned by the executing task,
-    /// not reachable from here) — a deliberate, diagnostic-only gap.
-    pub fn set_log_enabled(&self, enabled: bool) {
-        let mut state = self.state.lock().unwrap();
-        for worker in state.workers.iter_mut() {
-            worker.set_log_enabled(enabled);
-        }
-    }
-
     pub async fn destroy(&self) {
         self.growth_cancel.cancel();
         let (idle_workers, queued, active_tokens) = {
@@ -562,7 +549,6 @@ mod tests {
         fn is_connected(&self) -> bool {
             self.connected
         }
-        fn set_log_enabled(&mut self, _enabled: bool) {}
         fn set_log_sink(
             &mut self,
             _sink: Option<

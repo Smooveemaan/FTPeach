@@ -7,7 +7,6 @@ import type {
 } from '../features/settings/index.ts';
 import type { ResizableSection } from './layout/sectionResizeReducer.ts';
 import { useSectionResize } from './layout/useSectionResize.ts';
-import { api } from '../platform/api/index.ts';
 import type { AppSettings } from '../platform/api/settings.ts';
 import { persistSetting } from '../platform/persistSetting.ts';
 
@@ -30,7 +29,6 @@ export interface WorkspaceLayoutModel {
   toggleTransferQueue: () => void;
   toggleHiddenFiles: () => void;
   toggleLog: () => void;
-  toggleLogTimestamps: () => void;
   togglePaneOrientation: () => void;
   hydrateFromSettings: (s: AppSettings) => void;
   transferLogRef: MutableRefObject<HTMLDivElement | null>;
@@ -117,17 +115,8 @@ export function useWorkspaceLayout({
   const toggleLog = () => {
     update.logging((previous) => {
       const next = !previous.logEnabled;
-      api.log.setEnabled(next);
       persistSetting({ logEnabled: next });
       return { logEnabled: next };
-    });
-  };
-
-  const toggleLogTimestamps = () => {
-    update.logging((previous) => {
-      const next = !previous.logShowTimestamps;
-      persistSetting({ logShowTimestamps: next });
-      return { logShowTimestamps: next };
     });
   };
 
@@ -148,7 +137,6 @@ export function useWorkspaceLayout({
     toggleTransferQueue,
     toggleHiddenFiles,
     toggleLog,
-    toggleLogTimestamps,
     togglePaneOrientation,
   };
 }

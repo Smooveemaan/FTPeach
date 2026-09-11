@@ -2,7 +2,6 @@
 //! crosses this module before it can leave the process.
 
 use regex::{Captures, Regex};
-use serde_json::Value;
 use std::sync::OnceLock;
 
 const REDACTED: &str = "[REDACTED]";
@@ -97,27 +96,9 @@ pub fn redact(input: &str) -> String {
         .into_owned()
 }
 
-/// Converts renderer-provided diagnostics into a real JSON value. The current
-/// renderer sends an array of log records; the line fallback keeps older
-/// callers readable instead of embedding one long escaped string.
-pub fn pretty_log_value(input: &str) -> Value {
-    let redacted = redact(input);
-    match serde_json::from_str::<Value>(&redacted) {
-        Ok(Value::Array(records)) => Value::Array(records),
-        Ok(value) => value,
-        Err(_) => Value::Array(
-            redacted
-                .lines()
-                .filter(|line| !line.trim().is_empty())
-                .map(|line| Value::String(line.to_string()))
-                .collect(),
-        ),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{pretty_log_value, redact};
+    use super::redact;
 
     #[test]
     fn redacts_headers_fields_and_sensitive_query_values() {
@@ -160,13 +141,11 @@ mod tests {
     }
 
     #[test]
-    fn generated_secrets_never_survive_export_redaction() {
+    fn generated_secrets_never_survive_redaction() {
         for index in 0..256u32 {
             let secret = format!("property-secret-{index:08x}");
-            let input =
-                format!(r#"[{{"line":"password={secret}"}},{{"line":"/?token={secret}"}}]"#);
-            let exported = serde_json::to_string(&pretty_log_value(&input)).unwrap();
-            assert!(!exported.contains(&secret));
+            let input = format!("password={secret} GET /?token={secret}");
+            assert!(!redact(&input).contains(&secret));
         }
     }
 
@@ -183,28 +162,6 @@ mod tests {
         assert_eq!(
             redact("GET /public?file=readme.txt 200"),
             "GET /public?file=readme.txt 200"
-        );
-    }
-
-    #[test]
-    fn diagnostic_log_is_a_pretty_printable_array_not_an_escaped_json_string() {
-        let value = pretty_log_value(
-            r#"[{"ts":1,"kind":"status","line":"connected"},{"ts":2,"line":"password=secret"}]"#,
-        );
-        let records = value.as_array().expect("log must stay a JSON array");
-        assert_eq!(records.len(), 2);
-        assert_eq!(records[0]["line"], "connected");
-        assert_eq!(records[1]["line"], "password=[REDACTED]");
-        let pretty = serde_json::to_string_pretty(&value).unwrap();
-        assert!(pretty.contains("\n  {"));
-        assert!(!pretty.starts_with('"'));
-    }
-
-    #[test]
-    fn legacy_text_log_becomes_one_array_item_per_line() {
-        assert_eq!(
-            pretty_log_value("first line\nsecond line"),
-            serde_json::json!(["first line", "second line"])
         );
     }
 }

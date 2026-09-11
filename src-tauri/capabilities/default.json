@@ -15,6 +15,7 @@
     "core:window:allow-is-maximized",
     "core:window:allow-set-theme",
     "core:window:allow-set-background-color",
+    "log:allow-log",
     "sensitive:allow-authorize-sensitive",
     "sensitive:allow-sites-reveal-secret",
     "sensitive:allow-settings-reveal-proxy-password",

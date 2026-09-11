@@ -136,7 +136,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     autoReconnectTabsValue: !!settings.autoReconnectTabs,
     saveSessionOnExitValue: settings.saveSessionOnExit !== false,
     logEnabledValue: !!settings.logEnabled,
-    logShowTimestampsValue: !!settings.logShowTimestamps,
+    logShowTimestampsValue: settings.logShowTimestamps !== false,
     logToFileValue: !!settings.logToFile,
     vaultAutoLockValue: settings.vaultAutoLockMinutes ? String(settings.vaultAutoLockMinutes) : '',
     showSecurityConfirmationsValue: settings.showSecurityConfirmations !== false,

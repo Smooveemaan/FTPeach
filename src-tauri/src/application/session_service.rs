@@ -6,13 +6,12 @@ use crate::ipc::{CommandError, ErrorCode};
 use crate::protocol::config::ConnectionConfig;
 use crate::protocol::sftp::HostKeyMismatchError;
 use crate::protocol::{ftp::FtpBackend, sftp::SftpBackend, webdav::WebDavBackend};
-use crate::runtime::log_emitter::{LogEmitter, LogState};
+use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Session, Sessions, teardown_session};
 use crate::store::{JsonMap, Store};
 use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
 use zeroize::Zeroize;
 
 /// A connection map that wipes its secret fields when dropped, so a failed
@@ -66,10 +65,13 @@ impl ConnectFailure {
     }
 }
 
+/// Builds a backend whose log lines go to the protocol log under
+/// `connection_id`, named as `server_label` in the file and the diagnostic
+/// bundle.
 pub(crate) fn create_backend(
     protocol: Protocol,
     connection_id: &str,
-    log_enabled: &Arc<AtomicBool>,
+    server_label: &str,
     log_emitter: &LogEmitter,
     store: &Store,
 ) -> BoxBackend {
@@ -78,11 +80,11 @@ pub(crate) fn create_backend(
         Protocol::Webdav => Box::new(WebDavBackend::new()),
         Protocol::Ftp | Protocol::Ftps => Box::new(FtpBackend::new()),
     };
-    backend.set_log_enabled(log_enabled.load(Ordering::Relaxed));
     let emitter = log_emitter.clone();
     let connection_id = connection_id.to_string();
+    let server_label = server_label.to_string();
     backend.set_log_sink(Some(Arc::new(move |text, kind| {
-        emitter.push(text, kind, connection_id.clone());
+        emitter.push(text, kind, &connection_id, &server_label);
     })));
     backend
 }
@@ -196,11 +198,9 @@ fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSiz
 /// same id waits rather than racing. Cancellation goes through
 /// `ConnectingClients`, which lets a disconnect abandon a stalled connect
 /// without waiting for the lock.
-#[allow(clippy::too_many_arguments)]
 pub(crate) async fn connect(
     sessions: &Sessions,
     connecting: &ConnectingClients,
-    log_state: &LogState,
     log_emitter: &LogEmitter,
     store: &Store,
     vault: &Vault,
@@ -230,15 +230,11 @@ pub(crate) async fn connect(
     let concurrency = typed_config.common().concurrency;
     let browse_timeout_ms = typed_config.common().timeout_ms;
     let server = typed_config.server();
+    let server_label = typed_config.log_label();
 
     let token = connecting.start(connection_id);
-    let mut browse_client = create_backend(
-        protocol,
-        connection_id,
-        &log_state.enabled,
-        log_emitter,
-        store,
-    );
+    let mut browse_client =
+        create_backend(protocol, connection_id, &server_label, log_emitter, store);
     let connect_result = tokio::select! {
         res = browse_client.connect(&typed_config) => res,
         _ = token.cancelled() => Err(anyhow::anyhow!("Canceled by user")),
@@ -266,19 +262,23 @@ pub(crate) async fn connect(
     let pool_protocol = protocol;
     let pool_connection_id = connection_id.to_string();
     let pool_config = typed_config.clone();
-    let log_enabled_handle = log_state.enabled.clone();
     let log_emitter_handle = log_emitter.clone();
     let store_handle = store.clone();
     let factory: crate::transfer::transfer_pool::BackendFactory = Arc::new(move || {
         let protocol = pool_protocol;
         let connection_id = pool_connection_id.clone();
         let config = pool_config.clone();
-        let log_enabled = log_enabled_handle.clone();
+        let server_label = server_label.clone();
         let log_emitter = log_emitter_handle.clone();
         let store = store_handle.clone();
         Box::pin(async move {
-            let mut backend =
-                create_backend(protocol, &connection_id, &log_enabled, &log_emitter, &store);
+            let mut backend = create_backend(
+                protocol,
+                &connection_id,
+                &server_label,
+                &log_emitter,
+                &store,
+            );
             backend.connect(&config).await?;
             Ok(backend)
         })

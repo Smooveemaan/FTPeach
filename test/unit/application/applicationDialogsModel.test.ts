@@ -1,28 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  applyPaneMode,
-  serializeRecentLogLines,
-} from '../../../src/app/applicationDialogsModel.ts';
+import { applyPaneMode } from '../../../src/app/applicationDialogsModel.ts';
 import { makePane } from '../../../src/features/file-browser/panes/paneModel.ts';
-import type { LogEntry } from '../../../src/shared/types.ts';
-
-const logEntry = (index: number): LogEntry => ({
-  line: `line-${index}`,
-  kind: 'info',
-  ts: index,
-  connectionId: 'remote',
-});
-
-test('diagnostics contain only the latest 200 log entries', () => {
-  const lines = Array.from({ length: 205 }, (_, index) => logEntry(index));
-  const serialized = JSON.parse(serializeRecentLogLines(lines)) as LogEntry[];
-
-  assert.equal(serialized.length, 200);
-  assert.equal(serialized[0]?.line, 'line-5');
-  assert.equal(serialized.at(-1)?.line, 'line-204');
-});
 
 test('chmod reports command failures without refreshing the pane', async () => {
   const left = makePane('a', 'remote');

@@ -17,7 +17,6 @@ pub use transfer::transfer_pool;
 
 use local_fs::open_with::OpenWithWatchers;
 use local_fs::{local_open::ApprovedLocalPaths, preview::PreviewPaths};
-use runtime::log_emitter::LogState;
 use runtime::updater::UpdaterState;
 use runtime::{sensitive_plugin, shutdown};
 use security::sensitive::AuthorizationState;
@@ -73,7 +72,6 @@ pub fn run() {
         .manage(store)
         .manage(vault)
         .manage(vault_guard::VaultGuard::default())
-        .manage(LogState::default())
         .manage(Sessions::default())
         .manage(ConnectingClients::default())
         .manage(shutdown::ShutdownCoordinator::default())
@@ -125,7 +123,7 @@ pub fn run() {
             commands::app::app_set_window_border,
             commands::app::debug_open_devtools,
             commands::app::app_reset_layout,
-            commands::log::log_set_enabled,
+            commands::log::log_recent,
             commands::log::log_save,
             commands::log::log_export_diagnostics,
             commands::log::log_set_file_logging,

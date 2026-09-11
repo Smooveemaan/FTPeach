@@ -7,7 +7,7 @@ import {
 } from '../../src/features/file-browser/components/fileListModel.ts';
 import type { FileEntry, Translate } from '../../src/shared/types.ts';
 import { createSiteSearchIndex, searchSites } from '../../src/features/sites/siteSearchModel.ts';
-import { appendLogBatch } from '../../src/features/logs/logBuffer.ts';
+import { mergeLogBatch } from '../../src/features/logs/logBuffer.ts';
 import { sortManagedEntries } from '../../src/features/sites/siteManagerModel.ts';
 import { formatBytes } from '../../src/shared/format.ts';
 
@@ -55,7 +55,7 @@ for (const size of SIZES) {
   }));
   const entriesById = new Map(entries.map((entry) => [entry.id, entry]));
   const index = createSiteSearchIndex(entries, entriesById);
-  const batch = entries.map((entry) => ({ message: entry.host }));
+  const batch = entries.map((entry, seq) => ({ seq, message: entry.host }));
   const run = () => ({
     index: measure(() => {
       createSiteSearchIndex(entries, entriesById);
@@ -64,8 +64,7 @@ for (const size of SIZES) {
       searchSites(index, 'server-7');
     }),
     log: measure(() => {
-      let id = 0;
-      appendLogBatch([], batch, () => ++id);
+      mergeLogBatch([], batch, -1);
     }),
   });
   run();

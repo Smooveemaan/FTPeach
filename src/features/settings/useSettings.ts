@@ -191,7 +191,6 @@ export function settingsValues(state: SettingsState): SettingsValues {
 export type SettingsPatch = Record<string, unknown>;
 type SettingsApi = { set: (patch: SettingsPatch) => Promise<SettingsSetResult> };
 type LogApi = {
-  setEnabled: (enabled: boolean | undefined) => unknown;
   setFileLogging: (enabled: boolean | undefined) => unknown;
 };
 
@@ -332,7 +331,7 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     closeToTray: !!s.closeToTray,
     paneOrientation,
     logEnabled: !!s.logEnabled,
-    logShowTimestamps: !!s.logShowTimestamps,
+    logShowTimestamps: s.logShowTimestamps !== false,
     logToFile: !!s.logToFile,
     keyboardShortcuts: normalizeKeyboardShortcuts(s.keyboardShortcuts),
   };
@@ -418,7 +417,6 @@ export function useSettings({
   const applySettings = useCallback(
     (settings: AppSettings) => {
       dispatch({ type: 'hydrate', settings });
-      if (settings.logEnabled) logApi.setEnabled(true);
       if (settings.logToFile) logApi.setFileLogging(true);
     },
     [logApi],
@@ -433,8 +431,7 @@ export function useSettings({
         ),
       );
       dispatch({ type: 'patch', patch: livePatch });
-      logApi.setEnabled(typeof patch.logEnabled === 'boolean' ? patch.logEnabled : undefined);
-      logApi.setFileLogging(typeof patch.logToFile === 'boolean' ? patch.logToFile : undefined);
+      if (typeof patch.logToFile === 'boolean') logApi.setFileLogging(patch.logToFile);
     },
     [logApi],
   );

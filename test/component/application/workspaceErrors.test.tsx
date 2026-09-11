@@ -99,7 +99,7 @@ function props(narrow = false): WorkspaceProps {
         activeConnectionIds: new Set(),
         connectionLabels: new Map(),
         showTimestamps: false,
-        onToggleTimestamps: noop,
+        formatTime: { time: String, dateTime: String },
       },
     },
   };

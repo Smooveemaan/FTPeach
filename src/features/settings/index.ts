@@ -1,5 +1,11 @@
-export { createDateFormatter, setDateFormatPreference, useDateFormatter } from './dateFormat.ts';
-export type { DateFormatter } from './dateFormat.ts';
+export {
+  createDateFormatter,
+  createLogTimeFormatter,
+  setDateFormatPreference,
+  useDateFormatter,
+  useLogTimeFormatter,
+} from './dateFormat.ts';
+export type { DateFormatter, LogTimeFormatter } from './dateFormat.ts';
 export { resetLayoutFromApi } from './layoutReset.ts';
 export { useSettings } from './useSettings.ts';
 export { useSettingsTransfer } from './useSettingsTransfer.ts';

@@ -8,6 +8,12 @@ import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
 interface ContextMenuProps {
   x: number;
   y: number;
+  /**
+   * For a menu opened from a button: the button's top edge. Without room
+   * below `y`, the menu opens upward from here instead of being pushed up
+   * over the button, where it would block pressing the button again.
+   */
+  aboveY?: number | undefined;
   items: readonly MenuItem[];
   onClose: () => void;
   className?: string;
@@ -17,6 +23,7 @@ interface ContextMenuProps {
 export default function ContextMenu({
   x,
   y,
+  aboveY,
   items,
   onClose,
   className = '',
@@ -44,9 +51,13 @@ export default function ContextMenu({
   const localHeight = window.innerHeight / scale;
   const preferredLeft = rtl ? localX - width : localX;
   const left = Math.max(0, Math.min(preferredLeft, localWidth - width));
+  const estimatedHeight = items.length * 28 + 40;
+  const openAbove = aboveY != null && localY + estimatedHeight > localHeight;
   const style: CSSProperties = {
     [rtl ? 'right' : 'left']: rtl ? localWidth - left - width : left,
-    top: Math.max(0, Math.min(localY, localHeight - items.length * 28 - 40)),
+    ...(openAbove
+      ? { bottom: localHeight - aboveY / scale }
+      : { top: Math.max(0, Math.min(localY, localHeight - estimatedHeight)) }),
     width,
   };
 

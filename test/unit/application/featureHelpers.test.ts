@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { appendLogBatch } from '../../../src/features/logs/logBuffer.ts';
+import { mergeLogBatch } from '../../../src/features/logs/logBuffer.ts';
 import { collectLiveConnectionIds } from '../../../src/features/open-with/useOpenWithLifecycle.ts';
 import {
   pendingSecurityNotices,
@@ -248,18 +248,20 @@ test('pendingSecurityNotices skips checks already acknowledged on disk', () => {
   );
 });
 
-test('appendLogBatch assigns stable ids and retains the newest lines', () => {
-  let id = 10;
-  const result = appendLogBatch(
-    [{ message: 'old', id: 1 }],
-    [{ message: 'first' }, { message: 'second' }],
-    () => ++id,
+test('mergeLogBatch retains the newest lines in sequence order', () => {
+  const result = mergeLogBatch(
+    [{ message: 'old', seq: 1 }],
+    [
+      { message: 'first', seq: 2 },
+      { message: 'second', seq: 3 },
+    ],
+    1,
     2,
   );
 
   assert.deepEqual(result, [
-    { message: 'first', id: 11 },
-    { message: 'second', id: 12 },
+    { message: 'first', seq: 2 },
+    { message: 'second', seq: 3 },
   ]);
 });
 

@@ -747,6 +747,30 @@ async fn corrupt_settings_are_backed_up_before_falling_back_to_defaults() {
 }
 
 #[tokio::test]
+async fn layout_reset_keeps_the_log_open_or_closed_as_it_was() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(dir.clone());
+    for open in [true, false] {
+        store
+            .set_settings(JsonMap::from_iter([
+                ("logEnabled".into(), Value::Bool(open)),
+                ("logPanelHeight".into(), Value::from(420)),
+            ]))
+            .await
+            .unwrap();
+
+        let settings = store.reset_layout_settings().await.unwrap();
+
+        assert_eq!(settings.get("logEnabled"), Some(&Value::Bool(open)));
+        assert_eq!(
+            settings.get("logPanelHeight"),
+            Store::default_settings().get("logPanelHeight")
+        );
+    }
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
 async fn concurrent_settings_updates_are_serialized_and_atomically_committed() {
     let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
     let store = Store::new_at(dir.clone());

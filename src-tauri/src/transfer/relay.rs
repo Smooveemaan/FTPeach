@@ -130,7 +130,6 @@ mod tests {
         fn is_connected(&self) -> bool {
             true
         }
-        fn set_log_enabled(&mut self, _enabled: bool) {}
         fn set_log_sink(
             &mut self,
             _sink: Option<

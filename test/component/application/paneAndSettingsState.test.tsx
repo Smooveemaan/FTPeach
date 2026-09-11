@@ -38,11 +38,12 @@ describe('pane and settings state', () => {
 
   test('previews settings locally and persists only on explicit save', async () => {
     const settingsApi = { set: vi.fn(async () => ({ proxyPasswordSet: true })) };
-    const logApi = { setEnabled: vi.fn(), setFileLogging: vi.fn() };
+    const logApi = { setFileLogging: vi.fn() };
     const { result } = renderHook(() => useSettings({ settingsApi, logApi }));
     act(() =>
       result.current.applySettingsDialogPatch({ theme: 'dark', logEnabled: true, unknown: 1 }),
     );
+    expect(logApi.setFileLogging).not.toHaveBeenCalled();
     expect(result.current.settings.interface.theme).toBe('dark');
     expect((result.current.settings as unknown as Record<string, unknown>).unknown).toBeUndefined();
     expect(settingsApi.set).not.toHaveBeenCalled();

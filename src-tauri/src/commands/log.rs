@@ -1,9 +1,9 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
-use crate::runtime::diagnostics::{pretty_log_value, redact};
-use crate::runtime::log_emitter::{LogEmitter, LogState};
-use crate::session::Sessions;
+use crate::runtime::app_log;
+use crate::runtime::diagnostics::redact;
+use crate::runtime::log_emitter::{LogEmitter, LogRecord};
+use crate::store::Store;
 use serde::Serialize;
-use std::sync::atomic::Ordering;
 use tauri::{AppHandle, State};
 use tauri_plugin_dialog::DialogExt;
 
@@ -13,29 +13,19 @@ pub struct OkFlag {
 }
 
 #[tauri::command]
-pub async fn log_set_enabled(
-    state: State<'_, LogState>,
-    sessions: State<'_, Sessions>,
-    enabled: bool,
-) -> CommandResult<OkFlag> {
-    state.enabled.store(enabled, Ordering::Relaxed);
-    for (_, slot) in sessions.all_slots() {
-        let mut guard = slot.lock().await;
-        if let Some(session) = guard.as_mut() {
-            session.browse_client.set_log_enabled(enabled);
-            session.transfer_pool.set_log_enabled(enabled);
-        }
-    }
-    Ok(OkFlag { ok: true })
-}
-
-#[tauri::command]
 pub async fn log_set_file_logging(
     emitter: State<'_, LogEmitter>,
     enabled: bool,
 ) -> CommandResult<OkFlag> {
     emitter.set_file_logging_enabled(enabled);
     Ok(OkFlag { ok: true })
+}
+
+/// The protocol log still in memory, oldest first. The panel reads it when it
+/// opens and then follows `protocol:log`.
+#[tauri::command]
+pub async fn log_recent(emitter: State<'_, LogEmitter>) -> CommandResult<Vec<LogRecord>> {
+    Ok(emitter.recent())
 }
 
 #[derive(Serialize)]
@@ -74,12 +64,15 @@ pub async fn log_save(app: AppHandle, content: String) -> CommandResult<LogSaveR
     }
 }
 
+/// Builds the bundle from what the backend holds itself — the protocol log in
+/// memory and the end of the application log — so it has the history even when
+/// the log panel was never opened.
 #[tauri::command]
 pub async fn log_export_diagnostics(
     app: AppHandle,
-    content: String,
+    emitter: State<'_, LogEmitter>,
+    store: State<'_, Store>,
 ) -> CommandResult<LogSaveResult> {
-    validate_log_size(&content)?;
     let stamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
     let bundle = serde_json::json!({
         "metadata": {
@@ -88,7 +81,8 @@ pub async fn log_export_diagnostics(
             "supportedProtocols": ["ftp", "ftps", "sftp", "webdav"],
             "generatedAt": chrono::Utc::now().to_rfc3339(), "telemetrySent": false
         },
-        "recentLog": pretty_log_value(&content)
+        "protocolLog": emitter.diagnostic_records(),
+        "applicationLog": app_log::tail(&store.logs_dir()).await,
     });
     let serialized = serde_json::to_string_pretty(&bundle)
         .map_err(anyhow::Error::from)

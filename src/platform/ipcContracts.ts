@@ -348,9 +348,11 @@ export function isOpenWithChange(value: unknown): value is OpenWithChange {
 function isLogEntry(value: unknown): value is LogEntry {
   return (
     isRecord(value) &&
+    typeof value.seq === 'number' &&
     typeof value.kind === 'string' &&
     typeof value.ts === 'number' &&
     typeof value.connectionId === 'string' &&
+    (value.server === undefined || typeof value.server === 'string') &&
     (value.line === undefined || typeof value.line === 'string') &&
     (value.key === undefined || typeof value.key === 'string')
   );

@@ -1,7 +1,10 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import i18n from '../../../src/i18n/index.ts';
-import { createDateFormatter } from '../../../src/features/settings/dateFormat.ts';
+import {
+  createDateFormatter,
+  createLogTimeFormatter,
+} from '../../../src/features/settings/dateFormat.ts';
 
 // Make date expectations deterministic across developer machines and CI.
 process.env.TZ = 'UTC';
@@ -74,6 +77,27 @@ test('a non-string preference falls back to the locale format', () => {
     createDateFormatter(undefined, null)(input),
     createDateFormatter('locale', null)(input),
   );
+});
+
+test('log timestamps carry milliseconds and follow the 12- or 24-hour preference', () => {
+  const at = Date.parse('2026-03-05T13:07:09.042Z');
+
+  const twentyFour = createLogTimeFormatter('dd.MM.yyyy HH:mm', null);
+  assert.equal(twentyFour.time(at), '13:07:09.042');
+  assert.equal(twentyFour.dateTime(at), '05.03.2026 13:07:09.042');
+
+  const twelve = createLogTimeFormatter('MM/dd/yyyy hh:mm a', null);
+  assert.equal(twelve.time(at), '01:07:09.042 PM');
+  assert.equal(twelve.dateTime(at), '03/05/2026 01:07:09.042 PM');
+
+  assert.equal(createLogTimeFormatter('iso', null).dateTime(at), '2026-03-05 13:07:09.042');
+});
+
+test('locale log timestamps keep milliseconds and the system hour cycle', () => {
+  const at = Date.parse('2026-03-05T13:07:09.042Z');
+  const time = createLogTimeFormatter('locale', 'h23').time(at);
+  assert.match(time, /13.07.09.042/);
+  assert.doesNotMatch(time, /AM|PM/i);
 });
 
 // Each formatter above was built from its own arguments: no shared preference

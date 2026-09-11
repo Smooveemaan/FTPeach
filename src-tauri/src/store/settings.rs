@@ -172,7 +172,8 @@ impl Store {
             "showRemotePane",
             "showTransferQueue",
             "transferQueueHeight",
-            "logEnabled",
+            // `logEnabled` stays: a reset puts the log panel back to its
+            // default size, open or closed as it was.
             "logPanelHeight",
             "splitRatio",
             "paneOrientation",

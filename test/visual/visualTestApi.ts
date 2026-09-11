@@ -227,8 +227,8 @@ export const visualTestApi = {
     onProgress: () => unsubscribe,
   },
   log: {
-    setEnabled: () => resolved(ok),
     setFileLogging: () => resolved(ok),
+    recent: () => resolved([]),
     save: () => resolved(ok),
     exportDiagnostics: () => resolved(ok),
     onMessage: () => unsubscribe,

@@ -66,7 +66,6 @@ export default function LoggingSettings({
           <input
             type="checkbox"
             checked={logToFileValue}
-            disabled={!logEnabledValue}
             onChange={(e) => setLogToFileValue(e.target.checked)}
           />
           {t('settings.logToFile')}

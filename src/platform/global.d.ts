@@ -53,12 +53,11 @@ declare global {
         onKeyDown: (callback: (event: KeyboardEvent) => void) => () => void;
       };
       log: {
-        setEnabled: (enabled: boolean | undefined) => unknown;
         setFileLogging: (enabled: boolean | undefined) => unknown;
+        /** The protocol log the backend still holds, oldest first; empty on failure. */
+        recent: () => Promise<LogEntry[]>;
         save: (content: string) => Promise<CommandResult & { canceled?: boolean; path?: string }>;
-        exportDiagnostics: (
-          content: string,
-        ) => Promise<CommandResult & { canceled?: boolean; path?: string }>;
+        exportDiagnostics: () => Promise<CommandResult & { canceled?: boolean; path?: string }>;
         onMessage: (callback: (batch: LogEntry[]) => void) => () => void;
       };
       app: {

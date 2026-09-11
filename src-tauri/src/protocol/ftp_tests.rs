@@ -348,7 +348,6 @@ mod local_integration_tests {
             let mut backend = FtpBackend::new();
             let logs = Arc::new(std::sync::Mutex::new(Vec::new()));
             let captured = logs.clone();
-            backend.set_log_enabled(true);
             backend.set_log_sink(Some(Arc::new(move |text, kind| {
                 captured.lock().unwrap().push((text, kind));
             })));

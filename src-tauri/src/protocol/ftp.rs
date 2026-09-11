@@ -718,10 +718,6 @@ impl ProtocolBackend for FtpBackend {
         self.connected.load(Ordering::SeqCst)
     }
 
-    fn set_log_enabled(&mut self, enabled: bool) {
-        self.logger.set_enabled(enabled);
-    }
-
     fn set_log_sink(&mut self, sink: Option<LogSink>) {
         self.logger.set_sink(sink);
     }

@@ -1,12 +1,12 @@
 //! Runtime initialization after Tauri installs managed state and plugins.
 use super::log_emitter::LogEmitter;
-use super::{settings_apply, shutdown, tray, updater, window_bounds};
+use super::{app_log, settings_apply, shutdown, tray, updater, window_bounds};
 #[cfg(feature = "smoke-test")]
 use crate::commands;
 use crate::local_fs::{self, preview::PreviewPaths};
 use crate::store::Store;
 use crate::transfer::progress::ProgressEmitter;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 #[cfg(windows)]
 fn disable_browser_accelerator_keys(window: &tauri::WebviewWindow) {
@@ -32,13 +32,11 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("backend-ready");
     }
-    if cfg!(debug_assertions) && std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
-        app.handle().plugin(
-            tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
-                .build(),
-        )?;
-    }
+    let logs_dir = app.state::<Store>().logs_dir();
+    // First, so everything after it — the staged-update install included —
+    // can leave a record.
+    app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
+    app_log::record_panics();
     // Ahead of the tray, the window and everything else the user could see:
     // an update downloaded last session installs now, and when its installer
     // starts this process ends here and the new version opens instead.
@@ -48,8 +46,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     tauri::async_runtime::spawn(async move {
         local_fs::preview::cleanup_stale_sessions(&preview_paths).await;
     });
-    let logs_dir = app.state::<Store>().logs_dir();
-    app.manage(LogEmitter::new(app.handle().clone(), logs_dir));
+    let panel = app.handle().clone();
+    app.manage(LogEmitter::start(logs_dir, move |batch| {
+        let _ = panel.emit("protocol:log", batch);
+    }));
     #[cfg(windows)]
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
         && let Some(main_window) = app.get_webview_window("main")

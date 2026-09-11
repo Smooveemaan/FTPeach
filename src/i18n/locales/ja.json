@@ -500,6 +500,7 @@
     "title": "転送",
     "columns": {
       "file": "ファイル",
+      "route": "経路",
       "size": "サイズ",
       "transferred": "転送済み",
       "progress": "進捗状況",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "サーバー間のコピー",
     "directionTitleLocal": "このコンピューター上でのコピー",
     "directionTitleServer": "サーバー上でのコピー",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "ユーザーによりキャンセルされました",
     "stoppedDash": "停止",
     "resume": "再開",

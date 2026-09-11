@@ -500,6 +500,7 @@
     "title": "การโอน",
     "columns": {
       "file": "ไฟล์",
+      "route": "เส้นทาง",
       "size": "ขนาด",
       "transferred": "โอนแล้ว",
       "progress": "ความก้าวหน้า",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "คัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
     "directionTitleLocal": "คัดลอกในคอมพิวเตอร์เครื่องนี้",
     "directionTitleServer": "คัดลอกบนเซิร์ฟเวอร์",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "ถูกยกเลิกโดยผู้ใช้",
     "stoppedDash": "หยุดแล้ว",
     "resume": "ดำเนินการต่อ",

@@ -16,9 +16,13 @@ import {
   DIR_TITLE_KEY,
   pauseUnsupportedKey,
   transferRoute,
+  transferRoutePlaces,
+  transferRouteTooltip,
 } from '../transferPresentation.ts';
 interface TransferItemRowProps {
   item: TransferRow;
+  /** The name a connection's server goes by, including one already closed. */
+  connectionLabel: (connectionId: string) => string;
   columnOrder: readonly ReorderableColumnKey[];
   gridTemplateColumns: string;
   speedSamples: SpeedSamples;
@@ -27,8 +31,18 @@ interface TransferItemRowProps {
   onStop: (id: string) => void;
 }
 
+function RouteEndpoint({ name }: { name: string }) {
+  const [nameRef, nameTruncated] = useTruncated<HTMLElement>([name]);
+  return (
+    <bdi ref={nameRef} className={`t-route-name${nameTruncated ? ' truncated' : ''}`}>
+      {name}
+    </bdi>
+  );
+}
+
 export default function TransferItemRow({
   item,
+  connectionLabel,
   columnOrder,
   gridTemplateColumns,
   speedSamples,
@@ -39,6 +53,7 @@ export default function TransferItemRow({
   const { t } = useTranslation();
   const isDirectory = item.direction === 'recursive' || (item.dragOut && item.isDirectory);
   const route = transferRoute(item);
+  const moving = item.direction === 'recursive' && item.intent.moving;
   const fullPath =
     item.direction === 'recursive'
       ? item.intent.source.path
@@ -71,8 +86,14 @@ export default function TransferItemRow({
         ? t('transferQueue.cancelledByUser')
         : null;
   const statusLabel = t(
-    item.status === 'progress' ? PROGRESS_LABEL_KEY[route] : STATUS_LABEL_KEY[item.status],
+    item.status === 'progress'
+      ? moving
+        ? 'dragMove.moveMode'
+        : PROGRESS_LABEL_KEY[route]
+      : STATUS_LABEL_KEY[item.status],
   );
+  const [from, to] = transferRoutePlaces(item, connectionLabel, t);
+  const routeText = t('transferQueue.route', { from: isolate(from), to: isolate(to) });
 
   const [nameRef, nameTruncated] = useTruncated<HTMLSpanElement>([item.name]);
   const [subRef, subTruncated] = useTruncated<HTMLSpanElement>([subText]);
@@ -83,6 +104,22 @@ export default function TransferItemRow({
 
   const renderCell = (key: ReorderableColumnKey): ReactNode => {
     switch (key) {
+      case 'route':
+        return (
+          <div
+            key={key}
+            data-column-cell={key}
+            className="t-route"
+            aria-label={routeText}
+            data-tooltip={transferRouteTooltip(item, connectionLabel, t)}
+          >
+            <RouteEndpoint name={from} />
+            <span className="t-route-arrow" aria-hidden="true">
+              →
+            </span>
+            <RouteEndpoint name={to} />
+          </div>
+        );
       case 'size':
         return (
           <div key={key} data-column-cell={key} className="t-size">
@@ -169,8 +206,11 @@ export default function TransferItemRow({
       aria-label={`${isolate(item.name)}: ${statusLabel}${percent == null ? '' : `, ${percent}%`}`}
     >
       <div className="t-file">
-        <span className={`dir-icon dir-${route}`} data-tooltip={t(DIR_TITLE_KEY[route])}>
-          <Icon name={DIR_ICON[route]} size={13} />
+        <span
+          className={`dir-icon dir-${route}`}
+          data-tooltip={t(moving ? 'dragMove.moveMode' : DIR_TITLE_KEY[route])}
+        >
+          <Icon name={moving ? 'arrowLeftRight' : DIR_ICON[route]} size={13} />
         </span>
         <span className={`transfer-file-icon${isDirectory ? ' is-folder' : ''}`}>
           <Icon name={fileIconName({ name: displayName, isDirectory: !!isDirectory })} size={13} />

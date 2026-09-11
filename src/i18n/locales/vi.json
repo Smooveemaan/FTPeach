@@ -500,6 +500,7 @@
     "title": "Truyền tải",
     "columns": {
       "file": "Tệp",
+      "route": "Lộ trình",
       "size": "Kích thước",
       "transferred": "Đã chuyển",
       "progress": "Tiến độ",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Sao chép giữa các máy chủ",
     "directionTitleLocal": "Sao chép trên máy tính này",
     "directionTitleServer": "Sao chép trên máy chủ",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Đã bị người dùng hủy bỏ",
     "stoppedDash": "đã dừng lại",
     "resume": "Tiếp tục",

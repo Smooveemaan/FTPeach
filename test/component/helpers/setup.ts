@@ -21,6 +21,12 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   value: vi.fn(),
 });
 
+// jsdom has no layout engine; match its zero-sized element geometry for ranges.
+Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+  configurable: true,
+  value: () => new DOMRect(),
+});
+
 Object.defineProperty(globalThis, 'crypto', {
   configurable: true,
   value: { ...globalThis.crypto, randomUUID: vi.fn(() => 'test-uuid') },

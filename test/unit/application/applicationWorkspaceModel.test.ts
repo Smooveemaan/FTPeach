@@ -51,6 +51,7 @@ test('workspace model derives status counters and section emptiness from domain 
       onPause: noop,
       onStop: noop,
       onClearCompleted: noop,
+      connectionLabels: new Map(),
       columnWidths: {},
       onColumnWidthsChange: noop,
       columnOrder: [],

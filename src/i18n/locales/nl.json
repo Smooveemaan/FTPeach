@@ -500,6 +500,7 @@
     "title": "Overdrachten",
     "columns": {
       "file": "Bestand",
+      "route": "Route",
       "size": "Afmetingen",
       "transferred": "Overgeplaatst",
       "progress": "Voortgang",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Kopiëren tussen servers",
     "directionTitleLocal": "Kopiëren op deze computer",
     "directionTitleServer": "Kopiëren op de server",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Geannuleerd door de gebruiker",
     "stoppedDash": "gestopt",
     "resume": "Hervatten",

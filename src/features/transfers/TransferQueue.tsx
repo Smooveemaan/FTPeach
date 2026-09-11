@@ -30,7 +30,11 @@ import { useTruncated } from '../../hooks/useTruncated.ts';
 import { useColumnDragReorder } from '../../hooks/useColumnDragReorder.ts';
 import { useColumnResize } from '../../hooks/useColumnResize.ts';
 import { getInterfaceScale } from '../../platform/interfaceScale.ts';
-import { getTransfersSnapshot, subscribeTransfers } from './transferStore.ts';
+import {
+  getTransfersSnapshot,
+  rememberedConnectionLabel,
+  subscribeTransfers,
+} from './transferStore.ts';
 import type { SpeedSamples } from './transferSpeed.ts';
 import {
   TRANSFER_HEADER_HEIGHT,
@@ -42,6 +46,8 @@ interface TransferQueueProps {
   onPause: (id: string) => void;
   onStop: (id: string) => void;
   onClearCompleted: () => void;
+  /** Open connections' names. Closed ones come from `rememberConnectionLabels`. */
+  connectionLabels?: ReadonlyMap<string, string> | undefined;
   height?: number | undefined;
   narrow?: boolean | undefined;
   widthRatio?: number | undefined;
@@ -97,7 +103,7 @@ interface HeaderCellProps {
   registerRef?: ((element: HTMLElement | null) => void) | undefined;
   onDragMouseDown?: ((event: MouseEvent<HTMLElement>) => void) | undefined;
   onResizeStart?: ((event: MouseEvent<HTMLSpanElement>) => void) | undefined;
-  onResizeReset?: ((event: MouseEvent<HTMLSpanElement>) => void) | undefined;
+  onResizeFit?: ((event: MouseEvent<HTMLSpanElement>) => void) | undefined;
 }
 
 function HeaderCell({
@@ -109,7 +115,7 @@ function HeaderCell({
   registerRef,
   onDragMouseDown,
   onResizeStart,
-  onResizeReset,
+  onResizeFit,
 }: HeaderCellProps) {
   const [truncatedRef, truncated] = useTruncated<HTMLDivElement>([label]);
   return (
@@ -129,7 +135,7 @@ function HeaderCell({
         <span
           className="col-resize-handle"
           onMouseDown={onResizeStart}
-          onDoubleClick={onResizeReset}
+          onDoubleClick={onResizeFit}
         />
       )}
     </div>
@@ -141,6 +147,7 @@ export default function TransferQueue({
   onPause,
   onStop,
   onClearCompleted,
+  connectionLabels,
   height,
   narrow,
   widthRatio,
@@ -165,6 +172,8 @@ export default function TransferQueue({
   const hasCompleted = items.some(
     (item) => item.status === 'done' || item.status === 'error' || item.status === 'stopped',
   );
+  const connectionLabel = (connectionId: string): string =>
+    connectionLabels?.get(connectionId) ?? rememberedConnectionLabel(connectionId) ?? '?';
   const speedSamples = useRef<SpeedSamples>({}).current;
   const colHeaderRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -180,7 +189,12 @@ export default function TransferQueue({
   const visibleColumnKeys: TransferColumnKey[] = ['file', ...visibleReorderableKeys, 'actions'];
   const widthOf = (key: TransferColumnKey): number =>
     columnWidths[key] || COLUMN_DEFAULT_WIDTHS[key];
-  const gridTemplateColumns = `${visibleColumnKeys.map((key) => `${widthOf(key)}px`).join(' ')} minmax(0, 1fr)`;
+  const flexibleFile = !columnWidths.file;
+  const gridTemplateColumns = `${visibleColumnKeys
+    .map((key) =>
+      key === 'file' && flexibleFile ? `minmax(${widthOf(key)}px, 1fr)` : `${widthOf(key)}px`,
+    )
+    .join(' ')} ${flexibleFile ? '0px' : 'minmax(0, 1fr)'}`;
 
   const { draggedColumn, registerHeaderRef, getDragHandleProps, refreshRects } =
     useColumnDragReorder({
@@ -198,8 +212,18 @@ export default function TransferQueue({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnWidthsKey]);
 
+  const widthsForManualResize = (): ColumnWidths => {
+    if (!flexibleFile) return columnWidths;
+    const fileHeader = colHeaderRef.current?.querySelector<HTMLElement>('[data-column-key="file"]');
+    const renderedWidth = (fileHeader?.getBoundingClientRect().width ?? 0) / getInterfaceScale();
+    // Freeze the flexible track before changing another column, otherwise
+    // File absorbs its width delta and the divider appears to stand still.
+    return { ...columnWidths, file: renderedWidth || widthOf('file') };
+  };
+
   const startColumnResize = (key: ResizableColumnKey) => (event: MouseEvent<HTMLSpanElement>) => {
     if (!onColumnWidthsChange) return;
+    const resizeWidths = widthsForManualResize();
     let minWidth = COLUMN_MIN_WIDTHS[key];
     if (LABEL_DRIVEN_MIN_WIDTH_KEYS.has(key)) {
       const headerEl = event.currentTarget.parentElement;
@@ -223,19 +247,67 @@ export default function TransferQueue({
       }
     }
     startResize({
-      startWidth: widthOf(key),
+      startWidth: resizeWidths[key] || widthOf(key),
       minWidth,
-      onResize: (nextWidth) => onColumnWidthsChange({ ...columnWidths, [key]: nextWidth }),
+      onResize: (nextWidth) => onColumnWidthsChange({ ...resizeWidths, [key]: nextWidth }),
       onResizeEnd: refreshRects,
     })(event);
   };
 
-  const resetColumnWidth = (key: ResizableColumnKey) => (event: MouseEvent<HTMLSpanElement>) => {
+  const fitColumnWidth = (key: ResizableColumnKey) => (event: MouseEvent<HTMLSpanElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const next = { ...columnWidths };
-    delete next[key];
-    onColumnWidthsChange?.(next);
+    const header = event.currentTarget.parentElement;
+    const list = listRef.current;
+    if (!header || !list || !onColumnWidthsChange) return;
+    const scale = getInterfaceScale();
+    let width = COLUMN_MIN_WIDTHS[key];
+    if (key === 'status') width = Math.max(width, measureStatusColumnMinWidth(t, scale));
+    // A flexible bar has no intrinsic width. Keep a useful track length,
+    // while still fitting localized headings and text-only progress states.
+    if (key === 'progress') width = COLUMN_DEFAULT_WIDTHS.progress;
+
+    // Measure max-content copies in the same CSS context: this includes the
+    // actual fonts, icons, gaps, padding and secondary lines, even for rows
+    // outside the scroll viewport. Batch insertion before reading layout.
+    const sources = [
+      header,
+      ...list.querySelectorAll<HTMLElement>(
+        key === 'file' ? '.t-file' : `[data-column-cell="${key}"]`,
+      ),
+    ];
+    const probes = sources.map((source) => {
+      const wrapper = source.parentElement!.cloneNode(false) as HTMLElement;
+      wrapper.removeAttribute('id');
+      wrapper.removeAttribute('role');
+      wrapper.removeAttribute('aria-label');
+      wrapper.setAttribute('aria-hidden', 'true');
+      wrapper.inert = true;
+      Object.assign(wrapper.style, {
+        position: 'fixed',
+        visibility: 'hidden',
+        pointerEvents: 'none',
+        display: 'block',
+        width: 'max-content',
+        top: '0',
+        left: '0',
+      });
+      const copy = source.cloneNode(true) as HTMLElement;
+      copy.style.width = 'max-content';
+      copy.style.maxWidth = 'none';
+      copy.querySelector('.col-resize-handle')?.remove();
+      wrapper.append(copy);
+      source.parentElement!.parentElement!.append(wrapper);
+      return { wrapper, copy };
+    });
+    try {
+      for (const { copy } of probes) {
+        width = Math.max(width, Math.ceil(copy.getBoundingClientRect().width / scale));
+      }
+    } finally {
+      for (const { wrapper } of probes) wrapper.remove();
+    }
+    onColumnWidthsChange({ ...widthsForManualResize(), [key]: width });
   };
 
   const headerCell = (key: ResizableColumnKey, label: ReactNode, className: string) => {
@@ -252,7 +324,7 @@ export default function TransferQueue({
         registerRef={reorderable ? registerHeaderRef(key) : undefined}
         onDragMouseDown={dragHandleProps?.onMouseDown}
         onResizeStart={onColumnWidthsChange ? startColumnResize(key) : undefined}
-        onResizeReset={onColumnWidthsChange ? resetColumnWidth(key) : undefined}
+        onResizeFit={onColumnWidthsChange ? fitColumnWidth(key) : undefined}
       />
     );
   };
@@ -358,6 +430,7 @@ export default function TransferQueue({
             <TransferItemRow
               key={item.id}
               item={item}
+              connectionLabel={connectionLabel}
               columnOrder={visibleReorderableKeys}
               gridTemplateColumns={gridTemplateColumns}
               speedSamples={speedSamples}

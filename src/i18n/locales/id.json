@@ -500,6 +500,7 @@
     "title": "Transfer",
     "columns": {
       "file": "Berkas",
+      "route": "Rute",
       "size": "Ukuran",
       "transferred": "Dipindahkan",
       "progress": "Kemajuan",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Menyalin antar server",
     "directionTitleLocal": "Menyalin di komputer ini",
     "directionTitleServer": "Menyalin di server",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Dibatalkan oleh pengguna",
     "stoppedDash": "berhenti",
     "resume": "Lanjutkan",

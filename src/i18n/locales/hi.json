@@ -500,6 +500,7 @@
     "title": "स्थानान्तरण",
     "columns": {
       "file": "फ़ाइल",
+      "route": "मार्ग",
       "size": "आकार",
       "transferred": "स्थानांतरित",
       "progress": "प्रगति",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "सर्वरों के बीच कॉपी करें",
     "directionTitleLocal": "इस कंप्यूटर पर कॉपी करें",
     "directionTitleServer": "सर्वर पर कॉपी करें",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "उपयोगकर्ता द्वारा रद्द कर दिया गया",
     "stoppedDash": "रुक गया",
     "resume": "फिर से शुरू करें",

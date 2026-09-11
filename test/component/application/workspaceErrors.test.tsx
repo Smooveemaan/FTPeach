@@ -87,6 +87,7 @@ function props(narrow = false): WorkspaceProps {
         onPause: noop,
         onStop: noop,
         onClearCompleted: noop,
+        connectionLabels: new Map(),
         columnWidths: {},
         onColumnWidthsChange: noop,
         columnOrder: [],

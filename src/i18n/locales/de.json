@@ -500,6 +500,7 @@
     "title": "Übertragungen",
     "columns": {
       "file": "Datei",
+      "route": "Route",
       "size": "Größe",
       "transferred": "Übertragen",
       "progress": "Fortschritt",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Kopieren zwischen Servern",
     "directionTitleLocal": "Kopieren auf diesem Computer",
     "directionTitleServer": "Kopieren auf dem Server",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Vom Benutzer storniert",
     "stoppedDash": "angehalten",
     "resume": "Fortsetzen",

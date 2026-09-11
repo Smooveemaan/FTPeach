@@ -500,6 +500,7 @@
     "title": "Transferler",
     "columns": {
       "file": "Dosya",
+      "route": "Rota",
       "size": "Boyut",
       "transferred": "Aktarılan",
       "progress": "İlerleme",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Sunucular arasında kopyalama",
     "directionTitleLocal": "Bu bilgisayarda kopyalama",
     "directionTitleServer": "Sunucuda kopyalama",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Kullanıcı tarafından iptal edildi",
     "stoppedDash": "durdu",
     "resume": "Devam et",

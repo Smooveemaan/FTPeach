@@ -1,8 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import TitleBar from './TitleBar.tsx';
 import MenuBar from '../components/MenuBar.tsx';
 import ViewToolbar from './ViewToolbar.tsx';
-import { useTransfers } from '../features/transfers/index.ts';
+import { rememberConnectionLabels, useTransfers } from '../features/transfers/index.ts';
 import { useLogLines } from '../features/logs/index.ts';
 import { useTranslation } from 'react-i18next';
 import { useTooltip } from '../hooks/useTooltip.ts';
@@ -255,6 +255,30 @@ export default function Application() {
     onVaultUnlockRequired: handler(handleVaultUnlockRequired),
     stopTransfersForConnection,
   });
+  const routeConnectionLabels = useMemo(
+    () =>
+      new Map(
+        tabs.flatMap((tab) =>
+          (['a', 'b'] as const).flatMap((side) => {
+            const pane = tab.panes[side];
+            return pane.kind === 'remote' && pane.connectionId
+              ? [
+                  [
+                    pane.connectionId,
+                    pane.siteLabel ||
+                      (pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host) ||
+                      '?',
+                  ] as const,
+                ]
+              : [];
+          }),
+        ),
+      ),
+    [tabs],
+  );
+  // Here rather than in the transfer list, which is not mounted while hidden:
+  // a transfer should still name its server once that connection is closed.
+  useEffect(() => rememberConnectionLabels(routeConnectionLabels), [routeConnectionLabels]);
 
   const {
     target: openWithTarget,
@@ -528,6 +552,7 @@ export default function Application() {
       onPause: handler(pauseTransfer),
       onStop: handler(stopTransfer),
       onClearCompleted: clearCompletedTransfers,
+      connectionLabels: routeConnectionLabels,
       columnWidths: layout.transferColumnWidths,
       onColumnWidthsChange: changeTransferColumnWidths,
       columnOrder: layout.transferColumnOrder,

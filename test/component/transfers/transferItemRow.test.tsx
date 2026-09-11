@@ -4,10 +4,13 @@ import TransferItemRow from '../../../src/features/transfers/components/Transfer
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 import type { ReorderableColumnKey } from '../../../src/features/transfers/transferColumns.ts';
 
+const LABELS: Record<string, string> = { a: 'Production', b: 'Backup' };
+
 function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = []) {
   return render(
     <TransferItemRow
       item={item}
+      connectionLabel={(connectionId) => LABELS[connectionId] ?? '?'}
       columnOrder={columnOrder}
       gridTemplateColumns="1fr"
       speedSamples={{}}
@@ -202,3 +205,156 @@ test.each([
     expect(container.querySelector('.pause-btn')?.getAttribute('data-tooltip')).toBe(pauseTooltip);
   },
 );
+
+const isolated = (text: string) => `\u2068${text}\u2069`;
+
+test.each([
+  [
+    'an upload from a nested folder',
+    {
+      direction: 'up',
+      protocol: 'sftp',
+      connectionId: 'a',
+      localFile: 'D:\\Work\\Projects\\site.zip',
+      remoteTarget: '/www/site.zip',
+    },
+    `${isolated('Projects')} → ${isolated('Production')}`,
+    `${isolated('D:\\Work\\Projects\\site.zip')} → ${isolated('Production: /www/site.zip')}`,
+  ],
+  [
+    'an upload',
+    {
+      direction: 'up',
+      protocol: 'sftp',
+      connectionId: 'a',
+      localFile: 'D:\\site.zip',
+      remoteTarget: '/www/site.zip',
+    },
+    `${isolated('D:\\')} → ${isolated('Production')}`,
+    `${isolated('D:\\site.zip')} → ${isolated('Production: /www/site.zip')}`,
+  ],
+  [
+    'a download',
+    {
+      direction: 'down',
+      protocol: 'sftp',
+      connectionId: 'a',
+      remoteFile: '/www/site.zip',
+      localTarget: 'D:\\site.zip',
+    },
+    `${isolated('Production')} → ${isolated('D:\\')}`,
+    `${isolated('Production: /www/site.zip')} → ${isolated('D:\\site.zip')}`,
+  ],
+  [
+    'a drag to Explorer',
+    {
+      direction: 'down',
+      dragOut: true,
+      protocol: 'sftp',
+      connectionId: 'a',
+      remoteFile: '/www/site.zip',
+    },
+    // Explorer picks a folder on this computer without saying which.
+    `${isolated('Production')} → ${isolated('Computer')}`,
+    'Production: /www/site.zip',
+  ],
+  [
+    'a copy between servers',
+    {
+      direction: 'copy',
+      protocol: 'sftp',
+      sourceConnectionId: 'a',
+      targetConnectionId: 'b',
+      sourcePath: '/www/site.zip',
+      remoteTarget: '/old/site.zip',
+    },
+    `${isolated('Production')} → ${isolated('Backup')}`,
+    `${isolated('Production: /www/site.zip')} → ${isolated('Backup: /old/site.zip')}`,
+  ],
+  [
+    'a copy on one server',
+    {
+      direction: 'copy',
+      protocol: 'sftp',
+      sourceConnectionId: 'a',
+      targetConnectionId: 'a',
+      sourcePath: '/www/site.zip',
+      remoteTarget: '/old/site.zip',
+    },
+    `${isolated('Production: www')} → ${isolated('Production: old')}`,
+    `${isolated('Production: /www/site.zip')} → ${isolated('Production: /old/site.zip')}`,
+  ],
+  [
+    'a folder copied on this computer',
+    {
+      direction: 'recursive',
+      intent: {
+        id: 'row',
+        source: { kind: 'local', path: 'D:\\Site' },
+        target: { kind: 'local', path: 'E:\\Site' },
+        moving: false,
+        overwrite: false,
+      },
+    },
+    `${isolated('D:\\')} → ${isolated('E:\\')}`,
+    `${isolated('D:\\Site')} → ${isolated('E:\\Site')}`,
+  ],
+  [
+    'a folder sent from one server to another',
+    {
+      direction: 'recursive',
+      targetProtocol: 'sftp',
+      intent: {
+        id: 'row',
+        source: { kind: 'remote', path: '/www', connectionId: 'b' },
+        target: { kind: 'remote', path: '/www', connectionId: 'a' },
+        moving: false,
+        overwrite: false,
+      },
+    },
+    `${isolated('Backup')} → ${isolated('Production')}`,
+    `${isolated('Backup: /www')} → ${isolated('Production: /www')}`,
+  ],
+] as const)('the Route column names where %s goes', (_, route, label, tooltip) => {
+  const { container } = renderRow(
+    {
+      id: 'row',
+      name: 'site.zip',
+      status: 'progress',
+      bytes: 0,
+      startedAt: 1,
+      ...route,
+    } as TransferRow,
+    ['route'],
+  );
+  const cell = container.querySelector('.t-route');
+  expect(cell?.getAttribute('aria-label')).toBe(label);
+  expect(container.querySelectorAll('.t-route-name')).toHaveLength(2);
+  expect(cell?.getAttribute('data-tooltip')).toBe(tooltip);
+});
+
+test('long endpoint names retain their full text and keep the route arrow separate', () => {
+  const folder = 'A very long folder name '.repeat(12).trim();
+  const { container } = renderRow(
+    {
+      id: 'long-route',
+      name: 'file.txt',
+      status: 'done',
+      bytes: 0,
+      startedAt: 1,
+      direction: 'up',
+      protocol: 'sftp',
+      connectionId: 'a',
+      localFile: `C:\\Work\\${folder}\\file.txt`,
+      remoteTarget: '/file.txt',
+    },
+    ['route'],
+  );
+  const names = container.querySelectorAll('.t-route-name');
+  expect(names[0]?.textContent).toBe(folder);
+  expect(names[1]?.textContent).toBe('Production');
+  expect(container.querySelector('.t-route-arrow')?.textContent).toBe('→');
+  expect(container.querySelector('.t-route')?.getAttribute('data-tooltip')).toContain(
+    `C:\\Work\\${folder}\\file.txt`,
+  );
+});

@@ -11,7 +11,15 @@
   "localColumnWidths": { "a": {}, "b": {} },
   "remoteColumnWidths": { "a": {}, "b": {} },
   "transferColumnWidths": {},
-  "transferColumnOrder": ["size", "transferred", "progress", "speed", "remaining", "status"],
+  "transferColumnOrder": [
+    "route",
+    "size",
+    "transferred",
+    "progress",
+    "speed",
+    "remaining",
+    "status"
+  ],
   "showLocalPane": true,
   "showRemotePane": true,
   "showTransferQueue": true,

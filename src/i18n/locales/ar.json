@@ -516,6 +516,7 @@
     "title": "التحويلات",
     "columns": {
       "file": "ملف",
+      "route": "المسار",
       "size": "الحجم",
       "transferred": "تم نقله",
       "progress": "التقدم",
@@ -542,6 +543,7 @@
     "directionTitleCopy": "النسخ بين الخوادم",
     "directionTitleLocal": "نسخ على هذا الكمبيوتر",
     "directionTitleServer": "نسخ على الخادم",
+    "route": "{{from}} ← {{to}}",
     "cancelledByUser": "تم إلغاؤه من قبل المستخدم",
     "stoppedDash": "توقف",
     "resume": "استئناف",

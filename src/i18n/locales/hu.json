@@ -500,6 +500,7 @@
     "title": "Átvitelek",
     "columns": {
       "file": "Fájl",
+      "route": "Útvonal",
       "size": "Méret",
       "transferred": "Áthelyezve",
       "progress": "Előrehaladás",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Másolás szerverek között",
     "directionTitleLocal": "Másolás ezen a számítógépen",
     "directionTitleServer": "Másolás a szerveren",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Felhasználó által megszakítva",
     "stoppedDash": "megállt",
     "resume": "Folytatás",

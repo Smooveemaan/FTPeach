@@ -508,6 +508,7 @@
     "title": "Přenosy",
     "columns": {
       "file": "Soubor",
+      "route": "Trasa",
       "size": "Velikost",
       "transferred": "Převedeno",
       "progress": "Pokrok",
@@ -534,6 +535,7 @@
     "directionTitleCopy": "Kopírování mezi servery",
     "directionTitleLocal": "Kopírování v tomto počítači",
     "directionTitleServer": "Kopírování na serveru",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Zrušeno uživatelem",
     "stoppedDash": "zastavil se",
     "resume": "Pokračovat",

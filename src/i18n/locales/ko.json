@@ -500,6 +500,7 @@
     "title": "전송",
     "columns": {
       "file": "파일",
+      "route": "경로",
       "size": "크기",
       "transferred": "전송됨",
       "progress": "진행 상황",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "서버 간 복사",
     "directionTitleLocal": "이 컴퓨터에서 복사",
     "directionTitleServer": "서버에서 복사",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "사용자에 의해 취소됨",
     "stoppedDash": "중지됨",
     "resume": "재개",

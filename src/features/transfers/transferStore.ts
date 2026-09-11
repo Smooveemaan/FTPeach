@@ -159,6 +159,22 @@ export function isConnectionDead(connectionId: string): boolean {
   return deadConnectionIds.has(connectionId);
 }
 
+/**
+ * The name each connection was last shown under while it was open. A row stays
+ * in the list long after its connection closes and still has to say which
+ * server it went to; ids are never reissued (see above), so a name remembered
+ * here can never end up on some other server's row.
+ */
+const connectionLabelMemory = new Map<string, string>();
+
+export function rememberConnectionLabels(labels: ReadonlyMap<string, string>): void {
+  for (const [connectionId, label] of labels) connectionLabelMemory.set(connectionId, label);
+}
+
+export function rememberedConnectionLabel(connectionId: string): string | undefined {
+  return connectionLabelMemory.get(connectionId);
+}
+
 export function canRetryTransfer(row: TransferRow): boolean {
   return !transferConnectionIds(row).some(isConnectionDead);
 }
@@ -223,4 +239,5 @@ export function resetTransfersStoreForTests(): void {
   attempts.clear();
   targets.clear();
   deadConnectionIds.clear();
+  connectionLabelMemory.clear();
 }

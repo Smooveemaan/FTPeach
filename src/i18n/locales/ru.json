@@ -508,6 +508,7 @@
     "title": "Передачи",
     "columns": {
       "file": "Файл",
+      "route": "Маршрут",
       "size": "Размер",
       "transferred": "Перенесено",
       "progress": "Прогресс",
@@ -532,6 +533,7 @@
     "directionTitleCopy": "Копирование между серверами",
     "directionTitleLocal": "Копирование на этом компьютере",
     "directionTitleServer": "Копирование на сервере",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Отменено пользователем",
     "stoppedDash": "остановлено",
     "resume": "Возобновить",

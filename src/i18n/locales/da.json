@@ -500,6 +500,7 @@
     "title": "Overførsler",
     "columns": {
       "file": "Fil",
+      "route": "Rute",
       "size": "Størrelse",
       "transferred": "Overført",
       "progress": "Fremskridt",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Kopiering mellem servere",
     "directionTitleLocal": "Kopiering på denne computer",
     "directionTitleServer": "Kopiering på serveren",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Annulleret af brugeren",
     "stoppedDash": "stoppede",
     "resume": "Genoptag",

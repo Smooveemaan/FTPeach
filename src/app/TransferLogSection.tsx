@@ -35,6 +35,7 @@ interface TransferLogSectionProps {
     onPause: TransferQueueProps['onPause'];
     onStop: TransferQueueProps['onStop'];
     onClearCompleted: TransferQueueProps['onClearCompleted'];
+    connectionLabels: TransferQueueProps['connectionLabels'];
     columnWidths: TransferQueueProps['columnWidths'];
     onColumnWidthsChange: TransferQueueProps['onColumnWidthsChange'];
     columnOrder: TransferQueueProps['columnOrder'];
@@ -103,6 +104,7 @@ export default function TransferLogSection({
               onPause={transfer.onPause}
               onStop={transfer.onStop}
               onClearCompleted={transfer.onClearCompleted}
+              connectionLabels={transfer.connectionLabels}
               narrow
               widthRatio={transferLogSplitRatio}
               columnWidths={transfer.columnWidths}
@@ -148,6 +150,7 @@ export default function TransferLogSection({
               onPause={transfer.onPause}
               onStop={transfer.onStop}
               onClearCompleted={transfer.onClearCompleted}
+              connectionLabels={transfer.connectionLabels}
               height={transferQueueHeight}
               narrow={windowNarrow}
               columnWidths={transfer.columnWidths}

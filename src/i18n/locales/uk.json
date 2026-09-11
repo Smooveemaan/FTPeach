@@ -508,6 +508,7 @@
     "title": "Передавання",
     "columns": {
       "file": "Файл",
+      "route": "Маршрут",
       "size": "Розмір",
       "transferred": "Перенесено",
       "progress": "Прогрес",
@@ -534,6 +535,7 @@
     "directionTitleCopy": "Копіювання між серверами",
     "directionTitleLocal": "Копіювання на цьому комп’ютері",
     "directionTitleServer": "Копіювання на сервері",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Скасовано користувачем",
     "stoppedDash": "зупинився",
     "resume": "Резюме",

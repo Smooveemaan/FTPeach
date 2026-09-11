@@ -153,6 +153,36 @@ body.column-resize-active .transfer-item:hover {
 }
 .t-sub.err { color: var(--accent-red); }
 
+.t-route {
+  /* Keep text clear of the header's resize handle. */
+  padding-inline-end: 8px;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.t-route-name {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.t-route-arrow {
+  flex: 0 0 auto;
+}
+.t-route-arrow:dir(rtl) {
+  transform: scaleX(-1);
+}
+.t-route-name.truncated {
+  mask-image: var(--truncate-fade);
+  -webkit-mask-image: var(--truncate-fade);
+}
+
 .t-size,
 .t-transferred {
   display: flex;
@@ -179,10 +209,17 @@ body.column-resize-active .transfer-item:hover {
 }
 .t-transferred { color: var(--text-faint); }
 
-.t-progress { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.t-progress {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding-inline-end: 8px;
+}
 .t-progress.no-bar { color: var(--text-faint); font-size: 11px; }
 .p-track {
   flex: 1 1 auto;
+  min-width: 0;
   height: 3px;
   background: var(--border-soft);
   border-radius: 2px;
@@ -208,6 +245,8 @@ body.column-resize-active .transfer-item:hover {
 .p-pct {
   flex: 0 0 auto;
   width: 30px;
+  min-width: 4ch;
+  white-space: nowrap;
   /* Logical, not `right`: the percentage trails the bar it belongs to, and
      in RTL the flex row puts it on the left with the bar to its right. */
   text-align: end;
@@ -345,6 +384,9 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
 }
 .transfer-queue.narrow .t-name {
   font-size: 10.5px;
+}
+.transfer-queue.narrow .t-route {
+  font-size: 10px;
 }
 .transfer-queue.narrow .t-size,
 .transfer-queue.narrow .t-transferred {

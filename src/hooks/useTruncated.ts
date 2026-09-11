@@ -14,7 +14,35 @@ export function useTruncated<T extends HTMLElement = HTMLDivElement>(
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
-    const check = () => setTruncated(el.scrollWidth > el.clientWidth + 1);
+    const check = () => {
+      if (el.scrollWidth > el.clientWidth + 1) {
+        setTruncated(true);
+        return;
+      }
+      // Integer scroll metrics miss fractional clipping. Measure text nodes
+      // individually so header resize handles do not count as label content.
+      const bounds = el.getBoundingClientRect();
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const range = document.createRange();
+      let clipped = false;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.textContent?.trim()) continue;
+        range.selectNodeContents(node);
+        const textBounds = range.getBoundingClientRect();
+        if (textBounds.width === 0) continue;
+        // Range and element bounds may round differently (especially at a
+        // fractional zoom). Ignore layout-unit noise, not a clipped pixel.
+        const roundingTolerance = 0.05;
+        if (
+          textBounds.left < bounds.left - roundingTolerance ||
+          textBounds.right > bounds.right + roundingTolerance
+        ) {
+          clipped = true;
+          break;
+        }
+      }
+      setTruncated(clipped);
+    };
     check();
     const observer = new ResizeObserver(check);
     observer.observe(el);

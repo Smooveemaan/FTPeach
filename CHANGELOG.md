@@ -4,6 +4,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The transfer list has a new Route column that shows where each file comes from and
+  where it goes, such as “Projects → My site” or “My site → Backup”. Point at it to see
+  the full path at both ends. Server names stay in the list after you disconnect.
+- In the transfer list, the File column now uses any spare width, and double-clicking
+  the divider between two column headings fits the column to its contents.
+
 ### Fixed
 
 - Uploading to an FTP or FTPS server no longer asks whether to replace a file that isn’t

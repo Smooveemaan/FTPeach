@@ -504,6 +504,7 @@
     "title": "Transferuri",
     "columns": {
       "file": "Fișier",
+      "route": "Traseu",
       "size": "Dimensiune",
       "transferred": "Transferat",
       "progress": "Progres",
@@ -530,6 +531,7 @@
     "directionTitleCopy": "Copiere între servere",
     "directionTitleLocal": "Copiere pe acest computer",
     "directionTitleServer": "Copiere pe server",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Anulat de utilizator",
     "stoppedDash": "s-a oprit",
     "resume": "Reia",

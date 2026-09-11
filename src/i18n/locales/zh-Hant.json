@@ -500,6 +500,7 @@
     "title": "傳輸",
     "columns": {
       "file": "文件",
+      "route": "路線",
       "size": "大小",
       "transferred": "已傳輸",
       "progress": "進度",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "在伺服器之間複製",
     "directionTitleLocal": "在此電腦上複製",
     "directionTitleServer": "在伺服器上複製",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "已被用戶取消",
     "stoppedDash": "已停止",
     "resume": "恢復",

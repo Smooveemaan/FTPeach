@@ -504,6 +504,7 @@
     "title": "העברות",
     "columns": {
       "file": "קובץ",
+      "route": "מסלול",
       "size": "גודל",
       "transferred": "הועבר",
       "progress": "התקדמות",
@@ -530,6 +531,7 @@
     "directionTitleCopy": "העתקה בין שרתים",
     "directionTitleLocal": "העתקה במחשב זה",
     "directionTitleServer": "העתקה בשרת",
+    "route": "{{from}} ← {{to}}",
     "cancelledByUser": "בוטל על ידי המשתמש",
     "stoppedDash": "נעצר",
     "resume": "המשך",

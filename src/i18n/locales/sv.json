@@ -500,6 +500,7 @@
     "title": "Överföringar",
     "columns": {
       "file": "Fil",
+      "route": "Rutt",
       "size": "Storlek",
       "transferred": "Överförd",
       "progress": "Framsteg",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Kopiera mellan servrar",
     "directionTitleLocal": "Kopiera på den här datorn",
     "directionTitleServer": "Kopiera på servern",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Avbrutet av användaren",
     "stoppedDash": "stannade",
     "resume": "Återuppta",

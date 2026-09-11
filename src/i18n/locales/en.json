@@ -500,6 +500,7 @@
     "title": "Transfers",
     "columns": {
       "file": "File",
+      "route": "Route",
       "size": "Size",
       "transferred": "Transferred",
       "progress": "Progress",
@@ -526,6 +527,7 @@
     "directionTitleCopy": "Copy between servers",
     "directionTitleLocal": "Copy on this computer",
     "directionTitleServer": "Copy on the server",
+    "route": "{{from}} → {{to}}",
     "cancelledByUser": "Cancelled by user",
     "stoppedDash": "stopped",
     "resume": "Resume",

@@ -110,6 +110,13 @@ impl Store {
         for key in ["name", "icon", "color", "protocol", "host", "port", "user"] {
             record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
         }
+        if let Some(limit) = input.get("maxConnections").or_else(|| {
+            existing
+                .as_ref()
+                .and_then(|site| site.get("maxConnections"))
+        }) {
+            record.insert("maxConnections".into(), limit.clone());
+        }
         record.insert(
             "webdavUrl".into(),
             Value::String(

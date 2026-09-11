@@ -601,7 +601,8 @@
       "caCertFile": "CA sertifikası",
       "remotePath": "Varsayılan klasör",
       "localPath": "Yerel klasör",
-      "folder": "Klasör"
+      "folder": "Klasör",
+      "maxConnections": "Panel başına en fazla bağlantı"
     },
     "icons": {
       "bookmark": "Yer imi",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Buraya Yeni Yer İmi Ekle",
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
     "collapseFolder": "\"{{name}}\" klasörünü daralt",
-    "noFolder": "Klasör yok"
+    "noFolder": "Klasör yok",
+    "maxConnectionsHint": "0 veya boş: sınırsız. Aksi halde klasörleri gezmek için bir bağlantı dahil 2–128. Yeniden bağlanınca uygulanır. Her panelin kendi sınırı vardır."
   },
   "connectionBar": {
     "fields": {

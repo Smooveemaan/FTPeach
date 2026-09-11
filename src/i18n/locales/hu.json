@@ -601,7 +601,8 @@
       "caCertFile": "Hitelesítésszolgáltatói tanúsítvány",
       "remotePath": "Alapértelmezett mappa",
       "localPath": "Helyi mappa",
-      "folder": "Mappa"
+      "folder": "Mappa",
+      "maxConnections": "Kapcsolatok maximális száma panelenként"
     },
     "icons": {
       "bookmark": "Könyvjelző",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Új könyvjelző itt",
     "expandFolder": "A „{{name}}” kiterjesztése",
     "collapseFolder": "„{{name}}” összecsukása",
-    "noFolder": "Nincs mappa"
+    "noFolder": "Nincs mappa",
+    "maxConnectionsHint": "0 vagy üres: korlátlan. Egyébként 2–128, beleértve a mappák böngészésére használt kapcsolatot. Újracsatlakozás után érvényes. Minden panelnek saját korlátja van."
   },
   "connectionBar": {
     "fields": {

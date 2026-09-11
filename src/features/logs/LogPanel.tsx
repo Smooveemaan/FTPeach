@@ -140,13 +140,15 @@ export default function LogPanel({
   const showConnectionTags = new Set(lines.map((l) => l.connectionId).filter(Boolean)).size > 1;
 
   const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
+    // React nulls currentTarget once the handler yields, so grab it before the await.
+    const anchor = e.currentTarget;
     try {
       await navigator.clipboard.writeText(
         formatLines(visibleLines, showConnectionTags, getLabel, t),
       );
-      flashTooltip(e.currentTarget, t('logPanel.copiedTooltip'));
+      flashTooltip(anchor, t('logPanel.copiedTooltip'));
     } catch {
-      flashTooltip(e.currentTarget, t('logPanel.copyFailedTooltip'));
+      flashTooltip(anchor, t('logPanel.copyFailedTooltip'));
     }
   };
 

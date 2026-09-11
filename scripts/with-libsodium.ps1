@@ -124,6 +124,9 @@ try {
         }
         'compatibility' {
             & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --test docker_integration -- --ignored
+            if ($LASTEXITCODE -eq 0) {
+                & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --lib protocol::ftp::protocol_tests::recursive_stop_tests::docker_ -- --ignored --test-threads=1
+            }
         }
         'clippy' {
             & cargo clippy --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets --all-features -- -D warnings

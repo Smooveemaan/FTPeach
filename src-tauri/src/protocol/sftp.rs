@@ -27,7 +27,112 @@ const KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(20);
 const CHUNK_SIZE: usize = 32 * 1024;
 const GRACEFUL_IO_TIMEOUT: Duration = Duration::from_secs(5);
 const WRITE_WINDOW: usize = 16;
+const READ_WINDOW: usize = 16;
 const TRANSFER_STALL_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// Read ahead in bounded batches, restoring offset order before writing locally.
+/// Each request fills its own interval: a short DATA packet is not EOF.
+async fn read_pipelined(
+    raw: &Arc<RawSftpSession>,
+    handle: &str,
+    writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
+    start: u64,
+    total: Option<u64>,
+    progress: &ProgressSink,
+) -> BackendResult<u64> {
+    let mut offset = start;
+    loop {
+        let capacity = crate::transfer::rate_limiter::paced_chunk_size(CHUNK_SIZE);
+        // Under a bandwidth cap, avoid multiplying the paced read-ahead by 16.
+        let window = if capacity < CHUNK_SIZE {
+            1
+        } else {
+            READ_WINDOW
+        };
+        let mut pending = tokio::task::JoinSet::new();
+        for index in 0..window {
+            let position = offset
+                .checked_add((index * capacity) as u64)
+                .context("SFTP read offset overflow")?;
+            let session = raw.clone();
+            let handle = handle.to_owned();
+            pending.spawn(async move {
+                let mut bytes = Vec::with_capacity(capacity);
+                while bytes.len() < capacity {
+                    let at = position
+                        .checked_add(bytes.len() as u64)
+                        .context("SFTP read offset overflow")?;
+                    let want = (capacity - bytes.len()) as u32;
+                    match session.read(handle.as_str(), at, want).await {
+                        Ok(data) if data.data.is_empty() => break,
+                        Ok(data) => {
+                            anyhow::ensure!(
+                                data.data.len() <= want as usize,
+                                "SFTP server exceeded requested read length"
+                            );
+                            bytes.extend_from_slice(&data.data);
+                        }
+                        Err(SftpClientError::Status(status))
+                            if status.status_code == StatusCode::Eof =>
+                        {
+                            break;
+                        }
+                        Err(error) => return Err(error).context("reading from server"),
+                    }
+                }
+                Ok::<_, anyhow::Error>((index, bytes))
+            });
+        }
+        let mut blocks = vec![Vec::new(); window];
+        let mut error = None;
+        // Settle submitted requests before the caller closes the remote handle.
+        while let Some(reply) = pending.join_next().await {
+            match reply
+                .context("SFTP read task failed")
+                .and_then(|reply| reply)
+            {
+                Ok((index, bytes)) => blocks[index] = bytes,
+                Err(err) => {
+                    if error.is_none() {
+                        error = Some(err);
+                    }
+                }
+            }
+        }
+        if let Some(error) = error {
+            return Err(error);
+        }
+        let mut eof = false;
+        for bytes in blocks {
+            anyhow::ensure!(
+                !eof || bytes.is_empty(),
+                "SFTP server returned data beyond EOF"
+            );
+            eof |= bytes.len() < capacity;
+            let next = offset
+                .checked_add(bytes.len() as u64)
+                .context("SFTP read offset overflow")?;
+            super::transfer_file::validate_resume_offset(next, total)?;
+            if !bytes.is_empty() {
+                crate::transfer::rate_limiter::shared()
+                    .acquire(bytes.len() as u64)
+                    .await;
+                tokio::time::timeout(TRANSFER_STALL_TIMEOUT, writer.write_all(&bytes))
+                    .await
+                    .context("SFTP download destination stalled")??;
+                offset = next;
+                progress(ProgressInfo::Progress {
+                    bytes: offset,
+                    total: total.unwrap_or(0),
+                });
+            }
+        }
+        if eof {
+            super::transfer_file::validate_length(offset, total)?;
+            return Ok(offset);
+        }
+    }
+}
 
 /// Bound both memory and outstanding requests. Offsets are explicit: APPEND
 /// must not be used with concurrent writes, whose replies can arrive in any order.
@@ -857,49 +962,11 @@ impl ProtocolBackend for SftpBackend {
                 .context("opening remote file")?
                 .handle;
 
-            let mut offset = start_at;
-            let read_result: BackendResult<()> = async {
-                loop {
-                    let read_len =
-                        crate::transfer::rate_limiter::paced_chunk_size(CHUNK_SIZE) as u32;
-                    match raw.read(handle.as_str(), offset, read_len).await {
-                        Ok(data) => {
-                            if data.data.is_empty() {
-                                break;
-                            }
-                            anyhow::ensure!(
-                                data.data.len() <= read_len as usize,
-                                "SFTP server exceeded requested read length"
-                            );
-                            super::transfer_file::validate_resume_offset(
-                                offset.saturating_add(data.data.len() as u64),
-                                remote_size,
-                            )?;
-                            file.write_all(&data.data)
-                                .await
-                                .context("writing local file")?;
-                            crate::transfer::rate_limiter::shared()
-                                .acquire(data.data.len() as u64)
-                                .await;
-                            offset += data.data.len() as u64;
-                            progress(ProgressInfo::Progress {
-                                bytes: offset,
-                                total: remote_size.unwrap_or(0),
-                            });
-                        }
-                        Err(SftpClientError::Status(status))
-                            if status.status_code == StatusCode::Eof =>
-                        {
-                            break;
-                        }
-                        Err(err) => return Err(err).context("reading from server"),
-                    }
-                }
-                Ok(())
-            }
-            .await;
-            let _ = raw.close(handle.as_str()).await;
-            read_result?;
+            let read_result =
+                read_pipelined(&raw, &handle, &mut file, start_at, remote_size, &progress).await;
+            let closed = raw.close(handle.as_str()).await;
+            let offset = read_result?;
+            closed.context("closing remote file after download")?;
             file.flush().await.context("flushing local file")?;
             super::transfer_file::validate_length(offset, remote_size)?;
             drop(file);
@@ -934,44 +1001,8 @@ impl ProtocolBackend for SftpBackend {
             .context("opening remote file")?
             .handle;
 
-        let result: BackendResult<()> = async {
-            let mut offset: u64 = 0;
-            loop {
-                // Paced like every other transfer loop (see `download`): with
-                // a fixed CHUNK_SIZE a slow rate limit made this read 32 KB in
-                // one go and then sit inside acquire() for ~32s at 1 KB/s, so
-                // whatever consumes the writer — a relay copy, or a drag-out's
-                // progress bar — advanced in silent 32 KB jumps.
-                let read_len = crate::transfer::rate_limiter::paced_chunk_size(CHUNK_SIZE) as u32;
-                match raw.read(handle.as_str(), offset, read_len).await {
-                    Ok(data) => {
-                        if data.data.is_empty() {
-                            break;
-                        }
-                        anyhow::ensure!(
-                            data.data.len() <= read_len as usize,
-                            "SFTP server exceeded requested read length"
-                        );
-                        writer
-                            .write_all(&data.data)
-                            .await
-                            .context("relaying to target")?;
-                        crate::transfer::rate_limiter::shared()
-                            .acquire(data.data.len() as u64)
-                            .await;
-                        offset += data.data.len() as u64;
-                    }
-                    Err(SftpClientError::Status(status))
-                        if status.status_code == StatusCode::Eof =>
-                    {
-                        break;
-                    }
-                    Err(err) => return Err(err).context("reading from server"),
-                }
-            }
-            Ok(())
-        }
-        .await;
+        let progress: ProgressSink = Arc::new(|_| {});
+        let result = read_pipelined(&raw, &handle, writer, 0, None, &progress).await;
         let closed = raw.close(handle.as_str()).await;
         result?;
         closed.context("closing remote file")?;

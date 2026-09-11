@@ -601,7 +601,8 @@
       "caCertFile": "CA-Zertifikat",
       "remotePath": "Standardordner",
       "localPath": "Lokaler Ordner",
-      "folder": "Ordner"
+      "folder": "Ordner",
+      "maxConnections": "Maximale Verbindungen pro Bereich"
     },
     "icons": {
       "bookmark": "Lesezeichen",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Hier neues Lesezeichen setzen",
     "expandFolder": "„{{name}}“ erweitern",
     "collapseFolder": "„{{name}}“ ausblenden",
-    "noFolder": "Kein Ordner"
+    "noFolder": "Kein Ordner",
+    "maxConnectionsHint": "0 oder leer: unbegrenzt. Sonst 2–128, einschließlich einer Verbindung zum Durchsuchen. Gilt nach erneutem Verbinden. Jeder Bereich hat sein eigenes Limit."
   },
   "connectionBar": {
     "fields": {

@@ -608,7 +608,8 @@
       "caCertFile": "אישור של רשות אישורים",
       "remotePath": "תיקיית ברירת מחדל",
       "localPath": "תיקייה מקומית",
-      "folder": "תיקייה"
+      "folder": "תיקייה",
+      "maxConnections": "מספר חיבורים מרבי לחלונית"
     },
     "icons": {
       "bookmark": "סימנייה",
@@ -669,7 +670,8 @@
     "newBookmarkInFolder": "הוסף סימנייה חדשה כאן",
     "expandFolder": "הרחב את \"{{name}}\"",
     "collapseFolder": "קפל את \"{{name}}\"",
-    "noFolder": "ללא תיקייה"
+    "noFolder": "ללא תיקייה",
+    "maxConnectionsHint": "0 או ריק: ללא הגבלה. אחרת 2–128, כולל חיבור אחד לעיון בתיקיות. חל לאחר התחברות מחדש. לכל לשונית מגבלה משלה."
   },
   "connectionBar": {
     "fields": {

@@ -10,6 +10,7 @@ export const DEFAULT_SITE_PORTS: Partial<Record<SiteProtocol, string>> = {
 
 export function createSiteForm(site?: ManagedSite | null): SiteForm {
   return {
+    maxConnections: site?.maxConnections ? String(site.maxConnections) : '',
     kind: site?.kind === 'local' ? 'local' : 'site',
     name: site?.name || '',
     localPath: site?.localPath || '',
@@ -97,6 +98,7 @@ export function normalizeSiteForm(
     allowInvalidCert: form.allowInvalidCert,
     caCertPath: form.caCertPath,
     remotePath: form.remotePath.trim() || '/',
+    maxConnections: Number(form.maxConnections.trim() || 0),
     useKeyAuth: form.useKeyAuth,
     keyPath: form.keyPath,
     keyPassphrase: secrets.keyPassphrase,
@@ -110,6 +112,10 @@ export function normalizeSiteForm(
 export function canSubmitSiteForm(form: SiteForm): boolean {
   if (form.kind === 'local') return !!(form.name.trim() && form.localPath.trim());
   const port = form.port.trim();
+  const limit = form.maxConnections.trim();
+  const validLimit =
+    limit === '' ||
+    (/^\d+$/.test(limit) && (Number(limit) === 0 || (Number(limit) >= 2 && Number(limit) <= 128)));
   const validPort =
     form.protocol === 'webdav' ||
     port === '' ||
@@ -117,6 +123,7 @@ export function canSubmitSiteForm(form: SiteForm): boolean {
   return !!(
     form.name.trim() &&
     validPort &&
+    validLimit &&
     (form.protocol === 'webdav' ? form.webdavUrl.trim() : form.host.trim())
   );
 }

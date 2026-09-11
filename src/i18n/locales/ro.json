@@ -608,7 +608,8 @@
       "caCertFile": "Certificat CA",
       "remotePath": "Dosar implicit",
       "localPath": "Dosar local",
-      "folder": "Dosar"
+      "folder": "Dosar",
+      "maxConnections": "Număr maxim de conexiuni pe panou"
     },
     "icons": {
       "bookmark": "Marcaj",
@@ -669,7 +670,8 @@
     "newBookmarkInFolder": "Adaugă un marcaj nou aici",
     "expandFolder": "Extindeți „{{name}}”",
     "collapseFolder": "Ascunde „{{name}}”",
-    "noFolder": "Fără dosar"
+    "noFolder": "Fără dosar",
+    "maxConnectionsHint": "0 sau gol: fără limită. Altfel 2–128, inclusiv o conexiune pentru navigarea în foldere. Se aplică după reconectare. Fiecare panou are propria limită."
   },
   "connectionBar": {
     "fields": {

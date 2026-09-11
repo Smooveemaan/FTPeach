@@ -615,7 +615,8 @@
       "caCertFile": "Certifikát certifikační autority",
       "remotePath": "Výchozí složka",
       "localPath": "Místní složka",
-      "folder": "Složka"
+      "folder": "Složka",
+      "maxConnections": "Maximum připojení na panel"
     },
     "icons": {
       "bookmark": "Přidat do záložek",
@@ -678,7 +679,8 @@
     "newBookmarkInFolder": "Přidat sem záložku",
     "expandFolder": "Rozbalit „{{name}}“",
     "collapseFolder": "Sbalit „{{name}}“",
-    "noFolder": "Bez složky"
+    "noFolder": "Bez složky",
+    "maxConnectionsHint": "0 nebo prázdné: bez omezení. Jinak 2–128, včetně jednoho připojení pro procházení složek. Platí po opětovném připojení. Každý panel má vlastní limit."
   },
   "connectionBar": {
     "fields": {

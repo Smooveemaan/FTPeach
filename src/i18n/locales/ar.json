@@ -629,7 +629,8 @@
       "caCertFile": "شهادة سلطة التصديق",
       "remotePath": "المجلد الافتراضي",
       "localPath": "المجلد المحلي",
-      "folder": "مجلد"
+      "folder": "مجلد",
+      "maxConnections": "الحد الأقصى للاتصالات لكل لوحة"
     },
     "icons": {
       "bookmark": "إشارة مرجعية",
@@ -696,7 +697,8 @@
     "newBookmarkInFolder": "إضافة إشارة مرجعية جديدة هنا",
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",
-    "noFolder": "بدون مجلد"
+    "noFolder": "بدون مجلد",
+    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل لوحة حد مستقل."
   },
   "connectionBar": {
     "fields": {

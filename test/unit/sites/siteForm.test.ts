@@ -8,6 +8,19 @@ import {
 import { siteManagerDialogReducer } from '../../../src/features/sites/useSiteManagerDialogState.ts';
 import type { SiteManagerDialogState } from '../../../src/features/sites/useSiteManagerDialogState.ts';
 
+test('connection limit round trips and rejects values without a transfer slot', () => {
+  const form = createSiteForm({ id: 'ftp', name: 'FTP', host: 'example.test', maxConnections: 5 });
+  assert.equal(form.maxConnections, '5');
+  assert.equal(normalizeSiteForm(form).maxConnections, 5);
+  for (const maxConnections of ['', '0', '2', '5', '128']) {
+    assert.equal(canSubmitSiteForm({ ...form, maxConnections }), true);
+  }
+  for (const maxConnections of ['1', '-1', '129', '2.5', 'abc']) {
+    assert.equal(canSubmitSiteForm({ ...form, maxConnections }), false);
+  }
+  assert.equal(normalizeSiteForm({ ...form, maxConnections: '' }).maxConnections, 0);
+});
+
 test('site form normalization trims persisted fields and preserves secret intent', () => {
   const form = createSiteForm({
     id: 'site-1',

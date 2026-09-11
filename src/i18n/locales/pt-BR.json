@@ -608,7 +608,8 @@
       "caCertFile": "Certificado da AC",
       "remotePath": "Pasta padrão",
       "localPath": "Pasta local",
-      "folder": "Pasta"
+      "folder": "Pasta",
+      "maxConnections": "Máximo de conexões por painel"
     },
     "icons": {
       "bookmark": "Favorito",
@@ -669,7 +670,8 @@
     "collapseFolder": "Ocultar “{{name}}”",
     "noFolder": "Sem pasta",
     "importAdded_many": "Adicionados {{count}} marcadores",
-    "importSkipped_many": "ignorados {{count}} duplicados"
+    "importSkipped_many": "ignorados {{count}} duplicados",
+    "maxConnectionsHint": "0 ou vazio: sem limite. Caso contrário, 2–128, incluindo uma conexão para navegar nas pastas. Aplica-se após reconectar. Cada painel tem seu próprio limite."
   },
   "connectionBar": {
     "fields": {

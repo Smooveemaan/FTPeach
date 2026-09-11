@@ -412,6 +412,22 @@ export default function SiteEditor({
       )}
       {form.kind !== 'local' &&
         field('siteManagerDialog.fields.remotePath', 'remotePath', { placeholder: '/' })}
+      {form.kind !== 'local' && (
+        <>
+          {field('siteManagerDialog.fields.maxConnections', 'maxConnections', {
+            type: 'number',
+            min: 0,
+            max: 128,
+            step: 1,
+            placeholder: '0',
+            className: 'site-connection-limit-input',
+            'aria-describedby': 'site-max-connections-hint',
+          })}
+          <p className="settings-hint" id="site-max-connections-hint">
+            {t('siteManagerDialog.maxConnectionsHint')}
+          </p>
+        </>
+      )}
       {form.kind !== 'local' && (form.protocol === 'ftps' || isWebdav) && (
         <div className="settings-field">
           <span>{t('connectionBar.secureToggle.label')}</span>

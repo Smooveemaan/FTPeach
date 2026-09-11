@@ -615,7 +615,8 @@
       "caCertFile": "Certyfikat urzędu certyfikacji",
       "remotePath": "Folder domyślny",
       "localPath": "Folder lokalny",
-      "folder": "Folder"
+      "folder": "Folder",
+      "maxConnections": "Maksymalna liczba połączeń na panel"
     },
     "icons": {
       "bookmark": "Dodaj do zakładek",
@@ -678,7 +679,8 @@
     "newBookmarkInFolder": "Dodaj tutaj nową zakładkę",
     "expandFolder": "Rozwiń „{{name}}”",
     "collapseFolder": "Zwiń „{{name}}”",
-    "noFolder": "Bez folderu"
+    "noFolder": "Bez folderu",
+    "maxConnectionsHint": "0 lub puste pole: bez limitu. W przeciwnym razie 2–128, w tym jedno połączenie do przeglądania folderów. Działa po ponownym połączeniu. Każdy panel ma własny limit."
   },
   "connectionBar": {
     "fields": {

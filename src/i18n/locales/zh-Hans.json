@@ -601,7 +601,8 @@
       "caCertFile": "CA 证书",
       "remotePath": "默认文件夹",
       "localPath": "本地文件夹",
-      "folder": "文件夹"
+      "folder": "文件夹",
+      "maxConnections": "每个面板的最大连接数"
     },
     "icons": {
       "bookmark": "添加书签",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "在此添加新书签",
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",
-    "noFolder": "无文件夹"
+    "noFolder": "无文件夹",
+    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。各面板的限制独立计算。"
   },
   "connectionBar": {
     "fields": {

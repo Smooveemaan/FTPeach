@@ -64,6 +64,11 @@ jobs:
           set -o pipefail
           cargo test --locked --features test-utils --test docker_integration -- --ignored 2>&1 | tee compatibility-results.log
 
+      - name: Run simultaneous FTP and WebDAV application transfers
+        run: |
+          set -o pipefail
+          cargo test --locked --lib protocol::ftp::protocol_tests::recursive_stop_tests::docker_ -- --ignored --test-threads=1 2>&1 | tee -a compatibility-results.log
+
       - name: Publish compatibility outcome including ignored counts
         if: always()
         run: |

@@ -101,6 +101,18 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
         }
     }
 
+    if let Some(limit) = input.get("maxConnections")
+        && !limit.is_null()
+        && !limit
+            .as_u64()
+            .is_some_and(|value| value == 0 || (2..=128).contains(&value))
+    {
+        anyhow::bail!(CommandError::new(
+            ErrorCode::InvalidInput,
+            "maxConnections must be 0 (unlimited) or between 2 and 128",
+        ));
+    }
+
     if let Some(port) = input.get("port")
         && !port.is_null()
     {

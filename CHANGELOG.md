@@ -10,12 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Sort the transfer list by clicking a column heading. Right-click the headings to hide
   or show columns.
 - Double-click a column divider in the transfer list to fit the column to its contents.
+- Set the most connections a bookmark may open to its server in the Site Manager.
 
 ### Changed
 
 - The Concurrent transfers limit now covers all tabs together and applies at once.
 - The transfer list shows active transfers first and finished ones last.
 - When you send several folders at once, they all appear in the transfer list right away.
+- SFTP downloads are faster.
+- Transfers start sooner, without waiting for every extra connection to log in.
+- Dropping many files at once starts faster.
 
 ### Fixed
 
@@ -25,6 +29,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Files whose names start with a dot now show up on FTP servers, and folders that contain
   them can be deleted.
 - FTP and FTPS uploads no longer ask to replace a file that isn’t there.
+- Creating folders over FTP works on accounts that may create folders but not open them.
+- If a server turns away extra connections, FTPeach carries on with the ones it has and
+  tries again a little later.
+- A transfer now fails instead of finishing with a file of the wrong size.
+- The connection log no longer shows an error when an FTP server declines an optional
+  feature.
 - Folder uploads to WebDAV can no longer be paused, because resuming started the file over.
 - Resume all works while a WebDAV transfer is still running.
 - Unavailable Pause and Retry buttons no longer light up under the pointer.

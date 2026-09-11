@@ -601,7 +601,8 @@
       "caCertFile": "CA証明書",
       "remotePath": "デフォルトフォルダ",
       "localPath": "ローカルフォルダ",
-      "folder": "フォルダー"
+      "folder": "フォルダー",
+      "maxConnections": "ペインごとの最大接続数"
     },
     "icons": {
       "bookmark": "ブックマーク",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "ここに新しいブックマークを追加",
     "expandFolder": "「{{name}}」を展開する",
     "collapseFolder": "「{{name}}」を折りたたむ",
-    "noFolder": "フォルダーなし"
+    "noFolder": "フォルダーなし",
+    "maxConnectionsHint": "0 または空欄：無制限。それ以外は 2～128（フォルダー閲覧用の接続 1 つを含む）。再接続後に適用されます。制限はペインごとに独立しています。"
   },
   "connectionBar": {
     "fields": {

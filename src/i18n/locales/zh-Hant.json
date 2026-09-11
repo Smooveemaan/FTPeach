@@ -601,7 +601,8 @@
       "caCertFile": "CA 證書",
       "remotePath": "預設資料夾",
       "localPath": "本地資料夾",
-      "folder": "資料夾"
+      "folder": "資料夾",
+      "maxConnections": "每個面板的最大連線數"
     },
     "icons": {
       "bookmark": "書籤",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "此處新增書籤",
     "expandFolder": "展開“{{name}}”",
     "collapseFolder": "折疊“{{name}}”",
-    "noFolder": "無資料夾"
+    "noFolder": "無資料夾",
+    "maxConnectionsHint": "0 或留空：無限制。否則為 2–128，包含一個用於瀏覽資料夾的連線。重新連線後生效。各面板的限制獨立計算。"
   },
   "connectionBar": {
     "fields": {

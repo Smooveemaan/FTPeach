@@ -601,7 +601,8 @@
       "caCertFile": "CA-certifikat",
       "remotePath": "Standardmapp",
       "localPath": "Lokal mapp",
-      "folder": "Mapp"
+      "folder": "Mapp",
+      "maxConnections": "Maximalt antal anslutningar per panel"
     },
     "icons": {
       "bookmark": "Bokmärke",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Lägg till nytt bokmärke här",
     "expandFolder": "Visa ”{{name}}”",
     "collapseFolder": "Dölj ”{{name}}”",
-    "noFolder": "Ingen mapp"
+    "noFolder": "Ingen mapp",
+    "maxConnectionsHint": "0 eller tomt: obegränsat. Annars 2–128, inklusive en anslutning för att bläddra i mappar. Gäller efter återanslutning. Varje panel har en egen gräns."
   },
   "connectionBar": {
     "fields": {

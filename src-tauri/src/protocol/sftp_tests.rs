@@ -9,6 +9,110 @@ mod transfer_tests {
     use russh_sftp::protocol::{Attrs, Data, File, Handle, Name, Status};
 
     #[tokio::test]
+    async fn download_window_is_bounded_and_reorders_wire_replies() {
+        let (client, mut server) = tokio::io::duplex(1024 * 1024);
+        let task = tokio::spawn(async move {
+            async fn packet(server: &mut tokio::io::DuplexStream) -> Vec<u8> {
+                let length = server.read_u32().await.unwrap();
+                assert!(length < 64 * 1024);
+                let mut bytes = vec![0; length as usize];
+                server.read_exact(&mut bytes).await.unwrap();
+                bytes
+            }
+            assert_eq!(packet(&mut server).await[0], 1);
+            server
+                .write_all(&[0, 0, 0, 5, 2, 0, 0, 0, 3])
+                .await
+                .unwrap();
+            for eof in [false, true] {
+                let mut requests = Vec::new();
+                for _ in 0..READ_WINDOW {
+                    requests.push(packet(&mut server).await);
+                }
+                assert!(
+                    tokio::time::timeout(Duration::from_millis(30), server.read_u8())
+                        .await
+                        .is_err()
+                );
+                for request in requests.iter().rev() {
+                    assert_eq!(request[0], 5); // SSH_FXP_READ
+                    let handle_len = u32::from_be_bytes(request[5..9].try_into().unwrap()) as usize;
+                    let at = 9 + handle_len;
+                    let offset = u64::from_be_bytes(request[at..at + 8].try_into().unwrap());
+                    if eof {
+                        server.write_u32(17).await.unwrap();
+                        server.write_u8(101).await.unwrap();
+                        server.write_all(&request[1..5]).await.unwrap();
+                        server.write_u32(1).await.unwrap(); // EOF
+                        server.write_all(&[0; 8]).await.unwrap();
+                    } else {
+                        server.write_u32((9 + CHUNK_SIZE) as u32).await.unwrap();
+                        server.write_u8(103).await.unwrap(); // DATA
+                        server.write_all(&request[1..5]).await.unwrap();
+                        server.write_u32(CHUNK_SIZE as u32).await.unwrap();
+                        let bytes: Vec<u8> = (offset..offset + CHUNK_SIZE as u64)
+                            .map(|n| (n % 251) as u8)
+                            .collect();
+                        server.write_all(&bytes).await.unwrap();
+                    }
+                }
+            }
+        });
+        let raw = Arc::new(RawSftpSession::new(client));
+        raw.init().await.unwrap();
+        let mut bytes = Vec::new();
+        let progress: ProgressSink = Arc::new(|_| {});
+        let start = 123;
+        let total = start + (READ_WINDOW * CHUNK_SIZE) as u64;
+        let count = tokio::time::timeout(
+            Duration::from_secs(5),
+            read_pipelined(&raw, "file", &mut bytes, start, Some(total), &progress),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        assert_eq!(count, total);
+        assert_eq!(
+            bytes,
+            (start..total).map(|n| (n % 251) as u8).collect::<Vec<_>>()
+        );
+        task.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn failed_download_close_does_not_publish_destination() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            bytes: data(),
+            fail_close: true,
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+        let root = std::env::temp_dir().join(format!("sftp-close-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&root).await.unwrap();
+        let target = root.join("target");
+        tokio::fs::write(&target, b"original").await.unwrap();
+        let done = Arc::new(AtomicBool::new(false));
+        let seen = done.clone();
+        let result = backend
+            .download(
+                "/file",
+                &target,
+                false,
+                Arc::new(move |event| {
+                    if matches!(event, ProgressInfo::Done) {
+                        seen.store(true, Ordering::SeqCst);
+                    }
+                }),
+            )
+            .await;
+        assert!(result.is_err());
+        assert!(!done.load(Ordering::SeqCst));
+        assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+        assert_eq!(disk.lock().unwrap().closes, 1);
+        tokio::fs::remove_dir_all(root).await.unwrap();
+    }
+
+    #[tokio::test]
     async fn write_window_is_bounded_and_accepts_out_of_order_acknowledgements() {
         async fn packet(stream: &mut tokio::io::DuplexStream) -> Vec<u8> {
             let length = stream.read_u32().await.unwrap();

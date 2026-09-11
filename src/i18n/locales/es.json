@@ -608,7 +608,8 @@
       "caCertFile": "Certificado de CA",
       "remotePath": "Carpeta predeterminada",
       "localPath": "Carpeta local",
-      "folder": "Carpeta"
+      "folder": "Carpeta",
+      "maxConnections": "Máximo de conexiones por panel"
     },
     "icons": {
       "bookmark": "Marcador",
@@ -669,7 +670,8 @@
     "collapseFolder": "Ocultar «{{name}}»",
     "noFolder": "Sin carpeta",
     "importAdded_many": "Se añadieron {{count}} marcadores",
-    "importSkipped_many": "se omitieron {{count}} duplicados"
+    "importSkipped_many": "se omitieron {{count}} duplicados",
+    "maxConnectionsHint": "0 o vacío: sin límite. De lo contrario, 2–128, incluida una conexión para explorar carpetas. Se aplica al reconectar. Cada panel tiene su propio límite."
   },
   "connectionBar": {
     "fields": {

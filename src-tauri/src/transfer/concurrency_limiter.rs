@@ -10,6 +10,10 @@ pub struct ConcurrencyLimiter {
 pub struct Permit(Arc<ConcurrencyLimiter>);
 
 impl ConcurrencyLimiter {
+    pub(crate) fn limit(&self) -> usize {
+        self.state.lock().unwrap().0
+    }
+
     pub fn set_limit(&self, limit: usize) {
         self.state.lock().unwrap().0 = limit;
         self.changed.notify_waiters();

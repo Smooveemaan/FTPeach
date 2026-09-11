@@ -608,7 +608,8 @@
       "caCertFile": "Certificat d’AC",
       "remotePath": "Dossier par défaut",
       "localPath": "Dossier local",
-      "folder": "Dossier"
+      "folder": "Dossier",
+      "maxConnections": "Connexions maximales par panneau"
     },
     "icons": {
       "bookmark": "Signet",
@@ -669,7 +670,8 @@
     "collapseFolder": "Réduire « {{name}} »",
     "noFolder": "Aucun dossier",
     "importAdded_many": "{{count}} signets ajoutés",
-    "importSkipped_many": "{{count}} doublons ignorés"
+    "importSkipped_many": "{{count}} doublons ignorés",
+    "maxConnectionsHint": "0 ou vide : aucune limite. Sinon 2–128, dont une connexion pour parcourir les dossiers. Prend effet après reconnexion. Chaque panneau a sa propre limite."
   },
   "connectionBar": {
     "fields": {

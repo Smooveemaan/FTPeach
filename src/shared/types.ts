@@ -39,6 +39,7 @@ export interface ConnectionForm {
 }
 
 export interface ManagedSite {
+  maxConnections?: number;
   id: string;
   kind?: SiteKind;
   name: string;
@@ -62,6 +63,7 @@ export interface ManagedSite {
 }
 
 export interface SiteForm {
+  maxConnections: string;
   kind: 'site' | 'local';
   name: string;
   localPath: string;

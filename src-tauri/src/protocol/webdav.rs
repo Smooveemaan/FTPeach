@@ -184,9 +184,6 @@ impl WebDavBackend {
             body.extend_from_slice(&chunk);
         }
         let text = String::from_utf8(body).context("PROPFIND response is not UTF-8")?;
-        if status != StatusCode::MULTI_STATUS && status != StatusCode::OK {
-            return Err(response::status_error(status.as_u16(), "PROPFIND"));
-        }
         Ok(text)
     }
 
@@ -752,6 +749,17 @@ impl ProtocolBackend for WebDavBackend {
             if !res.status().is_success() {
                 return Err(response::status_error(res.status().as_u16(), "GET"));
             }
+            let range_end = if res.status() == StatusCode::PARTIAL_CONTENT {
+                Some(validate_content_range(
+                    res.headers()
+                        .get(reqwest::header::CONTENT_RANGE)
+                        .and_then(|v| v.to_str().ok()),
+                    start_at,
+                    remote_size,
+                )?)
+            } else {
+                None
+            };
             let effective_start =
                 if resumed_response_start(res.status(), start_at)? == 0 && start_at > 0 {
                     self.log_key(
@@ -761,15 +769,6 @@ impl ProtocolBackend for WebDavBackend {
                     );
                     0
                 } else {
-                    if start_at > 0 {
-                        validate_content_range(
-                            res.headers()
-                                .get(reqwest::header::CONTENT_RANGE)
-                                .and_then(|v| v.to_str().ok()),
-                            start_at,
-                            remote_size,
-                        )?;
-                    }
                     start_at
                 };
 
@@ -786,9 +785,25 @@ impl ProtocolBackend for WebDavBackend {
                     .context("seeking local file")?;
             }
 
+            let body_end = res
+                .content_length()
+                .and_then(|length| effective_start.checked_add(length));
+            if let (Some(body), Some(range)) = (body_end, range_end) {
+                transfer_file::validate_length(body, Some(range))?;
+            }
+            let expected_length = range_end.or(body_end).or(remote_size);
+            if let (Some(expected), Some(advertised)) = (expected_length, remote_size) {
+                transfer_file::validate_length(expected, Some(advertised))?;
+            }
             let mut transferred = effective_start;
             let mut res = res;
             while let Some(chunk) = res.chunk().await.context("reading from server")? {
+                transfer_file::validate_resume_offset(
+                    transferred
+                        .checked_add(chunk.len() as u64)
+                        .context("WebDAV size overflow")?,
+                    expected_length,
+                )?;
                 file.write_all(&chunk).await.context("writing local file")?;
                 crate::transfer::rate_limiter::acquire_paced(chunk.len() as u64, |slice| {
                     transferred += slice;
@@ -800,7 +815,7 @@ impl ProtocolBackend for WebDavBackend {
                 .await;
             }
             file.flush().await.context("flushing local file")?;
-            transfer_file::validate_length(transferred, remote_size)?;
+            transfer_file::validate_length(transferred, expected_length)?;
             drop(file);
             transfer_file::commit(&partial_path, local_path).await?;
             Ok(())
@@ -828,6 +843,7 @@ impl ProtocolBackend for WebDavBackend {
             .send()
             .await
             .context("GET request failed")?;
+        resumed_response_start(res.status(), 0)?;
         if !res.status().is_success() {
             return Err(response::status_error(res.status().as_u16(), "GET"));
         }

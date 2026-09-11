@@ -601,7 +601,8 @@
       "caCertFile": "CA-certificaat",
       "remotePath": "Standaardmap",
       "localPath": "Lokale map",
-      "folder": "Map"
+      "folder": "Map",
+      "maxConnections": "Maximale verbindingen per paneel"
     },
     "icons": {
       "bookmark": "Bladwijzer",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Hier een nieuwe bladwijzer toevoegen",
     "expandFolder": "\"{{name}}\" uitvouwen",
     "collapseFolder": "\"{{name}}\" samenvouwen",
-    "noFolder": "Geen map"
+    "noFolder": "Geen map",
+    "maxConnectionsHint": "0 of leeg: onbeperkt. Anders 2–128, inclusief één verbinding om mappen te bekijken. Geldt na opnieuw verbinden. Elk paneel heeft een eigen limiet."
   },
   "connectionBar": {
     "fields": {

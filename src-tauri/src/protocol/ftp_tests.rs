@@ -208,6 +208,16 @@ mod local_integration_tests {
                     (command, argument)
                 });
             match command.to_ascii_uppercase().as_str() {
+                "OPTS" if server.has("/reject-opts") => {
+                    writer.write_all(b"504 Unknown command\r\n").await.unwrap()
+                }
+                "OPTS" if server.has("/close-opts") => {
+                    writer
+                        .write_all(b"421 Service unavailable\r\n")
+                        .await
+                        .unwrap();
+                    return;
+                }
                 "OPTS" => writer.write_all(b"200 UTF8 enabled\r\n").await.unwrap(),
                 "USER" => writer
                     .write_all(b"331 Password required\r\n")
@@ -264,6 +274,9 @@ mod local_integration_tests {
                         .unwrap();
                 }
                 "SIZE" => {
+                    if argument == "/drop-size" {
+                        return;
+                    }
                     let reply: &[u8] = if !server.size_supported {
                         b"502 Command not implemented\r\n"
                     } else if server.has(argument) {
@@ -326,6 +339,75 @@ mod local_integration_tests {
             }
         });
         (port, handle)
+    }
+
+    #[tokio::test]
+    async fn optional_utf8_refusal_is_a_response_but_service_loss_is_an_error() {
+        for (marker, succeeds) in [("/reject-opts", true), ("/close-opts", false)] {
+            let (port, server) = spawn_ftp_server(TestServer::holding(&[marker], true)).await;
+            let mut backend = FtpBackend::new();
+            let logs = Arc::new(std::sync::Mutex::new(Vec::new()));
+            let captured = logs.clone();
+            backend.set_log_enabled(true);
+            backend.set_log_sink(Some(Arc::new(move |text, kind| {
+                captured.lock().unwrap().push((text, kind));
+            })));
+            assert_eq!(backend.connect(&local_config(port)).await.is_ok(), succeeds);
+            {
+                let logs = logs.lock().unwrap();
+                let raw: Vec<_> = logs
+                    .iter()
+                    .filter_map(|(text, kind)| match text {
+                        LogText::Raw(text) => Some((text.as_str(), kind)),
+                        _ => None,
+                    })
+                    .collect();
+                assert_eq!(
+                    raw.iter()
+                        .filter(|(text, _)| *text == "OPTS UTF8 ON")
+                        .count(),
+                    1
+                );
+                let opts = raw
+                    .iter()
+                    .position(|(text, _)| *text == "OPTS UTF8 ON")
+                    .unwrap();
+                let pass = raw
+                    .iter()
+                    .position(|(text, _)| *text == "PASS ****")
+                    .unwrap();
+                assert!(opts > pass);
+                if succeeds {
+                    assert!(!logs.iter().any(|(_, kind)| matches!(kind, LogKind::Error)));
+                    assert!(
+                        raw.iter()
+                            .any(|(text, kind)| text.contains("504 Unknown command")
+                                && matches!(kind, LogKind::Response))
+                    );
+                } else {
+                    assert!(
+                        raw.iter()
+                            .any(|(text, kind)| text.contains("421")
+                                && matches!(kind, LogKind::Error))
+                    );
+                }
+            }
+            backend.disconnect().await.unwrap();
+            server.abort();
+        }
+    }
+
+    #[tokio::test]
+    async fn failed_metadata_transport_discards_connection_but_refusal_does_not() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&[], false)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        assert_eq!(backend.known_size("/unsupported").await, None);
+        assert!(backend.is_connected());
+        assert_eq!(backend.known_size("/drop-size").await, None);
+        assert!(!backend.is_connected());
+        assert!(backend.stream.lock().await.is_none());
+        server.abort();
     }
 
     #[tokio::test]
@@ -613,6 +695,8 @@ mod recursive_stop_tests {
         offers_mlst: bool,
         /// ...and MLSD is turned away all the same.
         refuses_mlsd: bool,
+        denies_cwd: bool,
+        refuses_size: bool,
         /// DELEs to refuse before honouring them again.
         deletes_to_refuse: usize,
         /// How long the server takes over each 4 KiB it receives.
@@ -808,13 +892,16 @@ mod recursive_stop_tests {
                     }
                 }
                 "CWD" => {
-                    if disk.lock().unwrap().dirs.contains(&path) {
+                    if disk.lock().unwrap().denies_cwd {
+                        "550 Permission denied".to_string()
+                    } else if disk.lock().unwrap().dirs.contains(&path) {
                         cwd = path;
                         "250 OK".to_string()
                     } else {
                         "550 No such directory".to_string()
                     }
                 }
+                "PWD" => format!("257 \"{cwd}\""),
                 "MKD" => {
                     let mut disk = disk.lock().unwrap();
                     if disk.dirs.contains(&path)
@@ -847,6 +934,7 @@ mod recursive_stop_tests {
                         "550 No such file".to_string()
                     }
                 }
+                "SIZE" if disk.lock().unwrap().refuses_size => "502 Not implemented".to_string(),
                 "SIZE" => match disk.lock().unwrap().files.get(&path) {
                     Some(bytes) => format!("213 {}", bytes.len()),
                     None => "550 No such file".to_string(),
@@ -932,28 +1020,281 @@ mod recursive_stop_tests {
 
     /// A live session on a server holding `disk`, reached as a real one is.
     async fn connected(disk: &Shared) -> (Sessions, String) {
+        connected_at(config(spawn_server(disk.clone()).await)).await
+    }
+
+    async fn connected_at(config: crate::protocol::config::ConnectionConfig) -> (Sessions, String) {
+        connected_with_pool(config, PoolSize::Fixed(2)).await
+    }
+
+    async fn connected_with_pool(
+        config: crate::protocol::config::ConnectionConfig,
+        size: PoolSize,
+    ) -> (Sessions, String) {
+        fn backend(config: &crate::protocol::config::ConnectionConfig) -> BoxBackend {
+            if matches!(config, crate::protocol::config::ConnectionConfig::Webdav(_)) {
+                Box::new(crate::protocol::webdav::WebDavBackend::new())
+            } else {
+                Box::new(FtpBackend::new())
+            }
+        }
         let _ = rustls::crypto::ring::default_provider().install_default();
-        let config = config(spawn_server(disk.clone()).await);
-        let mut browse = FtpBackend::new();
+        let mut browse = backend(&config);
         browse.connect(&config).await.unwrap();
         let factory_config = config.clone();
         let factory: BackendFactory = Arc::new(move || {
             let config = factory_config.clone();
             Box::pin(async move {
-                let mut backend = FtpBackend::new();
+                let mut backend = backend(&config);
                 backend.connect(&config).await?;
-                Ok(Box::new(backend) as BoxBackend)
+                Ok(backend)
             })
         });
         let sessions = Sessions::default();
         let connection_id = uuid::Uuid::new_v4().to_string();
         *sessions.slot_for(&connection_id).lock().await = Some(Session {
-            browse_client: Box::new(browse),
+            browse_client: browse,
             server: config.server(),
-            transfer_pool: TransferPool::new(factory, PoolSize::Fixed(2)),
+            transfer_pool: TransferPool::new(factory, size),
             browse_timeout_ms: 20_000,
         });
         (sessions, connection_id)
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    #[ignore = "requires Docker FTP and WebDAV"]
+    async fn docker_simultaneous_ftp_webdav_files_and_empty_folder() {
+        let root = std::env::temp_dir().join(format!("ftpeach-parallel-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("Folder")).unwrap();
+        let bytes: Vec<u8> = (0..1024 * 1024).map(|n| (n % 251) as u8).collect();
+        for index in 0..7 {
+            std::fs::write(root.join(format!("file{index}")), &bytes).unwrap();
+        }
+        let remote = format!("/parallel-audit-{}", uuid::Uuid::new_v4());
+        let mut endpoints = Vec::new();
+        for map in [
+            json!({"protocol":"ftp", "host":"127.0.0.1", "port":2131, "user":"testuser", "password":"testpass"}),
+            json!({"protocol":"webdav", "webdavUrl":"http://127.0.0.1:6065", "user":"testuser", "password":"testpass"}),
+        ] {
+            let config =
+                crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap())
+                    .unwrap();
+            let (sessions, id) = connected_with_pool(config, PoolSize::Unlimited).await;
+            sessions
+                .slot_for(&id)
+                .lock()
+                .await
+                .as_mut()
+                .unwrap()
+                .browse_client
+                .mkdir(&remote)
+                .await
+                .unwrap();
+            endpoints.push((sessions, id));
+        }
+        let barrier = Arc::new(tokio::sync::Barrier::new(17));
+        let mut tasks = tokio::task::JoinSet::new();
+        for (sessions, id) in &endpoints {
+            for index in 0..8 {
+                let sessions = sessions.clone();
+                let id = id.clone();
+                let barrier = barrier.clone();
+                let name = if index == 7 {
+                    "Folder".into()
+                } else {
+                    format!("file{index}")
+                };
+                let source = root.join(&name).to_string_lossy().into_owned();
+                let target = format!("{remote}/{name}");
+                tasks.spawn(async move {
+                    barrier.wait().await;
+                    if index == 7 {
+                        let report = run(
+                            &sessions,
+                            Intent {
+                                id: uuid::Uuid::new_v4().to_string(),
+                                source: Endpoint::Local { path: source },
+                                target: Endpoint::Remote {
+                                    path: target,
+                                    connection_id: id,
+                                },
+                                moving: false,
+                                overwrite: false,
+                                skip_existing: false,
+                                resume_from: None,
+                            },
+                        )
+                        .await;
+                        assert!(report.ok, "{name}: {:?}", report.errors);
+                    } else {
+                        let progress = ProgressEmitter::for_tests(|_| {});
+                        let result = crate::application::transfer_service::transfer_upload(
+                            &sessions,
+                            &progress,
+                            id,
+                            uuid::Uuid::new_v4().to_string(),
+                            source,
+                            target,
+                            false,
+                            Some(false),
+                        )
+                        .await
+                        .unwrap();
+                        assert!(
+                            matches!(result, crate::ipc::OkResult::Ok { .. }),
+                            "{name}: {result:?}"
+                        );
+                    }
+                });
+            }
+        }
+        barrier.wait().await;
+        let results = tokio::time::timeout(Duration::from_secs(90), async {
+            let mut failures = Vec::new();
+            while let Some(result) = tasks.join_next().await {
+                if let Err(error) = result {
+                    failures.push(error.to_string());
+                }
+            }
+            failures
+        })
+        .await;
+        let mut mismatches = Vec::new();
+        for (sessions, id) in endpoints {
+            let slot = sessions.slot_for(&id);
+            let mut guard = slot.lock().await;
+            let session = guard.as_mut().unwrap();
+            for index in 0..7 {
+                let mut actual = Vec::new();
+                let result = session
+                    .browse_client
+                    .download_to_writer(&format!("{remote}/file{index}"), &mut actual)
+                    .await;
+                if result.is_err() || actual != bytes {
+                    mismatches.push(format!("{id}/file{index}: {result:?}"));
+                }
+            }
+            let empty = session
+                .browse_client
+                .list(&format!("{remote}/Folder"))
+                .await;
+            if !empty.is_ok_and(|entries| entries.is_empty()) {
+                mismatches.push(format!("{id}/Folder"));
+            }
+            let _ = session.browse_client.remove(&remote, true).await;
+            session.transfer_pool.destroy().await;
+            session.browse_client.disconnect().await.unwrap();
+        }
+        std::fs::remove_dir_all(root).unwrap();
+        assert!(
+            results.as_ref().is_ok_and(|failures| failures.is_empty()),
+            "{results:?}"
+        );
+        assert!(mismatches.is_empty(), "{mismatches:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the local Docker Pure-FTPd on port 2131"]
+    async fn docker_empty_folder_uses_the_recursive_transfer_path() {
+        let mut settings = config(2131);
+        let crate::protocol::config::ConnectionConfig::Ftp(ref mut ftp) = settings else {
+            unreachable!()
+        };
+        ftp.user = "testuser".into();
+        ftp.password = "testpass".into();
+        let (sessions, connection_id) = connected_at(settings).await;
+        let root = std::env::temp_dir().join(format!("ftpeach-empty-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("1")).unwrap();
+        let remote = format!("/empty-audit-{}", uuid::Uuid::new_v4());
+        let mut intent = upload(&root, &connection_id);
+        intent.target = Endpoint::Remote {
+            path: remote.clone(),
+            connection_id: connection_id.clone(),
+        };
+        let report = tokio::time::timeout(Duration::from_secs(30), run(&sessions, intent))
+            .await
+            .unwrap();
+        let slot = sessions.slot_for(&connection_id);
+        let mut session = slot.lock().await;
+        let session = session.as_mut().unwrap();
+        let listing = session.browse_client.list(&remote).await;
+        let _ = session.browse_client.remove_empty_directory(&remote).await;
+        session.transfer_pool.destroy().await;
+        session.browse_client.disconnect().await.unwrap();
+        std::fs::remove_dir_all(root).unwrap();
+        assert!(report.ok, "{:?}", report.errors);
+        assert!(listing.unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn mkdir_preserves_working_directory_for_reused_connections() {
+        let disk = disk(|_| {});
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+        backend.mkdir("/parent/child").await.unwrap();
+        backend.mkdir("sibling").await.unwrap();
+        backend.mkdir("/parent/child").await.unwrap();
+        backend.mkdir("another").await.unwrap();
+        let disk = disk.lock().unwrap();
+        for path in ["/parent/child", "/sibling", "/another"] {
+            assert!(disk.dirs.contains(path), "{path}");
+        }
+    }
+
+    #[tokio::test]
+    async fn empty_directory_creation_does_not_require_cwd_permission() {
+        let disk = disk(|disk| disk.denies_cwd = true);
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+        backend.mkdir("/Folder").await.unwrap();
+        assert!(disk.lock().unwrap().dirs.contains("/Folder"));
+        assert!(backend.is_connected());
+    }
+
+    #[tokio::test]
+    async fn shrinking_upload_source_fails_even_when_size_is_unsupported() {
+        let disk = disk(|disk| disk.refuses_size = true);
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+        let root = source_folder();
+        let source = root.join("1/File.docx");
+        let changing = source.clone();
+        let done = Arc::new(AtomicBool::new(false));
+        let seen = done.clone();
+        let result = backend
+            .upload(
+                &source,
+                "/file",
+                false,
+                Arc::new(move |event| match event {
+                    ProgressInfo::Progress { .. } => {
+                        std::fs::OpenOptions::new()
+                            .write(true)
+                            .open(&changing)
+                            .unwrap()
+                            .set_len(0)
+                            .unwrap();
+                    }
+                    ProgressInfo::Done => seen.store(true, Ordering::SeqCst),
+                    _ => {}
+                }),
+            )
+            .await;
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code,
+            ErrorCode::IntegrityMismatch
+        );
+        assert!(!done.load(Ordering::SeqCst));
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     /// A local folder "1" holding a single file.

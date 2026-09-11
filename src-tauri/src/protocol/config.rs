@@ -9,6 +9,7 @@ pub const DEFAULT_TIMEOUT_MS: u64 = 20_000;
 
 #[derive(Clone, Debug)]
 pub struct CommonConfig {
+    pub max_connections: Option<u16>,
     pub timeout_ms: u64,
     pub concurrency: Option<u16>,
     pub proxy: Option<ProxyConfig>,
@@ -105,6 +106,13 @@ impl ConnectionConfig {
             bail!("concurrency must not exceed 128");
         }
         let common = CommonConfig {
+            max_connections: {
+                let limit = optional_u16(map, "maxConnections")?;
+                if limit.is_some_and(|value| value == 1 || value > 128) {
+                    bail!("maxConnections must be 0 (unlimited) or between 2 and 128");
+                }
+                limit
+            },
             timeout_ms,
             concurrency,
             proxy: ProxyConfig::from_json_map(map)?,
@@ -285,6 +293,26 @@ fn optional_u16(map: &JsonMap, key: &str) -> Result<Option<u16>> {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn connection_limit_validates_runtime_and_saved_values() {
+        for limit in [json!(0), json!(2), json!(5), json!(128), json!(null)] {
+            assert!(
+                ConnectionConfig::from_json_map(&map(
+                    json!({"host":"test", "maxConnections":limit})
+                ))
+                .is_ok()
+            );
+        }
+        for limit in [json!(1), json!(129), json!(-1), json!(2.5), json!("bad")] {
+            assert!(
+                ConnectionConfig::from_json_map(&map(
+                    json!({"host":"test", "maxConnections":limit})
+                ))
+                .is_err()
+            );
+        }
+    }
 
     fn map(value: Value) -> JsonMap {
         value.as_object().unwrap().clone()

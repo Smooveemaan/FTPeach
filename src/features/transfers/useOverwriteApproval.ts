@@ -18,16 +18,27 @@ export function useOverwriteApproval({
   confirmOverwrite,
 }: TransferOverwriteOptions): OverwriteApproval {
   const confirmations = useRef<Promise<unknown>>(Promise.resolve());
+  type Listing = Awaited<ReturnType<typeof api.session.list>>;
+  const pendingListings = useRef(new Map<string, Promise<Listing>>());
   const approveTarget: OverwriteApproval = async (target) => {
     if (overwriteAction === 'overwrite') return true;
     const separator = target.kind === 'local' ? /[\\/]/ : /\//;
     const parts = target.path.split(separator);
     const name = parts.pop()!;
     const parent = parts.join(target.kind === 'local' ? '\\' : '/') || '/';
-    const listing =
-      target.kind === 'local'
-        ? await api.fsLocal.list(parent)
-        : await api.session.list(target.connectionId!, parent);
+    const key = JSON.stringify([target.kind, target.connectionId ?? null, parent]);
+    let pending = pendingListings.current.get(key);
+    if (!pending) {
+      // Share only an in-flight lookup. A later operation must see fresh
+      // directory contents, including files written by this transfer batch.
+      pending = (
+        target.kind === 'local'
+          ? api.fsLocal.list(parent)
+          : api.session.list(target.connectionId!, parent)
+      ).finally(() => pendingListings.current.delete(key));
+      pendingListings.current.set(key, pending);
+    }
+    const listing = await pending;
     if (!listing.ok) throw new Error(parent + ': ' + (listing.error || 'Cannot check destination'));
     const exists = listing.entries.some((entry) =>
       target.kind === 'local'

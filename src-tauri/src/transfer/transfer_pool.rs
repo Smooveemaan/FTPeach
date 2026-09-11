@@ -6,10 +6,11 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex as StdMutex};
-use tokio::sync::{Mutex as AsyncMutex, oneshot};
+use tokio::sync::{Mutex as AsyncMutex, Notify, oneshot};
 use tokio_util::sync::CancellationToken;
 
 const CANCELLED_CAP: usize = 256;
+const GROWTH_RETRY_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 
 pub type TaskId = String;
 pub type BoxBackend = Box<dyn ProtocolBackend + Send>;
@@ -25,6 +26,7 @@ pub type BackendFactory =
 #[derive(Clone, Copy)]
 pub enum PoolSize {
     Fixed(usize),
+    Capped(usize),
     Unlimited,
 }
 
@@ -32,6 +34,7 @@ impl PoolSize {
     fn satisfied(&self, current: usize, needed: usize) -> bool {
         match self {
             PoolSize::Fixed(n) => current >= *n,
+            PoolSize::Capped(n) => current >= needed.min(*n),
             PoolSize::Unlimited => current >= needed,
         }
     }
@@ -60,6 +63,7 @@ struct PoolState {
     // CANCELLED_CAP from the oldest end instead of growing unbounded.
     cancelled_order: VecDeque<TaskId>,
     destroyed: bool,
+    retry_growth_after: Option<tokio::time::Instant>,
 }
 
 impl PoolState {
@@ -82,6 +86,8 @@ pub struct TransferPool {
     size: PoolSize,
     state: Arc<StdMutex<PoolState>>,
     growing_gate: Arc<AsyncMutex<()>>,
+    growth_cancel: CancellationToken,
+    growth_changed: Arc<Notify>,
     generation: Arc<AtomicU64>,
 }
 
@@ -93,6 +99,8 @@ impl TransferPool {
             size,
             state: Arc::new(StdMutex::new(PoolState::default())),
             growing_gate: Arc::new(AsyncMutex::new(())),
+            growth_cancel: CancellationToken::new(),
+            growth_changed: Arc::new(Notify::new()),
             generation: Arc::new(AtomicU64::new(0)),
         }
     }
@@ -117,38 +125,92 @@ impl TransferPool {
     }
 
     async fn ensure_workers_for(&self, minimum: usize) {
+        self.growth_changed.notify_one();
+        // Login belongs to the pool, not to the transfer that requested it.
+        // Dropping that transfer's waiter must not abandon a half-open login:
+        // the server can keep counting it until authentication has finished.
+        let pool = self.clone();
+        let _ = tokio::spawn(async move { pool.grow_workers(minimum).await }).await;
+    }
+
+    async fn grow_workers(&self, minimum: usize) {
         let _gate = self.growing_gate.lock().await;
+        let mut connecting = tokio::task::JoinSet::new();
+        let mut last_error = None;
         loop {
-            let need_more = {
-                let state = self.state.lock().unwrap();
-                let total = state.workers.len() + state.active.len();
-                let needed = (state.queue.len() + state.active.len()).max(minimum);
-                !state.destroyed && !self.size.satisfied(total, needed)
-            };
-            if !need_more {
+            loop {
+                let need_more = {
+                    let state = self.state.lock().unwrap();
+                    // Pending logins reserve capacity before any network work begins.
+                    let total = state.workers.len() + state.active.len() + connecting.len();
+                    let needed = (state.queue.len() + state.active.len()).max(minimum);
+                    let transfer_limit = self.limiter.limit();
+                    let cooling_down = total > 0
+                        && state
+                            .retry_growth_after
+                            .is_some_and(|until| tokio::time::Instant::now() < until);
+                    // After a refusal, probe with one login rather than another burst.
+                    let probe_available =
+                        state.retry_growth_after.is_none() || connecting.is_empty();
+                    !state.destroyed
+                        && !cooling_down
+                        && last_error.is_none()
+                        && !self.size.satisfied(total, needed)
+                        && (transfer_limit == 0 || total < transfer_limit.max(minimum))
+                        && probe_available
+                };
+                if !need_more {
+                    break;
+                }
+                connecting.spawn((self.factory)());
+            }
+            if connecting.is_empty() {
                 break;
             }
-            match (self.factory)().await {
+            let result = tokio::select! {
+                biased;
+                _ = self.growth_cancel.cancelled() => {
+                    connecting.shutdown().await;
+                    break;
+                },
+                result = connecting.join_next() => match result {
+                    Some(Ok(result)) => result,
+                    Some(Err(error)) => Err(fail(ErrorCode::ConnectionLost, format!("Connection worker failed: {error}"))),
+                    None => break,
+                },
+                _ = self.growth_changed.notified() => continue,
+            };
+            match result {
                 Ok(backend) => {
                     if let Some(mut backend) = self.try_push_worker(backend) {
                         let _ = backend.disconnect().await;
                         break;
+                    }
+                    // A usable connection must not wait for subsequent logins.
+                    // Pair admission reserves both legs separately below.
+                    if minimum == 0 {
+                        self.drain();
                     }
                 }
                 // Server may be refusing extra connections — degrade to
                 // fewer workers rather than failing outright.
                 Err(error) => {
                     let mut state = self.state.lock().unwrap();
-                    if state.workers.is_empty() && state.active.is_empty() {
-                        state.destroyed = true;
-                        for item in state.queue.drain(..) {
-                            let _ = item.respond.send(Err(fail(
-                                ErrorCode::ConnectionLost,
-                                format!("Transfer worker replacement failed: {error}"),
-                            )));
-                        }
-                    }
-                    break;
+                    state.retry_growth_after =
+                        Some(tokio::time::Instant::now() + GROWTH_RETRY_DELAY);
+                    last_error = Some(error.to_string());
+                }
+            }
+        }
+        if let Some(error) = last_error {
+            let mut state = self.state.lock().unwrap();
+            if !state.destroyed && state.workers.is_empty() && state.active.is_empty() {
+                state.destroyed = true;
+                for item in state.queue.drain(..) {
+                    let _ = item.respond.send(Err(fail(
+                        ErrorCode::ConnectionLost,
+                        format!("Transfer worker replacement failed: {error}"),
+                    )));
                 }
             }
         }
@@ -290,7 +352,14 @@ impl TransferPool {
             rx
         };
 
-        self.ensure_workers().await;
+        self.drain();
+        let mut rx = rx;
+        // Growth may be waiting on a slow login while this task has already
+        // completed or been cancelled. Do not make its caller wait for growth.
+        tokio::select! {
+            result = &mut rx => return result.unwrap_or_else(|_| Err(fail(ErrorCode::ConnectionLost, "Connection closed"))),
+            _ = self.ensure_workers() => {}
+        }
 
         {
             let mut state = self.state.lock().unwrap();
@@ -430,6 +499,7 @@ impl TransferPool {
     }
 
     pub async fn destroy(&self) {
+        self.growth_cancel.cancel();
         let (idle_workers, queued, active_tokens) = {
             let mut state = self.state.lock().unwrap();
             state.destroyed = true;
@@ -453,12 +523,12 @@ impl TransferPool {
         }
     }
 
-    /// Waits until every task that was active when destruction began has
-    /// observed cancellation and released its backend. The application-level
-    /// shutdown timeout bounds this wait.
+    /// Waits until active tasks and any pending login have observed shutdown
+    /// and released their backends. The application-level timeout bounds this wait.
     pub async fn wait_until_idle(&self) {
         loop {
-            if self.state.lock().unwrap().active.is_empty() {
+            if self.state.lock().unwrap().active.is_empty() && self.growing_gate.try_lock().is_ok()
+            {
                 return;
             }
             tokio::time::sleep(std::time::Duration::from_millis(10)).await;
@@ -863,6 +933,407 @@ mod tests {
                 Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
             })
         })
+    }
+
+    #[tokio::test]
+    async fn capped_connection_limit_creates_on_demand_and_reuses_workers_for_eight_tasks() {
+        let created = Arc::new(AtomicUsize::new(0));
+        // A session limit of five reserves the remaining connection for browsing.
+        let pool = TransferPool::new(counting_factory(created.clone()), PoolSize::Capped(4));
+        pool.ensure_workers_for(1).await;
+        assert_eq!(created.load(Ordering::SeqCst), 1);
+        let release = Arc::new(tokio::sync::Semaphore::new(0));
+        let (started, mut ready) = tokio::sync::mpsc::unbounded_channel();
+        let mut tasks = tokio::task::JoinSet::new();
+        for index in 0..8 {
+            let pool = pool.clone();
+            let release = release.clone();
+            let started = started.clone();
+            tasks.spawn(async move {
+                pool.run(
+                    format!("file-{index}"),
+                    Box::new(move |_| {
+                        Box::pin(async move {
+                            started.send(()).unwrap();
+                            release.acquire().await.unwrap().forget();
+                            Ok(())
+                        })
+                    }),
+                )
+                .await
+            });
+        }
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            for _ in 0..4 {
+                ready.recv().await.unwrap();
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(created.load(Ordering::SeqCst), 4);
+        assert!(ready.try_recv().is_err());
+        release.add_permits(8);
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            while let Some(result) = tasks.join_next().await {
+                result.unwrap().unwrap();
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(created.load(Ordering::SeqCst), 4);
+        pool.destroy().await;
+    }
+
+    #[tokio::test]
+    async fn completed_transfers_do_not_abandon_pending_logins_or_exceed_connection_limit() {
+        struct PendingLogin(Arc<AtomicUsize>);
+        impl Drop for PendingLogin {
+            fn drop(&mut self) {
+                self.0.fetch_sub(1, Ordering::SeqCst);
+            }
+        }
+        for shutdown_during_login in [false, true] {
+            let calls = Arc::new(AtomicUsize::new(0));
+            let pending = Arc::new(AtomicUsize::new(0));
+            let login_started = Arc::new(tokio::sync::Notify::new());
+            let release_login = Arc::new(tokio::sync::Semaphore::new(0));
+            let factory: BackendFactory = {
+                let calls = calls.clone();
+                let pending = pending.clone();
+                let login_started = login_started.clone();
+                let release_login = release_login.clone();
+                Arc::new(move || {
+                    let index = calls.fetch_add(1, Ordering::SeqCst);
+                    let pending = pending.clone();
+                    let login_started = login_started.clone();
+                    let release_login = release_login.clone();
+                    Box::pin(async move {
+                        if index > 0 {
+                            pending.fetch_add(1, Ordering::SeqCst);
+                            let _pending = PendingLogin(pending);
+                            login_started.notify_one();
+                            release_login.acquire().await.unwrap().forget();
+                        }
+                        Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                    })
+                })
+            };
+            // Four total connections: one browse client plus at most three workers.
+            let pool = TransferPool::new(factory, PoolSize::Capped(3));
+            pool.ensure_workers_for(1).await;
+            let release_tasks = Arc::new(tokio::sync::Semaphore::new(0));
+            let mut tasks = tokio::task::JoinSet::new();
+            for index in 0..8 {
+                let pool = pool.clone();
+                let release = release_tasks.clone();
+                tasks.spawn(async move {
+                    pool.run(
+                        format!("small-file-{index}"),
+                        Box::new(move |_| {
+                            Box::pin(async move {
+                                release.acquire().await.unwrap().forget();
+                                Ok(())
+                            })
+                        }),
+                    )
+                    .await
+                });
+            }
+            tokio::time::timeout(std::time::Duration::from_secs(2), login_started.notified())
+                .await
+                .unwrap();
+            release_tasks.add_permits(8);
+            tokio::time::timeout(std::time::Duration::from_secs(2), async {
+                while let Some(result) = tasks.join_next().await {
+                    result.unwrap().unwrap();
+                }
+            })
+            .await
+            .expect("finished transfers must not wait for another connection's login");
+            assert_eq!(
+                pending.load(Ordering::SeqCst),
+                2,
+                "both pending logins must outlive completed transfers"
+            );
+            assert_eq!(
+                calls.load(Ordering::SeqCst),
+                3,
+                "completed files must not restart the pending login"
+            );
+            if shutdown_during_login {
+                pool.destroy().await;
+                tokio::time::timeout(std::time::Duration::from_secs(2), pool.wait_until_idle())
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    pending.load(Ordering::SeqCst),
+                    0,
+                    "disconnect must cancel the pending login"
+                );
+                continue;
+            }
+            release_login.add_permits(2);
+            tokio::time::timeout(std::time::Duration::from_secs(2), pool.ensure_workers())
+                .await
+                .unwrap();
+            assert_eq!(pool.state.lock().unwrap().workers.len(), 3);
+            assert_eq!(calls.load(Ordering::SeqCst), 3);
+            pool.destroy().await;
+        }
+    }
+
+    #[tokio::test]
+    async fn ready_worker_and_its_result_do_not_wait_for_a_stalled_extra_login() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let seen = calls.clone();
+        let factory: BackendFactory = Arc::new(move || {
+            let index = seen.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async move {
+                if index > 0 {
+                    std::future::pending::<()>().await;
+                }
+                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+            })
+        });
+        let pool = TransferPool::new(factory, PoolSize::Fixed(4));
+        let result = tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            pool.run("first".into(), Box::new(|_| Box::pin(async { Ok(()) }))),
+        )
+        .await;
+        result
+            .expect("a ready worker must start without waiting for all logins")
+            .unwrap();
+        pool.run("reuse".into(), Box::new(|_| Box::pin(async { Ok(()) })))
+            .await
+            .unwrap();
+        pool.destroy().await;
+    }
+
+    #[tokio::test]
+    async fn parallel_logins_obey_transfer_limit_and_later_login_can_serve_entire_queue() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let (started, mut ready) = tokio::sync::mpsc::unbounded_channel();
+        let release = Arc::new(tokio::sync::Semaphore::new(0));
+        let factory: BackendFactory = {
+            let calls = calls.clone();
+            let release = release.clone();
+            Arc::new(move || {
+                let index = calls.fetch_add(1, Ordering::SeqCst);
+                let started = started.clone();
+                let release = release.clone();
+                Box::pin(async move {
+                    started.send(index).unwrap();
+                    if index == 0 {
+                        std::future::pending::<()>().await;
+                    }
+                    release.acquire().await.unwrap().forget();
+                    Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                })
+            })
+        };
+        let limiter = Arc::new(ConcurrencyLimiter::default());
+        limiter.set_limit(2);
+        let pool = TransferPool::new(factory, PoolSize::Capped(3)).with_limiter(limiter);
+        let mut tasks = tokio::task::JoinSet::new();
+        for index in 0..8 {
+            let pool = pool.clone();
+            tasks.spawn(async move {
+                pool.run(
+                    format!("parallel-{index}"),
+                    Box::new(|_| Box::pin(async { Ok(()) })),
+                )
+                .await
+            });
+        }
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            let mut logins = vec![ready.recv().await.unwrap(), ready.recv().await.unwrap()];
+            logins.sort();
+            assert_eq!(logins, vec![0, 1]);
+        })
+        .await
+        .expect("both logins must start before either one completes");
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            2,
+            "the transfer limit also caps connection creation"
+        );
+        release.add_permits(1);
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            while let Some(result) = tasks.join_next().await {
+                result.unwrap().unwrap();
+            }
+        })
+        .await
+        .expect("a ready second connection must not wait for the stalled first login");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        pool.destroy().await;
+        tokio::time::timeout(std::time::Duration::from_secs(2), pool.wait_until_idle())
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn refused_parallel_login_does_not_discard_another_pending_success() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let (started, mut ready) = tokio::sync::mpsc::unbounded_channel();
+        let release = Arc::new(tokio::sync::Semaphore::new(0));
+        let factory: BackendFactory = {
+            let release = release.clone();
+            Arc::new(move || {
+                let index = calls.fetch_add(1, Ordering::SeqCst);
+                let started = started.clone();
+                let release = release.clone();
+                Box::pin(async move {
+                    started.send(index).unwrap();
+                    if index == 0 {
+                        return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
+                    }
+                    release.acquire().await.unwrap().forget();
+                    Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                })
+            })
+        };
+        let pool = TransferPool::new(factory, PoolSize::Fixed(2));
+        let worker = pool.clone();
+        let task = tokio::spawn(async move {
+            worker
+                .run("survivor".into(), Box::new(|_| Box::pin(async { Ok(()) })))
+                .await
+        });
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            ready.recv().await.unwrap();
+            ready.recv().await.unwrap();
+            loop {
+                if pool.state.lock().unwrap().retry_growth_after.is_some() {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        assert!(!pool.state.lock().unwrap().destroyed);
+        release.add_permits(1);
+        tokio::time::timeout(std::time::Duration::from_secs(2), task)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        pool.destroy().await;
+    }
+
+    #[tokio::test]
+    async fn loss_of_last_worker_bypasses_growth_cooldown() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let seen = calls.clone();
+        let factory: BackendFactory = Arc::new(move || {
+            let index = seen.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async move {
+                if index == 1 {
+                    return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
+                }
+                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+            })
+        });
+        let pool = TransferPool::new(factory, PoolSize::Fixed(2));
+        // Establish one worker and encounter the limit before losing it.
+        pool.ensure_workers().await;
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        assert!(pool.state.lock().unwrap().retry_growth_after.is_some());
+        pool.run(
+            "disconnect".into(),
+            Box::new(|backend| Box::pin(async move { backend.disconnect().await })),
+        )
+        .await
+        .unwrap();
+        tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            pool.run(
+                "replacement".into(),
+                Box::new(|_| Box::pin(async { Ok(()) })),
+            ),
+        )
+        .await
+        .expect("replacement must not wait for the five-second growth cooldown")
+        .unwrap();
+        assert!(calls.load(Ordering::SeqCst) >= 3);
+        pool.destroy().await;
+    }
+
+    #[tokio::test]
+    async fn rejected_growth_is_shared_by_queued_callers_and_can_retry_later() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let seen = calls.clone();
+        let factory: BackendFactory = Arc::new(move || {
+            let index = seen.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async move {
+                if index > 0 {
+                    return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
+                }
+                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+            })
+        });
+        let pool = TransferPool::new(factory, PoolSize::Fixed(4));
+        let release = Arc::new(tokio::sync::Notify::new());
+        let (started, ready) = oneshot::channel();
+        let worker = pool.clone();
+        let gate = release.clone();
+        let first = tokio::spawn(async move {
+            worker
+                .run(
+                    "first".into(),
+                    Box::new(move |_| {
+                        Box::pin(async move {
+                            let _ = started.send(());
+                            gate.notified().await;
+                            Ok(())
+                        })
+                    }),
+                )
+                .await
+        });
+        ready.await.unwrap();
+        let mut queued = tokio::task::JoinSet::new();
+        for index in 0..8 {
+            let pool = pool.clone();
+            queued.spawn(async move {
+                pool.run(
+                    format!("queued-{index}"),
+                    Box::new(|_| Box::pin(async { Ok(()) })),
+                )
+                .await
+            });
+        }
+        tokio::time::timeout(std::time::Duration::from_secs(1), async {
+            loop {
+                if pool.state.lock().unwrap().queue.len() == 8 {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            4,
+            "a refused initial batch must suppress further connection attempts"
+        );
+        release.notify_one();
+        first.await.unwrap().unwrap();
+        while let Some(result) = queued.join_next().await {
+            result.unwrap().unwrap();
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 4);
+        pool.state.lock().unwrap().retry_growth_after = Some(tokio::time::Instant::now());
+        pool.ensure_workers().await;
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            5,
+            "growth must probe with one connection after the cooldown"
+        );
+        pool.destroy().await;
     }
 
     #[tokio::test]

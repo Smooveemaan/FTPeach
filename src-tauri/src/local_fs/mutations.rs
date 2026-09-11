@@ -68,14 +68,15 @@ mod tests {
     }
     #[tokio::test]
     async fn mutations_wait_until_the_download_releases_its_guard() {
-        let download = guard().read().await;
-        assert!(guard().try_write().is_err());
-        let second_download = guard()
-            .try_read()
-            .expect("independent downloads can overlap");
+        // A queued writer from another test prevents new readers on Tokio's
+        // fair lock. Keep this lock-semantics assertion isolated from global IO.
+        let lock = tokio::sync::RwLock::new(());
+        let download = lock.read().await;
+        assert!(lock.try_write().is_err());
+        let second_download = lock.try_read().expect("independent downloads can overlap");
         drop(second_download);
         drop(download);
-        let _next = tokio::time::timeout(std::time::Duration::from_secs(5), guard().write())
+        let _next = tokio::time::timeout(std::time::Duration::from_secs(5), lock.write())
             .await
             .unwrap();
     }

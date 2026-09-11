@@ -24,7 +24,7 @@ pub(super) fn validate_content_range(
     value: Option<&str>,
     start: u64,
     expected_total: Option<u64>,
-) -> BackendResult<()> {
+) -> BackendResult<u64> {
     let value = value.ok_or_else(|| mismatch("missing Content-Range on resumed response"))?;
     let range = value
         .strip_prefix("bytes ")
@@ -50,8 +50,8 @@ pub(super) fn validate_content_range(
         let total: u64 = total
             .parse()
             .map_err(|_| mismatch("invalid Content-Range total"))?;
-        if end >= total {
-            return Err(mismatch("Content-Range end exceeds total length"));
+        if end.checked_add(1) != Some(total) {
+            return Err(mismatch("Content-Range does not reach the end of the file"));
         }
     }
     if let Some(expected) = expected_total {
@@ -64,7 +64,8 @@ pub(super) fn validate_content_range(
             )));
         }
     }
-    Ok(())
+    end.checked_add(1)
+        .ok_or_else(|| mismatch("Content-Range end overflow"))
 }
 
 /// Every way a resumed response can disagree with the range we asked for is
@@ -81,6 +82,12 @@ fn mismatch(detail: impl std::fmt::Display) -> anyhow::Error {
 pub(super) fn resumed_response_start(status: StatusCode, requested: u64) -> BackendResult<u64> {
     if status == StatusCode::RANGE_NOT_SATISFIABLE {
         return Err(mismatch("server rejected resume offset with 416"));
+    }
+    if status.is_success()
+        && status != StatusCode::OK
+        && !(status == StatusCode::PARTIAL_CONTENT && requested > 0)
+    {
+        return Err(mismatch("unexpected successful status for a file GET"));
     }
     if requested > 0 && status != StatusCode::PARTIAL_CONTENT {
         return Ok(0);

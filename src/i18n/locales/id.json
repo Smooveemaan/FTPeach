@@ -601,7 +601,8 @@
       "caCertFile": "Sertifikat CA",
       "remotePath": "Folder default",
       "localPath": "Folder lokal",
-      "folder": "Folder"
+      "folder": "Folder",
+      "maxConnections": "Koneksi maksimum per panel"
     },
     "icons": {
       "bookmark": "Penanda",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Tambahkan Bookmark Baru di Sini",
     "expandFolder": "Perluas \"{{name}}\"",
     "collapseFolder": "Sembunyikan \"{{name}}\"",
-    "noFolder": "Tanpa folder"
+    "noFolder": "Tanpa folder",
+    "maxConnectionsHint": "0 atau kosong: tanpa batas. Selain itu 2–128, termasuk satu koneksi untuk menjelajahi folder. Berlaku setelah tersambung kembali. Setiap panel memiliki batas sendiri."
   },
   "connectionBar": {
     "fields": {

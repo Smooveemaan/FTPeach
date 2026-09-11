@@ -251,6 +251,19 @@ impl FtpBackend {
         self.log_kind(cmd.to_string(), LogKind::Command);
         match stream.custom_command(cmd.to_string(), expected).await {
             Ok(resp) => self.log_response_body(&resp.body),
+            // Optional capability negotiation may be unsupported. Preserve
+            // the wire reply without presenting it as a connection failure.
+            Err(suppaftp::FtpError::UnexpectedResponse(resp))
+                if matches!(
+                    resp.status,
+                    Status::BadCommand
+                        | Status::BadArguments
+                        | Status::NotImplemented
+                        | Status::NotImplementedParameter
+                ) =>
+            {
+                self.log_response_body(&resp.body);
+            }
             Err(err) => self.log_kind(format!("{err}"), LogKind::Error),
         }
     }
@@ -300,6 +313,29 @@ impl FtpBackend {
     }
 
     async fn ensure_dir(stream: &mut AsyncRustlsFtpStream, path: &str) -> BackendResult<()> {
+        // The common case needs one command and no permission to enter the
+        // new directory (upload-only accounts may allow MKD but deny CWD).
+        match stream.mkdir(path).await {
+            Ok(_) => return Ok(()),
+            Err(suppaftp::FtpError::UnexpectedResponse(response))
+                if response.status == Status::FileUnavailable => {}
+            Err(error) => return Err(error.into()),
+        }
+        let original = stream.pwd().await.context("saving working directory")?;
+        let result = Self::ensure_dir_segments(stream, path).await;
+        let restored = stream
+            .cwd(&original)
+            .await
+            .context("restoring working directory");
+        result?;
+        restored?;
+        Ok(())
+    }
+
+    async fn ensure_dir_segments(
+        stream: &mut AsyncRustlsFtpStream,
+        path: &str,
+    ) -> BackendResult<()> {
         if path.starts_with('/') {
             stream.cwd("/").await.context("cwd to root")?;
         }
@@ -404,6 +440,9 @@ impl FtpBackend {
         // Unsupported commands are complete negative replies; MLSD can fall
         // back to LIST on this socket. Other failures discard it conservatively.
         operation.reusable = result.is_ok() || result.as_ref().is_err_and(command_refused);
+        if let Err(error) = &result {
+            self.log_kind(format!("{error:#}"), LogKind::Error);
+        }
         result
     }
 
@@ -414,7 +453,18 @@ impl FtpBackend {
     async fn exists(&mut self, path: &str) -> BackendResult<bool> {
         let probe = path.to_string();
         let size = self
-            .with_stream(move |s| Box::pin(async move { Ok(s.size(&probe).await) }))
+            .with_stream(move |s| Box::pin(async move {
+                match s.size(&probe).await {
+                    Ok(size) => Ok(Ok(size)),
+                    Err(error @ suppaftp::FtpError::UnexpectedResponse(_)) => {
+                        if matches!(&error, suppaftp::FtpError::UnexpectedResponse(response) if response.status == Status::NotAvailable) {
+                            return Err(error.into());
+                        }
+                        Ok(Err(error))
+                    }
+                    Err(error) => Err(error.into()),
+                }
+            }))
             .await?;
         match size {
             Ok(_) => return Ok(true),
@@ -580,9 +630,6 @@ impl ProtocolBackend for FtpBackend {
                     })
                 });
             }
-            this.logged_best_effort(&mut stream, "OPTS UTF8 ON", &[Status::CommandOk])
-                .await;
-
             let user_cmd = format!("USER {user}");
             let user_resp = this
                 .logged_command(
@@ -752,6 +799,7 @@ impl ProtocolBackend for FtpBackend {
     }
 
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
+        self.log_kind(format!("MKD {path}"), LogKind::Command);
         let path = path.to_string();
         self.with_stream(move |s| Box::pin(async move { Self::ensure_dir(s, &path).await }))
             .await
@@ -863,7 +911,17 @@ impl ProtocolBackend for FtpBackend {
     async fn known_size(&mut self, path: &str) -> Option<u64> {
         let path = path.to_string();
         self.with_stream(move |s| {
-            Box::pin(async move { Ok(s.size(&path).await.ok().map(|v| v as u64)) })
+            Box::pin(async move {
+                match s.size(&path).await {
+                    Ok(size) => Ok(Some(size as u64)),
+                    Err(suppaftp::FtpError::UnexpectedResponse(response))
+                        if response.status != Status::NotAvailable =>
+                    {
+                        Ok(None)
+                    }
+                    Err(error) => Err(error.into()),
+                }
+            })
         })
         .await
         .ok()
@@ -941,6 +999,7 @@ impl ProtocolBackend for FtpBackend {
                         });
                     }
                     data_stream.finish(s).await?;
+                    super::transfer_file::validate_length(transferred, Some(local_size))?;
                     Ok(())
                 })
             })
@@ -979,10 +1038,15 @@ impl ProtocolBackend for FtpBackend {
         let version = self
             .with_stream(move |s| {
                 Box::pin(async move {
-                    Ok(s.mdtm(&version_path)
-                        .await
-                        .ok()
-                        .map(|date| date.to_string()))
+                    match s.mdtm(&version_path).await {
+                        Ok(date) => Ok(Some(date.to_string())),
+                        Err(suppaftp::FtpError::UnexpectedResponse(response))
+                            if response.status != Status::NotAvailable =>
+                        {
+                            Ok(None)
+                        }
+                        Err(error) => Err(error.into()),
+                    }
                 })
             })
             .await

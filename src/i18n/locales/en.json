@@ -601,7 +601,8 @@
       "caCertFile": "CA certificate",
       "remotePath": "Default folder",
       "localPath": "Local folder",
-      "folder": "Folder"
+      "folder": "Folder",
+      "maxConnections": "Maximum connections per pane"
     },
     "icons": {
       "bookmark": "Bookmark",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "New Bookmark Here",
     "expandFolder": "Expand \"{{name}}\"",
     "collapseFolder": "Collapse \"{{name}}\"",
-    "noFolder": "No folder"
+    "noFolder": "No folder",
+    "maxConnectionsHint": "0 or blank: no limit. Otherwise 2–128, including one connection for browsing. Applies after reconnecting. Each pane has its own limit."
   },
   "connectionBar": {
     "fields": {

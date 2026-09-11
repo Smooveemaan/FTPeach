@@ -601,7 +601,8 @@
       "caCertFile": "Chứng chỉ CA",
       "remotePath": "Thư mục mặc định",
       "localPath": "Thư mục cục bộ",
-      "folder": "Thư mục"
+      "folder": "Thư mục",
+      "maxConnections": "Số kết nối tối đa mỗi bảng"
     },
     "icons": {
       "bookmark": "Dấu trang",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Thêm dấu trang mới tại đây",
     "expandFolder": "Mở rộng “{{name}}”",
     "collapseFolder": "Thu gọn “{{name}}”",
-    "noFolder": "Không có thư mục"
+    "noFolder": "Không có thư mục",
+    "maxConnectionsHint": "0 hoặc để trống: không giới hạn. Nếu không, 2–128, gồm một kết nối để duyệt thư mục. Áp dụng sau khi kết nối lại. Mỗi bảng có giới hạn riêng."
   },
   "connectionBar": {
     "fields": {

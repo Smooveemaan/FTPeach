@@ -9,6 +9,7 @@ import {
 } from '../../../src/features/transfers/index.ts';
 import { resetTransfersStoreForTests } from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
+import { useOverwriteApproval } from '../../../src/features/transfers/useOverwriteApproval.ts';
 import type {
   CommandResult,
   DragOutTransferStarted,
@@ -30,6 +31,118 @@ beforeEach(() => {
 });
 
 const folderEntry = { name: 'folder', isDirectory: true, size: 0 };
+
+test('overwrite checks share in-flight listings, preserve conflicts and refresh on the next operation', async () => {
+  const previousApi = window.api;
+  const first = createDeferred<Awaited<ReturnType<typeof tauriApi.session.list>>>();
+  const list = vi
+    .fn()
+    .mockReturnValueOnce(first.promise)
+    .mockResolvedValue({
+      ok: true,
+      entries: [{ name: 'file1', isDirectory: false }],
+    });
+  window.api = { ...tauriApi, session: { ...tauriApi.session, list } };
+  const confirm = vi.fn().mockResolvedValue(true);
+  const { result, unmount } = renderHook(() => useOverwriteApproval({ confirmOverwrite: confirm }));
+  try {
+    const checks = Array.from({ length: 8 }, (_, index) =>
+      result.current({
+        kind: 'remote',
+        connectionId: 'ftp',
+        path: '/' + (index === 0 ? 'Folder' : `file${index}`),
+      }),
+    );
+    assert.equal(list.mock.calls.length, 1);
+    first.resolve({ ok: true, entries: [{ name: 'Folder', isDirectory: true }] });
+    assert.deepEqual(await Promise.all(checks), [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    assert.equal(confirm.mock.calls.length, 1);
+    assert.equal(confirm.mock.calls[0]?.[0], '/Folder');
+    assert.equal(
+      await result.current({ kind: 'remote', connectionId: 'ftp', path: '/file1' }),
+      true,
+    );
+    assert.equal(list.mock.calls.length, 2);
+    assert.equal(confirm.mock.calls.length, 2);
+  } finally {
+    unmount();
+    window.api = previousApi;
+  }
+});
+
+test('listing sharing isolates sessions and folders and retries rejected requests', async () => {
+  const previousApi = window.api;
+  const failure = createDeferred<Awaited<ReturnType<typeof tauriApi.session.list>>>();
+  const list = vi.fn().mockReturnValue(failure.promise);
+  window.api = { ...tauriApi, session: { ...tauriApi.session, list } };
+  const { result, unmount } = renderHook(() => useOverwriteApproval({}));
+  try {
+    const targets = [
+      { kind: 'remote' as const, connectionId: 'one', path: '/file' },
+      { kind: 'remote' as const, connectionId: 'one', path: '/other' },
+      { kind: 'remote' as const, connectionId: 'two', path: '/file' },
+      { kind: 'remote' as const, connectionId: 'one', path: '/sub/file' },
+    ];
+    const checks = Promise.allSettled(targets.map((target) => result.current(target)));
+    assert.equal(list.mock.calls.length, 3);
+    failure.resolve(Promise.reject(new Error('Connection lost')));
+    assert.ok((await checks).every((check) => check.status === 'rejected'));
+    list.mockResolvedValue({ ok: true, entries: [] });
+    assert.equal(await result.current(targets[0]!), false);
+    assert.equal(list.mock.calls.length, 4);
+  } finally {
+    unmount();
+    window.api = previousApi;
+  }
+});
+
+test('dropping a folder and seven files performs one destination listing', async () => {
+  await withHarness(async ({ getApi, mockApi, calls, errors }) => {
+    const listing = createDeferred<Awaited<ReturnType<typeof tauriApi.session.list>>>();
+    const list = vi.fn().mockReturnValue(listing.promise);
+    mockApi.session.list = list;
+    mockApi._nextUpload.resolve({ ok: true });
+    const recursive = vi
+      .fn()
+      .mockResolvedValue({ ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] });
+    mockApi.transfer.recursive = recursive;
+    let pending!: Promise<void>;
+    await act(async () => {
+      pending = getApi().handleOsDropFiles(
+        {
+          kind: 'remote',
+          status: 'connected',
+          connectionId: 'ftp',
+          protocol: 'ftp',
+          path: '/',
+          entries: [],
+        },
+        Array.from({ length: 8 }, (_, index) => {
+          const name = index === 0 ? 'Folder' : `file${index}`;
+          return { name, path: `C:\\source\\${name}`, isDirectory: index === 0, size: 1 };
+        }),
+      );
+    });
+    assert.equal(list.mock.calls.length, 1);
+    await act(async () => {
+      listing.resolve({ ok: true, entries: [] });
+      await pending;
+    });
+    assert.equal(list.mock.calls.length, 1);
+    assert.equal(calls.upload.length, 7);
+    assert.equal(recursive.mock.calls.length, 1);
+    assert.deepEqual(errors, []);
+  });
+});
 
 test('waiting folders can pause, resume and stop before backend dispatch', async () => {
   await withHarness(async ({ getApi, mockApi, getSnapshot }) => {

@@ -32,6 +32,21 @@ async fn round_trip(mut backend: impl ProtocolBackend, config: &ConnectionConfig
 
     backend.mkdir(dir).await.expect("mkdir");
 
+    // Empty folders have no file transfer to hide listing or MKD failures.
+    let empty = format!("{dir}/empty folder");
+    backend.mkdir(&empty).await.expect("mkdir empty folder");
+    assert!(
+        backend
+            .list(&empty)
+            .await
+            .expect("list empty folder")
+            .is_empty()
+    );
+    backend
+        .remove(&empty, true)
+        .await
+        .expect("remove empty folder");
+
     let file_path = format!("{dir}/hello.txt");
     let content = b"FTPeach docker integration test payload\n".to_vec();
     let local_upload = std::env::temp_dir().join(format!(

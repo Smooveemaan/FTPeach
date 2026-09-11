@@ -127,6 +127,29 @@ async fn pool_size_for(_store: &Store, concurrency: Option<u16>) -> PoolSize {
 #[cfg(test)]
 mod pool_settings_tests {
     use super::*;
+    #[test]
+    fn connection_limit_reserves_browse_slot_and_preserves_lower_transfer_limit() {
+        assert!(matches!(
+            cap_pool_connections(PoolSize::Unlimited, Some(5)),
+            PoolSize::Capped(4)
+        ));
+        assert!(matches!(
+            cap_pool_connections(PoolSize::Unlimited, Some(2)),
+            PoolSize::Capped(1)
+        ));
+        assert!(matches!(
+            cap_pool_connections(PoolSize::Fixed(2), Some(5)),
+            PoolSize::Capped(2)
+        ));
+        assert!(matches!(
+            cap_pool_connections(PoolSize::Unlimited, Some(0)),
+            PoolSize::Unlimited
+        ));
+        assert!(matches!(
+            cap_pool_connections(PoolSize::Fixed(3), None),
+            PoolSize::Fixed(3)
+        ));
+    }
     #[tokio::test]
     async fn global_zero_uses_unlimited_when_connection_has_no_override() {
         let root =
@@ -150,6 +173,20 @@ mod pool_settings_tests {
             PoolSize::Fixed(1)
         ));
         std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSize {
+    match max_connections {
+        Some(limit) if limit >= 2 => {
+            // The browse client occupies one of the session's connections.
+            let workers = usize::from(limit - 1);
+            PoolSize::Capped(match size {
+                PoolSize::Fixed(existing) | PoolSize::Capped(existing) => existing.min(workers),
+                PoolSize::Unlimited => workers,
+            })
+        }
+        _ => size,
     }
 }
 
@@ -222,7 +259,10 @@ pub(crate) async fn connect(
         });
     }
 
-    let pool_size = pool_size_for(store, concurrency).await;
+    let pool_size = cap_pool_connections(
+        pool_size_for(store, concurrency).await,
+        typed_config.common().max_connections,
+    );
     let pool_protocol = protocol;
     let pool_connection_id = connection_id.to_string();
     let pool_config = typed_config.clone();

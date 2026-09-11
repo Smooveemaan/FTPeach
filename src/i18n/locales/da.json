@@ -601,7 +601,8 @@
       "caCertFile": "CA-certifikat",
       "remotePath": "Standardmappe",
       "localPath": "Lokal mappe",
-      "folder": "Mappe"
+      "folder": "Mappe",
+      "maxConnections": "Maksimale forbindelser pr. panel"
     },
     "icons": {
       "bookmark": "Bogmærke",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "Opret nyt bogmærke her",
     "expandFolder": "Udvid »{{name}}«",
     "collapseFolder": "Skjul »{{name}}«",
-    "noFolder": "Ingen mappe"
+    "noFolder": "Ingen mappe",
+    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hvert panel har sin egen grænse."
   },
   "connectionBar": {
     "fields": {

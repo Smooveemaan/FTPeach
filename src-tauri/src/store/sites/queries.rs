@@ -143,6 +143,7 @@ impl Store {
                 out.insert("protocol".into(), get("protocol"));
                 out.insert("host".into(), get("host"));
                 out.insert("port".into(), get("port"));
+                out.insert("maxConnections".into(), get("maxConnections"));
                 out.insert(
                     "webdavUrl".into(),
                     Value::String(

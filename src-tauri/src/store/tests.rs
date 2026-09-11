@@ -4,6 +4,37 @@ use crate::domain::SiteLayoutEntry;
 use crate::security::vault::Vault;
 use serde_json::{Value, json};
 
+#[tokio::test]
+async fn connection_limit_survives_site_storage_and_can_be_cleared() {
+    let root =
+        std::env::temp_dir().join(format!("ftpeach-connection-limit-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let mut input = json!({"id":"limited", "name":"FTP", "protocol":"ftp", "host":"example.test", "maxConnections":5}).as_object().unwrap().clone();
+    store.save_site(input.clone()).await.unwrap();
+    assert_eq!(store.list_sites().await.unwrap()[0]["maxConnections"], 5);
+    assert_eq!(
+        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
+        5
+    );
+    input.remove("maxConnections");
+    store.save_site(input.clone()).await.unwrap();
+    assert_eq!(
+        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
+        5
+    );
+    for invalid in [json!(1), json!(129), json!(-1), json!(2.5), json!("bad")] {
+        input.insert("maxConnections".into(), invalid);
+        assert!(store.save_site(input.clone()).await.is_err());
+    }
+    input.insert("maxConnections".into(), json!(0));
+    store.save_site(input).await.unwrap();
+    assert_eq!(
+        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
+        0
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[cfg(windows)]
 #[tokio::test]
 async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {

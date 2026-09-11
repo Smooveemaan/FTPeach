@@ -288,6 +288,18 @@
   height: 26px;
 }
 
+.site-edit-form .settings-field input.site-connection-limit-input {
+  width: 8ch;
+  justify-self: start;
+  appearance: textfield;
+}
+
+.site-connection-limit-input::-webkit-outer-spin-button,
+.site-connection-limit-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .site-edit-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -306,6 +318,15 @@
 .site-edit-form .settings-field > span {
   flex: 0 0 auto;
 }
+
+.site-edit-form .settings-field:has(> .site-connection-limit-input) {
+  grid-template-columns: max-content max-content;
+}
+
+.site-edit-form .settings-field:has(> .site-connection-limit-input) > span {
+  white-space: nowrap;
+}
+
 .site-field-group {
   display: grid;
   width: 100%;

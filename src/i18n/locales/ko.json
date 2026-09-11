@@ -601,7 +601,8 @@
       "caCertFile": "CA 인증서",
       "remotePath": "기본 폴더",
       "localPath": "로컬 폴더",
-      "folder": "폴더"
+      "folder": "폴더",
+      "maxConnections": "패널당 최대 연결 수"
     },
     "icons": {
       "bookmark": "즐겨찾기",
@@ -660,7 +661,8 @@
     "newBookmarkInFolder": "여기에 새 북마크 추가",
     "expandFolder": "“{{name}}” 확장",
     "collapseFolder": "“{{name}}” 접기",
-    "noFolder": "폴더 없음"
+    "noFolder": "폴더 없음",
+    "maxConnectionsHint": "0 또는 빈칸: 제한 없음. 그 외에는 폴더 탐색용 연결 하나를 포함하여 2–128개. 다시 연결하면 적용됩니다. 각 패널에 별도의 제한이 적용됩니다."
   },
   "connectionBar": {
     "fields": {

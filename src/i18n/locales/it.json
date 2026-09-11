@@ -608,7 +608,8 @@
       "caCertFile": "Certificato CA",
       "remotePath": "Cartella predefinita",
       "localPath": "Cartella locale",
-      "folder": "Cartella"
+      "folder": "Cartella",
+      "maxConnections": "Connessioni massime per pannello"
     },
     "icons": {
       "bookmark": "Segnalibro",
@@ -669,7 +670,8 @@
     "collapseFolder": "Nascondi “{{name}}”",
     "noFolder": "Nessuna cartella",
     "importAdded_many": "Aggiunti {{count}} segnalibri",
-    "importSkipped_many": "saltati {{count}} duplicati"
+    "importSkipped_many": "saltati {{count}} duplicati",
+    "maxConnectionsHint": "0 o vuoto: nessun limite. Altrimenti 2–128, inclusa una connessione per esplorare le cartelle. Si applica dopo la riconnessione. Ogni pannello ha il proprio limite."
   },
   "connectionBar": {
     "fields": {

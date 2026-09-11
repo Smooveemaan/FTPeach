@@ -1,6 +1,92 @@
 use super::*;
 use std::sync::Arc;
 
+#[tokio::test]
+async fn relay_rejects_unsolicited_partial_and_bodyless_success_before_writing() {
+    for status in ["206 Partial Content", "204 No Content", "205 Reset Content"] {
+        let (mut backend, server) = single_response(status, "").await;
+        let mut bytes = Vec::new();
+        let error = backend
+            .download_to_writer("/file", &mut bytes)
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::IntegrityMismatch
+        );
+        assert!(bytes.is_empty());
+        server.await.unwrap();
+    }
+}
+
+#[test]
+fn resumed_range_must_reach_eof_even_when_metadata_size_is_unknown() {
+    assert!(validate_content_range(Some("bytes 5-7/10"), 5, None).is_err());
+    assert!(validate_content_range(Some("bytes 5-9/10"), 5, None).is_ok());
+    assert!(validate_content_range(Some("bytes 5-10/10"), 5, None).is_err());
+}
+
+#[tokio::test]
+async fn oversized_chunked_download_stops_before_eof_and_preserves_destination() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        for method in ["PROPFIND", "HEAD", "GET"] {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut header = Vec::new();
+            while !header.ends_with(b"\r\n\r\n") {
+                header.push(socket.read_u8().await.unwrap());
+            }
+            let header = String::from_utf8(header).unwrap();
+            assert!(header.starts_with(method));
+            let length = header
+                .lines()
+                .find_map(|line| {
+                    let (key, value) = line.split_once(':')?;
+                    key.eq_ignore_ascii_case("content-length")
+                        .then(|| value.trim().parse::<usize>().unwrap())
+                })
+                .unwrap_or(0);
+            socket.read_exact(&mut vec![0; length]).await.unwrap();
+            match method {
+                "PROPFIND" => {
+                    let body = "<multistatus><response><href>/file</href><propstat><prop><getcontentlength>3</getcontentlength></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>";
+                    socket.write_all(format!("HTTP/1.1 207 Multi-Status\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).as_bytes()).await.unwrap();
+                }
+                "HEAD" => socket.write_all(b"HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await.unwrap(),
+                _ => {
+                    socket.write_all(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n4\r\nabcd\r\n").await.unwrap();
+                    std::future::pending::<()>().await;
+                }
+            }
+        }
+    });
+    let mut backend = WebDavBackend {
+        client: Some(Client::new()),
+        base_url: format!("http://{address}"),
+        ..Default::default()
+    };
+    let root = std::env::temp_dir().join(format!("webdav-oversize-{}", uuid::Uuid::new_v4()));
+    tokio::fs::create_dir_all(&root).await.unwrap();
+    let target = root.join("target");
+    tokio::fs::write(&target, b"original").await.unwrap();
+    let result = tokio::time::timeout(
+        Duration::from_secs(2),
+        backend.download("/file", &target, false, Arc::new(|_| {})),
+    )
+    .await;
+    server.abort();
+    let error = result
+        .expect("must reject excess bytes without waiting for EOF")
+        .unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::IntegrityMismatch
+    );
+    assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+    tokio::fs::remove_dir_all(root).await.unwrap();
+}
+
 async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::task::JoinHandle<()>) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();

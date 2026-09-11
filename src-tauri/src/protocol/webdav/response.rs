@@ -110,11 +110,21 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
     let mut response_status = None;
     let mut current_tag: Option<String> = None;
     let mut text = String::new();
+    let mut depth = 0usize;
+    let mut root_seen = false;
 
     loop {
         match reader.read_event() {
             Ok(Event::Start(event)) => {
                 let local = local_name_lower(event.local_name().as_ref());
+                if depth == 0 {
+                    anyhow::ensure!(
+                        !root_seen && local == "multistatus",
+                        "Invalid WebDAV multistatus root"
+                    );
+                    root_seen = true;
+                }
+                depth += 1;
                 match local.as_str() {
                     "response" => {
                         current = Some(RawEntry::default());
@@ -137,6 +147,14 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
                 }
             }
             Ok(Event::Empty(event)) => {
+                if depth == 0 {
+                    anyhow::ensure!(
+                        !root_seen
+                            && local_name_lower(event.local_name().as_ref()) == "multistatus",
+                        "Invalid WebDAV multistatus root"
+                    );
+                    root_seen = true;
+                }
                 if local_name_lower(event.local_name().as_ref()) == "collection"
                     && let Some(p) = &mut properties
                 {
@@ -152,6 +170,9 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
                 }
             }
             Ok(Event::End(event)) => {
+                depth = depth
+                    .checked_sub(1)
+                    .context("Unexpected XML closing element")?;
                 let local = local_name_lower(event.local_name().as_ref());
                 match local.as_str() {
                     "href" => {
@@ -202,13 +223,25 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
                             return Err(status_error(response_status.unwrap(), "response"));
                         }
                         if let Some(entry) = current.take() {
+                            if entries.len() >= crate::protocol::MAX_DIRECTORY_ENTRIES {
+                                return Err(fail(
+                                    ErrorCode::ResourceLimit,
+                                    "WebDAV directory contains too many entries",
+                                ));
+                            }
                             entries.push(entry);
                         }
                     }
                     _ => {}
                 }
             }
-            Ok(Event::Eof) => break,
+            Ok(Event::Eof) => {
+                anyhow::ensure!(
+                    root_seen && depth == 0,
+                    "Incomplete WebDAV multistatus document"
+                );
+                break;
+            }
             Err(error) => bail!("error parsing PROPFIND XML response: {error}"),
             _ => {}
         }

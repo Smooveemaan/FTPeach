@@ -26,6 +26,90 @@ use tokio::sync::Mutex as AsyncMutex;
 const KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(20);
 const CHUNK_SIZE: usize = 32 * 1024;
 const GRACEFUL_IO_TIMEOUT: Duration = Duration::from_secs(5);
+const WRITE_WINDOW: usize = 16;
+const TRANSFER_STALL_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// Bound both memory and outstanding requests. Offsets are explicit: APPEND
+/// must not be used with concurrent writes, whose replies can arrive in any order.
+async fn write_pipelined(
+    raw: &Arc<RawSftpSession>,
+    handle: &str,
+    reader: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
+    start: u64,
+    total: u64,
+    progress: &ProgressSink,
+) -> BackendResult<u64> {
+    let mut pending = tokio::task::JoinSet::new();
+    let mut offset = start;
+    let mut acknowledged = start;
+    let mut error = None;
+    let mut eof = false;
+    let mut buf = vec![0; CHUNK_SIZE];
+    while !eof || !pending.is_empty() {
+        if !eof && pending.len() < WRITE_WINDOW {
+            let capacity = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
+            match tokio::time::timeout(TRANSFER_STALL_TIMEOUT, reader.read(&mut buf[..capacity]))
+                .await
+                .unwrap_or_else(|_| {
+                    Err(std::io::Error::new(
+                        std::io::ErrorKind::TimedOut,
+                        "SFTP upload source stalled",
+                    ))
+                }) {
+                Ok(0) => eof = true,
+                Ok(n) => {
+                    crate::transfer::rate_limiter::shared()
+                        .acquire(n as u64)
+                        .await;
+                    let session = raw.clone();
+                    let handle = handle.to_owned();
+                    let data = buf[..n].to_vec();
+                    let position = offset;
+                    pending.spawn(async move {
+                        session
+                            .write(handle, position, data)
+                            .await
+                            .context("writing to server")?;
+                        Ok::<u64, anyhow::Error>(n as u64)
+                    });
+                    offset += n as u64;
+                    continue;
+                }
+                Err(err) => {
+                    error = Some(anyhow::Error::new(err).context("reading upload source"));
+                    eof = true;
+                }
+            }
+        }
+        if let Some(reply) = pending.join_next().await {
+            match reply
+                .context("SFTP write task failed")
+                .and_then(|result| result)
+            {
+                Ok(n) => {
+                    acknowledged += n;
+                    if error.is_none() {
+                        progress(ProgressInfo::Progress {
+                            bytes: acknowledged,
+                            total,
+                        });
+                    }
+                }
+                Err(err) => {
+                    if error.is_none() {
+                        error = Some(err);
+                    }
+                    eof = true;
+                }
+            }
+        }
+    }
+    // All submitted writes have settled before CLOSE, including on failure.
+    if let Some(error) = error {
+        return Err(error);
+    }
+    Ok(acknowledged)
+}
 
 #[derive(Debug)]
 pub struct HostKeyMismatchError {
@@ -122,6 +206,14 @@ pub struct SftpBackend {
     endpoint: String,
 }
 
+impl Drop for SftpBackend {
+    fn drop(&mut self) {
+        if let Some(handle) = self.keep_alive_handle.take() {
+            handle.abort();
+        }
+    }
+}
+
 impl SftpBackend {
     /// Takes only the host-key pinning it actually performs, not a whole
     /// `Store`: the backend has no other reason to know persistence exists.
@@ -158,6 +250,7 @@ impl SftpBackend {
 
     fn spawn_keep_alive(
         sftp: Arc<StdRwLock<Option<Arc<RawSftpSession>>>>,
+        connected: Arc<AtomicBool>,
     ) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(KEEP_ALIVE_INTERVAL);
@@ -167,12 +260,136 @@ impl SftpBackend {
                 let session = sftp.read().unwrap().clone();
                 match session {
                     Some(raw) => {
-                        let _ = tokio::time::timeout(GRACEFUL_IO_TIMEOUT, raw.stat(".")).await;
+                        let reply = tokio::time::timeout(GRACEFUL_IO_TIMEOUT, raw.stat(".")).await;
+                        // A permission-denied STAT is still a live server reply.
+                        if !matches!(reply, Ok(Ok(_)) | Ok(Err(SftpClientError::Status(_)))) {
+                            connected.store(false, Ordering::SeqCst);
+                            *sftp.write().unwrap() = None;
+                            break;
+                        }
                     }
                     None => break,
                 }
             }
         })
+    }
+
+    async fn list_entries(&self, path: &str, recursive: bool) -> BackendResult<Vec<EntryInfo>> {
+        let target = if path.is_empty() {
+            "/".to_string()
+        } else {
+            path.to_string()
+        };
+        self.log_kind(format!("READDIR {target}"), LogKind::Command);
+        let raw = self.sftp()?;
+        if recursive {
+            let attrs = raw.lstat(target.clone()).await?.attrs;
+            anyhow::ensure!(
+                !attrs.is_symlink(),
+                "Recursive operations cannot traverse an SFTP symbolic link: {target}"
+            );
+        }
+
+        let handle = match raw.opendir(target.clone()).await {
+            Ok(dir) => dir.handle,
+            Err(err) => {
+                self.log_key(
+                    "listFailed",
+                    serde_json::json!({ "error": format!("{err:#}") }),
+                    LogKind::Error,
+                );
+                return Err(err).context("opendir failed");
+            }
+        };
+        let mut raw_files = Vec::new();
+        let mut text_bytes = 0usize;
+        loop {
+            match raw.readdir(handle.as_str()).await {
+                Ok(name) => {
+                    if name.files.is_empty() {
+                        let _ = raw.close(handle.as_str()).await;
+                        anyhow::bail!("SFTP READDIR returned no entries without EOF");
+                    }
+                    for file in &name.files {
+                        text_bytes = text_bytes
+                            .saturating_add(file.filename.len())
+                            .saturating_add(file.longname.len());
+                    }
+                    raw_files.extend(name.files);
+                    if raw_files.len() > super::MAX_DIRECTORY_ENTRIES
+                        || text_bytes > super::MAX_DIRECTORY_TEXT_BYTES
+                    {
+                        let _ = raw.close(handle.as_str()).await;
+                        anyhow::bail!(crate::ipc::CommandError::new(
+                            crate::ipc::ErrorCode::ResourceLimit,
+                            "Remote directory contains too many entries",
+                        ));
+                    }
+                }
+                Err(SftpClientError::Status(status)) if status.status_code == StatusCode::Eof => {
+                    break;
+                }
+                Err(err) => {
+                    let _ = raw.close(handle.as_str()).await;
+                    self.log_key(
+                        "listFailed",
+                        serde_json::json!({ "error": format!("{err:#}") }),
+                        LogKind::Error,
+                    );
+                    return Err(err.into());
+                }
+            }
+        }
+        let _ = raw.close(handle.as_str()).await;
+
+        let mut entries = Vec::with_capacity(raw_files.len());
+        for file in raw_files {
+            if file.filename == "." || file.filename == ".." {
+                continue;
+            }
+            if !is_safe_path_segment(&file.filename) {
+                self.log_key(
+                    "skippedUnsafeEntry",
+                    serde_json::json!({ "name": file.filename }),
+                    LogKind::Status,
+                );
+                continue;
+            }
+            let (permissions, owner, group) = parse_longname(&file.longname);
+
+            let mut is_directory = file.attrs.is_dir();
+            if file.attrs.is_symlink() {
+                anyhow::ensure!(
+                    !recursive,
+                    "Recursive operations cannot preserve SFTP symbolic links: {}",
+                    file.filename
+                );
+                let child = format!("{}/{}", target.trim_end_matches('/'), file.filename);
+                if let Ok(target_attrs) = raw.stat(child).await {
+                    is_directory = target_attrs.attrs.is_dir();
+                }
+            }
+
+            entries.push(EntryInfo {
+                name: file.filename,
+                is_directory,
+                size: file.attrs.size.unwrap_or(0),
+                modified_at: file
+                    .attrs
+                    .mtime
+                    .and_then(|t| Utc.timestamp_opt(t as i64, 0).single())
+                    .map(|d| d.to_rfc3339()),
+                permissions,
+                owner,
+                group,
+            });
+        }
+        self.log_key(
+            "receivedEntries",
+            serde_json::json!({ "count": entries.len() }),
+            LogKind::Response,
+        );
+        Ok(entries)
     }
 
     fn remove_with_depth<'a>(
@@ -192,7 +409,7 @@ impl SftpBackend {
                 raw.remove(path.to_string()).await?;
                 return Ok(());
             }
-            let entries = self.list(path).await?;
+            let entries = self.list_for_recursive(path).await?;
             for entry in entries {
                 let child = format!("{}/{}", path.trim_end_matches('/'), entry.name);
                 self.remove_with_depth(&child, entry.is_directory, depth + 1)
@@ -332,7 +549,10 @@ impl ProtocolBackend for SftpBackend {
         *self.session.lock().await = Some(session);
         *self.sftp.write().unwrap() = Some(Arc::new(raw));
         self.connected.store(true, Ordering::SeqCst);
-        self.keep_alive_handle = Some(Self::spawn_keep_alive(self.sftp.clone()));
+        self.keep_alive_handle = Some(Self::spawn_keep_alive(
+            self.sftp.clone(),
+            self.connected.clone(),
+        ));
         Ok(())
     }
 
@@ -369,99 +589,12 @@ impl ProtocolBackend for SftpBackend {
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
-        let target = if path.is_empty() {
-            "/".to_string()
-        } else {
-            path.to_string()
-        };
-        self.log_kind(format!("READDIR {target}"), LogKind::Command);
-        let raw = self.sftp()?;
-
-        let handle = match raw.opendir(target.clone()).await {
-            Ok(dir) => dir.handle,
-            Err(err) => {
-                self.log_key(
-                    "listFailed",
-                    serde_json::json!({ "error": format!("{err:#}") }),
-                    LogKind::Error,
-                );
-                return Err(err).context("opendir failed");
-            }
-        };
-        let mut raw_files = Vec::new();
-        loop {
-            match raw.readdir(handle.as_str()).await {
-                Ok(name) => {
-                    raw_files.extend(name.files);
-                    if raw_files.len() > super::MAX_DIRECTORY_ENTRIES {
-                        let _ = raw.close(handle.as_str()).await;
-                        anyhow::bail!(crate::ipc::CommandError::new(
-                            crate::ipc::ErrorCode::ResourceLimit,
-                            "Remote directory contains too many entries",
-                        ));
-                    }
-                }
-                Err(SftpClientError::Status(status)) if status.status_code == StatusCode::Eof => {
-                    break;
-                }
-                Err(err) => {
-                    let _ = raw.close(handle.as_str()).await;
-                    self.log_key(
-                        "listFailed",
-                        serde_json::json!({ "error": format!("{err:#}") }),
-                        LogKind::Error,
-                    );
-                    return Err(err.into());
-                }
-            }
-        }
-        let _ = raw.close(handle.as_str()).await;
-
-        let mut entries = Vec::with_capacity(raw_files.len());
-        for file in raw_files {
-            if file.filename == "." || file.filename == ".." {
-                continue;
-            }
-            if !is_safe_path_segment(&file.filename) {
-                self.log_key(
-                    "skippedUnsafeEntry",
-                    serde_json::json!({ "name": file.filename }),
-                    LogKind::Status,
-                );
-                continue;
-            }
-            let (permissions, owner, group) = parse_longname(&file.longname);
-
-            let mut is_directory = file.attrs.is_dir();
-            if file.attrs.is_symlink() {
-                let child = format!("{}/{}", target.trim_end_matches('/'), file.filename);
-                if let Ok(target_attrs) = raw.stat(child).await {
-                    is_directory = target_attrs.attrs.is_dir();
-                }
-            }
-
-            entries.push(EntryInfo {
-                name: file.filename,
-                is_directory,
-                size: file.attrs.size.unwrap_or(0),
-                modified_at: file
-                    .attrs
-                    .mtime
-                    .and_then(|t| Utc.timestamp_opt(t as i64, 0).single())
-                    .map(|d| d.to_rfc3339()),
-                permissions,
-                owner,
-                group,
-            });
-        }
-        self.log_key(
-            "receivedEntries",
-            serde_json::json!({ "count": entries.len() }),
-            LogKind::Response,
-        );
-        Ok(entries)
+        self.list_entries(path, false).await
     }
 
+    async fn list_for_recursive(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
+        self.list_entries(path, true).await
+    }
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
         let raw = self.sftp()?;
         raw.mkdir(path.to_string(), FileAttributes::empty()).await?;
@@ -539,12 +672,22 @@ impl ProtocolBackend for SftpBackend {
             while buf.len() < len {
                 let want = (len - buf.len()).min(CHUNK_SIZE) as u32;
                 match raw
-                    .read(handle.as_str(), offset + buf.len() as u64, want)
+                    .read(
+                        handle.as_str(),
+                        offset
+                            .checked_add(buf.len() as u64)
+                            .context("SFTP range offset overflow")?,
+                        want,
+                    )
                     .await
                 {
                     // A short read is not EOF; only an empty one ends the range.
                     Ok(data) if data.data.is_empty() => break,
                     Ok(data) => {
+                        anyhow::ensure!(
+                            data.data.len() <= want as usize,
+                            "SFTP server exceeded requested read length"
+                        );
                         buf.extend_from_slice(&data.data);
                         // Verification bytes cross the wire like any others, so
                         // they are paced by the same bandwidth limit.
@@ -607,7 +750,7 @@ impl ProtocolBackend for SftpBackend {
                     .context("seeking local file")?;
             }
             let flags = if resume && remote_size > 0 {
-                OpenFlags::WRITE | OpenFlags::CREATE | OpenFlags::APPEND
+                OpenFlags::WRITE
             } else {
                 OpenFlags::WRITE | OpenFlags::CREATE | OpenFlags::TRUNCATE
             };
@@ -617,35 +760,13 @@ impl ProtocolBackend for SftpBackend {
                 .context("opening remote file")?
                 .handle;
 
-            let mut buf = vec![0u8; CHUNK_SIZE];
-            let mut transferred = remote_size;
-            let write_result: BackendResult<()> = async {
-                loop {
-                    let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
-                    let n = file
-                        .read(&mut buf[..read_len])
-                        .await
-                        .context("reading local file")?;
-                    if n == 0 {
-                        break;
-                    }
-                    raw.write(handle.as_str(), transferred, buf[..n].to_vec())
-                        .await
-                        .context("writing to server")?;
-                    transferred += n as u64;
-                    crate::transfer::rate_limiter::shared()
-                        .acquire(n as u64)
-                        .await;
-                    progress(ProgressInfo::Progress {
-                        bytes: transferred,
-                        total: local_size,
-                    });
-                }
-                Ok(())
-            }
-            .await;
-            let _ = raw.close(handle.as_str()).await;
-            write_result
+            let write_result =
+                write_pipelined(&raw, &handle, &mut file, remote_size, local_size, &progress).await;
+            let closed = raw.close(handle.as_str()).await;
+            let written = write_result?;
+            closed.context("closing remote file after upload")?;
+            super::transfer_file::validate_length(written, Some(local_size))?;
+            Ok(())
         }
         .await;
 
@@ -673,10 +794,8 @@ impl ProtocolBackend for SftpBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = crate::local_fs::target_reservation::Reservation::acquire(
-            &local_path.to_string_lossy(),
-        )?;
-        let _mutation = crate::local_fs::mutations::guard().lock().await;
+        let _lease = super::transfer_file::reserve(local_path)?;
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         crate::local_fs::mutations::validate_download_name(local_path)?;
         crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
         let raw = match self.sftp() {
@@ -686,12 +805,15 @@ impl ProtocolBackend for SftpBackend {
                 return Err(err);
             }
         };
-        let remote_size = self.known_size(remote_path).await;
-        let version = raw
+        let attrs = raw
             .stat(remote_path.to_string())
             .await
             .ok()
-            .and_then(|a| a.attrs.mtime)
+            .map(|a| a.attrs);
+        let remote_size = attrs.as_ref().and_then(|a| a.size);
+        let version = attrs
+            .as_ref()
+            .and_then(|a| a.mtime)
             .map(|mtime| mtime.to_string());
         let source = super::transfer_file::SourceIdentity {
             endpoint: self.endpoint.clone(),
@@ -745,6 +867,14 @@ impl ProtocolBackend for SftpBackend {
                             if data.data.is_empty() {
                                 break;
                             }
+                            anyhow::ensure!(
+                                data.data.len() <= read_len as usize,
+                                "SFTP server exceeded requested read length"
+                            );
+                            super::transfer_file::validate_resume_offset(
+                                offset.saturating_add(data.data.len() as u64),
+                                remote_size,
+                            )?;
                             file.write_all(&data.data)
                                 .await
                                 .context("writing local file")?;
@@ -818,6 +948,10 @@ impl ProtocolBackend for SftpBackend {
                         if data.data.is_empty() {
                             break;
                         }
+                        anyhow::ensure!(
+                            data.data.len() <= read_len as usize,
+                            "SFTP server exceeded requested read length"
+                        );
                         writer
                             .write_all(&data.data)
                             .await
@@ -838,8 +972,10 @@ impl ProtocolBackend for SftpBackend {
             Ok(())
         }
         .await;
-        let _ = raw.close(handle.as_str()).await;
-        result
+        let closed = raw.close(handle.as_str()).await;
+        result?;
+        closed.context("closing remote file")?;
+        Ok(())
     }
 
     async fn upload_from_reader(
@@ -858,33 +994,12 @@ impl ProtocolBackend for SftpBackend {
             .context("opening remote file")?
             .handle;
 
-        let result: BackendResult<()> = async {
-            let mut buf = vec![0u8; CHUNK_SIZE];
-            let mut offset: u64 = 0;
-            loop {
-                let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
-                let n = reader
-                    .read(&mut buf[..read_len])
-                    .await
-                    .context("reading from source")?;
-                if n == 0 {
-                    break;
-                }
-                raw.write(handle.as_str(), offset, buf[..n].to_vec())
-                    .await
-                    .context("writing to server")?;
-                // Relay's write side — see download_to_writer's identical
-                // comment on why this needs its own acquire() call.
-                crate::transfer::rate_limiter::shared()
-                    .acquire(n as u64)
-                    .await;
-                offset += n as u64;
-            }
-            Ok(())
-        }
-        .await;
-        let _ = raw.close(handle.as_str()).await;
-        result
+        let progress: ProgressSink = Arc::new(|_| {});
+        let result = write_pipelined(&raw, &handle, reader, 0, 0, &progress).await;
+        let closed = raw.close(handle.as_str()).await;
+        result?;
+        closed.context("closing remote file after upload")?;
+        Ok(())
     }
 }
 

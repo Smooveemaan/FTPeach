@@ -72,7 +72,7 @@ pub(super) async fn listing(
                 session.browse_timeout_ms
             });
             let result = tokio::select! {
-                result = tokio::time::timeout(timeout, session.browse_client.list(&path)) => result.map_err(anyhow::Error::from).and_then(|r| r),
+                result = tokio::time::timeout(timeout, session.browse_client.list_for_recursive(&path)) => result.map_err(anyhow::Error::from).and_then(|r| r),
                 _ = token.cancelled() => Err(CommandError::new(ErrorCode::Cancelled, "Recursive scan cancelled").into()),
             };
             if result.is_err() {
@@ -135,7 +135,7 @@ pub(super) async fn mkdir(
     let path = target.path(relative);
     match target {
         Endpoint::Local { .. } => {
-            let _guard = tokio::select! { guard = mutations::guard().lock() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
+            let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
             safety::validate_write_destination(Path::new(&path)).await?;
             safety::ensure_path_no_reparse_points_now(Path::new(&path))?;
             let existed = tokio::fs::symlink_metadata(&path).await.is_ok();
@@ -193,7 +193,7 @@ async fn copy_local(
     overwrite: bool,
     token: &CancellationToken,
 ) -> Result<()> {
-    let _guard = tokio::select! { guard = mutations::guard().lock() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
+    let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
     let source = Path::new(source);
     let target = Path::new(target);
     safety::validate_copy_relationship(source, target)?;
@@ -310,7 +310,7 @@ pub(super) async fn remove_entry(
     let path = source.path(&entry.relative);
     match source {
         Endpoint::Local { .. } => {
-            let _guard = tokio::select! { guard = mutations::guard().lock() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
+            let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
             check_cancel(token)?;
             let (path, is_dir) = safety::validated_delete_target(Path::new(&path))
                 .await?
@@ -367,7 +367,7 @@ pub(super) async fn remove_created(
     let path = target.path(relative);
     match target {
         Endpoint::Local { .. } => {
-            let _guard = mutations::guard().lock().await;
+            let _guard = mutations::guard().write().await;
             let Some((path, is_dir)) = safety::validated_delete_target(Path::new(&path)).await?
             else {
                 return Ok(());

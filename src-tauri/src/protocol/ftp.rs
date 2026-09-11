@@ -59,6 +59,23 @@ async fn read_list_data(
 }
 
 struct BusyGuard(Arc<AtomicUsize>);
+
+/// An interrupted command can leave replies queued on the control socket.
+/// Keep it out of the pool unless the entire operation completed safely.
+struct StreamOperation<'a> {
+    slot: tokio::sync::MutexGuard<'a, Option<AsyncRustlsFtpStream>>,
+    connected: &'a AtomicBool,
+    reusable: bool,
+}
+
+impl Drop for StreamOperation<'_> {
+    fn drop(&mut self) {
+        if !self.reusable {
+            *self.slot = None;
+            self.connected.store(false, Ordering::SeqCst);
+        }
+    }
+}
 impl BusyGuard {
     fn enter(busy: &Arc<AtomicUsize>) -> Self {
         busy.fetch_add(1, Ordering::SeqCst);
@@ -91,12 +108,17 @@ impl UploadData {
     /// Until it has, dropping this still resets the connection, so a stop
     /// that lands while the last bytes are in flight still takes effect.
     async fn finish(mut self, control: &mut AsyncRustlsFtpStream) -> BackendResult<()> {
-        self.stream()
-            .shutdown()
+        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, self.stream().shutdown())
             .await
+            .context("upload shutdown timed out")?
             .context("closing the upload data connection")?;
         // The data connection is already shut; this only reads the verdict.
-        control.finalize_put_stream(tokio::io::sink()).await?;
+        tokio::time::timeout(
+            TRANSFER_STALL_TIMEOUT,
+            control.finalize_put_stream(tokio::io::sink()),
+        )
+        .await
+        .context("upload completion timed out")??;
         // The server has the whole file, so closing takes nothing back now.
         self.0 = None;
         Ok(())
@@ -148,6 +170,14 @@ pub struct FtpBackend {
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
     logger: BackendLogger,
     endpoint: String,
+}
+
+impl Drop for FtpBackend {
+    fn drop(&mut self) {
+        if let Some(handle) = self.keep_alive_handle.take() {
+            handle.abort();
+        }
+    }
 }
 
 impl Default for FtpBackend {
@@ -313,7 +343,6 @@ impl FtpBackend {
         let text = String::from_utf8_lossy(&raw);
         Ok(text
             .split(['\r', '\n'])
-            .map(str::trim)
             .filter(|line| !line.is_empty())
             .map(str::to_string)
             .collect())
@@ -323,9 +352,10 @@ impl FtpBackend {
         stream: Arc<AsyncMutex<Option<AsyncRustlsFtpStream>>>,
         busy: Arc<AtomicUsize>,
         connected: Arc<AtomicBool>,
+        period: Duration,
     ) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(KEEP_ALIVE_INTERVAL);
+            let mut interval = tokio::time::interval(period);
             interval.tick().await; // first tick is immediate; skip it
             loop {
                 interval.tick().await;
@@ -335,10 +365,10 @@ impl FtpBackend {
                 let mut guard = stream.lock().await;
                 match guard.as_mut() {
                     Some(s) => {
-                        if tokio::time::timeout(GRACEFUL_IO_TIMEOUT, s.noop())
-                            .await
-                            .is_err()
-                        {
+                        if !matches!(
+                            tokio::time::timeout(GRACEFUL_IO_TIMEOUT, s.noop()).await,
+                            Ok(Ok(()))
+                        ) {
                             *guard = None;
                             connected.store(false, Ordering::SeqCst);
                             break;
@@ -359,14 +389,22 @@ impl FtpBackend {
         >,
     {
         let _busy = BusyGuard::enter(&self.busy);
-        let mut guard = self.stream.lock().await;
-        let stream = guard.as_mut().ok_or_else(|| {
+        let mut operation = StreamOperation {
+            slot: self.stream.lock().await,
+            connected: &self.connected,
+            reusable: false,
+        };
+        let stream = operation.slot.as_mut().ok_or_else(|| {
             super::fail(
                 ErrorCode::ConnectionLost,
                 "No active connection to the server",
             )
         })?;
-        f(stream).await
+        let result = f(stream).await;
+        // Unsupported commands are complete negative replies; MLSD can fall
+        // back to LIST on this socket. Other failures discard it conservatively.
+        operation.reusable = result.is_ok() || result.as_ref().is_err_and(command_refused);
+        result
     }
 
     /// Whether a file stands at `path`. SIZE answers in one control-channel
@@ -481,6 +519,11 @@ impl ProtocolBackend for FtpBackend {
             let tcp = crate::protocol::transport::connect(&host, port, proxy.as_ref())
                 .await
                 .context("proxy/TCP connect failed")?;
+            let ipv6 = if proxy.is_none() {
+                tcp.peer_addr()?.is_ipv6()
+            } else {
+                host.parse::<std::net::Ipv6Addr>().is_ok()
+            };
             let mut stream = AsyncRustlsFtpStream::connect_with_stream(tcp)
                 .await
                 .context("FTP handshake failed")?;
@@ -491,9 +534,14 @@ impl ProtocolBackend for FtpBackend {
             }
             stream.set_mode(if active_mode {
                 FtpMode::Active
+            } else if ipv6 {
+                FtpMode::ExtendedPassive
             } else {
                 FtpMode::Passive
             });
+            // PASV addresses frequently name a private interface behind NAT.
+            // Data must go to the control peer, not an arbitrary advertised IP.
+            stream.set_passive_nat_workaround(true);
             if secure {
                 this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
                 if allow_invalid_cert {
@@ -602,6 +650,7 @@ impl ProtocolBackend for FtpBackend {
             self.stream.clone(),
             self.busy.clone(),
             self.connected.clone(),
+            KEEP_ALIVE_INTERVAL,
         ));
         Ok(())
     }
@@ -802,7 +851,9 @@ impl ProtocolBackend for FtpBackend {
                 // nothing safe to drain. Only a read that reached EOF can settle
                 // the transfer and keep the control channel in step.
                 read?;
-                s.finalize_retr_stream(data_stream).await?;
+                tokio::time::timeout(TRANSFER_STALL_TIMEOUT, s.finalize_retr_stream(data_stream))
+                    .await
+                    .context("download completion timed out")??;
                 Ok(bytes)
             })
         })
@@ -919,10 +970,8 @@ impl ProtocolBackend for FtpBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = crate::local_fs::target_reservation::Reservation::acquire(
-            &local_path.to_string_lossy(),
-        )?;
-        let _mutation = crate::local_fs::mutations::guard().lock().await;
+        let _lease = super::transfer_file::reserve(local_path)?;
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         crate::local_fs::mutations::validate_download_name(local_path)?;
         crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
         let remote_size = self.known_size(remote_path).await;
@@ -981,7 +1030,7 @@ impl ProtocolBackend for FtpBackend {
                     let mut data_stream = s.retr_as_stream(&remote_path_owned).await?;
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
                     let mut transferred = start_at;
-                    while remote_size.is_none_or(|size| transferred != size) {
+                    loop {
                         let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
                         let read_result = tokio::time::timeout(
                             TRANSFER_STALL_TIMEOUT,
@@ -1004,22 +1053,22 @@ impl ProtocolBackend for FtpBackend {
                             bytes: transferred,
                             total: remote_size.unwrap_or(0),
                         });
-                        if let Some(size) = remote_size {
-                            if transferred > size {
-                                return Err(super::fail(
-                                    ErrorCode::IntegrityMismatch,
-                                    format!(
-                                        "The server sent more than the advertised {size} bytes"
-                                    ),
-                                ));
-                            }
-                            if transferred == size {
-                                break;
-                            }
+                        if let Some(size) = remote_size
+                            && transferred > size
+                        {
+                            return Err(super::fail(
+                                ErrorCode::IntegrityMismatch,
+                                format!("The server sent more than the advertised {size} bytes"),
+                            ));
                         }
                     }
                     file.flush().await.context("flushing local file")?;
-                    s.finalize_retr_stream(data_stream).await?;
+                    tokio::time::timeout(
+                        TRANSFER_STALL_TIMEOUT,
+                        s.finalize_retr_stream(data_stream),
+                    )
+                    .await
+                    .context("download completion timed out")??;
                     super::transfer_file::validate_length(transferred, remote_size)?;
                     drop(file);
                     super::transfer_file::commit(&partial_path_owned, &local_path_owned).await?;
@@ -1044,8 +1093,12 @@ impl ProtocolBackend for FtpBackend {
         writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
     ) -> BackendResult<()> {
         let _busy = BusyGuard::enter(&self.busy);
-        let mut guard = self.stream.lock().await;
-        let s = guard.as_mut().ok_or_else(|| {
+        let mut operation = StreamOperation {
+            slot: self.stream.lock().await,
+            connected: &self.connected,
+            reusable: false,
+        };
+        let s = operation.slot.as_mut().ok_or_else(|| {
             super::fail(
                 ErrorCode::ConnectionLost,
                 "No active connection to the server",
@@ -1073,7 +1126,10 @@ impl ProtocolBackend for FtpBackend {
                 .acquire(n as u64)
                 .await;
         }
-        s.finalize_retr_stream(data_stream).await?;
+        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, s.finalize_retr_stream(data_stream))
+            .await
+            .context("download completion timed out")??;
+        operation.reusable = true;
         Ok(())
     }
 
@@ -1083,8 +1139,12 @@ impl ProtocolBackend for FtpBackend {
         remote_path: &str,
     ) -> BackendResult<()> {
         let _busy = BusyGuard::enter(&self.busy);
-        let mut guard = self.stream.lock().await;
-        let s = guard.as_mut().ok_or_else(|| {
+        let mut operation = StreamOperation {
+            slot: self.stream.lock().await,
+            connected: &self.connected,
+            reusable: false,
+        };
+        let s = operation.slot.as_mut().ok_or_else(|| {
             super::fail(
                 ErrorCode::ConnectionLost,
                 "No active connection to the server",
@@ -1113,6 +1173,7 @@ impl ProtocolBackend for FtpBackend {
                 .await;
         }
         data_stream.finish(s).await?;
+        operation.reusable = true;
         Ok(())
     }
 }

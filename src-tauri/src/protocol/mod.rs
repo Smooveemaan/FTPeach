@@ -329,6 +329,10 @@ pub trait ProtocolBackend: Send {
     fn log_event(&self, _key: &'static str, _params: serde_json::Value, _kind: LogKind) {}
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>>;
+    /// Recursive operations must not follow directory links outside their root.
+    async fn list_for_recursive(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
+        self.list(path).await
+    }
     async fn mkdir(&mut self, path: &str) -> BackendResult<()>;
     async fn create_file(&mut self, path: &str) -> BackendResult<()>;
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()>;

@@ -33,7 +33,7 @@ fn leases() -> &'static Mutex<Vec<Lease>> {
     LEASES.get_or_init(Default::default)
 }
 
-fn key(server: Option<&str>, path: &str) -> String {
+pub(crate) fn key(server: Option<&str>, path: &str) -> String {
     let local = std::path::Path::new(path);
     // Only a path on this machine can be resolved against its filesystem.
     let resolved = if server.is_none()

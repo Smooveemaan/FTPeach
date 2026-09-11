@@ -113,7 +113,7 @@ pub async fn fs_mkdir(local_path: String) -> OkResult {
             };
         }
     };
-    let _mutation = mutation_guard().lock().await;
+    let _mutation = mutation_guard().write().await;
     if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
         return err(error);
     }
@@ -156,7 +156,7 @@ pub async fn fs_rename(old_path: String, new_path: String) -> OkResult {
             };
         }
     };
-    let _mutation = mutation_guard().lock().await;
+    let _mutation = mutation_guard().write().await;
     if let Err(error) = validate_copy_relationship(Path::new(&old_path), Path::new(&new_path)) {
         return err(error);
     }
@@ -206,7 +206,7 @@ pub async fn fs_copy_file(
             };
         }
     };
-    let _mutation = mutation_guard().lock().await;
+    let _mutation = mutation_guard().write().await;
     if let Err(error) = validate_copy_relationship(Path::new(&source_path), Path::new(&dest_path)) {
         return err(error);
     }
@@ -280,7 +280,7 @@ async fn fs_delete_authorized(local_path: String, permanent: bool) -> OkResult {
             };
         }
     };
-    let _mutation = mutation_guard().lock().await;
+    let _mutation = mutation_guard().write().await;
     if permanent {
         return crate::local_fs::fs_delete::fs_delete_permanently(local_path).await;
     }
@@ -438,7 +438,7 @@ pub async fn fs_create_file(local_path: String) -> OkResult {
             };
         }
     };
-    let _mutation = mutation_guard().lock().await;
+    let _mutation = mutation_guard().write().await;
     if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
         return err(error);
     }

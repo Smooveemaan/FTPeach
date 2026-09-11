@@ -1,6 +1,219 @@
 use super::*;
 use std::sync::Arc;
 
+async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::task::JoinHandle<()>) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let response = format!(
+        "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let task = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut header = Vec::new();
+        while !header.ends_with(b"\r\n\r\n") {
+            header.push(socket.read_u8().await.unwrap());
+        }
+        let length = String::from_utf8_lossy(&header)
+            .lines()
+            .find_map(|line| {
+                let (key, value) = line.split_once(':')?;
+                key.eq_ignore_ascii_case("content-length")
+                    .then(|| value.trim().parse::<usize>().unwrap())
+            })
+            .unwrap_or(0);
+        socket.read_exact(&mut vec![0; length]).await.unwrap();
+        socket.write_all(response.as_bytes()).await.unwrap();
+    });
+    (
+        WebDavBackend {
+            client: Some(Client::new()),
+            base_url: format!("http://{address}/encoded%20base"),
+            ..Default::default()
+        },
+        task,
+    )
+}
+
+#[tokio::test]
+async fn connect_rejects_a_successful_html_login_page() {
+    let (mut backend, server) = single_response("200 OK", "<html>Sign in</html>").await;
+    let map = serde_json::json!({"protocol": "webdav", "webdavUrl": backend.base_url})
+        .as_object()
+        .unwrap()
+        .clone();
+    let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+    assert!(backend.connect(&config).await.is_err());
+    assert!(!backend.is_connected());
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn mkdir_accepts_405_only_for_an_existing_collection() {
+    for collection in [false, true] {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            for method in ["MKCOL", "PROPFIND"] {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut header = Vec::new();
+                while !header.ends_with(b"\r\n\r\n") {
+                    header.push(socket.read_u8().await.unwrap());
+                }
+                let header = String::from_utf8(header).unwrap();
+                assert!(header.starts_with(method));
+                let length = header
+                    .lines()
+                    .find_map(|line| {
+                        let (key, value) = line.split_once(':')?;
+                        key.eq_ignore_ascii_case("content-length")
+                            .then(|| value.trim().parse::<usize>().unwrap())
+                    })
+                    .unwrap_or(0);
+                socket.read_exact(&mut vec![0; length]).await.unwrap();
+                let (status, body) = if method == "MKCOL" {
+                    ("405 Method Not Allowed", String::new())
+                } else {
+                    (
+                        "207 Multi-Status",
+                        format!(
+                            "<multistatus><response><href>/folder</href><propstat><prop><resourcetype>{}</resourcetype></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>",
+                            if collection { "<collection/>" } else { "" }
+                        ),
+                    )
+                };
+                socket.write_all(format!("HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).as_bytes()).await.unwrap();
+            }
+        });
+        let mut backend = WebDavBackend {
+            client: Some(Client::new()),
+            base_url: format!("http://{address}"),
+            ..Default::default()
+        };
+        assert_eq!(backend.mkdir("/folder").await.is_ok(), collection);
+        server.await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn listing_excludes_encoded_self_siblings_and_nested_descendants() {
+    let body = r#"<multistatus>
+        <response><href>/encoded%20base/dir/</href></response>
+        <response><href>/encoded%20base/dir/file%20name</href></response>
+        <response><href>/encoded%20base/dir/nested/file</href></response>
+        <response><href>/encoded%20base/dir-other/wrong</href></response>
+        </multistatus>"#;
+    let (mut backend, server) = single_response("207 Multi-Status", body).await;
+    let entries = backend.list("/dir").await.unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].name, "file name");
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn multistatus_delete_and_move_surface_child_failures() {
+    for operation in 0..3 {
+        let body = r#"<multistatus><response><href>/locked</href><status>HTTP/1.1 403 Forbidden</status></response></multistatus>"#;
+        let (mut backend, server) = single_response("207 Multi-Status", body).await;
+        let result = match operation {
+            0 => backend.remove("/folder", true).await,
+            1 => backend.rename("/folder", "/new").await,
+            _ => backend.rename_no_replace("/folder", "/new").await,
+        };
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code,
+            ErrorCode::PermissionDenied
+        );
+        server.await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn rejected_put_does_not_wait_for_a_stalled_source() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut header = Vec::new();
+        while !header.ends_with(b"\r\n\r\n") {
+            header.push(socket.read_u8().await.unwrap());
+        }
+        socket
+            .write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n")
+            .await
+            .unwrap();
+        std::future::pending::<()>().await;
+    });
+    let backend = WebDavBackend {
+        client: Some(Client::new()),
+        idle_timeout: Duration::from_secs(60),
+        base_url: format!("http://{address}"),
+        ..Default::default()
+    };
+    let (_producer, mut reader) = tokio::io::duplex(1);
+    let result = tokio::time::timeout(
+        Duration::from_secs(2),
+        backend.send_upload("/file", &mut reader, Some(1024), Arc::new(|_| {})),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code,
+        ErrorCode::PermissionDenied
+    );
+    server.abort();
+}
+
+#[tokio::test]
+async fn propfind_status_is_preserved_when_error_body_stalls() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut header = Vec::new();
+        while !header.ends_with(b"\r\n\r\n") {
+            header.push(socket.read_u8().await.unwrap());
+        }
+        socket
+            .write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 100\r\n\r\n")
+            .await
+            .unwrap();
+        std::future::pending::<()>().await;
+    });
+    let result = tokio::time::timeout(
+        Duration::from_secs(2),
+        WebDavBackend::propfind(&Client::new(), format!("http://{address}"), 0, "", ""),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code,
+        ErrorCode::PermissionDenied
+    );
+    server.abort();
+}
+
+#[test]
+fn propfind_rejects_truncated_wrong_root_and_over_budget_documents() {
+    for xml in [
+        "",
+        "<html>not DAV</html>",
+        "<multistatus><response><href>/file</href>",
+        "<multistatus/><multistatus/>",
+    ] {
+        assert!(parse_propfind(xml).is_err(), "{xml}");
+    }
+    let xml = format!(
+        "<multistatus>{}</multistatus>",
+        "<response><href>/file</href></response>"
+            .repeat(crate::protocol::MAX_DIRECTORY_ENTRIES + 1)
+    );
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&parse_propfind(&xml).err().unwrap()).code,
+        ErrorCode::ResourceLimit
+    );
+}
+
 #[test]
 fn propstat_status_controls_which_metadata_is_trusted() {
     let entries = parse_propfind(r#"<multistatus><response><href>/file</href>

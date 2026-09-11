@@ -1,9 +1,12 @@
 //! Shared exclusion for local mutations, including protocol downloads.
 use std::sync::OnceLock;
 
-pub(crate) fn guard() -> &'static tokio::sync::Mutex<()> {
-    static GUARD: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
-    GUARD.get_or_init(|| tokio::sync::Mutex::new(()))
+// Downloads hold a shared guard and reserve their destination separately.
+// Renames/removals hold the exclusive guard so ancestors cannot change while
+// a download validates, writes and commits its artifact.
+pub(crate) fn guard() -> &'static tokio::sync::RwLock<()> {
+    static GUARD: OnceLock<tokio::sync::RwLock<()>> = OnceLock::new();
+    GUARD.get_or_init(|| tokio::sync::RwLock::new(()))
 }
 
 /// Validate each destination component without applying Windows naming rules
@@ -65,10 +68,14 @@ mod tests {
     }
     #[tokio::test]
     async fn mutations_wait_until_the_download_releases_its_guard() {
-        let download = guard().lock().await;
-        assert!(guard().try_lock().is_err());
+        let download = guard().read().await;
+        assert!(guard().try_write().is_err());
+        let second_download = guard()
+            .try_read()
+            .expect("independent downloads can overlap");
+        drop(second_download);
         drop(download);
-        let _next = tokio::time::timeout(std::time::Duration::from_secs(5), guard().lock())
+        let _next = tokio::time::timeout(std::time::Duration::from_secs(5), guard().write())
             .await
             .unwrap();
     }

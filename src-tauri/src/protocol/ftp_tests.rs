@@ -273,6 +273,21 @@ mod local_integration_tests {
                     };
                     writer.write_all(reply).await.unwrap();
                 }
+                "MDTM" => writer.write_all(b"213 20260911000000\r\n").await.unwrap(),
+                "RETR" => {
+                    writer
+                        .write_all(b"150 Opening data connection\r\n")
+                        .await
+                        .unwrap();
+                    let (mut data, _) = passive_listener.take().unwrap().accept().await.unwrap();
+                    data.write_all(b"hello").await.unwrap();
+                    if argument == "/extra" {
+                        tokio::time::sleep(Duration::from_millis(20)).await;
+                        let _ = data.write_all(b"!").await;
+                    }
+                    let _ = data.shutdown().await;
+                    let _ = writer.write_all(b"226 Transfer complete\r\n").await;
+                }
                 "RNFR" => {
                     renaming = Some(argument.to_owned());
                     writer.write_all(b"350 Ready for RNTO\r\n").await.unwrap();
@@ -286,7 +301,14 @@ mod local_integration_tests {
                     writer.write_all(b"221 Goodbye\r\n").await.unwrap();
                     return;
                 }
-                "NOOP" => writer.write_all(b"200 Still here\r\n").await.unwrap(),
+                "NOOP" => {
+                    let reply: &[u8] = if server.has("/reject-noop") {
+                        b"421 Service unavailable\r\n"
+                    } else {
+                        b"200 Still here\r\n"
+                    };
+                    writer.write_all(reply).await.unwrap();
+                }
                 other => panic!("unexpected FTP command: {other} {argument}"),
             }
         }
@@ -304,6 +326,81 @@ mod local_integration_tests {
             }
         });
         (port, handle)
+    }
+
+    #[tokio::test]
+    async fn download_rejects_extra_bytes_arriving_after_advertised_size() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/extra"], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        let root = std::env::temp_dir().join(format!("ftp-extra-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&root).await.unwrap();
+        let target = root.join("target");
+        tokio::fs::write(&target, b"original").await.unwrap();
+        let error = tokio::time::timeout(
+            Duration::from_secs(3),
+            backend.download("/extra", &target, false, Arc::new(|_| {})),
+        )
+        .await
+        .unwrap()
+        .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::IntegrityMismatch
+        );
+        assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+        assert!(!backend.is_connected());
+        backend.disconnect().await.unwrap();
+        server.abort();
+        tokio::fs::remove_dir_all(root).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn rejected_keep_alive_marks_connection_lost() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/reject-noop"], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        backend.keep_alive_handle.take().unwrap().abort();
+        let keep_alive = FtpBackend::spawn_keep_alive(
+            backend.stream.clone(),
+            backend.busy.clone(),
+            backend.connected.clone(),
+            Duration::from_millis(10),
+        );
+        tokio::time::timeout(Duration::from_secs(2), keep_alive)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(!backend.is_connected());
+        assert!(backend.stream.lock().await.is_none());
+        server.abort();
+    }
+
+    #[tokio::test]
+    async fn listing_preserves_trailing_spaces_in_remote_names() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/hello.txt "], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        assert_eq!(backend.list("/").await.unwrap()[0].name, "hello.txt ");
+        backend.disconnect().await.unwrap();
+        server.abort();
+    }
+
+    #[tokio::test]
+    async fn cancelled_control_operation_discards_the_socket() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&[], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        let result = tokio::time::timeout(
+            Duration::from_millis(20),
+            backend.with_stream(|_| Box::pin(std::future::pending::<BackendResult<()>>())),
+        )
+        .await;
+        assert!(result.is_err());
+        assert!(!backend.is_connected());
+        assert!(backend.stream.lock().await.is_none());
+        backend.disconnect().await.unwrap();
+        server.abort();
     }
 
     #[tokio::test]

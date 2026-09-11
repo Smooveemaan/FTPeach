@@ -225,18 +225,18 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "Requires IPv6 loopback client connections permitted by the host firewall"]
     async fn connect_without_proxy_supports_ipv6_when_loopback_is_available() {
-        let Ok(listener) = tokio::net::TcpListener::bind("[::1]:0").await else {
-            return; // IPv6 can be disabled on a CI host.
-        };
+        let listener = tokio::net::TcpListener::bind("[::1]:0")
+            .await
+            .expect("IPv6 loopback listener");
         let port = listener.local_addr().unwrap().port();
         let accept_task = tokio::spawn(async move {
             let (_socket, _) = listener.accept().await.unwrap();
         });
-        if connect("::1", port, None).await.is_err() {
-            accept_task.abort();
-            return;
-        }
+        connect("::1", port, None)
+            .await
+            .expect("IPv6 connect must work when the loopback listener is available");
         accept_task.await.unwrap();
     }
 }

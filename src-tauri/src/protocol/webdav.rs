@@ -54,7 +54,6 @@ pub struct WebDavBackend {
     upload_client: Option<Client>,
     idle_timeout: Duration,
     base_url: String,
-    dav_base_path: String,
     user: String,
     password: String,
     connected: bool,
@@ -155,6 +154,11 @@ impl WebDavBackend {
                 ErrorCode::NotFound,
                 "WebDAV resource does not exist",
             ));
+        }
+        // Classify errors before reading an arbitrary (possibly stalled or
+        // non-UTF-8) error body. It carries no directory metadata.
+        if status != StatusCode::MULTI_STATUS && status != StatusCode::OK {
+            return Err(response::status_error(status.as_u16(), "PROPFIND"));
         }
         if res
             .content_length()
@@ -269,7 +273,13 @@ impl WebDavBackend {
             loop {
                 tokio::select! {
                     biased;
-                    result = &mut request => return result.context("PUT request failed"),
+                    result = &mut request => {
+                        let response = result.context("PUT request failed")?;
+                        if !response.status().is_success() {
+                            return Err(response::status_error(response.status().as_u16(), "PUT"));
+                        }
+                        return Ok(response);
+                    },
                     _ = activity.notified() => {},
                     _ = tokio::time::sleep(self.idle_timeout) => return Err(super::fail(ErrorCode::TimedOut, "WebDAV upload stalled")),
                 }
@@ -283,7 +293,7 @@ impl WebDavBackend {
         let client = self.client()?.clone();
         let url = self.build_url(path);
         match Self::propfind(&client, url, 0, &self.user, &self.password).await {
-            Ok(_) => Ok(true),
+            Ok(xml) => Ok(!parse_propfind(&xml)?.is_empty()),
             Err(error)
                 if crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::NotFound =>
             {
@@ -291,6 +301,30 @@ impl WebDavBackend {
             }
             Err(error) => Err(error),
         }
+    }
+
+    async fn mutation_result(mut res: reqwest::Response, operation: &str) -> BackendResult<()> {
+        if !res.status().is_success() {
+            return Err(response::status_error(res.status().as_u16(), operation));
+        }
+        if res.status() == StatusCode::MULTI_STATUS {
+            let mut body = Vec::new();
+            while let Some(chunk) = res.chunk().await? {
+                if body.len().saturating_add(chunk.len()) > MAX_PROPFIND_RESPONSE_BYTES {
+                    return Err(super::fail(
+                        ErrorCode::ResourceLimit,
+                        "WebDAV multi-status response exceeds its byte budget",
+                    ));
+                }
+                body.extend_from_slice(&chunk);
+            }
+            let entries = parse_propfind(std::str::from_utf8(&body)?)?;
+            anyhow::ensure!(
+                !entries.is_empty(),
+                "WebDAV {operation} returned an empty multi-status response"
+            );
+        }
+        Ok(())
     }
 }
 
@@ -316,12 +350,6 @@ impl ProtocolBackend for WebDavBackend {
             serde_json::json!({ "addr": &webdav_url }),
             LogKind::Status,
         );
-
-        let dav_base_path = reqwest::Url::parse(&webdav_url)
-            .context("invalid server URL")?
-            .path()
-            .trim_end_matches('/')
-            .to_string();
 
         let idle = Duration::from_millis(if timeout_ms == 0 { 60_000 } else { timeout_ms });
         let build_client = |read_timeout: bool| -> BackendResult<Client> {
@@ -356,7 +384,15 @@ impl ProtocolBackend for WebDavBackend {
         let upload_client = build_client(false)?;
 
         self.log_kind("PROPFIND / (Depth: 0)", LogKind::Command);
-        let probe = Self::propfind(&client, format!("{webdav_url}/"), 0, &user, &password);
+        let probe = async {
+            let xml =
+                Self::propfind(&client, format!("{webdav_url}/"), 0, &user, &password).await?;
+            anyhow::ensure!(
+                !parse_propfind(&xml)?.is_empty(),
+                "WebDAV server returned no resource metadata"
+            );
+            Ok::<(), anyhow::Error>(())
+        };
         let outcome = if timeout_ms > 0 {
             match tokio::time::timeout(Duration::from_millis(timeout_ms), probe).await {
                 Ok(inner) => inner,
@@ -382,7 +418,6 @@ impl ProtocolBackend for WebDavBackend {
         self.upload_client = Some(upload_client);
         self.idle_timeout = idle;
         self.base_url = webdav_url;
-        self.dav_base_path = dav_base_path;
         self.user = user;
         self.password = password;
         self.connected = true;
@@ -435,7 +470,7 @@ impl ProtocolBackend for WebDavBackend {
         };
         let raw_entries = parse_propfind(&xml)?;
 
-        let self_path = format!("{}{}", self.dav_base_path, target);
+        let self_path = decode_href(&self.build_url(&target));
         let self_path = self_path.trim_end_matches('/');
 
         let mut entries = Vec::with_capacity(raw_entries.len());
@@ -443,6 +478,13 @@ impl ProtocolBackend for WebDavBackend {
             let decoded = decode_href(&raw.href);
             if decoded.trim_end_matches('/') == self_path {
                 continue; // the listed directory itself, not a child entry
+            }
+            let child = decoded
+                .trim_end_matches('/')
+                .strip_prefix(self_path)
+                .and_then(|path| path.strip_prefix('/'));
+            if child.is_none_or(|name| name.is_empty() || name.contains('/')) {
+                continue;
             }
             let name = href_basename(&decoded);
             if !is_safe_path_segment(&name) {
@@ -491,9 +533,25 @@ impl ProtocolBackend for WebDavBackend {
                 .send()
                 .await
                 .context("MKCOL request failed")?;
-            // 405 = collection already exists — harmless for recursive mkdir.
-            if !res.status().is_success() && res.status() != StatusCode::METHOD_NOT_ALLOWED {
-                bail!("MKCOL {current} returned {}", res.status());
+            if res.status() == StatusCode::METHOD_NOT_ALLOWED {
+                // 405 can also mean MKCOL is disabled or a regular file is in
+                // the way. Only an existing collection satisfies mkdir.
+                let xml = Self::propfind(
+                    self.client()?,
+                    self.build_url(&current),
+                    0,
+                    &self.user,
+                    &self.password,
+                )
+                .await?;
+                anyhow::ensure!(
+                    parse_propfind(&xml)?
+                        .first()
+                        .is_some_and(|entry| entry.is_dir),
+                    "MKCOL {current}: existing resource is not a collection"
+                );
+            } else if !res.status().is_success() {
+                return Err(response::status_error(res.status().as_u16(), "MKCOL"));
             }
         }
         Ok(())
@@ -533,10 +591,10 @@ impl ProtocolBackend for WebDavBackend {
             .send()
             .await
             .context("DELETE request failed")?;
-        if !res.status().is_success() && res.status() != StatusCode::NOT_FOUND {
-            return Err(response::status_error(res.status().as_u16(), "DELETE"));
+        if res.status() == StatusCode::NOT_FOUND {
+            return Ok(());
         }
-        Ok(())
+        Self::mutation_result(res, "DELETE").await
     }
 
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
@@ -549,10 +607,7 @@ impl ProtocolBackend for WebDavBackend {
             .send()
             .await
             .context("MOVE request failed")?;
-        if !res.status().is_success() {
-            return Err(response::status_error(res.status().as_u16(), "MOVE"));
-        }
-        Ok(())
+        Self::mutation_result(res, "MOVE").await
     }
 
     async fn size(&mut self, path: &str) -> u64 {
@@ -566,12 +621,7 @@ impl ProtocolBackend for WebDavBackend {
             .header("Overwrite", "F")
             .send()
             .await?;
-        anyhow::ensure!(
-            response.status().is_success(),
-            "Conditional MOVE returned {}",
-            response.status()
-        );
-        Ok(())
+        Self::mutation_result(response, "MOVE").await
     }
 
     async fn known_size(&mut self, path: &str) -> Option<u64> {
@@ -646,10 +696,8 @@ impl ProtocolBackend for WebDavBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = crate::local_fs::target_reservation::Reservation::acquire(
-            &local_path.to_string_lossy(),
-        )?;
-        let _mutation = crate::local_fs::mutations::guard().lock().await;
+        let _lease = super::transfer_file::reserve(local_path)?;
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         crate::local_fs::mutations::validate_download_name(local_path)?;
         crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
         let remote_size = self.known_size(remote_path).await;

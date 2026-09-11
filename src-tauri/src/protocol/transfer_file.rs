@@ -33,6 +33,50 @@ fn sidecar(destination: &Path) -> PathBuf {
     PathBuf::from(name)
 }
 
+/// The resume record is another writable destination, so a parallel download
+/// cannot select it as its own output while this transfer is using it.
+pub fn reserve(destination: &Path) -> Result<DownloadReservation> {
+    use crate::local_fs::target_reservation::Reservation;
+    let target = Reservation::acquire(&destination.to_string_lossy())?;
+    let metadata = Reservation::acquire(&sidecar(destination).to_string_lossy())?;
+    let keys = [destination.to_path_buf(), sidecar(destination)]
+        .map(|path| crate::local_fs::target_reservation::key(None, &path.to_string_lossy()));
+    let mut active = active_downloads().lock().unwrap();
+    anyhow::ensure!(
+        !keys.iter().any(|key| active.contains(key)),
+        "Another download is using this destination or its resume metadata"
+    );
+    active.extend(keys.iter().cloned());
+    Ok(DownloadReservation {
+        _leases: (target, metadata),
+        keys,
+    })
+}
+
+fn active_downloads() -> &'static std::sync::Mutex<std::collections::HashSet<String>> {
+    static ACTIVE: std::sync::OnceLock<std::sync::Mutex<std::collections::HashSet<String>>> =
+        std::sync::OnceLock::new();
+    ACTIVE.get_or_init(Default::default)
+}
+
+/// Root leases can be shared by one recursive operation, but its individual
+/// downloads must never share a target or sidecar with one another.
+pub struct DownloadReservation {
+    _leases: (
+        crate::local_fs::target_reservation::Reservation,
+        crate::local_fs::target_reservation::Reservation,
+    ),
+    keys: [String; 2],
+}
+impl Drop for DownloadReservation {
+    fn drop(&mut self) {
+        let mut active = active_downloads().lock().unwrap();
+        for key in &self.keys {
+            active.remove(key);
+        }
+    }
+}
+
 fn artifact_path(destination: &Path, id: uuid::Uuid) -> PathBuf {
     destination.with_file_name(format!(".ftpeach-{id}.part"))
 }
@@ -297,6 +341,32 @@ pub async fn discard_resume_artifacts(destination: &Path) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn sibling_downloads_in_one_recursive_operation_cannot_share_metadata() {
+        crate::local_fs::target_reservation::OWNER
+            .scope("same-operation".into(), async {
+                let target =
+                    std::env::temp_dir().join(format!("same-owner-{}", uuid::Uuid::new_v4()));
+                let _first = reserve(&target).unwrap();
+                assert!(reserve(&target).is_err());
+                assert!(reserve(&sidecar(&target)).is_err());
+            })
+            .await;
+    }
+
+    #[test]
+    fn downloads_reserve_their_resume_metadata_as_well_as_the_target() {
+        let root = std::env::temp_dir().join(format!("reservation-{}", uuid::Uuid::new_v4()));
+        let target = root.join("file");
+        let first = reserve(&target).unwrap();
+        assert!(reserve(&target).is_err());
+        assert!(reserve(&sidecar(&target)).is_err());
+        let independent = reserve(&root.join("other")).unwrap();
+        drop(first);
+        assert!(reserve(&target).is_ok());
+        drop(independent);
+    }
 
     #[tokio::test]
     async fn resume_requires_the_same_endpoint_path_size_and_version() {

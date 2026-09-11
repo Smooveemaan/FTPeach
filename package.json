@@ -1,7 +1,7 @@
 {
   "name": "ftpeach",
   "productName": "FTPeach",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A lightweight FTP, FTPS, SFTP and WebDAV client for Windows",
   "type": "module",
   "scripts": {

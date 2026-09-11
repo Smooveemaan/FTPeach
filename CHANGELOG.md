@@ -54,6 +54,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Log lines no longer come out of order during busy transfers.
 - Reset Layout and Cache no longer opens or closes the log.
 - Tooltips near the window's edge no longer wrap onto two lines when one would fit.
+- Transfer speeds no longer dip while other transfers run, and no longer creep up from
+  0 B/s when a transfer starts.
 
 ## [0.1.2] - 2026-09-10
 

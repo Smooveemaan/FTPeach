@@ -28,6 +28,23 @@ export type RefreshCallback = () => unknown;
 
 let transferSequence = 0;
 
+// Keep manifests bounded while every selected folder already has a queue row.
+const recursiveSlots: Promise<unknown>[] = [Promise.resolve(), Promise.resolve()];
+let recursiveSlot = 0;
+function scheduleRecursive<T>(run: () => Promise<T>, signal: AbortSignal): Promise<T> {
+  const slot = recursiveSlot++ % recursiveSlots.length;
+  const result = recursiveSlots[slot]!.then(() => {
+    signal.throwIfAborted();
+    return run();
+  });
+  recursiveSlots[slot] = result.catch(() => {});
+  return new Promise<T>((resolve, reject) => {
+    const cancel = () => reject(new Error('Recursive transfer cancelled before dispatch'));
+    signal.addEventListener('abort', cancel, { once: true });
+    result.then(resolve, reject).finally(() => signal.removeEventListener('abort', cancel));
+  });
+}
+
 function nextTransferId() {
   const transfers = getTransfersSnapshot();
   let id: string;
@@ -143,6 +160,7 @@ export function useTransferLifecycle(
 ): TransferLifecycleModel {
   const { t } = useTranslation();
   const cancelIntentRef = useRef<Record<string, TransferStatus>>({});
+  const waitingRecursive = useRef(new Map<string, AbortController>());
 
   useTransferNotifications(t);
   useTransferProgressAdapter(cancelIntentRef);
@@ -236,7 +254,15 @@ export function useTransferLifecycle(
 
     const id =
       existing?.id ||
-      startTransfer({ direction: 'up', name, protocol, localFile, remoteTarget, connectionId });
+      startTransfer({
+        direction: 'up',
+        name,
+        protocol,
+        localFile,
+        remoteTarget,
+        connectionId,
+        total: _localSize,
+      });
     if (existing) {
       delete cancelIntentRef.current[id];
       setTransfersStore((previous) => {
@@ -392,16 +418,23 @@ export function useTransferLifecycle(
     const attemptId = beginAttempt(id);
     setTransfersStore((previous) => ({
       ...previous,
-      [id]: { ...previous[id]!, status: 'progress' },
+      [id]: { ...previous[id]!, status: 'queued' },
     }));
     const stopFollowing = followLanded(id, attemptId, refreshTarget);
+    const waiting = new AbortController();
+    waitingRecursive.current.set(id, waiting);
+    const dispatch = { started: false };
     let report: RecursiveReport;
     try {
-      report = await api.transfer.recursive({
-        ...intent,
-        id: attemptId,
-        ...(resumeFrom === undefined ? {} : { resumeFrom }),
-      });
+      report = await scheduleRecursive(() => {
+        dispatch.started = true;
+        waitingRecursive.current.delete(id);
+        return api.transfer.recursive({
+          ...intent,
+          id: attemptId,
+          ...(resumeFrom === undefined ? {} : { resumeFrom }),
+        });
+      }, waiting.signal);
     } catch (error) {
       report = {
         ok: false,
@@ -413,12 +446,16 @@ export function useTransferLifecycle(
     } finally {
       // Whoever started the walk lists the target once more when it ends.
       stopFollowing();
+      waitingRecursive.current.delete(id);
     }
     // A stop that overtook the pause reached the walk too late to change how
     // it ended: it kept what it wrote for a resume that will now never come.
-    if (report.paused && cancelIntentRef.current[id] === 'stopped') {
+    if (
+      cancelIntentRef.current[id] === 'stopped' &&
+      (report.paused || (!dispatch.started && resumeFrom !== undefined))
+    ) {
       try {
-        await api.transfer.discardRecursive(attemptId);
+        await api.transfer.discardRecursive(dispatch.started ? attemptId : resumeFrom!);
       } catch (error) {
         reportAsyncFailure(error);
       }
@@ -433,6 +470,15 @@ export function useTransferLifecycle(
       attemptId,
       { kind: intent.target.kind, path: intent.target.path },
     );
+    // No backend journal exists when a pause happened before dispatch.
+    if (!dispatch.started) {
+      setTransfersStore((previous) => {
+        const row = previous[id];
+        if (row?.attemptId !== attemptId) return previous;
+        const { attemptId: _attemptId, ...rest } = row;
+        return { ...previous, [id]: { ...rest, ...(resumeFrom ? { attemptId: resumeFrom } : {}) } };
+      });
+    }
     return report;
   };
 
@@ -573,6 +619,11 @@ export function useTransferLifecycle(
         : previous,
     );
     if (current.direction === 'recursive') {
+      const waiting = waitingRecursive.current.get(id);
+      if (waiting) {
+        waiting.abort();
+        return;
+      }
       const attemptId = current.attemptId || id;
       if (wasRunning) {
         await api.transfer.cancelRecursive(attemptId, intent === 'paused' ? 'pause' : 'stop');

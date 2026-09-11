@@ -158,3 +158,24 @@ export const STATUS_TAG_KEYS: readonly string[] = [
   ...Object.values(STATUS_LABEL_KEY),
   ...Object.values(PROGRESS_LABEL_KEY),
 ];
+
+export function transferFilePath(item: TransferRow): string {
+  return item.direction === 'recursive'
+    ? item.intent.source.path
+    : item.direction === 'up'
+      ? item.localFile
+      : item.direction === 'down'
+        ? item.remoteFile
+        : item.sourcePath;
+}
+
+export function transferDisplayName(item: TransferRow): string {
+  const isDirectory = item.direction === 'recursive' || (item.dragOut && item.isDirectory);
+  const fullPath = transferFilePath(item);
+  return isDirectory
+    ? fullPath
+        .replace(/[\\/]+$/, '')
+        .split(/[\\/]/)
+        .pop() || fullPath
+    : item.name;
+}

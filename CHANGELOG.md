@@ -6,38 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The transfer list has a new Route column that shows where each file comes from and
-  where it goes, such as “Projects → My site” or “My site → Backup”. Point at it to see
-  the full path at both ends. Server names stay in the list after you disconnect.
-- In the transfer list, the File column now uses any spare width, and double-clicking
-  the divider between two column headings fits the column to its contents.
+- The transfer list shows where each file goes, such as “Projects → My site”.
+- Sort the transfer list by clicking a column heading. Right-click the headings to hide
+  or show columns.
+- Double-click a column divider in the transfer list to fit the column to its contents.
+
+### Changed
+
+- The Concurrent transfers limit now covers all tabs together and applies at once.
+- The transfer list shows active transfers first and finished ones last.
+- When you send several folders at once, they all appear in the transfer list right away.
 
 ### Fixed
 
-- Uploading to an FTP or FTPS server no longer asks whether to replace a file that isn’t
-  there. If a file with the same name turns up on the server while you upload, FTPeach
-  still leaves it alone and tells you.
-- The “Connect first” hint, shown when you drop files onto a Server pane that isn’t
-  connected, is easier to read.
-- Saving the current connection as a bookmark now names its pane and tab after the
-  bookmark, instead of leaving the server address there.
-- A folder upload to a WebDAV server can no longer be paused, the same as a single file.
-  WebDAV can’t continue a file that was cut short, so resuming started that file over.
-- The Resume all button in the toolbar works again while a WebDAV transfer is still
-  running beside transfers you paused. Before, it stayed greyed out until the WebDAV
-  transfer finished.
-- The Pause and Retry buttons in the transfer list no longer light up under the pointer
-  when they are unavailable, so they no longer look clickable.
 - Sending the same file or folder to several servers at once no longer fails with
-  “Command failed” for every transfer but the first. When two transfers really do need
-  the same file or folder, the message now says so.
-- Stopping an upload to an FTP server takes effect at once. Before, the transfer could
-  sit on “Cancelling…” for several seconds while the server went on receiving the file.
-- A stopped folder upload to an FTP server no longer leaves a hidden, half-sent file
-  behind, which kept the folder from being deleted or replaced.
-- On FTP servers that hide files whose names start with a dot, FTPeach now shows those
-  files, and deleting a folder removes them too. Before, such a folder could look empty
-  and still refuse to be deleted.
+  “Command failed”.
+- Stopping an FTP upload takes effect at once and leaves no half-sent file behind.
+- Files whose names start with a dot now show up on FTP servers, and folders that contain
+  them can be deleted.
+- FTP and FTPS uploads no longer ask to replace a file that isn’t there.
+- Folder uploads to WebDAV can no longer be paused, because resuming started the file over.
+- Resume all works while a WebDAV transfer is still running.
+- Unavailable Pause and Retry buttons no longer light up under the pointer.
+- Saving a connection as a bookmark renames its pane and tab to match.
+- The “Connect first” hint is easier to read.
+- A finished transfer always shows 100%.
 
 ## [0.1.2] - 2026-09-10
 

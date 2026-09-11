@@ -30,6 +30,100 @@ beforeEach(() => {
 });
 
 const folderEntry = { name: 'folder', isDirectory: true, size: 0 };
+
+test('waiting folders can pause, resume and stop before backend dispatch', async () => {
+  await withHarness(async ({ getApi, mockApi, getSnapshot }) => {
+    const folder = createDeferred<RecursiveReport>();
+    const intents: RecursiveIntent[] = [];
+    mockApi.transfer.recursive = (intent) => {
+      intents.push(intent);
+      return folder.promise;
+    };
+    const entries = Array.from({ length: 20 }, (_, i) => ({ ...folderEntry, name: `folder${i}` }));
+    let pending!: Promise<void>;
+    await act(async () => {
+      pending = getApi().copyEntries({
+        ...localFolderMove(),
+        move: false,
+        sourcePane: { ...localFolderMove().sourcePane, entries },
+        names: entries.map((entry) => entry.name),
+        overwriteApproved: true,
+      });
+    });
+    assert.equal(Object.keys(getSnapshot()).length, 20);
+    assert.equal(intents.length, 2);
+    const rows = Object.values(getSnapshot());
+    const paused = rows[19]!;
+    const stopped = rows[18]!;
+    await act(async () => {
+      await getApi().pauseTransfer(paused.id);
+      await getApi().stopTransfer(stopped.id);
+    });
+    assert.equal(getSnapshot()[paused.id]?.status, 'paused');
+    assert.equal(getSnapshot()[stopped.id]?.status, 'stopped');
+    let retry!: Promise<void>;
+    await act(async () => {
+      retry = getApi().retryTransfer(paused.id);
+      folder.resolve({ ok: true, outcome: 'complete', scanned: 1, completed: 0, errors: [] });
+      await Promise.all([pending, retry]);
+    });
+    assert.equal(intents.length, 19);
+    assert.ok(intents.every((intent) => intent.resumeFrom === undefined));
+    assert.equal(getSnapshot()[paused.id]?.status, 'done');
+    assert.equal(getSnapshot()[stopped.id]?.status, 'stopped');
+  });
+});
+
+test('all protocols queue the whole selection while folder and file commands remain pending', async () => {
+  await withHarness(async ({ getApi, mockApi, calls, getSnapshot, emitProgress }) => {
+    const folder = createDeferred<RecursiveReport>();
+    mockApi.transfer.recursive = () => folder.promise;
+    const entries = [
+      folderEntry,
+      ...Array.from({ length: 12 }, (_, i) => ({
+        name: `file${i}.txt`,
+        isDirectory: false,
+        size: 2048,
+      })),
+    ];
+    const pending: Promise<void>[] = [];
+    await act(async () => {
+      for (const protocol of ['ftp', 'sftp', 'webdav'] as const) {
+        pending.push(
+          getApi().copyEntries({
+            ...localFolderMove(),
+            move: false,
+            sourcePane: { ...localFolderMove().sourcePane, entries },
+            targetPane: {
+              kind: 'remote',
+              status: 'connected',
+              connectionId: protocol,
+              protocol,
+              path: '/',
+              entries: [],
+            },
+            names: entries.map((entry) => entry.name),
+            overwriteApproved: true,
+          }),
+        );
+      }
+    });
+    assert.equal(calls.upload.length, 36);
+    assert.equal(Object.keys(getSnapshot()).length, 39);
+    assert.ok(Object.values(getSnapshot()).every((row) => row.status === 'queued'));
+    const row = Object.values(getSnapshot()).find((row) => row.direction === 'recursive')!;
+    await act(async () => {
+      emitProgress({ id: row.attemptId!, connectionId: 'ftp', status: 'progress', bytes: 1 });
+    });
+    assert.equal(getSnapshot()[row.id]?.status, 'progress');
+    await act(async () => {
+      folder.resolve({ ok: true, outcome: 'complete', scanned: 1, completed: 0, errors: [] });
+      mockApi._nextUpload.resolve({ ok: true });
+      await Promise.all(pending);
+    });
+    assert.ok(Object.values(getSnapshot()).every((row) => row.status === 'done'));
+  });
+});
 function localFolderMove(): Parameters<TransfersApi['copyEntries']>[0] {
   return {
     sourcePane: {

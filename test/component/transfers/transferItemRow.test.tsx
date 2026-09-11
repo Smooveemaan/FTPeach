@@ -6,12 +6,35 @@ import type { ReorderableColumnKey } from '../../../src/features/transfers/trans
 
 const LABELS: Record<string, string> = { a: 'Production', b: 'Backup' };
 
+test.each([0, 2048])('completed transfers show 100%% without a total (%s bytes)', (bytes) => {
+  const { container } = renderRow(
+    {
+      id: 'fast',
+      name: 'text.txt',
+      direction: 'down',
+      status: 'done',
+      bytes,
+      startedAt: 1,
+      protocol: 'webdav',
+      connectionId: 'session',
+      remoteFile: '/text.txt',
+      localTarget: 'D:\\text.txt',
+    },
+    ['progress'],
+  );
+  expect(container.querySelector('[data-column-cell="progress"]')?.textContent).toContain('100%');
+});
+
 function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = []) {
   return render(
     <TransferItemRow
       item={item}
       connectionLabel={(connectionId) => LABELS[connectionId] ?? '?'}
-      columnOrder={columnOrder}
+      columnOrder={[
+        'file',
+        'status',
+        ...columnOrder.filter((key) => key !== 'file' && key !== 'status'),
+      ]}
       gridTemplateColumns="1fr"
       speedSamples={{}}
       onRetry={vi.fn()}
@@ -118,7 +141,7 @@ test.each([
           overwrite: false,
         },
       },
-      ['status'],
+      [],
     );
     expect(container.querySelector('.status-tag')?.textContent).toBe(label);
     expect(container.querySelector(`.dir-icon.dir-${icon}`)?.getAttribute('data-tooltip')).toBe(

@@ -19,28 +19,6 @@
   position: relative;
 }
 
-.transfer-new-items {
-  position: absolute;
-  inset-inline-end: 20px;
-  bottom: 10px;
-  z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 26px;
-  padding: 4px 9px;
-  border: 1px solid var(--accent-primary);
-  border-radius: 4px;
-  color: var(--text-primary);
-  background: var(--bg-panel-alt);
-  box-shadow: 0 3px 12px rgb(0 0 0 / 28%);
-  font: 600 10.5px/1 var(--font-ui);
-  cursor: pointer;
-}
-.transfer-new-items:hover {
-  background: var(--bg-hover);
-}
-
 .transfer-list {
   flex: 1 1 auto;
 
@@ -89,6 +67,10 @@
   border-bottom: 1px solid var(--border-soft);
   align-items: stretch;
 }
+.transfer-resizable-header[role="button"] { cursor: pointer; }
+.transfer-resizable-header[role="button"]:hover { color: var(--text-primary); background: var(--bg-hover); }
+.transfer-resizable-header[aria-pressed="true"] { color: var(--text-primary); }
+
 .transfer-col-header > div {
   overflow: hidden;
   white-space: nowrap;
@@ -97,9 +79,9 @@
   mask-image: var(--truncate-fade);
   -webkit-mask-image: var(--truncate-fade);
 }
-/* Offsets "File" past the direction icon so it lines up with the file name
-   below it, not the icon — the icon column itself stays unlabeled. */
-.transfer-col-header > .col-file { padding-inline-start: 19px; }
+/* Direction has its own leading track; File no longer needs an icon offset. */
+.transfer-col-header > .col-file { padding-inline-start: 0; }
+.t-direction { display: flex; align-items: center; justify-content: center; }
 .transfer-col-header > .col-actions { text-align: center; }
 
 
@@ -281,8 +263,7 @@ body.column-resize-active .transfer-item:hover {
   padding-block: 5px;
   padding-inline-end: 8px;
 }
-/* Only the reorderable columns (not the pinned "File") carry this — see
-   TransferQueue.tsx's headerCell/data-reorderable. */
+/* All data columns support reordering when the layout is editable. */
 .transfer-col-header .transfer-resizable-header[data-reorderable='true'] {
   cursor: grab;
 }
@@ -409,3 +390,5 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
   font-size: 10.5px;
   padding: 6px 4px;
 }
+
+.transfer-col-header .sort-indicator { flex-shrink: 0; }

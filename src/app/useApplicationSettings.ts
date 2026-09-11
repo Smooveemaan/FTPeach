@@ -19,6 +19,7 @@ export interface ApplicationSettingsResult {
   changeLocalColumnWidths: (side: PaneId) => (widths: ColumnWidths) => void;
   changeRemoteColumnWidths: (side: PaneId) => (widths: ColumnWidths) => void;
   changeTransferColumnWidths: (widths: ColumnWidths) => void;
+  changeTransferHiddenColumns: (columns: string[]) => void;
   changeTransferColumnOrder: (order: string[]) => void;
 }
 
@@ -76,5 +77,9 @@ export function useApplicationSettings(
     changeRemoteColumnWidths: (side: PaneId) => changeColumnWidths('remoteColumnWidths', side),
     changeTransferColumnWidths,
     changeTransferColumnOrder,
+    changeTransferHiddenColumns: (columns) => {
+      update.layout({ transferHiddenColumns: columns });
+      persistSetting({ transferHiddenColumns: columns });
+    },
   };
 }

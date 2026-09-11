@@ -49,6 +49,7 @@ export interface SettingsValues {
   localColumnWidths: PaneColumnWidths;
   remoteColumnWidths: PaneColumnWidths;
   transferColumnWidths: ColumnWidths;
+  transferHiddenColumns: string[];
   transferColumnOrder: string[];
   showLocalPane: boolean;
   showRemotePane: boolean;
@@ -95,6 +96,7 @@ export const SETTING_GROUPS = {
     'remoteColumnWidths',
     'transferColumnWidths',
     'transferColumnOrder',
+    'transferHiddenColumns',
     'showLocalPane',
     'showRemotePane',
     'showTransferQueue',
@@ -313,6 +315,10 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     transferColumnWidths: isRecord(s.transferColumnWidths)
       ? (s.transferColumnWidths as ColumnWidths)
       : SETTINGS_DEFAULTS.transferColumnWidths,
+    transferHiddenColumns: normalizeStringArraySetting(
+      s.transferHiddenColumns,
+      SETTINGS_DEFAULTS.transferHiddenColumns,
+    ),
     transferColumnOrder: normalizeStringArraySetting(
       s.transferColumnOrder,
       SETTINGS_DEFAULTS.transferColumnOrder,

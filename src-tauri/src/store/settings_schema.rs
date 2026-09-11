@@ -116,8 +116,11 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
         }
     }
     if patch
-        .get("transferColumnOrder")
+        .get("transferHiddenColumns")
         .is_some_and(|v| !columns(v))
+        || patch
+            .get("transferColumnOrder")
+            .is_some_and(|v| !columns(v))
         || patch
             .get("transferColumnWidths")
             .is_some_and(|v| !widths(v))

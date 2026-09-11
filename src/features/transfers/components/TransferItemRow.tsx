@@ -16,6 +16,8 @@ import {
   DIR_TITLE_KEY,
   pauseUnsupportedKey,
   transferRoute,
+  transferFilePath,
+  transferDisplayName,
   transferRoutePlaces,
   transferRouteTooltip,
 } from '../transferPresentation.ts';
@@ -26,6 +28,7 @@ interface TransferItemRowProps {
   columnOrder: readonly ReorderableColumnKey[];
   gridTemplateColumns: string;
   speedSamples: SpeedSamples;
+  measuredSpeed?: number | null;
   onRetry: (id: string) => void;
   onPause: (id: string) => void;
   onStop: (id: string) => void;
@@ -46,6 +49,7 @@ export default function TransferItemRow({
   columnOrder,
   gridTemplateColumns,
   speedSamples,
+  measuredSpeed,
   onRetry,
   onPause,
   onStop,
@@ -54,27 +58,23 @@ export default function TransferItemRow({
   const isDirectory = item.direction === 'recursive' || (item.dragOut && item.isDirectory);
   const route = transferRoute(item);
   const moving = item.direction === 'recursive' && item.intent.moving;
-  const fullPath =
-    item.direction === 'recursive'
-      ? item.intent.source.path
-      : item.direction === 'up'
-        ? item.localFile
-        : item.direction === 'down'
-          ? item.remoteFile
-          : item.sourcePath;
-  const displayName = isDirectory
-    ? fullPath
-        .replace(/[\\/]+$/, '')
-        .split(/[\\/]/)
-        .pop() || fullPath
-    : item.name;
+  const fullPath = transferFilePath(item);
+  const displayName = transferDisplayName(item);
   const total = item.total ?? 0;
   const hasTotal = total > 0;
-  const percent = hasTotal ? Math.min(100, Math.round((item.bytes / total) * 100)) : null;
-  const showBar = hasTotal && item.status !== 'error';
+  const percent =
+    item.status === 'done'
+      ? 100
+      : hasTotal
+        ? Math.min(100, Math.round((item.bytes / total) * 100))
+        : null;
+  const showBar = (hasTotal || item.status === 'done') && item.status !== 'error';
   const pauseUnsupported = pauseUnsupportedKey(item);
   const retryUnsupported = !canRetryTransfer(item);
-  const speed = updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
+  const speed =
+    measuredSpeed !== undefined
+      ? measuredSpeed
+      : updateSpeedSample(speedSamples, item.id, item.bytes, item.status);
   const remaining =
     item.status === 'progress' && hasTotal && speed && speed > 0
       ? (total - item.bytes) / speed
@@ -104,6 +104,35 @@ export default function TransferItemRow({
 
   const renderCell = (key: ReorderableColumnKey): ReactNode => {
     switch (key) {
+      case 'file':
+        return (
+          <div key="file" data-column-cell="file" className="t-file">
+            <span className={`transfer-file-icon${isDirectory ? ' is-folder' : ''}`}>
+              <Icon
+                name={fileIconName({ name: displayName, isDirectory: !!isDirectory })}
+                size={13}
+              />
+            </span>
+            <div className="t-name-wrap">
+              <span
+                ref={nameRef}
+                className={`t-name${nameTruncated ? ' truncated' : ''}`}
+                data-tooltip={fullPath}
+              >
+                <bdi>{displayName}</bdi>
+              </span>
+              {subText && (
+                <span
+                  ref={subRef}
+                  className={`t-sub ${item.status === 'error' ? 'err' : ''}${subTruncated ? ' truncated' : ''}`}
+                  data-tooltip={subText}
+                >
+                  <bdi>{subText}</bdi>
+                </span>
+              )}
+            </div>
+          </div>
+        );
       case 'route':
         return (
           <div
@@ -205,34 +234,14 @@ export default function TransferItemRow({
       role="group"
       aria-label={`${isolate(item.name)}: ${statusLabel}${percent == null ? '' : `, ${percent}%`}`}
     >
-      <div className="t-file">
+      <div className="t-direction">
+        {' '}
         <span
           className={`dir-icon dir-${route}`}
           data-tooltip={t(moving ? 'dragMove.moveMode' : DIR_TITLE_KEY[route])}
         >
           <Icon name={moving ? 'arrowLeftRight' : DIR_ICON[route]} size={13} />
         </span>
-        <span className={`transfer-file-icon${isDirectory ? ' is-folder' : ''}`}>
-          <Icon name={fileIconName({ name: displayName, isDirectory: !!isDirectory })} size={13} />
-        </span>
-        <div className="t-name-wrap">
-          <span
-            ref={nameRef}
-            className={`t-name${nameTruncated ? ' truncated' : ''}`}
-            data-tooltip={fullPath}
-          >
-            <bdi>{displayName}</bdi>
-          </span>
-          {subText && (
-            <span
-              ref={subRef}
-              className={`t-sub ${item.status === 'error' ? 'err' : ''}${subTruncated ? ' truncated' : ''}`}
-              data-tooltip={subText}
-            >
-              <bdi>{subText}</bdi>
-            </span>
-          )}
-        </div>
       </div>
       {columnOrder.map((key) => renderCell(key))}
       <div className="transfer-actions">

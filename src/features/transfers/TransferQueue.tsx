@@ -1,3 +1,7 @@
+import { createPortal } from 'react-dom';
+import ContextMenu from '../../components/ContextMenu.tsx';
+import { updateSpeedSample } from './transferSpeed.ts';
+import { transferRoutePlaces, transferDisplayName } from './transferPresentation.ts';
 import TransferItemRow from './components/TransferItemRow.tsx';
 import { STATUS_TAG_KEYS } from './transferPresentation.ts';
 import {
@@ -8,12 +12,7 @@ import {
   COLUMN_MIN_WIDTHS,
   LABEL_DRIVEN_MIN_WIDTH_KEYS,
 } from './transferColumns.ts';
-import type {
-  TransferColumnKey,
-  ResizableColumnKey,
-  ReorderableColumnKey,
-  ColumnWidths,
-} from './transferColumns.ts';
+import type { TransferColumnKey, ResizableColumnKey, ColumnWidths } from './transferColumns.ts';
 import {
   useEffect,
   useLayoutEffect,
@@ -54,6 +53,8 @@ interface TransferQueueProps {
   columnWidths?: ColumnWidths | undefined;
   onColumnWidthsChange?: ((widths: ColumnWidths) => void) | undefined;
   columnOrder?: string[] | undefined;
+  hiddenColumns?: string[] | undefined;
+  onHiddenColumnsChange?: ((columns: string[]) => void) | undefined;
   onColumnOrderChange?: ((order: string[]) => void) | undefined;
 }
 
@@ -96,6 +97,9 @@ function measureStatusColumnMinWidth(t: (key: string) => string, scale: number):
 
 interface HeaderCellProps {
   label: ReactNode;
+  active: boolean;
+  descending: boolean;
+  onSort: () => void;
   className: string;
   columnKey: TransferColumnKey;
   reorderable: boolean;
@@ -108,6 +112,9 @@ interface HeaderCellProps {
 
 function HeaderCell({
   label,
+  active,
+  descending,
+  onSort,
   className,
   columnKey,
   reorderable,
@@ -128,14 +135,30 @@ function HeaderCell({
       data-reorderable={reorderable ? 'true' : undefined}
       data-dragging={dragging ? 'true' : undefined}
       className={`${className} transfer-resizable-header${truncated ? ' truncated' : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={active}
+      onClick={onSort}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSort();
+        }
+      }}
       onMouseDown={onDragMouseDown}
     >
       {label}
+      {active && (
+        <span className={`sort-indicator ${descending ? 'desc' : ''}`}>
+          <Icon name="chevronUp" size={10} />
+        </span>
+      )}
       {onResizeStart && (
         <span
           className="col-resize-handle"
           onMouseDown={onResizeStart}
           onDoubleClick={onResizeFit}
+          onClick={(event) => event.stopPropagation()}
         />
       )}
     </div>
@@ -155,14 +178,20 @@ export default function TransferQueue({
   onColumnWidthsChange,
   columnOrder,
   onColumnOrderChange,
+  hiddenColumns,
+  onHiddenColumnsChange,
 }: TransferQueueProps) {
   const { t } = useTranslation();
   const [, tickStalledSpeeds] = useReducer((n: number) => n + 1, 0);
   const transfers = useSyncExternalStore(subscribeTransfers, getTransfersSnapshot);
-  const items = useMemo(
-    () => Object.values(transfers).sort((a, b) => a.startedAt - b.startedAt),
-    [transfers],
-  );
+  const [sort, setSort] = useState<{ key: ResizableColumnKey | 'queue'; dir: 'asc' | 'desc' }>({
+    key: 'queue',
+    dir: 'asc',
+  });
+  const [localHidden, setLocalHidden] = useState<string[]>([]);
+  const hidden = hiddenColumns ?? localHidden;
+  const [columnMenu, setColumnMenu] = useState<{ x: number; y: number } | null>(null);
+  const items = Object.values(transfers);
   const hasProgress = items.some((item) => item.status === 'progress');
   useEffect(() => {
     if (!hasProgress) return;
@@ -175,28 +204,119 @@ export default function TransferQueue({
   const connectionLabel = (connectionId: string): string =>
     connectionLabels?.get(connectionId) ?? rememberedConnectionLabel(connectionId) ?? '?';
   const speedSamples = useRef<SpeedSamples>({}).current;
+  for (const id of Object.keys(speedSamples)) {
+    if (!transfers[id]) delete speedSamples[id];
+  }
+  const speeds = new Map(
+    items.map((item) => [
+      item.id,
+      updateSpeedSample(speedSamples, item.id, item.bytes, item.status),
+    ]),
+  );
+  const statusPriority = {
+    progress: 0,
+    cancelling: 1,
+    queued: 2,
+    paused: 3,
+    error: 4,
+    stopped: 5,
+    done: 6,
+  };
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const value = (item: (typeof items)[number]): string | number | null => {
+    const speed = speeds.get(item.id) ?? null;
+    switch (sort.key) {
+      case 'file':
+        return transferDisplayName(item);
+      case 'route':
+        return transferRoutePlaces(item, connectionLabel, t).join(' → ');
+      case 'size':
+        return item.total && item.total > 0 ? item.total : item.bytes;
+      case 'transferred':
+        return item.bytes;
+      case 'progress':
+        return item.total && item.total > 0 ? Math.min(1, item.bytes / item.total) : null;
+      case 'speed':
+        return speed;
+      case 'remaining':
+        return item.total && speed && speed > 0
+          ? Math.max(0, item.total - item.bytes) / speed
+          : null;
+      case 'status':
+      case 'queue':
+        return statusPriority[item.status];
+    }
+  };
+  const sortValues = new Map(items.map((item) => [item.id, value(item)]));
+  items.sort((a, b) => {
+    const av = sortValues.get(a.id) ?? null,
+      bv = sortValues.get(b.id) ?? null;
+    if (av === null && bv !== null) return 1;
+    if (bv === null && av !== null) return -1;
+    const comparison =
+      typeof av === 'string' && typeof bv === 'string'
+        ? collator.compare(av, bv)
+        : ((av as number | null) ?? 0) - ((bv as number | null) ?? 0);
+    return (
+      comparison * (sort.dir === 'asc' ? 1 : -1) ||
+      (sort.key === 'queue' ? b.startedAt - a.startedAt : a.startedAt - b.startedAt) ||
+      a.id.localeCompare(b.id)
+    );
+  });
   const colHeaderRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const previousIdsRef = useRef<Set<string> | null>(null);
-  const unseenIdsRef = useRef(new Set<string>());
-  const nearBottomRef = useRef(true);
-  const [unseenCount, setUnseenCount] = useState(0);
   const columnOrderFull = useMemo(() => sanitizeColumnOrder(columnOrder), [columnOrder]);
   const visibleReorderableKeys = useMemo(
-    () => columnOrderFull.filter((key) => !narrow || (key !== 'speed' && key !== 'remaining')),
-    [columnOrderFull, narrow],
+    () =>
+      columnOrderFull.filter(
+        (key) => !hidden.includes(key) && (!narrow || (key !== 'speed' && key !== 'remaining')),
+      ),
+    [columnOrderFull, narrow, hidden],
   );
-  const visibleColumnKeys: TransferColumnKey[] = ['file', ...visibleReorderableKeys, 'actions'];
+  const visibleColumnKeys: TransferColumnKey[] = [
+    'direction',
+    ...visibleReorderableKeys,
+    'actions',
+  ];
+  const [defaultWidths, setDefaultWidths] = useState<ColumnWidths>({});
   const widthOf = (key: TransferColumnKey): number =>
-    columnWidths[key] || COLUMN_DEFAULT_WIDTHS[key];
-  const flexibleFile = !columnWidths.file;
+    (key === 'direction'
+      ? COLUMN_DEFAULT_WIDTHS.direction
+      : columnWidths[key] || defaultWidths[key]) || COLUMN_DEFAULT_WIDTHS[key];
+  const labelsKey = visibleReorderableKeys.map((key) => t(COLUMN_LABEL_KEY[key])).join('|');
+  const statusLabelsKey = STATUS_TAG_KEYS.map((key) => t(key)).join('|');
+  const hasRows = items.length > 0;
+  const scale = getInterfaceScale();
+  useLayoutEffect(() => {
+    const next: ColumnWidths = {};
+    for (const key of visibleReorderableKeys) {
+      const header = colHeaderRef.current?.querySelector<HTMLElement>(`[data-column-key="${key}"]`);
+      if (!header) continue;
+      const cs = getComputedStyle(header);
+      // Reserve the sort arrow and both paddings, even before a sort is selected.
+      const padding =
+        (parseFloat(cs.paddingInlineStart) || 0) + (parseFloat(cs.paddingInlineEnd) || 0);
+      const labelWidth = measureLabelWidth(t(COLUMN_LABEL_KEY[key]), cs.font, cs.letterSpacing);
+      next[key] = Math.max(
+        COLUMN_DEFAULT_WIDTHS[key],
+        Math.ceil((labelWidth + padding) / scale) + 13,
+      );
+      if (key === 'status') next[key] = Math.max(next[key], measureStatusColumnMinWidth(t, scale));
+    }
+    setDefaultWidths((previous) =>
+      JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
+    );
+    // These keys encode the visible labels and status pills; progress ticks must not measure layout.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labelsKey, statusLabelsKey, narrow, hasRows, scale, height]);
+  const flexibleFile = visibleReorderableKeys.includes('file') && !columnWidths.file;
   const gridTemplateColumns = `${visibleColumnKeys
     .map((key) =>
       key === 'file' && flexibleFile ? `minmax(${widthOf(key)}px, 1fr)` : `${widthOf(key)}px`,
     )
     .join(' ')} ${flexibleFile ? '0px' : 'minmax(0, 1fr)'}`;
 
-  const { draggedColumn, registerHeaderRef, getDragHandleProps, refreshRects } =
+  const { draggedColumn, registerHeaderRef, getDragHandleProps, suppressClickRef, refreshRects } =
     useColumnDragReorder({
       order: columnOrderFull,
       onReorder: onColumnOrderChange,
@@ -211,6 +331,60 @@ export default function TransferQueue({
     // the serialized width set, which is what actually invalidates the rects.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnWidthsKey]);
+
+  const autoWidenRef = useRef<{
+    key: ResizableColumnKey;
+    originalWidth: number | undefined;
+    widenedWidth: number;
+  } | null>(null);
+  useLayoutEffect(() => {
+    if (!onColumnWidthsChange) return;
+    const indicatorKey = sort.key === 'queue' ? null : sort.key;
+    const nextWidths = { ...columnWidths };
+    let changed = false;
+    const record = autoWidenRef.current;
+    if (record && record.key !== indicatorKey) {
+      // Restore only our own adjustment, never a subsequent manual resize.
+      if (columnWidths[record.key] === record.widenedWidth) {
+        if (record.originalWidth === undefined) delete nextWidths[record.key];
+        else nextWidths[record.key] = record.originalWidth;
+        changed = true;
+      }
+      autoWidenRef.current = null;
+    }
+    if (indicatorKey) {
+      const header = colHeaderRef.current?.querySelector<HTMLElement>(
+        `[data-column-key="${indicatorKey}"]`,
+      );
+      if (header) {
+        const cs = getComputedStyle(header);
+        const padding =
+          (parseFloat(cs.paddingInlineStart) || 0) + (parseFloat(cs.paddingInlineEnd) || 0);
+        const labelWidth = measureLabelWidth(
+          t(COLUMN_LABEL_KEY[indicatorKey]),
+          cs.font,
+          cs.letterSpacing,
+        );
+        const needed = Math.ceil((labelWidth + padding) / scale) + 13;
+        const current = widthOf(indicatorKey);
+        if (needed > current) {
+          autoWidenRef.current = {
+            key: indicatorKey,
+            originalWidth:
+              record?.key === indicatorKey && columnWidths[indicatorKey] === record.widenedWidth
+                ? record.originalWidth
+                : columnWidths[indicatorKey],
+            widenedWidth: needed,
+          };
+          nextWidths[indicatorKey] = needed;
+          changed = true;
+        }
+      }
+    }
+    if (changed) onColumnWidthsChange(nextWidths);
+    // Match file panels: react to the indicator, not to the widths this effect writes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort.key, sort.dir, labelsKey, scale]);
 
   const widthsForManualResize = (): ColumnWidths => {
     if (!flexibleFile) return columnWidths;
@@ -230,20 +404,14 @@ export default function TransferQueue({
       if (headerEl) {
         const scale = getInterfaceScale();
         const cs = getComputedStyle(headerEl);
-        const label = t(COLUMN_LABEL_KEY[key as ReorderableColumnKey]);
+        const label = t(COLUMN_LABEL_KEY[key]);
         const textWidth = measureLabelWidth(label, cs.font, cs.letterSpacing);
-        // +8 mirrors .transfer-resizable-header's own end padding (transfers.css) —
+        // Reserve 13px for the sort arrow plus 8px end padding —
         // the same reserved-gap accounting the file browser's column headers use.
         // The floor only guards a canvas-measurement failure (e.g. a headless
         // test environment without 2d context support), not real labels.
-        minWidth = Math.max(24, Math.ceil(textWidth / scale) + 8);
-        // "Status" also has to fit whichever status pill is widest — a data
-        // cell, not the header, so it doesn't carry that same +8 (no resize
-        // handle sits over it) but can still exceed the header label's own
-        // width once a long status pill (e.g. the Russian "Paused") is measured.
-        if (key === 'status') {
-          minWidth = Math.max(minWidth, measureStatusColumnMinWidth(t, scale));
-        }
+        minWidth = Math.max(24, Math.ceil(textWidth / scale) + 21);
+        if (key === 'status') minWidth = Math.max(minWidth, measureStatusColumnMinWidth(t, scale));
       }
     }
     startResize({
@@ -311,72 +479,37 @@ export default function TransferQueue({
   };
 
   const headerCell = (key: ResizableColumnKey, label: ReactNode, className: string) => {
-    const reorderable = key !== 'file';
-    const dragHandleProps = reorderable ? getDragHandleProps(key) : null;
+    const dragHandleProps = getDragHandleProps(key);
     return (
       <HeaderCell
         key={key}
         columnKey={key}
         label={label}
+        active={sort.key === key}
+        descending={sort.dir === 'desc'}
+        onSort={() => {
+          if (suppressClickRef.current) {
+            suppressClickRef.current = false;
+            return;
+          }
+          setSort((previous) => ({
+            key: previous.key === key && previous.dir === 'desc' ? 'queue' : key,
+            dir: previous.key === key && previous.dir === 'asc' ? 'desc' : 'asc',
+          }));
+          if (listRef.current) listRef.current.scrollTop = 0;
+        }}
         className={className}
-        reorderable={reorderable}
+        reorderable={!!onColumnOrderChange}
         dragging={draggedColumn === key}
-        registerRef={reorderable ? registerHeaderRef(key) : undefined}
-        onDragMouseDown={dragHandleProps?.onMouseDown}
+        registerRef={registerHeaderRef(key)}
+        onDragMouseDown={dragHandleProps.onMouseDown}
         onResizeStart={onColumnWidthsChange ? startColumnResize(key) : undefined}
         onResizeFit={onColumnWidthsChange ? fitColumnWidth(key) : undefined}
       />
     );
   };
-  const scrollToLatest = () => {
-    const list = listRef.current;
-    if (!list) return;
-    list.scrollTop = list.scrollHeight;
-    nearBottomRef.current = true;
-    unseenIdsRef.current.clear();
-    setUnseenCount(0);
-  };
-
-  const itemIdsKey = items.map((item) => item.id).join('|');
-  useLayoutEffect(() => {
-    const currentIds = new Set(items.map((item) => item.id));
-    const previousIds = previousIdsRef.current;
-    previousIdsRef.current = currentIds;
-
-    // Rows removed by "Clear completed" must not remain in the badge count.
-    for (const id of unseenIdsRef.current) {
-      if (!currentIds.has(id)) unseenIdsRef.current.delete(id);
-    }
-
-    if (previousIds == null) {
-      // Opening an already-populated queue starts at its chronological end.
-      scrollToLatest();
-      return;
-    }
-
-    const added = items.filter((item) => !previousIds.has(item.id));
-    if (added.length > 0) {
-      if (nearBottomRef.current) {
-        scrollToLatest();
-        return;
-      }
-      for (const item of added) unseenIdsRef.current.add(item.id);
-    }
-    setUnseenCount(unseenIdsRef.current.size);
-    // itemIdsKey deliberately ignores progress ticks: only structural queue
-    // changes can create/remove unseen rows.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemIdsKey]);
-
   const handleListScroll = (e: UIEvent<HTMLDivElement>) => {
-    const list = e.currentTarget;
-    if (colHeaderRef.current) colHeaderRef.current.scrollLeft = list.scrollLeft;
-    const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight <= 32;
-    nearBottomRef.current = nearBottom;
-    if (nearBottom && unseenIdsRef.current.size > 0) {
-      unseenIdsRef.current.clear();
-      setUnseenCount(0);
-    }
+    if (colHeaderRef.current) colHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
   };
   const rootStyle: CSSProperties =
     widthRatio != null ? { flex: `${widthRatio} 1 0%`, minWidth: 0 } : { flex: `0 0 ${height}px` };
@@ -410,10 +543,15 @@ export default function TransferQueue({
       {!isCollapsed && items.length > 0 && (
         <div
           className="transfer-cols transfer-col-header"
+          onContextMenu={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setColumnMenu({ x: event.clientX, y: event.clientY });
+          }}
           ref={colHeaderRef}
           style={{ gridTemplateColumns }}
         >
-          {headerCell('file', t('transferQueue.columns.file'), 'col-file')}
+          <div className="col-direction" aria-hidden="true" />
           {visibleReorderableKeys.map((key) =>
             headerCell(key, t(COLUMN_LABEL_KEY[key]), COLUMN_CLASS[key]),
           )}
@@ -434,18 +572,38 @@ export default function TransferQueue({
               columnOrder={visibleReorderableKeys}
               gridTemplateColumns={gridTemplateColumns}
               speedSamples={speedSamples}
+              measuredSpeed={speeds.get(item.id) ?? null}
               onRetry={onRetry}
               onPause={onPause}
               onStop={onStop}
             />
           ))}
       </div>
-      {unseenCount > 0 && (
-        <button type="button" className="transfer-new-items" onClick={scrollToLatest}>
-          <Icon name="arrowDown" size={11} />
-          {t('transferQueue.newTransfers', { count: unseenCount })}
-        </button>
-      )}
+      {columnMenu &&
+        createPortal(
+          <ContextMenu
+            {...columnMenu}
+            onClose={() => setColumnMenu(null)}
+            items={[
+              ...columnOrderFull.map((key) => ({
+                label: t(COLUMN_LABEL_KEY[key]),
+                checked: !hidden.includes(key),
+                disabled:
+                  visibleReorderableKeys.length === 1 && visibleReorderableKeys.includes(key),
+                onClick: () => {
+                  const next = hidden.includes(key)
+                    ? hidden.filter((column) => column !== key)
+                    : [...hidden, key];
+                  setLocalHidden(next);
+                  onHiddenColumnsChange?.(next);
+                },
+              })),
+              { separator: true },
+              { label: t('filePane.resetColumnWidths'), onClick: () => onColumnWidthsChange?.({}) },
+            ]}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

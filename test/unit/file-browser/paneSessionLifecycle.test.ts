@@ -18,7 +18,6 @@ function harness(
   let retry: (() => unknown) | undefined;
   const lifecycle = createPaneSessionLifecycle({
     client: h.client,
-    concurrency: 3,
     connectTimeout: 20,
     ftpActiveMode: true,
     panes: tab.panes,
@@ -69,7 +68,11 @@ test('connection maps FTPS configuration and becomes connected only after initia
   assert.equal(config.secure, true);
   assert.equal(config.port, 990);
   assert.equal(config.activeMode, true);
-  assert.equal(config.concurrency, 3);
+  assert.equal(
+    config.concurrency,
+    undefined,
+    'global concurrency must not cap individual sessions',
+  );
   assert.equal(config.timeout, 20);
   assert.deepEqual(h.refreshes, ['/saved']);
   assert.equal(h.tab.panes.b.status, 'connected');

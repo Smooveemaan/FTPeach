@@ -15,7 +15,7 @@ use crate::store::{JsonMap, Store};
 /// spelling the rules out a fourth time inside `run()`.
 pub async fn apply_at_startup(store: &Store, log_emitter: &LogEmitter) {
     let settings = store.get_settings().await;
-    apply_speed_limit(&settings);
+    apply_transfer_limits(&settings);
     apply_prevent_sleep(&settings);
     apply_log_date_format(&settings, log_emitter);
     if settings
@@ -35,7 +35,12 @@ pub fn apply_log_date_format(settings: &JsonMap, log_emitter: &LogEmitter) {
     log_emitter.set_date_format(format);
 }
 
-pub fn apply_speed_limit(settings: &JsonMap) {
+pub fn apply_transfer_limits(settings: &JsonMap) {
+    let concurrency = settings
+        .get("concurrency")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(3);
+    crate::transfer::concurrency_limiter::shared().set_limit(concurrency as usize);
     let kbps = settings
         .get("transferSpeedLimitKBps")
         .and_then(|v| v.as_u64())

@@ -11,8 +11,10 @@
   "localColumnWidths": { "a": {}, "b": {} },
   "remoteColumnWidths": { "a": {}, "b": {} },
   "transferColumnWidths": {},
+  "transferHiddenColumns": [],
   "transferColumnOrder": [
     "route",
+    "file",
     "size",
     "transferred",
     "progress",

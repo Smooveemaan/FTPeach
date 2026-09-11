@@ -184,6 +184,28 @@ export function createTransferRouting(
       : targetPane.path;
 
     const folders = names.filter((name) => sourceEntriesByName.get(name)?.isDirectory);
+    // Submit the whole selection before waiting for any transfer to finish.
+    // The backend owns network concurrency; a folder must not hide its siblings.
+    if (folders.length > 0 && names.length > 1) {
+      await Promise.all(
+        [
+          ...folders.map((name) => [name]),
+          names.filter((name) => !sourceEntriesByName.get(name)?.isDirectory),
+        ].map((group) =>
+          copyEntriesUnchecked({
+            sourcePane,
+            targetPane,
+            names: group,
+            ...(targetFolder === undefined ? {} : { targetFolder }),
+            ...(move === undefined ? {} : { move }),
+            ...(refreshSource ? { refreshSource } : {}),
+            ...(refreshTarget ? { refreshTarget } : {}),
+            overwriteApproved,
+          }),
+        ),
+      );
+      return;
+    }
     for (const name of folders) {
       const sourcePath =
         sourcePane.kind === 'local'
@@ -233,7 +255,7 @@ export function createTransferRouting(
     }
 
     if (sourcePane.kind === 'remote' && targetPane.kind === 'remote') {
-      const results = await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
+      const results = await mapWithConcurrency(names, names.length, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return { entry, ok: false };
         if (entry.isDirectory && move) {
@@ -302,7 +324,7 @@ export function createTransferRouting(
       return;
     }
 
-    const results = await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
+    const results = await mapWithConcurrency(names, names.length, async (name) => {
       const entry = sourceEntriesByName.get(name);
       if (!entry) return { entry, ok: false };
       let ok;
@@ -391,7 +413,7 @@ export function createTransferRouting(
     const targetDir = targetFolder
       ? joinRemotePath(targetPane.path, targetFolder)
       : targetPane.path;
-    await mapWithConcurrency(files, RENDERER_FANOUT_LIMIT, async (file) => {
+    await mapWithConcurrency(files, files.length, async (file) => {
       if (file.isDirectory) {
         await uploadFolderEntry(
           targetPane.connectionId!,

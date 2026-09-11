@@ -170,3 +170,22 @@ describe('workspace render failures', () => {
     expect(screen.getByRole('button', { name: 'errorBoundary.reload' })).toBeTruthy();
   });
 });
+
+test.each([false, true])('layout reset clears Transfers local state in narrow=%s', (narrow) => {
+  const workspace = props(narrow);
+  const view = render(<Workspace {...workspace} />);
+  fireEvent.click(screen.getByRole('button', { name: 'queue: 0' }));
+  fireEvent.click(screen.getByRole('button', { name: 'a: 0' }));
+  view.rerender(
+    <Workspace
+      {...workspace}
+      transferLogSection={{
+        ...workspace.transferLogSection,
+        transfer: { ...workspace.transferLogSection.transfer, layoutVersion: 1 },
+      }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: 'queue: 0' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'a: 1' })).toBeTruthy();
+  view.unmount();
+});

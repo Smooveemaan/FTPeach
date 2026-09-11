@@ -2,7 +2,7 @@ use crate::domain::AppSettings;
 use crate::ipc::CommandResult;
 use crate::runtime::log_emitter::LogEmitter;
 use crate::runtime::settings_apply::{
-    apply_log_date_format, apply_prevent_sleep, apply_speed_limit,
+    apply_log_date_format, apply_prevent_sleep, apply_transfer_limits,
 };
 use crate::store::{JsonMap, Store};
 use serde_json::Value;
@@ -62,7 +62,7 @@ pub async fn settings_set(
     let had_date_format = patch.contains_key("dateFormat");
     let next = store.set_settings(patch).await?;
     if had_speed_limit {
-        apply_speed_limit(&next);
+        apply_transfer_limits(&next);
     }
     if had_prevent_sleep {
         apply_prevent_sleep(&next);

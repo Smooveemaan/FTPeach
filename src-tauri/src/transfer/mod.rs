@@ -1,3 +1,4 @@
+pub(crate) mod concurrency_limiter;
 pub(crate) mod error_kind;
 pub(crate) mod progress;
 pub(crate) mod rate_limiter;

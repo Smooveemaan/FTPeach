@@ -1,4 +1,5 @@
 export type TransferColumnKey =
+  | 'direction'
   | 'file'
   | 'route'
   | 'size'
@@ -8,15 +9,14 @@ export type TransferColumnKey =
   | 'remaining'
   | 'status'
   | 'actions';
-export type ResizableColumnKey = Exclude<TransferColumnKey, 'actions'>;
-/** The columns a drag can reorder — "File" stays pinned first (like the file
- * browser's "Name") and "Actions" stays pinned last (it has no header label
- * to grab in the first place). */
-export type ReorderableColumnKey = Exclude<ResizableColumnKey, 'file'>;
+export type ResizableColumnKey = Exclude<TransferColumnKey, 'actions' | 'direction'>;
+/** Direction stays first and actions stays last; data columns can be reordered. */
+export type ReorderableColumnKey = ResizableColumnKey;
 export type ColumnWidths = Partial<Record<TransferColumnKey, number>>;
 
 export const DEFAULT_COLUMN_ORDER: ReorderableColumnKey[] = [
   'route',
+  'file',
   'size',
   'transferred',
   'progress',
@@ -25,6 +25,7 @@ export const DEFAULT_COLUMN_ORDER: ReorderableColumnKey[] = [
   'status',
 ];
 export const COLUMN_LABEL_KEY: Record<ReorderableColumnKey, string> = {
+  file: 'transferQueue.columns.file',
   route: 'transferQueue.columns.route',
   size: 'transferQueue.columns.size',
   transferred: 'transferQueue.columns.transferred',
@@ -34,6 +35,7 @@ export const COLUMN_LABEL_KEY: Record<ReorderableColumnKey, string> = {
   status: 'transferQueue.columns.status',
 };
 export const COLUMN_CLASS: Record<ReorderableColumnKey, string> = {
+  file: 'col-file',
   route: 'col-route',
   size: 'col-size',
   transferred: 'col-transferred',
@@ -69,6 +71,7 @@ export function sanitizeColumnOrder(order: readonly string[] | undefined): Reord
 // File also receives spare viewport width until explicitly resized.
 // Speed and remaining retain room for their longer translated headings.
 export const COLUMN_DEFAULT_WIDTHS: Record<TransferColumnKey, number> = {
+  direction: 14,
   file: 202,
   route: 160,
   size: 76,
@@ -100,5 +103,4 @@ export const LABEL_DRIVEN_MIN_WIDTH_KEYS = new Set<ResizableColumnKey>([
   'transferred',
   'speed',
   'remaining',
-  'status',
 ]);

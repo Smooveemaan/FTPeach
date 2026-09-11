@@ -38,6 +38,9 @@ interface TransferLogSectionProps {
     connectionLabels: TransferQueueProps['connectionLabels'];
     columnWidths: TransferQueueProps['columnWidths'];
     onColumnWidthsChange: TransferQueueProps['onColumnWidthsChange'];
+    layoutVersion?: number;
+    hiddenColumns?: TransferQueueProps['hiddenColumns'];
+    onHiddenColumnsChange?: TransferQueueProps['onHiddenColumnsChange'];
     columnOrder: TransferQueueProps['columnOrder'];
     onColumnOrderChange: TransferQueueProps['onColumnOrderChange'];
   };
@@ -100,6 +103,7 @@ export default function TransferLogSection({
         >
           <ErrorBoundary local style={{ flex: `${transferLogSplitRatio} 1 0%` }}>
             <TransferQueue
+              key={transfer.layoutVersion}
               onRetry={transfer.onRetry}
               onPause={transfer.onPause}
               onStop={transfer.onStop}
@@ -109,6 +113,8 @@ export default function TransferLogSection({
               widthRatio={transferLogSplitRatio}
               columnWidths={transfer.columnWidths}
               onColumnWidthsChange={transfer.onColumnWidthsChange}
+              hiddenColumns={transfer.hiddenColumns}
+              onHiddenColumnsChange={transfer.onHiddenColumnsChange}
               columnOrder={transfer.columnOrder}
               onColumnOrderChange={transfer.onColumnOrderChange}
             />
@@ -146,6 +152,7 @@ export default function TransferLogSection({
           />
           <ErrorBoundary local style={{ flex: `0 0 ${transferQueueHeight}px` }}>
             <TransferQueue
+              key={transfer.layoutVersion}
               onRetry={transfer.onRetry}
               onPause={transfer.onPause}
               onStop={transfer.onStop}
@@ -155,6 +162,8 @@ export default function TransferLogSection({
               narrow={windowNarrow}
               columnWidths={transfer.columnWidths}
               onColumnWidthsChange={transfer.onColumnWidthsChange}
+              hiddenColumns={transfer.hiddenColumns}
+              onHiddenColumnsChange={transfer.onHiddenColumnsChange}
               columnOrder={transfer.columnOrder}
               onColumnOrderChange={transfer.onColumnOrderChange}
             />

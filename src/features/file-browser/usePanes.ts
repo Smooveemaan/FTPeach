@@ -34,7 +34,6 @@ interface UsePanesOptions {
   reportError: (error: FriendlyErrorInput) => unknown;
   setErrorMessage: (message: string) => unknown;
   requestConfirm: (message: string, onConfirm: () => unknown, options?: ConfirmOptions) => unknown;
-  concurrency: number;
   connectTimeout: number;
   paneOrientation: 'horizontal' | 'vertical';
   overwriteAction: 'ask' | 'skip' | 'overwrite';
@@ -136,7 +135,6 @@ export function usePanes({
   reportError,
   setErrorMessage,
   requestConfirm,
-  concurrency,
   connectTimeout,
   paneOrientation,
   overwriteAction,
@@ -209,7 +207,6 @@ export function usePanes({
     cancelConnectPane,
     siteConnectPane,
   } = createPaneSessionLifecycle({
-    concurrency,
     connectTimeout,
     ftpActiveMode,
     panes,

@@ -40,6 +40,7 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
     remoteColumnWidths: { a: { size: 220 }, b: {} },
     transferColumnWidths: { name: 320 },
     transferColumnOrder: ['status', 'size'],
+    transferHiddenColumns: ['route'],
     showLocalPane: false,
     showRemotePane: true,
     showTransferQueue: false,
@@ -63,6 +64,7 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
   });
   assert.deepEqual(recorded.layout.transferColumnWidths, { name: 320 });
   assert.deepEqual(recorded.layout.transferColumnOrder, ['status', 'size']);
+  assert.deepEqual(recorded.layout.transferHiddenColumns, ['route']);
   assert.equal(recorded.layout.showLocalPane, false);
   assert.equal(recorded.layout.showRemotePane, true);
   assert.equal(recorded.layout.showTransferQueue, false);
@@ -90,6 +92,7 @@ test('reset layout falls back to frontend defaults for missing layout fields', a
   assert.deepEqual(recorded.layout.remoteColumnWidths, SETTINGS_DEFAULTS.remoteColumnWidths);
   assert.deepEqual(recorded.layout.transferColumnWidths, SETTINGS_DEFAULTS.transferColumnWidths);
   assert.deepEqual(recorded.layout.transferColumnOrder, SETTINGS_DEFAULTS.transferColumnOrder);
+  assert.deepEqual(recorded.layout.transferHiddenColumns, []);
   assert.equal(recorded.layout.showLocalPane, true);
   assert.equal(recorded.layout.showRemotePane, true);
   assert.equal(recorded.layout.showTransferQueue, true);

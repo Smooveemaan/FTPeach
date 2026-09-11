@@ -134,3 +134,256 @@ test('a transfer keeps naming its server after that connection closes', () => {
     resetTransfersStoreForTests();
   }
 });
+
+function queueRow(
+  id: string,
+  startedAt: number,
+  status: TransferRow['status'] = 'queued',
+): TransferRow {
+  return {
+    id,
+    name: id,
+    startedAt,
+    status,
+    direction: 'up',
+    protocol: 'sftp',
+    connectionId: id,
+    localFile: id,
+    remoteTarget: '/' + id,
+    bytes: startedAt,
+    total: 100 + startedAt,
+  };
+}
+
+const queueProps = {
+  onRetry: () => {},
+  onPause: () => {},
+  onStop: () => {},
+  onClearCompleted: () => {},
+};
+const names = (container: HTMLElement) =>
+  [...container.querySelectorAll('.t-name')].map((el) => el.textContent);
+
+test('queue order puts running rows first, newest within each status, and completed rows last', () => {
+  resetTransfersStoreForTests();
+  const old = queueRow('old', 1, 'progress'),
+    newer = queueRow('new', 2),
+    done = queueRow('done', 3, 'done');
+  setTransfersStore({ old, newer, done });
+  const { container, unmount } = render(<TransferQueue {...queueProps} />);
+  try {
+    expect(names(container)).toEqual(['old', 'new', 'done']);
+    act(() => setTransfersStore({ old, newer, done, latest: queueRow('latest', 4) }));
+    expect(names(container)).toEqual(['old', 'latest', 'new', 'done']);
+    act(() =>
+      setTransfersStore({
+        old,
+        newer: { ...newer, status: 'done' },
+        done,
+        latest: queueRow('latest', 4),
+      }),
+    );
+    expect(names(container)).toEqual(['old', 'latest', 'done', 'new']);
+    act(() =>
+      setTransfersStore({
+        old: { ...old, status: 'done' },
+        latest: queueRow('latest', 4, 'progress'),
+        running: queueRow('running', 5, 'progress'),
+        queued: queueRow('queued', 20),
+        paused: queueRow('paused', 21, 'paused'),
+        error: queueRow('error', 22, 'error'),
+        stopped: queueRow('stopped', 23, 'stopped'),
+        cancelling: queueRow('cancelling', 24, 'cancelling'),
+        done,
+      }),
+    );
+    expect(names(container)).toEqual([
+      'running',
+      'latest',
+      'cancelling',
+      'queued',
+      'paused',
+      'error',
+      'stopped',
+      'done',
+      'old',
+    ]);
+    expect(container.querySelector('.transfer-new-items')).toBeNull();
+  } finally {
+    unmount();
+    resetTransfersStoreForTests();
+  }
+});
+
+test('all data headers sort in both directions and the third click restores queue order', () => {
+  resetTransfersStoreForTests();
+  setTransfersStore({ a: queueRow('file10', 10, 'done'), b: queueRow('file2', 2, 'paused') });
+  const { container, unmount } = render(
+    <TransferQueue {...queueProps} onColumnWidthsChange={() => {}} />,
+  );
+  try {
+    expect(
+      [...container.querySelectorAll('[data-column-key]')]
+        .map((el) => el.getAttribute('data-column-key'))
+        .slice(0, 2),
+    ).toEqual(['route', 'file']);
+    for (const key of ['file', 'route', 'size', 'transferred', 'progress', 'speed', 'remaining']) {
+      const header = container.querySelector('[data-column-key="' + key + '"]')!;
+      fireEvent.click(header);
+      expect(header.getAttribute('aria-pressed')).toBe('true');
+      if (!['speed', 'remaining'].includes(key))
+        expect(names(container)).toEqual(['file2', 'file10']);
+      fireEvent.click(header);
+      if (!['speed', 'remaining'].includes(key))
+        expect(names(container)).toEqual(['file10', 'file2']);
+      fireEvent.click(header);
+      expect(header.getAttribute('aria-pressed')).toBe('false');
+      expect(names(container)).toEqual(['file2', 'file10']);
+    }
+    const file = container.querySelector('[data-column-key="file"]')!;
+    fireEvent.keyDown(file, { key: 'Enter' });
+    expect(file.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(file.querySelector('.col-resize-handle')!);
+    expect(file.querySelector('.sort-indicator.desc')).toBeNull();
+  } finally {
+    unmount();
+    resetTransfersStoreForTests();
+  }
+});
+
+test('header context menu hides and restores File in headers and rows', () => {
+  resetTransfersStoreForTests();
+  setTransfersStore({ one: queueRow('one', 1) });
+  const changed = vi.fn();
+  const { container, unmount } = render(
+    <TransferQueue {...queueProps} onHiddenColumnsChange={changed} />,
+  );
+  try {
+    const open = () =>
+      fireEvent.contextMenu(container.querySelector('.transfer-col-header')!, {
+        clientX: 20,
+        clientY: 20,
+      });
+    const fileOption = () =>
+      [...document.querySelectorAll('.context-menu button')].find(
+        (el) => el.querySelector('.menu-item-label')?.textContent === 'File',
+      )!;
+    open();
+    fireEvent.click(fileOption());
+    expect(changed).toHaveBeenLastCalledWith(['file']);
+    expect(container.querySelector('[data-column-key="file"]')).toBeNull();
+    expect(container.querySelector('.t-file')).toBeNull();
+    open();
+    fireEvent.click(fileOption());
+    expect(changed).toHaveBeenLastCalledWith([]);
+    expect(container.querySelector('[data-column-key="file"]')).not.toBeNull();
+    expect(container.querySelector('.t-file')).not.toBeNull();
+  } finally {
+    unmount();
+    resetTransfersStoreForTests();
+  }
+});
+
+test('reset widths fit labels and status pills while restoring flexible File', () => {
+  resetTransfersStoreForTests();
+  setTransfersStore({ one: queueRow('one', 1) });
+  const measureText = vi.fn(() => ({ width: 240 }) as TextMetrics);
+  const canvas = vi
+    .spyOn(HTMLCanvasElement.prototype, 'getContext')
+    .mockReturnValue({ measureText } as unknown as CanvasRenderingContext2D);
+  const changed = vi.fn();
+  const view = render(
+    <TransferQueue
+      {...queueProps}
+      columnWidths={{ file: 400, route: 180 }}
+      onColumnWidthsChange={changed}
+    />,
+  );
+  try {
+    const grid = () =>
+      view.container.querySelector<HTMLElement>('.transfer-col-header')!.style.gridTemplateColumns;
+    expect(grid()).toContain('180px 400px');
+    view.rerender(
+      <TransferQueue {...queueProps} columnWidths={{}} onColumnWidthsChange={changed} />,
+    );
+    expect(grid()).toContain('253px minmax(253px, 1fr)');
+    expect(
+      view.container.querySelector<HTMLElement>('.transfer-item')!.style.gridTemplateColumns,
+    ).toBe(grid());
+    expect(changed).not.toHaveBeenCalled();
+    expect(measureText).toHaveBeenCalled();
+    const savedWidths = { file: 400, route: 180, transferred: 80 };
+    view.rerender(
+      <TransferQueue {...queueProps} columnWidths={savedWidths} onColumnWidthsChange={changed} />,
+    );
+    const click = (key: string) =>
+      fireEvent.click(view.container.querySelector('[data-column-key="' + key + '"]')!);
+    click('transferred');
+    expect(changed).toHaveBeenLastCalledWith({ ...savedWidths, transferred: 253 });
+    view.rerender(
+      <TransferQueue
+        {...queueProps}
+        columnWidths={{ ...savedWidths, transferred: 253 }}
+        onColumnWidthsChange={changed}
+      />,
+    );
+    click('route');
+    expect(changed).toHaveBeenLastCalledWith({ ...savedWidths, route: 253 });
+    // Resizing the auto-widened column manually must survive changing the sort.
+    view.rerender(
+      <TransferQueue
+        {...queueProps}
+        columnWidths={{ ...savedWidths, route: 300 }}
+        onColumnWidthsChange={changed}
+      />,
+    );
+    changed.mockClear();
+    click('file');
+    expect(changed).not.toHaveBeenCalled();
+    click('transferred');
+    expect(changed).toHaveBeenLastCalledWith({ ...savedWidths, route: 300, transferred: 253 });
+    view.rerender(
+      <TransferQueue
+        {...queueProps}
+        columnWidths={{ ...savedWidths, route: 300, transferred: 253 }}
+        onColumnWidthsChange={changed}
+      />,
+    );
+    click('transferred');
+    click('transferred');
+    expect(changed).toHaveBeenLastCalledWith({ ...savedWidths, route: 300 });
+  } finally {
+    view.unmount();
+    canvas.mockRestore();
+    resetTransfersStoreForTests();
+  }
+});
+
+test('direction arrow is pinned before Route and File, while Status stays sortable', () => {
+  resetTransfersStoreForTests();
+  setTransfersStore({ one: queueRow('one', 1, 'progress') });
+  const view = render(
+    <TransferQueue
+      {...queueProps}
+      onColumnOrderChange={() => {}}
+      onColumnWidthsChange={() => {}}
+    />,
+  );
+  try {
+    const header = view.container.querySelector('.transfer-col-header')!;
+    const first = header.firstElementChild!;
+    expect(first.className).toBe('col-direction');
+    expect(first.getAttribute('role')).toBeNull();
+    expect(first.getAttribute('data-reorderable')).toBeNull();
+    expect(first.querySelector('.col-resize-handle')).toBeNull();
+    const row = view.container.querySelector('.transfer-item')!;
+    expect(row.firstElementChild?.className).toBe('t-direction');
+    expect(row.firstElementChild?.querySelector('.dir-icon.dir-up')).not.toBeNull();
+    expect(row.querySelector('.t-file .dir-icon')).toBeNull();
+    expect(header.querySelector('[data-column-key="status"]')?.getAttribute('role')).toBe('button');
+    expect(row.querySelector('.status-tag')?.textContent).toBe('Upload');
+  } finally {
+    view.unmount();
+    resetTransfersStoreForTests();
+  }
+});

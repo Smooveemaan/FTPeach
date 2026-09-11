@@ -409,7 +409,7 @@
       "testFailed": "The proxy test failed."
     },
     "concurrencyLabel": "Concurrent transfers",
-    "concurrencyHint": "How many files to upload and download at the same time (0 or blank — no limit). Applies to the next connection.",
+    "concurrencyHint": "How many files to upload and download at the same time across all tabs (0 or blank — no limit). Takes effect immediately; active transfers finish normally.",
     "speedLimitLabel": "Speed limit, KB/s",
     "speedLimitHint": "Applies to the combined total of all simultaneous transfers (0 or blank — no limit). Takes effect immediately, without waiting for the next connection.",
     "notifyOnComplete": "Notify when transfers finish",

@@ -40,6 +40,10 @@ export function applyLayoutResetSettings(settings: AppSettings, targets: LayoutR
       settings.transferColumnWidths && typeof settings.transferColumnWidths === 'object'
         ? (settings.transferColumnWidths as ColumnWidths)
         : SETTINGS_DEFAULTS.transferColumnWidths,
+    transferHiddenColumns: normalizeStringArraySetting(
+      settings.transferHiddenColumns,
+      SETTINGS_DEFAULTS.transferHiddenColumns,
+    ),
     transferColumnOrder: normalizeStringArraySetting(
       settings.transferColumnOrder,
       SETTINGS_DEFAULTS.transferColumnOrder,

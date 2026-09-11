@@ -10,6 +10,7 @@ interface ResetLayoutOptions {
   confirmMessage: string;
   confirmLabel: string;
   reportError: (error: unknown) => void;
+  onReset?: () => void;
   hydrateLayout: (settings: AppSettings) => void;
 }
 
@@ -34,6 +35,7 @@ export function useResetLayout(options: ResetLayoutOptions): () => void {
         // backend store, bypassing that pairing, so it has to stop the
         // stream itself here.
         api.log.setEnabled(!!result.settings?.logEnabled);
+        options.onReset?.();
       },
       { confirmLabel: options.confirmLabel, danger: false },
     );

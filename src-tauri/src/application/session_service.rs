@@ -116,22 +116,11 @@ async fn resolve_config(
     Ok(config)
 }
 
-async fn pool_size_for(store: &Store, concurrency: Option<u16>) -> PoolSize {
+async fn pool_size_for(_store: &Store, concurrency: Option<u16>) -> PoolSize {
     match concurrency {
         Some(0) => PoolSize::Unlimited,
         Some(n) => PoolSize::Fixed(n as usize),
-        _ => {
-            let settings = store.get_settings().await;
-            let default_concurrency = settings
-                .get("concurrency")
-                .and_then(|v| v.as_u64())
-                .unwrap_or(3) as usize;
-            if default_concurrency == 0 {
-                PoolSize::Unlimited
-            } else {
-                PoolSize::Fixed(default_concurrency)
-            }
-        }
+        _ => PoolSize::Unlimited,
     }
 }
 
@@ -258,7 +247,8 @@ pub(crate) async fn connect(
     *guard = Some(Session {
         browse_client,
         server,
-        transfer_pool: TransferPool::new(factory, pool_size),
+        transfer_pool: TransferPool::new(factory, pool_size)
+            .with_limiter(crate::transfer::concurrency_limiter::shared()),
         browse_timeout_ms,
     });
     Ok(())

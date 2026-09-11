@@ -167,6 +167,7 @@ impl Store {
             "remoteColumnWidths",
             "transferColumnWidths",
             "transferColumnOrder",
+            "transferHiddenColumns",
             "showLocalPane",
             "showRemotePane",
             "showTransferQueue",

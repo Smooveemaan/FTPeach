@@ -20,7 +20,6 @@ interface ConfirmOptions {
 
 interface PaneSessionLifecycleOptions {
   client?: Pick<Window['api'], 'session'>;
-  concurrency: number;
   connectTimeout: number;
   ftpActiveMode: boolean;
   panes: Record<PaneId, PaneState>;
@@ -44,7 +43,6 @@ interface PaneSessionLifecycleOptions {
 
 export function createPaneSessionLifecycle({
   client = api,
-  concurrency,
   connectTimeout,
   ftpActiveMode,
   panes,
@@ -74,7 +72,6 @@ export function createPaneSessionLifecycle({
     password: f.password,
     allowInvalidCert: !!f.allowInvalidCert,
     caCertPath: f.caCertPath,
-    concurrency,
     timeout: connectTimeout,
     useKeyAuth: f.protocol === 'sftp' && !!f.useKeyAuth,
     keyPath: f.keyPath,

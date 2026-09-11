@@ -1,3 +1,4 @@
+use super::concurrency_limiter::{ConcurrencyLimiter, Permit};
 use crate::ipc::ErrorCode;
 use crate::protocol::{BackendResult, ProtocolBackend, fail};
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -37,6 +38,7 @@ impl PoolSize {
 }
 
 struct QueuedTask {
+    permit: Option<Arc<Permit>>,
     task_id: TaskId,
     task: TaskFn,
     respond: oneshot::Sender<BackendResult<()>>,
@@ -75,6 +77,7 @@ impl PoolState {
 
 #[derive(Clone)]
 pub struct TransferPool {
+    limiter: Arc<ConcurrencyLimiter>,
     factory: BackendFactory,
     size: PoolSize,
     state: Arc<StdMutex<PoolState>>,
@@ -85,12 +88,18 @@ pub struct TransferPool {
 impl TransferPool {
     pub fn new(factory: BackendFactory, size: PoolSize) -> Self {
         Self {
+            limiter: Arc::default(),
             factory,
             size,
             state: Arc::new(StdMutex::new(PoolState::default())),
             growing_gate: Arc::new(AsyncMutex::new(())),
             generation: Arc::new(AtomicU64::new(0)),
         }
+    }
+
+    pub(crate) fn with_limiter(mut self, limiter: Arc<ConcurrencyLimiter>) -> Self {
+        self.limiter = limiter;
+        self
     }
 
     fn try_push_worker(&self, backend: BoxBackend) -> Option<BoxBackend> {
@@ -164,13 +173,23 @@ impl TransferPool {
         }
         let (tx_a, rx_a) = oneshot::channel();
         let (tx_b, rx_b) = oneshot::channel();
+        // A relay is one logical transfer. Both legs share its slot so a
+        // global limit of one cannot deadlock a source against its target.
+        let permit = self.limiter.try_acquire().ok_or_else(|| {
+            fail(
+                ErrorCode::ResourceLimit,
+                "Transfer limit reached; retry when transfers finish",
+            )
+        })?;
         let a = QueuedTask {
+            permit: Some(permit.clone()),
             task_id: source.0,
             task: source.1,
             respond: tx_a,
             on_dispatch: source.2,
         };
         let b = QueuedTask {
+            permit: Some(permit),
             task_id: target.0,
             task: target.1,
             respond: tx_b,
@@ -262,6 +281,7 @@ impl TransferPool {
             }
             let (tx, rx) = oneshot::channel();
             state.queue.push_back(QueuedTask {
+                permit: None,
                 task_id: task_id.clone(),
                 task,
                 respond: tx,
@@ -327,12 +347,9 @@ impl TransferPool {
                 Some((item, backend, generation, token))
             }
         };
-        let Some((mut item, backend, generation, token)) = dispatched else {
+        let Some((item, backend, generation, token)) = dispatched else {
             return;
         };
-        let on_dispatch = std::mem::replace(&mut item.on_dispatch, Box::new(|| {}));
-        on_dispatch();
-        crate::runtime::sleep_guard::shared().transfer_started();
 
         let pool = self.clone();
         tokio::spawn(async move {
@@ -340,15 +357,28 @@ impl TransferPool {
                 task_id,
                 task,
                 respond,
-                ..
+                on_dispatch,
+                permit,
             } = item;
             let mut backend = backend;
+            let mut started = false;
+            let mut held_permit = None;
             let result = tokio::select! {
-                res = task(&mut backend) => res,
+                biased;
                 _ = token.cancelled() => {
                     let _ = tokio::time::timeout(std::time::Duration::from_secs(5), backend.disconnect()).await;
                     Err(fail(ErrorCode::Cancelled, "Canceled by user"))
-                }
+                },
+                res = async {
+                    held_permit = Some(match permit {
+                        Some(permit) => permit,
+                        None => pool.limiter.acquire().await,
+                    });
+                    on_dispatch();
+                    crate::runtime::sleep_guard::shared().transfer_started();
+                    started = true;
+                    task(&mut backend).await
+                } => res,
             };
             let still_connected = !token.is_cancelled() && backend.is_connected();
             let destroyed = {
@@ -363,7 +393,10 @@ impl TransferPool {
                 }
                 state.destroyed
             };
-            crate::runtime::sleep_guard::shared().transfer_finished();
+            if started {
+                crate::runtime::sleep_guard::shared().transfer_finished();
+            }
+            drop(held_permit);
             let _ = respond.send(result);
             if destroyed {
                 return;
@@ -619,7 +652,10 @@ mod tests {
     #[tokio::test]
     async fn same_pool_pair_streams_more_than_the_duplex_capacity() {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
-        let pool = TransferPool::new(fake_factory(), PoolSize::Fixed(2));
+        let limiter = Arc::new(ConcurrencyLimiter::default());
+        limiter.set_limit(1);
+        let pool =
+            TransferPool::new(fake_factory(), PoolSize::Fixed(2)).with_limiter(limiter.clone());
         let (mut writer, mut reader) = tokio::io::duplex(64 * 1024);
         let source: TaskFn = Box::new(move |_| {
             Box::pin(async move {
@@ -646,6 +682,7 @@ mod tests {
         .await
         .unwrap()
         .unwrap();
+        assert!(limiter.try_acquire().is_some());
     }
 
     #[tokio::test]
@@ -743,6 +780,67 @@ mod tests {
             h.await.unwrap().unwrap();
         }
         assert_eq!(max_seen.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn shared_limit_queues_other_tabs_and_allows_cancellation_and_live_changes() {
+        let limiter = Arc::new(ConcurrencyLimiter::default());
+        limiter.set_limit(1);
+        let a =
+            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+        let b =
+            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+        let (started_tx, started_rx) = oneshot::channel();
+        let first_pool = a.clone();
+        let first = tokio::spawn(async move {
+            a.run_notified(
+                "first".into(),
+                Box::new(|_| Box::pin(std::future::pending())),
+                move || {
+                    let _ = started_tx.send(());
+                },
+            )
+            .await
+        });
+        started_rx.await.unwrap();
+        let notified = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let spawn_waiter = |id: &'static str| {
+            let b = b.clone();
+            let notified = notified.clone();
+            tokio::spawn(async move {
+                b.run_notified(
+                    id.into(),
+                    Box::new(|_| Box::pin(async { Ok(()) })),
+                    move || {
+                        notified.fetch_add(1, Ordering::SeqCst);
+                    },
+                )
+                .await
+            })
+        };
+        let cancelled = spawn_waiter("cancelled");
+        // The second tab has a worker but must stay queued globally.
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        assert_eq!(notified.load(Ordering::SeqCst), 0);
+        b.cancel("cancelled");
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_secs(2), cancelled)
+                .await
+                .unwrap()
+                .unwrap()
+                .is_err()
+        );
+        let next = spawn_waiter("next");
+        limiter.set_limit(2);
+        tokio::time::timeout(std::time::Duration::from_secs(2), next)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(notified.load(Ordering::SeqCst), 1);
+        first_pool.cancel("first");
+        assert!(first.await.unwrap().is_err());
+        assert!(limiter.try_acquire().is_some());
     }
 
     #[tokio::test]

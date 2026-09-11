@@ -583,7 +583,7 @@ pub async fn app_import_settings(
         match store.set_settings(patch).await {
             Ok(next) => {
                 if had_speed_limit {
-                    crate::runtime::settings_apply::apply_speed_limit(&next);
+                    crate::runtime::settings_apply::apply_transfer_limits(&next);
                 }
                 if had_prevent_sleep {
                     crate::runtime::settings_apply::apply_prevent_sleep(&next);
@@ -613,7 +613,7 @@ pub async fn app_import_settings(
                     vec!["Import failed; restoring the previous settings and sites".into()];
                 match store.replace_settings_for_import(&previous_settings).await {
                     Ok(()) => {
-                        crate::runtime::settings_apply::apply_speed_limit(&previous_settings);
+                        crate::runtime::settings_apply::apply_transfer_limits(&previous_settings);
                         crate::runtime::settings_apply::apply_prevent_sleep(&previous_settings);
                     }
                     Err(restore) => issues.push(format!("Settings rollback failed: {restore:#}")),

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import TitleBar from './TitleBar.tsx';
 import MenuBar from '../components/MenuBar.tsx';
 import ViewToolbar from './ViewToolbar.tsx';
@@ -128,6 +128,7 @@ export default function Application() {
     changeRemoteColumnWidths,
     changeTransferColumnWidths,
     changeTransferColumnOrder,
+    changeTransferHiddenColumns,
   } = useApplicationSettings({
     layout,
     applySettings: applySettingsState,
@@ -245,7 +246,6 @@ export default function Application() {
     reportError,
     setErrorMessage,
     requestConfirm,
-    concurrency: settings.transfers.concurrency,
     connectTimeout: settings.connection.connectTimeout,
     paneOrientation: effectivePaneOrientation,
     overwriteAction: settings.transfers.overwriteAction,
@@ -375,7 +375,9 @@ export default function Application() {
     setOpenWithTarget,
   });
 
+  const [transferLayoutVersion, setTransferLayoutVersion] = useState(0);
   const resetLayout = useResetLayout({
+    onReset: () => setTransferLayoutVersion((version) => version + 1),
     confirm: requestConfirm,
     confirmMessage: t('confirm.resetLayout'),
     confirmLabel: t('common.reset'),
@@ -557,6 +559,9 @@ export default function Application() {
       onColumnWidthsChange: changeTransferColumnWidths,
       columnOrder: layout.transferColumnOrder,
       onColumnOrderChange: changeTransferColumnOrder,
+      layoutVersion: transferLayoutVersion,
+      hiddenColumns: layout.transferHiddenColumns,
+      onHiddenColumnsChange: changeTransferHiddenColumns,
     },
     log: {
       empty: logLines.length === 0,

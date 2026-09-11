@@ -69,6 +69,12 @@ export const SHORTCUT_ACTIONS: readonly ShortcutAction[] = [
     labelKey: 'settings.shortcuts.actions.closeTab',
   },
   {
+    id: 'reopen-closed-tab',
+    scope: 'global',
+    default: 'Ctrl+Shift+KeyT',
+    labelKey: 'settings.shortcuts.actions.reopenClosedTab',
+  },
+  {
     id: 'next-tab',
     scope: 'global',
     default: 'Ctrl+Tab',

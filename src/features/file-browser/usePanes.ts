@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../platform/api/index.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
@@ -13,6 +13,13 @@ import {
   transferTouchesConnection,
 } from '../transfers/index.ts';
 import type { PathCrumb } from './components/PathBar.tsx';
+import type { ClosedTab } from './panes/closedTabs.ts';
+import {
+  insertTab,
+  pushClosedTab,
+  restoreClosedTab,
+  snapshotClosedTab,
+} from './panes/closedTabs.ts';
 import { createPaneFileOperations } from './panes/createPaneFileOperations.ts';
 import type { NavigateOptions } from './panes/createPaneNavigation.ts';
 import { createPaneNavigation } from './panes/createPaneNavigation.ts';
@@ -100,6 +107,8 @@ export interface PanesModel {
   recentSiteIds: string[];
   openNewTab: () => void;
   closeTab: (tabId: string) => void;
+  reopenClosedTab: () => void;
+  canReopenClosedTab: boolean;
   deletePaneSelected: (id: PaneId, tabId?: string, permanent?: boolean) => void;
   deletePaneEntry: (id: PaneId, entry: FileEntry, tabId?: string, permanent?: boolean) => void;
   submitNewFolder: (name: string, tabId: string, id: PaneId) => Promise<void>;
@@ -237,6 +246,8 @@ export function usePanes({
   // Tabs
   // "Transfers"/"Log" intentionally shared across the entire application, not per-tab.
 
+  const [closedTabs, setClosedTabs] = useState<ClosedTab[]>([]);
+
   const openNewTab = () => {
     const tab = makeTab(crypto.randomUUID());
     setTabs((prev) => [...prev, tab]);
@@ -263,6 +274,7 @@ export function usePanes({
       const idx = tabs.findIndex((t) => t.id === tabId);
       const next = tabs.filter((t) => t.id !== tabId);
       setTabs(next);
+      setClosedTabs((previous) => pushClosedTab(previous, snapshotClosedTab(tab, idx)));
       if (activeTabId === tabId) {
         const nextActive = next[idx - 1] ?? next[0];
         if (nextActive) setActiveTabId(nextActive.id);
@@ -285,6 +297,25 @@ export function usePanes({
     } else {
       proceed();
     }
+  };
+
+  // The most recently closed tab comes back first, in its old place, with its
+  // folders listed again and the connections it had open reopened.
+  const reopenClosedTab = () => {
+    const closed = closedTabs.at(-1);
+    if (!closed) return;
+    setClosedTabs((previous) => previous.slice(0, -1));
+    const tab = restoreClosedTab(closed, crypto.randomUUID());
+    setTabs((previous) => insertTab(previous, tab, closed.index));
+    setActiveTabId(tab.id);
+    PANE_IDS.forEach((id) => {
+      const pane = tab.panes[id];
+      if (pane.kind === 'local') {
+        reportRejection(refreshPane(id, pane.path || undefined, pane, tab.id));
+      } else if (closed.panes[id].reconnect) {
+        reportRejection(connectPane(id, pane.form, pane, tab.id, pane.path || '/')());
+      }
+    });
   };
 
   const confirmOverwriteIfNeeded = async (
@@ -438,6 +469,8 @@ export function usePanes({
     recentSiteIds,
     openNewTab,
     closeTab,
+    reopenClosedTab,
+    canReopenClosedTab: closedTabs.length > 0,
     deletePaneSelected,
     deletePaneEntry,
     submitNewFolder,

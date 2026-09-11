@@ -75,6 +75,7 @@ export interface ApplicationCommandBindings {
   openNewTab: () => unknown;
   tabs: readonly TabState[];
   closeTab: (tabId: string) => unknown;
+  reopenClosedTab: () => unknown;
   activeTabId: string;
   setActiveTabId: (tabId: string) => unknown;
 }
@@ -95,6 +96,7 @@ export function useApplicationCommandBindings(options: ApplicationCommandBinding
     openNewTab,
     tabs,
     closeTab,
+    reopenClosedTab,
     activeTabId,
     setActiveTabId,
   } = options;
@@ -119,6 +121,7 @@ export function useApplicationCommandBindings(options: ApplicationCommandBinding
       'open-settings': () => setShowSettings(true),
       'new-tab': openNewTab,
       'close-tab': () => tabs.length > 1 && closeTab(activeTabId),
+      'reopen-closed-tab': reopenClosedTab,
       'next-tab': () => {
         if (tabs.length < 2) return;
         const index = tabs.findIndex((tab) => tab.id === activeTabId);

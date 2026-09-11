@@ -14,6 +14,8 @@ export interface MenusContext {
   openNewTab: () => unknown;
   tabs: TabState[];
   closeTab: (tabId: string) => unknown;
+  reopenClosedTab: () => unknown;
+  canReopenClosedTab: boolean;
   activeTabId: string;
   freeConnectTargetPaneId: PaneId | null;
   startPaneConnect: (id: PaneId) => unknown;
@@ -70,6 +72,8 @@ export function buildMenus(ctx: MenusContext): MenuBarEntry[] {
     openNewTab,
     tabs,
     closeTab,
+    reopenClosedTab,
+    canReopenClosedTab,
     activeTabId,
     freeConnectTargetPaneId,
     startPaneConnect,
@@ -153,6 +157,12 @@ export function buildMenus(ctx: MenusContext): MenuBarEntry[] {
           shortcut: shortcutLabel('close-tab'),
           disabled: modalOpen || tabs.length === 1,
           onClick: () => closeTab(activeTabId),
+        },
+        {
+          label: t('menu.file.reopenClosedTab'),
+          shortcut: shortcutLabel('reopen-closed-tab'),
+          disabled: modalOpen || !canReopenClosedTab,
+          onClick: reopenClosedTab,
         },
         { separator: true },
         {

@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Reopen closed tabs with Ctrl+Shift+T, starting with the last one you closed.
+
 ### Fixed
 
 - Toolbar buttons above the file lists no longer lose their bottom edge while pressed.

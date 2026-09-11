@@ -18,6 +18,8 @@ function harness() {
     openNewTab: record('new'),
     tabs: [tab],
     closeTab: record('close'),
+    reopenClosedTab: record('reopen'),
+    canReopenClosedTab: false,
     activeTabId: tab.id,
     freeConnectTargetPaneId: 'b',
     startPaneConnect: record('connect'),
@@ -99,6 +101,7 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
   for (const key of [
     'menu.file.newTab',
     'menu.file.closeTab',
+    'menu.file.reopenClosedTab',
     'menu.file.newConnection',
     'menu.file.exportSettings',
     'menu.file.importSettings',
@@ -110,9 +113,10 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     h.item(key).onClick!();
   h.item('menu.transfer.copySelectedRight').onClick!();
   h.item('menu.transfer.copySelectedLeft').onClick!();
-  assert.deepEqual(h.calls.slice(0, 9), [
+  assert.deepEqual(h.calls.slice(0, 10), [
     ['new'],
     ['close', 'active'],
+    ['reopen'],
     ['connect', 'b'],
     ['export', true],
     ['import', true],
@@ -121,7 +125,7 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     ['about'],
     ['updates'],
   ]);
-  assert.deepEqual(h.calls.slice(9), [
+  assert.deepEqual(h.calls.slice(10), [
     ['copy', 'a', 'b'],
     ['refresh', 'a', h.ctx.panes.a.path],
     ['refresh', 'b', h.ctx.panes.b.path],
@@ -140,9 +144,13 @@ test('availability tracks modal, selection, connected panes and the last visible
   assert.equal(h.item('menu.transfer.copySelectedRight').disabled, false);
   h.ctx.tabs.push(makeTab('second'));
   assert.equal(h.item('menu.file.closeTab').disabled, false);
+  assert.equal(h.item('menu.file.reopenClosedTab').disabled, true);
+  h.ctx.canReopenClosedTab = true;
+  assert.equal(h.item('menu.file.reopenClosedTab').disabled, false);
   h.ctx.modalOpen = true;
   assert.equal(h.item('menu.file.newTab').disabled, true);
   assert.equal(h.item('menu.file.closeTab').disabled, true);
+  assert.equal(h.item('menu.file.reopenClosedTab').disabled, true);
   h.ctx.showRemotePane = false;
   assert.equal(h.item('menu.view.leftPane').disabled, true);
   h.ctx.windowNarrow = true;
@@ -157,4 +165,5 @@ test('shortcut overrides and unbinding propagate into menu labels', () => {
   h.ctx.keyboardShortcuts = { 'new-tab': 'Alt+KeyN', 'close-tab': '' };
   assert.equal(h.item('menu.file.newTab').shortcut, 'Alt+N');
   assert.equal(h.item('menu.file.closeTab').shortcut, '');
+  assert.equal(h.item('menu.file.reopenClosedTab').shortcut, 'Ctrl+Shift+T');
 });

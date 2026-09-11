@@ -25,6 +25,11 @@ function fitWidth(el: HTMLElement) {
     parseFloat(cs.borderTopWidth) +
     parseFloat(cs.borderBottomWidth);
 
+  // Measured from the window's edge: left where the last tooltip stood, near
+  // the right edge of a narrow window, an auto width would wrap to the little
+  // room left there, even for text that fits the window on one line.
+  el.style.left = '0px';
+  el.style.top = '0px';
   el.style.display = 'block';
   el.style.webkitLineClamp = 'unset';
   el.style.width = '';
@@ -40,7 +45,8 @@ function fitWidth(el: HTMLElement) {
   };
 
   if (naturalWidth <= cap) {
-    el.style.width = '';
+    // Pinned, so moving it into place cannot rewrap it either.
+    el.style.width = `${Math.ceil(naturalWidth)}px`;
   } else if (linesAt(cap) > 2) {
     // Even the cap can't fit two lines; leave it there and let the CSS
     // line-clamp ellipsize the overflow.

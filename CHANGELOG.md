@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Saving a connection as a bookmark renames its pane and tab to match.
 - The “Connect first” hint is easier to read.
 - A finished transfer always shows 100%.
+- Tooltips near the window's edge no longer wrap onto two lines when one would fit.
 
 ## [0.1.2] - 2026-09-10
 

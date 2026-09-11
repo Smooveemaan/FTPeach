@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- Toolbar buttons above the file lists no longer lose their bottom edge while pressed.
+
 ## [0.2.0] - 2026-09-12
 
 ### Added

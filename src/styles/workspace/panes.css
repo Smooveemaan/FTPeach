@@ -887,10 +887,16 @@ body.column-reorder-active .col-resize-handle:hover::after {
 }
 
 
+/* overflow: hidden is only there for the horizontal fold, but it also clips
+   vertically, and the buttons fill the row exactly — so .btn:active's 1px
+   press shift would lose the bottom border. The padding/negative-margin pair
+   gives the clip box room above and below without changing the row height. */
 .pane-toolbar {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
+  padding-block: 2px;
+  margin-block: -2px;
   display: flex;
   align-items: center;
   gap: 6px;

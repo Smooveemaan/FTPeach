@@ -64,6 +64,30 @@ test('rtl narrow workspace', async ({ page }) => {
   await expect(page).toHaveScreenshot('workspace-rtl-narrow.png');
 });
 
+/* The pane toolbar clips to fold its buttons into the overflow menu, and a
+   pressed button shifts 1px down — which must stay inside that clip, or the
+   button loses its bottom border while held. */
+test('pressed pane toolbar button stays inside the toolbar clip', async ({ page }) => {
+  await openHarness(page);
+  const home = page
+    .locator('.pane-toolbar')
+    .first()
+    .locator(`button[data-tooltip="${en.filePane.homeFolder}"]`);
+  await expect(home).toBeEnabled();
+  const box = await home.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.down();
+  const geometry = await home.evaluate((button) => ({
+    pressed: getComputedStyle(button).transform !== 'none',
+    buttonBottom: button.getBoundingClientRect().bottom,
+    clipBottom: button.parentElement!.getBoundingClientRect().bottom,
+  }));
+  await page.mouse.up();
+  expect(geometry.pressed).toBe(true);
+  expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.clipBottom);
+});
+
 test('settings dialog', async ({ page }) => {
   await openHarness(page);
   await page.getByRole('menuitem', { name: 'Edit' }).click();

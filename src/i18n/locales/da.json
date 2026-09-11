@@ -7,13 +7,13 @@
       "gb": "GB",
       "tb": "TB"
     },
-    "perSecond": "{{value}} /s",
-    "noLoginUser": "ingen login",
+    "perSecond": "{{value}}/s",
+    "noLoginUser": "uden brugernavn",
     "anonymousUser": "anonym",
-    "rootFolder": "Hovedmappe",
+    "rootFolder": "Rodmappe",
     "close": "Luk",
     "reset": "Nulstil",
-    "open": "Åben",
+    "open": "Åbn",
     "upload": "Upload",
     "save": "Gem",
     "create": "Opret",
@@ -21,7 +21,7 @@
     "increase": "Forøg",
     "decrease": "Reducer",
     "showPassword": "Vis adgangskode",
-    "savedSecretProtected": "Den gemte hemmelighed er beskyttet og kan ikke ses",
+    "savedSecretProtected": "Den gemte adgangskode er beskyttet – godkend dig for at se den",
     "hidePassword": "Skjul adgangskode"
   },
   "securityConfirmation": {
@@ -36,7 +36,7 @@
         "message": "Vis den gemte proxyadgangskode?"
       },
       "vaultReset": {
-        "message": "Alle gemte adgangskoder og adgangsfraser til SSH-nøgler slettes permanent.",
+        "message": "Alle gemte adgangskoder og adgangssætninger til SSH-nøgler slettes permanent.",
         "approve": "Slet boks"
       },
       "executeLocalFile": {
@@ -51,10 +51,10 @@
     "newFolder": "Ny mappe…",
     "newFile": "Ny fil…",
     "refresh": "Opdater",
-    "open": "Åben",
-    "uploadToOtherPane": "Overfør til et andet vindue",
-    "copyToOtherPane": "Kopier til et andet vindue",
-    "downloadToOtherPane": "Overfør til et andet vindue",
+    "open": "Åbn",
+    "uploadToOtherPane": "Upload til den anden rude",
+    "copyToOtherPane": "Kopier til den anden rude",
+    "downloadToOtherPane": "Download til den anden rude",
     "openWith": "Åbn med…",
     "permissions": "Tilladelser…",
     "moveTo": "Flyt til…",
@@ -74,19 +74,19 @@
     "emptyFolder": "Mappen er tom",
     "connectFirst": "Opret forbindelse først",
     "homeFolder": "Hjemmemappe",
-    "copyToPaneBelow": "Kopier til feltet nedenfor",
-    "copyToPaneAbove": "Kopier til feltet ovenfor",
-    "copyToPaneRight": "Kopier til ruden til højre",
+    "copyToPaneBelow": "Kopier til nederste rude",
+    "copyToPaneAbove": "Kopier til øverste rude",
+    "copyToPaneRight": "Kopier til højre rude",
     "copyToPaneLeft": "Kopier til venstre rude",
     "fileTypeFolder": "Filmappe",
     "fileTypeGeneric": "Fil",
-    "fileTypeWithExt": "{{ext}} Fil",
+    "fileTypeWithExt": "{{ext}}-fil",
     "columnSize": "Størrelse",
     "columnModifiedAt": "Ændringsdato",
     "columnCreatedAt": "Oprettelsesdato",
     "columnType": "Type",
     "columnPermissions": "Tilladelser",
-    "columnOwner": "Ejeren",
+    "columnOwner": "Ejer",
     "columnGroup": "Gruppe",
     "columnName": "Navn",
     "filesAriaLabel": "Filer",
@@ -102,13 +102,13 @@
     "sortByColumnTooltip": "Sorter efter kolonnen »{{column}}«",
     "rowProbeSample": "Eksempel",
     "loading": "Indlæser…",
-    "nothingFound": "Der blev ikke fundet noget"
+    "nothingFound": "Intet fundet"
   },
   "update": {
     "readyToInstall": "Opdatering v{{version}} er nu tilgængelig — klik på »Genstart og installer« for at installere den.",
     "downloadingWithPercent": "Henter opdatering v{{version}}: {{percent}} %",
     "downloadingFound": "Opdatering v{{version}} fundet, henter…",
-    "restartAndInstall": "Genstart og installation",
+    "restartAndInstall": "Genstart og installer",
     "availableAction": "tilgængelig!",
     "installAction": "Installer opdatering",
     "downloadTooltip": "Klik for at hente",
@@ -116,10 +116,10 @@
     "installTooltip": "Genstart nu for at installere. Ellers installeres opdateringen, næste gang FTPeach starter."
   },
   "legacyPasswordNotice": {
-    "message": "Adgangskoder til visse gemte websteder kunne ikke læses efter opdateringen — indtast dem venligst igen i webstedsadministratoren."
+    "message": "Adgangskoder til visse gemte servere kunne ikke læses efter opdateringen — indtast dem igen under Administrer bogmærker."
   },
   "plaintextSecretNotice": {
-    "message": "Adgangskoden eller adgangssætningen for et gemt websted kunne ikke krypteres, da Windows’ databeskyttelse ikke er tilgængelig, og blev derfor gemt som almindelig tekst."
+    "message": "Adgangskoden eller adgangssætningen til en gemt server kunne ikke krypteres, da Windows' databeskyttelse ikke er tilgængelig, og blev derfor gemt som almindelig tekst."
   },
   "secretNotPersistedNotice": {
     "message": "Adgangskoden eller adgangssætningen kunne ikke krypteres og blev ikke gemt. En eksisterende forbindelse kan fortsætte, indtil den afbrydes; ellers skal du indtaste adgangskoden igen næste gang."
@@ -127,12 +127,12 @@
   "resize": {
     "paneSize": "Træk for at ændre størrelsen på ruder (dobbeltklik for at nulstille)",
     "height": "Træk for at ændre højden (dobbeltklik for at nulstille)",
-    "ratio": "Træk for at ændre størrelsesforholdet (dobbeltklik for at nulstille)"
+    "ratio": "Træk for at ændre fordelingen (dobbeltklik for at nulstille)"
   },
   "dragMove": {
-    "itemCount_one": "{{count}} vare",
-    "itemCount_other": "{{count}} varer",
-    "moveMode": "flytte"
+    "itemCount_one": "{{count}} element",
+    "itemCount_other": "{{count}} elementer",
+    "moveMode": "flyt"
   },
   "openWithChanged": {
     "title": "Filen er ændret",
@@ -162,16 +162,16 @@
     "labelMultiple": "Flyt de valgte emner ({{count}}) til mappen:"
   },
   "confirm": {
-    "resetLayout": "Skal vindues- og rudeformater nulstilles, standardkolonnerne gendannes og brugergrænsefladens cache ryddes?",
-    "hostKeyMismatch": "{{error}} Skal du slette det gemte nøgleaftryk for {{host}}:{{port}} og alligevel oprette forbindelse? Gør kun dette, hvis du er sikker på, at serveren er blevet geninstalleret eller migreret på korrekt vis — ellers kan det medføre, at du opretter forbindelse til en server, der muligvis er forfalsket.",
+    "resetLayout": "Nulstil vindues- og rudestørrelser, gendan standardkolonnerne og ryd brugergrænsefladens cache?",
+    "hostKeyMismatch": "{{error}} Slet det gemte nøgleaftryk for {{host}}:{{port}} og opret forbindelse alligevel? Gør det kun, hvis du er sikker på, at serveren rent faktisk er geninstalleret eller flyttet — ellers kan du ende på en forfalsket server.",
     "connectAnyway": "Opret forbindelse alligevel",
-    "closeTabWithActiveTransfers": "Denne fane indeholder aktive overførsler. Skal fanen lukkes, og skal overførslerne stoppes?",
-    "closeTabLabel": "Luk fanebladet",
+    "closeTabWithActiveTransfers": "Der er aktive overførsler i denne fane. Vil du lukke fanen og stoppe dem?",
+    "closeTabLabel": "Luk fane",
     "overwriteSingleExists": "»{{name}}« findes allerede i målmappen. Skal den overskrives?",
-    "overwriteConflicts_one": "{{count}} fil findes allerede i målmappen. Skal den overskrives?",
-    "overwriteConflicts_other": "{{count}} Der findes allerede filer i målmappen. Vil du overskrive dem?",
+    "overwriteConflicts_one": "{{count}} element findes allerede i målmappen. Skal det overskrives?",
+    "overwriteConflicts_other": "{{count}} elementer findes allerede i målmappen. Skal de overskrives?",
     "overwriteLabel": "Overskriv",
-    "replaceConnection": "Dette vindue er allerede forbundet til \"{{current}}\". Skal forbindelsen erstattes med \"{{next}}\"?",
+    "replaceConnection": "Denne rude er allerede forbundet til »{{current}}«. Skal forbindelsen erstattes med »{{next}}«?",
     "replaceConnectionLabel": "Erstat",
     "deleteSelected": "Vil du slette de valgte emner ({{count}})? Denne handling kan ikke fortrydes.",
     "deleteEntry": "Skal »{{name}}« slettes? Denne handling kan ikke fortrydes.",
@@ -179,22 +179,22 @@
     "recycleEntry": "Skal »{{name}}« flyttes til papirkurven?",
     "deletePermanentSelected": "Vil du slette de valgte elementer permanent ({{count}})? Denne handling kan ikke fortrydes.",
     "deletePermanentEntry": "Vil du slette \"{{name}}\" permanent? Denne handling kan ikke fortrydes.",
-    "deleteRemoteSelected": "Vil du slette de valgte fjernelementer permanent ({{count}})? Denne handling kan ikke fortrydes.",
-    "deleteRemoteEntry": "Vil du slette det eksterne element »{{name}}« permanent? Denne handling kan ikke fortrydes."
+    "deleteRemoteSelected": "Vil du slette de valgte elementer på serveren ({{count}}) permanent? Denne handling kan ikke fortrydes.",
+    "deleteRemoteEntry": "Vil du slette »{{name}}« på serveren permanent? Denne handling kan ikke fortrydes."
   },
   "paneSide": {
-    "top": "top",
-    "bottom": "bund",
+    "top": "øverst",
+    "bottom": "nederst",
     "left": "venstre",
     "right": "højre",
-    "labelWithTab": "{{base}} (fanebladet »{{tabNumber}}«, {{side}})",
+    "labelWithTab": "{{base}} (fane {{tabNumber}}, {{side}})",
     "labelWithSide": "{{base}} ({{side}})"
   },
   "menu": {
     "file": {
       "title": "Fil",
       "newTab": "Ny fane",
-      "closeTab": "Luk fanebladet",
+      "closeTab": "Luk fane",
       "newConnection": "Ny forbindelse",
       "disconnect": "Afbryd forbindelsen",
       "manageBookmarks": "Administrer bogmærker…",
@@ -202,8 +202,8 @@
       "saveConnectionSide": "Gem forbindelse ({{side}})",
       "saveBookmarkSide": "Gem bogmærke ({{side}})",
       "savePathSide": "Gem sti ({{side}})",
-      "exportSettings": "Eksportindstillinger…",
-      "importSettings": "Importer indstillinger…",
+      "exportSettings": "Eksportér indstillinger…",
+      "importSettings": "Importér indstillinger…",
       "quit": "Afslut"
     },
     "edit": {
@@ -222,25 +222,25 @@
       "rightPane": "Højre rude",
       "transferQueue": "Overførselskø",
       "log": "Log",
-      "stackedPanes": "Stablede ruder",
+      "stackedPanes": "Ruder over hinanden",
       "refreshBothPanes": "Opdater begge ruder"
     },
     "transfer": {
       "title": "Overførsel",
-      "copySelectedRight": "Kopier det valgte →",
-      "copySelectedLeft": "← Kopier det markerede",
-      "clearCompleted": "Ryddet Afsluttet"
+      "copySelectedRight": "Kopier markering →",
+      "copySelectedLeft": "← Kopier markering",
+      "clearCompleted": "Ryd fuldførte"
     },
     "bookmarks": {
       "title": "Bogmærker"
     },
     "help": {
-      "supportProject": "Støt projektet",
+      "supportProject": "Støt FTPeach",
       "title": "Hjælp",
       "documentation": "Dokumentation",
-      "reportIssue": "Anmeld et problem",
+      "reportIssue": "Rapportér et problem",
       "checkUpdates": "Se efter opdateringer",
-      "about": "Om"
+      "about": "Om FTPeach"
     }
   },
   "errors": {
@@ -253,7 +253,7 @@
     "invalidCertificate": "Serveren fremviste et ugyldigt certifikat. Hvis du stoler på denne server, skal du deaktivere certifikatverifikation i forbindelsesindstillingerne.",
     "tlsNegotiationFailed": "TLS-forhandlingen mislykkedes. Kontroller, at serveren understøtter eksplicit FTPS eller HTTPS samt en kompatibel TLS-version.",
     "sshNegotiationFailed": "SSH-forhandlingen mislykkedes. Serveren og FTPeach kunne ikke nå til enighed om en kompatibel SSH-algoritme eller protokolversion.",
-    "proxyFailed": "Proxyforbindelsen mislykkedes. Kontroller proxytypen, adressen og loginoplysningerne, og tjek, om der er forbindelse til målserveren.",
+    "proxyFailed": "Proxyforbindelsen mislykkedes. Kontroller proxytypen, adressen og loginoplysningerne, og om proxyen kan nå målserveren.",
     "keyReadFailed": "Det var ikke muligt at læse nøglen — filen er beskadiget, eller adgangssætningen er forkert.",
     "accessDenied": "Du har ikke tilladelse til denne handling.",
     "notFound": "Filen eller mappen blev ikke fundet.",
@@ -271,19 +271,19 @@
   "settings": {
     "openWithAssociations": {
       "title": "Tilknytninger",
-      "hint": "Vælg et program til at åbne filen med. For filer, der ikke er tilknyttet en regel, anvendes systemets standardindstilling.",
+      "hint": "Vælg et program til en filtype. Filer uden en regel åbnes med systemets standardprogram.",
       "extension": "Filtype",
       "extensionPlaceholder": "txt",
       "application": "Program",
-      "applicationPlaceholder": "Anvendelsessti",
+      "applicationPlaceholder": "Sti til program",
       "browse": "Vælg program",
       "remove": "Fjern tilknytning",
       "add": "Tilføj tilknytning"
     },
     "minimizeToTray": "Minimer til systemfeltet",
     "minimizeToTrayHint": "Minimeringsknappen skjuler vinduet i systemfeltet i stedet for på proceslinjen.",
-    "closeToTray": "Luk til systemfeltet",
-    "closeToTrayHint": "Luk-knappen skjuler vinduet i systemfeltet i stedet for at afslutte appen. Afslut appen via menuen i systemfeltets ikon.",
+    "closeToTray": "Minimer til systemfeltet ved lukning",
+    "closeToTrayHint": "Luk-knappen skjuler vinduet i systemfeltet i stedet for at afslutte appen. Afslut via menuen på ikonet i systemfeltet.",
     "title": "Indstillinger",
     "unsavedChangesTitle": "Ugemte ændringer",
     "unsavedChangesMessage": "Vil du gemme ændringerne i indstillingerne?",
@@ -292,22 +292,22 @@
       "connection": "Forbindelse",
       "transfers": "Overførsler",
       "interface": "Grænseflade",
-      "shortcuts": "Genveje",
+      "shortcuts": "Genvejstaster",
       "updates": "Opdateringer",
-      "logging": "Skovhugst",
+      "logging": "Logføring",
       "security": "Sikkerhed"
     },
     "shortcuts": {
       "title": "Tastaturgenveje",
-      "hint": "Klik på en genvej, og tryk derefter på en ny tastkombination for at tildele den en ny funktion.",
+      "hint": "Klik på en genvej, og tryk derefter på en ny tastkombination for at ændre den.",
       "globalTitle": "Globalt",
-      "paneTitle": "Filruden",
-      "recording": "Tryk på en tast…",
+      "paneTitle": "Filrude",
+      "recording": "Tryk på taster…",
       "unbound": "Ikke tildelt",
-      "reset": "Nulstil til standardindstillinger",
-      "resetAll": "Nulstil alt til standardindstillingerne",
+      "reset": "Nulstil til standard",
+      "resetAll": "Nulstil alle genveje til standard",
       "unassign": "Fjern tildeling",
-      "conflict": "Anvendes også af: {{action}}",
+      "conflict": "Anvendes også til: {{action}}",
       "actions": {
         "search": "Søg ({{side}})",
         "toggleHiddenFiles": "Vis/skjul skjulte filer",
@@ -315,43 +315,43 @@
         "save": "Gem ({{side}})",
         "openSettings": "Åbn indstillinger",
         "newTab": "Ny fane",
-        "closeTab": "Luk fanebladet",
+        "closeTab": "Luk fane",
         "nextTab": "Næste fane",
         "prevTab": "Forrige fane",
         "refresh": "Opdater",
         "selectAll": "Vælg alt",
         "delete": "Slet",
         "deletePermanent": "Slet permanent",
-        "navigateUp": "Gå en mappe op",
-        "navigateBack": "Gå tilbage",
-        "navigateForward": "Gå videre",
+        "navigateUp": "Gå et niveau op",
+        "navigateBack": "Tilbage",
+        "navigateForward": "Frem",
         "navigateHome": "Gå til hjemmemappen",
         "moveTo": "Flyt til…",
         "newFolder": "Ny mappe…",
         "newFile": "Ny fil…",
-        "copyToOtherPane": "Kopier til et andet vindue",
+        "copyToOtherPane": "Kopier til den anden rude",
         "copy": "Kopier",
         "cut": "Klip",
         "paste": "Indsæt",
-        "clearSelection": "Ryd valg",
-        "open": "Åben"
+        "clearSelection": "Fjern markering",
+        "open": "Åbn"
       }
     },
     "security": {
       "title": "Adgangskodebeskyttelse",
       "systemMode": "Systembeskyttelse",
-      "systemModeHint": "Adgangskoder til din Windows-konto er krypteret og kan ses under forbindelsesindstillingerne.",
-      "strongholdMode": "Forbedret beskyttelse",
-      "strongholdModeHint": "Kræver en hovedadgangskode. Gemte adgangskoder kan bruges til at oprette forbindelse, men kan ikke vises.",
+      "systemModeHint": "Adgangskoderne krypteres til din Windows-konto og kan ses under forbindelsesindstillingerne.",
+      "strongholdMode": "Udvidet beskyttelse",
+      "strongholdModeHint": "Kræver en hovedadgangskode. For at se en gemt adgangskode skal du indtaste hovedadgangskoden igen.",
       "loading": "Kontrollerer beskyttet lagerplads…",
       "configuredLocked": "Det beskyttede lager er sikret med en hovedadgangskode og låst.",
-      "configuredUnlocked": "Den beskyttede lagerplads er sikret med en hovedadgangskode og låses op.",
+      "configuredUnlocked": "Det beskyttede lager er sikret med en hovedadgangskode og låst op.",
       "masterPassword": "Hovedadgangskode",
       "confirmPassword": "Bekræft hovedadgangskoden",
       "oldPassword": "Nuværende hovedadgangskode",
-      "newPassword": "Nyt hovedadgangskode",
+      "newPassword": "Ny hovedadgangskode",
       "setup": "Beskyt gemte adgangskoder",
-      "settingUp": "Beskyttelse af…",
+      "settingUp": "Beskytter…",
       "unlock": "Lås op",
       "unlocking": "Låser op…",
       "unlockRequired": "Lås beskyttet lagerplads op",
@@ -359,32 +359,32 @@
       "lockNow": "Lås nu",
       "autoLock": "Automatisk låsning efter, min.",
       "autoLockDisabled": "Deaktiveret",
-      "autoLockHint": "Låser opbevaringsområdet efter inaktivitet. Eksisterende serverforbindelser forbliver aktive; 0 deaktiverer automatisk låsning.",
+      "autoLockHint": "Låser det beskyttede lager efter inaktivitet. Eksisterende serverforbindelser forbliver aktive; 0 slår automatisk låsning fra.",
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
-      "systemUnlock": "Tillad oplåsning af systemet",
+      "systemUnlock": "Tillad oplåsning via systemet",
       "systemUnlockHint": "Bruger Windows Hello (PIN-kode, ansigtsgenkendelse eller fingeraftryk, alt efter hvordan det er konfigureret i Windows). Din hovedadgangskode forbliver din gendannelsesmetode.",
       "unlockWithSystem": "Lås op med systemgodkendelse",
-      "systemUnavailable": "Systemlåsen kan ikke bruges på denne platform.",
-      "noRecovery": "En glemt hovedadgangskode kan ikke gendannes. Hvis du nulstiller boksen, slettes alle gemte hemmeligheder.",
+      "systemUnavailable": "Oplåsning via systemet er ikke tilgængelig på denne platform.",
+      "noRecovery": "En glemt hovedadgangskode kan ikke gendannes. Hvis du nulstiller boksen, slettes alle gemte adgangskoder og adgangssætninger.",
       "passwordMismatch": "Adgangskoderne stemmer ikke overens.",
       "passwordTooShort": "Hovedadgangskoden skal bestå af mindst 12 tegn.",
       "strength": {
         "tooShort": "For kort — brug mindst 12 tegn.",
-        "acceptable": "Det er i orden. En længere adgangskode er mere sikker.",
-        "strong": "Et stærkt hovedadgangskode."
+        "acceptable": "Acceptabel. En længere adgangssætning er mere sikker.",
+        "strong": "Stærk hovedadgangskode."
       },
       "reset": "Nulstil beskyttet lagerplads",
       "resetHint": "Sletter den beskyttede lagerplads samt alle adgangskoder og adgangssætninger til SSH-nøgler, der er gemt der. Den udvidede beskyttelse skal konfigureres på ny.",
-      "resetWarning": "Dette sletter alle gemte adgangskoder og nøglesætninger permanent. Indtast den aktuelle hovedadgangskode for at fortsætte.",
-      "confirmReset": "Slet gemte hemmeligheder",
+      "resetWarning": "Dette sletter alle gemte adgangskoder og adgangssætninger til nøgler permanent. Indtast den aktuelle hovedadgangskode for at fortsætte.",
+      "confirmReset": "Slet gemte adgangskoder",
       "showConfirmations": "Vis sikkerhedsbekræftelser",
-      "showConfirmationsHint": "Bed om bekræftelse før gemte hemmeligheder vises eller eksekverbare filer køres. Nulstilling af beskyttet lager kræver altid bekræftelse.",
-      "unavailable": "Beskyttet opbevaring er ikke tilgængelig.",
-      "failed": "Handlingen vedrørende den beskyttede lagring mislykkedes."
+      "showConfirmationsHint": "Bed om bekræftelse, før gemte adgangskoder vises eller eksekverbare filer køres. Nulstilling af det beskyttede lager kræver altid bekræftelse.",
+      "unavailable": "Det beskyttede lager er ikke tilgængeligt.",
+      "failed": "Handlingen på det beskyttede lager mislykkedes."
     },
     "unlimitedPlaceholder": "Ingen begrænsning",
-    "connectTimeoutLabel": "Tidsgrænse for forbindelse, sek.",
+    "connectTimeoutLabel": "Tidsgrænse for forbindelse, s",
     "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt — ingen begrænsning). Gælder for den næste forbindelse.",
     "ftpActiveMode": "Aktiv FTP-tilstand (i stedet for passiv)",
     "ftpActiveModeHint": "Gælder kun FTP/FTPS — har ingen indflydelse på SFTP/WebDAV. Er sjældent nødvendigt, kun på netværk/servere, hvor passiv tilstand ikke kommer igennem NAT. Gælder for den næste forbindelse.",
@@ -392,7 +392,7 @@
     "proxy": {
       "enable": "Brug en proxy til forbindelser",
       "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT — gælder for FTP, FTPS, SFTP og WebDAV. Gælder for den næste forbindelse.",
-      "typeLabel": "Proxitype",
+      "typeLabel": "Proxytype",
       "hostLabel": "Proxy-host",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
@@ -401,53 +401,53 @@
       "removeSavedPassword": "Slet gemt adgangskode",
       "revealFailed": "Det var ikke muligt at dekryptere den gemte adgangskode.",
       "testTargetLabel": "Test mod",
-      "testTargetHostPlaceholder": "Serverudbyder",
+      "testTargetHostPlaceholder": "Serveradresse",
       "testTargetPortPlaceholder": "Port",
-      "test": "Testproxy",
-      "testing": "Test…",
-      "testOk": "Proxyen nåede målet uden problemer.",
+      "test": "Test proxy",
+      "testing": "Tester…",
+      "testOk": "Proxyen nåede målserveren.",
       "testFailed": "Proxy-testen mislykkedes."
     },
     "concurrencyLabel": "Samtidige overførsler",
-    "concurrencyHint": "Hvor mange filer der skal uploades og downloades samtidigt (0 eller tomt felt — ingen begrænsning). Gælder for den næste forbindelse.",
+    "concurrencyHint": "Hvor mange filer der uploades og downloades samtidigt på tværs af alle faner (0 eller tomt felt — ingen begrænsning). Gælder med det samme; igangværende overførsler afsluttes normalt.",
     "speedLimitLabel": "Hastighedsbegrænsning, KB/s",
-    "speedLimitHint": "Gælder for det samlede beløb for alle samtidige overførsler (0 eller tomt felt — ingen begrænsning). Træder i kraft med det samme, uden at man skal vente på den næste forbindelse.",
+    "speedLimitHint": "Gælder for summen af alle samtidige overførsler (0 eller tomt felt — ingen begrænsning). Træder i kraft med det samme, uden at vente på den næste forbindelse.",
     "notifyOnComplete": "Giv besked, når overførslerne er afsluttet",
     "notifyOnCompleteHint": "En systemmeddelelse, når overførselskøen er tom — kun når vinduet ikke har fokus.",
-    "overwriteActionLabel": "Om navnekonflikter",
+    "overwriteActionLabel": "Ved navnekonflikt",
     "overwriteAsk": "Spørg",
     "overwriteOverwrite": "Overskriv",
     "overwriteSkip": "Spring over",
-    "overwriteHint": "Hvad skal man gøre, hvis den fil, der kopieres, allerede findes i målmappen?",
-    "preventSleep": "Undgå, at systemet går i dvaletilstand under overførsler",
+    "overwriteHint": "Hvad der skal ske, hvis filen, der kopieres, allerede findes i målmappen.",
+    "preventSleep": "Forhindr, at systemet går i dvale under overførsler",
     "preventSleepHint": "Træder i kraft med det samme, uden at vente på den næste forbindelse. Er aktiv, så længe der er mindst én igangværende overførsel — ellers blokerer den ikke dvaletilstanden.",
     "themeLabel": "Tema",
     "themeDark": "Mørkt",
-    "themeLight": "Lys",
+    "themeLight": "Lyst",
     "themeSystem": "System",
     "languageLabel": "Grænsefladesprog",
     "interfaceScaleLabel": "Grænsefladeskala",
-    "interfaceScaleHint": "Skift størrelsen på teksten og betjeningselementerne i hele applikationen.",
+    "interfaceScaleHint": "Ændrer størrelsen på tekst og betjeningselementer i hele programmet.",
     "dateFormatLabel": "Dato-/tidsformat",
     "dateFormatOnlyLabel": "Datoformat",
     "timeFormatLabel": "Tidsformat",
     "timeFormat24Hour": "24 t",
     "timeFormat12Hour": "12 t",
-    "dateFormatLocale": "Lokalt",
+    "dateFormatLocale": "Regionalt",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "Standardmappe for Computer",
-    "defaultLocalPathHint": "Mappen, som ruden Computer åbner ved opstart, og når du skifter fra en server. Lad stå tomt for at bruge systemets hjemmemappe.",
+    "defaultLocalPathLabel": "Standardmappe for »Computer«",
+    "defaultLocalPathHint": "Mappen, som ruden »Computer« åbner ved opstart, og når du skifter fra en server. Lad stå tomt for at bruge din hjemmemappe.",
     "chooseDefaultLocalPath": "Vælg standardmappe",
     "showHiddenFiles": "Vis skjulte filer og mapper",
-    "showHiddenFilesHint": "Gælder både lokale og eksterne filpaneler.",
+    "showHiddenFilesHint": "Gælder både lokale ruder og serverruder.",
     "coloredTabs": "Farvede faner",
-    "coloredTabsHint": "Farvelægger fanebladets navn og ikon med den farve, der er gemt for bogmærket.",
+    "coloredTabsHint": "Farvelægger fanens navn og ikon med den farve, der er gemt for bogmærket.",
     "autoCheckUpdates": "Opdater automatisk",
     "autoCheckUpdatesHint": "Søger efter opdateringer ved opstart og én gang dagligt og henter dem i baggrunden. En hentet opdatering installeres lydløst, næste gang FTPeach starter, eller med det samme fra statuslinjen.",
-    "autoReconnectTabs": "Genopret genoprettede faner ved opstart",
-    "autoReconnectTabsHint": "Slukket som standard. Når funktionen er aktiveret, oprettes der automatisk forbindelse til de gendannede gemte hjemmesider.",
+    "autoReconnectTabs": "Genopret forbindelse for gendannede faner ved opstart",
+    "autoReconnectTabsHint": "Slået fra som standard. Når funktionen er slået til, forbindes gendannede faner med gemte servere automatisk.",
     "saveSessionOnExit": "Gem sessionen ved afslutning",
-    "saveSessionOnExitHint": "Gendanner åbne faner, vinduestyper og stier ved næste opstart. Hvis du deaktiverer denne funktion, slettes den gemte session.",
+    "saveSessionOnExitHint": "Gendanner åbne faner, rudetyper og stier ved næste opstart. Hvis du slår dette fra, slettes den gemte session.",
     "checkNow": "Tjek nu",
     "updateStatus": {
       "checking": "Søger efter opdateringer…",
@@ -468,23 +468,23 @@
     "confirmLabel": "OK"
   },
   "exportSettingsDialog": {
-    "title": "Eksportindstillinger",
-    "confirmLabel": "Eksport…",
+    "title": "Eksportér indstillinger",
+    "confirmLabel": "Eksportér…",
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten — du skal indtaste dem igen, når du har importeret dem til en anden maskine."
+    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten — du skal indtaste dem igen efter import på en anden computer."
   },
   "importSettingsDialog": {
-    "title": "Importindstillinger",
-    "confirmLabel": "Import…",
+    "title": "Importér indstillinger",
+    "confirmLabel": "Importér…",
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i importen — du skal indtaste dem igen for hvert importeret site."
+    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i importen — du skal indtaste dem igen for hver importeret server."
   },
   "openWithDialog": {
-    "title": "Åbn i programmet",
+    "title": "Åbn i program",
     "downloading": "Henter »{{fileName}}«…",
     "progress": "{{loaded}} af {{total}} ({{percent}} %)",
     "connecting": "Opretter forbindelse…"
@@ -494,7 +494,7 @@
     "notifyCompleteTitle": "Overførslen er afsluttet",
     "notifySucceeded": "lykkedes: {{count}}",
     "notifyFailed": "mislykkedes: {{count}}",
-    "webdavUploadTooLarge": "WebDAV-overførsler er begrænset til {{limit}} MiB pr. fil."
+    "webdavUploadTooLarge": "WebDAV-uploads er begrænset til {{limit}} MiB pr. fil."
   },
   "transferQueue": {
     "title": "Overførsler",
@@ -503,9 +503,9 @@
       "route": "Rute",
       "size": "Størrelse",
       "transferred": "Overført",
-      "progress": "Fremskridt",
+      "progress": "Forløb",
       "speed": "Hastighed",
-      "remaining": "Resterende",
+      "remaining": "Tilbage",
       "status": "Status"
     },
     "empty": "Uploads og downloads vises her",
@@ -516,7 +516,7 @@
       "done": "Færdig",
       "error": "Fejl",
       "paused": "Pauset",
-      "stopped": "Aflyst",
+      "stopped": "Annulleret",
       "cancelling": "Annullerer…"
     },
     "direction": {
@@ -529,14 +529,14 @@
     "directionTitleServer": "Kopiering på serveren",
     "route": "{{from}} → {{to}}",
     "cancelledByUser": "Annulleret af brugeren",
-    "stoppedDash": "stoppede",
+    "stoppedDash": "stoppet",
     "resume": "Genoptag",
     "retry": "Prøv igen",
     "stop": "Stop",
-    "pauseUnsupportedCopy": "Pause-funktionen understøttes ikke ved kopiering mellem servere",
+    "pauseUnsupportedCopy": "Pause understøttes ikke ved kopiering mellem servere",
     "pauseUnsupportedServerCopy": "Pause understøttes ikke ved kopiering på serveren",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
-    "retryUnsupportedConnection": "Prøv igen er ikke tilgængelig: forbindelsen er blevet lukket"
+    "retryUnsupportedConnection": "Kan ikke prøve igen: forbindelsen er lukket"
   },
   "log": {
     "connecting": "Opretter forbindelse til {{addr}}...",
@@ -576,8 +576,8 @@
     "emptyDefault": "Protokolmeddelelser vises her"
   },
   "aboutDialog": {
-    "title": "Om",
-    "tagline": "En letvægts-klient til FTP/FTPS/SFTP.",
+    "title": "Om FTPeach",
+    "tagline": "En letvægtsklient til FTP/FTPS/SFTP/WebDAV.",
     "legalInformation": "Juridiske oplysninger",
     "sourceCode": "Kildekode",
     "reportIssue": "Rapportér et problem",
@@ -585,8 +585,8 @@
     "updateDownloaded": "Opdatering v{{version}} er blevet downloadet — du kan installere den nu."
   },
   "siteManager": {
-    "emptyList": "Der er endnu ingen gemte hjemmesider",
-    "confirmDeleteSite": "Skal siden »{{name}}« slettes?"
+    "emptyList": "Der er endnu ingen gemte servere",
+    "confirmDeleteSite": "Skal serveren »{{name}}« slettes?"
   },
   "siteManagerDialog": {
     "titleNew": "Nyt bogmærke",
@@ -606,15 +606,15 @@
       "remotePath": "Standardmappe",
       "localPath": "Lokal mappe",
       "folder": "Mappe",
-      "maxConnections": "Maksimale forbindelser pr. panel"
+      "maxConnections": "Maks. forbindelser pr. rude"
     },
     "icons": {
       "bookmark": "Bogmærke",
-      "globe": "Hjemmeside",
+      "globe": "Websted",
       "briefcase": "Arbejde",
       "house": "Hjemmeserver",
       "cloud": "Sky",
-      "flask": "Test / testmiljø",
+      "flask": "Test / staging",
       "gamepad": "Spilserver",
       "clapperboard": "Medieserver",
       "camera": "Kamera"
@@ -631,17 +631,17 @@
       "teal": "Blågrøn"
     },
     "saveFailed": "Det lykkedes ikke at gemme",
-    "revealFailed": "Det var ikke muligt at vise den gemte hemmelighed",
+    "revealFailed": "Den gemte adgangskode kunne ikke vises",
     "savedSecretPlaceholder": "Gemt",
     "savedSecretHint": "Lad feltet være tomt for at beholde den aktuelle adgangskode",
     "removeSavedPassword": "Slet gemt adgangskode",
     "removeSavedPassphrase": "Slet gemt adgangssætning",
-    "secretWillBeRemoved": "Fjernes, når det gemmes",
+    "secretWillBeRemoved": "Fjernes, når du gemmer",
     "addBookmark": "Nyt bogmærke",
     "addLocalBookmark": "Tilføj bogmærke til lokal mappe",
     "chooseLocalPath": "Vælg lokal mappe",
-    "importBookmarks": "Import",
-    "exportBookmarks": "Eksport",
+    "importBookmarks": "Importér",
+    "exportBookmarks": "Eksportér",
     "importAdded_one": "Tilføjede {{count}} bogmærke",
     "importAdded_other": "Tilføjede {{count}} bogmærker",
     "importSkipped_one": "sprang {{count}} duplikat over",
@@ -651,7 +651,7 @@
     "sortMode": "Sortering af bogmærker",
     "sortManual": "Manuel",
     "sortName": "Efter navn",
-    "sortProtocol": "I henhold til protokollen",
+    "sortProtocol": "Efter protokol",
     "duplicateWarning": "Der findes allerede et bogmærke til samme destination: »{{name}}«. Vil du gemme endnu et?",
     "saveAnyway": "Gem alligevel",
     "newFolder": "Ny mappe",
@@ -660,13 +660,13 @@
     "searchPlaceholder": "Søg…",
     "clearSearch": "Ryd søgning",
     "noSearchResults": "Der er ingen bogmærker, der matcher din søgning",
-    "duplicate": "Duplikat",
+    "duplicate": "Dupliker",
     "duplicateNameSuffix": " (kopi)",
-    "newBookmarkInFolder": "Opret nyt bogmærke her",
+    "newBookmarkInFolder": "Nyt bogmærke her",
     "expandFolder": "Udvid »{{name}}«",
-    "collapseFolder": "Skjul »{{name}}«",
+    "collapseFolder": "Fold »{{name}}« sammen",
     "noFolder": "Ingen mappe",
-    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hvert panel har sin egen grænse."
+    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hver rude har sin egen grænse."
   },
   "connectionBar": {
     "fields": {
@@ -682,7 +682,7 @@
     },
     "secureToggle": {
       "tooltip": "Fjern markeringen for at acceptere selvunderskrevne og ugyldige servercertifikater",
-      "label": "Bekræft certifikatet"
+      "label": "Kontrollér certifikat"
     },
     "authToggle": {
       "tooltip": "Log ind med en privat SSH-nøglefil i stedet for en adgangskode",
@@ -711,25 +711,25 @@
     "localComputer": "Computer",
     "untitledTab": "Ny fane",
     "newTabTooltip": "Ny fane (Ctrl+T)",
-    "rename": "Fanebladets navn"
+    "rename": "Fanens navn"
   },
   "toolbarOverflowMenu": {
     "more": "Mere"
   },
   "statusBar": {
     "transfers": "Overførsler: {{count}}",
-    "leftCount": "Til venstre: {{count}}",
-    "rightCount": "Til højre: {{count}}",
+    "leftCount": "Venstre: {{count}}",
+    "rightCount": "Højre: {{count}}",
     "topCount": "Øverst: {{count}}",
     "bottomCount": "Nederst: {{count}}",
-    "selectedSuffix": " ({{count}} er valgt)",
+    "selectedSuffix": " ({{count}} valgt)",
     "status": {
-      "transferring": "Overførsel af fil",
+      "transferring": "Overfører fil",
       "paused": "Pauset",
       "connected": "Forbundet",
-      "connecting": "Tilslutning",
+      "connecting": "Opretter forbindelse",
       "connectFailed": "Det var ikke muligt at oprette forbindelse",
-      "disconnected": "Ikke tilsluttet"
+      "disconnected": "Ikke forbundet"
     }
   },
   "viewToolbar": {
@@ -737,19 +737,19 @@
     "toggleRightPane": "Vis/skjul højre rude",
     "toggleTransferQueue": "Vis/skjul overførselskøen",
     "toggleLog": "Vis/skjul log",
-    "orientationNarrow": "Ruder stablet oven på hinanden — vinduet er for smalt til at kunne se dem side om side",
+    "orientationNarrow": "Ruderne er stablet oven på hinanden — vinduet er for smalt til at vise dem side om side",
     "orientationToRow": "Placer ruder side om side",
-    "orientationToStacked": "Stak paneler oven på hinanden",
+    "orientationToStacked": "Stak ruder oven på hinanden",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
     "pauseActive": "Sæt aktive overførsler på pause",
-    "resumeAllPaused": "Genoptag alle satte overførsler",
+    "resumeAllPaused": "Genoptag alle overførsler på pause",
     "stopActive": "Stop aktive overførsler",
-    "retryAllStopped": "Prøv igen med alle afbrudte overførsler",
+    "retryAllStopped": "Prøv igen med alle stoppede overførsler",
     "refreshPanesTooltip": "Opdater begge ruder (F5)"
   },
   "paneToolbar": {
     "back": "Tilbage",
-    "forward": "Videre",
+    "forward": "Frem",
     "up": "Op",
     "chooseFolder": "Vælg mappe…",
     "newFolder": "Ny mappe…",
@@ -763,15 +763,15 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Ingen nylige forbindelser",
-    "noSavedConnectionsBody": "Indtast serveradressen ovenfor, eller tilføj et websted for at få adgang med et enkelt klik.",
+    "noSavedConnectionsBody": "Indtast serveradressen ovenfor, eller tilføj et bogmærke for at oprette forbindelse med et enkelt klik.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Administrer bogmærker",
     "quicklistLabel": "Seneste forbindelser"
   },
   "errorBoundary": {
     "consoleLogPrefix": "Ubehandlet FTPeach-grænsefladefejl:",
-    "title": "Der opstod en fejl",
-    "message": "Der opstod en uventet fejl i brugergrænsefladen. Din aktive forbindelse og filerne på harddisken er ikke berørt — du kan prøve at genindlæse brugergrænsefladen.",
+    "title": "Noget gik galt",
+    "message": "Der opstod en uventet fejl i brugergrænsefladen. Din aktive forbindelse og filerne på disken er ikke berørt — du kan prøve at genindlæse brugergrænsefladen.",
     "reload": "Genindlæs grænseflade"
   }
 }

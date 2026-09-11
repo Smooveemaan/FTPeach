@@ -7,8 +7,8 @@
       "gb": "GB",
       "tb": "TB"
     },
-    "perSecond": "{{value}} /s",
-    "noLoginUser": "لم يتم تسجيل الدخول",
+    "perSecond": "{{value}}/ث",
+    "noLoginUser": "بدون اسم مستخدم",
     "anonymousUser": "مجهول",
     "rootFolder": "المجلد الجذري",
     "close": "إغلاق",
@@ -19,9 +19,9 @@
     "create": "إنشاء",
     "cancel": "إلغاء",
     "increase": "زيادة",
-    "decrease": "انخفاض",
+    "decrease": "إنقاص",
     "showPassword": "إظهار كلمة المرور",
-    "savedSecretProtected": "السر المحفوظ محمي ولا يمكن الاطلاع عليه",
+    "savedSecretProtected": "كلمة المرور المحفوظة محمية — تحقّق من هويتك لعرضها",
     "hidePassword": "إخفاء كلمة المرور"
   },
   "securityConfirmation": {
@@ -54,7 +54,7 @@
     "open": "فتح",
     "uploadToOtherPane": "التحميل إلى الجزء الآخر",
     "copyToOtherPane": "نسخ إلى الجزء الآخر",
-    "downloadToOtherPane": "التنزيل إلى جزء آخر",
+    "downloadToOtherPane": "التنزيل إلى الجزء الآخر",
     "openWith": "فتح باستخدام…",
     "permissions": "الأذونات…",
     "moveTo": "نقل إلى…",
@@ -88,7 +88,7 @@
     "copyToPaneLeft": "نسخ إلى الجزء الأيسر",
     "fileTypeFolder": "مجلد الملفات",
     "fileTypeGeneric": "ملف",
-    "fileTypeWithExt": "{{ext}} ملف",
+    "fileTypeWithExt": "ملف {{ext}}",
     "columnSize": "الحجم",
     "columnModifiedAt": "تاريخ التعديل",
     "columnCreatedAt": "تاريخ الإنشاء",
@@ -114,8 +114,8 @@
   },
   "update": {
     "readyToInstall": "يتوفر التحديث v{{version}} — انقر على «إعادة التشغيل والتثبيت» لتطبيقه.",
-    "downloadingWithPercent": "جاري تنزيل التحديث الإصدار {{version}}: {{percent}} %",
-    "downloadingFound": "تم العثور على تحديث الإصدار {{version}}، يجري التنزيل…",
+    "downloadingWithPercent": "جارٍ تنزيل التحديث v{{version}}: {{percent}}%",
+    "downloadingFound": "تم العثور على التحديث v{{version}}، جارٍ التنزيل…",
     "restartAndInstall": "إعادة التشغيل والتثبيت",
     "availableAction": "متاح!",
     "installAction": "تثبيت التحديث",
@@ -124,18 +124,18 @@
     "installTooltip": "أعد التشغيل الآن للتثبيت، وإلا فسيُثبَّت التحديث عند تشغيل FTPeach في المرة القادمة."
   },
   "legacyPasswordNotice": {
-    "message": "تعذر قراءة كلمات المرور الخاصة ببعض المواقع المحفوظة بعد التحديث — يرجى إعادة إدخالها في «مدير المواقع»."
+    "message": "تعذرت قراءة كلمات مرور بعض الخوادم المحفوظة بعد التحديث — يرجى إدخالها من جديد في «إدارة الإشارات المرجعية»."
   },
   "plaintextSecretNotice": {
-    "message": "تعذر تشفير كلمة المرور أو عبارة المرور الخاصة بموقع محفوظ بسبب عدم توفر ميزة حماية البيانات في نظام ويندوز، لذا تم تخزينها بنص عادي بدلاً من ذلك."
+    "message": "تعذر تشفير كلمة المرور أو عبارة المرور لخادم محفوظ لأن حماية بيانات Windows غير متاحة، لذا خُزّنت كنص عادي."
   },
   "secretNotPersistedNotice": {
-    "message": "تعذر تشفير كلمة المرور أو عبارة المرور، ولم يتم حفظها. يمكن أن يستمر الاتصال الحالي حتى يتم قطعه؛ وإلا، فسيتعين عليك إدخال كلمة المرور مرة أخرى في المرة القادمة."
+    "message": "تعذر تشفير كلمة المرور أو عبارة مرور المفتاح، لذا لم تُحفظ. يستمر الاتصال الحالي حتى قطعه؛ وفي المرة القادمة أدخلها من جديد."
   },
   "resize": {
     "paneSize": "اسحب لتغيير حجم الأجزاء (انقر نقرًا مزدوجًا لإعادة الضبط)",
     "height": "اسحب لتغيير الارتفاع (انقر نقرًا مزدوجًا لإعادة الضبط)",
-    "ratio": "اسحب لتغيير حجم النسبة (انقر نقرًا مزدوجًا لإعادة الضبط)"
+    "ratio": "اسحب لتغيير النسبة (انقر نقرًا مزدوجًا لإعادة الضبط)"
   },
   "dragMove": {
     "itemCount_one": "{{count}} عنصر",
@@ -170,29 +170,29 @@
   },
   "moveToDialog": {
     "title": "نقل إلى…",
-    "labelSingle": "انقل ملف «{{name}}» إلى المجلد:",
+    "labelSingle": "نقل «{{name}}» إلى المجلد:",
     "labelMultiple": "نقل العناصر المحددة ({{count}}) إلى المجلد:"
   },
   "confirm": {
     "resetLayout": "إعادة ضبط أحجام النوافذ والأجزاء، واستعادة الأعمدة الافتراضية، ومسح ذاكرة التخزين المؤقت للواجهة؟",
-    "hostKeyMismatch": "{{error}} هل تريد حذف بصمة المفتاح المحفوظة لـ {{host}}: {{port}} والاتصال على أي حال؟ لا تقم بذلك إلا إذا كنت متأكدًا من أن الخادم قد أُعيد تثبيته أو تم ترحيله بشكل صحيح — وإلا فقد يؤدي ذلك إلى اتصالك بخادم مزيف.",
-    "connectAnyway": "اتصل على أي حال",
-    "closeTabWithActiveTransfers": "تحتوي هذه العلامة التبويبية على عمليات نقل جارية. هل تريد إغلاق العلامة التبويبية وإيقافها؟",
+    "hostKeyMismatch": "{{error}} هل تريد حذف بصمة المفتاح المحفوظة لـ {{host}}:{{port}} والاتصال رغم ذلك؟ لا تفعل ذلك إلا إذا كنت متأكدًا من أن الخادم أُعيد تثبيته أو نُقل فعلًا — وإلا فقد تتصل بخادم مزيّف.",
+    "connectAnyway": "الاتصال رغم ذلك",
+    "closeTabWithActiveTransfers": "في علامة التبويب هذه عمليات نقل جارية. هل تريد إغلاق علامة التبويب وإيقافها؟",
     "closeTabLabel": "إغلاق علامة التبويب",
     "overwriteSingleExists": "\"{{name}}\" موجود بالفعل في مجلد الوجهة. هل تريد استبداله؟",
     "overwriteConflicts_one": "{{count}} عنصر موجود بالفعل في المجلد الوجهة. هل تريد الكتابة فوقه؟",
     "overwriteConflicts_other": "{{count}} عنصر موجود بالفعل في المجلد الوجهة. هل تريد الكتابة فوقها؟",
     "overwriteLabel": "الكتابة فوق",
-    "replaceConnection": "هذا الجزء مرتبط بالفعل بـ «{{current}}». هل تريد استبدال هذا الرابط بـ «{{next}}»؟",
+    "replaceConnection": "هذا الجزء متصل بالفعل بـ «{{current}}». هل تريد استبدال الاتصال بـ «{{next}}»؟",
     "replaceConnectionLabel": "استبدال",
     "deleteSelected": "هل تريد حذف العناصر المحددة ({{count}})؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteEntry": "هل تريد حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
     "recycleSelected": "هل تريد نقل العناصر المحددة ({{count}}) إلى سلة المحذوفات؟",
-    "recycleEntry": "هل تريد نقل ملف «{{name}}» إلى سلة المحذوفات؟",
+    "recycleEntry": "هل تريد نقل «{{name}}» إلى سلة المحذوفات؟",
     "deletePermanentSelected": "هل تريد حذف العناصر المحددة نهائيًا ({{count}})؟ لا يمكن التراجع عن هذا الإجراء.",
     "deletePermanentEntry": "هل تريد حذف \"{{name}}\" نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
-    "deleteRemoteSelected": "هل تريد حذف العناصر البعيدة المحددة نهائيًا ({{count}})؟ لا يمكن التراجع عن هذا الإجراء.",
-    "deleteRemoteEntry": "هل تريد حذف العنصر البعيد \"{{name}}\" نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteRemoteSelected": "هل تريد حذف العناصر المحددة على الخادم ({{count}}) نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteRemoteEntry": "هل تريد حذف «{{name}}» على الخادم نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
     "overwriteConflicts_zero": "{{count}} عنصر موجود بالفعل في المجلد الوجهة. هل تريد الكتابة فوقها؟",
     "overwriteConflicts_two": "{{count}} عنصران موجودان بالفعل في المجلد الوجهة. هل تريد الكتابة فوقهما؟",
     "overwriteConflicts_few": "{{count}} عناصر موجودة بالفعل في المجلد الوجهة. هل تريد الكتابة فوقها؟",
@@ -203,7 +203,7 @@
     "bottom": "أسفل",
     "left": "يسار",
     "right": "يمين",
-    "labelWithTab": "{{base}} (العلامة التبويبية {{tabNumber}}، {{side}})",
+    "labelWithTab": "{{base}} (علامة التبويب {{tabNumber}}، {{side}})",
     "labelWithSide": "{{base}} ({{side}})"
   },
   "menu": {
@@ -220,7 +220,7 @@
       "savePathSide": "حفظ المسار ({{side}})",
       "exportSettings": "تصدير الإعدادات…",
       "importSettings": "استيراد الإعدادات…",
-      "quit": "الخروج"
+      "quit": "خروج"
     },
     "edit": {
       "title": "تحرير",
@@ -231,18 +231,18 @@
       "title": "عرض",
       "darkTheme": "السمة الداكنة",
       "lightTheme": "السمة الفاتحة",
-      "systemTheme": "موضوع النظام",
-      "syncBrowsing": "تصفح مجلدات المزامنة",
+      "systemTheme": "سمة النظام",
+      "syncBrowsing": "تصفح متزامن للجزأين",
       "showHiddenFiles": "إظهار الملفات والمجلدات المخفية",
       "leftPane": "الجزء الأيسر",
       "rightPane": "الجزء الأيمن",
-      "transferQueue": "قائمة انتظار التحويل",
+      "transferQueue": "قائمة انتظار النقل",
       "log": "السجل",
-      "stackedPanes": "الأجزاء المكدسة",
-      "refreshBothPanes": "تحديث كلا الجانبين"
+      "stackedPanes": "الأجزاء فوق بعضها",
+      "refreshBothPanes": "تحديث كلا الجزأين"
     },
     "transfer": {
-      "title": "التحويل",
+      "title": "النقل",
       "copySelectedRight": "نسخ المحدد →",
       "copySelectedLeft": "← نسخ المحدد",
       "clearCompleted": "مسح المكتملة"
@@ -251,12 +251,12 @@
       "title": "الإشارات المرجعية"
     },
     "help": {
-      "supportProject": "دعم المشروع",
+      "supportProject": "دعم FTPeach",
       "title": "مساعدة",
       "documentation": "الوثائق",
       "reportIssue": "الإبلاغ عن مشكلة",
       "checkUpdates": "التحقق من وجود تحديثات",
-      "about": "نبذة عن"
+      "about": "حول FTPeach"
     }
   },
   "errors": {
@@ -267,9 +267,9 @@
     "networkUnreachable": "لا يمكن الوصول إلى الخادم — يرجى التحقق من اتصالك بالشبكة.",
     "loginIncorrect": "اسم المستخدم أو كلمة المرور غير صحيحين.",
     "invalidCertificate": "عرض الخادم شهادة غير صالحة. إذا كنت تثق في هذا الخادم، فقم بتعطيل التحقق من الشهادة في إعدادات الاتصال.",
-    "tlsNegotiationFailed": "فشل التفاوض على بروتوكول TLS. تأكد من أن الخادم يدعم بروتوكول FTPS أو HTTPS الصريح وإصدار TLS متوافق.",
+    "tlsNegotiationFailed": "فشل التفاوض على TLS. تأكد من أن الخادم يدعم FTPS الصريح (explicit) أو HTTPS وإصدار TLS متوافقًا.",
     "sshNegotiationFailed": "فشل التفاوض عبر SSH. لم يتمكن الخادم وبرنامج FTPeach من التوصل إلى اتفاق بشأن خوارزمية SSH أو إصدار بروتوكول متوافق.",
-    "proxyFailed": "فشل الاتصال بالبروكسي. يرجى التحقق من نوع البروكسي وعنوانه وبيانات الاعتماد الخاصة به، والتأكد من إمكانية الوصول إلى الخادم المستهدف.",
+    "proxyFailed": "فشل الاتصال عبر الوكيل. تحقق من نوع الوكيل وعنوانه وبيانات الاعتماد، ومن قدرة الوكيل على الوصول إلى الخادم الهدف.",
     "keyReadFailed": "تعذر قراءة المفتاح — إما أن الملف تالف أو أن عبارة المرور غير صحيحة.",
     "accessDenied": "ليس لديك الإذن للقيام بهذه العملية.",
     "notFound": "لم يتم العثور على الملف أو المجلد.",
@@ -287,43 +287,43 @@
   "settings": {
     "openWithAssociations": {
       "title": "الارتباطات",
-      "hint": "اختر تطبيقًا لامتداد الملف. الملفات التي لا توجد لها قاعدة تستخدم الإعداد الافتراضي للنظام.",
+      "hint": "اختر تطبيقًا لامتداد ملف. الملفات التي ليس لها قاعدة تُفتح بالتطبيق الافتراضي للنظام.",
       "extension": "الامتداد",
       "extensionPlaceholder": "txt",
       "application": "التطبيق",
       "applicationPlaceholder": "مسار التطبيق",
       "browse": "اختر التطبيق",
-      "remove": "إلغاء الارتباط",
+      "remove": "إزالة الارتباط",
       "add": "إضافة ارتباط"
     },
-    "minimizeToTray": "تقليص الحجم إلى علبة النظام",
+    "minimizeToTray": "التصغير إلى علبة النظام",
     "minimizeToTrayHint": "يعمل زر التصغير على إخفاء النافذة في علبة النظام بدلاً من شريط المهام.",
-    "closeToTray": "الإغلاق إلى علبة النظام",
-    "closeToTrayHint": "يعمل زر الإغلاق على إخفاء النافذة في علبة النظام بدلاً من إنهاء التطبيق. قم بإنهاء التطبيق من قائمة أيقونة علبة النظام.",
+    "closeToTray": "التصغير إلى علبة النظام عند الإغلاق",
+    "closeToTrayHint": "يخفي زر الإغلاق النافذة في علبة النظام بدلًا من إنهاء التطبيق. للخروج استخدم قائمة أيقونة علبة النظام.",
     "title": "الإعدادات",
     "unsavedChangesTitle": "التغييرات غير المحفوظة",
     "unsavedChangesMessage": "هل تريد حفظ التغييرات في الإعدادات؟",
-    "discardChanges": "لا تحفظ",
+    "discardChanges": "عدم الحفظ",
     "categories": {
       "connection": "الاتصال",
-      "transfers": "التحويلات",
+      "transfers": "عمليات النقل",
       "interface": "الواجهة",
       "shortcuts": "الاختصارات",
       "updates": "التحديثات",
       "logging": "تسجيل",
-      "security": "الأمن"
+      "security": "الأمان"
     },
     "shortcuts": {
       "title": "اختصارات لوحة المفاتيح",
       "hint": "انقر فوق أحد الاختصارات، ثم اضغط على مجموعة مفاتيح جديدة لإعادة تعيينها.",
-      "globalTitle": "عالمي",
+      "globalTitle": "عامة",
       "paneTitle": "جزء الملفات",
-      "recording": "اضغط على مفتاح...",
+      "recording": "اضغط على المفاتيح…",
       "unbound": "لم يتم تخصيصه",
-      "reset": "إعادة الضبط إلى الإعدادات الافتراضية",
-      "resetAll": "إعادة ضبط كل الإعدادات إلى القيم الافتراضية",
-      "unassign": "إلغاء التعيين",
-      "conflict": "يستخدمه أيضًا: {{action}}",
+      "reset": "استعادة الافتراضي",
+      "resetAll": "استعادة جميع الاختصارات الافتراضية",
+      "unassign": "إزالة الاختصار",
+      "conflict": "مستخدم أيضًا لـ: {{action}}",
       "actions": {
         "search": "بحث ({{side}})",
         "toggleHiddenFiles": "إظهار/إخفاء الملفات المخفية",
@@ -339,8 +339,8 @@
         "delete": "حذف",
         "deletePermanent": "حذف نهائيًا",
         "navigateUp": "الانتقال إلى المجلد الأعلى",
-        "navigateBack": "العودة",
-        "navigateForward": "تقدم",
+        "navigateBack": "رجوع",
+        "navigateForward": "للأمام",
         "navigateHome": "الانتقال إلى المجلد الرئيسي",
         "moveTo": "نقل إلى…",
         "newFolder": "مجلد جديد…",
@@ -356,33 +356,33 @@
     "security": {
       "title": "الحماية بكلمة مرور",
       "systemMode": "حماية النظام",
-      "systemModeHint": "يتم تشفير كلمات المرور الخاصة بحسابك في Windows، ويمكن الاطلاع عليها في إعدادات الاتصال.",
+      "systemModeHint": "تُشفَّر كلمات المرور لحسابك في Windows، ويمكن عرضها في إعدادات الاتصال.",
       "strongholdMode": "حماية معززة",
-      "strongholdModeHint": "يتطلب كلمة مرور رئيسية. يمكن استخدام كلمات المرور المحفوظة للاتصال، لكن لا يمكن عرضها.",
+      "strongholdModeHint": "يتطلب كلمة مرور رئيسية. لعرض كلمة مرور محفوظة يجب إدخال كلمة المرور الرئيسية مرة أخرى.",
       "loading": "جاري فحص وحدة التخزين المحمية…",
-      "configuredLocked": "يتم تأمين مساحة التخزين المحمية بكلمة مرور رئيسية ويتم قفلها.",
-      "configuredUnlocked": "يتم تأمين مساحة التخزين المحمية بكلمة مرور رئيسية وهي مفتوحة حاليًا.",
+      "configuredLocked": "مساحة التخزين المحمية مؤمّنة بكلمة مرور رئيسية ومقفلة.",
+      "configuredUnlocked": "مساحة التخزين المحمية مؤمّنة بكلمة مرور رئيسية وغير مقفلة.",
       "masterPassword": "كلمة المرور الرئيسية",
       "confirmPassword": "تأكيد كلمة المرور الرئيسية",
       "oldPassword": "كلمة المرور الرئيسية الحالية",
       "newPassword": "كلمة مرور رئيسية جديدة",
       "setup": "حماية كلمات المرور المحفوظة",
-      "settingUp": "حماية…",
+      "settingUp": "جارٍ تفعيل الحماية…",
       "unlock": "فتح",
       "unlocking": "جاري فتح القفل…",
       "unlockRequired": "إلغاء قفل مساحة التخزين المحمية",
-      "unlockRequiredHint": "يستخدم هذا الاتصال سرًا محفوظًا. قم بإلغاء قفل مساحة التخزين المحمية للمتابعة.",
+      "unlockRequiredHint": "يستخدم هذا الاتصال كلمة مرور محفوظة. ألغِ قفل مساحة التخزين المحمية للمتابعة.",
       "lockNow": "قفل الآن",
       "autoLock": "القفل التلقائي بعد، دقيقة",
       "autoLockDisabled": "معطّل",
-      "autoLockHint": "يؤدي هذا الإعداد إلى قفل مساحة التخزين بعد فترة من عدم النشاط. تظل الاتصالات الحالية بالخادم نشطة؛ ويؤدي إدخال القيمة 0 إلى تعطيل القفل التلقائي.",
+      "autoLockHint": "يقفل مساحة التخزين المحمية بعد فترة من عدم النشاط. تبقى الاتصالات القائمة بالخوادم نشطة؛ والقيمة 0 تعطّل القفل التلقائي.",
       "changePassword": "تغيير كلمة المرور الرئيسية",
       "change": "تغيير كلمة المرور",
-      "systemUnlock": "السماح بإلغاء قفل النظام",
+      "systemUnlock": "السماح بإلغاء القفل عبر النظام",
       "systemUnlockHint": "يستخدم ميزة «Windows Hello» (رقم التعريف الشخصي أو التعرف على الوجه أو بصمة الإصبع وفقًا لإعدادات Windows). وتظل كلمة المرور الرئيسية هي طريقة الاستعادة.",
       "unlockWithSystem": "فتح القفل باستخدام مصادقة النظام",
-      "systemUnavailable": "لا تتوفر ميزة إلغاء قفل النظام على هذه المنصة.",
-      "noRecovery": "لا يمكن استعادة كلمة المرور الرئيسية في حال نسيانها. تؤدي إعادة تعيين الخزينة إلى حذف جميع الأسرار المحفوظة.",
+      "systemUnavailable": "إلغاء القفل عبر النظام غير متاح على هذه المنصة.",
+      "noRecovery": "لا يمكن استعادة كلمة المرور الرئيسية المنسية. تؤدي إعادة تعيين الخزنة إلى حذف جميع كلمات المرور وعبارات المرور المحفوظة.",
       "passwordMismatch": "كلمات المرور غير متطابقة.",
       "passwordTooShort": "يجب أن تتكون كلمة المرور الرئيسية من 12 حرفًا على الأقل.",
       "strength": {
@@ -392,12 +392,12 @@
       },
       "reset": "إعادة تعيين مساحة التخزين المحمية",
       "resetHint": "يحذف مساحة التخزين المحمية وجميع كلمات المرور وعبارات مرور مفاتيح SSH المخزنة فيها. وسيتعين إعادة إعداد الحماية المعززة.",
-      "resetWarning": "سيؤدي هذا الإجراء إلى حذف جميع كلمات المرور وعبارات المرور الرئيسية المحفوظة نهائيًا. أدخل كلمة المرور الرئيسية الحالية للمتابعة.",
-      "confirmReset": "حذف الأسرار المحفوظة",
+      "resetWarning": "سيحذف هذا الإجراء جميع كلمات المرور وعبارات مرور المفاتيح المحفوظة نهائيًا. أدخل كلمة المرور الرئيسية الحالية للمتابعة.",
+      "confirmReset": "حذف كلمات المرور المحفوظة",
       "showConfirmations": "إظهار تأكيدات الأمان",
-      "showConfirmationsHint": "اطلب التأكيد قبل إظهار الأسرار المحفوظة أو تشغيل الملفات التنفيذية. تتطلب إعادة تعيين التخزين المحمي تأكيدًا دائمًا.",
-      "unavailable": "التخزين المحمي غير متاح.",
-      "failed": "فشلت عملية التخزين المحمي."
+      "showConfirmationsHint": "طلب التأكيد قبل عرض كلمات المرور المحفوظة أو تشغيل الملفات التنفيذية. تتطلب إعادة تعيين مساحة التخزين المحمية تأكيدًا دائمًا.",
+      "unavailable": "مساحة التخزين المحمية غير متاحة.",
+      "failed": "فشلت العملية على مساحة التخزين المحمية."
     },
     "unlimitedPlaceholder": "بلا حدود",
     "connectTimeoutLabel": "مهلة انتظار الاتصال، ثانية",
@@ -406,41 +406,41 @@
     "ftpActiveModeHint": "FTP/FTPS فقط — لا يؤثر على SFTP/WebDAV. نادرًا ما تكون هناك حاجة إليه، إلا في الشبكات/الخوادم التي لا يمر فيها الوضع السلبي عبر NAT. ينطبق على الاتصال التالي.",
     "ftpActiveModeDisabledByProxy": "غير متاح أثناء تفعيل الوكيل — حيث إن نفق الوكيل يدعم الاتصالات الصادرة فقط، لذا يجب أن يظل بروتوكول FTP في الوضع السلبي.",
     "proxy": {
-      "enable": "استخدم خادمًا وكيلًا للاتصال",
+      "enable": "استخدام وكيل للاتصالات",
       "enableHint": "SOCKS4 أو SOCKS5 أو HTTP CONNECT — ينطبق على بروتوكولات FTP وFTPS وSFTP وWebDAV. ينطبق على الاتصال التالي.",
       "typeLabel": "نوع الوكيل",
-      "hostLabel": "مضيف الوكيل",
+      "hostLabel": "عنوان الوكيل",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "المنفذ",
       "usernameLabel": "اسم المستخدم",
       "passwordLabel": "كلمة المرور",
       "removeSavedPassword": "إزالة كلمة المرور المحفوظة",
       "revealFailed": "تعذر فك تشفير كلمة المرور المحفوظة.",
-      "testTargetLabel": "اختبار مقابل",
-      "testTargetHostPlaceholder": "مضيف الخادم",
+      "testTargetLabel": "الاختبار مع",
+      "testTargetHostPlaceholder": "عنوان الخادم",
       "testTargetPortPlaceholder": "المنفذ",
       "test": "اختبار الوكيل",
-      "testing": "تجربة…",
-      "testOk": "وصل الوكيل إلى الهدف بنجاح.",
+      "testing": "جارٍ الاختبار…",
+      "testOk": "وصل الوكيل إلى الخادم الهدف بنجاح.",
       "testFailed": "فشل اختبار الوكيل."
     },
-    "concurrencyLabel": "عمليات التحويل المتزامنة",
-    "concurrencyHint": "عدد الملفات التي يمكن تحميلها وتنزيلها في الوقت نفسه (0 أو فارغ — بلا حدود). ينطبق هذا على الاتصال التالي.",
-    "speedLimitLabel": "الحد الأقصى للسرعة، كيلوبايت في الثانية",
-    "speedLimitHint": "ينطبق هذا على المجموع الإجمالي لجميع عمليات التحويل المتزامنة (0 أو فارغ — لا يوجد حد). يسري مفعوله على الفور، دون انتظار الاتصال التالي.",
-    "notifyOnComplete": "إرسال إشعار عند انتهاء عمليات التحويل",
+    "concurrencyLabel": "عمليات النقل المتزامنة",
+    "concurrencyHint": "عدد الملفات التي تُرفع وتُنزَّل في الوقت نفسه عبر جميع علامات التبويب (0 أو فارغ — بلا حد). يسري فورًا؛ وتكتمل عمليات النقل الجارية كالمعتاد.",
+    "speedLimitLabel": "حد السرعة، كيلوبايت/ث",
+    "speedLimitHint": "ينطبق على مجموع جميع عمليات النقل المتزامنة (0 أو فارغ — بلا حد). يسري فورًا دون انتظار الاتصال التالي.",
+    "notifyOnComplete": "إشعار عند انتهاء عمليات النقل",
     "notifyOnCompleteHint": "إشعار من النظام عند إفراغ قائمة انتظار النقل — فقط عندما لا تكون النافذة هي النافذة النشطة.",
-    "overwriteActionLabel": "بشأن تعارض الأسماء",
-    "overwriteAsk": "اسأل",
+    "overwriteActionLabel": "عند تعارض الأسماء",
+    "overwriteAsk": "السؤال",
     "overwriteOverwrite": "الكتابة فوق",
     "overwriteSkip": "تخطي",
-    "overwriteHint": "ماذا تفعل عندما يكون الملف الذي يتم نسخه موجودًا بالفعل في المجلد الوجهة؟",
+    "overwriteHint": "ما يجب فعله عندما يكون الملف المنسوخ موجودًا بالفعل في المجلد الوجهة.",
     "preventSleep": "منع النظام من الدخول في وضع السكون أثناء عمليات النقل",
     "preventSleepHint": "يسري مفعوله على الفور، دون انتظار الاتصال التالي. ويظل نشطًا طالما كان هناك عملية نقل واحدة على الأقل جارية — وإلا فإنه لا يمنع وضع السكون.",
-    "themeLabel": "الموضوع",
-    "themeDark": "مظلم",
-    "themeLight": "الضوء",
-    "themeSystem": "النظام",
+    "themeLabel": "السمة",
+    "themeDark": "داكنة",
+    "themeLight": "فاتحة",
+    "themeSystem": "حسب النظام",
     "languageLabel": "لغة الواجهة",
     "interfaceScaleLabel": "مقياس الواجهة",
     "interfaceScaleHint": "تغيير حجم النص وعناصر التحكم في جميع أنحاء التطبيق.",
@@ -449,24 +449,24 @@
     "timeFormatLabel": "تنسيق الوقت",
     "timeFormat24Hour": "24 س",
     "timeFormat12Hour": "12 س",
-    "dateFormatLocale": "محلي",
+    "dateFormatLocale": "إقليمي",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "المجلد الافتراضي لجزء الكمبيوتر",
-    "defaultLocalPathHint": "المجلد الذي يُفتح فيه جزء الكمبيوتر عند بدء التشغيل وعند التبديل من خادم. اتركه فارغًا لاستخدام المجلد الرئيسي لنظامك.",
+    "defaultLocalPathLabel": "المجلد الافتراضي لجزء «الكمبيوتر»",
+    "defaultLocalPathHint": "المجلد الذي يفتحه جزء «الكمبيوتر» عند بدء التشغيل وعند التبديل من خادم. اتركه فارغًا لاستخدام مجلدك الرئيسي.",
     "chooseDefaultLocalPath": "اختر المجلد الافتراضي",
     "showHiddenFiles": "إظهار الملفات والمجلدات المخفية",
-    "showHiddenFilesHint": "ينطبق ذلك على كل من أجزاء الملفات المحلية والبعيدة.",
+    "showHiddenFilesHint": "ينطبق على الأجزاء المحلية وأجزاء الخادم.",
     "coloredTabs": "علامات تبويب ملونة",
     "coloredTabsHint": "يقوم بتلوين اسم علامة التبويب وأيقونتها باستخدام لون الإشارة المرجعية المحفوظة.",
     "autoCheckUpdates": "التحديث تلقائيًا",
     "autoCheckUpdatesHint": "يتحقق من وجود تحديثات عند بدء التشغيل ومرة يوميًا، وينزّلها في الخلفية. يُثبَّت التحديث الذي تم تنزيله بصمت عند تشغيل FTPeach في المرة القادمة، أو فورًا من شريط الحالة.",
-    "autoReconnectTabs": "إعادة ربط علامات التبويب التي تمت استعادتها عند بدء التشغيل",
-    "autoReconnectTabsHint": "مُعطل افتراضيًّا. عند تفعيله، يتم الاتصال بالمواقع المحفوظة المستعادة تلقائيًّا.",
+    "autoReconnectTabs": "إعادة اتصال علامات التبويب المستعادة عند بدء التشغيل",
+    "autoReconnectTabsHint": "معطّل افتراضيًا. عند تفعيله، تتصل تلقائيًا علامات التبويب المستعادة التي تخص خوادم محفوظة.",
     "saveSessionOnExit": "حفظ الجلسة عند الخروج",
     "saveSessionOnExitHint": "يستعيد علامات التبويب المفتوحة وأنواع الأجزاء والمسارات عند التشغيل التالي. يؤدي إيقاف تشغيل هذه الميزة إلى مسح الجلسة المحفوظة.",
     "checkNow": "تحقق الآن",
     "updateStatus": {
-      "checking": "البحث عن التحديثات...",
+      "checking": "جارٍ البحث عن تحديثات…",
       "notAvailable": "أنت تستخدم أحدث إصدار.",
       "error": "تعذر التحقق من وجود تحديثات.",
       "notPackaged": "غير متوفر في هذا الإصدار (npm run dev/start)."
@@ -481,7 +481,7 @@
     "exportDiagnosticsFailed": "تعذّر تصدير حزمة التشخيص."
   },
   "promptDialog": {
-    "confirmLabel": "حسنًا"
+    "confirmLabel": "موافق"
   },
   "exportSettingsDialog": {
     "title": "تصدير الإعدادات",
@@ -497,39 +497,39 @@
     "includeSettings": "إعدادات التطبيق",
     "includeBookmarks": "الإشارات المرجعية",
     "includeLocalPaths": "المسارات المحلية",
-    "passwordHint": "لا يتم تضمين كلمات المرور وعبارات مرور مفاتيح SSH في عملية الاستيراد — ستحتاج إلى إدخالها مرة أخرى لكل موقع تم استيراده."
+    "passwordHint": "لا يتم تضمين كلمات المرور وعبارات مرور مفاتيح SSH في الاستيراد — ستحتاج إلى إدخالها مرة أخرى لكل خادم مستورد."
   },
   "openWithDialog": {
     "title": "فتح في التطبيق",
     "downloading": "جاري تنزيل «{{fileName}}»…",
-    "progress": "{{loaded}} من {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} من {{total}} ({{percent}}%)",
     "connecting": "جاري الاتصال…"
   },
   "transfers": {
-    "notifyErrorTitle": "خطأ في التحويل",
-    "notifyCompleteTitle": "اكتمل التحويل",
+    "notifyErrorTitle": "خطأ في النقل",
+    "notifyCompleteTitle": "اكتمل النقل",
     "notifySucceeded": "تمت بنجاح: {{count}}",
     "notifyFailed": "فشل: {{count}}",
-    "webdavUploadTooLarge": "يقتصر حجم الملفات التي يمكن تحميلها عبر WebDAV على {{limit}} ميغابايت لكل ملف."
+    "webdavUploadTooLarge": "يقتصر حجم الملف المرفوع عبر WebDAV على {{limit}} MiB."
   },
   "transferQueue": {
-    "title": "التحويلات",
+    "title": "عمليات النقل",
     "columns": {
       "file": "ملف",
-      "route": "المسار",
+      "route": "الاتجاه",
       "size": "الحجم",
-      "transferred": "تم نقله",
+      "transferred": "المنقول",
       "progress": "التقدم",
       "speed": "السرعة",
       "remaining": "المتبقي",
       "status": "الحالة"
     },
     "empty": "ستظهر عمليات التحميل والتنزيل هنا",
-    "newTransfers_one": "{{count}} تحويل جديد",
-    "newTransfers_other": "{{count}} تحويل جديد",
+    "newTransfers_one": "{{count}} عملية نقل جديدة",
+    "newTransfers_other": "{{count}} عملية نقل جديدة",
     "status": {
       "queued": "قيد الانتظار",
-      "done": "تم",
+      "done": "اكتمل",
       "error": "خطأ",
       "paused": "موقوف مؤقتًا",
       "stopped": "تم إلغاؤه",
@@ -545,27 +545,27 @@
     "directionTitleServer": "نسخ على الخادم",
     "route": "{{from}} ← {{to}}",
     "cancelledByUser": "تم إلغاؤه من قبل المستخدم",
-    "stoppedDash": "توقف",
+    "stoppedDash": "متوقف",
     "resume": "استئناف",
     "retry": "إعادة المحاولة",
-    "stop": "توقف",
+    "stop": "إيقاف",
     "pauseUnsupportedCopy": "لا يتم دعم ميزة «الإيقاف المؤقت» عند النسخ بين الخوادم",
     "pauseUnsupportedServerCopy": "الإيقاف المؤقت غير مدعوم عند النسخ على الخادم",
     "pauseUnsupportedWebdav": "لا يدعم WebDAV ميزة «الإيقاف المؤقت»",
     "retryUnsupportedConnection": "إعادة المحاولة غير متاحة: تم إغلاق الاتصال",
-    "newTransfers_zero": "{{count}} تحويل جديد",
-    "newTransfers_two": "{{count}} تحويلين جديدين",
-    "newTransfers_few": "{{count}} تحويلات جديدة",
-    "newTransfers_many": "{{count}} تحويلًا جديدًا"
+    "newTransfers_zero": "{{count}} عملية نقل جديدة",
+    "newTransfers_two": "{{count}} عمليتا نقل جديدتان",
+    "newTransfers_few": "{{count}} عمليات نقل جديدة",
+    "newTransfers_many": "{{count}} عملية نقل جديدة"
   },
   "log": {
-    "connecting": "جاري الاتصال بموقع {{addr}}...",
+    "connecting": "جارٍ الاتصال بـ {{addr}}...",
     "connectFailed": "فشل الاتصال: {{error}}",
     "connected": "تم تسجيل الدخول.",
     "receivedEntries_one": "تم استلام {{count}} سجل",
     "receivedEntries_other": "تم استلام {{count}} سجل",
     "skippedUnsafeEntry": "تم تخطي إدخال في القائمة يحمل اسمًا غير آمن: {{name}}",
-    "listFailed": "فشل الإدراج: {{error}}",
+    "listFailed": "تعذر جلب قائمة المجلد: {{error}}",
     "tlsInit": "جاري تهيئة TLS...",
     "tlsEstablished": "تم إنشاء اتصال TLS.",
     "davResumeUnsupportedLocal": "لا يدعم WebDAV استئناف التحميل — سيتم إرسال الملف من البداية مرة أخرى.",
@@ -595,13 +595,13 @@
     "copiedTooltip": "تم النسخ",
     "copyFailedTooltip": "تعذر النسخ",
     "saveFailedTooltip": "تعذر حفظ الملف",
-    "emptyFiltered": "لا توجد خطوط لهذا الاتصال",
+    "emptyFiltered": "لا توجد أسطر لهذا الاتصال",
     "emptyNoMatches": "لا توجد أسطر مطابقة",
     "emptyDefault": "ستظهر رسائل البروتوكول هنا"
   },
   "aboutDialog": {
-    "title": "نبذة عن",
-    "tagline": "عميل خفيف الوزن لبروتوكولات FTP/FTPS/SFTP.",
+    "title": "حول FTPeach",
+    "tagline": "عميل خفيف لبروتوكولات FTP/FTPS/SFTP/WebDAV.",
     "legalInformation": "معلومات قانونية",
     "sourceCode": "الشفرة المصدرية",
     "reportIssue": "الإبلاغ عن مشكلة",
@@ -609,8 +609,8 @@
     "updateDownloaded": "تم تنزيل التحديث v{{version}} — يمكنك تثبيته الآن."
   },
   "siteManager": {
-    "emptyList": "لم يتم حفظ أي مواقع حتى الآن",
-    "confirmDeleteSite": "هل تريد حذف موقع «{{name}}»؟"
+    "emptyList": "لم يتم حفظ أي خوادم حتى الآن",
+    "confirmDeleteSite": "هل تريد حذف الخادم «{{name}}»؟"
   },
   "siteManagerDialog": {
     "titleNew": "إضافة إشارة مرجعية جديدة",
@@ -626,11 +626,11 @@
       "color": "اللون",
       "protocol": "البروتوكول",
       "keyFile": "ملف المفتاح",
-      "caCertFile": "شهادة سلطة التصديق",
+      "caCertFile": "شهادة CA",
       "remotePath": "المجلد الافتراضي",
       "localPath": "المجلد المحلي",
       "folder": "مجلد",
-      "maxConnections": "الحد الأقصى للاتصالات لكل لوحة"
+      "maxConnections": "الحد الأقصى للاتصالات لكل جزء"
     },
     "icons": {
       "bookmark": "إشارة مرجعية",
@@ -638,24 +638,24 @@
       "briefcase": "العمل",
       "house": "خادم منزلي",
       "cloud": "السحابة",
-      "flask": "الاختبار / البيئة التجريبية",
+      "flask": "اختبار / بيئة تجريبية",
       "gamepad": "خادم الألعاب",
       "clapperboard": "خادم الوسائط",
       "camera": "الكاميرا"
     },
     "colors": {
       "default": "بدون لون",
-      "peach": "الخوخ",
+      "peach": "خوخي",
       "red": "أحمر",
       "amber": "كهرماني",
       "green": "أخضر",
       "blue": "أزرق",
       "purple": "أرجواني",
-      "pink": "الوردي",
-      "teal": "الأزرق المخضر"
+      "pink": "وردي",
+      "teal": "أزرق مخضر"
     },
     "saveFailed": "تعذر الحفظ",
-    "revealFailed": "تعذر عرض السر المحفوظ",
+    "revealFailed": "تعذر عرض كلمة المرور المحفوظة",
     "savedSecretPlaceholder": "تم الحفظ",
     "savedSecretHint": "اترك الحقل فارغًا للاحتفاظ بكلمة المرور الحالية",
     "removeSavedPassword": "إزالة كلمة المرور المحفوظة",
@@ -683,7 +683,7 @@
     "sortMode": "فرز الإشارات المرجعية",
     "sortManual": "يدوي",
     "sortName": "حسب الاسم",
-    "sortProtocol": "وفقًا للبروتوكول",
+    "sortProtocol": "حسب البروتوكول",
     "duplicateWarning": "يوجد بالفعل إشارة مرجعية لنفس الوجهة: \"{{name}}\". هل تريد حفظ إشارة مرجعية أخرى؟",
     "saveAnyway": "حفظ على أي حال",
     "newFolder": "مجلد جديد",
@@ -692,13 +692,13 @@
     "searchPlaceholder": "بحث…",
     "clearSearch": "مسح البحث",
     "noSearchResults": "لا توجد إشارات مرجعية مطابقة لبحثك",
-    "duplicate": "تكرار",
+    "duplicate": "إنشاء نسخة",
     "duplicateNameSuffix": " (نسخة)",
     "newBookmarkInFolder": "إضافة إشارة مرجعية جديدة هنا",
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",
     "noFolder": "بدون مجلد",
-    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل لوحة حد مستقل."
+    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل جزء حد مستقل."
   },
   "connectionBar": {
     "fields": {
@@ -709,8 +709,8 @@
       "passphrase": "عبارة المرور",
       "keyFilePlaceholder": "ملف المفتاح…",
       "chooseKeyFile": "اختر ملف المفتاح…",
-      "caCertFilePlaceholder": "شهادة سلطة التصديق…",
-      "chooseCaCertFile": "اختر شهادة سلطة التصديق…"
+      "caCertFilePlaceholder": "شهادة CA…",
+      "chooseCaCertFile": "اختر شهادة CA…"
     },
     "secureToggle": {
       "tooltip": "قم بإلغاء تحديد الخانة لقبول الشهادات الموقعة ذاتيًا وشهادات الخادم غير الصالحة",
@@ -733,11 +733,11 @@
   "titleBar": {
     "minimize": "تصغير",
     "restore": "استعادة",
-    "maximize": "تعظيم"
+    "maximize": "تكبير"
   },
   "tray": {
     "show": "عرض FTPeach",
-    "quit": "الخروج"
+    "quit": "خروج"
   },
   "tabStrip": {
     "localComputer": "الكمبيوتر",
@@ -749,17 +749,17 @@
     "more": "المزيد"
   },
   "statusBar": {
-    "transfers": "التحويلات: {{count}}",
+    "transfers": "عمليات النقل: {{count}}",
     "leftCount": "على اليسار: {{count}}",
     "rightCount": "على اليمين: {{count}}",
     "topCount": "أعلى: {{count}}",
     "bottomCount": "أسفل: {{count}}",
     "selectedSuffix": " (تم تحديد {{count}})",
     "status": {
-      "transferring": "نقل الملف",
+      "transferring": "جارٍ نقل ملف",
       "paused": "موقوف مؤقتًا",
       "connected": "متصل",
-      "connecting": "الاتصال",
+      "connecting": "جارٍ الاتصال",
       "connectFailed": "تعذر الاتصال",
       "disconnected": "غير متصل"
     }
@@ -767,7 +767,7 @@
   "viewToolbar": {
     "toggleLeftPane": "إظهار/إخفاء الجزء الأيسر",
     "toggleRightPane": "إظهار/إخفاء الجزء الأيمن",
-    "toggleTransferQueue": "إظهار/إخفاء قائمة الانتظار الخاصة بالتحويلات",
+    "toggleTransferQueue": "إظهار/إخفاء قائمة انتظار النقل",
     "toggleLog": "إظهار/إخفاء السجل",
     "orientationNarrow": "الأجزاء مكدسة — النافذة أضيق من أن تسمح بعرضها جنبًا إلى جنب",
     "orientationToRow": "ترتيب الأجزاء جنبًا إلى جنب",
@@ -776,12 +776,12 @@
     "pauseActive": "إيقاف عمليات النقل الجارية مؤقتًا",
     "resumeAllPaused": "استئناف جميع عمليات النقل الموقفة مؤقتًا",
     "stopActive": "إيقاف عمليات النقل الجارية",
-    "retryAllStopped": "إعادة محاولة جميع عمليات التحويل المتوقفة",
+    "retryAllStopped": "إعادة محاولة جميع عمليات النقل المتوقفة",
     "refreshPanesTooltip": "تحديث كلا الجزأين (F5)"
   },
   "paneToolbar": {
-    "back": "العودة",
-    "forward": "إلى الأمام",
+    "back": "رجوع",
+    "forward": "للأمام",
     "up": "أعلى",
     "chooseFolder": "اختر مجلدًا…",
     "newFolder": "مجلد جديد…",
@@ -795,7 +795,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "لا توجد اتصالات حديثة",
-    "noSavedConnectionsBody": "أدخل عنوان الخادم أعلاه، أو أضف موقعًا للوصول إليه بنقرة واحدة.",
+    "noSavedConnectionsBody": "أدخل عنوان الخادم أعلاه، أو أضف إشارة مرجعية للاتصال بنقرة واحدة.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "إدارة الإشارات المرجعية",
     "quicklistLabel": "الاتصالات الأخيرة"

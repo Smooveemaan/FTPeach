@@ -7,8 +7,8 @@
       "gb": "GB",
       "tb": "TB"
     },
-    "perSecond": "{{value}} /s",
-    "noLoginUser": "belum login",
+    "perSecond": "{{value}}/dtk",
+    "noLoginUser": "tanpa nama pengguna",
     "anonymousUser": "tanpa nama",
     "rootFolder": "Folder akar",
     "close": "Tutup",
@@ -21,7 +21,7 @@
     "increase": "Tambah",
     "decrease": "Kurangi",
     "showPassword": "Tampilkan kata sandi",
-    "savedSecretProtected": "Rahasia yang disimpan terlindungi dan tidak dapat dilihat",
+    "savedSecretProtected": "Kata sandi yang tersimpan dilindungi — lakukan autentikasi untuk melihatnya",
     "hidePassword": "Sembunyikan kata sandi"
   },
   "securityConfirmation": {
@@ -30,7 +30,7 @@
     "typeToConfirm": "Ketik {{phrase}} untuk mengonfirmasi",
     "operations": {
       "revealSiteSecret": {
-        "message": "Tampilkan kata sandi yang tersimpan untuk markah ini?"
+        "message": "Tampilkan kata sandi yang tersimpan untuk bookmark ini?"
       },
       "revealProxyPassword": {
         "message": "Tampilkan kata sandi proksi yang tersimpan?"
@@ -40,31 +40,31 @@
         "approve": "Hapus brankas"
       },
       "executeLocalFile": {
-        "message": "Jalankan berkas yang dapat dieksekusi atau skrip ini?"
+        "message": "Jalankan file yang dapat dieksekusi atau skrip ini?"
       },
       "executeRemoteFile": {
-        "message": "Unduh dan jalankan berkas yang dapat dieksekusi atau skrip ini?"
+        "message": "Unduh dan jalankan file yang dapat dieksekusi atau skrip ini?"
       }
     }
   },
   "paneMenu": {
     "newFolder": "Folder Baru…",
-    "newFile": "Berkas Baru…",
+    "newFile": "File Baru…",
     "refresh": "Segarkan",
     "open": "Buka",
-    "uploadToOtherPane": "Unggah ke panel lain",
-    "copyToOtherPane": "Salin ke panel lain",
-    "downloadToOtherPane": "Unduh ke panel lain",
+    "uploadToOtherPane": "Unggah ke panel satunya",
+    "copyToOtherPane": "Salin ke panel satunya",
+    "downloadToOtherPane": "Unduh ke panel satunya",
     "openWith": "Buka dengan…",
     "permissions": "Izin…",
     "moveTo": "Pindah ke…",
     "copyPath": "Salin jalur",
     "delete": "Hapus",
-    "deleteSelected_one": "Hapus (berkas {{count}})",
-    "deleteSelected_other": "Hapus (file {{count}})",
-    "deletePermanently": "Hapus secara permanen",
-    "deleteSelectedPermanently_one": "Hapus secara permanen (berkas {{count}})",
-    "deleteSelectedPermanently_other": "Hapus secara permanen (file {{count}})"
+    "deleteSelected_one": "Hapus ({{count}} file)",
+    "deleteSelected_other": "Hapus ({{count}} file)",
+    "deletePermanently": "Hapus permanen",
+    "deleteSelectedPermanently_one": "Hapus permanen ({{count}} file)",
+    "deleteSelectedPermanently_other": "Hapus permanen ({{count}} file)"
   },
   "chmodDialog": {
     "title": "Izin SFTP",
@@ -74,13 +74,13 @@
     "emptyFolder": "Folder ini kosong",
     "connectFirst": "Hubungkan dulu",
     "homeFolder": "Folder Beranda",
-    "copyToPaneBelow": "Salin ke panel di bawah ini",
-    "copyToPaneAbove": "Salin ke panel di atas",
-    "copyToPaneRight": "Salin ke panel di sebelah kanan",
-    "copyToPaneLeft": "Salin ke panel di sebelah kiri",
-    "fileTypeFolder": "Folder berkas",
-    "fileTypeGeneric": "Berkas",
-    "fileTypeWithExt": "{{ext}} Berkas",
+    "copyToPaneBelow": "Salin ke panel bawah",
+    "copyToPaneAbove": "Salin ke panel atas",
+    "copyToPaneRight": "Salin ke panel kanan",
+    "copyToPaneLeft": "Salin ke panel kiri",
+    "fileTypeFolder": "Folder file",
+    "fileTypeGeneric": "File",
+    "fileTypeWithExt": "File {{ext}}",
     "columnSize": "Ukuran",
     "columnModifiedAt": "Tanggal perubahan",
     "columnCreatedAt": "Tanggal dibuat",
@@ -89,7 +89,7 @@
     "columnOwner": "Pemilik",
     "columnGroup": "Kelompok",
     "columnName": "Nama",
-    "filesAriaLabel": "Berkas",
+    "filesAriaLabel": "File",
     "rename": "Ganti Nama",
     "resetColumnWidths": "Kembalikan lebar kolom",
     "updatedAtTooltip": "Diperbarui: {{date}}",
@@ -102,12 +102,12 @@
     "sortByColumnTooltip": "Urutkan berdasarkan kolom “{{column}}”",
     "rowProbeSample": "Contoh",
     "loading": "Sedang dimuat…",
-    "nothingFound": "Tidak ditemukan apa pun"
+    "nothingFound": "Tidak ada hasil"
   },
   "update": {
-    "readyToInstall": "Pembaruan v{{version}} sudah tersedia — klik \"Restart dan Instal\" untuk menerapkannya.",
-    "downloadingWithPercent": "Sedang mengunduh pembaruan versi {{version}}: {{percent}} %",
-    "downloadingFound": "Pembaruan v{{version}}, ditemukan, sedang diunduh…",
+    "readyToInstall": "Pembaruan v{{version}} tersedia — klik \"Mulai Ulang dan Instal\" untuk menerapkannya.",
+    "downloadingWithPercent": "Mengunduh pembaruan v{{version}}: {{percent}}%",
+    "downloadingFound": "Pembaruan v{{version}} ditemukan, sedang diunduh…",
     "restartAndInstall": "Mulai Ulang dan Instal",
     "availableAction": "tersedia!",
     "installAction": "Instal pembaruan",
@@ -116,27 +116,27 @@
     "installTooltip": "Mulai ulang sekarang untuk menginstal. Jika tidak, pembaruan akan diinstal saat FTPeach dijalankan berikutnya."
   },
   "legacyPasswordNotice": {
-    "message": "Kata sandi untuk beberapa situs yang tersimpan tidak dapat dibaca setelah pembaruan — silakan masukkan kembali kata sandi tersebut di pengelola situs."
+    "message": "Kata sandi beberapa server yang tersimpan tidak dapat dibaca setelah pembaruan — masukkan kembali di pengelola bookmark."
   },
   "plaintextSecretNotice": {
-    "message": "Kata sandi atau frasa sandi dari situs yang disimpan tidak dapat dienkripsi karena fitur perlindungan data Windows tidak tersedia, sehingga disimpan dalam bentuk teks biasa."
+    "message": "Kata sandi atau frasa sandi server yang tersimpan tidak dapat dienkripsi karena perlindungan data Windows tidak tersedia, sehingga disimpan sebagai teks biasa."
   },
   "secretNotPersistedNotice": {
-    "message": "Kata sandi atau frasa sandi tidak dapat dienkripsi dan tidak disimpan. Koneksi yang sudah ada dapat berlanjut hingga terputus; jika tidak, masukkan kembali frasa sandi tersebut pada kali berikutnya."
+    "message": "Kata sandi atau frasa sandi kunci tidak dapat dienkripsi dan tidak disimpan. Koneksi yang sudah ada dapat berlanjut hingga terputus; lain kali masukkan lagi."
   },
   "resize": {
-    "paneSize": "Seret untuk mengubah ukuran panel (klik dua kali untuk mengembalikan ke ukuran semula)",
-    "height": "Seret untuk mengubah ukuran tinggi (klik dua kali untuk mengembalikan ke ukuran semula)",
-    "ratio": "Seret untuk mengubah rasio ukuran (klik dua kali untuk mengembalikan ke pengaturan awal)"
+    "paneSize": "Seret untuk mengubah ukuran panel (klik dua kali untuk mengatur ulang)",
+    "height": "Seret untuk mengubah tinggi (klik dua kali untuk mengatur ulang)",
+    "ratio": "Seret untuk mengubah proporsi (klik dua kali untuk mengatur ulang)"
   },
   "dragMove": {
-    "itemCount_one": "{{count}} barang",
-    "itemCount_other": "{{count}} barang",
-    "moveMode": "bergerak"
+    "itemCount_one": "{{count}} item",
+    "itemCount_other": "{{count}} item",
+    "moveMode": "pindahkan"
   },
   "openWithChanged": {
-    "title": "File telah diubah",
-    "message": "\"{{name}}\" telah diubah di aplikasi eksternal. Apakah akan mengunggah berkas yang telah diperbarui ke server?"
+    "title": "File diubah",
+    "message": "\"{{name}}\" telah diubah di aplikasi eksternal. Unggah file yang diperbarui ke server?"
   },
   "saveSite": {
     "title": "Simpan profil koneksi",
@@ -153,25 +153,25 @@
     "labelRemote": "Nama folder baru di server:"
   },
   "newFile": {
-    "title": "Berkas Baru",
+    "title": "File Baru",
     "label": "Nama file (termasuk ekstensi):"
   },
   "moveToDialog": {
     "title": "Pindah ke…",
-    "labelSingle": "Pindahkan “{{name}}” ke folder:",
+    "labelSingle": "Pindahkan \"{{name}}\" ke folder:",
     "labelMultiple": "Pindahkan item yang dipilih ({{count}}) ke folder:"
   },
   "confirm": {
-    "resetLayout": "Mengatur ulang ukuran jendela dan panel, mengembalikan kolom ke pengaturan default, dan menghapus cache antarmuka?",
-    "hostKeyMismatch": "{{error}} Hapus sidik jari kunci yang tersimpan untuk {{host}}: {{port}} dan tetap terhubung? Lakukan ini hanya jika Anda yakin bahwa server tersebut benar-benar telah diinstal ulang atau dimigrasikan — jika tidak, hal ini dapat membuat Anda terhubung ke server yang berpotensi dipalsukan.",
+    "resetLayout": "Atur ulang ukuran jendela dan panel, kembalikan kolom default, dan hapus cache antarmuka?",
+    "hostKeyMismatch": "{{error}} Hapus sidik jari kunci yang tersimpan untuk {{host}}:{{port}} dan tetap terhubung? Lakukan ini hanya jika Anda yakin server benar-benar telah diinstal ulang atau dipindahkan — jika tidak, Anda bisa terhubung ke server palsu.",
     "connectAnyway": "Tetap terhubung",
-    "closeTabWithActiveTransfers": "Tab ini menampilkan transfer yang sedang berlangsung. Apakah Anda ingin menutup tab ini dan menghentikan transfer tersebut?",
+    "closeTabWithActiveTransfers": "Tab ini memiliki transfer yang sedang berlangsung. Tutup tab dan hentikan transfernya?",
     "closeTabLabel": "Tutup tab",
     "overwriteSingleExists": "\"{{name}}\" sudah ada di folder tujuan. Apakah ingin menimpanya?",
-    "overwriteConflicts_one": "{{count}} File tersebut sudah ada di folder tujuan. Apakah ingin menimpanya?",
-    "overwriteConflicts_other": "{{count}} File-file tersebut sudah ada di folder tujuan. Apakah ingin menimpanya?",
-    "overwriteLabel": "Menimpa",
-    "replaceConnection": "Panel ini sudah terhubung ke \"{{current}}\". Apakah Anda ingin mengganti tautan tersebut dengan \"{{next}}\"?",
+    "overwriteConflicts_one": "{{count}} item sudah ada di folder tujuan. Timpa?",
+    "overwriteConflicts_other": "{{count}} item sudah ada di folder tujuan. Timpa semuanya?",
+    "overwriteLabel": "Timpa",
+    "replaceConnection": "Panel ini sudah terhubung ke \"{{current}}\". Ganti koneksinya dengan \"{{next}}\"?",
     "replaceConnectionLabel": "Ganti",
     "deleteSelected": "Hapus item yang dipilih ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deleteEntry": "Hapus \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
@@ -179,12 +179,12 @@
     "recycleEntry": "Apakah ingin memindahkan “{{name}}” ke Keranjang Sampah?",
     "deletePermanentSelected": "Apakah Anda ingin menghapus item yang dipilih secara permanen ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deletePermanentEntry": "Apakah Anda ingin menghapus \"{{name}}\" secara permanen? Tindakan ini tidak dapat dibatalkan.",
-    "deleteRemoteSelected": "Apakah Anda ingin menghapus secara permanen item jarak jauh yang dipilih ({{count}})? Tindakan ini tidak dapat dibatalkan.",
-    "deleteRemoteEntry": "Apakah Anda ingin menghapus item jarak jauh \"{{name}}\" secara permanen? Tindakan ini tidak dapat dibatalkan."
+    "deleteRemoteSelected": "Hapus permanen item yang dipilih di server ({{count}})? Tindakan ini tidak dapat dibatalkan.",
+    "deleteRemoteEntry": "Hapus permanen \"{{name}}\" di server? Tindakan ini tidak dapat dibatalkan."
   },
   "paneSide": {
     "top": "atas",
-    "bottom": "bagian bawah",
+    "bottom": "bawah",
     "left": "kiri",
     "right": "kanan",
     "labelWithTab": "{{base}} (tab {{tabNumber}}, {{side}})",
@@ -192,22 +192,22 @@
   },
   "menu": {
     "file": {
-      "title": "Berkas",
+      "title": "File",
       "newTab": "Tab Baru",
       "closeTab": "Tutup Tab",
       "newConnection": "Koneksi Baru",
       "disconnect": "Putuskan sambungan",
-      "manageBookmarks": "Kelola Penanda…",
+      "manageBookmarks": "Kelola Bookmark…",
       "saveConnection": "Simpan Koneksi",
       "saveConnectionSide": "Simpan Koneksi ({{side}})",
-      "saveBookmarkSide": "Simpan Penanda ({{side}})",
+      "saveBookmarkSide": "Simpan Bookmark ({{side}})",
       "savePathSide": "Simpan Jalur ({{side}})",
-      "exportSettings": "Pengaturan Ekspor…",
+      "exportSettings": "Ekspor Pengaturan…",
       "importSettings": "Impor Pengaturan…",
       "quit": "Keluar"
     },
     "edit": {
-      "title": "Sunting",
+      "title": "Edit",
       "settings": "Pengaturan…",
       "resetLayout": "Atur Ulang Tata Letak dan Cache…"
     },
@@ -216,11 +216,11 @@
       "darkTheme": "Tema Gelap",
       "lightTheme": "Tema Terang",
       "systemTheme": "Tema Sistem",
-      "syncBrowsing": "Penjelajahan Folder Sinkronisasi",
-      "showHiddenFiles": "Tampilkan File dan Folder yang Tersembunyi",
+      "syncBrowsing": "Jelajah Panel Tersinkron",
+      "showHiddenFiles": "Tampilkan File dan Folder Tersembunyi",
       "leftPane": "Panel Kiri",
       "rightPane": "Panel Kanan",
-      "transferQueue": "Antrian Transfer",
+      "transferQueue": "Antrean Transfer",
       "log": "Log",
       "stackedPanes": "Panel Bertumpuk",
       "refreshBothPanes": "Segarkan Kedua Panel"
@@ -228,19 +228,19 @@
     "transfer": {
       "title": "Transfer",
       "copySelectedRight": "Salin yang Dipilih →",
-      "copySelectedLeft": "← Salin yang Terpilih",
+      "copySelectedLeft": "← Salin yang Dipilih",
       "clearCompleted": "Hapus yang Sudah Selesai"
     },
     "bookmarks": {
-      "title": "Tanda Buku"
+      "title": "Bookmark"
     },
     "help": {
-      "supportProject": "Dukung Proyek",
+      "supportProject": "Dukung FTPeach",
       "title": "Bantuan",
       "documentation": "Dokumentasi",
       "reportIssue": "Laporkan Masalah",
       "checkUpdates": "Periksa Pembaruan",
-      "about": "Tentang"
+      "about": "Tentang FTPeach"
     }
   },
   "errors": {
@@ -254,15 +254,15 @@
     "tlsNegotiationFailed": "Negosiasi TLS gagal. Pastikan server mendukung FTPS atau HTTPS eksplisit serta versi TLS yang kompatibel.",
     "sshNegotiationFailed": "Negosiasi SSH gagal. Server dan FTPeach tidak dapat mencapai kesepakatan mengenai algoritma SSH atau versi protokol yang kompatibel.",
     "proxyFailed": "Koneksi proxy gagal. Periksa jenis proxy, alamat, kredensial, dan apakah proxy tersebut dapat terhubung ke server tujuan.",
-    "keyReadFailed": "Tidak dapat membaca kunci — berkasnya rusak atau frasa sandinya salah.",
+    "keyReadFailed": "Tidak dapat membaca kunci — file rusak atau frasa sandi salah.",
     "accessDenied": "Anda tidak memiliki izin untuk melakukan operasi ini.",
     "notFound": "File atau folder tidak ditemukan.",
     "fileOrFolderExists": "File atau folder dengan nama tersebut sudah ada.",
-    "fileBusy": "Berkas tersebut sedang digunakan oleh proses lain.",
-    "locationBusy": "Operasi lain sedang menggunakan berkas atau folder ini. Coba lagi setelah operasi itu selesai.",
+    "fileBusy": "File sedang digunakan oleh proses lain.",
+    "locationBusy": "Operasi lain sedang menggunakan file atau folder ini. Coba lagi setelah operasi itu selesai.",
     "diskFull": "Ruang disk tidak cukup.",
     "hostKeyMismatch": "Kunci host server telah berubah.",
-    "integrityMismatch": "Berkas yang ditransfer gagal dalam pemeriksaan integritas.",
+    "integrityMismatch": "File yang ditransfer gagal dalam pemeriksaan integritas.",
     "invalidInput": "Nilai yang diberikan tidak valid.",
     "internal": "Terjadi kesalahan yang tidak terduga.",
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
@@ -270,24 +270,24 @@
   },
   "settings": {
     "openWithAssociations": {
-      "title": "Asosiasi Aplikasi",
-      "hint": "Pilih aplikasi untuk ekstensi tersebut. File yang tidak memiliki aturan akan menggunakan pengaturan default sistem.",
-      "extension": "Perpanjangan",
+      "title": "Asosiasi",
+      "hint": "Pilih aplikasi untuk sebuah ekstensi. File tanpa aturan dibuka dengan aplikasi default sistem.",
+      "extension": "Ekstensi",
       "extensionPlaceholder": "txt",
       "application": "Aplikasi",
       "applicationPlaceholder": "Jalur aplikasi",
       "browse": "Pilih aplikasi",
-      "remove": "Hapus keterkaitan",
-      "add": "Tambahkan keterkaitan"
+      "remove": "Hapus asosiasi",
+      "add": "Tambahkan asosiasi"
     },
-    "minimizeToTray": "Pindahkan ke baki sistem",
-    "minimizeToTrayHint": "Tombol minimize akan menyembunyikan jendela ke baki sistem, bukan ke bilah tugas.",
-    "closeToTray": "Tutup ke baki sistem",
-    "closeToTrayHint": "Tombol tutup akan menyembunyikan jendela ke baki sistem, bukan menutup aplikasi. Tutup aplikasi melalui menu ikon baki sistem.",
+    "minimizeToTray": "Minimalkan ke baki sistem",
+    "minimizeToTrayHint": "Tombol minimalkan menyembunyikan jendela ke baki sistem, bukan ke bilah tugas.",
+    "closeToTray": "Minimalkan ke baki sistem saat ditutup",
+    "closeToTrayHint": "Tombol tutup menyembunyikan jendela ke baki sistem alih-alih keluar dari aplikasi. Keluar melalui menu ikon di baki sistem.",
     "title": "Pengaturan",
     "unsavedChangesTitle": "Perubahan yang belum disimpan",
     "unsavedChangesMessage": "Apakah ingin menyimpan perubahan pada pengaturan?",
-    "discardChanges": "Jangan Menyimpan",
+    "discardChanges": "Jangan Simpan",
     "categories": {
       "connection": "Koneksi",
       "transfers": "Transfer",
@@ -301,13 +301,13 @@
       "title": "Pintasan keyboard",
       "hint": "Klik pintasan, lalu tekan kombinasi tombol baru untuk menetapkan kembali pintasan tersebut.",
       "globalTitle": "Global",
-      "paneTitle": "Panel File",
-      "recording": "Tekan sebuah tombol…",
+      "paneTitle": "Panel file",
+      "recording": "Tekan tombol…",
       "unbound": "Belum ditugaskan",
-      "reset": "Kembalikan ke pengaturan awal",
-      "resetAll": "Kembalikan semua ke pengaturan default",
-      "unassign": "Batalkan Penugasan",
-      "conflict": "Juga digunakan oleh: {{action}}",
+      "reset": "Kembalikan ke default",
+      "resetAll": "Kembalikan semua pintasan ke default",
+      "unassign": "Hapus pintasan",
+      "conflict": "Juga digunakan untuk: {{action}}",
       "actions": {
         "search": "Cari ({{side}})",
         "toggleHiddenFiles": "Tampilkan atau sembunyikan file tersembunyi",
@@ -324,12 +324,12 @@
         "deletePermanent": "Hapus secara permanen",
         "navigateUp": "Naik satu tingkat folder",
         "navigateBack": "Kembali",
-        "navigateForward": "Lanjutkan",
-        "navigateHome": "Buka folder beranda",
+        "navigateForward": "Maju",
+        "navigateHome": "Ke folder beranda",
         "moveTo": "Pindah ke…",
         "newFolder": "Folder baru…",
         "newFile": "File baru…",
-        "copyToOtherPane": "Salin ke panel lain",
+        "copyToOtherPane": "Salin ke panel satunya",
         "copy": "Salin",
         "cut": "Potong",
         "paste": "Tempel",
@@ -340,51 +340,51 @@
     "security": {
       "title": "Perlindungan dengan kata sandi",
       "systemMode": "Perlindungan sistem",
-      "systemModeHint": "Kata sandi untuk akun Windows Anda telah dienkripsi dan dapat dilihat di pengaturan koneksi.",
+      "systemModeHint": "Kata sandi dienkripsi untuk akun Windows Anda dan dapat dilihat di pengaturan koneksi.",
       "strongholdMode": "Perlindungan yang ditingkatkan",
-      "strongholdModeHint": "Diperlukan kata sandi utama. Kata sandi yang disimpan dapat digunakan untuk koneksi, tetapi tidak dapat dilihat.",
+      "strongholdModeHint": "Memerlukan kata sandi utama. Untuk melihat kata sandi tersimpan, Anda harus memasukkan kata sandi utama lagi.",
       "loading": "Memeriksa penyimpanan yang dilindungi…",
       "configuredLocked": "Penyimpanan yang dilindungi diamankan dengan kata sandi utama dan terkunci.",
-      "configuredUnlocked": "Penyimpanan yang dilindungi diamankan dengan kata sandi utama dan dapat dibuka kuncinya.",
+      "configuredUnlocked": "Penyimpanan yang dilindungi diamankan dengan kata sandi utama dan tidak terkunci.",
       "masterPassword": "Kata sandi utama",
       "confirmPassword": "Konfirmasi kata sandi utama",
       "oldPassword": "Kata sandi utama saat ini",
       "newPassword": "Kata sandi utama baru",
       "setup": "Lindungi kata sandi yang tersimpan",
-      "settingUp": "Melindungi…",
+      "settingUp": "Mengaktifkan perlindungan…",
       "unlock": "Buka Kunci",
       "unlocking": "Sedang membuka kunci…",
       "unlockRequired": "Buka kunci penyimpanan yang dilindungi",
-      "unlockRequiredHint": "Koneksi ini menggunakan rahasia yang telah disimpan. Buka kunci penyimpanan terlindungi untuk melanjutkan.",
+      "unlockRequiredHint": "Koneksi ini menggunakan kata sandi tersimpan. Buka kunci penyimpanan yang dilindungi untuk melanjutkan.",
       "lockNow": "Kunci sekarang",
       "autoLock": "Penguncian otomatis setelah, menit",
       "autoLockDisabled": "Nonaktif",
-      "autoLockHint": "Penyimpanan akan terkunci secara otomatis setelah tidak ada aktivitas. Koneksi server yang sudah ada tetap aktif; nilai 0 menonaktifkan penguncian otomatis.",
+      "autoLockHint": "Mengunci penyimpanan yang dilindungi setelah tidak ada aktivitas. Koneksi server yang terbuka tetap aktif; 0 menonaktifkan penguncian otomatis.",
       "changePassword": "Ubah kata sandi utama",
       "change": "Ubah kata sandi",
-      "systemUnlock": "Izinkan pembukaan kunci sistem",
+      "systemUnlock": "Izinkan buka kunci melalui sistem",
       "systemUnlockHint": "Menggunakan Windows Hello (PIN, pengenalan wajah, atau sidik jari sesuai pengaturan Windows). Kata sandi utama Anda tetap menjadi metode pemulihan.",
       "unlockWithSystem": "Buka kunci dengan otentikasi sistem",
-      "systemUnavailable": "Fitur pembukaan kunci sistem tidak tersedia di platform ini.",
-      "noRecovery": "Kata sandi utama yang terlupa tidak dapat dipulihkan. Mengatur ulang brankas akan menghapus semua rahasia yang tersimpan.",
+      "systemUnavailable": "Buka kunci melalui sistem tidak tersedia di platform ini.",
+      "noRecovery": "Kata sandi utama yang terlupa tidak dapat dipulihkan. Mengatur ulang brankas menghapus semua kata sandi dan frasa sandi yang tersimpan.",
       "passwordMismatch": "Kata sandi tersebut tidak cocok.",
       "passwordTooShort": "Gunakan setidaknya 12 karakter untuk kata sandi utama.",
       "strength": {
         "tooShort": "Terlalu pendek — gunakan setidaknya 12 karakter.",
-        "acceptable": "Boleh. Frasa sandi yang lebih panjang lebih aman.",
-        "strong": "Kata sandi utama yang kuat."
+        "acceptable": "Cukup. Frasa sandi yang lebih panjang lebih aman.",
+        "strong": "Kata sandi utama kuat."
       },
       "reset": "Atur ulang penyimpanan yang dilindungi",
       "resetHint": "Menghapus penyimpanan yang dilindungi serta semua kata sandi dan frasa sandi kunci SSH yang tersimpan di dalamnya. Perlindungan yang ditingkatkan perlu diatur ulang.",
-      "resetWarning": "Tindakan ini akan menghapus secara permanen semua kata sandi dan frasa sandi yang tersimpan. Masukkan kata sandi utama saat ini untuk melanjutkan.",
-      "confirmReset": "Hapus rahasia yang tersimpan",
+      "resetWarning": "Tindakan ini menghapus permanen semua kata sandi dan frasa sandi kunci yang tersimpan. Masukkan kata sandi utama saat ini untuk melanjutkan.",
+      "confirmReset": "Hapus kata sandi tersimpan",
       "showConfirmations": "Tampilkan konfirmasi keamanan",
-      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan rahasia tersimpan atau menjalankan file executable. Mengatur ulang penyimpanan terlindungi selalu memerlukan konfirmasi.",
+      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan atau menjalankan file yang dapat dieksekusi. Mengatur ulang penyimpanan yang dilindungi selalu memerlukan konfirmasi.",
       "unavailable": "Penyimpanan yang dilindungi tidak tersedia.",
-      "failed": "Operasi penyimpanan yang dilindungi gagal."
+      "failed": "Operasi pada penyimpanan yang dilindungi gagal."
     },
     "unlimitedPlaceholder": "Tanpa batas",
-    "connectTimeoutLabel": "Waktu tunggu koneksi, detik",
+    "connectTimeoutLabel": "Batas waktu koneksi, dtk",
     "connectTimeoutHint": "Berapa lama waktu tunggu respons server saat terhubung sebelum dianggap tidak dapat dijangkau (0 atau kosong — tanpa batas). Berlaku untuk koneksi berikutnya.",
     "ftpActiveMode": "Mode FTP aktif (bukan pasif)",
     "ftpActiveModeHint": "Hanya FTP/FTPS — tidak berpengaruh pada SFTP/WebDAV. Jarang diperlukan, hanya pada jaringan/server di mana mode pasif tidak dapat menembus NAT. Berlaku untuk koneksi berikutnya.",
@@ -400,26 +400,26 @@
       "passwordLabel": "Kata sandi",
       "removeSavedPassword": "Hapus kata sandi yang tersimpan",
       "revealFailed": "Tidak dapat mendekripsi kata sandi yang tersimpan.",
-      "testTargetLabel": "Uji terhadap",
-      "testTargetHostPlaceholder": "Host server",
+      "testTargetLabel": "Uji dengan",
+      "testTargetHostPlaceholder": "Alamat server",
       "testTargetPortPlaceholder": "Port",
       "test": "Uji proxy",
       "testing": "Sedang diuji…",
-      "testOk": "Proksi berhasil mencapai target.",
-      "testFailed": "Tes proxy gagal."
+      "testOk": "Proxy berhasil menjangkau server tujuan.",
+      "testFailed": "Uji proxy gagal."
     },
     "concurrencyLabel": "Transfer bersamaan",
-    "concurrencyHint": "Berapa banyak berkas yang akan diunggah dan diunduh secara bersamaan (0 atau dikosongkan — tanpa batas). Berlaku untuk koneksi berikutnya.",
+    "concurrencyHint": "Berapa banyak file yang diunggah dan diunduh bersamaan di semua tab (0 atau kosong — tanpa batas). Langsung berlaku; transfer yang sedang berjalan selesai seperti biasa.",
     "speedLimitLabel": "Batas kecepatan, KB/s",
-    "speedLimitHint": "Berlaku untuk jumlah total gabungan dari semua transfer yang dilakukan secara bersamaan (0 atau kosong — tidak ada batasan). Berlaku segera, tanpa harus menunggu koneksi berikutnya.",
-    "notifyOnComplete": "Berikan pemberitahuan saat transfer selesai",
-    "notifyOnCompleteHint": "Pemberitahuan sistem saat antrian transfer kosong — hanya saat jendela tersebut tidak sedang aktif.",
-    "overwriteActionLabel": "Tentang konflik nama",
+    "speedLimitHint": "Berlaku untuk total semua transfer yang berjalan bersamaan (0 atau kosong — tanpa batas). Langsung berlaku tanpa menunggu koneksi berikutnya.",
+    "notifyOnComplete": "Beri tahu saat transfer selesai",
+    "notifyOnCompleteHint": "Notifikasi sistem saat antrean transfer kosong — hanya saat jendela tidak sedang aktif.",
+    "overwriteActionLabel": "Jika nama bentrok",
     "overwriteAsk": "Tanyakan",
-    "overwriteOverwrite": "Menimpa",
+    "overwriteOverwrite": "Timpa",
     "overwriteSkip": "Lewati",
     "overwriteHint": "Apa yang harus dilakukan jika file yang sedang disalin sudah ada di folder tujuan.",
-    "preventSleep": "Mencegah sistem masuk ke mode tidur selama proses transfer",
+    "preventSleep": "Cegah sistem tidur selama transfer",
     "preventSleepHint": "Berlaku segera, tanpa harus menunggu koneksi berikutnya. Tetap aktif selama masih ada setidaknya satu transfer yang sedang berlangsung — jika tidak, tidak akan menghalangi mode tidur.",
     "themeLabel": "Tema",
     "themeDark": "Gelap",
@@ -427,28 +427,28 @@
     "themeSystem": "Sistem",
     "languageLabel": "Bahasa antarmuka",
     "interfaceScaleLabel": "Skala antarmuka",
-    "interfaceScaleHint": "Ubah ukuran teks dan tombol-tombol di seluruh aplikasi.",
+    "interfaceScaleHint": "Mengubah ukuran teks dan kontrol di seluruh aplikasi.",
     "dateFormatLabel": "Format tanggal/waktu",
     "dateFormatOnlyLabel": "Format tanggal",
     "timeFormatLabel": "Format waktu",
     "timeFormat24Hour": "24 jam",
     "timeFormat12Hour": "12 jam",
-    "dateFormatLocale": "Lokal",
+    "dateFormatLocale": "Regional",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "Folder default untuk Komputer",
-    "defaultLocalPathHint": "Folder yang dibuka panel Komputer saat startup dan saat beralih dari server. Biarkan kosong untuk menggunakan folder beranda sistem Anda.",
+    "defaultLocalPathLabel": "Folder default untuk \"Komputer\"",
+    "defaultLocalPathHint": "Folder yang dibuka panel \"Komputer\" saat aplikasi dimulai dan saat beralih dari server. Biarkan kosong untuk memakai folder beranda Anda.",
     "chooseDefaultLocalPath": "Pilih folder default",
     "showHiddenFiles": "Tampilkan file dan folder yang tersembunyi",
-    "showHiddenFilesHint": "Berlaku untuk panel file lokal maupun jarak jauh.",
+    "showHiddenFilesHint": "Berlaku untuk panel lokal maupun panel server.",
     "coloredTabs": "Tab berwarna",
     "coloredTabsHint": "Mewarnai nama tab dan ikonnya menggunakan warna bookmark yang telah disimpan.",
     "autoCheckUpdates": "Perbarui secara otomatis",
     "autoCheckUpdatesHint": "Memeriksa pembaruan saat aplikasi dimulai dan sekali sehari, lalu mengunduhnya di latar belakang. Pembaruan yang telah diunduh diinstal secara diam-diam saat FTPeach dijalankan berikutnya, atau langsung dari bilah status.",
     "autoReconnectTabs": "Hubungkan kembali tab yang telah dipulihkan saat aplikasi dimulai",
-    "autoReconnectTabsHint": "Secara default, fitur ini dinonaktifkan. Jika diaktifkan, situs yang telah disimpan dan dipulihkan akan terhubung secara otomatis.",
+    "autoReconnectTabsHint": "Nonaktif secara default. Jika diaktifkan, tab yang dipulihkan dengan server tersimpan akan terhubung otomatis.",
     "saveSessionOnExit": "Simpan sesi saat keluar",
     "saveSessionOnExitHint": "Mengembalikan tab yang terbuka, jenis panel, dan jalur pada saat aplikasi diluncurkan kembali. Menonaktifkan opsi ini akan menghapus sesi yang tersimpan.",
-    "checkNow": "Cek Sekarang",
+    "checkNow": "Periksa Sekarang",
     "updateStatus": {
       "checking": "Memeriksa pembaruan…",
       "notAvailable": "Anda sudah menggunakan versi terbaru.",
@@ -457,7 +457,7 @@
     },
     "logEnable": "Tampilkan panel log",
     "logShowTimestamps": "Tampilkan cap waktu",
-    "logToFile": "Menulis log ke berkas",
+    "logToFile": "Tulis log ke file",
     "logToFileHint": "Menambahkan log ke file harian di %APPDATA%\\FTPeach\\logs, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB. Tombol \"Simpan\" di panel berbeda: tombol itu menyimpan baris yang ditampilkan di panel satu kali, saat diklik.",
     "exportDiagnostics": "Ekspor paket diagnostik",
     "exportDiagnosticsBusy": "Mengekspor…",
@@ -465,28 +465,28 @@
     "exportDiagnosticsFailed": "Paket diagnostik tidak dapat diekspor."
   },
   "promptDialog": {
-    "confirmLabel": "Oke"
+    "confirmLabel": "OK"
   },
   "exportSettingsDialog": {
-    "title": "Pengaturan Ekspor",
+    "title": "Ekspor Pengaturan",
     "confirmLabel": "Ekspor…",
     "includeSettings": "Pengaturan aplikasi",
     "includeBookmarks": "Bookmark",
     "includeLocalPaths": "Jalur lokal",
-    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam ekspor — Anda perlu memasukkannya kembali setelah mengimpornya ke mesin lain."
+    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam ekspor — Anda perlu memasukkannya lagi setelah mengimpor di komputer lain."
   },
   "importSettingsDialog": {
-    "title": "Pengaturan Impor",
+    "title": "Impor Pengaturan",
     "confirmLabel": "Impor…",
     "includeSettings": "Pengaturan aplikasi",
     "includeBookmarks": "Bookmark",
     "includeLocalPaths": "Jalur lokal",
-    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam impor — Anda perlu memasukkannya kembali untuk setiap situs yang diimpor."
+    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam impor — Anda perlu memasukkannya lagi untuk setiap server yang diimpor."
   },
   "openWithDialog": {
     "title": "Buka di Aplikasi",
     "downloading": "Sedang mengunduh “{{fileName}}”…",
-    "progress": "{{loaded}} dari {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} dari {{total}} ({{percent}}%)",
     "connecting": "Sedang terhubung…"
   },
   "transfers": {
@@ -499,16 +499,16 @@
   "transferQueue": {
     "title": "Transfer",
     "columns": {
-      "file": "Berkas",
+      "file": "File",
       "route": "Rute",
       "size": "Ukuran",
-      "transferred": "Dipindahkan",
-      "progress": "Kemajuan",
+      "transferred": "Ditransfer",
+      "progress": "Progres",
       "speed": "Kecepatan",
       "remaining": "Sisa",
       "status": "Status"
     },
-    "empty": "File yang diunggah dan diunduh akan muncul di sini",
+    "empty": "Unggahan dan unduhan akan muncul di sini",
     "newTransfers_one": "{{count}} transfer baru",
     "newTransfers_other": "{{count}} transfer baru",
     "status": {
@@ -520,40 +520,40 @@
       "cancelling": "Membatalkan…"
     },
     "direction": {
-      "up": "Mengunggah",
-      "down": "Mengunduh",
-      "copy": "Menyalin"
+      "up": "Unggah",
+      "down": "Unduh",
+      "copy": "Salin"
     },
     "directionTitleCopy": "Menyalin antar server",
     "directionTitleLocal": "Menyalin di komputer ini",
     "directionTitleServer": "Menyalin di server",
     "route": "{{from}} → {{to}}",
     "cancelledByUser": "Dibatalkan oleh pengguna",
-    "stoppedDash": "berhenti",
+    "stoppedDash": "dihentikan",
     "resume": "Lanjutkan",
     "retry": "Coba lagi",
-    "stop": "Berhenti",
-    "pauseUnsupportedCopy": "Fitur jeda tidak didukung saat menyalin data antar server",
+    "stop": "Hentikan",
+    "pauseUnsupportedCopy": "Jeda tidak didukung saat menyalin antar server",
     "pauseUnsupportedServerCopy": "Jeda tidak didukung saat menyalin di server",
-    "pauseUnsupportedWebdav": "Fitur jeda tidak didukung oleh WebDAV",
-    "retryUnsupportedConnection": "Coba lagi tidak tersedia: koneksi telah ditutup"
+    "pauseUnsupportedWebdav": "WebDAV tidak mendukung jeda",
+    "retryUnsupportedConnection": "Tidak dapat mencoba lagi: koneksi telah ditutup"
   },
   "log": {
     "connecting": "Sedang terhubung ke {{addr}}...",
     "connectFailed": "Koneksi gagal: {{error}}",
-    "connected": "Sudah masuk.",
+    "connected": "Berhasil masuk.",
     "receivedEntries_one": "Menerima {{count}} entri",
     "receivedEntries_other": "Menerima {{count}} entri",
     "skippedUnsafeEntry": "Entri daftar dengan nama yang tidak aman telah dilewati: {{name}}",
-    "listFailed": "Pencantuman gagal: {{error}}",
+    "listFailed": "Gagal mengambil daftar folder: {{error}}",
     "tlsInit": "Sedang menginisialisasi TLS...",
     "tlsEstablished": "Koneksi TLS telah terjalin.",
-    "davResumeUnsupportedLocal": "WebDAV tidak mendukung kelanjutan pengunggahan — file tersebut akan dikirim ulang dari awal.",
-    "davResumeUnsupportedServer": "Server tidak mendukung fitur melanjutkan unduhan (status yang diharapkan: {{expected}}, namun yang diterima: {{status}}) — berkas tersebut akan diunduh ulang.",
+    "davResumeUnsupportedLocal": "WebDAV tidak mendukung melanjutkan unggahan — file akan dikirim ulang dari awal.",
+    "davResumeUnsupportedServer": "Server tidak mendukung melanjutkan unduhan (status yang diharapkan {{expected}}, diterima {{status}}) — file akan diunduh ulang.",
     "uploadResumed": "Melanjutkan unggahan {{path}} dari {{offset}} byte.",
-    "uploadRestartedSourceChanged": "Berkas lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — berkas akan dikirim ulang dari awal.",
-    "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan berkas lokal — {{path}} akan dikirim ulang dari awal.",
-    "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — berkas akan dikirim ulang dari awal."
+    "uploadRestartedSourceChanged": "File lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — file akan dikirim ulang dari awal.",
+    "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan file lokal — {{path}} akan dikirim ulang dari awal.",
+    "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — file akan dikirim ulang dari awal."
   },
   "logPanel": {
     "showAllConnections": "Tampilkan semua koneksi",
@@ -569,28 +569,28 @@
     "saveToFile": "Simpan baris yang ditampilkan ke file .txt",
     "clearLog": "Hapus log",
     "copiedTooltip": "Disalin",
-    "copyFailedTooltip": "Tidak bisa disalin",
-    "saveFailedTooltip": "Tidak dapat menyimpan berkas tersebut",
-    "emptyFiltered": "Tidak ada jalur untuk sambungan ini",
+    "copyFailedTooltip": "Tidak dapat menyalin",
+    "saveFailedTooltip": "Tidak dapat menyimpan file",
+    "emptyFiltered": "Tidak ada baris untuk koneksi ini",
     "emptyNoMatches": "Tidak ada baris yang cocok",
     "emptyDefault": "Pesan protokol akan muncul di sini"
   },
   "aboutDialog": {
-    "title": "Tentang",
-    "tagline": "Klien FTP/FTPS/SFTP yang ringan.",
+    "title": "Tentang FTPeach",
+    "tagline": "Klien FTP/FTPS/SFTP/WebDAV yang ringan.",
     "legalInformation": "Informasi hukum",
     "sourceCode": "Kode sumber",
     "reportIssue": "Laporkan masalah",
     "checkForUpdates": "Periksa Pembaruan",
-    "updateDownloaded": "Pembaruan v{{version}}telah diunduh — Anda dapat menginstalnya sekarang."
+    "updateDownloaded": "Pembaruan v{{version}} telah diunduh — Anda dapat menginstalnya sekarang."
   },
   "siteManager": {
-    "emptyList": "Belum ada situs yang disimpan",
-    "confirmDeleteSite": "Hapus situs \"{{name}}\"?"
+    "emptyList": "Belum ada server yang disimpan",
+    "confirmDeleteSite": "Hapus server \"{{name}}\"?"
   },
   "siteManagerDialog": {
     "titleNew": "Bookmark Baru",
-    "titleEdit": "Edit Penanda",
+    "titleEdit": "Edit Bookmark",
     "titleList": "Kelola Bookmark",
     "titleLocalPathList": "Kelola Jalur Lokal",
     "manageLocalPaths": "Kelola Jalur Lokal…",
@@ -609,12 +609,12 @@
       "maxConnections": "Koneksi maksimum per panel"
     },
     "icons": {
-      "bookmark": "Penanda",
+      "bookmark": "Bookmark",
       "globe": "Situs Web",
       "briefcase": "Pekerjaan",
       "house": "Server rumah",
       "cloud": "Awan",
-      "flask": "Pengujian / lingkungan staging",
+      "flask": "Pengujian / staging",
       "gamepad": "Server game",
       "clapperboard": "Server media",
       "camera": "Kamera"
@@ -631,12 +631,12 @@
       "teal": "Biru kehijauan"
     },
     "saveFailed": "Tidak dapat disimpan",
-    "revealFailed": "Tidak dapat menampilkan rahasia yang telah disimpan",
+    "revealFailed": "Tidak dapat menampilkan kata sandi yang tersimpan",
     "savedSecretPlaceholder": "Tersimpan",
     "savedSecretHint": "Biarkan kosong untuk mempertahankan kata sandi saat ini",
     "removeSavedPassword": "Hapus kata sandi yang tersimpan",
     "removeSavedPassphrase": "Hapus frasa sandi yang tersimpan",
-    "secretWillBeRemoved": "Akan dihapus setelah disimpan",
+    "secretWillBeRemoved": "Akan dihapus saat disimpan",
     "addBookmark": "Bookmark Baru",
     "addLocalBookmark": "Tambahkan Bookmark Folder Lokal",
     "chooseLocalPath": "Pilih folder lokal",
@@ -651,8 +651,8 @@
     "sortMode": "Penyortiran bookmark",
     "sortManual": "Manual",
     "sortName": "Berdasarkan nama",
-    "sortProtocol": "Sesuai protokol",
-    "duplicateWarning": "Tanda halaman untuk tujuan yang sama sudah ada: \"{{name}}\". Mau menyimpan yang lain?",
+    "sortProtocol": "Berdasarkan protokol",
+    "duplicateWarning": "Bookmark untuk tujuan yang sama sudah ada: \"{{name}}\". Simpan satu lagi?",
     "saveAnyway": "Simpan saja",
     "newFolder": "Folder Baru",
     "folderNamePlaceholder": "Nama folder",
@@ -660,11 +660,11 @@
     "searchPlaceholder": "Cari…",
     "clearSearch": "Hapus pencarian",
     "noSearchResults": "Tidak ada bookmark yang sesuai dengan pencarian Anda",
-    "duplicate": "Duplikat",
-    "duplicateNameSuffix": " (salin)",
-    "newBookmarkInFolder": "Tambahkan Bookmark Baru di Sini",
+    "duplicate": "Duplikasi",
+    "duplicateNameSuffix": " (salinan)",
+    "newBookmarkInFolder": "Bookmark Baru di Sini",
     "expandFolder": "Perluas \"{{name}}\"",
-    "collapseFolder": "Sembunyikan \"{{name}}\"",
+    "collapseFolder": "Ciutkan \"{{name}}\"",
     "noFolder": "Tanpa folder",
     "maxConnectionsHint": "0 atau kosong: tanpa batas. Selain itu 2–128, termasuk satu koneksi untuk menjelajahi folder. Berlaku setelah tersambung kembali. Setiap panel memiliki batas sendiri."
   },
@@ -676,7 +676,7 @@
       "password": "Kata sandi",
       "passphrase": "Frasa sandi",
       "keyFilePlaceholder": "File kunci…",
-      "chooseKeyFile": "Pilih berkas kunci…",
+      "chooseKeyFile": "Pilih file kunci…",
       "caCertFilePlaceholder": "Sertifikat CA…",
       "chooseCaCertFile": "Pilih sertifikat CA…"
     },
@@ -685,7 +685,7 @@
       "label": "Verifikasi sertifikat"
     },
     "authToggle": {
-      "tooltip": "Masuk menggunakan berkas kunci SSH pribadi, bukan kata sandi",
+      "tooltip": "Masuk menggunakan file kunci SSH privat, bukan kata sandi",
       "label": "Masuk menggunakan kunci SSH"
     },
     "rsaKeyWarning": "Kunci privat RSA memiliki risiko serangan kanal samping berbasis waktu yang telah diketahui. Utamakan Ed25519 untuk kunci SSH baru.",
@@ -699,8 +699,8 @@
     "insecureWarning": "FTP biasa mengirimkan nama pengguna, kata sandi, dan file Anda tanpa enkripsi. Gunakan FTPS atau SFTP jika memungkinkan."
   },
   "titleBar": {
-    "minimize": "Perkecil",
-    "restore": "Kembalikan",
+    "minimize": "Minimalkan",
+    "restore": "Pulihkan",
     "maximize": "Maksimalkan"
   },
   "tray": {
@@ -720,12 +720,12 @@
     "transfers": "Transfer: {{count}}",
     "leftCount": "Kiri: {{count}}",
     "rightCount": "Kanan: {{count}}",
-    "topCount": "Tautan: {{count}}",
-    "bottomCount": "Bagian bawah: {{count}}",
+    "topCount": "Atas: {{count}}",
+    "bottomCount": "Bawah: {{count}}",
     "selectedSuffix": " ({{count}} dipilih)",
     "status": {
-      "transferring": "Mentransfer berkas",
-      "paused": "Dihentikan sementara",
+      "transferring": "Mentransfer file",
+      "paused": "Dijeda",
       "connected": "Terhubung",
       "connecting": "Menghubungkan",
       "connectFailed": "Tidak dapat terhubung",
@@ -735,25 +735,25 @@
   "viewToolbar": {
     "toggleLeftPane": "Tampilkan/sembunyikan panel kiri",
     "toggleRightPane": "Tampilkan/sembunyikan panel kanan",
-    "toggleTransferQueue": "Tampilkan/sembunyikan antrian transfer",
+    "toggleTransferQueue": "Tampilkan/sembunyikan antrean transfer",
     "toggleLog": "Tampilkan/sembunyikan log",
     "orientationNarrow": "Panel-panel ditumpuk — jendela terlalu sempit untuk tampilan berdampingan",
     "orientationToRow": "Susun panel secara berdampingan",
-    "orientationToStacked": "Menumpuk panel satu di atas yang lain",
-    "pauseUnsupportedWebdav": "Fungsi jeda tidak didukung oleh WebDAV",
+    "orientationToStacked": "Tumpuk panel satu di atas yang lain",
+    "pauseUnsupportedWebdav": "WebDAV tidak mendukung jeda",
     "pauseActive": "Jeda transfer yang sedang berlangsung",
-    "resumeAllPaused": "Lanjutkan semua transfer yang ditangguhkan",
+    "resumeAllPaused": "Lanjutkan semua transfer yang dijeda",
     "stopActive": "Hentikan transfer aktif",
     "retryAllStopped": "Coba ulang semua transfer yang terhenti",
     "refreshPanesTooltip": "Segarkan kedua panel (F5)"
   },
   "paneToolbar": {
     "back": "Kembali",
-    "forward": "Lanjut",
-    "up": "Atas",
+    "forward": "Maju",
+    "up": "Naik",
     "chooseFolder": "Pilih folder…",
     "newFolder": "Folder Baru…",
-    "newFile": "Berkas Baru…"
+    "newFile": "File Baru…"
   },
   "paneSourceSwitcher": {
     "local": "Komputer",
@@ -762,16 +762,16 @@
     "connectToServer": "Server"
   },
   "paneConnectEmptyState": {
-    "noSavedConnectionsTitle": "Tidak ada koneksi baru-baru ini",
-    "noSavedConnectionsBody": "Isi alamat server di atas, atau tambahkan situs untuk akses satu klik.",
+    "noSavedConnectionsTitle": "Tidak ada koneksi terbaru",
+    "noSavedConnectionsBody": "Isi alamat server di atas, atau tambahkan bookmark untuk terhubung dengan satu klik.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Kelola Bookmark",
     "quicklistLabel": "Koneksi terbaru"
   },
   "errorBoundary": {
     "consoleLogPrefix": "Kesalahan antarmuka FTPeach yang tidak ditangani:",
-    "title": "Terjadi kesalahan",
-    "message": "Terjadi kesalahan antarmuka yang tidak terduga. Koneksi aktif Anda dan file-file di disk tidak terpengaruh — Anda dapat mencoba memuat ulang antarmuka tersebut.",
+    "title": "Terjadi masalah",
+    "message": "Terjadi kesalahan antarmuka yang tidak terduga. Koneksi aktif Anda dan file di disk tidak terpengaruh — Anda dapat mencoba memuat ulang antarmuka.",
     "reload": "Muat Ulang Antarmuka"
   }
 }

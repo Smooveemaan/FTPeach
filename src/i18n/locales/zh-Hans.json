@@ -7,8 +7,8 @@
       "gb": "GB",
       "tb": "TB"
     },
-    "perSecond": "{{value}} /s",
-    "noLoginUser": "未登录",
+    "perSecond": "{{value}}/秒",
+    "noLoginUser": "无用户名",
     "anonymousUser": "匿名",
     "rootFolder": "根目录",
     "close": "关闭",
@@ -21,7 +21,7 @@
     "increase": "增加",
     "decrease": "减少",
     "showPassword": "显示密码",
-    "savedSecretProtected": "已保存的密钥受到保护，无法查看",
+    "savedSecretProtected": "已保存的密码受保护，需验证身份后才能查看",
     "hidePassword": "隐藏密码"
   },
   "securityConfirmation": {
@@ -48,34 +48,34 @@
     }
   },
   "paneMenu": {
-    "newFolder": "新建文件夹……",
+    "newFolder": "新建文件夹…",
     "newFile": "新建文件…",
     "refresh": "刷新",
     "open": "打开",
     "uploadToOtherPane": "上传到另一个窗格",
     "copyToOtherPane": "复制到另一个窗格",
-    "downloadToOtherPane": "下载到其他窗格",
+    "downloadToOtherPane": "下载到另一个窗格",
     "openWith": "打开方式…",
-    "permissions": "权限……",
-    "moveTo": "移至……",
+    "permissions": "权限…",
+    "moveTo": "移至…",
     "copyPath": "复制路径",
     "delete": "删除",
-    "deleteSelected_one": "删除（{{count}}文件）",
-    "deleteSelected_other": "删除（{{count}}文件）",
+    "deleteSelected_one": "删除（{{count}} 个文件）",
+    "deleteSelected_other": "删除（{{count}} 个文件）",
     "deletePermanently": "永久删除",
-    "deleteSelectedPermanently_one": "永久删除（{{count}}文件）",
-    "deleteSelectedPermanently_other": "永久删除（{{count}}文件）"
+    "deleteSelectedPermanently_one": "永久删除（{{count}} 个文件）",
+    "deleteSelectedPermanently_other": "永久删除（{{count}} 个文件）"
   },
   "chmodDialog": {
     "title": "SFTP 权限",
-    "label": "{{name}}的八进制模式（例如 644 或 0755）"
+    "label": "“{{name}}”的八进制权限（例如 644 或 0755）"
   },
   "filePane": {
     "emptyFolder": "文件夹为空",
     "connectFirst": "请先连接",
     "homeFolder": "主文件夹",
-    "copyToPaneBelow": "复制到下方的区域",
-    "copyToPaneAbove": "复制到上方区域",
+    "copyToPaneBelow": "复制到下方窗格",
+    "copyToPaneAbove": "复制到上方窗格",
     "copyToPaneRight": "复制到右侧窗格",
     "copyToPaneLeft": "复制到左侧窗格",
     "fileTypeFolder": "文件夹",
@@ -88,7 +88,7 @@
     "columnPermissions": "权限",
     "columnOwner": "所有者",
     "columnGroup": "组",
-    "columnName": "姓名",
+    "columnName": "名称",
     "filesAriaLabel": "文件",
     "rename": "重命名",
     "resetColumnWidths": "恢复列宽",
@@ -101,13 +101,13 @@
     "sortByNameTooltip": "按名称排序",
     "sortByColumnTooltip": "按“{{column}}”列排序",
     "rowProbeSample": "示例",
-    "loading": "正在加载……",
-    "nothingFound": "未找到任何内容"
+    "loading": "正在加载…",
+    "nothingFound": "未找到结果"
   },
   "update": {
-    "readyToInstall": "更新版本{{version}}现已发布——点击“重新启动并安装”以应用该更新。",
-    "downloadingWithPercent": "正在下载更新 v{{version}}：{{percent}} %",
-    "downloadingFound": "已找到更新版本{{version}}，正在下载……",
+    "readyToInstall": "v{{version}} 更新可用——点击“重新启动并安装”即可应用。",
+    "downloadingWithPercent": "正在下载更新 v{{version}}：{{percent}}%",
+    "downloadingFound": "发现更新 v{{version}}，正在下载…",
     "restartAndInstall": "重新启动并安装",
     "availableAction": "可更新！",
     "installAction": "安装更新",
@@ -116,13 +116,13 @@
     "installTooltip": "立即重启以安装。否则，更新将在下次启动 FTPeach 时安装。"
   },
   "legacyPasswordNotice": {
-    "message": "更新后，部分已保存网站的密码无法读取——请在网站管理器中重新输入这些密码。"
+    "message": "更新后，部分已保存服务器的密码无法读取——请在“管理书签”中重新输入。"
   },
   "plaintextSecretNotice": {
-    "message": "由于 Windows 的数据保护功能不可用，已保存网站的密码或密码短语无法进行加密，因此以明文形式存储。"
+    "message": "由于 Windows 数据保护不可用，已保存服务器的密码或密码短语未能加密，已以明文形式存储。"
   },
   "secretNotPersistedNotice": {
-    "message": "无法对密码或密钥密码短语进行加密，因此未将其保存。现有连接可继续保持，直到断开为止；否则，下次请重新输入密钥。"
+    "message": "密码或密钥密码短语未能加密，因此没有保存。现有连接可以一直使用到断开为止；下次请重新输入。"
   },
   "resize": {
     "paneSize": "拖动以调整窗格大小（双击可重置）",
@@ -130,13 +130,13 @@
     "ratio": "拖动以调整比例（双击可重置）"
   },
   "dragMove": {
-    "itemCount_one": "{{count}} 项目",
-    "itemCount_other": "{{count}} 项目",
+    "itemCount_one": "{{count}} 个项目",
+    "itemCount_other": "{{count}} 个项目",
     "moveMode": "移动"
   },
   "openWithChanged": {
     "title": "文件已更改",
-    "message": "外部应用程序中已修改了“{{name}}”。是否将更新后的文件上传到服务器？"
+    "message": "“{{name}}”已在外部应用程序中修改。是否将更新后的文件上传到服务器？"
   },
   "saveSite": {
     "title": "保存连接配置",
@@ -157,19 +157,19 @@
     "label": "文件名（含扩展名）："
   },
   "moveToDialog": {
-    "title": "移至……",
+    "title": "移至…",
     "labelSingle": "将“{{name}}”移动到文件夹：",
     "labelMultiple": "将选中的项目（{{count}}）移动到文件夹："
   },
   "confirm": {
     "resetLayout": "重置窗口和窗格大小、恢复默认列，并清除界面缓存？",
-    "hostKeyMismatch": "{{error}} 删除 {{host}}:{{port}} 的已保存密钥指纹，并继续连接？请仅在确信服务器已合法重新安装或迁移的情况下执行此操作——否则可能会导致您连接到潜在的伪造服务器。",
-    "connectAnyway": "无论如何都要连接",
+    "hostKeyMismatch": "{{error}} 删除 {{host}}:{{port}} 的已保存密钥指纹并继续连接？仅当您确定服务器确实已重新安装或迁移时才这样做——否则可能会连接到伪造的服务器。",
+    "connectAnyway": "仍然连接",
     "closeTabWithActiveTransfers": "此标签页中有正在进行的传输。关闭此标签页并停止这些传输吗？",
     "closeTabLabel": "关闭标签页",
-    "overwriteSingleExists": "目标文件夹中已存在“{{name}}”文件。是否要覆盖它？",
-    "overwriteConflicts_one": "{{count}} 目标文件夹中已存在该项目。是否要覆盖它？",
-    "overwriteConflicts_other": "{{count}} 目标文件夹中已存在这些项目。是否要覆盖它们？",
+    "overwriteSingleExists": "目标文件夹中已存在“{{name}}”。是否覆盖？",
+    "overwriteConflicts_one": "目标文件夹中已存在 {{count}} 个项目。是否覆盖？",
+    "overwriteConflicts_other": "目标文件夹中已存在 {{count}} 个项目。是否全部覆盖？",
     "overwriteLabel": "覆盖",
     "replaceConnection": "此窗格已连接到“{{current}}”。是否要将该连接替换为“{{next}}”？",
     "replaceConnectionLabel": "替换",
@@ -179,16 +179,16 @@
     "recycleEntry": "将“{{name}}”移至回收站吗？",
     "deletePermanentSelected": "是否要永久删除所选项目（{{count}}）？此操作无法撤销。",
     "deletePermanentEntry": "是否要永久删除“{{name}}”？此操作无法撤销。",
-    "deleteRemoteSelected": "是否要永久删除所选的远程项目（{{count}}）？此操作无法撤销。",
-    "deleteRemoteEntry": "是否要永久删除远程项目“{{name}}”？此操作无法撤销。"
+    "deleteRemoteSelected": "是否永久删除服务器上的所选项目（{{count}}）？此操作无法撤销。",
+    "deleteRemoteEntry": "是否永久删除服务器上的“{{name}}”？此操作无法撤销。"
   },
   "paneSide": {
-    "top": "顶部",
-    "bottom": "底部",
+    "top": "上",
+    "bottom": "下",
     "left": "左",
     "right": "右",
-    "labelWithTab": "{{base}} （标签页 {{tabNumber}}，{{side}}）",
-    "labelWithSide": "{{base}} ({{side}})"
+    "labelWithTab": "{{base}}（标签页 {{tabNumber}}，{{side}}）",
+    "labelWithSide": "{{base}}（{{side}}）"
   },
   "menu": {
     "file": {
@@ -197,7 +197,7 @@
       "closeTab": "关闭标签页",
       "newConnection": "新连接",
       "disconnect": "断开连接",
-      "manageBookmarks": "管理书签……",
+      "manageBookmarks": "管理书签…",
       "saveConnection": "保存连接",
       "saveConnectionSide": "保存连接（{{side}}）",
       "saveBookmarkSide": "保存书签（{{side}}）",
@@ -209,38 +209,38 @@
     "edit": {
       "title": "编辑",
       "settings": "设置…",
-      "resetLayout": "重置布局和缓存……"
+      "resetLayout": "重置布局和缓存…"
     },
     "view": {
-      "title": "查看",
+      "title": "视图",
       "darkTheme": "深色主题",
       "lightTheme": "浅色主题",
       "systemTheme": "系统主题",
-      "syncBrowsing": "同步文件夹浏览",
+      "syncBrowsing": "窗格同步浏览",
       "showHiddenFiles": "显示隐藏的文件和文件夹",
       "leftPane": "左侧窗格",
       "rightPane": "右侧窗格",
       "transferQueue": "传输队列",
       "log": "日志",
-      "stackedPanes": "堆叠窗格",
+      "stackedPanes": "上下排列窗格",
       "refreshBothPanes": "刷新两个窗格"
     },
     "transfer": {
       "title": "传输",
       "copySelectedRight": "复制所选内容 →",
-      "copySelectedLeft": "← 复制选定内容",
+      "copySelectedLeft": "← 复制所选内容",
       "clearCompleted": "清除已完成"
     },
     "bookmarks": {
       "title": "书签"
     },
     "help": {
-      "supportProject": "支持项目",
+      "supportProject": "支持 FTPeach",
       "title": "帮助",
       "documentation": "文档",
       "reportIssue": "报告问题",
       "checkUpdates": "检查更新",
-      "about": "关于"
+      "about": "关于 FTPeach"
     }
   },
   "errors": {
@@ -253,7 +253,7 @@
     "invalidCertificate": "服务器提供的证书无效。如果您信任该服务器，请在连接设置中禁用证书验证。",
     "tlsNegotiationFailed": "TLS 协商失败。请确认服务器是否支持显式 FTPS 或 HTTPS 以及兼容的 TLS 版本。",
     "sshNegotiationFailed": "SSH 协商失败。服务器和 FTPeach 无法就兼容的 SSH 算法或协议版本达成一致。",
-    "proxyFailed": "代理连接失败。请检查代理类型、地址、凭据，以及是否能连接到目标服务器。",
+    "proxyFailed": "代理连接失败。请检查代理类型、地址、凭据，以及代理能否连接到目标服务器。",
     "keyReadFailed": "无法读取密钥——文件已损坏或密码短语不正确。",
     "accessDenied": "您无权执行此操作。",
     "notFound": "找不到该文件或文件夹。",
@@ -271,43 +271,43 @@
   "settings": {
     "openWithAssociations": {
       "title": "关联",
-      "hint": "为文件扩展名选择一个应用程序。没有规则的文件将使用系统默认设置。",
+      "hint": "为文件扩展名选择应用程序。没有规则的文件将使用系统默认应用打开。",
       "extension": "扩展名",
       "extensionPlaceholder": "txt",
       "application": "应用程序",
       "applicationPlaceholder": "应用程序路径",
       "browse": "选择应用程序",
-      "remove": "取消关联",
+      "remove": "删除关联",
       "add": "添加关联"
     },
-    "minimizeToTray": "缩小到任务栏",
-    "minimizeToTrayHint": "最小化按钮会将窗口隐藏到系统托盘中，而不是任务栏中。",
-    "closeToTray": "靠近托盘",
+    "minimizeToTray": "最小化到系统托盘",
+    "minimizeToTrayHint": "最小化按钮会将窗口隐藏到系统托盘，而不是任务栏。",
+    "closeToTray": "关闭时最小化到系统托盘",
     "closeToTrayHint": "“关闭”按钮会将窗口收起至系统托盘，而非退出应用程序。请通过系统托盘图标的菜单退出应用程序。",
     "title": "设置",
     "unsavedChangesTitle": "未保存的更改",
     "unsavedChangesMessage": "是否保存设置更改？",
-    "discardChanges": "不要保存",
+    "discardChanges": "不保存",
     "categories": {
       "connection": "连接",
       "transfers": "传输",
       "interface": "界面",
-      "shortcuts": "快捷方式",
+      "shortcuts": "快捷键",
       "updates": "更新",
       "logging": "日志记录",
       "security": "安全"
     },
     "shortcuts": {
       "title": "键盘快捷键",
-      "hint": "单击一个快捷键，然后按下一组新的键组合来重新分配该快捷键。",
-      "globalTitle": "全球",
+      "hint": "单击一个快捷键，然后按下新的组合键即可重新分配。",
+      "globalTitle": "全局",
       "paneTitle": "文件窗格",
-      "recording": "按任意键……",
+      "recording": "请按键…",
       "unbound": "未分配",
-      "reset": "恢复默认设置",
-      "resetAll": "将所有设置重置为默认值",
-      "unassign": "取消分配",
-      "conflict": "已被占用：{{action}}",
+      "reset": "恢复默认",
+      "resetAll": "将所有快捷键恢复为默认值",
+      "unassign": "移除快捷键",
+      "conflict": "也用于：{{action}}",
       "actions": {
         "search": "搜索（{{side}}）",
         "toggleHiddenFiles": "显示/隐藏隐藏文件",
@@ -316,34 +316,34 @@
         "openSettings": "打开设置",
         "newTab": "新标签页",
         "closeTab": "关闭标签页",
-        "nextTab": "下一个选项卡",
-        "prevTab": "上一页",
+        "nextTab": "下一个标签页",
+        "prevTab": "上一个标签页",
         "refresh": "刷新",
         "selectAll": "全选",
         "delete": "删除",
         "deletePermanent": "永久删除",
-        "navigateUp": "向上移动一个文件夹",
+        "navigateUp": "向上一级",
         "navigateBack": "返回",
         "navigateForward": "前进",
         "navigateHome": "转到主文件夹",
-        "moveTo": "移至……",
-        "newFolder": "新建文件夹……",
-        "newFile": "新建文件……",
+        "moveTo": "移至…",
+        "newFolder": "新建文件夹…",
+        "newFile": "新建文件…",
         "copyToOtherPane": "复制到另一个窗格",
         "copy": "复制",
         "cut": "剪切",
         "paste": "粘贴",
-        "clearSelection": "清除选择",
+        "clearSelection": "取消选择",
         "open": "打开"
       }
     },
     "security": {
       "title": "密码保护",
       "systemMode": "系统保护",
-      "systemModeHint": "Windows 帐户的密码已加密，您可以在“连接设置”中查看。",
-      "strongholdMode": "增强型保护",
-      "strongholdModeHint": "需要主密码。已保存的密码可用于连接，但无法查看。",
-      "loading": "正在检查受保护的存储空间……",
+      "systemModeHint": "密码会绑定您的 Windows 帐户加密，可以在连接设置中查看。",
+      "strongholdMode": "增强保护",
+      "strongholdModeHint": "需要主密码。查看已保存的密码时需要重新输入主密码。",
+      "loading": "正在检查受保护的存储空间…",
       "configuredLocked": "受保护的存储空间通过主密码进行保护并已锁定。",
       "configuredUnlocked": "受保护的存储空间通过主密码进行保护，并已解锁。",
       "masterPassword": "主密码",
@@ -351,41 +351,41 @@
       "oldPassword": "当前主密码",
       "newPassword": "新主密码",
       "setup": "保护已保存的密码",
-      "settingUp": "保护……",
+      "settingUp": "正在启用保护…",
       "unlock": "解锁",
-      "unlocking": "正在解锁……",
+      "unlocking": "正在解锁…",
       "unlockRequired": "解锁受保护的存储空间",
-      "unlockRequiredHint": "此连接使用的是已保存的密钥。请解锁受保护的存储空间以继续。",
+      "unlockRequiredHint": "此连接使用已保存的密码。请解锁受保护的存储以继续。",
       "lockNow": "立即锁定",
-      "autoLock": "自动锁定后，分钟",
+      "autoLock": "自动锁定时间（分钟）",
       "autoLockDisabled": "已禁用",
       "autoLockHint": "在闲置一段时间后锁定受保护的存储空间。现有的服务器连接仍保持活动状态；设置为 0 可禁用自动锁定功能。",
       "changePassword": "更改主密码",
       "change": "更改密码",
-      "systemUnlock": "允许解锁系统",
+      "systemUnlock": "允许通过系统验证解锁",
       "systemUnlockHint": "使用 Windows Hello（根据 Windows 的配置，可为 PIN 码、面部识别或指纹）。您的主密码仍作为恢复方式。",
       "unlockWithSystem": "通过系统认证解锁",
-      "systemUnavailable": "此平台不支持系统解锁。",
-      "noRecovery": "如果忘记了主密码，将无法找回。重置保险库会删除所有已保存的密钥。",
+      "systemUnavailable": "此平台不支持通过系统验证解锁。",
+      "noRecovery": "忘记主密码后将无法找回。重置保险库会删除所有已保存的密码和密码短语。",
       "passwordMismatch": "密码不匹配。",
       "passwordTooShort": "主密码的长度必须至少为 12 个字符。",
       "strength": {
         "tooShort": "太短了——请至少输入 12 个字符。",
         "acceptable": "可以。密码短语越长，安全性越高。",
-        "strong": "强主密码。"
+        "strong": "主密码强度高。"
       },
       "reset": "重置受保护存储",
       "resetHint": "删除受保护的存储空间及其中存储的所有密码和 SSH 密钥密码短语。需要重新设置增强型保护。",
-      "resetWarning": "此操作将永久删除所有已保存的密码和密钥密码。请输入当前主密码以继续。",
-      "confirmReset": "删除已保存的密钥",
+      "resetWarning": "此操作将永久删除所有已保存的密码和密钥密码短语。请输入当前主密码以继续。",
+      "confirmReset": "删除已保存的密码",
       "showConfirmations": "显示安全确认",
-      "showConfirmationsHint": "在显示已保存的机密或运行可执行文件前请求确认。重置受保护存储始终需要确认。",
+      "showConfirmationsHint": "在显示已保存的密码或运行可执行文件前请求确认。重置受保护的存储始终需要确认。",
       "unavailable": "无法使用受保护的存储空间。",
       "failed": "受保护存储操作失败。"
     },
     "unlimitedPlaceholder": "无限制",
     "connectTimeoutLabel": "连接超时，秒",
-    "connectTimeoutHint": "连接时，等待服务器响应的时间长度，超过该时间才视为无法连接（0 或留空表示无限制）。适用于下一次连接。",
+    "connectTimeoutHint": "连接时等待服务器响应的时间，超时后视为无法访问（0 或留空表示无限制）。从下一次连接开始生效。",
     "ftpActiveMode": "主动FTP模式（而非被动模式）",
     "ftpActiveModeHint": "仅限 FTP/FTPS —— 对 SFTP/WebDAV 无效。极少需要使用，仅适用于被动模式无法穿过 NAT 的网络/服务器。此设置适用于下一次连接。",
     "ftpActiveModeDisabledByProxy": "启用代理时不可用——代理隧道仅支持出站连接，因此FTP必须保持被动模式。",
@@ -393,7 +393,7 @@
       "enable": "连接时使用代理",
       "enableHint": "SOCKS4、SOCKS5 或 HTTP CONNECT —— 适用于 FTP、FTPS、SFTP 和 WebDAV。适用于下一次连接。",
       "typeLabel": "代理类型",
-      "hostLabel": "代理主机",
+      "hostLabel": "代理地址",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "端口",
       "usernameLabel": "用户名",
@@ -401,56 +401,56 @@
       "removeSavedPassword": "删除已保存的密码",
       "revealFailed": "无法解密已保存的密码。",
       "testTargetLabel": "测试目标",
-      "testTargetHostPlaceholder": "服务器主机",
+      "testTargetHostPlaceholder": "服务器地址",
       "testTargetPortPlaceholder": "端口",
       "test": "测试代理",
-      "testing": "测试中……",
-      "testOk": "代理已成功到达目标。",
+      "testing": "测试中…",
+      "testOk": "代理已成功连接到目标服务器。",
       "testFailed": "代理测试失败。"
     },
     "concurrencyLabel": "并发传输",
-    "concurrencyHint": "同时上传和下载的文件数量（0 或留空 — 无限制）。此设置适用于下次连接。",
+    "concurrencyHint": "所有标签页合计同时上传和下载的文件数（0 或留空表示无限制）。立即生效，正在进行的传输会正常完成。",
     "speedLimitLabel": "速度限制，KB/s",
     "speedLimitHint": "适用于所有同时进行的传输的总和（0 或留空 — 无限制）。立即生效，无需等待下次连接。",
     "notifyOnComplete": "传输完成后通知",
     "notifyOnCompleteHint": "当传输队列清空时触发系统通知——但仅在窗口未获得焦点时生效。",
-    "overwriteActionLabel": "关于名称冲突",
+    "overwriteActionLabel": "名称冲突时",
     "overwriteAsk": "询问",
     "overwriteOverwrite": "覆盖",
     "overwriteSkip": "跳过",
-    "overwriteHint": "当要复制的文件在目标文件夹中已存在时该怎么办。",
-    "preventSleep": "防止系统在数据传输期间进入睡眠状态",
+    "overwriteHint": "要复制的文件在目标文件夹中已存在时的处理方式。",
+    "preventSleep": "传输期间阻止系统进入睡眠",
     "preventSleepHint": "立即生效，无需等待下一次连接。只要至少有一个传输正在进行，该状态就保持激活——否则不会阻塞睡眠。",
     "themeLabel": "主题",
     "themeDark": "深色",
     "themeLight": "浅色",
     "themeSystem": "系统",
     "languageLabel": "界面语言",
-    "interfaceScaleLabel": "接口比例",
+    "interfaceScaleLabel": "界面缩放",
     "interfaceScaleHint": "更改整个应用程序中文字和控件的大小。",
     "dateFormatLabel": "日期/时间格式",
     "dateFormatOnlyLabel": "日期格式",
     "timeFormatLabel": "时间格式",
     "timeFormat24Hour": "24 小时",
     "timeFormat12Hour": "12 小时",
-    "dateFormatLocale": "本地",
+    "dateFormatLocale": "区域格式",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "「计算机」窗格的默认文件夹",
-    "defaultLocalPathHint": "「计算机」窗格在启动时以及从服务器切换过来时打开的文件夹。留空则使用系统的主文件夹。",
+    "defaultLocalPathLabel": "“计算机”窗格的默认文件夹",
+    "defaultLocalPathHint": "“计算机”窗格在启动时以及从服务器切换回来时打开的文件夹。留空则使用您的主文件夹。",
     "chooseDefaultLocalPath": "选择默认文件夹",
     "showHiddenFiles": "显示隐藏的文件和文件夹",
-    "showHiddenFilesHint": "适用于本地和远程文件窗格。",
-    "coloredTabs": "彩色标签",
+    "showHiddenFilesHint": "适用于本地窗格和服务器窗格。",
+    "coloredTabs": "彩色标签页",
     "coloredTabsHint": "使用已保存的书签颜色为标签页名称和图标上色。",
     "autoCheckUpdates": "自动更新",
     "autoCheckUpdatesHint": "在启动时以及每天检查一次更新，并在后台下载。已下载的更新会在下次启动 FTPeach 时静默安装，也可以从状态栏立即安装。",
     "autoReconnectTabs": "启动时重新连接已恢复的标签页",
-    "autoReconnectTabsHint": "默认处于关闭状态。启用后，已恢复的收藏网站将自动连接。",
+    "autoReconnectTabsHint": "默认关闭。启用后，关联已保存服务器的已恢复标签页将自动连接。",
     "saveSessionOnExit": "退出时保存会话",
     "saveSessionOnExitHint": "在下一次启动时恢复已打开的标签页、窗格类型和路径。关闭此选项将清除已保存的会话。",
-    "checkNow": "立即查看",
+    "checkNow": "立即检查",
     "updateStatus": {
-      "checking": "正在检查更新……",
+      "checking": "正在检查更新…",
       "notAvailable": "您正在使用最新版本。",
       "error": "无法检查更新。",
       "notPackaged": "此构建版本中不可用（npm run dev/start）。"
@@ -465,7 +465,7 @@
     "exportDiagnosticsFailed": "无法导出诊断包。"
   },
   "promptDialog": {
-    "confirmLabel": "好的"
+    "confirmLabel": "确定"
   },
   "exportSettingsDialog": {
     "title": "导出设置",
@@ -473,7 +473,7 @@
     "includeSettings": "应用设置",
     "includeBookmarks": "书签",
     "includeLocalPaths": "本地路径",
-    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台机器上导入后，您需要重新输入这些信息。"
+    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台电脑上导入后需要重新输入。"
   },
   "importSettingsDialog": {
     "title": "导入设置",
@@ -481,13 +481,13 @@
     "includeSettings": "应用设置",
     "includeBookmarks": "书签",
     "includeLocalPaths": "本地路径",
-    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导入中——您需要为每个导入的站点重新输入这些信息。"
+    "passwordHint": "密码和 SSH 密钥的密码短语不会被导入——需要为每个导入的服务器重新输入。"
   },
   "openWithDialog": {
     "title": "在应用程序中打开",
-    "downloading": "正在下载“{{fileName}}”……",
-    "progress": "{{loaded}} {{total}}（{{percent}}%）",
-    "connecting": "正在连接……"
+    "downloading": "正在下载“{{fileName}}”…",
+    "progress": "{{loaded}} / {{total}}（{{percent}}%）",
+    "connecting": "正在连接…"
   },
   "transfers": {
     "notifyErrorTitle": "传输错误",
@@ -500,7 +500,7 @@
     "title": "传输",
     "columns": {
       "file": "文件",
-      "route": "路线",
+      "route": "方向",
       "size": "大小",
       "transferred": "已传输",
       "progress": "进度",
@@ -508,7 +508,7 @@
       "remaining": "剩余",
       "status": "状态"
     },
-    "empty": "上传和下载内容将显示在此处",
+    "empty": "上传和下载将显示在此处",
     "newTransfers_one": "{{count}} 个新传输",
     "newTransfers_other": "{{count}} 个新传输",
     "status": {
@@ -533,9 +533,9 @@
     "resume": "继续",
     "retry": "重试",
     "stop": "停止",
-    "pauseUnsupportedCopy": "在服务器之间复制时不支持暂停功能",
-    "pauseUnsupportedServerCopy": "在服务器上复制时不支持暂停",
-    "pauseUnsupportedWebdav": "WebDAV 不支持暂停功能",
+    "pauseUnsupportedCopy": "在服务器之间复制时无法暂停",
+    "pauseUnsupportedServerCopy": "在服务器上复制时无法暂停",
+    "pauseUnsupportedWebdav": "WebDAV 不支持暂停",
     "retryUnsupportedConnection": "无法重试：连接已关闭"
   },
   "log": {
@@ -549,7 +549,7 @@
     "tlsInit": "正在初始化 TLS...",
     "tlsEstablished": "TLS 连接已建立。",
     "davResumeUnsupportedLocal": "WebDAV 不支持上传续传——文件将从头开始重新发送。",
-    "davResumeUnsupportedServer": "服务器不支持断点续传（预期状态为{{expected}}，实际返回{{status}}）——该文件将重新下载。",
+    "davResumeUnsupportedServer": "服务器不支持断点续传（预期状态 {{expected}}，实际返回 {{status}}）——将重新下载该文件。",
     "uploadResumed": "正在从第 {{offset}} 字节继续上传 {{path}}。",
     "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
     "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
@@ -571,29 +571,29 @@
     "copiedTooltip": "已复制",
     "copyFailedTooltip": "无法复制",
     "saveFailedTooltip": "无法保存文件",
-    "emptyFiltered": "此连接没有相关日志",
+    "emptyFiltered": "此连接没有日志行",
     "emptyNoMatches": "没有匹配的行",
     "emptyDefault": "协议消息将显示在此处"
   },
   "aboutDialog": {
-    "title": "关于",
-    "tagline": "一款轻量级的 FTP/FTPS/SFTP 客户端。",
+    "title": "关于 FTPeach",
+    "tagline": "一款轻量级的 FTP/FTPS/SFTP/WebDAV 客户端。",
     "legalInformation": "法律信息",
     "sourceCode": "源代码",
     "reportIssue": "报告问题",
     "checkForUpdates": "检查更新",
-    "updateDownloaded": "已下载更新版本{{version}}——您现在可以安装它了。"
+    "updateDownloaded": "已下载更新 v{{version}}——现在即可安装。"
   },
   "siteManager": {
-    "emptyList": "尚未保存任何网站",
-    "confirmDeleteSite": "删除网站“{{name}}”？"
+    "emptyList": "尚未保存任何服务器",
+    "confirmDeleteSite": "删除服务器“{{name}}”？"
   },
   "siteManagerDialog": {
     "titleNew": "新建书签",
     "titleEdit": "编辑书签",
     "titleList": "管理书签",
     "titleLocalPathList": "管理本地路径",
-    "manageLocalPaths": "管理本地路径……",
+    "manageLocalPaths": "管理本地路径…",
     "titleNewLocalPath": "新建本地路径",
     "titleEditLocalPath": "编辑本地路径",
     "fields": {
@@ -606,24 +606,24 @@
       "remotePath": "默认文件夹",
       "localPath": "本地文件夹",
       "folder": "文件夹",
-      "maxConnections": "每个面板的最大连接数"
+      "maxConnections": "每个窗格的最大连接数"
     },
     "icons": {
-      "bookmark": "添加书签",
+      "bookmark": "书签",
       "globe": "网站",
       "briefcase": "工作",
       "house": "家庭服务器",
       "cloud": "云",
-      "flask": "测试 / 预发布环境",
+      "flask": "测试 / 预发布",
       "gamepad": "游戏服务器",
       "clapperboard": "媒体服务器",
       "camera": "相机"
     },
     "colors": {
       "default": "无颜色",
-      "peach": "桃子",
+      "peach": "桃色",
       "red": "红色",
-      "amber": "琥珀",
+      "amber": "琥珀色",
       "green": "绿色",
       "blue": "蓝色",
       "purple": "紫色",
@@ -631,12 +631,12 @@
       "teal": "青绿色"
     },
     "saveFailed": "无法保存",
-    "revealFailed": "无法显示已保存的密钥",
+    "revealFailed": "无法显示已保存的密码",
     "savedSecretPlaceholder": "已保存",
     "savedSecretHint": "留空以保留当前密码",
     "removeSavedPassword": "删除已保存的密码",
     "removeSavedPassphrase": "删除已保存的密码短语",
-    "secretWillBeRemoved": "保存后将被删除",
+    "secretWillBeRemoved": "保存时将被删除",
     "addBookmark": "新建书签",
     "addLocalBookmark": "添加本地文件夹书签",
     "chooseLocalPath": "选择本地文件夹",
@@ -652,21 +652,21 @@
     "sortManual": "手动",
     "sortName": "按名称",
     "sortProtocol": "按协议",
-    "duplicateWarning": "该目的地已有书签：“{{name}}”。是否要保存另一个？",
+    "duplicateWarning": "已存在指向同一目标的书签：“{{name}}”。是否再保存一个？",
     "saveAnyway": "仍要保存",
     "newFolder": "新建文件夹",
     "folderNamePlaceholder": "文件夹名称",
     "confirmDeleteFolder": "删除文件夹“{{name}}”？其中的书签将向上移动一级。",
-    "searchPlaceholder": "搜索……",
+    "searchPlaceholder": "搜索…",
     "clearSearch": "清除搜索",
-    "noSearchResults": "没有书签与您的搜索结果匹配",
-    "duplicate": "重复项",
-    "duplicateNameSuffix": " (复制)",
-    "newBookmarkInFolder": "在此添加新书签",
+    "noSearchResults": "没有与搜索匹配的书签",
+    "duplicate": "创建副本",
+    "duplicateNameSuffix": "（副本）",
+    "newBookmarkInFolder": "在此新建书签",
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",
     "noFolder": "无文件夹",
-    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。各面板的限制独立计算。"
+    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。每个窗格的限制独立计算。"
   },
   "connectionBar": {
     "fields": {
@@ -675,17 +675,17 @@
       "user": "用户名",
       "password": "密码",
       "passphrase": "密码短语",
-      "keyFilePlaceholder": "密钥文件……",
-      "chooseKeyFile": "选择密钥文件……",
-      "caCertFilePlaceholder": "CA 证书……",
-      "chooseCaCertFile": "选择 CA 证书……"
+      "keyFilePlaceholder": "密钥文件…",
+      "chooseKeyFile": "选择密钥文件…",
+      "caCertFilePlaceholder": "CA 证书…",
+      "chooseCaCertFile": "选择 CA 证书…"
     },
     "secureToggle": {
       "tooltip": "取消勾选以接受自签名和无效的服务器证书",
       "label": "验证证书"
     },
     "authToggle": {
-      "tooltip": "使用私有 SSH 密钥文件而非密码登录",
+      "tooltip": "使用 SSH 私钥文件而非密码登录",
       "label": "使用 SSH 密钥登录"
     },
     "rsaKeyWarning": "RSA 私钥存在已知的计时侧信道攻击风险。建议新 SSH 密钥优先使用 Ed25519。",
@@ -711,7 +711,7 @@
     "localComputer": "计算机",
     "untitledTab": "新标签页",
     "newTabTooltip": "新标签页 (Ctrl+T)",
-    "rename": "标签名称"
+    "rename": "标签页名称"
   },
   "toolbarOverflowMenu": {
     "more": "更多"
@@ -720,14 +720,14 @@
     "transfers": "传输：{{count}}",
     "leftCount": "左侧：{{count}}",
     "rightCount": "右侧：{{count}}",
-    "topCount": "顶部：{{count}}",
-    "bottomCount": "底部：{{count}}",
-    "selectedSuffix": " （已选中 {{count}}）",
+    "topCount": "上方：{{count}}",
+    "bottomCount": "下方：{{count}}",
+    "selectedSuffix": "（已选中 {{count}} 个）",
     "status": {
-      "transferring": "文件传输",
+      "transferring": "正在传输文件",
       "paused": "已暂停",
       "connected": "已连接",
-      "connecting": "连接",
+      "connecting": "正在连接",
       "connectFailed": "无法连接",
       "disconnected": "未连接"
     }
@@ -737,13 +737,13 @@
     "toggleRightPane": "显示/隐藏右侧窗格",
     "toggleTransferQueue": "显示/隐藏传输队列",
     "toggleLog": "显示/隐藏日志",
-    "orientationNarrow": "窗格堆叠显示——窗口太窄，无法并排查看",
+    "orientationNarrow": "窗格已上下排列——窗口太窄，无法并排显示",
     "orientationToRow": "将窗格并排排列",
-    "orientationToStacked": "将窗格堆叠在一起",
-    "pauseUnsupportedWebdav": "WebDAV 不支持“暂停”功能",
+    "orientationToStacked": "上下排列窗格",
+    "pauseUnsupportedWebdav": "WebDAV 不支持暂停",
     "pauseActive": "暂停正在进行的传输",
     "resumeAllPaused": "恢复所有已暂停的传输",
-    "stopActive": "停止活动传输",
+    "stopActive": "停止正在进行的传输",
     "retryAllStopped": "重试所有已停止的传输",
     "refreshPanesTooltip": "刷新两个窗格（F5）"
   },
@@ -762,16 +762,16 @@
     "connectToServer": "服务器"
   },
   "paneConnectEmptyState": {
-    "noSavedConnectionsTitle": "最近没有连接记录",
-    "noSavedConnectionsBody": "请在上方填写服务器地址，或添加一个网站以便一键访问。",
+    "noSavedConnectionsTitle": "没有最近的连接",
+    "noSavedConnectionsBody": "请在上方填写服务器地址，或添加书签以便一键连接。",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "管理书签",
     "quicklistLabel": "最近的连接"
   },
   "errorBoundary": {
-    "consoleLogPrefix": "未处理的 FTPeach 接口错误：",
+    "consoleLogPrefix": "未处理的 FTPeach 界面错误：",
     "title": "出现了一些问题",
-    "message": "发生了一个意外的接口错误。您的活动连接和磁盘上的文件均未受影响——您可以尝试重新加载该接口。",
+    "message": "界面发生意外错误。当前连接和磁盘上的文件均未受影响——您可以尝试重新加载界面。",
     "reload": "重新加载界面"
   }
 }

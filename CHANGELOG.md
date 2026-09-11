@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Log files are named by date, name the server, and old ones are removed once they take
   too much space.
 - The diagnostic bundle includes the recent log and the app's own error log.
+- Translations in every language are clearer and match what each button and setting does.
 
 ### Fixed
 

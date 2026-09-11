@@ -7,8 +7,8 @@
       "gb": "GB",
       "tb": "TB"
     },
-    "perSecond": "{{value}} /s",
-    "noLoginUser": "bez logowania",
+    "perSecond": "{{value}}/s",
+    "noLoginUser": "bez loginu",
     "anonymousUser": "anonimowy",
     "rootFolder": "Folder główny",
     "close": "Zamknij",
@@ -21,7 +21,7 @@
     "increase": "Zwiększ",
     "decrease": "Zmniejsz",
     "showPassword": "Pokaż hasło",
-    "savedSecretProtected": "Zapisana tajemnica jest chroniona i nie można jej wyświetlić",
+    "savedSecretProtected": "Zapisane hasło jest chronione — uwierzytelnij się, aby je zobaczyć",
     "hidePassword": "Ukryj hasło"
   },
   "securityConfirmation": {
@@ -36,7 +36,7 @@
         "message": "Wyświetlić zapisane hasło serwera proxy?"
       },
       "vaultReset": {
-        "message": "Wszystkie zapisane hasła i hasła kluczy SSH zostaną trwale usunięte.",
+        "message": "Wszystkie zapisane hasła i frazy hasła kluczy SSH zostaną trwale usunięte.",
         "approve": "Usuń sejf"
       },
       "executeLocalFile": {
@@ -52,9 +52,9 @@
     "newFile": "Nowy plik…",
     "refresh": "Odśwież",
     "open": "Otwórz",
-    "uploadToOtherPane": "Prześlij do innego okienka",
-    "copyToOtherPane": "Skopiuj do innego okienka",
-    "downloadToOtherPane": "Pobierz do innego okienka",
+    "uploadToOtherPane": "Prześlij do drugiego panelu",
+    "copyToOtherPane": "Skopiuj do drugiego panelu",
+    "downloadToOtherPane": "Pobierz do drugiego panelu",
     "openWith": "Otwórz za pomocą…",
     "permissions": "Uprawnienia…",
     "moveTo": "Przenieś do…",
@@ -78,13 +78,13 @@
     "emptyFolder": "Folder jest pusty",
     "connectFirst": "Najpierw połącz",
     "homeFolder": "Folder domowy",
-    "copyToPaneBelow": "Skopiuj do poniższego pola",
-    "copyToPaneAbove": "Skopiuj do okienka powyżej",
-    "copyToPaneRight": "Skopiuj do panelu po prawej stronie",
-    "copyToPaneLeft": "Skopiuj do panelu po lewej stronie",
+    "copyToPaneBelow": "Skopiuj do dolnego panelu",
+    "copyToPaneAbove": "Skopiuj do górnego panelu",
+    "copyToPaneRight": "Skopiuj do prawego panelu",
+    "copyToPaneLeft": "Skopiuj do lewego panelu",
     "fileTypeFolder": "Folder plików",
     "fileTypeGeneric": "Plik",
-    "fileTypeWithExt": "{{ext}} Plik",
+    "fileTypeWithExt": "Plik {{ext}}",
     "columnSize": "Rozmiar",
     "columnModifiedAt": "Data modyfikacji",
     "columnCreatedAt": "Data utworzenia",
@@ -103,10 +103,10 @@
     "changeDriveTooltip": "Zmień dysk",
     "chooseColumnsTooltip": "Kliknij prawym przyciskiem myszy, aby wybrać kolumny",
     "sortByNameTooltip": "Sortuj według nazwy",
-    "sortByColumnTooltip": "Posortuj według kolumny „{{column}}”",
+    "sortByColumnTooltip": "Sortuj według kolumny „{{column}}”",
     "rowProbeSample": "Przykład",
     "loading": "Ładowanie…",
-    "nothingFound": "Nie znaleziono żadnych wyników"
+    "nothingFound": "Nic nie znaleziono"
   },
   "update": {
     "readyToInstall": "Dostępna jest aktualizacja w wersji {{version}} — kliknij „Uruchom ponownie i zainstaluj”, aby ją zastosować.",
@@ -120,29 +120,29 @@
     "installTooltip": "Uruchom ponownie teraz, aby zainstalować. W przeciwnym razie aktualizacja zostanie zainstalowana przy następnym uruchomieniu FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Po aktualizacji nie można było odczytać haseł do niektórych zapisanych stron — prosimy o ponowne wprowadzenie ich w menedżerze stron."
+    "message": "Po aktualizacji nie udało się odczytać haseł niektórych zapisanych serwerów — wprowadź je ponownie w menedżerze zakładek."
   },
   "plaintextSecretNotice": {
-    "message": "Nie udało się zaszyfrować hasła lub frazy hasła zapisanej witryny, ponieważ funkcja ochrony danych systemu Windows jest niedostępna, w związku z czym zostały one zapisane w postaci zwykłego tekstu."
+    "message": "Nie udało się zaszyfrować hasła lub frazy hasła zapisanego serwera, ponieważ ochrona danych systemu Windows jest niedostępna, dlatego zapisano je jako zwykły tekst."
   },
   "secretNotPersistedNotice": {
-    "message": "Nie udało się zaszyfrować hasła lub frazy hasła i nie zostało ono zapisane. Istniejące połączenie może trwać do momentu jego rozłączenia; w przeciwnym razie przy następnym uruchomieniu należy ponownie wprowadzić hasło."
+    "message": "Nie udało się zaszyfrować hasła lub frazy hasła klucza, więc nie zostało zapisane. Istniejące połączenie działa do rozłączenia; następnym razem wprowadź je ponownie."
   },
   "resize": {
-    "paneSize": "Przeciągnij, aby zmienić rozmiar paneli (kliknij dwukrotnie, aby przywrócić domyślne ustawienia)",
-    "height": "Przeciągnij, aby zmienić wysokość (kliknij dwukrotnie, aby przywrócić domyślne ustawienia)",
-    "ratio": "Przeciągnij, aby zmienić proporcje (kliknij dwukrotnie, aby przywrócić domyślne ustawienia)"
+    "paneSize": "Przeciągnij, aby zmienić rozmiar paneli (dwuklik przywraca domyślne)",
+    "height": "Przeciągnij, aby zmienić wysokość (dwuklik przywraca domyślne)",
+    "ratio": "Przeciągnij, aby zmienić proporcje (dwuklik przywraca domyślne)"
   },
   "dragMove": {
-    "itemCount_one": "{{count}} pozycja",
-    "itemCount_other": "{{count}} pozycji",
-    "moveMode": "przesunąć",
-    "itemCount_few": "{{count}} pozycje",
-    "itemCount_many": "{{count}} pozycji"
+    "itemCount_one": "{{count}} element",
+    "itemCount_other": "{{count}} elementu",
+    "moveMode": "przenoszenie",
+    "itemCount_few": "{{count}} elementy",
+    "itemCount_many": "{{count}} elementów"
   },
   "openWithChanged": {
     "title": "Plik został zmieniony",
-    "message": "W aplikacji zewnętrznej wprowadzono zmianę w pliku „{{name}}”. Czy należy przesłać zaktualizowany plik na serwer?"
+    "message": "Plik „{{name}}” został zmieniony w zewnętrznej aplikacji. Przesłać zaktualizowany plik na serwer?"
   },
   "saveSite": {
     "title": "Zapisz profil połączenia",
@@ -164,38 +164,38 @@
   },
   "moveToDialog": {
     "title": "Przenieś do…",
-    "labelSingle": "Przenieś plik „{{name}}” do folderu:",
+    "labelSingle": "Przenieś „{{name}}” do folderu:",
     "labelMultiple": "Przenieś zaznaczone elementy ({{count}}) do folderu:"
   },
   "confirm": {
     "resetLayout": "Czy chcesz zresetować rozmiary okien i paneli, przywrócić domyślne kolumny oraz wyczyścić pamięć podręczną interfejsu?",
-    "hostKeyMismatch": "{{error}} Czy usunąć zapisany odcisk klucza dla {{host}}: {{port}} i mimo to nawiązać połączenie? Należy to zrobić tylko wtedy, gdy masz pewność, że serwer został prawidłowo ponownie zainstalowany lub przeniesiony — w przeciwnym razie może to spowodować nawiązanie połączenia z potencjalnie sfałszowanym serwerem.",
-    "connectAnyway": "Połącz się mimo wszystko",
-    "closeTabWithActiveTransfers": "W tej zakładce znajdują się aktywne transfery. Czy chcesz zamknąć zakładkę i je zatrzymać?",
+    "hostKeyMismatch": "{{error}} Usunąć zapisany odcisk klucza dla {{host}}:{{port}} i mimo to się połączyć? Rób to tylko wtedy, gdy masz pewność, że serwer naprawdę został ponownie zainstalowany lub przeniesiony — w przeciwnym razie możesz połączyć się z podstawionym serwerem.",
+    "connectAnyway": "Połącz mimo to",
+    "closeTabWithActiveTransfers": "Na tej karcie trwają transfery. Zamknąć kartę i je zatrzymać?",
     "closeTabLabel": "Zamknij kartę",
-    "overwriteSingleExists": "Plik „{{name}}” już istnieje w folderze docelowym. Czy chcesz go nadpisać?",
-    "overwriteConflicts_one": "{{count}} plik już istnieje w folderze docelowym. Czy chcesz go nadpisać?",
-    "overwriteConflicts_other": "{{count}} pliku już istnieje w folderze docelowym. Czy chcesz je nadpisać?",
-    "overwriteLabel": "Zastąp",
-    "replaceConnection": "Ten panel jest już połączony z adresem „{{current}}”. Czy chcesz zastąpić to połączenie adresem „{{next}}”?",
+    "overwriteSingleExists": "„{{name}}” już istnieje w folderze docelowym. Czy chcesz to nadpisać?",
+    "overwriteConflicts_one": "{{count}} element już istnieje w folderze docelowym. Czy chcesz go nadpisać?",
+    "overwriteConflicts_other": "{{count}} elementu już istnieje w folderze docelowym. Czy chcesz je nadpisać?",
+    "overwriteLabel": "Nadpisz",
+    "replaceConnection": "Ten panel jest już połączony z „{{current}}”. Zastąpić to połączenie połączeniem z „{{next}}”?",
     "replaceConnectionLabel": "Zastąp",
     "deleteSelected": "Czy chcesz usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
     "deleteEntry": "Usunąć „{{name}}”? Tego działania nie da się cofnąć.",
     "recycleSelected": "Czy chcesz przenieść zaznaczone elementy ({{count}}) do Kosza?",
-    "recycleEntry": "Przenieść plik „{{name}}” do Kosza?",
+    "recycleEntry": "Przenieść „{{name}}” do Kosza?",
     "deletePermanentSelected": "Czy chcesz trwale usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
     "deletePermanentEntry": "Czy chcesz trwale usunąć „{{name}}”? Tego działania nie można cofnąć.",
-    "deleteRemoteSelected": "Czy chcesz trwale usunąć zaznaczone elementy zdalne ({{count}})? Tego działania nie można cofnąć.",
-    "deleteRemoteEntry": "Czy chcesz trwale usunąć element zdalny „{{name}}”? Tego działania nie można cofnąć.",
-    "overwriteConflicts_few": "{{count}} pliki już istnieją w folderze docelowym. Czy chcesz je nadpisać?",
-    "overwriteConflicts_many": "{{count}} plików już istnieje w folderze docelowym. Czy chcesz je nadpisać?"
+    "deleteRemoteSelected": "Czy chcesz trwale usunąć zaznaczone elementy na serwerze ({{count}})? Tego działania nie można cofnąć.",
+    "deleteRemoteEntry": "Czy chcesz trwale usunąć „{{name}}” na serwerze? Tego działania nie można cofnąć.",
+    "overwriteConflicts_few": "{{count}} elementy już istnieją w folderze docelowym. Czy chcesz je nadpisać?",
+    "overwriteConflicts_many": "{{count}} elementów już istnieje w folderze docelowym. Czy chcesz je nadpisać?"
   },
   "paneSide": {
-    "top": "na górę",
+    "top": "u góry",
     "bottom": "na dole",
     "left": "po lewej",
-    "right": "prawda",
-    "labelWithTab": "{{base}} (zakładka „{{tabNumber}}”, {{side}})",
+    "right": "po prawej",
+    "labelWithTab": "{{base}} (karta {{tabNumber}}, {{side}})",
     "labelWithSide": "{{base}} ({{side}})"
   },
   "menu": {
@@ -204,51 +204,51 @@
       "newTab": "Nowa karta",
       "closeTab": "Zamknij kartę",
       "newConnection": "Nowe połączenie",
-      "disconnect": "Odłącz",
+      "disconnect": "Rozłącz",
       "manageBookmarks": "Zarządzaj zakładkami…",
       "saveConnection": "Zapisz połączenie",
       "saveConnectionSide": "Zapisz połączenie ({{side}})",
       "saveBookmarkSide": "Zapisz zakładkę ({{side}})",
       "savePathSide": "Zapisz ścieżkę ({{side}})",
-      "exportSettings": "Ustawienia eksportu…",
-      "importSettings": "Ustawienia importu…",
+      "exportSettings": "Eksportuj ustawienia…",
+      "importSettings": "Importuj ustawienia…",
       "quit": "Wyjdź"
     },
     "edit": {
-      "title": "Edytuj",
+      "title": "Edycja",
       "settings": "Ustawienia…",
       "resetLayout": "Zresetuj układ i pamięć podręczną…"
     },
     "view": {
-      "title": "Wyświetl",
+      "title": "Widok",
       "darkTheme": "Ciemny motyw",
       "lightTheme": "Jasny motyw",
       "systemTheme": "Motyw systemu",
-      "syncBrowsing": "Przeglądanie folderów synchronizowanych",
-      "showHiddenFiles": "Pokaż ukryte pliki i foldery",
+      "syncBrowsing": "Synchroniczne przeglądanie paneli",
+      "showHiddenFiles": "Pokazuj ukryte pliki i foldery",
       "leftPane": "Lewy panel",
       "rightPane": "Prawy panel",
       "transferQueue": "Kolejka transferów",
       "log": "Dziennik",
-      "stackedPanes": "Panele w stosie",
-      "refreshBothPanes": "Odśwież oba okienka"
+      "stackedPanes": "Panele jeden nad drugim",
+      "refreshBothPanes": "Odśwież oba panele"
     },
     "transfer": {
-      "title": "Przeniesienie",
+      "title": "Transfer",
       "copySelectedRight": "Kopiuj zaznaczone →",
-      "copySelectedLeft": "← Skopiuj zaznaczone",
-      "clearCompleted": "Wyczyść Zakończone"
+      "copySelectedLeft": "← Kopiuj zaznaczone",
+      "clearCompleted": "Wyczyść zakończone"
     },
     "bookmarks": {
       "title": "Zakładki"
     },
     "help": {
-      "supportProject": "Wesprzyj projekt",
+      "supportProject": "Wesprzyj FTPeach",
       "title": "Pomoc",
       "documentation": "Dokumentacja",
       "reportIssue": "Zgłoś problem",
       "checkUpdates": "Sprawdź dostępność aktualizacji",
-      "about": "O nas"
+      "about": "O programie"
     }
   },
   "errors": {
@@ -259,8 +259,8 @@
     "networkUnreachable": "Nie można nawiązać połączenia z serwerem — sprawdź połączenie sieciowe.",
     "loginIncorrect": "Nieprawidłowa nazwa użytkownika lub hasło.",
     "invalidCertificate": "Serwer przedstawił nieprawidłowy certyfikat. Jeśli ufasz temu serwerowi, wyłącz weryfikację certyfikatu w ustawieniach połączenia.",
-    "tlsNegotiationFailed": "Negocjacja TLS zakończyła się niepowodzeniem. Sprawdź, czy serwer obsługuje protokoły FTPS lub HTTPS w trybie jawnym oraz zgodną wersję TLS.",
-    "sshNegotiationFailed": "Negocjacja SSH zakończyła się niepowodzeniem. Serwer i FTPeach nie zdołały uzgodnić kompatybilnego algorytmu SSH ani wersji protokołu.",
+    "tlsNegotiationFailed": "Negocjacja TLS nie powiodła się. Sprawdź, czy serwer obsługuje jawny FTPS lub HTTPS oraz zgodną wersję TLS.",
+    "sshNegotiationFailed": "Negocjacja SSH nie powiodła się. Serwer i FTPeach nie uzgodniły zgodnego algorytmu SSH ani wersji protokołu.",
     "proxyFailed": "Połączenie z serwerem proxy nie powiodło się. Sprawdź typ serwera proxy, jego adres, dane uwierzytelniające oraz czy serwer proxy ma dostęp do serwera docelowego.",
     "keyReadFailed": "Nie udało się odczytać klucza — plik jest uszkodzony lub fraza hasła jest nieprawidłowa.",
     "accessDenied": "Nie masz uprawnień do wykonania tej operacji.",
@@ -279,7 +279,7 @@
   "settings": {
     "openWithAssociations": {
       "title": "Powiązania",
-      "hint": "Wybierz aplikację, dla której chcesz zastosować rozszerzenie. W przypadku plików, dla których nie ma zdefiniowanej reguły, stosowane są domyślne ustawienia systemowe.",
+      "hint": "Wybierz aplikację dla rozszerzenia. Pliki bez reguły otwierają się w domyślnej aplikacji systemu.",
       "extension": "Rozszerzenie",
       "extensionPlaceholder": "txt",
       "application": "Aplikacja",
@@ -290,8 +290,8 @@
     },
     "minimizeToTray": "Minimalizuj do obszaru powiadomień",
     "minimizeToTrayHint": "Przycisk minimalizacji powoduje ukrycie okna w obszarze powiadomień zamiast na pasku zadań.",
-    "closeToTray": "Zamknij do zasobnika systemowego",
-    "closeToTrayHint": "Przycisk „Zamknij” powoduje ukrycie okna w zasobniku systemowym, a nie zamknięcie aplikacji. Aplikację można zamknąć z menu ikony w zasobniku.",
+    "closeToTray": "Minimalizuj do obszaru powiadomień przy zamykaniu",
+    "closeToTrayHint": "Przycisk „Zamknij” ukrywa okno w obszarze powiadomień zamiast zamykać aplikację. Aplikację zamkniesz z menu jej ikony w obszarze powiadomień.",
     "title": "Ustawienia",
     "unsavedChangesTitle": "Niezapisane zmiany",
     "unsavedChangesMessage": "Zapisać zmiany w ustawieniach?",
@@ -302,55 +302,55 @@
       "interface": "Interfejs",
       "shortcuts": "Skróty",
       "updates": "Aktualizacje",
-      "logging": "Rejestrowanie",
+      "logging": "Dziennik",
       "security": "Bezpieczeństwo"
     },
     "shortcuts": {
       "title": "Skróty klawiaturowe",
-      "hint": "Kliknij skrót, a następnie naciśnij nową kombinację klawiszy, aby go przypisać na nowo.",
-      "globalTitle": "Globalny",
-      "paneTitle": "Okienko plików",
-      "recording": "Naciśnij klawisz…",
+      "hint": "Kliknij skrót, a następnie naciśnij nową kombinację klawiszy, aby go przypisać.",
+      "globalTitle": "Globalne",
+      "paneTitle": "Panel plików",
+      "recording": "Naciśnij klawisze…",
       "unbound": "Nie przypisano",
-      "reset": "Przywróć ustawienia domyślne",
-      "resetAll": "Przywróć wszystkie ustawienia domyślne",
-      "unassign": "Cofnij przypisanie",
-      "conflict": "Wykorzystane również przez: {{action}}",
+      "reset": "Przywróć domyślny",
+      "resetAll": "Przywróć wszystkie domyślne skróty",
+      "unassign": "Usuń skrót",
+      "conflict": "Używany również do: {{action}}",
       "actions": {
         "search": "Wyszukiwanie ({{side}})",
-        "toggleHiddenFiles": "Włącz/wyłącz wyświetlanie ukrytych plików",
+        "toggleHiddenFiles": "Pokaż/ukryj ukryte pliki",
         "newConnection": "Nowe połączenie",
         "save": "Zapisz ({{side}})",
         "openSettings": "Otwórz ustawienia",
         "newTab": "Nowa karta",
         "closeTab": "Zamknij kartę",
-        "nextTab": "Następna zakładka",
-        "prevTab": "Poprzednia zakładka",
+        "nextTab": "Następna karta",
+        "prevTab": "Poprzednia karta",
         "refresh": "Odśwież",
         "selectAll": "Zaznacz wszystko",
         "delete": "Usuń",
         "deletePermanent": "Usuń na stałe",
-        "navigateUp": "Przejdź do wyższego poziomu katalogu",
-        "navigateBack": "Wróć",
-        "navigateForward": "Idź dalej",
-        "navigateHome": "Przejdź do folderu głównego",
+        "navigateUp": "Poziom wyżej",
+        "navigateBack": "Wstecz",
+        "navigateForward": "Dalej",
+        "navigateHome": "Przejdź do folderu domowego",
         "moveTo": "Przenieś do…",
         "newFolder": "Nowy folder…",
         "newFile": "Nowy plik…",
-        "copyToOtherPane": "Skopiuj do innego okienka",
+        "copyToOtherPane": "Skopiuj do drugiego panelu",
         "copy": "Kopiuj",
         "cut": "Wytnij",
         "paste": "Wklej",
-        "clearSelection": "Wyczyść wybór",
+        "clearSelection": "Odznacz wszystko",
         "open": "Otwórz"
       }
     },
     "security": {
       "title": "Ochrona hasłem",
-      "systemMode": "Ochrona systemu",
-      "systemModeHint": "Hasła do konta w systemie Windows są zaszyfrowane i można je wyświetlić w ustawieniach połączenia.",
+      "systemMode": "Ochrona systemowa",
+      "systemModeHint": "Hasła są szyfrowane dla Twojego konta Windows i można je wyświetlić w ustawieniach połączenia.",
       "strongholdMode": "Wzmocniona ochrona",
-      "strongholdModeHint": "Wymagane jest hasło główne. Zapisane hasła mogą być wykorzystywane do nawiązywania połączeń, ale nie można ich wyświetlić.",
+      "strongholdModeHint": "Wymaga hasła głównego. Aby wyświetlić zapisane hasło, trzeba ponownie podać hasło główne.",
       "loading": "Sprawdzanie pamięci chronionej…",
       "configuredLocked": "Chroniona pamięć jest zabezpieczona hasłem głównym i zablokowana.",
       "configuredUnlocked": "Chroniona pamięć jest zabezpieczona hasłem głównym i odblokowana.",
@@ -359,102 +359,102 @@
       "oldPassword": "Aktualne hasło główne",
       "newPassword": "Nowe hasło główne",
       "setup": "Chroń zapisane hasła",
-      "settingUp": "Ochrona…",
+      "settingUp": "Włączanie ochrony…",
       "unlock": "Odblokuj",
       "unlocking": "Odblokowywanie…",
       "unlockRequired": "Odblokuj chronioną pamięć",
-      "unlockRequiredHint": "To połączenie wykorzystuje zapisany klucz tajny. Odblokuj zabezpieczoną pamięć, aby kontynuować.",
+      "unlockRequiredHint": "To połączenie używa zapisanego hasła. Odblokuj chronioną pamięć, aby kontynuować.",
       "lockNow": "Zablokuj teraz",
-      "autoLock": "Automatyczne zablokowanie po upływie, min",
+      "autoLock": "Automatyczna blokada po, min",
       "autoLockDisabled": "Wyłączone",
-      "autoLockHint": "Blokuje dostęp do pamięci po okresie bezczynności. Istniejące połączenia z serwerem pozostają aktywne; wartość 0 wyłącza automatyczne blokowanie.",
+      "autoLockHint": "Blokuje chronioną pamięć po okresie bezczynności. Otwarte połączenia z serwerami pozostają aktywne; 0 wyłącza automatyczną blokadę.",
       "changePassword": "Zmień hasło główne",
       "change": "Zmień hasło",
-      "systemUnlock": "Zezwól na odblokowanie systemu",
+      "systemUnlock": "Zezwalaj na odblokowanie przez system",
       "systemUnlockHint": "Wykorzystuje funkcję Windows Hello (kod PIN, rozpoznawanie twarzy lub odcisk palca zgodnie z ustawieniami systemu Windows). Hasło główne pozostaje metodą odzyskiwania dostępu.",
       "unlockWithSystem": "Odblokuj za pomocą uwierzytelniania systemowego",
-      "systemUnavailable": "Na tej platformie funkcja odblokowania systemu jest niedostępna.",
-      "noRecovery": "Zapomnianego hasła głównego nie da się odzyskać. Zresetowanie chronionej pamięci powoduje usunięcie wszystkich zapisanych haseł.",
+      "systemUnavailable": "Odblokowanie przez system jest niedostępne na tej platformie.",
+      "noRecovery": "Zapomnianego hasła głównego nie da się odzyskać. Zresetowanie chronionej pamięci usuwa wszystkie zapisane hasła i frazy hasła.",
       "passwordMismatch": "Hasła się nie zgadzają.",
       "passwordTooShort": "Hasło główne powinno składać się z co najmniej 12 znaków.",
       "strength": {
         "tooShort": "Za krótkie — użyj co najmniej 12 znaków.",
-        "acceptable": "W porządku. Dłuższe hasło jest bezpieczniejsze.",
+        "acceptable": "W porządku. Dłuższa fraza hasła jest bezpieczniejsza.",
         "strong": "Silne hasło główne."
       },
       "reset": "Zresetuj pamięć chronioną",
-      "resetHint": "Usuwa chronioną pamięć oraz wszystkie hasła i frazy dostępowe do kluczy SSH w niej zapisane. Konieczne będzie ponowne skonfigurowanie rozszerzonej ochrony.",
-      "resetWarning": "Spowoduje to trwałe usunięcie wszystkich zapisanych haseł i fraz dostępu do kluczy. Wprowadź aktualne hasło główne, aby kontynuować.",
+      "resetHint": "Usuwa chronioną pamięć oraz wszystkie zapisane w niej hasła i frazy hasła kluczy SSH. Wzmocnioną ochronę trzeba będzie skonfigurować ponownie.",
+      "resetWarning": "Spowoduje to trwałe usunięcie wszystkich zapisanych haseł i fraz hasła kluczy. Wprowadź aktualne hasło główne, aby kontynuować.",
       "confirmReset": "Usuń zapisane hasła",
       "showConfirmations": "Pokazuj potwierdzenia bezpieczeństwa",
-      "showConfirmationsHint": "Pytaj przed ujawnieniem zapisanych sekretów lub uruchomieniem plików wykonywalnych. Reset chronionego magazynu zawsze wymaga potwierdzenia.",
-      "unavailable": "Chroniona pamięć masowa jest niedostępna.",
-      "failed": "Operacja dotycząca pamięci chronionej zakończyła się niepowodzeniem."
+      "showConfirmationsHint": "Pytaj przed pokazaniem zapisanych haseł lub uruchomieniem plików wykonywalnych. Reset chronionej pamięci zawsze wymaga potwierdzenia.",
+      "unavailable": "Chroniona pamięć jest niedostępna.",
+      "failed": "Operacja na chronionej pamięci nie powiodła się."
     },
     "unlimitedPlaceholder": "Bez ograniczeń",
-    "connectTimeoutLabel": "Limit czasu połączenia, sek.",
-    "connectTimeoutHint": "Jak długo należy czekać na odpowiedź serwera podczas nawiązywania połączenia, zanim uzna się je za niedostępne (0 lub puste pole — brak ograniczenia). Dotyczy kolejnego połączenia.",
+    "connectTimeoutLabel": "Limit czasu połączenia, s",
+    "connectTimeoutHint": "Jak długo czekać na odpowiedź serwera podczas łączenia, zanim zostanie uznany za niedostępny (0 lub puste pole — bez limitu). Dotyczy następnego połączenia.",
     "ftpActiveMode": "Tryb aktywnego FTP (zamiast pasywnego)",
-    "ftpActiveModeHint": "Tylko FTP/FTPS — nie ma wpływu na SFTP/WebDAV. Rzadko się to zdarza, tylko w sieciach/na serwerach, gdzie tryb pasywny nie przechodzi przez NAT. Działa od następnego połączenia.",
+    "ftpActiveModeHint": "Tylko FTP/FTPS — nie wpływa na SFTP/WebDAV. Rzadko potrzebne, tylko w sieciach lub na serwerach, gdzie tryb pasywny nie przechodzi przez NAT. Działa od następnego połączenia.",
     "ftpActiveModeDisabledByProxy": "Niedostępne przy włączonym serwerze proxy — tunel proxy obsługuje wyłącznie połączenia wychodzące, więc protokół FTP musi działać w trybie pasywnym.",
     "proxy": {
-      "enable": "Używaj serwera proxy do nawiązywania połączeń",
+      "enable": "Łącz przez serwer proxy",
       "enableHint": "SOCKS4, SOCKS5 lub HTTP CONNECT — dotyczy protokołów FTP, FTPS, SFTP i WebDAV. Dotyczy następnego połączenia.",
       "typeLabel": "Typ proxy",
-      "hostLabel": "Serwer proxy",
+      "hostLabel": "Host proxy",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
       "usernameLabel": "Nazwa użytkownika",
       "passwordLabel": "Hasło",
       "removeSavedPassword": "Usuń zapisane hasło",
       "revealFailed": "Nie udało się odszyfrować zapisanego hasła.",
-      "testTargetLabel": "Testuj względem",
-      "testTargetHostPlaceholder": "Host serwera",
+      "testTargetLabel": "Testuj z",
+      "testTargetHostPlaceholder": "Adres serwera",
       "testTargetPortPlaceholder": "Port",
       "test": "Testuj proxy",
       "testing": "Testowanie…",
-      "testOk": "Proxy pomyślnie dotarło do celu.",
+      "testOk": "Proxy pomyślnie połączył się z serwerem docelowym.",
       "testFailed": "Test proxy zakończył się niepowodzeniem."
     },
     "concurrencyLabel": "Równoczesne transfery",
-    "concurrencyHint": "Ile plików można jednocześnie przesyłać i pobierać (0 lub puste pole — brak ograniczeń). Dotyczy następnego połączenia.",
+    "concurrencyHint": "Ile plików jednocześnie przesyłać i pobierać we wszystkich kartach (0 lub puste pole — bez limitu). Działa od razu; trwające transfery kończą się normalnie.",
     "speedLimitLabel": "Ograniczenie prędkości, KB/s",
-    "speedLimitHint": "Dotyczy łącznej sumy wszystkich jednoczesnych transferów (0 lub puste pole — brak ograniczenia). Zmiana wchodzi w życie natychmiast, bez konieczności oczekiwania na następne połączenie.",
+    "speedLimitHint": "Dotyczy sumy wszystkich jednoczesnych transferów (0 lub puste pole — bez limitu). Działa od razu, bez czekania na następne połączenie.",
     "notifyOnComplete": "Powiadom o zakończeniu transferów",
-    "notifyOnCompleteHint": "Powiadomienie systemowe po opróżnieniu kolejki transferów — tylko wtedy, gdy okno nie ma aktywności.",
-    "overwriteActionLabel": "O konflikcie nazw",
+    "notifyOnCompleteHint": "Powiadomienie systemowe po opróżnieniu kolejki transferów — tylko gdy okno nie jest aktywne.",
+    "overwriteActionLabel": "W razie konfliktu nazw",
     "overwriteAsk": "Zapytaj",
-    "overwriteOverwrite": "Zastąp",
+    "overwriteOverwrite": "Nadpisz",
     "overwriteSkip": "Pomiń",
-    "overwriteHint": "Co zrobić, gdy kopiowany plik już istnieje w folderze docelowym?",
-    "preventSleep": "Zapobieganie przechodzeniu systemu w stan uśpienia podczas przesyłania danych",
-    "preventSleepHint": "Zaczyna działać natychmiast, bez konieczności oczekiwania na następne połączenie. Działa tak długo, jak długo trwa co najmniej jeden transfer — w przeciwnym razie nie blokuje trybu uśpienia.",
-    "themeLabel": "Temat",
-    "themeDark": "Ciemność",
-    "themeLight": "Światło",
-    "themeSystem": "System",
+    "overwriteHint": "Co zrobić, gdy kopiowany plik już istnieje w folderze docelowym.",
+    "preventSleep": "Nie pozwalaj systemowi przejść w stan uśpienia podczas transferów",
+    "preventSleepHint": "Działa od razu, bez czekania na następne połączenie. Aktywne, dopóki trwa co najmniej jeden transfer — poza tym nie blokuje uśpienia.",
+    "themeLabel": "Motyw",
+    "themeDark": "Ciemny",
+    "themeLight": "Jasny",
+    "themeSystem": "Systemowy",
     "languageLabel": "Język interfejsu",
     "interfaceScaleLabel": "Skala interfejsu",
-    "interfaceScaleHint": "Zmień rozmiar tekstu i elementów sterujących w całej aplikacji.",
+    "interfaceScaleHint": "Zmienia rozmiar tekstu i elementów sterujących w całej aplikacji.",
     "dateFormatLabel": "Format daty i godziny",
     "dateFormatOnlyLabel": "Format daty",
     "timeFormatLabel": "Format czasu",
     "timeFormat24Hour": "24 godz.",
     "timeFormat12Hour": "12 godz.",
-    "dateFormatLocale": "Lokalne",
+    "dateFormatLocale": "Regionalny",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "Domyślny folder dla panelu Komputer",
-    "defaultLocalPathHint": "Folder, który panel Komputer otwiera przy uruchomieniu i po przełączeniu z serwera. Pozostaw puste, aby użyć folderu domowego systemu.",
+    "defaultLocalPathLabel": "Domyślny folder panelu „Komputer”",
+    "defaultLocalPathHint": "Folder, który panel „Komputer” otwiera przy uruchomieniu i po przełączeniu z serwera. Pozostaw puste, aby użyć Twojego folderu domowego.",
     "chooseDefaultLocalPath": "Wybierz domyślny folder",
-    "showHiddenFiles": "Pokaż ukryte pliki i foldery",
-    "showHiddenFilesHint": "Dotyczy zarówno lokalnych, jak i zdalnych paneli plików.",
-    "coloredTabs": "Kolorowe zakładki",
-    "coloredTabsHint": "Zmienia kolor nazwy zakładki i ikony na kolor zapisany dla zakładki.",
+    "showHiddenFiles": "Pokazuj ukryte pliki i foldery",
+    "showHiddenFilesHint": "Dotyczy zarówno paneli lokalnych, jak i paneli serwera.",
+    "coloredTabs": "Kolorowe karty",
+    "coloredTabsHint": "Barwi nazwę i ikonę karty kolorem zapisanej zakładki.",
     "autoCheckUpdates": "Aktualizuj automatycznie",
     "autoCheckUpdatesHint": "Sprawdza dostępność aktualizacji przy uruchomieniu i raz dziennie oraz pobiera je w tle. Pobrana aktualizacja instaluje się po cichu przy następnym uruchomieniu FTPeach albo od razu z paska stanu.",
-    "autoReconnectTabs": "Ponowne podłączanie przywróconych kart podczas uruchamiania",
-    "autoReconnectTabsHint": "Domyślnie wyłączone. Po włączeniu tej opcji przywrócone zapisane strony są automatycznie łączone.",
-    "saveSessionOnExit": "Zapisz sesję przy zamykaniu",
+    "autoReconnectTabs": "Łącz ponownie przywrócone karty przy uruchomieniu",
+    "autoReconnectTabsHint": "Domyślnie wyłączone. Po włączeniu przywrócone karty z zapisanymi serwerami łączą się automatycznie.",
+    "saveSessionOnExit": "Zapisuj sesję przy zamykaniu",
     "saveSessionOnExitHint": "Przy następnym uruchomieniu przywraca otwarte karty, typy paneli i ścieżki. Wyłączenie tej opcji powoduje wyczyszczenie zapisanej sesji.",
     "checkNow": "Sprawdź teraz",
     "updateStatus": {
@@ -464,8 +464,8 @@
       "notPackaged": "Niedostępne w tej kompilacji (npm run dev/start)."
     },
     "logEnable": "Pokaż panel dziennika",
-    "logShowTimestamps": "Pokaż znaczniki czasu",
-    "logToFile": "Zapisz dziennik do pliku",
+    "logShowTimestamps": "Pokazuj znaczniki czasu",
+    "logToFile": "Zapisuj dziennik do pliku",
     "logToFileHint": "Dopisuje dziennik do osobnego pliku na każdy dzień w folderze %APPDATA%\\FTPeach\\logs, nawet gdy panel dziennika jest zamknięty. Pliki są przechowywane przez 14 dni, łącznie do 50 MB. Przycisk „Zapisz” w panelu działa inaczej: po kliknięciu jednorazowo zapisuje wiersze wyświetlane w panelu.",
     "exportDiagnostics": "Eksportuj pakiet diagnostyczny",
     "exportDiagnosticsBusy": "Eksportowanie…",
@@ -476,32 +476,32 @@
     "confirmLabel": "OK"
   },
   "exportSettingsDialog": {
-    "title": "Ustawienia eksportu",
+    "title": "Eksport ustawień",
     "confirmLabel": "Eksportuj…",
     "includeSettings": "Ustawienia aplikacji",
     "includeBookmarks": "Zakładki",
     "includeLocalPaths": "Ścieżki lokalne",
-    "passwordHint": "Hasła i frazy dostępu do kluczy SSH nie są uwzględnione w eksporcie — po zaimportowaniu danych na innym komputerze trzeba będzie je ponownie wprowadzić."
+    "passwordHint": "Hasła i frazy hasła kluczy SSH nie trafiają do eksportu — po zaimportowaniu na innym komputerze trzeba je wprowadzić ponownie."
   },
   "importSettingsDialog": {
-    "title": "Ustawienia importu",
+    "title": "Import ustawień",
     "confirmLabel": "Importuj…",
     "includeSettings": "Ustawienia aplikacji",
     "includeBookmarks": "Zakładki",
     "includeLocalPaths": "Ścieżki lokalne",
-    "passwordHint": "Hasła i frazy dostępu do kluczy SSH nie są uwzględnione w imporcie — trzeba będzie je ponownie wprowadzić dla każdej zaimportowanej witryny."
+    "passwordHint": "Hasła i frazy hasła kluczy SSH nie są importowane — trzeba je wprowadzić ponownie dla każdego zaimportowanego serwera."
   },
   "openWithDialog": {
     "title": "Otwórz w aplikacji",
-    "downloading": "Pobieranie utworu „{{fileName}}”…",
-    "progress": "{{loaded}} z serwisu „{{total}}” ({{percent}} %)",
+    "downloading": "Pobieranie „{{fileName}}”…",
+    "progress": "{{loaded}} z {{total}} ({{percent}}%)",
     "connecting": "Łączenie…"
   },
   "transfers": {
     "notifyErrorTitle": "Błąd transferu",
-    "notifyCompleteTitle": "Przeniesienie zakończone",
+    "notifyCompleteTitle": "Transfer zakończony",
     "notifySucceeded": "udane: {{count}}",
-    "notifyFailed": "nie powiodło się: {{count}}",
+    "notifyFailed": "nieudane: {{count}}",
     "webdavUploadTooLarge": "Rozmiar plików przesyłanych przez WebDAV jest ograniczony do {{limit}} MiB na plik."
   },
   "transferQueue": {
@@ -510,13 +510,13 @@
       "file": "Plik",
       "route": "Trasa",
       "size": "Rozmiar",
-      "transferred": "Przeniesiono",
-      "progress": "Postępy",
+      "transferred": "Przesłano",
+      "progress": "Postęp",
       "speed": "Prędkość",
-      "remaining": "Pozostałe",
+      "remaining": "Pozostało",
       "status": "Status"
     },
-    "empty": "W tym miejscu będą wyświetlane pliki przesłane i pobrane",
+    "empty": "W tym miejscu będą wyświetlane przesyłane i pobierane pliki",
     "newTransfers_one": "{{count}} nowy transfer",
     "newTransfers_other": "{{count}} nowych transferów",
     "status": {
@@ -524,7 +524,7 @@
       "done": "Gotowe",
       "error": "Błąd",
       "paused": "Wstrzymane",
-      "stopped": "Odwołane",
+      "stopped": "Anulowane",
       "cancelling": "Anulowanie…"
     },
     "direction": {
@@ -537,27 +537,27 @@
     "directionTitleServer": "Kopiowanie na serwerze",
     "route": "{{from}} → {{to}}",
     "cancelledByUser": "Anulowane przez użytkownika",
-    "stoppedDash": "zatrzymał się",
+    "stoppedDash": "zatrzymano",
     "resume": "Wznów",
     "retry": "Spróbuj ponownie",
-    "stop": "Stop",
-    "pauseUnsupportedCopy": "Podczas kopiowania danych między serwerami funkcja wstrzymania nie jest obsługiwana",
-    "pauseUnsupportedServerCopy": "Wstrzymywanie nie jest obsługiwane podczas kopiowania na serwerze",
-    "pauseUnsupportedWebdav": "Funkcja pauzy nie jest obsługiwana przez WebDAV",
+    "stop": "Zatrzymaj",
+    "pauseUnsupportedCopy": "Podczas kopiowania między serwerami nie można wstrzymać transferu",
+    "pauseUnsupportedServerCopy": "Podczas kopiowania na serwerze nie można wstrzymać transferu",
+    "pauseUnsupportedWebdav": "WebDAV nie obsługuje wstrzymywania",
     "retryUnsupportedConnection": "Ponowienie jest niedostępne: połączenie zostało zamknięte",
     "newTransfers_few": "{{count}} nowe transfery",
     "newTransfers_many": "{{count}} nowych transferów"
   },
   "log": {
-    "connecting": "Nawiązanie połączenia z {{addr}}...",
+    "connecting": "Nawiązywanie połączenia z {{addr}}...",
     "connectFailed": "Nie udało się nawiązać połączenia: {{error}}",
     "connected": "Zalogowano się.",
     "receivedEntries_one": "Otrzymano {{count}} wpis",
     "receivedEntries_other": "Otrzymano {{count}} wpisu",
-    "skippedUnsafeEntry": "Pominięto wpis z niebezpieczną nazwą: {{name}}",
-    "listFailed": "Nie udało się dodać ogłoszenia: {{error}}",
+    "skippedUnsafeEntry": "Pominięto wpis listy z niebezpieczną nazwą: {{name}}",
+    "listFailed": "Nie udało się pobrać listy plików: {{error}}",
     "tlsInit": "Inicjalizacja protokołu TLS...",
-    "tlsEstablished": "Połączono się za pomocą protokołu TLS.",
+    "tlsEstablished": "Nawiązano połączenie TLS.",
     "davResumeUnsupportedLocal": "WebDAV nie obsługuje wznowienia przesyłania — plik zostanie wysłany ponownie od początku.",
     "davResumeUnsupportedServer": "Serwer nie obsługuje wznowienia pobierania (oczekiwany status: {{expected}}, otrzymano: {{status}}) — plik zostanie pobrany ponownie.",
     "uploadResumed": "Wznawianie wysyłania {{path}} od {{offset}} bajtów.",
@@ -583,13 +583,13 @@
     "copiedTooltip": "Skopiowano",
     "copyFailedTooltip": "Nie udało się skopiować",
     "saveFailedTooltip": "Nie udało się zapisać pliku",
-    "emptyFiltered": "Brak linii dla tego połączenia",
+    "emptyFiltered": "Brak wierszy dla tego połączenia",
     "emptyNoMatches": "Brak pasujących wierszy",
     "emptyDefault": "W tym miejscu będą wyświetlane komunikaty protokołu"
   },
   "aboutDialog": {
     "title": "O programie",
-    "tagline": "Lekki klient FTP/FTPS/SFTP.",
+    "tagline": "Lekki klient FTP/FTPS/SFTP/WebDAV.",
     "legalInformation": "Informacje prawne",
     "sourceCode": "Kod źródłowy",
     "reportIssue": "Zgłoś problem",
@@ -597,8 +597,8 @@
     "updateDownloaded": "Pobrano aktualizację w wersji {{version}} — można ją teraz zainstalować."
   },
   "siteManager": {
-    "emptyList": "Nie ma jeszcze żadnych zapisanych stron",
-    "confirmDeleteSite": "Czy chcesz usunąć stronę „{{name}}”?"
+    "emptyList": "Nie ma jeszcze zapisanych serwerów",
+    "confirmDeleteSite": "Usunąć serwer „{{name}}”?"
   },
   "siteManagerDialog": {
     "titleNew": "Nowa zakładka",
@@ -614,28 +614,28 @@
       "color": "Kolor",
       "protocol": "Protokół",
       "keyFile": "Plik klucza",
-      "caCertFile": "Certyfikat urzędu certyfikacji",
+      "caCertFile": "Certyfikat CA",
       "remotePath": "Folder domyślny",
       "localPath": "Folder lokalny",
       "folder": "Folder",
       "maxConnections": "Maksymalna liczba połączeń na panel"
     },
     "icons": {
-      "bookmark": "Dodaj do zakładek",
+      "bookmark": "Zakładka",
       "globe": "Strona internetowa",
       "briefcase": "Praca",
       "house": "Serwer domowy",
       "cloud": "Chmura",
-      "flask": "Testowanie / środowisko testowe",
+      "flask": "Test / staging",
       "gamepad": "Serwer gry",
       "clapperboard": "Serwer multimediów",
-      "camera": "Aparat fotograficzny"
+      "camera": "Kamera"
     },
     "colors": {
       "default": "Bez koloru",
-      "peach": "Brzoskwinia",
+      "peach": "Brzoskwiniowy",
       "red": "Czerwony",
-      "amber": "Bursztyn",
+      "amber": "Bursztynowy",
       "green": "Zielony",
       "blue": "Niebieski",
       "purple": "Fioletowy",
@@ -653,7 +653,7 @@
     "addLocalBookmark": "Dodaj zakładkę do folderu lokalnego",
     "chooseLocalPath": "Wybierz folder lokalny",
     "importBookmarks": "Importuj",
-    "exportBookmarks": "Eksport",
+    "exportBookmarks": "Eksportuj",
     "importAdded_one": "Dodano {{count}} zakładkę",
     "importAdded_few": "Dodano {{count}} zakładki",
     "importAdded_many": "Dodano {{count}} zakładek",
@@ -667,18 +667,18 @@
     "sortMode": "Sortowanie zakładek",
     "sortManual": "Ręcznie",
     "sortName": "Według nazwy",
-    "sortProtocol": "Zgodnie z protokołem",
-    "duplicateWarning": "Istnieje już zakładka o tej samej nazwie: „{{name}}”. Czy chcesz zapisać kolejną?",
+    "sortProtocol": "Według protokołu",
+    "duplicateWarning": "Istnieje już zakładka do tego samego miejsca docelowego: „{{name}}”. Zapisać kolejną?",
     "saveAnyway": "Zapisz mimo to",
     "newFolder": "Nowy folder",
     "folderNamePlaceholder": "Nazwa folderu",
     "confirmDeleteFolder": "Czy chcesz usunąć folder „{{name}}”? Jego zakładki zostaną przeniesione o jeden poziom wyżej.",
     "searchPlaceholder": "Wyszukaj…",
-    "clearSearch": "Wyczyść wyniki wyszukiwania",
-    "noSearchResults": "Nie znaleziono zakładek pasujących do Twojego wyszukiwania",
-    "duplicate": "Duplikat",
+    "clearSearch": "Wyczyść wyszukiwanie",
+    "noSearchResults": "Brak zakładek pasujących do wyszukiwania",
+    "duplicate": "Duplikuj",
     "duplicateNameSuffix": " (kopia)",
-    "newBookmarkInFolder": "Dodaj tutaj nową zakładkę",
+    "newBookmarkInFolder": "Nowa zakładka tutaj",
     "expandFolder": "Rozwiń „{{name}}”",
     "collapseFolder": "Zwiń „{{name}}”",
     "noFolder": "Bez folderu",
@@ -693,29 +693,29 @@
       "passphrase": "Fraza hasła",
       "keyFilePlaceholder": "Plik klucza…",
       "chooseKeyFile": "Wybierz plik klucza…",
-      "caCertFilePlaceholder": "Certyfikat urzędu certyfikacji…",
-      "chooseCaCertFile": "Wybierz certyfikat urzędu certyfikacji…"
+      "caCertFilePlaceholder": "Certyfikat CA…",
+      "chooseCaCertFile": "Wybierz certyfikat CA…"
     },
     "secureToggle": {
       "tooltip": "Odznacz to pole, aby zaakceptować certyfikaty serwerowe z podpisem własnym oraz certyfikaty nieprawidłowe",
-      "label": "Sprawdź certyfikat"
+      "label": "Weryfikuj certyfikat"
     },
     "authToggle": {
-      "tooltip": "Zaloguj się przy użyciu prywatnego pliku klucza SSH zamiast hasła",
-      "label": "Zaloguj się za pomocą klucza SSH"
+      "tooltip": "Loguj się plikiem prywatnego klucza SSH zamiast hasłem",
+      "label": "Logowanie kluczem SSH"
     },
     "rsaKeyWarning": "Klucze prywatne RSA są narażone na znane ataki kanałem bocznym oparte na pomiarze czasu. W przypadku nowych kluczy SSH preferuj Ed25519.",
     "connectTooltip": {
       "cancel": "Anuluj",
-      "connect": "Połącz się",
-      "disconnect": "Odłącz się"
+      "connect": "Połącz",
+      "disconnect": "Rozłącz"
     }
   },
   "protocolSelect": {
-    "insecureWarning": "Zwykły protokół FTP przesyła nazwę użytkownika, hasło i pliki w postaci niezaszyfrowanej. Jeśli to możliwe, należy korzystać z protokołów FTPS lub SFTP."
+    "insecureWarning": "Zwykły FTP przesyła nazwę użytkownika, hasło i pliki bez szyfrowania. Jeśli to możliwe, używaj FTPS lub SFTP."
   },
   "titleBar": {
-    "minimize": "Zminimalizuj",
+    "minimize": "Minimalizuj",
     "restore": "Przywróć",
     "maximize": "Maksymalizuj"
   },
@@ -727,7 +727,7 @@
     "localComputer": "Komputer",
     "untitledTab": "Nowa karta",
     "newTabTooltip": "Nowa karta (Ctrl+T)",
-    "rename": "Nazwa zakładki"
+    "rename": "Nazwa karty"
   },
   "toolbarOverflowMenu": {
     "more": "Więcej"
@@ -736,9 +736,9 @@
     "transfers": "Transfery: {{count}}",
     "leftCount": "Po lewej: {{count}}",
     "rightCount": "Po prawej: {{count}}",
-    "topCount": "Źródło: {{count}}",
+    "topCount": "U góry: {{count}}",
     "bottomCount": "Na dole: {{count}}",
-    "selectedSuffix": " (wybrano opcję „{{count}}”)",
+    "selectedSuffix": " (zaznaczono: {{count}})",
     "status": {
       "transferring": "Przesyłanie pliku",
       "paused": "Wstrzymane",
@@ -753,18 +753,18 @@
     "toggleRightPane": "Pokaż/ukryj prawy panel",
     "toggleTransferQueue": "Pokaż/ukryj kolejkę transferów",
     "toggleLog": "Pokaż/ukryj dziennik",
-    "orientationNarrow": "Ułożone jeden nad drugim szyby — okno jest zbyt wąskie, by można było je obejrzeć obok siebie",
-    "orientationToRow": "Ułóż okienka obok siebie",
+    "orientationNarrow": "Panele ułożone jeden nad drugim — okno jest zbyt wąskie, by pokazać je obok siebie",
+    "orientationToRow": "Ułóż panele obok siebie",
     "orientationToStacked": "Ułóż panele jeden na drugim",
-    "pauseUnsupportedWebdav": "Funkcja pauzy nie jest obsługiwana przez WebDAV",
+    "pauseUnsupportedWebdav": "WebDAV nie obsługuje wstrzymywania",
     "pauseActive": "Wstrzymaj aktywne transfery",
-    "resumeAllPaused": "Wznowienie wszystkich wstrzymanych transferów",
+    "resumeAllPaused": "Wznów wszystkie wstrzymane transfery",
     "stopActive": "Zatrzymaj aktywne transfery",
-    "retryAllStopped": "Ponów wszystkie wstrzymane transfery",
-    "refreshPanesTooltip": "Odśwież oba okna (F5)"
+    "retryAllStopped": "Ponów wszystkie zatrzymane transfery",
+    "refreshPanesTooltip": "Odśwież oba panele (F5)"
   },
   "paneToolbar": {
-    "back": "Powrót",
+    "back": "Wstecz",
     "forward": "Dalej",
     "up": "W górę",
     "chooseFolder": "Wybierz folder…",
@@ -779,7 +779,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Brak ostatnich połączeń",
-    "noSavedConnectionsBody": "Wpisz powyżej adres serwera lub dodaj stronę, aby uzyskać do niej dostęp jednym kliknięciem.",
+    "noSavedConnectionsBody": "Wpisz powyżej adres serwera lub dodaj zakładkę, aby łączyć się jednym kliknięciem.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Zarządzaj zakładkami",
     "quicklistLabel": "Ostatnie połączenia"
@@ -788,6 +788,6 @@
     "consoleLogPrefix": "Nieobsługiwany błąd interfejsu FTPeach:",
     "title": "Coś poszło nie tak",
     "message": "Wystąpił nieoczekiwany błąd interfejsu. Nie ma to wpływu na aktywne połączenie ani na pliki na dysku — możesz spróbować ponownie załadować interfejs.",
-    "reload": "Odśwież interfejs"
+    "reload": "Przeładuj interfejs"
   }
 }

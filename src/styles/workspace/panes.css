@@ -130,7 +130,10 @@
   text-transform: uppercase;
   color: var(--text-secondary);
   border-radius: var(--radius-sm);
-  padding: 3px 7px 3px 8px;
+  /* Same 26px --control-height as the .btn-icon buttons sitting beside it, so
+     the hover/open background lines up with them instead of floating short. */
+  height: var(--control-height);
+  padding: 0 7px 0 8px;
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
   /* <button>'s own UA-stylesheet line-height wins over anything inherited
@@ -161,10 +164,12 @@
   -webkit-mask-image: var(--truncate-fade);
 }
 
+/* No vertical nudge: in var(--font-ui) the ▾ glyph's ink already lands on the
+   label's own optical center once flex-centered (measured: both at 13.5px in
+   the 26px chip), so the 1px push this used to carry left it visibly low. */
 .pane-source-chev {
   font-size: 8px;
   opacity: 0.7;
-  transform: translateY(1px);
 }
 
 

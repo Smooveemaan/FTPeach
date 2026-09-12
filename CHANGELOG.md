@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The notification shown when transfers finish now comes from FTPeach, with its name and
   icon, instead of appearing to come from Windows PowerShell.
+- The button naming a pane's source now stands as tall as the buttons beside it, and its
+  small arrow sits level with the name.
 - Menus now widen to fit what is written in them, so longer entries no longer fade out
   part-way. This was most noticeable in languages other than English.
 - Toolbar buttons above the file lists no longer lose their bottom edge while pressed.

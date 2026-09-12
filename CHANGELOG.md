@@ -2,56 +2,32 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
-## [Unreleased]
-
-### Added
-
-- Reopen closed tabs with Ctrl+Shift+T, starting with the last one you closed.
-
-### Changed
-
-- The log's Filter button moved next to the search, and a divider now separates them
-  from the LOG title.
-- The notification shown when transfers finish now counts the files in plain words, such
-  as “8 files transferred, 2 files failed”.
-
-### Fixed
-
-- The notification shown when transfers finish now comes from FTPeach, with its name and
-  icon, instead of appearing to come from Windows PowerShell.
-- The button naming a pane's source now stands as tall as the buttons beside it, and its
-  small arrow sits level with the name.
-- Menus now widen to fit what is written in them, so longer entries no longer fade out
-  part-way. This was most noticeable in languages other than English.
-- Toolbar buttons above the file lists no longer lose their bottom edge while pressed.
-- The transfer list can be dragged all the way up to the file lists without the log too,
-  and no longer leaves a strip of the column headings showing above it.
-
 ## [0.2.0] - 2026-09-12
 
 ### Added
 
 - The transfer list shows where each file goes, such as “Projects → My site”.
-- Sort the transfer list by clicking a column heading. Right-click the headings to hide
-  or show columns.
-- Double-click a column divider in the transfer list to fit the column to its contents.
+- Sort the transfer list by clicking a column heading, right-click the headings to hide or
+  show columns, and double-click a divider to fit a column to its contents.
 - Set the most connections a bookmark may open to its server in the Site Manager.
 - Search the log, and choose which kinds of messages it shows by Filter button.
+- Reopen closed tabs with Ctrl+Shift+T, starting with the last one you closed.
 
 ### Changed
 
 - The Concurrent transfers limit now covers all tabs together and applies at once.
 - The transfer list shows active transfers first and finished ones last.
 - When you send several folders at once, they all appear in the transfer list right away.
-- SFTP downloads are faster.
-- Transfers start sooner, without waiting for every extra connection to log in.
-- Dropping many files at once starts faster.
-- The log records even while its panel is closed, so opening it shows what already happened.
-- Writing the log to a file no longer needs the log panel open.
-- The log panel keeps more lines and shows times to the millisecond, in your time format.
-- The log shows the time of each line by default. You can turn this off in Settings.
+- Transfers start sooner, SFTP downloads are faster, and dropping many files at once gets
+  going quicker.
+- The log records, and can be written to a file, even while its panel is closed, so opening
+  it shows what already happened.
+- The log keeps more lines and shows the time of each one by default, to the millisecond
+  and in your time format. You can turn the times off in Settings.
 - Log files are named by date, name the server, and old ones are removed once they take
   too much space.
+- The notification shown when transfers finish counts the files in plain words, such as
+  “8 files transferred, 2 files failed”.
 - The diagnostic bundle includes the recent log and the app's own error log.
 - Translations in every language are clearer and match what each button and setting does.
 
@@ -67,20 +43,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - If a server turns away extra connections, FTPeach carries on with the ones it has and
   tries again a little later.
 - A transfer now fails instead of finishing with a file of the wrong size.
+- A finished transfer always shows 100%.
 - The connection log no longer shows an error when an FTP server declines an optional
   feature.
 - Folder uploads to WebDAV can no longer be paused, because resuming started the file over.
 - Resume all works while a WebDAV transfer is still running.
-- Unavailable Pause and Retry buttons no longer light up under the pointer.
 - Saving a connection as a bookmark renames its pane and tab to match.
-- The “Connect first” hint is easier to read.
-- A finished transfer always shows 100%.
-- Showing the log no longer waits for a connection that is stuck.
-- Log lines no longer come out of order during busy transfers.
-- Reset Layout and Cache no longer opens or closes the log.
-- Tooltips near the window's edge no longer wrap onto two lines when one would fit.
+- The notification shown when transfers finish now comes from FTPeach, with its name and
+  icon, instead of appearing to come from Windows PowerShell.
 - Transfer speeds no longer dip while other transfers run, and no longer creep up from
   0 B/s when a transfer starts.
+- Showing the log no longer waits for a connection that is stuck, and its lines no longer
+  come out of order during busy transfers.
+- Reset Layout and Cache no longer opens or closes the log.
+- Menus, tooltips and panels now fit what is written in them, so nothing fades out, wraps
+  or is pushed out of sight — including the Manage Bookmarks button in a disconnected pane.
+- Many smaller touches around the window: steadier buttons and lists, a clearer “Connect
+  first” hint, and the log's Filter button beside the search.
 
 ## [0.1.2] - 2026-09-10
 

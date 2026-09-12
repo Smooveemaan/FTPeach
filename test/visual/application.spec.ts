@@ -285,3 +285,48 @@ test('sort field fits the longest translated option', async ({ page }) => {
   }
   expect(widths[0]).not.toBe(widths[1]);
 });
+
+/* The connect empty state is at its tallest with the quicklist's cap of three
+   saved sites, and at its most cramped in the default layout: the smallest
+   window the app opens at, with the transfer queue and the log both taking
+   their share of it. Its Manage Bookmarks button used to fall past the bottom
+   edge there, and the scrollbar that appeared re-centred the whole card. */
+test('three recent connections fit a disconnected pane in the default layout', async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 740 });
+  await openHarness(page);
+  await page.locator(`[data-tooltip="${en.viewToolbar.toggleLog}"]`).first().click();
+  await page.getByRole('menuitem', { name: en.menu.file.title, exact: true }).click();
+  await page.getByRole('menuitem', { name: en.menu.file.disconnect, exact: true }).click();
+  await expect(page.locator('.pane-quicklist-row')).toHaveCount(3);
+
+  const list = page.locator('.pane-list-empty-scrollable');
+  const geometry = await list.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const more = element.querySelector('.pane-quicklist-more')!.getBoundingClientRect();
+    const card = element.querySelector('.pane-connect-quicklist')!.getBoundingClientRect();
+    return {
+      overflow: element.scrollHeight - element.clientHeight,
+      buttonBottomGap: bounds.bottom - more.bottom,
+      offCentre: card.left + card.width / 2 - (bounds.left + bounds.width / 2),
+      contentWidth: element.clientWidth,
+    };
+  });
+  expect(geometry.overflow).toBe(0);
+  expect(geometry.buttonBottomGap).toBeGreaterThan(0);
+
+  /* Short enough that the list has to scroll: the gutter is reserved on both
+     edges, so the card sits where it sat and the rows keep their width. */
+  await page.setViewportSize({ width: 1180, height: 560 });
+  const scrolled = await list.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const card = element.querySelector('.pane-connect-quicklist')!.getBoundingClientRect();
+    return {
+      overflow: element.scrollHeight - element.clientHeight,
+      offCentre: card.left + card.width / 2 - (bounds.left + bounds.width / 2),
+      contentWidth: element.clientWidth,
+    };
+  });
+  expect(scrolled.overflow).toBeGreaterThan(0);
+  expect(scrolled.offCentre).toBeCloseTo(geometry.offCentre, 1);
+  expect(scrolled.contentWidth).toBe(geometry.contentWidth);
+});

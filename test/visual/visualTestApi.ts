@@ -76,6 +76,20 @@ const sites: ManagedSite[] = [
     icon: 'cloud',
     color: '#60a5fa',
   },
+  /* Three is the quicklist's cap, and the height it has to fit into is the
+     tightest the connect empty state ever gets — so the fixture carries
+     exactly three sites. */
+  {
+    id: 'archive',
+    name: 'Archive',
+    protocol: 'ftp',
+    host: 'ftp.example.com',
+    port: 21,
+    user: 'archivist',
+    remotePath: '/backups',
+    icon: 'database',
+    color: '#34d399',
+  },
 ];
 
 /** `?lang=ar` on the harness URL. The app takes its language (and, through

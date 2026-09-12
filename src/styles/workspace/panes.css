@@ -776,8 +776,12 @@ body.column-reorder-active .col-resize-handle:hover::after {
 }
 
 
+/* both-edges, not plain stable: the connect state is a centred card, and a
+   gutter reserved on the end edge alone would re-centre it half a scrollbar
+   to the side the moment the list starts scrolling. */
 .pane-list.pane-list-empty.pane-list-empty-scrollable {
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
 
@@ -817,11 +821,19 @@ body.column-reorder-active .col-resize-handle:hover::after {
   margin-top: 4px;
 }
 
+/* The quicklist is the tallest thing this empty state holds — three rows
+   plus the bookmarks button — and it has to clear the short pane the default
+   layout leaves once the transfer queue and the log take their share. Hence
+   the tighter gaps here and the trimmed padding below; the onboarding
+   variant is short enough to keep the roomier spacing. */
 .pane-connect-quicklist {
-  gap: 6px;
+  gap: 5px;
   max-width: 340px;
   margin: 0 auto;
   text-align: start;
+}
+.pane-empty:has(.pane-connect-quicklist) {
+  padding-block: 10px;
 }
 .pane-quicklist-label {
   font-size: 11px;
@@ -892,7 +904,7 @@ body.column-reorder-active .col-resize-handle:hover::after {
   color: var(--accent-primary);
 }
 .pane-quicklist-more {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 

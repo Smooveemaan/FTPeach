@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
@@ -17,7 +17,12 @@ interface ContextMenuProps {
   items: readonly MenuItem[];
   onClose: () => void;
   className?: string;
-  width?: number;
+  /**
+   * The width the menu starts at. It grows past this whenever a label needs
+   * the room -- translations run well past the English they were sized for
+   * -- so this is a floor, not a size.
+   */
+  minWidth?: number;
 }
 
 export default function ContextMenu({
@@ -27,13 +32,22 @@ export default function ContextMenu({
   items,
   onClose,
   className = '',
-  width = 220,
+  minWidth = 220,
 }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   const previouslyFocusedRef = useRef(document.activeElement);
+
+  /**
+   * Placement clamps against the menu's real width, which only the browser
+   * knows once the labels are laid out. The first pass positions from
+   * `minWidth`; this measurement corrects it before the paint, so a menu
+   * that grew still stops at the viewport edge instead of running off it.
+   */
+  const [renderedWidth, setRenderedWidth] = useState(0);
+  useLayoutEffect(() => setRenderedWidth(ref.current?.offsetWidth ?? 0), [items]);
 
   const dismiss = useCallback(() => onCloseRef.current(), []);
   useDismissableOverlay({
@@ -49,16 +63,19 @@ export default function ContextMenu({
   const localY = y / scale;
   const localWidth = window.innerWidth / scale;
   const localHeight = window.innerHeight / scale;
-  const preferredLeft = rtl ? localX - width : localX;
-  const left = Math.max(0, Math.min(preferredLeft, localWidth - width));
+  const menuWidth = Math.min(Math.max(minWidth, renderedWidth), localWidth);
+  const preferredLeft = rtl ? localX - menuWidth : localX;
+  const left = Math.max(0, Math.min(preferredLeft, localWidth - menuWidth));
   const estimatedHeight = items.length * 28 + 40;
   const openAbove = aboveY != null && localY + estimatedHeight > localHeight;
   const style: CSSProperties = {
-    [rtl ? 'right' : 'left']: rtl ? localWidth - left - width : left,
+    [rtl ? 'right' : 'left']: rtl ? localWidth - left - menuWidth : left,
     ...(openAbove
       ? { bottom: localHeight - aboveY / scale }
       : { top: Math.max(0, Math.min(localY, localHeight - estimatedHeight)) }),
-    width,
+    minWidth,
+    width: 'max-content',
+    maxWidth: localWidth,
   };
 
   return (

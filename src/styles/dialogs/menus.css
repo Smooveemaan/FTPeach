@@ -26,11 +26,6 @@
   overflow: visible;
   text-overflow: clip;
 }
-.menu-bar-item > .menu-dropdown .menu-item-shortcut {
-  /* Adds to .menu-item's regular 6px gap, leaving a clear 24px minimum
-     separation between the action label and its keyboard shortcut. */
-  margin-inline-start: 18px;
-}
 
 .menu-bar-trigger {
   border: none;
@@ -65,17 +60,12 @@
   z-index: 100;
 }
 
+/* Sizing is the component's: it starts each menu at its caller's minimum
+   and lets the labels widen it, measuring the result to keep the placement
+   clamped to the viewport. */
 .context-menu {
   position: fixed;
-  min-width: 200px;
   z-index: 200;
-}
-
-/* Drive labels are only a letter and colon. The generic context menu's
-   200px minimum leaves mostly empty space, so this dedicated picker stays
-   compact while retaining room for its check slot and item padding. */
-.context-menu.drive-select-menu {
-  min-width: 84px;
 }
 
 /* Reserve the menu's intrinsic width, including its check slot and padding,
@@ -158,6 +148,11 @@
 
 .menu-item-shortcut {
   flex: 0 0 auto;
+  /* Adds to .menu-item's regular 6px gap, leaving a clear 24px minimum
+     separation between the action label and its keyboard shortcut -- menus
+     size themselves from their longest row, so this is what keeps the two
+     from meeting in the middle of it. */
+  margin-inline-start: 18px;
   color: var(--text-faint);
   font-family: var(--font-mono);
   font-size: 9px;

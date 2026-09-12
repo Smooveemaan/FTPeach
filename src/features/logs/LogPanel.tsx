@@ -45,7 +45,7 @@ const SAVE_BYTE_LIMIT = 2 * 1024 * 1024;
 // panel hold thousands of lines whose height depends on how they wrap.
 const CHUNK_SIZE = 100;
 
-const KIND_MENU_WIDTH = 200;
+const KIND_MENU_MIN_WIDTH = 200;
 
 const LOG_KINDS = ['status', 'command', 'response', 'error'] as const;
 type LogKindName = (typeof LOG_KINDS)[number];
@@ -535,7 +535,7 @@ export default function LogPanel({
         createPortal(
           <ContextMenu
             {...kindMenu}
-            width={KIND_MENU_WIDTH}
+            minWidth={KIND_MENU_MIN_WIDTH}
             onClose={() => setKindMenu(null)}
             items={LOG_KINDS.map((kind) => ({
               label: t(KIND_LABEL_KEYS[kind]),

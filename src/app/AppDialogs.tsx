@@ -399,8 +399,10 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           x={dialogs.driveMenu.x}
           y={dialogs.driveMenu.y}
           items={dialogs.driveMenu.items}
-          className="drive-select-menu"
-          width={84}
+          /* Drive labels are only a letter and colon. The generic menu's
+             width would leave mostly empty space, so this picker starts
+             compact -- just its check slot, the label and the padding. */
+          minWidth={84}
           onClose={() => dialogs.setDriveMenu(null)}
         />
       )}

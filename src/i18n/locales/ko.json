@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "전송 오류",
     "notifyCompleteTitle": "전송 완료",
-    "notifySucceeded": "성공: {{count}}",
-    "notifyFailed": "실패: {{count}}",
+    "notifySucceeded_one": "파일 {{count}}개 전송됨",
+    "notifySucceeded_other": "파일 {{count}}개 전송됨",
+    "notifyFailed_one": "파일 {{count}}개 실패",
+    "notifyFailed_other": "파일 {{count}}개 실패",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다."
   },
   "transferQueue": {

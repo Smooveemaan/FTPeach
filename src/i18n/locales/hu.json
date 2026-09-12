@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Átviteli hiba",
     "notifyCompleteTitle": "Az átvitel befejeződött",
-    "notifySucceeded": "sikeres: {{count}}",
-    "notifyFailed": "sikertelen: {{count}}",
+    "notifySucceeded_one": "{{count}} fájl átvitve",
+    "notifySucceeded_other": "{{count}} fájl átvitve",
+    "notifyFailed_one": "{{count}} fájl sikertelen",
+    "notifyFailed_other": "{{count}} fájl sikertelen",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet."
   },
   "transferQueue": {

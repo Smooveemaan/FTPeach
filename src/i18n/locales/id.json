@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Kesalahan Transfer",
     "notifyCompleteTitle": "Transfer Selesai",
-    "notifySucceeded": "berhasil: {{count}}",
-    "notifyFailed": "gagal: {{count}}",
+    "notifySucceeded_one": "{{count}} file ditransfer",
+    "notifySucceeded_other": "{{count}} file ditransfer",
+    "notifyFailed_one": "{{count}} file gagal",
+    "notifyFailed_other": "{{count}} file gagal",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file."
   },
   "transferQueue": {

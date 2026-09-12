@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Übertragungsfehler",
     "notifyCompleteTitle": "Übertragung abgeschlossen",
-    "notifySucceeded": "erfolgreich: {{count}}",
-    "notifyFailed": "fehlgeschlagen: {{count}}",
+    "notifySucceeded_one": "{{count}} Datei übertragen",
+    "notifySucceeded_other": "{{count}} Dateien übertragen",
+    "notifyFailed_one": "{{count}} Datei fehlgeschlagen",
+    "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt."
   },
   "transferQueue": {

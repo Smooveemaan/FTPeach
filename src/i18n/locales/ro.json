@@ -498,9 +498,14 @@
   "transfers": {
     "notifyErrorTitle": "Eroare de transfer",
     "notifyCompleteTitle": "Transfer finalizat",
-    "notifySucceeded": "reușite: {{count}}",
-    "notifyFailed": "eșuate: {{count}}",
-    "webdavUploadTooLarge": "Încărcările prin WebDAV sunt limitate la {{limit}} MiB pe fișier."
+    "notifySucceeded_one": "{{count}} fișier transferat",
+    "notifySucceeded_other": "{{count}} de fișiere transferate",
+    "notifyFailed_one": "{{count}} fișier eșuat",
+    "notifyFailed_other": "{{count}} de fișiere eșuate",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
+    "webdavUploadTooLarge": "Încărcările prin WebDAV sunt limitate la {{limit}} MiB pe fișier.",
+    "notifySucceeded_few": "{{count}} fișiere transferate",
+    "notifyFailed_few": "{{count}} fișiere eșuate"
   },
   "transferQueue": {
     "title": "Transferuri",

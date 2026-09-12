@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Överföringsfel",
     "notifyCompleteTitle": "Överföringen är klar",
-    "notifySucceeded": "lyckades: {{count}}",
-    "notifyFailed": "misslyckades: {{count}}",
+    "notifySucceeded_one": "{{count}} fil överförd",
+    "notifySucceeded_other": "{{count}} filer överförda",
+    "notifyFailed_one": "{{count}} fil misslyckades",
+    "notifyFailed_other": "{{count}} filer misslyckades",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil."
   },
   "transferQueue": {

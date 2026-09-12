@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "传输错误",
     "notifyCompleteTitle": "传输完成",
-    "notifySucceeded": "成功：{{count}}",
-    "notifyFailed": "失败：{{count}}",
+    "notifySucceeded_one": "已传输 {{count}} 个文件",
+    "notifySucceeded_other": "已传输 {{count}} 个文件",
+    "notifyFailed_one": "{{count}} 个文件失败",
+    "notifyFailed_other": "{{count}} 个文件失败",
+    "notifyBoth": "{{succeeded}}、{{failed}}",
     "webdavUploadTooLarge": "WebDAV 上传的单个文件大小上限为 {{limit}} MiB。"
   },
   "transferQueue": {

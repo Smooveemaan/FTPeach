@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Lỗi truyền tải",
     "notifyCompleteTitle": "Truyền tải hoàn tất",
-    "notifySucceeded": "thành công: {{count}}",
-    "notifyFailed": "thất bại: {{count}}",
+    "notifySucceeded_one": "Đã chuyển {{count}} tệp",
+    "notifySucceeded_other": "Đã chuyển {{count}} tệp",
+    "notifyFailed_one": "{{count}} tệp thất bại",
+    "notifyFailed_other": "{{count}} tệp thất bại",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp."
   },
   "transferQueue": {

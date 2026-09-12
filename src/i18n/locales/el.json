@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Σφάλμα μεταφοράς",
     "notifyCompleteTitle": "Η μεταφορά ολοκληρώθηκε",
-    "notifySucceeded": "επιτυχείς: {{count}}",
-    "notifyFailed": "αποτυχημένες: {{count}}",
+    "notifySucceeded_one": "{{count}} αρχείο μεταφέρθηκε",
+    "notifySucceeded_other": "{{count}} αρχεία μεταφέρθηκαν",
+    "notifyFailed_one": "{{count}} αρχείο απέτυχε",
+    "notifyFailed_other": "{{count}} αρχεία απέτυχαν",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Οι μεταφορτώσεις μέσω WebDAV περιορίζονται στα {{limit}} MiB ανά αρχείο."
   },
   "transferQueue": {

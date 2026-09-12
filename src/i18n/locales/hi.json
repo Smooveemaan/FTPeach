@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "स्थानांतरण त्रुटि",
     "notifyCompleteTitle": "स्थानांतरण पूर्ण",
-    "notifySucceeded": "सफल: {{count}}",
-    "notifyFailed": "विफल: {{count}}",
+    "notifySucceeded_one": "{{count}} फ़ाइल स्थानांतरित हुई",
+    "notifySucceeded_other": "{{count}} फ़ाइलें स्थानांतरित हुईं",
+    "notifyFailed_one": "{{count}} फ़ाइल विफल रही",
+    "notifyFailed_other": "{{count}} फ़ाइलें विफल रहीं",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV अपलोड प्रति फ़ाइल {{limit}} MiB तक सीमित हैं।"
   },
   "transferQueue": {

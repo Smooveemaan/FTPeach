@@ -498,9 +498,14 @@
   "transfers": {
     "notifyErrorTitle": "שגיאת העברה",
     "notifyCompleteTitle": "ההעברה הושלמה",
-    "notifySucceeded": "הצלחה: {{count}}",
-    "notifyFailed": "נכשל: {{count}}",
-    "webdavUploadTooLarge": "העלאות באמצעות WebDAV מוגבלות ל-{{limit}} MiB לכל קובץ."
+    "notifySucceeded_one": "{{count}} קובץ הועבר",
+    "notifySucceeded_other": "{{count}} קבצים הועברו",
+    "notifyFailed_one": "{{count}} קובץ נכשל",
+    "notifyFailed_other": "{{count}} קבצים נכשלו",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
+    "webdavUploadTooLarge": "העלאות באמצעות WebDAV מוגבלות ל-{{limit}} MiB לכל קובץ.",
+    "notifySucceeded_two": "{{count}} קבצים הועברו",
+    "notifyFailed_two": "{{count}} קבצים נכשלו"
   },
   "transferQueue": {
     "title": "העברות",

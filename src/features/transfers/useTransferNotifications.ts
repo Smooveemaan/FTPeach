@@ -33,15 +33,22 @@ export function useTransferNotifications(t: Translate): void {
               failed && !succeeded
                 ? t('transfers.notifyErrorTitle')
                 : t('transfers.notifyCompleteTitle');
-            const parts: string[] = [];
-            if (succeeded) parts.push(t('transfers.notifySucceeded', { count: succeeded }));
-            if (failed) parts.push(t('transfers.notifyFailed', { count: failed }));
+            const succeededText = succeeded
+              ? t('transfers.notifySucceeded', { count: succeeded })
+              : '';
+            const failedText = failed ? t('transfers.notifyFailed', { count: failed }) : '';
+            // The two halves are joined through a translated pattern, not a
+            // comma in code: CJK separates clauses with 、 and Arabic with ، .
+            const body =
+              succeededText && failedText
+                ? t('transfers.notifyBoth', { succeeded: succeededText, failed: failedText })
+                : succeededText || failedText;
             reportRejection(
               api.notifications.transfersComplete({
                 succeeded,
                 failed,
                 title,
-                body: parts.join(', '),
+                body,
               }),
             );
           }

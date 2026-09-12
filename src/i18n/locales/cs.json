@@ -502,9 +502,16 @@
   "transfers": {
     "notifyErrorTitle": "Chyba přenosu",
     "notifyCompleteTitle": "Přenos dokončen",
-    "notifySucceeded": "úspěšné: {{count}}",
-    "notifyFailed": "selhalo: {{count}}",
-    "webdavUploadTooLarge": "Velikost souborů nahrávaných přes WebDAV je omezena na {{limit}} MiB na jeden soubor."
+    "notifySucceeded_one": "Přenesen {{count}} soubor",
+    "notifySucceeded_other": "Přeneseno {{count}} souborů",
+    "notifyFailed_one": "Nepodařilo se přenést {{count}} soubor",
+    "notifyFailed_other": "Nepodařilo se přenést {{count}} souborů",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
+    "webdavUploadTooLarge": "Velikost souborů nahrávaných přes WebDAV je omezena na {{limit}} MiB na jeden soubor.",
+    "notifySucceeded_few": "Přeneseny {{count}} soubory",
+    "notifySucceeded_many": "Přeneseno {{count}} souboru",
+    "notifyFailed_few": "Nepodařilo se přenést {{count}} soubory",
+    "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru"
   },
   "transferQueue": {
     "title": "Přenosy",

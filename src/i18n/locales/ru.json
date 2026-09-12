@@ -502,8 +502,15 @@
   "transfers": {
     "notifyErrorTitle": "Ошибка передачи",
     "notifyCompleteTitle": "Передача завершена",
-    "notifySucceeded": "успешно: {{count}}",
-    "notifyFailed": "с ошибкой: {{count}}",
+    "notifySucceeded_one": "{{count}} файл передан",
+    "notifySucceeded_few": "{{count}} файла передано",
+    "notifySucceeded_many": "{{count}} файлов передано",
+    "notifySucceeded_other": "{{count}} файла передано",
+    "notifyFailed_one": "{{count}} файл не передан",
+    "notifyFailed_few": "{{count}} файла не передано",
+    "notifyFailed_many": "{{count}} файлов не передано",
+    "notifyFailed_other": "{{count}} файла не передано",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Через WebDAV можно загрузить файл не больше {{limit}} МиБ."
   },
   "transferQueue": {

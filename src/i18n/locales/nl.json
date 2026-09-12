@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Overdrachtsfout",
     "notifyCompleteTitle": "Overdracht voltooid",
-    "notifySucceeded": "gelukt: {{count}}",
-    "notifyFailed": "mislukt: {{count}}",
+    "notifySucceeded_one": "{{count}} bestand overgedragen",
+    "notifySucceeded_other": "{{count}} bestanden overgedragen",
+    "notifyFailed_one": "{{count}} bestand mislukt",
+    "notifyFailed_other": "{{count}} bestanden mislukt",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand."
   },
   "transferQueue": {

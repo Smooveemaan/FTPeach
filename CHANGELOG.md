@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The log's Filter button moved next to the search, and a divider now separates them
   from the LOG title.
+- The notification shown when transfers finish now counts the files in plain words, such
+  as “8 files transferred, 2 files failed”.
 
 ### Fixed
 

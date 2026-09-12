@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "Aktarım Hatası",
     "notifyCompleteTitle": "Aktarım Tamamlandı",
-    "notifySucceeded": "başarılı: {{count}}",
-    "notifyFailed": "başarısız: {{count}}",
+    "notifySucceeded_one": "{{count}} dosya aktarıldı",
+    "notifySucceeded_other": "{{count}} dosya aktarıldı",
+    "notifyFailed_one": "{{count}} dosya başarısız oldu",
+    "notifyFailed_other": "{{count}} dosya başarısız oldu",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır."
   },
   "transferQueue": {

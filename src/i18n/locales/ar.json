@@ -510,9 +510,20 @@
   "transfers": {
     "notifyErrorTitle": "خطأ في النقل",
     "notifyCompleteTitle": "اكتمل النقل",
-    "notifySucceeded": "تمت بنجاح: {{count}}",
-    "notifyFailed": "فشل: {{count}}",
-    "webdavUploadTooLarge": "يقتصر حجم الملف المرفوع عبر WebDAV على {{limit}} MiB."
+    "notifySucceeded_one": "تم نقل {{count}} ملف",
+    "notifySucceeded_other": "تم نقل {{count}} ملف",
+    "notifyFailed_one": "فشل نقل {{count}} ملف",
+    "notifyFailed_other": "فشل نقل {{count}} ملف",
+    "notifyBoth": "{{succeeded}}، {{failed}}",
+    "webdavUploadTooLarge": "يقتصر حجم الملف المرفوع عبر WebDAV على {{limit}} MiB.",
+    "notifySucceeded_zero": "تم نقل {{count}} ملف",
+    "notifySucceeded_two": "تم نقل {{count}} ملفين",
+    "notifySucceeded_few": "تم نقل {{count}} ملفات",
+    "notifySucceeded_many": "تم نقل {{count}} ملفًا",
+    "notifyFailed_zero": "فشل نقل {{count}} ملف",
+    "notifyFailed_two": "فشل نقل {{count}} ملفين",
+    "notifyFailed_few": "فشل نقل {{count}} ملفات",
+    "notifyFailed_many": "فشل نقل {{count}} ملفًا"
   },
   "transferQueue": {
     "title": "عمليات النقل",

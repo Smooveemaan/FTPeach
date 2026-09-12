@@ -498,9 +498,14 @@
   "transfers": {
     "notifyErrorTitle": "Error de transferencia",
     "notifyCompleteTitle": "Transferencia completada",
-    "notifySucceeded": "correctas: {{count}}",
-    "notifyFailed": "con error: {{count}}",
-    "webdavUploadTooLarge": "Las subidas mediante WebDAV tienen un límite de {{limit}} MiB por archivo."
+    "notifySucceeded_one": "{{count}} archivo transferido",
+    "notifySucceeded_other": "{{count}} archivos transferidos",
+    "notifyFailed_one": "{{count}} archivo con error",
+    "notifyFailed_other": "{{count}} archivos con error",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
+    "webdavUploadTooLarge": "Las subidas mediante WebDAV tienen un límite de {{limit}} MiB por archivo.",
+    "notifySucceeded_many": "{{count}} archivos transferidos",
+    "notifyFailed_many": "{{count}} archivos con error"
   },
   "transferQueue": {
     "title": "Transferencias",

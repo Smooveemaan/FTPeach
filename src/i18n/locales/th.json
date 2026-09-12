@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "ข้อผิดพลาดในการโอน",
     "notifyCompleteTitle": "การโอนเสร็จสิ้นแล้ว",
-    "notifySucceeded": "สำเร็จแล้ว: {{count}}",
-    "notifyFailed": "ไม่สำเร็จ: {{count}}",
+    "notifySucceeded_one": "โอนแล้ว {{count}} ไฟล์",
+    "notifySucceeded_other": "โอนแล้ว {{count}} ไฟล์",
+    "notifyFailed_one": "ไม่สำเร็จ {{count}} ไฟล์",
+    "notifyFailed_other": "ไม่สำเร็จ {{count}} ไฟล์",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์"
   },
   "transferQueue": {

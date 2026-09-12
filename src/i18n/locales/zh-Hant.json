@@ -494,8 +494,11 @@
   "transfers": {
     "notifyErrorTitle": "傳輸錯誤",
     "notifyCompleteTitle": "傳輸完成",
-    "notifySucceeded": "成功：{{count}}",
-    "notifyFailed": "失敗：{{count}}",
+    "notifySucceeded_one": "已傳輸 {{count}} 個檔案",
+    "notifySucceeded_other": "已傳輸 {{count}} 個檔案",
+    "notifyFailed_one": "{{count}} 個檔案失敗",
+    "notifyFailed_other": "{{count}} 個檔案失敗",
+    "notifyBoth": "{{succeeded}}、{{failed}}",
     "webdavUploadTooLarge": "WebDAV 上傳限制為每個檔案 {{limit}} MiB。"
   },
   "transferQueue": {

@@ -502,9 +502,16 @@
   "transfers": {
     "notifyErrorTitle": "Błąd transferu",
     "notifyCompleteTitle": "Transfer zakończony",
-    "notifySucceeded": "udane: {{count}}",
-    "notifyFailed": "nieudane: {{count}}",
-    "webdavUploadTooLarge": "Rozmiar plików przesyłanych przez WebDAV jest ograniczony do {{limit}} MiB na plik."
+    "notifySucceeded_one": "Przesłano {{count}} plik",
+    "notifySucceeded_other": "Przesłano {{count}} pliku",
+    "notifyFailed_one": "Nie przesłano {{count}} pliku",
+    "notifyFailed_other": "Nie przesłano {{count}} pliku",
+    "notifyBoth": "{{succeeded}}, {{failed}}",
+    "webdavUploadTooLarge": "Rozmiar plików przesyłanych przez WebDAV jest ograniczony do {{limit}} MiB na plik.",
+    "notifySucceeded_few": "Przesłano {{count}} pliki",
+    "notifySucceeded_many": "Przesłano {{count}} plików",
+    "notifyFailed_few": "Nie przesłano {{count}} plików",
+    "notifyFailed_many": "Nie przesłano {{count}} plików"
   },
   "transferQueue": {
     "title": "Transfery",

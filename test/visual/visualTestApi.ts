@@ -282,5 +282,5 @@ export const visualTestApi = {
     openDevtools: () => resolved(ok),
   },
   notifications: { transfersComplete: () => resolved(ok) },
-  tray: { setLabels: () => resolved(ok) },
+  tray: { setLabels: () => resolved(ok), hideWindow: () => resolved(ok) },
 } as unknown as Window['api'];

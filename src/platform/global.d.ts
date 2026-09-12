@@ -88,6 +88,7 @@ declare global {
       };
       tray: {
         setLabels: (show: string, quit: string) => Promise<unknown>;
+        hideWindow: () => Promise<unknown>;
       };
       openWith: {
         start: (

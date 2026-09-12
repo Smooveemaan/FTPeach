@@ -60,7 +60,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     {
         disable_browser_accelerator_keys(&main_window);
     }
-    app.manage(tray::build(app.handle())?);
+    // The icon itself only appears while the window is hidden to the tray.
+    tray::install(app.handle(), shutdown::quit);
 
     let store = app.state::<Store>().inner().clone();
     if let Some(main_window) = app.get_webview_window("main") {

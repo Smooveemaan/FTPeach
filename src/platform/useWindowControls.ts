@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { handler, reportRejection } from '../shared/asyncFailure.ts';
+import { api } from './api/index.ts';
 
 /** Native operations required by the application title bar. */
 export interface NativeWindowControls {
   isMaximized: () => Promise<boolean>;
   onResized: (callback: () => void) => Promise<() => void>;
-  hide: () => Promise<void>;
+  hideToTray: () => Promise<unknown>;
   minimize: () => Promise<void>;
   toggleMaximize: () => Promise<void>;
   close: () => Promise<void>;
@@ -13,7 +14,16 @@ export interface NativeWindowControls {
 
 const loadWindow = async (): Promise<NativeWindowControls> => {
   const { getCurrentWindow } = await import('@tauri-apps/api/window');
-  return getCurrentWindow();
+  const nativeWindow = getCurrentWindow();
+  return {
+    isMaximized: () => nativeWindow.isMaximized(),
+    onResized: (callback) => nativeWindow.onResized(callback),
+    // The backend puts the icon in the tray before it hides the window.
+    hideToTray: () => api.tray.hideWindow(),
+    minimize: () => nativeWindow.minimize(),
+    toggleMaximize: () => nativeWindow.toggleMaximize(),
+    close: () => nativeWindow.close(),
+  };
 };
 
 export interface WindowControlsModel {
@@ -68,7 +78,7 @@ export function useWindowControls(
     available,
     maximized,
     minimize: handler(() =>
-      minimizeToTray ? windowRef.current?.hide() : windowRef.current?.minimize(),
+      minimizeToTray ? windowRef.current?.hideToTray() : windowRef.current?.minimize(),
     ),
     toggleMaximize: handler(() => windowRef.current?.toggleMaximize()),
     close: handler(() => windowRef.current?.close()),

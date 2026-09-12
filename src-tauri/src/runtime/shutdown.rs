@@ -1,5 +1,6 @@
 use crate::local_fs::open_with::OpenWithWatchers;
 use crate::local_fs::preview::PreviewPaths;
+use crate::runtime::tray;
 use crate::runtime::window_bounds::BoundsPersister;
 use crate::security::vault::Vault;
 use crate::session::{self, ConnectingClients, Sessions};
@@ -28,7 +29,7 @@ impl ShutdownCoordinator {
 
 /// What a close request means.
 ///
-/// With `closeToTray` on, closing the window hides it; otherwise it shuts the
+/// With `closeToTray` on, closing the window hides it to the tray; otherwise it shuts the
 /// application down. Reading that setting and choosing between the two is a
 /// decision, not wiring, so it lives with shutdown rather than inside
 /// `run()`'s window-event closure.
@@ -40,11 +41,23 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
         .and_then(|value| value.as_bool())
         .unwrap_or(false);
     if close_to_tray {
-        let _ = window.hide();
+        tray::hide_to_tray(window);
         return;
     }
     if app.state::<ShutdownCoordinator>().begin() {
         run(app.clone(), window).await;
+    }
+}
+
+/// Quitting from outside the window, such as from the tray icon's menu.
+pub fn quit(app: &AppHandle) {
+    match app.get_webview_window("main") {
+        Some(window) => {
+            if app.state::<ShutdownCoordinator>().begin() {
+                tauri::async_runtime::spawn(run(app.clone(), window));
+            }
+        }
+        None => app.exit(0),
     }
 }
 

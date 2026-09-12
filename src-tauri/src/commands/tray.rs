@@ -1,8 +1,12 @@
-use crate::runtime::tray::TrayState;
-use tauri::State;
+use crate::runtime::tray::{self, TrayState};
+use tauri::{State, WebviewWindow};
 
 #[tauri::command]
 pub fn tray_set_labels(tray: State<'_, TrayState>, show: String, quit: String) {
-    let _ = tray.show_item.set_text(show);
-    let _ = tray.quit_item.set_text(quit);
+    tray.set_labels(show, quit);
+}
+
+#[tauri::command]
+pub fn tray_hide_window(window: WebviewWindow) {
+    tray::hide_to_tray(window);
 }

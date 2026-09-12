@@ -17,7 +17,7 @@ function nativeWindow(): NativeWindowControls {
     isMaximized: vi.fn(async () => false),
     onResized: vi.fn(async () => vi.fn()),
     minimize: vi.fn(async () => {}),
-    hide: vi.fn(async () => {}),
+    hideToTray: vi.fn(async () => {}),
     toggleMaximize: vi.fn(async () => {}),
     close: vi.fn(async () => {}),
   };
@@ -101,7 +101,7 @@ test('commands honor current tray preference and report native failures', async 
     expect(win.minimize).toHaveBeenCalledTimes(1);
     rerender({ tray: true });
     result.current.minimize();
-    expect(win.hide).toHaveBeenCalledTimes(1);
+    expect(win.hideToTray).toHaveBeenCalledTimes(1);
     const failure = new Error('Native close failed');
     win.close = vi.fn().mockRejectedValue(failure);
     await act(async () => {
@@ -110,7 +110,7 @@ test('commands honor current tray preference and report native failures', async 
     expect(errors).toHaveBeenCalledWith(failure);
     unmount();
     result.current.minimize();
-    expect(win.hide).toHaveBeenCalledTimes(1);
+    expect(win.hideToTray).toHaveBeenCalledTimes(1);
   } finally {
     dispose();
   }

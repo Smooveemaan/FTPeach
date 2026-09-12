@@ -54,11 +54,7 @@ pub fn run() {
         builder
     } else {
         builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.unminimize();
-                let _ = window.show();
-                let _ = window.set_focus();
-            }
+            runtime::tray::restore(app);
         }))
     };
     let store = Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
@@ -155,6 +151,7 @@ pub fn run() {
             commands::updater::updater_download,
             commands::updater::updater_install,
             commands::tray::tray_set_labels,
+            commands::tray::tray_hide_window,
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_backend_checks,
         ])

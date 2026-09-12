@@ -315,6 +315,7 @@ export const tauriApi: Window['api'] = {
   },
   tray: {
     setLabels: (show: string, quit: string) => invoke('tray_set_labels', { show, quit }),
+    hideWindow: () => invoke('tray_hide_window'),
   },
 };
 

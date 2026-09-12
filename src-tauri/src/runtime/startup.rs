@@ -1,6 +1,6 @@
 //! Runtime initialization after Tauri installs managed state and plugins.
 use super::log_emitter::LogEmitter;
-use super::{app_log, settings_apply, shutdown, tray, updater, window_bounds};
+use super::{app_log, notification, settings_apply, shutdown, tray, updater, window_bounds};
 #[cfg(feature = "smoke-test")]
 use crate::commands;
 use crate::local_fs::{self, preview::PreviewPaths};
@@ -41,6 +41,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // an update downloaded last session installs now, and when its installer
     // starts this process ends here and the new version opens instead.
     updater::install_staged_at_startup(app.handle());
+    // Before anything can finish and ask for a toast. Re-registered every
+    // launch so a moved or reinstalled FTPeach still points Windows at an
+    // icon that exists.
+    notification::register_identity(app.handle());
     app.manage(ProgressEmitter::new(app.handle().clone()));
     let preview_paths = app.state::<PreviewPaths>().inner().clone();
     tauri::async_runtime::spawn(async move {

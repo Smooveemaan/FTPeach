@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The notification shown when transfers finish now comes from FTPeach, with its name and
+  icon, instead of appearing to come from Windows PowerShell.
 - Toolbar buttons above the file lists no longer lose their bottom edge while pressed.
 - The transfer list can be dragged all the way up to the file lists without the log too,
   and no longer leaves a strip of the column headings showing above it.

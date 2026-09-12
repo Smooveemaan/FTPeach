@@ -24,6 +24,14 @@
     RMDir /r "$LOCALAPPDATA\${BUNDLEID}\updates"
   ${EndIf}
 
+  ; The toast identity FTPeach registers at startup so Windows can put its
+  ; name and icon on a notification (see runtime/notification.rs). It belongs
+  ; to the installation, not to the user's data, and an update re-registers it
+  ; on the next launch.
+  ${If} $UpdateMode <> 1
+    DeleteRegKey HKCU "Software\Classes\AppUserModelId\${BUNDLEID}"
+  ${EndIf}
+
   ; Unticked, or an updater-driven uninstall: keep the user's data. A silent
   ; uninstall (/P) skips the confirm page entirely, so the state stays empty
   ; and compares as 0 -- data is kept unless somebody asked for it to go.

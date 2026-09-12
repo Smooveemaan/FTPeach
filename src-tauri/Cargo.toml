@@ -92,6 +92,13 @@ semver = "1.0.28"
 # (and its docker_integration test) still compiles on the Linux CI runners
 # used for protocol-compatibility testing.
 [target.'cfg(windows)'.dependencies]
+# Toasts go out through these two rather than through
+# tauri-plugin-notification, which drops the AppUserModelID whenever the exe
+# runs from target/debug or target/release and leaves Windows attributing the
+# notification to PowerShell (see runtime/notification.rs). The plugin stays
+# for the platforms where its path is the right one.
+tauri-winrt-notification = "0.7.3"
+windows-registry = "0.6.1"
 windows = { version = "0.61.3", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Power", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_System_WinRT", "Security_Credentials_UI"] }
 windows-core = "0.61"
 windows-future = "0.2.1"

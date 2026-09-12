@@ -43,6 +43,7 @@
     "licenseFile": "../LICENSE",
     "resources": {
       "../NOTICE": "NOTICE",
+      "icons/icon.ico": "icons/app-icon.ico",
       "../docs/legal/ASSET_PROVENANCE.md": "licenses/ASSET_PROVENANCE.md",
       "../docs/legal/THIRD_PARTY_NOTICES.txt": "licenses/THIRD_PARTY_NOTICES.txt",
       "../docs/legal/NPM_THIRD_PARTY_LICENSES.txt": "licenses/NPM_THIRD_PARTY_LICENSES.txt",

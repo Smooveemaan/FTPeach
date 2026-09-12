@@ -1,8 +1,8 @@
 use crate::ipc::{CommandError, CommandResult};
+use crate::runtime::notification;
 use crate::store::Store;
 use serde::Deserialize;
 use tauri::{AppHandle, Manager, State};
-use tauri_plugin_notification::NotificationExt;
 
 #[derive(Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -43,11 +43,7 @@ pub async fn notifications_transfers_complete(
         return Ok(());
     }
 
-    app.notification()
-        .builder()
-        .title(summary.title)
-        .body(summary.body)
-        .show()
-        .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))?;
+    notification::show(&app, &summary.title, &summary.body)
+        .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error)))?;
     Ok(())
 }

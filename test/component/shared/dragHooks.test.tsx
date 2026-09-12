@@ -128,6 +128,44 @@ test.each(['ltr', 'rtl'])(
   },
 );
 
+function box(className: string, top: number, height: number) {
+  const el = document.createElement('div');
+  el.className = className;
+  document.body.append(el);
+  vi.spyOn(el, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, top, 1000, height));
+  return el;
+}
+
+test.each([false, true])(
+  'transfer queue dragged to the top stops at the pane headers (log shown: %s)',
+  (logEnabled) => {
+    // Below the 28.8px title bar the panes start on a fraction of a pixel.
+    box('app-shell', 0, 900);
+    box('status-bar', 874, 26);
+    const panes = box('panes', 136.8, 600);
+    const { result } = renderHook(() =>
+      useSectionResize({
+        showTransferQueue: true,
+        logEnabled,
+        paneOrientation: 'horizontal',
+        windowNarrow: false,
+      }),
+    );
+    result.current.panesRef.current = panes;
+    act(() => result.current.startSectionResize('transfers')(down(panes)));
+    fireEvent.mouseMove(document, { clientY: 0, buttons: 1 });
+    fireEvent.mouseUp(document);
+    const { transferQueueHeight, logPanelHeight } = result.current;
+    const sections = transferQueueHeight + 6 + (logEnabled ? logPanelHeight + 6 : 0);
+    const paneHeight = 874 - sections - 136.8;
+    // Title and path rows are 67px together. A fraction short of that clips
+    // the path row's empty bottom edge; a fraction over shows the column
+    // header, and the CSS floor (66px) must not stop the pane short of it.
+    expect(paneHeight).toBeGreaterThan(66);
+    expect(paneHeight).toBeLessThanOrEqual(67);
+  },
+);
+
 test.each(['ltr', 'rtl'])(
   'column reorder crosses the logical midpoint and Escape restores order in %s',
   (direction) => {

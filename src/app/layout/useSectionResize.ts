@@ -22,13 +22,13 @@ interface SectionResizeOptions {
   windowNarrow: boolean;
 }
 
-const PANE_MIN_HEIGHT = 68;
+// .pane-titlebar (39px) + .pane-path (28px) — any taller and the top of the
+// column header shows above whatever section was dragged up against it.
+const PANE_MIN_HEIGHT = 67;
 const PANE_DIVIDER_HEIGHT = 6;
 const SECTION_RESIZER_HEIGHT = 6;
 const PANE_RESIZER_WIDTH = 6;
 const PANE_MIN_WIDTH_FALLBACK = 120;
-
-const PANE_MIN_HEIGHT_HORIZONTAL = 200;
 
 // The log starts as tall as the transfer list, narrow or not.
 const NARROW_TRANSFER_QUEUE_MAX = 96;
@@ -286,6 +286,10 @@ export function useSectionResize({
   const pinnedLocalHeightRef = useRef(0);
   const dragStartPanesHeightRef = useRef(0);
   const dragStartSplitRatioRef = useRef(SETTINGS_DEFAULTS.splitRatio);
+  // The same with the log shown or not: dragging a section up collapses the
+  // panes down to their title and path rows either way.
+  const panesFloor =
+    paneOrientation === 'vertical' ? PANE_MIN_HEIGHT * 2 + PANE_DIVIDER_HEIGHT : PANE_MIN_HEIGHT;
 
   const startSectionResize = (section: ResizableSection) => (e: ReactMouseEvent) => {
     e.preventDefault();
@@ -344,7 +348,11 @@ export function useSectionResize({
   const getLayoutMetrics = () => {
     if (!panesRef.current) return null;
     const scale = getInterfaceScale();
-    const panesTop = Math.round(panesRef.current.getBoundingClientRect().top / scale);
+    // Rounded down: the panes start on a fraction of a pixel below the 28.8px
+    // title bar, and section heights are whole numbers. Down leaves a collapsed
+    // pane that fraction short of its path row's bottom; to nearest could leave
+    // it that fraction over, on the top edge of the column header.
+    const panesTop = Math.floor(panesRef.current.getBoundingClientRect().top / scale);
     const statusBarHeight = Math.round(
       (document.querySelector<HTMLElement>('.status-bar')?.getBoundingClientRect().height ??
         26 * scale) / scale,
@@ -364,15 +372,10 @@ export function useSectionResize({
     const reconcileToWindow = () => {
       const metrics = getLayoutMetrics();
       if (!metrics) return;
-      const minPanesHeightNow =
-        paneOrientation === 'vertical'
-          ? PANE_MIN_HEIGHT * 2 + PANE_DIVIDER_HEIGHT
-          : PANE_MIN_HEIGHT_HORIZONTAL;
-
       if (windowNarrow && showTransferQueue && logEnabled) {
         const maxRow = Math.max(
           TRANSFER_HEADER_HEIGHT_NARROW,
-          metrics.totalAvailable - SECTION_RESIZER_HEIGHT - minPanesHeightNow,
+          metrics.totalAvailable - SECTION_RESIZER_HEIGHT - panesFloor,
         );
         if (transferQueueHeight > maxRow) setTransferQueueHeight(maxRow);
         if (logPanelHeight > maxRow) setLogPanelHeight(maxRow);
@@ -380,17 +383,9 @@ export function useSectionResize({
       }
       if (showTransferQueue && logEnabled) {
         const pool = transferQueueHeight + logPanelHeight;
-        const comfortMaxPool =
-          metrics.totalAvailable - SECTION_RESIZER_HEIGHT * 2 - minPanesHeightNow;
-        const panesFloorNow =
-          pool > comfortMaxPool
-            ? paneOrientation === 'vertical'
-              ? minPanesHeightNow
-              : PANE_MIN_HEIGHT
-            : minPanesHeightNow;
         const maxPool = Math.max(
           TRANSFER_HEADER_HEIGHT + LOG_HEADER_HEIGHT,
-          metrics.totalAvailable - SECTION_RESIZER_HEIGHT * 2 - panesFloorNow,
+          metrics.totalAvailable - SECTION_RESIZER_HEIGHT * 2 - panesFloor,
         );
         if (pool > maxPool) {
           // Shrink both proportionally so neither is singled out, each
@@ -405,8 +400,7 @@ export function useSectionResize({
         }
         return;
       }
-      const availableForSingle =
-        metrics.totalAvailable - SECTION_RESIZER_HEIGHT - minPanesHeightNow;
+      const availableForSingle = metrics.totalAvailable - SECTION_RESIZER_HEIGHT - panesFloor;
       const maxTransfer = Math.max(
         windowNarrow ? TRANSFER_HEADER_HEIGHT_NARROW : TRANSFER_HEADER_HEIGHT,
         availableForSingle,
@@ -423,7 +417,7 @@ export function useSectionResize({
     window.addEventListener('resize', reconcileToWindow);
     return () => window.removeEventListener('resize', reconcileToWindow);
   }, [
-    paneOrientation,
+    panesFloor,
     showTransferQueue,
     logEnabled,
     windowNarrow,
@@ -438,10 +432,6 @@ export function useSectionResize({
       if (!resizingSection) {
         return { onMove: () => undefined, onEnd: () => undefined };
       }
-      const minPanesHeight =
-        paneOrientation === 'vertical'
-          ? PANE_MIN_HEIGHT * 2 + PANE_DIVIDER_HEIGHT
-          : PANE_MIN_HEIGHT_HORIZONTAL;
       return {
         onMove: ({ clientY }) => {
           dispatchSectionResize({ type: 'touch', section: resizingSection });
@@ -452,10 +442,6 @@ export function useSectionResize({
             totalAvailable: 480,
           };
           if (resizingSection === 'log' && tradesWithTransfers.current) {
-            const panesFloor =
-              paneOrientation === 'vertical'
-                ? PANE_MIN_HEIGHT * 2 + PANE_DIVIDER_HEIGHT
-                : PANE_MIN_HEIGHT;
             const maxLog =
               metrics.totalAvailable -
               SECTION_RESIZER_HEIGHT * 2 -
@@ -477,7 +463,7 @@ export function useSectionResize({
             windowNarrow &&
             showTransferQueue
           ) {
-            const panesHeight = Math.max(minPanesHeight, clientY - metrics.panesTop);
+            const panesHeight = Math.max(panesFloor, clientY - metrics.panesTop);
             const rowHeight = Math.max(
               TRANSFER_HEADER_HEIGHT_NARROW,
               metrics.totalAvailable - SECTION_RESIZER_HEIGHT - panesHeight,
@@ -488,10 +474,6 @@ export function useSectionResize({
             setLogPanelHeight(rowHeight);
             applyPanesHeight(metrics.totalAvailable - SECTION_RESIZER_HEIGHT - rowHeight);
           } else if (resizingSection === 'transfers' && logEnabled) {
-            const panesFloor =
-              paneOrientation === 'vertical'
-                ? PANE_MIN_HEIGHT * 2 + PANE_DIVIDER_HEIGHT
-                : PANE_MIN_HEIGHT;
             const maxPanesHeightForSections =
               metrics.totalAvailable -
               SECTION_RESIZER_HEIGHT * 2 -
@@ -520,7 +502,7 @@ export function useSectionResize({
             setLogPanelHeight(nextLog);
             applyPanesHeight(panesHeight);
           } else {
-            const panesHeight = Math.max(minPanesHeight, clientY - metrics.panesTop);
+            const panesHeight = Math.max(panesFloor, clientY - metrics.panesTop);
             const sectionMin =
               resizingSection === 'transfers'
                 ? windowNarrow

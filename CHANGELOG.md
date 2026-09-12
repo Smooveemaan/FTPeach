@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Toolbar buttons above the file lists no longer lose their bottom edge while pressed.
+- The transfer list can be dragged all the way up to the file lists without the log too,
+  and no longer leaves a strip of the column headings showing above it.
 
 ## [0.2.0] - 2026-09-12
 

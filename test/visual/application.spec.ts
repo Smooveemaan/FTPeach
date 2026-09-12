@@ -46,6 +46,44 @@ test('narrow workspace', async ({ page }) => {
   await expect(page).toHaveScreenshot('workspace-narrow.png');
 });
 
+/* Dragging the transfer queue up collapses the panes to their title and path
+   rows. The panes start on a fraction of a pixel below the 28.8px title bar,
+   and a pane that rounds that fraction too tall shows the top of its column
+   header between the path and the transfer queue. */
+for (const log of [false, true]) {
+  test(`transfer queue dragged to the top stops at the pane headers with the log ${
+    log ? 'shown' : 'hidden'
+  }`, async ({ page }) => {
+    await openHarness(page);
+    const resizers = page.locator('.section-resizer');
+    await expect(resizers).toHaveCount(1);
+    if (log) {
+      await page.locator(`[data-tooltip="${en.viewToolbar.toggleLog}"]`).first().click();
+      await expect(resizers).toHaveCount(2);
+    }
+    const box = (await resizers.first().boundingBox())!;
+    await page.mouse.move(box.x + 200, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 200, 0, { steps: 10 });
+    await page.mouse.up();
+    const overhangs = await page
+      .locator('.pane')
+      .evaluateAll((panes) =>
+        panes.map(
+          (pane) =>
+            pane.getBoundingClientRect().bottom -
+            pane.querySelector('.pane-path:not(.pane-path-measure)')!.getBoundingClientRect()
+              .bottom,
+        ),
+      );
+    expect(overhangs).toHaveLength(2);
+    for (const overhang of overhangs) {
+      expect(overhang).toBeLessThanOrEqual(0);
+      expect(overhang).toBeGreaterThan(-1);
+    }
+  });
+}
+
 /* Eighteen files branch on `dir === 'rtl'` by hand — drag offsets, column
    resize signs, menu anchors — and until these two baselines existed nothing
    rendered that branch at all. They also stand in for the CSS that has no

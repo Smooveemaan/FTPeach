@@ -3,7 +3,7 @@
 .panes {
   flex: 1 1 auto;
   display: flex;
-  min-height: 68px;
+  min-height: 66px;
   overflow: hidden;
 }
 .panes.vertical {
@@ -11,12 +11,16 @@
 }
 
 
+/* A pixel under .pane-titlebar (39px) + .pane-path (28px): useSectionResize
+   collapses a pane to a fraction of a pixel short of those two rows, so the
+   column header below them stays hidden, and this floor must not push the
+   pane back over them. */
 .pane {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-width: 120px;
-  min-height: 68px;
+  min-height: 66px;
   overflow: hidden;
 }
 

@@ -383,10 +383,36 @@ export default function LogPanel({
 
   return (
     <div className={`log-panel ${narrow ? 'narrow' : ''}`} style={rootStyle}>
-      {/* The title and search at the line's start, then the connection filter
-          pill; the other buttons at its end. */}
+      {/* The title, kind filter and search at the line's start, then the
+          connection filter pill; the other buttons at its end. */}
       <div className="section-panel-header log-panel-header">
         <span className="log-panel-title">{t('menu.view.log')}</span>
+        <span className="toolbar-divider" />
+        {!(narrow && searchFieldShown) && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon header-icon-btn"
+            data-tooltip={t('logPanel.filterKinds')}
+            aria-haspopup="menu"
+            aria-expanded={kindMenu !== null}
+            // The open menu closes on any press outside it; this button's press
+            // is left to its click, which closes the menu instead of reopening it.
+            onMouseDown={(event) => {
+              if (kindMenu) event.stopPropagation();
+            }}
+            onClick={(event) => {
+              const rect = event.currentTarget.getBoundingClientRect();
+              // The button sits at the header's start, so the menu lines up with
+              // its start edge and opens back over the log.
+              const x = document.documentElement.dir === 'rtl' ? rect.right : rect.left;
+              setKindMenu((open) =>
+                open ? null : { x, y: rect.bottom + 2, aboveY: rect.top - 2 },
+              );
+            }}
+          >
+            <Icon name="funnel" size={12} />
+          </button>
+        )}
         {narrow && (
           <button
             type="button"
@@ -439,32 +465,6 @@ export default function LogPanel({
         )}
         {!(narrow && searchFieldShown) && (
           <span className="log-panel-actions">
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon header-icon-btn"
-              data-tooltip={t('logPanel.filterKinds')}
-              aria-haspopup="menu"
-              aria-expanded={kindMenu !== null}
-              // The open menu closes on any press outside it; this button's press
-              // is left to its click, which closes the menu instead of reopening it.
-              onMouseDown={(event) => {
-                if (kindMenu) event.stopPropagation();
-              }}
-              onClick={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                // The button sits at the header's end, so the menu lines up
-                // with its end edge and opens back over the log.
-                const x =
-                  document.documentElement.dir === 'rtl'
-                    ? rect.left + KIND_MENU_WIDTH
-                    : rect.right - KIND_MENU_WIDTH;
-                setKindMenu((open) =>
-                  open ? null : { x, y: rect.bottom + 2, aboveY: rect.top - 2 },
-                );
-              }}
-            >
-              <Icon name="funnel" size={12} />
-            </button>
             <button
               type="button"
               className="btn btn-ghost btn-icon header-icon-btn"

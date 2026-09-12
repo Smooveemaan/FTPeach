@@ -105,17 +105,25 @@
   border-bottom: 1px solid var(--border-soft);
 }
 
-/* Title, search and filter pill from the line's start, the buttons at its
-   end. The pill shrinks first, then the search field; too narrow for all of
-   them, the header clips rather than spilling over. */
+/* Title, kind filter, search and connection pill from the line's start, the
+   buttons at its end. The same gap as those buttons keep between themselves
+   (.log-panel-actions), so the line reads as one evenly spaced row. The pill
+   shrinks first, then the search field; too narrow for all of them, the
+   header clips rather than spilling over. */
 .log-panel-header {
   justify-content: flex-start;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   overflow: hidden;
 }
 .log-panel-title {
   flex: 0 0 auto;
+}
+/* The gap above is the whole spacing here — the divider's own inline margin
+   would put it further from the title and the filter than the buttons at the
+   header's end are from each other. */
+.log-panel-header .toolbar-divider {
+  margin-inline: 0;
 }
 /* As close together as the pane toolbar's buttons, where the transfer
    queue's single button gets 10px. */
@@ -287,7 +295,6 @@
   font-size: 10px;
   gap: 6px;
 }
-.log-panel.narrow .log-panel-actions,
 .transfer-queue.narrow .transfer-queue-header-right {
   gap: 4px;
 }

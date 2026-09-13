@@ -716,10 +716,13 @@
     "show": "FTPeachを表示",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "終了"
+    "quit": "終了",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "コンピューター",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "転送: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "左: {{count}}",
     "rightCount": "右: {{count}}",
     "topCount": "上: {{count}}",
@@ -787,5 +792,11 @@
     "title": "何か問題が発生しました",
     "message": "インターフェースで予期しないエラーが発生しました。現在の接続とディスク上のファイルには影響ありません。インターフェースを再読み込みしてみてください。",
     "reload": "インターフェースの再読み込み"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

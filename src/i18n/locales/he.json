@@ -726,10 +726,13 @@
     "show": "הצג את FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "יציאה"
+    "quit": "יציאה",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "מחשב",
@@ -742,6 +745,8 @@
   },
   "statusBar": {
     "transfers": "העברות: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "משמאל: {{count}}",
     "rightCount": "מימין: {{count}}",
     "topCount": "למעלה: {{count}}",
@@ -797,5 +802,12 @@
     "title": "משהו השתבש",
     "message": "אירעה שגיאה בלתי צפויה בממשק. החיבור הפעיל והקבצים בדיסק לא נפגעו — ניתן לנסות לטעון מחדש את הממשק.",
     "reload": "טעינה מחדש של הממשק"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_two": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

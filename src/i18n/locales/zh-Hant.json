@@ -716,10 +716,13 @@
     "show": "顯示 FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "結束"
+    "quit": "結束",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "電腦",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "傳輸：{{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "左：{{count}}",
     "rightCount": "右：{{count}}",
     "topCount": "上方：{{count}}",
@@ -787,5 +792,11 @@
     "title": "出了點問題",
     "message": "介面發生意外錯誤。目前的連線和磁碟上的檔案都不受影響 — 您可以嘗試重新載入介面。",
     "reload": "重新載入介面"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

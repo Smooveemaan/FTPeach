@@ -736,10 +736,13 @@
     "show": "Zobrazit FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Ukončit"
+    "quit": "Ukončit",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Počítač",
@@ -752,6 +755,8 @@
   },
   "statusBar": {
     "transfers": "Přenosy: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Vlevo: {{count}}",
     "rightCount": "Vpravo: {{count}}",
     "topCount": "Nahoře: {{count}}",
@@ -807,5 +812,13 @@
     "title": "Něco se pokazilo",
     "message": "Došlo k neočekávané chybě rozhraní. Vaše aktivní připojení a soubory na disku tím nejsou ovlivněny – můžete zkusit rozhraní znovu načíst.",
     "reload": "Znovu načíst rozhraní"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_few": "{{count}} transfers are still running. Quit and stop them?",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

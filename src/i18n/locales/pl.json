@@ -736,10 +736,13 @@
     "show": "Pokaż FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Wyjdź"
+    "quit": "Wyjdź",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Komputer",
@@ -752,6 +755,8 @@
   },
   "statusBar": {
     "transfers": "Transfery: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Po lewej: {{count}}",
     "rightCount": "Po prawej: {{count}}",
     "topCount": "U góry: {{count}}",
@@ -807,5 +812,13 @@
     "title": "Coś poszło nie tak",
     "message": "Wystąpił nieoczekiwany błąd interfejsu. Nie ma to wpływu na aktywne połączenie ani na pliki na dysku — możesz spróbować ponownie załadować interfejs.",
     "reload": "Przeładuj interfejs"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_few": "{{count}} transfers are still running. Quit and stop them?",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

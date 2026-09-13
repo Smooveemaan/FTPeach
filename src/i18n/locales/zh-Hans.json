@@ -716,10 +716,13 @@
     "show": "显示 FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "退出"
+    "quit": "退出",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "计算机",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "传输：{{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "左侧：{{count}}",
     "rightCount": "右侧：{{count}}",
     "topCount": "上方：{{count}}",
@@ -787,5 +792,11 @@
     "title": "出现了一些问题",
     "message": "界面发生意外错误。当前连接和磁盘上的文件均未受影响——您可以尝试重新加载界面。",
     "reload": "重新加载界面"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

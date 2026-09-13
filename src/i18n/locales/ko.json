@@ -716,10 +716,13 @@
     "show": "FTPeach 표시",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "종료"
+    "quit": "종료",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "컴퓨터",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "전송: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "왼쪽: {{count}}",
     "rightCount": "오른쪽: {{count}}",
     "topCount": "상단: {{count}}",
@@ -787,5 +792,11 @@
     "title": "문제가 발생했습니다.",
     "message": "예기치 않은 인터페이스 오류가 발생했습니다. 현재 연결과 디스크의 파일에는 영향이 없습니다. 인터페이스를 다시 불러와 보세요.",
     "reload": "인터페이스 다시 불러오기"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

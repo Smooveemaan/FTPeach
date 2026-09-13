@@ -716,10 +716,13 @@
     "show": "Vis FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Afslut"
+    "quit": "Afslut",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Overførsler: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Venstre: {{count}}",
     "rightCount": "Højre: {{count}}",
     "topCount": "Øverst: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Noget gik galt",
     "message": "Der opstod en uventet fejl i brugergrænsefladen. Din aktive forbindelse og filerne på disken er ikke berørt — du kan prøve at genindlæse brugergrænsefladen.",
     "reload": "Genindlæs grænseflade"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

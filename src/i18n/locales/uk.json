@@ -736,10 +736,13 @@
     "show": "Показати FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Вийти"
+    "quit": "Вийти",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Комп'ютер",
@@ -752,6 +755,8 @@
   },
   "statusBar": {
     "transfers": "Передавання: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Ліворуч: {{count}}",
     "rightCount": "Праворуч: {{count}}",
     "topCount": "Вгорі: {{count}}",
@@ -807,5 +812,13 @@
     "title": "Щось пішло не так",
     "message": "Сталася несподівана помилка інтерфейсу. Це не вплинуло на ваше активне з’єднання та файли на диску — ви можете спробувати перезавантажити інтерфейс.",
     "reload": "Оновити інтерфейс"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_few": "{{count}} transfers are still running. Quit and stop them?",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

@@ -42,11 +42,13 @@ function setup(vaultStatus = { configured: true, locked: false }) {
   };
   const pauseAllTransfers = vi.fn();
   const resumeAllTransfers = vi.fn();
+  const quit = { pending: false, promptOpen: false, request: vi.fn(), cancel: vi.fn() };
   const baseProps: TrayBridgeOptions = {
     t,
     transfers: idle,
     pauseAllTransfers,
     resumeAllTransfers,
+    quit,
     trayApi,
     vaultApi,
   };
@@ -60,6 +62,7 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     vaultApi,
     pauseAllTransfers,
     resumeAllTransfers,
+    quit,
     lastModel: () => trayApi.setModel.mock.calls.at(-1)?.[0],
     fire: (action: TrayAction) => act(() => onAction?.(action)),
   };
@@ -179,6 +182,25 @@ test('tray actions call the same functions as the window', async () => {
   } finally {
     window.removeEventListener('ftpeach:vault-locked', locked);
   }
+});
+
+test('quit requests and cancellations reach the quit model, and its state reaches the tray', async () => {
+  const view = setup({ configured: false, locked: true });
+  await act(async () => {
+    await Promise.resolve();
+  });
+  view.fire({ kind: 'quitRequested' });
+  expect(view.quit.request).toHaveBeenCalledOnce();
+  view.fire({ kind: 'cancelQuit' });
+  expect(view.quit.cancel).toHaveBeenCalledOnce();
+
+  const calls = view.trayApi.setModel.mock.calls.length;
+  view.rerender({ ...view.baseProps, quit: { ...view.quit, promptOpen: true } });
+  expect(view.trayApi.setModel).toHaveBeenCalledTimes(calls + 1);
+  expect(view.lastModel()?.quitPromptOpen).toBe(true);
+  view.rerender({ ...view.baseProps, quit: { ...view.quit, pending: true } });
+  expect(view.lastModel()?.quitPending).toBe(true);
+  expect(view.lastModel()?.quitPromptOpen).toBe(false);
 });
 
 test('unmounting stops listening for tray actions', () => {

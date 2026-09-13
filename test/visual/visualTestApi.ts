@@ -280,7 +280,19 @@ export const visualTestApi = {
     importSettings: () => resolved(ok),
     openExternal: () => resolved(ok),
     openDevtools: () => resolved(ok),
+    quit: () => resolved(ok),
   },
   notifications: { transfersComplete: () => resolved(ok) },
-  tray: { setModel: () => resolved(ok), hideWindow: () => resolved(ok), onAction: () => () => {} },
+  tray: {
+    setModel: () => resolved(ok),
+    hideWindow: () => resolved(ok),
+    /** `?tray=quitRequested` delivers that action once the app listens, as
+     * closing the window with transfers running does. */
+    onAction: (callback: (_action: { kind: 'quitRequested' }) => void) => {
+      if (new URLSearchParams(window.location.search).get('tray') === 'quitRequested') {
+        window.setTimeout(() => callback({ kind: 'quitRequested' }), 0);
+      }
+      return () => {};
+    },
+  },
 } as unknown as Window['api'];

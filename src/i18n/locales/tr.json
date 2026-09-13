@@ -716,10 +716,13 @@
     "show": "FTPeach'i göster",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Çık"
+    "quit": "Çık",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Bilgisayar",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Aktarımlar: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Sol: {{count}}",
     "rightCount": "Sağ: {{count}}",
     "topCount": "Üst: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Bir şeyler ters gitti",
     "message": "Beklenmedik bir arayüz hatası oluştu. Aktif bağlantınız ve diskteki dosyalarınız bundan etkilenmemiştir — arayüzü yeniden yüklemeyi deneyebilirsiniz.",
     "reload": "Arayüzü Yeniden Yükle"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

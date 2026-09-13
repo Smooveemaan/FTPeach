@@ -716,10 +716,13 @@
     "show": "Visa FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Avsluta"
+    "quit": "Avsluta",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Dator",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Överföringar: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Vänster: {{count}}",
     "rightCount": "Höger: {{count}}",
     "topCount": "Överst: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Något gick fel",
     "message": "Ett oväntat gränssnittsfel har uppstått. Din aktiva anslutning och filerna på disken påverkas inte – du kan försöka ladda om gränssnittet.",
     "reload": "Ladda om gränssnittet"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

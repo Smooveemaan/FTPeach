@@ -716,10 +716,13 @@
     "show": "แสดง FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "ออกจากโปรแกรม"
+    "quit": "ออกจากโปรแกรม",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "คอมพิวเตอร์",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "การโอน: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "ด้านซ้าย: {{count}}",
     "rightCount": "ด้านขวา: {{count}}",
     "topCount": "ด้านบน: {{count}}",
@@ -787,5 +792,11 @@
     "title": "เกิดข้อผิดพลาดบางอย่าง",
     "message": "เกิดข้อผิดพลาดของอินเทอร์เฟซที่ไม่คาดคิด การเชื่อมต่อที่กำลังใช้งานอยู่และไฟล์บนดิสก์ไม่ได้รับผลกระทบ — คุณสามารถลองโหลดอินเทอร์เฟซใหม่ได้",
     "reload": "รีโหลดอินเทอร์เฟซ"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

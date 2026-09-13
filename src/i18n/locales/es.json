@@ -726,10 +726,13 @@
     "show": "Mostrar FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Salir"
+    "quit": "Salir",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Ordenador",
@@ -742,6 +745,8 @@
   },
   "statusBar": {
     "transfers": "Transferencias: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "A la izquierda: {{count}}",
     "rightCount": "A la derecha: {{count}}",
     "topCount": "Arriba: {{count}}",
@@ -797,5 +802,12 @@
     "title": "Algo salió mal",
     "message": "Se ha producido un error inesperado en la interfaz. Tu conexión activa y los archivos del disco no se han visto afectados; puedes intentar recargar la interfaz.",
     "reload": "Recargar interfaz"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

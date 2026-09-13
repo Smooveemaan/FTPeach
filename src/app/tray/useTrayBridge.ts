@@ -5,6 +5,7 @@ import { reportRejection } from '../../shared/asyncFailure.ts';
 import type { Translate } from '../../shared/types.ts';
 import { buildTrayModel, createTrayModelSender, transfersProgressPercent } from './trayModel.ts';
 import type { TrayModelInput, TrayModelSender } from './trayModel.ts';
+import type { QuitWhenIdleModel } from '../quit/useQuitWhenIdle.ts';
 
 type TrayApi = Pick<typeof api.tray, 'setModel' | 'onAction'>;
 type VaultApi = Pick<typeof api.vault, 'status' | 'lock'>;
@@ -14,6 +15,7 @@ export interface TrayBridgeOptions {
   transfers: TrayModelInput['transfers'];
   pauseAllTransfers: () => void;
   resumeAllTransfers: () => void;
+  quit: Pick<QuitWhenIdleModel, 'pending' | 'promptOpen' | 'request' | 'cancel'>;
   trayApi?: TrayApi;
   vaultApi?: VaultApi;
 }
@@ -29,13 +31,16 @@ export function useTrayBridge({
   transfers,
   pauseAllTransfers,
   resumeAllTransfers,
+  quit,
   trayApi = api.tray,
   vaultApi = api.vault,
 }: TrayBridgeOptions): void {
   const vault = useVaultState(vaultApi);
 
-  const inputRef = useRef({ t, transfers, vault });
-  inputRef.current = { t, transfers, vault };
+  const { pending: quitPending, promptOpen: quitPromptOpen } = quit;
+  const input = { t, transfers, vault, quit: { pending: quitPending, promptOpen: quitPromptOpen } };
+  const inputRef = useRef(input);
+  inputRef.current = input;
   const senderRef = useRef<TrayModelSender | null>(null);
   useEffect(() => {
     const sender = createTrayModelSender({
@@ -64,10 +69,18 @@ export function useTrayBridge({
   const { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers } = transfers;
   useEffect(() => {
     senderRef.current?.update();
-  }, [t, activeTransfersCount, hasPausableTransfers, canResumeAllTransfers, vault]);
+  }, [
+    t,
+    activeTransfersCount,
+    hasPausableTransfers,
+    canResumeAllTransfers,
+    vault,
+    quitPending,
+    quitPromptOpen,
+  ]);
 
-  const actionsRef = useRef({ pauseAllTransfers, resumeAllTransfers });
-  actionsRef.current = { pauseAllTransfers, resumeAllTransfers };
+  const actionsRef = useRef({ pauseAllTransfers, resumeAllTransfers, quit });
+  actionsRef.current = { pauseAllTransfers, resumeAllTransfers, quit };
   useEffect(
     () =>
       trayApi.onAction((action) => {
@@ -87,6 +100,12 @@ export function useTrayBridge({
                 if (result.ok !== false) window.dispatchEvent(new Event('ftpeach:vault-locked'));
               }),
             );
+            return;
+          case 'quitRequested':
+            actions.quit.request();
+            return;
+          case 'cancelQuit':
+            actions.quit.cancel();
             return;
         }
       }),

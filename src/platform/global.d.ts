@@ -86,6 +86,8 @@ declare global {
         >;
         openExternal: (url: string) => Promise<unknown>;
         openDevtools: () => Promise<unknown>;
+        /** Quits without asking about running transfers again. */
+        quit: () => Promise<unknown>;
       };
       tray: ReturnType<typeof createTrayApi>;
       openWith: {

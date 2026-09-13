@@ -716,10 +716,13 @@
     "show": "FTPeach weergeven",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Afsluiten"
+    "quit": "Afsluiten",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Overdrachten: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Links: {{count}}",
     "rightCount": "Rechts: {{count}}",
     "topCount": "Boven: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Er is iets misgegaan",
     "message": "Er is een onverwachte interfacefout opgetreden. Dit heeft geen invloed op je actieve verbinding en de bestanden op de schijf — je kunt proberen de interface opnieuw te laden.",
     "reload": "Interface opnieuw laden"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

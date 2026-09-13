@@ -726,10 +726,13 @@
     "show": "Mostra FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Esci"
+    "quit": "Esci",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -742,6 +745,8 @@
   },
   "statusBar": {
     "transfers": "Trasferimenti: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "A sinistra: {{count}}",
     "rightCount": "A destra: {{count}}",
     "topCount": "In alto: {{count}}",
@@ -797,5 +802,12 @@
     "title": "Si è verificato un errore",
     "message": "Si è verificato un errore imprevisto nell'interfaccia. La connessione attiva e i file presenti sul disco non sono stati interessati; è possibile provare a ricaricare l'interfaccia.",
     "reload": "Ricarica interfaccia"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

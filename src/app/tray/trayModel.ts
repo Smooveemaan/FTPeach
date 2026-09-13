@@ -11,6 +11,7 @@ export interface TrayModelInput {
   /** Overall progress of the running transfers, `null` when it is unknown. */
   progressPercent: number | null;
   vault: { configured: boolean; locked: boolean } | null;
+  quit: { pending: boolean; promptOpen: boolean };
 }
 
 export function buildTrayModel({
@@ -18,29 +19,36 @@ export function buildTrayModel({
   transfers,
   progressPercent,
   vault,
+  quit,
 }: TrayModelInput): TrayModel {
   const active = transfers.activeTransfersCount;
-  const status =
-    active === 0
-      ? ''
-      : progressPercent === null
-        ? t('tray.transferring', { count: active })
-        : t('tray.transferringProgress', { count: active, percent: progressPercent });
+  const numbers =
+    progressPercent === null ? { count: active } : { count: active, percent: progressPercent };
+  const statusKey = quit.pending
+    ? progressPercent === null
+      ? 'tray.quitWaiting'
+      : 'tray.quitWaitingProgress'
+    : progressPercent === null
+      ? 'tray.transferring'
+      : 'tray.transferringProgress';
   return {
     labels: {
       show: t('tray.show'),
       quit: t('tray.quit'),
+      cancelQuit: t('tray.cancelQuit'),
       pauseAll: t('tray.pauseAll'),
       resumeAll: t('tray.resumeAll'),
       lockVault: t('tray.lockVault'),
     },
-    status,
+    status: active === 0 ? '' : t(statusKey, numbers),
     transfers: {
       active,
       canPauseAll: transfers.hasPausableTransfers,
       canResumeAll: transfers.canResumeAllTransfers,
     },
     vaultLockable: !!vault && vault.configured && !vault.locked,
+    quitPending: quit.pending,
+    quitPromptOpen: quit.promptOpen,
   };
 }
 

@@ -22,6 +22,9 @@ pub struct TrayState {
 struct TrayInner {
     /// What the renderer last asked the icon to show; `None` until it has.
     model: Option<TrayModel>,
+    /// Counts the models received, so a caller can tell whether the
+    /// renderer has said anything since a given moment.
+    generation: u64,
     /// The live icon's menu, `None` while there is no icon.
     live: Option<LiveMenu>,
     /// Whether the window is hidden to the tray. The icon is removed on a
@@ -48,6 +51,7 @@ pub fn set_model(app: &AppHandle, model: TrayModel) {
         let state = app.state::<TrayState>();
         let mut inner = state.lock();
         inner.model = Some(model);
+        inner.generation += 1;
         inner.live.is_some()
     };
     if !has_icon {
@@ -72,6 +76,38 @@ pub fn set_model(app: &AppHandle, model: TrayModel) {
     }
 }
 
+/// How many transfers the renderer last reported as running. None before it
+/// has reported anything, so a renderer that never started cannot hold up
+/// quitting.
+pub fn active_transfers(app: &AppHandle) -> u32 {
+    let state = app.state::<TrayState>();
+    let inner = state.lock();
+    inner
+        .model
+        .as_ref()
+        .map_or(0, |model| model.transfers.active)
+}
+
+/// Changes whenever the renderer sends a model.
+pub fn model_generation(app: &AppHandle) -> u64 {
+    app.state::<TrayState>().lock().generation
+}
+
+/// Whether the window is already asking whether to quit.
+pub fn quit_prompt_open(app: &AppHandle) -> bool {
+    let state = app.state::<TrayState>();
+    let inner = state.lock();
+    inner
+        .model
+        .as_ref()
+        .is_some_and(|model| model.quit_prompt_open)
+}
+
+/// Asks the window what to do about quitting while transfers run.
+pub fn ask_to_quit(app: &AppHandle) {
+    send_action(app, &TrayAction::QuitRequested);
+}
+
 fn show_and_focus(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
@@ -87,6 +123,7 @@ pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
     app.manage(TrayState {
         inner: Mutex::new(TrayInner {
             model: None,
+            generation: 0,
             live: None,
             hidden: false,
         }),

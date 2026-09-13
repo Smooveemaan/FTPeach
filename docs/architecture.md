@@ -98,7 +98,8 @@ the grouping is readable at each import and checkable by
 `lib.rs` declares. Smoke-test JavaScript is an application
 asset in `src-tauri/assets/`, not Rust source.
 
-`run()` is wiring only. Deciding what a window close means — hide to tray, or shut down — lives in
+`run()` is wiring only. Deciding what a window close means — hide to tray, shut down, or first ask
+the window while transfers run — lives in
 `runtime::shutdown::on_close_requested`, and bringing the process in line with the saved settings
 at startup lives in `runtime::settings_apply::apply_at_startup`, beside the same functions the
 settings-save and settings-import paths call.

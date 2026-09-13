@@ -716,10 +716,13 @@
     "show": "FTPeach दिखाएँ",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "बाहर निकलें"
+    "quit": "बाहर निकलें",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "कंप्यूटर",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "स्थानान्तरण: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "बायां: {{count}}",
     "rightCount": "दायाँ: {{count}}",
     "topCount": "ऊपर: {{count}}",
@@ -787,5 +792,11 @@
     "title": "कुछ गलत हो गया",
     "message": "इंटरफ़ेस में एक अप्रत्याशित त्रुटि हुई। आपका सक्रिय कनेक्शन और डिस्क पर मौजूद फ़ाइलें प्रभावित नहीं हुई हैं — आप इंटरफ़ेस को फिर से लोड करके देख सकते हैं।",
     "reload": "इंटरफ़ेस पुनः लोड करें"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

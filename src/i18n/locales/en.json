@@ -716,10 +716,13 @@
     "show": "Show FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Quit"
+    "quit": "Quit",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Transfers: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Left: {{count}}",
     "rightCount": "Right: {{count}}",
     "topCount": "Top: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Something went wrong",
     "message": "An unexpected interface error occurred. Your active connection and files on disk are unaffected — you can try reloading the interface.",
     "reload": "Reload Interface"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

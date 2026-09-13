@@ -14,6 +14,7 @@ pub const MAX_TEXT_CHARS: usize = 256;
 pub struct TrayLabels {
     pub show: String,
     pub quit: String,
+    pub cancel_quit: String,
     pub pause_all: String,
     pub resume_all: String,
     pub lock_vault: String,
@@ -37,6 +38,10 @@ pub struct TrayModel {
     pub transfers: TrayTransfers,
     /// The vault is set up and unlocked, so there is something to lock.
     pub vault_lockable: bool,
+    /// Quitting waits for the running transfers to finish.
+    pub quit_pending: bool,
+    /// The window is asking whether to quit while transfers run.
+    pub quit_prompt_open: bool,
 }
 
 impl Default for TrayModel {
@@ -46,6 +51,7 @@ impl Default for TrayModel {
             labels: TrayLabels {
                 show: "Show FTPeach".into(),
                 quit: "Quit".into(),
+                cancel_quit: "Cancel quit".into(),
                 pause_all: "Pause all transfers".into(),
                 resume_all: "Resume all transfers".into(),
                 lock_vault: "Lock saved passwords".into(),
@@ -53,6 +59,8 @@ impl Default for TrayModel {
             status: String::new(),
             transfers: TrayTransfers::default(),
             vault_lockable: false,
+            quit_pending: false,
+            quit_prompt_open: false,
         }
     }
 }
@@ -63,6 +71,7 @@ impl TrayModel {
         [
             ("labels.show", &labels.show),
             ("labels.quit", &labels.quit),
+            ("labels.cancelQuit", &labels.cancel_quit),
             ("labels.pauseAll", &labels.pause_all),
             ("labels.resumeAll", &labels.resume_all),
             ("labels.lockVault", &labels.lock_vault),
@@ -89,6 +98,9 @@ pub enum TrayAction {
     PauseAll,
     ResumeAll,
     LockVault,
+    /// A quit was asked for while transfers run; the window decides.
+    QuitRequested,
+    CancelQuit,
 }
 
 #[cfg(test)]
@@ -101,6 +113,7 @@ mod tests {
             "labels": {
                 "show": "Show FTPeach",
                 "quit": "Quit",
+                "cancelQuit": "Cancel quit",
                 "pauseAll": "Pause all transfers",
                 "resumeAll": "Resume all transfers",
                 "lockVault": "Lock saved passwords",
@@ -108,6 +121,8 @@ mod tests {
             "status": "Transferring 3 · 42%",
             "transfers": { "active": 3, "canPauseAll": true, "canResumeAll": false },
             "vaultLockable": true,
+            "quitPending": false,
+            "quitPromptOpen": false,
         })
     }
 
@@ -164,6 +179,10 @@ mod tests {
         assert_eq!(
             serde_json::to_value(TrayAction::LockVault).unwrap(),
             json!({ "kind": "lockVault" })
+        );
+        assert_eq!(
+            serde_json::to_value(TrayAction::QuitRequested).unwrap(),
+            json!({ "kind": "quitRequested" })
         );
     }
 }

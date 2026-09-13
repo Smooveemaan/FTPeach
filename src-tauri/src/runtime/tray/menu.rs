@@ -15,6 +15,7 @@ pub const ID_PAUSE_ALL: &str = "tray-pause-all";
 pub const ID_RESUME_ALL: &str = "tray-resume-all";
 pub const ID_LOCK_VAULT: &str = "tray-lock-vault";
 pub const ID_QUIT: &str = "tray-quit";
+pub const ID_CANCEL_QUIT: &str = "tray-cancel-quit";
 
 /// `szTip` holds 128 UTF-16 units, and `tray-icon` copies at most that many
 /// without guaranteeing the terminating null, so one unit is left for it.
@@ -93,7 +94,13 @@ pub fn menu_spec(model: &TrayModel) -> Vec<ItemSpec> {
     }
     groups.push(vault);
 
-    groups.push(vec![ItemSpec::normal(ID_QUIT, &labels.quit)]);
+    // Quit stays last; while quitting waits for transfers it takes the
+    // cancellation's place.
+    groups.push(vec![if model.quit_pending {
+        ItemSpec::normal(ID_CANCEL_QUIT, &labels.cancel_quit)
+    } else {
+        ItemSpec::normal(ID_QUIT, &labels.quit)
+    }]);
 
     let mut spec = Vec::new();
     for group in groups.into_iter().filter(|group| !group.is_empty()) {
@@ -114,6 +121,7 @@ pub fn command_for(model: &TrayModel, id: &str) -> Option<MenuCommand> {
         ID_PAUSE_ALL => MenuCommand::Action(TrayAction::PauseAll),
         ID_RESUME_ALL => MenuCommand::Action(TrayAction::ResumeAll),
         ID_LOCK_VAULT => MenuCommand::Action(TrayAction::LockVault),
+        ID_CANCEL_QUIT => MenuCommand::Action(TrayAction::CancelQuit),
         _ => return None,
     };
     contains_id(&menu_spec(model), id).then_some(command)
@@ -390,6 +398,20 @@ mod tests {
             Some(MenuCommand::Action(TrayAction::LockVault))
         );
         assert_eq!(command_for(&model, ID_RESUME_ALL), None);
+    }
+
+    #[test]
+    fn a_pending_quit_offers_to_cancel_it_in_quit_s_place() {
+        let mut model = TrayModel::default();
+        assert_eq!(command_for(&model, ID_CANCEL_QUIT), None);
+        model.quit_pending = true;
+        let spec = menu_spec(&model);
+        assert_eq!(ids(&spec), [ID_SHOW, "tray-separator-1", ID_CANCEL_QUIT]);
+        assert_eq!(command_for(&model, ID_QUIT), None);
+        assert_eq!(
+            command_for(&model, ID_CANCEL_QUIT),
+            Some(MenuCommand::Action(TrayAction::CancelQuit))
+        );
     }
 
     #[test]

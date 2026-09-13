@@ -25,6 +25,7 @@ function input(overrides: Partial<TrayModelInput> = {}): TrayModelInput {
     },
     progressPercent: null,
     vault: null,
+    quit: { pending: false, promptOpen: false },
     ...overrides,
   };
 }
@@ -91,6 +92,31 @@ test('the vault can be locked only once it is set up and unlocked', () => {
     buildTrayModel(input({ vault: { configured: true, locked: false } })).vaultLockable,
     true,
   );
+});
+
+test('a pending quit says so in the status line and marks the model', () => {
+  const transfers = {
+    activeTransfersCount: 2,
+    hasPausableTransfers: true,
+    canResumeAllTransfers: false,
+  };
+  const quit = { pending: true, promptOpen: false };
+  assert.equal(
+    buildTrayModel(input({ transfers, quit, progressPercent: 50 })).status,
+    'tray.quitWaitingProgress{"count":2,"percent":50}',
+  );
+  const model = buildTrayModel(input({ transfers, quit }));
+  assert.equal(model.status, 'tray.quitWaiting{"count":2}');
+  assert.equal(model.quitPending, true);
+  assert.equal(model.labels.cancelQuit, 'tray.cancelQuit');
+  assert.equal(buildTrayModel(input({ quit })).status, '');
+});
+
+test('an open quit question changes the menu structure, so it is sent at once', () => {
+  const model = buildTrayModel(input());
+  const asking = buildTrayModel(input({ quit: { pending: false, promptOpen: true } }));
+  assert.equal(asking.quitPromptOpen, true);
+  assert.notEqual(trayMenuStructure(model), trayMenuStructure(asking));
 });
 
 test('progress sums the running transfers and ignores settled ones', () => {

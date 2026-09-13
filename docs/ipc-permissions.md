@@ -8,12 +8,16 @@ The `main` WebView receives only the core window/event permissions in
   `vault_status`, `app_version`, `session_list`, `updater_status`, `updater_check`.
 - Write: `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `sites_save`,
   `sites_save_folder`, `sites_apply_layout`, `settings_set`, `tabs_set`, `proxy_test`,
-  session/transfer commands, logging, notifications, `tray_set_model` and
-  `tray_hide_window`.
+  session/transfer commands, logging, notifications, `tray_set_model`, `tray_hide_window`
+  and `app_quit`, which quits without asking about running transfers again once the
+  window has asked.
 - Events to the renderer: `tray:action` goes only to the `main` window when a tray menu item
   is clicked. The backend maps the item ID to an action through its copy of the last
   `tray_set_model` model, so the payload never carries text read from the menu; the renderer
-  runs the action through the same functions as the window's own controls.
+  runs the action through the same functions as the window's own controls. The backend
+  also sends `quitRequested` when a quit from the tray or the window close button finds
+  transfers running; if no model saying the question is open arrives within 10 seconds,
+  it quits anyway, so a renderer that cannot answer never makes quitting impossible.
 - Delete: `sites_delete`, `sites_delete_folder`, `tabs_clear`, `session_delete`.
 - Vault management: `vault_setup`, `vault_unlock`, `vault_lock`, system-unlock commands,
   `vault_change_password`, `vault_use_system_protection`.

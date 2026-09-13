@@ -716,10 +716,13 @@
     "show": "FTPeach anzeigen",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Beenden"
+    "quit": "Beenden",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Übertragungen: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Links: {{count}}",
     "rightCount": "Rechts: {{count}}",
     "topCount": "Oben: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Etwas ist schiefgelaufen",
     "message": "Ein unerwarteter Fehler in der Oberfläche ist aufgetreten. Ihre aktive Verbindung und die Dateien auf dem Datenträger sind nicht betroffen – Sie können versuchen, die Oberfläche neu zu laden.",
     "reload": "Oberfläche neu laden"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

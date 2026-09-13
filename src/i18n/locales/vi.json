@@ -716,10 +716,13 @@
     "show": "Hiển thị FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Thoát"
+    "quit": "Thoát",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Máy tính",
@@ -732,6 +735,8 @@
   },
   "statusBar": {
     "transfers": "Lượt truyền: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Trái: {{count}}",
     "rightCount": "Phải: {{count}}",
     "topCount": "Trên: {{count}}",
@@ -787,5 +792,11 @@
     "title": "Đã xảy ra sự cố",
     "message": "Đã xảy ra một lỗi giao diện không mong muốn. Kết nối hiện tại và các tệp trên đĩa của bạn không bị ảnh hưởng — bạn có thể thử tải lại giao diện.",
     "reload": "Tải lại giao diện"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish"
   }
 }

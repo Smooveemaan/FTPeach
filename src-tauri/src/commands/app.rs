@@ -1,4 +1,5 @@
 use crate::ipc::{CommandError, CommandResult};
+use crate::runtime::shutdown;
 use crate::store::{JsonMap, Store};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
@@ -7,6 +8,13 @@ use tauri_plugin_opener::OpenerExt;
 #[tauri::command]
 pub fn app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
+}
+
+/// Quits once the window has settled what happens to running transfers, so
+/// unlike closing the window this does not ask again.
+#[tauri::command]
+pub fn app_quit(app: AppHandle) {
+    shutdown::quit_now(&app);
 }
 
 #[tauri::command]

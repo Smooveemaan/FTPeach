@@ -34,6 +34,8 @@ import UpdateStatus from './UpdateStatus.tsx';
 import { useUpdateBanner } from './useUpdateBanner.ts';
 import { useResetLayout } from './useResetLayout.ts';
 import { useTrayBridge } from './tray/useTrayBridge.ts';
+import QuitDialog from './quit/QuitDialog.tsx';
+import { useQuitWhenIdle } from './quit/useQuitWhenIdle.ts';
 import {
   connectionVisualState,
   useApplicationError,
@@ -198,6 +200,8 @@ export default function Application() {
       ),
   });
 
+  const quitWhenIdle = useQuitWhenIdle({ hasActiveTransfers });
+
   const {
     tabs,
     activeTabId,
@@ -267,6 +271,7 @@ export default function Application() {
     transfers: { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers },
     pauseAllTransfers,
     resumeAllTransfers: () => resumeAllTransfers(refreshBothPanes),
+    quit: quitWhenIdle,
   });
 
   const logConnectionLabels = useRememberedConnectionLabels(connectionLabels);
@@ -314,7 +319,8 @@ export default function Application() {
     moveToTarget ||
     showSaveSite ||
     vaultUnlockRetries.length > 0 ||
-    confirmState
+    confirmState ||
+    quitWhenIdle.promptOpen
   );
 
   const {
@@ -724,10 +730,19 @@ export default function Application() {
               onDownload={handler(downloadUpdate)}
             />
           ),
+          quitPending: quitWhenIdle.pending ? { onCancel: quitWhenIdle.cancel } : undefined,
         }}
       />
 
       <AppDialogs model={dialogsModel} />
+      {quitWhenIdle.promptOpen && (
+        <QuitDialog
+          count={activeTransfersCount}
+          onQuitNow={quitWhenIdle.quitNow}
+          onQuitWhenIdle={quitWhenIdle.quitWhenIdle}
+          onCancel={quitWhenIdle.dismiss}
+        />
+      )}
     </div>
   );
 }

@@ -21,6 +21,8 @@ interface StatusBarProps {
   activeTransfersCount: number;
   hasPausedTransfers: boolean;
   update?: ReactNode;
+  /** Quitting waits for the transfers; offers to stop waiting. */
+  quitPending?: { onCancel: () => void } | undefined;
 }
 
 interface StatusDescription {
@@ -42,6 +44,7 @@ export default function StatusBar({
   activeTransfersCount,
   hasPausedTransfers,
   update,
+  quitPending,
 }: StatusBarProps) {
   const { t } = useTranslation();
   const [tick, setTick] = useState(0);
@@ -69,6 +72,14 @@ export default function StatusBar({
           {t('statusBar.transfers', { count: activeTransfersCount })}
         </span>
         {update}
+        {quitPending && (
+          <span className="status-quit">
+            {t('statusBar.quitPending')}
+            <button type="button" className="status-update-action" onClick={quitPending.onCancel}>
+              {t('statusBar.cancelQuit')}
+            </button>
+          </span>
+        )}
       </span>
       <span className="status-right">
         {syncBrowsing && <span className="sync-indicator">⇄ {t('menu.view.syncBrowsing')}</span>}

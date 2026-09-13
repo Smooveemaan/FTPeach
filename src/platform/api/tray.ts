@@ -9,6 +9,7 @@ export interface TrayModel {
   labels: {
     show: string;
     quit: string;
+    cancelQuit: string;
     pauseAll: string;
     resumeAll: string;
     lockVault: string;
@@ -18,12 +19,30 @@ export interface TrayModel {
   transfers: { active: number; canPauseAll: boolean; canResumeAll: boolean };
   /** The vault is set up and unlocked. */
   vaultLockable: boolean;
+  /** Quitting waits for the running transfers to finish. */
+  quitPending: boolean;
+  /**
+   * The window is asking whether to quit. The backend takes a model saying so
+   * as the answer to its request; without one it assumes the window is gone.
+   */
+  quitPromptOpen: boolean;
 }
 
-/** A tray menu click the renderer carries out. */
-export type TrayAction = { kind: 'pauseAll' } | { kind: 'resumeAll' } | { kind: 'lockVault' };
+/** A tray menu click, or a quit request, the renderer carries out. */
+export type TrayAction =
+  | { kind: 'pauseAll' }
+  | { kind: 'resumeAll' }
+  | { kind: 'lockVault' }
+  | { kind: 'quitRequested' }
+  | { kind: 'cancelQuit' };
 
-const ACTION_KINDS: ReadonlySet<string> = new Set(['pauseAll', 'resumeAll', 'lockVault']);
+const ACTION_KINDS: ReadonlySet<string> = new Set([
+  'pauseAll',
+  'resumeAll',
+  'lockVault',
+  'quitRequested',
+  'cancelQuit',
+]);
 
 export function isTrayAction(value: unknown): value is TrayAction {
   return isRecord(value) && typeof value.kind === 'string' && ACTION_KINDS.has(value.kind);

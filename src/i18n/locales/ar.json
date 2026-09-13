@@ -756,10 +756,13 @@
     "show": "عرض FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "خروج"
+    "quit": "خروج",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "الكمبيوتر",
@@ -772,6 +775,8 @@
   },
   "statusBar": {
     "transfers": "عمليات النقل: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "على اليسار: {{count}}",
     "rightCount": "على اليمين: {{count}}",
     "topCount": "أعلى: {{count}}",
@@ -827,5 +832,15 @@
     "title": "حدث خطأ ما",
     "message": "حدث خطأ غير متوقع في الواجهة. لم يتأثر اتصالك النشط والملفات الموجودة على القرص — يمكنك محاولة إعادة تحميل الواجهة.",
     "reload": "إعادة تحميل الواجهة"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_zero": "{{count}} transfers are still running. Quit and stop them?",
+    "message_two": "{{count}} transfers are still running. Quit and stop them?",
+    "message_few": "{{count}} transfers are still running. Quit and stop them?",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

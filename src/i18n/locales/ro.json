@@ -726,10 +726,13 @@
     "show": "Afișează FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Ieșire"
+    "quit": "Ieșire",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Calculator",
@@ -742,6 +745,8 @@
   },
   "statusBar": {
     "transfers": "Transferuri: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "Stânga: {{count}}",
     "rightCount": "Dreapta: {{count}}",
     "topCount": "Sus: {{count}}",
@@ -797,5 +802,12 @@
     "title": "A apărut o problemă",
     "message": "A apărut o eroare neașteptată în interfață. Conexiunea activă și fișierele de pe disc nu sunt afectate — puteți încerca să reîncărcați interfața.",
     "reload": "Reîncărcare interfață"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_few": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

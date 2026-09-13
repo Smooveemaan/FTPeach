@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The tray icon's menu shows how transfers are going and lets you pause them or lock saved
   passwords.
+- If transfers are still running when you quit, FTPeach asks whether to quit right away or
+  once they finish.
 
 ## [0.2.1] - 2026-09-13
 

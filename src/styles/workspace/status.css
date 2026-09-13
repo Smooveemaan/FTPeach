@@ -41,12 +41,14 @@
   opacity: 0.6;
 }
 
-.status-update {
+.status-update,
+.status-quit {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.status-update::before {
+.status-update::before,
+.status-quit::before {
   content: '·';
   opacity: 0.6;
 }

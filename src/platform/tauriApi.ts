@@ -309,6 +309,7 @@ export const tauriApi: Window['api'] = {
       ),
     openExternal: (url: string) => invoke('app_open_external', { url }),
     openDevtools: () => invoke('debug_open_devtools'),
+    quit: () => invoke('app_quit'),
   },
   notifications: {
     transfersComplete: (summary: Record<string, unknown>) =>

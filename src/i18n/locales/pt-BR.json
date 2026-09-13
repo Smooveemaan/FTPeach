@@ -726,10 +726,13 @@
     "show": "Mostrar FTPeach",
     "transferring": "Transferring {{count}}",
     "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "quitWaiting": "Quitting after transfers finish · {{count}}",
+    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
     "lockVault": "Lock saved passwords",
-    "quit": "Sair"
+    "quit": "Sair",
+    "cancelQuit": "Cancel quit"
   },
   "tabStrip": {
     "localComputer": "Computador",
@@ -742,6 +745,8 @@
   },
   "statusBar": {
     "transfers": "Transferências: {{count}}",
+    "quitPending": "Quitting after transfers finish",
+    "cancelQuit": "Cancel",
     "leftCount": "À esquerda: {{count}}",
     "rightCount": "À direita: {{count}}",
     "topCount": "Em cima: {{count}}",
@@ -797,5 +802,12 @@
     "title": "Algo deu errado",
     "message": "Ocorreu um erro inesperado na interface. Sua conexão ativa e os arquivos no disco não foram afetados — você pode tentar recarregar a interface.",
     "reload": "Recarregar a interface"
+  },
+  "quitDialog": {
+    "message_one": "{{count}} transfer is still running. Quit and stop it?",
+    "message_other": "{{count}} transfers are still running. Quit and stop them?",
+    "quitNow": "Quit now",
+    "quitWhenDone": "Quit when transfers finish",
+    "message_many": "{{count}} transfers are still running. Quit and stop them?"
   }
 }

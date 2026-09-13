@@ -29,6 +29,7 @@ function harness() {
     handleSaveSite: (id) => () => record('save')(id),
     setShowExportSettings: record('export'),
     setShowImportSettings: record('import'),
+    requestQuit: record('quit'),
     theme: 'dark',
     changeTheme: record('theme'),
     resetLayout: record('reset'),
@@ -105,6 +106,7 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     'menu.file.newConnection',
     'menu.file.exportSettings',
     'menu.file.importSettings',
+    'menu.file.quit',
     'menu.view.lightTheme',
     'menu.edit.settings',
     'menu.help.about',
@@ -113,19 +115,20 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     h.item(key).onClick!();
   h.item('menu.transfer.copySelectedRight').onClick!();
   h.item('menu.transfer.copySelectedLeft').onClick!();
-  assert.deepEqual(h.calls.slice(0, 10), [
+  assert.deepEqual(h.calls.slice(0, 11), [
     ['new'],
     ['close', 'active'],
     ['reopen'],
     ['connect', 'b'],
     ['export', true],
     ['import', true],
+    ['quit'],
     ['theme', 'light'],
     ['settings'],
     ['about'],
     ['updates'],
   ]);
-  assert.deepEqual(h.calls.slice(10), [
+  assert.deepEqual(h.calls.slice(11), [
     ['copy', 'a', 'b'],
     ['refresh', 'a', h.ctx.panes.a.path],
     ['refresh', 'b', h.ctx.panes.b.path],

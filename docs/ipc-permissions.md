@@ -9,8 +9,9 @@ The `main` WebView receives only the core window/event permissions in
 - Write: `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `sites_save`,
   `sites_save_folder`, `sites_apply_layout`, `settings_set`, `tabs_set`, `proxy_test`,
   session/transfer commands, logging, notifications, `tray_set_model`, `tray_hide_window`
-  and `app_quit`, which quits without asking about running transfers again once the
-  window has asked.
+  and `app_quit`, which quits without asking about running transfers and without hiding to
+  the tray; the window calls it for File → Exit when nothing is running, or once it has
+  asked.
 - Events to the renderer: `tray:action` goes only to the `main` window when a tray menu item
   is clicked. The backend maps the item ID to an action through its copy of the last
   `tray_set_model` model, so the payload never carries text read from the menu; the renderer

@@ -26,6 +26,8 @@ export interface MenusContext {
   handleSaveSite: (id: PaneId) => () => unknown;
   setShowExportSettings: (show: boolean) => unknown;
   setShowImportSettings: (show: boolean) => unknown;
+  /** Quits the application, asking first while transfers run; never hides to the tray. */
+  requestQuit: () => unknown;
   theme: string;
   changeTheme: (theme: string) => unknown;
   resetLayout: () => unknown;
@@ -82,6 +84,7 @@ export function buildMenus(ctx: MenusContext): MenuBarEntry[] {
     handleSaveSite,
     setShowExportSettings,
     setShowImportSettings,
+    requestQuit,
     theme,
     changeTheme,
     resetLayout,
@@ -180,7 +183,7 @@ export function buildMenus(ctx: MenusContext): MenuBarEntry[] {
         { label: t('menu.file.exportSettings'), onClick: () => setShowExportSettings(true) },
         { label: t('menu.file.importSettings'), onClick: () => setShowImportSettings(true) },
         { separator: true },
-        { label: t('menu.file.quit'), onClick: () => window.close() },
+        { label: t('menu.file.quit'), onClick: () => requestQuit() },
       ],
     },
     {

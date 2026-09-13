@@ -456,6 +456,7 @@ export default function Application() {
       handleSaveSite,
       setShowExportSettings,
       setShowImportSettings,
+      requestQuit: quitWhenIdle.request,
       theme: settings.interface.theme,
       changeTheme,
       resetLayout,

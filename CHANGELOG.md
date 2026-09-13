@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - If transfers are still running when you quit, FTPeach asks whether to quit right away or
   once they finish.
 
+### Fixed
+
+- File → Exit quits the app instead of leaving a blank window or hiding it to the tray.
+
 ## [0.2.1] - 2026-09-13
 
 ### Added

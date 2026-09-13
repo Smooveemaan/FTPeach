@@ -268,7 +268,8 @@
     "invalidInput": "Der angegebene Wert ist ungültig.",
     "internal": "Ein unerwarteter Fehler ist aufgetreten.",
     "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
-    "alreadyExists": "„{{name}}“ existiert bereits"
+    "alreadyExists": "„{{name}}“ existiert bereits",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

@@ -19,6 +19,10 @@ use std::{
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_util::sync::CancellationToken;
 
+/// How long a stopped scan waits for its remote listing to finish before
+/// giving up on the browse connection.
+const STOPPED_LISTING_GRACE: Duration = Duration::from_secs(2);
+
 pub(super) async fn listing(
     sessions: &Sessions,
     endpoint: &Endpoint,
@@ -70,11 +74,32 @@ pub(super) async fn listing(
             } else {
                 session.browse_timeout_ms
             });
-            let result = tokio::select! {
-                result = tokio::time::timeout(timeout, session.browse_client.list_for_recursive(&path)) => result.map_err(anyhow::Error::from).and_then(|r| r),
-                _ = token.cancelled() => Err(CommandError::new(ErrorCode::Cancelled, "Recursive scan cancelled").into()),
+            // The browse connection is the pane's own, so a stop lets a listing
+            // already under way finish and drops its entries. Cut off mid-reply,
+            // an FTP control connection is unusable, and the pane would report
+            // the connection lost after a stop the user asked for.
+            let (result, reusable) = {
+                let listing =
+                    tokio::time::timeout(timeout, session.browse_client.list_for_recursive(&path));
+                tokio::pin!(listing);
+                // A stop that has arrived wins over a listing that just finished.
+                tokio::select! {
+                    biased;
+                    _ = token.cancelled() => {
+                        let settled = tokio::time::timeout(STOPPED_LISTING_GRACE, &mut listing).await;
+                        (
+                            Err(CommandError::new(ErrorCode::Cancelled, "Recursive scan cancelled").into()),
+                            matches!(settled, Ok(Ok(Ok(_)))),
+                        )
+                    }
+                    result = &mut listing => {
+                        let result = result.map_err(anyhow::Error::from).and_then(|r| r);
+                        let reusable = result.is_ok();
+                        (result, reusable)
+                    }
+                }
             };
-            if result.is_err() {
+            if !reusable {
                 let _ = tokio::time::timeout(
                     Duration::from_secs(2),
                     session.browse_client.disconnect(),

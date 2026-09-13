@@ -11,6 +11,7 @@ use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
 use crate::transfer::transfer_pool::TaskFn;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 #[cfg(test)]
 #[path = "transfer_service_tests.rs"]
@@ -70,7 +71,7 @@ async fn upload_staged(
     });
     let result = async {
         backend.upload(local, partial, resume, staged_sink).await?;
-        // Unsupported replacement is an error, never delete-then-rename.
+        // A server that will not replace sets the old file aside; never delete-then-rename.
         if crate::protocol::overwrite_allowed() {
             backend.rename(partial, target).await
         } else {
@@ -109,19 +110,33 @@ async fn relay_staged(
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
 async fn cleanup_remote_partial(sessions: &Sessions, connection_id: &str, partial: &str) {
-    let cleanup = async {
+    // Only the wait for the browsing connection is kept short. A removal cut
+    // off mid-reply would cost FTP that connection, and the pane its listing
+    // with it, so once started it gets as long as a server that still answers
+    // could need.
+    let cleaned = async {
         let slot = sessions.lookup_slot(connection_id);
-        let mut guard = slot.lock().await;
-        if let Some(session) = guard.as_mut()
-            && let Err(error) = session.browse_client.remove(partial, false).await
+        let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await else {
+            return false;
+        };
+        let Some(session) = guard.as_mut() else {
+            return true;
+        };
+        match tokio::time::timeout(
+            Duration::from_secs(10),
+            session.browse_client.remove(partial, false),
+        )
+        .await
         {
-            log::warn!("Could not clean transfer staging file {partial}: {error}");
+            Ok(Ok(())) => true,
+            Ok(Err(error)) => {
+                log::warn!("Could not clean transfer staging file {partial}: {error}");
+                true
+            }
+            Err(_) => false,
         }
     };
-    if tokio::time::timeout(std::time::Duration::from_secs(5), cleanup)
-        .await
-        .is_ok()
-    {
+    if cleaned.await {
         return;
     }
     // The browsing connection is busy or no longer answering. A transfer

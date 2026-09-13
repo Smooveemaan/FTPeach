@@ -362,6 +362,87 @@ async fn sftp_round_trip_against_docker_server() {
     let _ = tokio::fs::remove_dir_all(&store_dir).await;
 }
 
+async fn put(backend: &mut SftpBackend, local: &std::path::Path, contents: &[u8], remote: &str) {
+    tokio::fs::write(local, contents)
+        .await
+        .expect("write fixture");
+    backend
+        .upload(local, remote, false, noop_progress())
+        .await
+        .expect("upload");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore]
+async fn sftp_rename_replaces_an_existing_file_against_docker_server() {
+    let config = json!({
+        "protocol": "sftp",
+        "host": "127.0.0.1",
+        "port": 2222,
+        "user": "testuser",
+        "password": "testpass",
+    })
+    .as_object()
+    .unwrap()
+    .clone();
+    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let store_dir = std::env::temp_dir().join(format!(
+        "ftpeach-docker-sftp-replace-{}",
+        uuid::Uuid::new_v4()
+    ));
+    let mut backend = SftpBackend::new(Arc::new(Store::new_at(store_dir.clone())));
+    let dir = format!("/upload/replace-sftp-{}", uuid::Uuid::new_v4());
+    let target = format!("{dir}/target.txt");
+    let staging = format!("{dir}/.staging.part");
+
+    tokio::time::timeout(Duration::from_secs(30), async {
+        backend.connect(&config).await.expect("connect");
+        backend.mkdir(&dir).await.expect("mkdir");
+        let local = store_dir.with_extension("txt");
+        put(&mut backend, &local, b"old", &target).await;
+        put(&mut backend, &local, b"new", &staging).await;
+        // OpenSSH refuses a plain SSH_FXP_RENAME onto an existing file.
+        backend
+            .rename(&staging, &target)
+            .await
+            .expect("an approved overwrite replaces the existing file");
+        let mut replaced = Vec::new();
+        backend
+            .download_to_writer(&target, &mut replaced)
+            .await
+            .expect("download");
+        assert_eq!(replaced, b"new");
+        let names: Vec<String> = backend
+            .list(&dir)
+            .await
+            .expect("list")
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+        assert!(names.iter().any(|name| name == "target.txt"), "{names:?}");
+        assert!(
+            !names.iter().any(|name| name == ".staging.part"),
+            "{names:?}"
+        );
+
+        put(&mut backend, &local, b"newer", &staging).await;
+        assert!(
+            backend.rename_no_replace(&staging, &target).await.is_err(),
+            "a rename without overwrite consent still refuses to replace"
+        );
+
+        let _ = backend.remove(&dir, true).await;
+        let _ = tokio::fs::remove_file(&local).await;
+        backend.disconnect().await.expect("disconnect");
+    })
+    .await
+    .expect(
+        "test timed out — is `docker compose -f tests/docker/docker-compose.yml up -d` running?",
+    );
+
+    let _ = tokio::fs::remove_dir_all(&store_dir).await;
+}
+
 #[tokio::test(flavor = "multi_thread")]
 #[ignore]
 async fn sftp_tofu_pins_matches_and_rejects_changed_fingerprint() {

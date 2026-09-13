@@ -276,7 +276,8 @@
     "invalidInput": "Указано недопустимое значение.",
     "internal": "Произошла непредвиденная ошибка.",
     "connectFailedPrefix": "Не удалось подключиться к серверу. {{raw}}",
-    "alreadyExists": "«{{name}}» уже существует"
+    "alreadyExists": "«{{name}}» уже существует",
+    "replaceUnsupported": "Сервер не разрешил заменить существующий файл."
   },
   "settings": {
     "openWithAssociations": {

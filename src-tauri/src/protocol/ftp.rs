@@ -825,13 +825,38 @@ impl ProtocolBackend for FtpBackend {
             .await
     }
 
+    /// RNTO replaces an existing file on most servers, but some refuse (IIS
+    /// answers 550). That refusal is told apart from any other by both paths
+    /// still standing, and the existing file is then set aside so the new one
+    /// can take its name.
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        let old_path = old_path.to_string();
-        let new_path = new_path.to_string();
-        self.with_stream(move |s| {
-            Box::pin(async move { Ok(s.rename(&old_path, &new_path).await?) })
-        })
-        .await
+        let (from, to) = (old_path.to_string(), new_path.to_string());
+        // A refusal is the server's whole reply, so the connection stays in
+        // step for the checks below instead of being thrown away.
+        let refusal = self
+            .with_stream(move |s| {
+                Box::pin(async move {
+                    match s.rename(&from, &to).await {
+                        Ok(()) => Ok(None),
+                        Err(error @ suppaftp::FtpError::UnexpectedResponse(_))
+                            if !matches!(&error, suppaftp::FtpError::UnexpectedResponse(response) if response.status == Status::NotAvailable) =>
+                        {
+                            Ok(Some(error))
+                        }
+                        Err(error) => Err(error.into()),
+                    }
+                })
+            })
+            .await?;
+        let Some(error) = refusal else {
+            return Ok(());
+        };
+        self.log_kind(format!("{error}"), LogKind::Error);
+        // SIZE answers only for a file, so a folder in the way stays an error.
+        if self.exists(new_path).await? && self.exists(old_path).await? {
+            return super::replace_by_setting_aside(self, old_path, new_path).await;
+        }
+        Err(error.into())
     }
 
     /// FTP has no conditional rename, and RNTO replaces an existing file on
@@ -839,10 +864,12 @@ impl ProtocolBackend for FtpBackend {
     /// moment between the two for a racing file to be replaced in, instead of
     /// the whole upload that staged it.
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        anyhow::ensure!(
-            !self.exists(new_path).await?,
-            "{new_path} already exists on the server; it was not replaced"
-        );
+        if self.exists(new_path).await? {
+            return Err(super::fail(
+                ErrorCode::AlreadyExists,
+                format!("{new_path} already exists on the server; it was not replaced"),
+            ));
+        }
         self.rename(old_path, new_path).await
     }
 

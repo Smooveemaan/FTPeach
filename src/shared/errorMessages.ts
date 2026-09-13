@@ -22,6 +22,8 @@ const ERROR_CODE_KEYS = {
   resourceLimit: 'errors.invalidInput',
   busy: 'errors.locationBusy',
   vaultLocked: 'settings.security.unlockRequired',
+  alreadyExists: 'errors.fileOrFolderExists',
+  replaceUnsupported: 'errors.replaceUnsupported',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 

@@ -5,6 +5,7 @@ export {
   rememberConnectionLabels,
   setTransfersStore,
   subscribeTransfers,
+  transferForAttempt,
   transferTouchesConnection,
 } from './transferStore.ts';
 export { isTransferNameConflict } from './nameConflict.ts';

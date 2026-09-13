@@ -266,6 +266,7 @@
     "integrityMismatch": "The transferred file failed the integrity check.",
     "cleanupIncomplete": "Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.",
     "invalidInput": "The provided value is invalid.",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced.",
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
     "alreadyExists": "\"{{name}}\" already exists"

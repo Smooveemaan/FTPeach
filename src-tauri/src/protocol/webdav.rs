@@ -300,6 +300,38 @@ impl WebDavBackend {
         }
     }
 
+    /// Whether a file, rather than a collection, stands at `path`.
+    async fn file_exists(&self, path: &str) -> BackendResult<bool> {
+        let client = self.client()?.clone();
+        let url = self.build_url(path);
+        match Self::propfind(&client, url, 0, &self.user, &self.password).await {
+            Ok(xml) => Ok(parse_propfind(&xml)?
+                .first()
+                .is_some_and(|entry| !entry.is_dir)),
+            Err(error)
+                if crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::NotFound =>
+            {
+                Ok(false)
+            }
+            Err(error) => Err(error),
+        }
+    }
+
+    async fn send_move(
+        &self,
+        old_path: &str,
+        new_path: &str,
+        overwrite: bool,
+    ) -> BackendResult<reqwest::Response> {
+        self.log_kind(format!("MOVE {old_path} -> {new_path}"), LogKind::Command);
+        self.request(Method::from_bytes(b"MOVE")?, old_path)?
+            .header("Destination", self.build_url(new_path))
+            .header("Overwrite", if overwrite { "T" } else { "F" })
+            .send()
+            .await
+            .context("MOVE request failed")
+    }
+
     async fn mutation_result(mut res: reqwest::Response, operation: &str) -> BackendResult<()> {
         if !res.status().is_success() {
             return Err(response::status_error(res.status().as_u16(), operation));
@@ -590,17 +622,27 @@ impl ProtocolBackend for WebDavBackend {
         Self::mutation_result(res, "DELETE").await
     }
 
+    /// Some servers turn down replacing an existing file even under
+    /// `Overwrite: T`. Refused while both still stand, with a file in the
+    /// way, the existing file is set aside so the new one can take its name.
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        self.log_kind(format!("MOVE {old_path} -> {new_path}"), LogKind::Command);
-        let dest = self.build_url(new_path);
-        let res = self
-            .request(Method::from_bytes(b"MOVE").unwrap(), old_path)?
-            .header("Destination", dest)
-            .header("Overwrite", "T")
-            .send()
-            .await
-            .context("MOVE request failed")?;
-        Self::mutation_result(res, "MOVE").await
+        let reply = self.send_move(old_path, new_path, true).await?;
+        let status = reply.status();
+        if matches!(
+            status,
+            StatusCode::PRECONDITION_FAILED
+                | StatusCode::FORBIDDEN
+                | StatusCode::METHOD_NOT_ALLOWED
+                | StatusCode::CONFLICT
+                | StatusCode::NOT_IMPLEMENTED
+        ) {
+            drop(reply);
+            if self.file_exists(new_path).await? && self.resource_exists(old_path).await? {
+                return super::replace_by_setting_aside(self, old_path, new_path).await;
+            }
+            return Err(response::status_error(status.as_u16(), "MOVE"));
+        }
+        Self::mutation_result(reply, "MOVE").await
     }
 
     async fn size(&mut self, path: &str) -> u64 {
@@ -608,12 +650,14 @@ impl ProtocolBackend for WebDavBackend {
     }
 
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        let response = self
-            .request(Method::from_bytes(b"MOVE")?, old_path)?
-            .header("Destination", self.build_url(new_path))
-            .header("Overwrite", "F")
-            .send()
-            .await?;
+        let response = self.send_move(old_path, new_path, false).await?;
+        // Under Overwrite: F, 412 is the server saying the destination is taken.
+        if response.status() == StatusCode::PRECONDITION_FAILED {
+            return Err(super::fail(
+                ErrorCode::AlreadyExists,
+                format!("{new_path} already exists on the server; it was not replaced"),
+            ));
+        }
         Self::mutation_result(response, "MOVE").await
     }
 

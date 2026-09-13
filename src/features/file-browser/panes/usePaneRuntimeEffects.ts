@@ -1,10 +1,17 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useEffect } from 'react';
 import { api } from '../../../platform/api/index.ts';
+import { transferForAttempt } from '../../transfers/index.ts';
 import type { TabState } from './paneModel.ts';
 import { isConnectionLoss } from './paneModel.ts';
 
 type SetTabs = Dispatch<SetStateAction<TabState[]>>;
+
+/**
+ * A transfer the user is stopping or pausing lets go of its connection on
+ * purpose, so whatever it reports on the way out says nothing about the pane's.
+ */
+const ENDED_BY_USER: ReadonlySet<string> = new Set(['cancelling', 'stopped', 'paused']);
 
 export function useTransferConnectionLoss(setTabs: SetTabs, connectionResetMessage: string): void {
   useEffect(
@@ -15,6 +22,8 @@ export function useTransferConnectionLoss(setTabs: SetTabs, connectionResetMessa
           (payload.errorCode !== 'connectionLost' && !isConnectionLoss(payload.error))
         )
           return;
+        const transfer = transferForAttempt(payload.id);
+        if (transfer && ENDED_BY_USER.has(transfer.status)) return;
         setTabs((previous) =>
           previous.map((tab) => ({
             ...tab,

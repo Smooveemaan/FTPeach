@@ -268,7 +268,8 @@
     "invalidInput": "指定された値は無効です。",
     "internal": "予期しないエラーが発生しました。",
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
-    "alreadyExists": "「{{name}}」はすでに存在します"
+    "alreadyExists": "「{{name}}」はすでに存在します",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

@@ -268,7 +268,8 @@
     "invalidInput": "제공된 값이 올바르지 않습니다.",
     "internal": "예기치 않은 오류가 발생했습니다.",
     "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",
-    "alreadyExists": "“{{name}}”이(가) 이미 있습니다"
+    "alreadyExists": "“{{name}}”이(가) 이미 있습니다",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

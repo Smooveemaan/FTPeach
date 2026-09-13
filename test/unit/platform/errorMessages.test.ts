@@ -117,6 +117,8 @@ test('friendlyError localizes every structured command error code', () => {
     resourceLimit: 'The provided value is invalid.',
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
     vaultLocked: 'Unlock protected storage',
+    alreadyExists: 'A file or folder with that name already exists.',
+    replaceUnsupported: "The server didn't allow the existing file to be replaced.",
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

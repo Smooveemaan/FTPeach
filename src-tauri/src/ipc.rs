@@ -27,6 +27,12 @@ pub enum ErrorCode {
     /// Another operation is already reading or writing the same place.
     Busy,
     VaultLocked,
+    /// Something already stands where this would go, and replacing it was
+    /// not asked for.
+    AlreadyExists,
+    /// The server would not let an existing file be replaced, not even by
+    /// setting it aside first.
+    ReplaceUnsupported,
     Internal,
 }
 
@@ -251,6 +257,10 @@ impl CommandError {
             ErrorCode::ResourceLimit => "Resource limit exceeded",
             ErrorCode::Busy => "Another operation is using this location",
             ErrorCode::VaultLocked => "Vault is locked",
+            ErrorCode::AlreadyExists => "A file or folder with that name already exists",
+            ErrorCode::ReplaceUnsupported => {
+                "The server did not allow the existing file to be replaced"
+            }
             ErrorCode::Internal => "Command failed",
         };
         Self {
@@ -286,6 +296,8 @@ mod tests {
             (ErrorCode::ResourceLimit, "resourceLimit"),
             (ErrorCode::Busy, "busy"),
             (ErrorCode::VaultLocked, "vaultLocked"),
+            (ErrorCode::AlreadyExists, "alreadyExists"),
+            (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

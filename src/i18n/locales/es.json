@@ -272,7 +272,8 @@
     "invalidInput": "El valor proporcionado no es válido.",
     "internal": "Se produjo un error inesperado.",
     "connectFailedPrefix": "No se ha podido conectar al servidor. {{raw}}",
-    "alreadyExists": "«{{name}}» ya existe"
+    "alreadyExists": "«{{name}}» ya existe",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

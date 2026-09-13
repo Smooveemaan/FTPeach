@@ -215,6 +215,20 @@ async fn multistatus_delete_and_move_surface_child_failures() {
 }
 
 #[tokio::test]
+async fn no_replace_move_onto_a_taken_destination_says_it_exists() {
+    let (mut backend, server) = single_response("412 Precondition Failed", "").await;
+    let error = backend
+        .rename_no_replace("/staged.part", "/taken.txt")
+        .await
+        .unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::AlreadyExists
+    );
+    server.await.unwrap();
+}
+
+#[tokio::test]
 async fn rejected_put_does_not_wait_for_a_stalled_source() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
@@ -754,6 +768,8 @@ mod local_integration_tests {
     struct DavState {
         directories: HashSet<String>,
         files: HashMap<String, Vec<u8>>,
+        /// A MOVE onto an existing file is refused even under `Overwrite: T`.
+        refuses_overwrite: bool,
     }
 
     fn propfind_body(state: &DavState, path: &str, depth: u8) -> Option<String> {
@@ -798,11 +814,18 @@ mod local_integration_tests {
     }
 
     async fn spawn_stateful_webdav_server() -> (String, tokio::task::JoinHandle<()>) {
+        spawn_stateful_webdav_server_with(false).await
+    }
+
+    async fn spawn_stateful_webdav_server_with(
+        refuses_overwrite: bool,
+    ) -> (String, tokio::task::JoinHandle<()>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let state = Arc::new(Mutex::new(DavState {
             directories: HashSet::from(["/dav".to_string()]),
             files: HashMap::new(),
+            refuses_overwrite,
         }));
         let handle = tokio::spawn(async move {
             loop {
@@ -914,6 +937,17 @@ mod local_integration_tests {
                                 }
                                 None => ("404 Not Found", String::new(), Vec::new()),
                             },
+                            "MOVE"
+                                if header("destination")
+                                    .and_then(|value| reqwest::Url::parse(&value).ok())
+                                    .is_some_and(|url| {
+                                        state.files.contains_key(url.path().trim_end_matches('/'))
+                                    })
+                                    && (state.refuses_overwrite
+                                        || header("overwrite").as_deref() == Some("F")) =>
+                            {
+                                ("412 Precondition Failed", String::new(), Vec::new())
+                            }
                             "MOVE" => {
                                 let destination = header("destination")
                                     .and_then(|value| reqwest::Url::parse(&value).ok())
@@ -1114,6 +1148,69 @@ mod local_integration_tests {
         assert!(backend.list("/work").await.is_err());
         backend.disconnect().await.unwrap();
 
+        tokio::fs::remove_dir_all(&temp_dir).await.unwrap();
+        server.abort();
+    }
+
+    #[tokio::test]
+    async fn a_server_refusing_to_overwrite_on_move_gets_the_old_file_set_aside() {
+        let (url, server) = spawn_stateful_webdav_server_with(true).await;
+        let config = json!({ "protocol": "webdav", "webdavUrl": url })
+            .as_object()
+            .unwrap()
+            .clone();
+        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let mut backend = WebDavBackend::new();
+        let temp_dir =
+            std::env::temp_dir().join(format!("ftpeach-webdav-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir(&temp_dir).await.unwrap();
+        let (old, new) = (temp_dir.join("old.txt"), temp_dir.join("new.txt"));
+        tokio::fs::write(&old, b"old").await.unwrap();
+        tokio::fs::write(&new, b"new").await.unwrap();
+        let progress: ProgressSink = Arc::new(|_| {});
+
+        backend.connect(&config).await.unwrap();
+        backend.mkdir("/work").await.unwrap();
+        backend
+            .upload(&old, "/work/taken.txt", false, progress.clone())
+            .await
+            .unwrap();
+        backend
+            .upload(&new, "/work/staged.part", false, progress.clone())
+            .await
+            .unwrap();
+        backend
+            .rename("/work/staged.part", "/work/taken.txt")
+            .await
+            .unwrap();
+        let names: Vec<String> = backend
+            .list("/work")
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+        assert_eq!(names, ["taken.txt"]);
+        let mut replaced = Vec::new();
+        backend
+            .download_to_writer("/work/taken.txt", &mut replaced)
+            .await
+            .unwrap();
+        assert_eq!(replaced, b"new");
+
+        backend
+            .upload(&new, "/work/staged.part", false, progress)
+            .await
+            .unwrap();
+        let error = backend
+            .rename_no_replace("/work/staged.part", "/work/taken.txt")
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        backend.disconnect().await.unwrap();
         tokio::fs::remove_dir_all(&temp_dir).await.unwrap();
         server.abort();
     }

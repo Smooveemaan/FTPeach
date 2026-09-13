@@ -268,7 +268,8 @@
     "invalidInput": "ค่าที่ระบุไม่ถูกต้อง",
     "internal": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
     "connectFailedPrefix": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ {{raw}}",
-    "alreadyExists": "\"{{name}}\" มีอยู่แล้ว"
+    "alreadyExists": "\"{{name}}\" มีอยู่แล้ว",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

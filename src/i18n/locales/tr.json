@@ -268,7 +268,8 @@
     "invalidInput": "Sağlanan değer geçersiz.",
     "internal": "Beklenmeyen bir hata oluştu.",
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
-    "alreadyExists": "\"{{name}}\" halihazırda mevcut"
+    "alreadyExists": "\"{{name}}\" halihazırda mevcut",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

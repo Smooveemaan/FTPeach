@@ -284,7 +284,8 @@
     "invalidInput": "القيمة المقدمة غير صالحة.",
     "internal": "حدث خطأ غير متوقع.",
     "connectFailedPrefix": "تعذر الاتصال بالخادم. {{raw}}",
-    "alreadyExists": "\"{{name}}\" موجود بالفعل"
+    "alreadyExists": "\"{{name}}\" موجود بالفعل",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

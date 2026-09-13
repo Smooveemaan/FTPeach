@@ -268,7 +268,8 @@
     "invalidInput": "Giá trị được cung cấp không hợp lệ.",
     "internal": "Đã xảy ra lỗi không mong muốn.",
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
-    "alreadyExists": "\"{{name}}\" đã tồn tại rồi"
+    "alreadyExists": "\"{{name}}\" đã tồn tại rồi",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

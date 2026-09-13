@@ -272,7 +272,8 @@
     "invalidInput": "Valoarea furnizată nu este validă.",
     "internal": "A apărut o eroare neașteptată.",
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
-    "alreadyExists": "„{{name}}” există deja"
+    "alreadyExists": "„{{name}}” există deja",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

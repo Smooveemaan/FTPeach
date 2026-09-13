@@ -58,6 +58,53 @@ tokio::task_local! { pub static ALLOW_OVERWRITE: bool; }
 pub fn overwrite_allowed() -> bool {
     ALLOW_OVERWRITE.try_with(|value| *value).unwrap_or(true)
 }
+
+/// Puts `old_path` in place of the file at `new_path` on a server that will
+/// not rename over an existing file. That file is renamed aside to a hidden
+/// sibling rather than deleted, so one version stands at a name at every
+/// step: if the new file cannot take its place, the old one is put back, and
+/// it is removed only once the new one is in. A stop between the two renames
+/// leaves it under the hidden name.
+pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
+    backend: &mut B,
+    old_path: &str,
+    new_path: &str,
+) -> BackendResult<()> {
+    let parent = new_path
+        .rsplit_once('/')
+        .map(|(parent, _)| parent)
+        .unwrap_or(".");
+    let aside = format!("{parent}/.ftpeach-{}.old", uuid::Uuid::new_v4());
+    if let Err(error) = backend.rename_no_replace(new_path, &aside).await {
+        return Err(refused_replacement(error, new_path));
+    }
+    let Err(error) = backend.rename_no_replace(old_path, new_path).await else {
+        if let Err(error) = backend.remove(&aside, false).await {
+            log::warn!(
+                "Replaced {new_path}, but could not remove its previous version {aside}: {error:#}"
+            );
+        }
+        return Ok(());
+    };
+    if let Err(restore) = backend.rename_no_replace(&aside, new_path).await {
+        log::error!("Could not put {aside} back as {new_path}: {restore:#}");
+        return Err(error.context(format!(
+            "The previous version of {new_path} is kept as {aside}"
+        )));
+    }
+    Err(refused_replacement(error, new_path))
+}
+
+/// A refusal the server gave no reason for is named for what it refused.
+fn refused_replacement(error: anyhow::Error, new_path: &str) -> anyhow::Error {
+    if crate::ipc::CommandError::from_anyhow(&error).code != crate::ipc::ErrorCode::Internal {
+        return error;
+    }
+    fail(
+        crate::ipc::ErrorCode::ReplaceUnsupported,
+        format!("The server did not let {new_path} be replaced: {error:#}"),
+    )
+}
 pub const MAX_DIRECTORY_ENTRIES: usize = 10_000;
 pub const MAX_DIRECTORY_TEXT_BYTES: usize = 8 * 1024 * 1024;
 

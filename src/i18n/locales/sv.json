@@ -268,7 +268,8 @@
     "invalidInput": "Det angivna värdet är ogiltigt.",
     "internal": "Ett oväntat fel inträffade.",
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
-    "alreadyExists": "”{{name}}” finns redan"
+    "alreadyExists": "”{{name}}” finns redan",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

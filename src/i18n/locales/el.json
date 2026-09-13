@@ -268,7 +268,8 @@
     "invalidInput": "Η παρεχόμενη τιμή δεν είναι έγκυρη.",
     "internal": "Παρουσιάστηκε μη αναμενόμενο σφάλμα.",
     "connectFailedPrefix": "Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. {{raw}}",
-    "alreadyExists": "Το «{{name}}» υπάρχει ήδη"
+    "alreadyExists": "Το «{{name}}» υπάρχει ήδη",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

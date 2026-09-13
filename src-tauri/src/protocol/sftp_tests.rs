@@ -205,6 +205,14 @@ mod transfer_tests {
         flags: Vec<OpenFlags>,
         link_root: bool,
         readdirs: usize,
+        /// Every rename that went through: how it was asked for, and the two paths.
+        renames: Vec<(&'static str, String, String)>,
+        /// The paths on the server, for tests that follow renames and removals.
+        /// Without it, every path answers as an existing file.
+        names: Option<std::collections::BTreeSet<String>>,
+        /// Sources whose rename the server refuses.
+        refused_sources: Vec<String>,
+        removed: Vec<String>,
     }
     struct Server(Arc<StdMutex<Disk>>);
     fn ok(id: u32) -> Status {
@@ -312,9 +320,16 @@ mod transfer_tests {
                 data: disk.bytes[offset..end].to_vec(),
             })
         }
-        async fn stat(&mut self, id: u32, _: String) -> Result<Attrs, StatusCode> {
+        async fn stat(&mut self, id: u32, path: String) -> Result<Attrs, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             disk.stats += 1;
+            if disk
+                .names
+                .as_ref()
+                .is_some_and(|names| !names.contains(&path))
+            {
+                return Err(StatusCode::NoSuchFile);
+            }
             Ok(Attrs {
                 id,
                 attrs: FileAttributes {
@@ -333,7 +348,140 @@ mod transfer_tests {
                 Ok(ok(id))
             }
         }
+        /// As OpenSSH does: a plain rename never replaces. Without `names`,
+        /// every target here exists.
+        async fn rename(
+            &mut self,
+            id: u32,
+            old: String,
+            new: String,
+        ) -> Result<Status, StatusCode> {
+            let mut disk = self.0.lock().unwrap();
+            let refused = disk.refused_sources.contains(&old);
+            let Some(names) = disk.names.as_mut() else {
+                return Err(StatusCode::Failure);
+            };
+            if refused || names.contains(&new) || !names.remove(&old) {
+                return Err(StatusCode::Failure);
+            }
+            names.insert(new.clone());
+            disk.renames.push(("rename", old, new));
+            Ok(ok(id))
+        }
+        async fn remove(&mut self, id: u32, path: String) -> Result<Status, StatusCode> {
+            let mut disk = self.0.lock().unwrap();
+            if !disk.names.as_mut().is_some_and(|names| names.remove(&path)) {
+                return Err(StatusCode::NoSuchFile);
+            }
+            disk.removed.push(path);
+            Ok(ok(id))
+        }
+        async fn extended(
+            &mut self,
+            id: u32,
+            request: String,
+            data: Vec<u8>,
+        ) -> Result<Packet, StatusCode> {
+            if request != POSIX_RENAME {
+                return Err(StatusCode::OpUnsupported);
+            }
+            let mut paths = Vec::new();
+            let mut rest = data.as_slice();
+            while let Some((length, tail)) = rest.split_first_chunk::<4>() {
+                let (path, tail) = tail.split_at(u32::from_be_bytes(*length) as usize);
+                paths.push(String::from_utf8(path.to_vec()).unwrap());
+                rest = tail;
+            }
+            let [old, new] = <[String; 2]>::try_from(paths).unwrap();
+            self.0
+                .lock()
+                .unwrap()
+                .renames
+                .push(("posix-rename", old, new));
+            Ok(Packet::Status(ok(id)))
+        }
     }
+
+    #[tokio::test]
+    async fn approved_overwrite_replaces_through_posix_rename_only() {
+        let disk = Arc::new(StdMutex::new(Disk::default()));
+        let mut backend = backend(disk.clone()).await;
+        backend.posix_rename = true;
+        backend.rename("/staging", "/file").await.unwrap();
+        // Without consent to replace, the extension is never used.
+        let error = backend
+            .rename_no_replace("/staging", "/file")
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        assert_eq!(
+            disk.lock().unwrap().renames,
+            [("posix-rename", "/staging".to_owned(), "/file".to_owned())]
+        );
+    }
+
+    fn names(paths: &[&str]) -> Option<std::collections::BTreeSet<String>> {
+        Some(paths.iter().map(|path| path.to_string()).collect())
+    }
+
+    #[tokio::test]
+    async fn without_posix_rename_the_existing_file_is_set_aside_then_removed() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            names: names(&["/dir/staging", "/dir/file"]),
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+
+        backend.rename("/dir/staging", "/dir/file").await.unwrap();
+
+        let disk = disk.lock().unwrap();
+        assert_eq!(disk.names, names(&["/dir/file"]));
+        let aside = disk.renames[0].2.clone();
+        assert!(
+            aside.starts_with("/dir/.ftpeach-") && aside.ends_with(".old"),
+            "{aside}"
+        );
+        assert_eq!(
+            disk.renames,
+            [
+                ("rename", "/dir/file".to_owned(), aside.clone()),
+                ("rename", "/dir/staging".to_owned(), "/dir/file".to_owned()),
+            ]
+        );
+        assert_eq!(disk.removed, [aside]);
+    }
+
+    #[tokio::test]
+    async fn a_set_aside_file_is_put_back_when_the_new_one_cannot_take_its_name() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            names: names(&["/staging", "/file"]),
+            refused_sources: vec!["/staging".to_owned()],
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+
+        let error = backend.rename("/staging", "/file").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::ReplaceUnsupported
+        );
+
+        let disk = disk.lock().unwrap();
+        assert_eq!(disk.names, names(&["/staging", "/file"]));
+        let aside = disk.renames[0].2.clone();
+        assert_eq!(
+            disk.renames,
+            [
+                ("rename", "/file".to_owned(), aside.clone()),
+                ("rename", aside, "/file".to_owned()),
+            ]
+        );
+        assert!(disk.removed.is_empty());
+    }
+
     async fn backend(disk: Arc<StdMutex<Disk>>) -> SftpBackend {
         let (client, server) = tokio::io::duplex(1024 * 1024);
         russh_sftp::server::run(server, Server(disk)).await;

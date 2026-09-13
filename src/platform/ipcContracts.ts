@@ -22,6 +22,8 @@ export type CommandErrorCode =
   | 'resourceLimit'
   | 'busy'
   | 'vaultLocked'
+  | 'alreadyExists'
+  | 'replaceUnsupported'
   | 'internal';
 
 export interface CommandError {
@@ -148,7 +150,15 @@ export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
   return (
     typeof value === 'string' &&
     (ERROR_PATTERNS.some(([code]) => code === value) ||
-      ['invalidInput', 'resourceLimit', 'busy', 'internal', 'cleanupIncomplete'].includes(value))
+      [
+        'invalidInput',
+        'resourceLimit',
+        'busy',
+        'internal',
+        'cleanupIncomplete',
+        'alreadyExists',
+        'replaceUnsupported',
+      ].includes(value))
   );
 }
 

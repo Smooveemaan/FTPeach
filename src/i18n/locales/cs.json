@@ -276,7 +276,8 @@
     "invalidInput": "Zadaná hodnota není platná.",
     "internal": "Došlo k neočekávané chybě.",
     "connectFailedPrefix": "Nepodařilo se navázat spojení se serverem. {{raw}}",
-    "alreadyExists": "„{{name}}“ již existuje"
+    "alreadyExists": "„{{name}}“ již existuje",
+    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
   },
   "settings": {
     "openWithAssociations": {

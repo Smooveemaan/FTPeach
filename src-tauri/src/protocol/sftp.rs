@@ -14,7 +14,7 @@ use russh::client;
 use russh::keys::{PrivateKeyWithHashAlg, PublicKeyOrCertificate, load_secret_key};
 use russh_sftp::client::error::Error as SftpClientError;
 use russh_sftp::client::rawsession::RawSftpSession;
-use russh_sftp::protocol::{FileAttributes, OpenFlags, StatusCode};
+use russh_sftp::protocol::{FileAttributes, OpenFlags, Packet, StatusCode};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -29,6 +29,18 @@ const GRACEFUL_IO_TIMEOUT: Duration = Duration::from_secs(5);
 const WRITE_WINDOW: usize = 16;
 const READ_WINDOW: usize = 16;
 const TRANSFER_STALL_TIMEOUT: Duration = Duration::from_secs(60);
+/// OpenSSH's rename that replaces an existing file, as POSIX rename(2) does.
+const POSIX_RENAME: &str = "posix-rename@openssh.com";
+
+/// The body of a `posix-rename@openssh.com` request: both paths as SSH strings.
+fn posix_rename_request(old_path: &str, new_path: &str) -> Vec<u8> {
+    let mut data = Vec::with_capacity(8 + old_path.len() + new_path.len());
+    for path in [old_path, new_path] {
+        data.extend_from_slice(&(path.len() as u32).to_be_bytes());
+        data.extend_from_slice(path.as_bytes());
+    }
+    data
+}
 
 /// Read ahead in bounded batches, restoring offset order before writing locally.
 /// Each request fills its own interval: a short DATA packet is not EOF.
@@ -309,6 +321,9 @@ pub struct SftpBackend {
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
     logger: BackendLogger,
     endpoint: String,
+    /// The server offered `posix-rename@openssh.com`, the only rename that
+    /// may replace an existing file.
+    posix_rename: bool,
 }
 
 impl Drop for SftpBackend {
@@ -331,6 +346,7 @@ impl SftpBackend {
             keep_alive_handle: None,
             logger: BackendLogger::default(),
             endpoint: String::new(),
+            posix_rename: false,
         }
     }
 
@@ -613,9 +629,13 @@ impl ProtocolBackend for SftpBackend {
                 .await
                 .context("requesting sftp subsystem failed")?;
             let raw = RawSftpSession::new(channel.into_stream());
-            raw.init().await.context("sftp init failed")?;
+            let version = raw.init().await.context("sftp init failed")?;
+            let posix_rename = version
+                .extensions
+                .get(POSIX_RENAME)
+                .is_some_and(|revision| revision == "1");
 
-            Ok::<_, anyhow::Error>((session, raw))
+            Ok::<_, anyhow::Error>((session, raw, posix_rename))
         };
 
         let outcome = if timeout_ms > 0 {
@@ -630,8 +650,8 @@ impl ProtocolBackend for SftpBackend {
             connect_fut.await
         };
 
-        let (session, raw) = match outcome {
-            Ok(pair) => pair,
+        let (session, raw, posix_rename) = match outcome {
+            Ok(connected) => connected,
             Err(err) => {
                 if let Some(m) = mismatch.lock().unwrap().take() {
                     self.log_key(
@@ -653,6 +673,7 @@ impl ProtocolBackend for SftpBackend {
         self.log_key("connected", serde_json::json!({}), LogKind::Response);
         *self.session.lock().await = Some(session);
         *self.sftp.write().unwrap() = Some(Arc::new(raw));
+        self.posix_rename = posix_rename;
         self.connected.store(true, Ordering::SeqCst);
         self.keep_alive_handle = Some(Self::spawn_keep_alive(
             self.sftp.clone(),
@@ -667,6 +688,7 @@ impl ProtocolBackend for SftpBackend {
         }
         self.connected.store(false, Ordering::SeqCst);
         *self.sftp.write().unwrap() = None;
+        self.posix_rename = false;
         if let Some(session) = self.session.lock().await.take() {
             let _ = tokio::time::timeout(
                 GRACEFUL_IO_TIMEOUT,
@@ -727,11 +749,41 @@ impl ProtocolBackend for SftpBackend {
         Ok(())
     }
 
+    /// Replaces whatever stands at `new_path`. SSH_FXP_RENAME (v3) leaves an
+    /// existing target unspecified and OpenSSH refuses it, so a server that
+    /// offers posix-rename gets that. Any other still tries the plain rename,
+    /// which some servers let replace, and when it is refused with both files
+    /// still there, the existing one is set aside rather than deleted.
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
         let raw = self.sftp()?;
-        raw.rename(old_path.to_string(), new_path.to_string())
-            .await?;
-        Ok(())
+        if self.posix_rename {
+            return match raw
+                .extended(POSIX_RENAME, posix_rename_request(old_path, new_path))
+                .await?
+            {
+                Packet::Status(status) if status.status_code == StatusCode::Ok => Ok(()),
+                Packet::Status(status) => Err(SftpClientError::Status(status).into()),
+                _ => Err(anyhow!("Unexpected reply to {POSIX_RENAME}")),
+            };
+        }
+        let Err(error) = raw.rename(old_path.to_string(), new_path.to_string()).await else {
+            return Ok(());
+        };
+        let refused = matches!(
+            &error,
+            SftpClientError::Status(status) if status.status_code == StatusCode::Failure
+        );
+        // Only a file is set aside; a folder in the way stays an error.
+        if refused
+            && raw
+                .stat(new_path.to_string())
+                .await
+                .is_ok_and(|target| !target.attrs.is_dir())
+            && raw.stat(old_path.to_string()).await.is_ok()
+        {
+            return super::replace_by_setting_aside(self, old_path, new_path).await;
+        }
+        Err(error.into())
     }
 
     async fn chmod(&mut self, path: &str, mode: u32) -> BackendResult<()> {
@@ -746,7 +798,21 @@ impl ProtocolBackend for SftpBackend {
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
         // SSH_FXP_RENAME (v3), without the posix-rename extension, fails when
         // newpath exists. Do not substitute the overwriting POSIX extension.
-        self.rename(old_path, new_path).await
+        let raw = self.sftp()?;
+        let Err(error) = raw.rename(old_path.to_string(), new_path.to_string()).await else {
+            return Ok(());
+        };
+        let refused = matches!(
+            &error,
+            SftpClientError::Status(status) if status.status_code == StatusCode::Failure
+        );
+        if refused && raw.stat(new_path.to_string()).await.is_ok() {
+            return Err(super::fail(
+                ErrorCode::AlreadyExists,
+                format!("{new_path} already exists on the server; it was not replaced"),
+            ));
+        }
+        Err(error.into())
     }
 
     async fn size(&mut self, path: &str) -> u64 {

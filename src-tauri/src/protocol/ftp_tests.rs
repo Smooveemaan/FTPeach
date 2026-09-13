@@ -698,6 +698,8 @@ mod recursive_stop_tests {
         refuses_size: bool,
         /// DELEs to refuse before honouring them again.
         deletes_to_refuse: usize,
+        /// RNTO onto an existing file is refused, as IIS does.
+        refuses_replacing_rename: bool,
         /// How long the server takes over each 4 KiB it receives.
         pace: Duration,
     }
@@ -945,12 +947,16 @@ mod recursive_stop_tests {
                 "RNTO" => {
                     let from = renaming.take().unwrap_or_default();
                     let mut disk = disk.lock().unwrap();
-                    match disk.files.remove(&from) {
-                        Some(bytes) => {
-                            disk.files.insert(path, bytes);
-                            "250 Renamed".to_string()
+                    if disk.refuses_replacing_rename && disk.files.contains_key(&path) {
+                        "550 Cannot create a file when that file already exists.".to_string()
+                    } else {
+                        match disk.files.remove(&from) {
+                            Some(bytes) => {
+                                disk.files.insert(path, bytes);
+                                "250 Renamed".to_string()
+                            }
+                            None => "550 No such file".to_string(),
                         }
-                        None => "550 No such file".to_string(),
                     }
                 }
                 "LIST" | "MLSD" => {
@@ -1254,6 +1260,38 @@ mod recursive_stop_tests {
         backend.mkdir("/Folder").await.unwrap();
         assert!(disk.lock().unwrap().dirs.contains("/Folder"));
         assert!(backend.is_connected());
+    }
+
+    #[tokio::test]
+    async fn a_server_refusing_to_replace_on_rename_gets_the_old_file_set_aside() {
+        let disk = disk(|disk| {
+            disk.refuses_replacing_rename = true;
+            disk.files.insert("/staged.part".into(), b"new".to_vec());
+            disk.files.insert("/taken.txt".into(), b"old".to_vec());
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+
+        backend.rename("/staged.part", "/taken.txt").await.unwrap();
+        // The refusal was the server's whole reply, so the same connection
+        // set the old file aside, put the new one in and removed the old one.
+        assert!(backend.is_connected());
+        assert_eq!(
+            disk.lock().unwrap().files,
+            BTreeMap::from([("/taken.txt".to_owned(), b"new".to_vec())])
+        );
+
+        let error = backend
+            .rename_no_replace("/free.txt", "/taken.txt")
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
     }
 
     #[tokio::test]

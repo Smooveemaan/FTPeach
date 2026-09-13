@@ -546,6 +546,27 @@ struct Server {
     pause_at: Mutex<Option<(String, u64)>>,
     /// Every transfer attempt: the file, and the offset it started from.
     starts: Mutex<Vec<(String, u64)>>,
+    /// Holds every listing until the test lets it through.
+    list_gate: Option<Arc<ListGate>>,
+    disconnects: std::sync::atomic::AtomicUsize,
+}
+
+#[derive(Default)]
+struct ListGate {
+    entered: tokio::sync::Notify,
+    open: tokio::sync::Notify,
+    /// A listing was dropped before it finished.
+    abandoned: AtomicBool,
+}
+
+struct Unfinished<'a>(Option<&'a AtomicBool>);
+
+impl Drop for Unfinished<'_> {
+    fn drop(&mut self) {
+        if let Some(abandoned) = self.0 {
+            abandoned.store(true, Ordering::SeqCst);
+        }
+    }
 }
 
 impl Server {
@@ -594,6 +615,7 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         Ok(())
     }
     async fn disconnect(&mut self) -> crate::protocol::BackendResult<()> {
+        self.0.disconnects.fetch_add(1, Ordering::SeqCst);
         Ok(())
     }
     fn is_connected(&self) -> bool {
@@ -608,6 +630,12 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         &mut self,
         path: &str,
     ) -> crate::protocol::BackendResult<Vec<crate::protocol::EntryInfo>> {
+        if let Some(gate) = &self.0.list_gate {
+            let mut unfinished = Unfinished(Some(&gate.abandoned));
+            gate.entered.notify_one();
+            gate.open.notified().await;
+            unfinished.0 = None;
+        }
         let name_in = |full: &str| {
             full.rsplit_once('/')
                 .filter(|(parent, _)| *parent == path)
@@ -830,6 +858,48 @@ async fn serve(server: &Arc<Server>) -> (Sessions, String) {
         browse_timeout_ms: 1_000,
     });
     (sessions, connection_id)
+}
+
+#[tokio::test]
+async fn stopping_a_remote_scan_keeps_the_browse_connection() {
+    for finishes in [true, false] {
+        let gate = Arc::new(ListGate::default());
+        let server = Arc::new(Server {
+            dirs: vec!["/src/sub".into()],
+            list_gate: Some(gate.clone()),
+            ..Server::default()
+        });
+        let (sessions, connection_id) = serve(&server).await;
+        let endpoint = Endpoint::Remote {
+            path: "/src".into(),
+            connection_id,
+        };
+        let token = tokio_util::sync::CancellationToken::new();
+        let (result, ()) = tokio::join!(
+            super::io::listing(&sessions, &endpoint, "", &token),
+            async {
+                gate.entered.notified().await;
+                token.cancel();
+                if finishes {
+                    gate.open.notify_one();
+                }
+            }
+        );
+        let Err(error) = result else {
+            panic!("a stopped scan must not hand back its listing");
+        };
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::Cancelled
+        );
+        // A listing that settles in time leaves the pane's connection alone;
+        // one that hangs past the grace is given up on and the connection closed.
+        assert_eq!(gate.abandoned.load(Ordering::SeqCst), !finishes);
+        assert_eq!(
+            server.disconnects.load(Ordering::SeqCst),
+            usize::from(!finishes)
+        );
+    }
 }
 
 #[tokio::test]

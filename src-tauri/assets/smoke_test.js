@@ -123,7 +123,20 @@
     await assertThemeContrast('light');
     await assertRtlLayout('العربية', 'ar');
     await assertRtlLayout('עברית', 'he');
+    // The language switches above leave unsaved changes, so Escape asks before
+    // dropping them. The UI is in Hebrew by now: pick Discard by position
+    // (Cancel, Discard, Save) rather than by its label.
     key('Escape', 'Escape');
+    await waitUntil(
+      () =>
+        !document.querySelector('.modal-settings') || !!document.querySelector('.modal-confirm'),
+      'settings to close or ask about unsaved changes',
+    );
+    if (document.querySelector('.modal-confirm')) {
+      const discard = document.querySelectorAll('.modal-confirm button.btn')[1];
+      if (!(discard instanceof HTMLElement)) throw new Error('unsaved-changes Discard is missing');
+      discard.click();
+    }
     await waitFor('.modal-settings', false);
     const siteButton = await waitFor('.pane-connect-cta');
     if (!(siteButton instanceof HTMLElement))

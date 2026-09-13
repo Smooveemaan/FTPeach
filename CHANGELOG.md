@@ -4,9 +4,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Drop files onto any folder in the address bar to copy or move them there, including files
+  dragged in from Explorer.
+- While you drag files, the cursor shows whether they will be moved or copied.
+
+### Changed
+
+- Dragging files to another folder on the same computer or the same server now moves them,
+  while dragging between the computer and a server copies them. Hold Ctrl to copy or Shift
+  to move.
+- Moving a file to another drive checks the copy before the original is deleted.
+- The transfer list stays fast with thousands of transfers, and filtering a large folder is
+  quicker.
+- Adding transfers to a full queue shows a message instead of slowing FTPeach down.
+
 ### Fixed
 
 - The tray icon appears only while FTPeach is hidden to the tray.
+- Replacing an existing file works on SFTP servers and on servers that don't replace files on
+  their own.
+- Pressing Stop no longer reports that the connection to the server was lost.
+- When a file with the same name already exists on the server, the error message says so.
+- Stopping a folder transfer keeps the files it can't confirm it created, and tells you so.
+- A paused folder transfer no longer resumes over files that changed in the meantime.
+- Disconnecting from a server that stopped responding no longer hangs.
+- A local folder with files FTPeach can't read shows an error instead of listing them as
+  empty files.
+- Switching folders quickly no longer shows the contents of a folder you already left.
 
 ## [0.2.0] - 2026-09-12
 

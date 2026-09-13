@@ -1,6 +1,7 @@
 export {
   getTransfersSnapshot,
   isConnectionDead,
+  retainConnectionRequest,
   rememberConnectionLabels,
   setTransfersStore,
   subscribeTransfers,

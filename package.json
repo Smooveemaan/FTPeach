@@ -46,7 +46,8 @@
     "format:check": "prettier --check .",
     "benchmark:transfer-history": "node --experimental-strip-types scripts/benchmarks/benchmark-transfer-history.ts",
     "benchmark:transfer-ui": "node --experimental-strip-types scripts/benchmarks/benchmark-transfer-ui.ts",
-    "benchmark:baseline": "node --experimental-strip-types scripts/benchmarks/benchmark-baseline.ts"
+    "benchmark:baseline": "node --experimental-strip-types scripts/benchmarks/benchmark-baseline.ts",
+    "benchmark:listing": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command benchmark-listing"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

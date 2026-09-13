@@ -79,6 +79,7 @@ pub fn run() {
         .manage(AuthorizationState::default())
         .invoke_handler(tauri::generate_handler![
             commands::fs::fs_list,
+            commands::fs::fs_cancel_list,
             commands::fs::fs_homedir,
             commands::fs::fs_drives,
             commands::fs::fs_mkdir,

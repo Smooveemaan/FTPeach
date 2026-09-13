@@ -34,42 +34,78 @@ pub enum FsListResult {
 pub async fn fs_list(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: Option<String>,
+    request_key: Option<String>,
 ) -> Result<FsListResult, CommandError> {
-    let target = match local_path.filter(|s| !s.is_empty()) {
-        Some(p) => PathBuf::from(p),
-        None => match dirs_home() {
-            Some(h) => h,
-            None => {
-                return Ok(FsListResult::Err {
-                    ok: false,
-                    error: CommandError::new(ErrorCode::NotFound, "Home directory not found"),
-                });
+    let request = fs_listing::ListingRequest::start(request_key).map_err(CommandError::from)?;
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
+    let listing = async {
+        static REQUEST_SLOTS: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> =
+            std::sync::LazyLock::new(|| std::sync::Arc::new(tokio::sync::Semaphore::new(4)));
+        let permit = REQUEST_SLOTS
+            .clone()
+            .acquire_owned()
+            .await
+            .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
+        let target = match local_path.filter(|s| !s.is_empty()) {
+            Some(p) => PathBuf::from(p),
+            None => match dirs_home() {
+                Some(h) => h,
+                None => {
+                    return Ok(FsListResult::Err {
+                        ok: false,
+                        error: CommandError::new(ErrorCode::NotFound, "Home directory not found"),
+                    });
+                }
+            },
+        };
+        validate_read_source(&target)
+            .await
+            .map_err(CommandError::from)?;
+        match fs_listing::list_directory(&target, &request.token).await {
+            Ok(entries) => {
+                // Canonicalization may block on SMB. Bound blocking workers and
+                // keep their permit until the OS call actually returns.
+                let approvals = approved_paths.inner().clone();
+                let approval_target = target.clone();
+                let token = request.token.clone();
+                let entries = tokio::task::spawn_blocking(move || {
+                    let _permit = permit;
+                    for entry in &entries {
+                        if token.is_cancelled() {
+                            break;
+                        }
+                        approvals.approve_from_listing(&approval_target.join(&entry.name));
+                    }
+                    entries
+                })
+                .await
+                .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
+                Ok(FsListResult::Ok {
+                    ok: true,
+                    path: target.to_string_lossy().into_owned(),
+                    entries,
+                })
             }
-        },
-    };
-    validate_read_source(&target)
-        .await
-        .map_err(CommandError::from)?;
-    match fs_listing::list_directory(&target).await {
-        Ok(entries) => {
-            for entry in &entries {
-                approved_paths.approve_from_listing(&target.join(&entry.name));
-            }
-            Ok(FsListResult::Ok {
-                ok: true,
-                path: target.to_string_lossy().into_owned(),
-                entries,
-            })
+            Err(e) => Ok(FsListResult::Err {
+                ok: false,
+                error: CommandError::from(e),
+            }),
         }
-        Err(e) => Ok(FsListResult::Err {
-            ok: false,
-            error: CommandError::from(e),
-        }),
+    };
+    tokio::select! {
+        biased;
+        _ = request.token.cancelled() => Err(CommandError::new(ErrorCode::Cancelled, "Local listing cancelled")),
+        result = tokio::time::timeout_at(deadline, listing) => result.unwrap_or_else(|_| Err(CommandError::new(ErrorCode::TimedOut, "Local listing deadline exceeded"))),
     }
 }
 
 fn dirs_home() -> Option<PathBuf> {
     std::env::var_os("USERPROFILE").map(PathBuf::from)
+}
+
+#[tauri::command]
+pub fn fs_cancel_list(request_key: String) {
+    fs_listing::ListingRequest::cancel(&request_key);
 }
 
 #[tauri::command]

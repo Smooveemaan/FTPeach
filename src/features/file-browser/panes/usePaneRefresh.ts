@@ -1,9 +1,9 @@
 import type { MutableRefObject } from 'react';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
 import { commandResultError } from '../../../shared/errorMessages.ts';
-import { isConnectionDead } from '../../transfers/index.ts';
+import { isConnectionDead, retainConnectionRequest } from '../../transfers/index.ts';
 import { backendFor } from './paneBackend.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 
@@ -47,6 +47,22 @@ export function usePaneRefresh({
 }: UsePaneRefreshOptions): PaneRefreshModel {
   const requestIdsRef = useRef<PaneRequestIds>({});
   const inFlightRefreshesRef = useRef<PaneRefreshes>({});
+  const localRequests = useRef(new Map<string, AbortController>());
+  useEffect(() => {
+    const requests = localRequests.current;
+    return () => {
+      for (const request of requests.values()) request.abort();
+      requests.clear();
+    };
+  }, [activeTabId, panes.a.kind, panes.b.kind]);
+  const connectionA = panes.a.kind === 'remote' ? panes.a.connectionId : null;
+  const connectionB = panes.b.kind === 'remote' ? panes.b.connectionId : null;
+  useEffect(() => {
+    const releases = [connectionA, connectionB]
+      .filter((id): id is string => !!id)
+      .map(retainConnectionRequest);
+    return () => releases.forEach((release) => release());
+  }, [connectionA, connectionB]);
 
   const ensureRequestIds = useCallback((tabId: string) => {
     if (!requestIdsRef.current[tabId]) requestIdsRef.current[tabId] = { a: 0, b: 0 };
@@ -67,15 +83,28 @@ export function usePaneRefresh({
       const slotKey = `${tabId}:${id}`;
       const existing = inFlightRefreshesRef.current[slotKey];
       if (existing?.key === refreshKey) return existing.promise;
+      localRequests.current.get(slotKey)?.abort();
+      const controller = new AbortController();
+      localRequests.current.set(slotKey, controller);
 
+      const releaseConnection =
+        pane.kind === 'remote' && pane.connectionId
+          ? retainConnectionRequest(pane.connectionId)
+          : () => {};
       const promise = (async () => {
         const requestIds = ensureRequestIds(tabId);
         const requestId = (requestIds[id] += 1);
         updatePane(id, { loading: true }, tabId);
         const result = await backendFor(pane).list(
           pane.kind === 'local' ? localTargetPath || undefined : targetPath,
+          `${slotKey}:${crypto.randomUUID()}`,
+          controller.signal,
         );
-        if (requestId !== requestIds[id]) return;
+        if (requestId !== requestIds[id] || controller.signal.aborted) return;
+        if (pane.kind === 'remote' && pane.connectionId && isConnectionDead(pane.connectionId)) {
+          updatePane(id, { loading: false }, tabId);
+          return;
+        }
         if (result.ok) {
           // A local listing that came back without a path leaves the pane's
           // current path alone instead of blanking it.
@@ -111,6 +140,9 @@ export function usePaneRefresh({
       try {
         return await promise;
       } finally {
+        releaseConnection();
+        if (localRequests.current.get(slotKey) === controller)
+          localRequests.current.delete(slotKey);
         // A later refresh of the same slot can have replaced or deleted this
         // entry while the promise above was in flight; the compiler still sees
         // the assignment a few lines up.

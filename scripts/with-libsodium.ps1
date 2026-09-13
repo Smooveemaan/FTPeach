@@ -3,7 +3,7 @@ param(
 
     [string]$EnvironmentFile,
 
-    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater')]
+    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing')]
     [string]$Command = 'build',
 
     [ValidateSet('debug', 'release')]
@@ -121,6 +121,10 @@ try {
         }
         'test' {
             & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets
+        }
+        'benchmark-listing' {
+            New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null
+            & cargo run --locked --manifest-path 'src-tauri\Cargo.toml' --example benchmark_listing -- '.local\benchmarks\stage-2-listing.json' 100001
         }
         'compatibility' {
             & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --test docker_integration -- --ignored

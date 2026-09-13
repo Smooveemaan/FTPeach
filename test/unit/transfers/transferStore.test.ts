@@ -11,8 +11,28 @@ import {
   canPauseTransfer,
   canRetryTransfer,
   markConnectionDead,
+  isConnectionDead,
+  retainConnectionRequest,
+  rememberConnectionLabels,
+  rememberedConnectionLabel,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
+
+test('connection metadata follows live rows and pending responses through 10k disconnects', () => {
+  resetTransfersStoreForTests();
+  for (let index = 0; index < 10_000; index++) {
+    const id = `connection-${index}`;
+    const release = retainConnectionRequest(id);
+    rememberConnectionLabels(new Map([[id, 'Server']]));
+    markConnectionDead(id);
+    rememberConnectionLabels(new Map());
+    assert.equal(isConnectionDead(id), true);
+    assert.equal(rememberedConnectionLabel(id), 'Server');
+    release();
+    assert.equal(isConnectionDead(id), false);
+    assert.equal(rememberedConnectionLabel(id), undefined);
+  }
+});
 
 test('a folder walk pauses only where the file it cuts short can carry on', () => {
   const walk = (
@@ -108,6 +128,7 @@ test('a connection marked dead can never be retried into again, on either side o
   };
   assert.equal(canRetryTransfer(upload), true);
   assert.equal(canRetryTransfer(copy), true);
+  setTransfersStore({ upload, copy });
 
   let notifications = 0;
   const unsubscribe = subscribeTransfers(() => {

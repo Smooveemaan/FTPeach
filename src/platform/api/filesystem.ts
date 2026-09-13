@@ -87,13 +87,30 @@ export function createFilesystemApi(invoke: InvokeFn) {
     checkedResponse(command, invoke(command), isOptionalPath, () => null);
 
   return {
-    list: (localPath?: string): Promise<FilesystemListResult> =>
-      checkedResponse(
+    list: (
+      localPath?: string,
+      requestKey?: string,
+      signal?: AbortSignal,
+    ): Promise<FilesystemListResult> => {
+      if (signal?.aborted)
+        return Promise.resolve({
+          ok: false,
+          errorCode: 'cancelled',
+          path: localPath ?? '',
+          entries: [],
+        });
+      const cancel = () => {
+        if (requestKey) void invoke('fs_cancel_list', { requestKey }).catch(reportAsyncFailure);
+      };
+      const result = checkedResponse(
         'fs_list',
-        invoke('fs_list', { localPath }),
+        invoke('fs_list', { localPath, ...(requestKey ? { requestKey } : {}) }),
         isFilesystemListResult,
         (raw) => ({ ...commandFailure('fs_list', raw), path: localPath ?? '', entries: [] }),
-      ),
+      );
+      signal?.addEventListener('abort', cancel, { once: true });
+      return result.finally(() => signal?.removeEventListener('abort', cancel));
+    },
     homedir: (): Promise<string | null> =>
       checkedResponse(
         'fs_homedir',

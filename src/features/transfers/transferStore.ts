@@ -166,9 +166,39 @@ export function isConnectionDead(connectionId: string): boolean {
  * here can never end up on some other server's row.
  */
 const connectionLabelMemory = new Map<string, string>();
+const connectionRequests = new Map<string, number>();
+let liveLabelIds = new Set<string>();
+
+function pruneConnectionMemory(): void {
+  const referenced = new Set(liveLabelIds);
+  for (const row of Object.values(state)) {
+    for (const id of transferConnectionIds(row)) referenced.add(id);
+  }
+  for (const id of connectionRequests.keys()) referenced.add(id);
+  for (const id of deadConnectionIds) if (!referenced.has(id)) deadConnectionIds.delete(id);
+  for (const id of connectionLabelMemory.keys()) {
+    if (!referenced.has(id)) connectionLabelMemory.delete(id);
+  }
+}
+
+/** Keep disconnect suppression alive until the last pending response settles. */
+export function retainConnectionRequest(connectionId: string): () => void {
+  connectionRequests.set(connectionId, (connectionRequests.get(connectionId) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const count = (connectionRequests.get(connectionId) ?? 1) - 1;
+    if (count) connectionRequests.set(connectionId, count);
+    else connectionRequests.delete(connectionId);
+    pruneConnectionMemory();
+  };
+}
 
 export function rememberConnectionLabels(labels: ReadonlyMap<string, string>): void {
+  liveLabelIds = new Set(labels.keys());
   for (const [connectionId, label] of labels) connectionLabelMemory.set(connectionId, label);
+  pruneConnectionMemory();
 }
 
 export function rememberedConnectionLabel(connectionId: string): string | undefined {
@@ -232,6 +262,7 @@ export function setTransfersStore(updater: TransferStoreUpdater): void {
     }
   }
   listeners.forEach((listener) => listener());
+  pruneConnectionMemory();
 }
 
 export function resetTransfersStoreForTests(): void {
@@ -240,4 +271,6 @@ export function resetTransfersStoreForTests(): void {
   targets.clear();
   deadConnectionIds.clear();
   connectionLabelMemory.clear();
+  connectionRequests.clear();
+  liveLabelIds.clear();
 }

@@ -2,13 +2,13 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
 };
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ApprovedLocalPaths {
-    paths: Mutex<HashSet<String>>,
-    network_paths: Mutex<HashSet<String>>,
+    paths: Arc<Mutex<HashSet<String>>>,
+    network_paths: Arc<Mutex<HashSet<String>>>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

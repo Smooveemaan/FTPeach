@@ -1190,3 +1190,72 @@ async fn a_resume_with_no_paused_walk_behind_it_writes_nothing() {
     assert!(root.join("source/a").is_file());
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[tokio::test]
+async fn resume_preserves_directory_replacement_even_with_overwrite_consent() {
+    for moving in [false, true] {
+        let (root, mut intent) = fixture();
+        intent.moving = moving;
+        intent.overwrite = true;
+        for name in ["a", "b"] {
+            std::fs::write(root.join("source").join(name), b"original").unwrap();
+        }
+        let sessions = Sessions::default();
+        interrupt_after_first_file(&intent, CancelIntent::Pause);
+        assert!(run(&sessions, None, intent.clone()).await.paused);
+        let delivered = files_under(&root.join("target"));
+        assert_eq!(delivered.len(), 1);
+        let target = root.join("target").join(&delivered[0]);
+        std::fs::remove_file(&target).unwrap();
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("external"), b"keep").unwrap();
+        let report = run(&sessions, None, resumed(&intent)).await;
+        assert!(!report.ok);
+        assert!(
+            report
+                .errors
+                .iter()
+                .any(|error| error.code == ErrorCode::IntegrityMismatch)
+        );
+        assert_eq!(std::fs::read(target.join("external")).unwrap(), b"keep");
+        for name in ["a", "b"] {
+            assert_eq!(
+                std::fs::read(root.join("source").join(name)).unwrap(),
+                b"original"
+            );
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn stop_preserves_in_place_changes_and_reports_cleanup_details() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    for name in ["a", "b"] {
+        std::fs::write(root.join("source").join(name), b"original").unwrap();
+    }
+    let sessions = Sessions::default();
+    interrupt_after_first_file(&intent, CancelIntent::Pause);
+    assert!(run(&sessions, None, intent.clone()).await.paused);
+    let target = root
+        .join("target")
+        .join(&files_under(&root.join("target"))[0]);
+    let modified = std::fs::metadata(&target).unwrap().modified().unwrap();
+    std::fs::write(&target, b"external").unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&target)
+        .unwrap()
+        .set_modified(modified)
+        .unwrap();
+    let error = discard(&sessions, &intent.id).await.unwrap_err();
+    assert_eq!(error.code, ErrorCode::CleanupIncomplete);
+    let details: serde_json::Value =
+        serde_json::from_str(error.details.as_deref().unwrap()).unwrap();
+    assert!(!details.as_array().unwrap().is_empty());
+    assert_eq!(std::fs::read(&target).unwrap(), b"external");
+    assert_eq!(std::fs::read(root.join("source/a")).unwrap(), b"original");
+    assert_eq!(std::fs::read(root.join("source/b")).unwrap(), b"original");
+    std::fs::remove_dir_all(root).unwrap();
+}

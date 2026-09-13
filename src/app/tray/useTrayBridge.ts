@@ -5,11 +5,23 @@ import { api } from '../../platform/api/index.ts';
 import { persistSetting } from '../../platform/persistSetting.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
 import type { ManagedSite, PaneId, Translate } from '../../shared/types.ts';
-import { buildTrayModel, createTrayModelSender, transfersProgressPercent } from './trayModel.ts';
+import {
+  buildTrayModel,
+  createTransfersSpeedMeter,
+  createTrayModelSender,
+  transfersProgressPercent,
+} from './trayModel.ts';
 import type { TrayModelInput, TrayModelSender } from './trayModel.ts';
 import type { QuitWhenIdleModel } from '../quit/useQuitWhenIdle.ts';
 
 type TrayApi = Pick<typeof api.tray, 'setModel' | 'onAction'>;
+
+/**
+ * A stalled transfer sends no progress, so nothing would rebuild the model and
+ * the last speed would stay. Looking again after this long, a little past the
+ * point a transfer counts as stalled, lets it read 0.
+ */
+const STALL_RECHECK_MS = 2500;
 type VaultApi = Pick<typeof api.vault, 'status' | 'lock'>;
 
 export interface TrayBridgeOptions {
@@ -69,15 +81,20 @@ export function useTrayBridge({
   inputRef.current = input;
   const senderRef = useRef<TrayModelSender | null>(null);
   useEffect(() => {
+    const measureSpeed = createTransfersSpeedMeter();
+    let stallTimer: ReturnType<typeof setTimeout> | undefined;
     const sender = createTrayModelSender({
       build: () => {
         const input = inputRef.current;
+        const rows = Object.values(getTransfersSnapshot());
+        const speed = measureSpeed(rows);
+        clearTimeout(stallTimer);
+        stallTimer = speed ? setTimeout(sender.tick, STALL_RECHECK_MS) : undefined;
+        const active = input.transfers.activeTransfersCount > 0;
         return buildTrayModel({
           ...input,
-          progressPercent:
-            input.transfers.activeTransfersCount > 0
-              ? transfersProgressPercent(Object.values(getTransfersSnapshot()))
-              : null,
+          progressPercent: active ? transfersProgressPercent(rows) : null,
+          speedBytesPerSecond: active ? speed : null,
         });
       },
       send: (model) => reportRejection(trayApi.setModel(model)),
@@ -87,6 +104,7 @@ export function useTrayBridge({
     const unsubscribe = subscribeTransfers(sender.tick);
     return () => {
       unsubscribe();
+      clearTimeout(stallTimer);
       sender.dispose();
       senderRef.current = null;
     };

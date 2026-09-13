@@ -3,8 +3,10 @@ import test from 'node:test';
 
 import {
   buildTrayModel,
+  createTransfersSpeedMeter,
   createTrayModelSender,
   formatSpeedLimit,
+  formatTransferSpeed,
   SPEED_LIMIT_PRESETS_KBPS,
   transfersProgressPercent,
   trayMenuStructure,
@@ -27,6 +29,7 @@ function input(overrides: Partial<TrayModelInput> = {}): TrayModelInput {
       canResumeAllTransfers: false,
     },
     progressPercent: null,
+    speedBytesPerSecond: null,
     vault: null,
     quit: { pending: false, promptOpen: false },
     settings: {
@@ -71,6 +74,23 @@ test('running transfers show their count, with progress when it is known', () =>
   const model = buildTrayModel(input({ transfers }));
   assert.equal(model.status, 'tray.transferring{"count":3}');
   assert.deepEqual(model.transfers, { active: 3, canPauseAll: true, canResumeAll: false });
+});
+
+test('a measured speed follows the rest of the status line', () => {
+  const transfers = {
+    activeTransfersCount: 3,
+    hasPausableTransfers: true,
+    canResumeAllTransfers: false,
+  };
+  assert.equal(
+    buildTrayModel(input({ transfers, progressPercent: 5, speedBytesPerSecond: 10240 })).status,
+    'tray.transferringProgress{"count":3,"percent":5} · common.perSecond{"value":"10 common.units.kb"}',
+  );
+  assert.equal(
+    buildTrayModel(input({ transfers, speedBytesPerSecond: 0 })).status,
+    'tray.transferring{"count":3} · common.perSecond{"value":"0 common.units.byte"}',
+  );
+  assert.equal(buildTrayModel(input({ speedBytesPerSecond: 10240 })).status, '');
 });
 
 test('a queue that is only paused offers resume-all without a status line', () => {
@@ -290,6 +310,38 @@ test('speed labels read as kilobytes or megabytes per second', () => {
   assert.equal(formatSpeedLimit(t, 512), 'common.perSecond{"value":"512 common.units.kb"}');
   assert.equal(formatSpeedLimit(t, 5120), 'common.perSecond{"value":"5 common.units.mb"}');
   assert.equal(formatSpeedLimit(t, 1536), 'common.perSecond{"value":"1.5 common.units.mb"}');
+});
+
+test('transfer speeds read in the largest unit that fits', () => {
+  assert.equal(formatTransferSpeed(t, 850.6), 'common.perSecond{"value":"851 common.units.byte"}');
+  assert.equal(formatTransferSpeed(t, -5), 'common.perSecond{"value":"0 common.units.byte"}');
+  assert.equal(formatTransferSpeed(t, 1536), 'common.perSecond{"value":"1.5 common.units.kb"}');
+  assert.equal(
+    formatTransferSpeed(t, 35 * 1024 * 1024),
+    'common.perSecond{"value":"35 common.units.mb"}',
+  );
+});
+
+test('the speed meter adds up the running transfers and drops to 0 when they stall', () => {
+  let time = 0;
+  const measure = createTransfersSpeedMeter(() => time);
+  const upload = (bytes: number) => ({ ...row('progress', bytes), id: 'upload' });
+  const download = (bytes: number) => ({ ...row('progress', bytes), id: 'download' });
+
+  assert.equal(measure([upload(0), row('queued', 0)]), null);
+  time = 1000;
+  assert.equal(measure([upload(1000)]), null);
+  time = 2000;
+  assert.equal(measure([upload(3000), download(0)]), 2000);
+  time = 5000;
+  assert.equal(measure([upload(3000), download(0)]), 0);
+
+  // A transfer that left and came back starts measuring from scratch.
+  time = 6000;
+  assert.equal(measure([download(0)]), 0);
+  assert.equal(measure([upload(3000), download(0)]), 0);
+  time = 7000;
+  assert.equal(measure([upload(4000)]), null);
 });
 
 test('recent sites keep their order and stop at the empty pane quicklist limit', () => {

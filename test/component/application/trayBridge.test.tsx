@@ -180,6 +180,41 @@ test('progress alone reaches the tray at most once a second', async () => {
   expect(view.lastModel()?.status).toBe('tray.transferringProgress{"count":1,"percent":30}');
 });
 
+test('the status line gains the speed once it is measured and shows 0 when progress stops', async () => {
+  const view = setup({ configured: false, locked: true });
+  await act(async () => {
+    await Promise.resolve();
+  });
+  act(() => setTransfersStore({ upload: running(100) }));
+  view.rerender({
+    ...view.baseProps,
+    transfers: {
+      activeTransfersCount: 1,
+      hasPausableTransfers: true,
+      canResumeAllTransfers: false,
+    },
+  });
+  act(() => setTransfersStore({ upload: running(300) }));
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1000);
+  });
+  act(() => setTransfersStore({ upload: running(500) }));
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1000);
+  });
+  expect(view.lastModel()?.status).toBe(
+    'tray.transferringProgress{"count":1,"percent":50} · common.perSecond{"value":"200 common.units.byte"}',
+  );
+
+  // Nothing arrives any more, yet the tray looks again on its own.
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(3000);
+  });
+  expect(view.lastModel()?.status).toBe(
+    'tray.transferringProgress{"count":1,"percent":50} · common.perSecond{"value":"0 common.units.byte"}',
+  );
+});
+
 test('tray actions call the same functions as the window', async () => {
   const view = setup();
   await act(async () => {

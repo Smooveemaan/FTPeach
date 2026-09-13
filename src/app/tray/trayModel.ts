@@ -1,6 +1,7 @@
 import { QUICKLIST_LIMIT } from '../../features/sites/index.ts';
 import type { SettingsState } from '../../features/settings/index.ts';
-import type { TransferRow, TransferSummary } from '../../features/transfers/index.ts';
+import { updateSpeedSample } from '../../features/transfers/index.ts';
+import type { SpeedSamples, TransferRow, TransferSummary } from '../../features/transfers/index.ts';
 import type { TrayModel } from '../../platform/api/tray.ts';
 import type { ManagedSite, Translate } from '../../shared/types.ts';
 
@@ -15,6 +16,8 @@ export interface TrayModelInput {
   >;
   /** Overall progress of the running transfers, `null` when it is unknown. */
   progressPercent: number | null;
+  /** Combined speed of the running transfers in bytes per second, `null` until measured. */
+  speedBytesPerSecond: number | null;
   settings: Pick<
     SettingsState['transfers'],
     'transferSpeedLimitKBps' | 'preventSleepDuringTransfers' | 'notifyOnTransferComplete'
@@ -36,10 +39,35 @@ export function formatSpeedLimit(t: Translate, kbps: number): string {
   return t('common.perSecond', { value });
 }
 
+const SPEED_UNIT_KEYS = [
+  'common.units.kb',
+  'common.units.mb',
+  'common.units.gb',
+  'common.units.tb',
+] as const;
+
+/** "850 B/s", "1.2 MB/s", "35 MB/s": how fast the transfers run right now. */
+export function formatTransferSpeed(t: Translate, bytesPerSecond: number): string {
+  let value = Math.max(0, bytesPerSecond);
+  if (value < 1024) {
+    return t('common.perSecond', { value: `${Math.round(value)} ${t('common.units.byte')}` });
+  }
+  let unit = 0;
+  value /= 1024;
+  while (value >= 1024 && unit < SPEED_UNIT_KEYS.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return t('common.perSecond', {
+    value: `${value.toFixed(value < 10 ? 1 : 0)} ${t(SPEED_UNIT_KEYS[unit]!)}`,
+  });
+}
+
 export function buildTrayModel({
   t,
   transfers,
   progressPercent,
+  speedBytesPerSecond,
   settings,
   recentSites,
   vault,
@@ -62,6 +90,10 @@ export function buildTrayModel({
     : progressPercent === null
       ? 'tray.transferring'
       : 'tray.transferringProgress';
+  const status =
+    speedBytesPerSecond === null
+      ? t(statusKey, numbers)
+      : `${t(statusKey, numbers)} · ${formatTransferSpeed(t, speedBytesPerSecond)}`;
   return {
     labels: {
       show: t('tray.show'),
@@ -75,7 +107,7 @@ export function buildTrayModel({
       recentConnections: t('tray.recentConnections'),
       lockVault: t('tray.lockVault'),
     },
-    status: active === 0 ? '' : t(statusKey, numbers),
+    status: active === 0 ? '' : status,
     transfers: {
       active,
       canPauseAll: transfers.hasPausableTransfers,
@@ -112,6 +144,32 @@ export function transfersProgressPercent(rows: Iterable<TransferRow>): number | 
   }
   if (total <= 0) return null;
   return Math.min(100, Math.floor((bytes / total) * 100));
+}
+
+/**
+ * Measures the combined speed of the running transfers the way the transfer
+ * list measures each row, from the byte counts seen at each call. Returns
+ * `null` until at least one transfer has a speed.
+ */
+export function createTransfersSpeedMeter(
+  now: () => number = () => performance.now(),
+): (rows: Iterable<TransferRow>) => number | null {
+  const samples: SpeedSamples = {};
+  return (rows) => {
+    const time = now();
+    const running = new Set<string>();
+    let total: number | null = null;
+    for (const row of rows) {
+      if (row.status !== 'progress') continue;
+      running.add(row.id);
+      const speed = updateSpeedSample(samples, row.id, row.bytes, row.status, time);
+      if (speed !== null) total = (total ?? 0) + speed;
+    }
+    for (const id of Object.keys(samples)) {
+      if (!running.has(id)) delete samples[id];
+    }
+    return total;
+  };
 }
 
 /**

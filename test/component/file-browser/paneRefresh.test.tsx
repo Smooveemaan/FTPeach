@@ -166,3 +166,88 @@ test('local navigation and unmount abort obsolete listings without publishing th
   requests[2]!.resolve({ ok: true, entries: [] });
   await last;
 });
+
+test('switching a pane back to local keeps the listing it just started', async () => {
+  const remoteTab = makeTab('switch');
+  remoteTab.panes.a.kind = 'remote';
+  remoteTab.panes.a.status = 'idle';
+  const requests: Array<{ signal: AbortSignal; resolve: (_value: unknown) => void }> = [];
+  window.api = {
+    fsLocal: {
+      list: (_path: string, _key: string, signal: AbortSignal) =>
+        new Promise((resolve) => {
+          requests.push({ signal, resolve });
+        }),
+    },
+  } as unknown as Window['api'];
+  const updatePane = vi.fn();
+  const { result, rerender, unmount } = renderHook(
+    ({ panes }) =>
+      usePaneRefresh({
+        panes,
+        activeTabId: remoteTab.id,
+        updatePane,
+        reportError: vi.fn(),
+        setErrorMessage: vi.fn(),
+        defaultLocalPath: '',
+      }),
+    { initialProps: { panes: remoteTab.panes } },
+  );
+  const localPanes = { ...remoteTab.panes, a: { ...remoteTab.panes.a, kind: 'local' as const } };
+  let pending!: ReturnType<typeof result.current.refreshPane>;
+  // Like switchPaneToLocal: the listing starts before the new kind is rendered.
+  await act(async () => {
+    pending = result.current.refreshPane('a', '', localPanes.a);
+  });
+  rerender({ panes: localPanes });
+  expect(requests[0]!.signal.aborted).toBe(false);
+  await act(async () => {
+    requests[0]!.resolve({ ok: true, path: 'C:/root', entries: [] });
+    await pending;
+  });
+  expect(updatePane).toHaveBeenLastCalledWith(
+    'a',
+    expect.objectContaining({ loading: false, path: 'C:/root' }),
+    remoteTab.id,
+  );
+  unmount();
+});
+
+test('switching a pane away from local aborts its listing and clears the spinner', async () => {
+  const tab = makeTab('away');
+  const requests: Array<{ signal: AbortSignal; resolve: (_value: unknown) => void }> = [];
+  window.api = {
+    fsLocal: {
+      list: (_path: string, _key: string, signal: AbortSignal) =>
+        new Promise((resolve) => {
+          requests.push({ signal, resolve });
+        }),
+    },
+  } as unknown as Window['api'];
+  const updatePane = vi.fn();
+  const { result, rerender, unmount } = renderHook(
+    ({ panes }) =>
+      usePaneRefresh({
+        panes,
+        activeTabId: tab.id,
+        updatePane,
+        reportError: vi.fn(),
+        setErrorMessage: vi.fn(),
+        defaultLocalPath: '',
+      }),
+    { initialProps: { panes: tab.panes } },
+  );
+  let pending!: ReturnType<typeof result.current.refreshPane>;
+  await act(async () => {
+    pending = result.current.refreshPane('a', 'C:/root');
+  });
+  rerender({ panes: { ...tab.panes, a: { ...tab.panes.a, kind: 'remote' as const } } });
+  expect(requests[0]!.signal.aborted).toBe(true);
+  await act(async () => {
+    requests[0]!.resolve({ ok: true, path: 'C:/root', entries: [{ name: 'stale' }] });
+    await pending;
+  });
+  expect(updatePane.mock.calls.some(([, patch]) => 'entries' in patch)).toBe(false);
+  expect(updatePane).toHaveBeenLastCalledWith('a', { loading: false }, tab.id);
+  unmount();
+});

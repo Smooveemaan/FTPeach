@@ -47,14 +47,29 @@ export function usePaneRefresh({
 }: UsePaneRefreshOptions): PaneRefreshModel {
   const requestIdsRef = useRef<PaneRequestIds>({});
   const inFlightRefreshesRef = useRef<PaneRefreshes>({});
-  const localRequests = useRef(new Map<string, AbortController>());
+  const localRequests = useRef(
+    new Map<string, { controller: AbortController; tabId: string; id: PaneId; kind: string }>(),
+  );
   useEffect(() => {
     const requests = localRequests.current;
     return () => {
-      for (const request of requests.values()) request.abort();
+      for (const request of requests.values()) request.controller.abort();
       requests.clear();
     };
-  }, [activeTabId, panes.a.kind, panes.b.kind]);
+  }, []);
+  // A pane that changed kind no longer wants the listing it started as the old
+  // kind. Only those are aborted: switching Server -> Computer starts the new
+  // local listing before this effect sees the new kind, and that one must live.
+  const kindA = panes.a.kind;
+  const kindB = panes.b.kind;
+  useEffect(() => {
+    const kinds: Record<PaneId, string> = { a: kindA, b: kindB };
+    for (const request of localRequests.current.values()) {
+      if (request.tabId === activeTabId && request.kind !== kinds[request.id]) {
+        request.controller.abort();
+      }
+    }
+  }, [activeTabId, kindA, kindB]);
   const connectionA = panes.a.kind === 'remote' ? panes.a.connectionId : null;
   const connectionB = panes.b.kind === 'remote' ? panes.b.connectionId : null;
   useEffect(() => {
@@ -83,9 +98,9 @@ export function usePaneRefresh({
       const slotKey = `${tabId}:${id}`;
       const existing = inFlightRefreshesRef.current[slotKey];
       if (existing?.key === refreshKey) return existing.promise;
-      localRequests.current.get(slotKey)?.abort();
+      localRequests.current.get(slotKey)?.controller.abort();
       const controller = new AbortController();
-      localRequests.current.set(slotKey, controller);
+      localRequests.current.set(slotKey, { controller, tabId, id, kind: pane.kind });
 
       const releaseConnection =
         pane.kind === 'remote' && pane.connectionId
@@ -100,7 +115,13 @@ export function usePaneRefresh({
           `${slotKey}:${crypto.randomUUID()}`,
           controller.signal,
         );
-        if (requestId !== requestIds[id] || controller.signal.aborted) return;
+        if (requestId !== requestIds[id]) return;
+        if (controller.signal.aborted) {
+          // Nothing newer took over this slot, so nobody else will clear the
+          // spinner this listing turned on.
+          updatePane(id, { loading: false }, tabId);
+          return;
+        }
         if (pane.kind === 'remote' && pane.connectionId && isConnectionDead(pane.connectionId)) {
           updatePane(id, { loading: false }, tabId);
           return;
@@ -141,7 +162,7 @@ export function usePaneRefresh({
         return await promise;
       } finally {
         releaseConnection();
-        if (localRequests.current.get(slotKey) === controller)
+        if (localRequests.current.get(slotKey)?.controller === controller)
           localRequests.current.delete(slotKey);
         // A later refresh of the same slot can have replaced or deleted this
         // entry while the promise above was in flight; the compiler still sees

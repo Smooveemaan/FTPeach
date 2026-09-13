@@ -2,7 +2,7 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
-## [Unreleased]
+## [0.2.1] - 2026-09-13
 
 ### Added
 
@@ -16,26 +16,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   while dragging between the computer and a server copies them. Hold Ctrl to copy or Shift
   to move.
 - Moving a file to another drive checks the copy before the original is deleted.
+- Settings and the bookmark editor ask whether to save your changes when you press Escape or
+  click outside them, instead of closing and losing the changes.
 - The transfer list stays fast with thousands of transfers, and filtering a large folder is
   quicker.
 - Adding transfers to a full queue shows a message instead of slowing FTPeach down.
-- Settings and the bookmark editor ask whether to save your changes when you press Escape or
-  click outside them, instead of closing and losing the changes.
+- The transfer list shows the File column before Route again in a new or reset layout.
 
 ### Fixed
 
-- The tray icon appears only while FTPeach is hidden to the tray.
 - Replacing an existing file works on SFTP servers and on servers that don't replace files on
   their own.
-- Pressing Stop no longer reports that the connection to the server was lost.
 - When a file with the same name already exists on the server, the error message says so.
+- Pressing Stop no longer reports that the connection to the server was lost.
 - Stopping a folder transfer keeps the files it can't confirm it created, and tells you so.
-- When one window is open on top of another, Escape closes only the top one.
 - A paused folder transfer no longer resumes over files that changed in the meantime.
 - Disconnecting from a server that stopped responding no longer hangs.
 - A local folder with files FTPeach can't read shows an error instead of listing them as
   empty files.
 - Switching folders quickly no longer shows the contents of a folder you already left.
+- The tray icon appears only while FTPeach is hidden to the tray.
+- When one window is open on top of another, Escape closes only the top one.
+- Dragging files over a disconnected pane no longer highlights its connection options.
 - The scroll bar in the language list in Settings can be dragged without closing the list.
 - Chinese language names line up with the other languages in right-to-left layouts.
 

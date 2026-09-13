@@ -268,7 +268,7 @@ test('the speed presets mark the current limit and format their labels', () => {
   assert.equal(model.notifyOnComplete, true);
 });
 
-test('a limit no preset matches gets its own entry first, as a whole number', () => {
+test('a limit no preset matches gets its own entry under no limit, as a whole number', () => {
   const model = buildTrayModel(
     input({
       settings: {
@@ -281,7 +281,7 @@ test('a limit no preset matches gets its own entry first, as a whole number', ()
   assert.equal(model.speedLimitKBps, 300);
   assert.deepEqual(
     model.speedPresets.map((preset) => preset.kbps),
-    [300, ...SPEED_LIMIT_PRESETS_KBPS],
+    [0, 300, ...SPEED_LIMIT_PRESETS_KBPS.slice(1)],
   );
 });
 

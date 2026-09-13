@@ -46,11 +46,12 @@ export function buildTrayModel({
   quit,
 }: TrayModelInput): TrayModel {
   // The backend takes a whole, non-negative number; a limit typed in Settings
-  // that no preset matches gets a checked entry of its own, first.
+  // that no preset matches gets a checked entry of its own, under "No limit".
   const speedLimit = Math.max(0, Math.round(settings.transferSpeedLimitKBps || 0));
+  const [unlimited = 0, ...limits] = SPEED_LIMIT_PRESETS_KBPS;
   const presets = SPEED_LIMIT_PRESETS_KBPS.includes(speedLimit)
     ? SPEED_LIMIT_PRESETS_KBPS
-    : [speedLimit, ...SPEED_LIMIT_PRESETS_KBPS];
+    : [unlimited, speedLimit, ...limits];
   const active = transfers.activeTransfersCount;
   const numbers =
     progressPercent === null ? { count: active } : { count: active, percent: progressPercent };

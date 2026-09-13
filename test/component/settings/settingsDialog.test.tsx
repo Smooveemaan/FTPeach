@@ -148,6 +148,19 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ dateFormat: 'iso' }));
   });
 
+  test('keeps the language menu open when its list background is clicked', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+    await user.click(screen.getByRole('button', { name: 'settings.languageLabel' }));
+    // Releasing a dragged scrollbar clicks the list itself, which the
+    // surrounding <label> would otherwise forward to the menu's trigger.
+    await user.click(screen.getByRole('listbox'));
+
+    expect(screen.getByRole('listbox')).toBeTruthy();
+  });
+
   async function toggleNotifyOnComplete(user: UserEvent): Promise<void> {
     await user.click(screen.getByRole('button', { name: 'settings.categories.transfers' }));
     await user.click(screen.getByRole('checkbox', { name: 'settings.notifyOnComplete' }));

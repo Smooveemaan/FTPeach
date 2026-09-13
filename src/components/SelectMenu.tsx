@@ -110,7 +110,13 @@ export default function SelectMenu<T extends string | number>({
         </span>
       </button>
       {open && !disabled && (
-        <div className={`menu-dropdown ${dropdownClassName}`}>
+        <div
+          className={`menu-dropdown ${dropdownClassName}`}
+          // Callers nest the menu inside a <label>, which forwards clicks on
+          // non-interactive content (the padding, a dragged scrollbar) to its
+          // first button -- the trigger -- toggling the menu shut.
+          onClick={(event) => event.preventDefault()}
+        >
           <div className="menu-items" role="listbox" aria-label={label}>
             {options.map((option, index) => (
               <button

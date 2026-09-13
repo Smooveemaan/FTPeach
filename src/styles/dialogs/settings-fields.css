@@ -13,7 +13,12 @@
   pointer-events: none;
 }
 
-.modal-settings label.settings-field :is(input, button, select, textarea, [role='radio']) {
+/* An open select's list is a plain div: without it here, its scrollbar and
+   padding inherit the label's pointer-events: none and clicks fall through
+   to the panel behind, which dismisses the menu. */
+.modal-settings
+  label.settings-field
+  :is(input, button, select, textarea, [role='radio'], .menu-dropdown:not(.select-menu-sizer)) {
   pointer-events: auto;
 }
 

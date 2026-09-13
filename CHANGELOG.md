@@ -33,6 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A local folder with files FTPeach can't read shows an error instead of listing them as
   empty files.
 - Switching folders quickly no longer shows the contents of a folder you already left.
+- The scroll bar in the language list in Settings can be dragged without closing the list.
+- Chinese language names line up with the other languages in right-to-left layouts.
 
 ## [0.2.0] - 2026-09-12
 

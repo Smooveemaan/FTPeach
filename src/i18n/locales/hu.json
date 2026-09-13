@@ -269,7 +269,7 @@
     "internal": "Váratlan hiba történt.",
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
     "alreadyExists": "A „{{name}}” már létezik",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását."
   },
   "settings": {
     "openWithAssociations": {

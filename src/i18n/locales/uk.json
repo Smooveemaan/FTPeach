@@ -277,7 +277,7 @@
     "internal": "Сталася непередбачена помилка.",
     "connectFailedPrefix": "Не вдалося встановити з'єднання з сервером. {{raw}}",
     "alreadyExists": "«{{name}}» вже існує",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Сервер не дозволив перезаписати наявний файл."
   },
   "settings": {
     "openWithAssociations": {

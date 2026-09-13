@@ -273,7 +273,7 @@
     "internal": "Une erreur inattendue s’est produite.",
     "connectFailedPrefix": "Impossible de se connecter au serveur. {{raw}}",
     "alreadyExists": "« {{name}} » existe déjà",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Le serveur n'a pas autorisé le remplacement du fichier existant."
   },
   "settings": {
     "openWithAssociations": {

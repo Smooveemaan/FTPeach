@@ -269,7 +269,7 @@
     "internal": "Đã xảy ra lỗi không mong muốn.",
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
     "alreadyExists": "\"{{name}}\" đã tồn tại rồi",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có."
   },
   "settings": {
     "openWithAssociations": {

@@ -269,7 +269,7 @@
     "internal": "एक अनपेक्षित त्रुटि हुई।",
     "connectFailedPrefix": "सर्वर से कनेक्ट नहीं हो सका। {{raw}}",
     "alreadyExists": "\"{{name}}\" पहले से मौजूद है",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "सर्वर ने मौजूदा फ़ाइल को अधिलेखित करने की अनुमति नहीं दी।"
   },
   "settings": {
     "openWithAssociations": {

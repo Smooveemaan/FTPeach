@@ -269,7 +269,7 @@
     "internal": "Terjadi kesalahan yang tidak terduga.",
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa."
   },
   "settings": {
     "openWithAssociations": {

@@ -277,7 +277,7 @@
     "internal": "Wystąpił nieoczekiwany błąd.",
     "connectFailedPrefix": "Nie udało się połączyć z serwerem. {{raw}}",
     "alreadyExists": "„{{name}}” już istnieje",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Serwer nie zezwolił na nadpisanie istniejącego pliku."
   },
   "settings": {
     "openWithAssociations": {

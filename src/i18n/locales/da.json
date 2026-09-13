@@ -269,7 +269,7 @@
     "internal": "Der opstod en uventet fejl.",
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",
     "alreadyExists": "»{{name}}« findes allerede",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet."
   },
   "settings": {
     "openWithAssociations": {

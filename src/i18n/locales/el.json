@@ -269,7 +269,7 @@
     "internal": "Παρουσιάστηκε μη αναμενόμενο σφάλμα.",
     "connectFailedPrefix": "Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. {{raw}}",
     "alreadyExists": "Το «{{name}}» υπάρχει ήδη",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Ο διακομιστής δεν επέτρεψε την αντικατάσταση του υπάρχοντος αρχείου."
   },
   "settings": {
     "openWithAssociations": {

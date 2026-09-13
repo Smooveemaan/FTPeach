@@ -269,7 +269,7 @@
     "internal": "Beklenmeyen bir hata oluştu.",
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi."
   },
   "settings": {
     "openWithAssociations": {

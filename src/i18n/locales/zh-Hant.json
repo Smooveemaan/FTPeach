@@ -269,7 +269,7 @@
     "internal": "發生未預期的錯誤。",
     "connectFailedPrefix": "無法連線到伺服器。{{raw}}",
     "alreadyExists": "「{{name}}」已存在",
-    "replaceUnsupported": "The server didn't allow the existing file to be replaced."
+    "replaceUnsupported": "伺服器不允許覆寫現有檔案。"
   },
   "settings": {
     "openWithAssociations": {

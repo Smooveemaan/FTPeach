@@ -527,6 +527,7 @@
     "notifyFailed_many": "فشل نقل {{count}} ملفًا"
   },
   "transferQueue": {
+    "capacity": "قائمة الانتظار ممتلئة (حتى {{limit}} مهمة نشطة أو منتظرة). انتظر اكتمال المهام.",
     "title": "عمليات النقل",
     "columns": {
       "file": "ملف",

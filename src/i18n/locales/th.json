@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์"
   },
   "transferQueue": {
+    "capacity": "คิวเต็มแล้ว (งานที่กำลังทำงานหรือรอได้สูงสุด {{limit}} งาน) โปรดรอให้งานเสร็จ",
     "title": "การโอน",
     "columns": {
       "file": "ไฟล์",

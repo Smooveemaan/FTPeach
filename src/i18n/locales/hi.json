@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV अपलोड प्रति फ़ाइल {{limit}} MiB तक सीमित हैं।"
   },
   "transferQueue": {
+    "capacity": "कतार भरी हुई है (अधिकतम {{limit}} सक्रिय या प्रतीक्षारत कार्य)। कार्य पूरे होने तक प्रतीक्षा करें।",
     "title": "स्थानान्तरण",
     "columns": {
       "file": "फ़ाइल",

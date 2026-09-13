@@ -3,15 +3,18 @@ import { api } from '../../platform/api/index.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
 import type { Translate } from '../../shared/types.ts';
 import type { TransferStatus } from './transferStore.ts';
-import { getTransfersSnapshot, subscribeTransfers } from './transferStore.ts';
+import { getTransfersSnapshot, subscribeTransferStructure } from './transferStore.ts';
 
 export function useTransferNotifications(t: Translate): void {
   const notifiedRef = useRef(new Map<string, TransferStatus>());
   const wasActiveRef = useRef(false);
   useEffect(
     () =>
-      subscribeTransfers(() => {
+      subscribeTransferStructure(() => {
         const values = Object.values(getTransfersSnapshot());
+        const retained = new Set(values.map((row) => row.id));
+        for (const id of notifiedRef.current.keys())
+          if (!retained.has(id)) notifiedRef.current.delete(id);
         const active = values.some(
           (item) => item.status === 'progress' || item.status === 'queued',
         );

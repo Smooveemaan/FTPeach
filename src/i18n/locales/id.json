@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file."
   },
   "transferQueue": {
+    "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",
     "title": "Transfer",
     "columns": {
       "file": "File",

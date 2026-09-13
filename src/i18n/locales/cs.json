@@ -515,6 +515,7 @@
     "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru"
   },
   "transferQueue": {
+    "capacity": "Fronta je plná (až {{limit}} aktivních nebo čekajících úloh). Počkejte na dokončení.",
     "title": "Přenosy",
     "columns": {
       "file": "Soubor",

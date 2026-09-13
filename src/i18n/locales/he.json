@@ -509,6 +509,7 @@
     "notifyFailed_two": "{{count}} קבצים נכשלו"
   },
   "transferQueue": {
+    "capacity": "התור מלא (עד {{limit}} משימות פעילות או ממתינות). יש להמתין לסיום.",
     "title": "העברות",
     "columns": {
       "file": "קובץ",

@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır."
   },
   "transferQueue": {
+    "capacity": "Kuyruk dolu (en fazla {{limit}} etkin veya bekleyen görev). Görevlerin bitmesini bekleyin.",
     "title": "Aktarımlar",
     "columns": {
       "file": "Dosya",

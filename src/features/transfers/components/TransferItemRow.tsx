@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { memo, useCallback, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatSpeed, formatDuration } from '../../../shared/format.ts';
 import { isolate } from '../../../shared/bidi.ts';
@@ -7,7 +8,12 @@ import Icon from '../../../components/Icon.tsx';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 import { updateSpeedSample } from '../transferSpeed.ts';
 import type { SpeedSamples } from '../transferSpeed.ts';
-import { canRetryTransfer, type TransferRow } from '../transferStore.ts';
+import {
+  canRetryTransfer,
+  getTransferRow,
+  subscribeTransferRow,
+  type TransferRow,
+} from '../transferStore.ts';
 import type { ReorderableColumnKey } from '../transferColumns.ts';
 import {
   STATUS_LABEL_KEY,
@@ -23,6 +29,8 @@ import {
 } from '../transferPresentation.ts';
 interface TransferItemRowProps {
   item: TransferRow;
+  rowHeight?: number | undefined;
+  rowIndex?: number | undefined;
   /** The name a connection's server goes by, including one already closed. */
   connectionLabel: (connectionId: string) => string;
   columnOrder: readonly ReorderableColumnKey[];
@@ -43,8 +51,10 @@ function RouteEndpoint({ name }: { name: string }) {
   );
 }
 
-export default function TransferItemRow({
+function TransferItemRow({
   item,
+  rowHeight,
+  rowIndex,
   connectionLabel,
   columnOrder,
   gridTemplateColumns,
@@ -230,8 +240,10 @@ export default function TransferItemRow({
   return (
     <div
       className="transfer-item transfer-cols"
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns, height: rowHeight, boxSizing: 'border-box' }}
       role="group"
+      tabIndex={-1}
+      data-transfer-index={rowIndex}
       aria-label={`${isolate(item.name)}: ${statusLabel}${percent == null ? '' : `, ${percent}%`}`}
     >
       <div className="t-direction">
@@ -301,3 +313,13 @@ export default function TransferItemRow({
     </div>
   );
 }
+export default memo(TransferItemRow);
+
+/** Only mounted rows subscribe, and an unrelated row keeps the same snapshot. */
+export const LiveTransferItemRow = memo(function LiveTransferItemRow(props: TransferItemRowProps) {
+  const id = props.item.id;
+  const subscribe = useCallback((listener: () => void) => subscribeTransferRow(id, listener), [id]);
+  const getSnapshot = useCallback(() => getTransferRow(id), [id]);
+  const row = useSyncExternalStore(subscribe, getSnapshot);
+  return <TransferItemRow {...props} item={row ?? props.item} />;
+});

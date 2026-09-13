@@ -1,8 +1,10 @@
 import { createPortal } from 'react-dom';
 import ContextMenu from '../../components/ContextMenu.tsx';
 import { updateSpeedSample } from './transferSpeed.ts';
+import { measureTransferDataWidth } from './transferAutoWidth.ts';
+import { reportRejection } from '../../shared/asyncFailure.ts';
 import { transferRoutePlaces, transferDisplayName } from './transferPresentation.ts';
-import TransferItemRow from './components/TransferItemRow.tsx';
+import { LiveTransferItemRow as TransferItemRow } from './components/TransferItemRow.tsx';
 import { STATUS_TAG_KEYS } from './transferPresentation.ts';
 import {
   sanitizeColumnOrder,
@@ -14,6 +16,7 @@ import {
 } from './transferColumns.ts';
 import type { TransferColumnKey, ResizableColumnKey, ColumnWidths } from './transferColumns.ts';
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -30,7 +33,13 @@ import { useColumnDragReorder } from '../../hooks/useColumnDragReorder.ts';
 import { useColumnResize } from '../../hooks/useColumnResize.ts';
 import { getInterfaceScale } from '../../platform/interfaceScale.ts';
 import {
-  getTransfersSnapshot,
+  getTransferRow,
+  transferForAttempt,
+  getTransferIds,
+  getTransferRevision,
+  getTransferStructureRevision,
+  getProgressTransferIds,
+  getTransferSummarySnapshot,
   rememberedConnectionLabel,
   subscribeTransfers,
 } from './transferStore.ts';
@@ -182,8 +191,9 @@ export default function TransferQueue({
   onHiddenColumnsChange,
 }: TransferQueueProps) {
   const { t } = useTranslation();
-  const [, tickStalledSpeeds] = useReducer((n: number) => n + 1, 0);
-  const transfers = useSyncExternalStore(subscribeTransfers, getTransfersSnapshot);
+  const [speedTick, tickStalledSpeeds] = useReducer((n: number) => n + 1, 0);
+  const revision = useSyncExternalStore(subscribeTransfers, getTransferRevision);
+  const structureRevision = getTransferStructureRevision();
   const [sort, setSort] = useState<{ key: ResizableColumnKey | 'queue'; dir: 'asc' | 'desc' }>({
     key: 'queue',
     dir: 'asc',
@@ -191,80 +201,130 @@ export default function TransferQueue({
   const [localHidden, setLocalHidden] = useState<string[]>([]);
   const hidden = hiddenColumns ?? localHidden;
   const [columnMenu, setColumnMenu] = useState<{ x: number; y: number } | null>(null);
-  const items = Object.values(transfers);
-  const hasProgress = items.some((item) => item.status === 'progress');
+  const active = [...getProgressTransferIds()].map((id) => getTransferRow(id)!);
+  const hasProgress = active.some((item) => item.status === 'progress');
   useEffect(() => {
     if (!hasProgress) return;
     const timer = window.setInterval(tickStalledSpeeds, 1000);
     return () => window.clearInterval(timer);
   }, [hasProgress]);
-  const hasCompleted = items.some(
-    (item) => item.status === 'done' || item.status === 'error' || item.status === 'stopped',
+  const hasCompleted = getTransferSummarySnapshot().hasCompletedTransfers;
+  const connectionLabel = useCallback(
+    (connectionId: string): string =>
+      connectionLabels?.get(connectionId) ?? rememberedConnectionLabel(connectionId) ?? '?',
+    [connectionLabels],
   );
-  const connectionLabel = (connectionId: string): string =>
-    connectionLabels?.get(connectionId) ?? rememberedConnectionLabel(connectionId) ?? '?';
   const speedSamples = useRef<SpeedSamples>({}).current;
   for (const id of Object.keys(speedSamples)) {
-    if (!transfers[id]) delete speedSamples[id];
+    if (getTransferRow(id)?.status !== 'progress') delete speedSamples[id];
   }
   const speeds = new Map(
-    items.map((item) => [
+    active.map((item) => [
       item.id,
       updateSpeedSample(speedSamples, item.id, item.bytes, item.status),
     ]),
   );
-  const statusPriority = {
-    progress: 0,
-    cancelling: 1,
-    queued: 2,
-    paused: 3,
-    error: 4,
-    stopped: 5,
-    done: 6,
-  };
-  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  const value = (item: (typeof items)[number]): string | number | null => {
-    const speed = speeds.get(item.id) ?? null;
-    switch (sort.key) {
-      case 'file':
-        return transferDisplayName(item);
-      case 'route':
-        return transferRoutePlaces(item, connectionLabel, t).join(' → ');
-      case 'size':
-        return item.total && item.total > 0 ? item.total : item.bytes;
-      case 'transferred':
-        return item.bytes;
-      case 'progress':
-        return item.total && item.total > 0 ? Math.min(1, item.bytes / item.total) : null;
-      case 'speed':
-        return speed;
-      case 'remaining':
-        return item.total && speed && speed > 0
-          ? Math.max(0, item.total - item.bytes) / speed
-          : null;
-      case 'status':
-      case 'queue':
-        return statusPriority[item.status];
-    }
-  };
-  const sortValues = new Map(items.map((item) => [item.id, value(item)]));
-  items.sort((a, b) => {
-    const av = sortValues.get(a.id) ?? null,
-      bv = sortValues.get(b.id) ?? null;
-    if (av === null && bv !== null) return 1;
-    if (bv === null && av !== null) return -1;
-    const comparison =
-      typeof av === 'string' && typeof bv === 'string'
-        ? collator.compare(av, bv)
-        : ((av as number | null) ?? 0) - ((bv as number | null) ?? 0);
-    return (
-      comparison * (sort.dir === 'asc' ? 1 : -1) ||
-      (sort.key === 'queue' ? b.startedAt - a.startedAt : a.startedAt - b.startedAt) ||
-      a.id.localeCompare(b.id)
-    );
-  });
+  const collator = useMemo(
+    () => new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' }),
+    [],
+  );
+  const dynamicSort = ['size', 'transferred', 'progress', 'speed', 'remaining'].includes(sort.key);
+  const sortRevision = dynamicSort ? revision : structureRevision;
+  const sortSpeedTick = ['speed', 'remaining'].includes(sort.key) ? speedTick : 0;
+  const items = useMemo(() => {
+    const rows = getTransferIds().map((id) => getTransferRow(id)!);
+    const statusPriority = {
+      progress: 0,
+      cancelling: 1,
+      queued: 2,
+      paused: 3,
+      error: 4,
+      stopped: 5,
+      done: 6,
+    };
+    const value = (item: (typeof rows)[number]): string | number | null => {
+      const speed = speeds.get(item.id) ?? null;
+      switch (sort.key) {
+        case 'file':
+          return transferDisplayName(item);
+        case 'route':
+          return transferRoutePlaces(item, connectionLabel, t).join(' → ');
+        case 'size':
+          return item.total && item.total > 0 ? item.total : item.bytes;
+        case 'transferred':
+          return item.bytes;
+        case 'progress':
+          return item.total && item.total > 0 ? Math.min(1, item.bytes / item.total) : null;
+        case 'speed':
+          return speed;
+        case 'remaining':
+          return item.total && speed && speed > 0
+            ? Math.max(0, item.total - item.bytes) / speed
+            : null;
+        case 'status':
+        case 'queue':
+          return statusPriority[item.status];
+      }
+    };
+    const sortValues = new Map(rows.map((item) => [item.id, value(item)]));
+    rows.sort((a, b) => {
+      const av = sortValues.get(a.id) ?? null,
+        bv = sortValues.get(b.id) ?? null;
+      if (av === null && bv !== null) return 1;
+      if (bv === null && av !== null) return -1;
+      const comparison =
+        typeof av === 'string' && typeof bv === 'string'
+          ? collator.compare(av, bv)
+          : ((av as number | null) ?? 0) - ((bv as number | null) ?? 0);
+      return (
+        comparison * (sort.dir === 'asc' ? 1 : -1) ||
+        (sort.key === 'queue' ? b.startedAt - a.startedAt : a.startedAt - b.startedAt) ||
+        a.id.localeCompare(b.id)
+      );
+    });
+    return rows;
+    // Speeds change on published progress or the stall timer; static ordering ignores both.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortRevision, sortSpeedTick, sort, connectionLabel, t, collator]);
   const colHeaderRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(height ?? 300);
+  const rowHeight = narrow ? 32 : 38;
+  const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      if (list.clientHeight) setViewportHeight(list.clientHeight);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [height, narrow]);
+  const virtual = items.length > 200;
+  const start = virtual
+    ? Math.max(0, Math.min(Math.floor(scrollTop / rowHeight) - 5, items.length - 1))
+    : 0;
+  const end = virtual
+    ? Math.min(items.length, start + Math.ceil(viewportHeight / rowHeight) + 10)
+    : items.length;
+  useLayoutEffect(() => {
+    if (focusIndex !== null)
+      listRef.current?.querySelector<HTMLElement>(`[data-transfer-index="${focusIndex}"]`)?.focus();
+  }, [focusIndex]);
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (
+      list &&
+      virtual &&
+      list.scrollTop > Math.max(0, items.length * rowHeight - viewportHeight)
+    ) {
+      list.scrollTop = Math.max(0, items.length * rowHeight - viewportHeight);
+      setScrollTop(list.scrollTop);
+    }
+  }, [items.length, rowHeight, viewportHeight, virtual]);
   const columnOrderFull = useMemo(() => sanitizeColumnOrder(columnOrder), [columnOrder]);
   const visibleReorderableKeys = useMemo(
     () =>
@@ -322,6 +382,14 @@ export default function TransferQueue({
       onReorder: onColumnOrderChange,
     });
   const { startColumnResize: startResize } = useColumnResize();
+  const fitGeneration = useRef(0);
+  useEffect(() => {
+    const generation = fitGeneration;
+    generation.current++;
+    return () => {
+      generation.current++;
+    };
+  }, [narrow, t]);
 
   const columnWidthsKey = visibleColumnKeys.map((key) => widthOf(key)).join(',');
   useLayoutEffect(() => {
@@ -396,6 +464,7 @@ export default function TransferQueue({
   };
 
   const startColumnResize = (key: ResizableColumnKey) => (event: MouseEvent<HTMLSpanElement>) => {
+    fitGeneration.current++;
     if (!onColumnWidthsChange) return;
     const resizeWidths = widthsForManualResize();
     let minWidth = COLUMN_MIN_WIDTHS[key];
@@ -436,8 +505,8 @@ export default function TransferQueue({
     if (key === 'progress') width = COLUMN_DEFAULT_WIDTHS.progress;
 
     // Measure max-content copies in the same CSS context: this includes the
-    // actual fonts, icons, gaps, padding and secondary lines, even for rows
-    // outside the scroll viewport. Batch insertion before reading layout.
+    // actual fonts, icons, gaps, padding and secondary lines in the viewport.
+    // Offscreen rows are measured from data below, in short asynchronous slices.
     const sources = [
       header,
       ...list.querySelectorAll<HTMLElement>(
@@ -475,7 +544,26 @@ export default function TransferQueue({
     } finally {
       for (const { wrapper } of probes) wrapper.remove();
     }
-    onColumnWidthsChange({ ...widthsForManualResize(), [key]: width });
+    const resizeWidths = widthsForManualResize();
+    onColumnWidthsChange({ ...resizeWidths, [key]: width });
+    if (virtual) {
+      const generation = ++fitGeneration.current;
+      const cancelled = () => generation !== fitGeneration.current;
+      reportRejection(
+        measureTransferDataWidth(
+          items.map((item) => transferForAttempt(item.attemptId || item.id) ?? item),
+          key,
+          list,
+          connectionLabel,
+          t,
+          speeds,
+          cancelled,
+        ).then((dataWidth) => {
+          if (!cancelled() && dataWidth > width)
+            onColumnWidthsChange({ ...resizeWidths, [key]: dataWidth });
+        }),
+      );
+    }
   };
 
   const headerCell = (key: ResizableColumnKey, label: ReactNode, className: string) => {
@@ -497,6 +585,7 @@ export default function TransferQueue({
             dir: previous.key === key && previous.dir === 'asc' ? 'desc' : 'asc',
           }));
           if (listRef.current) listRef.current.scrollTop = 0;
+          setScrollTop(0);
         }}
         className={className}
         reorderable={!!onColumnOrderChange}
@@ -510,6 +599,7 @@ export default function TransferQueue({
   };
   const handleListScroll = (e: UIEvent<HTMLDivElement>) => {
     if (colHeaderRef.current) colHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
+    setScrollTop(e.currentTarget.scrollTop);
   };
   const rootStyle: CSSProperties =
     widthRatio != null ? { flex: `${widthRatio} 1 0%`, minWidth: 0 } : { flex: `0 0 ${height}px` };
@@ -559,25 +649,75 @@ export default function TransferQueue({
           <div className="col-filler" />
         </div>
       )}
-      <div className="transfer-list" ref={listRef} onScroll={handleListScroll}>
+      <div
+        className="transfer-list"
+        ref={listRef}
+        onScroll={handleListScroll}
+        tabIndex={0}
+        aria-label={t('transferQueue.title')}
+        onKeyDown={(event) => {
+          if (
+            !virtual ||
+            !['ArrowDown', 'ArrowUp', 'Home', 'End', 'PageDown', 'PageUp'].includes(event.key)
+          )
+            return;
+          event.preventDefault();
+          const current = Number(
+            (event.target as HTMLElement).closest<HTMLElement>('[data-transfer-index]')?.dataset
+              .transferIndex ?? start,
+          );
+          const page = Math.max(1, Math.floor(viewportHeight / rowHeight));
+          const next = Math.max(
+            0,
+            Math.min(
+              items.length - 1,
+              event.key === 'Home'
+                ? 0
+                : event.key === 'End'
+                  ? items.length - 1
+                  : current +
+                    (event.key === 'ArrowDown'
+                      ? 1
+                      : event.key === 'ArrowUp'
+                        ? -1
+                        : event.key === 'PageDown'
+                          ? page
+                          : -page),
+            ),
+          );
+          if (listRef.current) listRef.current.scrollTop = next * rowHeight;
+          setScrollTop(next * rowHeight);
+          setFocusIndex(next);
+        }}
+      >
         {!isCollapsed && items.length === 0 && (
           <div className="transfer-empty">{t('transferQueue.empty')}</div>
         )}
+        {!isCollapsed && virtual && (
+          <div aria-hidden="true" style={{ height: start * rowHeight }} />
+        )}
         {!isCollapsed &&
-          items.map((item) => (
-            <TransferItemRow
-              key={item.id}
-              item={item}
-              connectionLabel={connectionLabel}
-              columnOrder={visibleReorderableKeys}
-              gridTemplateColumns={gridTemplateColumns}
-              speedSamples={speedSamples}
-              measuredSpeed={speeds.get(item.id) ?? null}
-              onRetry={onRetry}
-              onPause={onPause}
-              onStop={onStop}
-            />
-          ))}
+          items
+            .slice(start, end)
+            .map((item, index) => (
+              <TransferItemRow
+                key={item.id}
+                item={item}
+                rowHeight={virtual ? rowHeight : undefined}
+                rowIndex={start + index}
+                connectionLabel={connectionLabel}
+                columnOrder={visibleReorderableKeys}
+                gridTemplateColumns={gridTemplateColumns}
+                speedSamples={speedSamples}
+                measuredSpeed={speeds.get(item.id) ?? null}
+                onRetry={onRetry}
+                onPause={onPause}
+                onStop={onStop}
+              />
+            ))}
+        {!isCollapsed && virtual && (
+          <div aria-hidden="true" style={{ height: (items.length - end) * rowHeight }} />
+        )}
       </div>
       {columnMenu &&
         createPortal(

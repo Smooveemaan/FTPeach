@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV uploads are limited to {{limit}} MiB per file."
   },
   "transferQueue": {
+    "capacity": "The queue is full (up to {{limit}} active or waiting tasks). Wait for tasks to finish.",
     "title": "Transfers",
     "columns": {
       "file": "File",

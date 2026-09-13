@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet."
   },
   "transferQueue": {
+    "capacity": "A sor megtelt (legfeljebb {{limit}} aktív vagy várakozó feladat). Várja meg a befejezést.",
     "title": "Átvitelek",
     "columns": {
       "file": "Fájl",

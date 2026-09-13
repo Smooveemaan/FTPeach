@@ -509,6 +509,7 @@
     "notifyFailed_many": "{{count}} archivos con error"
   },
   "transferQueue": {
+    "capacity": "La cola está llena (hasta {{limit}} tareas activas o en espera). Espere a que terminen.",
     "title": "Transferencias",
     "columns": {
       "file": "Archivo",

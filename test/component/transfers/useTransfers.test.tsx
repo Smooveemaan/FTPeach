@@ -8,7 +8,10 @@ import {
   setTransfersStore,
   useTransfers,
 } from '../../../src/features/transfers/index.ts';
-import { resetTransfersStoreForTests } from '../../../src/features/transfers/transferStore.ts';
+import {
+  flushTransferUpdates,
+  resetTransfersStoreForTests,
+} from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import { useOverwriteApproval } from '../../../src/features/transfers/useOverwriteApproval.ts';
 import type {
@@ -508,6 +511,7 @@ test('a running folder walk lists its target again as it puts entries in place',
     const report = async (landed: number) => {
       await act(async () => {
         emitProgress({ id: attemptId, connectionId: '', status: 'progress', total: 10, landed });
+        flushTransferUpdates();
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
     };

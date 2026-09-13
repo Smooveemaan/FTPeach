@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand."
   },
   "transferQueue": {
+    "capacity": "De wachtrij is vol (maximaal {{limit}} actieve of wachtende taken). Wacht tot taken klaar zijn.",
     "title": "Overdrachten",
     "columns": {
       "file": "Bestand",

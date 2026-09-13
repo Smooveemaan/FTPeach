@@ -515,6 +515,7 @@
     "notifyFailed_many": "Nie przesłano {{count}} plików"
   },
   "transferQueue": {
+    "capacity": "Kolejka jest pełna (do {{limit}} aktywnych lub oczekujących zadań). Poczekaj na zakończenie.",
     "title": "Transfery",
     "columns": {
       "file": "Plik",

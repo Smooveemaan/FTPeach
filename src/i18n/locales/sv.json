@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil."
   },
   "transferQueue": {
+    "capacity": "Kön är full (upp till {{limit}} aktiva eller väntande uppgifter). Vänta tills uppgifter slutförs.",
     "title": "Överföringar",
     "columns": {
       "file": "Fil",

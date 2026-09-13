@@ -5,8 +5,71 @@ import {
   rememberConnectionLabels,
   resetTransfersStoreForTests,
   setTransfersStore,
+  updateTransferRow,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
+
+test('speed ordering follows progress and invalidates when both transfers stall', () => {
+  resetTransfersStoreForTests();
+  vi.useFakeTimers();
+  const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
+  setTransfersStore({ a: queueRow('a', 1, 'progress'), b: queueRow('b', 2, 'progress') });
+  const { container, unmount } = render(<TransferQueue {...queueProps} />);
+  try {
+    clock.mockReturnValue(1250);
+    act(() => {
+      updateTransferRow('a', (row) => ({ ...row, bytes: 100 }));
+      updateTransferRow('b', (row) => ({ ...row, bytes: 100 }));
+    });
+    clock.mockReturnValue(1500);
+    act(() => {
+      updateTransferRow('a', (row) => ({ ...row, bytes: 300 }));
+      updateTransferRow('b', (row) => ({ ...row, bytes: 600 }));
+    });
+    const header = container.querySelector('[data-column-key="speed"]')!;
+    fireEvent.click(header);
+    expect(names(container)).toEqual(['a', 'b']);
+    fireEvent.click(header);
+    expect(names(container)).toEqual(['b', 'a']);
+    clock.mockReturnValue(4000);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(names(container)).toEqual(['a', 'b']);
+  } finally {
+    unmount();
+    clock.mockRestore();
+    vi.useRealTimers();
+    resetTransfersStoreForTests();
+  }
+});
+
+test('10k mixed rows stay virtualized through scrolling, keyboard navigation and progress', () => {
+  resetTransfersStoreForTests();
+  setTransfersStore(
+    Object.fromEntries(
+      Array.from({ length: 10_000 }, (_, i) => {
+        const id = `row-${i}`;
+        return [id, queueRow(id, i, i % 10 ? 'paused' : 'error')];
+      }),
+    ),
+  );
+  const { container, unmount } = render(<TransferQueue {...queueProps} height={240} narrow />);
+  try {
+    const list = container.querySelector<HTMLElement>('.transfer-list')!;
+    expect(container.querySelectorAll('.transfer-item').length).toBeLessThan(30);
+    fireEvent.scroll(list, { target: { scrollTop: 80_000 } });
+    expect(container.querySelectorAll('.transfer-item').length).toBeLessThan(30);
+    fireEvent.keyDown(list, { key: 'End' });
+    expect(container.querySelector('[data-transfer-index="9999"]')).not.toBeNull();
+    expect(document.activeElement?.getAttribute('data-transfer-index')).toBe('9999');
+    fireEvent.keyDown(list, { key: 'Home' });
+    expect(document.activeElement?.getAttribute('data-transfer-index')).toBe('0');
+    act(() => updateTransferRow('row-9999', (row) => ({ ...row, bytes: 42 })));
+    expect(container.querySelectorAll('.transfer-item').length).toBeLessThan(30);
+  } finally {
+    unmount();
+    resetTransfersStoreForTests();
+  }
+});
 
 test('resizing another column preserves the rendered width of the flexible File column', () => {
   resetTransfersStoreForTests();

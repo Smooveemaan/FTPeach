@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { TransferTarget } from './useOverwriteApproval.ts';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../platform/api/index.ts';
@@ -15,9 +15,13 @@ import {
   canPauseTransfer,
   canRetryTransfer,
   getTransfersSnapshot,
+  getTransferRow,
+  hasTransferCapacity,
+  PENDING_TRANSFER_LIMIT,
   markConnectionDead,
   setTransfersStore,
   subscribeTransfers,
+  subscribeTransferStructure,
   transferTouchesConnection,
 } from './transferStore.ts';
 import { validateWindowsDownloadName } from './transferWalk.ts';
@@ -66,11 +70,11 @@ const LANDED_REFRESH_INTERVAL_MS = 1000;
  */
 function followLanded(id: string, attemptId: string, refresh: RefreshCallback | undefined) {
   if (!refresh) return () => {};
-  let seen = getTransfersSnapshot()[id]?.landed;
+  let seen = getTransferRow(id)?.landed;
   let lastRefresh = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const unsubscribe = subscribeTransfers(() => {
-    const row = getTransfersSnapshot()[id];
+    const row = getTransferRow(id);
     if (row?.attemptId !== attemptId || row.landed === undefined || row.landed === seen) return;
     seen = row.landed;
     timer ??= setTimeout(
@@ -161,11 +165,21 @@ export function useTransferLifecycle(
   const { t } = useTranslation();
   const cancelIntentRef = useRef<Record<string, TransferStatus>>({});
   const waitingRecursive = useRef(new Map<string, AbortController>());
+  useEffect(
+    () =>
+      subscribeTransferStructure(() => {
+        for (const id of Object.keys(cancelIntentRef.current))
+          if (!getTransferRow(id)) delete cancelIntentRef.current[id];
+      }),
+    [],
+  );
 
   useTransferNotifications(t);
   useTransferProgressAdapter(cancelIntentRef);
 
   const startTransfer = (input: TransferInput) => {
+    if (!hasTransferCapacity())
+      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
     const id = nextTransferId();
     setTransfersStore((previous) => ({
       ...previous,
@@ -192,7 +206,7 @@ export function useTransferLifecycle(
     attemptId: string,
     _target: TransferTarget,
   ) => {
-    if (getTransfersSnapshot()[id]?.attemptId !== attemptId) return;
+    if (getTransferRow(id)?.attemptId !== attemptId) return;
     const intent = cancelIntentRef.current[id];
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
       setErrorMessage(friendlyError(commandResultError(result)) || undefined);
@@ -264,6 +278,8 @@ export function useTransferLifecycle(
         total: _localSize,
       });
     if (existing) {
+      if (!hasTransferCapacity(false))
+        throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
       delete cancelIntentRef.current[id];
       setTransfersStore((previous) => {
         const row = previous[id];
@@ -336,6 +352,8 @@ export function useTransferLifecycle(
       existing?.id ||
       startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId });
     if (existing) {
+      if (!hasTransferCapacity(false))
+        throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
       delete cancelIntentRef.current[id];
       setTransfersStore((previous) => {
         const row = previous[id];
@@ -488,7 +506,7 @@ export function useTransferLifecycle(
   };
 
   const retryTransfer = async (id: string, refreshTarget?: RefreshCallback) => {
-    const transfer = getTransfersSnapshot()[id];
+    const transfer = getTransferRow(id);
     // A drag-out download's destination is Explorer's, unknown to us — there
     // is nothing to retry into. The user simply drags again.
     if (
@@ -498,6 +516,8 @@ export function useTransferLifecycle(
       !canRetryTransfer(transfer)
     )
       return;
+    if (!hasTransferCapacity(false))
+      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
     delete cancelIntentRef.current[id];
     if (transfer.direction === 'recursive') {
       // A paused walk carries on from the journal its attempt kept; any other
@@ -604,7 +624,7 @@ export function useTransferLifecycle(
   };
 
   const requestCancel = async (id: string, intent: 'paused' | 'stopped') => {
-    const current = getTransfersSnapshot()[id];
+    const current = getTransferRow(id);
     if (!current || ['done', 'error', 'stopped'].includes(current.status)) return;
     const wasRunning = current.status === 'progress' || current.status === 'queued';
     // A paused folder walk still holds what it wrote, kept for a resume a stop
@@ -669,7 +689,7 @@ export function useTransferLifecycle(
   // only if it can genuinely be resumed, whoever asked. Anything else degrades
   // to a stop instead of offering a resume that would silently start over.
   const pauseTransfer = (id: string) => {
-    const transfer = getTransfersSnapshot()[id];
+    const transfer = getTransferRow(id);
     return requestCancel(id, transfer && canPauseTransfer(transfer) ? 'paused' : 'stopped');
   };
   const stopTransfer = (id: string) => requestCancel(id, 'stopped');
@@ -730,7 +750,7 @@ export function useTransferLifecycle(
   const pauseAllTransfers = () =>
     idsWithStatus('progress', 'queued')
       .filter((id) => {
-        const transfer = getTransfersSnapshot()[id];
+        const transfer = getTransferRow(id);
         return transfer !== undefined && canPauseTransfer(transfer);
       })
       .forEach((id) => reportRejection(pauseTransfer(id)));

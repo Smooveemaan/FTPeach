@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAV 上传的单个文件大小上限为 {{limit}} MiB。"
   },
   "transferQueue": {
+    "capacity": "队列已满（最多 {{limit}} 个正在运行或等待的任务）。请等待任务完成。",
     "title": "传输",
     "columns": {
       "file": "文件",

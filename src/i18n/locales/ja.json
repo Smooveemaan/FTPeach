@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。"
   },
   "transferQueue": {
+    "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大{{limit}}件）。完了するまでお待ちください。",
     "title": "転送",
     "columns": {
       "file": "ファイル",

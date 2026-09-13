@@ -73,10 +73,127 @@ export type TransferState = Record<string, TransferRow>;
 export type TransferStoreUpdater = TransferState | ((state: TransferState) => TransferState);
 
 let state: TransferState = {};
+let exposed = false;
 const listeners = new Set<() => void>();
+const structureListeners = new Set<() => void>();
+const rowListeners = new Map<string, Set<() => void>>();
+const activeIds = new Set<string>();
+const progressIds = new Set<string>();
+let revision = 0;
+let structureRevision = 0;
+let idsCache: { revision: number; ids: string[] } | undefined;
+let publishTimer: ReturnType<typeof setTimeout> | undefined;
+const pendingRows = new Set<string>();
+let structurePending = false;
+const counts = {
+  total: 0,
+  active: 0,
+  cancelling: 0,
+  paused: 0,
+  pausable: 0,
+  completed: 0,
+  retryable: 0,
+};
+export interface TransferSummary {
+  transfersEmpty: boolean;
+  hasCompletedTransfers: boolean;
+  hasActiveTransfers: boolean;
+  activeTransfersCount: number;
+  hasPausableTransfers: boolean;
+  hasPausedTransfers: boolean;
+  canResumeAllTransfers: boolean;
+  hasRetryableTransfers: boolean;
+}
+let summary: TransferSummary = makeSummary();
+
+function makeSummary(): TransferSummary {
+  return {
+    transfersEmpty: counts.total === 0,
+    hasCompletedTransfers: counts.completed > 0,
+    hasActiveTransfers: counts.active > 0,
+    activeTransfersCount: counts.active,
+    hasPausableTransfers: counts.pausable > 0,
+    hasPausedTransfers: counts.paused > 0,
+    canResumeAllTransfers: counts.paused > 0 && counts.pausable === 0 && counts.cancelling === 0,
+    hasRetryableTransfers: counts.retryable > 0,
+  };
+}
+function isActive(row: TransferRow): boolean {
+  return ['queued', 'progress', 'cancelling'].includes(row.status);
+}
+function countRow(row: TransferRow, delta: number): void {
+  counts.total += delta;
+  if (isActive(row)) counts.active += delta;
+  if (row.status === 'cancelling') counts.cancelling += delta;
+  if (row.status === 'paused') counts.paused += delta;
+  if (['queued', 'progress'].includes(row.status) && canPauseTransfer(row))
+    counts.pausable += delta;
+  if (['done', 'error', 'stopped'].includes(row.status)) counts.completed += delta;
+  if (['error', 'stopped'].includes(row.status) && canRetryTransfer(row)) counts.retryable += delta;
+}
+function refreshSummary(): void {
+  const next = makeSummary();
+  if (
+    Object.keys(next).some(
+      (key) => next[key as keyof TransferSummary] !== summary[key as keyof TransferSummary],
+    )
+  )
+    summary = next;
+}
+export const getTransferSummarySnapshot = (): TransferSummary => summary;
+export const getTransferRevision = (): number => revision;
+export const getTransferStructureRevision = (): number => structureRevision;
+export const getTransferRow = (id: string): TransferRow | undefined => state[id];
+export const getActiveTransferIds = (): ReadonlySet<string> => activeIds;
+export const getProgressTransferIds = (): ReadonlySet<string> => progressIds;
+export function getTransferIds(): readonly string[] {
+  if (idsCache?.revision !== structureRevision)
+    idsCache = { revision: structureRevision, ids: Object.keys(state) };
+  return idsCache.ids;
+}
+export function subscribeTransferStructure(listener: () => void): () => void {
+  structureListeners.add(listener);
+  return () => {
+    structureListeners.delete(listener);
+  };
+}
+export function subscribeTransferRow(id: string, listener: () => void): () => void {
+  let group = rowListeners.get(id);
+  if (!group) rowListeners.set(id, (group = new Set()));
+  group.add(listener);
+  return () => {
+    group.delete(listener);
+    if (!group.size) rowListeners.delete(id);
+  };
+}
+export function flushTransferUpdates(): void {
+  clearTimeout(publishTimer);
+  publishTimer = undefined;
+  if (!pendingRows.size && !structurePending) return;
+  const changed = [...pendingRows];
+  const structural = structurePending;
+  pendingRows.clear();
+  structurePending = false;
+  revision++;
+  if (structural) structureListeners.forEach((listener) => listener());
+  for (const id of changed) rowListeners.get(id)?.forEach((listener) => listener());
+  listeners.forEach((listener) => listener());
+}
+function publish(deferred = false): void {
+  if (deferred) publishTimer ??= setTimeout(flushTransferUpdates, 16);
+  else flushTransferUpdates();
+}
 export const COMPLETED_RETENTION = 1000;
+export const PENDING_TRANSFER_LIMIT = 1000;
+export const TRANSFER_RESOURCE_LIMIT = 10_000;
+/** Admission control only: never evict an existing active or paused operation. */
+export function hasTransferCapacity(adding = true): boolean {
+  return (
+    counts.active < PENDING_TRANSFER_LIMIT && (!adding || counts.total < TRANSFER_RESOURCE_LIMIT)
+  );
+}
 const attempts = new Map<string, string>();
-const targets = new Map<string, string>();
+const targets = new Map<string, Set<string>>();
 
 /**
  * Uploads can only resume where the protocol can both append at an offset and
@@ -141,12 +258,29 @@ const deadConnectionIds = new Set<string>();
 
 export function markConnectionDead(connectionId: string): void {
   if (deadConnectionIds.has(connectionId)) return;
+  for (const row of Object.values(state)) countRow(row, -1);
   deadConnectionIds.add(connectionId);
   // Rows read this set through canRetryTransfer while rendering, so growing it
   // has to reach subscribers the way a row change would. A row already sitting
   // at error/stopped is not touched by the teardown that got us here, and would
   // otherwise keep offering a Retry until some unrelated transfer redrew it.
-  setTransfersStore((previous) => ({ ...previous }));
+  for (const row of Object.values(state)) {
+    countRow(row, 1);
+    if (transferTouchesConnection(row, connectionId)) {
+      if (exposed) {
+        state = { ...state };
+        exposed = false;
+      }
+      const id = attempts.get(row.attemptId || row.id)!;
+      state[id] = { ...row };
+      pendingRows.add(id);
+    }
+  }
+  refreshSummary();
+  structureRevision++;
+  structurePending = true;
+  publish();
+  pruneConnectionMemory();
 }
 
 /**
@@ -228,11 +362,12 @@ export function transferForAttempt(attempt: string): TransferRow | undefined {
 }
 
 export function activeTransferForTarget(key: string): TransferRow | undefined {
-  const id = targets.get(key);
+  const id = targets.get(key)?.values().next().value;
   return id === undefined ? undefined : state[id];
 }
 
 export function getTransfersSnapshot(): TransferState {
+  exposed = true;
   return state;
 }
 
@@ -243,29 +378,124 @@ export function subscribeTransfers(listener: () => void): () => void {
   };
 }
 
+/**
+ * Keeps the newest COMPLETED_RETENTION rows among `statuses`. Successes and
+ * failures are capped apart, so a burst of finished uploads never pushes out
+ * an error nobody has looked at yet.
+ */
+function retainNewest(next: TransferState, statuses: readonly TransferStatus[]): TransferState {
+  const finished = Object.values(next).filter((row) => statuses.includes(row.status));
+  if (finished.length <= COMPLETED_RETENTION) return next;
+  finished.sort((a, b) => b.startedAt - a.startedAt);
+  const retained = { ...next };
+  for (const row of finished.slice(COMPLETED_RETENTION)) delete retained[row.id];
+  return retained;
+}
+
 export function setTransfersStore(updater: TransferStoreUpdater): void {
-  const nextState = typeof updater === 'function' ? updater(state) : updater;
+  let nextState = typeof updater === 'function' ? updater(getTransfersSnapshot()) : updater;
   if (Object.is(nextState, state)) return;
-  const completed = Object.values(nextState).filter((row) => row.status === 'done');
-  if (completed.length > COMPLETED_RETENTION) {
-    completed.sort((a, b) => b.startedAt - a.startedAt);
-    state = { ...nextState };
-    for (const row of completed.slice(COMPLETED_RETENTION)) delete state[row.id];
-  } else state = nextState;
-  attempts.clear();
-  targets.clear();
-  for (const row of Object.values(state)) {
-    attempts.set(row.attemptId || row.id, row.id);
-    if (['queued', 'progress', 'cancelling'].includes(row.status)) {
-      const key = transferTargetKey(row);
-      if (key !== undefined) targets.set(key, row.id);
-    }
+  nextState = retainNewest(retainNewest(nextState, ['done']), ['error', 'stopped']);
+  for (const id of new Set([...Object.keys(state), ...Object.keys(nextState)])) {
+    replaceRow(id, nextState[id]);
   }
-  listeners.forEach((listener) => listener());
+  publish();
   pruneConnectionMemory();
 }
 
+function sameRow(a: TransferRow | undefined, b: TransferRow | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])].every(
+    (key) => a[key as keyof TransferRow] === b[key as keyof TransferRow],
+  );
+}
+function replaceRow(id: string, row: TransferRow | undefined): boolean {
+  const previous = state[id];
+  if (sameRow(previous, row)) return false;
+  if (exposed) {
+    state = { ...state };
+    exposed = false;
+  }
+  const structural =
+    !previous ||
+    !row ||
+    Object.keys({ ...previous, ...row }).some(
+      (key) =>
+        !['bytes', 'total', 'landed'].includes(key) &&
+        previous[key as keyof TransferRow] !== row[key as keyof TransferRow],
+    );
+  if (structural) {
+    if (previous) {
+      countRow(previous, -1);
+      if (attempts.get(previous.attemptId || previous.id) === id)
+        attempts.delete(previous.attemptId || previous.id);
+      const target = transferTargetKey(previous);
+      if (target) {
+        const owners = targets.get(target);
+        owners?.delete(id);
+        if (!owners?.size) targets.delete(target);
+      }
+      activeIds.delete(id);
+      progressIds.delete(id);
+    }
+    if (row) {
+      countRow(row, 1);
+      if (row.status === 'progress') progressIds.add(id);
+      attempts.set(row.attemptId || row.id, id);
+      if (isActive(row)) {
+        activeIds.add(id);
+        const target = transferTargetKey(row);
+        if (target) {
+          let owners = targets.get(target);
+          if (!owners) targets.set(target, (owners = new Set()));
+          owners.add(id);
+        }
+      }
+    }
+    structureRevision++;
+    structurePending = true;
+    refreshSummary();
+  }
+  if (row) state[id] = row;
+  else delete state[id];
+  pendingRows.add(id);
+  return true;
+}
+
+/** Hot path: touch one row, keeping indexes and summary stable for byte-only updates. */
+export function updateTransferRow(
+  id: string,
+  update: (row: TransferRow) => TransferRow,
+  deferred = false,
+): void {
+  const previous = state[id];
+  if (!previous) return;
+  const next = update(previous);
+  if (!replaceRow(id, next)) {
+    if (!deferred) publish();
+    return;
+  }
+  // Retention and reference cleanup belong to lifecycle changes, never progress ticks.
+  if (next.status !== previous.status && ['done', 'error', 'stopped'].includes(next.status)) {
+    setTransfersStore({ ...state });
+  }
+  publish(deferred);
+}
+
 export function resetTransfersStoreForTests(): void {
+  clearTimeout(publishTimer);
+  publishTimer = undefined;
+  pendingRows.clear();
+  structurePending = false;
+  exposed = false;
+  activeIds.clear();
+  progressIds.clear();
+  revision = 0;
+  structureRevision = 0;
+  idsCache = undefined;
+  for (const key of Object.keys(counts)) counts[key as keyof typeof counts] = 0;
+  summary = makeSummary();
   state = {};
   attempts.clear();
   targets.clear();

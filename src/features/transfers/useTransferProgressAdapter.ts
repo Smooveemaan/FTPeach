@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { api } from '../../platform/api/index.ts';
 import { friendlyError } from '../../shared/errorMessages.ts';
 import type { TransferRow, TransferStatus } from './transferStore.ts';
-import { setTransfersStore, transferForAttempt } from './transferStore.ts';
+import { setTransfersStore, transferForAttempt, updateTransferRow } from './transferStore.ts';
 
 /**
  * Statuses a row reaches only once its attempt is over. A terminal payload may
@@ -15,7 +15,12 @@ import { setTransfersStore, transferForAttempt } from './transferStore.ts';
  * left running to finish it or answer a cancel, stranding it there and turning
  * Stop into a permanent "cancelling".
  */
-const SETTLED_STATUSES: ReadonlySet<TransferStatus> = new Set(['done', 'error', 'stopped']);
+const SETTLED_STATUSES: ReadonlySet<TransferStatus> = new Set([
+  'done',
+  'error',
+  'stopped',
+  'paused',
+]);
 
 export function useTransferProgressAdapter(
   cancelIntentRef: MutableRefObject<Record<string, TransferStatus>>,
@@ -23,19 +28,19 @@ export function useTransferProgressAdapter(
   useEffect(
     () =>
       api.transfer.onProgress((payload) => {
-        setTransfersStore((previous) => {
-          const existing = transferForAttempt(payload.id);
-          if (!existing) return previous;
-          if (payload.status === 'progress' && SETTLED_STATUSES.has(existing.status))
-            return previous;
-          if (existing.attemptId && existing.status === 'cancelling') return previous;
-          const status =
-            existing.attemptId && payload.status !== 'progress'
-              ? existing.status
-              : (cancelIntentRef.current[existing.id] ?? payload.status);
-          return {
-            ...previous,
-            [existing.id]: {
+        const matched = transferForAttempt(payload.id);
+        if (!matched) return;
+        updateTransferRow(
+          matched.id,
+          (existing) => {
+            if (payload.status === 'progress' && SETTLED_STATUSES.has(existing.status))
+              return existing;
+            if (existing.attemptId && existing.status === 'cancelling') return existing;
+            const status =
+              existing.attemptId && payload.status !== 'progress'
+                ? existing.status
+                : (cancelIntentRef.current[existing.id] ?? payload.status);
+            return {
               ...existing,
               bytes: payload.bytes ?? existing.bytes,
               total: payload.total ?? existing.total,
@@ -50,9 +55,10 @@ export function useTransferProgressAdapter(
                     ) || undefined
                   : existing.errorMessage,
               errorCode: status === 'error' ? payload.errorCode : existing.errorCode,
-            },
-          };
-        });
+            };
+          },
+          payload.status === 'progress',
+        );
       }),
     [cancelIntentRef],
   );

@@ -509,6 +509,7 @@
     "notifyFailed_many": "{{count}} file non riusciti"
   },
   "transferQueue": {
+    "capacity": "La coda è piena (fino a {{limit}} attività attive o in attesa). Attendi il completamento.",
     "title": "Trasferimenti",
     "columns": {
       "file": "File",

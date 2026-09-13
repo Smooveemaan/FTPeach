@@ -509,6 +509,7 @@
     "notifyFailed_many": "{{count}} arquivos com falha"
   },
   "transferQueue": {
+    "capacity": "A fila está cheia (até {{limit}} tarefas ativas ou em espera). Aguarde a conclusão.",
     "title": "Transferências",
     "columns": {
       "file": "Arquivo",

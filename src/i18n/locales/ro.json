@@ -509,6 +509,7 @@
     "notifyFailed_few": "{{count}} fișiere eșuate"
   },
   "transferQueue": {
+    "capacity": "Coada este plină (până la {{limit}} sarcini active sau în așteptare). Așteptați finalizarea.",
     "title": "Transferuri",
     "columns": {
       "file": "Fișier",

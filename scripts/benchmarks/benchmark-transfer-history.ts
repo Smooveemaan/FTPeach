@@ -4,6 +4,7 @@ import {
   resetTransfersStoreForTests,
   setTransfersStore,
   transferForAttempt,
+  updateTransferRow,
 } from '../../src/features/transfers/transferStore.ts';
 import type { TransferRow, TransferState } from '../../src/features/transfers/transferStore.ts';
 
@@ -48,10 +49,7 @@ for (const count of [10_000, 100_000]) {
   setTransfersStore(before);
   const newTime = measure(() => {
     const active = transferForAttempt('active')!;
-    setTransfersStore((current) => ({
-      ...current,
-      [active.id]: { ...active, bytes: active.bytes + 1 },
-    }));
+    updateTransferRow(active.id, (row) => ({ ...row, bytes: row.bytes + 1 }));
   });
   console.log(
     `${count} | ${oldTime.toFixed(3)} | ${newTime.toFixed(3)} | ${Object.keys(getTransfersSnapshot()).length}`,

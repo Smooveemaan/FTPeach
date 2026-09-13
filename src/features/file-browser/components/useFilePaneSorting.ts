@@ -24,23 +24,25 @@ export default function useFilePaneSorting({
   t,
 }: UseFilePaneSortingOptions): FilePaneSortingModel {
   const [sort, selectSortKey] = useReducer(nextFileSortState, DEFAULT_FILE_SORT);
-  const sortedEntries = useMemo(
+  const orderedEntries = useMemo(
     () =>
       filterAndSortEntries(entries, {
-        filterText,
+        filterText: '',
         sortKey: sort.key,
         sortDir: sort.direction,
         t,
       }),
-    [entries, filterText, sort, t],
-  );
-  const sortedFolderNames = useMemo(
-    () =>
-      filterAndSortEntries(
-        entries.filter((entry) => entry.isDirectory),
-        { filterText: '', sortKey: sort.key, sortDir: sort.direction, t },
-      ).map((entry) => entry.name),
     [entries, sort, t],
+  );
+  const sortedEntries = useMemo(() => {
+    const filter = filterText.toLowerCase();
+    return filter
+      ? orderedEntries.filter((entry) => entry.name.toLowerCase().includes(filter))
+      : orderedEntries;
+  }, [orderedEntries, filterText]);
+  const sortedFolderNames = useMemo(
+    () => orderedEntries.filter((entry) => entry.isDirectory).map((entry) => entry.name),
+    [orderedEntries],
   );
   const toggleSort = useCallback((key: SortKey) => selectSortKey(key), []);
 

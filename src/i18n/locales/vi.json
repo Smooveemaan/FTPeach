@@ -503,6 +503,7 @@
     "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp."
   },
   "transferQueue": {
+    "capacity": "Hàng đợi đã đầy (tối đa {{limit}} tác vụ đang chạy hoặc chờ). Hãy đợi hoàn tất.",
     "title": "Truyền tải",
     "columns": {
       "file": "Tệp",

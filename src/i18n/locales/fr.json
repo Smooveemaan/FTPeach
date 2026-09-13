@@ -509,6 +509,7 @@
     "notifyFailed_many": "{{count}} fichiers en échec"
   },
   "transferQueue": {
+    "capacity": "La file est pleine (jusqu’à {{limit}} tâches actives ou en attente). Attendez leur fin.",
     "title": "Transferts",
     "columns": {
       "file": "Fichier",

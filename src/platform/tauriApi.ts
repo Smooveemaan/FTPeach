@@ -12,6 +12,7 @@ import { createSettingsApi } from './api/settings.ts';
 import { createSitesApi } from './api/sites.ts';
 import { createTabsApi } from './api/tabs.ts';
 import { createTransferApi } from './api/transfers.ts';
+import { createTrayApi } from './api/tray.ts';
 import { createUpdaterApi } from './api/updater.ts';
 import {
   checkedResponse,
@@ -313,10 +314,7 @@ export const tauriApi: Window['api'] = {
     transfersComplete: (summary: Record<string, unknown>) =>
       invoke('notifications_transfers_complete', { summary }),
   },
-  tray: {
-    setLabels: (show: string, quit: string) => invoke('tray_set_labels', { show, quit }),
-    hideWindow: () => invoke('tray_hide_window'),
-  },
+  tray: createTrayApi(invoke, onEvent),
 };
 
 /**

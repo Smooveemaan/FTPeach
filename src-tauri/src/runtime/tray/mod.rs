@@ -1,11 +1,17 @@
+mod menu;
+pub(crate) mod model;
+
+use menu::{LiveMenu, MenuCommand};
+use model::{TrayAction, TrayModel};
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{
-    AppHandle, Manager, WebviewWindow,
-    menu::{Menu, MenuEvent, MenuItem},
+    AppHandle, Emitter, Manager, WebviewWindow,
+    menu::MenuEvent,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
 
 const TRAY_ID: &str = "main";
+const ACTION_EVENT: &str = "tray:action";
 
 /// The tray icon only exists while the main window is hidden to the tray, so
 /// it is created and removed at runtime; this keeps what it needs in between.
@@ -14,35 +20,55 @@ pub struct TrayState {
 }
 
 struct TrayInner {
-    show_label: String,
-    quit_label: String,
-    /// The live icon's show and quit items, `None` while there is no icon.
-    items: Option<(MenuItem<tauri::Wry>, MenuItem<tauri::Wry>)>,
+    /// What the renderer last asked the icon to show; `None` until it has.
+    model: Option<TrayModel>,
+    /// The live icon's menu, `None` while there is no icon.
+    live: Option<LiveMenu>,
     /// Whether the window is hidden to the tray. The icon is removed on a
     /// later turn of the event loop, and a hide landing in between keeps it.
     hidden: bool,
+}
+
+impl TrayInner {
+    fn model(&self) -> TrayModel {
+        self.model.clone().unwrap_or_default()
+    }
 }
 
 impl TrayState {
     fn lock(&self) -> MutexGuard<'_, TrayInner> {
         self.inner.lock().unwrap_or_else(PoisonError::into_inner)
     }
+}
 
-    /// Remembers the localized labels for an icon created later and applies
-    /// them to the current one.
-    pub fn set_labels(&self, show: String, quit: String) {
-        let items = {
-            let mut inner = self.lock();
-            inner.show_label = show.clone();
-            inner.quit_label = quit.clone();
-            inner.items.clone()
+/// Stores the renderer's model for an icon created later and applies it to
+/// the current one.
+pub fn set_model(app: &AppHandle, model: TrayModel) {
+    let has_icon = {
+        let state = app.state::<TrayState>();
+        let mut inner = state.lock();
+        inner.model = Some(model);
+        inner.live.is_some()
+    };
+    if !has_icon {
+        return;
+    }
+    // On the main thread, like every other change to the icon: the item
+    // setters wait for it, and it may be holding this lock right now.
+    let handle = app.clone();
+    let result = app.run_on_main_thread(move || {
+        let state = handle.state::<TrayState>();
+        let mut inner = state.lock();
+        let model = inner.model();
+        let (Some(live), Some(tray)) = (inner.live.as_mut(), handle.tray_by_id(TRAY_ID)) else {
+            return;
         };
-        // Outside the lock: `set_text` waits for the main thread, which may
-        // be holding this same lock.
-        if let Some((show_item, quit_item)) = items {
-            let _ = show_item.set_text(show);
-            let _ = quit_item.set_text(quit);
+        if let Err(error) = live.apply(&handle, &tray, &model) {
+            log::warn!("could not update the tray menu: {error}");
         }
+    });
+    if let Err(error) = result {
+        log::warn!("could not update the tray menu: {error}");
     }
 }
 
@@ -60,19 +86,34 @@ fn show_and_focus(app: &AppHandle) {
 pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
     app.manage(TrayState {
         inner: Mutex::new(TrayInner {
-            show_label: "Show FTPeach".into(),
-            quit_label: "Quit".into(),
-            items: None,
+            model: None,
+            live: None,
             hidden: false,
         }),
     });
     // Once, here: a menu handler given to the tray builder is added to a
     // global list on every build, so each re-created icon would stack another.
-    app.on_menu_event(move |app, event: MenuEvent| match event.id().as_ref() {
-        "tray-show" => restore(app),
-        "tray-quit" => quit(app),
-        _ => {}
+    app.on_menu_event(move |app, event: MenuEvent| {
+        let id = event.id().as_ref();
+        if !id.starts_with("tray-") {
+            return;
+        }
+        // The command is read from the model the menu was drawn from, not
+        // from the item's text.
+        let command = menu::command_for(&app.state::<TrayState>().lock().model(), id);
+        match command {
+            Some(MenuCommand::Show) => restore(app),
+            Some(MenuCommand::Quit) => quit(app),
+            Some(MenuCommand::Action(action)) => send_action(app, &action),
+            None => {}
+        }
     });
+}
+
+fn send_action(app: &AppHandle, action: &TrayAction) {
+    if let Err(error) = app.emit_to("main", ACTION_EVENT, action) {
+        log::warn!("could not send a tray action to the window: {error}");
+    }
 }
 
 /// Puts the icon in the tray, then hides the window. Runs on the main thread,
@@ -83,9 +124,9 @@ pub fn hide_to_tray(window: WebviewWindow) {
     let result = app.run_on_main_thread(move || {
         let state = handle.state::<TrayState>();
         let mut inner = state.lock();
-        if inner.items.is_none() {
-            match create(&handle, &inner.show_label, &inner.quit_label) {
-                Ok(items) => inner.items = Some(items),
+        if inner.live.is_none() {
+            match create(&handle, &inner.model()) {
+                Ok(live) => inner.live = Some(live),
                 Err(error) => {
                     log::warn!("could not create the tray icon: {error}");
                     // Hidden with no icon, the window would have no way back.
@@ -115,7 +156,7 @@ pub fn restore(app: &AppHandle) {
         let result = app.run_on_main_thread(move || {
             let state = handle.state::<TrayState>();
             let mut inner = state.lock();
-            if !inner.hidden && inner.items.take().is_some() {
+            if !inner.hidden && inner.live.take().is_some() {
                 drop(handle.remove_tray_by_id(TRAY_ID));
             }
         });
@@ -125,18 +166,11 @@ pub fn restore(app: &AppHandle) {
     });
 }
 
-fn create(
-    app: &AppHandle,
-    show_label: &str,
-    quit_label: &str,
-) -> tauri::Result<(MenuItem<tauri::Wry>, MenuItem<tauri::Wry>)> {
-    let show_item = MenuItem::with_id(app, "tray-show", show_label, true, None::<&str>)?;
-    let quit_item = MenuItem::with_id(app, "tray-quit", quit_label, true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
-
+fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
+    let live = LiveMenu::build(app, model)?;
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
-        .menu(&menu)
-        .tooltip("FTPeach")
+        .menu(live.menu())
+        .tooltip(live.tooltip())
         // Left click brings the window back; the menu opens on right click,
         // same as Windows' own tray convention.
         .show_menu_on_left_click(false)
@@ -154,6 +188,5 @@ fn create(
         builder = builder.icon(icon);
     }
     builder.build(app)?;
-
-    Ok((show_item, quit_item))
+    Ok(live)
 }

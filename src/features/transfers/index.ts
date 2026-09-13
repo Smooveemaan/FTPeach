@@ -8,6 +8,7 @@ export {
   transferForAttempt,
   transferTouchesConnection,
 } from './transferStore.ts';
+export type { TransferRow, TransferSummary } from './transferStore.ts';
 export { isTransferNameConflict } from './nameConflict.ts';
 export type { FileEntryLike } from './nameConflict.ts';
 export { useTransfers } from './useTransfers.ts';

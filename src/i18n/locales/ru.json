@@ -734,6 +734,11 @@
   },
   "tray": {
     "show": "Показать FTPeach",
+    "transferring": "Передаётся {{count}}",
+    "transferringProgress": "Передаётся {{count}} · {{percent}}%",
+    "pauseAll": "Приостановить все передачи",
+    "resumeAll": "Продолжить все передачи",
+    "lockVault": "Заблокировать сохранённые пароли",
     "quit": "Выйти"
   },
   "tabStrip": {

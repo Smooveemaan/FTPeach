@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Added
+
+- The tray icon's menu shows how transfers are going and lets you pause them or lock saved
+  passwords.
+
 ## [0.2.1] - 2026-09-13
 
 ### Added

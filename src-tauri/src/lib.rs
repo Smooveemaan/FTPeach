@@ -152,7 +152,7 @@ pub fn run() {
             commands::updater::updater_check,
             commands::updater::updater_download,
             commands::updater::updater_install,
-            commands::tray::tray_set_labels,
+            commands::tray::tray_set_model,
             commands::tray::tray_hide_window,
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_backend_checks,

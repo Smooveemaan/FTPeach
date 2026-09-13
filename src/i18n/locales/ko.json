@@ -714,6 +714,11 @@
   },
   "tray": {
     "show": "FTPeach 표시",
+    "transferring": "Transferring {{count}}",
+    "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "pauseAll": "Pause all transfers",
+    "resumeAll": "Resume all transfers",
+    "lockVault": "Lock saved passwords",
     "quit": "종료"
   },
   "tabStrip": {

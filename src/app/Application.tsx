@@ -33,6 +33,7 @@ import { useApplicationSettings } from './useApplicationSettings.ts';
 import UpdateStatus from './UpdateStatus.tsx';
 import { useUpdateBanner } from './useUpdateBanner.ts';
 import { useResetLayout } from './useResetLayout.ts';
+import { useTrayBridge } from './tray/useTrayBridge.ts';
 import {
   connectionVisualState,
   useApplicationError,
@@ -155,7 +156,6 @@ export default function Application() {
   useAppEffects({
     interface: settings.interface,
     vaultAutoLockMinutes: settings.security.vaultAutoLockMinutes,
-    t,
   });
 
   // Saved sites
@@ -262,6 +262,13 @@ export default function Application() {
     onVaultUnlockRequired: handler(handleVaultUnlockRequired),
     stopTransfersForConnection,
   });
+  useTrayBridge({
+    t,
+    transfers: { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers },
+    pauseAllTransfers,
+    resumeAllTransfers: () => resumeAllTransfers(refreshBothPanes),
+  });
+
   const logConnectionLabels = useRememberedConnectionLabels(connectionLabels);
   const routeConnectionLabels = useMemo(
     () =>

@@ -734,6 +734,11 @@
   },
   "tray": {
     "show": "Zobrazit FTPeach",
+    "transferring": "Transferring {{count}}",
+    "transferringProgress": "Transferring {{count}} · {{percent}}%",
+    "pauseAll": "Pause all transfers",
+    "resumeAll": "Resume all transfers",
+    "lockVault": "Lock saved passwords",
     "quit": "Ukončit"
   },
   "tabStrip": {

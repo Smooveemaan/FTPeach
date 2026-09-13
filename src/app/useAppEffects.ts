@@ -5,20 +5,16 @@ import i18n, { changeLanguage } from '../i18n/index.ts';
 import { api } from '../platform/api/index.ts';
 import { applyInterfaceScale } from '../platform/interfaceScale.ts';
 import { applyWindowTheme } from '../platform/windowFrame.ts';
-import { reportRejection } from '../shared/asyncFailure.ts';
-import type { Translate } from '../shared/types.ts';
 import { installVaultAutoLock } from './vaultAutoLock.ts';
 
 interface AppEffectsOptions {
   interface: SettingsState['interface'];
   vaultAutoLockMinutes: number;
-  t: Translate;
 }
 
 export function useAppEffects({
   interface: { theme, language, interfaceScale, dateFormat },
   vaultAutoLockMinutes,
-  t,
 }: AppEffectsOptions): void {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -55,10 +51,6 @@ export function useAppEffects({
     window.addEventListener('resize', updateViewportVars);
     return () => window.removeEventListener('resize', updateViewportVars);
   }, [interfaceScale]);
-
-  useEffect(() => {
-    reportRejection(api.tray.setLabels(t('tray.show'), t('tray.quit')));
-  }, [language, t]);
 
   useEffect(() => {
     setDateFormatPreference(dateFormat);

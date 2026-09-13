@@ -447,6 +447,13 @@ body.drag-move-active .pane-list,
 body.drag-move-active .pane-path [data-drop-path] {
   pointer-events: auto;
 }
+/* A disconnected pane refuses the drop, so the quicklist behind its refusal
+   must not answer the pointer either — no hover highlight on a connection
+   card. The list itself stays hit-testable, so useDragMove still finds the
+   pane and blurs it. */
+body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
+  pointer-events: none;
+}
 
 
 .pane-list.drag-wash {
@@ -531,10 +538,6 @@ body.drag-move-active .pane-path [data-drop-path] {
    to outrank that rule's own opacity: 1. */
 .drag-move-ghost.active.invalid {
   opacity: 0.55;
-}
-/* The resolved move action. */
-.drag-move-ghost.move {
-  border-color: var(--accent-primary);
 }
 .drag-move-ghost .icon {
   display: flex;
@@ -967,7 +970,6 @@ body.column-reorder-active .col-resize-handle:hover::after {
 .pane-path .crumb.drag-target {
   background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
   color: var(--accent-primary);
-  box-shadow: inset 0 0 0 1px var(--accent-primary);
   border-radius: 4px;
 }
 .drag-move-ghost.active.invalid { opacity: 1; padding: 3px 6px; }

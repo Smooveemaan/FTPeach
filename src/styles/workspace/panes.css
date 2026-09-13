@@ -443,7 +443,8 @@ body.column-resize-active .row:hover:not(.selected) {
 body.drag-move-active .app-shell {
   pointer-events: none;
 }
-body.drag-move-active .pane-list {
+body.drag-move-active .pane-list,
+body.drag-move-active .pane-path [data-drop-path] {
   pointer-events: auto;
 }
 
@@ -498,12 +499,6 @@ body.drag-move-active .pane-list {
   box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.55);
 }
 
-/* The row(s) actually being picked up — dimmed in place for the same
-   reason a native drag ghost leaves its source looking "lifted": makes
-   it obvious this is the thing following the cursor, not a duplicate. */
-.row.drag-source-row {
-  opacity: 0.4;
-}
 
 .drag-move-ghost {
   position: fixed;
@@ -537,7 +532,7 @@ body.drag-move-active .pane-list {
 .drag-move-ghost.active.invalid {
   opacity: 0.55;
 }
-/* Ctrl held during the drag — see useDragMove.js's isMove tracking. */
+/* The resolved move action. */
 .drag-move-ghost.move {
   border-color: var(--accent-primary);
 }
@@ -968,3 +963,14 @@ body.column-reorder-active .col-resize-handle:hover::after {
 .orientation-toggle {
   transition: none;
 }
+
+.pane-path .crumb.drag-target {
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  color: var(--accent-primary);
+  box-shadow: inset 0 0 0 1px var(--accent-primary);
+  border-radius: 4px;
+}
+.drag-move-ghost.active.invalid { opacity: 1; padding: 3px 6px; }
+
+
+body.drag-drop-forbidden, body.drag-drop-forbidden * { cursor: not-allowed !important; }

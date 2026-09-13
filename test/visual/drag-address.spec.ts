@@ -1,0 +1,28 @@
+import { expect, test } from '@playwright/test';
+test('real pointer reaches address segments during a file drag', async ({ page }) => {
+  await page.goto('/visual.html');
+  const pane = page.locator('.pane').first();
+  const row = pane.locator('.row[data-name="release-notes.md"] .name');
+  await expect(row).toBeVisible();
+  const crumb = pane.locator('[data-drop-path]').first();
+  const from = (await row.boundingBox())!;
+  const to = (await crumb.boundingBox())!;
+  await page.mouse.move(from.x + Math.min(20, from.width / 2), from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
+  await expect(crumb).toHaveClass(/drag-target/);
+  await expect(page.locator('.drag-move-ghost.active')).toContainText('Move');
+  await expect(page.locator('.drag-move-ghost.active')).toContainText('release-notes.md');
+  await expect(page.locator('.drag-move-ghost.active .icon svg')).toBeVisible();
+  await page.keyboard.down('Control');
+  await expect(page.locator('.drag-move-ghost.active')).toContainText('Copy');
+  await page.keyboard.down('Shift');
+  await expect(page.locator('body')).toHaveClass(/drag-drop-forbidden/);
+  await expect(crumb).toHaveCSS('cursor', 'not-allowed');
+  await expect(page.locator('.drag-move-ghost.active')).toHaveCount(0);
+  await page.keyboard.up('Shift');
+  await expect(page.locator('.drag-move-ghost.active')).toContainText('Copy');
+  await page.mouse.up();
+  await page.keyboard.up('Control');
+  await expect(crumb).not.toHaveClass(/drag-target/);
+});

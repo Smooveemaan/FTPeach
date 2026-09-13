@@ -1,3 +1,4 @@
+import { getInterfaceScale } from '../../platform/interfaceScale.ts';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   CSSProperties,
@@ -209,15 +210,7 @@ function FilePane({
     onDropFiles,
     outboundDragRef,
   });
-  const {
-    dragOver,
-    dragRejected,
-    dragOverRowName,
-    handleRowMouseDown,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-  } = dragDrop;
+  const { dragOver, dragRejected, dragOverRowName, handleRowMouseDown } = dragDrop;
 
   const contextMenu = useFileContextMenu({
     getContextMenuItems,
@@ -327,9 +320,6 @@ function FilePane({
     side,
     filesAriaLabel: t('filePane.filesAriaLabel'),
     onPointerDown: startMarquee,
-    onDragOver: handleDragOver,
-    onDragLeave: handleDragLeave,
-    onDrop: handleDrop,
     onContextMenu: (e) => contextMenu.openFiles(e, null),
   };
 
@@ -382,6 +372,11 @@ function FilePane({
     <div
       ref={paneRef}
       className="pane"
+      data-side={side}
+      data-disconnected={disconnected || undefined}
+      onDragOver={dragDrop.handleDragOver}
+      onDragLeave={dragDrop.handleDragLeave}
+      onDrop={dragDrop.handleDrop}
       data-column-reorder-scope
       style={paneStyle}
       tabIndex={0}
@@ -389,6 +384,16 @@ function FilePane({
       onMouseDownCapture={onActivate}
       aria-activedescendant={activeRowId}
     >
+      {dragDrop.dragPoint && !dragDrop.dragRejected && (
+        <div
+          className="drag-move-ghost active"
+          style={{
+            transform: `translate(${dragDrop.dragPoint.x / getInterfaceScale() + 14}px, ${dragDrop.dragPoint.y / getInterfaceScale() - 12}px)`,
+          }}
+        >
+          <span className="mode">Copy</span>
+        </div>
+      )}
       <PaneTitleBar
         title={title}
         titleSlot={titleSlot}
@@ -404,6 +409,7 @@ function FilePane({
       {!disconnected && (
         <PathBar
           kind={kind}
+          dragOverPath={dragDrop.dragOverPath}
           crumbs={crumbs}
           onCrumbClick={onCrumbClick}
           onDriveMenuOpen={onDriveMenuOpen}
@@ -482,9 +488,6 @@ function FilePane({
             'aria-multiselectable': 'true',
             'aria-label': t('filePane.filesAriaLabel'),
             onPointerDown: startMarquee,
-            onDragOver: handleDragOver,
-            onDragLeave: handleDragLeave,
-            onDrop: handleDrop,
             onContextMenu: (e) => contextMenu.openFiles(e, null),
           }}
           loading={loading}

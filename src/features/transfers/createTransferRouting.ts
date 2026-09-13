@@ -2,7 +2,7 @@ import { api } from '../../platform/api/index.ts';
 import type { TransferLifecycleModel, RefreshCallback } from './useTransferLifecycle.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { mapWithConcurrency } from '../../shared/lang.ts';
-import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
+import { dropDestinationPath, joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { FileEntry, PaneKind, PaneStatus, SiteProtocol } from '../../shared/types.ts';
 import type { OverwriteApproval, TransferOverwriteOptions } from './useOverwriteApproval.ts';
 interface TransferPane {
@@ -177,11 +177,7 @@ export function createTransferRouting(
   }: CopyEntriesOptions) => {
     if (names.length === 0) return;
     const sourceEntriesByName = new Map(sourcePane.entries.map((entry) => [entry.name, entry]));
-    const targetDir = targetFolder
-      ? targetPane.kind === 'local'
-        ? joinLocalPath(targetPane.path, targetFolder)
-        : joinRemotePath(targetPane.path, targetFolder)
-      : targetPane.path;
+    const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
 
     const folders = names.filter((name) => sourceEntriesByName.get(name)?.isDirectory);
     // Submit the whole selection before waiting for any transfer to finish.
@@ -233,7 +229,27 @@ export function createTransferRouting(
     if (names.length === 0) return;
 
     if (sourcePane.kind === 'local' && targetPane.kind === 'local') {
-      const results = await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
+      if (move) {
+        try {
+          await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
+            if (!sourceEntriesByName.has(name)) return;
+            const destination = joinLocalPath(targetDir, name);
+            const overwrite = overwriteApproved
+              ? true
+              : await approveTarget({ kind: 'local', path: destination });
+            if (overwrite === null) return;
+            await requireSuccess(
+              api.fsLocal.rename(joinLocalPath(sourcePane.path, name), destination, overwrite),
+              destination,
+            );
+          });
+        } finally {
+          refreshSource?.();
+          refreshTarget?.();
+        }
+        return;
+      }
+      await mapWithConcurrency(names, RENDERER_FANOUT_LIMIT, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return { entry, ok: false };
         return {
@@ -242,15 +258,6 @@ export function createTransferRouting(
         };
       });
       refreshTarget?.();
-      if (move) {
-        const moved = results.filter((r) => r.ok && r.entry);
-        if (moved.length) {
-          await mapWithConcurrency(moved, RENDERER_FANOUT_LIMIT, (r) =>
-            api.fsLocal.delete(joinLocalPath(sourcePane.path, r.entry!.name)),
-          );
-          refreshSource?.();
-        }
-      }
       return;
     }
 
@@ -388,9 +395,7 @@ export function createTransferRouting(
     // straight across and folders go through the recursive walk. Nothing here
     // needs a session, which is why this works with no server connected.
     if (targetPane.kind === 'local') {
-      const targetDir = targetFolder
-        ? joinLocalPath(targetPane.path, targetFolder)
-        : targetPane.path;
+      const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
       await mapWithConcurrency(files, RENDERER_FANOUT_LIMIT, async (file) => {
         const destination = joinLocalPath(targetDir, file.name);
         if (file.isDirectory) {
@@ -410,9 +415,7 @@ export function createTransferRouting(
       refreshTarget?.();
       return;
     }
-    const targetDir = targetFolder
-      ? joinRemotePath(targetPane.path, targetFolder)
-      : targetPane.path;
+    const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
     await mapWithConcurrency(files, files.length, async (file) => {
       if (file.isDirectory) {
         await uploadFolderEntry(

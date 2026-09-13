@@ -1,3 +1,4 @@
+import { dropDestinationPath } from '../../shared/paths.ts';
 import type { Dispatch, SetStateAction } from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -329,7 +330,9 @@ export function usePanes({
     if (!targetFolder) {
       destEntries = targetPane.entries;
     } else {
-      const res = await backendFor(targetPane).list(paneJoin(targetPane, targetFolder));
+      const res = await backendFor(targetPane).list(
+        dropDestinationPath(targetPane.kind, targetPane.path, targetFolder),
+      );
       if (!res.ok) {
         reportError(res.error || 'Cannot list destination');
         return;

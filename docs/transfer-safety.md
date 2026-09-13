@@ -112,3 +112,15 @@ Developer Mode or SeCreateSymbolicLinkPrivilege. Hardlink fixtures and existing 
 checks run normally. The three earlier ignored Rust tests remain ignored as well.
 
 A successful download consumes its UUID partial and removes its matching source metadata sidecar. Interrupted downloads may retain both; recursive Stop does not delete unverified artifacts.
+
+## Drag and drop contracts (September 13, 2026)
+
+Internal drags default to Move between local directories or within one remote connection; uploads, downloads and transfers between connections default to Copy. Ctrl requests Copy, Shift requests Move, and Ctrl+Shift is rejected. Copy/delete moves across remote endpoints remain unavailable. The backend can still reject a server rename; its error is surfaced without substituting Copy.
+
+The cursor badge shows the source icon and name/count plus Move or Copy over a valid destination. An unavailable destination uses the existing not-allowed cursor, without a separate symbol badge; disconnected servers retain the existing connect-first panel. Without a destination it shows the picked-up name/count without an action. Source rows retain ordinary selection. Folder rows and visible address breadcrumb segments highlight only for an accepted action. An address segment supplies its absolute path, including parent directories and roots; it does not navigate when dropped on. Background drops in the other pane use its current directory. Same-directory, self and descendant destinations are rejected before dispatch, with backend path validation remaining authoritative for aliases and races.
+
+Incoming Explorer drops support the same address segments and remain Copy-only; outgoing native drags also advertise Copy only. Editing the address or hovering its separators does not select a destination.
+
+Local single-file moves use filesystem rename with explicit overwrite approval, rather than copying and later deleting by path. Only a cross-volume rename error activates the verified file fallback: the source is held open denying writes/deletes, bytes are copied into a unique destination-side temporary file, flushed, and SHA-256 plus length are checked against rereads of both files. The temporary file is published by its still-protected handle, then the source is deleted through its original protected handle. This works without USN support and uses bounded buffers for large files. Other rename errors do not activate the fallback. Before publication, failure removes only the owned temporary object; after publication, a source-deletion failure retains the verified destination and reports an error. Existing ancestor-path, memory-mapped-write and power-loss limitations still apply. Recursive local folder moves retain the verified P0 route.
+
+Address breadcrumbs explicitly opt back into pointer events during drag; the browser regression uses real mouse movement with production CSS. Windows handle publication follows [FILE_RENAME_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info).

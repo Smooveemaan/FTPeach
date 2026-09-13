@@ -13,6 +13,7 @@ export interface PathCrumb {
 
 interface PathBarProps {
   kind: PaneKind;
+  dragOverPath?: string | null | undefined;
   crumbs: readonly PathCrumb[];
   onCrumbClick: (path: string) => void;
   onDriveMenuOpen?: ((event: ReactMouseEvent<HTMLSpanElement>) => void) | undefined;
@@ -21,6 +22,7 @@ interface PathBarProps {
 
 export default function PathBar({
   kind,
+  dragOverPath,
   crumbs,
   onCrumbClick,
   onDriveMenuOpen,
@@ -106,7 +108,8 @@ export default function PathBar({
       <React.Fragment key={crumb.path}>
         {index > 0 && <span className="sep">/</span>}
         <span
-          className={isDriveCrumb ? 'crumb crumb-drive' : 'crumb'}
+          className={`crumb ${isDriveCrumb ? 'crumb-drive' : ''} ${!measured && dragOverPath === crumb.path ? 'drag-target' : ''}`}
+          data-drop-path={measured ? undefined : crumb.path}
           data-tooltip={!measured && crumb.icon ? crumb.label : undefined}
           onClick={
             measured

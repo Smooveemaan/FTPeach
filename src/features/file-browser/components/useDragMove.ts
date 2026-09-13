@@ -1,6 +1,7 @@
 import type { MutableRefObject, MouseEvent as ReactMouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
+import type { DropAction, DropKeys } from './dropAction.ts';
 import type { PaneId } from '../../../shared/types.ts';
 
 export interface DragMovePayload {
@@ -34,6 +35,7 @@ export interface DragInfo {
   isDir: boolean;
   isMove: boolean;
   isValidTarget: boolean;
+  action: DropAction;
 }
 
 interface DropTarget {
@@ -51,7 +53,13 @@ interface DragLeaveWindowPayload {
 }
 
 interface DragMoveOptions {
-  isValidDropTarget?: (sourceSide: PaneId, targetSide: PaneId) => boolean;
+  resolveAction?: (
+    sourceSide: PaneId,
+    targetSide: PaneId,
+    folder: string | null,
+    names: string[],
+    keys: DropKeys,
+  ) => DropAction;
   onDragLeaveWindow?: (payload: DragLeaveWindowPayload) => void;
 }
 
@@ -73,7 +81,7 @@ export interface DragMoveModel {
 
 export function useDragMove(
   onDrop: (payload: DragMovePayload) => void,
-  { isValidDropTarget, onDragLeaveWindow }: DragMoveOptions = {},
+  { resolveAction, onDragLeaveWindow }: DragMoveOptions = {},
 ): DragMoveModel {
   const dragRef = useRef<ActiveDrag | null>(null);
   const ghostRef = useRef<HTMLDivElement | null>(null);
@@ -81,8 +89,8 @@ export function useDragMove(
 
   const onDropRef = useRef(onDrop);
   onDropRef.current = onDrop;
-  const isValidDropTargetRef = useRef(isValidDropTarget);
-  isValidDropTargetRef.current = isValidDropTarget;
+  const resolveActionRef = useRef(resolveAction);
+  resolveActionRef.current = resolveAction;
   const onDragLeaveWindowRef = useRef(onDragLeaveWindow);
   onDragLeaveWindowRef.current = onDragLeaveWindow;
   const finishDragRef = useRef<((e: MouseEvent | undefined, commit: boolean) => void) | null>(null);
@@ -98,13 +106,6 @@ export function useDragMove(
       document
         .querySelectorAll('.pane-list.drag-wash, .pane-list.drag-wash-invalid')
         .forEach((p) => p.classList.remove('drag-wash', 'drag-wash-invalid'));
-    };
-
-    const isValidTarget = (sourceSide: PaneId, target: DropTarget | null) => {
-      if (!target || !target.side) return false;
-      if (isValidDropTargetRef.current && !isValidDropTargetRef.current(sourceSide, target.side))
-        return false;
-      return true;
     };
 
     const scrollTick = () => {
@@ -159,15 +160,6 @@ export function useDragMove(
       activeFolderRowRef.current = rowEl;
     };
 
-    const clearSourceDim = (drag: ActiveDrag) => {
-      const listEl = document.querySelector<HTMLElement>(`.pane-list[data-side="${drag.side}"]`);
-      if (!listEl) return;
-      drag.names.forEach((name) => {
-        const rowEl = listEl.querySelector<HTMLElement>(`.row[data-name="${CSS.escape(name)}"]`);
-        if (rowEl) rowEl.classList.remove('drag-source-row');
-      });
-    };
-
     const nearestPaneList = (e: MouseEvent) => closestElement(e.target, '.pane-list[data-side]');
 
     const overNameCell = (e: MouseEvent, rowEl: HTMLElement) => {
@@ -178,18 +170,20 @@ export function useDragMove(
       return e.clientX >= start && e.clientX <= start + width;
     };
 
-    const resolveTarget = (e: MouseEvent, drag: ActiveDrag): DropTarget | null => {
+    const resolveTarget = (e: MouseEvent): DropTarget | null => {
+      const crumb = closestElement(e.target, '[data-drop-path]');
+      if (crumb)
+        return {
+          row: crumb,
+          side: crumb.closest<HTMLElement>('.pane[data-side]')?.dataset.side as PaneId | undefined,
+          folder: crumb.dataset.dropPath ?? null,
+        };
       const overRowEl = closestElement(e.target, '.row[data-name]');
       const overIsDir =
         !!overRowEl && overRowEl.classList.contains('is-dir') && overNameCell(e, overRowEl);
       const overListEl = overRowEl?.closest<HTMLElement>('.pane-list[data-side]') ?? null;
       const overSide = overListEl?.dataset.side as PaneId | undefined;
-      const isSelfTarget =
-        !!overRowEl &&
-        overSide === drag.side &&
-        typeof overRowEl.dataset.name === 'string' &&
-        drag.names.includes(overRowEl.dataset.name);
-      if (overRowEl && overIsDir && !isSelfTarget) {
+      if (overRowEl && overIsDir) {
         return { row: overRowEl, side: overSide, folder: overRowEl.dataset.name ?? null };
       }
       const list = nearestPaneList(e);
@@ -198,46 +192,51 @@ export function useDragMove(
         : null;
     };
 
-    const syncMoveMode = (ctrlHeld: boolean) => {
-      const drag = dragRef.current;
-      if (!drag || !drag.active || drag.isMove === ctrlHeld) return;
-      drag.isMove = ctrlHeld;
-      setDragInfo((prev) => (prev ? { ...prev, isMove: ctrlHeld } : prev));
+    let lastPointer: MouseEvent | null = null;
+    const actionFor = (drag: ActiveDrag, target: DropTarget | null, keys: DropKeys): DropAction => {
+      if (!target?.side) return null;
+      if (!target.row && target.side === drag.side) return null;
+      if (resolveActionRef.current)
+        return resolveActionRef.current(drag.side, target.side, target.folder, drag.names, keys);
+      return keys.ctrlKey && keys.shiftKey ? 'invalid' : keys.shiftKey ? 'move' : 'copy';
     };
-
-    const syncValidTarget = (valid: boolean) => {
+    const updateTarget = (e: MouseEvent, keys: DropKeys) => {
       const drag = dragRef.current;
-      if (!drag || !drag.active) return;
-      setDragInfo((prev) =>
-        prev && prev.isValidTarget !== valid ? { ...prev, isValidTarget: valid } : prev,
+      if (!drag?.active) return;
+      const target = resolveTarget(e);
+      const action = actionFor(drag, target, keys);
+      clearWash();
+      document.body.classList.toggle('drag-drop-forbidden', action === 'invalid');
+      if (action === 'invalid' && target?.list?.closest('.pane[data-disconnected="true"]'))
+        target.list.classList.add('drag-wash-invalid');
+      setFolderTarget(action === 'copy' || action === 'move' ? (target?.row ?? null) : null);
+      if (target?.list && action && action !== 'invalid') target.list.classList.add('drag-wash');
+      setDragInfo((previous) =>
+        previous?.action === action
+          ? previous
+          : {
+              count: drag.names.length,
+              name: drag.entryName,
+              isDir: drag.isDir,
+              isMove: action === 'move',
+              isValidTarget: action !== 'invalid',
+              action,
+            },
       );
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
+      lastPointer = e;
 
       if (!drag.active) {
         const dx = e.clientX - drag.startX;
         const dy = e.clientY - drag.startY;
         if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
         drag.active = true;
-        drag.isMove = e.ctrlKey;
         document.body.classList.add('drag-move-active');
         startAutoScroll();
-        setDragInfo({
-          count: drag.names.length,
-          name: drag.entryName,
-          isDir: drag.isDir,
-          isMove: drag.isMove,
-          isValidTarget: true,
-        });
-        const listEl = document.querySelector<HTMLElement>(`.pane-list[data-side="${drag.side}"]`);
-        drag.names.forEach((name) => {
-          const rowEl =
-            listEl?.querySelector<HTMLElement>(`.row[data-name="${CSS.escape(name)}"]`) ?? null;
-          if (rowEl) rowEl.classList.add('drag-source-row');
-        });
       }
 
       // Active by now either way: the block above starts the drag when the
@@ -265,29 +264,19 @@ export function useDragMove(
         ghostRef.current.style.transform = `translate(${e.clientX / scale}px, ${e.clientY / scale}px) translate(${inlineOffset}px, -12px)`;
       }
 
-      syncMoveMode(e.ctrlKey);
       updateAutoScroll(e);
-      clearWash();
-      const target = resolveTarget(e, drag);
-      setFolderTarget(target ? target.row : null);
-      const isOwnBackground = !!target && !target.row && target.side === drag.side;
-      const valid = isOwnBackground || isValidTarget(drag.side, target);
-      syncValidTarget(valid);
-      if (target && !target.row && !isOwnBackground) {
-        target.list?.classList.add(valid ? 'drag-wash' : 'drag-wash-invalid');
-      }
+      updateTarget(e, e);
     };
 
     const handleModifierKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Control') return;
-      syncMoveMode(e.ctrlKey);
+      if ((e.key === 'Control' || e.key === 'Shift') && lastPointer) updateTarget(lastPointer, e);
     };
 
     const finishDrag = (e: MouseEvent | undefined, commit: boolean) => {
       const drag = dragRef.current;
       dragRef.current = null;
       if (!drag) return;
-      document.body.classList.remove('drag-move-active');
+      document.body.classList.remove('drag-move-active', 'drag-drop-forbidden');
       setDragInfo(null);
       stopAutoScroll();
       clearWash();
@@ -296,19 +285,24 @@ export function useDragMove(
         activeFolderRowRef.current = null;
       }
       if (!drag.active) return;
-      clearSourceDim(drag);
+      const suppressClick = (event: Event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      };
+      document.addEventListener('click', suppressClick, { capture: true, once: true });
+      setTimeout(() => document.removeEventListener('click', suppressClick, true), 0);
       if (!commit || !e) return;
 
-      const target = resolveTarget(e, drag);
+      const target = resolveTarget(e);
       if (!target || !target.side) return;
-      const isOwnBackground = !target.row && target.side === drag.side;
-      if (!isOwnBackground && !isValidTarget(drag.side, target)) return;
+      const action = actionFor(drag, target, e);
+      if (!action || action === 'invalid') return;
       onDropRef.current({
         sourceSide: drag.side,
         names: drag.names,
         targetSide: target.side,
         targetFolder: target.folder,
-        isMove: e.ctrlKey,
+        isMove: action === 'move',
       });
     };
 
@@ -349,8 +343,7 @@ export function useDragMove(
     };
   };
 
-  // Tears down the in-app drag state (ghost, wash, auto-scroll, source-row
-  // dimming) exactly as Escape does, without committing a drop. Callers hand
+  // Tears down the in-app drag state (ghost, wash, auto-scroll, source) exactly as Escape does, without committing a drop. Callers hand
   // off to a native OS drag (see useFileClipboard's onDragLeaveWindow) call
   // this immediately so the later mouseup doesn't misinterpret leftover DOM
   // state as an in-app drop.

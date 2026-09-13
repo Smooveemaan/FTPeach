@@ -87,3 +87,36 @@ test('dragging local entries out of the window hands the shell their full paths'
   expect(startLocal).toHaveBeenCalledWith(['D:\\work\\folder', 'D:\\work\\file.txt']);
   expect(result.current.outboundDragRef.current).toBe(false);
 });
+
+test('Ctrl-copy within a pane uses the transfer route and preserves an absolute breadcrumb target', () => {
+  const tab = makeTab('tab');
+  const copyEntries = vi.fn().mockResolvedValue(undefined);
+  const movePaneSamePane = vi.fn();
+  renderHook(() =>
+    useFileClipboard({
+      panes: tab.panes,
+      copyEntries,
+      movePaneSamePane,
+      confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
+        proceed(names, false);
+      }),
+      canCopyBetween: vi.fn(() => true),
+      refreshPane: vi.fn(),
+    }),
+  );
+  act(() =>
+    vi
+      .mocked(useDragMove)
+      .mock.calls.at(-1)?.[0]({
+        sourceSide: 'a',
+        targetSide: 'a',
+        targetFolder: 'C:\\parent',
+        names: ['file.txt'],
+        isMove: false,
+      }),
+  );
+  expect(copyEntries).toHaveBeenCalledWith(
+    expect.objectContaining({ move: false, targetFolder: 'C:\\parent' }),
+  );
+  expect(movePaneSamePane).not.toHaveBeenCalled();
+});

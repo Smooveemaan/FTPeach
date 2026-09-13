@@ -90,7 +90,7 @@ fn artifact_path(destination: &Path, id: uuid::Uuid) -> PathBuf {
     destination.with_file_name(format!(".ftpeach-{id}.part"))
 }
 
-async fn rename_no_replace(source: &Path, destination: &Path) -> Result<()> {
+pub(crate) async fn rename_no_replace(source: &Path, destination: &Path) -> Result<()> {
     #[cfg(windows)]
     {
         use std::os::windows::ffi::OsStrExt;

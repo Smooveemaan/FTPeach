@@ -106,12 +106,12 @@ export default function Workspace({
           toggle alone (not conditional rendering) is what lets its opacity
           transition play instead of popping in. */}
       <div
-        className={`drag-move-ghost ${dragMove.dragInfo ? 'active' : ''} ${dragMove.dragInfo?.isMove ? 'move' : ''} ${
+        className={`drag-move-ghost ${dragMove.dragInfo && dragMove.dragInfo.action !== 'invalid' ? 'active' : ''} ${dragMove.dragInfo?.isMove ? 'move' : ''} ${
           dragMove.dragInfo?.isValidTarget === false ? 'invalid' : ''
         }`}
         ref={dragMove.ghostRef}
       >
-        {dragMove.dragInfo && (
+        {dragMove.dragInfo && dragMove.dragInfo.action !== 'invalid' && (
           <>
             <span className="icon">
               <Icon name={dragMove.dragInfo.isDir ? 'fileFolder' : 'file'} size={13} />
@@ -121,9 +121,9 @@ export default function Workspace({
                 ? t('dragMove.itemCount', { count: dragMove.dragInfo.count })
                 : dragMove.dragInfo.name}
             </span>
-            {/* Copy is the default outcome and needs no label; Ctrl-held move
-                is the one worth calling out before the user releases. */}
-            {dragMove.dragInfo.isMove && <span className="mode">{t('dragMove.moveMode')}</span>}
+            {dragMove.dragInfo.action && (
+              <span className="mode">{dragMove.dragInfo.action === 'move' ? 'Move' : 'Copy'}</span>
+            )}
           </>
         )}
       </div>

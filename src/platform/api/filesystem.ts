@@ -109,8 +109,12 @@ export function createFilesystemApi(invoke: InvokeFn) {
         () => [],
       ),
     mkdir: (localPath: string) => commandOutcome(invoke, 'fs_mkdir', { localPath }),
-    rename: (oldPath: string, newPath: string) =>
-      commandOutcome(invoke, 'fs_rename', { oldPath, newPath }),
+    rename: (oldPath: string, newPath: string, overwrite?: boolean) =>
+      commandOutcome(invoke, 'fs_rename', {
+        oldPath,
+        newPath,
+        ...(overwrite === undefined ? {} : { overwrite }),
+      }),
     copyFile: (sourcePath: string, destPath: string, overwrite = false) =>
       commandOutcome(invoke, 'fs_copy_file', { sourcePath, destPath, overwrite }),
     validateCopy: (sourcePath: string, destPath: string) =>

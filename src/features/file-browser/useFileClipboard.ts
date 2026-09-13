@@ -6,6 +6,7 @@ import { api } from '../../platform/api/index.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
 import type { useTransfers } from '../transfers/index.ts';
+import { resolveDropAction } from './components/dropAction.ts';
 import { paneJoin } from './panes/paneBackend.ts';
 import type { PaneId, PaneState } from './panes/paneModel.ts';
 import type { usePanes } from './usePanes.ts';
@@ -50,7 +51,6 @@ export function useFileClipboard({
   copyEntries,
   canCopyBetween,
   refreshPane,
-  movePaneSamePane,
   panes,
 }: FileClipboardOptions): FileClipboardModel {
   const copySelectedWithConfirm = (
@@ -168,15 +168,6 @@ export function useFileClipboard({
     ({ sourceSide, names, targetSide, targetFolder, isMove }) => {
       const sourcePane = panes[sourceSide];
       const targetPane = panes[targetSide];
-      if (targetSide === sourceSide) {
-        if (!targetFolder) return;
-        const proceed = (namesToUse: string[]) =>
-          movePaneSamePane(sourceSide, namesToUse, targetFolder);
-        reportRejection(
-          confirmOverwriteIfNeeded(targetPane, targetFolder, names, proceed, sourcePane.entries),
-        );
-        return;
-      }
       const proceed = (namesToUse: string[], overwriteApproved: boolean) =>
         copyEntries({
           sourcePane,
@@ -199,7 +190,10 @@ export function useFileClipboard({
       );
     },
     {
-      isValidDropTarget: (sourceId, targetId) => canCopyBetween(panes[sourceId], panes[targetId]),
+      resolveAction: (sourceId, targetId, folder, names, keys) =>
+        canCopyBetween(panes[sourceId], panes[targetId])
+          ? resolveDropAction(panes[sourceId], panes[targetId], folder, names, keys)
+          : 'invalid',
       onDragLeaveWindow: ({ side, names }) => {
         const pane = panes[side];
         if (pane.kind === 'local') {

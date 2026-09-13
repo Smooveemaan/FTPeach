@@ -135,7 +135,7 @@ pub async fn fs_mkdir(local_path: String) -> OkResult {
 }
 
 #[tauri::command]
-pub async fn fs_rename(old_path: String, new_path: String) -> OkResult {
+pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<bool>) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&old_path) {
         Ok(lease) => lease,
         // Kept typed: `err` would flatten the "busy" code into prose.
@@ -184,7 +184,29 @@ pub async fn fs_rename(old_path: String, new_path: String) -> OkResult {
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&new_path)) {
         return err(error);
     }
-    match tokio::fs::rename(&old_path, &new_path).await {
+    let result = if overwrite == Some(false) {
+        crate::protocol::transfer_file::rename_no_replace(&old_path, Path::new(&new_path)).await
+    } else {
+        tokio::fs::rename(&old_path, &new_path)
+            .await
+            .map_err(anyhow::Error::from)
+    };
+    #[cfg(windows)]
+    let result = match result {
+        Err(error) if crate::local_fs::verified_move::is_cross_volume(&error) => {
+            tokio::task::spawn_blocking(move || {
+                crate::local_fs::verified_move::copy_verify_delete(
+                    &old_path,
+                    Path::new(&new_path),
+                    overwrite.unwrap_or(false),
+                )
+            })
+            .await
+            .unwrap_or_else(|error| Err(error.into()))
+        }
+        other => other,
+    };
+    match result {
         Ok(()) => ok(),
         Err(e) => err(e),
     }
@@ -541,3 +563,76 @@ open_command!(
     "fs_execute_path",
     crate::local_fs::local_open::OpenKind::Execute
 );
+
+#[cfg(all(test, windows))]
+mod drag_move_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn move_without_overwrite_preserves_both_files_and_then_moves_to_free_target() {
+        let dir = std::env::temp_dir().join(format!("ftpeach-drag-move-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&dir).unwrap();
+        let source = dir.join("source.txt");
+        let target = dir.join("target.txt");
+        std::fs::write(&source, b"source").unwrap();
+        std::fs::write(&target, b"external").unwrap();
+        let result = fs_rename(
+            source.to_string_lossy().into(),
+            target.to_string_lossy().into(),
+            Some(false),
+        )
+        .await;
+        assert!(matches!(result, OkResult::Err { .. }));
+        assert_eq!(std::fs::read(&source).unwrap(), b"source");
+        assert_eq!(std::fs::read(&target).unwrap(), b"external");
+        std::fs::remove_file(&target).unwrap();
+        let result = fs_rename(
+            source.to_string_lossy().into(),
+            target.to_string_lossy().into(),
+            Some(false),
+        )
+        .await;
+        assert!(matches!(result, OkResult::Ok { .. }));
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source");
+        std::fs::remove_file(&target).unwrap();
+        std::fs::remove_dir(&dir).unwrap();
+    }
+    #[tokio::test]
+    #[ignore = "requires an explicitly configured writable second volume"]
+    async fn cross_volume_disk_move() {
+        let destination_root =
+            std::env::var_os("FTPEACH_MOVE_TEST_VOLUME").expect("Set a second volume path");
+        let id = uuid::Uuid::new_v4().to_string();
+        let source_dir = std::env::temp_dir().join(format!("ftpeach-move-source-{id}"));
+        let target_dir = PathBuf::from(destination_root).join(format!("ftpeach-move-target-{id}"));
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&target_dir).unwrap();
+        for overwrite in [false, true] {
+            let source = source_dir.join("file.bin");
+            let target = target_dir.join("file.bin");
+            let data = vec![73; 3 * 1024 * 1024 + 19];
+            std::fs::write(&source, &data).unwrap();
+            if overwrite {
+                std::fs::write(&target, b"old").unwrap();
+            }
+            let result = fs_rename(
+                source.to_string_lossy().into(),
+                target.to_string_lossy().into(),
+                Some(overwrite),
+            )
+            .await;
+            assert!(
+                matches!(result, OkResult::Ok { .. }),
+                "{}",
+                serde_json::to_string(&result).unwrap()
+            );
+            assert!(!source.exists());
+            assert_eq!(std::fs::read(&target).unwrap(), data);
+            assert_eq!(std::fs::read_dir(&target_dir).unwrap().count(), 1);
+            std::fs::remove_file(target).unwrap();
+        }
+        std::fs::remove_dir(source_dir).unwrap();
+        std::fs::remove_dir(target_dir).unwrap();
+    }
+}

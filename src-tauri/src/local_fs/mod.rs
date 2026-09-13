@@ -9,3 +9,6 @@ pub(crate) mod preview;
 pub(crate) mod recycle_bin;
 
 pub(crate) mod target_reservation;
+
+#[cfg(windows)]
+pub(crate) mod verified_move;

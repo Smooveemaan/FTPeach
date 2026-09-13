@@ -1,6 +1,11 @@
+import { QUICKLIST_LIMIT } from '../../features/sites/index.ts';
+import type { SettingsState } from '../../features/settings/index.ts';
 import type { TransferRow, TransferSummary } from '../../features/transfers/index.ts';
 import type { TrayModel } from '../../platform/api/tray.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { ManagedSite, Translate } from '../../shared/types.ts';
+
+/** The speed limits the tray offers, in KB/s; 0 is no limit. */
+export const SPEED_LIMIT_PRESETS_KBPS: readonly number[] = [0, 512, 1024, 5120, 10240];
 
 export interface TrayModelInput {
   t: Translate;
@@ -10,17 +15,42 @@ export interface TrayModelInput {
   >;
   /** Overall progress of the running transfers, `null` when it is unknown. */
   progressPercent: number | null;
+  settings: Pick<
+    SettingsState['transfers'],
+    'transferSpeedLimitKBps' | 'preventSleepDuringTransfers' | 'notifyOnTransferComplete'
+  >;
+  /** Connectable sites, most recent first: the empty pane's order. */
+  recentSites: readonly Pick<ManagedSite, 'id' | 'name'>[];
   vault: { configured: boolean; locked: boolean } | null;
   quit: { pending: boolean; promptOpen: boolean };
+}
+
+/** "512 KB/s", "5 MB/s", or no limit at all. */
+export function formatSpeedLimit(t: Translate, kbps: number): string {
+  if (kbps <= 0) return t('tray.unlimited');
+  const megabytes = kbps / 1024;
+  const value =
+    kbps < 1024
+      ? `${kbps} ${t('common.units.kb')}`
+      : `${Number.isInteger(megabytes) ? megabytes : megabytes.toFixed(1)} ${t('common.units.mb')}`;
+  return t('common.perSecond', { value });
 }
 
 export function buildTrayModel({
   t,
   transfers,
   progressPercent,
+  settings,
+  recentSites,
   vault,
   quit,
 }: TrayModelInput): TrayModel {
+  // The backend takes a whole, non-negative number; a limit typed in Settings
+  // that no preset matches gets a checked entry of its own, first.
+  const speedLimit = Math.max(0, Math.round(settings.transferSpeedLimitKBps || 0));
+  const presets = SPEED_LIMIT_PRESETS_KBPS.includes(speedLimit)
+    ? SPEED_LIMIT_PRESETS_KBPS
+    : [speedLimit, ...SPEED_LIMIT_PRESETS_KBPS];
   const active = transfers.activeTransfersCount;
   const numbers =
     progressPercent === null ? { count: active } : { count: active, percent: progressPercent };
@@ -38,6 +68,10 @@ export function buildTrayModel({
       cancelQuit: t('tray.cancelQuit'),
       pauseAll: t('tray.pauseAll'),
       resumeAll: t('tray.resumeAll'),
+      speedLimit: t('tray.speedLimit'),
+      preventSleep: t('tray.preventSleep'),
+      notify: t('tray.notify'),
+      recentConnections: t('tray.recentConnections'),
       lockVault: t('tray.lockVault'),
     },
     status: active === 0 ? '' : t(statusKey, numbers),
@@ -46,6 +80,13 @@ export function buildTrayModel({
       canPauseAll: transfers.hasPausableTransfers,
       canResumeAll: transfers.canResumeAllTransfers,
     },
+    speedLimitKBps: speedLimit,
+    speedPresets: presets.map((kbps) => ({ kbps, label: formatSpeedLimit(t, kbps) })),
+    preventSleep: settings.preventSleepDuringTransfers,
+    notifyOnComplete: settings.notifyOnTransferComplete,
+    recentSites: recentSites
+      .slice(0, QUICKLIST_LIMIT)
+      .map((site) => ({ id: site.id, label: site.name })),
     vaultLockable: !!vault && vault.configured && !vault.locked,
     quitPending: quit.pending,
     quitPromptOpen: quit.promptOpen,

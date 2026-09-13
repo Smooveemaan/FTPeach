@@ -266,14 +266,6 @@ export default function Application() {
     onVaultUnlockRequired: handler(handleVaultUnlockRequired),
     stopTransfersForConnection,
   });
-  useTrayBridge({
-    t,
-    transfers: { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers },
-    pauseAllTransfers,
-    resumeAllTransfers: () => resumeAllTransfers(refreshBothPanes),
-    quit: quitWhenIdle,
-  });
-
   const logConnectionLabels = useRememberedConnectionLabels(connectionLabels);
   const routeConnectionLabels = useMemo(
     () =>
@@ -338,6 +330,20 @@ export default function Application() {
     refreshSites,
     reportError,
     onSecretNotPersisted: () => setSecretNotPersistedNotice(true),
+  });
+
+  useTrayBridge({
+    t,
+    transfers: { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers },
+    pauseAllTransfers,
+    resumeAllTransfers: () => resumeAllTransfers(refreshBothPanes),
+    quit: quitWhenIdle,
+    settings: settings.transfers,
+    updateTransfers: updateSettings.transfers,
+    recentSites: orderedSites,
+    connectableSites: flatSites,
+    connectSavedSite,
+    freeConnectTargetPaneId,
   });
 
   const { exportSettings: handleExportSettings, importSettings: handleImportSettings } =

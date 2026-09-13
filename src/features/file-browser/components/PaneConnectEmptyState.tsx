@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
-import { siteMeta } from '../../sites/index.ts';
+import { QUICKLIST_LIMIT, siteMeta } from '../../sites/index.ts';
 import type { ManagedSite } from '../../../shared/types.ts';
 
 interface PaneConnectEmptyStateProps {
@@ -16,8 +16,6 @@ interface PaneQuicklistRowProps {
   site: ManagedSite;
   onSiteConnect: (site: ManagedSite) => unknown;
 }
-
-const QUICKLIST_LIMIT = 3;
 
 export default function PaneConnectEmptyState({
   sites,

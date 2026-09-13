@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import type { SettingsUpdaters } from '../../features/settings/index.ts';
 import { getTransfersSnapshot, subscribeTransfers } from '../../features/transfers/index.ts';
 import { api } from '../../platform/api/index.ts';
+import { persistSetting } from '../../platform/persistSetting.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { ManagedSite, PaneId, Translate } from '../../shared/types.ts';
 import { buildTrayModel, createTrayModelSender, transfersProgressPercent } from './trayModel.ts';
 import type { TrayModelInput, TrayModelSender } from './trayModel.ts';
 import type { QuitWhenIdleModel } from '../quit/useQuitWhenIdle.ts';
@@ -16,8 +18,16 @@ export interface TrayBridgeOptions {
   pauseAllTransfers: () => void;
   resumeAllTransfers: () => void;
   quit: Pick<QuitWhenIdleModel, 'pending' | 'promptOpen' | 'request' | 'cancel'>;
+  settings: TrayModelInput['settings'];
+  updateTransfers: SettingsUpdaters['transfers'];
+  /** Connectable sites, most recent first. */
+  recentSites: TrayModelInput['recentSites'];
+  connectableSites: readonly ManagedSite[];
+  connectSavedSite: (site: ManagedSite, paneId?: PaneId) => void;
+  freeConnectTargetPaneId: PaneId | null;
   trayApi?: TrayApi;
   vaultApi?: VaultApi;
+  persist?: (patch: Record<string, unknown>) => void;
 }
 
 /**
@@ -32,13 +42,29 @@ export function useTrayBridge({
   pauseAllTransfers,
   resumeAllTransfers,
   quit,
+  settings,
+  updateTransfers,
+  recentSites,
+  connectableSites,
+  connectSavedSite,
+  freeConnectTargetPaneId,
   trayApi = api.tray,
   vaultApi = api.vault,
+  persist = persistSetting,
 }: TrayBridgeOptions): void {
   const vault = useVaultState(vaultApi);
 
   const { pending: quitPending, promptOpen: quitPromptOpen } = quit;
-  const input = { t, transfers, vault, quit: { pending: quitPending, promptOpen: quitPromptOpen } };
+  const { transferSpeedLimitKBps, preventSleepDuringTransfers, notifyOnTransferComplete } =
+    settings;
+  const input = {
+    t,
+    transfers,
+    settings: { transferSpeedLimitKBps, preventSleepDuringTransfers, notifyOnTransferComplete },
+    recentSites,
+    vault,
+    quit: { pending: quitPending, promptOpen: quitPromptOpen },
+  };
   const inputRef = useRef(input);
   inputRef.current = input;
   const senderRef = useRef<TrayModelSender | null>(null);
@@ -74,13 +100,32 @@ export function useTrayBridge({
     activeTransfersCount,
     hasPausableTransfers,
     canResumeAllTransfers,
+    transferSpeedLimitKBps,
+    preventSleepDuringTransfers,
+    notifyOnTransferComplete,
+    recentSites,
     vault,
     quitPending,
     quitPromptOpen,
   ]);
 
-  const actionsRef = useRef({ pauseAllTransfers, resumeAllTransfers, quit });
-  actionsRef.current = { pauseAllTransfers, resumeAllTransfers, quit };
+  const actions = {
+    pauseAllTransfers,
+    resumeAllTransfers,
+    quit,
+    connectableSites,
+    connectSavedSite,
+    freeConnectTargetPaneId,
+    // Settings changed from the tray go the way a toggle in the window does:
+    // into the state at once, and to the store shortly after. The backend
+    // applies the speed limit and sleep prevention as it stores them.
+    changeTransfers: (patch: Partial<TrayModelInput['settings']>) => {
+      updateTransfers(patch);
+      persist(patch);
+    },
+  };
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
   useEffect(
     () =>
       trayApi.onAction((action) => {
@@ -92,6 +137,22 @@ export function useTrayBridge({
           case 'resumeAll':
             actions.resumeAllTransfers();
             return;
+          case 'setSpeedLimit':
+            actions.changeTransfers({ transferSpeedLimitKBps: action.kbps });
+            return;
+          case 'setPreventSleep':
+            actions.changeTransfers({ preventSleepDuringTransfers: action.enabled });
+            return;
+          case 'setNotifyOnComplete':
+            actions.changeTransfers({ notifyOnTransferComplete: action.enabled });
+            return;
+          case 'connect': {
+            // The backend has already brought the window back. A site
+            // deleted since the menu was drawn is simply not there.
+            const site = actions.connectableSites.find((entry) => entry.id === action.siteId);
+            if (site) actions.connectSavedSite(site, actions.freeConnectTargetPaneId ?? undefined);
+            return;
+          }
           case 'lockVault':
             reportRejection(
               vaultApi.lock().then((result) => {

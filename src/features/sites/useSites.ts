@@ -31,6 +31,9 @@ export interface PaneSiteSource {
   path: string;
 }
 
+/** How many recent connections the empty pane and the tray menu list. */
+export const QUICKLIST_LIMIT = 3;
+
 export function orderConnectableSites(
   sites: readonly ManagedSite[],
   recentSiteIds: readonly string[],

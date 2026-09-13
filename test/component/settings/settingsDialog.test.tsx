@@ -319,6 +319,46 @@ describe('SettingsDialog unsaved-changes gate', () => {
     );
   });
 
+  test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog({ transferSpeedLimitKBps: 512 });
+
+    await toggleNotifyOnComplete(user);
+    expect(props.onPreview).toHaveBeenLastCalledWith({ notifyOnTransferComplete: true });
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith({ notifyOnTransferComplete: true });
+  });
+
+  test('an edit put back is previewed once more and then left out of the save', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog();
+
+    await toggleNotifyOnComplete(user);
+    await user.click(screen.getByRole('checkbox', { name: 'settings.notifyOnComplete' }));
+    expect(props.onPreview).toHaveBeenLastCalledWith({ notifyOnTransferComplete: false });
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith({});
+  });
+
+  test('a change to one proxy setting saves the proxy settings together', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
+    await user.type(screen.getByLabelText('settings.proxy.usernameLabel'), 'relay');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith({
+      proxyEnabled: true,
+      proxyType: 'socks5',
+      proxyHost: '203.0.113.5',
+      proxyPort: 1080,
+      proxyUsername: 'relay',
+    });
+  });
+
   test('exports diagnostics from the Logging settings category', async () => {
     const user = userEvent.setup();
     const onExportDiagnostics = vi.fn(async () => ({ ok: true }));

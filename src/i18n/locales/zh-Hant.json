@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "傳輸完成時通知",
+    "recentConnections": "最近的連線",
     "lockVault": "Lock saved passwords",
     "quit": "結束",
     "cancelQuit": "Cancel quit"

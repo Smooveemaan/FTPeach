@@ -12,11 +12,23 @@ export interface TrayModel {
     cancelQuit: string;
     pauseAll: string;
     resumeAll: string;
+    speedLimit: string;
+    preventSleep: string;
+    notify: string;
+    recentConnections: string;
     lockVault: string;
   };
   /** The finished status line, empty while nothing is transferring. */
   status: string;
   transfers: { active: number; canPauseAll: boolean; canResumeAll: boolean };
+  /** A whole number; one of the presets always matches it. */
+  speedLimitKBps: number;
+  /** 0 is no limit. Labels are formatted here, not in the backend. */
+  speedPresets: { kbps: number; label: string }[];
+  preventSleep: boolean;
+  notifyOnComplete: boolean;
+  /** Most recent first, at most three. */
+  recentSites: { id: string; label: string }[];
   /** The vault is set up and unlocked. */
   vaultLockable: boolean;
   /** Quitting waits for the running transfers to finish. */
@@ -32,11 +44,15 @@ export interface TrayModel {
 export type TrayAction =
   | { kind: 'pauseAll' }
   | { kind: 'resumeAll' }
+  | { kind: 'setSpeedLimit'; kbps: number }
+  | { kind: 'setPreventSleep'; enabled: boolean }
+  | { kind: 'setNotifyOnComplete'; enabled: boolean }
+  | { kind: 'connect'; siteId: string }
   | { kind: 'lockVault' }
   | { kind: 'quitRequested' }
   | { kind: 'cancelQuit' };
 
-const ACTION_KINDS: ReadonlySet<string> = new Set([
+const BARE_ACTIONS: ReadonlySet<string> = new Set([
   'pauseAll',
   'resumeAll',
   'lockVault',
@@ -45,7 +61,18 @@ const ACTION_KINDS: ReadonlySet<string> = new Set([
 ]);
 
 export function isTrayAction(value: unknown): value is TrayAction {
-  return isRecord(value) && typeof value.kind === 'string' && ACTION_KINDS.has(value.kind);
+  if (!isRecord(value) || typeof value.kind !== 'string') return false;
+  switch (value.kind) {
+    case 'setSpeedLimit':
+      return typeof value.kbps === 'number' && Number.isSafeInteger(value.kbps) && value.kbps >= 0;
+    case 'setPreventSleep':
+    case 'setNotifyOnComplete':
+      return typeof value.enabled === 'boolean';
+    case 'connect':
+      return typeof value.siteId === 'string';
+    default:
+      return BARE_ACTIONS.has(value.kind);
+  }
 }
 
 export function createTrayApi(invoke: InvokeFn, onEvent: EventRegistrar) {

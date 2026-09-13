@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "전송이 완료되면 알림 보내기",
+    "recentConnections": "최근 연결",
     "lockVault": "Lock saved passwords",
     "quit": "종료",
     "cancelQuit": "Cancel quit"

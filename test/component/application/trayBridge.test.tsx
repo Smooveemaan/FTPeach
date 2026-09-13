@@ -42,6 +42,13 @@ function setup(vaultStatus = { configured: true, locked: false }) {
   };
   const pauseAllTransfers = vi.fn();
   const resumeAllTransfers = vi.fn();
+  const updateTransfers = vi.fn();
+  const persist = vi.fn();
+  const connectSavedSite = vi.fn();
+  const sites = [
+    { id: 'prod', name: 'Production' },
+    { id: 'stage', name: 'Staging' },
+  ];
   const quit = { pending: false, promptOpen: false, request: vi.fn(), cancel: vi.fn() };
   const baseProps: TrayBridgeOptions = {
     t,
@@ -49,8 +56,19 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     pauseAllTransfers,
     resumeAllTransfers,
     quit,
+    settings: {
+      transferSpeedLimitKBps: 0,
+      preventSleepDuringTransfers: true,
+      notifyOnTransferComplete: true,
+    },
+    updateTransfers,
+    recentSites: sites,
+    connectableSites: sites,
+    connectSavedSite,
+    freeConnectTargetPaneId: 'a',
     trayApi,
     vaultApi,
+    persist,
   };
   const view = renderHook((props: TrayBridgeOptions) => useTrayBridge(props), {
     initialProps: baseProps,
@@ -63,6 +81,10 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     pauseAllTransfers,
     resumeAllTransfers,
     quit,
+    updateTransfers,
+    persist,
+    connectSavedSite,
+    sites,
     lastModel: () => trayApi.setModel.mock.calls.at(-1)?.[0],
     fire: (action: TrayAction) => act(() => onAction?.(action)),
   };
@@ -208,4 +230,46 @@ test('unmounting stops listening for tray actions', () => {
   view.unmount();
   view.fire({ kind: 'pauseAll' });
   expect(view.pauseAllTransfers).not.toHaveBeenCalled();
+});
+
+test('settings changed from the tray update the state and the store together', async () => {
+  const view = setup();
+  await act(async () => {
+    await Promise.resolve();
+  });
+  view.fire({ kind: 'setSpeedLimit', kbps: 5120 });
+  expect(view.updateTransfers).toHaveBeenLastCalledWith({ transferSpeedLimitKBps: 5120 });
+  expect(view.persist).toHaveBeenLastCalledWith({ transferSpeedLimitKBps: 5120 });
+  view.fire({ kind: 'setPreventSleep', enabled: false });
+  expect(view.persist).toHaveBeenLastCalledWith({ preventSleepDuringTransfers: false });
+  view.fire({ kind: 'setNotifyOnComplete', enabled: false });
+  expect(view.updateTransfers).toHaveBeenLastCalledWith({ notifyOnTransferComplete: false });
+
+  const calls = view.trayApi.setModel.mock.calls.length;
+  view.rerender({
+    ...view.baseProps,
+    settings: { ...view.baseProps.settings, transferSpeedLimitKBps: 5120 },
+  });
+  expect(view.trayApi.setModel).toHaveBeenCalledTimes(calls + 1);
+  expect(view.lastModel()?.speedLimitKBps).toBe(5120);
+});
+
+test('connect opens a site that still exists in the free pane and ignores a deleted one', async () => {
+  const view = setup();
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(view.lastModel()?.recentSites).toEqual([
+    { id: 'prod', label: 'Production' },
+    { id: 'stage', label: 'Staging' },
+  ]);
+  view.fire({ kind: 'connect', siteId: 'stage' });
+  expect(view.connectSavedSite).toHaveBeenCalledWith(view.sites[1], 'a');
+
+  view.rerender({ ...view.baseProps, freeConnectTargetPaneId: null });
+  view.fire({ kind: 'connect', siteId: 'prod' });
+  expect(view.connectSavedSite).toHaveBeenLastCalledWith(view.sites[0], undefined);
+
+  view.fire({ kind: 'connect', siteId: 'deleted' });
+  expect(view.connectSavedSite).toHaveBeenCalledTimes(2);
 });

@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "Meddela när överföringarna är klara",
+    "recentConnections": "Senaste anslutningar",
     "lockVault": "Lock saved passwords",
     "quit": "Avsluta",
     "cancelQuit": "Cancel quit"

@@ -730,6 +730,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "Notificar quando as transferências forem concluídas",
+    "recentConnections": "Conexões recentes",
     "lockVault": "Lock saved passwords",
     "quit": "Sair",
     "cancelQuit": "Cancel quit"

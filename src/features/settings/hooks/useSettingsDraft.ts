@@ -207,6 +207,30 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
   };
 }
 
+/** Settings the store accepts only together: a change to one sends them all. */
+const LINKED_SETTINGS: readonly (readonly string[])[] = [
+  ['proxyEnabled', 'proxyType', 'proxyHost', 'proxyPort', 'proxyUsername'],
+];
+
+/**
+ * The part of `patch` that differs from how the dialog opened. Only that is
+ * previewed, reverted and saved, so a setting changed elsewhere while the
+ * dialog is open, such as from the tray icon's menu, is not put back.
+ */
+function changedSettings(patch: SettingsPatch, opened: SettingsPatch): SettingsPatch {
+  const changed = new Set(
+    Object.keys(patch).filter((key) => JSON.stringify(patch[key]) !== JSON.stringify(opened[key])),
+  );
+  for (const group of LINKED_SETTINGS) {
+    if (group.some((key) => changed.has(key))) for (const key of group) changed.add(key);
+  }
+  return Object.fromEntries(Object.entries(patch).filter(([key]) => changed.has(key)));
+}
+
+function pick(patch: SettingsPatch, keys: ReadonlySet<string>): SettingsPatch {
+  return Object.fromEntries(Object.entries(patch).filter(([key]) => keys.has(key)));
+}
+
 type SettingsDraftSetters = {
   [Key in keyof SettingsDraft as `set${Capitalize<Key>}`]: Dispatch<
     SetStateAction<SettingsDraft[Key]>
@@ -235,6 +259,9 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   const [confirmCloseArmed, setConfirmCloseArmed] = useState(false);
   const isFirstPreviewRef = useRef(true);
   const originalPatchRef = useRef<SettingsPatch>(initialSettings);
+  // The draft as it opened, through the same normalization a save applies.
+  const [openedPatch] = useState(() => buildPatch(createDraft(initialSettings)));
+  const previewedRef = useRef(new Set<string>());
 
   const setter =
     <Key extends keyof SettingsDraft>(field: Key): Dispatch<SetStateAction<SettingsDraft[Key]>> =>
@@ -242,7 +269,13 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
       dispatch({ field, value } as DraftAction);
 
   useEffect(() => {
-    onPreview(buildPatch(draft));
+    const patch = buildPatch(draft);
+    for (const key of Object.keys(changedSettings(patch, openedPatch))) {
+      previewedRef.current.add(key);
+    }
+    // A setting edited and then put back is previewed once more, which undoes
+    // its earlier preview.
+    onPreview(pick(patch, previewedRef.current));
     if (isFirstPreviewRef.current) isFirstPreviewRef.current = false;
     else setHasUnsavedChanges(true);
     // Preview callbacks intentionally retain the instance captured when the dialog opened.
@@ -256,7 +289,10 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setSaving(true);
     setSaveError(undefined);
     try {
-      const result = await onSave({ ...buildPatch(draft), ...proxyPasswordPatch });
+      const result = await onSave({
+        ...changedSettings(buildPatch(draft), openedPatch),
+        ...proxyPasswordPatch,
+      });
       if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
         throw new Error('error' in result ? String(result.error) : 'Settings could not be saved');
       }
@@ -270,7 +306,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   };
   const discardAndClose = () => {
     if (savingRef.current) return;
-    onPreview(originalPatchRef.current);
+    onPreview(pick(originalPatchRef.current, previewedRef.current));
     onClose();
   };
   const requestClose = (vaultBusy: boolean) => {

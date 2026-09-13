@@ -4,10 +4,13 @@ import test from 'node:test';
 import {
   buildTrayModel,
   createTrayModelSender,
+  formatSpeedLimit,
+  SPEED_LIMIT_PRESETS_KBPS,
   transfersProgressPercent,
   trayMenuStructure,
 } from '../../../src/app/tray/trayModel.ts';
 import type { TrayModelInput } from '../../../src/app/tray/trayModel.ts';
+import { QUICKLIST_LIMIT } from '../../../src/features/sites/index.ts';
 import type { TransferRow } from '../../../src/features/transfers/index.ts';
 import type { TrayModel } from '../../../src/platform/api/tray.ts';
 import type { Translate } from '../../../src/shared/types.ts';
@@ -26,6 +29,12 @@ function input(overrides: Partial<TrayModelInput> = {}): TrayModelInput {
     progressPercent: null,
     vault: null,
     quit: { pending: false, promptOpen: false },
+    settings: {
+      transferSpeedLimitKBps: 0,
+      preventSleepDuringTransfers: true,
+      notifyOnTransferComplete: false,
+    },
+    recentSites: [],
     ...overrides,
   };
 }
@@ -237,4 +246,63 @@ test('a tick that finds nothing new sends nothing, and dispose cancels a pending
   harness.advance(1000);
   harness.sender.update();
   assert.equal(harness.sent.length, 1);
+});
+
+test('the speed presets mark the current limit and format their labels', () => {
+  const model = buildTrayModel(
+    input({
+      settings: {
+        transferSpeedLimitKBps: 1024,
+        preventSleepDuringTransfers: false,
+        notifyOnTransferComplete: true,
+      },
+    }),
+  );
+  assert.equal(model.speedLimitKBps, 1024);
+  assert.deepEqual(
+    model.speedPresets.map((preset) => preset.kbps),
+    [...SPEED_LIMIT_PRESETS_KBPS],
+  );
+  assert.equal(model.speedPresets[0]?.label, 'tray.unlimited');
+  assert.equal(model.preventSleep, false);
+  assert.equal(model.notifyOnComplete, true);
+});
+
+test('a limit no preset matches gets its own entry first, as a whole number', () => {
+  const model = buildTrayModel(
+    input({
+      settings: {
+        transferSpeedLimitKBps: 300.4,
+        preventSleepDuringTransfers: true,
+        notifyOnTransferComplete: true,
+      },
+    }),
+  );
+  assert.equal(model.speedLimitKBps, 300);
+  assert.deepEqual(
+    model.speedPresets.map((preset) => preset.kbps),
+    [300, ...SPEED_LIMIT_PRESETS_KBPS],
+  );
+});
+
+test('speed labels read as kilobytes or megabytes per second', () => {
+  assert.equal(formatSpeedLimit(t, 0), 'tray.unlimited');
+  assert.equal(formatSpeedLimit(t, 512), 'common.perSecond{"value":"512 common.units.kb"}');
+  assert.equal(formatSpeedLimit(t, 5120), 'common.perSecond{"value":"5 common.units.mb"}');
+  assert.equal(formatSpeedLimit(t, 1536), 'common.perSecond{"value":"1.5 common.units.mb"}');
+});
+
+test('recent sites keep their order and stop at the empty pane quicklist limit', () => {
+  const sites = ['a', 'b', 'c', 'd', 'e'].map((id) => ({ id, name: `Site ${id}` }));
+  assert.deepEqual(buildTrayModel(input()).recentSites, []);
+  assert.deepEqual(buildTrayModel(input({ recentSites: sites.slice(0, 2) })).recentSites, [
+    { id: 'a', label: 'Site a' },
+    { id: 'b', label: 'Site b' },
+  ]);
+  const five = buildTrayModel(input({ recentSites: sites })).recentSites;
+  assert.equal(five.length, QUICKLIST_LIMIT);
+  assert.deepEqual(
+    five.map((site) => site.id),
+    ['a', 'b', 'c'],
+  );
 });

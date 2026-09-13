@@ -137,11 +137,29 @@ pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
         }
         // The command is read from the model the menu was drawn from, not
         // from the item's text.
-        let command = menu::command_for(&app.state::<TrayState>().lock().model(), id);
+        let command = {
+            let state = app.state::<TrayState>();
+            let inner = state.lock();
+            // Menu events arrive on the main thread, where the setters this
+            // calls take effect at once.
+            if let Some(live) = &inner.live
+                && let Err(error) = live.resync_checks()
+            {
+                log::warn!("could not reset the tray menu's check marks: {error}");
+            }
+            menu::command_for(&inner.model(), id)
+        };
         match command {
             Some(MenuCommand::Show) => restore(app),
             Some(MenuCommand::Quit) => quit(app),
-            Some(MenuCommand::Action(action)) => send_action(app, &action),
+            Some(MenuCommand::Action(action)) => {
+                // Connecting needs the window: it may ask before replacing a
+                // connection, and it is where the result shows.
+                if matches!(action, TrayAction::Connect { .. }) {
+                    restore(app);
+                }
+                send_action(app, &action);
+            }
             None => {}
         }
     });

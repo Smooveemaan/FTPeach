@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The tray icon's menu shows how transfers are going and lets you pause them or lock saved
   passwords.
+- From the tray icon's menu you can change the speed limit, keep the computer awake, turn
+  transfer notifications on or off, and connect to a recent site.
 - If transfers are still running when you quit, FTPeach asks whether to quit right away or
   once they finish.
 

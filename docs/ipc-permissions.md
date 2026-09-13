@@ -14,7 +14,9 @@ The `main` WebView receives only the core window/event permissions in
 - Events to the renderer: `tray:action` goes only to the `main` window when a tray menu item
   is clicked. The backend maps the item ID to an action through its copy of the last
   `tray_set_model` model, so the payload never carries text read from the menu; the renderer
-  runs the action through the same functions as the window's own controls. The backend
+  runs the action through the same functions as the window's own controls. A speed limit
+  comes from the model's presets and a connection names a saved site by the ID the model
+  gave it; the renderer connects only to a site it still has. The backend
   also sends `quitRequested` when a quit from the tray or the window close button finds
   transfers running; if no model saying the question is open arrives within 10 seconds,
   it quits anyway, so a renderer that cannot answer never makes quitting impossible.

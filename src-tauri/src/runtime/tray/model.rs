@@ -8,6 +8,10 @@ use serde::{Deserialize, Serialize};
 /// Longest label the renderer may send, in characters. A menu item or a
 /// status line has no use for more, and the tooltip is cut far shorter.
 pub const MAX_TEXT_CHARS: usize = 256;
+pub const MAX_SPEED_PRESETS: usize = 8;
+/// The same three the empty pane lists.
+pub const MAX_RECENT_SITES: usize = 3;
+pub const MAX_SITE_ID_CHARS: usize = 128;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -17,6 +21,10 @@ pub struct TrayLabels {
     pub cancel_quit: String,
     pub pause_all: String,
     pub resume_all: String,
+    pub speed_limit: String,
+    pub prevent_sleep: String,
+    pub notify: String,
+    pub recent_connections: String,
     pub lock_vault: String,
 }
 
@@ -31,11 +39,35 @@ pub struct TrayTransfers {
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SpeedPreset {
+    /// 0 is no limit.
+    pub kbps: u64,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RecentSite {
+    pub id: String,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TrayModel {
     pub labels: TrayLabels,
     /// The finished status line, empty while nothing is transferring.
     pub status: String,
     pub transfers: TrayTransfers,
+    /// The current limit; one of the presets always matches it, since the
+    /// renderer adds a preset for a value set in Settings.
+    #[serde(rename = "speedLimitKBps")]
+    pub speed_limit_kbps: u64,
+    pub speed_presets: Vec<SpeedPreset>,
+    pub prevent_sleep: bool,
+    pub notify_on_complete: bool,
+    /// Most recent first, at most [`MAX_RECENT_SITES`].
+    pub recent_sites: Vec<RecentSite>,
     /// The vault is set up and unlocked, so there is something to lock.
     pub vault_lockable: bool,
     /// Quitting waits for the running transfers to finish.
@@ -45,7 +77,8 @@ pub struct TrayModel {
 }
 
 impl Default for TrayModel {
-    /// What the icon shows before the renderer has sent anything.
+    /// What the icon shows before the renderer has sent anything: no presets
+    /// and no sites, so no setting or connection nobody could act on.
     fn default() -> Self {
         Self {
             labels: TrayLabels {
@@ -54,10 +87,19 @@ impl Default for TrayModel {
                 cancel_quit: "Cancel quit".into(),
                 pause_all: "Pause all transfers".into(),
                 resume_all: "Resume all transfers".into(),
+                speed_limit: "Speed limit".into(),
+                prevent_sleep: "Keep the computer awake".into(),
+                notify: "Notify when transfers finish".into(),
+                recent_connections: "Recent connections".into(),
                 lock_vault: "Lock saved passwords".into(),
             },
             status: String::new(),
             transfers: TrayTransfers::default(),
+            speed_limit_kbps: 0,
+            speed_presets: Vec::new(),
+            prevent_sleep: false,
+            notify_on_complete: false,
+            recent_sites: Vec::new(),
             vault_lockable: false,
             quit_pending: false,
             quit_prompt_open: false,
@@ -74,11 +116,39 @@ impl TrayModel {
             ("labels.cancelQuit", &labels.cancel_quit),
             ("labels.pauseAll", &labels.pause_all),
             ("labels.resumeAll", &labels.resume_all),
+            ("labels.speedLimit", &labels.speed_limit),
+            ("labels.preventSleep", &labels.prevent_sleep),
+            ("labels.notify", &labels.notify),
+            ("labels.recentConnections", &labels.recent_connections),
             ("labels.lockVault", &labels.lock_vault),
             ("status", &self.status),
         ]
         .into_iter()
-        .try_for_each(|(field, text)| check_text(field, text))
+        .try_for_each(|(field, text)| check_text(field, text))?;
+
+        if self.speed_presets.len() > MAX_SPEED_PRESETS {
+            return Err(format!(
+                "speedPresets has more than {MAX_SPEED_PRESETS} entries"
+            ));
+        }
+        for preset in &self.speed_presets {
+            check_text("speedPresets.label", &preset.label)?;
+        }
+
+        if self.recent_sites.len() > MAX_RECENT_SITES {
+            return Err(format!(
+                "recentSites has more than {MAX_RECENT_SITES} entries"
+            ));
+        }
+        for site in &self.recent_sites {
+            if site.id.is_empty() || site.id.chars().count() > MAX_SITE_ID_CHARS {
+                return Err(format!(
+                    "recentSites.id must be 1 to {MAX_SITE_ID_CHARS} characters"
+                ));
+            }
+            check_text("recentSites.label", &site.label)?;
+        }
+        Ok(())
     }
 }
 
@@ -93,10 +163,27 @@ fn check_text(field: &str, text: &str) -> Result<(), String> {
 
 /// A tray menu click the renderer carries out, sent as `tray:action`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum TrayAction {
     PauseAll,
     ResumeAll,
+    SetSpeedLimit {
+        kbps: u64,
+    },
+    SetPreventSleep {
+        enabled: bool,
+    },
+    SetNotifyOnComplete {
+        enabled: bool,
+    },
+    /// Connect to a saved site, by the ID the model gave for it.
+    Connect {
+        site_id: String,
+    },
     LockVault,
     /// A quit was asked for while transfers run; the window decides.
     QuitRequested,
@@ -116,10 +203,22 @@ mod tests {
                 "cancelQuit": "Cancel quit",
                 "pauseAll": "Pause all transfers",
                 "resumeAll": "Resume all transfers",
+                "speedLimit": "Speed limit",
+                "preventSleep": "Keep the computer awake",
+                "notify": "Notify when transfers finish",
+                "recentConnections": "Recent connections",
                 "lockVault": "Lock saved passwords",
             },
             "status": "Transferring 3 · 42%",
             "transfers": { "active": 3, "canPauseAll": true, "canResumeAll": false },
+            "speedLimitKBps": 512,
+            "speedPresets": [
+                { "kbps": 0, "label": "No limit" },
+                { "kbps": 512, "label": "512 KB/s" },
+            ],
+            "preventSleep": true,
+            "notifyOnComplete": false,
+            "recentSites": [{ "id": "site-1", "label": "Production" }],
             "vaultLockable": true,
             "quitPending": false,
             "quitPromptOpen": false,
@@ -131,6 +230,9 @@ mod tests {
         let model: TrayModel = serde_json::from_value(model_json()).unwrap();
         assert_eq!(model.transfers.active, 3);
         assert!(model.transfers.can_pause_all);
+        assert_eq!(model.speed_limit_kbps, 512);
+        assert_eq!(model.speed_presets[1].label, "512 KB/s");
+        assert_eq!(model.recent_sites[0].id, "site-1");
         assert!(model.vault_lockable);
         assert_eq!(model.validate(), Ok(()));
     }
@@ -148,10 +250,18 @@ mod tests {
         let mut transfers = model_json();
         transfers["transfers"]["extra"] = json!(1);
         assert!(serde_json::from_value::<TrayModel>(transfers).is_err());
+
+        let mut preset = model_json();
+        preset["speedPresets"][0]["extra"] = json!(1);
+        assert!(serde_json::from_value::<TrayModel>(preset).is_err());
+
+        let mut site = model_json();
+        site["recentSites"][0]["extra"] = json!(1);
+        assert!(serde_json::from_value::<TrayModel>(site).is_err());
     }
 
     #[test]
-    fn missing_fields_and_negative_counts_are_rejected() {
+    fn missing_fields_and_out_of_range_numbers_are_rejected() {
         let mut missing = model_json();
         missing.as_object_mut().unwrap().remove("status");
         assert!(serde_json::from_value::<TrayModel>(missing).is_err());
@@ -159,6 +269,10 @@ mod tests {
         let mut negative = model_json();
         negative["transfers"]["active"] = json!(-1);
         assert!(serde_json::from_value::<TrayModel>(negative).is_err());
+
+        let mut fractional = model_json();
+        fractional["speedLimitKBps"] = json!(1.5);
+        assert!(serde_json::from_value::<TrayModel>(fractional).is_err());
     }
 
     #[test]
@@ -168,21 +282,64 @@ mod tests {
         assert_eq!(model.validate(), Ok(()));
         model.status.push('x');
         assert!(model.validate().unwrap_err().contains("status"));
+
+        let mut model: TrayModel = serde_json::from_value(model_json()).unwrap();
+        model.recent_sites[0].label = "x".repeat(MAX_TEXT_CHARS + 1);
+        assert!(model.validate().unwrap_err().contains("recentSites.label"));
     }
 
     #[test]
-    fn actions_serialize_with_a_camel_case_kind() {
+    fn lists_and_site_ids_are_bounded() {
+        let site = RecentSite {
+            id: "site".into(),
+            label: "Site".into(),
+        };
+        let mut model: TrayModel = serde_json::from_value(model_json()).unwrap();
+        model.recent_sites = vec![site.clone(); MAX_RECENT_SITES];
+        assert_eq!(model.validate(), Ok(()));
+        model.recent_sites.push(site.clone());
+        assert!(model.validate().unwrap_err().contains("recentSites"));
+
+        model.recent_sites = vec![RecentSite {
+            id: String::new(),
+            ..site.clone()
+        }];
+        assert!(model.validate().is_err());
+        model.recent_sites = vec![RecentSite {
+            id: "x".repeat(MAX_SITE_ID_CHARS + 1),
+            ..site
+        }];
+        assert!(model.validate().is_err());
+
+        let mut model: TrayModel = serde_json::from_value(model_json()).unwrap();
+        model.speed_presets = vec![model.speed_presets[0].clone(); MAX_SPEED_PRESETS + 1];
+        assert!(model.validate().unwrap_err().contains("speedPresets"));
+    }
+
+    #[test]
+    fn actions_serialize_with_camel_case_kinds_and_fields() {
         assert_eq!(
             serde_json::to_value(TrayAction::PauseAll).unwrap(),
             json!({ "kind": "pauseAll" })
         );
         assert_eq!(
-            serde_json::to_value(TrayAction::LockVault).unwrap(),
-            json!({ "kind": "lockVault" })
-        );
-        assert_eq!(
             serde_json::to_value(TrayAction::QuitRequested).unwrap(),
             json!({ "kind": "quitRequested" })
+        );
+        assert_eq!(
+            serde_json::to_value(TrayAction::SetSpeedLimit { kbps: 512 }).unwrap(),
+            json!({ "kind": "setSpeedLimit", "kbps": 512 })
+        );
+        assert_eq!(
+            serde_json::to_value(TrayAction::SetNotifyOnComplete { enabled: true }).unwrap(),
+            json!({ "kind": "setNotifyOnComplete", "enabled": true })
+        );
+        assert_eq!(
+            serde_json::to_value(TrayAction::Connect {
+                site_id: "site-1".into()
+            })
+            .unwrap(),
+            json!({ "kind": "connect", "siteId": "site-1" })
         );
     }
 }

@@ -740,6 +740,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "Сповіщати про завершення передавань",
+    "recentConnections": "Нещодавні підключення",
     "lockVault": "Lock saved passwords",
     "quit": "Вийти",
     "cancelQuit": "Cancel quit"

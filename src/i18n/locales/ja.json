@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "転送が完了したら通知する",
+    "recentConnections": "最近の接続",
     "lockVault": "Lock saved passwords",
     "quit": "終了",
     "cancelQuit": "Cancel quit"

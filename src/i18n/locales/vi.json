@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "Thông báo khi quá trình truyền tải hoàn tất",
+    "recentConnections": "Các kết nối gần đây",
     "lockVault": "Lock saved passwords",
     "quit": "Thoát",
     "cancelQuit": "Cancel quit"

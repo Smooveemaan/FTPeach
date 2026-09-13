@@ -720,6 +720,11 @@
     "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
     "pauseAll": "Pause all transfers",
     "resumeAll": "Resume all transfers",
+    "speedLimit": "Speed limit",
+    "unlimited": "No limit",
+    "preventSleep": "Keep the computer awake",
+    "notify": "स्थानांतरण समाप्त होने पर सूचित करें",
+    "recentConnections": "हाल के कनेक्शन",
     "lockVault": "Lock saved passwords",
     "quit": "बाहर निकलें",
     "cancelQuit": "Cancel quit"

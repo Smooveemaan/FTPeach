@@ -62,7 +62,7 @@ pub(super) async fn listing(
         }
         Endpoint::Remote { connection_id, .. } => {
             crate::protocol::validate_remote_path(&path)?;
-            let slot = sessions.slot_for(connection_id);
+            let slot = sessions.lookup_slot(connection_id);
             let mut guard = tokio::select! { guard = slot.lock() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
             let session = guard.as_mut().context("Remote session unavailable")?;
             let timeout = Duration::from_millis(if session.browse_timeout_ms == 0 {

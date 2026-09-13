@@ -42,7 +42,7 @@ use std::path::Path;
 const VERIFY_WINDOW: u64 = 8 * 1024;
 
 async fn remove_staging(sessions: &Sessions, connection_id: &str, staging_path: &str) {
-    let slot = sessions.slot_for(connection_id);
+    let slot = sessions.lookup_slot(connection_id);
     let mut guard = slot.lock().await;
     if let Some(session) = guard.as_mut() {
         remove_staging_on(session.browse_client.as_mut(), staging_path).await;
@@ -132,7 +132,7 @@ pub async fn resolve(
         key.remote_path,
         restart.log_key()
     );
-    let slot = sessions.slot_for(&key.connection_id);
+    let slot = sessions.lookup_slot(&key.connection_id);
     let mut guard = slot.lock().await;
     if let Some(session) = guard.as_mut() {
         session.browse_client.log_event(
@@ -141,6 +141,11 @@ pub async fn resolve(
             LogKind::Status,
         );
         remove_staging_on(session.browse_client.as_mut(), &entry.staging_path).await;
+    } else {
+        log::warn!(
+            "Disconnected resume staging retained: {}",
+            entry.staging_path
+        );
     }
     None
 }
@@ -151,7 +156,7 @@ async fn log_event(
     key: &'static str,
     params: serde_json::Value,
 ) {
-    let slot = sessions.slot_for(connection_id);
+    let slot = sessions.lookup_slot(connection_id);
     let guard = slot.lock().await;
     if let Some(session) = guard.as_ref() {
         session
@@ -170,7 +175,25 @@ async fn verify_overlap(
     local_path: &Path,
     local_size: u64,
 ) -> anyhow::Result<Option<u64>> {
-    let slot = sessions.slot_for(&key.connection_id);
+    let pool = sessions
+        .pool_for(&key.connection_id)
+        .await
+        .ok_or_else(|| anyhow::anyhow!("the connection is gone"))?;
+    tokio::select! {
+        biased;
+        _ = pool.closed() => Err(anyhow::anyhow!("Connection closed during resume verification")),
+        result = verify_overlap_inner(sessions, key, entry, local_path, local_size) => result,
+    }
+}
+
+async fn verify_overlap_inner(
+    sessions: &Sessions,
+    key: &Key,
+    entry: &Paused,
+    local_path: &Path,
+    local_size: u64,
+) -> anyhow::Result<Option<u64>> {
+    let slot = sessions.lookup_slot(&key.connection_id);
     let mut guard = slot.lock().await;
     let session = guard
         .as_mut()

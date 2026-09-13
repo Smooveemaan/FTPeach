@@ -58,6 +58,14 @@ export function createPaneSessionLifecycle({
   stopTransfersForConnection,
   t,
 }: PaneSessionLifecycleOptions) {
+  const closeConnection = async (connectionId: string) => {
+    // Cancellation is signalled synchronously; backend teardown can now cancel
+    // a busy browse request instead of waiting behind its cleanup.
+    const stopping = stopTransfersForConnection(connectionId);
+    const results = await Promise.allSettled([stopping, client.session.disconnect(connectionId)]);
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure?.status === 'rejected') throw failure.reason;
+  };
   const buildSessionConfig = (
     f: ConnectionForm,
     siteId: string | null = null,
@@ -84,11 +92,7 @@ export function createPaneSessionLifecycle({
   const startPaneConnect = (id: PaneId, tabId = activeTabId) => {
     const pane = panes[id];
     if (pane.kind === 'remote' && (pane.status === 'connected' || pane.status === 'connecting')) {
-      reportRejection(
-        stopTransfersForConnection(pane.connectionId!).then(() =>
-          client.session.disconnect(pane.connectionId!),
-        ),
-      );
+      reportRejection(closeConnection(pane.connectionId!));
       if (pane.status === 'connecting') ensureRequestIds(tabId)[id] += 1;
     }
     updatePane(
@@ -113,11 +117,7 @@ export function createPaneSessionLifecycle({
   const switchPaneToLocal = (id: PaneId, tabId = activeTabId, targetPath = '') => {
     const pane = panes[id];
     if (pane.kind === 'remote' && (pane.status === 'connected' || pane.status === 'connecting')) {
-      reportRejection(
-        stopTransfersForConnection(pane.connectionId!).then(() =>
-          client.session.disconnect(pane.connectionId!),
-        ),
-      );
+      reportRejection(closeConnection(pane.connectionId!));
       // See startPaneConnect's identical bump for why this matters.
       if (pane.status === 'connecting') ensureRequestIds(tabId)[id] += 1;
     }
@@ -196,11 +196,7 @@ export function createPaneSessionLifecycle({
         if (pane.status === 'connecting') {
           reportRejection(client.session.cancelConnect(previousConnectionId));
         }
-        reportRejection(
-          stopTransfersForConnection(previousConnectionId).then(() =>
-            client.session.disconnect(previousConnectionId),
-          ),
-        );
+        reportRejection(closeConnection(previousConnectionId));
       }
       updatePane(
         id,
@@ -336,8 +332,7 @@ export function createPaneSessionLifecycle({
       tabId,
     );
     setTabs((prev) => prev.map((t) => (t.id !== tabId ? t : { ...t, syncBrowsing: false })));
-    await stopTransfersForConnection(pane.connectionId);
-    await client.session.disconnect(pane.connectionId);
+    await closeConnection(pane.connectionId);
   };
 
   const cancelConnectPane = (id: PaneId, tabId = activeTabId) => {

@@ -437,6 +437,31 @@ async function startAndPauseWalk({ getApi, mockApi, getSnapshot }: HarnessContex
   return { row, walk, running, submitted, cancels };
 }
 
+test('a refused backend pause becomes an error and retries without a missing journal', async () => {
+  await withHarness(async (context) => {
+    const { row, walk, running, submitted } = await startAndPauseWalk(context);
+    await act(async () => {
+      walk.resolve({
+        ...pausedWalkReport,
+        paused: false,
+        errors: [
+          { code: 'cleanupIncomplete', message: 'Pause budget exhausted; results retained' },
+        ],
+      });
+      await running;
+    });
+    assert.equal(context.getSnapshot()[row.id]?.status, 'error');
+    context.mockApi.transfer.recursive = async (intent) => {
+      submitted.push(intent);
+      return { ok: true, outcome: 'complete', scanned: 3, completed: 3, errors: [] };
+    };
+    await act(async () => {
+      await context.getApi().retryTransfer(row.id);
+    });
+    assert.equal(submitted[1]?.resumeFrom, undefined);
+  });
+});
+
 test('a paused folder walk resumes from the attempt that kept its journal', async () => {
   await withHarness(async (context) => {
     const { getApi, getSnapshot, mockApi } = context;
@@ -1584,7 +1609,7 @@ test('disconnecting settles every transfer on that connection, paused ones inclu
       await getApi().stopTransfersForConnection('c1');
     });
 
-    assert.equal(getSnapshot()[running]?.status, 'cancelling');
+    assert.equal(getSnapshot()[running]?.status, 'stopped');
     assert.deepEqual(
       calls.cancel,
       [{ connectionId: 'c1', id: getSnapshot()[running]?.attemptId, intent: 'stop' }],

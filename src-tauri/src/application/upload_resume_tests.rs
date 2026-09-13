@@ -10,6 +10,8 @@ use tokio::io::{AsyncRead, AsyncWrite};
 
 #[derive(Default)]
 struct Remote {
+    stall_read: std::sync::atomic::AtomicBool,
+    stall_cleanup: bool,
     files: Mutex<HashMap<String, Vec<u8>>>,
     /// Mirrors a protocol with no ranged read, which must never be resumed.
     refuse_ranged_read: bool,
@@ -33,6 +35,9 @@ impl ProtocolBackend for Backend {
         Ok(())
     }
     async fn disconnect(&mut self) -> BackendResult<()> {
+        if self.remote.stall_cleanup {
+            std::future::pending::<()>().await;
+        }
         Ok(())
     }
     fn is_connected(&self) -> bool {
@@ -56,6 +61,9 @@ impl ProtocolBackend for Backend {
         unreachable!()
     }
     async fn remove(&mut self, path: &str, _: bool) -> BackendResult<()> {
+        if self.remote.stall_cleanup {
+            std::future::pending::<()>().await;
+        }
         self.remote.files.lock().unwrap().remove(path);
         Ok(())
     }
@@ -72,6 +80,13 @@ impl ProtocolBackend for Backend {
     }
     async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
         self.remote.ranges.lock().unwrap().push((offset, len));
+        if self
+            .remote
+            .stall_read
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
+            std::future::pending::<()>().await;
+        }
         if self.remote.refuse_ranged_read {
             return Err(crate::protocol::fail(
                 crate::ipc::ErrorCode::InvalidInput,
@@ -134,6 +149,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
         PoolSize::Fixed(1),
     );
     let slot = sessions.slot_for(&connection_id);
+    assert!(sessions.register_pool(&connection_id, &slot, pool.clone()));
     *slot.lock().await = Some(Session {
         browse_client: Box::new(Backend {
             remote: remote.clone(),
@@ -152,6 +168,64 @@ struct Fixture {
     local: PathBuf,
     root: PathBuf,
     staging: String,
+}
+
+#[tokio::test]
+async fn disconnect_bounds_stalled_cleanup_and_releases_staging_registry() {
+    let remote = Arc::new(Remote {
+        stall_cleanup: true,
+        ..Remote::default()
+    });
+    let (sessions, connection_id) = session_for(&remote).await;
+    let root = std::env::temp_dir().join(format!("ftpeach-deadline-{}", uuid::Uuid::new_v4()));
+    std::fs::write(&root, b"x").unwrap();
+    let source_pin = pin(&root).await.unwrap();
+    let keys: Vec<_> = (0..40)
+        .map(|index| Key {
+            connection_id: connection_id.clone(),
+            remote_path: format!("/file-{index}"),
+        })
+        .collect();
+    for key in &keys {
+        remember(
+            key.clone(),
+            format!("{}.part", key.remote_path),
+            root.to_string_lossy().into_owned(),
+            source_pin,
+            1,
+        );
+    }
+    let started = std::time::Instant::now();
+    crate::application::session_service::disconnect(
+        &sessions,
+        &crate::session::ConnectingClients::default(),
+        &connection_id,
+    )
+    .await;
+    assert!(started.elapsed() < std::time::Duration::from_secs(6));
+    assert!(sessions.all_slots().is_empty());
+    for key in keys {
+        assert!(staged_len(&key).is_none());
+    }
+    std::fs::remove_file(root).unwrap();
+}
+
+#[tokio::test]
+async fn disconnect_bounds_stalled_backend_disconnect() {
+    let remote = Arc::new(Remote {
+        stall_cleanup: true,
+        ..Remote::default()
+    });
+    let (sessions, connection_id) = session_for(&remote).await;
+    let started = std::time::Instant::now();
+    crate::application::session_service::disconnect(
+        &sessions,
+        &crate::session::ConnectingClients::default(),
+        &connection_id,
+    )
+    .await;
+    assert!(started.elapsed() < std::time::Duration::from_secs(6));
+    assert!(sessions.all_slots().is_empty());
 }
 
 impl Fixture {
@@ -235,6 +309,49 @@ async fn staged_prefix_of_an_unchanged_source_resumes_at_its_length() {
         fixture.resolve_now().await,
         Some((fixture.staging.clone(), 5))
     );
+}
+
+#[tokio::test]
+async fn disconnect_interrupts_stalled_resume_verification() {
+    let fixture = Fixture::new(b"hello world", b"hello", false).await;
+    fixture
+        .remote
+        .stall_read
+        .store(true, std::sync::atomic::Ordering::SeqCst);
+    let remote = fixture.remote.clone();
+    let sessions = fixture.sessions.clone();
+    let id = fixture.key.connection_id.clone();
+    let resolving = tokio::spawn(async move {
+        let result = fixture.resolve_now().await;
+        (result, fixture)
+    });
+    tokio::time::timeout(std::time::Duration::from_secs(1), async {
+        while remote.ranges.lock().unwrap().is_empty() {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        crate::application::session_service::disconnect(
+            &sessions,
+            &crate::session::ConnectingClients::default(),
+            &id,
+        ),
+    )
+    .await
+    .unwrap();
+    let (result, fixture) = tokio::time::timeout(std::time::Duration::from_secs(1), resolving)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(result.is_none());
+    assert!(
+        fixture.staging_exists(),
+        "an unverified disconnected partial is retained"
+    );
+    assert!(sessions.all_slots().is_empty());
 }
 
 /// Resuming has to cost the same whether five bytes or five gigabytes were

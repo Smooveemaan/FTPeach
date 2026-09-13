@@ -59,6 +59,10 @@ pub async fn session_connect(
     )
     .await;
 
+    if let Some(slot) = sessions.get_existing(&connection_id) {
+        sessions.remove_if_empty(&connection_id, &slot);
+    }
+
     Ok(match outcome {
         Ok(()) => SessionConnectResult::Ok { ok: true },
         Err(failure) => SessionConnectResult::Err {

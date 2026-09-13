@@ -207,7 +207,7 @@ pub(crate) async fn connect(
     connection_id: &str,
     config: JsonMap,
 ) -> Result<(), ConnectFailure> {
-    let slot = sessions.slot_for(connection_id);
+    let slot = sessions.get_or_create(connection_id);
     let mut guard = slot.lock().await;
     teardown_session(&mut guard, connection_id).await;
 
@@ -284,11 +284,19 @@ pub(crate) async fn connect(
         })
     });
 
+    let transfer_pool = TransferPool::new(factory, pool_size)
+        .with_limiter(crate::transfer::concurrency_limiter::shared());
+    if !sessions.register_pool(connection_id, &slot, transfer_pool.clone()) {
+        transfer_pool.cancel_all();
+        return Err(ConnectFailure::from_error(CommandError::new(
+            ErrorCode::Cancelled,
+            "Connection closed during setup",
+        )));
+    }
     *guard = Some(Session {
         browse_client,
         server,
-        transfer_pool: TransferPool::new(factory, pool_size)
-            .with_limiter(crate::transfer::concurrency_limiter::shared()),
+        transfer_pool,
         browse_timeout_ms,
     });
     Ok(())
@@ -302,11 +310,21 @@ pub(crate) async fn disconnect(
     connection_id: &str,
 ) {
     connecting.cancel(connection_id);
-    let slot = sessions.slot_for(connection_id);
-    let mut guard = slot.lock().await;
-    teardown_session(&mut guard, connection_id).await;
-    drop(guard);
-    sessions.remove_if_empty(connection_id, &slot);
+    crate::application::recursive_transfer::close_connection(connection_id);
+    let Some(slot) = sessions.remove(connection_id) else {
+        return;
+    };
+    let closing = async {
+        let mut guard = slot.lock().await;
+        teardown_session(&mut guard, connection_id).await;
+    };
+    if tokio::time::timeout(std::time::Duration::from_secs(5), closing)
+        .await
+        .is_err()
+    {
+        log::warn!("Disconnect deadline exceeded for {connection_id}; session detached");
+        crate::transfer::upload_staging::retain_for_connection(connection_id);
+    }
 }
 
 #[cfg(test)]

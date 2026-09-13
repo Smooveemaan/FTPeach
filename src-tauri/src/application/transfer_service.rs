@@ -110,7 +110,7 @@ async fn relay_staged(
 /// the final destination. Retries use a fresh staging file and restart upload.
 async fn cleanup_remote_partial(sessions: &Sessions, connection_id: &str, partial: &str) {
     let cleanup = async {
-        let slot = sessions.slot_for(connection_id);
+        let slot = sessions.lookup_slot(connection_id);
         let mut guard = slot.lock().await;
         if let Some(session) = guard.as_mut()
             && let Err(error) = session.browse_client.remove(partial, false).await

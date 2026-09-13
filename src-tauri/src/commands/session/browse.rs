@@ -67,7 +67,7 @@ pub async fn session_list(
             error: CommandError::new(ErrorCode::InvalidInput, UNSAFE_PATH_MSG),
         });
     }
-    let slot = sessions.slot_for(&connection_id);
+    let slot = sessions.lookup_slot(&connection_id);
     let mut guard = slot.lock().await;
     let Some(session) = guard.as_mut() else {
         return Ok(SessionListResult::Err {
@@ -122,7 +122,7 @@ pub async fn session_list(
 
 macro_rules! run_unit_browse_operation {
     ($sessions:expr_2021, $connecting:expr_2021, $connection_id:expr_2021, $method:ident $(, $argument:expr_2021)* $(,)?) => {{
-        let slot = $sessions.slot_for(&$connection_id);
+        let slot = $sessions.lookup_slot(&$connection_id);
         let mut guard = slot.lock().await;
         let Some(session) = guard.as_mut() else {
             return Ok(OkResult::Err {

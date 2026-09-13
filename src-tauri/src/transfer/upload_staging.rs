@@ -144,8 +144,15 @@ pub(crate) async fn remove_staging_on(
     browse: &mut (dyn ProtocolBackend + Send),
     staging_path: &str,
 ) {
-    if let Err(error) = browse.remove(staging_path, false).await {
-        log::warn!("Could not remove staging file {staging_path}: {error}");
+    match tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        browse.remove(staging_path, false),
+    )
+    .await
+    {
+        Ok(Ok(())) => log::debug!("Removed staging file {staging_path}"),
+        Ok(Err(error)) => log::warn!("Could not remove staging file {staging_path}: {error}"),
+        Err(_) => log::warn!("Staging cleanup timed out; retained {staging_path}"),
     }
 }
 
@@ -170,7 +177,26 @@ pub async fn discard_for_connection(
             .map(|entry| entry.staging_path)
             .collect()
     };
+    for staging_path in &abandoned {
+        // Log before awaiting: cancellation of teardown must not lose paths.
+        log::warn!("Disconnect cleanup pending for {connection_id}: {staging_path}");
+    }
     for staging_path in abandoned {
         remove_staging_on(browse, &staging_path).await;
     }
+}
+
+/// Release RAM even when shutdown exhausted its network budget. Server files
+/// remain for manual cleanup; diagnostics retain the exact paths.
+pub fn retain_for_connection(connection_id: &str) {
+    state().lock().unwrap().paused.retain(|key, entry| {
+        if key.connection_id != connection_id {
+            return true;
+        }
+        log::warn!(
+            "Disconnected staging retained for {connection_id}: {}",
+            entry.staging_path
+        );
+        false
+    });
 }

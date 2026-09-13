@@ -39,19 +39,85 @@ pub(super) struct Paused {
     pub journal: Journal,
 }
 
-/// A row cleared from the queue never says so, so the oldest paused walks are
-/// forgotten past this many. Forgetting one only means it cannot be resumed.
 const MAX_PAUSED: usize = 32;
+const MAX_PAUSED_BYTES: usize = 64 * 1024 * 1024;
 static PAUSED: LazyLock<Mutex<VecDeque<(String, Paused)>>> = LazyLock::new(Default::default);
 
-pub(super) fn keep(id: String, paused: Paused) {
-    let mut kept = PAUSED.lock().unwrap();
-    if kept.len() == MAX_PAUSED
-        && let Some((forgotten, _)) = kept.pop_front()
+impl Paused {
+    fn estimated_bytes(&self) -> usize {
+        let j = &self.journal;
+        // Include allocated capacity and conservative hash-table/control overhead.
+        let strings = j
+            .staging
+            .iter()
+            .chain(j.created_dirs.iter())
+            .chain(j.created_files.iter())
+            .chain(j.done.keys())
+            .chain(j.targets.keys())
+            .chain(j.sources.keys())
+            .chain(j.directories.keys())
+            .map(|s| s.capacity())
+            .sum::<usize>();
+        let slots = j.created_dirs.capacity()
+            + j.created_files.capacity()
+            + j.done.capacity()
+            + j.targets.capacity()
+            + j.sources.capacity()
+            + j.directories.capacity();
+        std::mem::size_of::<Self>()
+            + strings
+            + slots * 256
+            + j.staging.capacity() * std::mem::size_of::<String>()
+            + j.operation_id.capacity()
+            + j.in_flight.as_ref().map_or(0, String::capacity)
+            + j.done
+                .values()
+                .map(|(_, t)| t.as_ref().map_or(0, String::capacity))
+                .sum::<usize>()
+            + j.targets
+                .values()
+                .map(|stamp| match stamp {
+                    super::io::Stamp::Remote { modified, .. } => modified.capacity(),
+                    _ => 0,
+                })
+                .sum::<usize>()
+            + [&self.source, &self.target]
+                .iter()
+                .map(|endpoint| match endpoint {
+                    Endpoint::Local { path } => path.capacity(),
+                    Endpoint::Remote {
+                        path,
+                        connection_id,
+                    } => path.capacity() + connection_id.capacity(),
+                })
+                .sum::<usize>()
+    }
+}
+
+fn keep_in(
+    kept: &mut VecDeque<(String, Paused)>,
+    id: String,
+    paused: Paused,
+) -> Result<(), Box<Paused>> {
+    let used = kept
+        .iter()
+        .map(|(id, p)| id.capacity() + p.estimated_bytes())
+        .sum::<usize>();
+    if kept.len() >= MAX_PAUSED
+        || used
+            .saturating_add(paused.estimated_bytes())
+            .saturating_add(id.capacity())
+            > MAX_PAUSED_BYTES
     {
-        log::warn!("Forgot paused folder transfer {forgotten}; it can no longer be resumed");
+        return Err(Box::new(paused));
     }
     kept.push_back((id, paused));
+    Ok(())
+}
+
+pub(super) fn keep(id: String, paused: Paused) -> Result<(), Box<Paused>> {
+    let mut kept = PAUSED.lock().unwrap();
+    keep_in(&mut kept, id, paused)
 }
 
 /// Takes the journal a paused attempt kept, provided it describes this walk.
@@ -67,6 +133,32 @@ pub(super) fn take_any(id: &str) -> Option<Paused> {
     let mut kept = PAUSED.lock().unwrap();
     let index = kept.iter().position(|(kept_id, _)| kept_id == id)?;
     kept.remove(index).map(|(_, paused)| paused)
+}
+
+pub(super) fn close_connection(connection_id: &str) {
+    PAUSED.lock().unwrap().retain(|(id, paused)| {
+        if paused.source.connection() != connection_id
+            && paused.target.connection() != connection_id
+        {
+            return true;
+        }
+        log::warn!(
+            "Disconnected recursive journal {id}; results retained at {}",
+            paused.target.path("")
+        );
+        if let Endpoint::Remote { connection_id, .. } = &paused.target
+            && let Some(relative) = &paused.journal.in_flight
+        {
+            let key = crate::transfer::upload_staging::Key {
+                connection_id: connection_id.clone(),
+                remote_path: paused.target.path(relative),
+            };
+            for path in &paused.journal.staging {
+                crate::transfer::upload_staging::forget_retained(&key, path);
+            }
+        }
+        false
+    });
 }
 
 /// Removes what the journal says this walk made on `target`, files first and
@@ -146,4 +238,52 @@ pub(super) async fn take_back(
         }
     }
     errors
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn paused() -> Paused {
+        Paused {
+            source: Endpoint::Local {
+                path: "source".into(),
+            },
+            target: Endpoint::Local {
+                path: "target".into(),
+            },
+            journal: Journal::default(),
+        }
+    }
+
+    #[test]
+    fn pause_budget_never_evicts_previous_journals() {
+        let mut kept = VecDeque::new();
+        for id in 0..32 {
+            assert!(keep_in(&mut kept, id.to_string(), paused()).is_ok());
+        }
+        for id in 32..100 {
+            assert!(keep_in(&mut kept, id.to_string(), paused()).is_err());
+        }
+        assert_eq!(kept.len(), 32);
+        assert_eq!(kept.front().unwrap().0, "0");
+        kept.pop_front();
+        assert!(keep_in(&mut kept, "next".into(), paused()).is_ok());
+    }
+
+    #[test]
+    fn pause_budget_accounts_for_allocated_memory() {
+        let mut kept = VecDeque::new();
+        let mut large = paused();
+        large.journal.operation_id = String::with_capacity(MAX_PAUSED_BYTES);
+        assert!(keep_in(&mut kept, "large".into(), large).is_err());
+        assert!(kept.is_empty());
+        let mut first = paused();
+        first.journal.operation_id = String::with_capacity(MAX_PAUSED_BYTES / 2);
+        assert!(keep_in(&mut kept, "first".into(), first).is_ok());
+        let mut second = paused();
+        second.journal.operation_id = String::with_capacity(MAX_PAUSED_BYTES / 2);
+        assert!(keep_in(&mut kept, "second".into(), second).is_err());
+        assert_eq!(kept.len(), 1);
+    }
 }

@@ -37,6 +37,17 @@ use tokio_util::sync::CancellationToken;
 struct Control {
     token: CancellationToken,
     pause: Arc<AtomicBool>,
+    connections: Vec<String>,
+}
+
+pub(crate) fn close_connection(connection_id: &str) {
+    for control in OPERATIONS.lock().unwrap().values() {
+        if control.connections.iter().any(|id| id == connection_id) {
+            control.pause.store(false, Ordering::SeqCst);
+            control.token.cancel();
+        }
+    }
+    journal::close_connection(connection_id);
 }
 
 static OPERATIONS: LazyLock<Mutex<HashMap<String, Control>>> = LazyLock::new(Default::default);
@@ -77,7 +88,10 @@ pub fn cancel(id: &str, intent: CancelIntent) {
 /// be resumed.
 pub async fn discard(sessions: &Sessions, id: &str) -> crate::ipc::CommandResult<()> {
     let Some(paused) = journal::take_any(id) else {
-        return Ok(());
+        return Err(CommandError::new(
+            ErrorCode::CleanupIncomplete,
+            "Recursive journal unavailable; previously written results may remain",
+        ));
     };
     let sessions = sessions.clone();
     // Finish even if the IPC caller goes away, as the walk itself does.
@@ -155,15 +169,32 @@ async fn wind_down(
         }
     }
     if pause {
-        report.paused = true;
-        journal::keep(
+        match journal::keep(
             intent.id.clone(),
             Paused {
                 source: intent.source.clone(),
                 target: intent.target.clone(),
                 journal,
             },
-        );
+        ) {
+            Ok(()) => report.paused = true,
+            Err(paused) => {
+                report.errors.insert(0, CommandError::new(ErrorCode::CleanupIncomplete,
+                    "Pause refused: recursive journal memory budget exhausted. Results retained; start a new transfer to retry."));
+                // Release staging registry references without deleting unverified data.
+                if let Endpoint::Remote { connection_id, .. } = &paused.target
+                    && let Some(relative) = &paused.journal.in_flight
+                {
+                    let key = crate::transfer::upload_staging::Key {
+                        connection_id: connection_id.clone(),
+                        remote_path: paused.target.path(relative),
+                    };
+                    for path in &paused.journal.staging {
+                        crate::transfer::upload_staging::forget_retained(&key, path);
+                    }
+                }
+            }
+        }
     } else {
         report
             .errors
@@ -178,7 +209,16 @@ async fn run_inner(
 ) -> Report {
     let mut report = Report::default();
     let mut wrote_target = false;
-    let control = Control::default();
+    let control = Control {
+        connections: [&intent.source, &intent.target]
+            .iter()
+            .filter_map(|endpoint| match endpoint {
+                Endpoint::Remote { connection_id, .. } => Some(connection_id.clone()),
+                _ => None,
+            })
+            .collect(),
+        ..Control::default()
+    };
     let token = control.token.clone();
     let cancelled_before_start = {
         let mut operations = OPERATIONS.lock().unwrap();

@@ -462,6 +462,9 @@ export function useTransferLifecycle(
     }
     const cleanupFailure = report.errors.find((error) => error.code === 'cleanupIncomplete');
     if (cleanupFailure) reportAsyncFailure(cleanupFailure);
+    if (dispatch.started && !report.paused && cancelIntentRef.current[id] === 'paused') {
+      delete cancelIntentRef.current[id];
+    }
     settleTransferResult(
       id,
       {
@@ -682,9 +685,10 @@ export function useTransferLifecycle(
   // agrees: teardown deletes the staging file every paused upload would append
   // to. A row left claiming "paused" would be a promise to resume that can only
   // fail, so the honest ending is a stop.
-  const stopTransfersForConnection = (connectionId: string) => {
+  const stopTransfersForConnection = async (connectionId: string) => {
     markConnectionDead(connectionId);
-    return Promise.all(
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const stopping = Promise.all(
       Object.values(getTransfersSnapshot())
         .filter(
           (transfer) =>
@@ -693,6 +697,30 @@ export function useTransferLifecycle(
         )
         .map((transfer) => requestCancel(transfer.id, 'stopped')),
     );
+    try {
+      return await Promise.race([
+        stopping,
+        new Promise<void[]>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('Disconnect cleanup deadline exceeded; results may remain')),
+            5000,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+      setTransfersStore((previous) =>
+        Object.fromEntries(
+          Object.entries(previous).map(([id, row]) => [
+            id,
+            transferTouchesConnection(row, connectionId) &&
+            ['queued', 'progress', 'paused', 'cancelling'].includes(row.status)
+              ? { ...row, status: 'stopped' as const }
+              : row,
+          ]),
+        ),
+      );
+    }
   };
 
   const idsWithStatus = (...statuses: TransferStatus[]) =>

@@ -485,6 +485,27 @@ impl TransferPool {
         self.drain();
     }
 
+    /// Allows browse-side preparation to observe shutdown without the slot lock.
+    pub async fn closed(&self) {
+        self.growth_cancel.cancelled().await;
+    }
+
+    /// Synchronous cancellation also runs when a deadline drops the session.
+    pub fn cancel_all(&self) {
+        self.growth_cancel.cancel();
+        let mut state = self.state.lock().unwrap();
+        state.destroyed = true;
+        for entry in state.active.values() {
+            entry.token.cancel();
+        }
+        for item in state.queue.drain(..) {
+            let _ = item
+                .respond
+                .send(Err(fail(ErrorCode::Cancelled, "Canceled by user")));
+        }
+        state.workers.clear();
+    }
+
     pub async fn destroy(&self) {
         self.growth_cancel.cancel();
         let (idle_workers, queued, active_tokens) = {

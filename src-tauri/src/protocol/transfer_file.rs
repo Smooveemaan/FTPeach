@@ -33,6 +33,15 @@ fn sidecar(destination: &Path) -> PathBuf {
     PathBuf::from(name)
 }
 
+/// Diagnostic paths only: a sidecar is not proof of current object ownership.
+pub(crate) fn retained_paths(destination: &Path) -> Vec<PathBuf> {
+    let metadata = sidecar(destination);
+    match read_record(&metadata) {
+        Some(record) => vec![artifact_path(destination, record.artifact), metadata],
+        None => Vec::new(),
+    }
+}
+
 /// The resume record is another writable destination, so a parallel download
 /// cannot select it as its own output while this transfer is using it.
 pub fn reserve(destination: &Path) -> Result<DownloadReservation> {

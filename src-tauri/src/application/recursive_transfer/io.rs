@@ -1,5 +1,4 @@
 //! Local and protocol adapters used by recursive phases.
-use super::manifest::Entry;
 use super::model::{Endpoint, Intent, check_cancel, unit};
 use crate::application::transfer_service;
 use crate::ipc::{CommandError, ErrorCode};
@@ -231,9 +230,8 @@ async fn copy_local(
     result
 }
 
-/// Copies one file of the walk. `overwrite` may reach further than the
-/// intent's, since the walk can always replace a file it wrote itself, and
-/// `resume` carries a download on from the partial an interrupted attempt
+/// Copies one file using the explicit overwrite policy. `resume` carries a
+/// download on from the partial an interrupted attempt
 /// kept, or an upload from its staging file.
 pub(super) async fn copy_file(
     sessions: &Sessions,
@@ -301,127 +299,85 @@ pub(super) async fn copy_file(
     }
 }
 
-pub(super) async fn remove_entry(
-    sessions: &Sessions,
-    source: &Endpoint,
-    entry: &Entry,
-    token: &CancellationToken,
-) -> Result<()> {
-    let path = source.path(&entry.relative);
-    match source {
-        Endpoint::Local { .. } => {
-            let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
-            check_cancel(token)?;
-            let (path, is_dir) = safety::validated_delete_target(Path::new(&path))
-                .await?
-                .context("Source disappeared before deletion")?;
-            safety::ensure_path_no_reparse_points_now(&path)?;
-            check_cancel(token)?;
-            if is_dir {
-                tokio::fs::remove_dir(path).await?;
-            } else {
-                tokio::fs::remove_file(path).await?;
-            }
-        }
-        Endpoint::Remote { connection_id, .. } => {
-            let directory = entry.directory;
-            remote_task(
-                sessions,
-                connection_id,
-                uuid::Uuid::new_v4().to_string(),
-                token,
-                Box::new(move |backend| {
-                    Box::pin(async move {
-                        if directory {
-                            tokio::time::timeout(
-                                Duration::from_secs(60),
-                                backend.remove_empty_directory(&path),
-                            )
-                            .await??;
-                        } else {
-                            tokio::time::timeout(
-                                Duration::from_secs(60),
-                                backend.remove(&path, false),
-                            )
-                            .await??;
-                        }
-                        Ok(())
-                    })
-                }),
-            )
-            .await?;
-        }
-    }
-    Ok(())
+/// Remote listing metadata is never authority for unconditional deletion.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) enum Stamp {
+    Local(super::identity::Receipt),
+    Remote { size: u64, modified: String },
 }
 
-/// Removes one entry a stopped walk created on its target. A directory goes
-/// only while it is empty, so nothing that appeared in it since is lost, and
-/// an entry that is already gone is left that way.
-pub(super) async fn remove_created(
+pub(super) async fn stamp(
     sessions: &Sessions,
-    target: &Endpoint,
+    endpoint: &Endpoint,
     relative: &str,
-    directory: bool,
-) -> Result<()> {
-    let path = target.path(relative);
-    match target {
+    token: &CancellationToken,
+) -> Result<Stamp> {
+    check_cancel(token)?;
+    match endpoint {
         Endpoint::Local { .. } => {
-            let _guard = mutations::guard().write().await;
-            let Some((path, is_dir)) = safety::validated_delete_target(Path::new(&path)).await?
-            else {
-                return Ok(());
-            };
-            anyhow::ensure!(is_dir == directory, "{} was replaced", path.display());
-            safety::ensure_path_no_reparse_points_now(&path)?;
-            if is_dir {
-                tokio::fs::remove_dir(path).await?;
-            } else {
-                tokio::fs::remove_file(path).await?;
-            }
-            Ok(())
+            let receipt = super::identity::capture(Path::new(&endpoint.path(relative)))?;
+            anyhow::ensure!(!receipt.directory, "Destination is no longer a file");
+            Ok(Stamp::Local(receipt))
         }
         Endpoint::Remote { connection_id, .. } => {
-            remote_task(
-                sessions,
-                connection_id,
-                uuid::Uuid::new_v4().to_string(),
-                &CancellationToken::new(),
-                Box::new(move |backend| {
-                    Box::pin(async move {
-                        tokio::time::timeout(Duration::from_secs(60), async {
-                            if !directory {
-                                return backend.remove(&path, false).await;
-                            }
-                            // An upload the stop cut short may have left its
-                            // staging file here. It is the walk's own, and it
-                            // would keep the folder from going.
-                            let mut others = 0;
-                            for entry in backend.list(&path).await? {
-                                if !entry.is_directory
-                                    && transfer_service::is_staging_name(&entry.name)
-                                {
-                                    let staging =
-                                        format!("{}/{}", path.trim_end_matches('/'), entry.name);
-                                    backend.remove(&staging, false).await?;
-                                } else {
-                                    others += 1;
-                                }
-                            }
-                            if backend.supports_empty_directory_remove() {
-                                backend.remove_empty_directory(&path).await
-                            } else {
-                                // WebDAV deletes a collection along with all
-                                // it holds, so only one still empty may go.
-                                anyhow::ensure!(others == 0, "Folder is no longer empty: {path}");
-                                backend.remove(&path, true).await
-                            }
-                        })
-                        .await?
-                    })
-                }),
-            )
-            .await
+            let path = endpoint.path(relative);
+            let (parent, name) = path.rsplit_once('/').context("Invalid remote file path")?;
+            let parent = Endpoint::Remote {
+                connection_id: connection_id.clone(),
+                path: if parent.is_empty() {
+                    "/".into()
+                } else {
+                    parent.into()
+                },
+            };
+            let entries = listing(sessions, &parent, "", token).await?;
+            let entry = entries
+                .iter()
+                .find(|entry| entry.name == name)
+                .context("Destination disappeared")?;
+            anyhow::ensure!(!entry.is_directory, "Destination is no longer a file");
+            Ok(Stamp::Remote {
+                size: entry.size,
+                modified: entry
+                    .modified_at
+                    .clone()
+                    .context("Destination has no verifiable modification metadata")?,
+            })
         }
     }
+}
+
+pub(super) async fn remove_created(
+    _sessions: &Sessions,
+    target: &Endpoint,
+    relative: &str,
+    expected: Option<&super::identity::Receipt>,
+) -> Result<()> {
+    let expected =
+        expected.context("Object ownership cannot be proven; automatic deletion refused")?;
+    remove_local(target, relative, expected, true).await
+}
+
+pub(super) async fn remove_local(
+    target: &Endpoint,
+    relative: &str,
+    expected: &super::identity::Receipt,
+    missing_ok: bool,
+) -> Result<()> {
+    anyhow::ensure!(
+        matches!(target, Endpoint::Local { .. }),
+        "Remote conditional deletion unavailable"
+    );
+    let path = target.path(relative);
+    let _guard = mutations::guard().write().await;
+    let Some((path, directory)) = safety::validated_delete_target(Path::new(&path)).await? else {
+        anyhow::ensure!(missing_ok, "Source disappeared before deletion");
+        return Ok(());
+    };
+    anyhow::ensure!(
+        directory == expected.directory,
+        "Object type changed; retained"
+    );
+    let file = super::identity::protect(&path, expected, true)?;
+    super::identity::delete(&file)
 }

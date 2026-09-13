@@ -94,7 +94,20 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
     cancelRecursive: (id: string, intent: 'pause' | 'stop' = 'stop') =>
       invoke('transfer_cancel_recursive', { id, intent }),
     /** Takes back what a paused walk wrote, once a stop rules out resuming it. */
-    discardRecursive: (id: string) => invoke('transfer_discard_recursive', { id }),
+    discardRecursive: async (id: string): Promise<unknown> => {
+      const raw = await invoke('transfer_discard_recursive', { id });
+      // The transport normalizes rejected Tauri commands into ok:false.
+      // Re-throw here so both Stop paths reach the application's error banner.
+      if (raw == null || (isCommandRecord(raw) && raw.ok === true)) return raw;
+      const failure = commandFailure('transfer_discard_recursive', raw);
+      throw Object.assign(new Error(failure.error), {
+        code: failure.errorCode,
+        details:
+          isCommandRecord(raw) && typeof raw.diagnosticDetails === 'string'
+            ? raw.diagnosticDetails
+            : failure.diagnosticDetails,
+      });
+    },
     validateRemoteCopy: (
       sourcePath: string,
       targetPath: string,

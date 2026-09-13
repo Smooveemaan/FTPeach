@@ -23,6 +23,7 @@ use security::sensitive::AuthorizationState;
 use security::{vault, vault_guard};
 use session::{ConnectingClients, Sessions};
 use store::Store;
+#[cfg(feature = "smoke-test")]
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

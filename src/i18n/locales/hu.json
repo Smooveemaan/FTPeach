@@ -264,6 +264,7 @@
     "diskFull": "Nincs elegendő lemezterület.",
     "hostKeyMismatch": "A szerver gazdagépkulcsa megváltozott.",
     "integrityMismatch": "Az átvitt fájl nem felelt meg az integritás-ellenőrzésen.",
+    "cleanupIncomplete": "A tisztítás nem teljes. A nem igazolható eredetű fájlok megmaradtak. Kézi törlés előtt ellenőrizze a célhelyet.",
     "invalidInput": "A megadott érték érvénytelen.",
     "internal": "Váratlan hiba történt.",
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",

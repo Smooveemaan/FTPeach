@@ -268,6 +268,7 @@
     "diskFull": "Spațiu insuficient pe disc.",
     "hostKeyMismatch": "Cheia gazdă a serverului s-a schimbat.",
     "integrityMismatch": "Fișierul transferat nu a trecut verificarea integrității.",
+    "cleanupIncomplete": "Curățarea este incompletă. Fișierele a căror apartenență nu a putut fi verificată au fost păstrate. Verificați destinația înainte de a le șterge manual.",
     "invalidInput": "Valoarea furnizată nu este validă.",
     "internal": "A apărut o eroare neașteptată.",
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",

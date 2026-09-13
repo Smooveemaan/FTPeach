@@ -264,6 +264,7 @@
     "diskFull": "Not enough disk space.",
     "hostKeyMismatch": "The server host key has changed.",
     "integrityMismatch": "The transferred file failed the integrity check.",
+    "cleanupIncomplete": "Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.",
     "invalidInput": "The provided value is invalid.",
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",

@@ -109,6 +109,8 @@ test('friendlyError localizes every structured command error code', () => {
     permissionDenied: "You don't have permission for this operation.",
     cancelled: 'Cancelled by user',
     integrityMismatch: 'The transferred file failed the integrity check.',
+    cleanupIncomplete:
+      'Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.',
     networkUnreachable: 'The server is unreachable — check your network connection.',
     connectionLost: 'The connection to the server was unexpectedly closed.',
     invalidInput: 'The provided value is invalid.',

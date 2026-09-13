@@ -460,6 +460,8 @@ export function useTransferLifecycle(
         reportAsyncFailure(error);
       }
     }
+    const cleanupFailure = report.errors.find((error) => error.code === 'cleanupIncomplete');
+    if (cleanupFailure) reportAsyncFailure(cleanupFailure);
     settleTransferResult(
       id,
       {

@@ -15,6 +15,7 @@ const ERROR_CODE_KEYS = {
   permissionDenied: 'errors.accessDenied',
   cancelled: 'transferQueue.cancelledByUser',
   integrityMismatch: 'errors.integrityMismatch',
+  cleanupIncomplete: 'errors.cleanupIncomplete',
   networkUnreachable: 'errors.networkUnreachable',
   connectionLost: 'errors.connectionReset',
   invalidInput: 'errors.invalidInput',

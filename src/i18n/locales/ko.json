@@ -264,6 +264,7 @@
     "diskFull": "디스크 공간이 부족합니다.",
     "hostKeyMismatch": "서버 호스트 키가 변경되었습니다.",
     "integrityMismatch": "전송된 파일이 무결성 검사를 통과하지 못했습니다.",
+    "cleanupIncomplete": "정리가 완료되지 않았습니다. 소유 여부를 확인할 수 없는 파일은 보존되었습니다. 수동으로 삭제하기 전에 대상을 확인하세요.",
     "invalidInput": "제공된 값이 올바르지 않습니다.",
     "internal": "예기치 않은 오류가 발생했습니다.",
     "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",

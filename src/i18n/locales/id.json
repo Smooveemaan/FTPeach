@@ -264,6 +264,7 @@
     "diskFull": "Ruang disk tidak cukup.",
     "hostKeyMismatch": "Kunci host server telah berubah.",
     "integrityMismatch": "File yang ditransfer gagal dalam pemeriksaan integritas.",
+    "cleanupIncomplete": "Pembersihan belum selesai. File yang kepemilikannya tidak dapat diverifikasi tetap disimpan. Periksa tujuan sebelum menghapusnya secara manual.",
     "invalidInput": "Nilai yang diberikan tidak valid.",
     "internal": "Terjadi kesalahan yang tidak terduga.",
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",

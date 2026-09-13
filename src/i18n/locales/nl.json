@@ -264,6 +264,7 @@
     "diskFull": "Onvoldoende schijfruimte.",
     "hostKeyMismatch": "De hostsleutel van de server is gewijzigd.",
     "integrityMismatch": "Het overgedragen bestand heeft de integriteitscontrole niet doorstaan.",
+    "cleanupIncomplete": "Het opruimen is onvolledig. Bestanden waarvan het eigendom niet kon worden geverifieerd, zijn behouden. Controleer de bestemming voordat u ze handmatig verwijdert.",
     "invalidInput": "De opgegeven waarde is ongeldig.",
     "internal": "Er is een onverwachte fout opgetreden.",
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",

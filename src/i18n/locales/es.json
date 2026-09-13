@@ -268,6 +268,7 @@
     "diskFull": "No hay suficiente espacio en disco.",
     "hostKeyMismatch": "La clave de host del servidor ha cambiado.",
     "integrityMismatch": "El archivo transferido no superó la comprobación de integridad.",
+    "cleanupIncomplete": "La limpieza está incompleta. Se conservaron los archivos cuya pertenencia no pudo verificarse. Revise el destino antes de eliminarlos manualmente.",
     "invalidInput": "El valor proporcionado no es válido.",
     "internal": "Se produjo un error inesperado.",
     "connectFailedPrefix": "No se ha podido conectar al servidor. {{raw}}",

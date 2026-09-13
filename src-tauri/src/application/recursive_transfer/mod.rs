@@ -1,11 +1,12 @@
 //! Recursive scan, execute, verify and optional-delete coordination.
+mod identity;
 mod io;
 mod journal;
 mod manifest;
 mod model;
 mod scan;
 
-use self::io::{copy_file, listing, mkdir, remote_task, remove_entry, reserve};
+use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp};
 use self::journal::{Journal, Paused};
 use self::manifest::Entry;
 pub use self::model::{Endpoint, Intent, Report};
@@ -74,21 +75,34 @@ pub fn cancel(id: &str, intent: CancelIntent) {
 
 /// Takes back what a paused walk wrote, now that a stop means it will never
 /// be resumed.
-pub async fn discard(sessions: &Sessions, id: &str) {
+pub async fn discard(sessions: &Sessions, id: &str) -> crate::ipc::CommandResult<()> {
     let Some(paused) = journal::take_any(id) else {
-        return;
+        return Ok(());
     };
     let sessions = sessions.clone();
     // Finish even if the IPC caller goes away, as the walk itself does.
-    let _ = tokio::spawn(async move {
+    let errors = tokio::spawn(async move {
         // Something else may have started writing there since the pause, and
         // taking files back from under it could remove what it just wrote.
         match reserve(&sessions, &paused.target, Access::Write).await {
             Ok(_lease) => journal::take_back(&sessions, &paused.target, &paused.journal).await,
-            Err(error) => log::warn!("Kept a stopped folder transfer's files: {error:#}"),
+            Err(error) => vec![CommandError::new(
+                ErrorCode::CleanupIncomplete,
+                format!("Cleanup incomplete; files retained: {error:#}"),
+            )],
         }
     })
-    .await;
+    .await
+    .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(CommandError {
+            code: ErrorCode::CleanupIncomplete,
+            message: "Cleanup incomplete; unverified objects were retained".into(),
+            details: Some(serde_json::to_string(&errors).unwrap_or_default()),
+        })
+    }
 }
 
 pub async fn run(
@@ -114,10 +128,32 @@ pub async fn run(
 async fn wind_down(
     sessions: &Sessions,
     intent: &Intent,
-    journal: Journal,
+    mut journal: Journal,
     pause: bool,
     report: &mut Report,
 ) {
+    journal.operation_id = intent.id.clone();
+    journal.staging.clear();
+    if let Some(relative) = &journal.in_flight {
+        match &intent.target {
+            Endpoint::Remote { connection_id, .. } => {
+                let key = crate::transfer::upload_staging::Key {
+                    connection_id: connection_id.clone(),
+                    remote_path: intent.target.path(relative),
+                };
+                journal
+                    .staging
+                    .extend(crate::transfer::upload_staging::staged_path(&key));
+            }
+            Endpoint::Local { .. } => journal.staging.extend(
+                crate::protocol::transfer_file::retained_paths(Path::new(
+                    &intent.target.path(relative),
+                ))
+                .iter()
+                .map(|path| path.to_string_lossy().into_owned()),
+            ),
+        }
+    }
     if pause {
         report.paused = true;
         journal::keep(
@@ -129,7 +165,9 @@ async fn wind_down(
             },
         );
     } else {
-        journal::take_back(sessions, &intent.target, &journal).await;
+        report
+            .errors
+            .extend(journal::take_back(sessions, &intent.target, &journal).await);
     }
 }
 
@@ -224,21 +262,28 @@ async fn run_inner(
                 return Ok(());
             }
         }
-        if intent.moving && let Endpoint::Remote { connection_id, .. } = &intent.source {
-            let slot = sessions.slot_for(connection_id);
-            let guard = slot.lock().await;
-            anyhow::ensure!(guard.as_ref().is_some_and(|session| session.browse_client.supports_empty_directory_remove()), "Source protocol cannot safely remove only empty folders; use Copy instead");
-        }
+        anyhow::ensure!(!intent.moving || (cfg!(windows) && matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. }))),
+            CommandError::new(ErrorCode::IntegrityMismatch, "Verified copy/delete Move requires exclusive local handles; use Copy instead. Remote rename remains supported."));
         leases.push(reserve(sessions, &intent.target, Access::Write).await?);
         // Any number of walks may send the same source at once; only a move,
         // which takes the source away, needs it to itself.
         let source_access = if intent.moving { Access::Write } else { Access::Read };
         leases.push(reserve(sessions, &intent.source, source_access).await?);
         let mut manifest = scan(sessions, &intent.source, &token).await?;
-        report.scanned = manifest.entries.len();
-        if intent.moving && matches!(intent.source, Endpoint::Remote { .. }) {
-            anyhow::ensure!(manifest.entries.iter().all(|entry| entry.directory || entry.modified.is_some()), "Remote source lacks modification metadata required for a verified move; use Copy instead");
+        let mut source_directories = HashMap::new();
+        if intent.moving {
+            for entry in manifest.entries.iter().filter(|entry| entry.directory) {
+                source_directories.insert(entry.relative.clone(), identity::capture(Path::new(&intent.source.path(&entry.relative)))?);
+            }
         }
+        // Validate every old destination before allowing skips or overwrites,
+        // including when the source changed and needs to be copied again.
+        for relative in journal.done.keys() {
+            let current = stamp(sessions, &intent.target, relative, &token).await;
+            anyhow::ensure!(current.as_ref().is_ok_and(|current| journal.targets.get(relative) == Some(current) && match current { Stamp::Local(receipt) => receipt.verified(), Stamp::Remote { .. } => true }),
+                CommandError::new(ErrorCode::IntegrityMismatch, format!("Destination changed or cannot be verified; resolve the conflict before restarting: {}", intent.target.path(relative))));
+        }
+        report.scanned = manifest.entries.len();
         for entry in &manifest.entries {
             if matches!(intent.target, Endpoint::Local { .. }) { mutations::validate_download_name(Path::new(&intent.target.path(&entry.relative)))?; }
         }
@@ -255,6 +300,9 @@ async fn run_inner(
             wrote_target = true;
             if created {
                 journal.created_dirs.insert(entry.relative.clone());
+                if matches!(intent.target, Endpoint::Local { .. }) {
+                    journal.directories.insert(entry.relative.clone(), identity::capture(Path::new(&intent.target.path(&entry.relative)))?);
+                }
             } else if note_existing && !journal.created_dirs.contains(&entry.relative) {
                 for child in listing(sessions, &intent.target, &entry.relative, &token).await? {
                     let relative = if entry.relative.is_empty() { child.name } else { format!("{}/{}", entry.relative, child.name) };
@@ -301,10 +349,16 @@ async fn run_inner(
         for entry in manifest.entries.iter().filter(|e| !e.directory) {
             check_cancel(&token)?;
             if delivered(&journal, entry) {
+                if let Some(expected) = journal.sources.get(&entry.relative) {
+                    anyhow::ensure!(expected.verified() && identity::capture(Path::new(&intent.source.path(&entry.relative)))? == *expected,
+                        CommandError::new(ErrorCode::IntegrityMismatch, "Source identity changed while paused; restart the operation"));
+                }
                 report.completed += 1;
                 continue;
             }
-            // The walk may always replace a file it wrote itself.
+            // Ownership affects rollback bookkeeping, not overwrite consent.
+            // A receipt check cannot make a later unconditional rename safe
+            // against external writers; never silently broaden consent.
             let ours = journal.created_files.contains(&entry.relative);
             let existed = !ours && existing_targets.contains(&target_key(&entry.relative));
             if intent.skip_existing && existed {
@@ -313,6 +367,9 @@ async fn run_inner(
             }
             // A download the pause cut short kept its partial; carry on from it.
             let resume = journal.in_flight.as_ref() == Some(&entry.relative);
+            let source_receipt = if matches!(intent.source, Endpoint::Local { .. }) {
+                Some(identity::capture(Path::new(&intent.source.path(&entry.relative)))?)
+            } else { None };
             journal.done.remove(&entry.relative);
             journal.in_flight = Some(entry.relative.clone());
             // Roll this file's own byte reports into the walk's row, so a
@@ -327,14 +384,15 @@ async fn run_inner(
                     landed(&journal),
                 )
             });
-            let copy = copy_file(sessions, progress, &intent, &entry.relative, intent.overwrite || ours, resume, &token);
+            let copy = copy_file(sessions, progress, &intent, &entry.relative, intent.overwrite, resume, &token);
             tokio::pin!(copy);
             let result = tokio::select! {
                 result = &mut copy => result,
                 _ = token.cancelled() => {
-                    // Paused, an upload keeps its staging file for the resume
-                    // to append to; unmarked, it deletes it on the way out.
-                    if control.pause.load(Ordering::SeqCst) && matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Remote { .. })) {
+                    // Keep recursive staging for either cancellation intent:
+                    // Pause can resume it; Stop reports it as unverified and
+                    // forgets its registry entry without deleting by path.
+                    if matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Remote { .. })) {
                         upload_resume::mark_paused(&format!("{}:file", intent.id));
                     }
                     for endpoint in [&intent.source, &intent.target] {
@@ -348,6 +406,15 @@ async fn run_inner(
             };
             match result {
                 Ok(()) => {
+                    if let Some(expected) = source_receipt {
+                        anyhow::ensure!(identity::capture(Path::new(&intent.source.path(&entry.relative)))? == expected,
+                            CommandError::new(ErrorCode::IntegrityMismatch, "Source changed during transfer; source retained"));
+                        journal.sources.insert(entry.relative.clone(), expected);
+                    }
+                    // Cancellation can race a successful commit. Capture the
+                    // receipt even then, so Stop can verify the landed file.
+                    let target_stamp = stamp(sessions, &intent.target, &entry.relative, &CancellationToken::new()).await?;
+                    journal.targets.insert(entry.relative.clone(), target_stamp);
                     report.completed += 1;
                     completed_bytes = completed_bytes.saturating_add(entry.size);
                     journal.done.insert(entry.relative.clone(), (entry.size, entry.modified.clone()));
@@ -371,11 +438,18 @@ async fn run_inner(
             manifest.entries.sort_by(|a, b| a.relative.cmp(&b.relative));
             verified.entries.sort_by(|a, b| a.relative.cmp(&b.relative));
             anyhow::ensure!(manifest.entries == verified.entries, "Source changed; copied files retained and source not deleted");
+            #[cfg(test)]
+            tests::before_delete(&intent.id);
             // From here the target holds the only copy of what the source loses.
             journal.source_deletion_started = true;
             for entry in manifest.entries.iter().rev() {
                 check_cancel(&token)?;
-                remove_entry(sessions, &intent.source, entry, &token).await.with_context(|| intent.source.path(&entry.relative))?;
+                let _target = if entry.directory { None } else {
+                    let Some(Stamp::Local(expected)) = journal.targets.get(&entry.relative) else { anyhow::bail!("Destination ownership unavailable; source retained"); };
+                    Some(identity::protect(Path::new(&intent.target.path(&entry.relative)), expected, false)?)
+                };
+                let expected = if entry.directory { source_directories.get(&entry.relative) } else { journal.sources.get(&entry.relative) }.context("Source identity unavailable; source retained")?;
+                io::remove_local(&intent.source, &entry.relative, expected, false).await?;
             }
         }
         Ok(())

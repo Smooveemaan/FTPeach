@@ -264,6 +264,7 @@
     "diskFull": "Der er ikke nok diskplads.",
     "hostKeyMismatch": "Serverens værtsnøgle er blevet ændret.",
     "integrityMismatch": "Den overførte fil bestod ikke integritetskontrollen.",
+    "cleanupIncomplete": "Oprydningen er ufuldstændig. Filer, hvis tilhørsforhold ikke kunne bekræftes, blev bevaret. Kontrollér destinationen, før du sletter dem manuelt.",
     "invalidInput": "Den angivne værdi er ugyldig.",
     "internal": "Der opstod en uventet fejl.",
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",

@@ -264,6 +264,7 @@
     "diskFull": "ディスク容量が不足しています。",
     "hostKeyMismatch": "サーバーのホストキーが変更されました。",
     "integrityMismatch": "転送されたファイルは整合性チェックに失敗しました。",
+    "cleanupIncomplete": "クリーンアップは未完了です。所有を確認できないファイルは保持されました。手動で削除する前に転送先を確認してください。",
     "invalidInput": "指定された値は無効です。",
     "internal": "予期しないエラーが発生しました。",
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",

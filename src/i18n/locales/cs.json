@@ -272,6 +272,7 @@
     "diskFull": "Nedostatek místa na disku.",
     "hostKeyMismatch": "Klíč hostitele serveru se změnil.",
     "integrityMismatch": "Přenesený soubor neprošel kontrolou integrity.",
+    "cleanupIncomplete": "Úklid není dokončen. Soubory, jejichž příslušnost nebylo možné ověřit, byly zachovány. Před ručním odstraněním zkontrolujte cíl.",
     "invalidInput": "Zadaná hodnota není platná.",
     "internal": "Došlo k neočekávané chybě.",
     "connectFailedPrefix": "Nepodařilo se navázat spojení se serverem. {{raw}}",

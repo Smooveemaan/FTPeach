@@ -264,6 +264,7 @@
     "diskFull": "Det finns inte tillräckligt med diskutrymme.",
     "hostKeyMismatch": "Serverns värdnyckel har ändrats.",
     "integrityMismatch": "Den överförda filen klarade inte integritetskontrollen.",
+    "cleanupIncomplete": "Rensningen är ofullständig. Filer vars tillhörighet inte kunde verifieras behölls. Kontrollera målet innan du tar bort dem manuellt.",
     "invalidInput": "Det angivna värdet är ogiltigt.",
     "internal": "Ett oväntat fel inträffade.",
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",

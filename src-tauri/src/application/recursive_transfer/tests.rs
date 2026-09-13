@@ -1,4 +1,166 @@
 use super::*;
+
+type DeleteHook = Box<dyn FnOnce() + Send>;
+static BEFORE_DELETE: LazyLock<Mutex<HashMap<String, DeleteHook>>> =
+    LazyLock::new(Default::default);
+pub(super) fn before_delete(id: &str) {
+    if let Some(hook) = BEFORE_DELETE.lock().unwrap().remove(id) {
+        hook();
+    }
+}
+
+#[tokio::test]
+async fn move_preserves_source_changes_after_final_scan() {
+    for replace in [false, true] {
+        let (root, intent) = fixture();
+        let source = root.join("source/a");
+        std::fs::write(&source, b"original").unwrap();
+        let changed = source.clone();
+        BEFORE_DELETE.lock().unwrap().insert(
+            intent.id.clone(),
+            Box::new(move || {
+                let modified = std::fs::metadata(&changed).unwrap().modified().unwrap();
+                if replace {
+                    std::fs::remove_file(&changed).unwrap();
+                }
+                std::fs::write(&changed, b"external").unwrap();
+                std::fs::File::options()
+                    .write(true)
+                    .open(&changed)
+                    .unwrap()
+                    .set_modified(modified)
+                    .unwrap();
+            }),
+        );
+        let report = run(&Sessions::default(), None, intent).await;
+        assert!(!report.ok);
+        assert_eq!(std::fs::read(source).unwrap(), b"external");
+        assert_eq!(std::fs::read(root.join("target/a")).unwrap(), b"original");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn move_rechecks_destination_immediately_before_source_deletion() {
+    let (root, intent) = fixture();
+    std::fs::write(root.join("source/a"), b"original").unwrap();
+    let target = root.join("target/a");
+    BEFORE_DELETE.lock().unwrap().insert(
+        intent.id.clone(),
+        Box::new(move || {
+            std::fs::write(target, b"external").unwrap();
+        }),
+    );
+    let report = run(&Sessions::default(), None, intent).await;
+    assert!(!report.ok);
+    assert_eq!(std::fs::read(root.join("source/a")).unwrap(), b"original");
+    assert_eq!(std::fs::read(root.join("target/a")).unwrap(), b"external");
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn protected_file_rejects_writes_and_replacement_until_handle_deletion() {
+    let (root, _) = fixture();
+    let path = root.join("source/a");
+    std::fs::write(&path, b"original").unwrap();
+    let expected = identity::capture(&path).unwrap();
+    let protected = identity::protect(&path, &expected, true).unwrap();
+    assert!(std::fs::write(&path, b"external").is_err());
+    assert!(std::fs::remove_file(&path).is_err());
+    identity::delete(&protected).unwrap();
+    drop(protected);
+    assert!(!path.exists());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn rollback_preserves_a_replacement_directory_and_new_children() {
+    for replacement in [false, true] {
+        let (root, intent) = fixture();
+        let path = root.join("target");
+        std::fs::create_dir(&path).unwrap();
+        let expected = identity::capture(&path).unwrap();
+        if replacement {
+            std::fs::remove_dir(&path).unwrap();
+            std::fs::create_dir(&path).unwrap();
+        }
+        std::fs::write(path.join("external"), b"keep").unwrap();
+        assert!(
+            io::remove_created(&Sessions::default(), &intent.target, "", Some(&expected))
+                .await
+                .is_err()
+        );
+        assert_eq!(std::fs::read(path.join("external")).unwrap(), b"keep");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn resume_rejects_a_changed_or_missing_destination() {
+    for moving in [false, true] {
+        for missing in [false, true] {
+            let (root, mut intent) = fixture();
+            intent.moving = moving;
+            std::fs::write(root.join("source/a"), b"original").unwrap();
+            std::fs::write(root.join("source/b"), b"second").unwrap();
+            let sessions = Sessions::default();
+            interrupt_after_first_file(&intent, CancelIntent::Pause);
+            assert!(run(&sessions, None, intent.clone()).await.paused);
+            let delivered = files_under(&root.join("target"));
+            let target = root.join("target").join(&delivered[0]);
+            if missing {
+                std::fs::remove_file(&target).unwrap();
+            } else {
+                let modified = std::fs::metadata(&target).unwrap().modified().unwrap();
+                std::fs::write(&target, b"external").unwrap();
+                std::fs::File::options()
+                    .write(true)
+                    .open(&target)
+                    .unwrap()
+                    .set_modified(modified)
+                    .unwrap();
+            }
+            let report = run(&sessions, None, resumed(&intent)).await;
+            assert!(
+                !report.ok,
+                "a changed destination must require conflict resolution"
+            );
+            assert!(root.join("source/a").is_file());
+            assert!(root.join("source/b").is_file());
+            if !missing {
+                assert_eq!(std::fs::read(target).unwrap(), b"external");
+            }
+            std::fs::remove_dir_all(root).unwrap();
+        }
+    }
+}
+
+#[tokio::test]
+async fn stop_preserves_an_external_replacement_with_restored_timestamp() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    std::fs::write(root.join("source/a"), b"original").unwrap();
+    std::fs::write(root.join("source/b"), b"second").unwrap();
+    let sessions = Sessions::default();
+    interrupt_after_first_file(&intent, CancelIntent::Pause);
+    assert!(run(&sessions, None, intent.clone()).await.paused);
+    let target = root
+        .join("target")
+        .join(&files_under(&root.join("target"))[0]);
+    let modified = std::fs::metadata(&target).unwrap().modified().unwrap();
+    std::fs::remove_file(&target).unwrap();
+    std::fs::write(&target, b"external").unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&target)
+        .unwrap()
+        .set_modified(modified)
+        .unwrap();
+    assert!(discard(&sessions, &intent.id).await.is_err());
+    assert_eq!(std::fs::read(&target).unwrap(), b"external");
+    std::fs::remove_dir_all(root).unwrap();
+}
 fn fixture() -> (std::path::PathBuf, Intent) {
     let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(root.join("source")).unwrap();
@@ -245,6 +407,7 @@ async fn a_paused_walk_resumes_past_what_it_already_delivered() {
     for moving in [false, true] {
         let (root, mut intent) = fixture();
         intent.moving = moving;
+        intent.overwrite = true;
         std::fs::create_dir_all(root.join("source/sub/deep")).unwrap();
         for (name, contents) in [("a", "one"), ("sub/b", "two"), ("sub/deep/c", "three")] {
             std::fs::write(root.join("source").join(name), contents).unwrap();
@@ -279,6 +442,31 @@ async fn a_paused_walk_resumes_past_what_it_already_delivered() {
 }
 
 #[tokio::test]
+async fn resume_does_not_implicitly_authorize_overwriting_a_delivered_file() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    for name in ["a", "b"] {
+        std::fs::write(root.join("source").join(name), b"original").unwrap();
+    }
+    let sessions = Sessions::default();
+    interrupt_after_first_file(&intent, CancelIntent::Pause);
+    assert!(run(&sessions, None, intent.clone()).await.paused);
+    let relative = files_under(&root.join("target"))[0].clone();
+    std::fs::write(root.join("source").join(&relative), b"changed source").unwrap();
+    let report = run(&sessions, None, resumed(&intent)).await;
+    assert!(!report.ok);
+    assert_eq!(
+        std::fs::read(root.join("target").join(&relative)).unwrap(),
+        b"original"
+    );
+    assert_eq!(
+        std::fs::read(root.join("source").join(relative)).unwrap(),
+        b"changed source"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
 async fn stop_takes_back_only_what_the_walk_created() {
     for pause_first in [false, true] {
         let (root, mut intent) = fixture();
@@ -309,7 +497,7 @@ async fn stop_takes_back_only_what_the_walk_created() {
         if pause_first {
             // Nothing is taken back while the walk may still be resumed.
             assert!(root.join("target/new/deep").is_dir());
-            discard(&sessions, &intent.id).await;
+            discard(&sessions, &intent.id).await.unwrap();
         }
         // Overwritten or not, "a" was the user's before the walk began.
         assert_eq!(files_under(&root.join("target")), ["a", "keep", "old/keep"]);
@@ -348,6 +536,7 @@ async fn a_resume_cancelled_before_it_starts_still_settles_the_paused_walk() {
 /// An in-memory server a test can have pause a walk partway into a transfer.
 #[derive(Default)]
 struct Server {
+    omit_modified: AtomicBool,
     dirs: Vec<String>,
     files: HashMap<String, Vec<u8>>,
     /// The folders and files walks have written to it.
@@ -435,6 +624,11 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         for (file, bytes) in self.0.files.iter().chain(&written) {
             if let Some(name) = name_in(file) {
                 entries.push(listed(&name, false, bytes.len() as u64));
+            }
+        }
+        if self.0.omit_modified.load(Ordering::SeqCst) {
+            for entry in &mut entries {
+                entry.modified_at = None;
             }
         }
         Ok(entries)
@@ -589,17 +783,30 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
     }
     async fn download_to_writer(
         &mut self,
-        _: &str,
-        _: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
+        path: &str,
+        writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
     ) -> crate::protocol::BackendResult<()> {
-        unreachable!()
+        use tokio::io::AsyncWriteExt;
+        let bytes = self
+            .0
+            .files
+            .get(path)
+            .cloned()
+            .or_else(|| self.0.written.lock().unwrap().get(path).cloned())
+            .unwrap();
+        writer.write_all(&bytes).await?;
+        Ok(())
     }
     async fn upload_from_reader(
         &mut self,
-        _: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
-        _: &str,
+        reader: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
+        path: &str,
     ) -> crate::protocol::BackendResult<()> {
-        unreachable!()
+        use tokio::io::AsyncReadExt;
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        self.0.written.lock().unwrap().insert(path.into(), bytes);
+        Ok(())
     }
 }
 
@@ -623,6 +830,103 @@ async fn serve(server: &Arc<Server>) -> (Sessions, String) {
         browse_timeout_ms: 1_000,
     });
     (sessions, connection_id)
+}
+
+#[tokio::test]
+async fn remote_directions_reject_changed_missing_or_directory_destinations_on_resume() {
+    for (remote_source, remote_target) in [(false, true), (true, false), (true, true)] {
+        for change in ["removed", "modified", "directory"] {
+            let (root, mut intent) = fixture();
+            intent.moving = false;
+            for name in ["a", "b"] {
+                std::fs::write(root.join("source").join(name), b"original").unwrap();
+            }
+            let server = Arc::new(Server {
+                dirs: vec!["/src".into()],
+                files: HashMap::from([
+                    ("/src/a".into(), b"original".to_vec()),
+                    ("/src/b".into(), b"original".to_vec()),
+                ]),
+                ..Server::default()
+            });
+            let (sessions, connection_id) = serve(&server).await;
+            if remote_source {
+                intent.source = Endpoint::Remote {
+                    path: "/src".into(),
+                    connection_id: connection_id.clone(),
+                };
+            }
+            if remote_target {
+                let (other, other_id) = serve(&server).await;
+                *sessions.slot_for(&other_id).lock().await =
+                    other.slot_for(&other_id).lock().await.take();
+                intent.target = Endpoint::Remote {
+                    path: "/dst".into(),
+                    connection_id: other_id,
+                };
+            }
+            let progress = ProgressEmitter::for_tests(|_| {});
+            interrupt_after_first_file(&intent, CancelIntent::Pause);
+            let report = run(&sessions, Some(&progress), intent.clone()).await;
+            assert!(
+                report.paused,
+                "{remote_source}/{remote_target}: {:?}",
+                report.errors
+            );
+            if remote_target {
+                let mut files = server.written.lock().unwrap();
+                let path = files
+                    .keys()
+                    .find(|path| path.starts_with("/dst/"))
+                    .unwrap()
+                    .clone();
+                files.remove(&path);
+                if change == "modified" {
+                    files.insert(path, b"external replacement".to_vec());
+                } else if change == "directory" {
+                    server.made.lock().unwrap().push(path);
+                }
+            } else {
+                let path = root
+                    .join("target")
+                    .join(&files_under(&root.join("target"))[0]);
+                std::fs::remove_file(&path).unwrap();
+                if change == "modified" {
+                    std::fs::write(path, b"external replacement").unwrap();
+                } else if change == "directory" {
+                    std::fs::create_dir(path).unwrap();
+                }
+            }
+            let report = run(&sessions, Some(&progress), resumed(&intent)).await;
+            assert!(!report.ok, "{remote_source}/{remote_target}/{change}");
+            assert_eq!(report.errors[0].code, ErrorCode::IntegrityMismatch);
+            std::fs::remove_dir_all(root).unwrap();
+        }
+    }
+}
+
+#[tokio::test]
+async fn copy_delete_moves_with_remote_endpoints_are_rejected_before_writes() {
+    for remote_source in [false, true] {
+        let (root, mut intent) = fixture();
+        let server = Arc::new(Server::default());
+        let (sessions, connection_id) = serve(&server).await;
+        let remote = Endpoint::Remote {
+            connection_id,
+            path: "/remote".into(),
+        };
+        if remote_source {
+            intent.source = remote;
+        } else {
+            intent.target = remote;
+        }
+        let report = run(&sessions, None, intent).await;
+        assert!(!report.ok);
+        assert_eq!(report.errors[0].code, ErrorCode::IntegrityMismatch);
+        assert!(server.made.lock().unwrap().is_empty());
+        assert!(server.written.lock().unwrap().is_empty());
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }
 
 #[tokio::test]
@@ -817,7 +1121,7 @@ async fn a_paused_upload_carries_on_from_its_staging_file() {
 }
 
 #[tokio::test]
-async fn stopping_a_paused_upload_takes_back_its_staging_file_and_folders() {
+async fn stopping_a_paused_upload_retains_unverifiable_objects_and_foreign_staging() {
     let server = Arc::new(Server::default());
     let quiet = ProgressEmitter::for_tests(|_| {});
     let (root, sessions, intent, _) = paused_upload(&server, &quiet, "/dst/stopped").await;
@@ -830,17 +1134,49 @@ async fn stopping_a_paused_upload_takes_back_its_staging_file_and_folders() {
             .any(|path| path.starts_with("/dst/stopped/sub/.ftpeach-")),
         "the pause kept the upload's staging file"
     );
-    discard(&sessions, &intent.id).await;
+    let foreign = format!("/dst/stopped/.ftpeach-{}.part", uuid::Uuid::new_v4());
+    server
+        .written
+        .lock()
+        .unwrap()
+        .insert(foreign.clone(), b"foreign".to_vec());
+    server
+        .written
+        .lock()
+        .unwrap()
+        .insert("/dst/stopped/a".into(), b"external".to_vec());
+    let before = server.written.lock().unwrap().clone();
+    let error = discard(&sessions, &intent.id).await.unwrap_err();
+    assert_eq!(error.code, ErrorCode::CleanupIncomplete);
+    let details = error.details.unwrap();
+    assert!(details.contains("Cleanup incomplete"));
+    assert!(details.contains(&intent.id));
+    assert!(details.contains(".part"));
     assert!(
-        server.written.lock().unwrap().is_empty(),
-        "{:?}",
-        server.written.lock().unwrap().keys().collect::<Vec<_>>()
+        crate::transfer::upload_staging::staged_path(&upload_resume::Key {
+            connection_id: intent.target.connection().into(),
+            remote_path: intent.target.path("sub/big"),
+        })
+        .is_none(),
+        "disconnect must not delete a retained staging file"
     );
-    assert!(
-        server.made.lock().unwrap().is_empty(),
-        "{:?}",
-        server.made.lock().unwrap()
-    );
+    assert_eq!(*server.written.lock().unwrap(), before);
+    assert!(!server.made.lock().unwrap().is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn resume_with_missing_remote_metadata_retains_source_and_destination() {
+    let server = Arc::new(Server::default());
+    let progress = ProgressEmitter::for_tests(|_| {});
+    let (root, sessions, intent, _) = paused_upload(&server, &progress, "/dst/no-metadata").await;
+    let before = server.written.lock().unwrap().clone();
+    server.omit_modified.store(true, Ordering::SeqCst);
+    let report = run(&sessions, Some(&progress), resumed(&intent)).await;
+    assert!(!report.ok);
+    assert_eq!(report.errors[0].code, ErrorCode::IntegrityMismatch);
+    assert_eq!(*server.written.lock().unwrap(), before);
+    assert!(root.join("source/a").is_file());
     std::fs::remove_dir_all(root).unwrap();
 }
 

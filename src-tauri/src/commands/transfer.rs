@@ -44,8 +44,7 @@ pub async fn transfer_discard_recursive(
     sessions: State<'_, Sessions>,
     id: String,
 ) -> CommandResult<()> {
-    crate::application::recursive_transfer::discard(&sessions, &id).await;
-    Ok(())
+    crate::application::recursive_transfer::discard(&sessions, &id).await
 }
 
 #[tauri::command]

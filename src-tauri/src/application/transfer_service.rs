@@ -54,15 +54,6 @@ fn remote_partial_path(target: &str) -> String {
     format!("{parent}/.ftpeach-{}.part", uuid::Uuid::new_v4())
 }
 
-/// Whether `name` is one of the staging files an upload writes before
-/// renaming it into place. Randomly named, so it never stands for anything
-/// the user made.
-pub(crate) fn is_staging_name(name: &str) -> bool {
-    name.strip_prefix(".ftpeach-")
-        .and_then(|rest| rest.strip_suffix(".part"))
-        .is_some_and(|id| uuid::Uuid::parse_str(id).is_ok())
-}
-
 async fn upload_staged(
     backend: &mut crate::transfer::transfer_pool::BoxBackend,
     local: &std::path::Path,

@@ -1,6 +1,7 @@
 import { beforeEach, test, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
 import { act, renderHook } from '@testing-library/react';
 import {
   getTransfersSnapshot,
@@ -526,6 +527,50 @@ test('stopping a paused folder walk takes back what it kept, reading cancelling 
       await stopping;
     });
     assert.equal(getSnapshot()[row.id]?.status, 'stopped');
+  });
+});
+
+test('a stopped folder walk surfaces incomplete cleanup instead of hiding it as cancellation', async () => {
+  await withHarness(async (context) => {
+    const failures: unknown[] = [];
+    const release = setAsyncFailureSink((error) => failures.push(error));
+    try {
+      const { row, walk, running } = await startAndPauseWalk(context);
+      await act(async () => {
+        await context.getApi().stopTransfer(row.id);
+      });
+      const cleanup = { code: 'cleanupIncomplete', message: 'Unverified destination retained' };
+      await act(async () => {
+        walk.resolve({
+          ...pausedWalkReport,
+          paused: false,
+          errors: [...pausedWalkReport.errors, cleanup],
+        });
+        await running;
+      });
+      assert.deepEqual(failures, [cleanup]);
+      assert.equal(context.getSnapshot()[row.id]?.status, 'stopped');
+    } finally {
+      release();
+    }
+  });
+});
+
+test('paused folder cleanup failure rejects Stop and leaves no cancelling row', async () => {
+  await withHarness(async (context) => {
+    const { row, walk, running } = await startAndPauseWalk(context);
+    await act(async () => {
+      walk.resolve(pausedWalkReport);
+      await running;
+    });
+    const cleanup = { code: 'cleanupIncomplete', message: 'Unverified destination retained' };
+    context.mockApi.transfer.discardRecursive = async () => {
+      throw cleanup;
+    };
+    await act(async () => {
+      await assert.rejects(context.getApi().stopTransfer(row.id), (error) => error === cleanup);
+    });
+    assert.equal(context.getSnapshot()[row.id]?.status, 'stopped');
   });
 });
 

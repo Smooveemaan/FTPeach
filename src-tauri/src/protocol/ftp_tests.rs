@@ -1418,7 +1418,7 @@ mod recursive_stop_tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-    async fn a_stopped_folder_upload_settles_at_once_and_takes_back_what_it_wrote() {
+    async fn a_stopped_folder_upload_settles_at_once_and_reports_retained_objects() {
         // Slow enough that the whole file takes seconds to arrive.
         let disk = disk(|disk| disk.pace = Duration::from_millis(50));
         let (took, report) = stop_midway(&disk).await;
@@ -1431,11 +1431,17 @@ mod recursive_stop_tests {
         // Closed rather than reset, the data connection went on delivering
         // the file, and the server answered QUIT only once all of it was in.
         assert!(took < Duration::from_secs(2), "the stop took {took:?}");
-        assert_nothing_left(&disk);
+        assert!(
+            report
+                .errors
+                .iter()
+                .any(|error| error.code == ErrorCode::CleanupIncomplete)
+        );
+        assert!(disk.lock().unwrap().dirs.contains("/1"));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-    async fn a_staging_file_the_stop_could_not_delete_goes_with_its_folder() {
+    async fn unverified_staging_is_not_deleted_by_folder_rollback() {
         let disk = disk(|disk| {
             disk.pace = Duration::from_millis(50);
             disk.deletes_to_refuse = 1;
@@ -1447,7 +1453,15 @@ mod recursive_stop_tests {
             "{:?}",
             report.errors
         );
-        assert_nothing_left(&disk);
+        assert!(
+            report
+                .errors
+                .iter()
+                .any(|error| error.code == ErrorCode::CleanupIncomplete)
+        );
+        let disk = disk.lock().unwrap();
+        assert!(disk.dirs.contains("/1"));
+        assert!(!disk.files.is_empty());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

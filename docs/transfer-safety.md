@@ -13,16 +13,51 @@ The P0 and P1 fixes from the September 2026 audit establish the following behavi
 | Upload and relay | Each attempt writes a fresh UUID sibling staging file. Only a successful upload, or a relay with explicit source completion, proceeds to server rename. Server refusal to replace is an error, with no delete-first fallback. Progress reports completion after rename. | `application/transfer_service_tests.rs` |
 | Cancellation | Queued cancellation does not touch the remote destination. Backend cleanup after an active failure/cancellation targets only that attempt's staging path. The renderer never deletes an upload/relay destination on stop or pause-to-stop. | Pool cancellation fixtures and frontend lifecycle tests |
 
-Upload retries, including continuation after pause, restart at byte zero in fresh staging.
+Upload retries restart in fresh staging unless a paused upload passes the source and staging-overlap checks.
 Downloads resume only with a compatible source-identity sidecar (see A06 below).
 If a connection is lost or staging cleanup fails, a `.ftpeach-<uuid>.part` artifact can remain
 on the server. Cleanup is bounded and logged; it never substitutes the final destination.
+Recursive Stop follows the more conservative ownership rules below and reports retained objects to the renderer.
 Once a server receives the final rename, cancellation cannot roll back a committed replacement.
 
 The tests model process interruption before local commit, not physical power loss or every
 network filesystem's durability guarantees. Windows UNC fixtures use the local administrative
 share when available; set `FTPEACH_REQUIRE_UNC_FIXTURES=1` to require this coverage. Protocol
 fault tests use controlled backends, so they do not replace the real server compatibility suite.
+
+## Recursive P0 contracts (September 13, 2026)
+
+| Phase | Guarantee and conservative fallback |
+| --- | --- |
+| Resume | The journal records the delivered destination as well as the source size/mtime. Before any resumed writes or skips, every recorded destination must still be a file with the saved receipt. Missing, replaced, changed or unverifiable destinations fail with an integrity conflict; the user must resolve it and restart. Explicit overwrite on the old attempt does not bypass this check. |
+| Local receipts | Windows receipts include volume/file identity, change time, last-write time, size, type and a USN change-journal revision where available. Without USN, files up to 1 MiB receive a SHA-256 digest; larger files have no strong receipt and cannot authorize resumed skips or deletion. Local source receipts are checked after copying and again before a resumed skip. Timestamps alone are insufficient, including change time, because fast writes can share a clock tick. |
+| Remote receipts | Current adapters expose file type, size and modification time through bounded listings. Missing metadata fails verification. This is metadata-based Copy verification, not a content hash: equal-size changes with unchanged server mtime cannot be detected. No full reread of large files was introduced. Remote receipts never authorize destructive rollback or copy/delete Move. |
+| Stop | Only a newly created local object with a matching identity can be removed. Files require the recorded version too; directories must still have their identity and must be empty at the native delete operation. Overwritten destinations are retained. Changed or unverifiable objects are retained and reported using the structured `cleanupIncomplete` code. |
+| Staging | Journals record the operation ID and exact retained staging paths. Recursive Stop never infers ownership from `.ftpeach-<UUID>.part`, never sweeps a folder for matching names and never follows a sidecar to delete its contents. Unverified partials are retained with diagnostics. A stopped upload's matching staging registry entry is forgotten so disconnect cannot subsequently delete that reported retained object. |
+| Remote rollback | Remote files and collections are retained because the adapters do not expose conditional object deletion. In particular, there is no WebDAV LIST-then-recursive-DELETE fallback; a file appearing in that interval cannot be deleted by rollback. |
+| Move | Copy/delete Move is enabled only between local endpoints on Windows. After the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is then opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. A conflict preserves the current source file and already delivered targets. Same-session remote server Rename remains available; other remote moves fail before writes with a Copy fallback. |
+
+The source-deletion phase is irreversible and its journal never rolls back the destination,
+including after a later cancellation. This change does not claim protection against malicious
+metadata forgery, existing writable memory mappings, replacement of ancestor directories,
+filesystem-specific durability failures or physical power loss. Local handle deletion fails
+closed when the filesystem refuses the required sharing/access semantics. Non-Windows
+copy/delete Move and automatic rollback are unavailable rather than falling back to path deletion.
+
+Windows reads the per-file journal revision with
+[FSCTL_READ_FILE_USN_DATA](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_read_file_usn_data).
+SMB does not support that control; the bounded digest fallback or conservative refusal applies.
+Verification costs one metadata/USN lookup per capture on supporting filesystems, or at most
+1 MiB of content per capture otherwise. This is a bound on extra reads, not a throughput benchmark.
+The original overwrite flag is never broadened merely because the journal once created a file;
+recopying a changed source requires explicit overwrite consent or a new destination.
+
+Regression tests cover destination removal/edit/type replacement on upload, download and relay
+resume; local edits and replacements with restored size/mtime; source changes injected after the
+final scan; destination changes before source deletion; sharing violations; foreign staging;
+nonempty/replaced directories; and frontend notification of incomplete Stop cleanup. Controlled
+FTP tests exercise cancellation with retained artifacts. Real-server compatibility and packaged
+smoke remain separate checks.
 
 
 ## P1 contracts
@@ -76,4 +111,4 @@ The Windows file-symlink fixture is explicitly ignored by default because it req
 Developer Mode or SeCreateSymbolicLinkPrivilege. Hardlink fixtures and existing junction/reparse
 checks run normally. The three earlier ignored Rust tests remain ignored as well.
 
-A successful download consumes its UUID partial but currently retains the source metadata sidecar. A later attempt cannot reuse the absent artifact and creates a new one. Sidecar cleanup after successful commit is not claimed.
+A successful download consumes its UUID partial and removes its matching source metadata sidecar. Interrupted downloads may retain both; recursive Stop does not delete unverified artifacts.

@@ -23,6 +23,21 @@ import { createSitesApi } from '../../../src/platform/api/sites.ts';
 import { createTransferApi } from '../../../src/platform/api/transfers.ts';
 import { createTabsApi } from '../../../src/platform/api/tabs.ts';
 
+test('recursive discard surfaces normalized cleanup failure with retained-path diagnostics', async () => {
+  const invoke: InvokeFn = async () => ({
+    ok: false,
+    errorCode: 'cleanupIncomplete',
+    error: 'Unverified objects were retained',
+    diagnosticDetails: '[{"path":"/dst/a"}]',
+  });
+  const api = createTransferApi(invoke, () => () => () => {});
+  await assert.rejects(api.discardRecursive('attempt'), {
+    code: 'cleanupIncomplete',
+    message: 'Unverified objects were retained',
+    details: '[{"path":"/dst/a"}]',
+  });
+});
+
 test('normalizes typed and legacy command errors without dropping diagnostics', () => {
   assert.deepEqual(
     normalizeCommandError({ code: 'timedOut', message: 'Timeout', details: 'socket 1' }),

@@ -1,17 +1,19 @@
 //! What a recursive walk has written. A pause keeps it so the next attempt
 //! can carry on where this one stopped; a stop uses it to take back exactly
 //! what the walk made, and nothing that was there before it.
+use super::identity;
 use super::io::remove_created;
 use super::model::Endpoint;
-use crate::application::upload_resume;
-use crate::protocol::transfer_file::discard_resume_artifacts;
+use crate::ipc::{CommandError, ErrorCode};
 use crate::session::Sessions;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::path::Path;
 use std::sync::{LazyLock, Mutex};
 
 #[derive(Default)]
 pub(super) struct Journal {
+    pub operation_id: String,
+    /// Exact paths, retained for diagnostics; never deleted by name pattern.
+    pub staging: Vec<String>,
     /// Directories that did not exist until this walk made them.
     pub created_dirs: HashSet<String>,
     /// Files this walk wrote where nothing stood before. Files it overwrote
@@ -20,6 +22,9 @@ pub(super) struct Journal {
     /// Files already delivered, with the source size and timestamp they were
     /// copied from, so a resume can tell whether they are still current.
     pub done: HashMap<String, (u64, Option<String>)>,
+    pub targets: HashMap<String, super::io::Stamp>,
+    pub sources: HashMap<String, identity::Receipt>,
+    pub directories: HashMap<String, identity::Receipt>,
     /// The file being copied when the walk was interrupted.
     pub in_flight: Option<String>,
     /// A move has begun deleting its source, so the target now holds the only
@@ -68,31 +73,53 @@ pub(super) fn take_any(id: &str) -> Option<Paused> {
 /// then folders deepest first, so each folder is empty by the time its turn
 /// comes. A folder that is not empty by then holds something the walk did not
 /// make, and stays. The stop has already happened, so whatever cannot be
-/// removed is logged and left.
-pub(super) async fn take_back(sessions: &Sessions, target: &Endpoint, journal: &Journal) {
+/// removed is returned to the caller and left.
+pub(super) async fn take_back(
+    sessions: &Sessions,
+    target: &Endpoint,
+    journal: &Journal,
+) -> Vec<CommandError> {
+    let mut errors = Vec::new();
     if journal.source_deletion_started {
-        return;
+        return errors;
     }
-    if let Endpoint::Local { .. } = target {
-        // A download keeps a resume sidecar beside every file, and one cut
-        // short keeps its partial too; a folder holding either cannot go.
-        for relative in journal.created_files.iter().chain(&journal.in_flight) {
-            discard_resume_artifacts(Path::new(&target.path(relative))).await;
+    if let Some(relative) = &journal.in_flight {
+        if let Endpoint::Remote { connection_id, .. } = target {
+            let key = crate::transfer::upload_staging::Key {
+                connection_id: connection_id.clone(),
+                remote_path: target.path(relative),
+            };
+            for path in &journal.staging {
+                crate::transfer::upload_staging::forget_retained(&key, path);
+            }
         }
-    }
-    if let (Endpoint::Remote { connection_id, .. }, Some(relative)) = (target, &journal.in_flight) {
-        // An upload cut short by the pause kept its staging file beside the
-        // file for the resume, which will now never come; and a folder holding
-        // it could not go either.
-        let key = upload_resume::Key {
-            connection_id: connection_id.clone(),
-            remote_path: target.path(relative),
-        };
-        upload_resume::discard(sessions, &key).await;
+        // A path (including an exact staging path) alone cannot prove that
+        // its current contents still belong to this operation.
+        errors.push(CommandError::new(
+            ErrorCode::CleanupIncomplete,
+            format!(
+                "Cleanup incomplete: operation {} retained unverified partials for {}: {}",
+                journal.operation_id,
+                target.path(relative),
+                journal.staging.join(", ")
+            ),
+        ));
     }
     for relative in &journal.created_files {
-        if let Err(error) = remove_created(sessions, target, relative, false).await {
-            log::warn!("Could not take back {}: {error:#}", target.path(relative));
+        let expected = journal.targets.get(relative).and_then(|stamp| match stamp {
+            super::io::Stamp::Local(receipt) => Some(receipt),
+            _ => None,
+        });
+        if let Err(error) = remove_created(sessions, target, relative, expected).await
+            && errors.len() < 100
+        {
+            errors.push(CommandError::new(
+                ErrorCode::CleanupIncomplete,
+                format!(
+                    "Cleanup incomplete: {} retained: {error:#}",
+                    target.path(relative)
+                ),
+            ));
         }
     }
     let mut directories: Vec<&String> = journal.created_dirs.iter().collect();
@@ -100,8 +127,23 @@ pub(super) async fn take_back(sessions: &Sessions, target: &Endpoint, journal: &
         std::cmp::Reverse(relative.split('/').filter(|part| !part.is_empty()).count())
     });
     for relative in directories {
-        if let Err(error) = remove_created(sessions, target, relative, true).await {
-            log::warn!("Could not take back {}: {error:#}", target.path(relative));
+        if let Err(error) = remove_created(
+            sessions,
+            target,
+            relative,
+            journal.directories.get(relative),
+        )
+        .await
+            && errors.len() < 100
+        {
+            errors.push(CommandError::new(
+                ErrorCode::CleanupIncomplete,
+                format!(
+                    "Cleanup incomplete: {} retained: {error:#}",
+                    target.path(relative)
+                ),
+            ));
         }
     }
+    errors
 }

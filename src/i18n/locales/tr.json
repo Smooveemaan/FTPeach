@@ -264,6 +264,7 @@
     "diskFull": "Yeterli disk alanı yok.",
     "hostKeyMismatch": "Sunucunun ana bilgisayar anahtarı değişti.",
     "integrityMismatch": "Aktarılan dosya bütünlük kontrolünden geçemedi.",
+    "cleanupIncomplete": "Temizleme tamamlanamadı. Aidiyeti doğrulanamayan dosyalar korundu. Elle silmeden önce hedefi kontrol edin.",
     "invalidInput": "Sağlanan değer geçersiz.",
     "internal": "Beklenmeyen bir hata oluştu.",
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",

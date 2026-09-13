@@ -111,6 +111,29 @@ pub fn staged_len(key: &Key) -> Option<u64> {
     state.paused.get(key).map(|entry| entry.staged)
 }
 
+/// Exact path for a recursive journal; naming alone never authorizes deletion.
+pub(crate) fn staged_path(key: &Key) -> Option<String> {
+    state()
+        .lock()
+        .unwrap()
+        .paused
+        .get(key)
+        .map(|entry| entry.staging_path.clone())
+}
+
+/// Stop has reported this unverified object as retained. Do not later delete
+/// it during disconnect, or consume a newer upload's staging record.
+pub(crate) fn forget_retained(key: &Key, staging_path: &str) {
+    let mut state = state().lock().unwrap();
+    if state
+        .paused
+        .get(key)
+        .is_some_and(|entry| entry.staging_path == staging_path)
+    {
+        state.paused.remove(key);
+    }
+}
+
 /// Claiming an entry removes it: from here on the caller owns that staging file
 /// and must either finish it, hand it back with [`remember`], or delete it.
 pub(crate) fn take(key: &Key) -> Option<Paused> {

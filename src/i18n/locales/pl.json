@@ -272,6 +272,7 @@
     "diskFull": "Za mało miejsca na dysku.",
     "hostKeyMismatch": "Klucz hosta serwera uległ zmianie.",
     "integrityMismatch": "Przesłany plik nie przeszedł kontroli integralności.",
+    "cleanupIncomplete": "Czyszczenie jest niekompletne. Zachowano pliki, których przynależności nie udało się potwierdzić. Sprawdź miejsce docelowe przed ich ręcznym usunięciem.",
     "invalidInput": "Podana wartość jest nieprawidłowa.",
     "internal": "Wystąpił nieoczekiwany błąd.",
     "connectFailedPrefix": "Nie udało się połączyć z serwerem. {{raw}}",

@@ -15,6 +15,7 @@ export type CommandErrorCode =
   | 'permissionDenied'
   | 'cancelled'
   | 'integrityMismatch'
+  | 'cleanupIncomplete'
   | 'networkUnreachable'
   | 'connectionLost'
   | 'invalidInput'
@@ -147,7 +148,7 @@ export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
   return (
     typeof value === 'string' &&
     (ERROR_PATTERNS.some(([code]) => code === value) ||
-      ['invalidInput', 'resourceLimit', 'busy', 'internal'].includes(value))
+      ['invalidInput', 'resourceLimit', 'busy', 'internal', 'cleanupIncomplete'].includes(value))
   );
 }
 

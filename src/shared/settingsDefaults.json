@@ -13,8 +13,8 @@
   "transferColumnWidths": {},
   "transferHiddenColumns": [],
   "transferColumnOrder": [
-    "route",
     "file",
+    "route",
     "size",
     "transferred",
     "progress",

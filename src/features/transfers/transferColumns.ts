@@ -15,8 +15,8 @@ export type ReorderableColumnKey = ResizableColumnKey;
 export type ColumnWidths = Partial<Record<TransferColumnKey, number>>;
 
 export const DEFAULT_COLUMN_ORDER: ReorderableColumnKey[] = [
-  'route',
   'file',
+  'route',
   'size',
   'transferred',
   'progress',

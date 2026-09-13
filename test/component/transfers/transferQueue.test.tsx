@@ -289,7 +289,7 @@ test('all data headers sort in both directions and the third click restores queu
       [...container.querySelectorAll('[data-column-key]')]
         .map((el) => el.getAttribute('data-column-key'))
         .slice(0, 2),
-    ).toEqual(['route', 'file']);
+    ).toEqual(['file', 'route']);
     for (const key of ['file', 'route', 'size', 'transferred', 'progress', 'speed', 'remaining']) {
       const header = container.querySelector('[data-column-key="' + key + '"]')!;
       fireEvent.click(header);
@@ -365,11 +365,11 @@ test('reset widths fit labels and status pills while restoring flexible File', (
   try {
     const grid = () =>
       view.container.querySelector<HTMLElement>('.transfer-col-header')!.style.gridTemplateColumns;
-    expect(grid()).toContain('180px 400px');
+    expect(grid()).toContain('400px 180px');
     view.rerender(
       <TransferQueue {...queueProps} columnWidths={{}} onColumnWidthsChange={changed} />,
     );
-    expect(grid()).toContain('253px minmax(253px, 1fr)');
+    expect(grid()).toContain('minmax(253px, 1fr) 253px');
     expect(
       view.container.querySelector<HTMLElement>('.transfer-item')!.style.gridTemplateColumns,
     ).toBe(grid());

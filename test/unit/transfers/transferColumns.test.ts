@@ -14,20 +14,20 @@ test('a column added after an order was saved goes back to its own place', () =>
   // Saved by a version with no "Route" column, and with "Status" moved first.
   assert.deepEqual(
     sanitizeColumnOrder(['status', 'size', 'transferred', 'progress', 'speed', 'remaining']),
-    ['route', 'file', 'status', 'size', 'transferred', 'progress', 'speed', 'remaining'],
+    ['file', 'route', 'status', 'size', 'transferred', 'progress', 'speed', 'remaining'],
   );
 });
 
 test('missing columns follow the column they come after by default', () => {
-  assert.deepEqual(sanitizeColumnOrder(['status', 'size', 'route']), [
+  assert.deepEqual(sanitizeColumnOrder(['status', 'file', 'size']), [
     'status',
+    'file',
+    'route',
     'size',
     'transferred',
     'progress',
     'speed',
     'remaining',
-    'route',
-    'file',
   ]);
 });
 

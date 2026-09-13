@@ -682,6 +682,7 @@
     "sortProtocol": "За протоколом",
     "duplicateWarning": "Закладка з такою самою адресою вже існує: «{{name}}». Зберегти ще одну?",
     "saveAnyway": "Зберегти все одно",
+    "unsavedChangesMessage": "Зберегти зміни в закладці?",
     "newFolder": "Нова папка",
     "folderNamePlaceholder": "Назва папки",
     "confirmDeleteFolder": "Видалити папку «{{name}}»? Її закладки будуть переміщені на один рівень вище.",

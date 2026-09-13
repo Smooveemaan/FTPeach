@@ -662,6 +662,7 @@
     "sortProtocol": "按协议",
     "duplicateWarning": "已存在指向同一目标的书签：“{{name}}”。是否再保存一个？",
     "saveAnyway": "仍要保存",
+    "unsavedChangesMessage": "是否保存书签更改？",
     "newFolder": "新建文件夹",
     "folderNamePlaceholder": "文件夹名称",
     "confirmDeleteFolder": "删除文件夹“{{name}}”？其中的书签将向上移动一级。",

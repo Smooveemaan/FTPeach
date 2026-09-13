@@ -662,6 +662,7 @@
     "sortProtocol": "Efter protokoll",
     "duplicateWarning": "Det finns redan ett bokmärke för samma destination: ”{{name}}”. Vill du spara ett till?",
     "saveAnyway": "Spara ändå",
+    "unsavedChangesMessage": "Vill du spara ändringarna i bokmärket?",
     "newFolder": "Ny mapp",
     "folderNamePlaceholder": "Mappnamn",
     "confirmDeleteFolder": "Ska mappen ”{{name}}” tas bort? Bokmärkena i mappen flyttas då upp en nivå.",

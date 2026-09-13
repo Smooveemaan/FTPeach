@@ -648,6 +648,97 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 
+  test('asks before Escape or a click outside drops an edited bookmark', async () => {
+    const user = userEvent.setup();
+    const { props, container } = renderManager();
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    const name = screen.getByRole<HTMLInputElement>('textbox', {
+      name: 'siteManagerDialog.fields.name',
+    });
+    await user.type(name, ' 2');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeTruthy();
+    // Escape on the prompt dismisses only the prompt; the edit survives.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeNull();
+    expect(name.value).toBe('Production 2');
+
+    fireEvent.mouseDown(requireHtml(container.querySelector('.modal-overlay')));
+    const prompt = screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' });
+    await user.click(within(prompt).getByRole('button', { name: 'settings.discardChanges' }));
+
+    expect(props.onSave).not.toHaveBeenCalled();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' })).toBeTruthy();
+  });
+
+  test('saves an edited bookmark from the unsaved-changes prompt', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    await user.type(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }), ' 2');
+    await user.click(screen.getByRole('button', { name: 'common.close' }));
+
+    const prompt = screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' });
+    await user.click(within(prompt).getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'site-1', name: 'Production 2' }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' })).toBeTruthy(),
+    );
+  });
+
+  test('a revealed saved password is not an unsaved change, a typed one is', async () => {
+    const user = userEvent.setup();
+    vi.mocked(window.api.sites.revealSecret).mockResolvedValue({ ok: true, value: 'revealed' });
+    renderManager();
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    const input = screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password');
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await waitFor(() => expect(input.value).toBe('revealed'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
+    await user.type(screen.getByLabelText('connectionBar.fields.password'), 'typed');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeTruthy();
+  });
+
+  test('Escape on the duplicate warning keeps the bookmark form open', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.duplicate' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(screen.getByRole('button', { name: 'siteManagerDialog.saveAnyway' })).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: 'siteManagerDialog.saveAnyway' })).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' })).toBeTruthy();
+    expect(props.onSave).not.toHaveBeenCalled();
+    expect(props.onClose).not.toHaveBeenCalled();
+  });
+
   test('Delete opens a confirmation for the focused row', () => {
     renderManager();
     const siteRow = screen.getByText('Production').closest('.site-manage-row');

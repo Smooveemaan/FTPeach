@@ -662,6 +662,7 @@
     "sortProtocol": "プロトコル順",
     "duplicateWarning": "同じ接続先のブックマークが既にあります:「{{name}}」。もう 1 つ保存しますか？",
     "saveAnyway": "このまま保存",
+    "unsavedChangesMessage": "ブックマークの変更を保存しますか？",
     "newFolder": "新しいフォルダー",
     "folderNamePlaceholder": "フォルダー名",
     "confirmDeleteFolder": "「{{name}}」フォルダーを削除しますか？そのフォルダー内のブックマークは、1つ上の階層に移動します。",

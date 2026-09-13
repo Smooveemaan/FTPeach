@@ -662,6 +662,7 @@
     "sortProtocol": "Protokole göre",
     "duplicateWarning": "Aynı hedefe ait bir yer imi zaten mevcut: \"{{name}}\". Bir tane daha kaydetmek ister misiniz?",
     "saveAnyway": "Yine de kaydet",
+    "unsavedChangesMessage": "Yer imindeki değişiklikler kaydedilsin mi?",
     "newFolder": "Yeni Klasör",
     "folderNamePlaceholder": "Klasör adı",
     "confirmDeleteFolder": "\"{{name}}\" klasörünü silmek istiyor musunuz? Bu klasördeki yer imleri bir üst düzeye taşınacaktır.",

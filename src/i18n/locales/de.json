@@ -662,6 +662,7 @@
     "sortProtocol": "Nach Protokoll",
     "duplicateWarning": "Es gibt bereits ein Lesezeichen für dieses Ziel: „{{name}}“. Möchten Sie ein weiteres speichern?",
     "saveAnyway": "Trotzdem speichern",
+    "unsavedChangesMessage": "Änderungen an diesem Lesezeichen speichern?",
     "newFolder": "Neuer Ordner",
     "folderNamePlaceholder": "Ordnername",
     "confirmDeleteFolder": "Den Ordner „{{name}}“ löschen? Die darin enthaltenen Lesezeichen werden eine Ebene höher verschoben.",

@@ -662,6 +662,7 @@
     "sortProtocol": "Protokoll szerint",
     "duplicateWarning": "Már létezik könyvjelző ugyanerre a célra: „{{name}}”. Ment még egyet?",
     "saveAnyway": "Mentés mégis",
+    "unsavedChangesMessage": "El akarja menteni a könyvjelző módosításait?",
     "newFolder": "Új mappa",
     "folderNamePlaceholder": "Mappa neve",
     "confirmDeleteFolder": "Törölje a „{{name}}” mappát? A benne található könyvjelzők egy szinttel feljebb kerülnek.",

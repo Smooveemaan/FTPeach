@@ -20,6 +20,7 @@ export interface SiteSecretsController {
   readSecrets: () => SiteFormSecrets;
   resetSecrets: () => void;
   revealSavedSecret: (field: SecretField) => Promise<boolean>;
+  secretsChanged: () => boolean;
 }
 
 const causeMessage = (cause: unknown): string =>
@@ -34,25 +35,31 @@ export function useSiteSecrets({
   const passwordRef = useRef<HTMLInputElement>(null);
   const keyPassphraseRef = useRef<HTMLInputElement>(null);
 
-  const inputFor = useCallback(
-    (field: SecretField) => (field === 'password' ? passwordRef.current : keyPassphraseRef.current),
-    [],
-  );
+  // What this hook itself last put into each input: a prefill, a reveal or a
+  // reset. Anything else found there was typed by the user.
+  const knownSecretsRef = useRef<SiteFormSecrets>({ password: '', keyPassphrase: '' });
+  const setSecret = useCallback((field: SecretField, value: string) => {
+    knownSecretsRef.current = { ...knownSecretsRef.current, [field]: value };
+    setNativeInputValue(
+      field === 'password' ? passwordRef.current : keyPassphraseRef.current,
+      value,
+    );
+  }, []);
 
   const resetSecrets = useCallback(() => {
-    setNativeInputValue(passwordRef.current, '');
-    setNativeInputValue(keyPassphraseRef.current, '');
-  }, []);
+    setSecret('password', '');
+    setSecret('keyPassphrase', '');
+  }, [setSecret]);
 
   const initialPassword = initialSecrets?.password || '';
   const initialKeyPassphrase = initialSecrets?.keyPassphrase || '';
   useEffect(() => {
     resetSecrets();
     if (editingId === '__new__') {
-      setNativeInputValue(passwordRef.current, initialPassword);
-      setNativeInputValue(keyPassphraseRef.current, initialKeyPassphrase);
+      setSecret('password', initialPassword);
+      setSecret('keyPassphrase', initialKeyPassphrase);
     }
-  }, [editingId, initialPassword, initialKeyPassphrase, resetSecrets]);
+  }, [editingId, initialPassword, initialKeyPassphrase, resetSecrets, setSecret]);
 
   useEffect(() => {
     const clearWhenHidden = () => {
@@ -77,6 +84,12 @@ export function useSiteSecrets({
     [],
   );
 
+  const secretsChanged = useCallback(() => {
+    const current = readSecrets();
+    const known = knownSecretsRef.current;
+    return current.password !== known.password || current.keyPassphrase !== known.keyPassphrase;
+  }, [readSecrets]);
+
   const revealSavedSecret = useCallback(
     async (field: SecretField) => {
       if (!editingId || editingId === '__new__') return false;
@@ -88,14 +101,14 @@ export function useSiteSecrets({
           }
           return false;
         }
-        setNativeInputValue(inputFor(field), result.value || '');
+        setSecret(field, result.value || '');
         return !!result.value;
       } catch (cause) {
         setError(causeMessage(cause) || revealFailedMessage);
         return false;
       }
     },
-    [editingId, inputFor, revealFailedMessage, setError],
+    [editingId, revealFailedMessage, setError, setSecret],
   );
 
   return {
@@ -104,5 +117,6 @@ export function useSiteSecrets({
     readSecrets,
     resetSecrets,
     revealSavedSecret,
+    secretsChanged,
   };
 }

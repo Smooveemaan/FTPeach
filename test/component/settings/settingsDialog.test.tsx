@@ -182,6 +182,34 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onClose).toHaveBeenCalledOnce();
   });
 
+  test('prompts to save when the backdrop is clicked after an edit', async () => {
+    const user = userEvent.setup();
+    const { props, container } = renderDialog();
+
+    await toggleNotifyOnComplete(user);
+    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
+
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeTruthy();
+  });
+
+  test('prompts to save when Escape is pressed after an edit', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog();
+
+    await toggleNotifyOnComplete(user);
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeTruthy();
+
+    // A second Escape dismisses only the prompt, leaving Settings open.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'settings.title' })).toBeTruthy();
+  });
+
   test('Cancel discards an edit and closes without prompting', async () => {
     const user = userEvent.setup();
     const { props } = renderDialog();

@@ -662,6 +662,7 @@
     "sortProtocol": "प्रोटोकॉल के अनुसार",
     "duplicateWarning": "उसी गंतव्य के लिए एक बुकमार्क पहले से मौजूद है: \"{{name}}\"। एक और सहेजें?",
     "saveAnyway": "फिर भी सहेजें",
+    "unsavedChangesMessage": "बुकमार्क में परिवर्तन सहेजें?",
     "newFolder": "नया फ़ोल्डर",
     "folderNamePlaceholder": "फ़ोल्डर का नाम",
     "confirmDeleteFolder": "फ़ोल्डर \"{{name}}\" हटाएं? इसके बुकमार्क एक स्तर ऊपर चले जायेंगे.",

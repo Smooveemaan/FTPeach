@@ -662,6 +662,7 @@
     "sortProtocol": "Theo giao thức",
     "duplicateWarning": "Đã có một dấu trang dẫn đến cùng địa chỉ này: \"{{name}}\". Bạn có muốn lưu thêm một dấu trang nữa không?",
     "saveAnyway": "Vẫn lưu",
+    "unsavedChangesMessage": "Lưu các thay đổi của dấu trang?",
     "newFolder": "Thư mục mới",
     "folderNamePlaceholder": "Tên thư mục",
     "confirmDeleteFolder": "Xóa thư mục “{{name}}”? Các dấu trang trong đó sẽ được chuyển lên một cấp.",

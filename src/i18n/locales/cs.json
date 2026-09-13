@@ -682,6 +682,7 @@
     "sortProtocol": "Podle protokolu",
     "duplicateWarning": "Záložka pro stejnou adresu již existuje: „{{name}}“. Chcete uložit další?",
     "saveAnyway": "Uložit i tak",
+    "unsavedChangesMessage": "Chcete změny v záložce uložit?",
     "newFolder": "Nová složka",
     "folderNamePlaceholder": "Název složky",
     "confirmDeleteFolder": "Smazat složku „{{name}}“? Její záložky se přesunou o úroveň výš.",

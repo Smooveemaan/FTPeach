@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../../components/Modal.tsx';
+import UnsavedChangesDialog from '../../components/UnsavedChangesDialog.tsx';
 import { api } from '../../platform/api/index.ts';
 import type { UpdaterStatus } from '../../platform/ipcContracts.ts';
 import type { PaneOrientation, SettingsPatch } from './useSettings.ts';
@@ -80,8 +81,7 @@ export default function SettingsDialog({
     <>
       <Modal
         title={t('settings.title')}
-        onClose={draft.discardAndClose}
-        onCloseButton={requestClose}
+        onClose={requestClose}
         className={`modal-settings ${narrow ? 'narrow' : ''}`}
       >
         <div className="settings-layout">
@@ -233,37 +233,15 @@ export default function SettingsDialog({
       </Modal>
 
       {draft.confirmCloseArmed && (
-        <Modal
-          title={t('settings.unsavedChangesTitle')}
-          onClose={() => draft.setConfirmCloseArmed(false)}
-          className="modal-confirm"
-          footer={
-            <>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => draft.setConfirmCloseArmed(false)}
-              >
-                {t('common.cancel')}
-              </button>
-              <button type="button" className="btn" onClick={draft.discardAndClose}>
-                {t('settings.discardChanges')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  draft.setConfirmCloseArmed(false);
-                  handleSave();
-                }}
-              >
-                {t('common.save')}
-              </button>
-            </>
-          }
-        >
-          <p>{t('settings.unsavedChangesMessage')}</p>
-        </Modal>
+        <UnsavedChangesDialog
+          message={t('settings.unsavedChangesMessage')}
+          onCancel={() => draft.setConfirmCloseArmed(false)}
+          onDiscard={draft.discardAndClose}
+          onSave={() => {
+            draft.setConfirmCloseArmed(false);
+            handleSave();
+          }}
+        />
       )}
     </>
   );

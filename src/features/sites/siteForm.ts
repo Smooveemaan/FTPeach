@@ -36,6 +36,10 @@ export function createSiteForm(site?: ManagedSite | null): SiteForm {
   };
 }
 
+export function siteFormsEqual(a: SiteForm, b: SiteForm): boolean {
+  return (Object.keys(a) as (keyof SiteForm)[]).every((key) => a[key] === b[key]);
+}
+
 export function createPaneSiteForm(pane: {
   kind?: 'local' | 'remote';
   form: ConnectionForm;

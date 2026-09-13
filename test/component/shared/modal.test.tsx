@@ -41,6 +41,33 @@ describe('critical dialog accessibility', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  test('Escape closes only the dialog opened last', () => {
+    const lower = vi.fn();
+    const upper = vi.fn();
+    const tree = (showUpper: boolean) => (
+      <>
+        <Modal title="Lower" onClose={lower}>
+          <button>Lower</button>
+        </Modal>
+        {showUpper && (
+          <Modal title="Upper" onClose={upper}>
+            <button>Upper</button>
+          </Modal>
+        )}
+      </>
+    );
+    const view = render(tree(true));
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(upper).toHaveBeenCalledOnce();
+    expect(lower).not.toHaveBeenCalled();
+
+    view.rerender(tree(false));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(lower).toHaveBeenCalledOnce();
+    view.unmount();
+  });
+
   test('prompt trims input and submits from the keyboard', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

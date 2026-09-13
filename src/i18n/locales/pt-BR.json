@@ -670,6 +670,7 @@
     "sortProtocol": "Por protocolo",
     "duplicateWarning": "Já existe um favorito para esse mesmo destino: “{{name}}”. Deseja salvar outro?",
     "saveAnyway": "Salvar mesmo assim",
+    "unsavedChangesMessage": "Deseja salvar as alterações no favorito?",
     "newFolder": "Nova pasta",
     "folderNamePlaceholder": "Nome da pasta",
     "confirmDeleteFolder": "Excluir a pasta “{{name}}”? Seus favoritos serão movidos para um nível acima.",

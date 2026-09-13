@@ -702,6 +702,7 @@
     "sortProtocol": "حسب البروتوكول",
     "duplicateWarning": "يوجد بالفعل إشارة مرجعية لنفس الوجهة: \"{{name}}\". هل تريد حفظ إشارة مرجعية أخرى؟",
     "saveAnyway": "حفظ على أي حال",
+    "unsavedChangesMessage": "هل تريد حفظ التغييرات في الإشارة المرجعية؟",
     "newFolder": "مجلد جديد",
     "folderNamePlaceholder": "اسم المجلد",
     "confirmDeleteFolder": "هل تريد حذف المجلد «{{name}}»؟ ستنتقل إشاراته المرجعية إلى المستوى الأعلى.",

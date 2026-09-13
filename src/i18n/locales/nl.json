@@ -662,6 +662,7 @@
     "sortProtocol": "Op protocol",
     "duplicateWarning": "Er bestaat al een bladwijzer voor dezelfde bestemming: \"{{name}}\". Wil je er nog een opslaan?",
     "saveAnyway": "Toch opslaan",
+    "unsavedChangesMessage": "Wil je de wijzigingen in de bladwijzer opslaan?",
     "newFolder": "Nieuwe map",
     "folderNamePlaceholder": "Naam van de map",
     "confirmDeleteFolder": "De map \"{{name}}\" verwijderen? De bladwijzers daarin worden dan één niveau hoger geplaatst.",

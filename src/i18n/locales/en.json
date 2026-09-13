@@ -662,6 +662,7 @@
     "sortProtocol": "By protocol",
     "duplicateWarning": "A bookmark for the same destination already exists: \"{{name}}\". Save another one?",
     "saveAnyway": "Save anyway",
+    "unsavedChangesMessage": "Save changes to this bookmark?",
     "newFolder": "New Folder",
     "folderNamePlaceholder": "Folder name",
     "confirmDeleteFolder": "Delete folder \"{{name}}\"? Its bookmarks will move up one level.",

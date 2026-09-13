@@ -672,6 +672,7 @@
     "sortProtocol": "După protocol",
     "duplicateWarning": "Există deja un marcaj pentru aceeași destinație: „{{name}}”. Doriți să salvați încă unul?",
     "saveAnyway": "Salvează oricum",
+    "unsavedChangesMessage": "Doriți să salvați modificările aduse marcajului?",
     "newFolder": "Folder nou",
     "folderNamePlaceholder": "Numele folderului",
     "confirmDeleteFolder": "Ștergeți folderul „{{name}}”? Marcajele din el vor fi mutate cu un nivel mai sus.",

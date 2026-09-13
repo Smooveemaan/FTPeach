@@ -672,6 +672,7 @@
     "sortProtocol": "לפי פרוטוקול",
     "duplicateWarning": "כבר קיימת סימנייה לאותו יעד: \"{{name}}\". לשמור סימנייה נוספת?",
     "saveAnyway": "שמור בכל מקרה",
+    "unsavedChangesMessage": "לשמור את השינויים בסימנייה?",
     "newFolder": "תיקייה חדשה",
     "folderNamePlaceholder": "שם התיקייה",
     "confirmDeleteFolder": "האם למחוק את התיקייה \"{{name}}\"? הסימניות שבה יועברו רמה אחת למעלה.",

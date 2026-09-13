@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The transfer list stays fast with thousands of transfers, and filtering a large folder is
   quicker.
 - Adding transfers to a full queue shows a message instead of slowing FTPeach down.
+- Settings and the bookmark editor ask whether to save your changes when you press Escape or
+  click outside them, instead of closing and losing the changes.
 
 ### Fixed
 
@@ -28,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pressing Stop no longer reports that the connection to the server was lost.
 - When a file with the same name already exists on the server, the error message says so.
 - Stopping a folder transfer keeps the files it can't confirm it created, and tells you so.
+- When one window is open on top of another, Escape closes only the top one.
 - A paused folder transfer no longer resumes over files that changed in the meantime.
 - Disconnecting from a server that stopped responding no longer hangs.
 - A local folder with files FTPeach can't read shows an error instead of listing them as

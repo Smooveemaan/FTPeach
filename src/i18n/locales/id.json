@@ -662,6 +662,7 @@
     "sortProtocol": "Berdasarkan protokol",
     "duplicateWarning": "Bookmark untuk tujuan yang sama sudah ada: \"{{name}}\". Simpan satu lagi?",
     "saveAnyway": "Simpan saja",
+    "unsavedChangesMessage": "Apakah ingin menyimpan perubahan pada bookmark?",
     "newFolder": "Folder Baru",
     "folderNamePlaceholder": "Nama folder",
     "confirmDeleteFolder": "Hapus folder “{{name}}”? Bookmark di dalamnya akan dipindahkan ke tingkat di atasnya.",

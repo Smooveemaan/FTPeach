@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useTruncated } from '../hooks/useTruncated.ts';
 import { holdDialogScrim } from '../platform/windowFrame.ts';
 
+// Every open Modal listens for Escape on the document, so a dialog stacked on
+// top of another would otherwise close both. Only the most recently opened one
+// reacts.
+const openModals: object[] = [];
+
 interface ModalFooterActionsProps {
   onCancel: () => void;
   onConfirm: () => void;
@@ -45,7 +50,6 @@ export function ModalFooterActions({
 interface ModalProps {
   title?: ReactNode;
   onClose: () => void;
-  onCloseButton?: () => void;
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
@@ -57,7 +61,6 @@ interface ModalProps {
 export default function Modal({
   title,
   onClose,
-  onCloseButton,
   children,
   footer,
   className,
@@ -66,13 +69,21 @@ export default function Modal({
   initialFocusRef,
 }: ModalProps) {
   const { t } = useTranslation();
+  const stackToken = useRef({}).current;
+  useEffect(() => {
+    openModals.push(stackToken);
+    return () => {
+      openModals.splice(openModals.indexOf(stackToken), 1);
+    };
+  }, [stackToken]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !closeDisabled) onClose();
+      if (e.key === 'Escape' && !closeDisabled && openModals.at(-1) === stackToken) onClose();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onClose, closeDisabled]);
+  }, [onClose, closeDisabled, stackToken]);
 
   // The overlay scrims the app and .title-bar::after scrims the bar above it,
   // but the window border is outside the webview and no rule reaches it. Every
@@ -174,7 +185,7 @@ export default function Modal({
             type="button"
             className="modal-close"
             aria-label={t('common.close')}
-            onClick={onCloseButton ?? onClose}
+            onClick={onClose}
             disabled={closeDisabled}
           >
             ✕

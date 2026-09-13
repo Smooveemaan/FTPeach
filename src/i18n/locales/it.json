@@ -670,6 +670,7 @@
     "sortProtocol": "Per protocollo",
     "duplicateWarning": "Esiste già un segnalibro con la stessa destinazione: \"{{name}}\". Vuoi salvarne un altro?",
     "saveAnyway": "Salva comunque",
+    "unsavedChangesMessage": "Salvare le modifiche al segnalibro?",
     "newFolder": "Nuova cartella",
     "folderNamePlaceholder": "Nome della cartella",
     "confirmDeleteFolder": "Eliminare la cartella “{{name}}”? I suoi segnalibri verranno spostati al livello superiore.",

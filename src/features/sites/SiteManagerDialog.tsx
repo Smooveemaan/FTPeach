@@ -1,15 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal, { ModalFooterActions } from '../../components/Modal.tsx';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
+import UnsavedChangesDialog from '../../components/UnsavedChangesDialog.tsx';
 import { isolate } from '../../shared/bidi.ts';
 import ExportSettingsDialog from '../../components/ExportSettingsDialog.tsx';
 import type { ExportSettingsOptions } from '../../components/ExportSettingsDialog.tsx';
 import ImportSettingsDialog from '../../components/ImportSettingsDialog.tsx';
 import type { ImportSettingsOptions } from '../../components/ImportSettingsDialog.tsx';
 import Icon from '../../components/Icon.tsx';
-import { canSubmitSiteForm, createSiteForm, DEFAULT_SITE_PORTS } from './siteForm.ts';
+import {
+  canSubmitSiteForm,
+  createSiteForm,
+  DEFAULT_SITE_PORTS,
+  siteFormsEqual,
+} from './siteForm.ts';
 import SiteEditor from './SiteEditor.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
 import type { SiteTextField } from './SiteEditor.tsx';
@@ -143,14 +149,22 @@ export default function SiteManagerDialog({
     setRenameSiteName,
     setRenamingSiteId,
   } = dialog;
+  const editorBaselineRef = useRef(form);
+  const [confirmDiscardEdit, setConfirmDiscardEdit] = useState(false);
 
-  const { keyPassphraseRef, passwordRef, readSecrets, resetSecrets, revealSavedSecret } =
-    useSiteSecrets({
-      editingId,
-      initialSecrets: initialForm,
-      revealFailedMessage: t('siteManagerDialog.revealFailed'),
-      setError,
-    });
+  const {
+    keyPassphraseRef,
+    passwordRef,
+    readSecrets,
+    resetSecrets,
+    revealSavedSecret,
+    secretsChanged,
+  } = useSiteSecrets({
+    editingId,
+    initialSecrets: initialForm,
+    revealFailedMessage: t('siteManagerDialog.revealFailed'),
+    setError,
+  });
 
   const {
     activeEntry,
@@ -191,62 +205,35 @@ export default function SiteManagerDialog({
 
   const canSubmit = canSubmitSiteForm(form);
 
-  const startEdit = (site: ManagedSite) => {
+  const openEditor = (id: string, nextForm: SiteForm) => {
     setRsaKeySelected(false);
     resetSecrets();
+    editorBaselineRef.current = nextForm;
     patch({
       addingFolder: false,
-      editingId: site.id,
+      editingId: id,
       error: '',
-      form: createSiteForm(site),
+      form: nextForm,
       renamingFolderId: null,
       renamingSiteId: null,
     });
   };
 
-  const startAdd = (parentId: string | null = null) => {
-    setRsaKeySelected(false);
-    resetSecrets();
-    patch({
-      addingFolder: false,
-      editingId: '__new__',
-      error: '',
-      form: { ...createSiteForm(), parentId },
-      renamingFolderId: null,
-      renamingSiteId: null,
-    });
-  };
+  const startEdit = (site: ManagedSite) => openEditor(site.id, createSiteForm(site));
 
-  const startAddLocal = (parentId: string | null = null) => {
-    setRsaKeySelected(false);
-    resetSecrets();
-    patch({
-      addingFolder: false,
-      editingId: '__new__',
-      error: '',
-      form: { ...createSiteForm(), kind: 'local', parentId },
-      renamingFolderId: null,
-      renamingSiteId: null,
-    });
-  };
+  const startAdd = (parentId: string | null = null) =>
+    openEditor('__new__', { ...createSiteForm(), parentId });
 
-  const duplicateSite = (site: ManagedSite) => {
-    setRsaKeySelected(false);
-    resetSecrets();
-    patch({
-      addingFolder: false,
-      editingId: '__new__',
-      error: '',
-      form: {
-        ...createSiteForm(site),
-        name: `${site.name}${t('siteManagerDialog.duplicateNameSuffix')}`,
-        hasPassword: false,
-        hasKeyPassphrase: false,
-      },
-      renamingFolderId: null,
-      renamingSiteId: null,
+  const startAddLocal = (parentId: string | null = null) =>
+    openEditor('__new__', { ...createSiteForm(), kind: 'local', parentId });
+
+  const duplicateSite = (site: ManagedSite) =>
+    openEditor('__new__', {
+      ...createSiteForm(site),
+      name: `${site.name}${t('siteManagerDialog.duplicateNameSuffix')}`,
+      hasPassword: false,
+      hasKeyPassphrase: false,
     });
-  };
 
   const cancelEdit = () => {
     if (saving) return;
@@ -256,6 +243,14 @@ export default function SiteManagerDialog({
     }
     setRsaKeySelected(false);
     patch({ editingId: null, error: '', saving: false });
+  };
+
+  // Escape, the ✕ and a click outside are easy to hit by accident, so they ask
+  // before dropping edits; the footer's Cancel discards them outright.
+  const requestCancelEdit = () => {
+    if (saving) return;
+    if (siteFormsEqual(form, editorBaselineRef.current) && !secretsChanged()) cancelEdit();
+    else setConfirmDiscardEdit(true);
   };
 
   const handleField = (key: SiteTextField) => (e: ChangeEvent<HTMLInputElement>) =>
@@ -410,7 +405,7 @@ export default function SiteManagerDialog({
                   : 'siteManagerDialog.titleList',
               )
         }
-        onClose={editing ? cancelEdit : onClose}
+        onClose={editing ? requestCancelEdit : onClose}
         className="modal-site-manager"
         closeDisabled={!!pendingDelete || saving}
         footer={
@@ -652,6 +647,21 @@ export default function SiteManagerDialog({
             void handleSubmit(true);
           }}
           onClose={() => setPendingDuplicate(null)}
+        />
+      )}
+      {editing && confirmDiscardEdit && (
+        <UnsavedChangesDialog
+          message={t('siteManagerDialog.unsavedChangesMessage')}
+          saveDisabled={!canSubmit || saving}
+          onCancel={() => setConfirmDiscardEdit(false)}
+          onDiscard={() => {
+            setConfirmDiscardEdit(false);
+            cancelEdit();
+          }}
+          onSave={() => {
+            setConfirmDiscardEdit(false);
+            void handleSubmit();
+          }}
         />
       )}
       {showExportOptions && (

@@ -662,6 +662,7 @@
     "sortProtocol": "Efter protokol",
     "duplicateWarning": "Der findes allerede et bogmærke til samme destination: »{{name}}«. Vil du gemme endnu et?",
     "saveAnyway": "Gem alligevel",
+    "unsavedChangesMessage": "Vil du gemme ændringerne i bogmærket?",
     "newFolder": "Ny mappe",
     "folderNamePlaceholder": "Mappenavn",
     "confirmDeleteFolder": "Skal mappen »{{name}}« slettes? Dens bogmærker flyttes da et niveau op.",

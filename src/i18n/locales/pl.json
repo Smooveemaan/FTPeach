@@ -682,6 +682,7 @@
     "sortProtocol": "Według protokołu",
     "duplicateWarning": "Istnieje już zakładka do tego samego miejsca docelowego: „{{name}}”. Zapisać kolejną?",
     "saveAnyway": "Zapisz mimo to",
+    "unsavedChangesMessage": "Zapisać zmiany w zakładce?",
     "newFolder": "Nowy folder",
     "folderNamePlaceholder": "Nazwa folderu",
     "confirmDeleteFolder": "Czy chcesz usunąć folder „{{name}}”? Jego zakładki zostaną przeniesione o jeden poziom wyżej.",

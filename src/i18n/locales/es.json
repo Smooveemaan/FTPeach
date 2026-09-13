@@ -670,6 +670,7 @@
     "sortProtocol": "Por protocolo",
     "duplicateWarning": "Ya existe un marcador con el mismo destino: «{{name}}». ¿Quieres guardar otro?",
     "saveAnyway": "Guardar de todos modos",
+    "unsavedChangesMessage": "¿Quieres guardar los cambios en el marcador?",
     "newFolder": "Nueva carpeta",
     "folderNamePlaceholder": "Nombre de la carpeta",
     "confirmDeleteFolder": "¿Deseas eliminar la carpeta «{{name}}»? Sus marcadores se trasladarán un nivel más arriba.",

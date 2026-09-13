@@ -670,6 +670,7 @@
     "sortProtocol": "Par protocole",
     "duplicateWarning": "Un signet vers cette même destination existe déjà : « {{name}} ». Voulez-vous en enregistrer un autre ?",
     "saveAnyway": "Enregistrer quand même",
+    "unsavedChangesMessage": "Enregistrer les modifications apportées au signet ?",
     "newFolder": "Nouveau dossier",
     "folderNamePlaceholder": "Nom du dossier",
     "confirmDeleteFolder": "Supprimer le dossier « {{name}} » ? Ses signets seront déplacés au niveau supérieur.",

@@ -23,8 +23,7 @@ pub fn list(data: &[u8]) {
         let now = chrono::DateTime::from_timestamp(1_781_524_800, 0).unwrap();
         for line in text.lines() {
             let _ = list_parse::parse_line(line, now);
-            // The app currently uses LIST; exercise the dependency's MLSD parser too.
-            let _ = suppaftp::list::ListParser::parse_mlsd(line);
+            let _ = list_parse::parse_mlsd_line(line);
         }
     }
 }

@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Closing Settings no longer overwrites settings changed from the tray while it was open.
 - Weekly parser fuzz checks compile with the application's shared directory limits again.
   CI also replays saved parser inputs to catch compilation regressions before the weekly run.
+- MLSD fuzzing exercises the parser used by FTPeach and preserves the input found by the
+  weekly audit as a regression case.
+- Regenerate license reports for the release lockfiles so CI can validate them.
 
 ## [0.2.1] - 2026-09-13
 

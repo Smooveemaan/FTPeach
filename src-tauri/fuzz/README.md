@@ -23,10 +23,13 @@ failure. The job timeout also bounds compilation. Fuzzing is outside the PR
 pipeline; saved parser regression inputs also replay in CI and releases when
 Rust sources change, so harness compilation failures are caught before the weekly run.
 
+LIST and MLSD fuzzing both call the application's `protocol/list_parse.rs` parsers.
 LIST seeds come from `protocol/list_parse.rs` unit tests; PROPFIND seeds from
 `protocol/webdav_tests.rs`; FTP welcome/FEAT replies from `protocol/ftp_tests.rs`,
 plus complete and truncated multiline greetings. MLSD examples come from the
-locked suppaftp parser tests (the app currently requests LIST).
+locked suppaftp parser tests. `mlsd-upstream-index-out-of-bounds` preserves an input
+that crashed suppaftp's unused MLSD parser; it is replayed against the application's
+MLSD parser, which is used for directory listings.
 `malformed-reply` retains an input saved during a local harness timeout; it
 replays successfully in isolation. The harness now reuses its loopback listener
 to avoid exhausting ephemeral listening ports during sustained fuzzing.

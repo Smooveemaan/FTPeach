@@ -4,6 +4,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-14
+
 ### Added
 
 - The tray icon's menu shows how transfers are going and lets you pause them or lock saved
@@ -12,10 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   transfer notifications on or off, and connect to a recent site.
 - If transfers are still running when you quit, FTPeach asks whether to quit right away or
   once they finish.
+- The tray menu shows the current transfer speed alongside transfer progress.
 
 ### Fixed
 
 - File → Exit quits the app instead of leaving a blank window or hiding it to the tray.
+- A custom speed limit appears directly below No limit in the tray menu.
+- Closing Settings no longer overwrites settings changed from the tray while it was open.
+- Weekly parser fuzz checks compile with the application's shared directory limits again.
+  CI also replays saved parser inputs to catch compilation regressions before the weekly run.
 
 ## [0.2.1] - 2026-09-13
 

@@ -1,6 +1,8 @@
 mod backend_logger;
 mod failure;
 pub use failure::fail;
+mod limits;
+pub use limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES};
 pub mod config;
 pub mod ftp;
 pub mod known_hosts;
@@ -105,8 +107,6 @@ fn refused_replacement(error: anyhow::Error, new_path: &str) -> anyhow::Error {
         format!("The server did not let {new_path} be replaced: {error:#}"),
     )
 }
-pub const MAX_DIRECTORY_ENTRIES: usize = 10_000;
-pub const MAX_DIRECTORY_TEXT_BYTES: usize = 8 * 1024 * 1024;
 
 pub fn validate_remote_path(path: &str) -> BackendResult<()> {
     if path.len() > MAX_REMOTE_PATH_LEN {

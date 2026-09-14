@@ -20,7 +20,8 @@ cargo +nightly-2026-09-01 fuzz run webdav_propfind -- -max_total_time=60
 The weekly/manual security workflow runs each target for 60 seconds, limits
 inputs to 64 KiB, and saves crashes and evolved corpora for 30 days even on
 failure. The job timeout also bounds compilation. Fuzzing is outside the PR
-pipeline; SAST runs on PRs.
+pipeline; saved parser regression inputs also replay in CI and releases when
+Rust sources change, so harness compilation failures are caught before the weekly run.
 
 LIST seeds come from `protocol/list_parse.rs` unit tests; PROPFIND seeds from
 `protocol/webdav_tests.rs`; FTP welcome/FEAT replies from `protocol/ftp_tests.rs`,

@@ -1,12 +1,18 @@
 //! Harnesses compile the real parser/error sources, not copies or mock parsers.
 #![allow(dead_code)]
 
+#[path = "../../src/protocol/failure.rs"]
+mod failure;
 #[path = "../../src/ipc.rs"]
 mod ipc;
+#[path = "../../src/protocol/limits.rs"]
+mod limits;
 #[path = "../../src/protocol/list_parse.rs"]
 mod list_parse;
-#[path = "../../src/protocol/failure.rs"]
-pub mod protocol;
+pub mod protocol {
+    pub use crate::failure::fail;
+    pub use crate::limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES};
+}
 #[path = "../../src/protocol/webdav/response.rs"]
 mod response;
 type BackendResult<T> = anyhow::Result<T>;

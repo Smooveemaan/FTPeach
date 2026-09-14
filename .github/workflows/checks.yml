@@ -148,6 +148,25 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  parser-regressions:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned Rust toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri/fuzz
+      - name: Replay saved parser regression inputs
+        run: cargo test --locked --manifest-path src-tauri/fuzz/Cargo.toml --lib
+
   rust-test:
     permissions:
       contents: read

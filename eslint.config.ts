@@ -54,7 +54,7 @@ export default [
       ...js.configs.recommended.rules,
       ...presetRules('react/recommended', react.configs.flat.recommended),
       ...presetRules('react/jsx-runtime', react.configs.flat['jsx-runtime']),
-      ...reactHooks.configs.recommended.rules,
+      ...presetRules('react-hooks/recommended', reactHooks.configs.recommended),
       ...presetRules(
         'typescript-eslint/recommended-type-checked',
         tseslint.configs.recommendedTypeChecked[2],
@@ -79,6 +79,28 @@ export default [
       // why including the dependency would produce wrong behaviour. `error`
       // rather than the preset's `warn` so that stays a deliberate act.
       'react-hooks/exhaustive-deps': 'error',
+      // The three React Compiler rules below are off; the other 13 in the
+      // preset are on. Each of these three reads a deliberate idiom in this
+      // codebase as a defect, and satisfying them would mean restructuring
+      // working code rather than fixing anything.
+      //
+      // `refs` infers at the level of a hook's whole return value: because
+      // useDragMove returns a ref alongside `dragInfo` from useState, every
+      // read of `dragMove.dragInfo` in Workspace is reported as a render-phase
+      // ref access, as is passing `ghostRef` to a `ref` prop, which never
+      // touches `.current` at all.
+      //
+      // `immutability` and `set-state-in-effect` both land on the latest-value
+      // ref pattern (`onDropRef.current = onDrop`), which keeps a stable
+      // callback identity without re-subscribing native listeners on every
+      // render, and on resetting a field when its subject changes
+      // (`useEffect(() => setText(''), [currentPath])`).
+      //
+      // Revisit these when the rules can distinguish a ref from its
+      // neighbours in the same object.
+      'react-hooks/refs': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/set-state-in-effect': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',

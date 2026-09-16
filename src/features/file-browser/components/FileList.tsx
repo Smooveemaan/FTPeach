@@ -20,7 +20,7 @@ interface FileListProps {
   virtualized: boolean;
   listRef: MutableRefObject<VirtualListHandle | null>;
   outerElementType: ReactElementType;
-  viewportRef: RefObject<HTMLDivElement>;
+  viewportRef: RefObject<HTMLDivElement | null>;
   viewportSize: { width: number; height: number };
   rowHeight: number;
   entries: readonly FileEntry[];

@@ -12,7 +12,7 @@ export interface SiteSearchModel {
   closeSearch: () => void;
   filteredSites: ManagedSite[];
   isSearching: boolean;
-  searchInputRef: RefObject<HTMLInputElement>;
+  searchInputRef: RefObject<HTMLInputElement | null>;
   searchOpen: boolean;
   searchQuery: string;
   setSearchOpen: Dispatch<SetStateAction<boolean>>;

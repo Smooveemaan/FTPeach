@@ -10,9 +10,9 @@ interface UseSettingsNavCarouselOptions {
 }
 
 interface SettingsNavCarouselModel {
-  settingsNavRef: RefObject<HTMLElement>;
-  settingsNavWindowRef: RefObject<HTMLDivElement>;
-  settingsNavTabsRef: RefObject<HTMLDivElement>;
+  settingsNavRef: RefObject<HTMLElement | null>;
+  settingsNavWindowRef: RefObject<HTMLDivElement | null>;
+  settingsNavTabsRef: RefObject<HTMLDivElement | null>;
   settingsNavCarousel: SettingsNavLayout;
   scrollSettingsTabs: (direction: -1 | 1) => void;
   revealSettingsTab: (index: number) => void;

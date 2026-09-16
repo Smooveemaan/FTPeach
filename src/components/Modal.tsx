@@ -16,7 +16,7 @@ interface ModalFooterActionsProps {
   danger?: boolean;
   cancelDisabled?: boolean;
   confirmDisabled?: boolean;
-  confirmRef?: RefObject<HTMLButtonElement>;
+  confirmRef?: RefObject<HTMLButtonElement | null>;
 }
 
 export function ModalFooterActions({
@@ -55,7 +55,7 @@ interface ModalProps {
   className?: string;
   headerActions?: ReactNode;
   closeDisabled?: boolean;
-  initialFocusRef?: RefObject<HTMLElement>;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export default function Modal({

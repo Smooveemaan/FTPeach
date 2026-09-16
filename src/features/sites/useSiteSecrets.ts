@@ -15,8 +15,8 @@ interface UseSiteSecretsOptions {
 }
 
 export interface SiteSecretsController {
-  keyPassphraseRef: RefObject<HTMLInputElement>;
-  passwordRef: RefObject<HTMLInputElement>;
+  keyPassphraseRef: RefObject<HTMLInputElement | null>;
+  passwordRef: RefObject<HTMLInputElement | null>;
   readSecrets: () => SiteFormSecrets;
   resetSecrets: () => void;
   revealSavedSecret: (field: SecretField) => Promise<boolean>;

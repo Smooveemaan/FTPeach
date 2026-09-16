@@ -15,7 +15,7 @@ interface PaneSourceMinWidthOptions {
 interface PaneSearchState {
   open: boolean;
   text: string;
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   setOpen: (open: boolean) => void;
   close: () => void;
   setText: (text: string) => void;
@@ -34,7 +34,7 @@ interface PaneTitleBarProps {
 }
 
 export interface PaneSourceMinWidthModel {
-  sourceRef: React.RefObject<HTMLElement>;
+  sourceRef: React.RefObject<HTMLElement | null>;
   paneStyle: React.CSSProperties | undefined;
 }
 

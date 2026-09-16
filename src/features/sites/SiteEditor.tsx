@@ -42,8 +42,8 @@ interface SiteEditorProps {
   onChooseLocalPath: () => void | Promise<void>;
   onRevealSecret: (field: SecretField) => boolean | Promise<boolean>;
   rsaKeySelected: boolean;
-  passwordRef: RefObject<HTMLInputElement>;
-  keyPassphraseRef: RefObject<HTMLInputElement>;
+  passwordRef: RefObject<HTMLInputElement | null>;
+  keyPassphraseRef: RefObject<HTMLInputElement | null>;
   t: Translate;
 }
 

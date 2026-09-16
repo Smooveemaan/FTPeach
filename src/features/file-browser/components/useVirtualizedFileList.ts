@@ -21,9 +21,9 @@ interface PaneListOuterProps {
 }
 
 export interface VirtualizedFileListModel {
-  viewportRef: React.RefObject<HTMLDivElement>;
-  rowProbeRef: React.RefObject<HTMLDivElement>;
-  listRef: React.RefObject<VirtualListHandle>;
+  viewportRef: React.RefObject<HTMLDivElement | null>;
+  rowProbeRef: React.RefObject<HTMLDivElement | null>;
+  listRef: React.RefObject<VirtualListHandle | null>;
   viewportSize: { width: number; height: number };
   rowHeight: number;
   outerElementType: React.ForwardRefExoticComponent<

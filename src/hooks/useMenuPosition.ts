@@ -18,7 +18,7 @@ interface MenuGrid {
 }
 
 export function useMenuPosition(
-  anchor: RefObject<HTMLElement>,
+  anchor: RefObject<HTMLElement | null>,
   open: boolean,
   { count, columns, cell, gap, padding, maxRows, scrollbarWidth }: MenuGrid,
 ): MenuPosition | null {

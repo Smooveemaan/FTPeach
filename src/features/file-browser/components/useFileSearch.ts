@@ -15,7 +15,7 @@ export interface FileSearchModel {
   setText: Dispatch<SetStateAction<string>>;
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   close: () => void;
 }
 

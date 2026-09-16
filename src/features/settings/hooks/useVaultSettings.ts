@@ -36,9 +36,9 @@ export interface VaultSettingsModel {
   setChangePasswordArmed: Dispatch<SetStateAction<boolean>>;
   strongholdSetupArmed: boolean;
   setStrongholdSetupArmed: Dispatch<SetStateAction<boolean>>;
-  masterPasswordRef: RefObject<HTMLInputElement>;
-  masterPasswordConfirmRef: RefObject<HTMLInputElement>;
-  oldMasterPasswordRef: RefObject<HTMLInputElement>;
+  masterPasswordRef: RefObject<HTMLInputElement | null>;
+  masterPasswordConfirmRef: RefObject<HTMLInputElement | null>;
+  oldMasterPasswordRef: RefObject<HTMLInputElement | null>;
   runVaultAction: (action: () => Promise<CommandResult>) => Promise<boolean>;
   setupVault: () => void | Promise<boolean>;
   unlockVault: () => Promise<boolean>;

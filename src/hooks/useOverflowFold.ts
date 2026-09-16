@@ -12,7 +12,7 @@ interface FoldItem {
 }
 
 interface OverflowFoldOptions {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   baseWidth: number;
   foldOrder: readonly FoldItem[];
 }

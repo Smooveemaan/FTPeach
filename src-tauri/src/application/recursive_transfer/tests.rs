@@ -544,6 +544,8 @@ struct Server {
     written: Mutex<HashMap<String, Vec<u8>>>,
     /// The walk to pause once a transfer has moved this many bytes.
     pause_at: Mutex<Option<(String, u64)>>,
+    /// Holds an upload at its pause point until the test lets it through.
+    pause_gate: Option<Arc<tokio::sync::Notify>>,
     /// Every transfer attempt: the file, and the offset it started from.
     starts: Mutex<Vec<(String, u64)>>,
     /// Holds every listing until the test lets it through.
@@ -756,6 +758,18 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
                 bytes: offset,
                 total: size,
             });
+            let pauses_here = self
+                .0
+                .pause_at
+                .lock()
+                .unwrap()
+                .as_ref()
+                .is_some_and(|(_, at)| offset >= *at);
+            if pauses_here && let Some(gate) = &self.0.pause_gate {
+                // Bounded, so a walk that never reports fails the test's own
+                // assertion instead of hanging it.
+                let _ = tokio::time::timeout(Duration::from_secs(5), gate.notified()).await;
+            }
             self.0.reached(offset);
             tokio::time::sleep(Duration::from_millis(1)).await;
         }
@@ -1118,7 +1132,16 @@ async fn paused_upload(
 
 #[tokio::test]
 async fn a_paused_upload_carries_on_from_its_staging_file() {
-    let server = Arc::new(Server::default());
+    // Progress is emitted from behind a 100ms batching timer, and the fake
+    // upload can reach its pause point sooner than that; how much sooner
+    // depends on the machine's sleep granularity. Holding the pause until the
+    // walk has reported keeps the check below about what the walk said, not
+    // about how fast the clock ticks.
+    let reported = Arc::new(tokio::sync::Notify::new());
+    let server = Arc::new(Server {
+        pause_gate: Some(reported.clone()),
+        ..Server::default()
+    });
     let first_id = Arc::new(Mutex::new(None::<String>));
     let landed_early = Arc::new(Mutex::new(None::<u64>));
     let (watched, landed) = (first_id.clone(), landed_early.clone());
@@ -1128,6 +1151,7 @@ async fn a_paused_upload_carries_on_from_its_staging_file() {
             if let Some(count) = payload.landed {
                 landed.lock().unwrap().get_or_insert(count);
             }
+            reported.notify_one();
         }
     });
     let (root, sessions, intent, big) = paused_upload(&server, &watching, "/dst/folder").await;

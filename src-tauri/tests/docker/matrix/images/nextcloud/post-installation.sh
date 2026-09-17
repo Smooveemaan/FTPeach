@@ -1,7 +1,7 @@
 #!/bin/sh
-# Runs once, right after the image's automatic installation: creates testuser,
-# copies the seeded fixtures into its files and indexes them. The healthcheck
-# waits for the ready marker written at the end.
+# Runs once, right after the image's automatic installation: creates testuser.
+# The fixtures are imported by the before-starting hook, on every start the
+# seed has changed since.
 set -eu
 occ() {
   php /var/www/html/occ "$@"
@@ -15,10 +15,3 @@ occ config:system:set auth.bruteforce.protection.enabled --value=false --type=bo
 occ config:system:set skeletondirectory --value=''
 
 OC_PASS=testpass occ user:add --password-from-env --display-name 'FTPeach test user' testuser
-
-files=/var/www/html/data/testuser/files
-mkdir -p "$files"
-cp -a /ftpeach-seed/fixtures "$files/"
-occ files:scan testuser
-
-touch /var/www/html/data/.ftpeach-ready

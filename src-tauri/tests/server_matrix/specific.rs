@@ -131,7 +131,11 @@ specific!(
     cp1251_names
 );
 async fn cp1251_names(target: Target) {
-    let mut backend = connect(&target).await;
+    let mut config = target.config.clone();
+    config.insert("encoding".into(), "windows-1251".into());
+    let mut backend = try_connect_with(&target, &config)
+        .await
+        .unwrap_or_else(|error| panic!("connect [{:?}]: {error:#}", code(&error)));
     let dir = fixtures(&target, "encoding");
     let listed = backend
         .list(&dir)
@@ -163,6 +167,57 @@ async fn cp1251_names(target: Target) {
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+
+    // New names go out in the same encoding.
+    let work = Work::new(&target, &mut backend).await;
+    let folder = work.path("\u{41f}\u{430}\u{43f}\u{43a}\u{430}");
+    backend.mkdir(&folder).await.expect("mkdir cp1251 folder");
+    let file = join(&folder, "\u{424}\u{430}\u{439}\u{43b}.txt");
+    put(&mut backend, &work.local("upload.txt"), &file, b"cp1251").await;
+    let renamed = join(&folder, "\u{418}\u{442}\u{43e}\u{433}.txt");
+    backend
+        .rename(&file, &renamed)
+        .await
+        .expect("rename cp1251 file");
+    let listed = backend.list(&folder).await.expect("list cp1251 folder");
+    assert_eq!(names(&listed), ["\u{418}\u{442}\u{43e}\u{433}.txt"]);
+    assert_eq!(get(&mut backend, &renamed).await, b"cp1251");
+    // A name windows-1251 has no letters for is refused before it is sent.
+    let error = backend
+        .mkdir(&work.path("\u{65e5}\u{672c}"))
+        .await
+        .expect_err("a name outside windows-1251");
+    assert_eq!(code(&error), ErrorCode::InvalidInput, "{error:#}");
+    work.finish(&mut backend).await;
+}
+
+specific!(
+    vsftpd_reuse_ftps_with_encoding,
+    "vsftpd_reuse",
+    ftps_with_encoding
+);
+specific!(
+    proftpd_tls12_ftps_with_encoding,
+    "proftpd_tls12",
+    ftps_with_encoding
+);
+/// A site encoding moves TLS into the relay. Data connections still have to
+/// resume that session, which vsftpd insists on.
+async fn ftps_with_encoding(target: Target) {
+    let mut config = target.config.clone();
+    config.insert("encoding".into(), "windows-1252".into());
+    let mut backend = try_connect_with(&target, &config)
+        .await
+        .unwrap_or_else(|error| panic!("connect [{:?}]: {error:#}", code(&error)));
+    let work = Work::new(&target, &mut backend).await;
+    for round in 0..3 {
+        let path = work.path(&format!("caf\u{e9}-{round}.txt"));
+        put(&mut backend, &work.local("upload.txt"), &path, b"relayed").await;
+        assert_eq!(get(&mut backend, &path).await, b"relayed");
+    }
+    let listed = backend.list(&work.remote).await.expect("list");
+    assert_eq!(listed.len(), 3, "{:?}", names(&listed));
+    work.finish(&mut backend).await;
 }
 
 // SFTP

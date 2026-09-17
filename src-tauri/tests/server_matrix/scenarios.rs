@@ -814,7 +814,7 @@ pub async fn s16_connections(target: Target) {
             "{}: {ok} logins above the limit {limit}",
             target.id
         );
-    } else {
+    } else if !target.login_drops {
         assert!(errors.is_empty(), "{}: {errors:?}", target.id);
     }
     assert!(

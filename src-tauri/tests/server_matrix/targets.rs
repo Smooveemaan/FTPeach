@@ -39,6 +39,9 @@ pub struct Target {
     pub resume_upload: bool,
     /// Parallel logins the server accepts from one address.
     pub max_connections: Option<usize>,
+    /// Under many parallel logins the server drops some at random, with no
+    /// fixed limit.
+    pub login_drops: bool,
 }
 
 pub fn matrix_dir() -> PathBuf {
@@ -128,6 +131,7 @@ fn base(
         max_upload_bytes: None,
         resume_upload: kind != Kind::Webdav,
         max_connections: None,
+        login_drops: false,
     }
 }
 
@@ -143,6 +147,8 @@ pub fn target(id: &str) -> Target {
         },
         "baseline_atmoz" => Target {
             fixtures: false,
+            // Stock sshd: MaxStartups 10:30:100 drops logins past ten at random.
+            login_drops: true,
             ..base(
                 "baseline_atmoz",
                 "baseline",

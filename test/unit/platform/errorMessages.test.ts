@@ -118,7 +118,7 @@ test('friendlyError localizes every structured command error code', () => {
     storageFull: 'Not enough disk space.',
     keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
-    vaultLocked: 'Unlock protected storage',
+    vaultLocked: 'Unlock vault',
     alreadyExists: 'A file or folder with that name already exists.',
     replaceUnsupported: "The server didn't allow the existing file to be replaced.",
     internal: 'An unexpected error occurred.',

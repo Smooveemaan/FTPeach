@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - With enhanced protection on, the saved proxy password is locked behind the master password too.
+- Security settings call the master-password storage "vault" everywhere, and the unlock prompt no
+  longer talks about a connection when you save settings or a bookmark.
 
 ### Fixed
 

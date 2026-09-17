@@ -37,7 +37,7 @@
       },
       "vaultReset": {
         "message": "Minden mentett jelszó és SSH-kulcs jelmondata véglegesen törlődik.",
-        "approve": "Tároló törlése"
+        "approve": "Széf törlése"
       },
       "executeLocalFile": {
         "message": "Futtatja ezt a végrehajtható fájlt vagy parancsfájlt?"
@@ -347,9 +347,9 @@
       "systemModeHint": "A jelszavakat a Windows-fiókjához kötve titkosítja, és a kapcsolatbeállításokban megtekinthetők.",
       "strongholdMode": "Fokozott védelem",
       "strongholdModeHint": "Fő jelszó szükséges. Mentett jelszó megtekintéséhez újra meg kell adni a fő jelszót.",
-      "loading": "A védett tárhely ellenőrzése…",
-      "configuredLocked": "A védett tárhelyet fő jelszó védi, és zárolva van.",
-      "configuredUnlocked": "A védett tárhelyet fő jelszó védi, és fel van oldva.",
+      "loading": "A széf ellenőrzése…",
+      "configuredLocked": "A széfet fő jelszó védi, és zárolva van.",
+      "configuredUnlocked": "A széfet fő jelszó védi, és fel van oldva.",
       "masterPassword": "Fő jelszó",
       "confirmPassword": "A fő jelszó megerősítése",
       "oldPassword": "Jelenlegi fő jelszó",
@@ -358,19 +358,19 @@
       "settingUp": "Védelem bekapcsolása…",
       "unlock": "Feloldás",
       "unlocking": "Feloldás…",
-      "unlockRequired": "A védett tárhely feloldása",
-      "unlockRequiredHint": "Ez a kapcsolat mentett jelszót használ. A folytatáshoz oldja fel a védett tárhelyet.",
+      "unlockRequired": "A széf feloldása",
+      "unlockRequiredHint": "A mentett jelszavak zárolva vannak. A folytatáshoz oldja fel a széfet.",
       "lockNow": "Zárolás most",
       "autoLock": "Automatikus zárolás ennyi idő után, perc",
       "autoLockDisabled": "Kikapcsolva",
-      "autoLockHint": "Tétlenség után zárolja a védett tárhelyet. A meglévő szerverkapcsolatok aktívak maradnak; a 0 kikapcsolja az automatikus zárolást.",
+      "autoLockHint": "Tétlenség után zárolja a széfet. A meglévő szerverkapcsolatok aktívak maradnak; a 0 kikapcsolja az automatikus zárolást.",
       "changePassword": "A fő jelszó módosítása",
       "change": "Jelszó módosítása",
       "systemUnlock": "Feloldás engedélyezése a rendszeren keresztül",
       "systemUnlockHint": "A Windows Hellót használja (PIN-kód, arc vagy ujjlenyomat, a Windows beállításai szerint). A fő jelszava továbbra is helyreállítási lehetőség marad.",
       "unlockWithSystem": "Feloldás rendszerhitelesítéssel",
       "systemUnavailable": "A rendszeren keresztüli feloldás ezen a platformon nem érhető el.",
-      "noRecovery": "Az elfelejtett fő jelszó nem állítható helyre. A tároló visszaállítása minden mentett jelszót és jelmondatot töröl.",
+      "noRecovery": "Az elfelejtett fő jelszó nem állítható helyre. A széf visszaállítása minden mentett jelszót és jelmondatot töröl.",
       "passwordMismatch": "A jelszavak nem egyeznek.",
       "passwordTooShort": "A fő jelszó hossza legalább 12 karakter legyen.",
       "strength": {
@@ -378,14 +378,14 @@
         "acceptable": "Elfogadható. A hosszabb jelmondat biztonságosabb.",
         "strong": "Erős fő jelszó."
       },
-      "reset": "A védett tárhely visszaállítása",
-      "resetHint": "Törli a védett tárhelyet, valamint az abban tárolt összes jelszót és SSH-kulcs jelmondatot. A fokozott védelmet újra be kell állítani.",
+      "reset": "A széf visszaállítása",
+      "resetHint": "Törli a széfet, valamint az abban tárolt összes jelszót és SSH-kulcs jelmondatot. A fokozott védelmet újra be kell állítani.",
       "resetWarning": "Ez véglegesen törli az összes mentett jelszót és kulcsjelmondatot. A folytatáshoz írja be a jelenlegi fő jelszót.",
       "confirmReset": "Mentett jelszavak törlése",
       "showConfirmations": "Biztonsági megerősítések megjelenítése",
-      "showConfirmationsHint": "Megerősítés kérése mentett jelszavak megjelenítése vagy végrehajtható fájlok futtatása előtt. A védett tárhely visszaállítása mindig megerősítést igényel.",
-      "unavailable": "A védett tárhely nem érhető el.",
-      "failed": "A védett tárhelyen végzett művelet sikertelen."
+      "showConfirmationsHint": "Megerősítés kérése mentett jelszavak megjelenítése vagy végrehajtható fájlok futtatása előtt. A széf visszaállítása mindig megerősítést igényel.",
+      "unavailable": "A széf nem érhető el.",
+      "failed": "A széfen végzett művelet sikertelen."
     },
     "unlimitedPlaceholder": "Nincs korlát",
     "connectTimeoutLabel": "Csatlakozási időtúllépés, s",

@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- In Greek, German and other long translations, the Save button, checkbox labels and shortcut names
+  in Settings no longer run off the edge.
 - Opening a file the FTP server refuses no longer hangs until the connection times out.
 - FTPS uploads keep working on vsftpd servers that require data connections to reuse the TLS
   session.

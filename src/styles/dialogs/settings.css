@@ -326,7 +326,9 @@
 
 .settings-shortcuts-scopes {
   display: grid;
-  grid-template-columns: max-content 1fr max-content;
+  /* The label column may shrink so a long translated action name wraps
+     instead of pushing the table past the panel edge. */
+  grid-template-columns: minmax(0, max-content) 1fr max-content;
   row-gap: 14px;
 }
 
@@ -483,7 +485,8 @@
 
 .settings-layout {
   display: grid;
-  grid-template-columns: 178px 1fr;
+  /* 178px unless a translation needs more, so long labels never spill into the panel. */
+  grid-template-columns: minmax(178px, max-content) 1fr;
 
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:

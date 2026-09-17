@@ -25,6 +25,12 @@
 
 .settings-toggle {
   padding-inline-start: 0;
+  /* Long translations wrap instead of running past the panel edge. */
+  white-space: normal;
+  align-items: flex-start;
+}
+.settings-toggle input[type='checkbox'] {
+  margin-top: 1px;
 }
 .settings-field input {
   width: 70px;

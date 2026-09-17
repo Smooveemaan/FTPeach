@@ -630,7 +630,8 @@
       "remotePath": "Folder domyślny",
       "localPath": "Folder lokalny",
       "folder": "Folder",
-      "maxConnections": "Maksymalna liczba połączeń na panel"
+      "maxConnections": "Maksymalna liczba połączeń na panel",
+      "encoding": "Kodowanie"
     },
     "icons": {
       "bookmark": "Zakładka",
@@ -695,7 +696,25 @@
     "expandFolder": "Rozwiń „{{name}}”",
     "collapseFolder": "Zwiń „{{name}}”",
     "noFolder": "Bez folderu",
-    "maxConnectionsHint": "0 lub puste pole: bez limitu. W przeciwnym razie 2–128, w tym jedno połączenie do przeglądania folderów. Działa po ponownym połączeniu. Każdy panel ma własny limit."
+    "maxConnectionsHint": "0 lub puste pole: bez limitu. W przeciwnym razie 2–128, w tym jedno połączenie do przeglądania folderów. Działa po ponownym połączeniu. Każdy panel ma własny limit.",
+    "encodingHint": "Zmieniaj tylko wtedy, gdy nazwy plików na tym serwerze wyświetlają się nieprawidłowo.",
+    "encodings": {
+      "utf8": "UTF-8 (domyślne)",
+      "cyrillic": "Cyrylica",
+      "westernEuropean": "Zachodnioeuropejskie",
+      "centralEuropean": "Środkowoeuropejskie",
+      "greek": "Greckie",
+      "turkish": "Tureckie",
+      "hebrew": "Hebrajskie",
+      "arabic": "Arabskie",
+      "baltic": "Bałtyckie",
+      "vietnamese": "Wietnamskie",
+      "thai": "Tajskie",
+      "japanese": "Japońskie",
+      "simplifiedChinese": "Chińskie uproszczone",
+      "traditionalChinese": "Chińskie tradycyjne",
+      "korean": "Koreańskie"
+    }
   },
   "connectionBar": {
     "fields": {

@@ -113,6 +113,18 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
         ));
     }
 
+    if let Some(encoding) = input.get("encoding")
+        && !encoding.is_null()
+        && encoding
+            .as_str()
+            .is_none_or(|label| crate::protocol::ftp_charset::parse(label).is_err())
+    {
+        anyhow::bail!(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Unsupported file name encoding",
+        ));
+    }
+
     if let Some(port) = input.get("port")
         && !port.is_null()
     {

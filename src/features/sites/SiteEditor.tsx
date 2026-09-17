@@ -14,7 +14,7 @@ import { ProtocolSelect } from '../connections/index.ts';
 import Icon from '../../components/Icon.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
 import type { IconName } from '../../components/Icon.tsx';
-import { SITE_COLORS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
+import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
 import type { ManagedSite, SiteForm, SiteProtocol, Translate } from '../../shared/types.ts';
@@ -69,6 +69,7 @@ export default function SiteEditor({
   const iconTriggerRef = useRef<HTMLButtonElement | null>(null);
   const colorTriggerRef = useRef<HTMLButtonElement | null>(null);
   const isWebdav = form.protocol === 'webdav';
+  const isFtp = form.protocol === 'ftp' || form.protocol === 'ftps';
   const isKeyAuth = form.protocol === 'sftp' && form.useKeyAuth;
   const currentColor = SITE_COLORS.find(({ value }) => value === form.color) || SITE_COLORS[0];
   const iconLabel = (name: (typeof SITE_ICONS)[number]) =>
@@ -412,6 +413,31 @@ export default function SiteEditor({
       )}
       {form.kind !== 'local' &&
         field('siteManagerDialog.fields.remotePath', 'remotePath', { placeholder: '/' })}
+      {form.kind !== 'local' && isFtp && (
+        <>
+          <div className="settings-field">
+            <span>{t('siteManagerDialog.fields.encoding')}</span>
+            <SelectMenu
+              label={t('siteManagerDialog.fields.encoding')}
+              value={form.encoding}
+              onChange={(value) => setForm((current) => ({ ...current, encoding: value }))}
+              options={[
+                { value: '', label: t('siteManagerDialog.encodings.utf8') },
+                ...SITE_ENCODINGS.map(({ value, name, script }) => ({
+                  value,
+                  label: `${t(`siteManagerDialog.encodings.${script}`)} (${name})`,
+                })),
+              ]}
+              rootClassName="language-select site-folder-select site-encoding-select"
+              triggerClassName="language-select-trigger"
+              dropdownClassName="language-select-dropdown site-folder-dropdown site-encoding-dropdown"
+              valueClassName="language-select-value"
+              caretClassName="language-select-caret"
+            />
+          </div>
+          <p className="settings-hint site-field-hint">{t('siteManagerDialog.encodingHint')}</p>
+        </>
+      )}
       {form.kind !== 'local' && (
         <>
           {field('siteManagerDialog.fields.maxConnections', 'maxConnections', {
@@ -423,7 +449,7 @@ export default function SiteEditor({
             className: 'site-connection-limit-input',
             'aria-describedby': 'site-max-connections-hint',
           })}
-          <p className="settings-hint" id="site-max-connections-hint">
+          <p className="settings-hint site-field-hint" id="site-max-connections-hint">
             {t('siteManagerDialog.maxConnectionsHint')}
           </p>
         </>

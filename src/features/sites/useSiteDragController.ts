@@ -531,7 +531,10 @@ export function useSiteDragController({
       return;
     }
 
-    if (activeKind !== 'folder') {
+    // With no cross-container projection this drag, the sortable animation has
+    // already shown the row at `over`'s index; the fallback below lands there.
+    const projected = !siteContainersMatch(cs, buildSiteContainers(localEntries));
+    if (activeKind !== 'folder' && projected) {
       const activeId = String(active.id);
       const overId = String(over.id);
       const sourceContainer = findSiteContainer(activeId, cs);

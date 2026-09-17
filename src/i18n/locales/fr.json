@@ -622,7 +622,8 @@
       "remotePath": "Dossier par défaut",
       "localPath": "Dossier local",
       "folder": "Dossier",
-      "maxConnections": "Connexions maximales par volet"
+      "maxConnections": "Connexions maximales par volet",
+      "encoding": "Encodage"
     },
     "icons": {
       "bookmark": "Signet",
@@ -685,7 +686,25 @@
     "noFolder": "Aucun dossier",
     "importAdded_many": "{{count}} signets ajoutés",
     "importSkipped_many": "{{count}} doublons ignorés",
-    "maxConnectionsHint": "0 ou vide : aucune limite. Sinon 2–128, dont une connexion pour parcourir les dossiers. Prend effet après reconnexion. Chaque volet a sa propre limite."
+    "maxConnectionsHint": "0 ou vide : aucune limite. Sinon 2–128, dont une connexion pour parcourir les dossiers. Prend effet après reconnexion. Chaque volet a sa propre limite.",
+    "encodingHint": "Ne le changez que si les noms de fichiers de ce serveur s’affichent mal.",
+    "encodings": {
+      "utf8": "UTF-8 (par défaut)",
+      "cyrillic": "Cyrillique",
+      "westernEuropean": "Europe occidentale",
+      "centralEuropean": "Europe centrale",
+      "greek": "Grec",
+      "turkish": "Turc",
+      "hebrew": "Hébreu",
+      "arabic": "Arabe",
+      "baltic": "Balte",
+      "vietnamese": "Vietnamien",
+      "thai": "Thaï",
+      "japanese": "Japonais",
+      "simplifiedChinese": "Chinois simplifié",
+      "traditionalChinese": "Chinois traditionnel",
+      "korean": "Coréen"
+    }
   },
   "connectionBar": {
     "fields": {

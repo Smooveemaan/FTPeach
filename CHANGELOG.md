@@ -4,6 +4,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- FTP bookmarks can use an older file name encoding, such as Windows-1251, for servers whose
+  file names looked garbled.
+- SFTP servers that ask for the password through keyboard-interactive login now let you in.
+
+### Fixed
+
+- Opening a file the FTP server refuses no longer hangs until the connection times out.
+- FTPS uploads keep working on vsftpd servers that require data connections to reuse the TLS
+  session.
+- Connecting to a server that only speaks implicit FTPS fails within seconds with a clear
+  message.
+- RSA keys work with current OpenSSH servers.
+- Renaming onto an existing name on SFTPGo no longer silently replaces that file.
+- WebDAV works through SOCKS4 proxies, and file names with `&` no longer break on WebDAV.
+- A full disk on the server is reported as a full disk instead of a lost connection.
+- Bookmarks with a connection limit can be imported again after exporting them.
+
 ## [0.2.2] - 2026-09-14
 
 ### Added

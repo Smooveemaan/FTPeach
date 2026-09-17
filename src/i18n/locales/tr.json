@@ -614,7 +614,8 @@
       "remotePath": "Varsayılan klasör",
       "localPath": "Yerel klasör",
       "folder": "Klasör",
-      "maxConnections": "Bölme başına en fazla bağlantı"
+      "maxConnections": "Bölme başına en fazla bağlantı",
+      "encoding": "Karakter kodlaması"
     },
     "icons": {
       "bookmark": "Yer imi",
@@ -675,7 +676,25 @@
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
     "collapseFolder": "\"{{name}}\" klasörünü daralt",
     "noFolder": "Klasör yok",
-    "maxConnectionsHint": "0 veya boş: sınırsız. Aksi halde klasörleri gezmek için bir bağlantı dahil 2–128. Yeniden bağlanınca uygulanır. Her bölmenin kendi sınırı vardır."
+    "maxConnectionsHint": "0 veya boş: sınırsız. Aksi halde klasörleri gezmek için bir bağlantı dahil 2–128. Yeniden bağlanınca uygulanır. Her bölmenin kendi sınırı vardır.",
+    "encodingHint": "Yalnızca bu sunucudaki dosya adları bozuk görünüyorsa değiştirin.",
+    "encodings": {
+      "utf8": "UTF-8 (varsayılan)",
+      "cyrillic": "Kiril",
+      "westernEuropean": "Batı Avrupa",
+      "centralEuropean": "Orta Avrupa",
+      "greek": "Yunanca",
+      "turkish": "Türkçe",
+      "hebrew": "İbranice",
+      "arabic": "Arapça",
+      "baltic": "Baltık",
+      "vietnamese": "Vietnamca",
+      "thai": "Tayca",
+      "japanese": "Japonca",
+      "simplifiedChinese": "Basitleştirilmiş Çince",
+      "traditionalChinese": "Geleneksel Çince",
+      "korean": "Korece"
+    }
   },
   "connectionBar": {
     "fields": {

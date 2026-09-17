@@ -401,6 +401,15 @@
   font-size: 11px;
   line-height: 1.3;
 }
+/* A hint under a whole row reads like the saved-password hint: it starts at
+   the control column (the 96px label plus the 12px gap) and sits 4px below
+   the row, which is the form's 14px row gap less 10px. */
+.site-edit-form > .site-field-hint {
+  margin: -10px 0 0;
+  padding-inline-start: 108px;
+  font-size: 11px;
+  line-height: 1.3;
+}
 
 /* The base bottom padding reserves the height of a file-list header. When an
    error is present, that reserve becomes the space below the credentials
@@ -459,6 +468,13 @@
 .site-folder-select .site-folder-dropdown {
   width: 100%;
   min-width: 0;
+}
+/* The encoding field sits low in the form, where a menu opening downward runs
+   past the dialog, which clips what overflows it. The form above it is always
+   taller than the menu. */
+.site-encoding-select .site-encoding-dropdown {
+  top: auto;
+  bottom: calc(100% + 2px);
 }
 
 .site-appearance-select {

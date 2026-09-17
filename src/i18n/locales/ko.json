@@ -614,7 +614,8 @@
       "remotePath": "기본 폴더",
       "localPath": "로컬 폴더",
       "folder": "폴더",
-      "maxConnections": "창당 최대 연결 수"
+      "maxConnections": "창당 최대 연결 수",
+      "encoding": "인코딩"
     },
     "icons": {
       "bookmark": "북마크",
@@ -675,7 +676,25 @@
     "expandFolder": "“{{name}}” 펼치기",
     "collapseFolder": "“{{name}}” 접기",
     "noFolder": "폴더 없음",
-    "maxConnectionsHint": "0 또는 빈칸: 제한 없음. 그 외에는 폴더 탐색용 연결 하나를 포함하여 2–128개. 다시 연결하면 적용됩니다. 창마다 별도로 제한됩니다."
+    "maxConnectionsHint": "0 또는 빈칸: 제한 없음. 그 외에는 폴더 탐색용 연결 하나를 포함하여 2–128개. 다시 연결하면 적용됩니다. 창마다 별도로 제한됩니다.",
+    "encodingHint": "이 서버의 파일 이름이 깨져 보일 때만 변경하세요.",
+    "encodings": {
+      "utf8": "UTF-8 (기본값)",
+      "cyrillic": "키릴 문자",
+      "westernEuropean": "서유럽어",
+      "centralEuropean": "중앙 유럽어",
+      "greek": "그리스어",
+      "turkish": "터키어",
+      "hebrew": "히브리어",
+      "arabic": "아랍어",
+      "baltic": "발트어",
+      "vietnamese": "베트남어",
+      "thai": "태국어",
+      "japanese": "일본어",
+      "simplifiedChinese": "중국어 간체",
+      "traditionalChinese": "중국어 번체",
+      "korean": "한국어"
+    }
   },
   "connectionBar": {
     "fields": {

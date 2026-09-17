@@ -160,6 +160,7 @@ impl CommandError {
                 452 | 552 => Some(ErrorCode::StorageFull),
                 // vsftpd's word for a write the disk would not take.
                 451 if text.contains("failure writing") => Some(ErrorCode::StorageFull),
+                553 if text.contains("site encoding") => Some(ErrorCode::InvalidInput),
                 // "File name not allowed": servers answer it for a folder
                 // they will not write to.
                 553 => Some(ErrorCode::PermissionDenied),

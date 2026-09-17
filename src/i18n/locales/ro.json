@@ -622,7 +622,8 @@
       "remotePath": "Folder implicit",
       "localPath": "Folder local",
       "folder": "Folder",
-      "maxConnections": "Număr maxim de conexiuni pe panou"
+      "maxConnections": "Număr maxim de conexiuni pe panou",
+      "encoding": "Codificare"
     },
     "icons": {
       "bookmark": "Marcaj",
@@ -685,7 +686,25 @@
     "expandFolder": "Extinde „{{name}}”",
     "collapseFolder": "Restrânge „{{name}}”",
     "noFolder": "Fără folder",
-    "maxConnectionsHint": "0 sau gol: fără limită. Altfel 2–128, inclusiv o conexiune pentru navigarea în foldere. Se aplică după reconectare. Fiecare panou are propria limită."
+    "maxConnectionsHint": "0 sau gol: fără limită. Altfel 2–128, inclusiv o conexiune pentru navigarea în foldere. Se aplică după reconectare. Fiecare panou are propria limită.",
+    "encodingHint": "Schimbați-o doar dacă numele fișierelor de pe acest server apar deformate.",
+    "encodings": {
+      "utf8": "UTF-8 (implicită)",
+      "cyrillic": "Chirilică",
+      "westernEuropean": "Vest-europeană",
+      "centralEuropean": "Central-europeană",
+      "greek": "Greacă",
+      "turkish": "Turcă",
+      "hebrew": "Ebraică",
+      "arabic": "Arabă",
+      "baltic": "Baltică",
+      "vietnamese": "Vietnameză",
+      "thai": "Thailandeză",
+      "japanese": "Japoneză",
+      "simplifiedChinese": "Chineză simplificată",
+      "traditionalChinese": "Chineză tradițională",
+      "korean": "Coreeană"
+    }
   },
   "connectionBar": {
     "fields": {

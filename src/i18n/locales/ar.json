@@ -646,7 +646,8 @@
       "remotePath": "المجلد الافتراضي",
       "localPath": "المجلد المحلي",
       "folder": "مجلد",
-      "maxConnections": "الحد الأقصى للاتصالات لكل جزء"
+      "maxConnections": "الحد الأقصى للاتصالات لكل جزء",
+      "encoding": "الترميز"
     },
     "icons": {
       "bookmark": "إشارة مرجعية",
@@ -715,7 +716,25 @@
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",
     "noFolder": "بدون مجلد",
-    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل جزء حد مستقل."
+    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل جزء حد مستقل.",
+    "encodingHint": "غيّره فقط إذا ظهرت أسماء الملفات على هذا الخادم مشوّهة.",
+    "encodings": {
+      "utf8": "UTF-8 (افتراضي)",
+      "cyrillic": "السيريلية",
+      "westernEuropean": "أوروبا الغربية",
+      "centralEuropean": "أوروبا الوسطى",
+      "greek": "اليونانية",
+      "turkish": "التركية",
+      "hebrew": "العبرية",
+      "arabic": "العربية",
+      "baltic": "البلطيقية",
+      "vietnamese": "الفيتنامية",
+      "thai": "التايلاندية",
+      "japanese": "اليابانية",
+      "simplifiedChinese": "الصينية المبسطة",
+      "traditionalChinese": "الصينية التقليدية",
+      "korean": "الكورية"
+    }
   },
   "connectionBar": {
     "fields": {

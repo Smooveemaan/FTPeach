@@ -215,6 +215,15 @@ impl Store {
                     ),
                 );
                 out.insert(
+                    "encoding".into(),
+                    Value::String(
+                        site.get("encoding")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .into(),
+                    ),
+                );
+                out.insert(
                     "hasKeyPassphrase".into(),
                     Value::Bool(
                         site.get("hasKeyPassphrase")

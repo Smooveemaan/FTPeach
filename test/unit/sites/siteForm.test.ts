@@ -21,6 +21,15 @@ test('connection limit round trips and rejects values without a transfer slot', 
   assert.equal(normalizeSiteForm({ ...form, maxConnections: '' }).maxConnections, 0);
 });
 
+test('file name encoding round trips for FTP and is dropped for other protocols', () => {
+  const form = createSiteForm({ id: 'ftp', name: 'FTP', host: 'example.test', encoding: 'koi8-r' });
+  assert.equal(form.encoding, 'koi8-r');
+  assert.equal(normalizeSiteForm(form).encoding, 'koi8-r');
+  assert.equal(normalizeSiteForm({ ...form, protocol: 'ftps' }).encoding, 'koi8-r');
+  assert.equal(normalizeSiteForm({ ...form, protocol: 'sftp' }).encoding, '');
+  assert.equal(createSiteForm().encoding, '');
+});
+
 test('site form normalization trims persisted fields and preserves secret intent', () => {
   const form = createSiteForm({
     id: 'site-1',

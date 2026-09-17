@@ -35,6 +35,30 @@ async fn connection_limit_survives_site_storage_and_can_be_cleared() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[tokio::test]
+async fn file_name_encoding_survives_site_storage() {
+    let root = std::env::temp_dir().join(format!("ftpeach-encoding-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let mut input = json!({"id":"legacy", "name":"FTP", "protocol":"ftp", "host":"example.test", "encoding":"windows-1251"}).as_object().unwrap().clone();
+    store.save_site(input.clone()).await.unwrap();
+    assert_eq!(
+        store.list_sites().await.unwrap()[0]["encoding"],
+        "windows-1251"
+    );
+    assert_eq!(
+        store.connection_config_for_site("legacy").await.unwrap()["encoding"],
+        "windows-1251"
+    );
+    for invalid in [json!("klingon"), json!("utf-16le"), json!(1251)] {
+        input.insert("encoding".into(), invalid);
+        assert!(store.save_site(input.clone()).await.is_err());
+    }
+    input.remove("encoding");
+    store.save_site(input).await.unwrap();
+    assert_eq!(store.list_sites().await.unwrap()[0]["encoding"], "");
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[cfg(windows)]
 #[tokio::test]
 async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {

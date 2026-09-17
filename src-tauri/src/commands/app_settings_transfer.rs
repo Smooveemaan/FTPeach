@@ -198,6 +198,8 @@ fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
         "useKeyAuth",
         "keyPath",
         "caCertPath",
+        "encoding",
+        "maxConnections",
         "localPath",
         "managerScope",
         // strip_site_secrets sets these on export; import_sites recomputes them.

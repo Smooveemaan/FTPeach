@@ -32,6 +32,11 @@ const GRACEFUL_IO_TIMEOUT: Duration = Duration::from_secs(5);
 const TRANSFER_STALL_TIMEOUT: Duration = Duration::from_secs(60);
 /// Links in one listing whose kind is looked up, one CWD each.
 const MAX_RESOLVED_LINKS: usize = 64;
+/// How long a silent server may keep its greeting before it is asked whether
+/// it waits for TLS instead: an implicit FTPS server greets only after it.
+const IMPLICIT_PROBE_AFTER: Duration = Duration::from_secs(2);
+/// How long that TLS probe may take.
+const IMPLICIT_PROBE_WAIT: Duration = Duration::from_secs(5);
 /// How long an upload waits for the TLS 1.3 ticket its data connection brings.
 const TICKET_WAIT: Duration = Duration::from_millis(500);
 /// How long a data connection waits for the reply before starting TLS anyway.
@@ -170,6 +175,30 @@ fn command_refused(error: &anyhow::Error) -> bool {
                 )
         )
     })
+}
+
+/// Whether the server completes a TLS handshake on a fresh connection, as an
+/// implicit FTPS server does before it sends any greeting.
+async fn answers_tls(
+    host: &str,
+    port: u16,
+    proxy: Option<&crate::protocol::transport::ProxyConfig>,
+) -> bool {
+    let Ok(config) = FtpBackend::build_tls_config(true, None) else {
+        return false;
+    };
+    let Ok(name) = ServerName::try_from(host.to_owned()) else {
+        return false;
+    };
+    let probe = async {
+        let tcp = crate::protocol::transport::connect(host, port, proxy).await?;
+        let connector = tokio_rustls::TlsConnector::from(Arc::new(config));
+        anyhow::Ok(connector.connect(name, tcp).await?)
+    };
+    matches!(
+        tokio::time::timeout(IMPLICIT_PROBE_WAIT, probe).await,
+        Ok(Ok(_))
+    )
 }
 
 /// Why an upload's data connection broke. A server that runs out of room
@@ -357,6 +386,10 @@ struct DataChannel {
     /// cache lets the data connection resume that session.
     tls: Option<(tokio_rustls::TlsConnector, ServerName<'static>)>,
     tickets: Arc<SessionTickets>,
+    /// The server's address. The control connection's own peer is the
+    /// loopback relay when the site has an encoding.
+    peer: std::net::IpAddr,
+    encoding: Option<&'static encoding_rs::Encoding>,
     active: bool,
     /// EPSV instead of PASV: over IPv6, or once the server turned PASV away.
     extended: Arc<AtomicBool>,
@@ -373,7 +406,7 @@ impl DataChannel {
             return Ok(control.custom_data_command(command, expected).await?.1);
         }
         let port = self.passive_port(control).await?;
-        let peer = control.get_ref().peer_addr()?.ip();
+        let peer = self.peer;
         let connect = async {
             match &self.proxy {
                 Some(proxy) => super::transport::connect(&self.host, port, Some(proxy)).await,
@@ -670,6 +703,7 @@ impl FtpBackend {
         .with_context(|| format!("{command} command failed"))?;
 
         let raw = read_list_data(&mut data_stream, DATA_IDLE_TIMEOUT).await?;
+        let encoding = data.encoding;
 
         tokio::time::timeout(
             GRACEFUL_IO_TIMEOUT,
@@ -679,7 +713,7 @@ impl FtpBackend {
         .with_context(|| format!("FTP {command} completion timed out"))?
         .with_context(|| format!("closing {command} data connection"))?;
 
-        let text = String::from_utf8_lossy(&raw);
+        let text = super::ftp_charset::decode(encoding, &raw);
         Ok(text
             .split(['\r', '\n'])
             .filter(|line| !line.is_empty())
@@ -1098,6 +1132,7 @@ impl ProtocolBackend for FtpBackend {
         let ca_cert_path = config.ca_cert_path.clone();
         let proxy = config.common.proxy.clone();
         let active_mode = config.active_mode && proxy.is_none();
+        let encoding = config.encoding;
         // `0` is a deliberate, explicit "no timeout" — must not collapse it
         // into the 20s default the way `timeout || 20000` would in JS.
         let timeout_ms = config.common.timeout_ms;
@@ -1119,27 +1154,13 @@ impl ProtocolBackend for FtpBackend {
             } else {
                 host.parse::<std::net::Ipv6Addr>().is_ok()
             };
-            let mut stream = AsyncRustlsFtpStream::connect_with_stream(tcp)
-                .await
-                .context("FTP handshake failed")?;
-            // The literal server welcome banner — a real, wire-level line,
-            // same as FileZilla's own "Response: 220 ..." right after connect.
-            if let Some(welcome) = stream.get_welcome_msg() {
-                this.log_response_body(welcome.as_bytes());
-            }
-            if active_mode {
-                stream.set_mode(suppaftp::types::Mode::Active);
-            }
-            let mut data = DataChannel {
-                host: host.clone(),
-                proxy: proxy.clone(),
-                tls: None,
-                tickets: Arc::new(SessionTickets::new()),
-                active: active_mode,
-                extended: Arc::new(AtomicBool::new(ipv6)),
-            };
-            if secure {
-                this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
+            let peer = tcp.peer_addr()?.ip();
+            let tickets = Arc::new(SessionTickets::new());
+            let tls = if secure {
+                // The relay secures the connection before the greeting.
+                if encoding.is_some() {
+                    this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
+                }
                 if allow_invalid_cert {
                     this.log_kind(
                         "WARNING: TLS certificate verification is disabled for this connection (allowInvalidCert) — the server's identity is not being checked.".to_string(),
@@ -1148,20 +1169,86 @@ impl ProtocolBackend for FtpBackend {
                 }
                 let mut tls_config =
                     Self::build_tls_config(allow_invalid_cert, ca_cert_path.as_deref())?;
-                tls_config.resumption = rustls::client::Resumption::store(data.tickets.clone());
-                let tls_config = Arc::new(tls_config);
+                tls_config.resumption = rustls::client::Resumption::store(tickets.clone());
                 let server_name = ServerName::try_from(host.clone())
                     .context("TLS handshake failed: invalid server name")?;
-                data.tls = Some((
-                    tokio_rustls::TlsConnector::from(tls_config.clone()),
-                    server_name,
-                ));
-                let connector: AsyncRustlsConnector =
-                    tokio_rustls::TlsConnector::from(tls_config).into();
-                stream = stream
-                    .into_secure(connector, &host)
-                    .await
-                    .context("TLS handshake failed")?;
+                Some((Arc::new(tls_config), server_name))
+            } else {
+                None
+            };
+            let connector = |(config, name): &(Arc<ClientConfig>, ServerName<'static>)| {
+                (
+                    tokio_rustls::TlsConnector::from(config.clone()),
+                    name.clone(),
+                )
+            };
+            let greeting = async {
+                let tcp = match encoding {
+                    Some(encoding) => {
+                        super::ftp_charset::start(tcp, encoding, tls.as_ref().map(connector))
+                            .await?
+                    }
+                    None => tcp,
+                };
+                Ok::<_, anyhow::Error>(AsyncRustlsFtpStream::connect_with_stream(tcp).await?)
+            };
+            tokio::pin!(greeting);
+            let implicit = async {
+                tokio::time::sleep(IMPLICIT_PROBE_AFTER).await;
+                if !answers_tls(&host, port, proxy.as_ref()).await {
+                    std::future::pending::<()>().await;
+                }
+            };
+            let mut stream = tokio::select! {
+                stream = &mut greeting => stream.context("FTP handshake failed")?,
+                () = implicit => {
+                    return Err(super::fail(
+                        ErrorCode::TlsNegotiationFailed,
+                        "The server expects implicit FTPS, which is not supported",
+                    ));
+                }
+            };
+            // The literal server welcome banner — a real, wire-level line,
+            // same as FileZilla's own "Response: 220 ..." right after connect.
+            if let Some(welcome) = stream.get_welcome_msg() {
+                this.log_response_body(welcome.as_bytes());
+            }
+            if active_mode {
+                stream.set_mode(suppaftp::types::Mode::Active);
+            }
+            let data = DataChannel {
+                host: host.clone(),
+                proxy: proxy.clone(),
+                tls: tls.as_ref().map(connector),
+                tickets,
+                peer,
+                encoding,
+                active: active_mode,
+                extended: Arc::new(AtomicBool::new(ipv6)),
+            };
+            if let Some((config, _)) = &tls {
+                if encoding.is_some() {
+                    // The relay already secured the connection; what is left
+                    // of FTPS is protecting the data connections too.
+                    for command in ["PBSZ 0", "PROT P"] {
+                        this.logged_command(
+                            &mut stream,
+                            command.into(),
+                            command,
+                            &[Status::CommandOk],
+                        )
+                        .await
+                        .context("TLS handshake failed")?;
+                    }
+                } else {
+                    this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
+                    let connector: AsyncRustlsConnector =
+                        tokio_rustls::TlsConnector::from(config.clone()).into();
+                    stream = stream
+                        .into_secure(connector, &host)
+                        .await
+                        .context("TLS handshake failed")?;
+                }
                 this.log_key("tlsEstablished", serde_json::json!({}), LogKind::Response);
             }
             let user_cmd = format!("USER {user}");
@@ -1190,8 +1277,11 @@ impl ProtocolBackend for FtpBackend {
             this.logged_best_effort(&mut stream, "SYST", &[Status::Name])
                 .await;
             let feat = this.logged_feat(&mut stream).await;
-            this.logged_best_effort(&mut stream, "OPTS UTF8 ON", &[Status::CommandOk])
-                .await;
+            // A site with its own encoding names files in it, not in UTF-8.
+            if encoding.is_none() {
+                this.logged_best_effort(&mut stream, "OPTS UTF8 ON", &[Status::CommandOk])
+                    .await;
+            }
 
             stream
                 .transfer_type(FtpFileType::Binary)

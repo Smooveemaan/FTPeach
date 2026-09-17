@@ -26,6 +26,8 @@ pub struct FtpConfig {
     pub allow_invalid_cert: bool,
     pub ca_cert_path: Option<String>,
     pub active_mode: bool,
+    /// The server's file name encoding, when it is not UTF-8.
+    pub encoding: Option<&'static encoding_rs::Encoding>,
 }
 
 #[derive(Clone, Debug)]
@@ -140,6 +142,9 @@ impl ConnectionConfig {
                     allow_invalid_cert: bool_value(map, "allowInvalidCert"),
                     ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
                     active_mode: bool_value(map, "activeMode"),
+                    encoding: super::ftp_charset::parse(
+                        &string(map, "encoding").unwrap_or_default(),
+                    )?,
                 }))
             }
             Protocol::Sftp => {

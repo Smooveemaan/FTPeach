@@ -25,6 +25,7 @@ export function createSiteForm(site?: ManagedSite | null): SiteForm {
     remotePath: site?.remotePath || '/',
     allowInvalidCert: !!site?.allowInvalidCert,
     caCertPath: site?.caCertPath || '',
+    encoding: site?.encoding || '',
     useKeyAuth: !!site?.useKeyAuth,
     keyPath: site?.keyPath || '',
     keyPassphrase: '',
@@ -101,6 +102,8 @@ export function normalizeSiteForm(
     removePassword: form.removePassword,
     allowInvalidCert: form.allowInvalidCert,
     caCertPath: form.caCertPath,
+    // Only FTP names files in a server-chosen encoding.
+    encoding: form.protocol === 'ftp' || form.protocol === 'ftps' ? form.encoding : '',
     remotePath: form.remotePath.trim() || '/',
     maxConnections: Number(form.maxConnections.trim() || 0),
     useKeyAuth: form.useKeyAuth,

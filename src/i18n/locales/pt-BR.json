@@ -622,7 +622,8 @@
       "remotePath": "Pasta padrão",
       "localPath": "Pasta local",
       "folder": "Pasta",
-      "maxConnections": "Máximo de conexões por painel"
+      "maxConnections": "Máximo de conexões por painel",
+      "encoding": "Codificação"
     },
     "icons": {
       "bookmark": "Favorito",
@@ -685,7 +686,25 @@
     "noFolder": "Sem pasta",
     "importAdded_many": "{{count}} favoritos adicionados",
     "importSkipped_many": "{{count}} duplicados ignorados",
-    "maxConnectionsHint": "0 ou vazio: sem limite. Caso contrário, 2–128, incluindo uma conexão para navegar nas pastas. Aplica-se após reconectar. Cada painel tem seu próprio limite."
+    "maxConnectionsHint": "0 ou vazio: sem limite. Caso contrário, 2–128, incluindo uma conexão para navegar nas pastas. Aplica-se após reconectar. Cada painel tem seu próprio limite.",
+    "encodingHint": "Altere somente se os nomes de arquivos neste servidor aparecerem ilegíveis.",
+    "encodings": {
+      "utf8": "UTF-8 (padrão)",
+      "cyrillic": "Cirílico",
+      "westernEuropean": "Europa Ocidental",
+      "centralEuropean": "Europa Central",
+      "greek": "Grego",
+      "turkish": "Turco",
+      "hebrew": "Hebraico",
+      "arabic": "Árabe",
+      "baltic": "Báltico",
+      "vietnamese": "Vietnamita",
+      "thai": "Tailandês",
+      "japanese": "Japonês",
+      "simplifiedChinese": "Chinês simplificado",
+      "traditionalChinese": "Chinês tradicional",
+      "korean": "Coreano"
+    }
   },
   "connectionBar": {
     "fields": {

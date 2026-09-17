@@ -614,7 +614,8 @@
       "remotePath": "默认文件夹",
       "localPath": "本地文件夹",
       "folder": "文件夹",
-      "maxConnections": "每个窗格的最大连接数"
+      "maxConnections": "每个窗格的最大连接数",
+      "encoding": "编码"
     },
     "icons": {
       "bookmark": "书签",
@@ -675,7 +676,25 @@
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",
     "noFolder": "无文件夹",
-    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。每个窗格的限制独立计算。"
+    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。每个窗格的限制独立计算。",
+    "encodingHint": "仅当此服务器上的文件名显示为乱码时才更改。",
+    "encodings": {
+      "utf8": "UTF-8（默认）",
+      "cyrillic": "西里尔文",
+      "westernEuropean": "西欧",
+      "centralEuropean": "中欧",
+      "greek": "希腊文",
+      "turkish": "土耳其文",
+      "hebrew": "希伯来文",
+      "arabic": "阿拉伯文",
+      "baltic": "波罗的海文",
+      "vietnamese": "越南文",
+      "thai": "泰文",
+      "japanese": "日文",
+      "simplifiedChinese": "简体中文",
+      "traditionalChinese": "繁体中文",
+      "korean": "韩文"
+    }
   },
   "connectionBar": {
     "fields": {

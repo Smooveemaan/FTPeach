@@ -614,7 +614,8 @@
       "remotePath": "Standardmapp",
       "localPath": "Lokal mapp",
       "folder": "Mapp",
-      "maxConnections": "Maximalt antal anslutningar per panel"
+      "maxConnections": "Maximalt antal anslutningar per panel",
+      "encoding": "Teckenkodning"
     },
     "icons": {
       "bookmark": "Bokmärke",
@@ -675,7 +676,25 @@
     "expandFolder": "Expandera ”{{name}}”",
     "collapseFolder": "Komprimera ”{{name}}”",
     "noFolder": "Ingen mapp",
-    "maxConnectionsHint": "0 eller tomt: obegränsat. Annars 2–128, inklusive en anslutning för att bläddra i mappar. Gäller efter återanslutning. Varje panel har en egen gräns."
+    "maxConnectionsHint": "0 eller tomt: obegränsat. Annars 2–128, inklusive en anslutning för att bläddra i mappar. Gäller efter återanslutning. Varje panel har en egen gräns.",
+    "encodingHint": "Ändra den bara om filnamn på den här servern visas felaktigt.",
+    "encodings": {
+      "utf8": "UTF-8 (standard)",
+      "cyrillic": "Kyrillisk",
+      "westernEuropean": "Västeuropeisk",
+      "centralEuropean": "Centraleuropeisk",
+      "greek": "Grekisk",
+      "turkish": "Turkisk",
+      "hebrew": "Hebreisk",
+      "arabic": "Arabisk",
+      "baltic": "Baltisk",
+      "vietnamese": "Vietnamesisk",
+      "thai": "Thailändsk",
+      "japanese": "Japansk",
+      "simplifiedChinese": "Kinesisk (förenklad)",
+      "traditionalChinese": "Kinesisk (traditionell)",
+      "korean": "Koreansk"
+    }
   },
   "connectionBar": {
     "fields": {

@@ -614,7 +614,8 @@
       "remotePath": "Alapértelmezett mappa",
       "localPath": "Helyi mappa",
       "folder": "Mappa",
-      "maxConnections": "Kapcsolatok maximális száma panelenként"
+      "maxConnections": "Kapcsolatok maximális száma panelenként",
+      "encoding": "Karakterkódolás"
     },
     "icons": {
       "bookmark": "Könyvjelző",
@@ -675,7 +676,25 @@
     "expandFolder": "„{{name}}” kibontása",
     "collapseFolder": "„{{name}}” összecsukása",
     "noFolder": "Nincs mappa",
-    "maxConnectionsHint": "0 vagy üres: korlátlan. Egyébként 2–128, beleértve a mappák böngészésére használt kapcsolatot. Újracsatlakozás után érvényes. Minden panelnek saját korlátja van."
+    "maxConnectionsHint": "0 vagy üres: korlátlan. Egyébként 2–128, beleértve a mappák böngészésére használt kapcsolatot. Újracsatlakozás után érvényes. Minden panelnek saját korlátja van.",
+    "encodingHint": "Csak akkor változtassa meg, ha a kiszolgálón lévő fájlnevek olvashatatlanok.",
+    "encodings": {
+      "utf8": "UTF-8 (alapértelmezett)",
+      "cyrillic": "Cirill",
+      "westernEuropean": "Nyugat-európai",
+      "centralEuropean": "Közép-európai",
+      "greek": "Görög",
+      "turkish": "Török",
+      "hebrew": "Héber",
+      "arabic": "Arab",
+      "baltic": "Balti",
+      "vietnamese": "Vietnami",
+      "thai": "Thai",
+      "japanese": "Japán",
+      "simplifiedChinese": "Egyszerűsített kínai",
+      "traditionalChinese": "Hagyományos kínai",
+      "korean": "Koreai"
+    }
   },
   "connectionBar": {
     "fields": {

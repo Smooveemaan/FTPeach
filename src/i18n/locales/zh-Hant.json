@@ -614,7 +614,8 @@
       "remotePath": "預設資料夾",
       "localPath": "本機資料夾",
       "folder": "資料夾",
-      "maxConnections": "每個窗格的最大連線數"
+      "maxConnections": "每個窗格的最大連線數",
+      "encoding": "編碼"
     },
     "icons": {
       "bookmark": "書籤",
@@ -675,7 +676,25 @@
     "expandFolder": "展開「{{name}}」",
     "collapseFolder": "摺疊「{{name}}」",
     "noFolder": "無資料夾",
-    "maxConnectionsHint": "0 或留空：無限制。否則為 2–128，包含一個用於瀏覽資料夾的連線。重新連線後生效。每個窗格的限制各自獨立。"
+    "maxConnectionsHint": "0 或留空：無限制。否則為 2–128，包含一個用於瀏覽資料夾的連線。重新連線後生效。每個窗格的限制各自獨立。",
+    "encodingHint": "僅在此伺服器上的檔案名稱顯示為亂碼時才變更。",
+    "encodings": {
+      "utf8": "UTF-8（預設）",
+      "cyrillic": "斯拉夫文",
+      "westernEuropean": "西歐",
+      "centralEuropean": "中歐",
+      "greek": "希臘文",
+      "turkish": "土耳其文",
+      "hebrew": "希伯來文",
+      "arabic": "阿拉伯文",
+      "baltic": "波羅的海文",
+      "vietnamese": "越南文",
+      "thai": "泰文",
+      "japanese": "日文",
+      "simplifiedChinese": "簡體中文",
+      "traditionalChinese": "繁體中文",
+      "korean": "韓文"
+    }
   },
   "connectionBar": {
     "fields": {

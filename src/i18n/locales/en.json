@@ -614,7 +614,8 @@
       "remotePath": "Default folder",
       "localPath": "Local folder",
       "folder": "Folder",
-      "maxConnections": "Maximum connections per pane"
+      "maxConnections": "Maximum connections per pane",
+      "encoding": "Encoding"
     },
     "icons": {
       "bookmark": "Bookmark",
@@ -675,7 +676,25 @@
     "expandFolder": "Expand \"{{name}}\"",
     "collapseFolder": "Collapse \"{{name}}\"",
     "noFolder": "No folder",
-    "maxConnectionsHint": "0 or blank: no limit. Otherwise 2–128, including one connection for browsing. Applies after reconnecting. Each pane has its own limit."
+    "maxConnectionsHint": "0 or blank: no limit. Otherwise 2–128, including one connection for browsing. Applies after reconnecting. Each pane has its own limit.",
+    "encodingHint": "Change it only if file names on this server look garbled.",
+    "encodings": {
+      "utf8": "UTF-8 (default)",
+      "cyrillic": "Cyrillic",
+      "westernEuropean": "Western European",
+      "centralEuropean": "Central European",
+      "greek": "Greek",
+      "turkish": "Turkish",
+      "hebrew": "Hebrew",
+      "arabic": "Arabic",
+      "baltic": "Baltic",
+      "vietnamese": "Vietnamese",
+      "thai": "Thai",
+      "japanese": "Japanese",
+      "simplifiedChinese": "Chinese Simplified",
+      "traditionalChinese": "Chinese Traditional",
+      "korean": "Korean"
+    }
   },
   "connectionBar": {
     "fields": {

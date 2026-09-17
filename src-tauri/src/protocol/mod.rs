@@ -5,6 +5,7 @@ mod limits;
 pub use limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES, MAX_RAW_DIRECTORY_ENTRIES};
 pub mod config;
 pub mod ftp;
+pub(crate) mod ftp_charset;
 pub mod known_hosts;
 mod list_parse;
 mod proxy;

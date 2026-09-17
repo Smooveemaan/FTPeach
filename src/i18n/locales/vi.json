@@ -614,7 +614,8 @@
       "remotePath": "Thư mục mặc định",
       "localPath": "Thư mục cục bộ",
       "folder": "Thư mục",
-      "maxConnections": "Số kết nối tối đa mỗi khung"
+      "maxConnections": "Số kết nối tối đa mỗi khung",
+      "encoding": "Bảng mã"
     },
     "icons": {
       "bookmark": "Dấu trang",
@@ -675,7 +676,25 @@
     "expandFolder": "Mở rộng “{{name}}”",
     "collapseFolder": "Thu gọn “{{name}}”",
     "noFolder": "Không có thư mục",
-    "maxConnectionsHint": "0 hoặc để trống: không giới hạn. Nếu không, 2–128, gồm một kết nối để duyệt thư mục. Áp dụng sau khi kết nối lại. Mỗi khung có giới hạn riêng."
+    "maxConnectionsHint": "0 hoặc để trống: không giới hạn. Nếu không, 2–128, gồm một kết nối để duyệt thư mục. Áp dụng sau khi kết nối lại. Mỗi khung có giới hạn riêng.",
+    "encodingHint": "Chỉ đổi khi tên tệp trên máy chủ này hiển thị bị lỗi.",
+    "encodings": {
+      "utf8": "UTF-8 (mặc định)",
+      "cyrillic": "Kirin",
+      "westernEuropean": "Tây Âu",
+      "centralEuropean": "Trung Âu",
+      "greek": "Hy Lạp",
+      "turkish": "Thổ Nhĩ Kỳ",
+      "hebrew": "Do Thái",
+      "arabic": "Ả Rập",
+      "baltic": "Baltic",
+      "vietnamese": "Tiếng Việt",
+      "thai": "Thái",
+      "japanese": "Nhật",
+      "simplifiedChinese": "Trung giản thể",
+      "traditionalChinese": "Trung phồn thể",
+      "korean": "Hàn"
+    }
   },
   "connectionBar": {
     "fields": {

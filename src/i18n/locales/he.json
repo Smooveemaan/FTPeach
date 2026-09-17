@@ -622,7 +622,8 @@
       "remotePath": "תיקיית ברירת מחדל",
       "localPath": "תיקייה מקומית",
       "folder": "תיקייה",
-      "maxConnections": "מספר חיבורים מרבי לחלונית"
+      "maxConnections": "מספר חיבורים מרבי לחלונית",
+      "encoding": "קידוד"
     },
     "icons": {
       "bookmark": "סימנייה",
@@ -685,7 +686,25 @@
     "expandFolder": "הרחב את \"{{name}}\"",
     "collapseFolder": "קפל את \"{{name}}\"",
     "noFolder": "ללא תיקייה",
-    "maxConnectionsHint": "0 או ריק: ללא הגבלה. אחרת 2–128, כולל חיבור אחד לעיון בתיקיות. חל לאחר התחברות מחדש. לכל חלונית מגבלה משלה."
+    "maxConnectionsHint": "0 או ריק: ללא הגבלה. אחרת 2–128, כולל חיבור אחד לעיון בתיקיות. חל לאחר התחברות מחדש. לכל חלונית מגבלה משלה.",
+    "encodingHint": "שנו אותו רק אם שמות הקבצים בשרת הזה מוצגים משובשים.",
+    "encodings": {
+      "utf8": "UTF-8 (ברירת מחדל)",
+      "cyrillic": "קירילי",
+      "westernEuropean": "מערב אירופאי",
+      "centralEuropean": "מרכז אירופאי",
+      "greek": "יווני",
+      "turkish": "טורקי",
+      "hebrew": "עברי",
+      "arabic": "ערבי",
+      "baltic": "בלטי",
+      "vietnamese": "וייטנאמי",
+      "thai": "תאי",
+      "japanese": "יפני",
+      "simplifiedChinese": "סינית פשוטה",
+      "traditionalChinese": "סינית מסורתית",
+      "korean": "קוריאני"
+    }
   },
   "connectionBar": {
     "fields": {

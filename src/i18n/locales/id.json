@@ -614,7 +614,8 @@
       "remotePath": "Folder default",
       "localPath": "Folder lokal",
       "folder": "Folder",
-      "maxConnections": "Koneksi maksimum per panel"
+      "maxConnections": "Koneksi maksimum per panel",
+      "encoding": "Encoding"
     },
     "icons": {
       "bookmark": "Bookmark",
@@ -675,7 +676,25 @@
     "expandFolder": "Perluas \"{{name}}\"",
     "collapseFolder": "Ciutkan \"{{name}}\"",
     "noFolder": "Tanpa folder",
-    "maxConnectionsHint": "0 atau kosong: tanpa batas. Selain itu 2–128, termasuk satu koneksi untuk menjelajahi folder. Berlaku setelah tersambung kembali. Setiap panel memiliki batas sendiri."
+    "maxConnectionsHint": "0 atau kosong: tanpa batas. Selain itu 2–128, termasuk satu koneksi untuk menjelajahi folder. Berlaku setelah tersambung kembali. Setiap panel memiliki batas sendiri.",
+    "encodingHint": "Ubah hanya jika nama file di server ini tampil rusak.",
+    "encodings": {
+      "utf8": "UTF-8 (default)",
+      "cyrillic": "Sirilik",
+      "westernEuropean": "Eropa Barat",
+      "centralEuropean": "Eropa Tengah",
+      "greek": "Yunani",
+      "turkish": "Turki",
+      "hebrew": "Ibrani",
+      "arabic": "Arab",
+      "baltic": "Baltik",
+      "vietnamese": "Vietnam",
+      "thai": "Thai",
+      "japanese": "Jepang",
+      "simplifiedChinese": "Tionghoa Sederhana",
+      "traditionalChinese": "Tionghoa Tradisional",
+      "korean": "Korea"
+    }
   },
   "connectionBar": {
     "fields": {

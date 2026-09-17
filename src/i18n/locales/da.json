@@ -614,7 +614,8 @@
       "remotePath": "Standardmappe",
       "localPath": "Lokal mappe",
       "folder": "Mappe",
-      "maxConnections": "Maks. forbindelser pr. rude"
+      "maxConnections": "Maks. forbindelser pr. rude",
+      "encoding": "Tegnkodning"
     },
     "icons": {
       "bookmark": "Bogmærke",
@@ -675,7 +676,25 @@
     "expandFolder": "Udvid »{{name}}«",
     "collapseFolder": "Fold »{{name}}« sammen",
     "noFolder": "Ingen mappe",
-    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hver rude har sin egen grænse."
+    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hver rude har sin egen grænse.",
+    "encodingHint": "Skift den kun, hvis filnavne på denne server vises forkert.",
+    "encodings": {
+      "utf8": "UTF-8 (standard)",
+      "cyrillic": "Kyrillisk",
+      "westernEuropean": "Vesteuropæisk",
+      "centralEuropean": "Centraleuropæisk",
+      "greek": "Græsk",
+      "turkish": "Tyrkisk",
+      "hebrew": "Hebraisk",
+      "arabic": "Arabisk",
+      "baltic": "Baltisk",
+      "vietnamese": "Vietnamesisk",
+      "thai": "Thai",
+      "japanese": "Japansk",
+      "simplifiedChinese": "Kinesisk (forenklet)",
+      "traditionalChinese": "Kinesisk (traditionelt)",
+      "korean": "Koreansk"
+    }
   },
   "connectionBar": {
     "fields": {

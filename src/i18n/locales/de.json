@@ -614,7 +614,8 @@
       "remotePath": "Standardordner",
       "localPath": "Lokaler Ordner",
       "folder": "Ordner",
-      "maxConnections": "Maximale Verbindungen pro Bereich"
+      "maxConnections": "Maximale Verbindungen pro Bereich",
+      "encoding": "Zeichenkodierung"
     },
     "icons": {
       "bookmark": "Lesezeichen",
@@ -675,7 +676,25 @@
     "expandFolder": "„{{name}}“ aufklappen",
     "collapseFolder": "„{{name}}“ zuklappen",
     "noFolder": "Kein Ordner",
-    "maxConnectionsHint": "0 oder leer: unbegrenzt. Sonst 2–128, einschließlich einer Verbindung zum Durchsuchen. Gilt nach erneutem Verbinden. Jeder Bereich hat sein eigenes Limit."
+    "maxConnectionsHint": "0 oder leer: unbegrenzt. Sonst 2–128, einschließlich einer Verbindung zum Durchsuchen. Gilt nach erneutem Verbinden. Jeder Bereich hat sein eigenes Limit.",
+    "encodingHint": "Nur ändern, wenn Dateinamen auf diesem Server verstümmelt angezeigt werden.",
+    "encodings": {
+      "utf8": "UTF-8 (Standard)",
+      "cyrillic": "Kyrillisch",
+      "westernEuropean": "Westeuropäisch",
+      "centralEuropean": "Mitteleuropäisch",
+      "greek": "Griechisch",
+      "turkish": "Türkisch",
+      "hebrew": "Hebräisch",
+      "arabic": "Arabisch",
+      "baltic": "Baltisch",
+      "vietnamese": "Vietnamesisch",
+      "thai": "Thailändisch",
+      "japanese": "Japanisch",
+      "simplifiedChinese": "Chinesisch (vereinfacht)",
+      "traditionalChinese": "Chinesisch (traditionell)",
+      "korean": "Koreanisch"
+    }
   },
   "connectionBar": {
     "fields": {

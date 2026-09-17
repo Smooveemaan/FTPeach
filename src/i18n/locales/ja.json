@@ -614,7 +614,8 @@
       "remotePath": "デフォルトフォルダー",
       "localPath": "ローカルフォルダー",
       "folder": "フォルダー",
-      "maxConnections": "ペインごとの最大接続数"
+      "maxConnections": "ペインごとの最大接続数",
+      "encoding": "文字コード"
     },
     "icons": {
       "bookmark": "ブックマーク",
@@ -675,7 +676,25 @@
     "expandFolder": "「{{name}}」を展開",
     "collapseFolder": "「{{name}}」を折りたたむ",
     "noFolder": "フォルダーなし",
-    "maxConnectionsHint": "0 または空欄：無制限。それ以外は 2～128（フォルダー閲覧用の接続 1 つを含む）。再接続後に適用されます。制限はペインごとに独立しています。"
+    "maxConnectionsHint": "0 または空欄：無制限。それ以外は 2～128（フォルダー閲覧用の接続 1 つを含む）。再接続後に適用されます。制限はペインごとに独立しています。",
+    "encodingHint": "このサーバーのファイル名が文字化けする場合にのみ変更してください。",
+    "encodings": {
+      "utf8": "UTF-8 (デフォルト)",
+      "cyrillic": "キリル文字",
+      "westernEuropean": "西ヨーロッパ",
+      "centralEuropean": "中央ヨーロッパ",
+      "greek": "ギリシャ語",
+      "turkish": "トルコ語",
+      "hebrew": "ヘブライ語",
+      "arabic": "アラビア語",
+      "baltic": "バルト語",
+      "vietnamese": "ベトナム語",
+      "thai": "タイ語",
+      "japanese": "日本語",
+      "simplifiedChinese": "簡体字中国語",
+      "traditionalChinese": "繁体字中国語",
+      "korean": "韓国語"
+    }
   },
   "connectionBar": {
     "fields": {

@@ -188,6 +188,16 @@ impl Store {
                     .into(),
             ),
         );
+        record.insert(
+            "encoding".into(),
+            Value::String(
+                input
+                    .get("encoding")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .into(),
+            ),
+        );
         if let Some((field, value)) = pw_field {
             record.insert(field, value);
         }

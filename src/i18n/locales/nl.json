@@ -614,7 +614,8 @@
       "remotePath": "Standaardmap",
       "localPath": "Lokale map",
       "folder": "Map",
-      "maxConnections": "Maximale verbindingen per paneel"
+      "maxConnections": "Maximale verbindingen per paneel",
+      "encoding": "Tekencodering"
     },
     "icons": {
       "bookmark": "Bladwijzer",
@@ -675,7 +676,25 @@
     "expandFolder": "\"{{name}}\" uitvouwen",
     "collapseFolder": "\"{{name}}\" samenvouwen",
     "noFolder": "Geen map",
-    "maxConnectionsHint": "0 of leeg: onbeperkt. Anders 2–128, inclusief één verbinding om mappen te bekijken. Geldt na opnieuw verbinden. Elk paneel heeft een eigen limiet."
+    "maxConnectionsHint": "0 of leeg: onbeperkt. Anders 2–128, inclusief één verbinding om mappen te bekijken. Geldt na opnieuw verbinden. Elk paneel heeft een eigen limiet.",
+    "encodingHint": "Wijzig dit alleen als bestandsnamen op deze server onleesbaar zijn.",
+    "encodings": {
+      "utf8": "UTF-8 (standaard)",
+      "cyrillic": "Cyrillisch",
+      "westernEuropean": "West-Europees",
+      "centralEuropean": "Centraal-Europees",
+      "greek": "Grieks",
+      "turkish": "Turks",
+      "hebrew": "Hebreeuws",
+      "arabic": "Arabisch",
+      "baltic": "Baltisch",
+      "vietnamese": "Vietnamees",
+      "thai": "Thai",
+      "japanese": "Japans",
+      "simplifiedChinese": "Chinees (vereenvoudigd)",
+      "traditionalChinese": "Chinees (traditioneel)",
+      "korean": "Koreaans"
+    }
   },
   "connectionBar": {
     "fields": {

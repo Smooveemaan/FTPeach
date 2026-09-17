@@ -622,7 +622,8 @@
       "remotePath": "Cartella predefinita",
       "localPath": "Cartella locale",
       "folder": "Cartella",
-      "maxConnections": "Connessioni massime per riquadro"
+      "maxConnections": "Connessioni massime per riquadro",
+      "encoding": "Codifica"
     },
     "icons": {
       "bookmark": "Segnalibro",
@@ -685,7 +686,25 @@
     "noFolder": "Nessuna cartella",
     "importAdded_many": "Aggiunti {{count}} segnalibri",
     "importSkipped_many": "saltati {{count}} duplicati",
-    "maxConnectionsHint": "0 o vuoto: nessun limite. Altrimenti 2–128, inclusa una connessione per esplorare le cartelle. Si applica dopo la riconnessione. Ogni riquadro ha il proprio limite."
+    "maxConnectionsHint": "0 o vuoto: nessun limite. Altrimenti 2–128, inclusa una connessione per esplorare le cartelle. Si applica dopo la riconnessione. Ogni riquadro ha il proprio limite.",
+    "encodingHint": "Cambiala solo se i nomi dei file su questo server appaiono illeggibili.",
+    "encodings": {
+      "utf8": "UTF-8 (predefinita)",
+      "cyrillic": "Cirillico",
+      "westernEuropean": "Europa occidentale",
+      "centralEuropean": "Europa centrale",
+      "greek": "Greco",
+      "turkish": "Turco",
+      "hebrew": "Ebraico",
+      "arabic": "Arabo",
+      "baltic": "Baltico",
+      "vietnamese": "Vietnamita",
+      "thai": "Thailandese",
+      "japanese": "Giapponese",
+      "simplifiedChinese": "Cinese semplificato",
+      "traditionalChinese": "Cinese tradizionale",
+      "korean": "Coreano"
+    }
   },
   "connectionBar": {
     "fields": {

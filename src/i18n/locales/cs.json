@@ -630,7 +630,8 @@
       "remotePath": "Výchozí složka",
       "localPath": "Místní složka",
       "folder": "Složka",
-      "maxConnections": "Maximum připojení na panel"
+      "maxConnections": "Maximum připojení na panel",
+      "encoding": "Kódování"
     },
     "icons": {
       "bookmark": "Záložka",
@@ -695,7 +696,25 @@
     "expandFolder": "Rozbalit „{{name}}“",
     "collapseFolder": "Sbalit „{{name}}“",
     "noFolder": "Bez složky",
-    "maxConnectionsHint": "0 nebo prázdné: bez omezení. Jinak 2–128, včetně jednoho připojení pro procházení složek. Platí po opětovném připojení. Každý panel má vlastní limit."
+    "maxConnectionsHint": "0 nebo prázdné: bez omezení. Jinak 2–128, včetně jednoho připojení pro procházení složek. Platí po opětovném připojení. Každý panel má vlastní limit.",
+    "encodingHint": "Měňte jen tehdy, když se názvy souborů na tomto serveru zobrazují nečitelně.",
+    "encodings": {
+      "utf8": "UTF-8 (výchozí)",
+      "cyrillic": "Cyrilice",
+      "westernEuropean": "Západoevropské",
+      "centralEuropean": "Středoevropské",
+      "greek": "Řecké",
+      "turkish": "Turecké",
+      "hebrew": "Hebrejské",
+      "arabic": "Arabské",
+      "baltic": "Baltské",
+      "vietnamese": "Vietnamské",
+      "thai": "Thajské",
+      "japanese": "Japonské",
+      "simplifiedChinese": "Čínské zjednodušené",
+      "traditionalChinese": "Čínské tradiční",
+      "korean": "Korejské"
+    }
   },
   "connectionBar": {
     "fields": {

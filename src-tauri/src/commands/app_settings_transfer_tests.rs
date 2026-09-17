@@ -258,7 +258,13 @@ fn exported_site_round_trips_through_import_validation() {
             "password".into(),
             serde_json::Value::String("secret".into()),
         ),
+        ("maxConnections".into(), serde_json::json!(4)),
+        ("encoding".into(), serde_json::json!("windows-1251")),
     ]);
     let exported = strip_site_secrets(site);
-    assert!(validate_import_site(&exported, 0).is_ok());
+    assert_eq!(validate_import_site(&exported, 0), Ok(()));
+
+    let mut unknown = exported;
+    unknown.insert("encoding".into(), serde_json::json!("klingon"));
+    assert!(validate_import_site(&unknown, 0).is_err());
 }

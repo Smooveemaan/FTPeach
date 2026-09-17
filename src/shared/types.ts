@@ -60,6 +60,8 @@ export interface ManagedSite {
   hasKeyPassphrase?: boolean;
   allowInvalidCert?: boolean;
   caCertPath?: string;
+  /** FTP file name encoding; empty means UTF-8. */
+  encoding?: string;
   useKeyAuth?: boolean;
   keyPath?: string;
   icon?: string;
@@ -82,6 +84,7 @@ export interface SiteForm {
   remotePath: string;
   allowInvalidCert: boolean;
   caCertPath: string;
+  encoding: string;
   useKeyAuth: boolean;
   keyPath: string;
   keyPassphrase: string;

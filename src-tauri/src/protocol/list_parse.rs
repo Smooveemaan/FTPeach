@@ -4,6 +4,8 @@ use std::sync::OnceLock;
 pub struct RawEntry {
     pub name: String,
     pub is_directory: bool,
+    /// A symbolic link, whose target LIST and MLSD do not say the kind of.
+    pub is_symlink: bool,
     pub size: u64,
     pub modified_at: Option<DateTime<Utc>>,
     pub permissions: Option<String>,
@@ -15,7 +17,7 @@ fn posix_re() -> &'static regex::Regex {
     static RE: OnceLock<regex::Regex> = OnceLock::new();
     RE.get_or_init(|| {
         regex::Regex::new(
-            r#"^([\-ld])([\-rwxsStT]{9})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+(\d+)\s+([^ ]+\s+\d{1,2}\s+(?:\d{1,2}:\d{1,2}|\d{4}))\s+(.+)$"#,
+            r#"^([\-ld])([\-rwxsStT]{9})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+(\d+)\s+([^ ]+\s+\d{1,2}\s+(?:\d{1,2}:\d{1,2}|\d{4})) (.+)$"#,
         )
         .unwrap()
     })
@@ -84,6 +86,7 @@ pub fn parse_line(line: &str, now: DateTime<Utc>) -> Option<RawEntry> {
         return Some(RawEntry {
             name,
             is_directory: file_type == "d",
+            is_symlink: file_type == "l",
             size: caps.get(6)?.as_str().parse().ok()?,
             modified_at: resolve_ambiguous_date(caps.get(7)?.as_str(), now),
             permissions: permissions_string(caps.get(2)?.as_str()),
@@ -104,6 +107,7 @@ pub fn parse_line(line: &str, now: DateTime<Utc>) -> Option<RawEntry> {
         return Some(RawEntry {
             name: caps.get(4)?.as_str().to_string(),
             is_directory,
+            is_symlink: false,
             size,
             modified_at: parse_dos_datetime(caps.get(1)?.as_str()),
             permissions: None,
@@ -145,7 +149,8 @@ pub fn parse_mlsd_line(line: &str) -> Option<RawEntry> {
             _ => {}
         }
     }
-    let is_directory = match kind?.as_str() {
+    let kind = kind?;
+    let is_directory = match kind.as_str() {
         "cdir" | "pdir" => return None,
         "dir" => true,
         _ => false,
@@ -153,6 +158,8 @@ pub fn parse_mlsd_line(line: &str) -> Option<RawEntry> {
     Some(RawEntry {
         name: name.to_string(),
         is_directory,
+        // ProFTPD writes `OS.unix=symlink`, others `OS.unix=slink:target`.
+        is_symlink: kind.starts_with("os.unix=symlink") || kind.starts_with("os.unix=slink"),
         size: if is_directory { 0 } else { size },
         modified_at,
         permissions: mode.map(mode_string),
@@ -248,6 +255,16 @@ mod tests {
         )
         .unwrap();
         assert_eq!(entry.name, "link");
+        assert!(entry.is_symlink && !entry.is_directory);
+    }
+
+    #[test]
+    fn keeps_the_spaces_a_name_starts_with() {
+        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let entry = parse_line("-rw-r--r-- 1 ftp ftp 3 Nov  5  2018   spaced.txt", now).unwrap();
+        assert_eq!(entry.name, "  spaced.txt");
+        let entry = parse_line("-rw-r--r-- 1 ftp ftp 3 Jun 14 09:30  lead", now).unwrap();
+        assert_eq!(entry.name, " lead");
     }
 
     #[test]

@@ -306,11 +306,24 @@ fn propfind_rejects_truncated_wrong_root_and_over_budget_documents() {
     let xml = format!(
         "<multistatus>{}</multistatus>",
         "<response><href>/file</href></response>"
-            .repeat(crate::protocol::MAX_DIRECTORY_ENTRIES + 1)
+            .repeat(crate::protocol::MAX_RAW_DIRECTORY_ENTRIES + 1)
     );
     assert_eq!(
         crate::ipc::CommandError::from_anyhow(&parse_propfind(&xml).err().unwrap()).code,
         ErrorCode::ResourceLimit
+    );
+}
+
+#[test]
+fn entity_references_stay_in_hrefs() {
+    let entries = parse_propfind(
+        "<multistatus><response><href>/a&amp;b &#38; c&#x26;d&lt;</href></response></multistatus>",
+    )
+    .unwrap();
+    assert_eq!(entries[0].href, "/a&b & c&d<");
+    assert!(
+        parse_propfind("<multistatus><response><href>/&nbsp;</href></response></multistatus>")
+            .is_err()
     );
 }
 
@@ -1450,5 +1463,54 @@ mod live_tests {
         tokio::time::timeout(Duration::from_secs(60), body)
             .await
             .expect("live test timed out after 60s");
+    }
+}
+
+#[test]
+fn only_the_same_host_and_path_are_upgraded_to_https() {
+    assert_eq!(
+        https_upgrade("http://dav.example/dav", "https://dav.example/dav/").as_deref(),
+        Some("https://dav.example/dav")
+    );
+    assert_eq!(
+        https_upgrade(
+            "http://dav.example:8080/dav/",
+            "https://dav.example:8443/dav/"
+        )
+        .as_deref(),
+        Some("https://dav.example:8443/dav")
+    );
+    for location in [
+        "https://other.example/dav/",
+        "https://dav.example/elsewhere/",
+        "http://dav.example/dav/",
+        "https://dav.example/dav/?session=1",
+    ] {
+        assert_eq!(
+            https_upgrade("http://dav.example/dav", location),
+            None,
+            "{location}"
+        );
+    }
+    assert_eq!(
+        https_upgrade("https://dav.example/dav", "https://dav.example/dav/"),
+        None
+    );
+}
+
+#[test]
+fn http_statuses_name_proxy_and_space_failures() {
+    for (status, expected) in [
+        (401, ErrorCode::AuthFailed),
+        (407, ErrorCode::ProxyFailed),
+        (413, ErrorCode::ResourceLimit),
+        (507, ErrorCode::StorageFull),
+    ] {
+        let error = response::status_error(status, "PUT");
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            expected,
+            "{status}"
+        );
     }
 }

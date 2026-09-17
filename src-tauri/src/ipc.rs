@@ -24,6 +24,11 @@ pub enum ErrorCode {
     ConnectionLost,
     InvalidInput,
     ResourceLimit,
+    /// The server has no room left for what is being written.
+    StorageFull,
+    /// A private key file could not be decrypted or parsed: most often a
+    /// wrong passphrase.
+    KeyUnreadable,
     /// Another operation is already reading or writing the same place.
     Busy,
     VaultLocked,
@@ -129,10 +134,76 @@ impl CommandError {
         let details = format!("{error:#}");
         let code = error
             .chain()
-            .find_map(|source| source.downcast_ref::<std::io::Error>())
-            .and_then(Self::code_for_io_error)
+            .find_map(Self::code_for_server_reply)
+            .or_else(|| {
+                error
+                    .chain()
+                    .find_map(|source| source.downcast_ref::<std::io::Error>())
+                    .and_then(Self::code_for_io_error)
+            })
             .unwrap_or_else(|| Self::code_for_message(&details));
         Self::with_safe_message(code, details)
+    }
+
+    /// A server's own verdict: an FTP reply code or an SFTP status. The reply
+    /// text only splits the codes that servers use for more than one thing.
+    fn code_for_server_reply(source: &(dyn std::error::Error + 'static)) -> Option<ErrorCode> {
+        if let Some(suppaftp::FtpError::UnexpectedResponse(response)) =
+            source.downcast_ref::<suppaftp::FtpError>()
+        {
+            let text = String::from_utf8_lossy(&response.body).to_ascii_lowercase();
+            let too_many = text.contains("too many");
+            return match response.status.code() {
+                421 | 530 if too_many => Some(ErrorCode::ResourceLimit),
+                530 => Some(ErrorCode::AuthFailed),
+                421 => Some(ErrorCode::ConnectionLost),
+                452 | 552 => Some(ErrorCode::StorageFull),
+                // vsftpd's word for a write the disk would not take.
+                451 if text.contains("failure writing") => Some(ErrorCode::StorageFull),
+                // "File name not allowed": servers answer it for a folder
+                // they will not write to.
+                553 => Some(ErrorCode::PermissionDenied),
+                550 if text.contains("no such")
+                    || text.contains("not found")
+                    || text.contains("not exist")
+                    || text.contains("doesn't exist") =>
+                {
+                    Some(ErrorCode::NotFound)
+                }
+                550 if text.contains("permission")
+                    || text.contains("denied")
+                    || text.contains("not permitted") =>
+                {
+                    Some(ErrorCode::PermissionDenied)
+                }
+                _ => None,
+            };
+        }
+        if let Some(russh_sftp::client::error::Error::Status(status)) =
+            source.downcast_ref::<russh_sftp::client::error::Error>()
+        {
+            use russh_sftp::protocol::StatusCode;
+            return match status.status_code {
+                StatusCode::NoSuchFile => Some(ErrorCode::NotFound),
+                StatusCode::PermissionDenied => Some(ErrorCode::PermissionDenied),
+                StatusCode::ConnectionLost | StatusCode::NoConnection => {
+                    Some(ErrorCode::ConnectionLost)
+                }
+                // SFTP v3 has no code for a full disk; the message says so.
+                _ if Self::names_full_storage(&status.error_message.to_ascii_lowercase()) => {
+                    Some(ErrorCode::StorageFull)
+                }
+                _ => None,
+            };
+        }
+        None
+    }
+
+    fn names_full_storage(lower: &str) -> bool {
+        lower.contains("no space left")
+            || lower.contains("disk full")
+            || lower.contains("quota exceeded")
+            || lower.contains("insufficient storage")
     }
 
     /// Typed classification for the errors third-party crates hand us most
@@ -195,6 +266,7 @@ impl CommandError {
         } else if lower.contains("proxy handshake failed")
             || lower.contains("could not connect to proxy")
             || lower.contains("proxy rejected")
+            || lower.contains("socks proxy")
         {
             ErrorCode::ProxyFailed
         } else if lower.contains("permission denied")
@@ -226,6 +298,8 @@ impl CommandError {
             || lower.contains("socket")
         {
             ErrorCode::ConnectionLost
+        } else if Self::names_full_storage(&lower) {
+            ErrorCode::StorageFull
         } else if lower.contains("vault is locked") {
             ErrorCode::VaultLocked
         } else {
@@ -255,6 +329,8 @@ impl CommandError {
             ErrorCode::ConnectionLost => "Connection lost",
             ErrorCode::InvalidInput => "Invalid input",
             ErrorCode::ResourceLimit => "Resource limit exceeded",
+            ErrorCode::StorageFull => "Not enough storage space on the server",
+            ErrorCode::KeyUnreadable => "The private key could not be read",
             ErrorCode::Busy => "Another operation is using this location",
             ErrorCode::VaultLocked => "Vault is locked",
             ErrorCode::AlreadyExists => "A file or folder with that name already exists",
@@ -294,6 +370,8 @@ mod tests {
             (ErrorCode::ConnectionLost, "connectionLost"),
             (ErrorCode::InvalidInput, "invalidInput"),
             (ErrorCode::ResourceLimit, "resourceLimit"),
+            (ErrorCode::StorageFull, "storageFull"),
+            (ErrorCode::KeyUnreadable, "keyUnreadable"),
             (ErrorCode::Busy, "busy"),
             (ErrorCode::VaultLocked, "vaultLocked"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
@@ -315,6 +393,76 @@ mod tests {
     }
 
     #[test]
+    fn ftp_replies_and_sftp_statuses_classify_by_code() {
+        let ftp = |code: u32, text: &str| {
+            let error = anyhow::Error::from(suppaftp::FtpError::UnexpectedResponse(
+                suppaftp::types::Response::new(
+                    suppaftp::Status::from(code),
+                    format!("{code} {text}").into_bytes(),
+                ),
+            ))
+            .context("command failed");
+            CommandError::from_anyhow(&error).code
+        };
+        assert_eq!(ftp(530, "Login incorrect."), ErrorCode::AuthFailed);
+        assert_eq!(
+            ftp(530, "Too many connections from your host (limit 8)"),
+            ErrorCode::ResourceLimit
+        );
+        assert_eq!(
+            ftp(
+                421,
+                "There are too many connections from your internet address."
+            ),
+            ErrorCode::ResourceLimit
+        );
+        assert_eq!(ftp(421, "Timeout."), ErrorCode::ConnectionLost);
+        assert_eq!(
+            ftp(550, "/a.txt: No such file or directory"),
+            ErrorCode::NotFound
+        );
+        assert_eq!(
+            ftp(550, "/a.txt: Operation not permitted"),
+            ErrorCode::PermissionDenied
+        );
+        assert_eq!(ftp(550, "Failed to open file."), ErrorCode::Internal);
+        assert_eq!(ftp(552, "Disk full"), ErrorCode::StorageFull);
+        assert_eq!(
+            ftp(451, "Failure writing to local file."),
+            ErrorCode::StorageFull
+        );
+        assert_eq!(
+            ftp(553, "Could not create file."),
+            ErrorCode::PermissionDenied
+        );
+
+        let sftp = |status_code, message: &str| {
+            let error = anyhow::Error::from(russh_sftp::client::error::Error::Status(
+                russh_sftp::protocol::Status {
+                    id: 1,
+                    status_code,
+                    error_message: message.to_owned(),
+                    language_tag: String::new(),
+                },
+            ));
+            CommandError::from_anyhow(&error).code
+        };
+        use russh_sftp::protocol::StatusCode;
+        assert_eq!(
+            sftp(StatusCode::NoSuchFile, "No such file"),
+            ErrorCode::NotFound
+        );
+        assert_eq!(
+            sftp(StatusCode::PermissionDenied, "Permission denied"),
+            ErrorCode::PermissionDenied
+        );
+        assert_eq!(
+            sftp(StatusCode::Failure, "No space left on device"),
+            ErrorCode::StorageFull
+        );
+    }
+
+    #[test]
     fn negotiation_and_proxy_failures_have_stable_codes() {
         let cases = [
             (
@@ -327,6 +475,10 @@ mod tests {
             ),
             (
                 "SOCKS5 proxy handshake failed: proxy rejected connection",
+                ErrorCode::ProxyFailed,
+            ),
+            (
+                "error connecting to socks proxy: SOCKS error: credentials not accepted",
                 ErrorCode::ProxyFailed,
             ),
         ];

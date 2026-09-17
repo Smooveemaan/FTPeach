@@ -13,7 +13,7 @@ async fn list_reader_rejects_stalls_and_enforces_budgets_before_eof() {
     );
     for data in [
         vec![b'x'; super::super::MAX_DIRECTORY_TEXT_BYTES + 1],
-        vec![b'\n'; super::super::MAX_DIRECTORY_ENTRIES + 1],
+        vec![b'\n'; super::super::MAX_RAW_DIRECTORY_ENTRIES + 1],
     ] {
         let mut reader = std::io::Cursor::new(data);
         let error = read_list_data(&mut reader, Duration::from_secs(1))
@@ -1589,4 +1589,39 @@ mod live_tests {
             .await
             .expect("live test timed out after 30s");
     }
+}
+
+#[test]
+fn passive_replies_give_their_port() {
+    assert_eq!(
+        pasv_port("227 Entering Passive Mode (10,0,0,5,122,105)."),
+        Some(122 * 256 + 105)
+    );
+    assert_eq!(pasv_port("227 =127,0,0,1,4,1"), Some(1025));
+    assert_eq!(pasv_port("227 Entering Passive Mode (10,0,0,5,122)"), None);
+    assert_eq!(pasv_port("227 Entering Passive Mode (300,0,0,5,1,1)"), None);
+    assert_eq!(
+        epsv_port("229 Entering Extended Passive Mode (|||31012|)"),
+        Some(31012)
+    );
+    assert_eq!(epsv_port("229 Extended Passive (!!!2121!)"), Some(2121));
+    assert_eq!(epsv_port("229 Entering Extended Passive Mode"), None);
+}
+
+#[test]
+fn only_a_final_refusal_keeps_the_control_connection() {
+    let reply = |code: u32| {
+        anyhow::Error::from(suppaftp::FtpError::UnexpectedResponse(
+            suppaftp::types::Response::new(Status::from(code), format!("{code} x").into_bytes()),
+        ))
+        .context("RETR failed")
+    };
+    assert!(refused_by_server(&reply(550)));
+    assert!(refused_by_server(&reply(452)));
+    // 421 closes the connection; a preliminary reply leaves more to come.
+    assert!(!refused_by_server(&reply(421)));
+    assert!(!refused_by_server(&reply(150)));
+    assert!(!refused_by_server(&anyhow::anyhow!(
+        "stalled while reading"
+    )));
 }

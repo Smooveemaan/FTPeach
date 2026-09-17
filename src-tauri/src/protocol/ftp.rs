@@ -11,6 +11,7 @@ use anyhow::{Context, Result as AnyhowResult, anyhow};
 use async_trait::async_trait;
 use chrono::Utc;
 use rustls::ClientConfig;
+use rustls_pki_types::ServerName;
 use rustls_pki_types::pem::PemObject;
 use std::path::Path;
 use std::sync::Arc;
@@ -21,7 +22,6 @@ use suppaftp::tokio::{
     AsyncDataStream, AsyncRustlsConnector, AsyncRustlsFtpStream, AsyncRustlsStream,
 };
 use suppaftp::types::FileType as FtpFileType;
-use suppaftp::types::Mode as FtpMode;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio::sync::Mutex as AsyncMutex;
 
@@ -30,6 +30,18 @@ const COPY_CHUNK_SIZE: usize = 64 * 1024;
 const DATA_IDLE_TIMEOUT: Duration = Duration::from_secs(3);
 const GRACEFUL_IO_TIMEOUT: Duration = Duration::from_secs(5);
 const TRANSFER_STALL_TIMEOUT: Duration = Duration::from_secs(60);
+/// Links in one listing whose kind is looked up, one CWD each.
+const MAX_RESOLVED_LINKS: usize = 64;
+/// How long an upload waits for the TLS 1.3 ticket its data connection brings.
+const TICKET_WAIT: Duration = Duration::from_millis(500);
+/// How long a data connection waits for the reply before starting TLS anyway.
+const HANDSHAKE_FIRST_WAIT: Duration = Duration::from_millis(500);
+/// Folders a recursive walk has seen listed as folders, not links, kept so it
+/// can enter them without checking again.
+const MAX_REAL_FOLDERS: usize = 100_000;
+/// Preliminary replies that open a download's or an upload's data transfer.
+const RETRIEVE_OPEN: &[Status] = &[Status::AboutToSend, Status::AlreadyOpen];
+const STORE_OPEN: &[Status] = &[Status::AlreadyOpen, Status::AboutToSend];
 
 async fn read_list_data(
     reader: &mut (impl tokio::io::AsyncRead + Unpin),
@@ -47,7 +59,7 @@ async fn read_list_data(
         }
         entries += buf[..n].iter().filter(|&&b| b == b'\n').count();
         if raw.len().saturating_add(n) > super::MAX_DIRECTORY_TEXT_BYTES
-            || entries > super::MAX_DIRECTORY_ENTRIES
+            || entries > super::MAX_RAW_DIRECTORY_ENTRIES
         {
             return Err(super::fail(
                 ErrorCode::ResourceLimit,
@@ -160,8 +172,295 @@ fn command_refused(error: &anyhow::Error) -> bool {
     })
 }
 
+/// Why an upload's data connection broke. A server that runs out of room
+/// closes it, and gives the reason (552) on the control connection.
+async fn upload_refusal(
+    control: &mut AsyncRustlsFtpStream,
+    data: UploadData,
+    error: anyhow::Error,
+) -> anyhow::Error {
+    drop(data);
+    match tokio::time::timeout(
+        GRACEFUL_IO_TIMEOUT,
+        control.read_response_in(&[Status::ClosingDataConnection, Status::RequestedFileActionOk]),
+    )
+    .await
+    {
+        Ok(Err(reply @ suppaftp::FtpError::UnexpectedResponse(_))) => {
+            anyhow::Error::from(reply).context(format!("{error:#}"))
+        }
+        _ => error,
+    }
+}
+
+/// Whether the error ends in the server's own refusal: a complete negative
+/// reply, after which the control connection is ready for the next command.
+/// A 421 is the server closing the connection, so it does not count.
+fn refused_by_server(error: &anyhow::Error) -> bool {
+    error.chain().any(|cause| {
+        matches!(
+            cause.downcast_ref::<suppaftp::FtpError>(),
+            Some(suppaftp::FtpError::UnexpectedResponse(response))
+                if response.status.code() >= 400 && response.status != Status::NotAvailable
+        )
+    })
+}
+
+/// The port in a `227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)` reply. The
+/// address is not used: data goes to the control connection's peer.
+fn pasv_port(reply: &str) -> Option<u16> {
+    reply
+        .get(4..)?
+        .split(|c: char| !c.is_ascii_digit() && c != ',')
+        .find_map(|group| {
+            let numbers = group
+                .split(',')
+                .map(str::parse::<u8>)
+                .collect::<Result<Vec<_>, _>>()
+                .ok()?;
+            match numbers[..] {
+                [_, _, _, _, high, low] => Some(u16::from(high) << 8 | u16::from(low)),
+                _ => None,
+            }
+        })
+}
+
+/// The port in a `229 Entering Extended Passive Mode (|||port|)` reply, whose
+/// delimiter is whatever character follows the parenthesis.
+fn epsv_port(reply: &str) -> Option<u16> {
+    let inner = &reply[reply.find('(')? + 1..];
+    let delimiter = inner.chars().next()?;
+    inner.split(delimiter).nth(3)?.parse().ok()
+}
+
+/// The TLS session cache of one FTPS connection, counting the TLS 1.3 tickets
+/// it holds. rustls spends each ticket once, and a server that requires data
+/// connections to resume the control session (vsftpd does by default) refuses
+/// one that has none left with 522.
+#[derive(Debug)]
+struct SessionTickets {
+    cache: rustls::client::ClientSessionMemoryCache,
+    held: std::sync::atomic::AtomicUsize,
+    inserted: tokio::sync::Notify,
+    /// Cleared once a server was seen not to send a ticket in time, so no
+    /// upload waits for one again.
+    arrive: AtomicBool,
+}
+
+impl SessionTickets {
+    fn new() -> Self {
+        Self {
+            // rustls' own default. The cache sizes its server slots from
+            // this, and too few leave no room for the session to resume.
+            cache: rustls::client::ClientSessionMemoryCache::new(256),
+            held: std::sync::atomic::AtomicUsize::new(0),
+            inserted: tokio::sync::Notify::new(),
+            arrive: AtomicBool::new(true),
+        }
+    }
+
+    /// A download reads what its data connection receives, the server's new
+    /// ticket included, but an upload only writes. Reading after the upload's
+    /// handshake takes that ticket in, so the next data connection has one.
+    async fn replenish(&self, tls: &mut tokio_rustls::client::TlsStream<tokio::net::TcpStream>) {
+        let tls13 = tls.get_ref().1.protocol_version() == Some(rustls::ProtocolVersion::TLSv1_3);
+        if !tls13 || self.held.load(Ordering::SeqCst) > 0 || !self.arrive.load(Ordering::SeqCst) {
+            return;
+        }
+        let inserted = self.inserted.notified();
+        tokio::pin!(inserted);
+        inserted.as_mut().enable();
+        if self.held.load(Ordering::SeqCst) > 0 {
+            return;
+        }
+        // No application data comes before the file does: a server sends
+        // nothing on an upload's data connection.
+        let mut byte = [0u8; 1];
+        tokio::select! {
+            _ = &mut inserted => {}
+            _ = tls.read(&mut byte) => {}
+            _ = tokio::time::sleep(TICKET_WAIT) => self.arrive.store(false, Ordering::SeqCst),
+        }
+    }
+}
+
+impl rustls::client::ClientSessionStore for SessionTickets {
+    fn set_kx_hint(&self, server_name: ServerName<'static>, group: rustls::NamedGroup) {
+        self.cache.set_kx_hint(server_name, group);
+    }
+    fn kx_hint(&self, server_name: &ServerName<'_>) -> Option<rustls::NamedGroup> {
+        self.cache.kx_hint(server_name)
+    }
+    fn set_tls12_session(
+        &self,
+        server_name: ServerName<'static>,
+        value: rustls::client::Tls12ClientSessionValue,
+    ) {
+        self.cache.set_tls12_session(server_name, value);
+    }
+    fn tls12_session(
+        &self,
+        server_name: &ServerName<'_>,
+    ) -> Option<rustls::client::Tls12ClientSessionValue> {
+        self.cache.tls12_session(server_name)
+    }
+    fn remove_tls12_session(&self, server_name: &ServerName<'static>) {
+        self.cache.remove_tls12_session(server_name);
+    }
+    fn insert_tls13_ticket(
+        &self,
+        server_name: ServerName<'static>,
+        value: rustls::client::Tls13ClientSessionValue,
+    ) {
+        self.cache.insert_tls13_ticket(server_name, value);
+        // The cache keeps at most eight and drops the oldest.
+        let _ = self
+            .held
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
+                Some((held + 1).min(8))
+            });
+        self.inserted.notify_waiters();
+    }
+    fn take_tls13_ticket(
+        &self,
+        server_name: &ServerName<'static>,
+    ) -> Option<rustls::client::Tls13ClientSessionValue> {
+        let ticket = self.cache.take_tls13_ticket(server_name);
+        if ticket.is_some() {
+            let _ = self
+                .held
+                .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
+                    held.checked_sub(1)
+                });
+        } else {
+            self.held.store(0, Ordering::SeqCst);
+        }
+        ticket
+    }
+}
+
+/// Opens the data connections of one control connection.
+///
+/// suppaftp starts the TLS handshake on a passive data connection before it
+/// reads the reply to the command that asked for it. When that reply is a
+/// refusal (RETR of a missing file, MLSD of a folder that may not be read) no
+/// one answers the handshake, and the operation hung until it timed out. The
+/// handshake here runs alongside the wait for the reply, so a refusal ends it.
+#[derive(Clone)]
+struct DataChannel {
+    /// Where a proxy connects data connections to. Direct ones go to the
+    /// control connection's peer, whatever address PASV names: behind NAT it
+    /// is often a private one.
+    host: String,
+    proxy: Option<super::transport::ProxyConfig>,
+    /// Built from the control connection's own TLS settings, whose session
+    /// cache lets the data connection resume that session.
+    tls: Option<(tokio_rustls::TlsConnector, ServerName<'static>)>,
+    tickets: Arc<SessionTickets>,
+    active: bool,
+    /// EPSV instead of PASV: over IPv6, or once the server turned PASV away.
+    extended: Arc<AtomicBool>,
+}
+
+impl DataChannel {
+    async fn open(
+        &self,
+        control: &mut AsyncRustlsFtpStream,
+        command: String,
+        expected: &[Status],
+    ) -> BackendResult<AsyncDataStream<AsyncRustlsStream>> {
+        if self.active {
+            return Ok(control.custom_data_command(command, expected).await?.1);
+        }
+        let port = self.passive_port(control).await?;
+        let peer = control.get_ref().peer_addr()?.ip();
+        let connect = async {
+            match &self.proxy {
+                Some(proxy) => super::transport::connect(&self.host, port, Some(proxy)).await,
+                None => tokio::net::TcpStream::connect((peer, port))
+                    .await
+                    .with_context(|| format!("could not connect to {peer}:{port}")),
+            }
+        };
+        let tcp = tokio::time::timeout(TRANSFER_STALL_TIMEOUT, connect)
+            .await
+            .context("FTP data connection timed out")?
+            .context("opening the FTP data connection")?;
+        let Some((connector, name)) = self.tls.clone() else {
+            control.custom_command(command, expected).await?;
+            return Ok(AsyncDataStream::Tcp(tcp));
+        };
+        let upload = command.starts_with("STOR ") || command.starts_with("APPE ");
+        // tokio-rustls builds the TLS connection, spending a session ticket,
+        // as soon as `connect` is called; the async block defers that until
+        // the handshake is really started.
+        let handshake = async move { connector.connect(name, tcp).await };
+        tokio::pin!(handshake);
+        let reply = control.custom_command(command, expected);
+        tokio::pin!(reply);
+        let mut secured = None;
+        // Most servers reply before they take the handshake, and starting it
+        // spends a session ticket even when the reply turns out a refusal.
+        // A server that wants the handshake first gets it after a moment.
+        let early = tokio::select! {
+            reply = &mut reply => Some(reply),
+            _ = tokio::time::sleep(HANDSHAKE_FIRST_WAIT) => None,
+        };
+        // Servers differ on whether the reply or the handshake comes first.
+        let reply = match early {
+            Some(reply) => reply,
+            None => loop {
+                tokio::select! {
+                    reply = &mut reply => break reply,
+                    done = &mut handshake, if secured.is_none() => secured = Some(done),
+                }
+            },
+        };
+        // A refusal drops the handshake that is still waiting for an answer.
+        reply?;
+        let tls = match secured {
+            Some(done) => done,
+            None => tokio::time::timeout(TRANSFER_STALL_TIMEOUT, handshake)
+                .await
+                .context("FTP data TLS handshake timed out")?,
+        }
+        .context("TLS handshake failed on the FTP data connection")?;
+        let mut tls = tls;
+        if upload {
+            self.tickets.replenish(&mut tls).await;
+        }
+        Ok(AsyncDataStream::Ssl(Box::new(AsyncRustlsStream::from(tls))))
+    }
+
+    async fn passive_port(&self, control: &mut AsyncRustlsFtpStream) -> BackendResult<u16> {
+        if !self.extended.load(Ordering::SeqCst) {
+            match control.custom_command("PASV", &[Status::PassiveMode]).await {
+                Ok(reply) => {
+                    return pasv_port(&reply.as_string().unwrap_or_default())
+                        .ok_or_else(|| anyhow!("Unreadable reply to PASV"));
+                }
+                Err(error) => {
+                    let error = anyhow::Error::from(error);
+                    if !command_refused(&error) {
+                        return Err(error);
+                    }
+                    // Some servers only speak EPSV, which works over IPv4 too.
+                    self.extended.store(true, Ordering::SeqCst);
+                }
+            }
+        }
+        let reply = control
+            .custom_command("EPSV", &[Status::ExtendedPassiveMode])
+            .await?;
+        epsv_port(&reply.as_string().unwrap_or_default())
+            .ok_or_else(|| anyhow!("Unreadable reply to EPSV"))
+    }
+}
+
 pub struct FtpBackend {
     stream: Arc<AsyncMutex<Option<AsyncRustlsFtpStream>>>,
+    data: Option<DataChannel>,
+    real_folders: std::collections::HashSet<String>,
     connected: Arc<AtomicBool>,
     /// Listings come by MLSD, which names every entry, rather than by LIST,
     /// which many servers print without the names that start with a dot.
@@ -186,6 +485,8 @@ impl Default for FtpBackend {
             stream: Arc::new(AsyncMutex::new(None)),
             connected: Arc::new(AtomicBool::new(false)),
             mlsd: false,
+            data: None,
+            real_folders: std::collections::HashSet::new(),
             busy: Arc::new(AtomicUsize::new(0)),
             keep_alive_handle: None,
             logger: BackendLogger::default(),
@@ -352,12 +653,14 @@ impl FtpBackend {
     /// the lines the server sent.
     async fn list_raw(
         stream: &mut AsyncRustlsFtpStream,
+        data: &DataChannel,
         command: &str,
         path: &str,
     ) -> BackendResult<Vec<String>> {
-        let (_, mut data_stream) = tokio::time::timeout(
+        let mut data_stream = tokio::time::timeout(
             GRACEFUL_IO_TIMEOUT,
-            stream.custom_data_command(
+            data.open(
+                stream,
                 format!("{command} {path}"),
                 &[Status::AboutToSend, Status::AlreadyOpen],
             ),
@@ -437,9 +740,10 @@ impl FtpBackend {
             )
         })?;
         let result = f(stream).await;
-        // Unsupported commands are complete negative replies; MLSD can fall
-        // back to LIST on this socket. Other failures discard it conservatively.
-        operation.reusable = result.is_ok() || result.as_ref().is_err_and(command_refused);
+        // A refusal is the server's complete reply, so the connection stays in
+        // step: MLSD can fall back to LIST on it, and a missing file does not
+        // cost a reconnect. Other failures discard it conservatively.
+        operation.reusable = result.is_ok() || result.as_ref().is_err_and(refused_by_server);
         if let Err(error) = &result {
             self.log_kind(format!("{error:#}"), LogKind::Error);
         }
@@ -478,10 +782,246 @@ impl FtpBackend {
         let (parent, name) = path.rsplit_once('/').unwrap_or(("", path));
         let parent = if parent.is_empty() { "/" } else { parent };
         Ok(self
-            .list(parent)
+            .read_listing(parent)
             .await?
+            .0
             .iter()
             .any(|entry| entry.name == name))
+    }
+
+    /// Many servers answer a missing file and one they will not open with
+    /// the same plain 550 ("Failed to open file"). Whether the parent lists
+    /// the name tells the two apart.
+    async fn explain_refusal(&mut self, path: &str, error: anyhow::Error) -> anyhow::Error {
+        let unexplained = refused_by_server(&error)
+            && crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::Internal;
+        if !unexplained {
+            return error;
+        }
+        let trimmed = path.trim_end_matches('/');
+        let (parent, name) = trimmed.rsplit_once('/').unwrap_or(("", trimmed));
+        let parent = if parent.is_empty() { "/" } else { parent };
+        let (code, message) = match self.read_listing(parent).await {
+            Ok((entries, _)) if entries.iter().any(|entry| entry.name == name) => {
+                (ErrorCode::PermissionDenied, "The server refused access")
+            }
+            Ok(_) => (ErrorCode::NotFound, "File or folder not found"),
+            Err(_) => return error,
+        };
+        error.context(crate::ipc::CommandError::new(code, message))
+    }
+
+    /// Whether `folder` can be entered, the working directory put back after.
+    /// `None` when that could not be found out.
+    async fn folder_opens(&self, folder: &str) -> Option<bool> {
+        let folder = folder.to_owned();
+        self.with_stream(move |s| {
+            Box::pin(async move {
+                let original = s.pwd().await.context("saving working directory")?;
+                let opens = s.cwd(&folder).await.is_ok();
+                s.cwd(&original)
+                    .await
+                    .context("restoring working directory")?;
+                Ok(opens)
+            })
+        })
+        .await
+        .ok()
+    }
+
+    fn data_channel(&self) -> BackendResult<DataChannel> {
+        self.data.clone().ok_or_else(|| {
+            super::fail(
+                ErrorCode::ConnectionLost,
+                "No active connection to the server",
+            )
+        })
+    }
+
+    /// A folder's entries. For a recursive operation (`resolve_links` off)
+    /// a link stays a file and the folder itself must not be a link, so the
+    /// walk cannot leave the tree it was started on.
+    async fn list_entries(
+        &mut self,
+        path: &str,
+        resolve_links: bool,
+    ) -> BackendResult<Vec<EntryInfo>> {
+        let target = if path.is_empty() {
+            "/".to_string()
+        } else {
+            path.to_string()
+        };
+        if !resolve_links && !self.real_folders.remove(&target) {
+            self.refuse_linked_folder(&target).await?;
+        }
+        let (mut entries, links) = match self.read_listing(&target).await {
+            Ok(listing) => listing,
+            Err(error) => return Err(self.explain_refusal(&target, error).await),
+        };
+        let basename = target
+            .trim_end_matches('/')
+            .rsplit('/')
+            .next()
+            .unwrap_or("");
+        let suspicious = entries.is_empty() || (entries.len() == 1 && entries[0].name == basename);
+        // Where a server lists what it could not open as nothing, or as the
+        // name alone, entering the folder tells whether it is really there.
+        if !self.mlsd
+            && suspicious
+            && target != "/"
+            && self.folder_opens(&target).await == Some(false)
+        {
+            return Err(self
+                .explain_refusal(
+                    &target,
+                    anyhow::Error::new(suppaftp::FtpError::UnexpectedResponse(
+                        suppaftp::types::Response::new(
+                            Status::FileUnavailable,
+                            b"550 The folder cannot be opened".to_vec(),
+                        ),
+                    )),
+                )
+                .await);
+        }
+        if resolve_links && !links.is_empty() {
+            let names = links
+                .iter()
+                .take(MAX_RESOLVED_LINKS)
+                .map(|&index| entries[index].name.clone())
+                .collect();
+            let folders = self.linked_folders(&target, names).await;
+            for (index, is_folder) in links.into_iter().zip(folders) {
+                entries[index].is_directory = is_folder;
+            }
+        }
+        if !resolve_links {
+            // Each of these was listed as a folder, not a link, so the walk
+            // entering it next needs no check of its own.
+            if self.real_folders.len() > MAX_REAL_FOLDERS {
+                self.real_folders.clear();
+            }
+            let parent = target.trim_end_matches('/');
+            self.real_folders.extend(
+                entries
+                    .iter()
+                    .filter(|entry| entry.is_directory)
+                    .map(|entry| format!("{parent}/{}", entry.name)),
+            );
+        }
+        self.log_key(
+            "receivedEntries",
+            serde_json::json!({ "count": entries.len() }),
+            LogKind::Response,
+        );
+        Ok(entries)
+    }
+
+    /// Fails when `target` is a link in its parent's listing. A parent that
+    /// cannot be listed leaves nothing to check against.
+    async fn refuse_linked_folder(&mut self, target: &str) -> BackendResult<()> {
+        let trimmed = target.trim_end_matches('/');
+        let Some((parent, name)) = trimmed.rsplit_once('/') else {
+            return Ok(());
+        };
+        if name.is_empty() {
+            return Ok(());
+        }
+        let parent = if parent.is_empty() { "/" } else { parent };
+        if let Ok((siblings, links)) = self.read_listing(parent).await {
+            anyhow::ensure!(
+                !links.iter().any(|&index| siblings[index].name == name),
+                "Recursive operations cannot traverse an FTP symbolic link: {target}"
+            );
+        }
+        Ok(())
+    }
+
+    /// The parsed listing of `target`, with the indexes of the entries that
+    /// are links.
+    async fn read_listing(&mut self, target: &str) -> BackendResult<(Vec<EntryInfo>, Vec<usize>)> {
+        let target = target.to_owned();
+        let mut listing = self.fetch_listing(&target).await;
+        // A server may announce MLST and still turn MLSD away; LIST answers.
+        if self.mlsd && listing.as_ref().is_err_and(command_refused) {
+            self.mlsd = false;
+            listing = self.fetch_listing(&target).await;
+        }
+        let raw_lines = match listing {
+            Ok(lines) => lines,
+            Err(err) => {
+                self.log_key(
+                    "listFailed",
+                    serde_json::json!({ "error": format!("{err:#}") }),
+                    LogKind::Error,
+                );
+                return Err(err);
+            }
+        };
+        if raw_lines.len() > super::MAX_RAW_DIRECTORY_ENTRIES
+            || raw_lines.iter().map(String::len).sum::<usize>() > super::MAX_DIRECTORY_TEXT_BYTES
+        {
+            anyhow::bail!(crate::ipc::CommandError::new(
+                crate::ipc::ErrorCode::ResourceLimit,
+                "FTP directory listing exceeds the configured limit",
+            ));
+        }
+        let now = Utc::now();
+        let mut entries = Vec::with_capacity(raw_lines.len());
+        let mut links = Vec::new();
+        for line in raw_lines {
+            let parsed = if self.mlsd {
+                list_parse::parse_mlsd_line(&line)
+            } else {
+                list_parse::parse_line(&line, now)
+            };
+            let Some(raw) = parsed else {
+                continue;
+            };
+            if !is_safe_path_segment(&raw.name) {
+                self.log_key(
+                    "skippedUnsafeEntry",
+                    serde_json::json!({ "name": raw.name }),
+                    LogKind::Status,
+                );
+                continue;
+            }
+            if raw.is_symlink {
+                links.push(entries.len());
+            }
+            entries.push(EntryInfo {
+                name: raw.name,
+                is_directory: raw.is_directory,
+                size: raw.size,
+                modified_at: raw.modified_at.map(|d| d.to_rfc3339()),
+                permissions: raw.permissions,
+                owner: raw.owner,
+                group: raw.group,
+            });
+        }
+        Ok((entries, links))
+    }
+
+    /// Which of the links in `folder` lead to a folder: LIST and MLSD only say
+    /// that they are links. Entering one tells, and the working directory is
+    /// put back afterwards. A link that cannot be entered counts as a file.
+    async fn linked_folders(&self, folder: &str, names: Vec<String>) -> Vec<bool> {
+        let count = names.len();
+        let folder = folder.trim_end_matches('/').to_owned();
+        self.with_stream(move |s| {
+            Box::pin(async move {
+                let original = s.pwd().await.context("saving working directory")?;
+                let mut folders = Vec::with_capacity(names.len());
+                for name in names {
+                    folders.push(s.cwd(format!("{folder}/{name}")).await.is_ok());
+                }
+                s.cwd(&original)
+                    .await
+                    .context("restoring working directory")?;
+                Ok(folders)
+            })
+        })
+        .await
+        .unwrap_or_else(|_| vec![false; count])
     }
 
     /// The lines of `target`'s listing, by MLSD where the server offers it.
@@ -489,8 +1029,9 @@ impl FtpBackend {
         let command = if self.mlsd { "MLSD" } else { "LIST" };
         self.log_kind(format!("{command} {target}"), LogKind::Command);
         let target = target.to_owned();
+        let data = self.data_channel()?;
         self.with_stream(move |s| {
-            Box::pin(async move { Self::list_raw(s, command, &target).await })
+            Box::pin(async move { Self::list_raw(s, &data, command, &target).await })
         })
         .await
     }
@@ -508,12 +1049,16 @@ impl FtpBackend {
                 ));
             }
             if !is_dir {
-                let path = path.to_string();
-                return self
-                    .with_stream(move |s| Box::pin(async move { Ok(s.rm(&path).await?) }))
-                    .await;
+                let target = path.to_string();
+                return match self
+                    .with_stream(move |s| Box::pin(async move { Ok(s.rm(&target).await?) }))
+                    .await
+                {
+                    Err(error) => Err(self.explain_refusal(path, error).await),
+                    done => done,
+                };
             }
-            let entries = self.list(path).await?;
+            let entries = self.list_for_recursive(path).await?;
             for entry in entries {
                 let child = format!("{}/{}", path.trim_end_matches('/'), entry.name);
                 self.remove_with_depth(&child, entry.is_directory, depth + 1)
@@ -582,16 +1127,17 @@ impl ProtocolBackend for FtpBackend {
             if let Some(welcome) = stream.get_welcome_msg() {
                 this.log_response_body(welcome.as_bytes());
             }
-            stream.set_mode(if active_mode {
-                FtpMode::Active
-            } else if ipv6 {
-                FtpMode::ExtendedPassive
-            } else {
-                FtpMode::Passive
-            });
-            // PASV addresses frequently name a private interface behind NAT.
-            // Data must go to the control peer, not an arbitrary advertised IP.
-            stream.set_passive_nat_workaround(true);
+            if active_mode {
+                stream.set_mode(suppaftp::types::Mode::Active);
+            }
+            let mut data = DataChannel {
+                host: host.clone(),
+                proxy: proxy.clone(),
+                tls: None,
+                tickets: Arc::new(SessionTickets::new()),
+                active: active_mode,
+                extended: Arc::new(AtomicBool::new(ipv6)),
+            };
             if secure {
                 this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
                 if allow_invalid_cert {
@@ -600,35 +1146,23 @@ impl ProtocolBackend for FtpBackend {
                         LogKind::Error,
                     );
                 }
-                let tls_config =
+                let mut tls_config =
                     Self::build_tls_config(allow_invalid_cert, ca_cert_path.as_deref())?;
+                tls_config.resumption = rustls::client::Resumption::store(data.tickets.clone());
+                let tls_config = Arc::new(tls_config);
+                let server_name = ServerName::try_from(host.clone())
+                    .context("TLS handshake failed: invalid server name")?;
+                data.tls = Some((
+                    tokio_rustls::TlsConnector::from(tls_config.clone()),
+                    server_name,
+                ));
                 let connector: AsyncRustlsConnector =
-                    tokio_rustls::TlsConnector::from(Arc::new(tls_config)).into();
+                    tokio_rustls::TlsConnector::from(tls_config).into();
                 stream = stream
                     .into_secure(connector, &host)
                     .await
                     .context("TLS handshake failed")?;
                 this.log_key("tlsEstablished", serde_json::json!({}), LogKind::Response);
-            }
-            if let Some(proxy) = proxy.clone() {
-                let host_for_data = host.clone();
-                stream = stream.passive_stream_builder(move |addr| {
-                    let proxy = proxy.clone();
-                    let host_for_data = host_for_data.clone();
-                    Box::pin(async move {
-                        crate::protocol::transport::connect(
-                            &host_for_data,
-                            addr.port(),
-                            Some(&proxy),
-                        )
-                        .await
-                        .map_err(|e| {
-                            suppaftp::FtpError::ConnectionError(std::io::Error::other(
-                                e.to_string(),
-                            ))
-                        })
-                    })
-                });
             }
             let user_cmd = format!("USER {user}");
             let user_resp = this
@@ -663,7 +1197,7 @@ impl ProtocolBackend for FtpBackend {
                 .transfer_type(FtpFileType::Binary)
                 .await
                 .context("setting binary transfer type failed")?;
-            Ok::<_, anyhow::Error>((stream, feat))
+            Ok::<_, anyhow::Error>((stream, feat, data))
         };
 
         let outcome = if timeout_ms > 0 {
@@ -677,7 +1211,7 @@ impl ProtocolBackend for FtpBackend {
         } else {
             connect_fut.await
         };
-        let (stream, feat) = match outcome {
+        let (stream, feat, data) = match outcome {
             Ok(connected) => connected,
             Err(err) => {
                 self.log_key(
@@ -691,6 +1225,7 @@ impl ProtocolBackend for FtpBackend {
 
         self.log_key("connected", serde_json::json!({}), LogKind::Response);
         self.mlsd = feat_offers_mlsd(&feat);
+        self.data = Some(data);
         *self.stream.lock().await = Some(stream);
         self.connected.store(true, Ordering::SeqCst);
         self.keep_alive_handle = Some(Self::spawn_keep_alive(
@@ -707,6 +1242,7 @@ impl ProtocolBackend for FtpBackend {
             handle.abort();
         }
         self.connected.store(false, Ordering::SeqCst);
+        self.data = None;
         let mut guard = self.stream.lock().await;
         if let Some(mut stream) = guard.take() {
             let _ = tokio::time::timeout(GRACEFUL_IO_TIMEOUT, stream.quit()).await;
@@ -727,87 +1263,45 @@ impl ProtocolBackend for FtpBackend {
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
-        let target = if path.is_empty() {
-            "/".to_string()
-        } else {
-            path.to_string()
-        };
-        let mut listing = self.fetch_listing(&target).await;
-        // A server may announce MLST and still turn MLSD away; LIST answers.
-        if self.mlsd && listing.as_ref().is_err_and(command_refused) {
-            self.mlsd = false;
-            listing = self.fetch_listing(&target).await;
-        }
-        let raw_lines = match listing {
-            Ok(lines) => lines,
-            Err(err) => {
-                self.log_key(
-                    "listFailed",
-                    serde_json::json!({ "error": format!("{err:#}") }),
-                    LogKind::Error,
-                );
-                return Err(err);
-            }
-        };
-        if raw_lines.len() > super::MAX_DIRECTORY_ENTRIES
-            || raw_lines.iter().map(String::len).sum::<usize>() > super::MAX_DIRECTORY_TEXT_BYTES
-        {
-            anyhow::bail!(crate::ipc::CommandError::new(
-                crate::ipc::ErrorCode::ResourceLimit,
-                "FTP directory listing exceeds the configured limit",
-            ));
-        }
-        let now = Utc::now();
-        let mut entries = Vec::with_capacity(raw_lines.len());
-        for line in raw_lines {
-            let parsed = if self.mlsd {
-                list_parse::parse_mlsd_line(&line)
-            } else {
-                list_parse::parse_line(&line, now)
-            };
-            let Some(raw) = parsed else {
-                continue;
-            };
-            if !is_safe_path_segment(&raw.name) {
-                self.log_key(
-                    "skippedUnsafeEntry",
-                    serde_json::json!({ "name": raw.name }),
-                    LogKind::Status,
-                );
-                continue;
-            }
-            entries.push(EntryInfo {
-                name: raw.name,
-                is_directory: raw.is_directory,
-                size: raw.size,
-                modified_at: raw.modified_at.map(|d| d.to_rfc3339()),
-                permissions: raw.permissions,
-                owner: raw.owner,
-                group: raw.group,
-            });
-        }
-        self.log_key(
-            "receivedEntries",
-            serde_json::json!({ "count": entries.len() }),
-            LogKind::Response,
-        );
-        Ok(entries)
+        self.list_entries(path, true).await
+    }
+
+    /// A link stays a file here, so a recursive delete removes the link
+    /// instead of emptying the folder it leads to.
+    async fn list_for_recursive(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
+        self.list_entries(path, false).await
     }
 
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
         self.log_kind(format!("MKD {path}"), LogKind::Command);
-        let path = path.to_string();
-        self.with_stream(move |s| Box::pin(async move { Self::ensure_dir(s, &path).await }))
-            .await
+        let target = path.to_string();
+        let made = self
+            .with_stream(move |s| Box::pin(async move { Self::ensure_dir(s, &target).await }))
+            .await;
+        // An existing folder already counts as made, so a plain 550 left
+        // over is the server refusing to create one.
+        match made {
+            Err(error)
+                if refused_by_server(&error)
+                    && crate::ipc::CommandError::from_anyhow(&error).code
+                        == ErrorCode::Internal =>
+            {
+                Err(error.context(crate::ipc::CommandError::new(
+                    ErrorCode::PermissionDenied,
+                    format!("The server refused to create {path}"),
+                )))
+            }
+            made => made,
+        }
     }
 
     async fn create_file(&mut self, path: &str) -> BackendResult<()> {
         let path = path.to_string();
+        let data = self.data_channel()?;
         self.with_stream(move |s| {
             Box::pin(async move {
-                let mut empty = tokio::io::empty();
-                s.put_file(&path, &mut empty).await?;
-                Ok(())
+                let stream = data.open(s, format!("STOR {path}"), STORE_OPEN).await?;
+                UploadData(Some(stream)).finish(s).await
             })
         })
         .await
@@ -879,6 +1373,7 @@ impl ProtocolBackend for FtpBackend {
 
     async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
         let path = path.to_string();
+        let data = self.data_channel()?;
         self.with_stream(move |s| {
             Box::pin(async move {
                 // REST only positions the next RETR, so the transfer runs to end
@@ -888,7 +1383,7 @@ impl ProtocolBackend for FtpBackend {
                 if offset > 0 {
                     s.resume_transfer(offset as usize).await?;
                 }
-                let mut data_stream = s.retr_as_stream(&path).await?;
+                let mut data_stream = data.open(s, format!("RETR {path}"), RETRIEVE_OPEN).await?;
                 let mut bytes: Vec<u8> = Vec::with_capacity(len);
                 let read: BackendResult<()> = async {
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
@@ -978,6 +1473,7 @@ impl ProtocolBackend for FtpBackend {
         let remote_path_for_op = remote_path.clone();
         let local_path = local_path.to_path_buf();
         let progress_for_op = progress.clone();
+        let data = self.data_channel()?;
         let result = self
             .with_stream(move |s| {
                 Box::pin(async move {
@@ -989,11 +1485,15 @@ impl ProtocolBackend for FtpBackend {
                             .await
                             .context("seeking local file")?;
                     }
-                    let mut data_stream = UploadData(Some(if resume && remote_size > 0 {
-                        s.append_with_stream(&remote_path_for_op).await?
+                    let command = if resume && remote_size > 0 {
+                        "APPE"
                     } else {
-                        s.put_with_stream(&remote_path_for_op).await?
-                    }));
+                        "STOR"
+                    };
+                    let mut data_stream = UploadData(Some(
+                        data.open(s, format!("{command} {remote_path_for_op}"), STORE_OPEN)
+                            .await?,
+                    ));
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
                     let mut transferred = remote_size;
                     loop {
@@ -1005,13 +1505,16 @@ impl ProtocolBackend for FtpBackend {
                         if n == 0 {
                             break;
                         }
-                        tokio::time::timeout(
+                        let written = tokio::time::timeout(
                             TRANSFER_STALL_TIMEOUT,
                             data_stream.stream().write_all(&buf[..n]),
                         )
                         .await
-                        .context("stalled while writing to server")?
-                        .context("writing to server")?;
+                        .context("stalled while writing to server")
+                        .and_then(|written| written.context("writing to server"));
+                        if let Err(error) = written {
+                            return Err(upload_refusal(s, data_stream, error).await);
+                        }
                         transferred += n as u64;
                         crate::transfer::rate_limiter::shared()
                             .acquire(n as u64)
@@ -1100,6 +1603,7 @@ impl ProtocolBackend for FtpBackend {
         let local_path_owned = local_path.to_path_buf();
         let partial_path_owned = partial_path.clone();
         let progress_for_op = progress.clone();
+        let data = self.data_channel()?;
         let result = self
             .with_stream(move |s| {
                 Box::pin(async move {
@@ -1114,7 +1618,9 @@ impl ProtocolBackend for FtpBackend {
                             .await
                             .context("seeking local file")?;
                     }
-                    let mut data_stream = s.retr_as_stream(&remote_path_owned).await?;
+                    let mut data_stream = data
+                        .open(s, format!("RETR {remote_path_owned}"), RETRIEVE_OPEN)
+                        .await?;
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
                     let mut transferred = start_at;
                     loop {
@@ -1163,6 +1669,10 @@ impl ProtocolBackend for FtpBackend {
                 })
             })
             .await;
+        let result = match result {
+            Err(error) => Err(self.explain_refusal(remote_path, error).await),
+            done => done,
+        };
 
         match &result {
             Ok(()) => progress(ProgressInfo::Done),
@@ -1179,6 +1689,7 @@ impl ProtocolBackend for FtpBackend {
         remote_path: &str,
         writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
     ) -> BackendResult<()> {
+        let data = self.data_channel()?;
         let _busy = BusyGuard::enter(&self.busy);
         let mut operation = StreamOperation {
             slot: self.stream.lock().await,
@@ -1191,7 +1702,17 @@ impl ProtocolBackend for FtpBackend {
                 "No active connection to the server",
             )
         })?;
-        let mut data_stream = s.retr_as_stream(remote_path).await?;
+        let mut data_stream = match data
+            .open(s, format!("RETR {remote_path}"), RETRIEVE_OPEN)
+            .await
+        {
+            Ok(stream) => stream,
+            Err(error) => {
+                operation.reusable = refused_by_server(&error);
+                drop(operation);
+                return Err(self.explain_refusal(remote_path, error).await);
+            }
+        };
         let mut buf = vec![0u8; COPY_CHUNK_SIZE];
         loop {
             let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
@@ -1225,6 +1746,7 @@ impl ProtocolBackend for FtpBackend {
         reader: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
         remote_path: &str,
     ) -> BackendResult<()> {
+        let data = self.data_channel()?;
         let _busy = BusyGuard::enter(&self.busy);
         let mut operation = StreamOperation {
             slot: self.stream.lock().await,
@@ -1237,7 +1759,16 @@ impl ProtocolBackend for FtpBackend {
                 "No active connection to the server",
             )
         })?;
-        let mut data_stream = UploadData(Some(s.put_with_stream(remote_path).await?));
+        let mut data_stream = match data
+            .open(s, format!("STOR {remote_path}"), STORE_OPEN)
+            .await
+        {
+            Ok(stream) => UploadData(Some(stream)),
+            Err(error) => {
+                operation.reusable = refused_by_server(&error);
+                return Err(error);
+            }
+        };
         let mut buf = vec![0u8; COPY_CHUNK_SIZE];
         loop {
             let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
@@ -1248,13 +1779,18 @@ impl ProtocolBackend for FtpBackend {
             if n == 0 {
                 break;
             }
-            tokio::time::timeout(
+            let written = tokio::time::timeout(
                 TRANSFER_STALL_TIMEOUT,
                 data_stream.stream().write_all(&buf[..n]),
             )
             .await
-            .context("stalled while writing to server")?
-            .context("writing to server")?;
+            .context("stalled while writing to server")
+            .and_then(|written| written.context("writing to server"));
+            if let Err(error) = written {
+                let error = upload_refusal(s, data_stream, error).await;
+                operation.reusable = refused_by_server(&error);
+                return Err(error);
+            }
             crate::transfer::rate_limiter::shared()
                 .acquire(n as u64)
                 .await;

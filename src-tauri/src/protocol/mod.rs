@@ -2,7 +2,7 @@ mod backend_logger;
 mod failure;
 pub use failure::fail;
 mod limits;
-pub use limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES};
+pub use limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES, MAX_RAW_DIRECTORY_ENTRIES};
 pub mod config;
 pub mod ftp;
 pub mod known_hosts;

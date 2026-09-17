@@ -20,6 +20,8 @@ const ERROR_CODE_KEYS = {
   connectionLost: 'errors.connectionReset',
   invalidInput: 'errors.invalidInput',
   resourceLimit: 'errors.invalidInput',
+  storageFull: 'errors.diskFull',
+  keyUnreadable: 'errors.keyReadFailed',
   busy: 'errors.locationBusy',
   vaultLocked: 'settings.security.unlockRequired',
   alreadyExists: 'errors.fileOrFolderExists',

@@ -115,6 +115,8 @@ test('friendlyError localizes every structured command error code', () => {
     connectionLost: 'The connection to the server was unexpectedly closed.',
     invalidInput: 'The provided value is invalid.',
     resourceLimit: 'The provided value is invalid.',
+    storageFull: 'Not enough disk space.',
+    keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
     vaultLocked: 'Unlock protected storage',
     alreadyExists: 'A file or folder with that name already exists.',

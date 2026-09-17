@@ -9,7 +9,10 @@ use reqwest::StatusCode;
 
 pub(super) fn status_error(status: u16, operation: &str) -> anyhow::Error {
     let code = match status {
-        401 | 407 => ErrorCode::AuthFailed,
+        401 => ErrorCode::AuthFailed,
+        407 => ErrorCode::ProxyFailed,
+        413 => ErrorCode::ResourceLimit,
+        507 => ErrorCode::StorageFull,
         403 => ErrorCode::PermissionDenied,
         404 => ErrorCode::NotFound,
         408 | 504 => ErrorCode::TimedOut,
@@ -170,10 +173,24 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
             }
             Ok(Event::Text(event)) => {
                 if current_tag.is_some() {
-                    let decoded = event.xml10_content();
-                    let unescaped = quick_xml::escape::unescape(&decoded)
-                        .context("unescaping PROPFIND text")?;
-                    text.push_str(&unescaped);
+                    text.push_str(&event.xml10_content());
+                }
+            }
+            // The reader hands `&amp;` and `&#38;` over separately from the
+            // text around them; dropping them loses characters from names.
+            Ok(Event::GeneralRef(reference)) => {
+                if current_tag.is_some() {
+                    if let Some(character) = reference
+                        .resolve_char_ref()
+                        .context("resolving PROPFIND character reference")?
+                    {
+                        text.push(character);
+                    } else {
+                        let entity = reference.xml10_content();
+                        let resolved = quick_xml::escape::resolve_predefined_entity(&entity)
+                            .with_context(|| format!("Unknown XML entity &{entity};"))?;
+                        text.push_str(resolved);
+                    }
                 }
             }
             Ok(Event::End(event)) => {
@@ -230,7 +247,7 @@ pub(super) fn parse_propfind(xml: &str) -> BackendResult<Vec<RawEntry>> {
                             return Err(status_error(response_status.unwrap(), "response"));
                         }
                         if let Some(entry) = current.take() {
-                            if entries.len() >= crate::protocol::MAX_DIRECTORY_ENTRIES {
+                            if entries.len() >= crate::protocol::MAX_RAW_DIRECTORY_ENTRIES {
                                 return Err(fail(
                                     ErrorCode::ResourceLimit,
                                     "WebDAV directory contains too many entries",

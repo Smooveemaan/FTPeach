@@ -20,6 +20,8 @@ export type CommandErrorCode =
   | 'connectionLost'
   | 'invalidInput'
   | 'resourceLimit'
+  | 'storageFull'
+  | 'keyUnreadable'
   | 'busy'
   | 'vaultLocked'
   | 'alreadyExists'
@@ -153,6 +155,8 @@ export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
       [
         'invalidInput',
         'resourceLimit',
+        'storageFull',
+        'keyUnreadable',
         'busy',
         'internal',
         'cleanupIncomplete',

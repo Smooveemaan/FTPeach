@@ -27,6 +27,53 @@ const PATH_SEGMENT: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b'.')
     .remove(b'~');
 
+/// A redirect the client did not follow: it leads to another origin, where
+/// the credentials must not be sent without the user choosing that address.
+#[derive(Debug)]
+struct CrossOriginRedirect(String);
+
+impl std::fmt::Display for CrossOriginRedirect {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "the server redirects to {}", self.0)
+    }
+}
+
+impl std::error::Error for CrossOriginRedirect {}
+
+/// Follows redirects within the origin a request was sent to, where its
+/// credentials already go, and stops at any other.
+fn same_origin_redirects() -> reqwest::redirect::Policy {
+    reqwest::redirect::Policy::custom(|attempt| {
+        let Some(first) = attempt.previous().first() else {
+            return attempt.follow();
+        };
+        let same = attempt.url().scheme() == first.scheme()
+            && attempt.url().host_str() == first.host_str()
+            && attempt.url().port_or_known_default() == first.port_or_known_default();
+        if !same {
+            attempt.stop()
+        } else if attempt.previous().len() >= 10 {
+            attempt.error("too many redirects")
+        } else {
+            attempt.follow()
+        }
+    })
+}
+
+/// The address to use instead of `base` when `location` only moves the same
+/// host and path from HTTP to HTTPS.
+fn https_upgrade(base: &str, location: &str) -> Option<String> {
+    let from = reqwest::Url::parse(&format!("{}/", base.trim_end_matches('/'))).ok()?;
+    let to = from.join(location).ok()?;
+    let same_path = from.path().trim_end_matches('/') == to.path().trim_end_matches('/');
+    (from.scheme() == "http"
+        && to.scheme() == "https"
+        && from.host_str() == to.host_str()
+        && same_path
+        && to.query().is_none())
+    .then(|| to.as_str().trim_end_matches('/').to_owned())
+}
+
 const PROPFIND_BODY: &str = r#"<?xml version="1.0"?><D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/><D:getcontentlength/><D:getlastmodified/></D:prop></D:propfind>"#;
 
 struct UploadBody {
@@ -98,8 +145,12 @@ impl WebDavBackend {
         use super::transport::ProxyKind;
         use zeroize::Zeroize;
         let scheme = match cfg.kind {
+            // The proxy resolves the server's name, as it does for FTP and
+            // SFTP: a name only the proxy's network knows still connects.
+            // Not over SOCKS4: hyper-util writes the SOCKS4a request with an
+            // extra NUL before the name, which proxies read as an empty name.
             ProxyKind::Socks4 => "socks4",
-            ProxyKind::Socks5 => "socks5",
+            ProxyKind::Socks5 => "socks5h",
             ProxyKind::Http => "http",
         };
         let mut userinfo = match (&cfg.username, &cfg.password) {
@@ -118,8 +169,21 @@ impl WebDavBackend {
         result
     }
 
+    /// A collection's URL ends in a slash (RFC 4918 section 5.2). Most servers
+    /// accept one without it, but nginx answers 409 to MKCOL or DELETE then.
+    fn collection_url(&self, path: &str) -> String {
+        let mut url = self.build_url(path);
+        if !url.ends_with('/') {
+            url.push('/');
+        }
+        url
+    }
+
     fn request(&self, method: Method, path: &str) -> BackendResult<reqwest::RequestBuilder> {
-        let url = self.build_url(path);
+        self.request_url(method, self.build_url(path))
+    }
+
+    fn request_url(&self, method: Method, url: String) -> BackendResult<reqwest::RequestBuilder> {
         let client = if method == Method::PUT {
             self.upload_client.as_ref().unwrap_or(self.client()?)
         } else {
@@ -149,6 +213,20 @@ impl WebDavBackend {
         }
         let mut res = req.send().await.context("PROPFIND request failed")?;
         let status = res.status();
+        if status.is_redirection() {
+            let location = res
+                .headers()
+                .get(reqwest::header::LOCATION)
+                .and_then(|value| value.to_str().ok())
+                .unwrap_or_default()
+                .to_owned();
+            return Err(anyhow::Error::new(CrossOriginRedirect(location)).context(
+                crate::ipc::CommandError::new(
+                    ErrorCode::InvalidInput,
+                    "The WebDAV server redirects to another address",
+                ),
+            ));
+        }
         if status == StatusCode::NOT_FOUND {
             return Err(super::fail(
                 ErrorCode::NotFound,
@@ -382,7 +460,7 @@ impl ProtocolBackend for WebDavBackend {
 
         let idle = Duration::from_millis(if timeout_ms == 0 { 60_000 } else { timeout_ms });
         let build_client = |read_timeout: bool| -> BackendResult<Client> {
-            let mut builder = Client::builder();
+            let mut builder = Client::builder().redirect(same_origin_redirects());
             if read_timeout {
                 builder = builder.read_timeout(idle);
             }
@@ -413,14 +491,32 @@ impl ProtocolBackend for WebDavBackend {
         let upload_client = build_client(false)?;
 
         self.log_kind("PROPFIND / (Depth: 0)", LogKind::Command);
+        let mut webdav_url = webdav_url;
         let probe = async {
-            let xml =
-                Self::propfind(&client, format!("{webdav_url}/"), 0, &user, &password).await?;
-            anyhow::ensure!(
-                !parse_propfind(&xml)?.is_empty(),
-                "WebDAV server returned no resource metadata"
-            );
-            Ok::<(), anyhow::Error>(())
+            let mut upgraded = false;
+            loop {
+                let reply =
+                    Self::propfind(&client, format!("{webdav_url}/"), 0, &user, &password).await;
+                // An http:// address the server moves to https:// on the same
+                // host is taken as that; the user already chose the host.
+                let upgrade = reply.as_ref().err().and_then(|error| {
+                    error
+                        .chain()
+                        .find_map(|cause| cause.downcast_ref::<CrossOriginRedirect>())
+                        .and_then(|redirect| https_upgrade(&webdav_url, &redirect.0))
+                });
+                if let Some(address) = upgrade.filter(|_| !upgraded) {
+                    self.log_kind(format!("Redirected to {address}"), LogKind::Status);
+                    webdav_url = address;
+                    upgraded = true;
+                    continue;
+                }
+                anyhow::ensure!(
+                    !parse_propfind(&reply?)?.is_empty(),
+                    "WebDAV server returned no resource metadata"
+                );
+                return Ok::<(), anyhow::Error>(());
+            }
         };
         let outcome = if timeout_ms > 0 {
             match tokio::time::timeout(Duration::from_millis(timeout_ms), probe).await {
@@ -554,7 +650,10 @@ impl ProtocolBackend for WebDavBackend {
             current.push_str(segment);
             self.log_kind(format!("MKCOL {current}"), LogKind::Command);
             let res = self
-                .request(Method::from_bytes(b"MKCOL").unwrap(), &current)?
+                .request_url(
+                    Method::from_bytes(b"MKCOL").unwrap(),
+                    self.collection_url(&current),
+                )?
                 .send()
                 .await
                 .context("MKCOL request failed")?;
@@ -609,10 +708,15 @@ impl ProtocolBackend for WebDavBackend {
         Ok(())
     }
 
-    async fn remove(&mut self, path: &str, _is_dir: bool) -> BackendResult<()> {
+    async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {
         self.log_kind(format!("DELETE {path}"), LogKind::Command);
+        let url = if is_dir {
+            self.collection_url(path)
+        } else {
+            self.build_url(path)
+        };
         let res = self
-            .request(Method::DELETE, path)?
+            .request_url(Method::DELETE, url)?
             .send()
             .await
             .context("DELETE request failed")?;

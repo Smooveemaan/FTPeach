@@ -210,6 +210,8 @@ mod transfer_tests {
         /// The paths on the server, for tests that follow renames and removals.
         /// Without it, every path answers as an existing file.
         names: Option<std::collections::BTreeSet<String>>,
+        /// A plain rename replaces an existing target, as SFTPGo does.
+        rename_replaces: bool,
         /// Sources whose rename the server refuses.
         refused_sources: Vec<String>,
         removed: Vec<String>,
@@ -228,7 +230,17 @@ mod transfer_tests {
         fn unimplemented(&self) -> StatusCode {
             StatusCode::OpUnsupported
         }
-        async fn lstat(&mut self, id: u32, _: String) -> Result<Attrs, StatusCode> {
+        async fn lstat(&mut self, id: u32, path: String) -> Result<Attrs, StatusCode> {
+            if self
+                .0
+                .lock()
+                .unwrap()
+                .names
+                .as_ref()
+                .is_some_and(|names| !names.contains(&path))
+            {
+                return Err(StatusCode::NoSuchFile);
+            }
             Ok(Attrs {
                 id,
                 attrs: FileAttributes {
@@ -348,7 +360,7 @@ mod transfer_tests {
                 Ok(ok(id))
             }
         }
-        /// As OpenSSH does: a plain rename never replaces. Without `names`,
+        /// As OpenSSH does, unless `rename_replaces`: a plain rename never replaces. Without `names`,
         /// every target here exists.
         async fn rename(
             &mut self,
@@ -358,10 +370,12 @@ mod transfer_tests {
         ) -> Result<Status, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             let refused = disk.refused_sources.contains(&old);
+            let replaces = disk.rename_replaces;
             let Some(names) = disk.names.as_mut() else {
                 return Err(StatusCode::Failure);
             };
-            if refused || names.contains(&new) || !names.remove(&old) {
+            let taken = names.contains(&new) && !replaces;
+            if refused || taken || !names.remove(&old) {
                 return Err(StatusCode::Failure);
             }
             names.insert(new.clone());
@@ -480,6 +494,32 @@ mod transfer_tests {
             ]
         );
         assert!(disk.removed.is_empty());
+    }
+
+    #[tokio::test]
+    async fn no_replace_rename_keeps_a_target_the_server_would_overwrite() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            names: names(&["/staging", "/file"]),
+            rename_replaces: true,
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+
+        let error = backend
+            .rename_no_replace("/staging", "/file")
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        assert!(disk.lock().unwrap().renames.is_empty());
+
+        backend
+            .rename_no_replace("/staging", "/free")
+            .await
+            .unwrap();
+        assert_eq!(disk.lock().unwrap().names, names(&["/file", "/free"]));
     }
 
     async fn backend(disk: Arc<StdMutex<Disk>>) -> SftpBackend {

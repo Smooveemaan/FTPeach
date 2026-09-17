@@ -42,6 +42,48 @@ fn posix_rename_request(old_path: &str, new_path: &str) -> Vec<u8> {
     data
 }
 
+/// Answers keyboard-interactive prompts with the password: every hidden
+/// prompt gets it, as a password login would. A server still asking after a
+/// few rounds wants more than a password, which counts as a refusal.
+async fn keyboard_interactive<H: client::Handler>(
+    session: &mut client::Handle<H>,
+    user: &str,
+    password: &str,
+) -> Result<bool, russh::Error> {
+    let mut reply = session
+        .authenticate_keyboard_interactive_start(user, None)
+        .await?;
+    for _ in 0..4 {
+        let client::KeyboardInteractiveAuthResponse::InfoRequest { prompts, .. } = reply else {
+            break;
+        };
+        let answers = prompts
+            .iter()
+            .map(|prompt| {
+                if prompt.echo {
+                    String::new()
+                } else {
+                    password.to_owned()
+                }
+            })
+            .collect();
+        reply = session
+            .authenticate_keyboard_interactive_respond(answers)
+            .await?;
+    }
+    Ok(matches!(
+        reply,
+        client::KeyboardInteractiveAuthResponse::Success
+    ))
+}
+
+fn already_exists(path: &str) -> anyhow::Error {
+    super::fail(
+        ErrorCode::AlreadyExists,
+        format!("{path} already exists on the server; it was not replaced"),
+    )
+}
+
 /// Read ahead in bounded batches, restoring offset order before writing locally.
 /// Each request fills its own interval: a short DATA packet is not EOF.
 async fn read_pipelined(
@@ -405,8 +447,10 @@ impl SftpBackend {
         let raw = self.sftp()?;
         if recursive {
             let attrs = raw.lstat(target.clone()).await?.attrs;
+            // ProFTPD answers LSTAT for a link with what it leads to; only
+            // READLINK gives the link away there.
             anyhow::ensure!(
-                !attrs.is_symlink(),
+                !attrs.is_symlink() && raw.readlink(target.clone()).await.is_err(),
                 "Recursive operations cannot traverse an SFTP symbolic link: {target}"
             );
         }
@@ -437,7 +481,7 @@ impl SftpBackend {
                             .saturating_add(file.longname.len());
                     }
                     raw_files.extend(name.files);
-                    if raw_files.len() > super::MAX_DIRECTORY_ENTRIES
+                    if raw_files.len() > super::MAX_RAW_DIRECTORY_ENTRIES
                         || text_bytes > super::MAX_DIRECTORY_TEXT_BYTES
                     {
                         let _ = raw.close(handle.as_str()).await;
@@ -592,12 +636,37 @@ impl ProtocolBackend for SftpBackend {
             if use_key_auth {
                 let key_path = key_path
                     .ok_or_else(|| super::fail(ErrorCode::InvalidInput, "No key file specified"))?;
-                let key = load_secret_key(&key_path, key_passphrase.as_deref())
-                    .with_context(|| format!("failed to read key file \"{key_path}\""))?;
+                let key =
+                    load_secret_key(&key_path, key_passphrase.as_deref()).map_err(|error| {
+                        let io = matches!(error, russh::keys::Error::IO(_));
+                        let error = anyhow::Error::from(error)
+                            .context(format!("failed to read key file \"{key_path}\""));
+                        // A missing or locked file keeps its I/O classification.
+                        if io {
+                            error
+                        } else {
+                            error.context(crate::ipc::CommandError::new(
+                                ErrorCode::KeyUnreadable,
+                                "The key file could not be decrypted or parsed",
+                            ))
+                        }
+                    })?;
+                // An RSA key signs with SHA-1 (ssh-rsa) unless told otherwise,
+                // and OpenSSH 8.8+ refuses that. A server that lists no
+                // server-sig-algs predates rsa-sha2, so SHA-1 stays for it.
+                let hash = if key.algorithm().is_rsa() {
+                    session
+                        .best_supported_rsa_hash()
+                        .await
+                        .context("SSH handshake failed")?
+                        .flatten()
+                } else {
+                    None
+                };
                 let auth = session
                     .authenticate_publickey(
                         user.as_str(),
-                        PrivateKeyWithHashAlg::new(Arc::new(key), None),
+                        PrivateKeyWithHashAlg::new(Arc::new(key), hash),
                     )
                     .await
                     .context("key auth failed")?;
@@ -612,7 +681,20 @@ impl ProtocolBackend for SftpBackend {
                     .authenticate_password(user.as_str(), password.as_str())
                     .await
                     .context("password auth failed")?;
-                if !auth.success() {
+                let accepted = match auth {
+                    russh::client::AuthResult::Success => true,
+                    // Servers that hand passwords to PAM often take them
+                    // only this way.
+                    russh::client::AuthResult::Failure {
+                        remaining_methods, ..
+                    } if remaining_methods.contains(&russh::MethodKind::KeyboardInteractive) => {
+                        keyboard_interactive(&mut session, &user, &password)
+                            .await
+                            .context("keyboard-interactive auth failed")?
+                    }
+                    russh::client::AuthResult::Failure { .. } => false,
+                };
+                if !accepted {
                     return Err(super::fail(
                         ErrorCode::AuthFailed,
                         "Invalid username or password",
@@ -659,7 +741,12 @@ impl ProtocolBackend for SftpBackend {
                         serde_json::json!({ "error": format!("{m}") }),
                         LogKind::Error,
                     );
-                    return Err(m.into());
+                    // The mismatch itself stays in the chain for the prompt
+                    // that offers to trust the new key.
+                    return Err(anyhow::Error::new(m).context(crate::ipc::CommandError::new(
+                        ErrorCode::HostKeyMismatch,
+                        "The server host key has changed",
+                    )));
                 }
                 self.log_key(
                     "connectFailed",
@@ -798,7 +885,12 @@ impl ProtocolBackend for SftpBackend {
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
         // SSH_FXP_RENAME (v3), without the posix-rename extension, fails when
         // newpath exists. Do not substitute the overwriting POSIX extension.
+        // Not every server keeps to that (SFTPGo replaces the target), so an
+        // existing target is refused before the rename is sent.
         let raw = self.sftp()?;
+        if raw.lstat(new_path.to_string()).await.is_ok() {
+            return Err(already_exists(new_path));
+        }
         let Err(error) = raw.rename(old_path.to_string(), new_path.to_string()).await else {
             return Ok(());
         };
@@ -807,10 +899,7 @@ impl ProtocolBackend for SftpBackend {
             SftpClientError::Status(status) if status.status_code == StatusCode::Failure
         );
         if refused && raw.stat(new_path.to_string()).await.is_ok() {
-            return Err(super::fail(
-                ErrorCode::AlreadyExists,
-                format!("{new_path} already exists on the server; it was not replaced"),
-            ));
+            return Err(already_exists(new_path));
         }
         Err(error.into())
     }

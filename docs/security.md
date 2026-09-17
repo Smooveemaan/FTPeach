@@ -10,7 +10,7 @@ The security of Windows and the user's account, vulnerabilities in WebView2 or a
 
 ## Protected data
 
-- saved passwords and SSH-key passphrases;
+- saved site passwords, SSH-key passphrases, and the proxy password;
 - private SSH keys and their paths;
 - local and remote file contents;
 - saved sites, settings, and SFTP host-key fingerprints;
@@ -53,23 +53,34 @@ A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates` un
 
 **Open with** downloads an untrusted remote file to a temporary directory and passes it to the Windows-registered application. FTPeach removes its temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server.
 
+## Secret storage modes
+
+Saved secrets are a site's password, an SSH-key passphrase, and the global proxy password. The user chooses one of two modes, and every saved secret follows it:
+
+- **System protection** (the default) encrypts each secret with DPAPI for the signed-in Windows account and keeps the ciphertext in `sites.json` or `settings.json`. No master password is involved, so anyone acting as that Windows user can read the secrets.
+- **Enhanced protection** keeps them in the vault, a Stronghold snapshot encrypted under a master password. They cannot be read until the vault is unlocked.
+
+In both modes the renderer never receives a secret on ordinary IPC: it supplies a `siteId`, and the Rust backend resolves the password and the proxy password itself.
+
+Switching modes moves every saved secret. Turning on enhanced protection moves DPAPI and plaintext values into the vault. A value still left in DPAPI, for example after an interrupted migration, moves at the next unlock; saving a new secret while the vault is locked is refused rather than written to DPAPI. Turning it off copies every vault secret back to DPAPI before the vault is removed, so a failure leaves the vault intact.
+
 ## Stronghold and the master password
 
-Saved site passwords and private SSH-key passphrases are stored in `%APPDATA%\FTPeach\vault.hold`. After migration, `sites.json` contains only non-secret parameters and `hasPassword`/`hasKeyPassphrase` flags. The renderer supplies only `siteId`; the Rust backend resolves the secret.
+Under enhanced protection, saved site passwords, private SSH-key passphrases, and the proxy password are stored in `%APPDATA%\FTPeach\vault.hold`. After migration, `sites.json` contains only non-secret parameters and `hasPassword`/`hasKeyPassphrase` flags, and `settings.json` holds only a `hasProxyPassword` flag. Saving or removing a secret, connecting with one, and revealing one all require an unlocked vault; a locked vault opens the unlock dialog, including for an unsaved connection that goes through a password-protected proxy.
 
 Setup creates a random 32-byte data key. Stronghold encrypts the snapshot with this key, while Argon2id derives the key that wraps it from the master password. `vault.json` stores the format version, unique salt, and KDF parameters, but never the master password or data key. Current production parameters are Argon2id v1, 64 MiB of memory, three passes, and one lane. Changing the master password rewraps the data key without re-encrypting every secret.
 
-All KDF and protected vault transitions share one process-wide semaphore. Failed authentication uses exponential backoff from 500 ms to 30 seconds and is limited to eight failures in a rolling five-minute window. Successful authentication or a completed safe reset clears the failure state. Authentication failures use one generic response.
+All KDF and protected vault transitions share one process-wide semaphore. Failed authentication uses exponential backoff from 500 ms to 30 seconds and is limited to eight failures in a rolling five-minute window. Successful authentication or a completed safe reset clears the failure state, and failures older than the window stop counting. Incorrect credentials and temporary throttling return the same generic response.
 
 Manual or automatic locking closes the Stronghold client and zeroizes the in-memory data key. The default idle timeout is 15 minutes and can be disabled. Existing network connections remain active because a protocol backend may already have obtained a secret; new secret access requires unlocking. The renderer also locks the vault when the document becomes hidden, including application minimization and system screen locking. Normal shutdown explicitly locks the vault.
 
-A forgotten master password cannot be recovered. Reset requires the dedicated backend confirmation and the exact `RESET` phrase; it deletes `vault.hold` and `vault.json` and clears saved-secret flags, but does not require the forgotten password. A corrupt snapshot fails closed and is not silently replaced with an empty vault.
+A forgotten master password cannot be recovered. Reset requires the dedicated backend confirmation and the exact `RESET` phrase; it deletes `vault.hold` and `vault.json` and clears saved-secret flags, including the proxy password's, but does not require the forgotten password. A corrupt snapshot fails closed and is not silently replaced with an empty vault.
 
 ### Windows Hello system unlock
 
 On supported Windows 10/11 systems, system unlock is available only when Windows Hello and the Microsoft Platform Crypto Provider are available for the current user. Enabling it first asks Windows to verify the user, then creates a persisted 2048-bit RSA key in the platform provider and wraps the vault data key with RSA-OAEP/SHA-256. Unlock asks Windows Hello again before the platform key can unwrap that data key. FTPeach receives only the success/failure result; the PIN, face image, and fingerprint remain inside Windows.
 
-The credential is tied to the current Windows user and platform provider. A policy change, removed credential, unavailable device, or Windows Hello cancellation makes system unlock fail closed. The master password remains the recovery path. Disabling system unlock deletes the persisted platform key and its wrapped-key metadata. macOS and Linux builds report the feature as unavailable; no fallback imitation or plaintext system credential is used.
+The credential is tied to the current Windows user and platform provider. A policy change, removed credential, unavailable device, or Windows Hello cancellation makes system unlock fail closed. The master password remains the recovery path. Disabling system unlock deletes the persisted platform key and its wrapped-key metadata.
 
 System unlock uses the same process-wide serialization, rolling attempt limit, and generic authentication failure as password unlock. It improves convenience and resistance to copied vault files, but it does not protect against malware already controlling the logged-in Windows session or the FTPeach process.
 
@@ -77,7 +88,7 @@ System unlock uses the same process-wide serialization, rolling attempt limit, a
 
 `tabs.json` stores only non-secret pane data: a local path or a saved site's `siteId` and last remote path. Reconnection follows the same path as clicking a bookmark: the renderer sends only `siteId`, and the backend decrypts the password or passphrase through DPAPI or Stronghold. A locked vault opens the normal unlock dialog. Unsaved manual connections are never persisted and reopen as an empty Server form.
 
-Legacy DPAPI fields migrate only while the vault is unlocked. Old ciphertext is removed only after writing and reading back the migrated secret, and `sites.json` is saved atomically. `sites.pre-stronghold.bak` must not contain plaintext. A remaining legacy field safely marks an incomplete migration for retry, while `vault-migration.json` records its version and state. Failed final saves restore `sites.json` from backup. Stronghold snapshots use a temporary sibling and atomic replacement.
+Under enhanced protection, DPAPI fields migrate into the vault only while it is unlocked. Old ciphertext is removed only after writing and reading back the migrated secret, and `sites.json` is saved atomically. `sites.pre-stronghold.bak` must not contain plaintext. A remaining legacy field safely marks an incomplete migration for retry, while `vault-migration.json` records its version and state. Failed final saves restore `sites.json` from backup. Stronghold snapshots use a temporary sibling and atomic replacement.
 
 ## Threats and mitigations
 
@@ -90,7 +101,8 @@ Legacy DPAPI fields migrate only while the vault is unlocked. Old ciphertext is 
 | First-connection SFTP MITM | TOFU stores the first fingerprint | The first key should be verified through another channel |
 | Changed SSH host key | Fail-closed mismatch and explicit pin reset | A user may approve a malicious replacement without verification |
 | Poisoned update | HTTPS endpoint and signature verification | Release signing and publication still require operational discipline |
-| Secrets at rest | DPAPI/Stronghold and fail-closed behavior | Same-session malware may act as the Windows user |
+| Secrets at rest under system protection | DPAPI bound to the Windows account | Anyone acting as that Windows user can read them without a master password |
+| Secrets at rest under enhanced protection | Stronghold vault behind the master password, fail-closed behavior | Same-session malware may act as the Windows user while the vault is unlocked |
 | Secrets in renderer | Backend-side decryption by `siteId` | Unsaved manual passwords necessarily pass through the renderer |
 | Backend memory compromise | `zeroize` for connection configs and temporary buffers | Active protocol sessions need secrets; process-memory compromise is out of scope |
 | Log leakage | Opt-in logs split into local-date files and retained for 14 days | Protocol/server text may still contain sensitive content |
@@ -116,7 +128,7 @@ Remote directory responses are limited to 10,000 entries and 8 MiB of names/text
 
 Protocol events are structured before they reach the renderer. Credential, authorization, token, private-key, and secret-named fields are replaced with `[REDACTED]`; the generic text redactor remains a final export/file-logging barrier. Redaction does not make diagnostics anonymous: server hostnames, IP addresses, user-selected local paths, and remote names may remain. Users should review diagnostic bundles before sharing them.
 
-Vault password derivation and protected transitions share a single process-wide slot. Failed password or system unlock attempts wait with exponential backoff from 500 ms up to 30 seconds and stop after eight failures in a rolling five-minute window. A successful authentication or safe reset clears the state; expiration of the window clears it after the delay. The same generic error is returned for incorrect credentials and temporary throttling.
+Vault unlock attempts are throttled as described in [Stronghold and the master password](#stronghold-and-the-master-password).
 
 ## Explicitly accepted risks
 
@@ -127,6 +139,10 @@ FTP without TLS remains for compatibility. Credentials, commands, and file conte
 ### `allowInvalidCert`
 
 This option supports deliberately trusted local and legacy servers with self-signed or invalid certificates. It disables TLS peer authentication and makes MITM difficult to distinguish from the intended server. Enable it only when the network and server are consciously trusted.
+
+### System protection
+
+System protection is the default because it needs no master password and cannot lock the user out. DPAPI ties the secrets to the Windows account, which protects copied files but not the account itself: any process or person acting as that user can decrypt them. Users who need more choose enhanced protection.
 
 ### External applications
 

@@ -3,11 +3,15 @@ param(
 
     [string]$EnvironmentFile,
 
-    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing')]
+    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing', 'server-matrix')]
     [string]$Command = 'build',
 
     [ValidateSet('debug', 'release')]
-    [string]$Profile = 'debug'
+    [string]$Profile = 'debug',
+
+    # Passed to the test binary by the server-matrix command (filters, --test-threads).
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$TestArgs = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -131,6 +135,9 @@ try {
             if ($LASTEXITCODE -eq 0) {
                 & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --lib protocol::ftp::protocol_tests::recursive_stop_tests::docker_ -- --ignored --test-threads=1
             }
+        }
+        'server-matrix' {
+            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --test server_matrix -- --ignored @TestArgs
         }
         'clippy' {
             & cargo clippy --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets --all-features -- -D warnings

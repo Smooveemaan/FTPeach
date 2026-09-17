@@ -49,7 +49,11 @@
     "benchmark:transfer-mixed": "node --experimental-strip-types scripts/benchmarks/benchmark-transfer-mixed.ts",
     "benchmark:file-filter": "node --experimental-strip-types scripts/benchmarks/benchmark-file-filter.ts",
     "benchmark:baseline": "node --experimental-strip-types scripts/benchmarks/benchmark-baseline.ts",
-    "benchmark:listing": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command benchmark-listing"
+    "benchmark:listing": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command benchmark-listing",
+    "servers:up": "node --experimental-strip-types scripts/test-servers/up.ts",
+    "servers:down": "node --experimental-strip-types scripts/test-servers/down.ts",
+    "servers:status": "node --experimental-strip-types scripts/test-servers/status.ts",
+    "servers:test": "node --experimental-strip-types scripts/test-servers/test.ts"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

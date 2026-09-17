@@ -38,6 +38,7 @@ playwright-report/
 target/
 src-tauri/gen/
 src-tauri/tests/docker/generated-tls/*
+src-tauri/tests/docker/matrix/generated/
 !src-tauri/tests/docker/generated-tls/.gitkeep
 
 # Downloaded native build tools and libraries.

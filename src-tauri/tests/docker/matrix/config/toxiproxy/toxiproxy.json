@@ -1,0 +1,20 @@
+[
+  {
+    "name": "vsftpd",
+    "listen": "0.0.0.0:19000",
+    "upstream": "vsftpd:21",
+    "enabled": true
+  },
+  {
+    "name": "openssh_chroot",
+    "listen": "0.0.0.0:19001",
+    "upstream": "openssh-chroot:22",
+    "enabled": true
+  },
+  {
+    "name": "apache_basic",
+    "listen": "0.0.0.0:19002",
+    "upstream": "apache-basic:80",
+    "enabled": true
+  }
+]

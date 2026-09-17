@@ -14,6 +14,9 @@ mod transfer;
 // Expose the pool only for protocol integration tests.
 #[cfg(feature = "test-utils")]
 pub use transfer::transfer_pool;
+// The server matrix asserts failure categories, not message text.
+#[cfg(feature = "test-utils")]
+pub use ipc::{CommandError, ErrorCode};
 
 use local_fs::open_with::OpenWithWatchers;
 use local_fs::{local_open::ApprovedLocalPaths, preview::PreviewPaths};

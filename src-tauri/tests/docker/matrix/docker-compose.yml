@@ -1,0 +1,767 @@
+name: ftpeach-test-matrix
+
+# Server matrix: many real FTP/FTPS/SFTP/WebDAV implementations and
+# configurations, plus proxies and a fault-injection proxy. Separate from
+# ../docker-compose.yml, which CI and the release gate depend on and which this
+# file must not change.
+#
+# Start it through the npm scripts, which also print ports and credentials:
+#   npm run servers:up -- ftp sftp
+#   npm run servers:status
+#   npm run servers:down
+# Profiles: ftp, sftp, webdav, heavy (Nextcloud), proxy, chaos. "baseline" (the
+# existing stack) is handled by the scripts, not by this file.
+#
+# Every account is testuser / testpass unless noted. Ports are published on
+# 127.0.0.1 only. See README.md for ports and servers.json for the catalog.
+
+x-server: &server
+  init: true
+  restart: 'no'
+  stop_grace_period: 3s
+
+x-tcp-health: &tcp-health
+  interval: 2s
+  timeout: 2s
+  retries: 60
+
+x-tools: &tools
+  build: images/tools
+  image: ftpeach-matrix-tools:local
+  environment:
+    FTPEACH_MATRIX_BIG_MB: ${FTPEACH_MATRIX_BIG_MB:-64}
+
+x-ready: &ready
+  prepare:
+    condition: service_completed_successfully
+
+services:
+  # ---------------------------------------------------------------- one-shot
+
+  prepare:
+    <<: *tools
+    # Only profiles whose servers depend on it: `up --wait` treats an exited
+    # one-shot container that nothing waits for as a failure.
+    profiles: [ftp, sftp, webdav, chaos]
+    volumes:
+      - ./generated:/generated
+      - ./tls:/scripts/tls:ro
+      - ./keys:/scripts/keys:ro
+    command: ['sh', '-c', 'sh /scripts/tls/generate.sh && sh /scripts/keys/generate.sh']
+
+  seed-ftp:
+    <<: *tools
+    profiles: [ftp, chaos]
+    volumes:
+      - ./seed:/scripts:ro
+      - vsftpd-data:/seed/vsftpd
+      - proftpd-data:/seed/proftpd
+      - pyftpdlib-data:/seed/pyftpdlib
+      - pyftpdlib-nonutf8-data:/seed/pyftpdlib-nonutf8
+    command:
+      - python3
+      - /scripts/seed.py
+      - /seed/vsftpd:1001:1001
+      - /seed/proftpd:1001:1001
+      - /seed/pyftpdlib:1001:1001
+      - /seed/pyftpdlib-nonutf8:1001:1001:cp1251
+
+  seed-sftp:
+    <<: *tools
+    profiles: [sftp, chaos]
+    volumes:
+      - ./seed:/scripts:ro
+      - openssh-data:/seed/openssh
+      - openssh-chroot-data:/seed/openssh-chroot
+      - proftpd-sftp-data:/seed/proftpd-sftp
+      - dropbear-data:/seed/dropbear
+    command:
+      - python3
+      - /scripts/seed.py
+      - /seed/openssh:1001:1001
+      - /seed/openssh-chroot:1001:1001
+      - /seed/proftpd-sftp:1001:1001
+      - /seed/dropbear:1001:1001
+
+  seed-webdav:
+    <<: *tools
+    profiles: [webdav, chaos]
+    volumes:
+      - ./seed:/scripts:ro
+      - apache-data:/seed/apache
+      - nginx-data:/seed/nginx
+      - rclone-data:/seed/rclone
+    command:
+      - python3
+      - /scripts/seed.py
+      - /seed/apache:1001:1001
+      - /seed/nginx:1001:1001
+      - /seed/rclone:1001:1001
+
+  seed-sftpgo:
+    <<: *tools
+    profiles: [ftp, sftp, webdav]
+    volumes:
+      - ./seed:/scripts:ro
+      - sftpgo-data:/seed/sftpgo
+    # The SFTPGo image runs as uid/gid 1000 and serves /srv/sftpgo/data/testuser.
+    command: ['python3', '/scripts/seed.py', '/seed/sftpgo/testuser:1000:1000']
+
+  seed-nextcloud:
+    <<: *tools
+    profiles: [heavy]
+    volumes:
+      - ./seed:/scripts:ro
+      - nextcloud-seed:/seed/nextcloud
+    # www-data. Nextcloud's scanner skips symlinks and cannot index files its
+    # own user cannot read, so those fixtures are left out.
+    command: ['python3', '/scripts/seed.py', '/seed/nextcloud:33:33:nolinks+noperms']
+
+  # ---------------------------------------------------------------- FTP / FTPS
+
+  vsftpd:
+    <<: *server
+    profiles: [ftp, chaos]
+    build: images/vsftpd
+    image: ftpeach-matrix-vsftpd:local
+    ports:
+      - '127.0.0.1:2141:21'
+      - '127.0.0.1:31000-31009:31000-31009'
+    volumes:
+      - ./config/vsftpd/plain.conf:/etc/vsftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - type: volume
+        source: vsftpd-data
+        target: /home/testuser
+      - type: tmpfs
+        target: /home/testuser/small
+        tmpfs:
+          size: 16777216
+          mode: 0o1777
+    depends_on: &ftp-deps
+      <<: *ready
+      seed-ftp:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  vsftpd-reuse:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-vsftpd:local
+    build: images/vsftpd
+    ports:
+      - '127.0.0.1:2142:21'
+      - '127.0.0.1:31010-31019:31010-31019'
+    volumes:
+      - ./config/vsftpd/reuse.conf:/etc/vsftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - vsftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  vsftpd-nat:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-vsftpd:local
+    build: images/vsftpd
+    ports:
+      - '127.0.0.1:2143:21'
+      - '127.0.0.1:31020-31029:31020-31029'
+    volumes:
+      - ./config/vsftpd/nat.conf:/etc/vsftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - vsftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  vsftpd-implicit:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-vsftpd:local
+    build: images/vsftpd
+    ports:
+      - '127.0.0.1:2990:990'
+      - '127.0.0.1:31030-31039:31030-31039'
+    volumes:
+      - ./config/vsftpd/implicit.conf:/etc/vsftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - vsftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/990']
+
+  proftpd:
+    <<: *server
+    profiles: [ftp]
+    build: images/proftpd
+    image: ftpeach-matrix-proftpd:local
+    environment: &proftpd-ftp-env
+      PROFTPD_CONFIG: /etc/proftpd/matrix-ftp.conf
+    ports:
+      - '127.0.0.1:2151:21'
+      - '127.0.0.1:31100-31109:31100-31109'
+    volumes:
+      - ./config/proftpd/ftp.conf:/etc/proftpd/matrix-ftp.conf:ro
+      - ./config/proftpd/default.conf:/etc/proftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - type: volume
+        source: proftpd-data
+        target: /home/testuser
+      - type: tmpfs
+        target: /home/testuser/small
+        tmpfs:
+          size: 16777216
+          mode: 0o1777
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  proftpd-tls12:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-proftpd:local
+    build: images/proftpd
+    environment: *proftpd-ftp-env
+    ports:
+      - '127.0.0.1:2152:21'
+      - '127.0.0.1:31110-31119:31110-31119'
+    volumes:
+      - ./config/proftpd/ftp.conf:/etc/proftpd/matrix-ftp.conf:ro
+      - ./config/proftpd/tls12.conf:/etc/proftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - proftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  proftpd-tls13:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-proftpd:local
+    build: images/proftpd
+    environment: *proftpd-ftp-env
+    ports:
+      - '127.0.0.1:2153:21'
+      - '127.0.0.1:31120-31129:31120-31129'
+    volumes:
+      - ./config/proftpd/ftp.conf:/etc/proftpd/matrix-ftp.conf:ro
+      - ./config/proftpd/tls13.conf:/etc/proftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - proftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  proftpd-badcert-expired:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-proftpd:local
+    build: images/proftpd
+    environment: *proftpd-ftp-env
+    ports:
+      - '127.0.0.1:2154:21'
+      - '127.0.0.1:31130-31139:31130-31139'
+    volumes:
+      - ./config/proftpd/ftp.conf:/etc/proftpd/matrix-ftp.conf:ro
+      - ./config/proftpd/badcert_expired.conf:/etc/proftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - proftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  proftpd-badcert-cn:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-proftpd:local
+    build: images/proftpd
+    environment: *proftpd-ftp-env
+    ports:
+      - '127.0.0.1:2155:21'
+      - '127.0.0.1:31140-31149:31140-31149'
+    volumes:
+      - ./config/proftpd/ftp.conf:/etc/proftpd/matrix-ftp.conf:ro
+      - ./config/proftpd/badcert_cn.conf:/etc/proftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - proftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
+  pyftpdlib:
+    <<: *server
+    profiles: [ftp]
+    build: images/pyftpdlib
+    image: ftpeach-matrix-pyftpdlib:local
+    environment:
+      PYFTPDLIB_VARIANT: standard
+      PYFTPDLIB_PASSIVE_START: 31200
+      PYFTPDLIB_PASSIVE_END: 31209
+    ports:
+      - '127.0.0.1:2161:2121'
+      - '127.0.0.1:31200-31209:31200-31209'
+    volumes:
+      - ./generated/tls:/tls:ro
+      - pyftpdlib-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/2121']
+
+  pyftpdlib-epsv-only:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-pyftpdlib:local
+    build: images/pyftpdlib
+    environment:
+      PYFTPDLIB_VARIANT: epsv_only
+      PYFTPDLIB_PASSIVE_START: 31210
+      PYFTPDLIB_PASSIVE_END: 31219
+    ports:
+      - '127.0.0.1:2162:2121'
+      - '127.0.0.1:31210-31219:31210-31219'
+    volumes:
+      - ./generated/tls:/tls:ro
+      - pyftpdlib-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/2121']
+
+  pyftpdlib-nonutf8:
+    <<: *server
+    profiles: [ftp]
+    image: ftpeach-matrix-pyftpdlib:local
+    build: images/pyftpdlib
+    environment:
+      PYFTPDLIB_VARIANT: nonutf8
+      PYFTPDLIB_PASSIVE_START: 31220
+      PYFTPDLIB_PASSIVE_END: 31229
+      LANG: ru_RU.CP1251
+      LC_ALL: ru_RU.CP1251
+      PYTHONUTF8: '0'
+      PYTHONCOERCECLOCALE: '0'
+    ports:
+      - '127.0.0.1:2163:2121'
+      - '127.0.0.1:31220-31229:31220-31229'
+    volumes:
+      - ./generated/tls:/tls:ro
+      - pyftpdlib-nonutf8-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/2121']
+
+  # SFTPGo serves FTP(S), SFTP and WebDAV from one container.
+  sftpgo:
+    <<: *server
+    profiles: [ftp, sftp, webdav]
+    image: drakkan/sftpgo@sha256:9011fe608d336d3daf6ed6224b16fd40443aab8f3335e0b20853d6a539c58738
+    entrypoint: ['sh', '/ftpeach/start.sh']
+    environment:
+      SFTPGO_FTPD__BINDINGS__0__PORT: 2121
+      # 0: TLS optional on the same port (plain FTP and explicit FTPS).
+      SFTPGO_FTPD__BINDINGS__0__TLS_MODE: 0
+      SFTPGO_FTPD__BINDINGS__0__FORCE_PASSIVE_IP: 127.0.0.1
+      SFTPGO_FTPD__PASSIVE_PORT_RANGE__START: 31300
+      SFTPGO_FTPD__PASSIVE_PORT_RANGE__END: 31309
+      SFTPGO_FTPD__CERTIFICATE_FILE: /tls/localhost.pem
+      SFTPGO_FTPD__CERTIFICATE_KEY_FILE: /tls/localhost.key
+      SFTPGO_SFTPD__BINDINGS__0__PORT: 2022
+      SFTPGO_WEBDAVD__BINDINGS__0__PORT: 10080
+      SFTPGO_COMMON__DEFENDER__ENABLED: 'false'
+    ports:
+      - '127.0.0.1:2171:2121'
+      - '127.0.0.1:2251:2022'
+      - '127.0.0.1:18121:10080'
+      - '127.0.0.1:31300-31309:31300-31309'
+    volumes:
+      - ./config/sftpgo/start.sh:/ftpeach/start.sh:ro
+      - ./generated/tls:/tls:ro
+      - ./generated/keys:/keys:ro
+      - sftpgo-data:/srv/sftpgo/data
+    depends_on:
+      <<: *ready
+      seed-sftpgo:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/2022']
+
+  # ---------------------------------------------------------------- SFTP
+
+  openssh-keys:
+    <<: *server
+    profiles: [sftp]
+    build: images/openssh
+    image: ftpeach-matrix-openssh:local
+    ports:
+      - '127.0.0.1:2231:22'
+    volumes:
+      - ./config/openssh/keys.conf:/etc/ssh/sshd_config:ro
+      - ./generated/keys:/keys:ro
+      - openssh-data:/home/testuser
+    depends_on: &sftp-deps
+      <<: *ready
+      seed-sftp:
+        condition: service_completed_successfully
+    healthcheck: &ssh-health
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/22']
+
+  openssh-kbdint:
+    <<: *server
+    profiles: [sftp]
+    image: ftpeach-matrix-openssh:local
+    build: images/openssh
+    ports:
+      - '127.0.0.1:2232:22'
+    volumes:
+      - ./config/openssh/kbdint.conf:/etc/ssh/sshd_config:ro
+      - ./generated/keys:/keys:ro
+      - openssh-data:/home/testuser
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  openssh-legacy:
+    <<: *server
+    profiles: [sftp]
+    image: ftpeach-matrix-openssh:local
+    build: images/openssh
+    ports:
+      - '127.0.0.1:2233:22'
+    volumes:
+      - ./config/openssh/legacy.conf:/etc/ssh/sshd_config:ro
+      - ./generated/keys:/keys:ro
+      - openssh-data:/home/testuser
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  openssh-modern:
+    <<: *server
+    profiles: [sftp]
+    image: ftpeach-matrix-openssh:local
+    build: images/openssh
+    ports:
+      - '127.0.0.1:2234:22'
+    volumes:
+      - ./config/openssh/modern.conf:/etc/ssh/sshd_config:ro
+      - ./generated/keys:/keys:ro
+      - openssh-data:/home/testuser
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  openssh-chroot:
+    <<: *server
+    profiles: [sftp, chaos]
+    image: ftpeach-matrix-openssh:local
+    build: images/openssh
+    ports:
+      - '127.0.0.1:2235:22'
+    volumes:
+      - ./config/openssh/chroot.conf:/etc/ssh/sshd_config:ro
+      - ./generated/keys:/keys:ro
+      - type: volume
+        source: openssh-chroot-data
+        target: /srv/chroot/home
+      - type: tmpfs
+        target: /srv/chroot/small
+        tmpfs:
+          size: 16777216
+          mode: 0o1777
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  proftpd-sftp:
+    <<: *server
+    profiles: [sftp]
+    image: ftpeach-matrix-proftpd:local
+    build: images/proftpd
+    environment:
+      PROFTPD_CONFIG: /etc/proftpd/matrix-sftp.conf
+    ports:
+      - '127.0.0.1:2241:22'
+    volumes:
+      - ./config/proftpd/sftp.conf:/etc/proftpd/matrix-sftp.conf:ro
+      - ./generated/keys:/keys:ro
+      - proftpd-sftp-data:/home/testuser
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  dropbear:
+    <<: *server
+    profiles: [sftp]
+    build: images/dropbear
+    image: ftpeach-matrix-dropbear:local
+    ports:
+      - '127.0.0.1:2261:22'
+    volumes:
+      - ./generated/keys:/keys:ro
+      - dropbear-data:/home/testuser
+    depends_on: *sftp-deps
+    healthcheck: *ssh-health
+
+  # ---------------------------------------------------------------- WebDAV
+
+  apache-basic:
+    <<: *server
+    profiles: [webdav, chaos]
+    build: images/apache
+    image: ftpeach-matrix-apache:local
+    ports:
+      - '127.0.0.1:18081:80'
+    volumes:
+      - ./config/apache/basic.conf:/etc/apache2/sites-enabled/matrix.conf:ro
+      - type: volume
+        source: apache-data
+        target: /srv/dav
+      - type: tmpfs
+        target: /srv/dav/small
+        tmpfs:
+          size: 16777216
+          mode: 0o1777
+    depends_on: &webdav-deps
+      <<: *ready
+      seed-webdav:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/80']
+
+  apache-digest:
+    <<: *server
+    profiles: [webdav]
+    image: ftpeach-matrix-apache:local
+    build: images/apache
+    ports:
+      - '127.0.0.1:18082:80'
+    volumes:
+      - ./config/apache/digest.conf:/etc/apache2/sites-enabled/matrix.conf:ro
+      - apache-data:/srv/dav
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/80']
+
+  apache-https:
+    <<: *server
+    profiles: [webdav]
+    image: ftpeach-matrix-apache:local
+    build: images/apache
+    ports:
+      - '127.0.0.1:18443:443'
+    volumes:
+      - ./config/apache/https.conf:/etc/apache2/sites-enabled/matrix.conf:ro
+      - ./generated/tls:/tls:ro
+      - apache-data:/srv/dav
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/443']
+
+  nginx-davext:
+    <<: *server
+    profiles: [webdav]
+    build: images/nginx
+    image: ftpeach-matrix-nginx:local
+    ports:
+      - '127.0.0.1:18091:80'
+    volumes:
+      - ./config/nginx/davext.conf:/etc/nginx/conf.d/matrix.conf:ro
+      - type: volume
+        source: nginx-data
+        target: /srv/dav
+      - type: tmpfs
+        target: /srv/dav/small
+        tmpfs:
+          size: 16777216
+          mode: 0o1777
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/80']
+
+  nginx-norange-h2:
+    <<: *server
+    profiles: [webdav]
+    image: ftpeach-matrix-nginx:local
+    build: images/nginx
+    ports:
+      - '127.0.0.1:18444:443'
+    volumes:
+      - ./config/nginx/norange_h2.conf:/etc/nginx/conf.d/matrix.conf:ro
+      - ./generated/tls:/tls:ro
+      - nginx-data:/srv/dav
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/443']
+
+  webdav-subpath:
+    <<: *server
+    profiles: [webdav]
+    image: ftpeach-matrix-nginx:local
+    build: images/nginx
+    ports:
+      - '127.0.0.1:18131:80'
+      - '127.0.0.1:18445:443'
+    volumes:
+      - ./config/nginx/subpath.conf:/etc/nginx/conf.d/matrix.conf:ro
+      - ./generated/tls:/tls:ro
+      - nginx-data:/srv/dav
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/443']
+
+  rclone-webdav:
+    <<: *server
+    profiles: [webdav]
+    image: rclone/rclone@sha256:45401ad7410db1d67ffdb58e19059ad20b0d8e0285a60e38bbec55cc1019c7a5
+    user: '1001:1001'
+    environment:
+      RCLONE_CONFIG: /tmp/rclone.conf
+    command:
+      - serve
+      - webdav
+      - /data
+      - --addr=:8080
+      - --user=testuser
+      - --pass=testpass
+    ports:
+      - '127.0.0.1:18111:8080'
+    volumes:
+      - rclone-data:/data
+    depends_on: *webdav-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'nc', '-z', '127.0.0.1', '8080']
+
+  # ---------------------------------------------------------------- heavy
+
+  nextcloud:
+    <<: *server
+    profiles: [heavy]
+    build: images/nextcloud
+    image: ftpeach-matrix-nextcloud:local
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: FTPeach-matrix-admin-2026
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost 127.0.0.1
+      PHP_UPLOAD_LIMIT: 2G
+      PHP_MEMORY_LIMIT: 512M
+    ports:
+      - '127.0.0.1:18101:80'
+    volumes:
+      - nextcloud-html:/var/www/html
+      - nextcloud-seed:/ftpeach-seed:ro
+    depends_on:
+      seed-nextcloud:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - test -f /var/www/html/data/.ftpeach-ready && curl -fsS http://127.0.0.1/status.php | grep -q '"installed":true'
+      interval: 5s
+      timeout: 5s
+      retries: 120
+      start_period: 60s
+
+  # ---------------------------------------------------------------- proxy
+
+  dante:
+    <<: *server
+    profiles: [proxy]
+    build: images/dante
+    image: ftpeach-matrix-dante:local
+    ports:
+      - '127.0.0.1:11080:1080'
+    volumes:
+      - ./config/dante/open.conf:/etc/danted.conf:ro
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/1080']
+
+  dante-auth:
+    <<: *server
+    profiles: [proxy]
+    image: ftpeach-matrix-dante:local
+    build: images/dante
+    ports:
+      - '127.0.0.1:11081:1080'
+    volumes:
+      - ./config/dante/auth.conf:/etc/danted.conf:ro
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/1080']
+
+  threeproxy:
+    <<: *server
+    profiles: [proxy]
+    image: 3proxy/3proxy@sha256:b7098c1b2e92078575d2f0baec9ba8a77b53e984c02dcec63019f5586264124a
+    ports:
+      - '127.0.0.1:11082:1080'
+    volumes:
+      - ./config/3proxy/3proxy.cfg:/etc/3proxy/3proxy.cfg:ro
+    # Minimal image without a shell; compose waits for "running" instead.
+
+  squid:
+    <<: *server
+    profiles: [proxy]
+    build: images/squid
+    image: ftpeach-matrix-squid:local
+    ports:
+      - '127.0.0.1:13128:3128'
+      - '127.0.0.1:13129:3129'
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/3128']
+
+  # ---------------------------------------------------------------- chaos
+
+  # Fault injection in front of one server per protocol. Tests add toxics
+  # (latency, bandwidth, reset_peer, timeout) through the API on 8474. Only the
+  # FTP control connection goes through it: PASV still points at vsftpd's own
+  # published data ports.
+  toxiproxy:
+    <<: *server
+    profiles: [chaos]
+    image: ghcr.io/shopify/toxiproxy@sha256:9378ed52a28bc50edc1350f936f518f31fa95f0d15917d6eb40b8e376d1a214e
+    command: ['-host=0.0.0.0', '-config=/config/toxiproxy.json']
+    ports:
+      - '127.0.0.1:8474:8474'
+      - '127.0.0.1:19000-19009:19000-19009'
+    volumes:
+      - ./config/toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', '/toxiproxy-cli', 'list']
+
+volumes:
+  vsftpd-data:
+  proftpd-data:
+  pyftpdlib-data:
+  pyftpdlib-nonutf8-data:
+  sftpgo-data:
+  openssh-data:
+  openssh-chroot-data:
+  proftpd-sftp-data:
+  dropbear-data:
+  apache-data:
+  nginx-data:
+  rclone-data:
+  nextcloud-seed:
+  nextcloud-html:

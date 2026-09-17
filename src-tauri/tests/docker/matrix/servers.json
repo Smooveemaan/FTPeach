@@ -1,0 +1,395 @@
+{
+  "$comment": "Catalog of matrix servers, printed by scripts/test-servers. Addresses are as seen from the host. Credentials are disposable test values.",
+  "servers": [
+    {
+      "id": "baseline_pureftpd",
+      "profile": "baseline",
+      "service": "ftp",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2131",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "existing stack; pure-ftpd hides dot-files, 5 connections per IP"
+    },
+    {
+      "id": "baseline_atmoz",
+      "profile": "baseline",
+      "service": "sftp",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2222",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "existing stack; atmoz/sftp, writable /upload"
+    },
+    {
+      "id": "baseline_hacdias",
+      "profile": "baseline",
+      "service": "webdav",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:6065/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "existing stack; TLS 1.2 on :6443, TLS 1.3 on :6444"
+    },
+    {
+      "id": "vsftpd",
+      "profile": "ftp",
+      "service": "vsftpd",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2141",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "LIST only (no MLSD), dot-files hidden, small/ is 16 MiB"
+    },
+    {
+      "id": "vsftpd_reuse",
+      "profile": "ftp",
+      "service": "vsftpd-reuse",
+      "protocol": "ftps",
+      "address": "127.0.0.1:2142",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "FTPS required; data channel must reuse the TLS session (522 otherwise)"
+    },
+    {
+      "id": "vsftpd_nat",
+      "profile": "ftp",
+      "service": "vsftpd-nat",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2143",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "PASV advertises unreachable 10.255.255.1"
+    },
+    {
+      "id": "vsftpd_implicit",
+      "profile": "ftp",
+      "service": "vsftpd-implicit",
+      "protocol": "ftps-implicit",
+      "address": "127.0.0.1:2990",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "implicit FTPS; expect a clear unsupported error"
+    },
+    {
+      "id": "proftpd",
+      "profile": "ftp",
+      "service": "proftpd",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2151",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "MLSD; anonymous read-only; user readonly/testpass; 8 connections per host; small/ is 16 MiB"
+    },
+    {
+      "id": "proftpd_tls12",
+      "profile": "ftp",
+      "service": "proftpd-tls12",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2152",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "FTPS TLS 1.2 only"
+    },
+    {
+      "id": "proftpd_tls13",
+      "profile": "ftp",
+      "service": "proftpd-tls13",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2153",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "FTPS TLS 1.3 only"
+    },
+    {
+      "id": "proftpd_badcert_expired",
+      "profile": "ftp",
+      "service": "proftpd-badcert-expired",
+      "protocol": "ftps",
+      "address": "127.0.0.1:2154",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "certificate from the test CA, expired"
+    },
+    {
+      "id": "proftpd_badcert_cn",
+      "profile": "ftp",
+      "service": "proftpd-badcert-cn",
+      "protocol": "ftps",
+      "address": "127.0.0.1:2155",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "certificate from the test CA for ftpeach.invalid"
+    },
+    {
+      "id": "pyftpdlib",
+      "profile": "ftp",
+      "service": "pyftpdlib",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2161",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "reference RFC implementation, MLSD, UTF-8"
+    },
+    {
+      "id": "pyftpdlib_epsv_only",
+      "profile": "ftp",
+      "service": "pyftpdlib-epsv-only",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2162",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "PASV answers 502, EPSV only"
+    },
+    {
+      "id": "pyftpdlib_nonutf8",
+      "profile": "ftp",
+      "service": "pyftpdlib-nonutf8",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2163",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "cp1251 names in fixtures/encoding, no UTF8 in FEAT"
+    },
+    {
+      "id": "sftpgo_ftp",
+      "profile": "ftp",
+      "service": "sftpgo",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2171",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "SFTPGo (Go implementation)"
+    },
+    {
+      "id": "openssh_keys",
+      "profile": "sftp",
+      "service": "openssh-keys",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2231",
+      "user": "testuser",
+      "password": "",
+      "notes": "public keys only: generated/keys/id_{ed25519,rsa,ecdsa}, id_ed25519_passphrase (keypass)"
+    },
+    {
+      "id": "openssh_kbdint",
+      "profile": "sftp",
+      "service": "openssh-kbdint",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2232",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "keyboard-interactive only, password method refused"
+    },
+    {
+      "id": "openssh_legacy",
+      "profile": "sftp",
+      "service": "openssh-legacy",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2233",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "ssh-rsa, diffie-hellman-group14-sha1, CBC, hmac-sha1 only"
+    },
+    {
+      "id": "openssh_modern",
+      "profile": "sftp",
+      "service": "openssh-modern",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2234",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "ed25519 host key, ML-KEM/sntrup KEX, AEAD ciphers only"
+    },
+    {
+      "id": "openssh_chroot",
+      "profile": "sftp",
+      "service": "openssh-chroot",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2235",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "chroot with banner; /home fixtures, /readonly root-owned, /small 16 MiB"
+    },
+    {
+      "id": "proftpd_sftp",
+      "profile": "sftp",
+      "service": "proftpd-sftp",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2241",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "ProFTPD mod_sftp, password or key"
+    },
+    {
+      "id": "sftpgo_sftp",
+      "profile": "sftp",
+      "service": "sftpgo",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2251",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "SFTPGo, password or key"
+    },
+    {
+      "id": "dropbear",
+      "profile": "sftp",
+      "service": "dropbear",
+      "protocol": "sftp",
+      "address": "127.0.0.1:2261",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "Dropbear + OpenSSH sftp-server (embedded devices)"
+    },
+    {
+      "id": "apache_basic",
+      "profile": "webdav",
+      "service": "apache-basic",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18081/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "Apache mod_dav, Basic; small/ is 16 MiB"
+    },
+    {
+      "id": "apache_digest",
+      "profile": "webdav",
+      "service": "apache-digest",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18082/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "Digest auth only"
+    },
+    {
+      "id": "apache_https",
+      "profile": "webdav",
+      "service": "apache-https",
+      "protocol": "webdav",
+      "address": "https://localhost:18443/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "HTTPS, trust generated/tls/ca.pem"
+    },
+    {
+      "id": "nginx_davext",
+      "profile": "webdav",
+      "service": "nginx-davext",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18091/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "nginx dav_ext; trailing slash for collections; 413 above 8 MiB"
+    },
+    {
+      "id": "nginx_norange_h2",
+      "profile": "webdav",
+      "service": "nginx-norange-h2",
+      "protocol": "webdav",
+      "address": "https://localhost:18444/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "HTTP/2, byte ranges disabled"
+    },
+    {
+      "id": "webdav_subpath",
+      "profile": "webdav",
+      "service": "webdav-subpath",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18131/dav/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "301 to https://localhost:18445/dav/"
+    },
+    {
+      "id": "rclone_webdav",
+      "profile": "webdav",
+      "service": "rclone-webdav",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18111/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "rclone serve webdav"
+    },
+    {
+      "id": "sftpgo_webdav",
+      "profile": "webdav",
+      "service": "sftpgo",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18121/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "SFTPGo WebDAV"
+    },
+    {
+      "id": "nextcloud",
+      "profile": "heavy",
+      "service": "nextcloud",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18101/remote.php/dav/files/testuser/",
+      "user": "testuser",
+      "password": "testpass",
+      "notes": "Nextcloud (SQLite); first start takes minutes; skips the 255-byte fixture name (250 limit)"
+    },
+    {
+      "id": "dante",
+      "profile": "proxy",
+      "service": "dante",
+      "protocol": "socks5/socks4",
+      "address": "127.0.0.1:11080",
+      "user": "",
+      "password": "",
+      "notes": "no auth; no SOCKS4a; targets by compose service name, e.g. vsftpd:21"
+    },
+    {
+      "id": "dante_auth",
+      "profile": "proxy",
+      "service": "dante-auth",
+      "protocol": "socks5",
+      "address": "127.0.0.1:11081",
+      "user": "proxyuser",
+      "password": "proxypass",
+      "notes": "SOCKS5 username/password"
+    },
+    {
+      "id": "threeproxy",
+      "profile": "proxy",
+      "service": "threeproxy",
+      "protocol": "socks4a/socks4/socks5",
+      "address": "127.0.0.1:11082",
+      "user": "",
+      "password": "",
+      "notes": "3proxy, no auth; the SOCKS4a target"
+    },
+    {
+      "id": "squid",
+      "profile": "proxy",
+      "service": "squid",
+      "protocol": "http-connect",
+      "address": "127.0.0.1:13128",
+      "user": "",
+      "password": "",
+      "notes": "HTTP CONNECT, no auth"
+    },
+    {
+      "id": "squid_auth",
+      "profile": "proxy",
+      "service": "squid",
+      "protocol": "http-connect",
+      "address": "127.0.0.1:13129",
+      "user": "proxyuser",
+      "password": "proxypass",
+      "notes": "HTTP CONNECT, Basic auth"
+    },
+    {
+      "id": "toxiproxy",
+      "profile": "chaos",
+      "service": "toxiproxy",
+      "protocol": "toxiproxy",
+      "address": "http://127.0.0.1:8474/",
+      "user": "",
+      "password": "",
+      "notes": "19000 -> vsftpd:21, 19001 -> openssh-chroot:22, 19002 -> apache-basic:80"
+    }
+  ]
+}

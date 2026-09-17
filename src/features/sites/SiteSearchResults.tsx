@@ -104,7 +104,10 @@ export default function SiteSearchResults({
                       onBlur={() => onCommitRenameSite(site)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') e.currentTarget.blur();
-                        if (e.key === 'Escape') onCancelRenameSite();
+                        if (e.key === 'Escape') {
+                          e.stopPropagation();
+                          onCancelRenameSite();
+                        }
                       }}
                     />
                   ) : (

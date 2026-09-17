@@ -80,6 +80,24 @@ const collisionDetectionStrategy: CollisionDetection = (args) => {
   return closestCenter(args);
 };
 
+// Whether a drop right now belongs at the very end of the root list. Only once
+// that end is on screen: mid-scroll the bottom edge zone is there to scroll,
+// and the rows under it keep their own drop positions.
+function pointerAtRootEnd({ container, pointerX, pointerY }: AutoScrollState): boolean {
+  if (!container || pointerX == null || pointerY == null) return false;
+  const bounds = container.getBoundingClientRect();
+  const rootBounds = container.querySelector('.site-manage-root-zone')?.getBoundingClientRect();
+  // An unlaid-out list measures as a zero rect that would pass every check.
+  if (!rootBounds || bounds.height <= 0) return false;
+  return (
+    pointerX >= bounds.left &&
+    pointerX <= bounds.right &&
+    pointerY >= bounds.bottom - AUTO_SCROLL_EDGE_PX &&
+    pointerY >= rootBounds.top &&
+    rootBounds.bottom <= bounds.bottom + 1
+  );
+}
+
 const restrictToVerticalAxis: Modifier = ({ transform }) => {
   return { ...transform, x: 0 };
 };
@@ -164,7 +182,6 @@ export function useSiteDragController({
 }: SiteDragControllerOptions): SiteDragControllerModel {
   const [localEntries, setLocalEntries] = useState<ManagedSite[]>(() => [...entries]);
   const draggingRef = useRef(false);
-  const committingRef = useRef(false);
   const autoScrollRef = useRef<AutoScrollState>({
     container: null,
     frame: null,
@@ -180,18 +197,7 @@ export function useSiteDragController({
       const state = autoScrollRef.current;
       state.pointerX = event.clientX;
       state.pointerY = event.clientY;
-      const bounds = state.container?.getBoundingClientRect();
-      const rootBounds = state.container
-        ?.querySelector('.site-manage-root-zone')
-        ?.getBoundingClientRect();
-      state.rootEnd = Boolean(
-        bounds &&
-        rootBounds &&
-        rootBounds.top <= bounds.bottom &&
-        event.clientX >= bounds.left &&
-        event.clientX <= bounds.right &&
-        event.clientY >= bounds.bottom - AUTO_SCROLL_EDGE_PX,
-      );
+      state.rootEnd = pointerAtRootEnd(state);
     };
     window.addEventListener('pointermove', trackPointer, true);
     return () => window.removeEventListener('pointermove', trackPointer, true);
@@ -204,9 +210,33 @@ export function useSiteDragController({
     },
     [],
   );
+  // `entries` is the persisted list. While a drag or a layout save is in
+  // flight it would overwrite the optimistic order, so a change then is only
+  // remembered and applied once the tree is idle again.
+  const latestEntriesRef = useRef(entries);
+  const persistedEntriesRef = useRef(entries);
+  const entriesStaleRef = useRef(false);
+  const pendingCommitsRef = useRef(0);
+  const commitSeqRef = useRef(0);
+  const commitQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+  const requestedContainersRef = useRef<SiteContainers | null>(null);
   useEffect(() => {
-    if (!draggingRef.current && !committingRef.current) setLocalEntries([...entries]);
+    latestEntriesRef.current = entries;
+    if (draggingRef.current || pendingCommitsRef.current > 0) {
+      entriesStaleRef.current = true;
+      return;
+    }
+    persistedEntriesRef.current = entries;
+    requestedContainersRef.current = null;
+    setLocalEntries([...entries]);
   }, [entries]);
+  const syncStaleEntries = () => {
+    if (draggingRef.current || pendingCommitsRef.current > 0 || !entriesStaleRef.current) return;
+    entriesStaleRef.current = false;
+    persistedEntriesRef.current = latestEntriesRef.current;
+    requestedContainersRef.current = null;
+    setLocalEntries([...latestEntriesRef.current]);
+  };
 
   const rowNodesRef = useRef(new Map<UniqueIdentifier, HTMLElement>());
   const rowNodeCallbacksRef = useRef(
@@ -229,14 +259,15 @@ export function useSiteDragController({
 
   const [containers, setContainers] = useState(() => buildSiteContainers(entries));
   const containersRef = useRef(containers);
+  // Resolved against the ref, not inside a state updater: the ref has to be
+  // current before React renders, for a drop or a repeated Alt+Arrow that
+  // lands in the same frame.
   const applyContainers = (
     next: SiteContainers | ((previous: SiteContainers) => SiteContainers),
   ) => {
-    setContainers((prev) => {
-      const resolved = typeof next === 'function' ? next(prev) : next;
-      containersRef.current = resolved;
-      return resolved;
-    });
+    const resolved = typeof next === 'function' ? next(containersRef.current) : next;
+    containersRef.current = resolved;
+    setContainers(resolved);
   };
   useEffect(() => {
     if (!draggingRef.current) applyContainers(buildSiteContainers(localEntries));
@@ -379,6 +410,8 @@ export function useSiteDragController({
         const next = Math.max(0, Math.min(state.maxScrollTop, container.scrollTop + speed));
         if (next !== container.scrollTop) container.scrollTop = next;
       }
+      // Scrolling moves the root list under a still pointer.
+      state.rootEnd = pointerAtRootEnd(state);
       state.frame = requestAnimationFrame(tickAutoScroll);
     };
     autoScrollRef.current.frame = requestAnimationFrame(tickAutoScroll);
@@ -433,52 +466,67 @@ export function useSiteDragController({
     });
   };
 
-  const commitDrag = async (
-    finalContainers: SiteContainers,
-    draggedId: string,
-    draggedKind: string | undefined,
-  ) => {
-    const persistedEntries = entries;
-    if (siteContainersMatch(finalContainers, buildSiteContainers(persistedEntries))) return;
-    committingRef.current = true;
-    const originalEntry = entries.find((e) => e.id === draggedId);
-    const oldParentId = originalEntry?.parentId || null;
-    let newParentId = oldParentId;
-    if (draggedKind === 'folder') {
-      newParentId = null;
-    } else {
-      const container = findSiteContainer(draggedId, finalContainers);
-      newParentId = container && container !== ROOT ? container : null;
+  // Layout saves run one at a time, in order: each sends the full order, so a
+  // save that is still queued behind a newer one is skipped, and a failure
+  // rolls back only when no newer order is on its way.
+  const commitDrag = async (finalContainers: SiteContainers): Promise<boolean> => {
+    const requested =
+      requestedContainersRef.current ?? buildSiteContainers(persistedEntriesRef.current);
+    if (siteContainersMatch(finalContainers, requested)) {
+      syncStaleEntries();
+      return true;
     }
-    const orderedIds = flattenSiteContainers(finalContainers);
-    const finalEntries = orderedIds
+    const parentById = new Map<string, string | null>();
+    for (const [key, ids] of Object.entries(finalContainers)) {
+      if (key === FOLDERS) continue;
+      for (const id of ids) parentById.set(id, key === ROOT ? null : key);
+    }
+    const finalEntries = flattenSiteContainers(finalContainers)
       .map((id) => entriesById.get(id))
       .filter((entry): entry is ManagedSite => entry != null)
-      .map((e) => (e.id === draggedId ? { ...e, parentId: newParentId } : e));
-    setLocalEntries(finalEntries);
+      .map((entry) => {
+        if (entry.kind === 'folder') return entry;
+        const parentId = parentById.get(entry.id) ?? null;
+        return (entry.parentId || null) === parentId ? entry : { ...entry, parentId };
+      });
     const layout = finalEntries.map((e) => ({
       id: e.id,
       parentId: e.kind === 'folder' ? null : e.parentId || null,
     }));
-    let errorMessage = '';
-    try {
-      const result = await onApplyLayout(layout);
-      if (result?.ok !== false) {
-        committingRef.current = false;
-        return true;
-      }
-      errorMessage = result.error || '';
-    } catch (cause) {
-      errorMessage = cause instanceof Error ? cause.message : '';
-    }
+    const seq = ++commitSeqRef.current;
+    pendingCommitsRef.current += 1;
+    requestedContainersRef.current = finalContainers;
+    setLocalEntries(finalEntries);
 
-    // The renderer owns an optimistic projection only — restore the last
-    // persisted snapshot.
-    setLocalEntries([...persistedEntries]);
-    applyContainers(buildSiteContainers(persistedEntries));
-    committingRef.current = false;
-    onCommitError?.(errorMessage);
-    return false;
+    const send = async (): Promise<string | null> => {
+      if (seq !== commitSeqRef.current) return null;
+      try {
+        const result = await onApplyLayout(layout);
+        if (result?.ok !== false) {
+          persistedEntriesRef.current = finalEntries;
+          return null;
+        }
+        return result.error || '';
+      } catch (cause) {
+        return cause instanceof Error ? cause.message : '';
+      }
+    };
+    const outcome = commitQueueRef.current.then(send);
+    commitQueueRef.current = outcome;
+    const errorMessage = await outcome;
+    pendingCommitsRef.current -= 1;
+
+    if (errorMessage !== null && seq === commitSeqRef.current) {
+      // The renderer owns an optimistic projection only — restore the last
+      // persisted snapshot.
+      const persisted = persistedEntriesRef.current;
+      requestedContainersRef.current = null;
+      setLocalEntries([...persisted]);
+      if (!draggingRef.current) applyContainers(buildSiteContainers(persisted));
+      onCommitError?.(errorMessage);
+    }
+    syncStaleEntries();
+    return errorMessage === null;
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -497,7 +545,8 @@ export function useSiteDragController({
         setDropTargetFolderId(null);
         setDragContentHeight(null);
       });
-      if (shouldCommit) void commitDrag(next, String(active.id), activeKind);
+      if (shouldCommit) void commitDrag(next);
+      else syncStaleEntries();
     };
 
     if (activeKind !== 'folder' && dropAtRootEnd) {
@@ -531,15 +580,14 @@ export function useSiteDragController({
       return;
     }
 
-    // With no cross-container projection this drag, the sortable animation has
-    // already shown the row at `over`'s index; the fallback below lands there.
-    const projected = !siteContainersMatch(cs, buildSiteContainers(localEntries));
-    if (activeKind !== 'folder' && projected) {
-      const activeId = String(active.id);
-      const overId = String(over.id);
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeKind !== 'folder') {
       const sourceContainer = findSiteContainer(activeId, cs);
       const destinationContainer = resolveSiteOverContainer(over.id, cs);
-      if (sourceContainer && destinationContainer && overId !== activeId) {
+      // handleDragOver moves a site between containers as soon as `over`
+      // enters another one, so this only covers a hop it has not seen yet.
+      if (sourceContainer && destinationContainer && sourceContainer !== destinationContainer) {
         const overIndex = cs[destinationContainer]?.indexOf(overId) ?? -1;
         const translated = active.rect.current.translated;
         const insertAfter = Boolean(
@@ -547,21 +595,16 @@ export function useSiteDragController({
           translated &&
           translated.top + translated.height / 2 > over.rect.top + over.rect.height / 2,
         );
-        const next = moveSiteRelative(cs, activeId, destinationContainer, overId, insertAfter);
-        finishDrop(next);
+        finishDrop(moveSiteRelative(cs, activeId, destinationContainer, overId, insertAfter));
         return;
       }
     }
 
-    const activeId = String(active.id);
-    const overId = String(over.id);
+    // Within one container the sortable animation has already shown the row
+    // at `over`'s index, so the drop lands exactly there.
     const containerKey = activeKind === 'folder' ? FOLDERS : findSiteContainer(activeId, cs);
-    if (!containerKey) {
-      finishDrop(cs);
-      return;
-    }
-    const list = cs[containerKey];
-    if (!list) {
+    const list = containerKey ? cs[containerKey] : undefined;
+    if (!containerKey || !list) {
       finishDrop(cs);
       return;
     }
@@ -585,7 +628,7 @@ export function useSiteDragController({
     if (oldIndex === -1 || newIndex < 0 || newIndex >= list.length) return;
     const next = { ...cs, [containerKey]: arrayMove(list, oldIndex, newIndex) };
     applyContainers(next);
-    await commitDrag(next, id, kind);
+    await commitDrag(next);
   };
 
   const handleDragCancel = () => {
@@ -595,6 +638,7 @@ export function useSiteDragController({
     setDropTargetFolderId(null);
     setDragContentHeight(null);
     applyContainers(buildSiteContainers(localEntries));
+    syncStaleEntries();
   };
 
   return {

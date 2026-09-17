@@ -122,7 +122,7 @@ export default function SiteTree({
   t,
 }: SiteTreeProps) {
   const [contextMenu, setContextMenu] = useState<TreeContextMenu | null>(null);
-  const { focusedId, handleKeyDown, registerFocusNode, setFocusedId } = useSiteTreeNavigation({
+  const { handleKeyDown, registerFocusNode } = useSiteTreeNavigation({
     activeId,
     containers,
     entriesById,
@@ -185,8 +185,6 @@ export default function SiteTree({
         onCommitRename={() => onCommitRenameSite(site)}
         onCancelRename={onCancelRenameSite}
         onContextMenu={(e) => openContextMenu(e, items)}
-        isFocused={focusedId === site.id}
-        onRowFocus={() => setFocusedId(site.id)}
         collapseDraggingSource={Boolean(dropTargetFolderId) && canCollapseSource}
         registerNode={registerRowNode(site.id)}
         focusRef={registerFocusNode(site.id)}
@@ -216,8 +214,6 @@ export default function SiteTree({
         onStartRenameFolder={onStartRenameFolder}
         onRequestDelete={onRequestDelete}
         onContextMenu={(e) => openContextMenu(e, items)}
-        isFocused={focusedId === folder.id}
-        onRowFocus={() => setFocusedId(folder.id)}
         registerNode={registerRowNode(folder.id)}
         focusRef={registerFocusNode(folder.id)}
         t={t}
@@ -280,7 +276,11 @@ export default function SiteTree({
                 onBlur={onCommitAddFolder}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.currentTarget.blur();
-                  if (e.key === 'Escape') onCancelAddFolder();
+                  if (e.key === 'Escape') {
+                    // Backs out of the field only; the dialog stays open.
+                    e.stopPropagation();
+                    onCancelAddFolder();
+                  }
                 }}
               />
             </div>

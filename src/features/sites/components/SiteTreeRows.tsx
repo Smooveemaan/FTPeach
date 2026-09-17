@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react';
+import type { MouseEvent, PointerEventHandler, ReactNode } from 'react';
 import { DragOverlay, useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -90,8 +90,6 @@ interface SortableSiteRowProps {
   onCommitRename: () => void;
   onCancelRename: () => void;
   onContextMenu: (event: MouseEvent<HTMLDivElement>) => void;
-  isFocused: boolean;
-  onRowFocus: () => void;
   collapseDraggingSource: boolean;
   registerNode: SiteTreeRowNodeRef;
   focusRef: SiteTreeRowNodeRef;
@@ -111,8 +109,6 @@ export function SortableSiteRow({
   onCommitRename,
   onCancelRename,
   onContextMenu,
-  isFocused,
-  onRowFocus,
   collapseDraggingSource,
   registerNode,
   focusRef,
@@ -141,9 +137,9 @@ export function SortableSiteRow({
       {...listeners}
       role="treeitem"
       aria-level={level}
-      tabIndex={isFocused ? 0 : -1}
+      // Every row is its own Tab stop, ahead of its action buttons.
+      tabIndex={0}
       data-row-id={site.id}
-      onFocus={onRowFocus}
       onContextMenu={onContextMenu}
       onClick={(e) => {
         if (e.target instanceof Element && e.target.closest('button, input')) return;
@@ -166,7 +162,10 @@ export function SortableSiteRow({
           onBlur={onCommitRename}
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') onCancelRename();
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              onCancelRename();
+            }
           }}
         />
       ) : (
@@ -230,8 +229,6 @@ interface SortableFolderRowProps {
   onStartRenameFolder: (folder: ManagedSite) => void;
   onRequestDelete: (target: SiteDeleteTarget) => void;
   onContextMenu: (event: MouseEvent<HTMLDivElement>) => void;
-  isFocused: boolean;
-  onRowFocus: () => void;
   registerNode: SiteTreeRowNodeRef;
   focusRef: SiteTreeRowNodeRef;
   t: Translate;
@@ -252,8 +249,6 @@ export function SortableFolderRow({
   onStartRenameFolder,
   onRequestDelete,
   onContextMenu,
-  isFocused,
-  onRowFocus,
   registerNode,
   focusRef,
   t,
@@ -264,8 +259,12 @@ export function SortableFolderRow({
       id: folder.id,
       data: { kind: 'folder' },
     });
+  // The keyboard picks the folder up from the focused row itself, which is
+  // the node dnd-kit's KeyboardSensor accepts Space from; the pointer only
+  // from its header, so a drag that starts on a child row moves that child.
   const setRefs = (node: HTMLElement | null) => {
     setNodeRef(node);
+    setActivatorNodeRef(node);
     registerNode(node);
     focusRef(node);
   };
@@ -287,10 +286,10 @@ export function SortableFolderRow({
       aria-label={folder.name}
       aria-level={1}
       aria-expanded={expanded}
-      tabIndex={isFocused ? 0 : -1}
+      // Every row is its own Tab stop, ahead of its action buttons.
+      tabIndex={0}
       data-row-id={folder.id}
       data-kind="folder"
-      onFocus={onRowFocus}
       onContextMenu={(event) => {
         if (
           event.target instanceof Element &&
@@ -302,12 +301,11 @@ export function SortableFolderRow({
     >
       <div
         className={`site-manage-row is-folder${isDropTarget ? ' drop-target' : ''}`}
-        ref={setActivatorNodeRef}
         onClick={(e) => {
           if (e.target instanceof Element && e.target.closest('button, input')) return;
           onToggle();
         }}
-        {...listeners}
+        onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLDivElement> | undefined}
       >
         <button
           type="button"
@@ -339,7 +337,10 @@ export function SortableFolderRow({
             onBlur={onCommitRename}
             onKeyDown={(e) => {
               if (e.key === 'Enter') e.currentTarget.blur();
-              if (e.key === 'Escape') onCancelRename();
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                onCancelRename();
+              }
             }}
           />
         ) : (

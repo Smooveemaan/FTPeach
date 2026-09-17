@@ -14,6 +14,8 @@ type CollisionArgs = Parameters<SiteDragController['collisionDetection']>[0];
 interface ComputedLayout {
   headerRects: Map<string, DOMRect>;
   childRectsByFolder: Map<string, Map<string, DOMRect>>;
+  rootRects: Map<string, DOMRect>;
+  rootZone: DOMRect;
   bottom: number;
 }
 
@@ -51,7 +53,17 @@ function computeLayout(
     }
     cursor += GAP;
   }
-  return { headerRects, childRectsByFolder, bottom: cursor };
+  // The ROOT zone follows the folders, as in the real tree.
+  const rootTop = cursor;
+  const rootRects = new Map<string, DOMRect>();
+  for (const id of containers[ROOT]) {
+    if (id === collapsedRowId) continue;
+    const rootRect = rect(cursor, cursor + ROW_H);
+    rootRects.set(id, rootRect);
+    cursor = rootRect.bottom + GAP;
+  }
+  const rootZone = rect(rootTop, Math.max(cursor, rootTop + 24));
+  return { headerRects, childRectsByFolder, rootRects, rootZone, bottom: rootZone.bottom };
 }
 
 // The row currently pulled out of flow, if any (see computeLayout above).
@@ -116,8 +128,14 @@ function stepDrag(
   const collisionRect = rect(top, top + ROW_H);
   active.rect.current.translated = collisionRect;
 
-  const droppableRects = new Map([[ROOT, rect(10000, 10038)]]);
+  // Every rendered row is a droppable, the dragged one included: dnd-kit keeps
+  // the active row's own placeholder in the collision set.
+  const droppableRects = new Map([[ROOT, layout.rootZone]]);
   const droppableContainers = [{ id: ROOT }];
+  for (const [siteId, siteRect] of layout.rootRects) {
+    droppableRects.set(siteId, siteRect);
+    droppableContainers.push({ id: siteId });
+  }
   for (const folderId of folderIds) {
     const headerRect = layout.headerRects.get(folderId);
     if (!headerRect) throw new Error(`Missing header for ${folderId}`);
@@ -392,12 +410,52 @@ describe('useSiteDragController: reaching the exact end of an open folder', () =
     const active = makeActive('drag-site', 500);
     act(() => result.current.handleDragStart(dragStartEvent(active, 519)));
 
-    // Walk up from well below the folder to just past c2's own top edge —
-    // deep enough into c2's territory that "insert after" is unambiguous.
+    // Walk up from below until the site is projected into the folder (after
+    // c2), then settle where its own placeholder, not c2, is under it: that
+    // is where the animation shows it as the last child.
     let overId: UniqueIdentifier | null = null;
     let overRect: DOMRect | null = null;
-    for (let top = 400; top >= 95; top -= 1) {
+    let top = 400;
+    while (!result.current.containers['open-a']?.includes('drag-site') && top > 0) {
       ({ overId, overRect } = stepDrag(result, active, folderIds, expandedFolderIds, top));
+      top -= 1;
+    }
+    expect(result.current.containers['open-a']).toEqual(['c1', 'c2', 'drag-site']);
+    while (overId !== 'drag-site' && top < 400) {
+      top += 1;
+      ({ overId, overRect } = stepDrag(result, active, folderIds, expandedFolderIds, top));
+    }
+    expect(overId).toBe('drag-site');
+
+    act(() => {
+      result.current.handleDragEnd(dragEndEvent(active, overId, overRect));
+    });
+
+    expect(result.current.containers['open-a']).toEqual(['c1', 'c2', 'drag-site']);
+  });
+
+  test('after moving into a folder, a drop over c2 lands above it, where the animation shows it', () => {
+    const entries: ManagedSite[] = [
+      { id: 'open-a', kind: 'folder', parentId: null, name: 'open-a' },
+      { id: 'c1', kind: 'site', parentId: 'open-a', name: 'c1' },
+      { id: 'c2', kind: 'site', parentId: 'open-a', name: 'c2' },
+      { id: 'drag-site', kind: 'site', parentId: null, name: 'drag-site' },
+    ];
+    const folderIds = ['open-a'];
+    const expandedFolderIds = new Set(folderIds);
+    const onApplyLayout = () => Promise.resolve({ ok: true });
+    const { result } = renderHook(() => useSiteDragController({ entries, onApplyLayout }));
+    registerLiveFolderNodes(result, folderIds, expandedFolderIds);
+
+    const active = makeActive('drag-site', 120);
+    act(() => result.current.handleDragStart(dragStartEvent(active, 139)));
+
+    let overId: UniqueIdentifier | null = null;
+    let overRect: DOMRect | null = null;
+    let top = 120;
+    while (!result.current.containers['open-a']?.includes('drag-site') && top > 0) {
+      ({ overId, overRect } = stepDrag(result, active, folderIds, expandedFolderIds, top));
+      top -= 1;
     }
     expect(overId).toBe('c2');
 
@@ -405,7 +463,67 @@ describe('useSiteDragController: reaching the exact end of an open folder', () =
       result.current.handleDragEnd(dragEndEvent(active, overId, overRect));
     });
 
-    expect(result.current.containers['open-a']).toEqual(['c1', 'c2', 'drag-site']);
+    expect(result.current.containers['open-a']).toEqual(['c1', 'drag-site', 'c2']);
+  });
+});
+
+describe('useSiteDragController: the bottom edge of a scrolled list', () => {
+  const rootEntries: ManagedSite[] = ['a', 'b', 'c', 'd', 'e'].map((id) => ({
+    id: `site-${id}`,
+    kind: 'site',
+    parentId: null,
+    name: id,
+  }));
+
+  // A 200px-tall list; the pointer sits in its bottom edge zone over site-c.
+  function dropInBottomEdge(rootZone: DOMRect) {
+    const onApplyLayout = () => Promise.resolve({ ok: true });
+    const { result } = renderHook(() =>
+      useSiteDragController({ entries: rootEntries, onApplyLayout }),
+    );
+    const list = {
+      getBoundingClientRect: () => rect(0, 200),
+      querySelector: () => ({ getBoundingClientRect: () => rootZone }),
+      scrollHeight: rootZone.height,
+      clientHeight: 200,
+      scrollTop: 0,
+    };
+    act(() => {
+      result.current.registerRowNode('site-a')({
+        getBoundingClientRect: () => rect(0, 38),
+        closest: () => list,
+      } as unknown as HTMLElement);
+    });
+    const active = makeActive('site-a', 0);
+    act(() => result.current.handleDragStart(dragStartEvent(active, 19)));
+    act(() => {
+      window.dispatchEvent(new window.PointerEvent('pointermove', { clientX: 50, clientY: 190 }));
+    });
+    active.rect.current.translated = rect(120, 158);
+    act(() => {
+      result.current.handleDragEnd(dragEndEvent(active, 'site-c', rect(80, 118)));
+    });
+    return result.current.containers[ROOT];
+  }
+
+  test('mid-scroll, a drop there lands on the row under the pointer, not past unseen rows', () => {
+    expect(dropInBottomEdge(rect(0, 400))).toEqual([
+      'site-b',
+      'site-c',
+      'site-a',
+      'site-d',
+      'site-e',
+    ]);
+  });
+
+  test('once the end of the list is on screen, a drop there lands at the very end', () => {
+    expect(dropInBottomEdge(rect(0, 200))).toEqual([
+      'site-b',
+      'site-c',
+      'site-d',
+      'site-e',
+      'site-a',
+    ]);
   });
 });
 
@@ -464,6 +582,161 @@ describe('useSiteDragController: a folder squeezed between two real rows stays c
     expect(firstHit).not.toBeNull();
     if (lastHit == null || firstHit == null) throw new Error('Expected closed-mid collision range');
     expect(lastHit - firstHit + 1).toBeGreaterThan(20);
+  });
+});
+
+describe('useSiteDragController: reordering bookmarks within one list', () => {
+  const rootEntries: ManagedSite[] = [
+    { id: 'site-a', kind: 'site', parentId: null, name: 'Alpha' },
+    { id: 'site-b', kind: 'site', parentId: null, name: 'Beta' },
+    { id: 'site-c', kind: 'site', parentId: null, name: 'Gamma' },
+  ];
+
+  // The sortable animation swaps rows as soon as `over` changes, which happens
+  // well before the dragged row's centre passes the neighbour's centre.
+  test.each([
+    ['down', 'site-a', 0, 22, 'site-b', ['site-b', 'site-a', 'site-c']],
+    ['up', 'site-c', 80, 58, 'site-b', ['site-a', 'site-c', 'site-b']],
+  ])(
+    'dropping %s just past half a row lands where the animation showed it',
+    (_direction, activeId, initialTop, droppedTop, overId, expected) => {
+      const onApplyLayout = () => Promise.resolve({ ok: true });
+      const { result } = renderHook(() =>
+        useSiteDragController({ entries: rootEntries, onApplyLayout }),
+      );
+      const active = makeActive(activeId, initialTop);
+      active.rect.current.translated = rect(droppedTop, droppedTop + ROW_H);
+
+      act(() => {
+        result.current.handleDragStart(dragStartEvent(active, initialTop + 19));
+        result.current.handleDragEnd(dragEndEvent(active, overId, rect(40, 78)));
+      });
+
+      expect(result.current.containers[ROOT]).toEqual(expected);
+    },
+  );
+});
+
+describe('useSiteDragController: layout saves in flight', () => {
+  const rootEntries: ManagedSite[] = ['a', 'b', 'c'].map((id) => ({
+    id: `site-${id}`,
+    kind: 'site',
+    parentId: null,
+    name: id,
+  }));
+  type LayoutResult = { ok: boolean; error?: string };
+
+  function deferredApply() {
+    const pending: ((_result: LayoutResult) => void)[] = [];
+    const onApplyLayout = vi.fn(
+      () => new Promise<LayoutResult>((resolve) => pending.push(resolve)),
+    );
+    return { onApplyLayout, pending };
+  }
+
+  test('rapid moves save one at a time and skip an order a newer one replaces', async () => {
+    const { onApplyLayout, pending } = deferredApply();
+    const { result } = renderHook(() =>
+      useSiteDragController({ entries: rootEntries, onApplyLayout }),
+    );
+
+    act(() => void result.current.moveEntryBy('site-a', 'site', 1));
+    await waitFor(() => expect(onApplyLayout).toHaveBeenCalledTimes(1));
+    act(() => void result.current.moveEntryBy('site-a', 'site', 1));
+    act(() => void result.current.moveEntryBy('site-c', 'site', -1));
+    act(() => void result.current.moveEntryBy('site-c', 'site', 1));
+    expect(result.current.containers[ROOT]).toEqual(['site-b', 'site-c', 'site-a']);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(onApplyLayout).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      pending[0]?.({ ok: true });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(onApplyLayout).toHaveBeenCalledTimes(2));
+    expect(onApplyLayout).toHaveBeenLastCalledWith([
+      { id: 'site-b', parentId: null },
+      { id: 'site-c', parentId: null },
+      { id: 'site-a', parentId: null },
+    ]);
+    await act(async () => {
+      pending[1]?.({ ok: true });
+      await Promise.resolve();
+    });
+    expect(onApplyLayout).toHaveBeenCalledTimes(2);
+    expect(result.current.containers[ROOT]).toEqual(['site-b', 'site-c', 'site-a']);
+  });
+
+  test('a failed save rolls back to the last saved order, not the one before it', async () => {
+    const { onApplyLayout, pending } = deferredApply();
+    const onCommitError = vi.fn();
+    const { result } = renderHook(() =>
+      useSiteDragController({ entries: rootEntries, onApplyLayout, onCommitError }),
+    );
+
+    act(() => void result.current.moveEntryBy('site-a', 'site', 1));
+    await waitFor(() => expect(onApplyLayout).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      pending[0]?.({ ok: true });
+      await Promise.resolve();
+    });
+    act(() => void result.current.moveEntryBy('site-a', 'site', 1));
+    await waitFor(() => expect(onApplyLayout).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      pending[1]?.({ ok: false, error: 'Layout failed' });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(onCommitError).toHaveBeenCalledWith('Layout failed'));
+    expect(result.current.containers[ROOT]).toEqual(['site-b', 'site-a', 'site-c']);
+  });
+
+  test('a list refreshed mid-drag is applied once the drag ends', () => {
+    const onApplyLayout = () => Promise.resolve({ ok: true });
+    const { result, rerender } = renderHook(
+      ({ entries }) => useSiteDragController({ entries, onApplyLayout }),
+      { initialProps: { entries: rootEntries } },
+    );
+    const refreshed: ManagedSite[] = [
+      ...rootEntries,
+      { id: 'site-d', kind: 'site', parentId: null, name: 'd' },
+    ];
+
+    act(() => result.current.handleDragStart(dragStartEvent(makeActive('site-a', 0), 19)));
+    rerender({ entries: refreshed });
+    expect(result.current.containers[ROOT]).toEqual(['site-a', 'site-b', 'site-c']);
+
+    act(() => result.current.handleDragCancel());
+    expect(result.current.containers[ROOT]).toEqual(['site-a', 'site-b', 'site-c', 'site-d']);
+  });
+
+  test('a list refreshed while a save is in flight is applied once it settles', async () => {
+    const { onApplyLayout, pending } = deferredApply();
+    const { result, rerender } = renderHook(
+      ({ entries }) => useSiteDragController({ entries, onApplyLayout }),
+      { initialProps: { entries: rootEntries } },
+    );
+
+    act(() => void result.current.moveEntryBy('site-a', 'site', 1));
+    await waitFor(() => expect(onApplyLayout).toHaveBeenCalledTimes(1));
+    const refreshed: ManagedSite[] = [
+      rootEntries[1]!,
+      rootEntries[0]!,
+      rootEntries[2]!,
+      { id: 'site-d', kind: 'site', parentId: null, name: 'd' },
+    ];
+    rerender({ entries: refreshed });
+    expect(result.current.containers[ROOT]).toEqual(['site-b', 'site-a', 'site-c']);
+
+    await act(async () => {
+      pending[0]?.({ ok: true });
+      await Promise.resolve();
+    });
+    await waitFor(() =>
+      expect(result.current.containers[ROOT]).toEqual(['site-b', 'site-a', 'site-c', 'site-d']),
+    );
   });
 });
 

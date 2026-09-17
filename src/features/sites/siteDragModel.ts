@@ -27,16 +27,6 @@ export function computeVisibleSiteOrder(
   return order;
 }
 
-export function resolveVisibleSiteFocus(
-  visibleEntries: readonly VisibleSiteEntry[],
-  focusedId: string | null,
-  parentId?: string | null,
-): string | null {
-  if (focusedId && visibleEntries.some((entry) => entry.id === focusedId)) return focusedId;
-  if (parentId && visibleEntries.some((entry) => entry.id === parentId)) return parentId;
-  return visibleEntries[0]?.id ?? null;
-}
-
 export function buildSiteContainers(entries: readonly ManagedSite[]): SiteContainers {
   const folderIds = new Set<string>();
   for (const entry of entries) {

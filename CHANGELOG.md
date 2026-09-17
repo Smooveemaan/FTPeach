@@ -26,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - WebDAV works through SOCKS4 proxies, and file names with `&` no longer break on WebDAV.
 - A full disk on the server is reported as a full disk instead of a lost connection.
 - Bookmarks with a connection limit can be imported again after exporting them.
+- A dragged bookmark lands where the list showed it, even when you let go early.
+- Dragging a bookmark to the bottom edge of a scrolled list no longer sends it to the very end.
+- Quickly reordering bookmarks no longer loses a move or snaps the list back.
+- Escape in the bookmark search or a name field no longer closes the whole bookmark manager.
+- Folders in the bookmark manager can be picked up and moved with Space.
+- Tab reaches every folder and bookmark in the bookmark manager, not just the first folder.
 
 ## [0.2.2] - 2026-09-14
 

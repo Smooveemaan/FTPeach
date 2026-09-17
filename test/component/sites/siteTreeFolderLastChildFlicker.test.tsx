@@ -180,8 +180,8 @@ describe("SiteTree: an open folder's own last child during a live cross-containe
         ['open-a', l.headerRect],
       ]);
       const droppableContainers = [{ id: ROOT }, { id: 'open-a' }];
+      // The dragged row's own placeholder stays a droppable, as in dnd-kit.
       for (const [id, r] of l.rootRects) {
-        if (id === active.id) continue;
         droppableRects.set(id, r);
         droppableContainers.push({ id });
       }
@@ -226,8 +226,13 @@ describe("SiteTree: an open folder's own last child during a live cross-containe
     }
     expect(landedOnC2).toBe(true);
 
-    // Hold at that exact pixel a few more frames before releasing, the way a
-    // real pointer settles briefly before the button comes up.
+    // Over c2 the animation shows the site above it; ease back down until its
+    // own placeholder after c2 is under it, then hold a few frames before
+    // releasing, the way a real pointer settles before the button comes up.
+    while (overIds.at(-1) !== 'drag-site' && top <= startTop) {
+      top += 1;
+      overIds.push(await stepTo(top));
+    }
     for (let i = 0; i < 5; i += 1) {
       overIds.push(await stepTo(top));
     }
@@ -237,7 +242,8 @@ describe("SiteTree: an open folder's own last child during a live cross-containe
     act(() => {
       controller.handleDragEnd({
         active,
-        over: lastOverId == null ? null : { id: lastOverId, rect: layout().childRects.get('c2') },
+        over:
+          lastOverId == null ? null : { id: lastOverId, rect: layout().childRects.get(lastOverId) },
       } as unknown as DragEndEvent);
     });
     doRerender();

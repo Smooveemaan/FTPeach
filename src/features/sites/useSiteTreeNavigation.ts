@@ -1,7 +1,7 @@
-import type { Dispatch, KeyboardEvent, SetStateAction } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
+import { useRef } from 'react';
 import type { ManagedSite, SiteContainers } from '../../shared/types.ts';
-import { computeVisibleSiteOrder, resolveVisibleSiteFocus } from './siteDragModel.ts';
+import { computeVisibleSiteOrder } from './siteDragModel.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 
 interface UseSiteTreeNavigationOptions {
@@ -19,10 +19,8 @@ interface UseSiteTreeNavigationOptions {
 }
 
 export interface SiteTreeNavigationModel {
-  focusedId: string | null;
   handleKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
   registerFocusNode: (id: string) => (node: HTMLElement | null) => void;
-  setFocusedId: Dispatch<SetStateAction<string | null>>;
 }
 
 export function useSiteTreeNavigation({
@@ -38,20 +36,6 @@ export function useSiteTreeNavigation({
   onToggleFolder,
 }: UseSiteTreeNavigationOptions): SiteTreeNavigationModel {
   const rowNodesRef = useRef(new Map<string, HTMLElement>());
-  const [focusedId, setFocusedId] = useState<string | null>(
-    () => computeVisibleSiteOrder(containers, expandedFolderIds)[0]?.id ?? null,
-  );
-
-  useEffect(() => {
-    const visible = computeVisibleSiteOrder(containers, expandedFolderIds);
-    const nextFocusedId = resolveVisibleSiteFocus(
-      visible,
-      focusedId,
-      focusedId ? entriesById.get(focusedId)?.parentId : null,
-    );
-    if (nextFocusedId !== focusedId) setFocusedId(nextFocusedId);
-  }, [containers, expandedFolderIds, entriesById, focusedId]);
-
   const registerFocusNode =
     (id: string) =>
     (node: HTMLElement | null): void => {
@@ -124,9 +108,7 @@ export function useSiteTreeNavigation({
   };
 
   return {
-    focusedId,
     handleKeyDown,
     registerFocusNode,
-    setFocusedId,
   };
 }

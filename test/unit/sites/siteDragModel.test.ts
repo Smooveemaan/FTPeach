@@ -7,7 +7,6 @@ import {
   FOLDERS,
   moveSiteToContainerEnd,
   moveSiteRelative,
-  resolveVisibleSiteFocus,
   ROOT,
   siteContainersMatch,
 } from '../../../src/features/sites/siteDragModel.ts';
@@ -46,15 +45,6 @@ test('visible tree order includes children only for expanded folders', () => {
     { id: 'root-a', kind: 'site' },
     { id: 'root-b', kind: 'site' },
   ]);
-});
-
-test('tree focus falls back to a collapsed child parent, then to the first visible row', () => {
-  const collapsed = computeVisibleSiteOrder(buildSiteContainers(entries), new Set());
-
-  assert.equal(resolveVisibleSiteFocus(collapsed, 'root-b'), 'root-b');
-  assert.equal(resolveVisibleSiteFocus(collapsed, 'inside-a', 'folder-a'), 'folder-a');
-  assert.equal(resolveVisibleSiteFocus(collapsed, 'deleted'), 'folder-a');
-  assert.equal(resolveVisibleSiteFocus([], 'deleted'), null);
 });
 
 test('buildSiteContainers falls back a dangling parentId to root instead of dropping the site', () => {

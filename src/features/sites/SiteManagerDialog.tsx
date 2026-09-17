@@ -407,7 +407,7 @@ export default function SiteManagerDialog({
         }
         onClose={editing ? requestCancelEdit : onClose}
         className="modal-site-manager"
-        closeDisabled={!!pendingDelete || saving}
+        closeDisabled={!!pendingDelete || saving || activeId != null}
         footer={
           editing ? (
             <ModalFooterActions
@@ -452,6 +452,7 @@ export default function SiteManagerDialog({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key !== 'Escape') return;
+                  e.stopPropagation();
                   setSearchQuery('');
                   closeSearch();
                 }}

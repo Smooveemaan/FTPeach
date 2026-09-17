@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -874,6 +874,69 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
       expect.objectContaining({ id: 'site-1', name: 'Prod Renamed', host: 'prod.example.test' }),
     );
     expect(screen.queryByRole('textbox', { name: 'siteManagerDialog.fields.name' })).toBeNull();
+  });
+
+  test('Tab reaches every row, folder headers included, on every pass', async () => {
+    const user = userEvent.setup();
+    renderManager();
+
+    const reached: string[] = [];
+    for (let i = 0; i < 60; i += 1) {
+      await user.tab();
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active.getAttribute('role') === 'treeitem') {
+        reached.push(active.dataset.rowId ?? '');
+      }
+    }
+
+    expect(reached.filter((id) => id === 'folder-1').length).toBeGreaterThanOrEqual(2);
+    expect(reached.filter((id) => id === 'site-1').length).toBeGreaterThanOrEqual(2);
+    expect(reached.slice(0, 4)).toEqual(['folder-1', 'site-1', 'folder-1', 'site-1']);
+  });
+
+  test('Space on a focused folder row picks it up, and Escape then only drops it', async () => {
+    const { props } = renderManager();
+
+    const folderRow = screen.getByRole('treeitem', { name: 'Servers' });
+    act(() => {
+      fireEvent.keyDown(folderRow, { key: ' ', code: 'Space' });
+    });
+    expect(folderRow.classList.contains('dragging')).toBe(true);
+
+    // dnd-kit's KeyboardSensor starts listening for keys on the next tick.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    act(() => {
+      fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+    });
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('treeitem', { name: 'Servers' }).classList.contains('dragging')).toBe(
+      false,
+    );
+  });
+
+  test.each([
+    ['search', 'siteManagerDialog.searchPlaceholder'],
+    ['new folder', 'siteManagerDialog.folderNamePlaceholder'],
+    ['bookmark rename', 'filePane.rename'],
+    ['folder rename', 'siteManagerDialog.folderNamePlaceholder'],
+  ])('Escape in the %s field backs out of it without closing the dialog', async (field, label) => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+
+    if (field === 'new folder') {
+      await user.click(screen.getByRole('button', { name: 'siteManagerDialog.newFolder' }));
+    } else if (field === 'bookmark rename') {
+      const row = screen.getByText('Production').closest('.site-manage-row');
+      fireEvent.contextMenu(requireHtml(row), { clientX: 10, clientY: 10 });
+      await user.click(screen.getByText('filePane.rename'));
+    } else if (field === 'folder rename') {
+      fireEvent.keyDown(screen.getByRole('treeitem', { name: 'Servers' }), { key: 'F2' });
+    }
+
+    fireEvent.keyDown(screen.getByRole('textbox', { name: label }), { key: 'Escape' });
+    expect(props.onClose).not.toHaveBeenCalled();
   });
 
   test('reports and rolls back a failed keyboard reorder', async () => {

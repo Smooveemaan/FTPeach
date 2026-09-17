@@ -9,6 +9,7 @@ pub mod known_hosts;
 mod list_parse;
 mod proxy;
 pub mod sftp;
+mod socks_bridge;
 pub mod transfer_file;
 pub mod transport;
 pub mod webdav;

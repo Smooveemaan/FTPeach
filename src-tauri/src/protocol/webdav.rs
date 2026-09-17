@@ -105,6 +105,8 @@ pub struct WebDavBackend {
     password: String,
     connected: bool,
     logger: BackendLogger,
+    /// Carries the connection's SOCKS4 proxy, which reqwest cannot speak.
+    socks_bridge: Option<super::socks_bridge::SocksBridge>,
 }
 
 impl WebDavBackend {
@@ -147,9 +149,8 @@ impl WebDavBackend {
         let scheme = match cfg.kind {
             // The proxy resolves the server's name, as it does for FTP and
             // SFTP: a name only the proxy's network knows still connects.
-            // Not over SOCKS4: hyper-util writes the SOCKS4a request with an
-            // extra NUL before the name, which proxies read as an empty name.
-            ProxyKind::Socks4 => "socks4",
+            // reqwest cannot speak SOCKS4; connect bridges it as SOCKS5.
+            ProxyKind::Socks4 => bail!("a SOCKS4 proxy has to go through the SOCKS bridge"),
             ProxyKind::Socks5 => "socks5h",
             ProxyKind::Http => "http",
         };
@@ -459,6 +460,16 @@ impl ProtocolBackend for WebDavBackend {
         );
 
         let idle = Duration::from_millis(if timeout_ms == 0 { 60_000 } else { timeout_ms });
+        let proxy = match &config.common.proxy {
+            Some(proxy) if proxy.kind == super::transport::ProxyKind::Socks4 => {
+                let bridge = super::socks_bridge::start(proxy.clone()).await?;
+                let proxy = reqwest::Proxy::all(&bridge.url).context("invalid proxy configuration");
+                self.socks_bridge = Some(bridge);
+                Some(proxy?)
+            }
+            Some(proxy) => Some(Self::build_proxy(proxy)?),
+            None => None,
+        };
         let build_client = |read_timeout: bool| -> BackendResult<Client> {
             let mut builder = Client::builder().redirect(same_origin_redirects());
             if read_timeout {
@@ -482,8 +493,8 @@ impl ProtocolBackend for WebDavBackend {
                     builder = builder.add_root_certificate(cert);
                 }
             }
-            if let Some(proxy_cfg) = &config.common.proxy {
-                builder = builder.proxy(Self::build_proxy(proxy_cfg)?);
+            if let Some(proxy) = &proxy {
+                builder = builder.proxy(proxy.clone());
             }
             builder.build().context("failed to create HTTP client")
         };
@@ -552,6 +563,7 @@ impl ProtocolBackend for WebDavBackend {
     async fn disconnect(&mut self) -> BackendResult<()> {
         self.client = None;
         self.upload_client = None;
+        self.socks_bridge = None;
         self.connected = false;
         Ok(())
     }

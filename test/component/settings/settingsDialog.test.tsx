@@ -54,6 +54,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     onPreview: vi.fn(),
     onSave: vi.fn(),
     onClose: vi.fn(),
+    onVaultUnlockRequired: vi.fn(),
     ...overrides,
   };
   return { ...render(<SettingsDialog {...props} />), props };
@@ -91,6 +92,26 @@ describe('SettingsDialog unsaved-changes gate', () => {
     );
     finish({ ok: true });
     await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+  });
+  test('asks to unlock the vault and retries the same save', async () => {
+    const user = userEvent.setup();
+    const onSave = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, error: 'Vault is locked' })
+      .mockResolvedValueOnce({ ok: true });
+    const onVaultUnlockRequired = vi.fn();
+    const { props } = renderDialog({ onSave, onVaultUnlockRequired });
+    await toggleNotifyOnComplete(user);
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    await waitFor(() => expect(onVaultUnlockRequired).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
+    const [[retry]] = onVaultUnlockRequired.mock.calls as [[() => void]];
+    retry();
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(onSave).toHaveBeenCalledTimes(2);
+    const [[firstPatch], [retriedPatch]] = onSave.mock.calls as [[unknown], [unknown]];
+    expect(retriedPatch).toEqual(firstPatch);
   });
   beforeEach(() => {
     Object.defineProperty(window, 'api', {

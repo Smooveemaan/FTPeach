@@ -123,6 +123,202 @@ async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[cfg(windows)]
+fn proxy_patch(extra: Value) -> JsonMap {
+    let mut patch: JsonMap = serde_json::from_value(
+        json!({"proxyEnabled": true, "proxyType": "socks5", "proxyHost": "proxy.test", "proxyPort": 1080}),
+    )
+    .unwrap();
+    patch.extend(serde_json::from_value::<JsonMap>(extra).unwrap());
+    patch
+}
+
+#[cfg(windows)]
+async fn connect_proxy_password(store: &Store, vault: &Vault) -> Option<String> {
+    store
+        .proxy_config_for_connect(vault)
+        .await
+        .unwrap()
+        .get("proxyPassword")
+        .and_then(Value::as_str)
+        .map(str::to_owned)
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn proxy_password_moves_with_enhanced_protection() {
+    let root = std::env::temp_dir().join(format!("ftpeach-proxy-vault-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    let settings_raw = || std::fs::read_to_string(root.join("settings.json")).unwrap();
+
+    // System protection keeps the password in settings.json with DPAPI.
+    store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "first-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap();
+    assert!(settings_raw().contains("proxyPasswordEnc"));
+    assert_eq!(
+        connect_proxy_password(&store, &vault).await.as_deref(),
+        Some("first-secret")
+    );
+
+    // Turning on enhanced protection moves it into the vault.
+    vault.setup("correct horse battery staple").await.unwrap();
+    store.migrate_secrets_to_vault(&vault).await.unwrap();
+    assert!(!settings_raw().contains("proxyPasswordEnc"));
+    assert!(settings_raw().contains("hasProxyPassword"));
+    assert_eq!(
+        vault
+            .get_proxy_password()
+            .await
+            .unwrap()
+            .unwrap()
+            .as_slice(),
+        b"first-secret"
+    );
+    assert_eq!(
+        connect_proxy_password(&store, &vault).await.as_deref(),
+        Some("first-secret")
+    );
+
+    // A locked vault blocks connecting and changing the password, not other settings.
+    vault.lock().await;
+    let locked = store.proxy_config_for_connect(&vault).await.unwrap_err();
+    assert!(format!("{locked:#}").contains("vault is locked"));
+    assert!(store.reveal_proxy_password(&vault).await.is_err());
+    let locked = store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "second-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap_err();
+    assert!(format!("{locked:#}").contains("vault is locked"));
+    store
+        .set_settings_with_vault(proxy_patch(json!({"proxyPort": 1081})), &vault)
+        .await
+        .unwrap();
+    assert!(settings_raw().contains("hasProxyPassword"));
+
+    vault.unlock("correct horse battery staple").await.unwrap();
+    store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "second-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap();
+    assert!(!settings_raw().contains("second-secret"));
+    assert_eq!(
+        store
+            .reveal_proxy_password(&vault)
+            .await
+            .unwrap()
+            .as_deref(),
+        Some("second-secret")
+    );
+
+    // Switching back to system protection returns it to DPAPI.
+    store.migrate_secrets_from_vault(&vault).await.unwrap();
+    vault.remove_unlocked().await.unwrap();
+    store.clear_vault_secret_flags().await.unwrap();
+    assert!(settings_raw().contains("proxyPasswordEnc"));
+    assert!(!settings_raw().contains("hasProxyPassword"));
+    assert_eq!(
+        connect_proxy_password(&store, &vault).await.as_deref(),
+        Some("second-secret")
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn vault_reset_and_removal_forget_the_proxy_password() {
+    let root = std::env::temp_dir().join(format!("ftpeach-proxy-reset-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    vault.setup("correct horse battery staple").await.unwrap();
+    store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "reset-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap();
+    store
+        .set_settings_with_vault(proxy_patch(json!({"removeProxyPassword": true})), &vault)
+        .await
+        .unwrap();
+    assert!(vault.get_proxy_password().await.unwrap().is_none());
+    assert_eq!(connect_proxy_password(&store, &vault).await, None);
+
+    store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "reset-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap();
+    vault.reset().await.unwrap();
+    store.clear_vault_secret_flags().await.unwrap();
+    let raw = std::fs::read_to_string(root.join("settings.json")).unwrap();
+    assert!(!raw.contains("hasProxyPassword"));
+    assert!(!raw.contains("proxyPasswordEnc"));
+    assert_eq!(connect_proxy_password(&store, &vault).await, None);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn settings_commit_failure_restores_the_vault_proxy_password() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let root = std::env::temp_dir().join(format!(
+        "ftpeach-proxy-transaction-{}",
+        uuid::Uuid::new_v4()
+    ));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    vault.setup("correct horse battery staple").await.unwrap();
+    store
+        .set_settings_with_vault(proxy_patch(json!({"proxyPassword": "original"})), &vault)
+        .await
+        .unwrap();
+    let original = std::fs::read(root.join("settings.json")).unwrap();
+    let deny_replace = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(1)
+        .open(root.join("settings.json"))
+        .unwrap();
+    for patch in [
+        json!({"proxyPassword": "replacement"}),
+        json!({"removeProxyPassword": true}),
+    ] {
+        assert!(
+            store
+                .set_settings_with_vault(proxy_patch(patch), &vault)
+                .await
+                .is_err()
+        );
+        assert_eq!(
+            vault
+                .get_proxy_password()
+                .await
+                .unwrap()
+                .unwrap()
+                .as_slice(),
+            b"original"
+        );
+        assert_eq!(std::fs::read(root.join("settings.json")).unwrap(), original);
+    }
+    drop(deny_replace);
+    vault.lock().await;
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[tokio::test]
 async fn import_rollback_snapshot_retains_secret_fields() {
     let root =

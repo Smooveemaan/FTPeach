@@ -44,6 +44,7 @@ type SettingsValues = Omit<
   | 'onPreview'
   | 'onSave'
   | 'onClose'
+  | 'onVaultUnlockRequired'
 >;
 type SiteManagerProps = ComponentProps<typeof SiteManagerDialog>;
 type DialogHook = ReturnType<typeof useAppDialogs>;
@@ -171,6 +172,9 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           narrow={model.windowNarrow}
           onPreview={settings.preview}
           onSave={settings.save}
+          onVaultUnlockRequired={(retry) =>
+            dialogs.setVaultUnlockRetries((current) => [...current, retry])
+          }
           onClose={() => dialogs.setShowSettings(false)}
         />
       )}

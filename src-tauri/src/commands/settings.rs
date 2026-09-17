@@ -4,6 +4,7 @@ use crate::runtime::log_emitter::LogEmitter;
 use crate::runtime::settings_apply::{
     apply_log_date_format, apply_prevent_sleep, apply_transfer_limits,
 };
+use crate::security::vault::Vault;
 use crate::store::{JsonMap, Store};
 use serde_json::Value;
 use tauri::State;
@@ -28,7 +29,10 @@ fn strip_proxy_secret(mut settings: JsonMap) -> JsonMap {
     let has_plaintext_secret = settings
         .remove("proxyPasswordPlain")
         .is_some_and(|v| v.as_str().is_some_and(|s| !s.is_empty()));
-    let has_secret = has_encrypted_secret || has_plaintext_secret;
+    let has_vault_secret = settings
+        .remove("hasProxyPassword")
+        .is_some_and(|v| v.as_bool() == Some(true));
+    let has_secret = has_encrypted_secret || has_plaintext_secret || has_vault_secret;
     settings.insert("proxyPasswordSet".into(), Value::Bool(has_secret));
     settings
 }
@@ -39,6 +43,7 @@ pub async fn settings_reveal_proxy_password(
     authorization: State<'_, crate::security::sensitive::AuthorizationState>,
     authorization_token: String,
     store: State<'_, Store>,
+    vault: State<'_, Vault>,
 ) -> CommandResult<Option<String>> {
     crate::security::sensitive::consume(
         &window,
@@ -47,12 +52,13 @@ pub async fn settings_reveal_proxy_password(
         "settings_reveal_proxy_password",
         "proxy",
     )?;
-    Ok(store.reveal_proxy_password().await?)
+    Ok(store.reveal_proxy_password(&vault).await?)
 }
 
 #[tauri::command]
 pub async fn settings_set(
     store: State<'_, Store>,
+    vault: State<'_, Vault>,
     log_emitter: State<'_, LogEmitter>,
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
@@ -60,7 +66,7 @@ pub async fn settings_set(
     let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
     let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
     let had_date_format = patch.contains_key("dateFormat");
-    let next = store.set_settings(patch).await?;
+    let next = store.set_settings_with_vault(patch, &vault).await?;
     if had_speed_limit {
         apply_transfer_limits(&next);
     }
@@ -82,7 +88,8 @@ mod tests {
         let settings = serde_json::from_value::<JsonMap>(serde_json::json!({
             "proxyEnabled": true,
             "proxyPasswordEnc": "encrypted-secret",
-            "proxyPasswordPlain": "legacy-secret"
+            "proxyPasswordPlain": "legacy-secret",
+            "hasProxyPassword": true
         }))
         .unwrap();
 
@@ -94,5 +101,6 @@ mod tests {
         assert!(!serialized.contains("legacy-secret"));
         assert!(!serialized.contains("proxyPasswordEnc"));
         assert!(!serialized.contains("proxyPasswordPlain"));
+        assert!(!serialized.contains("hasProxyPassword"));
     }
 }

@@ -28,6 +28,7 @@ export interface SettingsDialogProps extends SettingsDraftValues {
   onPreview: (patch: SettingsPatch) => unknown;
   onSave: SaveSettings;
   onClose: () => unknown;
+  onVaultUnlockRequired: (retry: () => void) => void;
 }
 
 export default function SettingsDialog({
@@ -40,6 +41,7 @@ export default function SettingsDialog({
   onPreview,
   onSave,
   onClose,
+  onVaultUnlockRequired,
   ...draftValues
 }: SettingsDialogProps) {
   const { t } = useTranslation();
@@ -62,7 +64,13 @@ export default function SettingsDialog({
     (first ?? panel).focus();
   };
 
-  const draft = useSettingsDraft({ ...draftValues, onPreview, onSave, onClose });
+  const draft = useSettingsDraft({
+    ...draftValues,
+    onPreview,
+    onSave,
+    onClose,
+    onVaultUnlockRequired,
+  });
   const vault = useVaultSettings();
   const proxyPassword = useProxyPasswordTest({
     proxyTypeValue: draft.proxyTypeValue,

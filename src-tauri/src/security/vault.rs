@@ -17,6 +17,7 @@ use zeroize::{Zeroize, Zeroizing};
 const CLIENT: &[u8] = b"ftpeach-vault-v1";
 const CHECK_KEY: &[u8] = b"vault-format";
 const CHECK_VALUE: &[u8] = b"ftpeach-v1";
+const PROXY_PASSWORD_KEY: &[u8] = b"settings:proxyPassword";
 #[cfg(not(test))]
 const KDF_MEMORY_KIB: u32 = 64 * 1024;
 #[cfg(test)]
@@ -89,6 +90,24 @@ pub enum SecretUpdate<'a> {
         site_id: &'a str,
         field: &'a str,
     },
+    /// The global proxy password, which belongs to no saved site.
+    SetProxyPassword {
+        value: &'a [u8],
+    },
+    DeleteProxyPassword,
+}
+
+impl SecretUpdate<'_> {
+    fn key(&self) -> Vec<u8> {
+        match self {
+            Self::Set { site_id, field, .. } | Self::Delete { site_id, field } => {
+                Vault::secret_key(site_id, field)
+            }
+            Self::SetProxyPassword { .. } | Self::DeleteProxyPassword => {
+                PROXY_PASSWORD_KEY.to_vec()
+            }
+        }
+    }
 }
 
 impl Vault {
@@ -316,6 +335,14 @@ impl Vault {
         site_id: &str,
         field: &str,
     ) -> Result<Option<Zeroizing<Vec<u8>>>> {
+        self.get_key(&Self::secret_key(site_id, field)).await
+    }
+
+    pub async fn get_proxy_password(&self) -> Result<Option<Zeroizing<Vec<u8>>>> {
+        self.get_key(PROXY_PASSWORD_KEY).await
+    }
+
+    async fn get_key(&self, key: &[u8]) -> Result<Option<Zeroizing<Vec<u8>>>> {
         let state = self.state.lock().await;
         let unlocked = state.as_ref().context("vault is locked")?;
         let client = unlocked
@@ -324,7 +351,7 @@ impl Vault {
             .context("opening vault client")?;
         Ok(client
             .store()
-            .get(&Self::secret_key(site_id, field))
+            .get(key)
             .context("reading vault secret")?
             .map(Zeroizing::new))
     }
@@ -339,9 +366,7 @@ impl Vault {
         let store = client.store();
         let mut previous = std::collections::HashMap::new();
         for update in updates {
-            let (SecretUpdate::Set { site_id, field, .. }
-            | SecretUpdate::Delete { site_id, field }) = update;
-            let key = Self::secret_key(site_id, field);
+            let key = update.key();
             if let std::collections::hash_map::Entry::Vacant(entry) = previous.entry(key) {
                 let value = store.get(entry.key())?.map(Zeroizing::new);
                 entry.insert(value);
@@ -350,18 +375,14 @@ impl Vault {
         let result = (|| -> Result<()> {
             for update in updates {
                 match update {
-                    SecretUpdate::Set {
-                        site_id,
-                        field,
-                        value,
-                    } => {
+                    SecretUpdate::Set { value, .. } | SecretUpdate::SetProxyPassword { value } => {
                         store
-                            .insert(Self::secret_key(site_id, field), value.to_vec(), None)
+                            .insert(update.key(), value.to_vec(), None)
                             .context("writing vault secret")?;
                     }
-                    SecretUpdate::Delete { site_id, field } => {
+                    SecretUpdate::Delete { .. } | SecretUpdate::DeleteProxyPassword => {
                         store
-                            .delete(&Self::secret_key(site_id, field))
+                            .delete(&update.key())
                             .context("deleting vault secret")?;
                     }
                 }

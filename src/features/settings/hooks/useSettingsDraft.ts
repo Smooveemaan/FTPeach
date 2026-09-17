@@ -54,6 +54,7 @@ interface UseSettingsDraftOptions extends SettingsDraftValues {
   onPreview: (patch: SettingsPatch) => unknown;
   onSave: SaveSettings;
   onClose: () => unknown;
+  onVaultUnlockRequired: (retry: () => void) => void;
 }
 
 interface AssociationRow {
@@ -250,7 +251,7 @@ export interface SettingsDraftModel extends SettingsDraft, SettingsDraftSetters 
 }
 
 export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraftModel {
-  const { onPreview, onSave, onClose, ...initialSettings } = options;
+  const { onPreview, onSave, onClose, onVaultUnlockRequired, ...initialSettings } = options;
   const [draft, dispatch] = useReducer(draftReducer, initialSettings, createDraft);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -298,6 +299,11 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
       }
       onClose();
     } catch (error) {
+      // A new proxy password under enhanced protection needs the vault unlocked.
+      if (/vault is locked/i.test(error instanceof Error ? error.message : String(error))) {
+        onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
+        return;
+      }
       setSaveError(friendlyError(error instanceof Error ? error : String(error)) || String(error));
     } finally {
       savingRef.current = false;

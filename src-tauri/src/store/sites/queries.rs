@@ -455,6 +455,7 @@ impl Store {
         if !vault.is_configured() || !vault.is_unlocked().await {
             anyhow::bail!("vault is locked");
         }
+        self.migrate_proxy_password_to_vault(vault).await?;
         let migration: JsonMap = self
             .read_json(&self.vault_migration_file(), JsonMap::new())
             .await;
@@ -557,6 +558,7 @@ impl Store {
         if !vault.is_configured() || !vault.is_unlocked().await {
             anyhow::bail!("vault is locked");
         }
+        self.migrate_proxy_password_from_vault(vault).await?;
         let path = self.sites_file();
         let lock = self.lock_for(&path).await;
         let _guard = lock.lock().await;
@@ -601,6 +603,7 @@ impl Store {
     }
 
     pub async fn clear_vault_secret_flags(&self) -> Result<()> {
+        self.clear_proxy_password_flag().await?;
         let path = self.sites_file();
         let lock = self.lock_for(&path).await;
         let _guard = lock.lock().await;

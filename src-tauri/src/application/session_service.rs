@@ -214,7 +214,11 @@ pub(crate) async fn connect(
     let mut config = resolve_config(store, vault, config)
         .await
         .map_err(ConnectFailure::from_error)?;
-    for (key, value) in store.proxy_config_for_connect().await {
+    let proxy_config = store
+        .proxy_config_for_connect(vault)
+        .await
+        .map_err(|error| ConnectFailure::from_error(CommandError::from_anyhow(&error)))?;
+    for (key, value) in proxy_config {
         config.insert(key, value);
     }
 

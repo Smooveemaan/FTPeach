@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   file names looked garbled.
 - SFTP servers that ask for the password through keyboard-interactive login now let you in.
 
+### Changed
+
+- With enhanced protection on, the saved proxy password is locked behind the master password too.
+
 ### Fixed
 
 - Opening a file the FTP server refuses no longer hangs until the connection times out.

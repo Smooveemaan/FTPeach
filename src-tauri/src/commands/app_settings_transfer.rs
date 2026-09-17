@@ -37,6 +37,7 @@ fn strip_settings_secrets(mut settings: JsonMap) -> JsonMap {
         "proxyPasswordEnc",
         "proxyPasswordPlain",
         "removeProxyPassword",
+        "hasProxyPassword",
     ] {
         settings.remove(key);
     }

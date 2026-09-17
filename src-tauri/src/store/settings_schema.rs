@@ -19,6 +19,7 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
                 | "proxyPasswordEnc"
                 | "proxyPasswordPlain"
                 | "proxyPasswordSet"
+                | "hasProxyPassword"
                 | "removeProxyPassword"
         ) {
             return Err(format!("settings.{key}: secret fields cannot be imported"));

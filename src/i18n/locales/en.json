@@ -269,7 +269,8 @@
     "replaceUnsupported": "The server didn't allow the existing file to be replaced.",
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
-    "alreadyExists": "\"{{name}}\" already exists"
+    "alreadyExists": "\"{{name}}\" already exists",
+    "moveBetweenEndpoints": "Files can be moved only within this computer or within one server connection. Copy them instead."
   },
   "settings": {
     "openWithAssociations": {

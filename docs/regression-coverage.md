@@ -24,6 +24,7 @@ These are permanent suites included by npm test or npm run rust:test. The local 
 | A18 | Persistence failure retains the settings draft and permits retry | [settings component suite](../test/component/settings/settingsDialog.test.tsx), [store tests](../src-tauri/src/store/tests.rs) |
 | HF-02 | Rename/copy with an omitted overwrite flag keep the existing target; F2 never replaces; MoveTo replaces only after approval | [fs command tests](../src-tauri/src/commands/fs.rs), [pane operations](../test/unit/file-browser/paneFileOperations.test.ts) |
 | HF-03 | Faults after copying or syncing, a racing target and a changed source leave the old target intact and no partial file | [staged copy tests](../src-tauri/src/local_fs/staged_copy.rs) |
+| HF-01 | Move between the computer and a server, or two connections, is refused before any copy or delete from drag, paste and routing; a refused paste keeps the cut | [transfer lifecycle](../test/component/transfers/useTransfers.test.tsx), [clipboard](../test/component/file-browser/dragOut.test.tsx) |
 
 A07's file-symlink fixture is ignored by default because it requires Windows Developer Mode or SeCreateSymbolicLinkPrivilege. UNC fixtures must be explicitly required with FTPEACH_REQUIRE_UNC_FIXTURES=1 to prevent an unavailable administrative share from being treated as coverage. These limitations remain separate from passing ordinary unit tests. Native and real-server outcomes are recorded in [native validation](native-validation.md).
 

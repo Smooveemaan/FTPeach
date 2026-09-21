@@ -269,7 +269,8 @@
     "internal": "Er is een onverwachte fout opgetreden.",
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
     "alreadyExists": "\"{{name}}\" bestaat al",
-    "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven."
+    "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
+    "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan."
   },
   "settings": {
     "openWithAssociations": {

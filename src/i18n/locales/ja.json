@@ -269,7 +269,8 @@
     "internal": "予期しないエラーが発生しました。",
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
-    "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。"
+    "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
+    "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。"
   },
   "settings": {
     "openWithAssociations": {

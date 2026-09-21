@@ -269,7 +269,8 @@
     "internal": "Đã xảy ra lỗi không mong muốn.",
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
     "alreadyExists": "\"{{name}}\" đã tồn tại rồi",
-    "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có."
+    "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có.",
+    "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển."
   },
   "settings": {
     "openWithAssociations": {

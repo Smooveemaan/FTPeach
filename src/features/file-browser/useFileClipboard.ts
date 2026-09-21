@@ -1,10 +1,12 @@
 import type { MouseEvent, MutableRefObject } from 'react';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DragEntry, DragInfo } from './components/useDragMove.ts';
 import { useDragMove } from './components/useDragMove.ts';
 import { api } from '../../platform/api/index.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
+import { canMoveBetween } from '../../shared/movePolicy.ts';
 import type { useTransfers } from '../transfers/index.ts';
 import { resolveDropAction } from './components/dropAction.ts';
 import { paneJoin } from './panes/paneBackend.ts';
@@ -53,6 +55,7 @@ export function useFileClipboard({
   refreshPane,
   panes,
 }: FileClipboardOptions): FileClipboardModel {
+  const { t } = useTranslation();
   const copySelectedWithConfirm = (
     sourcePane: PaneState,
     targetPane: PaneState,
@@ -84,6 +87,11 @@ export function useFileClipboard({
   const pasteClipboard = (targetId: PaneId, targetPane: PaneState) => {
     if (!clipboard) return;
     const { id: sourceId, pane: sourcePane, mode } = clipboard;
+    // The cut stays on the clipboard, so the user can still copy it instead.
+    if (mode === 'cut' && !canMoveBetween(sourcePane, targetPane)) {
+      reportAsyncFailure(t('errors.moveBetweenEndpoints'));
+      return;
+    }
     reportRejection(
       confirmOverwriteIfNeeded(
         targetPane,

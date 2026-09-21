@@ -273,7 +273,8 @@
     "internal": "Si è verificato un errore imprevisto.",
     "connectFailedPrefix": "Impossibile connettersi al server. {{raw}}",
     "alreadyExists": "\"{{name}}\" esiste già",
-    "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente."
+    "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente.",
+    "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli."
   },
   "settings": {
     "openWithAssociations": {

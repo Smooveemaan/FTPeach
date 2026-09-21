@@ -269,7 +269,8 @@
     "internal": "Váratlan hiba történt.",
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
     "alreadyExists": "A „{{name}}” már létezik",
-    "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását."
+    "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
+    "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket."
   },
   "settings": {
     "openWithAssociations": {

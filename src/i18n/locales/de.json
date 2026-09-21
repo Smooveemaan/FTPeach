@@ -269,7 +269,8 @@
     "internal": "Ein unerwarteter Fehler ist aufgetreten.",
     "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
     "alreadyExists": "„{{name}}“ existiert bereits",
-    "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen."
+    "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen.",
+    "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen."
   },
   "settings": {
     "openWithAssociations": {

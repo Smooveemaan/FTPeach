@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Files can be moved only on your computer or within one server connection. Between your
+  computer and a server, or between two servers, copy them instead.
+
 ### Fixed
 
 - Renaming or moving a file into a folder no longer replaces a file with the same name there

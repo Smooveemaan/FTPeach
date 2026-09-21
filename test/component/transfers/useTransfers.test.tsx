@@ -345,7 +345,7 @@ test('folder upload, download and relay submit endpoint intent without per-file 
           errors: [{ message: 'folder: Nested mkdir denied' }],
         };
       };
-      const options = localFolderMove();
+      const options = { ...localFolderMove(), move: false };
       if (direction !== 'upload')
         options.sourcePane = {
           ...options.sourcePane,
@@ -376,6 +376,43 @@ test('folder upload, download and relay submit endpoint intent without per-file 
       );
       assert.match(errors[0]!, /Nested mkdir denied/);
     });
+  }
+});
+
+test('a move between different endpoints touches nothing, for files and folders', async () => {
+  const remote = (connectionId: string) => ({
+    kind: 'remote' as const,
+    status: 'connected' as const,
+    connectionId,
+    protocol: 'sftp' as const,
+    path: '/dir',
+    entries: [folderEntry, { name: 'file.txt', isDirectory: false, size: 3 }],
+  });
+  const local = {
+    ...localFolderMove().sourcePane,
+    entries: [folderEntry, { name: 'file.txt', isDirectory: false, size: 3 }],
+  };
+  for (const [sourcePane, targetPane] of [
+    [local, remote('a')],
+    [remote('a'), local],
+    [remote('a'), remote('b')],
+  ] as const) {
+    for (const names of [['folder'], ['file.txt'], ['folder', 'file.txt']]) {
+      await withHarness(async ({ getApi, mockApi, calls, errors }) => {
+        let submitted = false;
+        mockApi.transfer.recursive = async () => {
+          submitted = true;
+          return { ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] };
+        };
+        await act(async () => {
+          await getApi().copyEntries({ sourcePane, targetPane, names, move: true });
+        });
+        assert.equal(submitted, false);
+        assert.equal(calls.upload.length + calls.download.length, 0);
+        assert.equal(calls.fsLocalDelete.length + calls.sessionDelete.length, 0);
+        assert.match(errors[0]!, /moved only within/);
+      });
+    }
   }
 });
 

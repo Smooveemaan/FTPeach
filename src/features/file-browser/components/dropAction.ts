@@ -1,4 +1,5 @@
 import { dropDestinationPath } from '../../../shared/paths.ts';
+import { canMoveBetween } from '../../../shared/movePolicy.ts';
 import { paneJoin } from '../panes/paneBackend.ts';
 import type { PaneState } from '../panes/paneModel.ts';
 
@@ -23,9 +24,7 @@ export function resolveDropAction(
     )
   )
     return 'invalid';
-  const same =
-    source.kind === target.kind &&
-    (source.kind === 'local' || source.connectionId === target.connectionId);
+  const same = canMoveBetween(source, target);
   const normalize = (path: string) =>
     source.kind === 'local'
       ? path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()

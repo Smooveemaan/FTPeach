@@ -269,7 +269,8 @@
     "internal": "Der opstod en uventet fejl.",
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",
     "alreadyExists": "»{{name}}« findes allerede",
-    "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet."
+    "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
+    "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopier dem i stedet."
   },
   "settings": {
     "openWithAssociations": {

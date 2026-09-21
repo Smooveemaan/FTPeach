@@ -2,6 +2,7 @@ import { api } from '../../platform/api/index.ts';
 import type { TransferLifecycleModel, RefreshCallback } from './useTransferLifecycle.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { mapWithConcurrency } from '../../shared/lang.ts';
+import { canMoveBetween } from '../../shared/movePolicy.ts';
 import { dropDestinationPath, joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { FileEntry, PaneKind, PaneStatus, SiteProtocol } from '../../shared/types.ts';
 import type { OverwriteApproval, TransferOverwriteOptions } from './useOverwriteApproval.ts';
@@ -36,6 +37,8 @@ interface OsDropFile {
   size?: number;
 }
 const RENDERER_FANOUT_LIMIT = 8;
+const MOVE_BETWEEN_ENDPOINTS =
+  'Files can be moved only within this computer or within one server connection';
 
 async function requireSuccess(result: Promise<CommandResult>, path: string) {
   const outcome = await result;
@@ -176,6 +179,11 @@ export function createTransferRouting(
     overwriteApproved = false,
   }: CopyEntriesOptions) => {
     if (names.length === 0) return;
+    // Every UI entry point already offers only Copy here; this keeps a caller
+    // that asks anyway from reaching the copy, let alone a delete.
+    if (move && !canMoveBetween(sourcePane, targetPane)) {
+      throw new Error(MOVE_BETWEEN_ENDPOINTS);
+    }
     const sourceEntriesByName = new Map(sourcePane.entries.map((entry) => [entry.name, entry]));
     const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
 
@@ -262,7 +270,7 @@ export function createTransferRouting(
     }
 
     if (sourcePane.kind === 'remote' && targetPane.kind === 'remote') {
-      const results = await mapWithConcurrency(names, names.length, async (name) => {
+      await mapWithConcurrency(names, names.length, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return { entry, ok: false };
         if (entry.isDirectory && move) {
@@ -297,7 +305,7 @@ export function createTransferRouting(
               api.session.rename(sourcePane.connectionId!, sourceFull, destFull, overwrite),
               sourceFull,
             );
-            return { entry, ok: true, renamed: true };
+            return { entry, ok: true };
           }
         }
         const ok = (
@@ -314,24 +322,11 @@ export function createTransferRouting(
         return { entry, ok };
       });
       refreshTarget?.();
-      if (move) {
-        const moved = results.filter((r) => r.ok && r.entry && !('renamed' in r && r.renamed));
-        if (moved.length) {
-          await mapWithConcurrency(moved, RENDERER_FANOUT_LIMIT, (r) =>
-            api.session.delete(
-              sourcePane.connectionId!,
-              joinRemotePath(sourcePane.path, r.entry!.name),
-              r.entry!.isDirectory,
-            ),
-          );
-          refreshSource?.();
-        }
-        if (results.some((r) => 'renamed' in r && r.renamed)) refreshSource?.();
-      }
+      if (move) refreshSource?.();
       return;
     }
 
-    const results = await mapWithConcurrency(names, names.length, async (name) => {
+    await mapWithConcurrency(names, names.length, async (name) => {
       const entry = sourceEntriesByName.get(name);
       if (!entry) return { entry, ok: false };
       let ok;
@@ -363,23 +358,6 @@ export function createTransferRouting(
       return { entry, ok };
     });
     refreshTarget?.();
-    if (!move) return;
-    const moved = results.filter((r) => r.ok && r.entry);
-    if (moved.length === 0) return;
-    if (sourcePane.kind === 'local') {
-      await mapWithConcurrency(moved, RENDERER_FANOUT_LIMIT, (r) =>
-        api.fsLocal.delete(joinLocalPath(sourcePane.path, r.entry!.name)),
-      );
-    } else {
-      await mapWithConcurrency(moved, RENDERER_FANOUT_LIMIT, (r) =>
-        api.session.delete(
-          sourcePane.connectionId!,
-          joinRemotePath(sourcePane.path, r.entry!.name),
-          r.entry!.isDirectory,
-        ),
-      );
-    }
-    refreshSource?.();
   };
 
   // Files dropped from the operating system

@@ -273,7 +273,8 @@
     "internal": "A apărut o eroare neașteptată.",
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
     "alreadyExists": "„{{name}}” există deja",
-    "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent."
+    "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
+    "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb."
   },
   "settings": {
     "openWithAssociations": {

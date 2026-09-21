@@ -269,7 +269,8 @@
     "internal": "예기치 않은 오류가 발생했습니다.",
     "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",
     "alreadyExists": "“{{name}}”이(가) 이미 있습니다",
-    "replaceUnsupported": "서버에서 기존 파일 덮어쓰기를 허용하지 않았습니다."
+    "replaceUnsupported": "서버에서 기존 파일 덮어쓰기를 허용하지 않았습니다.",
+    "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요."
   },
   "settings": {
     "openWithAssociations": {

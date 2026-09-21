@@ -269,7 +269,8 @@
     "internal": "Beklenmeyen bir hata oluştu.",
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
-    "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi."
+    "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
+    "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın."
   },
   "settings": {
     "openWithAssociations": {

@@ -273,7 +273,8 @@
     "internal": "אירעה שגיאה בלתי צפויה.",
     "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
     "alreadyExists": "\"{{name}}\" כבר קיים",
-    "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים."
+    "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים.",
+    "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת."
   },
   "settings": {
     "openWithAssociations": {

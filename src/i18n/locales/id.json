@@ -269,7 +269,8 @@
     "internal": "Terjadi kesalahan yang tidak terduga.",
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
-    "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa."
+    "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
+    "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya."
   },
   "settings": {
     "openWithAssociations": {

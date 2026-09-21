@@ -273,7 +273,8 @@
     "internal": "Se produjo un error inesperado.",
     "connectFailedPrefix": "No se ha podido conectar al servidor. {{raw}}",
     "alreadyExists": "«{{name}}» ya existe",
-    "replaceUnsupported": "El servidor no ha permitido sobrescribir el archivo existente."
+    "replaceUnsupported": "El servidor no ha permitido sobrescribir el archivo existente.",
+    "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar."
   },
   "settings": {
     "openWithAssociations": {

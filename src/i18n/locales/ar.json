@@ -285,7 +285,8 @@
     "internal": "حدث خطأ غير متوقع.",
     "connectFailedPrefix": "تعذر الاتصال بالخادم. {{raw}}",
     "alreadyExists": "\"{{name}}\" موجود بالفعل",
-    "replaceUnsupported": "لم يسمح الخادم بالكتابة فوق الملف الموجود."
+    "replaceUnsupported": "لم يسمح الخادم بالكتابة فوق الملف الموجود.",
+    "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلاً من ذلك."
   },
   "settings": {
     "openWithAssociations": {

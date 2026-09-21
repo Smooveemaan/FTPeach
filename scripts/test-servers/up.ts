@@ -10,7 +10,7 @@ import {
 
 const usage = [
   'Usage: npm run servers:up -- <profile...>',
-  `Profiles: ${matrixProfiles.join(', ')}, baseline, all (everything except heavy and chaos)`,
+  `Profiles: ${matrixProfiles.join(', ')}, baseline, iis (host, prints how to install), all (everything except heavy, chaos and iis)`,
   'FTPEACH_MATRIX_BIG_MB sets the size of fixtures/sizes/big.bin (default 64).',
 ].join('\n');
 
@@ -24,7 +24,14 @@ if (selected.includes('baseline')) {
   docker(['compose', '-f', baselineCompose, 'up', '--detach', '--wait']);
 }
 
-const matrix = selected.filter((profile) => profile !== 'baseline');
+if (selected.includes('iis')) {
+  console.log(
+    'IIS runs on the Windows host, not in Docker. Install it once from an elevated PowerShell:\n' +
+      '  scripts/test-servers/iis.ps1 install\n',
+  );
+}
+
+const matrix = selected.filter((profile) => profile !== 'baseline' && profile !== 'iis');
 if (matrix.length > 0) {
   docker([
     'compose',

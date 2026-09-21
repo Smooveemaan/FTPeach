@@ -6,7 +6,7 @@ import { parseProfiles, profiles } from './matrix.ts';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const usage = [
   'Usage: npm run servers:test -- [profile...] [-- test filter and libtest flags]',
-  `Profiles: ${profiles.join(', ')}, all. None selects every target.`,
+  `Profiles: ${profiles.join(', ')}, iis, all. None selects every target except iis.`,
   'FTPEACH_MATRIX_TARGETS=vsftpd,dropbear selects single servers instead.',
 ].join('\n');
 

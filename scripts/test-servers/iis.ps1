@@ -19,6 +19,8 @@
     iis_ftp_unix  ftp://127.0.0.1:2122   Unix listing style, explicit FTPS allowed
     iis_webdav    http://127.0.0.1:18180/ Basic authentication
   Passive data ports: 32000-32009. Account: ftpeach_test / FTPeach-test-2026!
+  Fixtures follow seed/seed.py; the certificate is exported to
+  C:\ftpeach-test-servers\iis\cert.pem for the client's caCertPath.
   (Windows Server password policy rejects the "testpass" used elsewhere.)
 #>
 [CmdletBinding()]
@@ -43,6 +45,7 @@ $StateFile = 'C:\ftpeach-test-servers\iis-state.json'
 $UserName = 'ftpeach_test'
 $Password = 'FTPeach-test-2026!'
 $CertName = 'FTPeach IIS test certificate'
+$CertPem = Join-Path $Root 'cert.pem'
 $Sites = @(
   @{ Name = 'FTPeachTestFtp'; Kind = 'ftp'; Port = 2121; Style = '' },
   @{ Name = 'FTPeachTestFtpUnix'; Kind = 'ftp'; Port = 2122; Style = 'StyleUnix,LongDate' },
@@ -110,25 +113,51 @@ function Enable-Features {
   return $toEnable
 }
 
+# Long-path form: the 255-character fixture name makes the full path longer
+# than MAX_PATH.
+function Get-LongPath([string]$Path) { "\\?\$Path" }
+
 function Write-Fixture([string]$Path, [string]$Content) {
-  [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($Path)) | Out-Null
-  [IO.File]::WriteAllText($Path, $Content, [Text.UTF8Encoding]::new($false))
+  [IO.Directory]::CreateDirectory((Get-LongPath ([IO.Path]::GetDirectoryName($Path)))) | Out-Null
+  [IO.File]::WriteAllText((Get-LongPath $Path), $Content, [Text.UTF8Encoding]::new($false))
 }
 
-function New-Fixtures([string]$Base) {
-  $fixtures = Join-Path $Base 'fixtures'
-  if (Test-Path $fixtures) { Remove-Item $fixtures -Recurse -Force }
+function Get-Text([int[]]$CodePoints) {
+  -join ($CodePoints | ForEach-Object { [char]::ConvertFromUtf32($_) })
+}
 
-  # Non-ASCII names as code points: the repository's no-Cyrillic gate scans
-  # this file.
-  $cyrillic = -join ([char[]](0x041F, 0x0440, 0x0438, 0x0432, 0x0435, 0x0442))
-  $japanese = -join ([char[]](0x65E5, 0x672C, 0x8A9E))
-  $emoji = [char]::ConvertFromUtf32(0x1F351)
-  foreach ($name in @("$cyrillic.txt", "$japanese.txt", "emoji $emoji.txt", 'with spaces.txt',
-      '-leading-dash.txt', '#hash %percent &ampersand +plus ;semicolon.txt', 'Case.txt')) {
+# The fixtures of seed/seed.py, minus what Windows cannot hold: a name with
+# '"', and case.txt next to Case.txt (NTFS paths are case-insensitive). No
+# links. Non-ASCII names as code points: the repository's no-Cyrillic gate
+# scans this file.
+function New-Fixtures([string]$Base, [int]$BigMb) {
+  $fixtures = Join-Path $Base 'fixtures'
+  if (Test-Path -LiteralPath (Get-LongPath $fixtures)) {
+    [IO.Directory]::Delete((Get-LongPath $fixtures), $true)
+  }
+
+  $names = @(
+    ((Get-Text 0x041F, 0x0440, 0x0438, 0x0432, 0x0435, 0x0442) + ' ' + (Get-Text 0x043C, 0x0438, 0x0440) + '.txt'),
+    ((Get-Text 0x65E5, 0x672C, 0x8A9E, 0x306E, 0x30D5, 0x30A1, 0x30A4, 0x30EB) + '.txt'),
+    ((Get-Text 0x4E2D, 0x6587, 0x6587, 0x4EF6) + '.txt'),
+    ((Get-Text 0xD55C, 0xAD6D, 0xC5B4) + '.txt'),
+    ('emoji ' + (Get-Text 0x1F351, 0x1F680) + '.txt'),
+    ('caf' + (Get-Text 0xE9) + ' na' + (Get-Text 0xEF) + 've.txt'),
+    'with spaces.txt',
+    '  leading and trailing spaces  .txt',
+    '-leading-dash.txt',
+    '#hash %percent &ampersand +plus ;semicolon.txt',
+    'brackets [x] (y) {z}.txt',
+    'Case.txt',
+    (('n' * 251) + '.txt')
+  )
+  foreach ($name in $names) {
     Write-Fixture (Join-Path $fixtures "names\$name") "$name`n"
   }
-  # IIS paths are case-insensitive: case.txt must resolve to Case.txt.
+  foreach ($dir in @((Get-Text 0x041F, 0x0430, 0x043F, 0x043A, 0x0430),
+      (Get-Text 0x30C7, 0x30A3, 0x30EC, 0x30AF, 0x30C8, 0x30EA), 'dir with spaces')) {
+    Write-Fixture (Join-Path $fixtures "names\$dir\inner.txt") "inner`n"
+  }
 
   $many = Join-Path $fixtures 'many'
   [IO.Directory]::CreateDirectory($many) | Out-Null
@@ -144,17 +173,50 @@ function New-Fixtures([string]$Base) {
 
   Write-Fixture (Join-Path $fixtures 'sizes\empty.bin') ''
   Write-Fixture (Join-Path $fixtures 'sizes\small.txt') "FTPeach matrix fixture`n"
-  $bigMb = if ($env:FTPEACH_MATRIX_BIG_MB) { [int]$env:FTPEACH_MATRIX_BIG_MB } else { 64 }
   $random = [Random]::new(20260913)
   $buffer = [byte[]]::new(1MB)
   $stream = [IO.File]::Create((Join-Path $fixtures 'sizes\big.bin'))
   try {
-    for ($i = 0; $i -lt $bigMb; $i++) {
+    for ($i = 0; $i -lt $BigMb; $i++) {
       $random.NextBytes($buffer)
       $stream.Write($buffer, 0, $buffer.Length)
     }
   } finally {
     $stream.Dispose()
+  }
+
+  Write-Fixture (Join-Path $fixtures 'hidden\visible.txt') "visible`n"
+  Write-Fixture (Join-Path $fixtures 'hidden\.dotfile') "hidden`n"
+  Write-Fixture (Join-Path $fixtures 'hidden\.dotdir\inner.txt') "inner`n"
+
+  Write-Fixture (Join-Path $fixtures 'perms\readable.txt') "readable`n"
+  Write-Fixture (Join-Path $fixtures 'perms\no-read.txt') "secret`n"
+  Write-Fixture (Join-Path $fixtures 'perms\no-read-dir\inner.txt') "inner`n"
+  Write-Fixture (Join-Path $fixtures 'perms\read-only-dir\inner.txt') "inner`n"
+
+  # The client reads big_mb from this marker, as on the Docker servers.
+  Write-Fixture (Join-Path $Base '.ftpeach-seed') "version=1 big_mb=$BigMb flags=iis`n"
+}
+
+# perms/ as NTFS denies for the test user; run after the site-wide grant.
+function Set-FixtureDenies([string]$Base) {
+  $perms = Join-Path $Base 'fixtures\perms'
+  icacls (Join-Path $perms 'no-read.txt') /deny "${UserName}:(R)" /Q | Out-Null
+  icacls (Join-Path $perms 'no-read-dir') /deny "${UserName}:(OI)(CI)(R)" /Q | Out-Null
+  icacls (Join-Path $perms 'read-only-dir') /deny "${UserName}:(WD,AD)" /Q | Out-Null
+}
+
+# Removes a site with the <location> configuration it left in
+# applicationHost.config, so a repeated install can add its rules again.
+function Remove-TestSite([string]$Name) {
+  if (Get-Website -Name $Name) { Remove-Website -Name $Name }
+  Add-Type -Path "$env:SystemRoot\System32\inetsrv\Microsoft.Web.Administration.dll"
+  $manager = New-Object Microsoft.Web.Administration.ServerManager
+  try {
+    $manager.GetApplicationHostConfiguration().RemoveLocationPath($Name)
+    $manager.CommitChanges()
+  } finally {
+    $manager.Dispose()
   }
 }
 
@@ -189,11 +251,20 @@ function Install-Servers {
     Add-LocalGroupMember -Group $users -Member $UserName
   }
 
-  $cert = Get-ChildItem Cert:\LocalMachine\My | Where-Object FriendlyName -EQ $CertName | Select-Object -First 1
+  $cert = Get-ChildItem Cert:\LocalMachine\My | Where-Object FriendlyName -EQ $CertName |
+    Where-Object NotAfter -GT (Get-Date).AddDays(1) | Select-Object -First 1
   if (-not $cert) {
+    Get-ChildItem Cert:\LocalMachine\My | Where-Object FriendlyName -EQ $CertName | Remove-Item
     $cert = New-SelfSignedCertificate -DnsName 'localhost' -CertStoreLocation Cert:\LocalMachine\My `
       -FriendlyName $CertName -NotAfter (Get-Date).AddDays(30)
   }
+  # The client trusts it through caCertPath, as the matrix test CA.
+  [IO.Directory]::CreateDirectory($Root) | Out-Null
+  $pem = "-----BEGIN CERTIFICATE-----`n" +
+    [Convert]::ToBase64String($cert.RawData, 'InsertLineBreaks').Replace("`r`n", "`n") +
+    "`n-----END CERTIFICATE-----`n"
+  [IO.File]::WriteAllText($CertPem, $pem, [Text.Encoding]::ASCII)
+  $bigMb = if ($env:FTPEACH_MATRIX_BIG_MB) { [int]$env:FTPEACH_MATRIX_BIG_MB } else { 64 }
 
   Set-WebConfigurationProperty -PSPath 'IIS:\' -Filter 'system.ftpServer/firewallSupport' `
     -Name 'lowDataChannelPort' -Value $PassiveLow
@@ -202,9 +273,10 @@ function Install-Servers {
 
   foreach ($site in $Sites) {
     $path = Join-Path $Root $site.Name
-    New-Fixtures $path
-    icacls $path /grant "${UserName}:(OI)(CI)M" /T /Q | Out-Null
-    if (Get-Website -Name $site.Name) { Remove-Website -Name $site.Name }
+    Remove-TestSite $site.Name
+    New-Fixtures $path $bigMb
+    icacls $path /grant "${UserName}:(OI)(CI)M" /Q | Out-Null
+    Set-FixtureDenies $path
 
     if ($site.Kind -eq 'ftp') {
       New-WebFtpSite -Name $site.Name -IPAddress '127.0.0.1' -Port $site.Port -PhysicalPath $path | Out-Null
@@ -240,6 +312,11 @@ function Install-Servers {
         -Filter 'system.webServer/security/requestFiltering/requestLimits' -Name 'maxAllowedContentLength' -Value 4294967295
       Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Location $location `
         -Filter 'system.webServer/defaultDocument' -Name 'enabled' -Value $false
+      # The static file handler answers 404 to extensions it has no MIME type
+      # for (.ftpeach-seed, .dotfile, files without one): serve them all.
+      Add-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Location $location `
+        -Filter 'system.webServer/staticContent' -Name '.' `
+        -Value @{ fileExtension = '.*'; mimeType = 'application/octet-stream' }
     }
   }
 
@@ -252,13 +329,11 @@ function Uninstall-Servers {
   Assert-Administrator
   if (Get-Module -ListAvailable WebAdministration) {
     Import-Module WebAdministration
-    foreach ($site in $Sites) {
-      if (Get-Website -Name $site.Name) { Remove-Website -Name $site.Name }
-    }
+    foreach ($site in $Sites) { Remove-TestSite $site.Name }
   }
   Get-ChildItem Cert:\LocalMachine\My | Where-Object FriendlyName -EQ $CertName | Remove-Item
   if (Get-LocalUser -Name $UserName -ErrorAction SilentlyContinue) { Remove-LocalUser -Name $UserName }
-  if (Test-Path $Root) { Remove-Item $Root -Recurse -Force }
+  if (Test-Path $Root) { [IO.Directory]::Delete((Get-LongPath $Root), $true) }
 
   if (Test-Path $StateFile) {
     $features = @((Get-Content $StateFile -Raw | ConvertFrom-Json).EnabledFeatures | Where-Object { $_ })

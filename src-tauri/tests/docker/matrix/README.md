@@ -126,3 +126,12 @@ Checked with curl, OpenSSH and openssl against the running containers:
   PUT out of the `Allow` header although PUT works, answers `200` to DELETE,
   resolves paths case-insensitively (`case.txt` serves `Case.txt`) and refuses
   `web.config` with `404` (request filtering).
+- IIS WebDAV refuses URLs of more than 32 segments with `404.20`
+  (`limits.maxUrlSegments`, left at its default), and answers a file the user
+  may not read with `401`, not `403`.
+- IIS FTP answers a missing file and a file in a missing folder with the same
+  bare `550 The system cannot find the path specified.`
+- The IIS fixtures leave out what NTFS cannot hold: the name with `"` and
+  `case.txt` next to `Case.txt`; `perms/` is made with NTFS denies. Run the
+  IIS targets with `npm run servers:test -- iis`; no selection and `all` skip
+  them.

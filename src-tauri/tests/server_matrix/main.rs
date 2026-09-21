@@ -3,6 +3,8 @@
 //! Start the servers first (`npm run servers:up -- all heavy`), then
 //! `npm run servers:test`. Every test is `#[ignore]`; selection:
 //! `FTPEACH_MATRIX=ftp,sftp` (profiles) or `FTPEACH_MATRIX_TARGETS=vsftpd,dropbear`.
+//! The `iis` targets run only when named: `FTPEACH_MATRIX=iis` after
+//! `scripts/test-servers/iis.ps1 install`.
 //! A test outside the selection prints NOT RUN and passes; a selected server
 //! that does not answer fails.
 #![cfg(feature = "test-utils")]
@@ -65,6 +67,10 @@ mod common {
             rclone_webdav,
             sftpgo_webdav,
             nextcloud,
+            iis_ftp,
+            iis_ftps,
+            iis_ftp_unix,
+            iis_webdav,
         ],
         [
             s01_connect,

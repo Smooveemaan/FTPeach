@@ -419,7 +419,7 @@
       "address": "http://127.0.0.1:18180/",
       "user": "ftpeach_test",
       "password": "FTPeach-test-2026!",
-      "notes": "Windows host (iis.ps1); Basic auth, absolute hrefs, case-insensitive paths"
+      "notes": "Windows host (iis.ps1); Basic auth, absolute hrefs, case-insensitive paths, 32 URL segments"
     }
   ]
 }

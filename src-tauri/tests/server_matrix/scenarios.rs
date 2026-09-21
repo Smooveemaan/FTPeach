@@ -236,7 +236,11 @@ fn long_name() -> String {
 /// S5: awkward names from the seed, then the same names written by the client.
 pub async fn s05_names(target: Target) {
     let mut backend = connect(&target).await;
-    let mut expected: Vec<String> = FIXTURE_NAMES.iter().map(|name| name.to_string()).collect();
+    let mut expected: Vec<String> = FIXTURE_NAMES
+        .iter()
+        .filter(|name| !target.unsupported_names.contains(name))
+        .map(|name| name.to_string())
+        .collect();
     if target.long_name {
         expected.push(long_name());
     }
@@ -431,12 +435,37 @@ pub async fn s08_many(target: Target) {
     );
 }
 
-/// S9: walk and fetch a 30-level tree, then build and remove one.
+/// Whether the server accepts a URL for `path` (a folder is requested with a
+/// trailing slash, which counts as a segment).
+fn fits(target: &Target, path: &str, folder: bool) -> bool {
+    let segments = path.split('/').filter(|part| !part.is_empty()).count() + usize::from(folder);
+    target
+        .max_url_segments
+        .is_none_or(|limit| segments <= limit)
+}
+
+/// S9: walk and fetch a 30-level tree, then build and remove one. A server
+/// with a URL segment limit is walked as deep as it allows, and the level
+/// past it must be `NotFound`.
 pub async fn s09_deep(target: Target) {
     let mut backend = connect(&target).await;
     if target.fixtures {
         let mut path = fixtures(&target, "deep");
         for level in 1..=30 {
+            if !fits(&target, &path, true) {
+                let error = backend
+                    .list_for_recursive(&path)
+                    .await
+                    .err()
+                    .unwrap_or_else(|| panic!("{}: {path} listed past the URL limit", target.id));
+                assert_eq!(
+                    code(&error),
+                    ErrorCode::NotFound,
+                    "{}: {error:#}",
+                    target.id
+                );
+                break;
+            }
             let listed = backend
                 .list_for_recursive(&path)
                 .await
@@ -447,6 +476,9 @@ pub async fn s09_deep(target: Target) {
                 "{}: level {level} missing",
                 target.id
             );
+            if !fits(&target, &join(&path, "level.txt"), false) {
+                continue;
+            }
             let content = get(&mut backend, &join(&path, "level.txt")).await;
             assert_eq!(content, format!("{level}\n").as_bytes());
         }
@@ -455,7 +487,11 @@ pub async fn s09_deep(target: Target) {
     let mut path = work.path("deep");
     backend.mkdir(&path).await.expect("mkdir deep");
     for level in 1..=30 {
-        path = join(&path, &format!("d{level:02}"));
+        let next = join(&path, &format!("d{level:02}"));
+        if !fits(&target, &join(&next, "leaf.txt"), false) {
+            break;
+        }
+        path = next;
         backend
             .mkdir(&path)
             .await

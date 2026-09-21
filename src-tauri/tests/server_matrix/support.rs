@@ -34,11 +34,15 @@ fn listed(variable: &str) -> Option<Vec<String>> {
 fn selected(target: &Target) -> bool {
     let profiles = listed("FTPEACH_MATRIX");
     let targets = listed("FTPEACH_MATRIX_TARGETS");
+    // IIS changes the Windows host (iis.ps1), so it runs only when named.
+    let host_only = target.profile == "iis";
     if profiles.is_none() && targets.is_none() {
-        return true;
+        return !host_only;
     }
-    profiles.is_some_and(|list| list.iter().any(|p| p == "all" || p == target.profile))
-        || targets.is_some_and(|list| list.iter().any(|id| id == target.id))
+    profiles.is_some_and(|list| {
+        list.iter()
+            .any(|p| (p == "all" && !host_only) || p == target.profile)
+    }) || targets.is_some_and(|list| list.iter().any(|id| id == target.id))
 }
 
 /// One lock per container, shared by every target it serves.

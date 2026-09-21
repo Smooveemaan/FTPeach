@@ -32,6 +32,12 @@ pub struct Target {
     pub perms: bool,
     /// The 255-byte fixture name is served.
     pub long_name: bool,
+    /// Fixture names the server's file system cannot hold; the seed skips
+    /// them and the client is not asked to write them.
+    pub unsupported_names: &'static [&'static str],
+    /// URL segments the server accepts, a trailing slash counting as one
+    /// (IIS `limits.maxUrlSegments`, 32 by default; it answers 404.20).
+    pub max_url_segments: Option<usize>,
     /// Directory backed by a 16 MiB tmpfs.
     pub disk_full_dir: Option<&'static str>,
     /// Uploads above this size are refused by the server.
@@ -107,6 +113,35 @@ fn webdav(url: &str) -> Map<String, Value> {
     }))
 }
 
+/// IIS on the Windows host (scripts/test-servers/iis.ps1): its own account,
+/// and a self-signed certificate the script exports for caCertPath.
+fn iis(mut config: Map<String, Value>) -> Map<String, Value> {
+    config.insert("user".into(), "ftpeach_test".into());
+    config.insert("password".into(), "FTPeach-test-2026!".into());
+    if config.contains_key("caCertPath") {
+        config.insert(
+            "caCertPath".into(),
+            r"C:\ftpeach-test-servers\iis\cert.pem".into(),
+        );
+    }
+    config
+}
+
+/// NTFS holds no '"' in a name and no case.txt beside Case.txt.
+const WINDOWS_UNSUPPORTED_NAMES: &[&str] = &["quote's and \"double\".txt", "case.txt"];
+
+/// IIS: NTFS permissions instead of modes, no links. All sites share one
+/// lock: they run in the same host services, and a 10 000-entry PROPFIND
+/// next to the FTP scenarios outlasts the client timeout.
+fn iis_target(id: &'static str, kind: Kind, config: Map<String, Value>) -> Target {
+    Target {
+        symlinks: false,
+        unsupported_names: WINDOWS_UNSUPPORTED_NAMES,
+        max_url_segments: (kind == Kind::Webdav).then_some(32),
+        ..base(id, "iis", "iis", kind, iis(config), "")
+    }
+}
+
 fn base(
     id: &'static str,
     profile: &'static str,
@@ -127,6 +162,8 @@ fn base(
         symlinks: true,
         perms: true,
         long_name: true,
+        unsupported_names: &[],
+        max_url_segments: None,
         disk_full_dir: None,
         max_upload_bytes: None,
         resume_upload: kind != Kind::Webdav,
@@ -444,6 +481,12 @@ pub fn target(id: &str) -> Target {
                 "",
             )
         },
+
+        // IIS (Windows host, profile iis)
+        "iis_ftp" => iis_target("iis_ftp", Ftp, ftp(2121)),
+        "iis_ftps" => iis_target("iis_ftps", Ftp, ftps(2121)),
+        "iis_ftp_unix" => iis_target("iis_ftp_unix", Ftp, ftp(2122)),
+        "iis_webdav" => iis_target("iis_webdav", Webdav, webdav("http://127.0.0.1:18180/")),
         other => panic!("unknown matrix target {other}"),
     }
 }

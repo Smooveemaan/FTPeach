@@ -1,3 +1,4 @@
+pub(crate) mod edit_recovery;
 pub(crate) mod filesystem_safety;
 pub(crate) mod fs_delete;
 pub(crate) mod fs_listing;

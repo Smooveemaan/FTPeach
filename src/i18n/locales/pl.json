@@ -144,6 +144,15 @@
     "title": "Plik został zmieniony",
     "message": "Plik „{{name}}” został zmieniony w zewnętrznej aplikacji. Przesłać zaktualizowany plik na serwer?"
   },
+  "recoveredEdits": {
+    "title": "Nieprzesłane zmiany",
+    "message": "Pliki zmienione w zewnętrznej aplikacji nie zostały przesłane na serwer przed zamknięciem FTPeach. Zachowano je, aby można było przesłać je samodzielnie.",
+    "unknownPath": "Nieznana ścieżka na serwerze",
+    "show": "Pokaż pliki",
+    "later": "Później",
+    "discard": "Usuń",
+    "confirmDiscard": "Usunąć te pliki? Zawarte w nich zmiany zostaną utracone."
+  },
   "saveSite": {
     "title": "Zapisz profil połączenia",
     "label": "Nazwa profilu połączenia:"

@@ -138,6 +138,15 @@
     "title": "檔案已變更",
     "message": "「{{name}}」已在外部應用程式中變更。要將更新後的檔案上傳到伺服器嗎？"
   },
+  "recoveredEdits": {
+    "title": "未上傳的變更",
+    "message": "您在外部應用程式中變更的檔案在 FTPeach 關閉前未上傳到伺服器。這些檔案已保留，您可以自行上傳。",
+    "unknownPath": "伺服器路徑不明",
+    "show": "顯示檔案",
+    "later": "稍後",
+    "discard": "刪除",
+    "confirmDiscard": "要刪除這些檔案嗎？其中的變更將會遺失。"
+  },
   "saveSite": {
     "title": "儲存連線設定檔",
     "label": "連線設定檔名稱："

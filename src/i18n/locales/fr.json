@@ -141,6 +141,15 @@
     "title": "Fichier modifié",
     "message": "« {{name}} » a été modifié dans l'application externe. Téléverser le fichier mis à jour sur le serveur ?"
   },
+  "recoveredEdits": {
+    "title": "Modifications non téléversées",
+    "message": "Des fichiers que vous avez modifiés dans une application externe n'ont pas été téléversés sur le serveur avant la fermeture de FTPeach. Ils ont été conservés pour que vous puissiez les téléverser vous-même.",
+    "unknownPath": "Chemin sur le serveur inconnu",
+    "show": "Afficher les fichiers",
+    "later": "Plus tard",
+    "discard": "Supprimer",
+    "confirmDiscard": "Supprimer ces fichiers ? Les modifications qu'ils contiennent seront perdues."
+  },
   "saveSite": {
     "title": "Enregistrer le profil de connexion",
     "label": "Nom du profil de connexion :"

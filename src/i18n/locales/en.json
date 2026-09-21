@@ -138,6 +138,15 @@
     "title": "File changed",
     "message": "\"{{name}}\" was changed in the external application. Upload the updated file to the server?"
   },
+  "recoveredEdits": {
+    "title": "Edits that were not uploaded",
+    "message": "Files you changed in an external application were not uploaded to the server before FTPeach closed. They have been kept so you can upload them yourself.",
+    "unknownPath": "Server path unknown",
+    "show": "Show files",
+    "later": "Later",
+    "discard": "Delete",
+    "confirmDiscard": "Delete these files? The changes in them will be lost."
+  },
   "saveSite": {
     "title": "Save connection profile",
     "label": "Connection profile name:"

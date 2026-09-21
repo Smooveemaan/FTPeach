@@ -30,40 +30,41 @@ impl Default for PreviewPaths {
     }
 }
 
-/// Removes abandoned temp sessions from crashed/force-killed instances.
+/// Removes abandoned preview sessions from crashed/force-killed instances.
+/// Open-with sessions are not removed here: they may hold edits nobody
+/// uploaded, and `edit_recovery` collects them instead.
 /// A generous age limit avoids touching another FTPeach instance that is
 /// still running, while UUID validation confines deletion to directories
 /// created by this application.
 pub async fn cleanup_stale_sessions(paths: &PreviewPaths) {
-    for current in [&paths.preview_dir, &paths.open_with_dir] {
-        let Some(root) = current.parent() else {
+    let current = &paths.preview_dir;
+    let Some(root) = current.parent() else {
+        return;
+    };
+    let Ok(mut entries) = tokio::fs::read_dir(root).await else {
+        return;
+    };
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let path = entry.path();
+        if path.as_path() == current.as_path() || !is_managed_session_dir(&path) {
+            continue;
+        }
+        let Ok(file_type) = entry.file_type().await else {
             continue;
         };
-        let Ok(mut entries) = tokio::fs::read_dir(root).await else {
+        if !file_type.is_dir() || file_type.is_symlink() {
+            continue;
+        }
+        let Ok(metadata) = entry.metadata().await else {
             continue;
         };
-        while let Ok(Some(entry)) = entries.next_entry().await {
-            let path = entry.path();
-            if path.as_path() == current.as_path() || !is_managed_session_dir(&path) {
-                continue;
-            }
-            let Ok(file_type) = entry.file_type().await else {
-                continue;
-            };
-            if !file_type.is_dir() || file_type.is_symlink() {
-                continue;
-            }
-            let Ok(metadata) = entry.metadata().await else {
-                continue;
-            };
-            let old_enough = metadata
-                .modified()
-                .ok()
-                .and_then(|modified| std::time::SystemTime::now().duration_since(modified).ok())
-                .is_some_and(|age| age >= STALE_TEMP_SESSION_AGE);
-            if old_enough {
-                let _ = tokio::fs::remove_dir_all(path).await;
-            }
+        let old_enough = metadata
+            .modified()
+            .ok()
+            .and_then(|modified| std::time::SystemTime::now().duration_since(modified).ok())
+            .is_some_and(|age| age >= STALE_TEMP_SESSION_AGE);
+        if old_enough {
+            let _ = tokio::fs::remove_dir_all(path).await;
         }
     }
 }

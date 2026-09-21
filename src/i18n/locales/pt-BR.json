@@ -141,6 +141,15 @@
     "title": "Arquivo alterado",
     "message": "O arquivo “{{name}}” foi alterado no aplicativo externo. Deseja enviar o arquivo atualizado para o servidor?"
   },
+  "recoveredEdits": {
+    "title": "Alterações que não foram enviadas",
+    "message": "Os arquivos que você alterou em um aplicativo externo não foram enviados ao servidor antes de o FTPeach ser fechado. Eles foram mantidos para que você possa enviá-los.",
+    "unknownPath": "Caminho no servidor desconhecido",
+    "show": "Mostrar arquivos",
+    "later": "Mais tarde",
+    "discard": "Excluir",
+    "confirmDiscard": "Excluir estes arquivos? As alterações feitas neles serão perdidas."
+  },
   "saveSite": {
     "title": "Salvar perfil de conexão",
     "label": "Nome do perfil de conexão:"

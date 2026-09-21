@@ -8,7 +8,12 @@ import type { createTransferApi } from './api/transfers.ts';
 import type { createTrayApi } from './api/tray.ts';
 import type { createUpdaterApi } from './api/updater.ts';
 import type { AppSettings } from './api/settings.ts';
-import type { CommandResult, OpenWithChange, PreviewProgress } from './ipcContracts.ts';
+import type {
+  CommandResult,
+  OpenWithChange,
+  PreviewProgress,
+  RecoveredEdit,
+} from './ipcContracts.ts';
 import type { DragOutFile } from './api/dragOut.ts';
 import type { LogEntry, SiteProtocol } from '../shared/types.ts';
 
@@ -98,6 +103,10 @@ declare global {
           application: string | null,
         ) => Promise<CommandResult & { localPath?: string }>;
         stop: (id: string) => Promise<unknown>;
+        markSynced: (id: string, revision: string) => Promise<CommandResult>;
+        recoveredEdits: () => Promise<RecoveredEdit[]>;
+        revealRecoveredEdits: () => Promise<CommandResult>;
+        discardRecoveredEdits: () => Promise<CommandResult>;
         onChanged: (callback: (payload: OpenWithChange) => void) => () => void;
         onProgress: (callback: (payload: PreviewProgress) => void) => () => void;
       };

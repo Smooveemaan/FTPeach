@@ -125,8 +125,9 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 }
 
 /// Everything `run` does short of exiting: connections closed, window bounds
-/// saved, temporary copies removed and the vault locked. Installing an update
-/// needs the same tidy state before it hands over to the installer.
+/// saved, temporary copies removed (edited ones kept for recovery) and the
+/// vault locked. Installing an update needs the same tidy state before it
+/// hands over to the installer.
 pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
@@ -134,6 +135,7 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
     let paths = app.state::<PreviewPaths>();
     let open_with_dir = paths.open_with_dir.clone();
     let preview_dir = paths.preview_dir.clone();
+    let recovery_root = crate::local_fs::edit_recovery::root(&app);
     let store = app.state::<Store>().inner().clone();
     let vault = app.state::<Vault>().inner().clone();
 
@@ -155,13 +157,32 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
             }
             while tasks.join_next().await.is_some() {}
         };
+        // Copies with edits nobody uploaded move to the recovery folder; only
+        // the rest is deleted. Cut short by the deadline, the next start
+        // collects the session the same way.
+        let end_open_with = async {
+            if let Some(root) = recovery_root {
+                let collected = tokio::task::spawn_blocking(move || {
+                    crate::local_fs::edit_recovery::collect(&open_with_dir, &root)
+                })
+                .await;
+                if let Ok(Err(error)) = collected {
+                    log::warn!("kept the open-with session for recovery: {error}");
+                }
+            }
+        };
         let remove_session_temp = async {
-            let _ = tokio::fs::remove_dir_all(open_with_dir).await;
             let _ = tokio::fs::remove_dir_all(preview_dir).await;
         };
         let lock_vault = vault.lock();
 
-        tokio::join!(persist, disconnect, remove_session_temp, lock_vault);
+        tokio::join!(
+            persist,
+            disconnect,
+            end_open_with,
+            remove_session_temp,
+            lock_vault
+        );
     };
 
     // A stuck network operation or locked temp file must never make the app

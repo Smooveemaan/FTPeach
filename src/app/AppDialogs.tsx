@@ -11,7 +11,7 @@ import { parentRemotePath } from '../features/file-browser/index.ts';
 import type { PaneId, SiteProtocol } from '../shared/types.ts';
 import type { PaneState, TabState, usePanes } from '../features/file-browser/index.ts';
 import type { useAppDialogs } from './useAppDialogs.ts';
-import type { useOpenWithLifecycle } from '../features/open-with/index.ts';
+import type { RecoveredEditsModel, useOpenWithLifecycle } from '../features/open-with/index.ts';
 import { reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 
@@ -21,6 +21,11 @@ const ImportSettingsDialog = lazy(() => import('../components/ImportSettingsDial
 const OpenWithDialog = lazy(() =>
   import('../features/open-with/ui.ts').then(({ OpenWithDialog }) => ({
     default: OpenWithDialog,
+  })),
+);
+const RecoveredEditsDialog = lazy(() =>
+  import('../features/open-with/ui.ts').then(({ RecoveredEditsDialog }) => ({
+    default: RecoveredEditsDialog,
   })),
 );
 const SettingsDialog = lazy(() =>
@@ -130,13 +135,14 @@ export interface AppDialogsModel {
   openWith: OpenWithLifecycle & {
     applicationFor: (path: string) => string | null;
   };
+  recoveredEdits: RecoveredEditsModel;
   runUpload: (
     connectionId: string,
     protocol: SiteProtocol,
     localPath: string,
     name: string,
     remotePath: string,
-  ) => Promise<unknown>;
+  ) => Promise<{ ok: boolean; skipped?: boolean; alreadyRunning?: boolean }>;
   refreshPane: ReturnType<typeof usePanes>['refreshPane'];
   windowNarrow: boolean;
 }
@@ -157,10 +163,12 @@ export default function AppDialogs({ model }: AppDialogsProps) {
     tabs,
     paneActions,
     openWith,
+    recoveredEdits,
     runUpload,
     refreshPane,
   } = model;
-  const changedWatch = openWith.changedId ? openWith.watches[openWith.changedId] : undefined;
+  const changed = openWith.changed;
+  const changedWatch = changed ? openWith.watches[changed.id] : undefined;
 
   return (
     <Suspense fallback={null}>
@@ -273,6 +281,14 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onClose={() => openWith.setTarget(null)}
         />
       )}
+      {recoveredEdits.edits.length > 0 && (
+        <RecoveredEditsDialog
+          edits={recoveredEdits.edits}
+          onReveal={recoveredEdits.reveal}
+          onDiscard={recoveredEdits.discard}
+          onLater={recoveredEdits.later}
+        />
+      )}
       {changedWatch && (
         <ConfirmDialog
           title={t('openWithChanged.title')}
@@ -281,6 +297,8 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           danger={false}
           onConfirm={() => {
             const watch = changedWatch;
+            const change = changed;
+            if (!change) return;
             const targetPane = tabs.find((tab) => tab.id === watch.tabId)?.panes[watch.paneId];
             if (!targetPane?.protocol) return;
             const upload = runUpload(
@@ -291,12 +309,16 @@ export default function AppDialogs({ model }: AppDialogsProps) {
               parentRemotePath(watch.remotePath),
             );
             reportRejection(
-              upload.then(() =>
-                refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId),
-              ),
+              upload.then((result) => {
+                // Only the revision the question was about counts as uploaded;
+                // a later save is asked about on its own.
+                if (result.ok) openWith.confirmUploaded(change);
+                else if (!result.skipped && !result.alreadyRunning) openWith.retryChanged(change);
+                return refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId);
+              }),
             );
           }}
-          onClose={() => openWith.setChangedId(null)}
+          onClose={() => changed && openWith.dismissChanged(changed)}
         />
       )}
       {dialogs.showSaveSite && (

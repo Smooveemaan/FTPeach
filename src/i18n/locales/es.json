@@ -141,6 +141,15 @@
     "title": "El archivo ha cambiado",
     "message": "Se ha modificado «{{name}}» en la aplicación externa. ¿Quieres subir el archivo actualizado al servidor?"
   },
+  "recoveredEdits": {
+    "title": "Cambios que no se subieron",
+    "message": "Los archivos que modificaste en una aplicación externa no se subieron al servidor antes de cerrar FTPeach. Se han guardado para que puedas subirlos tú mismo.",
+    "unknownPath": "Ruta del servidor desconocida",
+    "show": "Mostrar archivos",
+    "later": "Más tarde",
+    "discard": "Eliminar",
+    "confirmDiscard": "¿Quieres eliminar estos archivos? Se perderán los cambios que contienen."
+  },
   "saveSite": {
     "title": "Guardar perfil de conexión",
     "label": "Nombre del perfil de conexión:"

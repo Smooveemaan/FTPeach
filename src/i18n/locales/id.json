@@ -138,6 +138,15 @@
     "title": "File diubah",
     "message": "\"{{name}}\" telah diubah di aplikasi eksternal. Unggah file yang diperbarui ke server?"
   },
+  "recoveredEdits": {
+    "title": "Perubahan yang belum diunggah",
+    "message": "File yang Anda ubah di aplikasi eksternal belum diunggah ke server sebelum FTPeach ditutup. File tersebut disimpan agar Anda dapat mengunggahnya sendiri.",
+    "unknownPath": "Jalur server tidak diketahui",
+    "show": "Tampilkan file",
+    "later": "Nanti",
+    "discard": "Hapus",
+    "confirmDiscard": "Hapus file ini? Perubahan di dalamnya akan hilang."
+  },
   "saveSite": {
     "title": "Simpan profil koneksi",
     "label": "Nama profil koneksi:"

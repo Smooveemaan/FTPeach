@@ -138,6 +138,15 @@
     "title": "Bestand gewijzigd",
     "message": "\"{{name}}\" is gewijzigd in de externe toepassing. Het bijgewerkte bestand naar de server uploaden?"
   },
+  "recoveredEdits": {
+    "title": "Wijzigingen die niet zijn geüpload",
+    "message": "Bestanden die u in een externe toepassing hebt gewijzigd, zijn niet naar de server geüpload voordat FTPeach werd gesloten. Ze zijn bewaard zodat u ze zelf kunt uploaden.",
+    "unknownPath": "Serverpad onbekend",
+    "show": "Bestanden weergeven",
+    "later": "Later",
+    "discard": "Verwijderen",
+    "confirmDiscard": "Deze bestanden verwijderen? De wijzigingen erin gaan verloren."
+  },
   "saveSite": {
     "title": "Verbindingsprofiel opslaan",
     "label": "Naam van verbindingsprofiel:"

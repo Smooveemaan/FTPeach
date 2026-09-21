@@ -141,6 +141,15 @@
     "title": "Fișierul a fost modificat",
     "message": "„{{name}}” a fost modificat în aplicația externă. Încărcați fișierul actualizat pe server?"
   },
+  "recoveredEdits": {
+    "title": "Modificări neîncărcate",
+    "message": "Fișierele pe care le-ați modificat într-o aplicație externă nu au fost încărcate pe server înainte de închiderea FTPeach. Au fost păstrate pentru a le putea încărca dumneavoastră.",
+    "unknownPath": "Calea de pe server este necunoscută",
+    "show": "Afișează fișierele",
+    "later": "Mai târziu",
+    "discard": "Șterge",
+    "confirmDiscard": "Ștergeți aceste fișiere? Modificările din ele se vor pierde."
+  },
   "saveSite": {
     "title": "Salvează profilul conexiunii",
     "label": "Numele profilului conexiunii:"

@@ -237,6 +237,10 @@ export const visualTestApi = {
   openWith: {
     start: () => resolved(ok),
     stop: () => resolved(ok),
+    markSynced: () => resolved(ok),
+    recoveredEdits: () => resolved([]),
+    revealRecoveredEdits: () => resolved(ok),
+    discardRecoveredEdits: () => resolved(ok),
     onChanged: () => unsubscribe,
     onProgress: () => unsubscribe,
   },

@@ -27,6 +27,12 @@ The `main` WebView receives only the core window/event permissions in
 - Ordinary list/edit IPC returns only secret-presence flags. Explicit reveal commands require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.
+- Open-with bookkeeping: `open_with_stop` and `open_with_mark_synced` (which records that the
+  named revision of an open-with copy was uploaded) take only the ID the copy was opened
+  under; an unknown ID or malformed revision changes nothing.
+  `open_with_recovered_edits`, `open_with_reveal_recovered_edits` and
+  `open_with_discard_recovered_edits` act only on the backend-owned recovery folder and
+  accept no path from the renderer.
 - Import/export: `app_import_settings`, `app_export_settings`.
 
 The highest-risk commands (secret reveal, `vault_reset`, `fs_delete`, local

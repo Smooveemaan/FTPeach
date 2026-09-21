@@ -22,6 +22,7 @@ import {
   hasCommandOutcome,
   isLogEntryArray,
   isOpenWithChange,
+  isRecoveredEditArray,
   isPreviewProgress,
   isRecord,
   normalizeCommandError,
@@ -36,6 +37,7 @@ import type {
   InvokeArgs,
   InvokeResult,
   PayloadGuard,
+  RecoveredEdit,
 } from './ipcContracts.ts';
 import type { AppSettings } from './api/settings.ts';
 import type { LogEntry } from '../shared/types.ts';
@@ -198,6 +200,17 @@ export const tauriApi: Window['api'] = {
         (raw): OpenWithStartResult => commandFailure('open_with_start', raw),
       ),
     stop: (id: string) => invoke('open_with_stop', { id }),
+    markSynced: (id: string, revision: string) =>
+      commandOutcome(invoke, 'open_with_mark_synced', { id, revision }),
+    recoveredEdits: (): Promise<RecoveredEdit[]> =>
+      checkedResponse(
+        'open_with_recovered_edits',
+        invoke('open_with_recovered_edits'),
+        isRecoveredEditArray,
+        (): RecoveredEdit[] => [],
+      ),
+    revealRecoveredEdits: () => commandOutcome(invoke, 'open_with_reveal_recovered_edits'),
+    discardRecoveredEdits: () => commandOutcome(invoke, 'open_with_discard_recovered_edits'),
     onChanged: onEvent('openWith:changed', isOpenWithChange),
     onProgress: onEvent('preview:progress', isPreviewProgress),
   },

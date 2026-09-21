@@ -63,6 +63,7 @@ pub fn run() {
     };
     let store = Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
     let vault = vault::Vault::new(store.data_dir().to_path_buf());
+    let preview_paths = PreviewPaths::default();
     builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(sensitive_plugin::init())
@@ -75,8 +76,8 @@ pub fn run() {
         .manage(Sessions::default())
         .manage(ConnectingClients::default())
         .manage(shutdown::ShutdownCoordinator::default())
-        .manage(PreviewPaths::default())
-        .manage(OpenWithWatchers::default())
+        .manage(OpenWithWatchers::new(preview_paths.open_with_dir.clone()))
+        .manage(preview_paths)
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
         .manage(AuthorizationState::default())
@@ -150,6 +151,10 @@ pub fn run() {
             commands::transfer::transfer_validate_remote_copy,
             commands::transfer::transfer_cancel_remote_copy,
             commands::open_with::open_with_stop,
+            commands::open_with::open_with_mark_synced,
+            commands::open_with::open_with_recovered_edits,
+            commands::open_with::open_with_reveal_recovered_edits,
+            commands::open_with::open_with_discard_recovered_edits,
             commands::drag_out::drag_out_start,
             commands::drag_out::drag_out_start_local,
             commands::updater::updater_status,

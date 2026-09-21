@@ -141,6 +141,15 @@
     "title": "File modificato",
     "message": "\"{{name}}\" è stato modificato nell'applicazione esterna. Caricare il file aggiornato sul server?"
   },
+  "recoveredEdits": {
+    "title": "Modifiche non caricate",
+    "message": "I file che hai modificato in un'applicazione esterna non sono stati caricati sul server prima della chiusura di FTPeach. Sono stati conservati perché tu possa caricarli.",
+    "unknownPath": "Percorso sul server sconosciuto",
+    "show": "Mostra i file",
+    "later": "Più tardi",
+    "discard": "Elimina",
+    "confirmDiscard": "Eliminare questi file? Le modifiche che contengono andranno perse."
+  },
   "saveSite": {
     "title": "Salva profilo di connessione",
     "label": "Nome profilo di connessione:"

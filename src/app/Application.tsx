@@ -13,7 +13,7 @@ import {
   usePanes,
 } from '../features/file-browser/index.ts';
 import type { FileSearchHandle } from '../features/file-browser/index.ts';
-import { useOpenWithLifecycle } from '../features/open-with/index.ts';
+import { useOpenWithLifecycle, useRecoveredEdits } from '../features/open-with/index.ts';
 import { useAppBootstrap } from './useAppBootstrap.ts';
 import { useAppDialogs } from './useAppDialogs.ts';
 import { useAppEffects } from './useAppEffects.ts';
@@ -296,10 +296,13 @@ export default function Application() {
     target: openWithTarget,
     setTarget: setOpenWithTarget,
     watches: openWithWatches,
-    changedId: openWithChanged,
-    setChangedId: setOpenWithChanged,
+    changed: openWithChanged,
+    dismissChanged: dismissOpenWithChanged,
+    confirmUploaded: confirmOpenWithUploaded,
+    retryChanged: retryOpenWithChanged,
     registerOpened: handleOpenWithOpened,
   } = useOpenWithLifecycle(tabs);
+  const recoveredEdits = useRecoveredEdits();
 
   // These dialogs resolve against the active tab. Blocking tab commands while
   // one is open keeps that implicit target stable until the action completes.
@@ -654,10 +657,13 @@ export default function Application() {
       target: openWithTarget,
       setTarget: setOpenWithTarget,
       watches: openWithWatches,
-      changedId: openWithChanged,
-      setChangedId: setOpenWithChanged,
+      changed: openWithChanged,
+      dismissChanged: dismissOpenWithChanged,
+      confirmUploaded: confirmOpenWithUploaded,
+      retryChanged: retryOpenWithChanged,
       registerOpened: handleOpenWithOpened,
     },
+    recoveredEdits,
     openWithAssociations: settings.transfers.openWithAssociations,
     runUpload,
     refreshPane,

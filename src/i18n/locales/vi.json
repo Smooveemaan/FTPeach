@@ -138,6 +138,15 @@
     "title": "Tệp đã thay đổi",
     "message": "“{{name}}” đã được chỉnh sửa trong ứng dụng bên ngoài. Tải tệp đã cập nhật lên máy chủ?"
   },
+  "recoveredEdits": {
+    "title": "Thay đổi chưa được tải lên",
+    "message": "Các tệp bạn đã thay đổi trong ứng dụng bên ngoài chưa được tải lên máy chủ trước khi FTPeach đóng. Các tệp này đã được giữ lại để bạn có thể tự tải lên.",
+    "unknownPath": "Không rõ đường dẫn trên máy chủ",
+    "show": "Hiển thị tệp",
+    "later": "Để sau",
+    "discard": "Xóa",
+    "confirmDiscard": "Xóa các tệp này? Những thay đổi trong đó sẽ bị mất."
+  },
   "saveSite": {
     "title": "Lưu hồ sơ kết nối",
     "label": "Tên hồ sơ kết nối:"

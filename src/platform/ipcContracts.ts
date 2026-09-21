@@ -79,7 +79,15 @@ export type UpdaterStatus =
   | { state: 'error'; message: string };
 export interface OpenWithChange {
   id: string;
-  [key: string]: unknown;
+  /** The revision to hand back once exactly this content is uploaded. */
+  revision: string;
+}
+
+/** An external-editor edit an earlier run could not upload. */
+export interface RecoveredEdit {
+  name: string;
+  remotePath: string | null;
+  savedAt: string;
 }
 
 export type InvokeArgs = Record<string, unknown>;
@@ -357,7 +365,20 @@ export function isUpdaterStatus(value: unknown): value is UpdaterStatus {
 }
 
 export function isOpenWithChange(value: unknown): value is OpenWithChange {
-  return isRecord(value) && typeof value.id === 'string';
+  return isRecord(value) && typeof value.id === 'string' && typeof value.revision === 'string';
+}
+
+export function isRecoveredEditArray(value: unknown): value is RecoveredEdit[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (edit) =>
+        isRecord(edit) &&
+        typeof edit.name === 'string' &&
+        (edit.remotePath === null || typeof edit.remotePath === 'string') &&
+        typeof edit.savedAt === 'string',
+    )
+  );
 }
 
 function isLogEntry(value: unknown): value is LogEntry {

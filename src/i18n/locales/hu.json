@@ -138,6 +138,15 @@
     "title": "A fájl megváltozott",
     "message": "A(z) „{{name}}” fájl módosult a külső alkalmazásban. Feltölti a frissített fájlt a szerverre?"
   },
+  "recoveredEdits": {
+    "title": "Fel nem töltött módosítások",
+    "message": "A külső alkalmazásban módosított fájlok nem kerültek fel a szerverre az FTPeach bezárása előtt. Megőriztük őket, hogy saját maga feltölthesse őket.",
+    "unknownPath": "Ismeretlen szerverútvonal",
+    "show": "Fájlok megjelenítése",
+    "later": "Később",
+    "discard": "Törlés",
+    "confirmDiscard": "Törli ezeket a fájlokat? A bennük lévő módosítások elvesznek."
+  },
   "saveSite": {
     "title": "Kapcsolati profil mentése",
     "label": "Kapcsolati profil neve:"

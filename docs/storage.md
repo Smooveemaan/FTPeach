@@ -43,6 +43,17 @@ next launch verifies it and installs it silently before any window appears,
 and the updated FTPeach removes the directory. An update never touches
 `%APPDATA%\FTPeach`.
 
+## Edits recovered from Open with
+
+A file opened with **Open with** is downloaded to a per-run folder under `%TEMP%\ftpeach-openwith`.
+Beside it, `copies.json` records each copy's server path and the modification time and size
+of the version the server holds; it contains no passwords. On exit, and at the next start
+after a crash, a copy that differs from that version is moved to
+`%LOCALAPPDATA%\com.smooveemaan.ftpeach\recovered-edits`, one folder per file with an
+`edit.json` naming its server path. Unchanged copies are deleted. FTPeach lists the recovered
+files at start and deletes them only when the user chooses to; nothing there expires. An
+uninstall that keeps application data keeps them too.
+
 ## Uninstall
 
 The uninstaller’s confirmation page carries a “Delete the application data”

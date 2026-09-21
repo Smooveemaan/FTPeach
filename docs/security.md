@@ -51,7 +51,7 @@ A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates` un
 
 ### FTPeach and external applications
 
-**Open with** downloads an untrusted remote file to a temporary directory and passes it to the Windows-registered application. FTPeach removes its temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server.
+**Open with** downloads an untrusted remote file to a temporary directory and passes it to the Windows-registered application. FTPeach removes its unchanged temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server; a modified copy that was never uploaded is moved to the recovery folder described in [storage](storage.md) instead of being deleted.
 
 ## Secret storage modes
 

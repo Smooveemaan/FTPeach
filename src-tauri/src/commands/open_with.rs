@@ -1,4 +1,5 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
+use crate::local_fs::edit_recovery;
 use crate::local_fs::open_with::OpenWithWatchers;
 use crate::local_fs::preview::{self, PreviewPaths};
 use crate::security::connection_guard::safe_temp_name;
@@ -118,10 +119,14 @@ pub async fn open_with_start(
             ),
         });
     }
+    // Recorded before the editor can touch the copy, so a save made straight
+    // after opening already differs from the recorded signature.
+    watchers.register(&id, local_path.clone(), remote_path.clone());
     if let Err(err) = app
         .opener()
         .open_path(local_path.to_string_lossy().into_owned(), application)
     {
+        watchers.forget(&id);
         let _ = tokio::fs::remove_file(&local_path).await;
         let _ = tokio::fs::remove_dir(&dir).await;
         return Ok(OpenWithStartResult::Err {
@@ -130,7 +135,7 @@ pub async fn open_with_start(
         });
     }
 
-    watchers.start(app, id, local_path.clone());
+    watchers.start(app, id);
     Ok(OpenWithStartResult::Ok {
         ok: true,
         local_path: local_path.to_string_lossy().into_owned(),
@@ -141,6 +146,81 @@ pub async fn open_with_start(
 pub fn open_with_stop(watchers: State<'_, OpenWithWatchers>, id: String) -> OkResult {
     watchers.stop(&id);
     OkResult::Ok { ok: true }
+}
+
+/// Called once `revision` of the copy has been uploaded, and only then.
+#[tauri::command]
+pub fn open_with_mark_synced(
+    watchers: State<'_, OpenWithWatchers>,
+    id: String,
+    revision: String,
+) -> OkResult {
+    if watchers.mark_synced(&id, &revision) {
+        OkResult::Ok { ok: true }
+    } else {
+        OkResult::Err {
+            ok: false,
+            error: CommandError::new(ErrorCode::NotFound, "No such open-with copy"),
+        }
+    }
+}
+
+fn recovery_root(app: &AppHandle) -> Result<std::path::PathBuf, CommandError> {
+    edit_recovery::root(app)
+        .ok_or_else(|| CommandError::new(ErrorCode::NotFound, "No local data directory"))
+}
+
+/// Edits earlier runs could not upload. Collects sessions they left first,
+/// so a crash is recovered as well as a normal exit.
+#[tauri::command]
+pub async fn open_with_recovered_edits(
+    app: AppHandle,
+    paths: State<'_, PreviewPaths>,
+) -> Result<Vec<edit_recovery::RecoveredEdit>, CommandError> {
+    let root = recovery_root(&app)?;
+    let current = paths.open_with_dir.clone();
+    tokio::task::spawn_blocking(move || {
+        edit_recovery::collect_abandoned(&current, &root);
+        edit_recovery::list(&root)
+    })
+    .await
+    .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))
+}
+
+/// Opens the recovery folder itself; the renderer never names a path here.
+#[tauri::command]
+pub fn open_with_reveal_recovered_edits(app: AppHandle) -> Result<OkResult, CommandError> {
+    let root = recovery_root(&app)?;
+    Ok(
+        match app
+            .opener()
+            .open_path(root.to_string_lossy().into_owned(), None::<String>)
+        {
+            Ok(()) => OkResult::Ok { ok: true },
+            Err(error) => OkResult::Err {
+                ok: false,
+                error: CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())),
+            },
+        },
+    )
+}
+
+#[tauri::command]
+pub async fn open_with_discard_recovered_edits(app: AppHandle) -> Result<OkResult, CommandError> {
+    let root = recovery_root(&app)?;
+    Ok(
+        match tokio::task::spawn_blocking(move || edit_recovery::discard(&root)).await {
+            Ok(Ok(())) => OkResult::Ok { ok: true },
+            Ok(Err(error)) => OkResult::Err {
+                ok: false,
+                error: CommandError::from(error),
+            },
+            Err(error) => OkResult::Err {
+                ok: false,
+                error: CommandError::new(ErrorCode::Internal, error.to_string()),
+            },
+        },
+    )
 }
 
 // See commands/preview.rs's serde_field_casing module for why this needs

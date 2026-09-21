@@ -144,6 +144,15 @@
     "title": "Soubor byl změněn",
     "message": "V externí aplikaci došlo ke změně souboru „{{name}}“. Chcete nahrát aktualizovaný soubor na server?"
   },
+  "recoveredEdits": {
+    "title": "Neodeslané úpravy",
+    "message": "Soubory, které jste změnili v externí aplikaci, nebyly před zavřením FTPeach nahrány na server. Byly uchovány, abyste je mohli nahrát sami.",
+    "unknownPath": "Cesta na serveru není známa",
+    "show": "Zobrazit soubory",
+    "later": "Později",
+    "discard": "Odstranit",
+    "confirmDiscard": "Odstranit tyto soubory? Změny v nich budou ztraceny."
+  },
   "saveSite": {
     "title": "Uložit profil připojení",
     "label": "Název profilu připojení:"

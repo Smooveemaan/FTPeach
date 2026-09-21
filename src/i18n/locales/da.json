@@ -138,6 +138,15 @@
     "title": "Filen er ændret",
     "message": "»{{name}}« er blevet ændret i det eksterne program. Skal den opdaterede fil uploades til serveren?"
   },
+  "recoveredEdits": {
+    "title": "Ændringer, der ikke blev uploadet",
+    "message": "Filer, du har ændret i et eksternt program, blev ikke uploadet til serveren, før FTPeach blev lukket. De er gemt, så du selv kan uploade dem.",
+    "unknownPath": "Stien på serveren er ukendt",
+    "show": "Vis filer",
+    "later": "Senere",
+    "discard": "Slet",
+    "confirmDiscard": "Vil du slette disse filer? Ændringerne i dem går tabt."
+  },
   "saveSite": {
     "title": "Gem forbindelsesprofil",
     "label": "Navn på forbindelsesprofil:"

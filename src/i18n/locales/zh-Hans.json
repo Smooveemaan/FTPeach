@@ -138,6 +138,15 @@
     "title": "文件已更改",
     "message": "“{{name}}”已在外部应用程序中修改。是否将更新后的文件上传到服务器？"
   },
+  "recoveredEdits": {
+    "title": "未上传的修改",
+    "message": "你在外部应用程序中修改的文件在 FTPeach 关闭前未上传到服务器。这些文件已保留，你可以自行上传。",
+    "unknownPath": "服务器路径未知",
+    "show": "显示文件",
+    "later": "稍后",
+    "discard": "删除",
+    "confirmDiscard": "要删除这些文件吗？其中的修改将会丢失。"
+  },
   "saveSite": {
     "title": "保存连接配置",
     "label": "连接配置名称："

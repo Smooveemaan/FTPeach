@@ -25,3 +25,28 @@
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* Edits kept from an earlier run: each file with the server path it came from. */
+.recovered-edits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(240px, calc(var(--app-viewport-h) - 240px));
+  margin: 12px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.recovered-edits li {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.recovered-edits strong,
+.recovered-edits span {
+  overflow-wrap: anywhere;
+}
+.recovered-edits span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}

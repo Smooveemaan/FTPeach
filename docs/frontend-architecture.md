@@ -148,7 +148,7 @@ different runtime environments. See `test/README.md` for the test layout and com
 | `features/settings` | `settings` | `dialogs/settings.css`, `dialogs/settings-shell.css`, `dialogs/settings-fields.css` |
 | `features/connections` | `connectionBar`, `protocolSelect` | `connection.css` |
 | `features/logs` | `log`, `logPanel` | `panels.css` (log additions) |
-| `features/open-with` | `openWithDialog`, `openWithChanged` | `dialogs/open-with.css` |
+| `features/open-with` | `openWithDialog`, `openWithChanged`, `recoveredEdits` | `dialogs/open-with.css` |
 | `features/updater` | `update` | `panels.css` (banner) |
 | `app/` | `menu`, `tray`, `quitDialog`, `statusBar`, `titleBar`, `viewToolbar`, `confirm`, `chmodDialog`, `newFolder`, `newFile`, `moveToDialog`, `saveSite`, `resize`, `dragMove`, `legacyPasswordNotice`, `plaintextSecretNotice`, `secretNotPersistedNotice` | `shell.css`, `workspace/controls.css` |
 | `components/` | `promptDialog`, `exportSettingsDialog`, `importSettingsDialog`, `aboutDialog`, `toolbarOverflowMenu`, `errorBoundary` | `dialogs/modal.css`, `dialogs/about.css`, `dialogs/menus.css`, `dialogs/move-to.css`, `dialogs/error-boundary.css`, `workspace/controls.css`, `workspace/status.css` |

@@ -138,6 +138,15 @@
     "title": "Datei geändert",
     "message": "„{{name}}“ wurde in der externen Anwendung geändert. Soll die aktualisierte Datei auf den Server hochgeladen werden?"
   },
+  "recoveredEdits": {
+    "title": "Nicht hochgeladene Änderungen",
+    "message": "Dateien, die Sie in einer externen Anwendung geändert haben, wurden vor dem Beenden von FTPeach nicht auf den Server hochgeladen. Sie wurden aufbewahrt, damit Sie sie selbst hochladen können.",
+    "unknownPath": "Serverpfad unbekannt",
+    "show": "Dateien anzeigen",
+    "later": "Später",
+    "discard": "Löschen",
+    "confirmDiscard": "Diese Dateien löschen? Die Änderungen darin gehen verloren."
+  },
   "saveSite": {
     "title": "Verbindungsprofil speichern",
     "label": "Name des Verbindungsprofils:"

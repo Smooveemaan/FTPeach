@@ -138,6 +138,15 @@
     "title": "Filen har ändrats",
     "message": "”{{name}}” har ändrats i det externa programmet. Ska den uppdaterade filen laddas upp till servern?"
   },
+  "recoveredEdits": {
+    "title": "Ändringar som inte laddades upp",
+    "message": "Filer som du ändrade i ett externt program laddades inte upp till servern innan FTPeach stängdes. De har sparats så att du kan ladda upp dem själv.",
+    "unknownPath": "Okänd sökväg på servern",
+    "show": "Visa filer",
+    "later": "Senare",
+    "discard": "Ta bort",
+    "confirmDiscard": "Vill du ta bort filerna? Ändringarna i dem går förlorade."
+  },
   "saveSite": {
     "title": "Spara anslutningsprofil",
     "label": "Namn på anslutningsprofil:"

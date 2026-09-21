@@ -138,6 +138,15 @@
     "title": "Dosya değiştirildi",
     "message": "\"{{name}}\" dosyası harici uygulamada değiştirildi. Güncellenmiş dosyayı sunucuya yüklemek ister misiniz?"
   },
+  "recoveredEdits": {
+    "title": "Yüklenmeyen değişiklikler",
+    "message": "Harici bir uygulamada değiştirdiğiniz dosyalar FTPeach kapanmadan önce sunucuya yüklenmedi. Kendiniz yükleyebilmeniz için saklandılar.",
+    "unknownPath": "Sunucudaki yol bilinmiyor",
+    "show": "Dosyaları göster",
+    "later": "Daha sonra",
+    "discard": "Sil",
+    "confirmDiscard": "Bu dosyalar silinsin mi? İçlerindeki değişiklikler kaybolacak."
+  },
   "saveSite": {
     "title": "Bağlantı profilini kaydet",
     "label": "Bağlantı profili adı:"

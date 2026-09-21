@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   unless you agreed to overwrite it.
 - A failed copy of a single file no longer leaves a half-written file behind or damages the
   file it was about to replace.
+- Changes to a file opened in another application are no longer lost if FTPeach closes before
+  they are uploaded. They are kept, and FTPeach offers them the next time it starts.
+- When several files opened in other applications change at once, FTPeach now asks about each
+  of them.
 
 ## [0.2.3] - 2026-09-22
 

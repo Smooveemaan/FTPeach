@@ -23,11 +23,13 @@ fn posix_re() -> &'static regex::Regex {
     })
 }
 
+/// IIS puts every name in one column: one space after the size, ten after
+/// `<DIR>`. Only that separator is taken, so a name's own leading spaces stay.
 fn dos_re() -> &'static regex::Regex {
     static RE: OnceLock<regex::Regex> = OnceLock::new();
     RE.get_or_init(|| {
         regex::Regex::new(
-            r#"^(\d{2}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*[AP]M)\s+(<DIR>)?([\d,]*)\s+(.+)$"#,
+            r#"^(\d{2}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*[AP]M)\s+(?:(<DIR>)(?: {10}| )|([\d,]+) )(.+)$"#,
         )
         .unwrap()
     })
@@ -265,6 +267,17 @@ mod tests {
         assert_eq!(entry.name, "  spaced.txt");
         let entry = parse_line("-rw-r--r-- 1 ftp ftp 3 Jun 14 09:30  lead", now).unwrap();
         assert_eq!(entry.name, " lead");
+        // IIS, as it lists them.
+        let entry = parse_line(
+            "09-21-26  09:27PM                   36   leading and trailing spaces  .txt",
+            now,
+        )
+        .unwrap();
+        assert_eq!(entry.name, "  leading and trailing spaces  .txt");
+        assert_eq!(entry.size, 36);
+        let entry = parse_line("09-21-26  09:27PM       <DIR>           spaced dir", now).unwrap();
+        assert_eq!(entry.name, " spaced dir");
+        assert!(entry.is_directory);
     }
 
     #[test]

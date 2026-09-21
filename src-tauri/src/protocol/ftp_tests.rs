@@ -982,6 +982,17 @@ mod recursive_stop_tests {
                         Err(reply) => reply.to_string(),
                     }
                 }
+                "RETR" => {
+                    let content = disk.lock().unwrap().files.get(&path).cloned();
+                    match content {
+                        Some(bytes) => {
+                            let text = String::from_utf8_lossy(&bytes).into_owned();
+                            send_listing(text, &mut passive, &mut writer).await
+                        }
+                        // IIS words a missing file and a missing folder alike.
+                        None => "550 The system cannot find the path specified.".to_string(),
+                    }
+                }
                 "STOR" | "APPE" => {
                     store(&disk, path, command == "APPE", &mut passive, &mut writer).await
                 }
@@ -1260,6 +1271,27 @@ mod recursive_stop_tests {
         backend.mkdir("/Folder").await.unwrap();
         assert!(disk.lock().unwrap().dirs.contains("/Folder"));
         assert!(backend.is_connected());
+    }
+
+    #[tokio::test]
+    async fn a_file_in_a_missing_folder_is_not_found_from_a_bare_550() {
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk(|_| {})).await))
+            .await
+            .unwrap();
+        let mut sink = Vec::new();
+        let error = backend
+            .download_to_writer("/missing/file.txt", &mut sink)
+            .await
+            .unwrap_err();
+        // Neither reply says "not found": the parent's listing is refused
+        // too, and the grandparent does not list it.
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::NotFound,
+            "{error:#}"
+        );
     }
 
     #[tokio::test]

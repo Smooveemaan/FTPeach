@@ -840,6 +840,16 @@ impl FtpBackend {
                 (ErrorCode::PermissionDenied, "The server refused access")
             }
             Ok(_) => (ErrorCode::NotFound, "File or folder not found"),
+            // Nor is anything inside a folder that is missing itself (IIS
+            // answers both with the same plain 550).
+            Err(listing) if parent != "/" && refused_by_server(&listing) => {
+                let parent_error = Box::pin(self.explain_refusal(parent, listing)).await;
+                if crate::ipc::CommandError::from_anyhow(&parent_error).code != ErrorCode::NotFound
+                {
+                    return error;
+                }
+                (ErrorCode::NotFound, "File or folder not found")
+            }
             Err(_) => return error,
         };
         error.context(crate::ipc::CommandError::new(code, message))

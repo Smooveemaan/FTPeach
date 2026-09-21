@@ -3,8 +3,8 @@ use super::model::{Endpoint, Intent, check_cancel, unit};
 use crate::application::transfer_service;
 use crate::ipc::{CommandError, ErrorCode};
 use crate::local_fs::target_reservation::{Access, Reservation};
-use crate::local_fs::{filesystem_safety as safety, mutations};
-use crate::protocol::{EntryInfo, transfer_file};
+use crate::local_fs::{filesystem_safety as safety, mutations, staged_copy};
+use crate::protocol::EntryInfo;
 use crate::session::Sessions;
 use crate::transfer::progress::ProgressEmitter;
 use anyhow::{Context, Result};
@@ -16,7 +16,6 @@ use std::{
     },
     time::Duration,
 };
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_util::sync::CancellationToken;
 
 /// How long a stopped scan waits for its remote listing to finish before
@@ -225,34 +224,12 @@ async fn copy_local(
     safety::validate_write_destination(target).await?;
     safety::ensure_path_no_reparse_points_now(source)?;
     safety::ensure_path_no_reparse_points_now(target)?;
-    let temporary = target.with_file_name(format!(".ftpeach-{}.part", uuid::Uuid::new_v4()));
-    let result = async {
-        let mut input = tokio::fs::File::open(source).await?;
-        let before = input.metadata().await?;
-        let mut output = tokio::fs::File::from_std(transfer_file::open_artifact(&temporary, true)?);
-        let mut limited = (&mut input).take(before.len().saturating_add(1));
-        let bytes = tokio::select! {
-            result = tokio::io::copy(&mut limited, &mut output) => result?,
-            _ = token.cancelled() => { check_cancel(token)?; unreachable!() }
-        };
-        transfer_file::validate_length(bytes, Some(before.len()))?;
-        let after = input.metadata().await?;
-        anyhow::ensure!(
-            before.len() == after.len() && before.modified()? == after.modified()?,
-            "Source changed during copy"
-        );
-        output.flush().await?;
-        output.sync_all().await?;
-        drop(output);
-        crate::protocol::ALLOW_OVERWRITE
-            .scope(overwrite, transfer_file::commit(&temporary, target))
-            .await
-    }
-    .await;
-    if result.is_err() {
-        let _ = tokio::fs::remove_file(&temporary).await;
-    }
-    result
+    staged_copy::copy_file(source, target, overwrite, token)
+        .await
+        .or_else(|error| {
+            check_cancel(token)?;
+            Err(error)
+        })
 }
 
 /// Copies one file using the explicit overwrite policy. `resume` carries a

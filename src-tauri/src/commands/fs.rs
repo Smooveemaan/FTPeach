@@ -289,26 +289,16 @@ pub async fn fs_copy_file(
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&dest_path)) {
         return err(error);
     }
-    if !overwrite.unwrap_or(false) {
-        let result: anyhow::Result<()> = async {
-            let mut source = tokio::fs::File::open(&source_path).await?;
-            let mut destination = tokio::fs::OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&dest_path)
-                .await?;
-            tokio::io::copy(&mut source, &mut destination).await?;
-            Ok(())
-        }
-        .await;
-        return match result {
-            Ok(()) => ok(),
-            Err(error) => err(error),
-        };
-    }
-    match tokio::fs::copy(&source_path, &dest_path).await {
-        Ok(_) => ok(),
-        Err(e) => err(e),
+    match crate::local_fs::staged_copy::copy_file(
+        Path::new(&source_path),
+        Path::new(&dest_path),
+        overwrite == Some(true),
+        &tokio_util::sync::CancellationToken::new(),
+    )
+    .await
+    {
+        Ok(()) => ok(),
+        Err(error) => err(error),
     }
 }
 

@@ -125,4 +125,6 @@ Local single-file moves use filesystem rename with explicit overwrite approval, 
 
 Rename and single-file copy replace an existing target only when the caller passes `overwrite: true`, which the renderer does only after the user resolved that conflict (MoveTo, paste, drag). A missing or `false` flag means no replacement, locally and in `session_rename`; F2 rename never replaces another entry. The one exception is a remote change of letter case with no entry of exactly the new name, which is sent as a replacing rename because a case-insensitive server would otherwise see the entry itself as the conflict.
 
+`fs_copy_file` uses the same staged copy as recursive local copies: bytes go to a unique hidden sibling, the source must keep its length and modification time, the sibling is synced and only then committed under the overwrite policy. A failure before commit removes only that sibling; an existing target keeps its old content and a new target never appears partially written.
+
 Address breadcrumbs explicitly opt back into pointer events during drag; the browser regression uses real mouse movement with production CSS. Windows handle publication follows [FILE_RENAME_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info).

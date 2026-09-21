@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Renaming or moving a file into a folder no longer replaces a file with the same name there
   unless you agreed to overwrite it.
+- A failed copy of a single file no longer leaves a half-written file behind or damages the
+  file it was about to replace.
 
 ## [0.2.3] - 2026-09-22
 

@@ -1,0 +1,261 @@
+//! Copy of one local file that never exposes a partial target. The data lands
+//! in a hidden sibling owned by this copy; only after the source is confirmed
+//! unchanged and the sibling is synced does it take the target name, under the
+//! caller's overwrite policy. Until that commit an existing target keeps its
+//! old content, and a failure removes the sibling and nothing else.
+//!
+//! Callers hold the target reservation and the local mutation guard and have
+//! validated both paths; this module owns only staging and commit.
+use crate::ipc::{CommandError, ErrorCode};
+use crate::protocol::transfer_file;
+use anyhow::Result;
+use std::path::{Path, PathBuf};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio_util::sync::CancellationToken;
+
+/// Points where a test can fail the copy, in the order they are reached.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Stage {
+    Copied,
+    Synced,
+}
+
+#[cfg(test)]
+tokio::task_local! {
+    pub(crate) static FAULT: std::sync::Arc<dyn Fn(Stage) -> Result<()> + Send + Sync>;
+}
+
+#[cfg(test)]
+fn reach(stage: Stage) -> Result<()> {
+    FAULT.try_with(|fault| fault(stage)).unwrap_or(Ok(()))
+}
+
+#[cfg(not(test))]
+fn reach(_: Stage) -> Result<()> {
+    Ok(())
+}
+
+fn staging_path(target: &Path) -> PathBuf {
+    target.with_file_name(format!(".ftpeach-{}.part", uuid::Uuid::new_v4()))
+}
+
+fn cancelled() -> anyhow::Error {
+    CommandError::new(ErrorCode::Cancelled, "Copy cancelled").into()
+}
+
+pub(crate) async fn copy_file(
+    source: &Path,
+    target: &Path,
+    overwrite: bool,
+    token: &CancellationToken,
+) -> Result<()> {
+    let temporary = staging_path(target);
+    let result = async {
+        let mut input = tokio::fs::File::open(source).await?;
+        let before = input.metadata().await?;
+        anyhow::ensure!(before.is_file(), "Only a regular file can be copied");
+        let mut output = tokio::fs::File::from_std(transfer_file::open_artifact(&temporary, true)?);
+        let mut limited = (&mut input).take(before.len().saturating_add(1));
+        let bytes = tokio::select! {
+            result = tokio::io::copy(&mut limited, &mut output) => result?,
+            _ = token.cancelled() => return Err(cancelled()),
+        };
+        reach(Stage::Copied)?;
+        transfer_file::validate_length(bytes, Some(before.len()))?;
+        let after = input.metadata().await?;
+        anyhow::ensure!(
+            before.len() == after.len() && before.modified()? == after.modified()?,
+            "Source changed during copy"
+        );
+        output.flush().await?;
+        output.sync_all().await?;
+        drop(output);
+        reach(Stage::Synced)?;
+        if token.is_cancelled() {
+            return Err(cancelled());
+        }
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(overwrite, transfer_file::commit(&temporary, target))
+            .await
+    }
+    .await;
+    if result.is_err() {
+        let _ = tokio::fs::remove_file(&temporary).await;
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+
+    struct Fixture {
+        root: PathBuf,
+        source: PathBuf,
+        target: PathBuf,
+    }
+
+    impl Fixture {
+        fn new(existing_target: Option<&[u8]>) -> Self {
+            let root =
+                std::env::temp_dir().join(format!("ftpeach-staged-copy-{}", uuid::Uuid::new_v4()));
+            std::fs::create_dir(&root).unwrap();
+            let source = root.join("source.bin");
+            let target = root.join("target.bin");
+            std::fs::write(&source, vec![7u8; 256 * 1024 + 3]).unwrap();
+            if let Some(content) = existing_target {
+                std::fs::write(&target, content).unwrap();
+            }
+            Self {
+                root,
+                source,
+                target,
+            }
+        }
+
+        fn names(&self) -> Vec<String> {
+            let mut names: Vec<_> = std::fs::read_dir(&self.root)
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+                .collect();
+            names.sort();
+            names
+        }
+
+        async fn copy_failing_at(&self, stage: Stage, overwrite: bool) -> Result<()> {
+            let fault: Arc<dyn Fn(Stage) -> Result<()> + Send + Sync> = Arc::new(move |reached| {
+                anyhow::ensure!(reached != stage, "injected fault at {reached:?}");
+                Ok(())
+            });
+            FAULT
+                .scope(
+                    fault,
+                    copy_file(
+                        &self.source,
+                        &self.target,
+                        overwrite,
+                        &CancellationToken::new(),
+                    ),
+                )
+                .await
+        }
+    }
+
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.root);
+        }
+    }
+
+    #[tokio::test]
+    async fn a_fault_before_commit_keeps_the_old_target_and_leaves_no_partial() {
+        for stage in [Stage::Copied, Stage::Synced] {
+            for overwrite in [false, true] {
+                let fixture = Fixture::new(Some(b"old"));
+                assert!(fixture.copy_failing_at(stage, overwrite).await.is_err());
+                assert_eq!(std::fs::read(&fixture.target).unwrap(), b"old");
+                assert_eq!(fixture.names(), ["source.bin", "target.bin"]);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn a_fault_before_commit_never_creates_a_new_target() {
+        for stage in [Stage::Copied, Stage::Synced] {
+            let fixture = Fixture::new(None);
+            assert!(fixture.copy_failing_at(stage, false).await.is_err());
+            assert_eq!(fixture.names(), ["source.bin"]);
+        }
+    }
+
+    #[tokio::test]
+    async fn a_target_that_appears_before_commit_is_not_replaced() {
+        let fixture = Fixture::new(None);
+        let target = fixture.target.clone();
+        let fault: Arc<dyn Fn(Stage) -> Result<()> + Send + Sync> = Arc::new(move |stage| {
+            if stage == Stage::Synced {
+                std::fs::write(&target, b"racing")?;
+            }
+            Ok(())
+        });
+        let result = FAULT
+            .scope(
+                fault,
+                copy_file(
+                    &fixture.source,
+                    &fixture.target,
+                    false,
+                    &CancellationToken::new(),
+                ),
+            )
+            .await;
+        assert!(result.is_err());
+        assert_eq!(std::fs::read(&fixture.target).unwrap(), b"racing");
+        assert_eq!(fixture.names(), ["source.bin", "target.bin"]);
+    }
+
+    #[tokio::test]
+    async fn a_source_changed_during_the_copy_is_refused() {
+        let fixture = Fixture::new(Some(b"old"));
+        let source = fixture.source.clone();
+        let fault: Arc<dyn Fn(Stage) -> Result<()> + Send + Sync> = Arc::new(move |stage| {
+            if stage == Stage::Copied {
+                std::fs::OpenOptions::new()
+                    .append(true)
+                    .open(&source)
+                    .and_then(|mut file| std::io::Write::write_all(&mut file, b"more"))?;
+            }
+            Ok(())
+        });
+        let result = FAULT
+            .scope(
+                fault,
+                copy_file(
+                    &fixture.source,
+                    &fixture.target,
+                    true,
+                    &CancellationToken::new(),
+                ),
+            )
+            .await;
+        assert!(format!("{:#}", result.unwrap_err()).contains("Source changed"));
+        assert_eq!(std::fs::read(&fixture.target).unwrap(), b"old");
+        assert_eq!(fixture.names(), ["source.bin", "target.bin"]);
+    }
+
+    #[tokio::test]
+    async fn a_cancelled_copy_leaves_no_trace() {
+        let fixture = Fixture::new(None);
+        let token = CancellationToken::new();
+        token.cancel();
+        let error = copy_file(&fixture.source, &fixture.target, false, &token)
+            .await
+            .unwrap_err();
+        assert_eq!(
+            error.downcast_ref::<CommandError>().map(|e| e.code),
+            Some(ErrorCode::Cancelled)
+        );
+        assert_eq!(fixture.names(), ["source.bin"]);
+    }
+
+    #[tokio::test]
+    async fn the_overwrite_policy_decides_an_existing_target() {
+        let fixture = Fixture::new(Some(b"old"));
+        let token = CancellationToken::new();
+        assert!(
+            copy_file(&fixture.source, &fixture.target, false, &token)
+                .await
+                .is_err()
+        );
+        assert_eq!(std::fs::read(&fixture.target).unwrap(), b"old");
+        copy_file(&fixture.source, &fixture.target, true, &token)
+            .await
+            .unwrap();
+        assert_eq!(
+            std::fs::read(&fixture.target).unwrap(),
+            std::fs::read(&fixture.source).unwrap()
+        );
+        assert_eq!(fixture.names(), ["source.bin", "target.bin"]);
+    }
+}

@@ -7,6 +7,7 @@ pub(crate) mod open_with;
 pub(crate) mod preview;
 #[cfg(windows)]
 pub(crate) mod recycle_bin;
+pub(crate) mod staged_copy;
 
 pub(crate) mod target_reservation;
 

@@ -2,40 +2,36 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
-## [Unreleased]
+## [0.2.3] - 2026-09-22
 
 ### Added
 
-- FTP bookmarks can use an older file name encoding, such as Windows-1251, for servers whose
-  file names looked garbled.
-- SFTP servers that ask for the password through keyboard-interactive login now let you in.
+- If file names on an FTP server look garbled, you can pick another encoding for its bookmark,
+  such as Windows-1251 for Cyrillic.
+- You can log in to SFTP servers that ask for the password in a separate prompt.
 
 ### Changed
 
-- With enhanced protection on, the saved proxy password is locked behind the master password too.
-- Security settings call the master-password storage "vault" everywhere, and the unlock prompt no
-  longer talks about a connection when you save settings or a bookmark.
+- With enhanced protection on, the proxy password is protected by the master password too.
 
 ### Fixed
 
-- In Greek, German and other long translations, the Save button, checkbox labels and shortcut names
-  in Settings no longer run off the edge.
-- Opening a file the FTP server refuses no longer hangs until the connection times out.
-- FTPS uploads keep working on vsftpd servers that require data connections to reuse the TLS
-  session.
-- Connecting to a server that only speaks implicit FTPS fails within seconds with a clear
-  message.
-- RSA keys work with current OpenSSH servers.
-- Renaming onto an existing name on SFTPGo no longer silently replaces that file.
-- WebDAV works through SOCKS4 proxies, and file names with `&` no longer break on WebDAV.
-- A full disk on the server is reported as a full disk instead of a lost connection.
-- Bookmarks with a connection limit can be imported again after exporting them.
-- A dragged bookmark lands where the list showed it, even when you let go early.
-- Dragging a bookmark to the bottom edge of a scrolled list no longer sends it to the very end.
-- Quickly reordering bookmarks no longer loses a move or snaps the list back.
-- Escape in the bookmark search or a name field no longer closes the whole bookmark manager.
-- Folders in the bookmark manager can be picked up and moved with Space.
-- Tab reaches every folder and bookmark in the bookmark manager, not just the first folder.
+- Opening a file the server refuses no longer hangs.
+- Uploads over FTPS no longer fail on some servers.
+- Choosing the wrong kind of FTPS for a server now fails quickly with a clear message.
+- Logging in with an RSA key works on up-to-date SFTP servers.
+- Renaming a file to a name that is already taken no longer silently replaces the other file.
+- WebDAV works through SOCKS4 proxies, and file names with `&` work on WebDAV.
+- On Windows (IIS) servers, file names starting with a space keep it, and a missing file is
+  reported as not found.
+- A file you aren't allowed to open on a WebDAV server says access is denied instead of
+  reporting a failed login.
+- A full disk on the server is reported as such instead of a lost connection.
+- Exported bookmarks with a connection limit can be imported again.
+- Dragging bookmarks in the bookmark manager puts them where you drop them.
+- The bookmark manager works fully from the keyboard, and Escape in its fields no longer
+  closes it.
+- Long translations, such as Greek or German, no longer run off the edge in Settings.
 
 ## [0.2.2] - 2026-09-14
 
@@ -54,11 +50,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - File → Exit quits the app instead of leaving a blank window or hiding it to the tray.
 - A custom speed limit appears directly below No limit in the tray menu.
 - Closing Settings no longer overwrites settings changed from the tray while it was open.
-- Weekly parser fuzz checks compile with the application's shared directory limits again.
-  CI also replays saved parser inputs to catch compilation regressions before the weekly run.
-- MLSD fuzzing exercises the parser used by FTPeach and preserves the input found by the
-  weekly audit as a regression case.
-- Regenerate license reports for the release lockfiles so CI can validate them.
 
 ## [0.2.1] - 2026-09-13
 
@@ -203,7 +194,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   partial downloads and upload staging files — and never anything that was there before.
 - Show a folder dragged out to Explorer as a single row with its real size, instead of a
   row per file and a folder row stuck at 0 B.
-- Remove the `.ftpeach-resume.json` record next to a file once its download completes.
+- Remove the leftover resume file next to a downloaded file once the download completes.
 
 ## [0.1.1] - 2026-09-09
 
@@ -214,8 +205,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Correct translations and plural forms across supported languages, with checks for missing plural forms and unknown translation keys.
-- Resolve sRGB theme colors correctly for the native window frame.
+- Correct translations and plural forms across supported languages.
+- The window frame uses the right theme colors.
 
 ## [0.1.0] - 2026-09-08
 

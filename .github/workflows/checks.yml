@@ -165,7 +165,7 @@ jobs:
         with:
           workspaces: src-tauri/fuzz
       - name: Replay saved parser regression inputs
-        run: cargo test --locked --manifest-path src-tauri/fuzz/Cargo.toml --lib
+        run: npm run test:parser-regressions
 
   rust-test:
     permissions:

@@ -11,7 +11,9 @@ mod limits;
 mod list_parse;
 pub mod protocol {
     pub use crate::failure::fail;
-    pub use crate::limits::{MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES};
+    pub use crate::limits::{
+        MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES, MAX_RAW_DIRECTORY_ENTRIES,
+    };
 }
 #[path = "../../src/protocol/webdav/response.rs"]
 mod response;

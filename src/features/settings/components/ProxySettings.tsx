@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import PasswordInput from '../../../components/PasswordInput.tsx';
@@ -31,6 +32,9 @@ export default function ProxySettings({
   password,
 }: ProxySettingsProps) {
   const { t } = useTranslation();
+  const hostId = useId();
+  const portId = useId();
+  const testHostId = useId();
 
   return (
     <>
@@ -49,18 +53,23 @@ export default function ProxySettings({
         </label>
       </div>
       <div className="settings-option-group settings-proxy-fields">
-        <label className="settings-field">
-          <span>{t('settings.proxy.hostLabel')}</span>
+        {/* Rows with two inputs are divs, not wrapping labels: a text selection
+            dragged out of one input ends in a click on the label, which then
+            moves focus to its first input. */}
+        <div className="settings-field">
+          <label htmlFor={hostId}>{t('settings.proxy.hostLabel')}</label>
           <div className="settings-proxy-address">
             <input
+              id={hostId}
               type="text"
               className="settings-proxy-field-grow"
               value={proxyHostValue}
               onChange={(e) => setProxyHostValue(e.target.value)}
               placeholder={t('settings.proxy.hostPlaceholder')}
             />
-            <span>{t('settings.proxy.portLabel')}</span>
+            <label htmlFor={portId}>{t('settings.proxy.portLabel')}</label>
             <input
+              id={portId}
               type="number"
               className="settings-proxy-field-fixed"
               min={1}
@@ -69,7 +78,7 @@ export default function ProxySettings({
               onChange={(e) => setProxyPortValue(e.target.value)}
             />
           </div>
-        </label>
+        </div>
         <label className="settings-field">
           <span>{t('settings.proxy.usernameLabel')}</span>
           <div className="settings-proxy-username-control">
@@ -113,10 +122,11 @@ export default function ProxySettings({
             )}
           </div>
         </label>
-        <label className="settings-field">
-          <span>{t('settings.proxy.testTargetLabel')}</span>
+        <div className="settings-field">
+          <label htmlFor={testHostId}>{t('settings.proxy.testTargetLabel')}</label>
           <div className="settings-proxy-test-controls">
             <input
+              id={testHostId}
               type="text"
               className="settings-proxy-field-grow"
               value={password.proxyTestHost}
@@ -126,6 +136,7 @@ export default function ProxySettings({
             <input
               type="number"
               className="settings-proxy-field-fixed"
+              aria-label={t('settings.proxy.portLabel')}
               min={1}
               max={65535}
               value={password.proxyTestPort}
@@ -152,7 +163,7 @@ export default function ProxySettings({
               <Icon name="server" size={14} />
             </button>
           </div>
-        </label>
+        </div>
         {password.proxyTestResult === 'ok' && (
           <p className="settings-hint settings-success">{t('settings.proxy.testOk')}</p>
         )}

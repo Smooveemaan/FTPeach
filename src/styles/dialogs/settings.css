@@ -91,7 +91,7 @@
   align-items: center;
   gap: 8px;
 }
-.settings-proxy-address > span {
+.settings-proxy-address > label {
   flex: 0 0 auto;
 }
 

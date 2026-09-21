@@ -380,6 +380,19 @@ describe('SettingsDialog unsaved-changes gate', () => {
     });
   });
 
+  test('a text selection dragged out of a proxy port field keeps the focus there', async () => {
+    const user = userEvent.setup();
+    renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
+    for (const port of screen.getAllByLabelText('settings.proxy.portLabel')) {
+      await user.click(port);
+      // A drag that ends outside the input fires its click on the shared row.
+      fireEvent.click(port.parentElement!);
+      expect(document.activeElement).toBe(port);
+    }
+  });
+
   test('exports diagnostics from the Logging settings category', async () => {
     const user = userEvent.setup();
     const onExportDiagnostics = vi.fn(async () => ({ ok: true }));

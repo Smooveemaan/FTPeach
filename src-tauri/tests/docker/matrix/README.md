@@ -128,7 +128,8 @@ Checked with curl, OpenSSH and openssl against the running containers:
   `web.config` with `404` (request filtering).
 - IIS WebDAV refuses URLs of more than 32 segments with `404.20`
   (`limits.maxUrlSegments`, left at its default), and answers a file the user
-  may not read with `401`, not `403`.
+  may not read with `401`, not `403`; after login the client reports a `401`
+  as a denied resource, not a rejected login.
 - IIS FTP answers a missing file and a file in a missing folder with the same
   bare `550 The system cannot find the path specified.`
 - The IIS fixtures leave out what NTFS cannot hold: the name with `"` and

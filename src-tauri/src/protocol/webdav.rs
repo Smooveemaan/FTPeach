@@ -522,8 +522,21 @@ impl ProtocolBackend for WebDavBackend {
                     upgraded = true;
                     continue;
                 }
+                let reply = reply.map_err(|error| {
+                    if error
+                        .chain()
+                        .any(|cause| cause.is::<response::Unauthorized>())
+                    {
+                        super::fail(
+                            ErrorCode::AuthFailed,
+                            "The WebDAV server rejected the login",
+                        )
+                    } else {
+                        error
+                    }
+                })?;
                 anyhow::ensure!(
-                    !parse_propfind(&reply?)?.is_empty(),
+                    !parse_propfind(&reply)?.is_empty(),
                     "WebDAV server returned no resource metadata"
                 );
                 return Ok::<(), anyhow::Error>(());

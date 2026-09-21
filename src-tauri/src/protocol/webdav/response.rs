@@ -7,9 +7,28 @@ use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 use reqwest::StatusCode;
 
+/// Marks a 401. At connect it means wrong credentials; after login the
+/// account is known, so it means this resource is closed to it (IIS answers
+/// a file the account may not read this way).
+#[derive(Debug)]
+pub(super) struct Unauthorized;
+
+impl std::fmt::Display for Unauthorized {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("HTTP 401 Unauthorized")
+    }
+}
+
+impl std::error::Error for Unauthorized {}
+
 pub(super) fn status_error(status: u16, operation: &str) -> anyhow::Error {
     let code = match status {
-        401 => ErrorCode::AuthFailed,
+        401 => {
+            return anyhow::Error::new(Unauthorized).context(crate::ipc::CommandError::new(
+                ErrorCode::PermissionDenied,
+                format!("WebDAV {operation} returned HTTP 401"),
+            ));
+        }
         407 => ErrorCode::ProxyFailed,
         413 => ErrorCode::ResourceLimit,
         507 => ErrorCode::StorageFull,

@@ -135,6 +135,33 @@ async fn connect_rejects_a_successful_html_login_page() {
 }
 
 #[tokio::test]
+async fn a_401_is_a_rejected_login_at_connect_and_a_denied_resource_after() {
+    let (mut backend, server) = single_response("401 Unauthorized", "").await;
+    let map = serde_json::json!({"protocol": "webdav", "webdavUrl": backend.base_url})
+        .as_object()
+        .unwrap()
+        .clone();
+    let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+    let error = backend.connect(&config).await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::AuthFailed
+    );
+    server.await.unwrap();
+
+    let (mut backend, server) = single_response("401 Unauthorized", "").await;
+    backend.connected = true;
+    let Err(error) = backend.list("/no-read-dir").await else {
+        panic!("listing a refused folder succeeded");
+    };
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::PermissionDenied
+    );
+    server.await.unwrap();
+}
+
+#[tokio::test]
 async fn mkdir_accepts_405_only_for_an_existing_collection() {
     for collection in [false, true] {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -1501,7 +1528,7 @@ fn only_the_same_host_and_path_are_upgraded_to_https() {
 #[test]
 fn http_statuses_name_proxy_and_space_failures() {
     for (status, expected) in [
-        (401, ErrorCode::AuthFailed),
+        (401, ErrorCode::PermissionDenied),
         (407, ErrorCode::ProxyFailed),
         (413, ErrorCode::ResourceLimit),
         (507, ErrorCode::StorageFull),

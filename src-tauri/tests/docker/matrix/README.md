@@ -12,6 +12,7 @@ npm run servers:up -- ftp sftp        # build, start, wait for healthchecks, pri
 npm run servers:up -- all             # ftp sftp webdav proxy baseline
 npm run servers:up -- heavy           # Nextcloud; first start takes several minutes
 npm run servers:status
+npm run servers:test                  # the client against what `all` starts; add `heavy` / `iis` to test those
 npm run servers:down                  # add --volumes to drop fixtures, --baseline for the CI stack
 ```
 

@@ -34,14 +34,15 @@ fn listed(variable: &str) -> Option<Vec<String>> {
 fn selected(target: &Target) -> bool {
     let profiles = listed("FTPEACH_MATRIX");
     let targets = listed("FTPEACH_MATRIX_TARGETS");
-    // IIS changes the Windows host (iis.ps1), so it runs only when named.
-    let host_only = target.profile == "iis";
+    // As with `servers:up -- all`: Nextcloud (heavy) is slow to start and IIS
+    // changes the Windows host (iis.ps1), so both run only when named.
+    let opt_in = matches!(target.profile, "heavy" | "iis");
     if profiles.is_none() && targets.is_none() {
-        return !host_only;
+        return !opt_in;
     }
     profiles.is_some_and(|list| {
         list.iter()
-            .any(|p| (p == "all" && !host_only) || p == target.profile)
+            .any(|p| (p == "all" && !opt_in) || p == target.profile)
     }) || targets.is_some_and(|list| list.iter().any(|id| id == target.id))
 }
 

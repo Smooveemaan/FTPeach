@@ -1,9 +1,11 @@
 //! Runs the client against every server of tests/docker/matrix.
 //!
-//! Start the servers first (`npm run servers:up -- all heavy`), then
+//! Start the servers first (`npm run servers:up -- all`), then
 //! `npm run servers:test`. Every test is `#[ignore]`; selection:
 //! `FTPEACH_MATRIX=ftp,sftp` (profiles) or `FTPEACH_MATRIX_TARGETS=vsftpd,dropbear`.
-//! The `iis` targets run only when named: `FTPEACH_MATRIX=iis` after
+//! No selection is the same as `all`. The `heavy` (Nextcloud) and `iis`
+//! targets run only when named: `npm run servers:test -- heavy` after
+//! `servers:up -- heavy`, `FTPEACH_MATRIX=iis` after
 //! `scripts/test-servers/iis.ps1 install`.
 //! A test outside the selection prints NOT RUN and passes; a selected server
 //! that does not answer fails.

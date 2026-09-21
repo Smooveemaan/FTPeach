@@ -64,6 +64,10 @@ services:
       TLS_CN: 'ftpeach-test'
       TLS_ORG: 'FTPeach'
       TLS_C: 'US'
+      # A safe-prime DH search takes anywhere from seconds to minutes and
+      # outlasted CI's 90 s port wait; DSA-style parameters are near-instant
+      # and serve a throwaway test server just as well.
+      TLS_USE_DSAPRAM: 'true'
 
   sftp:
     image: atmoz/sftp@sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475

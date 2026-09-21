@@ -390,6 +390,36 @@
       "user": "",
       "password": "",
       "notes": "19000 -> vsftpd:21, 19001 -> openssh-chroot:22, 19002 -> apache-basic:80"
+    },
+    {
+      "id": "iis_ftp",
+      "profile": "iis",
+      "service": "FTPeachTestFtp",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2121",
+      "user": "ftpeach_test",
+      "password": "FTPeach-test-2026!",
+      "notes": "Windows host (iis.ps1); MS-DOS listing, no MLSD, non-ASCII names are '?' until OPTS UTF8 ON"
+    },
+    {
+      "id": "iis_ftp_unix",
+      "profile": "iis",
+      "service": "FTPeachTestFtpUnix",
+      "protocol": "ftp/ftps",
+      "address": "127.0.0.1:2122",
+      "user": "ftpeach_test",
+      "password": "FTPeach-test-2026!",
+      "notes": "Windows host (iis.ps1); Unix-style listing with owner/group placeholders"
+    },
+    {
+      "id": "iis_webdav",
+      "profile": "iis",
+      "service": "FTPeachTestDav",
+      "protocol": "webdav",
+      "address": "http://127.0.0.1:18180/",
+      "user": "ftpeach_test",
+      "password": "FTPeach-test-2026!",
+      "notes": "Windows host (iis.ps1); Basic auth, absolute hrefs, case-insensitive paths"
     }
   ]
 }

@@ -31,6 +31,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# The DISM and WebAdministration modules only work in Windows PowerShell 5.1
+# (PowerShell 7 fails with "Class not registered").
+if ($PSVersionTable.PSEdition -eq 'Core') {
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath $Action
+  exit $LASTEXITCODE
+}
+
 $Root = 'C:\ftpeach-test-servers\iis'
 $StateFile = 'C:\ftpeach-test-servers\iis-state.json'
 $UserName = 'ftpeach_test'
@@ -59,11 +66,11 @@ function Test-ServerSku {
 # Server (server roles).
 $ClientFeatures = @(
   'IIS-WebServerRole', 'IIS-WebServer', 'IIS-CommonHttpFeatures', 'IIS-Security',
-  'IIS-BasicAuthentication', 'IIS-RequestFiltering', 'IIS-WebDAV',
+  'IIS-StaticContent', 'IIS-BasicAuthentication', 'IIS-RequestFiltering', 'IIS-WebDAV',
   'IIS-FTPServer', 'IIS-FTPSvc', 'IIS-ManagementScriptingTools'
 )
 $ServerFeatures = @(
-  'Web-Server', 'Web-Basic-Auth', 'Web-Filtering', 'Web-DAV-Publishing',
+  'Web-Server', 'Web-Static-Content', 'Web-Basic-Auth', 'Web-Filtering', 'Web-DAV-Publishing',
   'Web-Ftp-Server', 'Web-Ftp-Service', 'Web-Scripting-Tools'
 )
 
@@ -156,10 +163,18 @@ function Install-Servers {
   $enabled = Enable-Features
   [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($StateFile)) | Out-Null
   $previous = if (Test-Path $StateFile) { @((Get-Content $StateFile -Raw | ConvertFrom-Json).EnabledFeatures) } else { @() }
-  @{ EnabledFeatures = @($previous + $enabled | Where-Object { $_ } | Select-Object -Unique) } |
-    ConvertTo-Json | Set-Content $StateFile -Encoding utf8
+  $ours = @($previous + $enabled | Where-Object { $_ } | Select-Object -Unique)
+  @{ EnabledFeatures = $ours } | ConvertTo-Json | Set-Content $StateFile -Encoding utf8
 
   Import-Module WebAdministration
+
+  # When this script brought IIS in, its Default Web Site (*:80, every
+  # interface) is not wanted: stop it and keep it stopped.
+  if (($ours -contains 'IIS-WebServerRole' -or $ours -contains 'Web-Server') -and
+    (Get-Website -Name 'Default Web Site')) {
+    Set-ItemProperty 'IIS:\Sites\Default Web Site' -Name serverAutoStart -Value $false
+    Stop-Website -Name 'Default Web Site'
+  }
 
   $secure = ConvertTo-SecureString $Password -AsPlainText -Force
   if (Get-LocalUser -Name $UserName -ErrorAction SilentlyContinue) {

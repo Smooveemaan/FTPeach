@@ -9,7 +9,8 @@ export const baselineCompose = path.join(root, 'src-tauri/tests/docker/docker-co
 
 export const matrixProfiles = ['ftp', 'sftp', 'webdav', 'heavy', 'proxy', 'chaos'] as const;
 export const profiles = [...matrixProfiles, 'baseline'] as const;
-export type Profile = (typeof profiles)[number];
+// `iis` is catalog-only: those servers run on the Windows host (iis.ps1).
+export type Profile = (typeof profiles)[number] | 'iis';
 
 export interface MatrixServer {
   id: string;
@@ -38,6 +39,12 @@ export function parseProfiles(args: string[], usage: string): Profile[] {
       for (const profile of ['ftp', 'sftp', 'webdav', 'proxy', 'baseline'] as const) {
         selected.add(profile);
       }
+    } else if (arg === 'iis') {
+      console.error(
+        'IIS runs on the Windows host, not in Docker. From an elevated PowerShell:\n' +
+          '  scripts/test-servers/iis.ps1 install',
+      );
+      process.exit(2);
     } else if ((profiles as readonly string[]).includes(arg)) {
       selected.add(arg as Profile);
     } else {
@@ -46,6 +53,10 @@ export function parseProfiles(args: string[], usage: string): Profile[] {
     }
   }
   return [...selected];
+}
+
+export function dockerRunning(): boolean {
+  return spawnSync('docker', ['info'], { stdio: 'ignore' }).status === 0;
 }
 
 export function docker(args: string[], options: { capture?: boolean } = {}): string {

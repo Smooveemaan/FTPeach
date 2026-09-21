@@ -28,7 +28,14 @@ what the server is for. `servers:up` and `servers:status` print it.
 
 IIS FTP and IIS WebDAV run on the Windows host, not in Docker:
 `scripts/test-servers/iis.ps1 install|uninstall|status` (elevated; it changes
-the machine).
+the machine). It works on Windows 11 Home, and relaunches itself in Windows
+PowerShell 5.1 because the DISM and WebAdministration modules fail under
+PowerShell 7. `install` enables the IIS features that were off, creates the
+local user, a self-signed certificate, fixtures under
+`C:\ftpeach-test-servers\iis` and the three sites, and stops IIS's Default Web
+Site when it brought IIS in; `uninstall` reverts all of it. The sites are in
+the catalog as the `iis` profile; `servers:status` lists them when their ports
+answer.
 
 ## Ports
 
@@ -109,3 +116,13 @@ Checked with curl, OpenSSH and openssl against the running containers:
 - Nextcloud does not index the 255-byte fixture name (its limit is 250).
 - Behind Toxiproxy only the FTP control connection is proxied; passive data
   goes straight to vsftpd, which therefore runs with `pasv_promiscuous=YES`.
+- IIS FTP replaces every non-ASCII character in names with `?` (one per UTF-16
+  unit, so the loss is irreversible) until the client sends `OPTS UTF8 ON`,
+  although FEAT advertises `UTF8`. FEAT has no `MLST`, so listings must be
+  parsed from LIST: MS-DOS style on `iis_ftp`, Unix style with `owner`/`group`
+  placeholders and `drwxrwxrwx` on `iis_ftp_unix`. Explicit FTPS is optional
+  and a wrong password gives `530`.
+- IIS WebDAV returns absolute `href`s (`http://127.0.0.1:18180/...`), leaves
+  PUT out of the `Allow` header although PUT works, answers `200` to DELETE,
+  resolves paths case-insensitively (`case.txt` serves `Case.txt`) and refuses
+  `web.config` with `404` (request filtering).

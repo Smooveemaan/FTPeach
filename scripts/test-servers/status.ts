@@ -1,4 +1,12 @@
-import { baselineCompose, docker, loadServers, matrixCompose, printServers } from './matrix.ts';
+import { connect } from 'node:net';
+import {
+  baselineCompose,
+  docker,
+  dockerRunning,
+  loadServers,
+  matrixCompose,
+  printServers,
+} from './matrix.ts';
 
 interface ComposeContainer {
   Service: string;
@@ -15,10 +23,36 @@ function containers(args: string[]): ComposeContainer[] {
     .map((line) => JSON.parse(line) as ComposeContainer);
 }
 
-const matrix = containers(['-f', matrixCompose, '--profile', '*']);
-const baseline = containers(['-f', baselineCompose]);
+function accepts(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ host: '127.0.0.1', port, timeout: 1000 });
+    const done = (open: boolean) => {
+      socket.destroy();
+      resolve(open);
+    };
+    socket.once('connect', () => done(true));
+    socket.once('error', () => done(false));
+    socket.once('timeout', () => done(false));
+  });
+}
 
-if (matrix.length + baseline.length === 0) {
+const port = (address: string) => Number(/:(\d+)/.exec(address)?.[1]);
+
+const withDocker = dockerRunning();
+if (!withDocker) console.log('Docker is not running; only host servers (IIS) are checked.\n');
+const matrix = withDocker ? containers(['-f', matrixCompose, '--profile', '*']) : [];
+const baseline = withDocker ? containers(['-f', baselineCompose]) : [];
+// IIS is not a container: a server counts as up when its port accepts.
+const servers = loadServers();
+const iis = (
+  await Promise.all(
+    servers
+      .filter((server) => server.profile === 'iis')
+      .map(async (server) => ((await accepts(port(server.address))) ? server : undefined)),
+  )
+).filter((server) => server !== undefined);
+
+if (matrix.length + baseline.length + iis.length === 0) {
   console.log('No test servers are running. Start some with: npm run servers:up -- <profile...>');
   process.exit(0);
 }
@@ -39,7 +73,8 @@ const healthy = new Set(
     .filter((container) => container.State === 'running' && container.Health !== 'unhealthy')
     .map((container) => container.Service),
 );
-const running = loadServers().filter((server) => {
+const running = servers.filter((server) => {
+  if (server.profile === 'iis') return iis.includes(server);
   if (server.profile === 'baseline') {
     return baseline.some(
       (container) => container.Service === server.service && container.State === 'running',

@@ -130,9 +130,18 @@ export function createPaneFileOperations({
     tabId = activeTabId,
   ) => {
     const pane = panes[id];
+    // Rename never replaces another entry: the backend refuses a taken name.
+    // A change of case alone is the exception on a server: one that ignores
+    // case sees the entry itself at the new name and would refuse it too.
+    const caseOnly =
+      pane.kind === 'remote' &&
+      newName !== entry.name &&
+      newName.toLowerCase() === entry.name.toLowerCase() &&
+      !pane.entries.some((other) => other.name === newName);
     const res = await backendFor(pane, client).rename(
       paneJoin(pane, entry.name),
       paneJoin(pane, newName),
+      caseOnly,
     );
     if (!res.ok) reportError(commandResultError(res));
     refreshPane(id, pane.path, undefined, tabId);
@@ -143,6 +152,7 @@ export function createPaneFileOperations({
     names: readonly string[],
     targetFolder: string,
     tabId = activeTabId,
+    overwriteApproved = false,
   ) => {
     const pane = panes[id];
     const backend = backendFor(pane, client);
@@ -151,6 +161,7 @@ export function createPaneFileOperations({
       const res = await backend.rename(
         paneJoin(pane, name),
         pane.kind === 'local' ? joinLocalPath(targetDir, name) : joinRemotePath(targetDir, name),
+        overwriteApproved,
       );
       if (!res.ok) reportError(commandResultError(res));
     }

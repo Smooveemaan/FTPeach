@@ -15,7 +15,7 @@ test('backend routes every operation to the correct namespace and preserves dele
     await backend.createFile('/file');
     await backend.remove('/dir', true);
     await backend.remove('/file', false, true);
-    await backend.rename('/old', '/new');
+    await backend.rename('/old', '/new', false);
   }
   assert.deepEqual(
     h.calls.slice(0, 6).map((call) => call.command),
@@ -45,6 +45,7 @@ test('backend routes every operation to the correct namespace and preserves dele
     connectionId: 'session',
     oldPath: '/old',
     newPath: '/new',
+    overwrite: false,
   });
 });
 

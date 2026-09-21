@@ -66,10 +66,44 @@ test('remote file creation refuses overwrite without IPC; failed mutations still
   assert.deepEqual(
     h.calls.slice(-2).map((call) => call.args),
     [
-      { connectionId: 'session', oldPath: '/root/one', newPath: '/root/target/one' },
-      { connectionId: 'session', oldPath: '/root/two', newPath: '/root/target/two' },
+      {
+        connectionId: 'session',
+        oldPath: '/root/one',
+        newPath: '/root/target/one',
+        overwrite: false,
+      },
+      {
+        connectionId: 'session',
+        oldPath: '/root/two',
+        newPath: '/root/target/two',
+        overwrite: false,
+      },
     ],
   );
+});
+
+test('rename and move replace a target only on an explicit decision', async () => {
+  const h = harness();
+  h.panes.a.entries = [{ name: 'a.txt', isDirectory: false }];
+  h.panes.b.entries = [
+    { name: 'a.txt', isDirectory: false },
+    { name: 'B.txt', isDirectory: false },
+    { name: 'b.txt', isDirectory: false },
+  ];
+  await h.operations.renamePaneEntry('a', h.panes.a.entries[0]!, 'taken.txt');
+  await h.operations.renamePaneEntry('a', h.panes.a.entries[0]!, 'A.txt');
+  await h.operations.renamePaneEntry('b', h.panes.b.entries[0]!, 'taken.txt');
+  // A case change on a server may land on the entry itself, not on another.
+  await h.operations.renamePaneEntry('b', h.panes.b.entries[0]!, 'A.txt');
+  // Here another entry already has the new name exactly.
+  await h.operations.renamePaneEntry('b', h.panes.b.entries[1]!, 'b.txt');
+  await h.operations.movePaneSamePane('a', ['a.txt'], 'folder', 'tab');
+  await h.operations.movePaneSamePane('a', ['a.txt'], 'folder', 'tab', true);
+  assert.deepEqual(
+    h.calls.map((call) => call.args!.overwrite),
+    [false, false, false, true, false, false, true],
+  );
+  assert.ok(h.calls.every((call) => call.command.endsWith('_rename')));
 });
 
 test('directory chooser cancellation does not navigate and a chosen home does', async () => {

@@ -13,7 +13,8 @@ export interface PaneBackend {
   mkdir: (path: string) => Promise<CommandResult>;
   createFile: (path: string) => Promise<CommandResult>;
   remove: (path: string, isDir: boolean, permanent?: boolean) => Promise<CommandResult>;
-  rename: (oldPath: string, newPath: string) => Promise<CommandResult>;
+  /** `overwrite` may only be true once the user has resolved a conflict. */
+  rename: (oldPath: string, newPath: string, overwrite: boolean) => Promise<CommandResult>;
 }
 
 export function backendFor(
@@ -26,7 +27,7 @@ export function backendFor(
       mkdir: (path) => client.fsLocal.mkdir(path),
       createFile: (path) => client.fsLocal.createFile(path),
       remove: (path, _isDir, permanent = false) => client.fsLocal.delete(path, permanent),
-      rename: (oldPath, newPath) => client.fsLocal.rename(oldPath, newPath),
+      rename: (oldPath, newPath, overwrite) => client.fsLocal.rename(oldPath, newPath, overwrite),
     };
   }
 
@@ -37,7 +38,8 @@ export function backendFor(
     mkdir: (path) => client.session.mkdir(connectionId, path),
     createFile: (path) => client.session.createFile(connectionId, path),
     remove: (path, isDir) => client.session.delete(connectionId, path, isDir),
-    rename: (oldPath, newPath) => client.session.rename(connectionId, oldPath, newPath),
+    rename: (oldPath, newPath, overwrite) =>
+      client.session.rename(connectionId, oldPath, newPath, overwrite),
   };
 }
 

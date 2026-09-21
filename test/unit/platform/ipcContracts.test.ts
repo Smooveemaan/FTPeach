@@ -119,7 +119,7 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
   const settings = createSettingsApi(invoke);
   const tabs = createTabsApi(invoke);
 
-  await session.rename('connection-1', '/old', '/new');
+  await session.rename('connection-1', '/old', '/new', false);
   await transfer.cancelRemoteCopy('source-1', 'target-1', 'transfer-1');
   await sites.applyLayout([{ id: 'site-1', parentId: 'folder-1' }]);
   await settings.set({ concurrency: 4 });
@@ -128,7 +128,7 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
   assert.deepEqual(calls, [
     {
       command: 'session_rename',
-      args: { connectionId: 'connection-1', oldPath: '/old', newPath: '/new' },
+      args: { connectionId: 'connection-1', oldPath: '/old', newPath: '/new', overwrite: false },
     },
     {
       command: 'transfer_cancel_remote_copy',

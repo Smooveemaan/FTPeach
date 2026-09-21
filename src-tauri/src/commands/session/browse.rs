@@ -262,23 +262,25 @@ pub async fn session_rename(
     let _target = Reservation::acquire_remote(&sessions, &connection_id, &new_path, Access::Write)
         .await
         .map_err(CommandError::from)?;
-    if overwrite == Some(false) {
+    // Only an explicit `true` may replace: a caller that omits the flag has
+    // not resolved a conflict, so an existing target must survive.
+    if overwrite == Some(true) {
         return run_unit_browse_operation!(
             sessions,
             connecting,
             connection_id,
-            rename_no_replace,
+            rename,
             &old_path,
-            &new_path
+            &new_path,
         );
     }
     run_unit_browse_operation!(
         sessions,
         connecting,
         connection_id,
-        rename,
+        rename_no_replace,
         &old_path,
-        &new_path,
+        &new_path
     )
 }
 

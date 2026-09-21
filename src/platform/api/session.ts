@@ -59,12 +59,12 @@ export function createSessionApi(invoke: InvokeFn) {
       commandOutcome(invoke, 'session_create_file', { connectionId, remotePath }),
     delete: (connectionId: string, remotePath: string, isDir: boolean) =>
       commandOutcome(invoke, 'session_delete', { connectionId, remotePath, isDir }),
-    rename: (connectionId: string, oldPath: string, newPath: string, overwrite?: boolean) =>
+    rename: (connectionId: string, oldPath: string, newPath: string, overwrite: boolean) =>
       commandOutcome(invoke, 'session_rename', {
         connectionId,
         oldPath,
         newPath,
-        ...(overwrite === undefined ? {} : { overwrite }),
+        overwrite,
       }),
     chmod: (connectionId: string, remotePath: string, mode: string) =>
       commandOutcome(invoke, 'session_chmod', { connectionId, remotePath, mode }),

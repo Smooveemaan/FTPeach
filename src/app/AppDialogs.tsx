@@ -123,6 +123,7 @@ export interface AppDialogsModel {
       names: string[],
       folderName: string,
       tabId: string,
+      overwriteApproved: boolean,
     ) => unknown;
     chmod: (target: NonNullable<DialogHook['chmodTarget']>, mode: string) => unknown;
   };
@@ -368,7 +369,14 @@ export default function AppDialogs({ model }: AppDialogsProps) {
               pane,
               folderName,
               target.names,
-              (names) => paneActions.movePaneSamePane(target.id, names, folderName, activeTabId),
+              (names, overwriteApproved) =>
+                paneActions.movePaneSamePane(
+                  target.id,
+                  names,
+                  folderName,
+                  activeTabId,
+                  overwriteApproved,
+                ),
               pane.entries,
             );
           }}

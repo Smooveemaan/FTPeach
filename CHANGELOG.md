@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- Renaming or moving a file into a folder no longer replaces a file with the same name there
+  unless you agreed to overwrite it.
+
 ## [0.2.3] - 2026-09-22
 
 ### Added

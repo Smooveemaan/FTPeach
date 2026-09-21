@@ -120,6 +120,7 @@ export interface PanesModel {
     names: readonly string[],
     targetFolder: string,
     tabId?: string,
+    overwriteApproved?: boolean,
   ) => Promise<void>;
   chooseLocalDir: (id: PaneId) => () => Promise<void>;
   goPaneHome: (id: PaneId) => () => Promise<void>;

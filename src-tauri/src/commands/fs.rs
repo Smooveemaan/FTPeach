@@ -220,12 +220,15 @@ pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<boo
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&new_path)) {
         return err(error);
     }
-    let result = if overwrite == Some(false) {
-        crate::protocol::transfer_file::rename_no_replace(&old_path, Path::new(&new_path)).await
-    } else {
+    // Only an explicit `true` may replace: a caller that omits the flag has
+    // not resolved a conflict, so an existing target must survive.
+    let overwrite = overwrite == Some(true);
+    let result = if overwrite {
         tokio::fs::rename(&old_path, &new_path)
             .await
             .map_err(anyhow::Error::from)
+    } else {
+        crate::protocol::transfer_file::rename_no_replace(&old_path, Path::new(&new_path)).await
     };
     #[cfg(windows)]
     let result = match result {
@@ -234,7 +237,7 @@ pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<boo
                 crate::local_fs::verified_move::copy_verify_delete(
                     &old_path,
                     Path::new(&new_path),
-                    overwrite.unwrap_or(false),
+                    overwrite,
                 )
             })
             .await
@@ -465,6 +468,37 @@ mod tests {
 
         assert!(matches!(result, OkResult::Ok { ok: true }), "{result:?}");
         assert!(!root.join("folder").exists());
+        let _ = tokio::fs::remove_dir_all(root).await;
+    }
+
+    #[tokio::test]
+    async fn rename_and_copy_without_an_overwrite_decision_keep_the_existing_target() {
+        let root = std::env::temp_dir().join(format!("ftpeach-fs-test-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&root).await.unwrap();
+        let source = root.join("source.txt");
+        let target = root.join("target.txt");
+        tokio::fs::write(&source, b"source").await.unwrap();
+        tokio::fs::write(&target, b"external").await.unwrap();
+        let path = |p: &Path| p.to_string_lossy().into_owned();
+
+        for overwrite in [None, Some(false)] {
+            let result = fs_rename(path(&source), path(&target), overwrite).await;
+            assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
+            let result = fs_copy_file(path(&source), path(&target), overwrite).await;
+            assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
+            assert_eq!(std::fs::read(&source).unwrap(), b"source");
+            assert_eq!(std::fs::read(&target).unwrap(), b"external");
+        }
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
+
+        let result = fs_copy_file(path(&source), path(&target), Some(true)).await;
+        assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
+        assert_eq!(std::fs::read(&target).unwrap(), b"source");
+        tokio::fs::write(&target, b"external").await.unwrap();
+        let result = fs_rename(path(&source), path(&target), Some(true)).await;
+        assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source");
         let _ = tokio::fs::remove_dir_all(root).await;
     }
 

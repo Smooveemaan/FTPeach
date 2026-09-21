@@ -191,6 +191,47 @@ async fn cp1251_names(target: Target) {
     work.finish(&mut backend).await;
 }
 
+specific!(proftpd_cp1251_iac_names, "proftpd", cp1251_iac_names);
+specific!(iis_ftp_cp1251_iac_names, "iis_ftp", cp1251_iac_names);
+specific!(vsftpd_cp1251_iac_names, "vsftpd", cp1251_iac_names);
+specific!(
+    pureftpd_cp1251_iac_names,
+    "baseline_pureftpd",
+    cp1251_iac_names
+);
+specific!(sftpgo_cp1251_iac_names, "sftpgo_ftp", cp1251_iac_names);
+/// windows-1251 writes its last letter as 0xFF, the Telnet IAC. ProFTPD and
+/// IIS read Telnet and need it doubled; the others take it as it is, and
+/// vsftpd doubles it in replies.
+async fn cp1251_iac_names(target: Target) {
+    let mut config = target.config.clone();
+    config.insert("encoding".into(), "windows-1251".into());
+    let mut backend = try_connect_with(&target, &config)
+        .await
+        .unwrap_or_else(|error| panic!("connect [{:?}]: {error:#}", code(&error)));
+    let work = Work::new(&target, &mut backend).await;
+    // "Family", then 0xFF right before 0xFE, which reads as Telnet DONT.
+    let folder = work.path("\u{421}\u{435}\u{43c}\u{44c}\u{44f}");
+    let file = join(&folder, "\u{44f}\u{44e}.txt");
+    // Only reachable by walking the path, which saves and restores the
+    // working directory through PWD.
+    let nested = join(
+        &folder,
+        "\u{41c}\u{43e}\u{44f}/\u{442}\u{432}\u{43e}\u{44f}",
+    );
+    backend.mkdir(&folder).await.expect("mkdir");
+    put(&mut backend, &work.local("upload.txt"), &file, b"iac").await;
+    backend.mkdir(&nested).await.expect("mkdir nested");
+    let renamed = join(&nested, "\u{44f}\u{44f}.txt");
+    backend.rename(&file, &renamed).await.expect("rename");
+    let listed = backend.list(&folder).await.expect("list folder");
+    assert_eq!(names(&listed), ["\u{41c}\u{43e}\u{44f}"]);
+    let listed = backend.list(&nested).await.expect("list nested");
+    assert_eq!(names(&listed), ["\u{44f}\u{44f}.txt"]);
+    assert_eq!(get(&mut backend, &renamed).await, b"iac");
+    work.finish(&mut backend).await;
+}
+
 specific!(
     vsftpd_reuse_ftps_with_encoding,
     "vsftpd_reuse",
@@ -427,6 +468,23 @@ proxied!(proxy_http_webdav, Webdav, http(None));
 proxied!(proxy_http_auth_ftp, Ftp, http(Some("proxypass")));
 proxied!(proxy_http_auth_sftp, Sftp, http(Some("proxypass")));
 proxied!(proxy_http_auth_webdav, Webdav, http(Some("proxypass")));
+
+/// The encoding relay sits on top of the proxied control connection.
+macro_rules! proxied_cp1251 {
+    ($name:ident, $host:literal, $proxy:expr) => {
+        #[tokio::test(flavor = "multi_thread")]
+        #[ignore]
+        async fn $name() {
+            let mut target = through(Kind::Ftp, $proxy);
+            target.config.insert("host".into(), $host.into());
+            let id = target.id;
+            run(id, move |_| Box::pin(cp1251_iac_names(target))).await;
+        }
+    };
+}
+
+proxied_cp1251!(proxy_socks5_ftp_cp1251, "vsftpd", socks5());
+proxied_cp1251!(proxy_http_ftp_cp1251, "proftpd", http(None));
 
 macro_rules! proxy_refused {
     ($name:ident, $kind:ident, $proxy:expr) => {

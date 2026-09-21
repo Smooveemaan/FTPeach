@@ -6,6 +6,11 @@
 //! UTF-8 into the server's encoding, replies back into UTF-8. TLS has to sit
 //! between the relay and the server, so the relay secures the connection
 //! itself before suppaftp sees it.
+//!
+//! Byte 0xFF, which windows-1251 uses for one of its letters, is also the
+//! Telnet IAC the control connection may carry. Some servers read Telnet and
+//! keep 0xFF only when it comes doubled, while the rest take every byte as it
+//! is. The first command with 0xFF asks the server which kind it is.
 
 use anyhow::{Context, Result, anyhow};
 use encoding_rs::Encoding;
@@ -20,6 +25,12 @@ use tokio::sync::Mutex;
 /// The longest control line relayed in one piece.
 const MAX_LINE: u64 = 64 * 1024;
 const LOOPBACK_ACCEPT_TIMEOUT: Duration = Duration::from_secs(5);
+const TELNET_PROBE_TIMEOUT: Duration = Duration::from_secs(5);
+const IAC: u8 = 0xff;
+/// Telnet Data Mark ahead of NOOP: a server that reads Telnet drops the mark
+/// and answers the NOOP, the others refuse the line or ignore it. PWD follows
+/// so that every kind of server answers something.
+const TELNET_PROBE: &[u8] = b"\xff\xf2NOOP\r\nPWD\r\n";
 
 /// What the relay answers, in place of the server, to a command naming a
 /// file the server's encoding has no characters for.
@@ -118,8 +129,13 @@ async fn relay(
     let (server_read, mut server_write) = tokio::io::split(server);
     let (client_read, client_write) = client.into_split();
     let client_write = Arc::new(Mutex::new(client_write));
+    // While set, reply lines go here instead of to suppaftp.
+    let divert = Arc::new(std::sync::Mutex::new(
+        None::<tokio::sync::mpsc::UnboundedSender<Vec<u8>>>,
+    ));
     let replies = {
         let client_write = client_write.clone();
+        let divert = divert.clone();
         async move {
             let mut reader = BufReader::new(server_read);
             let mut line = greeting;
@@ -127,8 +143,18 @@ async fn relay(
                 if line.is_empty() && read_line(&mut reader, &mut line).await? == 0 {
                     return anyhow::Ok(());
                 }
-                let text = encoding.decode_without_bom_handling(&line).0;
-                client_write.lock().await.write_all(text.as_bytes()).await?;
+                let diverted = divert
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .as_ref()
+                    .map(|probe| probe.send(line.clone()));
+                if diverted.is_none() {
+                    // vsftpd doubles 0xFF in what it answers, even though it
+                    // reads commands byte for byte.
+                    let single = undouble_iac(&line);
+                    let text = encoding.decode_without_bom_handling(&single).0;
+                    client_write.lock().await.write_all(text.as_bytes()).await?;
+                }
                 line.clear();
             }
         }
@@ -136,6 +162,7 @@ async fn relay(
     let commands = async move {
         let mut reader = BufReader::new(client_read);
         let mut line = Vec::new();
+        let mut reads_telnet = None;
         loop {
             line.clear();
             if read_line(&mut reader, &mut line).await? == 0 {
@@ -153,7 +180,37 @@ async fn relay(
                     .await?;
                 continue;
             }
-            server_write.write_all(&bytes).await?;
+            if !bytes.contains(&IAC) {
+                server_write.write_all(&bytes).await?;
+                continue;
+            }
+            let telnet = match reads_telnet {
+                Some(telnet) => telnet,
+                None => {
+                    let (sender, mut probe) = tokio::sync::mpsc::unbounded_channel();
+                    *divert
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(sender);
+                    server_write.write_all(TELNET_PROBE).await?;
+                    let telnet =
+                        tokio::time::timeout(TELNET_PROBE_TIMEOUT, reads_telnet_from(&mut probe))
+                            .await
+                            .unwrap_or(Some(false));
+                    *divert
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
+                    // The server closed the connection mid-probe.
+                    let Some(telnet) = telnet else {
+                        return anyhow::Ok(());
+                    };
+                    *reads_telnet.insert(telnet)
+                }
+            };
+            if telnet {
+                server_write.write_all(&double_iac(&bytes)).await?;
+            } else {
+                server_write.write_all(&bytes).await?;
+            }
         }
     };
     // Either side closing ends the session; dropping both streams closes
@@ -162,6 +219,60 @@ async fn relay(
         _ = replies => {}
         _ = commands => {}
     }
+}
+
+/// Reads the answers to [`TELNET_PROBE`]: whether the server took the NOOP
+/// behind the Telnet mark. None when the replies stop coming.
+async fn reads_telnet_from(
+    lines: &mut tokio::sync::mpsc::UnboundedReceiver<Vec<u8>>,
+) -> Option<bool> {
+    let mut first = None;
+    while let Some(line) = lines.recv().await {
+        let Some(code) = final_reply_code(&line) else {
+            continue;
+        };
+        match first {
+            // A server that ignored the marked line answered PWD alone.
+            None if code == Status::PathCreated.code() => return Some(false),
+            None => first = Some(code),
+            Some(first) => return Some((200..300).contains(&first)),
+        }
+    }
+    None
+}
+
+/// The code of a reply's last line, which starts with the code and a space.
+fn final_reply_code(line: &[u8]) -> Option<u32> {
+    if line.len() < 4 || line[3] != b' ' {
+        return None;
+    }
+    std::str::from_utf8(&line[..3]).ok()?.parse().ok()
+}
+
+fn double_iac(bytes: &[u8]) -> Vec<u8> {
+    let mut doubled = Vec::with_capacity(bytes.len() + 4);
+    for &byte in bytes {
+        doubled.push(byte);
+        if byte == IAC {
+            doubled.push(IAC);
+        }
+    }
+    doubled
+}
+
+fn undouble_iac(bytes: &[u8]) -> std::borrow::Cow<'_, [u8]> {
+    if !bytes.windows(2).any(|pair| pair == [IAC, IAC]) {
+        return bytes.into();
+    }
+    let mut single = Vec::with_capacity(bytes.len());
+    let mut bytes = bytes.iter();
+    while let Some(&byte) = bytes.next() {
+        single.push(byte);
+        if byte == IAC && bytes.as_slice().first() == Some(&IAC) {
+            bytes.next();
+        }
+    }
+    single.into()
 }
 
 async fn read_line(
@@ -319,5 +430,94 @@ mod tests {
         line.clear();
         client.read_line(&mut line).await.unwrap();
         assert_eq!(line, format!("{UNENCODABLE_REPLY}\r\n"));
+    }
+
+    #[test]
+    fn iac_doubles_and_undoubles() {
+        assert_eq!(double_iac(b"a\xffb\xff"), b"a\xff\xffb\xff\xff");
+        assert_eq!(&*undouble_iac(b"a\xff\xffb\xff"), b"a\xffb\xff");
+        assert_eq!(&*undouble_iac(b"\xff\xff\xff\xff"), b"\xff\xff");
+    }
+
+    /// How a fake server answers one command line.
+    #[derive(Clone, Copy)]
+    enum Telnet {
+        /// ProFTPD, IIS: the Telnet mark is dropped, IAC IAC is one 0xFF.
+        Reads,
+        /// vsftpd: every byte is part of the command; 0xFF is doubled in
+        /// replies.
+        Refuses,
+        /// pure-ftpd: a line starting with 0xFF gets no answer at all.
+        Ignores,
+    }
+
+    /// Runs a session through the relay: the fake answers the probe as
+    /// `telnet` says, then gets `MKD <name>` and echoes the path it made.
+    /// Answers with the path suppaftp saw and the bytes the server made.
+    async fn make_dir_through(telnet: Telnet, name: &str) -> (String, Vec<u8>) {
+        let server = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = server.local_addr().unwrap();
+        let fake = tokio::spawn(async move {
+            let (stream, _) = server.accept().await.unwrap();
+            let mut stream = BufReader::new(stream);
+            stream.get_mut().write_all(b"220 ready\r\n").await.unwrap();
+            loop {
+                let mut line = Vec::new();
+                stream.read_until(b'\n', &mut line).await.unwrap();
+                let line = line.strip_suffix(b"\r\n").unwrap().to_vec();
+                let reply: Vec<u8> = if line == b"\xff\xf2NOOP" {
+                    match telnet {
+                        Telnet::Reads => b"200 NOOP ok\r\n".to_vec(),
+                        Telnet::Refuses => b"500 Unknown command\r\n".to_vec(),
+                        Telnet::Ignores => continue,
+                    }
+                } else if line == b"PWD" {
+                    b"257 \"/\" is the current directory\r\n".to_vec()
+                } else if let Some(name) = line.strip_prefix(b"MKD ") {
+                    let made = match telnet {
+                        Telnet::Reads => undouble_iac(name).into_owned(),
+                        _ => name.to_vec(),
+                    };
+                    let echoed = match telnet {
+                        Telnet::Refuses => double_iac(&made),
+                        _ => made.clone(),
+                    };
+                    let mut reply = b"257 \"".to_vec();
+                    reply.extend_from_slice(&echoed);
+                    reply.extend_from_slice(b"\" created\r\n");
+                    stream.get_mut().write_all(&reply).await.unwrap();
+                    return (made, stream);
+                } else {
+                    panic!("unexpected command {line:?}");
+                };
+                stream.get_mut().write_all(&reply).await.unwrap();
+            }
+        });
+        let tcp = TcpStream::connect(address).await.unwrap();
+        let client = start(tcp, encoding_rs::WINDOWS_1251, None).await.unwrap();
+        let mut client = BufReader::new(client);
+        let mut line = String::new();
+        client.read_line(&mut line).await.unwrap();
+        client
+            .get_mut()
+            .write_all(format!("MKD {name}\r\n").as_bytes())
+            .await
+            .unwrap();
+        line.clear();
+        client.read_line(&mut line).await.unwrap();
+        let (made, _server) = fake.await.unwrap();
+        (line, made)
+    }
+
+    #[tokio::test]
+    async fn the_last_cyrillic_letter_reaches_every_kind_of_server() {
+        // "Family", ending in the letter windows-1251 writes as 0xFF.
+        let name = "\u{421}\u{435}\u{43c}\u{44c}\u{44f}";
+        let bytes = b"\xd1\xe5\xec\xfc\xff";
+        for telnet in [Telnet::Reads, Telnet::Refuses, Telnet::Ignores] {
+            let (reply, made) = make_dir_through(telnet, name).await;
+            assert_eq!(made, bytes);
+            assert_eq!(reply, format!("257 \"{name}\" created\r\n"));
+        }
     }
 }

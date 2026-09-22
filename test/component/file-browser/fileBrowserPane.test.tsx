@@ -150,3 +150,40 @@ describe('FileBrowserPane drop targets', () => {
     expect(lastFilePaneProps?.onDropFiles).toBeTypeOf('function');
   });
 });
+
+describe('FileBrowserPane new-file availability', () => {
+  const connected = (protocol: PaneState['protocol']) =>
+    makePane({
+      kind: 'remote',
+      status: 'connected',
+      path: '/',
+      connectionId: 'session',
+      protocol,
+    });
+
+  test('the new-file action is offered only where the protocol can create one safely', () => {
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(connected('sftp'))} />);
+    expect(lastFilePaneProps?.onNewFile).toBeTypeOf('function');
+
+    // FTP cannot create a named file without risking the one already there, so
+    // the shortcut does nothing rather than asking for a name it must refuse.
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(connected('ftp'))} />);
+    expect(lastFilePaneProps?.onNewFile).toBeUndefined();
+
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(connected('ftps'))} />);
+    expect(lastFilePaneProps?.onNewFile).toBeUndefined();
+
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(makePane())} />);
+    expect(lastFilePaneProps?.onNewFile).toBeTypeOf('function');
+  });
+
+  test('the toolbar is told why the new-file button is unavailable', () => {
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(connected('ftp'))} />);
+    const toolbar = lastFilePaneProps?.toolbar as { props: { newFileUnsupported: boolean } };
+    expect(toolbar.props.newFileUnsupported).toBe(true);
+
+    render(<FileBrowserPane id="a" style={{}} model={makeModel(connected('sftp'))} />);
+    const supported = lastFilePaneProps?.toolbar as { props: { newFileUnsupported: boolean } };
+    expect(supported.props.newFileUnsupported).toBe(false);
+  });
+});

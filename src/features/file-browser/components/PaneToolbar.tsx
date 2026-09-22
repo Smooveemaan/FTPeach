@@ -8,6 +8,8 @@ import { DIVIDER_WIDTH, ITEM_WIDTH, useOverflowFold } from '../../../hooks/useOv
 interface PaneToolbarProps {
   isLocal: boolean;
   disconnected: boolean;
+  /** The protocol cannot create a named file safely, so the action is refused. */
+  newFileUnsupported: boolean;
   homeLabel: string;
   canGoBack: boolean;
   canGoForward: boolean;
@@ -28,6 +30,7 @@ interface PaneToolbarProps {
 export default function PaneToolbar({
   isLocal,
   disconnected,
+  newFileUnsupported,
   homeLabel,
   canGoBack,
   canGoForward,
@@ -47,6 +50,10 @@ export default function PaneToolbar({
   const { t, i18n } = useTranslation();
   const rtl = i18n.dir() === 'rtl';
   const deleteLabel = t('paneMenu.delete');
+  // The reason stands in for the label, so the answer is there before a name is typed.
+  const newFileLabel = newFileUnsupported
+    ? t('errors.createUnsupported')
+    : t('paneToolbar.newFile');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const foldOrder = [
@@ -106,7 +113,13 @@ export default function PaneToolbar({
             ? [{ label: t('paneToolbar.newFolder'), disabled: disconnected, onClick: onNewFolder }]
             : []),
           ...(foldedKeys.has('newFile')
-            ? [{ label: t('paneToolbar.newFile'), disabled: disconnected, onClick: onNewFile }]
+            ? [
+                {
+                  label: newFileLabel,
+                  disabled: disconnected || newFileUnsupported,
+                  onClick: onNewFile,
+                },
+              ]
             : []),
           ...(foldedKeys.has('copy')
             ? [{ label: copyLabel, disabled: copyDisabled, onClick: onCopy }]
@@ -184,9 +197,9 @@ export default function PaneToolbar({
       {!foldedKeys.has('newFile') && (
         <button
           className="btn btn-ghost btn-icon"
-          data-tooltip={t('paneToolbar.newFile')}
+          data-tooltip={newFileLabel}
           onClick={onNewFile}
-          disabled={disconnected}
+          disabled={disconnected || newFileUnsupported}
         >
           <Icon name="filePlus" />
         </button>

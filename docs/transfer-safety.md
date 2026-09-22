@@ -69,7 +69,10 @@ capability. It sends neither STOR nor RNTO and leaves no staging artifact. A
 staged empty upload followed by ordinary rename would still overwrite a racing
 target. SFTP exclusive creation and WebDAV conditional creation remain available.
 The accepted check-then-rename limitation of HF-02 does not authorize replacement
-by the New file command. A real TCP FTP fixture verifies existing bytes, a file
+by the New file command. Because the answer cannot depend on the name, the UI does
+not ask for one: `canCreateNamedFile` in `src/shared/protocolCapabilities.ts` gates
+the toolbar button, the pane menu item and the keyboard shortcut, and the disabled
+control carries the reason as its label. A real TCP FTP fixture verifies existing bytes, a file
 arriving after the listing, unsupported creation, and absence of artifacts.
 
 | Audit | Behavior | Regression coverage |

@@ -216,32 +216,25 @@ pub async fn vault_reset(
     Ok(VaultResult::from_result(result))
 }
 
+/// Turns enhanced protection off. The grant for it is issued only after
+/// the backend's own confirmation window verified the master password,
+/// whether or not the vault was already unlocked.
 #[tauri::command]
 pub async fn vault_use_system_protection(
+    window: tauri::WebviewWindow,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+    authorization_token: String,
     vault: State<'_, Vault>,
-    guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
-    mut master_password: String,
 ) -> CommandResult<VaultResult> {
-    let result = async {
-        let _permit = guard.acquire().await?;
-        if !vault.is_unlocked().await && !master_password.is_empty() {
-            vault.unlock(&master_password).await?;
-        }
-        if !vault.is_unlocked().await {
-            anyhow::bail!("vault is locked");
-        }
-        store.migrate_secrets_from_vault(&vault).await?;
-        vault.remove_unlocked().await?;
-        store.clear_vault_secret_flags().await?;
-        Ok(())
-    }
-    .await;
-    if result.is_ok() {
-        guard.succeeded().await;
-    } else {
-        guard.failed().await;
-    }
-    master_password.zeroize();
-    Ok(VaultResult::from_guarded_result(result))
+    crate::security::sensitive::consume(
+        &window,
+        &authorization,
+        &authorization_token,
+        "vault_use_system_protection",
+        "vault",
+    )?;
+    Ok(VaultResult::from_result(
+        store.downgrade_to_system_protection(&vault).await,
+    ))
 }

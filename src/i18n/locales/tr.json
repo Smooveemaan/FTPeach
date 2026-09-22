@@ -52,6 +52,10 @@
       "weakenSecuritySettings": {
         "message": "Lower the protection FTPeach gives you?",
         "approve": "Apply"
+      },
+      "useSystemProtection": {
+        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
+        "approve": "Turn off"
       }
     },
     "savedAs": "Saved on this computer as: {{name}}",

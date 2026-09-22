@@ -15,6 +15,7 @@ fn main() {
         "app_export_settings",
         "app_import_settings",
         "settings_set_security",
+        "vault_use_system_protection",
     ];
     tauri_build::try_build(tauri_build::Attributes::new().plugin(
         "sensitive",

@@ -52,6 +52,10 @@
       "weakenSecuritySettings": {
         "message": "Ослабить защиту FTPeach?",
         "approve": "Применить"
+      },
+      "useSystemProtection": {
+        "message": "Отключить усиленную защиту? Сохранённые пароли будут защищены вашей учётной записью Windows вместо мастер-пароля.",
+        "approve": "Отключить"
       }
     },
     "savedAs": "Сохраняется на компьютере как: {{name}}",

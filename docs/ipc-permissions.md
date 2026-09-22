@@ -23,7 +23,8 @@ The `main` WebView receives only the core window/event permissions in
   it quits anyway, so a renderer that cannot answer never makes quitting impossible.
 - Delete: `sites_delete`, `sites_delete_folder`, `tabs_clear`, `session_delete`.
 - Vault management: `vault_setup`, `vault_unlock`, `vault_lock`, system-unlock commands,
-  `vault_change_password`, `vault_use_system_protection`.
+  `vault_change_password`. `vault_use_system_protection` lives in the `sensitive` plugin and
+  needs a token issued only after the confirmation window verified the master password.
 - Ordinary list/edit IPC returns only secret-presence flags. Explicit reveal commands require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.

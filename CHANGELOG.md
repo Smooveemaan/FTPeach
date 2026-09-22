@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   script, and the first time a program typed into settings opens a file.
 - Turning off security confirmations or relaxing the vault's automatic lock now asks for
   confirmation in a separate window, and for the master password when one is set.
+- Turning off enhanced protection always asks for the master password, even while the vault
+  is unlocked.
 
 ### Fixed
 

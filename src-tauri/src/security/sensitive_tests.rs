@@ -332,3 +332,17 @@ async fn locking_the_vault_withdraws_grants_issued_before() {
     assert!(consume_for_label("main", &state, "before", "vault_reset", "vault").is_err());
     assert!(consume_for_label("main", &state, "after", "vault_reset", "vault").is_ok());
 }
+
+#[test]
+fn switching_off_enhanced_protection_is_always_confirmed() {
+    assert!(requires_confirmation("vault_use_system_protection"));
+    assert!(should_show_confirmation(
+        "vault_use_system_protection",
+        true,
+        false
+    ));
+    let prompt =
+        confirmation_prompt("vault_use_system_protection", "vault", "en".into(), true).unwrap();
+    assert_eq!(prompt.kind, ConfirmationKind::UseSystemProtection);
+    assert!(prompt.requires_reauthentication);
+}

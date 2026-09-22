@@ -75,6 +75,7 @@ pub enum ConfirmationKind {
     ExecuteRemoteFile,
     OpenWithApplication,
     WeakenSecuritySettings,
+    UseSystemProtection,
 }
 
 #[derive(Clone, Serialize)]
@@ -115,6 +116,7 @@ fn requires_confirmation(operation: &str) -> bool {
         "sites_reveal_secret"
             | "settings_reveal_proxy_password"
             | "vault_reset"
+            | "vault_use_system_protection"
             | "fs_execute_path"
     )
 }
@@ -125,10 +127,14 @@ fn open_with_requires_confirmation(intent: &OpenWithIntent, application_trusted:
     intent.executable || (intent.application.is_some() && !application_trusted)
 }
 
-/// Vault reset, and weakening the settings that decide about prompts, are
-/// confirmed whatever those settings say.
+/// Removing or downgrading the vault, and weakening the settings that
+/// decide about prompts, are confirmed whatever those settings say.
 fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> bool {
-    required && (matches!(operation, "vault_reset" | "settings_set_security") || enabled)
+    required
+        && (matches!(
+            operation,
+            "vault_reset" | "vault_use_system_protection" | "settings_set_security"
+        ) || enabled)
 }
 
 fn should_prompt(
@@ -176,6 +182,7 @@ fn confirmation_prompt(
         "sites_reveal_secret" => (ConfirmationKind::RevealSiteSecret, false),
         "settings_reveal_proxy_password" => (ConfirmationKind::RevealProxyPassword, false),
         "vault_reset" => (ConfirmationKind::VaultReset, false),
+        "vault_use_system_protection" => (ConfirmationKind::UseSystemProtection, false),
         "fs_execute_path" => (ConfirmationKind::ExecuteLocalFile, true),
         _ => return Err(denied("Unsupported confirmation operation")),
     };
@@ -369,6 +376,7 @@ pub async fn authorize_sensitive(
         "app_export_settings",
         "app_import_settings",
         "settings_set_security",
+        "vault_use_system_protection",
     ];
     if window.label() != "main" || !ALLOWED.contains(&operation.as_str()) {
         return Err(denied(
@@ -402,7 +410,9 @@ pub async fn authorize_sensitive(
     let requires_reauthentication = vault.is_configured()
         && (matches!(
             operation.as_str(),
-            "sites_reveal_secret" | "settings_reveal_proxy_password"
+            "sites_reveal_secret"
+                | "settings_reveal_proxy_password"
+                | "vault_use_system_protection"
         ) || weakening.is_some());
     // A program the user has not chosen before; approving the prompt trusts it.
     let mut untrusted_application = None;

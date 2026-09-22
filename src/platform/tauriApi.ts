@@ -125,6 +125,7 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         case 'settings_reveal_proxy_password':
           return 'proxy';
         case 'vault_reset':
+        case 'vault_use_system_protection':
           return 'vault';
         case 'settings_set_security':
           return JSON.stringify(args?.patch ?? {});
@@ -263,8 +264,8 @@ export const tauriApi: Window['api'] = {
     changePassword: (oldPassword: string, newPassword: string) =>
       commandOutcome(invoke, 'vault_change_password', { oldPassword, newPassword }),
     reset: () => commandOutcome(invoke, 'vault_reset'),
-    useSystemProtection: (masterPassword: string) =>
-      commandOutcome(invoke, 'vault_use_system_protection', { masterPassword }),
+    // The master password is asked for by the backend's confirmation window.
+    useSystemProtection: () => commandOutcome(invoke, 'vault_use_system_protection'),
   },
   app: {
     version: async (): Promise<string> => {

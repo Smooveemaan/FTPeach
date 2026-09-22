@@ -62,7 +62,7 @@ Saved secrets are a site's password, an SSH-key passphrase, and the global proxy
 
 In both modes the renderer never receives a secret on ordinary IPC: it supplies a `siteId`, and the Rust backend resolves the password and the proxy password itself.
 
-Switching modes moves every saved secret. Turning on enhanced protection moves DPAPI and plaintext values into the vault. A value still left in DPAPI, for example after an interrupted migration, moves at the next unlock; saving a new secret while the vault is locked is refused rather than written to DPAPI. Turning it off copies every vault secret back to DPAPI before the vault is removed, so a failure leaves the vault intact.
+Switching modes moves every saved secret. Turning on enhanced protection moves DPAPI and plaintext values into the vault. A value still left in DPAPI, for example after an interrupted migration, moves at the next unlock; saving a new secret while the vault is locked is refused rather than written to DPAPI. Turning it off copies every vault secret back to DPAPI before the vault is removed, so a failure leaves the vault intact: sites and settings are put back as they were, with no DPAPI copy left behind. It goes through the sensitive `vault_use_system_protection` command, whose backend confirmation window always asks for the master password, even when the vault is already unlocked; the renderer cannot supply or skip it. The switch is serialized with other vault updates, and removing the vault locks it, which withdraws every token issued before. Connections that are already open keep the credentials they authenticated with.
 
 ## Stronghold and the master password
 

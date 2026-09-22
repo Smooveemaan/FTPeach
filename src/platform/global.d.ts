@@ -45,7 +45,7 @@ declare global {
         disableSystemUnlock: () => Promise<CommandResult>;
         changePassword: (oldPassword: string, newPassword: string) => Promise<CommandResult>;
         reset: () => Promise<CommandResult>;
-        useSystemProtection: (masterPassword: string) => Promise<CommandResult>;
+        useSystemProtection: () => Promise<CommandResult>;
       };
       notifications: {
         transfersComplete: (summary: {

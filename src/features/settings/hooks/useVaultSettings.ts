@@ -178,7 +178,7 @@ export function useVaultSettings(): VaultSettingsModel {
 
   const lockVault = () => runVaultAction(() => api.vault.lock());
 
-  const selectSystemProtection = () => runVaultAction(() => api.vault.useSystemProtection(''));
+  const selectSystemProtection = () => runVaultAction(() => api.vault.useSystemProtection());
 
   const toggleSystemUnlock = () =>
     runVaultAction(() =>

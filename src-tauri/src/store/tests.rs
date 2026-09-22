@@ -61,6 +61,67 @@ async fn file_name_encoding_survives_site_storage() {
 
 #[cfg(windows)]
 #[tokio::test]
+async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let root = std::env::temp_dir().join(format!("ftpeach-downgrade-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    vault.setup("correct horse battery staple").await.unwrap();
+    store
+        .set_settings_with_vault(
+            proxy_patch(json!({"proxyPassword": "proxy-secret"})),
+            &vault,
+        )
+        .await
+        .unwrap();
+    let site: JsonMap = serde_json::from_value(json!({"id":"site", "name":"Site", "protocol":"ftp", "host":"example.test", "password":"site-secret"})).unwrap();
+    store.save_site_with_vault(site, &vault).await.unwrap();
+    let settings_before = std::fs::read_to_string(root.join("settings.json")).unwrap();
+    let sites_before = std::fs::read(root.join("sites.json")).unwrap();
+
+    // A locked vault is refused before anything is touched.
+    vault.lock().await;
+    assert!(store.downgrade_to_system_protection(&vault).await.is_err());
+    assert!(vault.is_configured());
+    vault.unlock("correct horse battery staple").await.unwrap();
+
+    // The proxy password moves out first; sites.json then cannot be
+    // replaced, so the proxy copy must be taken back and the vault kept.
+    let deny_replace = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(1)
+        .open(root.join("sites.json"))
+        .unwrap();
+    assert!(store.downgrade_to_system_protection(&vault).await.is_err());
+    drop(deny_replace);
+    assert!(vault.is_configured());
+    let settings_after = std::fs::read_to_string(root.join("settings.json")).unwrap();
+    assert!(
+        !settings_after.contains("proxyPasswordEnc"),
+        "{settings_after}"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&settings_after).unwrap()["data"]["hasProxyPassword"],
+        serde_json::from_str::<Value>(&settings_before).unwrap()["data"]["hasProxyPassword"]
+    );
+    assert_eq!(
+        std::fs::read(root.join("sites.json")).unwrap(),
+        sites_before
+    );
+    assert_eq!(
+        vault
+            .get_proxy_password()
+            .await
+            .unwrap()
+            .unwrap()
+            .as_slice(),
+        b"proxy-secret"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[tokio::test]
 async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {
     use std::os::windows::fs::OpenOptionsExt;
     let root =
@@ -223,9 +284,8 @@ async fn proxy_password_moves_with_enhanced_protection() {
     );
 
     // Switching back to system protection returns it to DPAPI.
-    store.migrate_secrets_from_vault(&vault).await.unwrap();
-    vault.remove_unlocked().await.unwrap();
-    store.clear_vault_secret_flags().await.unwrap();
+    store.downgrade_to_system_protection(&vault).await.unwrap();
+    assert!(!vault.is_configured());
     assert!(settings_raw().contains("proxyPasswordEnc"));
     assert!(!settings_raw().contains("hasProxyPassword"));
     assert_eq!(

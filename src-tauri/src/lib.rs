@@ -114,7 +114,6 @@ pub fn run() {
             commands::vault::vault_unlock_system,
             commands::vault::vault_disable_system_unlock,
             commands::vault::vault_change_password,
-            commands::vault::vault_use_system_protection,
             commands::app::app_version,
             commands::app::app_quit,
             commands::app::app_system_hour_cycle,

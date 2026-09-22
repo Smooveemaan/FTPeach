@@ -619,6 +619,49 @@ impl Store {
             Err(error) => Err(error).context("removing vault migration marker"),
         }
     }
+    /// Moves every secret out of the unlocked vault into DPAPI and removes
+    /// the vault, serialized with the other vault updates. Until the vault
+    /// is gone a failure puts sites and settings back as they were, so
+    /// protection is never left half-disabled with secrets copied out.
+    pub async fn downgrade_to_system_protection(&self, vault: &Vault) -> Result<()> {
+        let store = self.clone();
+        let vault = vault.clone();
+        tokio::spawn(async move {
+            let _transaction = store.vault_updates.lock().await;
+            if !vault.is_configured() || !vault.is_unlocked().await {
+                anyhow::bail!("vault is locked");
+            }
+            let settings = store.get_settings().await;
+            let sites = store.snapshot_sites_for_import().await?;
+            let copied = match store.migrate_secrets_from_vault(&vault).await {
+                Ok(_) => vault.remove_unlocked().await,
+                Err(error) => Err(error),
+            };
+            if let Err(error) = copied {
+                if !vault.is_configured() {
+                    // Part of the vault is already gone; the copies just made
+                    // are now the only ones, so finish the switch instead.
+                    vault
+                        .reset()
+                        .await
+                        .with_context(|| format!("removing the vault failed: {error:#}"))?;
+                    return store.clear_vault_secret_flags().await;
+                }
+                let restored = store.replace_settings_for_import(&settings).await;
+                let restored = restored.and(store.replace_sites_for_import(&sites).await);
+                return match restored {
+                    Ok(()) => Err(error),
+                    Err(restore) => Err(error.context(format!(
+                        "restoring the previous sites and settings also failed: {restore:#}"
+                    ))),
+                };
+            }
+            store.clear_vault_secret_flags().await
+        })
+        .await
+        .context("vault downgrade task failed")?
+    }
+
     pub async fn delete_site_with_vault(&self, id: String, vault: &Vault) -> Result<()> {
         let store = self.clone();
         let vault = vault.clone();

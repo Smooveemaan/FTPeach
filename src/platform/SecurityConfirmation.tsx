@@ -14,7 +14,8 @@ type ConfirmationKind =
   | 'executeLocalFile'
   | 'executeRemoteFile'
   | 'openWithApplication'
-  | 'weakenSecuritySettings';
+  | 'weakenSecuritySettings'
+  | 'useSystemProtection';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -24,6 +25,7 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   executeRemoteFile: 'securityConfirmation.operations.executeRemoteFile',
   openWithApplication: 'securityConfirmation.operations.openWithApplication',
   weakenSecuritySettings: 'securityConfirmation.operations.weakenSecuritySettings',
+  useSystemProtection: 'securityConfirmation.operations.useSystemProtection',
 };
 
 interface SecurityChanges {

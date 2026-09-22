@@ -37,6 +37,15 @@ interface OsDropFile {
   size?: number;
 }
 const RENDERER_FANOUT_LIMIT = 8;
+/**
+ * How many transfers a selection may have in flight at once. The backend owns
+ * network concurrency and queues what it cannot start, but admitting a whole
+ * 10 000-file selection in one go builds that queue in the renderer first —
+ * thousands of pending calls, rows and progress subscriptions, most of them for
+ * work the destination may already have refused. Items are admitted as earlier
+ * ones settle instead, which keeps the order and the visible queue intact.
+ */
+const TRANSFER_ADMISSION_LIMIT = 64;
 const MOVE_BETWEEN_ENDPOINTS =
   'Files can be moved only within this computer or within one server connection';
 
@@ -188,25 +197,25 @@ export function createTransferRouting(
     const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
 
     const folders = names.filter((name) => sourceEntriesByName.get(name)?.isDirectory);
-    // Submit the whole selection before waiting for any transfer to finish.
-    // The backend owns network concurrency; a folder must not hide its siblings.
+    // Start the folders alongside the files rather than one after the other:
+    // the backend owns network concurrency, and a folder must not hide its
+    // siblings. Every group is waited for, including after one of them fails.
     if (folders.length > 0 && names.length > 1) {
-      await Promise.all(
-        [
-          ...folders.map((name) => [name]),
-          names.filter((name) => !sourceEntriesByName.get(name)?.isDirectory),
-        ].map((group) =>
-          copyEntriesUnchecked({
-            sourcePane,
-            targetPane,
-            names: group,
-            ...(targetFolder === undefined ? {} : { targetFolder }),
-            ...(move === undefined ? {} : { move }),
-            ...(refreshSource ? { refreshSource } : {}),
-            ...(refreshTarget ? { refreshTarget } : {}),
-            overwriteApproved,
-          }),
-        ),
+      const groups = [
+        ...folders.map((name) => [name]),
+        names.filter((name) => !sourceEntriesByName.get(name)?.isDirectory),
+      ];
+      await mapWithConcurrency(groups, TRANSFER_ADMISSION_LIMIT, (group) =>
+        copyEntriesUnchecked({
+          sourcePane,
+          targetPane,
+          names: group,
+          ...(targetFolder === undefined ? {} : { targetFolder }),
+          ...(move === undefined ? {} : { move }),
+          ...(refreshSource ? { refreshSource } : {}),
+          ...(refreshTarget ? { refreshTarget } : {}),
+          overwriteApproved,
+        }),
       );
       return;
     }
@@ -270,7 +279,7 @@ export function createTransferRouting(
     }
 
     if (sourcePane.kind === 'remote' && targetPane.kind === 'remote') {
-      await mapWithConcurrency(names, names.length, async (name) => {
+      await mapWithConcurrency(names, TRANSFER_ADMISSION_LIMIT, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return { entry, ok: false };
         if (entry.isDirectory && move) {
@@ -326,7 +335,7 @@ export function createTransferRouting(
       return;
     }
 
-    await mapWithConcurrency(names, names.length, async (name) => {
+    await mapWithConcurrency(names, TRANSFER_ADMISSION_LIMIT, async (name) => {
       const entry = sourceEntriesByName.get(name);
       if (!entry) return { entry, ok: false };
       let ok;
@@ -394,7 +403,7 @@ export function createTransferRouting(
       return;
     }
     const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
-    await mapWithConcurrency(files, files.length, async (file) => {
+    await mapWithConcurrency(files, TRANSFER_ADMISSION_LIMIT, async (file) => {
       if (file.isDirectory) {
         await uploadFolderEntry(
           targetPane.connectionId!,

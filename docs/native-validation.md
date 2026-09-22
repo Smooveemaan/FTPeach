@@ -12,6 +12,58 @@ The release workflow requires both the shared checks (including packaged smoke a
 | Docker compatibility | Explicit ignored tests against disposable FTP/FTPS/SFTP/WebDAV and TLS endpoints | Every server/version, external network failures or power loss |
 | cargo deny | Current advisory database and license policy for the locked graph | Proof of absence of exploitable bugs; ignored advisories remain accepted risks |
 
+## P1 hotfix completion, Windows, 2026-09-23
+
+This is the current HF hotfix queue (19 P1 items, including HF-54), not the
+older A06-A18 audit in transfer-safety.md. The implementation revision is
+`0c9fc61`; P0 completion remains recorded separately below.
+
+| Item | Implementation commits | Regression evidence |
+| --- | --- | --- |
+| HF-36, HF-37 | `0b4665d` | Final executable-name classification and bound Open-with intents; security tests |
+| HF-38 | `a7cebc9` | Separate security confirmation and rejected unprivileged weakening |
+| HF-39 | `76e79c4` | Saved-secret recipient binding and credential-scope tests |
+| HF-40 | `7a900d8` | Master-password reauthentication before disabling enhanced protection |
+| HF-41 | `c1d9bf5` | Backup secret removal and storage failure/recovery tests |
+| HF-42 | `89a5784`, `0c9fc61` | Bounded FTP/FTPS/encoding-relay replies and active peers; standalone fuzz workspace uses the same patched reader |
+| HF-43 | `7a0a615` | Held updater object, path substitution and rollback fixtures; no installer launched |
+| HF-09, HF-10 | `66ed95e` | Failed encryption retains prior secret; delayed reveal cannot overwrite a different site or newer input |
+| HF-04 | `8d23084` | Real TCP FTP fixture: existing bytes and a file arriving after listing survive; unsupported creation leaves no artifacts |
+| HF-07 | `f061d1c`, `ea077bd`, `25068be` | Revision queue, A/B/C edits, edits during upload, failure/retry, disconnect and native recovery |
+| HF-05 | `e9f10a3` | Per-item batch results, retained originals and cut clipboard behavior |
+| HF-06 | `5712c79` | Deferred worker barrier and bounded batch admission |
+| HF-11 | `75d3bd2` | Real tabs API adapter with failed envelope, rejected promise and ordered snapshots |
+| HF-12 | `9ff8e1a` | Settings/tabs flush, delayed writes, disabled session saving, stale acknowledgements, renderer timeout and packaged WebView2 shutdown |
+| HF-15 | `8983cb7` | 10,000-record stalled-writer test, drop notice and recovery, byte/entry budgets, delayed renderer history, log flush |
+| HF-22 | `fdb8668` | CI classifier recognizes frontend JSON compiled into Rust |
+| HF-54 | `5712c79`, `75d3bd2`, `e9f10a3` | Batch/persistence reproductions run in the normal unit/component suites |
+
+HF-04 closes with an explicit functional restriction: New file on FTP/FTPS
+returns `createUnsupported` when the requested name is free, because the adapter
+has no exclusive publication capability. It never sends STOR/RNTO for this
+operation. Existing targets return `alreadyExists`; SFTP/WebDAV creation remains
+available. This is distinct from the accepted FTP rename race in HF-02.
+
+The packaged smoke adds a tab and changes pane orientation, then immediately
+enters the real `wind_down` shared by quit and immediate update installation.
+It requires a successful renderer flush acknowledgement and rereads both JSON
+files, as well as verifying editor recovery and vault locking. It does not launch
+an installer. A crashed/unresponsive renderer has a bounded fallback with a log
+diagnostic, not a guarantee of preserving changes it never sent.
+
+Full `npm run check`: PASS in one invocation, exit 0, on `0c9fc61`.
+301 Node unit tests, 361 component tests, 65 browser tests, 504 Rust library
+tests, four Rust example tests and 22 parser regression tests passed. The same
+invocation passed lint/TypeScript, formatting, source policies, localization,
+licenses, Clippy, production build/bundle checks and valid/damaged updater
+fixtures. Packaged native build and smoke passed separately.
+
+Evidence: `.local/p1-completion-check.log`, `.local/p1-smoke-build.log`,
+`.local/p1-smoke.log`. Nine Rust tests remain ignored in the default suite;
+they are not passes. Docker compatibility, external server matrix, privileged
+Windows fixtures, fresh cargo deny and production installation were not rerun
+for this completion; their separate release requirements remain in force.
+
 ## P0 completion checks, Windows, 2026-09-22
 
 - Rust: 454 library tests and four example tests passed; nine remain ignored by default.

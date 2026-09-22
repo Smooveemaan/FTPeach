@@ -14,6 +14,8 @@ const ignoredDirectories = new Set([
   // Generated browser reports can contain localized UI text.
   'test-results',
   'playwright-report',
+  // Third-party sources FTPeach only patches; their text is not ours.
+  'vendor',
 ]);
 const allowed = new Set([
   path.normalize('src/i18n/index.ts'),

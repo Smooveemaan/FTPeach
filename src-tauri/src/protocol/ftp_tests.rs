@@ -663,6 +663,212 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         server.abort();
         let _ = tokio::fs::remove_dir_all(dir).await;
     }
+
+    /// A server that answers everything with one endless line, or with
+    /// endless continuation lines, and never closes the connection.
+    async fn spawn_flooding_server(
+        endless_line: bool,
+        tls: Option<tokio_rustls::TlsAcceptor>,
+    ) -> (u16, tokio::task::JoinHandle<()>) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let handle = tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                let tls = tls.clone();
+                tokio::spawn(async move {
+                    let mut stream: Box<dyn TlsOrPlain> = match tls {
+                        None => Box::new(socket),
+                        Some(acceptor) => {
+                            socket
+                                .write_all(b"220 FTPeach flooding server\r\n")
+                                .await
+                                .unwrap();
+                            let mut auth = String::new();
+                            {
+                                let mut reader = BufReader::new(&mut socket);
+                                reader.read_line(&mut auth).await.unwrap();
+                            }
+                            socket.write_all(b"234 Start TLS\r\n").await.unwrap();
+                            let Ok(tls_stream) = acceptor.accept(socket).await else {
+                                return;
+                            };
+                            Box::new(tls_stream)
+                        }
+                    };
+                    let flood: &[u8] = if endless_line {
+                        b"220-"
+                    } else {
+                        b"220-still going\r\n"
+                    };
+                    let filler = if endless_line {
+                        vec![b'x'; 1024]
+                    } else {
+                        b"220-still going\r\n".repeat(64)
+                    };
+                    if stream.write_all(flood).await.is_err() {
+                        return;
+                    }
+                    // Never a terminal line and never EOF: the client has to
+                    // stop on its own budget.
+                    while stream.write_all(&filler).await.is_ok() {
+                        tokio::task::yield_now().await;
+                    }
+                });
+            }
+        });
+        (port, handle)
+    }
+
+    trait TlsOrPlain: tokio::io::AsyncWrite + Unpin + Send {}
+    impl<T: tokio::io::AsyncWrite + Unpin + Send> TlsOrPlain for T {}
+
+    fn flooding_config(
+        port: u16,
+        secure: bool,
+        encoding: &str,
+    ) -> crate::protocol::config::ConnectionConfig {
+        let map = json!({
+            "protocol": "ftp",
+            "host": "127.0.0.1",
+            "port": port,
+            "user": "local",
+            "password": "test",
+            "secure": secure,
+            "allowInvalidCert": secure,
+            "encoding": encoding,
+            "timeoutMs": 30_000
+        })
+        .as_object()
+        .unwrap()
+        .clone();
+        crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+    }
+
+    #[tokio::test]
+    async fn an_endless_control_reply_stops_on_the_client_budget() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let decode = |value| {
+            base64::engine::general_purpose::STANDARD
+                .decode(value)
+                .unwrap()
+        };
+        let cert = rustls_pki_types::CertificateDer::from(decode(TEST_CERT_DER));
+        let key = rustls_pki_types::PrivateKeyDer::Pkcs8(
+            rustls_pki_types::PrivatePkcs8KeyDer::from(decode(TEST_KEY_DER)),
+        );
+        let tls = rustls::ServerConfig::builder_with_protocol_versions(&[&rustls::version::TLS12])
+            .with_no_client_auth()
+            .with_single_cert(vec![cert], key)
+            .unwrap();
+        let acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(tls));
+
+        for endless_line in [true, false] {
+            for (secure, encoding) in [(false, ""), (true, ""), (false, "windows-1251")] {
+                let (port, server) =
+                    spawn_flooding_server(endless_line, secure.then(|| acceptor.clone())).await;
+                let mut backend = FtpBackend::new();
+                let error = tokio::time::timeout(
+                    Duration::from_secs(20),
+                    backend.connect(&flooding_config(port, secure, encoding)),
+                )
+                .await
+                .expect("the client must stop reading instead of following the server")
+                .expect_err("an endless reply must not be accepted");
+                assert_eq!(
+                    crate::ipc::CommandError::from_anyhow(&error).code,
+                    crate::ipc::ErrorCode::ResourceLimit,
+                    "endless_line={endless_line} secure={secure} encoding={encoding:?}: {error:#}"
+                );
+                assert!(!backend.is_connected());
+                server.abort();
+            }
+        }
+    }
+
+    /// Active mode: the listener is open to anyone, so a data connection
+    /// from another address must be ignored, not taken for the server's.
+    #[tokio::test]
+    async fn an_active_data_connection_is_taken_only_from_the_server() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (socket, _) = listener.accept().await.unwrap();
+            let (reader, mut writer) = socket.into_split();
+            let mut lines = BufReader::new(reader).lines();
+            writer
+                .write_all(b"220 FTPeach active server\r\n")
+                .await
+                .unwrap();
+            let mut data: Option<std::net::SocketAddr> = None;
+            while let Ok(Some(line)) = lines.next_line().await {
+                let (command, argument) = line
+                    .split_once(' ')
+                    .map_or((line.as_str(), ""), |split| split);
+                match command.to_ascii_uppercase().as_str() {
+                    "PORT" => {
+                        let numbers: Vec<u16> = argument
+                            .split(',')
+                            .map(|part| part.parse().unwrap())
+                            .collect();
+                        data = Some(std::net::SocketAddr::from((
+                            [
+                                numbers[0] as u8,
+                                numbers[1] as u8,
+                                numbers[2] as u8,
+                                numbers[3] as u8,
+                            ],
+                            numbers[4] << 8 | numbers[5],
+                        )));
+                        writer.write_all(b"200 PORT ok\r\n").await.unwrap();
+                    }
+                    "LIST" => {
+                        let target = data.unwrap();
+                        // Someone else answers first, from another address.
+                        let foreign = tokio::net::TcpSocket::new_v4().unwrap();
+                        foreign.bind("127.0.0.2:0".parse().unwrap()).unwrap();
+                        if let Ok(mut stream) = foreign.connect(target).await {
+                            let _ = stream
+                                .write_all(b"-rw-r--r-- 1 o g 5 Nov 05 2018 evil.txt\r\n")
+                                .await;
+                            let _ = stream.shutdown().await;
+                        }
+                        writer.write_all(b"150 Opening\r\n").await.unwrap();
+                        let mut stream = TcpStream::connect(target).await.unwrap();
+                        stream
+                            .write_all(b"-rw-r--r-- 1 o g 5 Nov 05 2018 real.txt\r\n")
+                            .await
+                            .unwrap();
+                        stream.shutdown().await.unwrap();
+                        writer
+                            .write_all(b"226 Transfer complete\r\n")
+                            .await
+                            .unwrap();
+                    }
+                    "QUIT" => return,
+                    _ => writer.write_all(b"200 OK\r\n").await.unwrap(),
+                }
+            }
+        });
+
+        let tcp = TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+        let mut stream = AsyncRustlsFtpStream::connect_with_stream(tcp)
+            .await
+            .unwrap();
+        stream.set_mode(suppaftp::types::Mode::Active);
+        let listing = tokio::time::timeout(Duration::from_secs(20), stream.list(None))
+            .await
+            .expect("the client must ignore the foreign connection and wait for the server")
+            .unwrap();
+        assert!(
+            listing.iter().all(|line| !line.contains("evil.txt")),
+            "{listing:?}"
+        );
+        assert!(
+            listing.iter().any(|line| line.contains("real.txt")),
+            "{listing:?}"
+        );
+        server.abort();
+    }
 }
 
 #[cfg(test)]

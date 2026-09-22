@@ -1225,6 +1225,9 @@ impl ProtocolBackend for FtpBackend {
             }
             if active_mode {
                 stream.set_mode(suppaftp::types::Mode::Active);
+                // Behind the encoding relay the control peer is the loopback;
+                // data connections are taken only from the server itself.
+                stream.set_active_peer(peer);
             }
             let data = DataChannel {
                 host: host.clone(),

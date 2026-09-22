@@ -141,3 +141,9 @@ opt-level = 3
 
 [profile.dev.package.stronghold-runtime]
 opt-level = 3
+
+[patch.crates-io]
+# FTPeach keeps a patched copy of suppaftp: control replies are bounded and
+# active-mode data connections are accepted only from the server. See
+# vendor/suppaftp/FTPEACH-PATCH.md.
+suppaftp = { path = "vendor/suppaftp" }

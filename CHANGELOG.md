@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   the vault, changed or deleted, and never keep unencrypted passwords.
 - A downloaded update can no longer be swapped for another file before it installs, and an
   older installer can no longer be passed off as a newer version.
+- An FTP server that answers with an endless reply is disconnected instead of filling
+  memory, and in active mode files are accepted only from the server itself.
 
 ### Fixed
 

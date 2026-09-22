@@ -314,19 +314,35 @@ fn active_address(command: &str, local: IpAddr) -> Option<String> {
 }
 
 /// One whole reply, as suppaftp reads it: lines up to the first that starts
-/// with a code and a space.
+/// with a code and a space. Bounded like suppaftp's own replies, since the
+/// greeting and the AUTH answer arrive before anyone is authenticated.
 async fn read_reply(reader: &mut BufReader<TcpStream>) -> Result<Vec<u8>> {
+    let limits = suppaftp::ReplyLimits::default();
     let mut reply = Vec::new();
-    loop {
+    for _ in 0..limits.max_lines {
         let start = reply.len();
-        if read_line(reader, &mut reply).await? == 0 {
+        let read = (&mut *reader)
+            .take(limits.max_line as u64 + 1)
+            .read_until(b'\n', &mut reply)
+            .await?;
+        if read == 0 {
             return Err(anyhow!("the server closed the connection"));
+        }
+        if read > limits.max_line || reply.len() > limits.max_reply {
+            return Err(too_large());
         }
         let line = &reply[start..];
         if line.len() >= 4 && line[..3].iter().all(u8::is_ascii_digit) && line[3] == b' ' {
             return Ok(reply);
         }
     }
+    Err(too_large())
+}
+
+/// The same error suppaftp gives a reply over its limits, so both classify
+/// as `resourceLimit` without the reply's text reaching errors or logs.
+fn too_large() -> anyhow::Error {
+    std::io::Error::new(std::io::ErrorKind::InvalidData, suppaftp::ReplyTooLarge).into()
 }
 
 fn expect(reply: &[u8], status: Status) -> Result<()> {

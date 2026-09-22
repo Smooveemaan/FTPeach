@@ -148,6 +148,23 @@ impl CommandError {
     /// A server's own verdict: an FTP reply code or an SFTP status. The reply
     /// text only splits the codes that servers use for more than one thing.
     fn code_for_server_reply(source: &(dyn std::error::Error + 'static)) -> Option<ErrorCode> {
+        let too_large = |error: &std::io::Error| {
+            error
+                .get_ref()
+                .is_some_and(|inner| inner.is::<suppaftp::ReplyTooLarge>())
+        };
+        if let Some(suppaftp::FtpError::ConnectionError(error)) =
+            source.downcast_ref::<suppaftp::FtpError>()
+            && too_large(error)
+        {
+            return Some(ErrorCode::ResourceLimit);
+        }
+        if source
+            .downcast_ref::<std::io::Error>()
+            .is_some_and(too_large)
+        {
+            return Some(ErrorCode::ResourceLimit);
+        }
         if let Some(suppaftp::FtpError::UnexpectedResponse(response)) =
             source.downcast_ref::<suppaftp::FtpError>()
         {

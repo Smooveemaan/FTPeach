@@ -1,5 +1,17 @@
 # Settings and session storage
 
+## Protocol log budgets
+
+The writer admits at most 512 records without waiting on the disk. Text and event
+parameters are capped at 8 KiB, connection/server labels at 512 bytes each, and
+batches at 128 records (therefore below 1.3 MiB of payload). The recent ring retains
+at most 5,000 records and 4 MiB of accounted payload. Overflow drops disk/live
+records, keeps bounded recent history and queues one aggregate drop notice when
+the writer recovers; it never logs that notice recursively. Renderer history and
+live batches waiting for a history response also have 5,000-entry/4 MiB limits.
+Quit and immediate update installation drain admitted log records with a two-second
+deadline. Daily rotation, age and directory-size policies still apply (HF-15).
+
 FTPeach currently supports the installed Windows storage model. It stores
 `settings.json`, `sites.json`, `known_hosts.json`, and `tabs.json` under
 `%APPDATA%\FTPeach`. Each file uses a `{ schemaVersion, data }` envelope,

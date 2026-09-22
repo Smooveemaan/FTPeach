@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../platform/api/index.ts';
 import type { LogEntry } from '../../shared/types.ts';
-import { hasLogGap, MAX_LOG_LINES, mergeLogBatch } from './logBuffer.ts';
+import { hasLogGap, mergeLogBatch } from './logBuffer.ts';
 
 export type { LogEntry } from '../../shared/types.ts';
 
@@ -31,7 +31,7 @@ export function useLogLines(enabled: boolean, logApi: LogApi = api.log): LogLine
     if (!enabled) return;
     let disposed = false;
     // Live batches that arrive while the history is loading wait here.
-    let pending: LogEntry[][] | null = [];
+    let pending: readonly LogEntry[] | null = [];
 
     const apply = (batch: LogEntry[]) => {
       const afterSeq = lastSeqRef.current;
@@ -44,20 +44,20 @@ export function useLogLines(enabled: boolean, logApi: LogApi = api.log): LogLine
         if (disposed) return;
         const clearedThrough = clearedThroughRef.current;
         lastSeqRef.current = Math.max(history.at(-1)?.seq ?? 0, clearedThrough);
-        setLines(history.filter((entry) => entry.seq > clearedThrough).slice(-MAX_LOG_LINES));
+        setLines(mergeLogBatch([], history, clearedThrough));
         const queued = pending ?? [];
         pending = null;
         // Read once: if the history could not close the gap, take what came.
-        for (const batch of queued) apply(batch);
+        apply([...queued]);
       });
     };
 
     const unsubscribe = logApi.onMessage((batch) => {
       if (batch.length === 0) return;
       if (pending) {
-        pending.push(batch);
+        pending = mergeLogBatch(pending, batch, pending.at(-1)?.seq ?? 0);
       } else if (hasLogGap(lastSeqRef.current, batch)) {
-        pending = [batch];
+        pending = mergeLogBatch([], batch, 0);
         load();
       } else {
         apply(batch);

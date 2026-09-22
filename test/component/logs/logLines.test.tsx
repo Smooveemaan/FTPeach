@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import { useLogLines } from '../../../src/features/logs/useLogLines.ts';
 import type { LogEntry } from '../../../src/shared/types.ts';
+import { MAX_LOG_BYTES } from '../../../src/features/logs/logBuffer.ts';
 
 const entry = (seq: number): LogEntry => ({
   seq,
@@ -38,6 +39,34 @@ test('a closed panel neither reads the history nor listens', () => {
   expect(log.api.recent).not.toHaveBeenCalled();
   expect(log.api.onMessage).not.toHaveBeenCalled();
   expect(result.current.lines).toEqual([]);
+});
+
+test('live records stay bounded while history is stalled', async () => {
+  const log = fakeLogApi(() => []);
+  let resolve!: (_entries: LogEntry[]) => void;
+  log.api.recent.mockImplementationOnce(
+    () =>
+      new Promise<LogEntry[]>((done) => {
+        resolve = done;
+      }),
+  );
+  const { result } = renderHook(() => useLogLines(true, log.api));
+  for (let index = 0; index < 20; index += 1) {
+    act(() =>
+      log.send(
+        Array.from({ length: 128 }, (_, offset) => ({
+          ...entry(index * 128 + offset + 1),
+          line: 'x'.repeat(8192),
+        })),
+      ),
+    );
+  }
+  await act(async () => resolve([]));
+  expect(result.current.lines.at(-1)?.seq).toBe(2560);
+  expect(result.current.lines.length).toBeLessThan(512);
+  expect(new TextEncoder().encode(JSON.stringify(result.current.lines)).byteLength).toBeLessThan(
+    MAX_LOG_BYTES + 512,
+  );
 });
 
 test('opening reads the history, then adds live batches without repeating records', async () => {

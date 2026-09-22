@@ -1,6 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hasLogGap, mergeLogBatch } from '../../../src/features/logs/logBuffer.ts';
+import { hasLogGap, mergeLogBatch, MAX_LOG_BYTES } from '../../../src/features/logs/logBuffer.ts';
+
+test('byte retention bounds large records even below the entry limit', () => {
+  const batch = Array.from({ length: 1000 }, (_, seq) => ({
+    seq: seq + 1,
+    line: 'x'.repeat(8192),
+  }));
+  const kept = mergeLogBatch([], batch, 0);
+  assert.ok(kept.length < 1000);
+  assert.equal(kept.at(-1)?.seq, 1000);
+  assert.ok(
+    kept.reduce((bytes, entry) => bytes + Buffer.byteLength(JSON.stringify(entry)), 0) <=
+      MAX_LOG_BYTES,
+  );
+});
 
 test('a large batch keeps only the newest entries, without copying the rest', () => {
   const batch = Array.from({ length: 10000 }, (_, n) => ({ seq: n + 1 }));

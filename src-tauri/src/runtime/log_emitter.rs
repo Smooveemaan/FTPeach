@@ -21,11 +21,32 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use tokio::io::AsyncWriteExt;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 
 /// How many records stay in memory for the panel and the diagnostic bundle.
 pub const RECENT_CAPACITY: usize = 5_000;
 const FLUSH_INTERVAL: Duration = Duration::from_millis(150);
+const WRITER_CAPACITY: usize = 512;
+const BATCH_CAPACITY: usize = 128;
+const MAX_TEXT_BYTES: usize = 8 * 1024;
+const RECENT_BYTES: usize = 4 * 1024 * 1024;
+
+enum WriterMessage {
+    Record(LogRecord),
+    Flush(oneshot::Sender<()>),
+}
+
+fn bounded_text(mut text: String, limit: usize) -> String {
+    if text.len() > limit {
+        let mut end = limit.saturating_sub(3);
+        while !text.is_char_boundary(end) {
+            end -= 1;
+        }
+        text.truncate(end);
+        text.push_str("...");
+    }
+    text
+}
 const MAX_LOG_AGE: Duration = Duration::from_secs(14 * 86_400);
 /// A day's file continues in `ftpeach-<date>_2.log` and so on past this size.
 const MAX_LOG_FILE_BYTES: u64 = 10 * 1024 * 1024;
@@ -83,7 +104,61 @@ impl LogRecord {
 struct Recent {
     records: VecDeque<LogRecord>,
     next_seq: u64,
-    writer: mpsc::UnboundedSender<LogRecord>,
+    writer: mpsc::Sender<WriterMessage>,
+    bytes: usize,
+    dropped: u64,
+}
+
+impl Recent {
+    fn keep(&mut self, record: LogRecord) {
+        self.bytes += record_bytes(&record);
+        self.records.push_back(record);
+        while self.records.len() > RECENT_CAPACITY || self.bytes > RECENT_BYTES {
+            if let Some(old) = self.records.pop_front() {
+                self.bytes -= record_bytes(&old);
+            }
+        }
+    }
+
+    fn report_dropped(&mut self) {
+        if self.dropped == 0 || self.writer.capacity() == 0 {
+            return;
+        }
+        let record = LogRecord {
+            seq: self.next_seq,
+            ts: chrono::Utc::now().timestamp_millis(),
+            kind: LogKind::Error,
+            connection_id: String::new(),
+            server: String::new(),
+            line: Some(format!(
+                "Protocol log writer dropped {} records because its queue was full",
+                self.dropped
+            )),
+            key: None,
+            params: None,
+        };
+        if self
+            .writer
+            .try_send(WriterMessage::Record(record.clone()))
+            .is_ok()
+        {
+            self.next_seq += 1;
+            self.dropped = 0;
+            self.keep(record);
+        }
+    }
+}
+
+fn record_bytes(record: &LogRecord) -> usize {
+    record.connection_id.len()
+        + record.server.len()
+        + record.line.as_ref().map_or(0, String::len)
+        + record.key.as_ref().map_or(0, String::len)
+        + record
+            .params
+            .as_ref()
+            .map_or(0, |params| params.to_string().len())
+        + std::mem::size_of::<LogRecord>()
 }
 
 #[derive(Clone)]
@@ -97,12 +172,14 @@ impl LogEmitter {
     /// Starts the writer task. `publish` receives each batch in order; the
     /// app hands it to the panel as the `protocol:log` event.
     pub fn start(log_dir: PathBuf, publish: impl Fn(&[LogRecord]) + Send + 'static) -> Self {
-        let (writer, receiver) = mpsc::unbounded_channel();
+        let (writer, receiver) = mpsc::channel(WRITER_CAPACITY);
         let emitter = Self {
             recent: Arc::new(Mutex::new(Recent {
                 records: VecDeque::new(),
                 next_seq: 1,
                 writer,
+                bytes: 0,
+                dropped: 0,
             })),
             file_logging: Arc::new(AtomicBool::new(false)),
             date_format: Arc::new(Mutex::new("locale".to_string())),
@@ -112,6 +189,7 @@ impl LogEmitter {
             LogFiles::new(log_dir),
             emitter.file_logging.clone(),
             emitter.date_format.clone(),
+            emitter.recent.clone(),
             publish,
         ));
         emitter
@@ -127,28 +205,58 @@ impl LogEmitter {
 
     pub fn push(&self, text: LogText, kind: LogKind, connection_id: &str, server: &str) {
         let (line, key, params) = match text {
-            LogText::Raw(s) => (Some(redact(&s)), None, None),
-            LogText::Key { key, params } => (None, Some(key.to_string()), Some(params)),
+            LogText::Raw(s) => (Some(bounded_text(redact(&s), MAX_TEXT_BYTES)), None, None),
+            LogText::Key { key, params } if params.to_string().len() <= MAX_TEXT_BYTES => {
+                (None, Some(bounded_text(key.to_string(), 512)), Some(params))
+            }
+            LogText::Key { .. } => (
+                Some("Log event omitted: parameters exceed the byte limit".into()),
+                None,
+                None,
+            ),
         };
         // Numbering, keeping and queueing under one lock: records reach the
         // writer in the order of their numbers.
         let mut recent = self.recent.lock().unwrap();
+        recent.report_dropped();
         let record = LogRecord {
             seq: recent.next_seq,
             ts: chrono::Utc::now().timestamp_millis(),
             kind,
-            connection_id: connection_id.to_string(),
-            server: server.to_string(),
+            connection_id: bounded_text(connection_id.to_string(), 512),
+            server: bounded_text(server.to_string(), 512),
             line,
             key,
             params,
         };
         recent.next_seq += 1;
-        if recent.records.len() == RECENT_CAPACITY {
-            recent.records.pop_front();
+        recent.keep(record.clone());
+        if recent
+            .writer
+            .try_send(WriterMessage::Record(record))
+            .is_err()
+        {
+            recent.dropped += 1;
         }
-        recent.records.push_back(record.clone());
-        let _ = recent.writer.send(record);
+    }
+
+    /// Drains accepted records with a deadline even if the disk stops responding.
+    pub async fn flush(&self) {
+        let writer = self.recent.lock().unwrap().writer.clone();
+        let result = tokio::time::timeout(Duration::from_secs(2), async {
+            // A recovered writer may enqueue its overflow notice behind the
+            // first barrier. The second barrier drains that notice as well.
+            for _ in 0..2 {
+                let (ack, done) = oneshot::channel();
+                writer.send(WriterMessage::Flush(ack)).await.ok()?;
+                done.await.ok()?;
+            }
+            Some(())
+        })
+        .await;
+        if !matches!(result, Ok(Some(()))) {
+            log::warn!("protocol log flush did not finish before shutdown");
+        }
     }
 
     /// Everything still in memory, oldest first.
@@ -182,24 +290,38 @@ impl LogEmitter {
 }
 
 async fn run_writer(
-    mut receiver: mpsc::UnboundedReceiver<LogRecord>,
+    mut receiver: mpsc::Receiver<WriterMessage>,
     mut files: LogFiles,
     file_logging: Arc<AtomicBool>,
     date_format: Arc<Mutex<String>>,
+    recent: Arc<Mutex<Recent>>,
     publish: impl Fn(&[LogRecord]),
 ) {
     // Once per start, whether or not file logging is on, so files left from
     // an earlier session still age out.
     files.cleanup(None).await;
     while let Some(first) = receiver.recv().await {
+        recent.lock().unwrap().report_dropped();
+        let first = match first {
+            WriterMessage::Record(record) => record,
+            WriterMessage::Flush(ack) => {
+                let _ = ack.send(());
+                continue;
+            }
+        };
         let mut batch = vec![first];
+        let mut acknowledge = None;
         let deadline = tokio::time::sleep(FLUSH_INTERVAL);
         tokio::pin!(deadline);
         loop {
+            if batch.len() >= BATCH_CAPACITY {
+                break;
+            }
             tokio::select! {
                 () = &mut deadline => break,
                 next = receiver.recv() => match next {
-                    Some(record) => batch.push(record),
+                    Some(WriterMessage::Record(record)) => batch.push(record),
+                    Some(WriterMessage::Flush(ack)) => { acknowledge = Some(ack); break; }
                     None => break,
                 },
             }
@@ -210,6 +332,9 @@ async fn run_writer(
             files.append(&batch, &preference).await;
         } else {
             files.close();
+        }
+        if let Some(ack) = acknowledge {
+            let _ = ack.send(());
         }
     }
 }
@@ -572,7 +697,11 @@ mod tests {
                 "connection",
                 "ftp://example.test:21",
             );
+            if index % BATCH_CAPACITY == 0 {
+                emitter.flush().await;
+            }
         }
+        emitter.flush().await;
 
         let recent = emitter.recent();
         assert_eq!(recent.len(), RECENT_CAPACITY);
@@ -594,7 +723,7 @@ mod tests {
 
     #[test]
     fn diagnostic_records_carry_english_text_and_the_server() {
-        let (writer, _receiver) = mpsc::unbounded_channel();
+        let (writer, _receiver) = mpsc::channel(WRITER_CAPACITY);
         let emitter = LogEmitter {
             recent: Arc::new(Mutex::new(Recent {
                 records: VecDeque::from([record(
@@ -603,6 +732,8 @@ mod tests {
                 )]),
                 next_seq: 2,
                 writer,
+                bytes: 0,
+                dropped: 0,
             })),
             file_logging: Arc::default(),
             date_format: Arc::default(),
@@ -612,5 +743,80 @@ mod tests {
         assert_eq!(records[0]["server"], "ftp://example.test:21");
         assert_eq!(records[0]["kind"], "status");
         assert_eq!(records[0]["connection"], "ftp://example.test:21 3f2a9c1e");
+    }
+
+    #[tokio::test]
+    async fn stalled_writer_has_bounded_memory_and_reports_drops_when_it_recovers() {
+        let (writer, receiver) = mpsc::channel(WRITER_CAPACITY);
+        let emitter = LogEmitter {
+            recent: Arc::new(Mutex::new(Recent {
+                records: VecDeque::new(),
+                next_seq: 1,
+                writer,
+                bytes: 0,
+                dropped: 0,
+            })),
+            file_logging: Arc::default(),
+            date_format: Arc::default(),
+        };
+        // No receiver is polling: this is the same admission pressure as a disk
+        // write that has stopped making progress. Producers never await it.
+        for _ in 0..10_000 {
+            emitter.push(
+                LogText::Raw("x".repeat(MAX_TEXT_BYTES * 2)),
+                LogKind::Status,
+                "test",
+                "server",
+            );
+        }
+        {
+            let recent = emitter.recent.lock().unwrap();
+            assert_eq!(recent.writer.capacity(), 0);
+            assert_eq!(recent.dropped, 10_000 - WRITER_CAPACITY as u64);
+            assert!(recent.bytes <= RECENT_BYTES);
+            assert!(
+                recent
+                    .records
+                    .iter()
+                    .all(|record| record.line.as_ref().unwrap().len() <= MAX_TEXT_BYTES)
+            );
+        }
+        let batches = Arc::new(Mutex::new(Vec::new()));
+        let captured = batches.clone();
+        let task = tokio::spawn(run_writer(
+            receiver,
+            LogFiles::new(temp_dir()),
+            emitter.file_logging.clone(),
+            emitter.date_format.clone(),
+            emitter.recent.clone(),
+            move |batch| {
+                assert!(batch.len() <= BATCH_CAPACITY);
+                captured.lock().unwrap().extend_from_slice(batch);
+            },
+        ));
+        emitter.flush().await;
+        // The overflow notice is queued after records already admitted; flush
+        // again to cover that internal notice too.
+        emitter.flush().await;
+        emitter.push(
+            LogText::Raw("writer recovered".into()),
+            LogKind::Status,
+            "test",
+            "server",
+        );
+        emitter.flush().await;
+        let records = batches.lock().unwrap();
+        assert!(records.windows(2).all(|pair| pair[0].seq < pair[1].seq));
+        assert!(records.iter().any(|record| {
+            record
+                .line
+                .as_ref()
+                .is_some_and(|line| line.contains("dropped 9488 records"))
+        }));
+        assert_eq!(
+            records.last().unwrap().line.as_deref(),
+            Some("writer recovered")
+        );
+        task.abort();
     }
 }

@@ -194,6 +194,9 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
     // A stuck network operation or locked temp file must never make the app
     // impossible to close. Dropping cleanup after the deadline is deliberate.
     let _ = tokio::time::timeout(SHUTDOWN_TIMEOUT, cleanup).await;
+    if let Some(emitter) = app.try_state::<crate::runtime::log_emitter::LogEmitter>() {
+        emitter.flush().await;
+    }
 }
 
 #[cfg(test)]

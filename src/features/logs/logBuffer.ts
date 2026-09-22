@@ -2,6 +2,28 @@ import type { LogEntry } from '../../shared/types.ts';
 
 /** As many lines as the backend keeps in memory. */
 export const MAX_LOG_LINES = 5000;
+export const MAX_LOG_BYTES = 4 * 1024 * 1024;
+const sizes = new WeakMap<object, number>();
+
+/** Bounds serialized text as well as record count, including pending history batches. */
+export function boundLogBytes<Entry extends Sequenced>(
+  entries: readonly Entry[],
+): readonly Entry[] {
+  let bytes = 0;
+  let start = entries.length;
+  while (start > 0) {
+    const entry = entries[start - 1]!;
+    let size = sizes.get(entry);
+    if (size === undefined) {
+      size = new TextEncoder().encode(JSON.stringify(entry)).byteLength;
+      sizes.set(entry, size);
+    }
+    if (bytes + size > MAX_LOG_BYTES) break;
+    bytes += size;
+    start -= 1;
+  }
+  return start === 0 ? entries : entries.slice(start);
+}
 
 type Sequenced = Pick<LogEntry, 'seq'>;
 
@@ -23,7 +45,7 @@ export function mergeLogBatch<Entry extends Sequenced>(
   if (firstNew === -1 && previous.length <= limit) return previous;
   const fresh = firstNew === -1 ? [] : batch.slice(Math.max(firstNew, batch.length - limit));
   const kept = Math.min(previous.length, limit - fresh.length);
-  return [...previous.slice(previous.length - kept), ...fresh];
+  return boundLogBytes([...previous.slice(previous.length - kept), ...fresh]);
 }
 
 /**

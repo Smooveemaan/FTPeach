@@ -34,6 +34,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A busy protocol log no longer builds an unlimited queue behind a slow disk. It
+  reports dropped messages and drains pending records before quitting when the disk responds.
+
 - Failed local copies now wait for outstanding disk writes before removing their temporary
   files, including after cancellation or a full disk.
 - Editor copies survive temporary-folder cleanup and retain later saves when an editor

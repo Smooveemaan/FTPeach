@@ -1,9 +1,10 @@
 use crate::domain::AppSettings;
-use crate::ipc::CommandResult;
+use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::runtime::log_emitter::LogEmitter;
 use crate::runtime::settings_apply::{
     apply_log_date_format, apply_prevent_sleep, apply_transfer_limits,
 };
+use crate::security::security_policy;
 use crate::security::vault::Vault;
 use crate::store::{JsonMap, Store};
 use serde_json::Value;
@@ -63,6 +64,12 @@ pub async fn settings_set(
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
     let patch = patch.0;
+    if !security_policy::weakening(&store.get_settings().await, &patch).is_empty() {
+        return Err(CommandError::new(
+            ErrorCode::PermissionDenied,
+            "Security settings can only be relaxed through settings_set_security",
+        ));
+    }
     let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
     let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
     let had_date_format = patch.contains_key("dateFormat");
@@ -75,6 +82,38 @@ pub async fn settings_set(
     }
     if had_date_format {
         apply_log_date_format(&next, &log_emitter);
+    }
+    Ok(AppSettings(strip_proxy_secret(next)))
+}
+
+/// Applies security confirmations and the vault idle lock. Relaxing either
+/// is confirmed by the backend when the grant is requested; every grant
+/// issued earlier is withdrawn once the policy changes.
+#[tauri::command]
+pub async fn settings_set_security(
+    window: tauri::WebviewWindow,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+    authorization_token: String,
+    store: State<'_, Store>,
+    patch: AppSettings,
+) -> CommandResult<AppSettings> {
+    let patch = crate::security::sensitive::security_patch_from_request(
+        &serde_json::to_string(&patch.0).unwrap_or_default(),
+    )?;
+    crate::security::sensitive::consume(
+        &window,
+        &authorization,
+        &authorization_token,
+        "settings_set_security",
+        &security_policy::grant_target(&patch),
+    )?;
+    let current = store.get_settings().await;
+    let changed = patch
+        .iter()
+        .any(|(key, value)| current.get(key) != Some(value));
+    let next = store.set_settings(patch).await?;
+    if changed {
+        authorization.revoke_all();
     }
     Ok(AppSettings(strip_proxy_secret(next)))
 }

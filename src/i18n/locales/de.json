@@ -48,10 +48,19 @@
       "openWithApplication": {
         "message": "Open this file with a program not used with FTPeach before?",
         "approve": "Open"
+      },
+      "weakenSecuritySettings": {
+        "message": "Lower the protection FTPeach gives you?",
+        "approve": "Apply"
       }
     },
     "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}"
+    "program": "Program: {{path}}",
+    "changes": {
+      "confirmationsOff": "Security confirmations will be turned off.",
+      "autoLockNever": "The vault will no longer lock after inactivity.",
+      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+    }
   },
   "paneMenu": {
     "newFolder": "Neuer Ordner…",

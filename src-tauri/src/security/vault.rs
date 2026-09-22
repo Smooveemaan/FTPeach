@@ -9,7 +9,10 @@ use iota_stronghold::{KeyProvider, SnapshotPath, Stronghold};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicU64, Ordering},
+    },
 };
 use tokio::sync::Mutex;
 use zeroize::{Zeroize, Zeroizing};
@@ -78,6 +81,8 @@ struct UnlockedVault {
 pub struct Vault {
     dir: PathBuf,
     state: Arc<Mutex<Option<UnlockedVault>>>,
+    /// Advances on every lock, so authorizations issued before it expire.
+    lock_epoch: Arc<AtomicU64>,
 }
 
 pub enum SecretUpdate<'a> {
@@ -124,7 +129,13 @@ impl Vault {
         Self {
             dir,
             state: Arc::new(Mutex::new(None)),
+            lock_epoch: Arc::default(),
         }
+    }
+
+    /// How many times the vault has been locked since start.
+    pub fn lock_epoch(&self) -> u64 {
+        self.lock_epoch.load(Ordering::SeqCst)
     }
 
     fn snapshot_path(&self) -> PathBuf {
@@ -590,6 +601,7 @@ impl Vault {
     }
 
     pub async fn lock(&self) {
+        self.lock_epoch.fetch_add(1, Ordering::SeqCst);
         if let Some(mut unlocked) = self.state.lock().await.take() {
             let _ = unlocked.stronghold.clear();
             unlocked.data_key.zeroize();

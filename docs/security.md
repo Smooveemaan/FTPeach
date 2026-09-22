@@ -122,6 +122,8 @@ An **Open with** token covers the whole request: the connection, the remote path
 
 When security confirmations are enabled, execution requires a backend-owned confirmation window showing the canonical target, followed by a short-lived token for that exact operation. Vault reset is always confirmed. Users may disable routine security confirmations in settings; command separation, path provenance, canonicalization, token binding, and executable classification still apply, but a compromised main renderer could then request an execution token without an interactive prompt.
 
+The renderer cannot make that decision for the user. `settings_set` refuses to turn security confirmations off or to lengthen or disable the vault idle lock; only the sensitive `settings_set_security` command does, after a backend confirmation window that is shown whatever the confirmation setting says and that asks for the master password when a vault is configured. Strengthening either setting needs no confirmation. A settings import keeps the current protection instead of relaxing it. Once the policy changes, every unused token is withdrawn, and a token issued before the vault was last locked is refused.
+
 ## Input and resource limits
 
 IPC strings are validated before storage or network use, including host, username, local/remote path, filename, proxy, and textual setting lengths. Imports are read with a 4 MiB ceiling, allow at most 2,000 sites, reject unknown and secret-bearing fields, and are applied only after the complete document validates. Renderer log input is limited to 2 MiB.

@@ -150,6 +150,36 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
   assert.equal(validateProgress({ id: '1', connectionId: 'c', status: 'done' }), true);
 });
 
+test('security settings go through their own confirmed command before the rest', async () => {
+  const calls: Array<{ command: string; args?: InvokeArgs | undefined }> = [];
+  let refuse = false;
+  const invoke: InvokeFn = async (command, args) => {
+    calls.push({ command, args });
+    return command === 'settings_set_security' && refuse
+      ? { ok: false, error: 'Operation was cancelled', errorCode: 'cancelled' }
+      : ({ ok: true } as const);
+  };
+  const settings = createSettingsApi(invoke);
+
+  await settings.set({ theme: 'dark', showSecurityConfirmations: false, vaultAutoLockMinutes: 0 });
+  assert.deepEqual(calls, [
+    {
+      command: 'settings_set_security',
+      args: { patch: { showSecurityConfirmations: false, vaultAutoLockMinutes: 0 } },
+    },
+    { command: 'settings_set', args: { patch: { theme: 'dark' } } },
+  ]);
+
+  calls.length = 0;
+  refuse = true;
+  const result = await settings.set({ theme: 'light', showSecurityConfirmations: false });
+  assert.equal(result.ok, false);
+  assert.deepEqual(
+    calls.map((call) => call.command),
+    ['settings_set_security'],
+  );
+});
+
 /**
  * Command responses used to be asserted into their declared type, so a backend
  * that answered with the wrong shape produced a value that merely claimed to be

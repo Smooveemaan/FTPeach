@@ -15,6 +15,7 @@ pub fn init() -> tauri::plugin::TauriPlugin<tauri::Wry> {
             crate::security::sensitive::respond_sensitive_confirmation,
             crate::commands::sites::sites_reveal_secret,
             crate::commands::settings::settings_reveal_proxy_password,
+            crate::commands::settings::settings_set_security,
             crate::commands::vault::vault_reset,
             crate::commands::fs::fs_delete,
             crate::commands::fs::fs_reveal_path,

@@ -13,7 +13,8 @@ type ConfirmationKind =
   | 'vaultReset'
   | 'executeLocalFile'
   | 'executeRemoteFile'
-  | 'openWithApplication';
+  | 'openWithApplication'
+  | 'weakenSecuritySettings';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -22,7 +23,13 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   executeLocalFile: 'securityConfirmation.operations.executeLocalFile',
   executeRemoteFile: 'securityConfirmation.operations.executeRemoteFile',
   openWithApplication: 'securityConfirmation.operations.openWithApplication',
+  weakenSecuritySettings: 'securityConfirmation.operations.weakenSecuritySettings',
 };
+
+interface SecurityChanges {
+  showSecurityConfirmations?: boolean | null;
+  vaultAutoLockMinutes?: number | null;
+}
 
 interface ConfirmationPrompt {
   kind: ConfirmationKind;
@@ -30,6 +37,7 @@ interface ConfirmationPrompt {
   target?: string | null;
   localName?: string | null;
   application?: string | null;
+  securityChanges?: SecurityChanges | null;
   confirmationPhrase?: string | null;
   requiresReauthentication: boolean;
 }
@@ -172,6 +180,24 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
             <>
               <br />
               {t('securityConfirmation.program', { path: prompt.application })}
+            </>
+          )}
+          {prompt?.securityChanges?.showSecurityConfirmations === false && (
+            <>
+              <br />
+              <br />
+              {t('securityConfirmation.changes.confirmationsOff')}
+            </>
+          )}
+          {typeof prompt?.securityChanges?.vaultAutoLockMinutes === 'number' && (
+            <>
+              <br />
+              <br />
+              {prompt.securityChanges.vaultAutoLockMinutes === 0
+                ? t('securityConfirmation.changes.autoLockNever')
+                : t('securityConfirmation.changes.autoLockMinutes', {
+                    minutes: prompt.securityChanges.vaultAutoLockMinutes,
+                  })}
             </>
           )}
         </p>

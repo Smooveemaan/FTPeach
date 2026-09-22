@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Open with now asks before running a server file whose saved name makes it a program or
   script, and the first time a program typed into settings opens a file.
+- Turning off security confirmations or relaxing the vault's automatic lock now asks for
+  confirmation in a separate window, and for the master password when one is set.
 
 ### Fixed
 

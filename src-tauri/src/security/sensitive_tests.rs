@@ -8,6 +8,7 @@ fn grant(state: &AuthorizationState, token: &str, operation: &str, target: &str,
             operation: operation.into(),
             target: target.into(),
             expires,
+            vault_epoch: state.vault_epoch(),
         },
     );
 }
@@ -245,4 +246,89 @@ fn enhanced_secret_reveal_always_prompts_for_reauthentication() {
         assert!(should_prompt(operation, true, true, true));
     }
     assert!(!should_prompt("sites_reveal_secret", true, false, false));
+}
+
+#[test]
+fn relaxing_security_settings_is_confirmed_even_with_confirmations_off() {
+    assert!(should_show_confirmation(
+        "settings_set_security",
+        true,
+        false
+    ));
+    assert!(!should_show_confirmation(
+        "settings_set_security",
+        false,
+        false
+    ));
+}
+
+#[test]
+fn security_requests_accept_only_valid_security_keys() {
+    assert!(security_patch_from_request(r#"{"showSecurityConfirmations":false}"#).is_ok());
+    assert!(security_patch_from_request(r#"{"vaultAutoLockMinutes":0}"#).is_ok());
+    for request in [
+        r#"{"theme":"dark"}"#,
+        r#"{"showSecurityConfirmations":false,"proxyHost":"evil"}"#,
+        r#"{"vaultAutoLockMinutes":999999}"#,
+        "false",
+    ] {
+        assert!(security_patch_from_request(request).is_err(), "{request}");
+    }
+}
+
+#[test]
+fn weakening_prompt_lists_what_is_turned_off() {
+    let prompt = weakening_prompt(
+        Weakening {
+            show_security_confirmations: Some(false),
+            vault_auto_lock_minutes: None,
+        },
+        "en".into(),
+        true,
+    );
+    assert_eq!(prompt.kind, ConfirmationKind::WeakenSecuritySettings);
+    assert!(prompt.requires_reauthentication);
+    let value = serde_json::to_value(&prompt).unwrap();
+    assert_eq!(
+        value["securityChanges"]["showSecurityConfirmations"],
+        serde_json::json!(false)
+    );
+}
+
+#[test]
+fn a_policy_change_withdraws_unused_grants() {
+    let state = AuthorizationState::default();
+    grant(
+        &state,
+        "token",
+        "vault_reset",
+        "vault",
+        Instant::now() + TOKEN_TTL,
+    );
+    state.revoke_all();
+    assert!(consume_for_label("main", &state, "token", "vault_reset", "vault").is_err());
+}
+
+#[tokio::test]
+async fn locking_the_vault_withdraws_grants_issued_before() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-grants-{}", uuid::Uuid::new_v4()));
+    let vault = Vault::new(dir);
+    let state = AuthorizationState::new(vault.clone());
+    grant(
+        &state,
+        "before",
+        "vault_reset",
+        "vault",
+        Instant::now() + TOKEN_TTL,
+    );
+    vault.lock().await;
+    grant(
+        &state,
+        "after",
+        "vault_reset",
+        "vault",
+        Instant::now() + TOKEN_TTL,
+    );
+    assert!(consume_for_label("main", &state, "before", "vault_reset", "vault").is_err());
+    assert!(consume_for_label("main", &state, "after", "vault_reset", "vault").is_ok());
 }

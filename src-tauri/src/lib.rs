@@ -69,14 +69,14 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .manage(store)
-        .manage(vault)
+        .manage(vault.clone())
         .manage(vault_guard::VaultGuard::default())
         .manage(Sessions::default())
         .manage(ConnectingClients::default())
         .manage(shutdown::ShutdownCoordinator::default())
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
-        .manage(AuthorizationState::default())
+        .manage(AuthorizationState::new(vault))
         .invoke_handler(tauri::generate_handler![
             commands::fs::fs_list,
             commands::fs::fs_cancel_list,

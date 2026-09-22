@@ -25,6 +25,7 @@
     "sensitive:allow-fs-execute-path",
     "sensitive:allow-open-with-start",
     "sensitive:allow-app-export-settings",
-    "sensitive:allow-app-import-settings"
+    "sensitive:allow-app-import-settings",
+    "sensitive:allow-settings-set-security"
   ]
 }

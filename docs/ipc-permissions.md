@@ -34,6 +34,9 @@ The `main` WebView receives only the core window/event permissions in
   `open_with_discard_recovered_edits` act only on the backend-owned recovery folder and
   accept no path from the renderer.
 - Import/export: `app_import_settings`, `app_export_settings`.
+- Security settings: `settings_set_security` is the only command that applies
+  `showSecurityConfirmations` and `vaultAutoLockMinutes`; `settings_set` rejects a patch
+  that would relax either, and an import keeps the current values instead of relaxing them.
 
 The highest-risk commands (secret reveal, `vault_reset`, `fs_delete`, local
 path operations, and settings import/export) live in the inlined `sensitive`
@@ -43,8 +46,12 @@ backend token bound to the `main` window, exact operation, and canonical local
 path (or exact logical target).
 
 Secret reveal, vault reset, and executable content use an isolated backend-owned
-confirmation window when required. Vault reset is always confirmed; secret
-reveal also reauthenticates a configured Stronghold vault. Delete,
+confirmation window when required. Vault reset and relaxing security settings are
+always confirmed; secret reveal and relaxing security settings also reauthenticate a
+configured Stronghold vault. An Open with token names the connection, remote path, local
+name and program, and a program not chosen before is confirmed on first use. Unused
+tokens are withdrawn when the security policy changes, and tokens issued before the
+vault was last locked are refused. Delete,
 reveal-in-Explorer, ordinary document open, and import/export do not always
 show a confirmation, so the token is a binding/replay control rather than proof
 of user presence for those operations. Their path, schema, protected-target,

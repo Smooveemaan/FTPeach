@@ -48,10 +48,19 @@
       "openWithApplication": {
         "message": "Открыть этот файл программой, которая ещё не использовалась в FTPeach?",
         "approve": "Открыть"
+      },
+      "weakenSecuritySettings": {
+        "message": "Ослабить защиту FTPeach?",
+        "approve": "Применить"
       }
     },
     "savedAs": "Сохраняется на компьютере как: {{name}}",
-    "program": "Программа: {{path}}"
+    "program": "Программа: {{path}}",
+    "changes": {
+      "confirmationsOff": "Подтверждения безопасности будут отключены.",
+      "autoLockNever": "Хранилище больше не будет блокироваться при бездействии.",
+      "autoLockMinutes": "Хранилище будет блокироваться после {{minutes}} мин бездействия."
+    }
   },
   "paneMenu": {
     "newFolder": "Новая папка…",

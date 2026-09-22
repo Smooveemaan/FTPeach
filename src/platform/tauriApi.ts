@@ -126,6 +126,8 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
           return 'proxy';
         case 'vault_reset':
           return 'vault';
+        case 'settings_set_security':
+          return JSON.stringify(args?.patch ?? {});
         case 'app_export_settings':
         case 'app_import_settings':
           return 'native-dialog';

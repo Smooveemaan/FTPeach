@@ -1,9 +1,10 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::local_fs::local_open::ApprovedLocalPaths;
 use crate::security::open_with_intent::OpenWithIntent;
+use crate::security::security_policy::{self, Weakening};
 use crate::security::vault::Vault;
 use crate::security::vault_guard::VaultGuard;
-use crate::store::Store;
+use crate::store::{JsonMap, Store};
 use serde::Serialize;
 use std::{
     collections::HashMap,
@@ -21,6 +22,7 @@ struct Grant {
     operation: String,
     target: String,
     expires: Instant,
+    vault_epoch: u64,
 }
 
 struct PendingConfirmation {
@@ -33,6 +35,28 @@ struct PendingConfirmation {
 pub struct AuthorizationState {
     grants: Mutex<HashMap<String, Grant>>,
     pending: Mutex<HashMap<String, PendingConfirmation>>,
+    /// A grant dies with the vault session it was issued in.
+    vault: Option<Vault>,
+}
+
+impl AuthorizationState {
+    pub fn new(vault: Vault) -> Self {
+        Self {
+            vault: Some(vault),
+            ..Self::default()
+        }
+    }
+
+    fn vault_epoch(&self) -> u64 {
+        self.vault.as_ref().map_or(0, Vault::lock_epoch)
+    }
+
+    /// Withdraws every unused grant, after a security policy changed.
+    pub fn revoke_all(&self) {
+        if let Ok(mut grants) = self.grants.lock() {
+            grants.clear();
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -50,6 +74,7 @@ pub enum ConfirmationKind {
     ExecuteLocalFile,
     ExecuteRemoteFile,
     OpenWithApplication,
+    WeakenSecuritySettings,
 }
 
 #[derive(Clone, Serialize)]
@@ -62,6 +87,8 @@ pub struct ConfirmationPrompt {
     local_name: Option<String>,
     /// The program that opens the file, when one is configured.
     application: Option<String>,
+    /// The protection a settings change would turn off or relax.
+    security_changes: Option<Weakening>,
     confirmation_phrase: Option<String>,
     requires_reauthentication: bool,
 }
@@ -98,8 +125,10 @@ fn open_with_requires_confirmation(intent: &OpenWithIntent, application_trusted:
     intent.executable || (intent.application.is_some() && !application_trusted)
 }
 
+/// Vault reset, and weakening the settings that decide about prompts, are
+/// confirmed whatever those settings say.
 fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> bool {
-    required && (operation == "vault_reset" || enabled)
+    required && (matches!(operation, "vault_reset" | "settings_set_security") || enabled)
 }
 
 fn should_prompt(
@@ -131,6 +160,7 @@ fn issue_token(
             operation,
             target,
             expires: Instant::now() + TOKEN_TTL,
+            vault_epoch: state.vault_epoch(),
         },
     );
     Ok(AuthorizationToken { token })
@@ -155,6 +185,7 @@ fn confirmation_prompt(
         target: include_target.then(|| target.to_owned()),
         local_name: None,
         application: None,
+        security_changes: None,
         confirmation_phrase: (kind == ConfirmationKind::VaultReset).then(|| "RESET".into()),
         requires_reauthentication,
     })
@@ -174,9 +205,42 @@ fn open_with_prompt(intent: &OpenWithIntent, locale: String) -> ConfirmationProm
             .application
             .as_ref()
             .map(|path| crate::local_fs::local_open::shell_path(path)),
+        security_changes: None,
         confirmation_phrase: None,
         requires_reauthentication: false,
     }
+}
+
+fn weakening_prompt(
+    weakening: Weakening,
+    locale: String,
+    requires_reauthentication: bool,
+) -> ConfirmationPrompt {
+    ConfirmationPrompt {
+        kind: ConfirmationKind::WeakenSecuritySettings,
+        locale,
+        target: None,
+        local_name: None,
+        application: None,
+        security_changes: Some(weakening),
+        confirmation_phrase: None,
+        requires_reauthentication,
+    }
+}
+
+/// Parses the security part of a settings patch the renderer wants applied.
+pub fn security_patch_from_request(target: &str) -> CommandResult<JsonMap> {
+    let patch: JsonMap =
+        serde_json::from_str(target).map_err(|_| denied("Invalid security settings request"))?;
+    if patch
+        .keys()
+        .any(|key| !security_policy::SECURITY_KEYS.contains(&key.as_str()))
+    {
+        return Err(denied("Invalid security settings request"));
+    }
+    crate::store::validate_settings(&patch, false)
+        .map_err(|issue| CommandError::new(ErrorCode::InvalidInput, issue))?;
+    Ok(patch)
 }
 
 fn reject_pending(state: &AuthorizationState, request_id: &str) {
@@ -304,6 +368,7 @@ pub async fn authorize_sensitive(
         "open_with_start",
         "app_export_settings",
         "app_import_settings",
+        "settings_set_security",
     ];
     if window.label() != "main" || !ALLOWED.contains(&operation.as_str()) {
         return Err(denied(
@@ -315,20 +380,30 @@ pub async fn authorize_sensitive(
     } else {
         None
     };
-    let target = match &open_with {
-        Some(intent) => intent.grant_target(),
-        None => normalized_target(&operation, &target)?,
+    let security_patch = if operation == "settings_set_security" {
+        Some(security_patch_from_request(&target)?)
+    } else {
+        None
+    };
+    let target = match (&open_with, &security_patch) {
+        (Some(intent), _) => intent.grant_target(),
+        (_, Some(patch)) => security_policy::grant_target(patch),
+        _ => normalized_target(&operation, &target)?,
     };
     let settings = store.get_settings().await;
+    let weakening = security_patch
+        .as_ref()
+        .map(|patch| security_policy::weakening(&settings, patch))
+        .filter(|weakening| !weakening.is_empty());
     let confirmations_enabled = settings
         .get("showSecurityConfirmations")
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
     let requires_reauthentication = vault.is_configured()
-        && matches!(
+        && (matches!(
             operation.as_str(),
             "sites_reveal_secret" | "settings_reveal_proxy_password"
-        );
+        ) || weakening.is_some());
     // A program the user has not chosen before; approving the prompt trusts it.
     let mut untrusted_application = None;
     if let Some(application) = open_with
@@ -340,6 +415,7 @@ pub async fn authorize_sensitive(
     }
     let required = match &open_with {
         Some(intent) => open_with_requires_confirmation(intent, untrusted_application.is_none()),
+        None if security_patch.is_some() => weakening.is_some(),
         None => requires_confirmation(&operation),
     };
     if !should_prompt(
@@ -355,9 +431,12 @@ pub async fn authorize_sensitive(
         .and_then(|value| value.as_str())
         .unwrap_or("en")
         .to_owned();
-    let prompt = match &open_with {
-        Some(intent) => open_with_prompt(intent, locale),
-        None => confirmation_prompt(&operation, &target, locale, requires_reauthentication)?,
+    let prompt = match (&open_with, weakening) {
+        (Some(intent), _) => open_with_prompt(intent, locale),
+        (None, Some(weakening)) => weakening_prompt(weakening, locale, requires_reauthentication),
+        (None, None) => {
+            confirmation_prompt(&operation, &target, locale, requires_reauthentication)?
+        }
     };
     let app = window.app_handle().clone();
     let request_id = uuid::Uuid::new_v4().to_string();
@@ -440,6 +519,7 @@ fn consume_for_label(
         .remove(token)
         .ok_or_else(|| denied("PermissionDenied"))?;
     if grant.expires <= Instant::now()
+        || grant.vault_epoch != state.vault_epoch()
         || grant.window != window_label
         || grant.operation != operation
         || grant.target != target

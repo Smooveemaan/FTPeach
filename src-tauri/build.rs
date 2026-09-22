@@ -14,6 +14,7 @@ fn main() {
         "open_with_start",
         "app_export_settings",
         "app_import_settings",
+        "settings_set_security",
     ];
     tauri_build::try_build(tauri_build::Attributes::new().plugin(
         "sensitive",

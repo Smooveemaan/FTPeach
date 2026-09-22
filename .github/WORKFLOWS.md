@@ -11,6 +11,7 @@
 ## Maintenance
 
 - Keep shared verification steps in `checks.yml`; keep `npm run check` aligned with `npm run check:suite-coverage`.
+- Which changed paths select which jobs is decided by `scripts/checks/classify-changes.ts`, covered by `test/unit/tooling/classifyChanges.test.ts`. Files one side compiles from the other — the JSON under `src/` that the Rust crate includes — are listed there and select both.
 - Preserve workflow and job identifiers when editing: branch protection can reference their check names.
 - Pin third-party actions to full commit SHAs with version comments, and container images to digests.
 - Declare permissions per job and disable persisted checkout credentials.

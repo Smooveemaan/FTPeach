@@ -28,6 +28,10 @@ jobs:
           # The git diff below needs the base commit, which a shallow clone lacks.
           fetch-depth: 0
 
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
       - id: classify
         env:
           FORCE_ALL: ${{ inputs.force-all }}
@@ -54,29 +58,11 @@ jobs:
             everything "the diff failed"
           fi
 
-          rust=false
-          frontend=false
-          while IFS= read -r -d '' path; do
-            case "$path" in
-              '') ;;
-              src-tauri/*) rust=true ;;
-              src/* | index.html | vite.config.ts | tsconfig*.json | playwright.config.ts | test/visual/*)
-                frontend=true
-                ;;
-              # Documentation drives neither build. Anything else unrecognized —
-              # workflows, scripts, manifests, lockfiles — conservatively counts
-              # as touching both.
-              *.md | LICENSE | .gitattributes | .gitignore | .editorconfig) ;;
-              *)
-                rust=true
-                frontend=true
-                ;;
-            esac
-          done < "$changed_paths"
-
-          echo "rust=$rust" >>"$GITHUB_OUTPUT"
-          echo "frontend=$frontend" >>"$GITHUB_OUTPUT"
-          echo "rust=$rust frontend=$frontend"
+          # Which paths belong to which build is decided by a script with its
+          # own tests (test/unit/tooling/classifyChanges.test.ts): the rules have
+          # exceptions -- JSON under src/ that the Rust crate compiles into
+          # itself -- and an untested case statement had already missed them.
+          node --experimental-strip-types scripts/checks/classify-changes.ts <"$changed_paths"
 
   supply-chain:
     permissions:

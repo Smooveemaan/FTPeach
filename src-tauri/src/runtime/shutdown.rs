@@ -14,6 +14,15 @@ const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 /// How long the window has to show that it is asking about a quit before the
 /// backend decides it cannot answer and quits anyway.
 const QUIT_PROMPT_TIMEOUT: Duration = Duration::from_secs(10);
+/// How long the renderer gets to store what it still holds before the app goes
+/// away for good. Tabs are the slowest writer at a 400 ms debounce plus a disk
+/// write, so this is generous on purpose: what is not saved here is lost.
+const SHUTDOWN_FLUSH_TIMEOUT: Duration = Duration::from_secs(3);
+/// The same handshake before merely hiding the window to the tray. Nothing is
+/// lost if it times out — the app keeps running and the debounce fires on its
+/// own — and the window has to disappear when the user clicks the close button,
+/// so this waits only long enough to settle the 75 ms settings debounce.
+const TRAY_FLUSH_TIMEOUT: Duration = Duration::from_millis(400);
 
 /// Makes application shutdown a single, coordinated operation. Window close
 /// events can arrive more than once while cleanup is running; only the first
@@ -75,8 +84,11 @@ pub fn quit_route(active_transfers: u32, unsynced_edits: usize) -> QuitRoute {
 /// decision, not wiring, so it lives with shutdown rather than inside
 /// `run()`'s window-event closure.
 pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: Store) {
-    // The close-to-tray preference itself may still be debounced in the UI.
-    flush_renderer(&app).await;
+    // The close-to-tray preference itself may still be debounced in the UI, so
+    // ask for it to be stored before reading it -- briefly, because the window
+    // has to go away when the button is clicked and nothing is lost if the
+    // debounce fires by itself a moment later.
+    flush_renderer(&app, TRAY_FLUSH_TIMEOUT).await;
     let close_to_tray = store
         .get_settings()
         .await
@@ -158,7 +170,7 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 /// vault locked. Installing an update needs the same tidy state before it
 /// hands over to the installer.
 pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
-    let state_saved = flush_renderer(&app).await;
+    let state_saved = flush_renderer(&app, SHUTDOWN_FLUSH_TIMEOUT).await;
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
@@ -224,7 +236,7 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
     state_saved
 }
 
-async fn flush_renderer(app: &AppHandle) -> bool {
+async fn flush_renderer(app: &AppHandle, deadline: Duration) -> bool {
     let coordinator = app.state::<ShutdownCoordinator>();
     let (request_id, receiver) = coordinator.request_flush();
     let emitted = app.emit_to(
@@ -232,9 +244,11 @@ async fn flush_renderer(app: &AppHandle) -> bool {
         "app:flush-state",
         serde_json::json!({"requestId": request_id}),
     );
-    let saved = emitted.is_ok() && wait_for_flush(receiver, Duration::from_secs(3)).await;
+    let saved = emitted.is_ok() && wait_for_flush(receiver, deadline).await;
     if !saved {
-        log::warn!("renderer state could not be fully saved before shutdown (failed or timed out)");
+        log::warn!(
+            "renderer did not confirm its state was saved within {deadline:?} (failed or timed out)"
+        );
     }
     coordinator.state_flushed(&request_id, false);
     saved
@@ -276,6 +290,15 @@ mod tests {
         assert!(coordinator.state_flushed(&current, false));
         assert!(!reply.await.unwrap());
         assert!(!coordinator.state_flushed(&current, true));
+    }
+
+    #[test]
+    fn hiding_to_tray_waits_far_less_than_quitting_does() {
+        // Closing to the tray loses nothing if the handshake times out, so the
+        // window must not appear to hang while it waits; a quit has to wait,
+        // because whatever the renderer still holds is gone afterwards.
+        assert!(TRAY_FLUSH_TIMEOUT < SHUTDOWN_FLUSH_TIMEOUT / 4);
+        assert!(TRAY_FLUSH_TIMEOUT >= Duration::from_millis(200));
     }
 
     #[tokio::test]

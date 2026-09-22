@@ -9,8 +9,10 @@ saving is disabled), and await the writer. Failed settings retain their pending 
 for retry; failed tab writes report failure. All state owners start their drains even
 if another owner is slow or fails. Only `main` can acknowledge the current request
 through `app_state_flushed`. The backend logs a failed acknowledgement or a three-second
-timeout and continues cleanup. Window close reads close-to-tray after this flush;
-hiding preserves the session. Quit and immediate update installation use the same
+timeout and continues cleanup. Window close reads close-to-tray after the same
+handshake, but waits only 400 ms for it: hiding to the tray loses nothing if the
+debounce fires by itself a moment later, and the window has to disappear when the
+button is clicked. Hiding preserves the session. Quit and immediate update installation use the same
 handshake. Abrupt termination and an unresponsive renderer cannot guarantee the last
 unsent change (HF-12).
 

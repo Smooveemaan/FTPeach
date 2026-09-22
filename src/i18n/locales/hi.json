@@ -46,32 +46,32 @@
         "message": "इस निष्पादन योग्य फ़ाइल या स्क्रिप्ट को डाउनलोड करके चलाएँ?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "इस फ़ाइल को ऐसे प्रोग्राम से खोलें जो FTPeach के साथ पहले इस्तेमाल नहीं हुआ?",
+        "approve": "खोलें"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "FTPeach से मिलने वाली सुरक्षा घटाएँ?",
+        "approve": "लागू करें"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "बढ़ी हुई सुरक्षा बंद करें? सहेजे गए पासवर्ड मास्टर पासवर्ड की जगह आपके Windows खाते से सुरक्षित होंगे।",
+        "approve": "बंद करें"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "सहेजा गया पासवर्ड रखें और उसे नए सर्वर पर भेजें?",
+        "approve": "पासवर्ड रखें"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "इस कंप्यूटर पर इस नाम से सहेजा जाता है: {{name}}",
+    "program": "प्रोग्राम: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "सुरक्षा पुष्टिकरण बंद कर दिए जाएँगे।",
+      "autoLockNever": "निष्क्रियता के बाद वॉल्ट अब लॉक नहीं होगा।",
+      "autoLockMinutes": "{{minutes}} मिनट की निष्क्रियता के बाद वॉल्ट लॉक हो जाएगा।"
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "इसके लिए सहेजा गया: {{recipient}}",
+    "transferTo": "नया सर्वर: {{recipient}}",
+    "transferLessSecure": "नया कनेक्शन एन्क्रिप्टेड नहीं है या सर्वर प्रमाणपत्र की जाँच नहीं करता।"
   },
   "paneMenu": {
     "newFolder": "नया फ़ोल्डर…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} फ़ाइलें विफल रहीं",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV अपलोड प्रति फ़ाइल {{limit}} MiB तक सीमित हैं।",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}} में से {{failed}} आइटम स्थानांतरित नहीं हुए।",
+    "sourcesKept": "मूल फ़ाइलें अपनी जगह पर हैं।"
   },
   "transferQueue": {
     "capacity": "कतार भरी हुई है (अधिकतम {{limit}} सक्रिय या प्रतीक्षारत कार्य)। कार्य पूरे होने तक प्रतीक्षा करें।",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "स्थानीय फ़ाइल अब {{path}} के रोके गए अपलोड से मेल नहीं खाती — इसे शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedMismatch": "सर्वर पर पहले से मौजूद डेटा स्थानीय फ़ाइल से मेल नहीं खाता — {{path}} को शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "लेखन गति पीछे रह जाने के कारण प्रोटोकॉल लॉग के कुछ रिकॉर्ड छोड़ दिए गए: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "सभी कनेक्शन दिखाएं",

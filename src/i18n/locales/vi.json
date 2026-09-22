@@ -46,32 +46,32 @@
         "message": "Tải xuống và chạy tệp thực thi hoặc tập lệnh này?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Mở tệp này bằng một chương trình chưa từng dùng với FTPeach?",
+        "approve": "Mở"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Giảm mức bảo vệ mà FTPeach cung cấp?",
+        "approve": "Áp dụng"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Tắt bảo vệ nâng cao? Mật khẩu đã lưu sẽ được bảo vệ bằng tài khoản Windows của bạn thay vì mật khẩu chính.",
+        "approve": "Tắt"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Giữ mật khẩu đã lưu và gửi đến máy chủ mới?",
+        "approve": "Giữ mật khẩu"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "Lưu trên máy tính này với tên: {{name}}",
+    "program": "Chương trình: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Xác nhận bảo mật sẽ bị tắt.",
+      "autoLockNever": "Kho bảo mật sẽ không còn khóa sau khi không hoạt động.",
+      "autoLockMinutes": "Kho bảo mật sẽ khóa sau {{minutes}} phút không hoạt động."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Đã lưu cho: {{recipient}}",
+    "transferTo": "Máy chủ mới: {{recipient}}",
+    "transferLessSecure": "Kết nối mới không được mã hóa hoặc không kiểm tra chứng chỉ máy chủ."
   },
   "paneMenu": {
     "newFolder": "Thư mục mới…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} tệp thất bại",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} trong {{total}} mục chưa được truyền.",
+    "sourcesKept": "Các tệp gốc vẫn còn nguyên."
   },
   "transferQueue": {
     "capacity": "Hàng đợi đã đầy (tối đa {{limit}} tác vụ đang chạy hoặc chờ). Hãy đợi hoàn tất.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Tệp cục bộ không còn khớp với phiên tải lên đang tạm dừng của {{path}} — tệp sẽ được gửi lại từ đầu.",
     "uploadRestartedMismatch": "Dữ liệu đã có trên máy chủ không khớp với tệp cục bộ — {{path}} sẽ được gửi lại từ đầu.",
     "uploadRestartedUnverified": "Không thể xác minh phiên tải lên đang tạm dừng của {{path}} ({{error}}) — tệp sẽ được gửi lại từ đầu.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Một số dòng trong bản ghi giao thức đã bị loại bỏ vì ghi không theo kịp: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Hiển thị tất cả các kết nối",

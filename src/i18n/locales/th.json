@@ -46,32 +46,32 @@
         "message": "ดาวน์โหลดและเรียกใช้ไฟล์ปฏิบัติการหรือสคริปต์นี้หรือไม่"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "เปิดไฟล์นี้ด้วยโปรแกรมที่ยังไม่เคยใช้กับ FTPeach หรือไม่",
+        "approve": "เปิด"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "ลดระดับการป้องกันที่ FTPeach ให้ไว้หรือไม่",
+        "approve": "ใช้"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "ปิดการป้องกันขั้นสูงหรือไม่ รหัสผ่านที่บันทึกไว้จะได้รับการป้องกันด้วยบัญชี Windows ของคุณแทนรหัสผ่านหลัก",
+        "approve": "ปิด"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "เก็บรหัสผ่านที่บันทึกไว้และส่งไปยังเซิร์ฟเวอร์ใหม่หรือไม่",
+        "approve": "เก็บรหัสผ่าน"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "บันทึกบนคอมพิวเตอร์เครื่องนี้เป็น: {{name}}",
+    "program": "โปรแกรม: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "การยืนยันความปลอดภัยจะถูกปิด",
+      "autoLockNever": "คลังนิรภัยจะไม่ล็อกหลังจากไม่มีการใช้งานอีกต่อไป",
+      "autoLockMinutes": "คลังนิรภัยจะล็อกหลังจากไม่มีการใช้งาน {{minutes}} นาที"
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "บันทึกไว้สำหรับ: {{recipient}}",
+    "transferTo": "เซิร์ฟเวอร์ใหม่: {{recipient}}",
+    "transferLessSecure": "การเชื่อมต่อใหม่ไม่ได้เข้ารหัสหรือไม่ตรวจสอบใบรับรองของเซิร์ฟเวอร์"
   },
   "paneMenu": {
     "newFolder": "โฟลเดอร์ใหม่…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "ไม่สำเร็จ {{count}} ไฟล์",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "ไม่ได้ถ่ายโอน {{failed}} จาก {{total}} รายการ",
+    "sourcesKept": "ไฟล์ต้นทางยังอยู่ที่เดิม"
   },
   "transferQueue": {
     "capacity": "คิวเต็มแล้ว (งานที่กำลังทำงานหรือรอได้สูงสุด {{limit}} งาน) โปรดรอให้งานเสร็จ",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "ไฟล์ในเครื่องไม่ตรงกับการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้แล้ว — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
     "uploadRestartedMismatch": "ข้อมูลที่มีอยู่บนเซิร์ฟเวอร์ไม่ตรงกับไฟล์ในเครื่อง — จะส่ง {{path}} ใหม่ตั้งแต่ต้น",
     "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "บันทึกโปรโตคอลบางรายการถูกทิ้งเพราะการเขียนตามไม่ทัน: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",

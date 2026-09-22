@@ -46,32 +46,32 @@
         "message": "Stáhnout a spustit tento spustitelný soubor nebo skript?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Otevřít tento soubor programem, který ve FTPeach ještě nebyl použit?",
+        "approve": "Otevřít"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Snížit ochranu, kterou FTPeach poskytuje?",
+        "approve": "Použít"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Vypnout rozšířenou ochranu? Uložená hesla budou chráněna vaším účtem Windows místo hlavního hesla.",
+        "approve": "Vypnout"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Zachovat uložené heslo a posílat je na nový server?",
+        "approve": "Zachovat heslo"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Ukládá se na tomto počítači jako: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Bezpečnostní potvrzení budou vypnuta.",
+      "autoLockNever": "Trezor se po nečinnosti už nebude uzamykat.",
+      "autoLockMinutes": "Trezor se uzamkne po {{minutes}} min nečinnosti."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Uloženo pro: {{recipient}}",
+    "transferTo": "Nový server: {{recipient}}",
+    "transferLessSecure": "Nové připojení není šifrované nebo neověřuje certifikát serveru."
   },
   "paneMenu": {
     "newFolder": "Nová složka…",
@@ -551,8 +551,8 @@
     "notifySucceeded_many": "Přeneseno {{count}} souboru",
     "notifyFailed_few": "Nepodařilo se přenést {{count}} soubory",
     "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} z {{total}} položek nebylo přeneseno.",
+    "sourcesKept": "Originály zůstaly na svém místě."
   },
   "transferQueue": {
     "capacity": "Fronta je plná (až {{limit}} aktivních nebo čekajících úloh). Počkejte na dokončení.",
@@ -617,7 +617,7 @@
     "uploadRestartedUnverified": "Pozastavené odesílání {{path}} se nepodařilo ověřit ({{error}}) – soubor bude odeslán znovu od začátku.",
     "receivedEntries_few": "Přijaty {{count}} záznamy",
     "receivedEntries_many": "Přijato {{count}} záznamu",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Některé záznamy protokolu byly zahozeny, protože zápis nestíhal: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Zobrazit všechna připojení",

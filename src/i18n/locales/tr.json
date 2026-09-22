@@ -46,32 +46,32 @@
         "message": "Bu yürütülebilir dosya veya betik indirilip çalıştırılsın mı?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Bu dosya, FTPeach ile daha önce kullanılmamış bir programla açılsın mı?",
+        "approve": "Aç"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "FTPeach'in sağladığı koruma azaltılsın mı?",
+        "approve": "Uygula"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Gelişmiş koruma kapatılsın mı? Kaydedilmiş şifreler bundan sonra ana şifre yerine Windows hesabınız tarafından korunacak.",
+        "approve": "Kapat"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Kaydedilmiş şifre korunup yeni sunucuya gönderilsin mi?",
+        "approve": "Şifreyi koru"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Bu bilgisayarda şu adla kaydedilir: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Güvenlik onayları kapatılacak.",
+      "autoLockNever": "Kasa, işlem yapılmadığında artık kilitlenmeyecek.",
+      "autoLockMinutes": "Kasa, {{minutes}} dk işlem yapılmadığında kilitlenecek."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Şu sunucu için kaydedildi: {{recipient}}",
+    "transferTo": "Yeni sunucu: {{recipient}}",
+    "transferLessSecure": "Yeni bağlantı şifrelenmiyor veya sunucu sertifikasını denetlemiyor."
   },
   "paneMenu": {
     "newFolder": "Yeni Klasör…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} dosya başarısız oldu",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}} öğeden {{failed}} tanesi aktarılmadı.",
+    "sourcesKept": "Özgün dosyalar yerinde kaldı."
   },
   "transferQueue": {
     "capacity": "Kuyruk dolu (en fazla {{limit}} etkin veya bekleyen görev). Görevlerin bitmesini bekleyin.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Yerel dosya, duraklatılan {{path}} yüklemesiyle artık eşleşmiyor — dosya baştan yeniden gönderilecek.",
     "uploadRestartedMismatch": "Sunucuda bulunanlar yerel dosyayla eşleşmiyor — {{path}} baştan yeniden gönderilecek.",
     "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Yazma işlemi yetişemediği için protokol günlüğündeki bazı kayıtlar atıldı: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Tüm bağlantıları göster",

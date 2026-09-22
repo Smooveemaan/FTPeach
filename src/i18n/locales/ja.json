@@ -46,32 +46,32 @@
         "message": "この実行可能ファイルまたはスクリプトをダウンロードして実行しますか？"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "FTPeach でこれまで使用していないプログラムでこのファイルを開きますか？",
+        "approve": "開く"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "FTPeach による保護を弱めますか？",
+        "approve": "適用"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "強化された保護を無効にしますか？保存されたパスワードは、マスターパスワードではなく Windows アカウントで保護されます。",
+        "approve": "無効にする"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "保存されたパスワードを保持し、新しいサーバーに送信しますか？",
+        "approve": "パスワードを保持"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "このコンピューターに次の名前で保存されます: {{name}}",
+    "program": "プログラム: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "セキュリティ確認が無効になります。",
+      "autoLockNever": "保管庫は操作がなくてもロックされなくなります。",
+      "autoLockMinutes": "保管庫は操作がないまま {{minutes}} 分でロックされます。"
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "保存先: {{recipient}}",
+    "transferTo": "新しいサーバー: {{recipient}}",
+    "transferLessSecure": "新しい接続は暗号化されていない、またはサーバー証明書を検証しません。"
   },
   "paneMenu": {
     "newFolder": "新しいフォルダー…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} 個のファイルが失敗しました",
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}} 件のうち {{failed}} 件が転送されませんでした。",
+    "sourcesKept": "元のファイルはそのまま残っています。"
   },
   "transferQueue": {
     "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大{{limit}}件）。完了するまでお待ちください。",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
     "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
     "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "書き込みが追いつかなかったため、プロトコルログの一部の記録が破棄されました: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "すべての接続を表示",

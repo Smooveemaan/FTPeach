@@ -46,32 +46,32 @@
         "message": "下载并运行此可执行文件或脚本？"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "使用尚未在 FTPeach 中用过的程序打开此文件？",
+        "approve": "打开"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "降低 FTPeach 提供的保护？",
+        "approve": "应用"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "关闭增强保护？已保存的密码将由您的 Windows 账户保护，而不再由主密码保护。",
+        "approve": "关闭"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "保留已保存的密码并发送到新服务器？",
+        "approve": "保留密码"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "在本计算机上保存为：{{name}}",
+    "program": "程序：{{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "安全确认将被关闭。",
+      "autoLockNever": "密码库将不再在闲置后锁定。",
+      "autoLockMinutes": "密码库将在闲置 {{minutes}} 分钟后锁定。"
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "保存给：{{recipient}}",
+    "transferTo": "新服务器：{{recipient}}",
+    "transferLessSecure": "新连接未加密，或不校验服务器证书。"
   },
   "paneMenu": {
     "newFolder": "新建文件夹…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} 个文件失败",
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "webdavUploadTooLarge": "WebDAV 上传的单个文件大小上限为 {{limit}} MiB。",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}} 个项目中有 {{failed}} 个未传输。",
+    "sourcesKept": "原文件仍在原处。"
   },
   "transferQueue": {
     "capacity": "队列已满（最多 {{limit}} 个正在运行或等待的任务）。请等待任务完成。",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
     "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
     "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "由于写入速度跟不上，协议日志的部分记录已被丢弃：{{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "显示所有连接",

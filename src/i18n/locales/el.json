@@ -46,32 +46,32 @@
         "message": "Να γίνει λήψη και εκτέλεση αυτού του εκτελέσιμου αρχείου ή σεναρίου;"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Να ανοίξει αυτό το αρχείο με πρόγραμμα που δεν έχει χρησιμοποιηθεί ξανά με το FTPeach;",
+        "approve": "Άνοιγμα"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Να μειωθεί η προστασία που παρέχει το FTPeach;",
+        "approve": "Εφαρμογή"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Να απενεργοποιηθεί η ενισχυμένη προστασία; Οι αποθηκευμένοι κωδικοί πρόσβασης θα προστατεύονται από τον λογαριασμό σας Windows και όχι από τον κύριο κωδικό πρόσβασης.",
+        "approve": "Απενεργοποίηση"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Να διατηρηθεί ο αποθηκευμένος κωδικός πρόσβασης και να αποστέλλεται στον νέο διακομιστή;",
+        "approve": "Διατήρηση κωδικού"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "Αποθηκεύεται σε αυτόν τον υπολογιστή ως: {{name}}",
+    "program": "Πρόγραμμα: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Οι επιβεβαιώσεις ασφαλείας θα απενεργοποιηθούν.",
+      "autoLockNever": "Το θησαυροφυλάκιο δεν θα κλειδώνει πλέον μετά από αδράνεια.",
+      "autoLockMinutes": "Το θησαυροφυλάκιο θα κλειδώνει μετά από {{minutes}} λεπτά αδράνειας."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Αποθηκευμένος για: {{recipient}}",
+    "transferTo": "Νέος διακομιστής: {{recipient}}",
+    "transferLessSecure": "Η νέα σύνδεση δεν είναι κρυπτογραφημένη ή δεν ελέγχει το πιστοποιητικό του διακομιστή."
   },
   "paneMenu": {
     "newFolder": "Νέος φάκελος…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} αρχεία απέτυχαν",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Οι μεταφορτώσεις μέσω WebDAV περιορίζονται στα {{limit}} MiB ανά αρχείο.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} από {{total}} στοιχεία δεν μεταφέρθηκαν.",
+    "sourcesKept": "Τα αρχικά αρχεία παραμένουν στη θέση τους."
   },
   "transferQueue": {
     "capacity": "Η ουρά είναι πλήρης (έως {{limit}} ενεργές ή εκκρεμείς εργασίες). Περιμένετε να ολοκληρωθούν.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Το τοπικό αρχείο δεν αντιστοιχεί πλέον στην αποστολή του {{path}} που είχε τεθεί σε παύση — θα σταλεί ξανά από την αρχή.",
     "uploadRestartedMismatch": "Τα δεδομένα που βρίσκονται ήδη στον διακομιστή δεν αντιστοιχούν στο τοπικό αρχείο — το {{path}} θα σταλεί ξανά από την αρχή.",
     "uploadRestartedUnverified": "Δεν ήταν δυνατή η επαλήθευση της αποστολής του {{path}} που είχε τεθεί σε παύση ({{error}}) — το αρχείο θα σταλεί ξανά από την αρχή.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Ορισμένες εγγραφές του αρχείου καταγραφής πρωτοκόλλου χάθηκαν, επειδή η εγγραφή δεν προλάβαινε: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Εμφάνιση όλων των συνδέσεων",

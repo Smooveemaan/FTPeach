@@ -46,32 +46,32 @@
         "message": "Dit uitvoerbare bestand of script downloaden en uitvoeren?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Dit bestand openen met een programma dat nog niet met FTPeach is gebruikt?",
+        "approve": "Openen"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "De beveiliging van FTPeach verlagen?",
+        "approve": "Toepassen"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Uitgebreide beveiliging uitschakelen? Opgeslagen wachtwoorden worden dan beschermd door uw Windows-account in plaats van het hoofdwachtwoord.",
+        "approve": "Uitschakelen"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Het opgeslagen wachtwoord behouden en naar de nieuwe server verzenden?",
+        "approve": "Wachtwoord behouden"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "Op deze computer opgeslagen als: {{name}}",
+    "program": "Programma: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Beveiligingsbevestigingen worden uitgeschakeld.",
+      "autoLockNever": "De kluis wordt niet meer vergrendeld na inactiviteit.",
+      "autoLockMinutes": "De kluis wordt na {{minutes}} min inactiviteit vergrendeld."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Opgeslagen voor: {{recipient}}",
+    "transferTo": "Nieuwe server: {{recipient}}",
+    "transferLessSecure": "De nieuwe verbinding is niet versleuteld of controleert het servercertificaat niet."
   },
   "paneMenu": {
     "newFolder": "Nieuwe map…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} bestanden mislukt",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} van {{total}} items zijn niet overgedragen.",
+    "sourcesKept": "De originelen staan er nog."
   },
   "transferQueue": {
     "capacity": "De wachtrij is vol (maximaal {{limit}} actieve of wachtende taken). Wacht tot taken klaar zijn.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Het lokale bestand komt niet meer overeen met de gepauzeerde upload van {{path}} — het wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Enkele regels van het protocollogboek zijn verloren omdat het wegschrijven het niet bijhield: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Alle verbindingen weergeven",

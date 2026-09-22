@@ -46,32 +46,32 @@
         "message": "Завантажити й запустити цей виконуваний файл або скрипт?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Відкрити цей файл програмою, яка ще не використовувалася у FTPeach?",
+        "approve": "Відкрити"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Послабити захист FTPeach?",
+        "approve": "Застосувати"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Вимкнути посилений захист? Збережені паролі захищатиме ваш обліковий запис Windows замість головного пароля.",
+        "approve": "Вимкнути"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Зберегти пароль і надсилати його на новий сервер?",
+        "approve": "Зберегти пароль"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "Зберігається на комп’ютері як: {{name}}",
+    "program": "Програма: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Підтвердження безпеки буде вимкнено.",
+      "autoLockNever": "Сховище більше не блокуватиметься після періоду бездіяльності.",
+      "autoLockMinutes": "Сховище блокуватиметься через {{minutes}} хв бездіяльності."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Збережено для: {{recipient}}",
+    "transferTo": "Новий сервер: {{recipient}}",
+    "transferLessSecure": "Нове підключення не шифрується або не перевіряє сертифікат сервера."
   },
   "paneMenu": {
     "newFolder": "Нова папка…",
@@ -551,8 +551,8 @@
     "notifySucceeded_many": "{{count}} файлів передано",
     "notifyFailed_few": "{{count}} файли не передано",
     "notifyFailed_many": "{{count}} файлів не передано",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "Не перенесено об’єктів: {{failed}} з {{total}}.",
+    "sourcesKept": "Вихідні файли залишилися на місці."
   },
   "transferQueue": {
     "capacity": "Черга заповнена (до {{limit}} активних або очікуваних завдань). Дочекайтеся завершення.",
@@ -617,7 +617,7 @@
     "uploadRestartedUnverified": "Не вдалося перевірити призупинене надсилання {{path}} ({{error}}) — файл буде надіслано наново.",
     "receivedEntries_few": "Отримано {{count}} записи",
     "receivedEntries_many": "Отримано {{count}} записів",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Частину записів протокольного журналу втрачено, бо підсистема запису не встигала. Втрачено: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Показати всі з'єднання",

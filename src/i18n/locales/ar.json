@@ -46,32 +46,32 @@
         "message": "تنزيل هذا الملف التنفيذي أو البرنامج النصي وتشغيله؟"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "هل تريد فتح هذا الملف ببرنامج لم يُستخدم مع FTPeach من قبل؟",
+        "approve": "فتح"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "هل تريد إضعاف الحماية التي يوفّرها FTPeach؟",
+        "approve": "تطبيق"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "هل تريد إيقاف الحماية المعززة؟ ستُحمى كلمات المرور المحفوظة بحساب Windows الخاص بك بدلاً من كلمة المرور الرئيسية.",
+        "approve": "إيقاف"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "هل تريد الاحتفاظ بكلمة المرور المحفوظة وإرسالها إلى الخادم الجديد؟",
+        "approve": "الاحتفاظ بكلمة المرور"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "يُحفظ على هذا الحاسوب باسم: {{name}}",
+    "program": "البرنامج: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "سيتم إيقاف تأكيدات الأمان.",
+      "autoLockNever": "لن تُقفل الخزنة بعد فترة من عدم النشاط.",
+      "autoLockMinutes": "ستُقفل الخزنة بعد {{minutes}} دقيقة من عدم النشاط."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "محفوظة لأجل: {{recipient}}",
+    "transferTo": "الخادم الجديد: {{recipient}}",
+    "transferLessSecure": "الاتصال الجديد غير مشفّر أو لا يتحقق من شهادة الخادم."
   },
   "paneMenu": {
     "newFolder": "مجلد جديد…",
@@ -563,8 +563,8 @@
     "notifyFailed_two": "فشل نقل {{count}} ملفين",
     "notifyFailed_few": "فشل نقل {{count}} ملفات",
     "notifyFailed_many": "فشل نقل {{count}} ملفًا",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "لم يُنقل {{failed}} من {{total}} عنصر.",
+    "sourcesKept": "الملفات الأصلية باقية في مكانها."
   },
   "transferQueue": {
     "capacity": "قائمة الانتظار ممتلئة (حتى {{limit}} مهمة نشطة أو منتظرة). انتظر اكتمال المهام.",
@@ -633,7 +633,7 @@
     "receivedEntries_two": "تم استلام {{count}} سجلين",
     "receivedEntries_few": "تم استلام {{count}} سجلات",
     "receivedEntries_many": "تم استلام {{count}} سجلًا",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "أُسقطت بعض مدخلات سجل البروتوكول لأن الكتابة لم تستطع اللحاق: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "عرض جميع الاتصالات",

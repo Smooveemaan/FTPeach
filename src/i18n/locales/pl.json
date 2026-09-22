@@ -46,32 +46,32 @@
         "message": "Pobrać i uruchomić ten plik wykonywalny lub skrypt?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Otworzyć ten plik programem, który nie był dotąd używany w FTPeach?",
+        "approve": "Otwórz"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Obniżyć ochronę zapewnianą przez FTPeach?",
+        "approve": "Zastosuj"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Wyłączyć wzmocnioną ochronę? Zapisane hasła będą chronione kontem Windows, a nie hasłem głównym.",
+        "approve": "Wyłącz"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Zachować zapisane hasło i wysyłać je na nowy serwer?",
+        "approve": "Zachowaj hasło"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Zapisywany na tym komputerze jako: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Potwierdzenia bezpieczeństwa zostaną wyłączone.",
+      "autoLockNever": "Sejf nie będzie już blokowany po okresie bezczynności.",
+      "autoLockMinutes": "Sejf zostanie zablokowany po {{minutes}} min bezczynności."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Zapisane dla: {{recipient}}",
+    "transferTo": "Nowy serwer: {{recipient}}",
+    "transferLessSecure": "Nowe połączenie nie jest szyfrowane lub nie sprawdza certyfikatu serwera."
   },
   "paneMenu": {
     "newFolder": "Nowy folder…",
@@ -551,8 +551,8 @@
     "notifySucceeded_many": "Przesłano {{count}} plików",
     "notifyFailed_few": "Nie przesłano {{count}} plików",
     "notifyFailed_many": "Nie przesłano {{count}} plików",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "Nie przeniesiono {{failed}} z {{total}} elementów.",
+    "sourcesKept": "Oryginały pozostały na swoim miejscu."
   },
   "transferQueue": {
     "capacity": "Kolejka jest pełna (do {{limit}} aktywnych lub oczekujących zadań). Poczekaj na zakończenie.",
@@ -617,7 +617,7 @@
     "uploadRestartedUnverified": "Nie udało się zweryfikować wstrzymanego wysyłania {{path}} ({{error}}) — plik zostanie wysłany ponownie od początku.",
     "receivedEntries_few": "Otrzymano {{count}} wpisy",
     "receivedEntries_many": "Otrzymano {{count}} wpisów",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Część wpisów dziennika protokołu została odrzucona, bo zapis nie nadążał: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Pokaż wszystkie połączenia",

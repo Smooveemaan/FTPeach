@@ -46,32 +46,32 @@
         "message": "이 실행 파일 또는 스크립트를 다운로드하여 실행할까요?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "FTPeach에서 아직 사용하지 않은 프로그램으로 이 파일을 열까요?",
+        "approve": "열기"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "FTPeach가 제공하는 보호를 낮출까요?",
+        "approve": "적용"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "강화된 보호를 끌까요? 저장된 비밀번호는 마스터 비밀번호가 아니라 Windows 계정으로 보호됩니다.",
+        "approve": "끄기"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "저장된 비밀번호를 유지하고 새 서버로 보낼까요?",
+        "approve": "비밀번호 유지"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "이 컴퓨터에 다음 이름으로 저장됩니다: {{name}}",
+    "program": "프로그램: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "보안 확인이 꺼집니다.",
+      "autoLockNever": "보관소가 유휴 상태에서 더 이상 잠기지 않습니다.",
+      "autoLockMinutes": "보관소가 {{minutes}}분 동안 사용하지 않으면 잠깁니다."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "저장 대상: {{recipient}}",
+    "transferTo": "새 서버: {{recipient}}",
+    "transferLessSecure": "새 연결은 암호화되지 않거나 서버 인증서를 확인하지 않습니다."
   },
   "paneMenu": {
     "newFolder": "새 폴더…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "파일 {{count}}개 실패",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}}개 중 {{failed}}개가 전송되지 않았습니다.",
+    "sourcesKept": "원본은 그대로 남아 있습니다."
   },
   "transferQueue": {
     "capacity": "대기열이 가득 찼습니다(실행 중이거나 대기 중인 작업 최대 {{limit}}개). 완료를 기다리세요.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "로컬 파일이 일시 중지된 {{path}} 업로드와 더 이상 일치하지 않습니다. 처음부터 다시 전송합니다.",
     "uploadRestartedMismatch": "서버에 있는 데이터가 로컬 파일과 일치하지 않습니다. {{path}}을(를) 처음부터 다시 전송합니다.",
     "uploadRestartedUnverified": "일시 중지된 {{path}} 업로드를 확인할 수 없습니다({{error}}). 처음부터 다시 전송합니다.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "기록 속도가 따라가지 못해 프로토콜 로그의 일부 기록이 버려졌습니다: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "모든 연결 보기",

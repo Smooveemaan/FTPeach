@@ -46,32 +46,32 @@
         "message": "Hämta och köra den här körbara filen eller det här skriptet?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Öppna den här filen med ett program som inte har använts med FTPeach tidigare?",
+        "approve": "Öppna"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Sänka skyddet som FTPeach ger?",
+        "approve": "Verkställ"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Stänga av förstärkt skydd? Sparade lösenord skyddas då av ditt Windows-konto i stället för huvudlösenordet.",
+        "approve": "Stäng av"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Behålla det sparade lösenordet och skicka det till den nya servern?",
+        "approve": "Behåll lösenordet"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Sparas på den här datorn som: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Säkerhetsbekräftelser stängs av.",
+      "autoLockNever": "Valvet låses inte längre efter inaktivitet.",
+      "autoLockMinutes": "Valvet låses efter {{minutes}} min inaktivitet."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Sparat för: {{recipient}}",
+    "transferTo": "Ny server: {{recipient}}",
+    "transferLessSecure": "Den nya anslutningen är inte krypterad eller kontrollerar inte serverns certifikat."
   },
   "paneMenu": {
     "newFolder": "Ny mapp…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} filer misslyckades",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} av {{total}} objekt överfördes inte.",
+    "sourcesKept": "Originalen finns kvar."
   },
   "transferQueue": {
     "capacity": "Kön är full (upp till {{limit}} aktiva eller väntande uppgifter). Vänta tills uppgifter slutförs.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
     "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
     "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Några rader i protokolloggen gick förlorade eftersom skrivningen inte hann med: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",

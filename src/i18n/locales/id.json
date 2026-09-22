@@ -46,32 +46,32 @@
         "message": "Unduh dan jalankan file yang dapat dieksekusi atau skrip ini?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Buka berkas ini dengan program yang belum pernah dipakai dengan FTPeach?",
+        "approve": "Buka"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Turunkan perlindungan yang diberikan FTPeach?",
+        "approve": "Terapkan"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Matikan perlindungan yang ditingkatkan? Kata sandi tersimpan akan dilindungi oleh akun Windows Anda, bukan kata sandi utama.",
+        "approve": "Matikan"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Pertahankan kata sandi tersimpan dan kirim ke server baru?",
+        "approve": "Pertahankan kata sandi"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Disimpan di komputer ini sebagai: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Konfirmasi keamanan akan dimatikan.",
+      "autoLockNever": "Brankas tidak akan terkunci lagi setelah tidak aktif.",
+      "autoLockMinutes": "Brankas akan terkunci setelah {{minutes}} menit tidak aktif."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Disimpan untuk: {{recipient}}",
+    "transferTo": "Server baru: {{recipient}}",
+    "transferLessSecure": "Koneksi baru tidak terenkripsi atau tidak memeriksa sertifikat server."
   },
   "paneMenu": {
     "newFolder": "Folder Baru…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} file gagal",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} dari {{total}} item tidak dipindahkan.",
+    "sourcesKept": "Berkas aslinya masih ada di tempatnya."
   },
   "transferQueue": {
     "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "File lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — file akan dikirim ulang dari awal.",
     "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan file lokal — {{path}} akan dikirim ulang dari awal.",
     "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — file akan dikirim ulang dari awal.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Sebagian catatan log protokol dibuang karena penulisan tidak mengejar: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Tampilkan semua koneksi",

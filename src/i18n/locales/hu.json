@@ -46,32 +46,32 @@
         "message": "Letölti és futtatja ezt a végrehajtható fájlt vagy parancsfájlt?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Megnyitja ezt a fájlt olyan programmal, amelyet az FTPeach még nem használt?",
+        "approve": "Megnyitás"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Csökkenti az FTPeach által nyújtott védelmet?",
+        "approve": "Alkalmaz"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Kikapcsolja a fokozott védelmet? A mentett jelszavakat ezután a Windows-fiókja védi a fő jelszó helyett.",
+        "approve": "Kikapcsolás"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Megtartja a mentett jelszót, és elküldi az új szervernek?",
+        "approve": "Jelszó megtartása"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Mentés ezen a számítógépen a következő néven: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "A biztonsági megerősítések ki lesznek kapcsolva.",
+      "autoLockNever": "A széf tétlenség után többé nem záródik be.",
+      "autoLockMinutes": "A széf {{minutes}} perc tétlenség után bezárul."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Ehhez mentve: {{recipient}}",
+    "transferTo": "Új szerver: {{recipient}}",
+    "transferLessSecure": "Az új kapcsolat nem titkosított, vagy nem ellenőrzi a szerver tanúsítványát."
   },
   "paneMenu": {
     "newFolder": "Új mappa…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} fájl sikertelen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{total}} elem közül {{failed}} nem lett átvíve.",
+    "sourcesKept": "Az eredeti fájlok a helyükön maradtak."
   },
   "transferQueue": {
     "capacity": "A sor megtelt (legfeljebb {{limit}} aktív vagy várakozó feladat). Várja meg a befejezést.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
     "uploadRestartedMismatch": "A kiszolgálón lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
     "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "A protokollnapló néhány bejegyzése elveszett, mert az írás nem tudott lépést tartani: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Az összes kapcsolat megjelenítése",

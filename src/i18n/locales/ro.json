@@ -46,32 +46,32 @@
         "message": "Descărcați și rulați acest fișier executabil sau script?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Deschideți acest fișier cu un program care nu a fost folosit până acum cu FTPeach?",
+        "approve": "Deschide"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Reduceți protecția oferită de FTPeach?",
+        "approve": "Aplică"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Dezactivați protecția avansată? Parolele salvate vor fi protejate de contul dumneavoastră Windows în locul parolei principale.",
+        "approve": "Dezactivează"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Păstrați parola salvată și o trimiteți către noul server?",
+        "approve": "Păstrează parola"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Se salvează pe acest computer ca: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Confirmările de securitate vor fi dezactivate.",
+      "autoLockNever": "Seiful nu se va mai bloca după inactivitate.",
+      "autoLockMinutes": "Seiful se va bloca după {{minutes}} min de inactivitate."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Salvată pentru: {{recipient}}",
+    "transferTo": "Server nou: {{recipient}}",
+    "transferLessSecure": "Noua conexiune nu este criptată sau nu verifică certificatul serverului."
   },
   "paneMenu": {
     "newFolder": "Folder nou…",
@@ -545,8 +545,8 @@
     "webdavUploadTooLarge": "Încărcările prin WebDAV sunt limitate la {{limit}} MiB pe fișier.",
     "notifySucceeded_few": "{{count}} fișiere transferate",
     "notifyFailed_few": "{{count}} fișiere eșuate",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} din {{total}} elemente nu au fost transferate.",
+    "sourcesKept": "Originalele sunt încă la locul lor."
   },
   "transferQueue": {
     "capacity": "Coada este plină (până la {{limit}} sarcini active sau în așteptare). Așteptați finalizarea.",
@@ -609,7 +609,7 @@
     "uploadRestartedMismatch": "Ceea ce se află deja pe server nu corespunde fișierului local — {{path}} va fi trimis din nou de la început.",
     "uploadRestartedUnverified": "Încărcarea întreruptă a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
     "receivedEntries_few": "S-au primit {{count}} înregistrări",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Unele linii din jurnalul de protocol au fost pierdute, deoarece scrierea nu a putut ține pasul: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Afișează toate conexiunile",

@@ -46,32 +46,32 @@
         "message": "Diese ausführbare Datei oder dieses Skript herunterladen und ausführen?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Diese Datei mit einem Programm öffnen, das in FTPeach noch nicht verwendet wurde?",
+        "approve": "Öffnen"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Den Schutz von FTPeach verringern?",
+        "approve": "Übernehmen"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Erweiterten Schutz abschalten? Gespeicherte Passwörter werden dann durch Ihr Windows-Konto und nicht mehr durch das Master-Passwort geschützt.",
+        "approve": "Abschalten"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Das gespeicherte Passwort behalten und an den neuen Server senden?",
+        "approve": "Passwort behalten"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "Auf diesem Computer gespeichert als: {{name}}",
+    "program": "Programm: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Sicherheitsbestätigungen werden abgeschaltet.",
+      "autoLockNever": "Der Tresor wird bei Inaktivität nicht mehr gesperrt.",
+      "autoLockMinutes": "Der Tresor wird nach {{minutes}} Min. Inaktivität gesperrt."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Gespeichert für: {{recipient}}",
+    "transferTo": "Neuer Server: {{recipient}}",
+    "transferLessSecure": "Die neue Verbindung ist nicht verschlüsselt oder prüft das Serverzertifikat nicht."
   },
   "paneMenu": {
     "newFolder": "Neuer Ordner…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} von {{total}} Objekten wurden nicht übertragen.",
+    "sourcesKept": "Die Originale sind unverändert vorhanden."
   },
   "transferQueue": {
     "capacity": "Die Warteschlange ist voll (bis zu {{limit}} aktive oder wartende Aufgaben). Warten Sie auf den Abschluss.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Die lokale Datei entspricht nicht mehr dem pausierten Upload von {{path}} – sie wird erneut von vorn gesendet.",
     "uploadRestartedMismatch": "Die Daten auf dem Server stimmen nicht mit der lokalen Datei überein – {{path}} wird erneut von vorn gesendet.",
     "uploadRestartedUnverified": "Der pausierte Upload von {{path}} konnte nicht überprüft werden ({{error}}) – die Datei wird erneut von vorn gesendet.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Einige Protokolleinträge wurden verworfen, weil das Schreiben nicht mitkam: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Alle Verbindungen anzeigen",

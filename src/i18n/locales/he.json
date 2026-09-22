@@ -46,32 +46,32 @@
         "message": "להוריד ולהפעיל קובץ הפעלה או סקריפט זה?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "לפתוח את הקובץ הזה בתוכנה שלא שימשה עם FTPeach עד כה?",
+        "approve": "פתיחה"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "להחליש את ההגנה ש‑FTPeach מספק?",
+        "approve": "החלה"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "לכבות את ההגנה המשופרת? הסיסמאות השמורות יהיו מוגנות על ידי חשבון Windows שלך במקום סיסמת המאסטר.",
+        "approve": "כיבוי"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "לשמור את הסיסמה השמורה ולשלוח אותה לשרת החדש?",
+        "approve": "שמירת הסיסמה"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
-    "program": "Program: {{path}}",
+    "savedAs": "נשמר במחשב הזה בשם: {{name}}",
+    "program": "תוכנה: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "אישורי האבטחה יכובו.",
+      "autoLockNever": "הכספת לא תינעל יותר לאחר חוסר פעילות.",
+      "autoLockMinutes": "הכספת תינעל לאחר {{minutes}} דקות של חוסר פעילות."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "נשמרה עבור: {{recipient}}",
+    "transferTo": "שרת חדש: {{recipient}}",
+    "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את אישור השרת."
   },
   "paneMenu": {
     "newFolder": "תיקייה חדשה…",
@@ -545,8 +545,8 @@
     "webdavUploadTooLarge": "העלאות באמצעות WebDAV מוגבלות ל-{{limit}} MiB לכל קובץ.",
     "notifySucceeded_two": "{{count}} קבצים הועברו",
     "notifyFailed_two": "{{count}} קבצים נכשלו",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} מתוך {{total}} פריטים לא הועברו.",
+    "sourcesKept": "קבצי המקור נותרו במקומם."
   },
   "transferQueue": {
     "capacity": "התור מלא (עד {{limit}} משימות פעילות או ממתינות). יש להמתין לסיום.",
@@ -609,7 +609,7 @@
     "uploadRestartedMismatch": "מה שכבר נמצא בשרת אינו תואם לקובץ המקומי — {{path}} יישלח שוב מההתחלה.",
     "uploadRestartedUnverified": "לא ניתן היה לאמת את ההעלאה המושהית של {{path}} ({{error}}) — הקובץ יישלח שוב מההתחלה.",
     "receivedEntries_two": "התקבלו {{count}} רשומות",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "חלק מרשומות יומן הפרוטוקול הושמטו כי הכתיבה לא הדביקה את הקצב: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "הצג את כל החיבורים",

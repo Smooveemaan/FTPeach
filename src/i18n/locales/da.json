@@ -46,32 +46,32 @@
         "message": "Download og kør denne eksekverbare fil eller dette script?"
       },
       "openWithApplication": {
-        "message": "Open this file with a program not used with FTPeach before?",
-        "approve": "Open"
+        "message": "Åbn denne fil med et program, der ikke har været brugt med FTPeach før?",
+        "approve": "Åbn"
       },
       "weakenSecuritySettings": {
-        "message": "Lower the protection FTPeach gives you?",
-        "approve": "Apply"
+        "message": "Vil du sænke den beskyttelse, FTPeach giver?",
+        "approve": "Anvend"
       },
       "useSystemProtection": {
-        "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
-        "approve": "Turn off"
+        "message": "Slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af din Windows-konto i stedet for hovedadgangskoden.",
+        "approve": "Slå fra"
       },
       "transferSecret": {
-        "message": "Keep the saved password and send it to the new server?",
-        "approve": "Keep password"
+        "message": "Behold den gemte adgangskode og send den til den nye server?",
+        "approve": "Behold adgangskode"
       }
     },
-    "savedAs": "Saved on this computer as: {{name}}",
+    "savedAs": "Gemmes på denne computer som: {{name}}",
     "program": "Program: {{path}}",
     "changes": {
-      "confirmationsOff": "Security confirmations will be turned off.",
-      "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "confirmationsOff": "Sikkerhedsbekræftelser slås fra.",
+      "autoLockNever": "Boksen låses ikke længere efter inaktivitet.",
+      "autoLockMinutes": "Boksen låses efter {{minutes}} min. inaktivitet."
     },
-    "transferFrom": "Saved for: {{recipient}}",
-    "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferFrom": "Gemt til: {{recipient}}",
+    "transferTo": "Ny server: {{recipient}}",
+    "transferLessSecure": "Den nye forbindelse er ikke krypteret eller kontrollerer ikke serverens certifikat."
   },
   "paneMenu": {
     "newFolder": "Ny mappe…",
@@ -539,8 +539,8 @@
     "notifyFailed_other": "{{count}} filer mislykkedes",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uploads er begrænset til {{limit}} MiB pr. fil.",
-    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "batchFailed": "{{failed}} af {{total}} objekter blev ikke overført.",
+    "sourcesKept": "Originalerne ligger der stadig."
   },
   "transferQueue": {
     "capacity": "Køen er fuld (op til {{limit}} aktive eller ventende opgaver). Vent på afslutning.",
@@ -601,7 +601,7 @@
     "uploadRestartedSourceChanged": "Den lokale fil svarer ikke længere til den pausede upload af {{path}} – den sendes igen fra begyndelsen.",
     "uploadRestartedMismatch": "Det, der allerede ligger på serveren, svarer ikke til den lokale fil – {{path}} sendes igen fra begyndelsen.",
     "uploadRestartedUnverified": "Den pausede upload af {{path}} kunne ikke verificeres ({{error}}) – filen sendes igen fra begyndelsen.",
-    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+    "droppedRecords": "Nogle linjer i protokolloggen blev kasseret, fordi skrivningen ikke kunne følge med: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Vis alle forbindelser",

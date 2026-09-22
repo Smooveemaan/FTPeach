@@ -900,6 +900,114 @@ async fn dpapi_failure_does_not_write_the_secret_to_disk() {
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
 
+#[test]
+fn a_backup_keeps_only_secrets_the_live_file_still_holds() {
+    use super::storage::backup_without_stale_secrets;
+    let previous = json!([
+        {"id": "kept", "enc": "AAA", "keyEnc": "BBB"},
+        {"id": "moved", "enc": "CCC", "hasPassword": false},
+        {"id": "legacy", "plain": "plaintext-secret", "name": "L"},
+        {"id": "deleted", "enc": "DDD"}
+    ]);
+    let next = json!([
+        {"id": "kept", "enc": "AAA", "keyEnc": "changed"},
+        {"id": "moved", "hasPassword": true},
+        {"id": "legacy", "plain": "plaintext-secret", "name": "L"}
+    ]);
+    assert_eq!(
+        backup_without_stale_secrets(previous, &next),
+        json!([
+            {"id": "kept", "enc": "AAA"},
+            {"id": "moved", "hasPassword": false},
+            {"id": "legacy", "name": "L"},
+            {"id": "deleted"}
+        ])
+    );
+    let settings = json!({"proxyHost": "p", "proxyPasswordEnc": "E", "proxyPasswordPlain": "x"});
+    assert_eq!(
+        backup_without_stale_secrets(settings, &json!({"hasProxyPassword": true})),
+        json!({"proxyHost": "p"})
+    );
+}
+
+/// Every file the store writes, other than the vault's own.
+fn store_files_text(dir: &std::path::Path) -> Vec<(String, String)> {
+    std::fs::read_dir(dir)
+        .unwrap()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_file())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|name| !name.starts_with("vault."))
+        .map(|name| {
+            let text = std::fs::read_to_string(dir.join(&name)).unwrap_or_default();
+            (name, text)
+        })
+        .collect()
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn no_backup_keeps_a_secret_weaker_than_the_live_protection() {
+    let root = std::env::temp_dir().join(format!("ftpeach-backups-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    // An old install: legacy plaintext in both stores, plus leftovers.
+    std::fs::write(
+        root.join("sites.json"),
+        r#"[{"id":"s","name":"S","protocol":"ftp","host":"h","plain":"synthetic-site-secret"}]"#,
+    )
+    .unwrap();
+    std::fs::write(
+        root.join("settings.json"),
+        r#"{"proxyHost":"p","proxyPasswordPlain":"synthetic-proxy-secret"}"#,
+    )
+    .unwrap();
+    std::fs::write(root.join("sites.4242.1.tmp"), "synthetic-site-secret").unwrap();
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+
+    // Legacy plaintext -> DPAPI: no file may keep the plaintext.
+    store
+        .migrate_plaintext_secrets_with(Store::protect_secret)
+        .await
+        .unwrap();
+    store
+        .set_settings(proxy_patch(
+            json!({"proxyPassword": "synthetic-proxy-secret"}),
+        ))
+        .await
+        .unwrap();
+    store.scrub_secret_backups().await;
+    for (name, text) in store_files_text(&root) {
+        assert!(!text.contains("synthetic-"), "{name}: {text}");
+    }
+
+    // DPAPI -> vault -> lock: no file outside the vault keeps DPAPI copies.
+    vault.setup("correct horse battery staple").await.unwrap();
+    store.migrate_secrets_to_vault(&vault).await.unwrap();
+    vault.lock().await;
+    for (name, text) in store_files_text(&root) {
+        for field in [
+            "\"enc\"",
+            "\"plain\"",
+            "proxyPasswordEnc",
+            "proxyPasswordPlain",
+        ] {
+            assert!(!text.contains(field), "{name} keeps {field}: {text}");
+        }
+    }
+    assert!(!root.join("sites.pre-stronghold.bak").exists());
+
+    // Losing the live files must not bring the weaker format back.
+    std::fs::remove_file(root.join("sites.json")).unwrap();
+    std::fs::remove_file(root.join("settings.json")).unwrap();
+    let recovered = Store::new_at(root.clone());
+    let sites = recovered.list_sites().await.unwrap();
+    assert!(sites.iter().all(|site| site.get("enc").is_none()));
+    let settings = recovered.get_settings().await;
+    assert!(settings.get("proxyPasswordEnc").is_none());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[tokio::test]
 async fn plaintext_secrets_are_migrated_only_after_successful_encryption() {
     let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));

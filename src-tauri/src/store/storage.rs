@@ -73,7 +73,145 @@ fn is_versioned_store(path: &Path) -> bool {
     )
 }
 
+/// Fields that hold a saved secret, protected or not.
+const SECRET_FIELDS: [&str; 6] = [
+    "enc",
+    "plain",
+    "keyEnc",
+    "keyPlain",
+    "proxyPasswordEnc",
+    "proxyPasswordPlain",
+];
+const PLAINTEXT_FIELDS: [&str; 3] = ["plain", "keyPlain", "proxyPasswordPlain"];
+
+/// `previous`, fit to be kept as a backup of a store that now holds `next`.
+/// A secret survives only where `next` holds the very same value, so a
+/// backup never keeps a secret the live file has moved into the vault,
+/// replaced or deleted, and never keeps plaintext at all.
+pub(super) fn backup_without_stale_secrets(previous: Value, next: &Value) -> Value {
+    fn strip(mut record: Value, counterpart: Option<&Value>) -> Value {
+        if let Value::Object(fields) = &mut record {
+            for field in SECRET_FIELDS {
+                let still_live = !PLAINTEXT_FIELDS.contains(&field)
+                    && counterpart.and_then(|next| next.get(field)) == fields.get(field);
+                if !still_live {
+                    fields.remove(field);
+                }
+            }
+        }
+        record
+    }
+    match previous {
+        Value::Array(records) => Value::Array(
+            records
+                .into_iter()
+                .map(|record| {
+                    let counterpart = record.get("id").and_then(|id| {
+                        next.as_array()?
+                            .iter()
+                            .find(|candidate| candidate.get("id") == Some(id))
+                    });
+                    strip(record, counterpart)
+                })
+                .collect(),
+        ),
+        record => strip(record, Some(next)),
+    }
+}
+
+/// Replaces `path`'s last-good backup with `backup`, atomically.
+async fn write_backup(path: &Path, backup: Value) -> Result<()> {
+    let target = path.with_extension("last-good.bak");
+    let tmp = path.with_extension(format!("last-good.{}.tmp", std::process::id()));
+    let body = serde_json::to_string_pretty(&encode_versioned_store(path, backup))?;
+    tokio::fs::write(&tmp, body).await?;
+    if let Err(error) = tokio::fs::rename(&tmp, &target).await {
+        let _ = tokio::fs::remove_file(&tmp).await;
+        return Err(error.into());
+    }
+    Ok(())
+}
+
+/// Temporary files this module names `<store>.<pid>.<millis>.tmp` or
+/// `<store>.last-good.<pid>.tmp`, with the pid that wrote them.
+fn store_tmp_pid(name: &str) -> Option<u32> {
+    let stem = name.strip_suffix(".tmp")?;
+    let mut parts = stem.split('.');
+    let store = parts.next()?;
+    if !matches!(
+        store,
+        "sites" | "settings" | "tabs" | "known_hosts" | "local-paths"
+    ) {
+        return None;
+    }
+    let rest: Vec<&str> = parts.collect();
+    match rest.as_slice() {
+        [pid, millis] if millis.bytes().all(|b| b.is_ascii_digit()) => pid.parse().ok(),
+        ["last-good", pid] => pid.parse().ok(),
+        _ => None,
+    }
+}
+
 impl Store {
+    /// Brings backups in line with the live stores, for installs that wrote
+    /// them before backups followed the live file's protection: rewrites
+    /// each last-good backup without stale or plaintext secrets, drops the
+    /// pre-vault copy of `sites.json` unless a migration is still running,
+    /// and removes temporary files an earlier run left behind. Corrupt-file
+    /// copies are kept verbatim for manual recovery.
+    pub async fn scrub_secret_backups(&self) {
+        for name in ["sites.json", "settings.json"] {
+            let path = self.dir.join(name);
+            let lock = self.lock_for(&path).await;
+            let _guard = lock.lock().await;
+            let read = |path: PathBuf| async move {
+                let raw = tokio::fs::read_to_string(&path).await.ok()?;
+                decode_versioned_store(&path, serde_json::from_str(&raw).ok()?).ok()
+            };
+            let (Some(live), Some(backup)) = (
+                read(path.clone()).await,
+                read(path.with_extension("last-good.bak")).await,
+            ) else {
+                continue;
+            };
+            let scrubbed = backup_without_stale_secrets(backup.clone(), &live);
+            if scrubbed != backup
+                && let Err(error) = write_backup(&path, scrubbed).await
+            {
+                log::warn!("Could not scrub the {name} backup: {error:#}");
+            }
+        }
+
+        let migration: Value = tokio::fs::read_to_string(self.dir.join("vault-migration.json"))
+            .await
+            .ok()
+            .and_then(|raw| serde_json::from_str(&raw).ok())
+            .unwrap_or(Value::Null);
+        let migrating = decode_versioned_store(Path::new("vault-migration.json"), migration)
+            .ok()
+            .and_then(|value| value.get("status").cloned())
+            == Some(Value::String("inProgress".into()));
+        if !migrating {
+            match tokio::fs::remove_file(self.dir.join("sites.pre-stronghold.bak")).await {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => log::warn!("Could not remove the pre-vault backup: {error}"),
+            }
+        }
+
+        let Ok(mut entries) = tokio::fs::read_dir(&self.dir).await else {
+            return;
+        };
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            let name = entry.file_name();
+            if let Some(pid) = name.to_str().and_then(store_tmp_pid)
+                && pid != std::process::id()
+            {
+                let _ = tokio::fs::remove_file(entry.path()).await;
+            }
+        }
+    }
+
     fn storage_issue(&self, path: &Path, message: String, blocked: bool) {
         log::warn!("Store {}: {message}", path.display());
         self.storage_issues
@@ -218,7 +356,7 @@ impl Store {
                 .as_millis()
         ));
         let value = serde_json::to_value(data)?;
-        let body = serde_json::to_string_pretty(&encode_versioned_store(path, value))?;
+        let body = serde_json::to_string_pretty(&encode_versioned_store(path, value.clone()))?;
         let mut tmp_file = tokio::fs::File::create(&tmp)
             .await
             .context("creating tmp file")?;
@@ -228,14 +366,13 @@ impl Store {
             .context("writing tmp file")?;
         tmp_file.sync_all().await.context("syncing tmp file")?;
         drop(tmp_file);
-        if tokio::fs::read_to_string(path)
+        if let Some(previous) = tokio::fs::read_to_string(path)
             .await
             .ok()
             .and_then(|raw| serde_json::from_str::<Value>(&raw).ok())
             .and_then(|value| decode_versioned_store(path, value).ok())
-            .is_some()
         {
-            let _ = tokio::fs::copy(path, path.with_extension("last-good.bak")).await;
+            let _ = write_backup(path, backup_without_stale_secrets(previous, &value)).await;
         }
         if let Err(error) = tokio::fs::rename(&tmp, path).await {
             let _ = tokio::fs::remove_file(&tmp).await;

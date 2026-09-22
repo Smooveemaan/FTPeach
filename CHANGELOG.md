@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   is unlocked.
 - Changing a bookmark's or the proxy's server, port, user or encryption now asks before the
   saved password is used for the new address, and warns if the connection becomes less secure.
+- Backup copies of bookmarks and settings no longer keep passwords that were moved into
+  the vault, changed or deleted, and never keep unencrypted passwords.
 
 ### Fixed
 

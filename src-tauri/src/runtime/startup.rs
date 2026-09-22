@@ -97,6 +97,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let log_emitter_for_apply = app.state::<LogEmitter>().inner().clone();
     tauri::async_runtime::spawn(async move {
         settings_apply::apply_at_startup(&store, &log_emitter_for_apply).await;
+        store.scrub_secret_backups().await;
     });
     updater::check_at_startup(app.handle());
 

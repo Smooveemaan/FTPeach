@@ -563,6 +563,9 @@ impl Store {
             )
             .await?;
         }
+        // The DPAPI copies now live only in backups; nothing needs them.
+        drop(_guard);
+        self.scrub_secret_backups().await;
         Ok(migrated)
     }
 
@@ -671,7 +674,9 @@ impl Store {
                     ))),
                 };
             }
-            store.clear_vault_secret_flags().await
+            store.clear_vault_secret_flags().await?;
+            store.scrub_secret_backups().await;
+            Ok(())
         })
         .await
         .context("vault downgrade task failed")?

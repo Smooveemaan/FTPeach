@@ -7,7 +7,14 @@ atomic replacement, and a per-file write lock. Invalid JSON is preserved as a
 timestamped `*.corrupt-*.bak` file before defaults are used.
 
 Before replacing a valid file, the previous snapshot is saved as
-`*.last-good.bak`. On a parse/schema error FTPeach keeps a timestamped copy of
+`*.last-good.bak`. For `sites.json` and `settings.json` that snapshot keeps a saved secret
+only where the new file holds the very same value: a password moved into the vault,
+replaced or deleted is dropped from the backup, and legacy plaintext never reaches it.
+Recovering from the backup therefore cannot bring back a weaker protection format. At
+every start FTPeach applies the same rule to existing backups, deletes
+`sites.pre-stronghold.bak` once no vault migration is in progress, and removes temporary
+files an earlier run left behind. Timestamped `*.corrupt-*.bak` copies are kept byte for
+byte for manual recovery. On a parse/schema error FTPeach keeps a timestamped copy of
 the broken bytes, tries the last-good snapshot, and only then falls back to
 defaults. It does not overwrite the corrupt original during that read.
 

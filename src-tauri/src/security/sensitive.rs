@@ -1,11 +1,15 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::local_fs::local_open::ApprovedLocalPaths;
+use crate::security::credential_scope::{
+    SecretTransfer, proxy_transfer, site_save_target, site_save_transfer,
+};
 use crate::security::open_with_intent::OpenWithIntent;
 use crate::security::security_policy::{self, Weakening};
 use crate::security::vault::Vault;
 use crate::security::vault_guard::VaultGuard;
 use crate::store::{JsonMap, Store};
 use serde::Serialize;
+use serde_json::Value;
 use std::{
     collections::HashMap,
     path::Path,
@@ -76,6 +80,7 @@ pub enum ConfirmationKind {
     OpenWithApplication,
     WeakenSecuritySettings,
     UseSystemProtection,
+    TransferSecret,
 }
 
 #[derive(Clone, Serialize)]
@@ -90,6 +95,8 @@ pub struct ConfirmationPrompt {
     application: Option<String>,
     /// The protection a settings change would turn off or relax.
     security_changes: Option<Weakening>,
+    /// A saved password that would be kept for a new recipient.
+    secret_transfer: Option<SecretTransfer>,
     confirmation_phrase: Option<String>,
     requires_reauthentication: bool,
 }
@@ -133,7 +140,7 @@ fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> b
     required
         && (matches!(
             operation,
-            "vault_reset" | "vault_use_system_protection" | "settings_set_security"
+            "vault_reset" | "vault_use_system_protection" | "settings_set_security" | "sites_save"
         ) || enabled)
 }
 
@@ -193,6 +200,7 @@ fn confirmation_prompt(
         local_name: None,
         application: None,
         security_changes: None,
+        secret_transfer: None,
         confirmation_phrase: (kind == ConfirmationKind::VaultReset).then(|| "RESET".into()),
         requires_reauthentication,
     })
@@ -213,41 +221,152 @@ fn open_with_prompt(intent: &OpenWithIntent, locale: String) -> ConfirmationProm
             .as_ref()
             .map(|path| crate::local_fs::local_open::shell_path(path)),
         security_changes: None,
+        secret_transfer: None,
         confirmation_phrase: None,
         requires_reauthentication: false,
     }
 }
 
-fn weakening_prompt(
-    weakening: Weakening,
-    locale: String,
-    requires_reauthentication: bool,
-) -> ConfirmationPrompt {
-    ConfirmationPrompt {
-        kind: ConfirmationKind::WeakenSecuritySettings,
-        locale,
-        target: None,
-        local_name: None,
-        application: None,
-        security_changes: Some(weakening),
-        confirmation_phrase: None,
-        requires_reauthentication,
-    }
-}
-
-/// Parses the security part of a settings patch the renderer wants applied.
+/// Parses a patch of protected settings. In an authorization request a new
+/// proxy password is named by `true` rather than sent.
 pub fn security_patch_from_request(target: &str) -> CommandResult<JsonMap> {
     let patch: JsonMap =
         serde_json::from_str(target).map_err(|_| denied("Invalid security settings request"))?;
     if patch
         .keys()
-        .any(|key| !security_policy::SECURITY_KEYS.contains(&key.as_str()))
+        .any(|key| !security_policy::PROTECTED_KEYS.contains(&key.as_str()))
     {
         return Err(denied("Invalid security settings request"));
     }
-    crate::store::validate_settings(&patch, false)
+    let mut checked = patch.clone();
+    if checked.get("proxyPassword").is_some_and(Value::is_boolean) {
+        checked.remove("proxyPassword");
+    }
+    crate::store::validate_settings(&checked, true)
         .map_err(|issue| CommandError::new(ErrorCode::InvalidInput, issue))?;
     Ok(patch)
+}
+
+/// What an authorization request resolves to before anyone is asked.
+struct Plan {
+    /// The value the grant is bound to.
+    target: String,
+    /// Whether the operation itself calls for a confirmation.
+    required: bool,
+    /// The confirmation to show, when one may be needed.
+    prompt: Option<ConfirmationPrompt>,
+    /// A program the user starts trusting by approving the prompt.
+    trusts_application: Option<std::path::PathBuf>,
+}
+
+fn plan_operation(
+    operation: &str,
+    target: &str,
+    vault_configured: bool,
+    locale: String,
+) -> CommandResult<Plan> {
+    let target = normalized_target(operation, target)?;
+    let required = requires_confirmation(operation);
+    let requires_reauthentication = vault_configured
+        && matches!(
+            operation,
+            "sites_reveal_secret"
+                | "settings_reveal_proxy_password"
+                | "vault_use_system_protection"
+        );
+    let prompt = (required || requires_reauthentication)
+        .then(|| confirmation_prompt(operation, &target, locale, requires_reauthentication))
+        .transpose()?;
+    Ok(Plan {
+        target,
+        required,
+        prompt,
+        trusts_application: None,
+    })
+}
+
+async fn plan_open_with(
+    store: &Store,
+    approved_paths: &ApprovedLocalPaths,
+    target: &str,
+    locale: String,
+) -> CommandResult<Plan> {
+    let intent = OpenWithIntent::from_request(target, approved_paths)?;
+    // A program the user has not chosen before; approving the prompt trusts it.
+    let mut untrusted_application = None;
+    if let Some(application) = intent.application.as_ref()
+        && !store.is_trusted_application(application).await
+    {
+        untrusted_application = Some(application.clone());
+    }
+    Ok(Plan {
+        target: intent.grant_target(),
+        required: open_with_requires_confirmation(&intent, untrusted_application.is_none()),
+        prompt: Some(open_with_prompt(&intent, locale)),
+        trusts_application: untrusted_application,
+    })
+}
+
+fn plan_protected_settings(
+    settings: &JsonMap,
+    vault_configured: bool,
+    target: &str,
+    locale: String,
+) -> CommandResult<Plan> {
+    let patch = security_patch_from_request(target)?;
+    let weakening = security_policy::weakening(settings, &patch);
+    let transfer = proxy_transfer(settings, &patch);
+    let required = !weakening.is_empty() || transfer.is_some();
+    let prompt = ConfirmationPrompt {
+        kind: if weakening.is_empty() {
+            ConfirmationKind::TransferSecret
+        } else {
+            ConfirmationKind::WeakenSecuritySettings
+        },
+        locale,
+        target: None,
+        local_name: None,
+        application: None,
+        requires_reauthentication: vault_configured && !weakening.is_empty(),
+        security_changes: (!weakening.is_empty()).then_some(weakening),
+        secret_transfer: transfer,
+        confirmation_phrase: None,
+    };
+    Ok(Plan {
+        target: security_policy::grant_target(settings, &patch),
+        required,
+        prompt: Some(prompt),
+        trusts_application: None,
+    })
+}
+
+async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandResult<Plan> {
+    let input: JsonMap =
+        serde_json::from_str(target).map_err(|_| denied("Invalid bookmark request"))?;
+    let transfer = site_save_transfer_for(store, &input).await;
+    Ok(Plan {
+        target: site_save_target(&input, transfer.as_ref()),
+        required: transfer.is_some(),
+        prompt: Some(ConfirmationPrompt {
+            kind: ConfirmationKind::TransferSecret,
+            locale,
+            target: None,
+            local_name: None,
+            application: None,
+            security_changes: None,
+            secret_transfer: transfer,
+            confirmation_phrase: None,
+            requires_reauthentication: false,
+        }),
+        trusts_application: None,
+    })
+}
+
+/// The password move saving `input` makes against the bookmark as stored now.
+pub async fn site_save_transfer_for(store: &Store, input: &JsonMap) -> Option<SecretTransfer> {
+    let id = input.get("id").and_then(Value::as_str)?;
+    let stored = store.saved_site_credentials(id).await;
+    site_save_transfer(stored.as_ref(), input)
 }
 
 fn reject_pending(state: &AuthorizationState, request_id: &str) {
@@ -377,77 +496,50 @@ pub async fn authorize_sensitive(
         "app_import_settings",
         "settings_set_security",
         "vault_use_system_protection",
+        "sites_save",
     ];
     if window.label() != "main" || !ALLOWED.contains(&operation.as_str()) {
         return Err(denied(
             "Sensitive operation is not permitted for this window",
         ));
     }
-    let open_with = if operation == "open_with_start" {
-        Some(OpenWithIntent::from_request(&target, &approved_paths)?)
-    } else {
-        None
-    };
-    let security_patch = if operation == "settings_set_security" {
-        Some(security_patch_from_request(&target)?)
-    } else {
-        None
-    };
-    let target = match (&open_with, &security_patch) {
-        (Some(intent), _) => intent.grant_target(),
-        (_, Some(patch)) => security_policy::grant_target(patch),
-        _ => normalized_target(&operation, &target)?,
-    };
     let settings = store.get_settings().await;
-    let weakening = security_patch
-        .as_ref()
-        .map(|patch| security_policy::weakening(&settings, patch))
-        .filter(|weakening| !weakening.is_empty());
     let confirmations_enabled = settings
         .get("showSecurityConfirmations")
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
-    let requires_reauthentication = vault.is_configured()
-        && (matches!(
-            operation.as_str(),
-            "sites_reveal_secret"
-                | "settings_reveal_proxy_password"
-                | "vault_use_system_protection"
-        ) || weakening.is_some());
-    // A program the user has not chosen before; approving the prompt trusts it.
-    let mut untrusted_application = None;
-    if let Some(application) = open_with
-        .as_ref()
-        .and_then(|intent| intent.application.as_ref())
-        && !store.is_trusted_application(application).await
-    {
-        untrusted_application = Some(application.clone());
-    }
-    let required = match &open_with {
-        Some(intent) => open_with_requires_confirmation(intent, untrusted_application.is_none()),
-        None if security_patch.is_some() => weakening.is_some(),
-        None => requires_confirmation(&operation),
-    };
-    if !should_prompt(
-        &operation,
-        required,
-        confirmations_enabled,
-        requires_reauthentication,
-    ) {
-        return issue_token(&state, &window, operation, target);
-    }
     let locale = settings
         .get("language")
         .and_then(|value| value.as_str())
         .unwrap_or("en")
         .to_owned();
-    let prompt = match (&open_with, weakening) {
-        (Some(intent), _) => open_with_prompt(intent, locale),
-        (None, Some(weakening)) => weakening_prompt(weakening, locale, requires_reauthentication),
-        (None, None) => {
-            confirmation_prompt(&operation, &target, locale, requires_reauthentication)?
+    let plan = match operation.as_str() {
+        "open_with_start" => plan_open_with(&store, &approved_paths, &target, locale).await?,
+        "settings_set_security" => {
+            plan_protected_settings(&settings, vault.is_configured(), &target, locale)?
         }
+        "sites_save" => plan_site_save(&store, &target, locale).await?,
+        _ => plan_operation(&operation, &target, vault.is_configured(), locale)?,
     };
+    let requires_reauthentication = plan
+        .prompt
+        .as_ref()
+        .is_some_and(|prompt| prompt.requires_reauthentication);
+    if !should_prompt(
+        &operation,
+        plan.required,
+        confirmations_enabled,
+        requires_reauthentication,
+    ) {
+        return issue_token(&state, &window, operation, plan.target);
+    }
+    let Plan {
+        target,
+        prompt,
+        trusts_application,
+        ..
+    } = plan;
+    let prompt = prompt.ok_or_else(|| denied("Unsupported confirmation operation"))?;
     let app = window.app_handle().clone();
     let request_id = uuid::Uuid::new_v4().to_string();
     let confirmation_label = format!("security-confirmation-{request_id}");
@@ -493,7 +585,7 @@ pub async fn authorize_sensitive(
             "Operation was cancelled",
         ));
     }
-    if let Some(application) = untrusted_application
+    if let Some(application) = trusts_application
         && let Err(error) = store.trust_application(&application).await
     {
         log::warn!("Could not remember the approved Open with program: {error:#}");

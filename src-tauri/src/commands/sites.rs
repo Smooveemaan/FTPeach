@@ -102,11 +102,25 @@ pub async fn sites_reveal_secret(
 }
 
 #[tauri::command]
+/// Saving a bookmark goes through the `sensitive` plugin: a saved password
+/// kept while the server, port, account or TLS policy changes is moved only
+/// with a grant the user confirmed for exactly that move.
 pub async fn sites_save(
+    window: tauri::WebviewWindow,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+    authorization_token: String,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
     site: SavedSite,
 ) -> CommandResult<SiteOpResult> {
+    let transfer = crate::security::sensitive::site_save_transfer_for(&store, &site.0).await;
+    crate::security::sensitive::consume(
+        &window,
+        &authorization,
+        &authorization_token,
+        "sites_save",
+        &crate::security::credential_scope::site_save_target(&site.0, transfer.as_ref()),
+    )?;
     Ok(match store.save_site_with_vault(site.0, &vault).await {
         Ok(saved) => SiteOpResult::Saved {
             ok: true,

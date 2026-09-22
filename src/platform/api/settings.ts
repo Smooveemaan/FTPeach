@@ -27,8 +27,20 @@ export interface SettingsSetResult extends AppSettings {
   proxyPasswordSet?: boolean | undefined;
 }
 
-/** Settings that protect the user; `settings_set` refuses to relax them. */
-const SECURITY_SETTINGS = new Set(['showSecurityConfirmations', 'vaultAutoLockMinutes']);
+/**
+ * Settings that protect the user, and the proxy's address with its password:
+ * `settings_set` refuses to relax the first or to move the saved password.
+ */
+const SECURITY_SETTINGS = new Set([
+  'showSecurityConfirmations',
+  'vaultAutoLockMinutes',
+  'proxyType',
+  'proxyHost',
+  'proxyPort',
+  'proxyUsername',
+  'proxyPassword',
+  'removeProxyPassword',
+]);
 
 function isAppSettings(value: unknown): value is AppSettings {
   if (!isCommandRecord(value)) return false;

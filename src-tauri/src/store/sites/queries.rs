@@ -99,6 +99,21 @@ impl Store {
 
     // ---------- sites ----------
 
+    /// A saved bookmark as stored, without its secrets, and whether it has a
+    /// saved password in DPAPI, legacy plaintext or the vault.
+    pub async fn saved_site_credentials(&self, id: &str) -> Option<(JsonMap, bool)> {
+        let sites: Vec<JsonMap> = self.read_json(&self.sites_file(), Vec::new()).await;
+        let mut site = sites
+            .into_iter()
+            .find(|site| site.get("id").and_then(Value::as_str) == Some(id))?;
+        let has_password = site.get("hasPassword").and_then(Value::as_bool) == Some(true)
+            || Self::has_saved_secret(&site, "enc", "plain");
+        for key in ["enc", "plain", "keyEnc", "keyPlain"] {
+            site.remove(key);
+        }
+        Some((site, has_password))
+    }
+
     pub async fn list_sites(&self) -> Result<Vec<JsonMap>> {
         self.ensure_storage_split().await?;
         self.migrate_plaintext_secrets().await?;

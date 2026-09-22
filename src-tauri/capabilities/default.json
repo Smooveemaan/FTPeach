@@ -17,6 +17,7 @@
     "log:allow-log",
     "sensitive:allow-authorize-sensitive",
     "sensitive:allow-sites-reveal-secret",
+    "sensitive:allow-sites-save",
     "sensitive:allow-settings-reveal-proxy-password",
     "sensitive:allow-vault-reset",
     "sensitive:allow-fs-delete",

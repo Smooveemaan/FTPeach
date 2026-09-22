@@ -15,7 +15,8 @@ type ConfirmationKind =
   | 'executeRemoteFile'
   | 'openWithApplication'
   | 'weakenSecuritySettings'
-  | 'useSystemProtection';
+  | 'useSystemProtection'
+  | 'transferSecret';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -26,7 +27,14 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   openWithApplication: 'securityConfirmation.operations.openWithApplication',
   weakenSecuritySettings: 'securityConfirmation.operations.weakenSecuritySettings',
   useSystemProtection: 'securityConfirmation.operations.useSystemProtection',
+  transferSecret: 'securityConfirmation.operations.transferSecret',
 };
+
+interface SecretTransfer {
+  from: string;
+  to: string;
+  lessSecure: boolean;
+}
 
 interface SecurityChanges {
   showSecurityConfirmations?: boolean | null;
@@ -40,6 +48,7 @@ interface ConfirmationPrompt {
   localName?: string | null;
   application?: string | null;
   securityChanges?: SecurityChanges | null;
+  secretTransfer?: SecretTransfer | null;
   confirmationPhrase?: string | null;
   requiresReauthentication: boolean;
 }
@@ -200,6 +209,29 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
                 : t('securityConfirmation.changes.autoLockMinutes', {
                     minutes: prompt.securityChanges.vaultAutoLockMinutes,
                   })}
+            </>
+          )}
+          {prompt?.secretTransfer && (
+            <>
+              {prompt.kind !== 'transferSecret' && (
+                <>
+                  <br />
+                  <br />
+                  {t('securityConfirmation.operations.transferSecret.message')}
+                </>
+              )}
+              <br />
+              <br />
+              {t('securityConfirmation.transferFrom', { recipient: prompt.secretTransfer.from })}
+              <br />
+              {t('securityConfirmation.transferTo', { recipient: prompt.secretTransfer.to })}
+              {prompt.secretTransfer.lessSecure && (
+                <>
+                  <br />
+                  <br />
+                  <strong>{t('securityConfirmation.transferLessSecure')}</strong>
+                </>
+              )}
             </>
           )}
         </p>

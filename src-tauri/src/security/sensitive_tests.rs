@@ -268,7 +268,8 @@ fn security_requests_accept_only_valid_security_keys() {
     assert!(security_patch_from_request(r#"{"vaultAutoLockMinutes":0}"#).is_ok());
     for request in [
         r#"{"theme":"dark"}"#,
-        r#"{"showSecurityConfirmations":false,"proxyHost":"evil"}"#,
+        r#"{"showSecurityConfirmations":false,"proxyPasswordEnc":"AQID"}"#,
+        r#"{"proxyPort":"not a port"}"#,
         r#"{"vaultAutoLockMinutes":999999}"#,
         "false",
     ] {
@@ -278,14 +279,15 @@ fn security_requests_accept_only_valid_security_keys() {
 
 #[test]
 fn weakening_prompt_lists_what_is_turned_off() {
-    let prompt = weakening_prompt(
-        Weakening {
-            show_security_confirmations: Some(false),
-            vault_auto_lock_minutes: None,
-        },
-        "en".into(),
+    let plan = plan_protected_settings(
+        &JsonMap::new(),
         true,
-    );
+        r#"{"showSecurityConfirmations":false}"#,
+        "en".into(),
+    )
+    .unwrap();
+    assert!(plan.required);
+    let prompt = plan.prompt.unwrap();
     assert_eq!(prompt.kind, ConfirmationKind::WeakenSecuritySettings);
     assert!(prompt.requires_reauthentication);
     let value = serde_json::to_value(&prompt).unwrap();
@@ -293,6 +295,34 @@ fn weakening_prompt_lists_what_is_turned_off() {
         value["securityChanges"]["showSecurityConfirmations"],
         serde_json::json!(false)
     );
+}
+
+#[test]
+fn moving_the_proxy_password_is_confirmed_without_reauthentication() {
+    let settings: JsonMap = serde_json::from_value(serde_json::json!({
+        "proxyType": "socks5", "proxyHost": "p.example", "proxyPort": 1080,
+        "proxyPasswordEnc": "AQID"
+    }))
+    .unwrap();
+    let plan =
+        plan_protected_settings(&settings, true, r#"{"proxyHost":"q.example"}"#, "en".into())
+            .unwrap();
+    assert!(plan.required);
+    let prompt = plan.prompt.unwrap();
+    assert_eq!(prompt.kind, ConfirmationKind::TransferSecret);
+    assert!(!prompt.requires_reauthentication);
+    let transfer = prompt.secret_transfer.unwrap();
+    assert!(transfer.from.contains("p.example") && transfer.to.contains("q.example"));
+
+    let replaced = plan_protected_settings(
+        &settings,
+        true,
+        r#"{"proxyHost":"q.example","proxyPassword":true}"#,
+        "en".into(),
+    )
+    .unwrap();
+    assert!(!replaced.required);
+    assert!(should_show_confirmation("sites_save", true, false));
 }
 
 #[test]

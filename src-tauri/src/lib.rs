@@ -95,7 +95,6 @@ pub fn run() {
             commands::sites::sites_list,
             commands::sites::sites_has_legacy_secret,
             commands::sites::sites_has_plaintext_secret,
-            commands::sites::sites_save,
             commands::sites::sites_delete,
             commands::sites::sites_save_folder,
             commands::sites::sites_delete_folder,

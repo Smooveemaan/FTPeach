@@ -56,6 +56,10 @@
       "useSystemProtection": {
         "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
         "approve": "Turn off"
+      },
+      "transferSecret": {
+        "message": "Keep the saved password and send it to the new server?",
+        "approve": "Keep password"
       }
     },
     "savedAs": "Saved on this computer as: {{name}}",
@@ -64,7 +68,10 @@
       "confirmationsOff": "Security confirmations will be turned off.",
       "autoLockNever": "The vault will no longer lock after inactivity.",
       "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
-    }
+    },
+    "transferFrom": "Saved for: {{recipient}}",
+    "transferTo": "New server: {{recipient}}",
+    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
   },
   "paneMenu": {
     "newFolder": "Nouveau dossier…",

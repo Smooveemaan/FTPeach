@@ -127,8 +127,25 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         case 'vault_reset':
         case 'vault_use_system_protection':
           return 'vault';
-        case 'settings_set_security':
-          return JSON.stringify(args?.patch ?? {});
+        case 'settings_set_security': {
+          // A new proxy password is named by whether there is one, never sent here.
+          const patch = isRecord(args?.patch) ? args.patch : {};
+          return JSON.stringify(
+            typeof patch.proxyPassword === 'string'
+              ? { ...patch, proxyPassword: patch.proxyPassword !== '' }
+              : patch,
+          );
+        }
+        case 'sites_save': {
+          // The backend compares the recipient with the stored bookmark; the
+          // secrets themselves stay out of the authorization request.
+          const site = isRecord(args?.site) ? args.site : {};
+          const { password, keyPassphrase: _keyPassphrase, ...rest } = site;
+          return JSON.stringify({
+            ...rest,
+            password: typeof password === 'string' && password !== '',
+          });
+        }
         case 'app_export_settings':
         case 'app_import_settings':
           return 'native-dialog';

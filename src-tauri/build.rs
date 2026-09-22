@@ -5,6 +5,7 @@ fn main() {
         "sensitive_confirmation_ready",
         "respond_sensitive_confirmation",
         "sites_reveal_secret",
+        "sites_save",
         "settings_reveal_proxy_password",
         "vault_reset",
         "fs_delete",

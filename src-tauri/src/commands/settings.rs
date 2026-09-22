@@ -64,10 +64,10 @@ pub async fn settings_set(
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
     let patch = patch.0;
-    if !security_policy::weakening(&store.get_settings().await, &patch).is_empty() {
+    if security_policy::needs_confirmation_path(&store.get_settings().await, &patch) {
         return Err(CommandError::new(
             ErrorCode::PermissionDenied,
-            "Security settings can only be relaxed through settings_set_security",
+            "Relaxing protection or moving the proxy password needs settings_set_security",
         ));
     }
     let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
@@ -86,32 +86,35 @@ pub async fn settings_set(
     Ok(AppSettings(strip_proxy_secret(next)))
 }
 
-/// Applies security confirmations and the vault idle lock. Relaxing either
-/// is confirmed by the backend when the grant is requested; every grant
-/// issued earlier is withdrawn once the policy changes.
+/// Applies the protected settings: security confirmations, the vault idle
+/// lock, and the proxy's address with its password. Relaxing protection or
+/// keeping the saved proxy password for a new proxy is confirmed by the
+/// backend when the grant is requested; every grant issued earlier is
+/// withdrawn once something changes.
 #[tauri::command]
 pub async fn settings_set_security(
     window: tauri::WebviewWindow,
     authorization: State<'_, crate::security::sensitive::AuthorizationState>,
     authorization_token: String,
     store: State<'_, Store>,
+    vault: State<'_, Vault>,
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
     let patch = crate::security::sensitive::security_patch_from_request(
         &serde_json::to_string(&patch.0).unwrap_or_default(),
     )?;
+    let current = store.get_settings().await;
     crate::security::sensitive::consume(
         &window,
         &authorization,
         &authorization_token,
         "settings_set_security",
-        &security_policy::grant_target(&patch),
+        &security_policy::grant_target(&current, &patch),
     )?;
-    let current = store.get_settings().await;
     let changed = patch
         .iter()
         .any(|(key, value)| current.get(key) != Some(value));
-    let next = store.set_settings(patch).await?;
+    let next = store.set_settings_with_vault(patch, &vault).await?;
     if changed {
         authorization.revoke_all();
     }

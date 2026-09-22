@@ -5,14 +5,16 @@
 //! guard against can do through `settings_set`. Such a change goes through
 //! the `settings_set_security` command, whose confirmation is always shown,
 //! whatever the setting being changed currently says. Making protection
-//! stronger needs no confirmation.
+//! stronger needs no confirmation. The same command carries the proxy's
+//! address and password, so a saved proxy password follows a new proxy
+//! only after the user confirmed that move (see `credential_scope`).
+use crate::security::credential_scope::{PROXY_SCOPE_KEYS, proxy_transfer, sets_secret};
 use crate::store::JsonMap;
 use serde::Serialize;
 use serde_json::Value;
 
 pub const CONFIRMATIONS: &str = "showSecurityConfirmations";
 pub const AUTO_LOCK: &str = "vaultAutoLockMinutes";
-pub const SECURITY_KEYS: [&str; 2] = [CONFIRMATIONS, AUTO_LOCK];
 
 /// The protective changes a patch would undo, as shown to the user.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
@@ -70,19 +72,54 @@ pub fn without_weakening(current: &JsonMap, mut patch: JsonMap) -> JsonMap {
     patch
 }
 
-/// Only the security keys of `patch`.
-pub fn security_part(patch: &JsonMap) -> JsonMap {
-    patch
-        .iter()
-        .filter(|(key, _)| SECURITY_KEYS.contains(&key.as_str()))
-        .map(|(key, value)| (key.clone(), value.clone()))
-        .collect()
+/// Everything `settings_set_security` applies: the protective settings,
+/// and the proxy's address together with its password, since changing one
+/// without the other can send the saved password somewhere new.
+pub const PROTECTED_KEYS: [&str; 8] = [
+    CONFIRMATIONS,
+    AUTO_LOCK,
+    "proxyType",
+    "proxyHost",
+    "proxyPort",
+    "proxyUsername",
+    "proxyPassword",
+    "removeProxyPassword",
+];
+
+/// Whether `settings_set` must leave `patch` to `settings_set_security`.
+pub fn needs_confirmation_path(current: &JsonMap, patch: &JsonMap) -> bool {
+    !weakening(current, patch).is_empty() || proxy_transfer(current, patch).is_some()
 }
 
-/// The value a grant for `settings_set_security` is bound to.
-pub fn grant_target(patch: &JsonMap) -> String {
-    let ordered: std::collections::BTreeMap<_, _> = security_part(patch).into_iter().collect();
-    serde_json::to_string(&ordered).unwrap_or_default()
+/// `patch` without what would weaken protection or send the saved proxy
+/// password to a new proxy. An import applies settings in bulk, so it keeps
+/// the current values instead.
+pub fn without_unconfirmed_changes(current: &JsonMap, patch: JsonMap) -> JsonMap {
+    let mut patch = without_weakening(current, patch);
+    if proxy_transfer(current, &patch).is_some() {
+        for key in PROXY_SCOPE_KEYS {
+            patch.remove(key);
+        }
+    }
+    patch
+}
+
+/// The value a grant for `settings_set_security` is bound to. A new proxy
+/// password is named only by whether there is one, never by its value.
+pub fn grant_target(current: &JsonMap, patch: &JsonMap) -> String {
+    let protected: std::collections::BTreeMap<_, _> = patch
+        .iter()
+        .filter(|(key, _)| PROTECTED_KEYS.contains(&key.as_str()))
+        .map(|(key, value)| match key.as_str() {
+            "proxyPassword" => (key.clone(), Value::Bool(sets_secret(patch, key))),
+            _ => (key.clone(), value.clone()),
+        })
+        .collect();
+    serde_json::json!({
+        "patch": protected,
+        "transfer": proxy_transfer(current, patch),
+    })
+    .to_string()
 }
 
 #[cfg(test)]
@@ -175,13 +212,46 @@ mod tests {
     }
 
     #[test]
-    fn the_grant_covers_only_security_keys_in_a_stable_order() {
+    fn the_grant_covers_only_protected_keys_in_a_stable_order() {
+        let current = JsonMap::new();
         let a = map(serde_json::json!({ AUTO_LOCK: 0, CONFIRMATIONS: false, "theme": "x" }));
         let b = map(serde_json::json!({ CONFIRMATIONS: false, AUTO_LOCK: 0 }));
-        assert_eq!(grant_target(&a), grant_target(&b));
+        assert_eq!(grant_target(&current, &a), grant_target(&current, &b));
         assert_ne!(
-            grant_target(&a),
-            grant_target(&map(serde_json::json!({ CONFIRMATIONS: false })))
+            grant_target(&current, &a),
+            grant_target(&current, &map(serde_json::json!({ CONFIRMATIONS: false })))
+        );
+    }
+
+    #[test]
+    fn the_grant_names_a_new_proxy_password_but_never_its_value() {
+        let current = JsonMap::new();
+        let sent = map(serde_json::json!({ "proxyHost": "p", "proxyPassword": "hunter2" }));
+        let named = map(serde_json::json!({ "proxyHost": "p", "proxyPassword": true }));
+        let target = grant_target(&current, &sent);
+        assert!(!target.contains("hunter2"));
+        assert_eq!(target, grant_target(&current, &named));
+    }
+
+    #[test]
+    fn moving_the_saved_proxy_password_takes_the_confirmed_path() {
+        let current = map(serde_json::json!({ "proxyHost": "p", "proxyPasswordEnc": "AQID" }));
+        let moved = map(serde_json::json!({ "proxyHost": "q" }));
+        assert!(needs_confirmation_path(&current, &moved));
+        assert!(!needs_confirmation_path(
+            &current,
+            &map(serde_json::json!({ "proxyHost": "q", "proxyPassword": "new" }))
+        ));
+        assert!(!needs_confirmation_path(
+            &current,
+            &map(serde_json::json!({ "theme": "x" }))
+        ));
+        assert_eq!(
+            without_unconfirmed_changes(
+                &current,
+                map(serde_json::json!({ "proxyHost": "q", "proxyPort": 9, "theme": "x" }))
+            ),
+            map(serde_json::json!({ "theme": "x" }))
         );
     }
 }

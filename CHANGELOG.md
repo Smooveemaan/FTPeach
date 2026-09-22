@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   confirmation in a separate window, and for the master password when one is set.
 - Turning off enhanced protection always asks for the master password, even while the vault
   is unlocked.
+- Changing a bookmark's or the proxy's server, port, user or encryption now asks before the
+  saved password is used for the new address, and warns if the connection becomes less secure.
 
 ### Fixed
 

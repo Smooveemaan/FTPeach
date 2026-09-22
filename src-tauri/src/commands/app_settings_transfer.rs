@@ -581,8 +581,12 @@ pub async fn app_import_settings(
 
     let mut settings_out = None;
     if let Some(patch) = data.settings {
-        // Relaxing protection needs its own confirmation; an import keeps it.
-        let patch = crate::security::security_policy::without_weakening(&previous_settings, patch);
+        // Relaxing protection or moving the saved proxy password needs its
+        // own confirmation; an import keeps the current values instead.
+        let patch = crate::security::security_policy::without_unconfirmed_changes(
+            &previous_settings,
+            patch,
+        );
         let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
         let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
         match store.set_settings(patch).await {

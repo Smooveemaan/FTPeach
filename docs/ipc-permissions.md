@@ -36,8 +36,12 @@ The `main` WebView receives only the core window/event permissions in
   accept no path from the renderer.
 - Import/export: `app_import_settings`, `app_export_settings`.
 - Security settings: `settings_set_security` is the only command that applies
-  `showSecurityConfirmations` and `vaultAutoLockMinutes`; `settings_set` rejects a patch
-  that would relax either, and an import keeps the current values instead of relaxing them.
+  `showSecurityConfirmations` and `vaultAutoLockMinutes`, and it also carries the proxy's
+  type, host, port, account and password; `settings_set` rejects a patch that would relax
+  either setting or move the saved proxy password, and an import keeps the current values.
+- Bookmarks: `sites_save` lives in the `sensitive` plugin. Its token names the bookmark and
+  any move of its saved password to a new server, port, account or TLS policy; such a move
+  is confirmed in the backend window first.
 
 The highest-risk commands (secret reveal, `vault_reset`, `fs_delete`, local
 path operations, and settings import/export) live in the inlined `sensitive`

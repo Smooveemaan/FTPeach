@@ -300,6 +300,8 @@ export default function Application() {
     dismissChanged: dismissOpenWithChanged,
     confirmUploaded: confirmOpenWithUploaded,
     retryChanged: retryOpenWithChanged,
+    uploadStarted: openWithUploadStarted,
+    uploadSettled: openWithUploadSettled,
     registerOpened: handleOpenWithOpened,
   } = useOpenWithLifecycle(tabs);
   const recoveredEdits = useRecoveredEdits();
@@ -661,6 +663,8 @@ export default function Application() {
       dismissChanged: dismissOpenWithChanged,
       confirmUploaded: confirmOpenWithUploaded,
       retryChanged: retryOpenWithChanged,
+      uploadStarted: openWithUploadStarted,
+      uploadSettled: openWithUploadSettled,
       registerOpened: handleOpenWithOpened,
     },
     recoveredEdits,

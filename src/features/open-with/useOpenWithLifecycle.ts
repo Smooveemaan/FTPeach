@@ -89,6 +89,10 @@ export interface OpenWithLifecycleModel {
   confirmUploaded: (change: OpenWithChange) => void;
   /** Asks about a change again after its upload failed. */
   retryChanged: (change: OpenWithChange) => void;
+  /** This copy's upload has started; its later revisions wait for it. */
+  uploadStarted: (change: OpenWithChange) => void;
+  /** The upload settled, whatever the outcome; the copy can be asked about again. */
+  uploadSettled: (change: OpenWithChange) => void;
   registerOpened: ({ id, localPath, remotePath }: OpenWithOpened) => void;
 }
 
@@ -102,6 +106,12 @@ export function useOpenWithLifecycle(
   // replaces the queued one in place, so every edited copy is asked about
   // once and none is lost while another question is open.
   const [pending, setPending] = useState<OpenWithChange[]>([]);
+  // Copies whose upload is in flight. The question closes as soon as the user
+  // answers it, so a save made while the upload runs would otherwise be asked
+  // about immediately and refused, because a transfer to that same file is
+  // already active — leaving the user to click Upload until it happens to go
+  // through. The newer revision waits here instead and is asked about once.
+  const [uploading, setUploading] = useState<Record<string, true>>({});
   const watchesRef = useRef(watches);
   watchesRef.current = watches;
 
@@ -162,6 +172,19 @@ export function useOpenWithLifecycle(
     );
   }, []);
 
+  const uploadStarted = useCallback((change: OpenWithChange) => {
+    setUploading((current) => ({ ...current, [change.id]: true }));
+  }, []);
+
+  const uploadSettled = useCallback((change: OpenWithChange) => {
+    setUploading((current) => {
+      if (!current[change.id]) return current;
+      const next = { ...current };
+      delete next[change.id];
+      return next;
+    });
+  }, []);
+
   const confirmUploaded = useCallback(
     (change: OpenWithChange) =>
       reportRejection(
@@ -185,10 +208,12 @@ export function useOpenWithLifecycle(
     target,
     setTarget,
     watches,
-    changed: pending[0] ?? null,
+    changed: pending.find((change) => !uploading[change.id]) ?? null,
     dismissChanged,
     confirmUploaded,
     retryChanged,
+    uploadStarted,
+    uploadSettled,
     registerOpened,
   };
 }

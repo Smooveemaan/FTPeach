@@ -304,6 +304,9 @@ export default function AppDialogs({ model }: AppDialogsProps) {
             if (!change) return;
             const targetPane = tabs.find((tab) => tab.id === watch.tabId)?.panes[watch.paneId];
             if (!targetPane?.protocol) return;
+            // Held until this upload settles, so a save made in the meantime is
+            // asked about afterwards rather than refused for colliding with it.
+            openWith.uploadStarted(change);
             const upload = runUpload(
               watch.connectionId,
               targetPane.protocol,
@@ -325,7 +328,8 @@ export default function AppDialogs({ model }: AppDialogsProps) {
                   if (result.ok) openWith.confirmUploaded(change);
                   else if (!result.skipped) openWith.retryChanged(change);
                   return refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId);
-                }),
+                })
+                .finally(() => openWith.uploadSettled(change)),
             );
           }}
           onClose={() => changed && openWith.dismissChanged(changed)}

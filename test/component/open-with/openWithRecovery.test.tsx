@@ -202,3 +202,42 @@ test('deleting recovered edits takes a second, explicit step', () => {
   fireEvent.click(screen.getByRole('button', { name: 'recoveredEdits.discard' }));
   expect(onDiscard).toHaveBeenCalledTimes(1);
 });
+
+test('a save made while an upload runs is asked about after it, not during', () => {
+  const h = openWithHarness();
+  h.open('a');
+  h.open('b');
+  h.emit({ id: 'a', revision: '1' });
+  const first = h.hook.result.current.changed!;
+
+  // What the dialog does on Upload: it closes, then the upload begins.
+  act(() => h.hook.result.current.dismissChanged(first));
+  act(() => h.hook.result.current.uploadStarted(first));
+
+  // The editor saves again while that upload is still running. Asking now would
+  // only produce a refusal, because a transfer to this file is already active.
+  h.emit({ id: 'a', revision: '2' });
+  expect(h.hook.result.current.changed).toBeNull();
+
+  // Another copy is not held up by it.
+  h.emit({ id: 'b', revision: '1' });
+  expect(h.hook.result.current.changed).toEqual({ id: 'b', revision: '1' });
+  act(() => h.hook.result.current.dismissChanged({ id: 'b', revision: '1' }));
+
+  act(() => h.hook.result.current.uploadSettled(first));
+  expect(h.hook.result.current.changed).toEqual({ id: 'a', revision: '2' });
+});
+
+test('an upload that failed releases the copy so its question comes back', () => {
+  const h = openWithHarness();
+  h.open('a');
+  h.emit({ id: 'a', revision: '1' });
+  const change = h.hook.result.current.changed!;
+  act(() => h.hook.result.current.dismissChanged(change));
+  act(() => h.hook.result.current.uploadStarted(change));
+  act(() => h.hook.result.current.retryChanged(change));
+  expect(h.hook.result.current.changed).toBeNull();
+
+  act(() => h.hook.result.current.uploadSettled(change));
+  expect(h.hook.result.current.changed).toEqual(change);
+});

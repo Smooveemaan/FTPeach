@@ -136,7 +136,10 @@ A successful download consumes its UUID partial and removes its matching source 
 ## Drag and drop contracts (September 13, 2026)
 
 Open-with changes are queued once per copy with the latest dirty revision. An upload
-acknowledges only its captured revision; newer saves remain pending. Failed uploads
+acknowledges only its captured revision; newer saves remain pending. While a copy's
+upload is in flight its queued revision is not asked about, because a transfer to that
+file is already active and the question could only be refused; it surfaces once, after
+the upload settles either way. Questions about other copies are unaffected. Failed uploads
 and failed sync acknowledgements keep a retryable question. An admission refusal
 because an older upload is still running also keeps the newer revision retryable.
 Later dismisses the

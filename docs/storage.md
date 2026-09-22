@@ -45,14 +45,25 @@ and the updated FTPeach removes the directory. An update never touches
 
 ## Edits recovered from Open with
 
-A file opened with **Open with** is downloaded to a per-run folder under `%TEMP%\ftpeach-openwith`.
+A file opened with **Open with** is downloaded to a per-run folder under
+`%LOCALAPPDATA%\com.smooveemaan.ftpeach\edit-sessions`, outside Windows temporary-file cleanup.
 Beside it, `copies.json` records each copy's server path and the modification time and size
 of the version the server holds; it contains no passwords. On exit, and at the next start
 after a crash, a copy that differs from that version is moved to
 `%LOCALAPPDATA%\com.smooveemaan.ftpeach\recovered-edits`, one folder per file with an
 `edit.json` naming its server path. Unchanged copies are deleted. FTPeach lists the recovered
-files at start and deletes them only when the user chooses to; nothing there expires. An
-uninstall that keeps application data keeps them too.
+files at start and deletes them only when the user chooses to. New Open with requests are
+refused when editor sessions and recovery copies total 1 GiB, or contain a file last modified
+30 days ago. Save or explicitly discard the retained work before opening more files. Limits
+also apply after downloading a file of unknown size, before launching the editor. Concurrent
+opens share admission. Existing editors can grow files beyond the limit; the limit never
+deletes their work or interrupts an already-open editor.
+
+If an editor prevents renaming or deleting its file, the original and its manifest stay in
+the persistent session directory. Once the editor releases the file, the next start recovers
+its latest contents. A snapshot is not substituted for a still-editable original. Legacy
+sessions under `%TEMP%\ftpeach-openwith` are also recovered. An uninstall that keeps
+application data keeps recovered edits too.
 
 ## Uninstall
 

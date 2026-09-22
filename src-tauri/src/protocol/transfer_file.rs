@@ -461,7 +461,10 @@ mod tests {
         };
         let (partial, _) = prepare(&destination, false, source.clone()).await.unwrap();
         std::fs::write(&partial, b"complete").unwrap();
-        commit(&partial, &destination).await.unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap();
         assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
         assert!(!sidecar(&destination).exists());
         // A local copy committing its own temporary leaves a download's record be.
@@ -522,6 +525,8 @@ mod tests {
         let partial = root.join("partial");
         std::fs::write(&partial, b"new").unwrap();
         std::fs::write(&destination, b"racing writer").unwrap();
+        // Missing task-local consent must be just as safe as explicit refusal.
+        assert!(commit(&partial, &destination).await.is_err());
         assert!(
             crate::protocol::ALLOW_OVERWRITE
                 .scope(false, commit(&partial, &destination))
@@ -558,7 +563,10 @@ mod tests {
         assert_eq!(std::fs::read(&destination).unwrap(), b"old");
         let partial = partial_path(&destination);
         assert_eq!(std::fs::read(&partial).unwrap(), b"verified");
-        commit(&partial, &destination).await.unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap();
         assert_eq!(std::fs::read(&destination).unwrap(), b"verified");
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -575,7 +583,10 @@ mod tests {
             let partial = partial_path(&destination);
             tokio::fs::write(&destination, b"old").await.unwrap();
             tokio::fs::write(&partial, name.as_bytes()).await.unwrap();
-            commit(&partial, &destination).await.unwrap();
+            crate::protocol::ALLOW_OVERWRITE
+                .scope(true, commit(&partial, &destination))
+                .await
+                .unwrap();
             assert_eq!(tokio::fs::read(destination).await.unwrap(), name.as_bytes());
             assert_eq!(
                 tokio::fs::read(root.join("report.ftpeach-old"))
@@ -587,7 +598,10 @@ mod tests {
         let destination = root.join("report.ftpeach-old");
         let partial = partial_path(&destination);
         tokio::fs::write(&partial, b"new backup").await.unwrap();
-        commit(&partial, &destination).await.unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap();
         assert_eq!(tokio::fs::read(&destination).await.unwrap(), b"new backup");
         assert!(commit(&root.join("missing"), &destination).await.is_err());
         assert_eq!(tokio::fs::read(&destination).await.unwrap(), b"new backup");
@@ -609,11 +623,19 @@ mod tests {
             .share_mode(1)
             .open(&destination)
             .unwrap();
-        assert!(commit(&partial, &destination).await.is_err());
+        assert!(
+            crate::protocol::ALLOW_OVERWRITE
+                .scope(true, commit(&partial, &destination))
+                .await
+                .is_err()
+        );
         assert_eq!(std::fs::read(&destination).unwrap(), b"old");
         assert_eq!(std::fs::read(&partial).unwrap(), b"verified");
         drop(lock);
-        commit(&partial, &destination).await.unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap();
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -642,7 +664,10 @@ mod tests {
         let partial = partial_path(&destination);
         tokio::fs::write(&destination, b"old").await.unwrap();
         tokio::fs::write(&partial, b"verified").await.unwrap();
-        commit(&partial, &destination).await.unwrap();
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap();
         assert_eq!(tokio::fs::read(&destination).await.unwrap(), b"verified");
         assert!(tokio::fs::metadata(&partial).await.is_err());
         tokio::fs::remove_dir_all(root).await.unwrap();

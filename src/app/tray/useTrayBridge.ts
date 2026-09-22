@@ -181,7 +181,7 @@ export function useTrayBridge({
             );
             return;
           case 'quitRequested':
-            actions.quit.request();
+            actions.quit.request(action.unsyncedEdits ?? 0);
             return;
           case 'cancelQuit':
             actions.quit.cancel();

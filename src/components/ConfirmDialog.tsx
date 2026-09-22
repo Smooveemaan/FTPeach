@@ -8,6 +8,7 @@ interface ConfirmDialogProps {
   title?: ReactNode;
   message: ReactNode;
   confirmLabel?: ReactNode | undefined;
+  cancelLabel?: ReactNode | undefined;
   danger?: boolean | undefined;
   onConfirm: () => unknown;
   onClose: () => void;
@@ -18,6 +19,7 @@ export default function ConfirmDialog({
   title = 'FTPeach',
   message,
   confirmLabel,
+  cancelLabel,
   danger = true,
   onConfirm,
   onClose,
@@ -45,6 +47,7 @@ export default function ConfirmDialog({
           onCancel={handleCancel}
           onConfirm={handleConfirm}
           confirmLabel={confirmLabel ?? t('paneMenu.delete')}
+          cancelLabel={cancelLabel}
           danger={danger}
           confirmRef={confirmRef}
         />

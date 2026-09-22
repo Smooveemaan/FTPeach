@@ -4,6 +4,7 @@ import Modal from '../../components/Modal.tsx';
 
 interface QuitDialogProps {
   count: number;
+  unsyncedEdits?: number;
   onQuitNow: () => void;
   onQuitWhenIdle: () => void;
   onCancel: () => void;
@@ -12,6 +13,7 @@ interface QuitDialogProps {
 /** Asks what quitting does to the transfers still running. */
 export default function QuitDialog({
   count,
+  unsyncedEdits = 0,
   onQuitNow,
   onQuitWhenIdle,
   onCancel,
@@ -27,19 +29,32 @@ export default function QuitDialog({
       initialFocusRef={waitRef}
       footer={
         <>
-          <button type="button" className="btn" onClick={onCancel}>
-            {t('common.cancel')}
+          <button
+            ref={unsyncedEdits > 0 ? waitRef : undefined}
+            type="button"
+            className="btn"
+            onClick={onCancel}
+          >
+            {t(unsyncedEdits > 0 ? 'quitDialog.return' : 'common.cancel')}
           </button>
           <button type="button" className="btn btn-danger" onClick={onQuitNow}>
-            {t('quitDialog.quitNow')}
+            {t(unsyncedEdits > 0 ? 'quitDialog.preserveAndQuit' : 'quitDialog.quitNow')}
           </button>
-          <button ref={waitRef} type="button" className="btn btn-primary" onClick={onQuitWhenIdle}>
-            {t('quitDialog.quitWhenDone')}
-          </button>
+          {count > 0 && (
+            <button
+              ref={unsyncedEdits > 0 ? undefined : waitRef}
+              type="button"
+              className="btn btn-primary"
+              onClick={onQuitWhenIdle}
+            >
+              {t('quitDialog.quitWhenDone')}
+            </button>
+          )}
         </>
       }
     >
-      <p>{t('quitDialog.message', { count })}</p>
+      {count > 0 && <p>{t('quitDialog.message', { count })}</p>}
+      {unsyncedEdits > 0 && <p>{t('quitDialog.unsyncedEdits', { count: unsyncedEdits })}</p>}
     </Modal>
   );
 }

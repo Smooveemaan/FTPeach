@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "FTPeach 표시",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "진행 중인 전송: {{count}}개",
+    "transferringProgress": "진행 중인 전송: {{count}}개 · {{percent}}%",
+    "quitWaiting": "전송이 완료되면 종료합니다 · {{count}}",
+    "quitWaitingProgress": "전송이 완료되면 종료합니다 · {{count}} · {{percent}}%",
+    "pauseAll": "모든 전송 일시 중지",
+    "resumeAll": "모든 전송 재개",
+    "speedLimit": "속도 제한",
+    "unlimited": "제한 없음",
+    "preventSleep": "컴퓨터 절전 모드 방지",
     "notify": "전송이 완료되면 알림 보내기",
     "recentConnections": "최근 연결",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "저장된 비밀번호 잠그기",
     "quit": "종료",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "종료 취소"
   },
   "tabStrip": {
     "localComputer": "컴퓨터",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "전송: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "전송이 완료되면 종료합니다",
+    "cancelQuit": "취소",
     "leftCount": "왼쪽: {{count}}",
     "rightCount": "오른쪽: {{count}}",
     "topCount": "상단: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "인터페이스 다시 불러오기"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "서버에 아직 업로드되지 않은 변경 내용이 있는 파일: {{count}}개. 종료하면 복구용 사본이 보관되며, 다음에 FTPeach를 시작할 때 표시됩니다.",
+    "preserveAndQuit": "복구용으로 보관하고 종료",
+    "return": "돌아가기",
+    "message_one": "전송 {{count}}개가 아직 진행 중입니다. 종료하고 전송을 중지하시겠습니까?",
+    "message_other": "전송 {{count}}개가 아직 진행 중입니다. 종료하고 전송을 중지하시겠습니까?",
+    "quitNow": "지금 종료",
+    "quitWhenDone": "전송 완료 후 종료"
   }
 }

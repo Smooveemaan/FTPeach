@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "Vis FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Aktive overførsler: {{count}}",
+    "transferringProgress": "Aktive overførsler: {{count}} · {{percent}} %",
+    "quitWaiting": "Afslutter, når overførslerne er færdige · {{count}}",
+    "quitWaitingProgress": "Afslutter, når overførslerne er færdige · {{count}} · {{percent}} %",
+    "pauseAll": "Sæt alle overførsler på pause",
+    "resumeAll": "Genoptag alle overførsler",
+    "speedLimit": "Hastighedsbegrænsning",
+    "unlimited": "Ingen begrænsning",
+    "preventSleep": "Hold computeren vågen",
     "notify": "Giv besked, når overførslerne er afsluttet",
     "recentConnections": "Seneste forbindelser",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Lås gemte adgangskoder",
     "quit": "Afslut",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Annuller afslutning"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Overførsler: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Afslutter, når overførslerne er færdige",
+    "cancelQuit": "Annuller",
     "leftCount": "Venstre: {{count}}",
     "rightCount": "Højre: {{count}}",
     "topCount": "Øverst: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Genindlæs grænseflade"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Filer med ændringer, der endnu ikke er uploadet til serveren: {{count}}. Når du afslutter, gemmes kopier til gendannelse, og de tilbydes, næste gang du starter FTPeach.",
+    "preserveAndQuit": "Gem til gendannelse, og afslut",
+    "return": "Gå tilbage",
+    "message_one": "{{count}} overførsel er stadig i gang. Vil du afslutte og stoppe den?",
+    "message_other": "{{count}} overførsler er stadig i gang. Vil du afslutte og stoppe dem?",
+    "quitNow": "Afslut nu",
+    "quitWhenDone": "Afslut, når overførslerne er færdige"
   }
 }

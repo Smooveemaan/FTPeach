@@ -783,20 +783,20 @@
   },
   "tray": {
     "show": "عرض FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "عمليات النقل الجارية: {{count}}",
+    "transferringProgress": "عمليات النقل الجارية: {{count}} · {{percent}}%",
+    "quitWaiting": "سيتم الخروج بعد انتهاء عمليات النقل · {{count}}",
+    "quitWaitingProgress": "سيتم الخروج بعد انتهاء عمليات النقل · {{count}} · {{percent}}%",
+    "pauseAll": "إيقاف جميع عمليات النقل مؤقتًا",
+    "resumeAll": "استئناف جميع عمليات النقل",
+    "speedLimit": "حد السرعة",
+    "unlimited": "بلا حدود",
+    "preventSleep": "إبقاء الكمبيوتر في وضع التشغيل",
     "notify": "إشعار عند انتهاء عمليات النقل",
     "recentConnections": "الاتصالات الأخيرة",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "قفل كلمات المرور المحفوظة",
     "quit": "خروج",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "إلغاء الخروج"
   },
   "tabStrip": {
     "localComputer": "الكمبيوتر",
@@ -809,8 +809,8 @@
   },
   "statusBar": {
     "transfers": "عمليات النقل: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "سيتم الخروج بعد انتهاء عمليات النقل",
+    "cancelQuit": "إلغاء",
     "leftCount": "على اليسار: {{count}}",
     "rightCount": "على اليمين: {{count}}",
     "topCount": "أعلى: {{count}}",
@@ -868,13 +868,16 @@
     "reload": "إعادة تحميل الواجهة"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_zero": "{{count}} transfers are still running. Quit and stop them?",
-    "message_two": "{{count}} transfers are still running. Quit and stop them?",
-    "message_few": "{{count}} transfers are still running. Quit and stop them?",
-    "message_many": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "ملفات بها تغييرات لم يتم تحميلها إلى الخادم بعد: {{count}}. عند الخروج، سيتم الاحتفاظ بنسخ منها للاسترداد وستُعرض عليك عند تشغيل FTPeach في المرة التالية.",
+    "preserveAndQuit": "الاحتفاظ للاسترداد والخروج",
+    "return": "رجوع",
+    "message_one": "لا تزال {{count}} عملية نقل جارية. هل تريد الخروج وإيقافها؟",
+    "message_other": "لا تزال {{count}} عملية نقل جارية. هل تريد الخروج وإيقافها؟",
+    "quitNow": "الخروج الآن",
+    "quitWhenDone": "الخروج بعد انتهاء عمليات النقل",
+    "message_zero": "لا تزال {{count}} عملية نقل جارية. هل تريد الخروج وإيقافها؟",
+    "message_two": "لا تزال {{count}} عمليتا نقل جاريتين. هل تريد الخروج وإيقافهما؟",
+    "message_few": "لا تزال {{count}} عمليات نقل جارية. هل تريد الخروج وإيقافها؟",
+    "message_many": "لا تزال {{count}} عملية نقل جارية. هل تريد الخروج وإيقافها؟"
   }
 }

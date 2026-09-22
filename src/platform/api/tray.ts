@@ -49,20 +49,26 @@ export type TrayAction =
   | { kind: 'setNotifyOnComplete'; enabled: boolean }
   | { kind: 'connect'; siteId: string }
   | { kind: 'lockVault' }
-  | { kind: 'quitRequested' }
+  | { kind: 'quitRequested'; unsyncedEdits?: number }
   | { kind: 'cancelQuit' };
 
 const BARE_ACTIONS: ReadonlySet<string> = new Set([
   'pauseAll',
   'resumeAll',
   'lockVault',
-  'quitRequested',
   'cancelQuit',
 ]);
 
 export function isTrayAction(value: unknown): value is TrayAction {
   if (!isRecord(value) || typeof value.kind !== 'string') return false;
   switch (value.kind) {
+    case 'quitRequested':
+      return (
+        value.unsyncedEdits === undefined ||
+        (typeof value.unsyncedEdits === 'number' &&
+          Number.isSafeInteger(value.unsyncedEdits) &&
+          value.unsyncedEdits >= 0)
+      );
     case 'setSpeedLimit':
       return typeof value.kbps === 'number' && Number.isSafeInteger(value.kbps) && value.kbps >= 0;
     case 'setPreventSleep':

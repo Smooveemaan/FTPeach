@@ -753,20 +753,20 @@
   },
   "tray": {
     "show": "הצג את FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "העברות פעילות: {{count}}",
+    "transferringProgress": "העברות פעילות: {{count}} · {{percent}}%",
+    "quitWaiting": "היציאה תתבצע בסיום ההעברות · {{count}}",
+    "quitWaitingProgress": "היציאה תתבצע בסיום ההעברות · {{count}} · {{percent}}%",
+    "pauseAll": "השהה את כל ההעברות",
+    "resumeAll": "המשך את כל ההעברות",
+    "speedLimit": "מגבלת מהירות",
+    "unlimited": "ללא הגבלה",
+    "preventSleep": "מנע מהמחשב להיכנס למצב שינה",
     "notify": "הודעה עם סיום ההעברות",
     "recentConnections": "חיבורים אחרונים",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "נעל את הסיסמאות השמורות",
     "quit": "יציאה",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "בטל את היציאה"
   },
   "tabStrip": {
     "localComputer": "מחשב",
@@ -779,8 +779,8 @@
   },
   "statusBar": {
     "transfers": "העברות: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "היציאה תתבצע בסיום ההעברות",
+    "cancelQuit": "ביטול",
     "leftCount": "משמאל: {{count}}",
     "rightCount": "מימין: {{count}}",
     "topCount": "למעלה: {{count}}",
@@ -838,10 +838,13 @@
     "reload": "טעינה מחדש של הממשק"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_two": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "קבצים עם שינויים שעדיין לא הועלו לשרת: {{count}}. ביציאה יישמרו עותקים לשחזור, והם יוצעו לך בפעם הבאה שתפעיל את FTPeach.",
+    "preserveAndQuit": "שמור לשחזור וצא",
+    "return": "חזור",
+    "message_one": "{{count}} העברה עדיין פועלת. לצאת ולעצור אותה?",
+    "message_other": "{{count}} העברות עדיין פועלות. לצאת ולעצור אותן?",
+    "quitNow": "צא עכשיו",
+    "quitWhenDone": "צא בסיום ההעברות",
+    "message_two": "{{count}} העברות עדיין פועלות. לצאת ולעצור אותן?"
   }
 }

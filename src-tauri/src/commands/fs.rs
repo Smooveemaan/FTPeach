@@ -182,7 +182,14 @@ pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<boo
             };
         }
     };
-    let _lease1 = match crate::local_fs::target_reservation::Reservation::acquire(&new_path) {
+    // One lease already protects both names when their reservation keys match.
+    let same_key = crate::local_fs::target_reservation::key(None, &old_path)
+        == crate::local_fs::target_reservation::key(None, &new_path);
+    let _lease1 = match if same_key {
+        Ok(None)
+    } else {
+        crate::local_fs::target_reservation::Reservation::acquire(&new_path).map(Some)
+    } {
         Ok(lease) => lease,
         // Kept typed: `err` would flatten the "busy" code into prose.
         Err(error) => {
@@ -193,7 +200,11 @@ pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<boo
         }
     };
     let _mutation = mutation_guard().write().await;
-    if let Err(error) = validate_copy_relationship(Path::new(&old_path), Path::new(&new_path)) {
+    let case_only =
+        cfg!(windows) && old_path != new_path && old_path.to_lowercase() == new_path.to_lowercase();
+    if !case_only
+        && let Err(error) = validate_copy_relationship(Path::new(&old_path), Path::new(&new_path))
+    {
         return err(error);
     }
     let old_path = match validated_delete_target(Path::new(&old_path)).await {
@@ -629,6 +640,39 @@ mod drag_move_tests {
     use super::*;
 
     #[tokio::test]
+    async fn case_only_rename_keeps_contents_and_respects_other_owners() {
+        let dir = std::env::temp_dir().join(format!("ftpeach-case-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&dir).unwrap();
+        let source = dir.join("a.txt");
+        let target = dir.join("A.txt");
+        std::fs::write(&source, b"keep").unwrap();
+        let source = source.to_string_lossy().into_owned();
+        let target = target.to_string_lossy().into_owned();
+        let lease = crate::local_fs::target_reservation::Reservation::acquire(&source).unwrap();
+        assert!(matches!(
+            fs_rename(source.clone(), target.clone(), None).await,
+            OkResult::Err { error, .. } if error.code == crate::ipc::ErrorCode::Busy
+        ));
+        drop(lease);
+        assert!(matches!(
+            fs_rename(source, target.clone(), None).await,
+            OkResult::Ok { .. }
+        ));
+        assert_eq!(std::fs::read(&target).unwrap(), b"keep");
+        assert_eq!(
+            std::fs::read_dir(&dir)
+                .unwrap()
+                .next()
+                .unwrap()
+                .unwrap()
+                .file_name(),
+            "A.txt"
+        );
+        std::fs::remove_file(target).unwrap();
+        std::fs::remove_dir(dir).unwrap();
+    }
+
+    #[tokio::test]
     async fn move_without_overwrite_preserves_both_files_and_then_moves_to_free_target() {
         let dir = std::env::temp_dir().join(format!("ftpeach-drag-move-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&dir).unwrap();
@@ -668,6 +712,12 @@ mod drag_move_tests {
         let target_dir = PathBuf::from(destination_root).join(format!("ftpeach-move-target-{id}"));
         std::fs::create_dir(&source_dir).unwrap();
         std::fs::create_dir(&target_dir).unwrap();
+        let probe = source_dir.join("volume-probe");
+        std::fs::write(&probe, b"probe").unwrap();
+        let error = std::fs::rename(&probe, target_dir.join("volume-probe"))
+            .expect_err("the fixture must use two genuinely different volumes");
+        assert_eq!(error.raw_os_error(), Some(17));
+        std::fs::remove_file(probe).unwrap();
         for overwrite in [false, true] {
             let source = source_dir.join("file.bin");
             let target = target_dir.join("file.bin");
@@ -675,6 +725,15 @@ mod drag_move_tests {
             std::fs::write(&source, &data).unwrap();
             if overwrite {
                 std::fs::write(&target, b"old").unwrap();
+                let refused = fs_rename(
+                    source.to_string_lossy().into(),
+                    target.to_string_lossy().into(),
+                    None,
+                )
+                .await;
+                assert!(matches!(refused, OkResult::Err { .. }));
+                assert_eq!(std::fs::read(&source).unwrap(), data);
+                assert_eq!(std::fs::read(&target).unwrap(), b"old");
             }
             let result = fs_rename(
                 source.to_string_lossy().into(),

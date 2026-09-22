@@ -753,20 +753,20 @@
   },
   "tray": {
     "show": "Mostrar FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Transferências em andamento: {{count}}",
+    "transferringProgress": "Transferências em andamento: {{count}} · {{percent}} %",
+    "quitWaiting": "Saindo após a conclusão das transferências · {{count}}",
+    "quitWaitingProgress": "Saindo após a conclusão das transferências · {{count}} · {{percent}} %",
+    "pauseAll": "Pausar todas as transferências",
+    "resumeAll": "Retomar todas as transferências",
+    "speedLimit": "Limite de velocidade",
+    "unlimited": "Sem limite",
+    "preventSleep": "Manter o computador ativo",
     "notify": "Notificar quando as transferências forem concluídas",
     "recentConnections": "Conexões recentes",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Bloquear senhas salvas",
     "quit": "Sair",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Cancelar saída"
   },
   "tabStrip": {
     "localComputer": "Computador",
@@ -779,8 +779,8 @@
   },
   "statusBar": {
     "transfers": "Transferências: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Saindo após a conclusão das transferências",
+    "cancelQuit": "Cancelar",
     "leftCount": "À esquerda: {{count}}",
     "rightCount": "À direita: {{count}}",
     "topCount": "Em cima: {{count}}",
@@ -838,10 +838,13 @@
     "reload": "Recarregar a interface"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_many": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "Arquivos com alterações ainda não enviadas ao servidor: {{count}}. Ao sair, cópias serão mantidas para recuperação e oferecidas na próxima vez que você iniciar o FTPeach.",
+    "preserveAndQuit": "Manter para recuperação e sair",
+    "return": "Voltar",
+    "message_one": "{{count}} transferência ainda está em andamento. Sair e interrompê-la?",
+    "message_other": "{{count}} transferências ainda estão em andamento. Sair e interrompê-las?",
+    "quitNow": "Sair agora",
+    "quitWhenDone": "Sair quando as transferências terminarem",
+    "message_many": "{{count}} transferências ainda estão em andamento. Sair e interrompê-las?"
   }
 }

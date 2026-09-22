@@ -15,7 +15,11 @@ interface PaneFileOperationsOptions {
   client?: Pick<Window['api'], 'fsLocal' | 'session'>;
   panes: Record<PaneId, PaneState>;
   activeTabId: string;
-  requestConfirm: (message: string, onConfirm: () => unknown) => unknown;
+  requestConfirm: (
+    message: string,
+    onConfirm: () => unknown,
+    options?: { confirmLabel?: string },
+  ) => unknown;
   reportError: (error: FriendlyErrorInput) => unknown;
   refreshPane: (id: PaneId, path: string, paneOverride?: PaneState, tabId?: string) => unknown;
   navigatePane: (id: PaneId, path: string) => unknown;
@@ -130,19 +134,24 @@ export function createPaneFileOperations({
     tabId = activeTabId,
   ) => {
     const pane = panes[id];
-    // Rename never replaces another entry: the backend refuses a taken name.
-    // A change of case alone is the exception on a server: one that ignores
-    // case sees the entry itself at the new name and would refuse it too.
-    const caseOnly =
-      pane.kind === 'remote' &&
-      newName !== entry.name &&
-      newName.toLowerCase() === entry.name.toLowerCase() &&
-      !pane.entries.some((other) => other.name === newName);
-    const res = await backendFor(pane, client).rename(
-      paneJoin(pane, entry.name),
-      paneJoin(pane, newName),
-      caseOnly,
-    );
+    const backend = backendFor(pane, client);
+    const res = await backend.rename(paneJoin(pane, entry.name), paneJoin(pane, newName), false);
+    if (!res.ok && res.errorCode === 'alreadyExists' && pane.kind === 'remote') {
+      requestConfirm(
+        t('confirm.overwriteSingleExists', { name: isolate(newName) }),
+        async () => {
+          const result = await backend.rename(
+            paneJoin(pane, entry.name),
+            paneJoin(pane, newName),
+            true,
+          );
+          if (!result.ok) reportError(commandResultError(result));
+          refreshPane(id, pane.path, undefined, tabId);
+        },
+        { confirmLabel: t('confirm.overwriteLabel') },
+      );
+      return;
+    }
     if (!res.ok) reportError(commandResultError(res));
     refreshPane(id, pane.path, undefined, tabId);
   };

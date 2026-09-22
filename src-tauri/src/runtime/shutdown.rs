@@ -38,11 +38,9 @@ pub enum QuitRoute {
     Ask,
 }
 
-/// Transfers still running make a quit a question. With none running, or no
-/// word from the renderer at all, it quits straight away, so quitting never
-/// depends on the renderer being there to answer.
-pub fn quit_route(active_transfers: u32) -> QuitRoute {
-    if active_transfers > 0 {
+/// Running transfers and edits that have not been uploaded both need a decision.
+pub fn quit_route(active_transfers: u32, unsynced_edits: usize) -> QuitRoute {
+    if active_transfers > 0 || unsynced_edits > 0 {
         QuitRoute::Ask
     } else {
         QuitRoute::Now
@@ -66,7 +64,11 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
         tray::hide_to_tray(window);
         return;
     }
-    if quit_route(tray::active_transfers(&app)) == QuitRoute::Ask {
+    if quit_route(
+        tray::active_transfers(&app),
+        app.state::<OpenWithWatchers>().unsynced_count(),
+    ) == QuitRoute::Ask
+    {
         ask_window(&app);
         return;
     }
@@ -78,7 +80,11 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
 /// Quitting from outside the window, such as from the tray icon's menu. With
 /// transfers running the window comes back to ask.
 pub fn quit(app: &AppHandle) {
-    if quit_route(tray::active_transfers(app)) == QuitRoute::Ask {
+    if quit_route(
+        tray::active_transfers(app),
+        app.state::<OpenWithWatchers>().unsynced_count(),
+    ) == QuitRoute::Ask
+    {
         tray::restore(app);
         ask_window(app);
         return;
@@ -105,7 +111,7 @@ fn ask_window(app: &AppHandle) {
         return;
     }
     let generation = tray::model_generation(app);
-    tray::ask_to_quit(app);
+    tray::ask_to_quit(app, app.state::<OpenWithWatchers>().unsynced_count());
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(QUIT_PROMPT_TIMEOUT).await;
@@ -195,10 +201,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn quitting_asks_only_while_transfers_run() {
-        assert_eq!(quit_route(0), QuitRoute::Now);
-        assert_eq!(quit_route(1), QuitRoute::Ask);
-        assert_eq!(quit_route(u32::MAX), QuitRoute::Ask);
+    fn quitting_asks_for_transfers_or_unsynced_edits() {
+        assert_eq!(quit_route(0, 0), QuitRoute::Now);
+        assert_eq!(quit_route(1, 0), QuitRoute::Ask);
+        assert_eq!(quit_route(u32::MAX, 0), QuitRoute::Ask);
+        assert_eq!(quit_route(0, 1), QuitRoute::Ask);
     }
 
     #[test]

@@ -19,7 +19,7 @@ pub(crate) fn is_cross_volume(error: &anyhow::Error) -> bool {
     })
 }
 
-fn disposition(file: &File) -> Result<()> {
+pub(crate) fn disposition(file: &File) -> Result<()> {
     let info = FILE_DISPOSITION_INFO { DeleteFile: true };
     // SAFETY: a live DELETE-capable handle and a correctly sized input buffer.
     unsafe {

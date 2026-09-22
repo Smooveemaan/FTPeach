@@ -828,6 +828,9 @@
     "reload": "Reload Interface"
   },
   "quitDialog": {
+    "unsyncedEdits": "Files with changes not yet uploaded to the server: {{count}}. On exit, copies will be kept for recovery and offered the next time you start FTPeach.",
+    "preserveAndQuit": "Keep for recovery and quit",
+    "return": "Go back",
     "message_one": "{{count}} transfer is still running. Quit and stop it?",
     "message_other": "{{count}} transfers are still running. Quit and stop them?",
     "quitNow": "Quit now",

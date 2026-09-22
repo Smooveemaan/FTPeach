@@ -148,15 +148,15 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
         let partial = remote_partial_path("/target");
         let events = Arc::new(Mutex::new(Vec::new()));
         let events_for_sink = events.clone();
-        let result = upload_staged(
+        let upload = upload_staged(
             &mut backend,
             std::path::Path::new("unused"),
             &partial,
             "/target",
             false,
             Arc::new(move |event| events_for_sink.lock().unwrap().push(event)),
-        )
-        .await;
+        );
+        let result = crate::protocol::ALLOW_OVERWRITE.scope(true, upload).await;
         assert_eq!(result.is_err(), reject);
         assert_eq!(
             events
@@ -252,8 +252,12 @@ async fn relay_does_not_commit_after_source_failure_or_disconnect() {
         } else {
             drop(done_tx);
         }
-        let result =
-            relay_staged(&mut backend, &partial, "/target", reader, total_rx, done_rx).await;
+        let result = crate::protocol::ALLOW_OVERWRITE
+            .scope(
+                true,
+                relay_staged(&mut backend, &partial, "/target", reader, total_rx, done_rx),
+            )
+            .await;
         assert_eq!(result.is_ok(), completion == Some(true));
         if completion != Some(true) {
             assert_old(&remote);

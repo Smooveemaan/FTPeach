@@ -5,10 +5,11 @@ import { reportRejection } from '../../shared/asyncFailure.ts';
 export interface QuitWhenIdleModel {
   /** Quitting waits for the running transfers to finish. */
   pending: boolean;
-  /** The window is asking what to do with the running transfers. */
+  /** The window is asking about running transfers or edits not uploaded. */
   promptOpen: boolean;
+  unsyncedEdits: number;
   /** A quit was asked for, from the tray or by closing the window. */
-  request: () => void;
+  request: (unsyncedEdits?: number) => void;
   quitNow: () => void;
   quitWhenIdle: () => void;
   /** Closes the question and stays. */
@@ -28,41 +29,53 @@ export interface QuitWhenIdleModel {
  */
 export function useQuitWhenIdle({
   hasActiveTransfers,
-  quit = () => api.app.quit(),
+  quit = (preserveEdits: boolean) => api.app.quit(preserveEdits),
 }: {
   hasActiveTransfers: boolean;
-  quit?: () => Promise<unknown>;
+  quit?: (preserveEdits: boolean) => Promise<unknown>;
 }): QuitWhenIdleModel {
   const [pending, setPending] = useState(false);
   const [promptOpen, setPromptOpen] = useState(false);
+  const [unsyncedEdits, setUnsyncedEdits] = useState(0);
   const activeRef = useRef(hasActiveTransfers);
   activeRef.current = hasActiveTransfers;
   const quitRef = useRef(quit);
   quitRef.current = quit;
   const quittingRef = useRef(false);
 
-  const quitOnce = useCallback(() => {
+  const quitOnce = useCallback((preserveEdits = false) => {
     if (quittingRef.current) return;
     quittingRef.current = true;
-    reportRejection(quitRef.current());
+    reportRejection(quitRef.current(preserveEdits));
   }, []);
 
-  // A question about transfers that have all finished answers itself: either
-  // choice would quit now.
+  // Completed transfers can settle their own question, but edits still need
+  // explicit consent to keep them for recovery and exit.
   useEffect(() => {
     if (hasActiveTransfers || (!pending && !promptOpen)) return;
+    if (unsyncedEdits > 0) {
+      setPending(false);
+      setPromptOpen(true);
+      return;
+    }
     setPromptOpen(false);
     quitOnce();
-  }, [hasActiveTransfers, pending, promptOpen, quitOnce]);
+  }, [hasActiveTransfers, pending, promptOpen, quitOnce, unsyncedEdits]);
 
-  const request = useCallback(() => {
-    if (activeRef.current) setPromptOpen(true);
-    else quitOnce();
-  }, [quitOnce]);
+  const request = useCallback(
+    (edits = 0) => {
+      quittingRef.current = false;
+      setPending(false);
+      setUnsyncedEdits(edits);
+      if (activeRef.current || edits > 0) setPromptOpen(true);
+      else quitOnce();
+    },
+    [quitOnce],
+  );
   const quitNow = useCallback(() => {
     setPromptOpen(false);
-    quitOnce();
-  }, [quitOnce]);
+    quitOnce(unsyncedEdits > 0);
+  }, [quitOnce, unsyncedEdits]);
   const quitWhenIdle = useCallback(() => {
     setPromptOpen(false);
     setPending(true);
@@ -70,5 +83,5 @@ export function useQuitWhenIdle({
   const dismiss = useCallback(() => setPromptOpen(false), []);
   const cancel = useCallback(() => setPending(false), []);
 
-  return { pending, promptOpen, request, quitNow, quitWhenIdle, dismiss, cancel };
+  return { pending, promptOpen, unsyncedEdits, request, quitNow, quitWhenIdle, dismiss, cancel };
 }

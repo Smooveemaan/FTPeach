@@ -763,20 +763,20 @@
   },
   "tray": {
     "show": "Показати FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Передається: {{count}}",
+    "transferringProgress": "Передається: {{count}} · {{percent}}%",
+    "quitWaiting": "Вихід після завершення передавань · {{count}}",
+    "quitWaitingProgress": "Вихід після завершення передавань · {{count}} · {{percent}}%",
+    "pauseAll": "Призупинити всі передавання",
+    "resumeAll": "Відновити всі передавання",
+    "speedLimit": "Обмеження швидкості",
+    "unlimited": "Без обмежень",
+    "preventSleep": "Не давати комп'ютеру засинати",
     "notify": "Сповіщати про завершення передавань",
     "recentConnections": "Нещодавні підключення",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Заблокувати збережені паролі",
     "quit": "Вийти",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Скасувати вихід"
   },
   "tabStrip": {
     "localComputer": "Комп'ютер",
@@ -789,8 +789,8 @@
   },
   "statusBar": {
     "transfers": "Передавання: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Вихід після завершення передавань",
+    "cancelQuit": "Скасувати",
     "leftCount": "Ліворуч: {{count}}",
     "rightCount": "Праворуч: {{count}}",
     "topCount": "Вгорі: {{count}}",
@@ -848,11 +848,14 @@
     "reload": "Оновити інтерфейс"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_few": "{{count}} transfers are still running. Quit and stop them?",
-    "message_many": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "Файлів зі змінами, які ще не вивантажено на сервер: {{count}}. Під час виходу їхні копії буде збережено для відновлення й запропоновано під час наступного запуску FTPeach.",
+    "preserveAndQuit": "Зберегти для відновлення й вийти",
+    "return": "Повернутися",
+    "message_one": "Триває {{count}} передавання. Вийти й перервати його?",
+    "message_other": "Триває {{count}} передавання. Вийти й перервати їх?",
+    "quitNow": "Вийти зараз",
+    "quitWhenDone": "Вийти після завершення",
+    "message_few": "Тривають {{count}} передавання. Вийти й перервати їх?",
+    "message_many": "Триває {{count}} передавань. Вийти й перервати їх?"
   }
 }

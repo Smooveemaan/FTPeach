@@ -10,10 +10,17 @@ pub fn app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
 
-/// Quits once the window has settled what happens to running transfers, so
-/// unlike closing the window this does not ask again.
+/// The window settled the transfers. Check for edits once more: an editor
+/// may have saved while the window was waiting for transfers to finish.
 #[tauri::command]
-pub fn app_quit(app: AppHandle) {
+pub fn app_quit(app: AppHandle, preserve_edits: Option<bool>) {
+    let count = app
+        .state::<crate::local_fs::open_with::OpenWithWatchers>()
+        .unsynced_count();
+    if count > 0 && preserve_edits != Some(true) {
+        crate::runtime::tray::ask_to_quit(&app, count);
+        return;
+    }
     shutdown::quit_now(&app);
 }
 

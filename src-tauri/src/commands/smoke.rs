@@ -65,18 +65,75 @@ pub fn report_phase(phase: &str) {
 }
 
 pub fn finish(app: &tauri::AppHandle, result: &str) {
+    // PageLoad reports both Started and Finished for the result navigation.
+    if !app
+        .state::<crate::runtime::shutdown::ShutdownCoordinator>()
+        .begin()
+    {
+        return;
+    }
     if result != "ok" {
         report_phase(result);
         app.exit(1);
         return;
     }
 
-    report_phase("ok");
-    if let Some(window) = app.get_webview_window("main")
-        && window.close().is_ok()
-    {
-        return;
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        match verify_editor_shutdown(&app).await {
+            Ok(()) => {
+                report_phase("ok");
+                app.exit(0);
+            }
+            Err(error) => {
+                report_phase(&format!("error: editor shutdown recovery: {error}"));
+                app.exit(1);
+            }
+        }
+    });
+}
+
+/// Runs the same real Tauri cleanup used by quit and install_now, without
+/// launching an installer or touching anything outside isolated smoke data.
+async fn verify_editor_shutdown(app: &tauri::AppHandle) -> anyhow::Result<()> {
+    use crate::local_fs::{edit_recovery, open_with::OpenWithWatchers, preview::PreviewPaths};
+    let paths = app.state::<PreviewPaths>();
+    let folder = paths.open_with_dir.join("shutdown-fixture");
+    fs::create_dir_all(&folder)?;
+    let file = folder.join("edited.txt");
+    fs::write(&file, b"server copy")?;
+    let watchers = app.state::<OpenWithWatchers>();
+    watchers.register(
+        "smoke-editor",
+        fs::canonicalize(&file)?,
+        "/edited.txt".into(),
+    );
+    fs::write(&file, b"edits before quit or update")?;
+    anyhow::ensure!(watchers.unsynced_count() == 1, "edit not detected");
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| anyhow::anyhow!("no main window"))?;
+    crate::runtime::shutdown::wind_down(app.clone(), window).await;
+    anyhow::ensure!(
+        app.state::<Vault>().status().await.locked,
+        "shutdown did not lock vault"
+    );
+    let root = edit_recovery::root(app).ok_or_else(|| anyhow::anyhow!("no recovery root"))?;
+    anyhow::ensure!(
+        edit_recovery::list(&root).len() == 1,
+        "shutdown lost the edited copy"
+    );
+    let mut found = false;
+    for entry in fs::read_dir(root)? {
+        let candidate = entry?.path().join("edited.txt");
+        if candidate.is_file() {
+            anyhow::ensure!(
+                fs::read(candidate)? == b"edits before quit or update",
+                "recovery changed the payload"
+            );
+            found = true;
+        }
     }
-    report_phase("error: failed to request normal application close");
-    app.exit(1);
+    anyhow::ensure!(found, "recovery has no payload");
+    Ok(())
 }

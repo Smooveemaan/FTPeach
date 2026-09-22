@@ -28,6 +28,13 @@ fn disable_browser_accelerator_keys(window: &tauri::WebviewWindow) {
 }
 
 pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let data_dir = local_fs::edit_recovery::data_dir(app.handle())
+        .ok_or_else(|| std::io::Error::other("No local application data directory"))?;
+    let preview_paths = PreviewPaths::with_edit_root(&data_dir);
+    app.manage(local_fs::open_with::OpenWithWatchers::new(
+        preview_paths.open_with_dir.clone(),
+    ));
+    app.manage(preview_paths);
     #[cfg(feature = "smoke-test")]
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("backend-ready");

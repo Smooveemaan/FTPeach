@@ -142,6 +142,8 @@ export interface AppDialogsModel {
     localPath: string,
     name: string,
     remotePath: string,
+    localSize?: number,
+    overwriteApproved?: boolean,
   ) => Promise<{ ok: boolean; skipped?: boolean; alreadyRunning?: boolean }>;
   refreshPane: ReturnType<typeof usePanes>['refreshPane'];
   windowNarrow: boolean;
@@ -294,6 +296,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           title={t('openWithChanged.title')}
           message={t('openWithChanged.message', { name: changedWatch.name })}
           confirmLabel={t('common.upload')}
+          cancelLabel={t('recoveredEdits.later')}
           danger={false}
           onConfirm={() => {
             const watch = changedWatch;
@@ -307,6 +310,8 @@ export default function AppDialogs({ model }: AppDialogsProps) {
               watch.localPath,
               watch.name,
               parentRemotePath(watch.remotePath),
+              undefined,
+              true,
             );
             reportRejection(
               upload.then((result) => {

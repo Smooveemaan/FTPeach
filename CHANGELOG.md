@@ -8,9 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Files can be moved only on your computer or within one server connection. Between your
   computer and a server, or between two servers, copy them instead.
+- Quitting with edits that have not been uploaded now asks whether to return or keep the
+  copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
 
 ### Fixed
 
+- Failed local copies now wait for outstanding disk writes before removing their temporary
+  files, including after cancellation or a full disk.
+- Editor copies survive temporary-folder cleanup and retain later saves when an editor
+  keeps a file locked during shutdown. New editor opens pause when retained copies reach
+  1 GiB or 30 days; existing edits are never automatically deleted.
+
+- Remote renames, including letter-case changes, only replace an existing file after confirmation.
+- Changing only the letter case of a local file name no longer fails as busy.
+- Uploading from the changed-file dialog no longer asks for overwrite confirmation twice.
+- Download commits now refuse to replace existing files unless overwrite was explicitly allowed.
 - Renaming or moving a file into a folder no longer replaces a file with the same name there
   unless you agreed to overwrite it.
 - A failed copy of a single file no longer leaves a half-written file behind or damages the

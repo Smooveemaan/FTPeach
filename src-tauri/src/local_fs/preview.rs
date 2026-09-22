@@ -30,6 +30,19 @@ impl Default for PreviewPaths {
     }
 }
 
+impl PreviewPaths {
+    /// Editor copies must survive OS temporary-file cleanup, including when
+    /// an editor denies rename at shutdown. Previews remain disposable.
+    pub fn with_edit_root(data_dir: &std::path::Path) -> Self {
+        Self {
+            open_with_dir: data_dir
+                .join("edit-sessions")
+                .join(uuid::Uuid::new_v4().to_string()),
+            ..Self::default()
+        }
+    }
+}
+
 /// Removes abandoned preview sessions from crashed/force-killed instances.
 /// Open-with sessions are not removed here: they may hold edits nobody
 /// uploaded, and `edit_recovery` collects them instead.

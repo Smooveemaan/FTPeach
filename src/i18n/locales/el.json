@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "Εμφάνιση FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Ενεργές μεταφορές: {{count}}",
+    "transferringProgress": "Ενεργές μεταφορές: {{count}} · {{percent}} %",
+    "quitWaiting": "Έξοδος μετά την ολοκλήρωση των μεταφορών · {{count}}",
+    "quitWaitingProgress": "Έξοδος μετά την ολοκλήρωση των μεταφορών · {{count}} · {{percent}} %",
+    "pauseAll": "Παύση όλων των μεταφορών",
+    "resumeAll": "Συνέχιση όλων των μεταφορών",
+    "speedLimit": "Όριο ταχύτητας",
+    "unlimited": "Χωρίς όριο",
+    "preventSleep": "Διατήρηση του υπολογιστή σε λειτουργία",
     "notify": "Ειδοποίηση κατά την ολοκλήρωση των μεταφορών",
     "recentConnections": "Πρόσφατες συνδέσεις",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Κλείδωμα αποθηκευμένων κωδικών πρόσβασης",
     "quit": "Έξοδος",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Ακύρωση εξόδου"
   },
   "tabStrip": {
     "localComputer": "Υπολογιστής",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Μεταφορές: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Έξοδος μετά την ολοκλήρωση των μεταφορών",
+    "cancelQuit": "Ακύρωση",
     "leftCount": "Αριστερά: {{count}}",
     "rightCount": "Δεξιά: {{count}}",
     "topCount": "Πάνω: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Επαναφόρτωση διεπαφής"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Αρχεία με αλλαγές που δεν έχουν μεταφορτωθεί ακόμη στον διακομιστή: {{count}}. Κατά την έξοδο θα διατηρηθούν αντίγραφα για ανάκτηση, τα οποία θα σας προταθούν την επόμενη φορά που θα ξεκινήσετε το FTPeach.",
+    "preserveAndQuit": "Διατήρηση για ανάκτηση και έξοδος",
+    "return": "Επιστροφή",
+    "message_one": "{{count}} μεταφορά βρίσκεται ακόμη σε εξέλιξη. Έξοδος και διακοπή της;",
+    "message_other": "{{count}} μεταφορές βρίσκονται ακόμη σε εξέλιξη. Έξοδος και διακοπή τους;",
+    "quitNow": "Έξοδος τώρα",
+    "quitWhenDone": "Έξοδος μετά την ολοκλήρωση των μεταφορών"
   }
 }

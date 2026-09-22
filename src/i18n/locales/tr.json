@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "FTPeach'i göster",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Devam eden aktarımlar: {{count}}",
+    "transferringProgress": "Devam eden aktarımlar: {{count}} · %{{percent}}",
+    "quitWaiting": "Aktarımlar bitince çıkılacak · {{count}}",
+    "quitWaitingProgress": "Aktarımlar bitince çıkılacak · {{count}} · %{{percent}}",
+    "pauseAll": "Tüm aktarımları duraklat",
+    "resumeAll": "Tüm aktarımları sürdür",
+    "speedLimit": "Hız sınırı",
+    "unlimited": "Sınırsız",
+    "preventSleep": "Bilgisayarı uyanık tut",
     "notify": "Aktarımlar bittiğinde bildirim gönder",
     "recentConnections": "Son bağlantılar",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Kaydedilmiş şifreleri kilitle",
     "quit": "Çık",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Çıkışı iptal et"
   },
   "tabStrip": {
     "localComputer": "Bilgisayar",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Aktarımlar: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Aktarımlar bitince çıkılacak",
+    "cancelQuit": "İptal et",
     "leftCount": "Sol: {{count}}",
     "rightCount": "Sağ: {{count}}",
     "topCount": "Üst: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Arayüzü Yeniden Yükle"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Değişiklikleri henüz sunucuya yüklenmemiş dosyalar: {{count}}. Çıkışta kopyaları kurtarma için saklanacak ve FTPeach'i bir sonraki başlatışınızda size sunulacak.",
+    "preserveAndQuit": "Kurtarma için sakla ve çık",
+    "return": "Geri dön",
+    "message_one": "{{count}} aktarım hâlâ sürüyor. Çıkılsın ve durdurulsun mu?",
+    "message_other": "{{count}} aktarım hâlâ sürüyor. Çıkılsın ve durdurulsun mu?",
+    "quitNow": "Şimdi çık",
+    "quitWhenDone": "Aktarımlar bitince çık"
   }
 }

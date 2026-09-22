@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "FTPeach megjelenítése",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Folyamatban lévő átvitelek: {{count}}",
+    "transferringProgress": "Folyamatban lévő átvitelek: {{count}} · {{percent}} %",
+    "quitWaiting": "Kilépés az átvitelek befejezése után · {{count}}",
+    "quitWaitingProgress": "Kilépés az átvitelek befejezése után · {{count}} · {{percent}} %",
+    "pauseAll": "Minden átvitel szüneteltetése",
+    "resumeAll": "Minden átvitel folytatása",
+    "speedLimit": "Sebességkorlátozás",
+    "unlimited": "Nincs korlát",
+    "preventSleep": "A számítógép ébren tartása",
     "notify": "Értesítés az átvitelek befejezéséről",
     "recentConnections": "Legutóbbi kapcsolatok",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Mentett jelszavak zárolása",
     "quit": "Kilépés",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Kilépés megszakítása"
   },
   "tabStrip": {
     "localComputer": "Számítógép",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Átvitelek: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Kilépés az átvitelek befejezése után",
+    "cancelQuit": "Mégse",
     "leftCount": "Bal: {{count}}",
     "rightCount": "Jobb: {{count}}",
     "topCount": "Felül: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Felület újratöltése"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Fájlok olyan módosításokkal, amelyek még nem kerültek fel a szerverre: {{count}}. Kilépéskor a másolatukat megőrizzük helyreállításhoz, és az FTPeach következő indításakor felajánljuk őket.",
+    "preserveAndQuit": "Megőrzés helyreállításhoz és kilépés",
+    "return": "Vissza",
+    "message_one": "Még {{count}} átvitel van folyamatban. Kilép, és leállítja?",
+    "message_other": "Még {{count}} átvitel van folyamatban. Kilép, és leállítja őket?",
+    "quitNow": "Kilépés most",
+    "quitWhenDone": "Kilépés az átvitelek befejezése után"
   }
 }

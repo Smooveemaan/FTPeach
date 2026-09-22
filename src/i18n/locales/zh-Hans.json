@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "显示 FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "正在传输：{{count}} 个",
+    "transferringProgress": "正在传输：{{count}} 个 · {{percent}}%",
+    "quitWaiting": "传输完成后将退出 · {{count}}",
+    "quitWaitingProgress": "传输完成后将退出 · {{count}} · {{percent}}%",
+    "pauseAll": "暂停所有传输",
+    "resumeAll": "继续所有传输",
+    "speedLimit": "速度限制",
+    "unlimited": "无限制",
+    "preventSleep": "保持电脑唤醒",
     "notify": "传输完成后通知",
     "recentConnections": "最近的连接",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "锁定已保存的密码",
     "quit": "退出",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "取消退出"
   },
   "tabStrip": {
     "localComputer": "计算机",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "传输：{{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "传输完成后将退出",
+    "cancelQuit": "取消",
     "leftCount": "左侧：{{count}}",
     "rightCount": "右侧：{{count}}",
     "topCount": "上方：{{count}}",
@@ -828,9 +828,12 @@
     "reload": "重新加载界面"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "有更改尚未上传到服务器的文件：{{count}} 个。退出时将保留副本以便恢复，并在下次启动 FTPeach 时提供给你。",
+    "preserveAndQuit": "保留以便恢复并退出",
+    "return": "返回",
+    "message_one": "仍有 {{count}} 个传输正在进行。要退出并停止传输吗？",
+    "message_other": "仍有 {{count}} 个传输正在进行。要退出并停止传输吗？",
+    "quitNow": "立即退出",
+    "quitWhenDone": "传输完成后退出"
   }
 }

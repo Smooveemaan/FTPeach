@@ -60,7 +60,7 @@ pub const MAX_REMOTE_FILENAME_LEN: usize = 1024;
 tokio::task_local! { pub static ALLOW_OVERWRITE: bool; }
 
 pub fn overwrite_allowed() -> bool {
-    ALLOW_OVERWRITE.try_with(|value| *value).unwrap_or(true)
+    ALLOW_OVERWRITE.try_with(|value| *value).unwrap_or(false)
 }
 
 /// Puts `old_path` in place of the file at `new_path` on a server that will

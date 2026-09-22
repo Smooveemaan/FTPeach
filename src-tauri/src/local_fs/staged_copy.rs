@@ -16,6 +16,13 @@ use tokio_util::sync::CancellationToken;
 /// Points where a test can fail the copy, in the order they are reached.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage {
+    #[cfg(test)]
+    Read,
+    #[cfg(test)]
+    Write,
+    #[cfg(test)]
+    Flush,
+    Sync,
     Copied,
     Synced,
 }
@@ -35,6 +42,71 @@ fn reach(_: Stage) -> Result<()> {
     Ok(())
 }
 
+// Inject errors through the same AsyncRead/AsyncWrite interface used by
+// tokio::io::copy, including after some bytes have already been written.
+#[cfg(test)]
+struct FaultIo(tokio::fs::File);
+
+#[cfg(test)]
+impl FaultIo {
+    async fn into_std(self) -> std::fs::File {
+        self.0.into_std().await
+    }
+}
+
+#[cfg(test)]
+impl std::ops::Deref for FaultIo {
+    type Target = tokio::fs::File;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[cfg(test)]
+impl tokio::io::AsyncRead for FaultIo {
+    fn poll_read(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        if let Err(error) = reach(Stage::Read) {
+            return std::task::Poll::Ready(Err(std::io::Error::other(error)));
+        }
+        std::pin::Pin::new(&mut self.0).poll_read(cx, buf)
+    }
+}
+
+#[cfg(test)]
+impl tokio::io::AsyncWrite for FaultIo {
+    fn poll_write(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &[u8],
+    ) -> std::task::Poll<std::io::Result<usize>> {
+        if let Err(error) = reach(Stage::Write) {
+            return std::task::Poll::Ready(Err(std::io::Error::other(error)));
+        }
+        std::pin::Pin::new(&mut self.0).poll_write(cx, buf)
+    }
+
+    fn poll_flush(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        if let Err(error) = reach(Stage::Flush) {
+            return std::task::Poll::Ready(Err(std::io::Error::other(error)));
+        }
+        std::pin::Pin::new(&mut self.0).poll_flush(cx)
+    }
+
+    fn poll_shutdown(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        std::pin::Pin::new(&mut self.0).poll_shutdown(cx)
+    }
+}
+
 fn staging_path(target: &Path) -> PathBuf {
     target.with_file_name(format!(".ftpeach-{}.part", uuid::Uuid::new_v4()))
 }
@@ -50,14 +122,24 @@ pub(crate) async fn copy_file(
     token: &CancellationToken,
 ) -> Result<()> {
     let temporary = staging_path(target);
+    let mut staged = None;
+    let mut created = false;
     let result = async {
-        let mut input = tokio::fs::File::open(source).await?;
+        let input = tokio::fs::File::open(source).await?;
+        #[cfg(test)]
+        let input = FaultIo(input);
+        let mut input = input;
         let before = input.metadata().await?;
         anyhow::ensure!(before.is_file(), "Only a regular file can be copied");
-        let mut output = tokio::fs::File::from_std(transfer_file::open_artifact(&temporary, true)?);
+        let output = tokio::fs::File::from_std(transfer_file::open_artifact(&temporary, true)?);
+        created = true;
+        #[cfg(test)]
+        let output = FaultIo(output);
+        staged = Some(output);
+        let output = staged.as_mut().unwrap();
         let mut limited = (&mut input).take(before.len().saturating_add(1));
         let bytes = tokio::select! {
-            result = tokio::io::copy(&mut limited, &mut output) => result?,
+            result = tokio::io::copy(&mut limited, &mut *output) => result?,
             _ = token.cancelled() => return Err(cancelled()),
         };
         reach(Stage::Copied)?;
@@ -68,8 +150,9 @@ pub(crate) async fn copy_file(
             "Source changed during copy"
         );
         output.flush().await?;
+        reach(Stage::Sync)?;
         output.sync_all().await?;
-        drop(output);
+        drop(staged.take().unwrap().into_std().await);
         reach(Stage::Synced)?;
         if token.is_cancelled() {
             return Err(cancelled());
@@ -79,7 +162,13 @@ pub(crate) async fn copy_file(
             .await
     }
     .await;
-    if result.is_err() {
+    // Tokio file writes can still be running on the blocking pool when copy
+    // fails or is cancelled. Join them and close the exclusive handle before
+    // removing the artifact, otherwise Windows may leave a partial behind.
+    if let Some(output) = staged.take() {
+        drop(output.into_std().await);
+    }
+    if result.is_err() && created {
         let _ = tokio::fs::remove_file(&temporary).await;
     }
     result
@@ -89,6 +178,66 @@ pub(crate) async fn copy_file(
 mod tests {
     use super::*;
     use std::sync::Arc;
+
+    #[tokio::test]
+    async fn io_errors_and_disk_full_never_publish_a_partial_or_damage_an_old_target() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        for stage in [Stage::Read, Stage::Write, Stage::Flush, Stage::Sync] {
+            for existing in [None, Some(b"old".as_slice())] {
+                for overwrite in [false, true] {
+                    let fixture = Fixture::new(existing);
+                    let writes = Arc::new(AtomicUsize::new(0));
+                    let observed_writes = writes.clone();
+                    let fault: Arc<dyn Fn(Stage) -> Result<()> + Send + Sync> =
+                        Arc::new(move |reached| {
+                            if reached == Stage::Write {
+                                observed_writes.fetch_add(1, Ordering::SeqCst);
+                            }
+                            // Let the first write through, then fail a subsequent
+                            // read/write. This exercises cleanup of a partial file.
+                            if reached == stage
+                                && (matches!(stage, Stage::Flush | Stage::Sync)
+                                    || observed_writes.load(Ordering::SeqCst) > 1)
+                            {
+                                let error = if stage == Stage::Write {
+                                    std::io::Error::from_raw_os_error(112) // ERROR_DISK_FULL
+                                } else {
+                                    std::io::Error::other(format!("injected {stage:?} I/O failure"))
+                                };
+                                return Err(error.into());
+                            }
+                            Ok(())
+                        });
+                    assert!(
+                        FAULT
+                            .scope(
+                                fault,
+                                copy_file(
+                                    &fixture.source,
+                                    &fixture.target,
+                                    overwrite,
+                                    &CancellationToken::new(),
+                                )
+                            )
+                            .await
+                            .is_err(),
+                        "{stage:?}"
+                    );
+                    assert!(writes.load(Ordering::SeqCst) > 0);
+                    if let Some(content) = existing {
+                        assert_eq!(std::fs::read(&fixture.target).unwrap(), content);
+                        assert_eq!(fixture.names(), ["source.bin", "target.bin"]);
+                    } else {
+                        assert_eq!(fixture.names(), ["source.bin"]);
+                    }
+                    assert_eq!(
+                        std::fs::metadata(&fixture.source).unwrap().len(),
+                        256 * 1024 + 3
+                    );
+                }
+            }
+        }
+    }
 
     struct Fixture {
         root: PathBuf,

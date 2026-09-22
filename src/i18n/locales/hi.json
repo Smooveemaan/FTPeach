@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "FTPeach दिखाएँ",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "जारी स्थानांतरण: {{count}}",
+    "transferringProgress": "जारी स्थानांतरण: {{count}} · {{percent}}%",
+    "quitWaiting": "स्थानांतरण समाप्त होने के बाद बाहर निकलेगा · {{count}}",
+    "quitWaitingProgress": "स्थानांतरण समाप्त होने के बाद बाहर निकलेगा · {{count}} · {{percent}}%",
+    "pauseAll": "सभी स्थानांतरण रोकें",
+    "resumeAll": "सभी स्थानांतरण फिर से शुरू करें",
+    "speedLimit": "गति सीमा",
+    "unlimited": "कोई सीमा नहीं",
+    "preventSleep": "कंप्यूटर को स्लीप में जाने से रोकें",
     "notify": "स्थानांतरण समाप्त होने पर सूचित करें",
     "recentConnections": "हाल के कनेक्शन",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "सहेजे गए पासवर्ड लॉक करें",
     "quit": "बाहर निकलें",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "बाहर निकलना रद्द करें"
   },
   "tabStrip": {
     "localComputer": "कंप्यूटर",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "स्थानान्तरण: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "स्थानांतरण समाप्त होने के बाद बाहर निकलेगा",
+    "cancelQuit": "रद्द करें",
     "leftCount": "बायां: {{count}}",
     "rightCount": "दायाँ: {{count}}",
     "topCount": "ऊपर: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "इंटरफ़ेस पुनः लोड करें"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "ऐसी फ़ाइलें जिनके बदलाव अभी तक सर्वर पर अपलोड नहीं हुए हैं: {{count}}। बाहर निकलने पर उनकी प्रतियाँ पुनर्प्राप्ति के लिए सहेजकर रखी जाएँगी और अगली बार FTPeach शुरू करने पर आपको दिखाई जाएँगी।",
+    "preserveAndQuit": "पुनर्प्राप्ति के लिए रखें और बाहर निकलें",
+    "return": "वापस जाएँ",
+    "message_one": "{{count}} स्थानांतरण अभी भी चल रहा है। बाहर निकलें और उसे रोकें?",
+    "message_other": "{{count}} स्थानांतरण अभी भी चल रहे हैं। बाहर निकलें और उन्हें रोकें?",
+    "quitNow": "अभी बाहर निकलें",
+    "quitWhenDone": "स्थानांतरण समाप्त होने पर बाहर निकलें"
   }
 }

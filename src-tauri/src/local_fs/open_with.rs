@@ -29,16 +29,20 @@ pub(crate) struct Signature {
 impl Signature {
     pub(crate) fn of(path: &Path) -> Option<Self> {
         let meta = std::fs::metadata(path).ok()?;
+        Some(Self::from_metadata(&meta))
+    }
+
+    pub(crate) fn from_metadata(meta: &std::fs::Metadata) -> Self {
         let modified = meta
             .modified()
             .unwrap_or(SystemTime::UNIX_EPOCH)
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or_default();
-        Some(Self {
+        Self {
             secs: modified.as_secs(),
             nanos: modified.subsec_nanos(),
             len: meta.len(),
-        })
+        }
     }
 
     /// The token the renderer hands back once this revision is uploaded.
@@ -72,7 +76,10 @@ impl CopyRecord {
     pub(crate) fn has_unsynced_edits(&self) -> bool {
         match Signature::of(&self.local_path) {
             Some(current) => self.synced != Some(current),
-            None => false,
+            // A sharing/access error is not proof that an edit is clean.
+            None => {
+                !matches!(std::fs::metadata(&self.local_path), Err(error) if error.kind() == std::io::ErrorKind::NotFound)
+            }
         }
     }
 }
@@ -109,6 +116,18 @@ pub struct OpenWithWatchers {
 }
 
 impl OpenWithWatchers {
+    /// Read the files, rather than the last poll, so a save just before exit counts.
+    pub fn unsynced_count(&self) -> usize {
+        self.inner
+            .lock()
+            .unwrap()
+            .manifest
+            .copies
+            .values()
+            .filter(|copy| copy.has_unsynced_edits())
+            .count()
+    }
+
     /// `dir` is this process's open-with session directory.
     pub fn new(dir: PathBuf) -> Self {
         Self {
@@ -255,10 +274,14 @@ mod tests {
         let file = dir.join("page.html");
         std::fs::write(&file, b"server").unwrap();
         watchers.register("a", file.clone(), "/site/page.html".into());
+        assert_eq!(watchers.unsynced_count(), 0);
         let manifest = Manifest::read(&dir).unwrap();
         assert!(!manifest.copies["a"].has_unsynced_edits());
 
         edit(&file, b"edited by the user");
+        assert_eq!(watchers.unsynced_count(), 1);
+        watchers.stop("a");
+        assert_eq!(watchers.unsynced_count(), 1);
         let manifest = Manifest::read(&dir).unwrap();
         assert!(manifest.copies["a"].has_unsynced_edits());
         assert_eq!(manifest.copies["a"].remote_path, "/site/page.html");
@@ -280,6 +303,7 @@ mod tests {
 
         let latest = Signature::of(&file).unwrap().revision();
         assert!(watchers.mark_synced("a", &latest));
+        assert_eq!(watchers.unsynced_count(), 0);
         assert!(!Manifest::read(&dir).unwrap().copies["a"].has_unsynced_edits());
         assert!(!watchers.mark_synced("missing", &latest));
         std::fs::remove_dir_all(dir).unwrap();

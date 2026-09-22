@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "FTPeach weergeven",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Actieve overdrachten: {{count}}",
+    "transferringProgress": "Actieve overdrachten: {{count}} · {{percent}} %",
+    "quitWaiting": "Wordt afgesloten zodra de overdrachten klaar zijn · {{count}}",
+    "quitWaitingProgress": "Wordt afgesloten zodra de overdrachten klaar zijn · {{count}} · {{percent}} %",
+    "pauseAll": "Alle overdrachten pauzeren",
+    "resumeAll": "Alle overdrachten hervatten",
+    "speedLimit": "Snelheidslimiet",
+    "unlimited": "Geen limiet",
+    "preventSleep": "Computer wakker houden",
     "notify": "Melden wanneer overdrachten klaar zijn",
     "recentConnections": "Recente verbindingen",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Opgeslagen wachtwoorden vergrendelen",
     "quit": "Afsluiten",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Afsluiten annuleren"
   },
   "tabStrip": {
     "localComputer": "Computer",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Overdrachten: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Wordt afgesloten zodra de overdrachten klaar zijn",
+    "cancelQuit": "Annuleren",
     "leftCount": "Links: {{count}}",
     "rightCount": "Rechts: {{count}}",
     "topCount": "Boven: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Interface opnieuw laden"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Bestanden met wijzigingen die nog niet naar de server zijn geüpload: {{count}}. Bij het afsluiten worden kopieën bewaard voor herstel en aangeboden wanneer u FTPeach de volgende keer start.",
+    "preserveAndQuit": "Bewaren voor herstel en afsluiten",
+    "return": "Teruggaan",
+    "message_one": "Er loopt nog {{count}} overdracht. Afsluiten en deze stoppen?",
+    "message_other": "Er lopen nog {{count}} overdrachten. Afsluiten en deze stoppen?",
+    "quitNow": "Nu afsluiten",
+    "quitWhenDone": "Afsluiten zodra de overdrachten klaar zijn"
   }
 }

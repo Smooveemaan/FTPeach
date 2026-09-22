@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "แสดง FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "การโอนที่กำลังดำเนินการ: {{count}}",
+    "transferringProgress": "การโอนที่กำลังดำเนินการ: {{count}} · {{percent}}%",
+    "quitWaiting": "จะออกจากโปรแกรมเมื่อการโอนเสร็จสิ้น · {{count}}",
+    "quitWaitingProgress": "จะออกจากโปรแกรมเมื่อการโอนเสร็จสิ้น · {{count}} · {{percent}}%",
+    "pauseAll": "หยุดการโอนทั้งหมดชั่วคราว",
+    "resumeAll": "ดำเนินการโอนทั้งหมดต่อ",
+    "speedLimit": "จำกัดความเร็ว",
+    "unlimited": "ไม่มีขีดจำกัด",
+    "preventSleep": "ไม่ให้คอมพิวเตอร์เข้าสู่โหมดพัก",
     "notify": "แจ้งเตือนเมื่อการโอนเสร็จสิ้น",
     "recentConnections": "การเชื่อมต่อล่าสุด",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "ล็อกรหัสผ่านที่บันทึกไว้",
     "quit": "ออกจากโปรแกรม",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "ยกเลิกการออก"
   },
   "tabStrip": {
     "localComputer": "คอมพิวเตอร์",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "การโอน: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "จะออกจากโปรแกรมเมื่อการโอนเสร็จสิ้น",
+    "cancelQuit": "ยกเลิก",
     "leftCount": "ด้านซ้าย: {{count}}",
     "rightCount": "ด้านขวา: {{count}}",
     "topCount": "ด้านบน: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "รีโหลดอินเทอร์เฟซ"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "ไฟล์ที่มีการแก้ไขซึ่งยังไม่ได้อัปโหลดไปยังเซิร์ฟเวอร์: {{count}} ไฟล์ เมื่อออก ระบบจะเก็บสำเนาไว้เพื่อกู้คืนและแสดงให้คุณเลือกเมื่อเริ่ม FTPeach ครั้งถัดไป",
+    "preserveAndQuit": "เก็บไว้เพื่อกู้คืนและออก",
+    "return": "ย้อนกลับ",
+    "message_one": "ยังมีการโอน {{count}} รายการที่กำลังดำเนินการอยู่ ออกจากโปรแกรมและหยุดการโอนหรือไม่?",
+    "message_other": "ยังมีการโอน {{count}} รายการที่กำลังดำเนินการอยู่ ออกจากโปรแกรมและหยุดการโอนหรือไม่?",
+    "quitNow": "ออกทันที",
+    "quitWhenDone": "ออกเมื่อการโอนเสร็จสิ้น"
   }
 }

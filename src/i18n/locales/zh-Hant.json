@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "顯示 FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "正在傳輸：{{count}} 個",
+    "transferringProgress": "正在傳輸：{{count}} 個 · {{percent}}%",
+    "quitWaiting": "傳輸完成後將結束 · {{count}}",
+    "quitWaitingProgress": "傳輸完成後將結束 · {{count}} · {{percent}}%",
+    "pauseAll": "暫停所有傳輸",
+    "resumeAll": "繼續所有傳輸",
+    "speedLimit": "速度限制",
+    "unlimited": "無限制",
+    "preventSleep": "讓電腦保持喚醒",
     "notify": "傳輸完成時通知",
     "recentConnections": "最近的連線",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "鎖定已儲存的密碼",
     "quit": "結束",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "取消結束"
   },
   "tabStrip": {
     "localComputer": "電腦",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "傳輸：{{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "傳輸完成後將結束",
+    "cancelQuit": "取消",
     "leftCount": "左：{{count}}",
     "rightCount": "右：{{count}}",
     "topCount": "上方：{{count}}",
@@ -828,9 +828,12 @@
     "reload": "重新載入介面"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "有變更尚未上傳到伺服器的檔案：{{count}} 個。結束時將保留副本以供復原，並在下次啟動 FTPeach 時提供給您。",
+    "preserveAndQuit": "保留以供復原並結束",
+    "return": "返回",
+    "message_one": "仍有 {{count}} 個傳輸正在進行。要結束並停止傳輸嗎？",
+    "message_other": "仍有 {{count}} 個傳輸正在進行。要結束並停止傳輸嗎？",
+    "quitNow": "立即結束",
+    "quitWhenDone": "傳輸完成後結束"
   }
 }

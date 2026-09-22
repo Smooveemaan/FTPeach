@@ -763,20 +763,20 @@
   },
   "tray": {
     "show": "Zobrazit FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Probíhající přenosy: {{count}}",
+    "transferringProgress": "Probíhající přenosy: {{count}} · {{percent}} %",
+    "quitWaiting": "Aplikace se ukončí po dokončení přenosů · {{count}}",
+    "quitWaitingProgress": "Aplikace se ukončí po dokončení přenosů · {{count}} · {{percent}} %",
+    "pauseAll": "Pozastavit všechny přenosy",
+    "resumeAll": "Obnovit všechny přenosy",
+    "speedLimit": "Omezení rychlosti",
+    "unlimited": "Bez omezení",
+    "preventSleep": "Nenechat počítač usnout",
     "notify": "Upozornit na dokončení přenosů",
     "recentConnections": "Nedávná připojení",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Zamknout uložená hesla",
     "quit": "Ukončit",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Zrušit ukončení"
   },
   "tabStrip": {
     "localComputer": "Počítač",
@@ -789,8 +789,8 @@
   },
   "statusBar": {
     "transfers": "Přenosy: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Aplikace se ukončí po dokončení přenosů",
+    "cancelQuit": "Zrušit",
     "leftCount": "Vlevo: {{count}}",
     "rightCount": "Vpravo: {{count}}",
     "topCount": "Nahoře: {{count}}",
@@ -848,11 +848,14 @@
     "reload": "Znovu načíst rozhraní"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_few": "{{count}} transfers are still running. Quit and stop them?",
-    "message_many": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "Soubory se změnami, které ještě nebyly nahrány na server: {{count}}. Při ukončení budou jejich kopie uchovány pro obnovení a nabídnuty při příštím spuštění FTPeach.",
+    "preserveAndQuit": "Uchovat pro obnovení a ukončit",
+    "return": "Zpět",
+    "message_one": "Stále probíhá {{count}} přenos. Ukončit aplikaci a přenos zastavit?",
+    "message_other": "Stále probíhá {{count}} přenosů. Ukončit aplikaci a přenosy zastavit?",
+    "quitNow": "Ukončit hned",
+    "quitWhenDone": "Ukončit po dokončení přenosů",
+    "message_few": "Stále probíhají {{count}} přenosy. Ukončit aplikaci a přenosy zastavit?",
+    "message_many": "Stále probíhá {{count}} přenosu. Ukončit aplikaci a přenosy zastavit?"
   }
 }

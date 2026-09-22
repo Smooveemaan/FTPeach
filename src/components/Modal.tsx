@@ -13,6 +13,7 @@ interface ModalFooterActionsProps {
   onCancel: () => void;
   onConfirm: () => void;
   confirmLabel?: ReactNode;
+  cancelLabel?: ReactNode;
   danger?: boolean;
   cancelDisabled?: boolean;
   confirmDisabled?: boolean;
@@ -23,6 +24,7 @@ export function ModalFooterActions({
   onCancel,
   onConfirm,
   confirmLabel,
+  cancelLabel,
   danger = false,
   cancelDisabled = false,
   confirmDisabled = false,
@@ -32,7 +34,7 @@ export function ModalFooterActions({
   return (
     <>
       <button type="button" className="btn" onClick={onCancel} disabled={cancelDisabled}>
-        {t('common.cancel')}
+        {cancelLabel ?? t('common.cancel')}
       </button>
       <button
         ref={confirmRef}

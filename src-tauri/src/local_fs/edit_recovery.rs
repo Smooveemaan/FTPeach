@@ -12,6 +12,65 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 const DESCRIPTION: &str = "edit.json";
+const MAX_RETAINED_BYTES: u64 = 1024 * 1024 * 1024;
+const MAX_RETAINED_AGE: std::time::Duration = std::time::Duration::from_secs(30 * 24 * 60 * 60);
+
+/// Retention is enforced at admission, never by deleting the only edited copy.
+/// Existing editors may grow their files beyond the budget; new opens then
+/// stop until the user has saved or explicitly discarded the retained work.
+pub fn check_admission(session: &Path, root: &Path) -> anyhow::Result<()> {
+    let sessions = session
+        .parent()
+        .ok_or_else(|| std::io::Error::other("No edit session root"))?;
+    check_budget(&[sessions, root], MAX_RETAINED_BYTES, MAX_RETAINED_AGE)
+}
+
+fn check_budget(
+    roots: &[&Path],
+    max_bytes: u64,
+    max_age: std::time::Duration,
+) -> anyhow::Result<()> {
+    let mut pending: Vec<(PathBuf, usize)> =
+        roots.iter().map(|root| (root.to_path_buf(), 0)).collect();
+    let mut bytes = 0u64;
+    let mut count = 0usize;
+    while let Some((folder, depth)) = pending.pop() {
+        let entries = match std::fs::read_dir(folder) {
+            Ok(entries) => entries,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(error.into()),
+        };
+        for entry in entries {
+            let entry = entry?;
+            let kind = entry.file_type()?;
+            count += 1;
+            if count > 10_000 || depth > 4 {
+                return Err(retention_limit());
+            }
+            if kind.is_symlink() {
+                return Err(retention_limit());
+            }
+            if kind.is_dir() {
+                pending.push((entry.path(), depth + 1));
+            } else if kind.is_file() {
+                let metadata = entry.metadata()?;
+                bytes = bytes.saturating_add(metadata.len());
+                let age = metadata.modified()?.elapsed().unwrap_or_default();
+                if bytes >= max_bytes || age >= max_age {
+                    return Err(retention_limit());
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn retention_limit() -> anyhow::Error {
+    crate::ipc::CommandError::new(
+        crate::ipc::ErrorCode::ResourceLimit,
+        "Save or discard recovered editor copies before opening more files (1 GiB or 30 days). Existing edits have been kept.",
+    ).into()
+}
 
 /// One recovered edit as the renderer lists it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -25,12 +84,20 @@ pub struct RecoveredEdit {
 
 /// Where recovered edits live: beside the application's local data, outside
 /// the temporary directory that Windows may clean on its own.
-pub fn root(app: &tauri::AppHandle) -> Option<PathBuf> {
+pub fn data_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+    // Windows KnownFolder APIs do not necessarily honor the process's
+    // LOCALAPPDATA override. Smoke must never use the interactive user's data.
+    #[cfg(feature = "smoke-test")]
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
+        return std::env::var_os("LOCALAPPDATA")
+            .map(|path| PathBuf::from(path).join("com.smooveemaan.ftpeach"));
+    }
     use tauri::Manager;
-    app.path()
-        .app_local_data_dir()
-        .ok()
-        .map(|dir| dir.join("recovered-edits"))
+    app.path().app_local_data_dir().ok()
+}
+
+pub fn root(app: &tauri::AppHandle) -> Option<PathBuf> {
+    data_dir(app).map(|dir| dir.join("recovered-edits"))
 }
 
 fn is_session_name(path: &Path) -> bool {
@@ -41,18 +108,21 @@ fn is_session_name(path: &Path) -> bool {
 
 /// Files a session left without a manifest: every regular file in its
 /// per-download folders. Without a record nothing proves them unedited.
-fn unrecorded_files(session: &Path) -> Vec<PathBuf> {
-    let Ok(folders) = std::fs::read_dir(session) else {
-        return Vec::new();
-    };
-    folders
-        .flatten()
-        .filter(|folder| folder.file_type().is_ok_and(|kind| kind.is_dir()))
-        .filter_map(|folder| std::fs::read_dir(folder.path()).ok())
-        .flat_map(|files| files.flatten())
-        .filter(|file| file.file_type().is_ok_and(|kind| kind.is_file()))
-        .map(|file| file.path())
-        .collect()
+fn unrecorded_files(session: &Path) -> std::io::Result<Vec<PathBuf>> {
+    let mut found = Vec::new();
+    for folder in std::fs::read_dir(session)? {
+        let folder = folder?;
+        let kind = folder.file_type()?;
+        if kind.is_dir() && !kind.is_symlink() {
+            for file in std::fs::read_dir(folder.path())? {
+                let file = file?;
+                if file.file_type()?.is_file() {
+                    found.push(file.path());
+                }
+            }
+        }
+    }
+    Ok(found)
 }
 
 fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::Result<()> {
@@ -66,12 +136,22 @@ fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::R
         remote_path,
         saved_at: chrono::Utc::now().to_rfc3339(),
     };
+    // A live editor may keep writing. Never copy it and then forget its
+    // original: that would lose saves made after the snapshot. If rename is
+    // denied, retain the original plus manifest and retry on the next start.
+    let destination = folder.join(name);
     let saved = std::fs::write(folder.join(DESCRIPTION), serde_json::to_vec(&description)?)
-        .and_then(|()| match std::fs::rename(file, folder.join(name)) {
-            Ok(()) => Ok(()),
-            // Another volume, or an editor holding the file without sharing
-            // delete: a copy keeps the edit and leaves the original alone.
-            Err(_) => std::fs::copy(file, folder.join(name)).map(|_| ()),
+        .and_then(|()| {
+            let result = std::fs::rename(file, &destination);
+            #[cfg(windows)]
+            if result
+                .as_ref()
+                .is_err_and(|error| error.raw_os_error() == Some(17))
+            {
+                return super::verified_move::copy_verify_delete(file, &destination, false)
+                    .map_err(std::io::Error::other);
+            }
+            result
         });
     if saved.is_err() {
         let _ = std::fs::remove_dir_all(&folder);
@@ -79,32 +159,88 @@ fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::R
     saved
 }
 
+/// A baseline match by path is not enough: an editor could write between
+/// that check and deletion. Hold a handle denying writers/deletion, check
+/// its metadata, then delete that very handle. A live writer is recovered.
+#[cfg(windows)]
+fn remove_if_clean(copy: &super::open_with::CopyRecord) -> std::io::Result<bool> {
+    use std::os::windows::fs::OpenOptionsExt;
+    let file = match std::fs::OpenOptions::new()
+        .read(true)
+        .access_mode(0x80010000)
+        .share_mode(1)
+        .custom_flags(0x00200000)
+        .open(&copy.local_path)
+    {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+        Err(error) if matches!(error.raw_os_error(), Some(32) | Some(33)) => return Ok(false),
+        Err(error) => return Err(error),
+    };
+    let metadata = file.metadata()?;
+    if !metadata.is_file() || super::filesystem_safety::is_reparse_point(&metadata) {
+        return Err(std::io::Error::other("not a regular editor copy"));
+    }
+    if copy.synced != Some(super::open_with::Signature::from_metadata(&metadata)) {
+        return Ok(false);
+    }
+    super::verified_move::disposition(&file).map_err(std::io::Error::other)?;
+    Ok(true)
+}
+
+#[cfg(not(windows))]
+fn remove_if_clean(copy: &super::open_with::CopyRecord) -> std::io::Result<bool> {
+    // Without the native exclusion contract, retain even a seemingly clean copy.
+    Ok(
+        matches!(std::fs::metadata(&copy.local_path), Err(error) if error.kind() == std::io::ErrorKind::NotFound),
+    )
+}
+
 /// Ends one open-with session directory: edited copies move to `root`, and
 /// the directory is removed only once every one of them is safe there.
 pub fn collect(session: &Path, root: &Path) -> std::io::Result<()> {
-    let edited: Vec<(PathBuf, Option<String>)> = match Manifest::read(session) {
-        Some(manifest) => manifest
-            .copies
-            .into_values()
-            .filter(|copy| copy.local_path.starts_with(session) && copy.has_unsynced_edits())
-            .map(|copy| (copy.local_path, Some(copy.remote_path)))
-            .collect(),
+    let canonical_session = match std::fs::canonicalize(session) {
+        Ok(path) => path,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+    };
+    let manifest = match Manifest::read(session) {
+        Some(manifest) => manifest,
         None if session.join(MANIFEST).exists() => {
             return Err(std::io::Error::other("unreadable open-with manifest"));
         }
-        None => unrecorded_files(session)
-            .into_iter()
-            .map(|path| (path, None))
-            .collect(),
+        None => Manifest::default(),
     };
-    for (file, remote_path) in edited {
-        preserve(&file, remote_path, root)?;
+    for copy in manifest.copies.values() {
+        if !copy.local_path.starts_with(session) && !copy.local_path.starts_with(&canonical_session)
+        {
+            return Err(std::io::Error::other("copy outside its session"));
+        }
+        if !remove_if_clean(copy)? {
+            preserve(&copy.local_path, Some(copy.remote_path.clone()), root)?;
+        }
+    }
+    // A failed manifest write must not make the next opened file disposable.
+    // Anything left without a record is conservatively recovered as well.
+    for file in unrecorded_files(session)? {
+        preserve(&file, None, root)?;
     }
     // Emptied first, so a file an editor keeps locked is not collected twice.
     if session.join(MANIFEST).exists() {
         Manifest::default().write(session)?;
     }
-    let _ = std::fs::remove_dir_all(session);
+    // Remove only empty folders, never recursively sweep an editor's tree:
+    // a save-as racing the scan must survive for the next recovery pass.
+    for folder in std::fs::read_dir(session)? {
+        let folder = folder?;
+        if folder.file_type()?.is_dir() {
+            std::fs::remove_dir(folder.path())?;
+        }
+    }
+    if session.join(MANIFEST).exists() {
+        std::fs::remove_file(session.join(MANIFEST))?;
+    }
+    std::fs::remove_dir(session)?;
     Ok(())
 }
 
@@ -166,6 +302,190 @@ pub fn discard(root: &Path) -> std::io::Result<()> {
 mod tests {
     use super::*;
     use crate::local_fs::open_with::OpenWithWatchers;
+
+    #[test]
+    fn retention_budget_blocks_new_opens_without_deleting_existing_work() {
+        let fixture = Fixture::new();
+        let file = fixture.download("edited.txt", b"keep every byte");
+        assert!(check_budget(&[&fixture.session], 4, MAX_RETAINED_AGE).is_err());
+        assert_eq!(std::fs::read(&file).unwrap(), b"keep every byte");
+        assert!(check_budget(&[&fixture.session], 1024, MAX_RETAINED_AGE).is_ok());
+        let old =
+            std::time::SystemTime::now() - MAX_RETAINED_AGE - std::time::Duration::from_secs(1);
+        std::fs::File::options()
+            .write(true)
+            .open(&file)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(old))
+            .unwrap();
+        assert!(check_budget(&[&fixture.session], 1024, MAX_RETAINED_AGE).is_err());
+        assert_eq!(std::fs::read(&file).unwrap(), b"keep every byte");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_live_editor_with_or_without_delete_sharing_keeps_later_saves() {
+        use std::io::{Seek, SeekFrom, Write};
+        use std::os::windows::fs::OpenOptionsExt;
+        for share_delete in [false, true] {
+            let fixture = Fixture::new();
+            let watchers = OpenWithWatchers::new(fixture.session.clone());
+            let file = fixture.download("live.txt", b"server");
+            watchers.register("a", file.clone(), "/live.txt".into());
+            let mut editor = std::fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .share_mode(if share_delete { 7 } else { 3 })
+                .open(&file)
+                .unwrap();
+            editor.write_all(b"first edited revision").unwrap();
+            editor.sync_all().unwrap();
+            watchers.stop_all();
+            let collected = collect(&fixture.session, &fixture.root);
+            assert_eq!(collected.is_ok(), share_delete);
+            // The editor saves again after shutdown. A copied snapshot with
+            // a cleared manifest would lose this second save.
+            editor.seek(SeekFrom::Start(0)).unwrap();
+            editor
+                .write_all(b"second revision after application shutdown")
+                .unwrap();
+            editor.sync_all().unwrap();
+            drop(editor);
+            if !share_delete {
+                assert!(
+                    Manifest::read(&fixture.session)
+                        .unwrap()
+                        .copies
+                        .contains_key("a")
+                );
+                collect(&fixture.session, &fixture.root).unwrap();
+            }
+            let recovered = entries(&fixture.root);
+            assert_eq!(recovered.len(), 1);
+            assert_eq!(
+                std::fs::read(recovered[0].0.join("live.txt")).unwrap(),
+                b"second revision after application shutdown"
+            );
+        }
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn an_exclusively_locked_edit_and_its_manifest_survive_collection() {
+        use std::os::windows::fs::OpenOptionsExt;
+        let fixture = Fixture::new();
+        let watchers = OpenWithWatchers::new(fixture.session.clone());
+        let file = fixture.download("locked.txt", b"server");
+        watchers.register("a", file.clone(), "/locked.txt".into());
+        std::fs::write(&file, b"unsaved editor changes").unwrap();
+        let editor = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .share_mode(0)
+            .open(&file)
+            .unwrap();
+        assert!(collect(&fixture.session, &fixture.root).is_err());
+        assert!(
+            Manifest::read(&fixture.session)
+                .unwrap()
+                .copies
+                .contains_key("a")
+        );
+        drop(editor);
+        collect(&fixture.session, &fixture.root).unwrap();
+        assert_eq!(
+            std::fs::read(entries(&fixture.root)[0].0.join("locked.txt")).unwrap(),
+            b"unsaved editor changes"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_clean_but_open_file_keeps_its_baseline_for_a_later_save() {
+        use std::io::Write;
+        use std::os::windows::fs::OpenOptionsExt;
+        let fixture = Fixture::new();
+        let watchers = OpenWithWatchers::new(fixture.session.clone());
+        let file = fixture.download("clean.txt", b"server");
+        watchers.register("a", file.clone(), "/clean.txt".into());
+        let mut editor = std::fs::OpenOptions::new()
+            .write(true)
+            .share_mode(3)
+            .open(&file)
+            .unwrap();
+        assert!(collect(&fixture.session, &fixture.root).is_err());
+        assert!(
+            Manifest::read(&fixture.session)
+                .unwrap()
+                .copies
+                .contains_key("a")
+        );
+        editor
+            .write_all(b"saved after the application closed")
+            .unwrap();
+        editor.sync_all().unwrap();
+        drop(editor);
+        collect(&fixture.session, &fixture.root).unwrap();
+        assert_eq!(
+            std::fs::read(entries(&fixture.root)[0].0.join("clean.txt")).unwrap(),
+            b"saved after the application closed"
+        );
+    }
+
+    #[test]
+    fn a_partial_manifest_does_not_discard_unrecorded_files() {
+        let fixture = Fixture::new();
+        let watchers = OpenWithWatchers::new(fixture.session.clone());
+        let clean = fixture.download("clean.txt", b"server");
+        watchers.register("a", clean, "/clean.txt".into());
+        fixture.download("unrecorded.txt", b"edits after a failed manifest write");
+        collect(&fixture.session, &fixture.root).unwrap();
+        assert_eq!(list(&fixture.root).len(), 1);
+        assert_eq!(
+            std::fs::read(entries(&fixture.root)[0].0.join("unrecorded.txt")).unwrap(),
+            b"edits after a failed manifest write"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_clean_live_writer_with_delete_sharing_is_recovered_instead_of_unlinked() {
+        use std::io::Write;
+        use std::os::windows::fs::OpenOptionsExt;
+        let fixture = Fixture::new();
+        let watchers = OpenWithWatchers::new(fixture.session.clone());
+        let file = fixture.download("live-clean.txt", b"server");
+        watchers.register("a", file.clone(), "/live-clean.txt".into());
+        let mut editor = std::fs::OpenOptions::new()
+            .write(true)
+            .share_mode(7)
+            .open(&file)
+            .unwrap();
+        collect(&fixture.session, &fixture.root).unwrap();
+        editor.write_all(b"first save after shutdown").unwrap();
+        editor.sync_all().unwrap();
+        drop(editor);
+        assert_eq!(
+            std::fs::read(entries(&fixture.root)[0].0.join("live-clean.txt")).unwrap(),
+            b"first save after shutdown"
+        );
+    }
+
+    #[test]
+    fn canonical_paths_returned_by_the_opener_are_recovered() {
+        let fixture = Fixture::new();
+        let watchers = OpenWithWatchers::new(fixture.session.clone());
+        let file = fixture.download("canonical.txt", b"server");
+        watchers.register(
+            "a",
+            std::fs::canonicalize(&file).unwrap(),
+            "/canonical.txt".into(),
+        );
+        std::fs::write(&file, b"edited through the canonical opener path").unwrap();
+        collect(&fixture.session, &fixture.root).unwrap();
+        assert_eq!(list(&fixture.root).len(), 1);
+        assert!(!fixture.session.exists());
+    }
 
     struct Fixture {
         base: PathBuf,

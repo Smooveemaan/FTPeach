@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "Tampilkan FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Transfer berjalan: {{count}}",
+    "transferringProgress": "Transfer berjalan: {{count}} · {{percent}}%",
+    "quitWaiting": "Akan keluar setelah transfer selesai · {{count}}",
+    "quitWaitingProgress": "Akan keluar setelah transfer selesai · {{count}} · {{percent}}%",
+    "pauseAll": "Jeda semua transfer",
+    "resumeAll": "Lanjutkan semua transfer",
+    "speedLimit": "Batas kecepatan",
+    "unlimited": "Tanpa batas",
+    "preventSleep": "Jaga komputer tetap aktif",
     "notify": "Beri tahu saat transfer selesai",
     "recentConnections": "Koneksi terbaru",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Kunci kata sandi tersimpan",
     "quit": "Keluar",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Batalkan keluar"
   },
   "tabStrip": {
     "localComputer": "Komputer",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Transfer: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Akan keluar setelah transfer selesai",
+    "cancelQuit": "Batal",
     "leftCount": "Kiri: {{count}}",
     "rightCount": "Kanan: {{count}}",
     "topCount": "Atas: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Muat Ulang Antarmuka"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "File dengan perubahan yang belum diunggah ke server: {{count}}. Saat keluar, salinannya akan disimpan untuk pemulihan dan ditawarkan saat Anda memulai FTPeach berikutnya.",
+    "preserveAndQuit": "Simpan untuk pemulihan dan keluar",
+    "return": "Kembali",
+    "message_one": "{{count}} transfer masih berjalan. Keluar dan hentikan?",
+    "message_other": "{{count}} transfer masih berjalan. Keluar dan hentikan semuanya?",
+    "quitNow": "Keluar sekarang",
+    "quitWhenDone": "Keluar setelah transfer selesai"
   }
 }

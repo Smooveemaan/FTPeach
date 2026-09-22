@@ -186,7 +186,9 @@ pub enum TrayAction {
     },
     LockVault,
     /// A quit was asked for while transfers run; the window decides.
-    QuitRequested,
+    QuitRequested {
+        unsynced_edits: usize,
+    },
     CancelQuit,
 }
 
@@ -323,8 +325,8 @@ mod tests {
             json!({ "kind": "pauseAll" })
         );
         assert_eq!(
-            serde_json::to_value(TrayAction::QuitRequested).unwrap(),
-            json!({ "kind": "quitRequested" })
+            serde_json::to_value(TrayAction::QuitRequested { unsynced_edits: 2 }).unwrap(),
+            json!({ "kind": "quitRequested", "unsyncedEdits": 2 })
         );
         assert_eq!(
             serde_json::to_value(TrayAction::SetSpeedLimit { kbps: 512 }).unwrap(),

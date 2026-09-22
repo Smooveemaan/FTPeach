@@ -101,9 +101,39 @@ test('rename and move replace a target only on an explicit decision', async () =
   await h.operations.movePaneSamePane('a', ['a.txt'], 'folder', 'tab', true);
   assert.deepEqual(
     h.calls.map((call) => call.args!.overwrite),
-    [false, false, false, true, false, false, true],
+    [false, false, false, false, false, false, true],
   );
   assert.ok(h.calls.every((call) => call.command.endsWith('_rename')));
+});
+
+test('remote rename retries a conflicting case change only after explicit confirmation', async () => {
+  const h = harness((_command, args) =>
+    args?.overwrite
+      ? { ok: true }
+      : {
+          ok: false,
+          errorCode: 'alreadyExists',
+          error: 'Target exists',
+        },
+  );
+  const entry = { name: 'a.txt', isDirectory: false };
+  // The listing need not contain the conflicting destination.
+  h.panes.b.entries = [entry];
+  await h.operations.renamePaneEntry('b', entry, 'A.txt', 'origin');
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0]!.args!.overwrite, false);
+  assert.equal(h.confirmations.length, 1);
+  assert.equal(h.errors.length, 0);
+  await h.confirmations[0]!.run();
+  assert.equal(h.calls[1]!.args!.overwrite, true);
+  assert.equal(h.refreshes[0]![3], 'origin');
+});
+
+test('remote permission errors do not offer an overwrite retry', async () => {
+  const h = harness(() => ({ ok: false, errorCode: 'permissionDenied', error: 'Denied' }));
+  await h.operations.renamePaneEntry('b', { name: 'a', isDirectory: false }, 'A');
+  assert.equal(h.confirmations.length, 0);
+  assert.equal(h.errors.length, 1);
 });
 
 test('directory chooser cancellation does not navigate and a chosen home does', async () => {

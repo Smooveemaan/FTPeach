@@ -753,20 +753,20 @@
   },
   "tray": {
     "show": "Afișează FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Transferuri active: {{count}}",
+    "transferringProgress": "Transferuri active: {{count}} · {{percent}} %",
+    "quitWaiting": "Ieșire după finalizarea transferurilor · {{count}}",
+    "quitWaitingProgress": "Ieșire după finalizarea transferurilor · {{count}} · {{percent}} %",
+    "pauseAll": "Întrerupe toate transferurile",
+    "resumeAll": "Reia toate transferurile",
+    "speedLimit": "Limita de viteză",
+    "unlimited": "Fără limită",
+    "preventSleep": "Menține computerul activ",
     "notify": "Notifică la finalizarea transferurilor",
     "recentConnections": "Conexiuni recente",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Blochează parolele salvate",
     "quit": "Ieșire",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Anulează ieșirea"
   },
   "tabStrip": {
     "localComputer": "Calculator",
@@ -779,8 +779,8 @@
   },
   "statusBar": {
     "transfers": "Transferuri: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Ieșire după finalizarea transferurilor",
+    "cancelQuit": "Anulează",
     "leftCount": "Stânga: {{count}}",
     "rightCount": "Dreapta: {{count}}",
     "topCount": "Sus: {{count}}",
@@ -838,10 +838,13 @@
     "reload": "Reîncărcare interfață"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish",
-    "message_few": "{{count}} transfers are still running. Quit and stop them?"
+    "unsyncedEdits": "Fișiere cu modificări care nu au fost încă încărcate pe server: {{count}}. La ieșire, copiile vor fi păstrate pentru recuperare și vă vor fi oferite la următoarea pornire a FTPeach.",
+    "preserveAndQuit": "Păstrează pentru recuperare și ieși",
+    "return": "Înapoi",
+    "message_one": "{{count}} transfer este încă în curs. Ieșiți și îl opriți?",
+    "message_other": "{{count}} de transferuri sunt încă în curs. Ieșiți și le opriți?",
+    "quitNow": "Ieși acum",
+    "quitWhenDone": "Ieși după finalizarea transferurilor",
+    "message_few": "{{count}} transferuri sunt încă în curs. Ieșiți și le opriți?"
   }
 }

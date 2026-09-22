@@ -751,6 +751,7 @@ export default function Application() {
       {quitWhenIdle.promptOpen && (
         <QuitDialog
           count={activeTransfersCount}
+          unsyncedEdits={quitWhenIdle.unsyncedEdits}
           onQuitNow={quitWhenIdle.quitNow}
           onQuitWhenIdle={quitWhenIdle.quitWhenIdle}
           onCancel={quitWhenIdle.dismiss}

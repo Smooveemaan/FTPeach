@@ -104,8 +104,8 @@ pub fn quit_prompt_open(app: &AppHandle) -> bool {
 }
 
 /// Asks the window what to do about quitting while transfers run.
-pub fn ask_to_quit(app: &AppHandle) {
-    send_action(app, &TrayAction::QuitRequested);
+pub fn ask_to_quit(app: &AppHandle, unsynced_edits: usize) {
+    send_action(app, &TrayAction::QuitRequested { unsynced_edits });
 }
 
 fn show_and_focus(app: &AppHandle) {

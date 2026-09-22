@@ -743,20 +743,20 @@
   },
   "tray": {
     "show": "Hiển thị FTPeach",
-    "transferring": "Transferring {{count}}",
-    "transferringProgress": "Transferring {{count}} · {{percent}}%",
-    "quitWaiting": "Quitting after transfers finish · {{count}}",
-    "quitWaitingProgress": "Quitting after transfers finish · {{count}} · {{percent}}%",
-    "pauseAll": "Pause all transfers",
-    "resumeAll": "Resume all transfers",
-    "speedLimit": "Speed limit",
-    "unlimited": "No limit",
-    "preventSleep": "Keep the computer awake",
+    "transferring": "Lượt truyền đang chạy: {{count}}",
+    "transferringProgress": "Lượt truyền đang chạy: {{count}} · {{percent}}%",
+    "quitWaiting": "Sẽ thoát khi các lượt truyền hoàn tất · {{count}}",
+    "quitWaitingProgress": "Sẽ thoát khi các lượt truyền hoàn tất · {{count}} · {{percent}}%",
+    "pauseAll": "Tạm dừng tất cả lượt truyền",
+    "resumeAll": "Tiếp tục tất cả lượt truyền",
+    "speedLimit": "Giới hạn tốc độ",
+    "unlimited": "Không giới hạn",
+    "preventSleep": "Giữ máy tính không ngủ",
     "notify": "Thông báo khi quá trình truyền tải hoàn tất",
     "recentConnections": "Các kết nối gần đây",
-    "lockVault": "Lock saved passwords",
+    "lockVault": "Khóa mật khẩu đã lưu",
     "quit": "Thoát",
-    "cancelQuit": "Cancel quit"
+    "cancelQuit": "Hủy thoát"
   },
   "tabStrip": {
     "localComputer": "Máy tính",
@@ -769,8 +769,8 @@
   },
   "statusBar": {
     "transfers": "Lượt truyền: {{count}}",
-    "quitPending": "Quitting after transfers finish",
-    "cancelQuit": "Cancel",
+    "quitPending": "Sẽ thoát khi các lượt truyền hoàn tất",
+    "cancelQuit": "Hủy",
     "leftCount": "Trái: {{count}}",
     "rightCount": "Phải: {{count}}",
     "topCount": "Trên: {{count}}",
@@ -828,9 +828,12 @@
     "reload": "Tải lại giao diện"
   },
   "quitDialog": {
-    "message_one": "{{count}} transfer is still running. Quit and stop it?",
-    "message_other": "{{count}} transfers are still running. Quit and stop them?",
-    "quitNow": "Quit now",
-    "quitWhenDone": "Quit when transfers finish"
+    "unsyncedEdits": "Tệp có thay đổi chưa được tải lên máy chủ: {{count}}. Khi thoát, bản sao sẽ được giữ lại để khôi phục và được đề xuất vào lần tới bạn khởi động FTPeach.",
+    "preserveAndQuit": "Giữ lại để khôi phục và thoát",
+    "return": "Quay lại",
+    "message_one": "Vẫn còn {{count}} lượt truyền đang chạy. Thoát và dừng chúng?",
+    "message_other": "Vẫn còn {{count}} lượt truyền đang chạy. Thoát và dừng chúng?",
+    "quitNow": "Thoát ngay",
+    "quitWhenDone": "Thoát khi truyền xong"
   }
 }

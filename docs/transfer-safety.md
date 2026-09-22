@@ -89,8 +89,15 @@ FTP has no portable atomic no-replace rename. Its no-replace commit checks the t
 parent's listing where SIZE is unsupported) immediately before RNFR/RNTO and refuses a target that
 exists, so a racing file can still be replaced only if it appears between that check and RNTO —
 not at any point during the upload. SFTP uses
-standard v3 RENAME, never the overwriting posix-rename extension; WebDAV uses Overwrite: F.
-These server semantics still require the real compatibility matrix before release.
+standard v3 RENAME for no-replace, never the overwriting posix-rename extension; WebDAV uses
+Overwrite: F. Servers that violate SFTP v3 no-replace semantics can still replace a target
+created after the preliminary lstat. Server behavior requires compatibility testing.
+
+The accepted HF-02 policy (September 22, 2026) keeps ordinary FTP rename available: a free
+name does not trigger an overwrite question, and a detected conflict requires confirmation.
+FTPeach checks the destination immediately before rename but does not claim atomic protection
+against another client creating it in that interval. Closing HF-02 accepts this protocol
+limitation; it does not mean the race was eliminated or that tests prove its absence.
 
 Resume compatibility is metadata-based, not a content hash or a guarantee that a server updates
 mtime correctly. A corrupt or linked sidecar is preserved and reported as an error. Abandoned
@@ -123,7 +130,7 @@ Incoming Explorer drops support the same address segments and remain Copy-only; 
 
 Local single-file moves use filesystem rename with explicit overwrite approval, rather than copying and later deleting by path. Only a cross-volume rename error activates the verified file fallback: the source is held open denying writes/deletes, bytes are copied into a unique destination-side temporary file, flushed, and SHA-256 plus length are checked against rereads of both files. The temporary file is published by its still-protected handle, then the source is deleted through its original protected handle. This works without USN support and uses bounded buffers for large files. Other rename errors do not activate the fallback. Before publication, failure removes only the owned temporary object; after publication, a source-deletion failure retains the verified destination and reports an error. Existing ancestor-path, memory-mapped-write and power-loss limitations still apply. Recursive local folder moves retain the verified P0 route.
 
-Rename and single-file copy replace an existing target only when the caller passes `overwrite: true`, which the renderer does only after the user resolved that conflict (MoveTo, paste, drag). A missing or `false` flag means no replacement, locally and in `session_rename`; F2 rename never replaces another entry. The one exception is a remote change of letter case with no entry of exactly the new name, which is sent as a replacing rename because a case-insensitive server would otherwise see the entry itself as the conflict.
+Rename and single-file copy request replacement only when the caller passes `overwrite: true`, after the user resolves a detected conflict (MoveTo, paste, drag or remote F2). A missing or `false` flag selects the no-replace path locally and in `session_rename`, subject to the remote protocol limitations above. Remote F2, including a change of letter case, first requests no-replace and retries with overwrite only after confirmation of an `alreadyExists` response. A successful rename to a free name needs no extra confirmation.
 
 `fs_copy_file` uses the same staged copy as recursive local copies: bytes go to a unique hidden sibling, the source must keep its length and modification time, the sibling is synced and only then committed under the overwrite policy. A failure before commit removes only that sibling; an existing target keeps its old content and a new target never appears partially written.
 

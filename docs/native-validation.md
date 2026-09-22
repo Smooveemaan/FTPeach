@@ -12,6 +12,28 @@ The release workflow requires both the shared checks (including packaged smoke a
 | Docker compatibility | Explicit ignored tests against disposable FTP/FTPS/SFTP/WebDAV and TLS endpoints | Every server/version, external network failures or power loss |
 | cargo deny | Current advisory database and license policy for the locked graph | Proof of absence of exploitable bugs; ignored advisories remain accepted risks |
 
+## P0 completion checks, Windows, 2026-09-22
+
+- Rust: 454 library tests and four example tests passed; nine remain ignored by default.
+- The explicit `cross_volume_disk_move` fixture passed between C: and D:, including
+  no-replace collision and approved overwrite. The fixture first verifies error 17 from
+  an ordinary rename to prove it is really exercising two volumes.
+- Native recovery tests hold editor handles with and without delete sharing, and with
+  exclusive access. Late saves survive shutdown even when the copy was initially clean.
+- Packaged WebView2 smoke verifies edited-copy recovery and vault locking through the real
+  `shutdown::wind_down` shared by quit and immediate update installation. It does not launch
+  a production installer. Smoke storage explicitly uses its isolated LOCALAPPDATA because
+  Windows KnownFolder resolution can ignore the process environment override.
+- The rename scenario passed on IIS FTP, FTP with Unix listings, FTPS and WebDAV. The
+  matrix output also contains 29 NOT RUN profiles; they are not server coverage.
+- Unit/component tests, lint/TypeScript, Clippy and production build/bundle checks passed.
+
+Evidence: `.local/p0-completion-*.log`, `.local/p0-cross-volume.log`,
+`.local/p0-iis-rename.log`, `.local/p0-smoke*.log`. HF-02 was closed with an explicitly
+accepted FTP limitation: rename to an apparently free name proceeds without an overwrite
+prompt; a detected conflict requires confirmation. The check-then-rename race with another
+client remains possible. Passing these tests does not prove atomic no-replace on FTP.
+
 ## Reproduction
 
 Run npm run check as one invocation. Native smoke uses npm run build:packaged-smoke followed by npm run test:packaged-smoke; see [harness instructions](../scripts/packaged-smoke/README.md). Run cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses for a fresh dependency check.

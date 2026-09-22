@@ -18,8 +18,7 @@ pub use transfer::transfer_pool;
 #[cfg(feature = "test-utils")]
 pub use ipc::{CommandError, ErrorCode};
 
-use local_fs::open_with::OpenWithWatchers;
-use local_fs::{local_open::ApprovedLocalPaths, preview::PreviewPaths};
+use local_fs::local_open::ApprovedLocalPaths;
 use runtime::updater::UpdaterState;
 use runtime::{sensitive_plugin, shutdown};
 use security::sensitive::AuthorizationState;
@@ -63,7 +62,6 @@ pub fn run() {
     };
     let store = Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
     let vault = vault::Vault::new(store.data_dir().to_path_buf());
-    let preview_paths = PreviewPaths::default();
     builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(sensitive_plugin::init())
@@ -76,8 +74,6 @@ pub fn run() {
         .manage(Sessions::default())
         .manage(ConnectingClients::default())
         .manage(shutdown::ShutdownCoordinator::default())
-        .manage(OpenWithWatchers::new(preview_paths.open_with_dir.clone()))
-        .manage(preview_paths)
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
         .manage(AuthorizationState::default())

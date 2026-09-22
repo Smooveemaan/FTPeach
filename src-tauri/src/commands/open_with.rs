@@ -9,12 +9,9 @@ use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
 
-fn now_millis() -> u128 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis()
-}
+// Admission includes the download and registration, so concurrent opens
+// cannot all pass the same remaining storage budget.
+static OPEN_ADMISSION: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 #[derive(Serialize)]
 #[serde(tag = "result", rename_all = "camelCase")]
@@ -53,6 +50,17 @@ pub async fn open_with_start(
         "open_with_start",
         &remote_path,
     )?;
+    let _admission = OPEN_ADMISSION.lock().await;
+    let recovery = recovery_root(&app)?;
+    let session = paths.open_with_dir.clone();
+    let check_session = session.clone();
+    let check_recovery = recovery.clone();
+    tokio::task::spawn_blocking(move || {
+        edit_recovery::check_admission(&check_session, &check_recovery)
+    })
+    .await
+    .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?
+    .map_err(|error| CommandError::from_anyhow(&error))?;
     let Some(pool) = sessions.pool_for(&connection_id).await else {
         return Ok(OpenWithStartResult::Err {
             ok: false,
@@ -65,7 +73,7 @@ pub async fn open_with_start(
         .next()
         .unwrap_or(&remote_path)
         .to_string();
-    let dir = paths.open_with_dir.join(now_millis().to_string());
+    let dir = paths.open_with_dir.join(uuid::Uuid::new_v4().to_string());
     if let Err(err) = tokio::fs::create_dir_all(&dir).await {
         return Ok(OpenWithStartResult::Err {
             ok: false,
@@ -91,6 +99,18 @@ pub async fn open_with_start(
             ok: false,
             error: CommandError::from_anyhow(&err),
         });
+    }
+
+    // Unknown remote sizes cannot bypass admission. This downloaded copy
+    // has not reached an editor, so rejecting and removing it loses no edits.
+    let admitted =
+        tokio::task::spawn_blocking(move || edit_recovery::check_admission(&session, &recovery))
+            .await
+            .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
+    if let Err(error) = admitted {
+        let _ = tokio::fs::remove_file(&local_path).await;
+        let _ = tokio::fs::remove_dir(&dir).await;
+        return Err(CommandError::from_anyhow(&error));
     }
 
     approved_paths.approve_from_listing(&local_path);
@@ -181,6 +201,12 @@ pub async fn open_with_recovered_edits(
     let current = paths.open_with_dir.clone();
     tokio::task::spawn_blocking(move || {
         edit_recovery::collect_abandoned(&current, &root);
+        // Versions before persistent editor sessions used the OS temp dir.
+        // Recover those copies too; they are never age-deleted as previews.
+        let legacy = std::env::temp_dir()
+            .join("ftpeach-openwith")
+            .join("current-placeholder");
+        edit_recovery::collect_abandoned(&legacy, &root);
         edit_recovery::list(&root)
     })
     .await

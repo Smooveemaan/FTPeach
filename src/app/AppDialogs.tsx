@@ -323,7 +323,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
                   // Only the revision the question was about counts as uploaded;
                   // a later save is asked about on its own.
                   if (result.ok) openWith.confirmUploaded(change);
-                  else if (!result.skipped && !result.alreadyRunning) openWith.retryChanged(change);
+                  else if (!result.skipped) openWith.retryChanged(change);
                   return refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId);
                 }),
             );

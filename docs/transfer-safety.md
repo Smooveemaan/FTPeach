@@ -134,7 +134,9 @@ A successful download consumes its UUID partial and removes its matching source 
 
 Open-with changes are queued once per copy with the latest dirty revision. An upload
 acknowledges only its captured revision; newer saves remain pending. Failed uploads
-and failed sync acknowledgements keep a retryable question. Later dismisses the
+and failed sync acknowledgements keep a retryable question. An admission refusal
+because an older upload is still running also keeps the newer revision retryable.
+Later dismisses the
 question without marking the copy synced; disconnect retains unsynced copies for
 recovery. Queue and revision regressions live in `openWithRecovery.test.tsx` and
 `local_fs::open_with::tests` (HF-07).

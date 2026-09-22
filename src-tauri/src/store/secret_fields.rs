@@ -165,7 +165,14 @@ impl Store {
                 )),
                 false,
             ),
-            Err(_) => (None, true),
+            // The new secret cannot be protected, so it is not saved at all;
+            // whatever was saved before stays, rather than being dropped.
+            Err(_) => (
+                existing
+                    .and_then(|existing| existing.get(field_enc))
+                    .map(|value| (field_enc.to_string(), value.clone())),
+                true,
+            ),
         }
     }
 }

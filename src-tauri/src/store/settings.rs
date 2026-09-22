@@ -50,7 +50,22 @@ impl Store {
     }
 
     pub async fn set_settings(&self, patch: JsonMap) -> Result<JsonMap> {
-        self.write_settings(patch, ProxyPasswordWrite::Dpapi).await
+        self.set_settings_with_protector(patch, Self::protect_secret)
+            .await
+    }
+
+    /// `set_settings` with the encryption of the proxy password injected,
+    /// so a test can see what a refusal to protect it leaves behind.
+    pub(crate) async fn set_settings_with_protector<F>(
+        &self,
+        patch: JsonMap,
+        protect: F,
+    ) -> Result<JsonMap>
+    where
+        F: Fn(&[u8]) -> Result<Vec<u8>> + Copy,
+    {
+        self.write_settings(patch, ProxyPasswordWrite::Dpapi, protect)
+            .await
     }
 
     /// `set_settings` for the settings dialog: under enhanced protection a
@@ -108,7 +123,11 @@ impl Store {
         applied?;
 
         match self
-            .write_settings(patch, ProxyPasswordWrite::Vault { saved })
+            .write_settings(
+                patch,
+                ProxyPasswordWrite::Vault { saved },
+                Self::protect_secret,
+            )
             .await
         {
             Ok(settings) => Ok(settings),
@@ -123,11 +142,15 @@ impl Store {
         }
     }
 
-    async fn write_settings(
+    async fn write_settings<F>(
         &self,
         patch: JsonMap,
         proxy_password: ProxyPasswordWrite,
-    ) -> Result<JsonMap> {
+        protect: F,
+    ) -> Result<JsonMap>
+    where
+        F: Fn(&[u8]) -> Result<Vec<u8>> + Copy,
+    {
         super::validate_settings(&patch, true).map_err(|message| {
             anyhow::anyhow!(CommandError::new(ErrorCode::InvalidInput, message))
         })?;
@@ -176,13 +199,22 @@ impl Store {
             }
             ProxyPasswordWrite::Dpapi => {
                 if let Some(Value::String(password)) = raw_password {
-                    let (field, _secret_not_persisted) = Self::encrypt_secret_with(
+                    let (field, secret_not_persisted) = Self::encrypt_secret_with(
                         &password,
                         Some(&current),
                         "proxyPasswordEnc",
                         "proxyPasswordPlain",
-                        Self::protect_secret,
+                        protect,
                     );
+                    // Nothing is written: the settings keep the proxy password
+                    // they had, and the caller hears that the save failed
+                    // rather than seeing it reported as done.
+                    if secret_not_persisted {
+                        anyhow::bail!(CommandError::new(
+                            ErrorCode::Internal,
+                            "The proxy password could not be protected; the saved one was kept",
+                        ));
+                    }
                     current.remove("proxyPasswordEnc");
                     current.remove("proxyPasswordPlain");
                     if let Some((f, v)) = field {

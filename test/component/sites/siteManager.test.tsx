@@ -281,6 +281,63 @@ describe('Site Manager workflows', () => {
     await waitFor(() => expect(input.value).toBe(''));
   });
 
+  test('a late reveal never fills a field the user moved on from', async () => {
+    const user = userEvent.setup();
+    const pending: Array<(_value: { ok: true; value: string }) => void> = [];
+    vi.mocked(window.api.sites.revealSecret).mockImplementation(
+      () => new Promise((resolve) => pending.push(resolve)),
+    );
+    renderManager({
+      entries: [
+        ...entries,
+        {
+          id: 'site-3',
+          kind: 'site',
+          name: 'Staging',
+          protocol: 'sftp',
+          host: 'staging.example.test',
+          port: 22,
+          user: 'deploy',
+          hasPassword: true,
+          remotePath: '/',
+          parentId: null,
+        },
+      ],
+    });
+
+    const editFirst = async (name: string) => {
+      const row = screen.getByText(name).closest('.site-manage-row');
+      await user.click(
+        within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+      );
+    };
+    const password = () => screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password');
+
+    // Asked for one bookmark, answered after another one was opened.
+    await editFirst('Production');
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await user.click(screen.getByRole('button', { name: 'common.cancel' }));
+    await editFirst('Staging');
+    act(() => pending[0]?.({ ok: true, value: 'secret-of-production' }));
+    await waitFor(() => expect(pending.length).toBe(1));
+    expect(password().value).toBe('');
+    expect(screen.queryByRole('button', { name: 'common.hidePassword' })).toBeNull();
+
+    // Asked, then the vault locked before the answer arrived.
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    window.dispatchEvent(new Event('ftpeach:vault-locked'));
+    act(() => pending[1]?.({ ok: true, value: 'secret-of-staging' }));
+    await waitFor(() => expect(pending.length).toBe(2));
+    expect(password().value).toBe('');
+
+    // Asked, then a password typed by hand while it was on its way.
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await user.type(password(), 'typed-by-hand');
+    act(() => pending[2]?.({ ok: true, value: 'secret-of-staging' }));
+    await waitFor(() => expect(pending.length).toBe(3));
+    expect(password().value).toBe('typed-by-hand');
+  });
+
   test('requests vault unlock and retries saving a bookmark', async () => {
     const user = userEvent.setup();
     const onSave = vi

@@ -46,7 +46,15 @@ export function useSiteSecrets({
     );
   }, []);
 
+  // A reveal in flight belongs to the site, field and input contents it was
+  // asked for. Anything that clears the fields -- another site, a reset, the
+  // window losing focus or hiding, the vault locking, unmounting -- moves the
+  // generation on, and a later answer is dropped instead of filling an input
+  // it no longer belongs to.
+  const generationRef = useRef(0);
+
   const resetSecrets = useCallback(() => {
+    generationRef.current += 1;
     setSecret('password', '');
     setSecret('keyPassphrase', '');
   }, [setSecret]);
@@ -93,8 +101,15 @@ export function useSiteSecrets({
   const revealSavedSecret = useCallback(
     async (field: SecretField) => {
       if (!editingId || editingId === '__new__') return false;
+      const input = () => (field === 'password' ? passwordRef.current : keyPassphraseRef.current);
+      const generation = generationRef.current;
+      const asked = input()?.value ?? '';
+      // The user typed a password of their own while the answer was on its way.
+      const superseded = () =>
+        generationRef.current !== generation || (input()?.value ?? '') !== asked;
       try {
         const result = await api.sites.revealSecret(editingId, field);
+        if (superseded()) return false;
         if (!result.ok) {
           if (result.errorCode !== 'cancelled') {
             setError(friendlyError(commandResultError(result)) || revealFailedMessage);
@@ -104,6 +119,7 @@ export function useSiteSecrets({
         setSecret(field, result.value || '');
         return !!result.value;
       } catch (cause) {
+        if (superseded()) return false;
         setError(causeMessage(cause) || revealFailedMessage);
         return false;
       }

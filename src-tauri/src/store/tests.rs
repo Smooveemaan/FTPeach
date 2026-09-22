@@ -1103,6 +1103,68 @@ async fn plaintext_migration_keeps_secrets_when_encryption_fails() {
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
 
+#[cfg(windows)]
+#[tokio::test]
+async fn a_secret_that_cannot_be_encrypted_is_not_reported_as_saved() {
+    let root = std::env::temp_dir().join(format!("ftpeach-secret-fail-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let refuse = |_: &[u8]| Err(anyhow::anyhow!("DPAPI unavailable"));
+    let settings_raw = || std::fs::read_to_string(root.join("settings.json")).unwrap();
+
+    store
+        .set_settings(proxy_patch(json!({"proxyPassword": "first-secret"})))
+        .await
+        .unwrap();
+    let saved = settings_raw();
+
+    // The new proxy password cannot be protected: nothing is saved, the
+    // caller hears about it, and the previous password still works.
+    let error = store
+        .set_settings_with_protector(
+            proxy_patch(json!({"proxyPassword": "second-secret", "proxyPort": 1081})),
+            refuse,
+        )
+        .await
+        .unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        crate::ipc::ErrorCode::Internal
+    );
+    assert_eq!(settings_raw(), saved);
+    assert!(!settings_raw().contains("second-secret"));
+    let vault = Vault::new(root.clone());
+    assert_eq!(
+        connect_proxy_password(&store, &vault).await.as_deref(),
+        Some("first-secret")
+    );
+
+    // The same for a site: the password saved before is kept.
+    let site: JsonMap = serde_json::from_value(
+        json!({"id":"s", "name":"S", "protocol":"ftp", "host":"h", "password":"site-first"}),
+    )
+    .unwrap();
+    store.save_site(site.clone()).await.unwrap();
+    let mut replacement = site;
+    replacement.insert("password".into(), json!("site-second"));
+    let outcome = store
+        .save_site_with_protector(replacement, refuse)
+        .await
+        .unwrap();
+    assert!(outcome.secret_not_persisted);
+    let sites = std::fs::read_to_string(root.join("sites.json")).unwrap();
+    assert!(!sites.contains("site-second"), "{sites}");
+    assert_eq!(
+        store
+            .connection_config_for_site("s")
+            .await
+            .unwrap()
+            .get("password")
+            .and_then(Value::as_str),
+        Some("site-first")
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[tokio::test]
 async fn corrupt_settings_are_backed_up_before_falling_back_to_defaults() {
     let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));

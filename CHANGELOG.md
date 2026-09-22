@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   older installer can no longer be passed off as a newer version.
 - An FTP server that answers with an endless reply is disconnected instead of filling
   memory, and in active mode files are accepted only from the server itself.
+- A proxy password that cannot be encrypted is reported as an error instead of a saved
+  setting, and the password saved before is kept.
+- A saved password shown with the eye button no longer appears in another bookmark's field
+  or over a password just typed, and never after the vault locks.
 
 ### Fixed
 

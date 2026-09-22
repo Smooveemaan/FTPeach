@@ -600,7 +600,8 @@
     "uploadResumed": "{{path}} का अपलोड {{offset}} बाइट से फिर से शुरू किया जा रहा है।",
     "uploadRestartedSourceChanged": "स्थानीय फ़ाइल अब {{path}} के रोके गए अपलोड से मेल नहीं खाती — इसे शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedMismatch": "सर्वर पर पहले से मौजूद डेटा स्थानीय फ़ाइल से मेल नहीं खाता — {{path}} को शुरू से फिर से भेजा जाएगा।",
-    "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।"
+    "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "सभी कनेक्शन दिखाएं",

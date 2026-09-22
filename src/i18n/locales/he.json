@@ -608,7 +608,8 @@
     "uploadRestartedSourceChanged": "הקובץ המקומי כבר אינו תואם להעלאה המושהית של {{path}} — הוא יישלח שוב מההתחלה.",
     "uploadRestartedMismatch": "מה שכבר נמצא בשרת אינו תואם לקובץ המקומי — {{path}} יישלח שוב מההתחלה.",
     "uploadRestartedUnverified": "לא ניתן היה לאמת את ההעלאה המושהית של {{path}} ({{error}}) — הקובץ יישלח שוב מההתחלה.",
-    "receivedEntries_two": "התקבלו {{count}} רשומות"
+    "receivedEntries_two": "התקבלו {{count}} רשומות",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "הצג את כל החיבורים",

@@ -600,7 +600,8 @@
     "uploadResumed": "正在從第 {{offset}} 位元組繼續上傳 {{path}}。",
     "uploadRestartedSourceChanged": "本機檔案與已暫停的 {{path}} 上傳不再相符，將從頭重新傳送。",
     "uploadRestartedMismatch": "伺服器上已有的資料與本機檔案不相符，將從頭重新傳送 {{path}}。",
-    "uploadRestartedUnverified": "無法驗證已暫停的 {{path}} 上傳（{{error}}），將從頭重新傳送該檔案。"
+    "uploadRestartedUnverified": "無法驗證已暫停的 {{path}} 上傳（{{error}}），將從頭重新傳送該檔案。",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "顯示所有連線",

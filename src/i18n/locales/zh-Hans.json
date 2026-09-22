@@ -600,7 +600,8 @@
     "uploadResumed": "正在从第 {{offset}} 字节继续上传 {{path}}。",
     "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
     "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
-    "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。"
+    "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "显示所有连接",

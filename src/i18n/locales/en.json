@@ -600,7 +600,8 @@
     "uploadResumed": "Resuming the upload of {{path}} at {{offset}} bytes.",
     "uploadRestartedSourceChanged": "The local file no longer matches the paused upload of {{path}} — sending it again from the start.",
     "uploadRestartedMismatch": "What is already on the server doesn't match the local file — sending {{path}} again from the start.",
-    "uploadRestartedUnverified": "The paused upload of {{path}} couldn't be verified ({{error}}) — sending it again from the start."
+    "uploadRestartedUnverified": "The paused upload of {{path}} couldn't be verified ({{error}}) — sending it again from the start.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Show all connections",

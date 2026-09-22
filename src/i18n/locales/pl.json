@@ -616,7 +616,8 @@
     "uploadRestartedMismatch": "Dane znajdujące się już na serwerze nie odpowiadają plikowi lokalnemu — {{path}} zostanie wysłany ponownie od początku.",
     "uploadRestartedUnverified": "Nie udało się zweryfikować wstrzymanego wysyłania {{path}} ({{error}}) — plik zostanie wysłany ponownie od początku.",
     "receivedEntries_few": "Otrzymano {{count}} wpisy",
-    "receivedEntries_many": "Otrzymano {{count}} wpisów"
+    "receivedEntries_many": "Otrzymano {{count}} wpisów",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Pokaż wszystkie połączenia",

@@ -21,7 +21,9 @@ parameters are capped at 8 KiB, connection/server labels at 512 bytes each, and
 batches at 128 records (therefore below 1.3 MiB of payload). The recent ring retains
 at most 5,000 records and 4 MiB of accounted payload. Overflow drops disk/live
 records, keeps bounded recent history and queues one aggregate drop notice when
-the writer recovers; it never logs that notice recursively. Renderer history and
+the writer recovers; it never logs that notice recursively. The notice is a
+translated event (`log.droppedRecords`), so the panel shows it in the interface
+language while the log file and diagnostic bundle keep the English sentence. Renderer history and
 live batches waiting for a history response also have 5,000-entry/4 MiB limits.
 Quit and immediate update installation drain admitted log records with a two-second
 deadline. Daily rotation, age and directory-size policies still apply (HF-15).

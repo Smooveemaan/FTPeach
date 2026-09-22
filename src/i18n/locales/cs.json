@@ -616,7 +616,8 @@
     "uploadRestartedMismatch": "Data, která už jsou na serveru, neodpovídají místnímu souboru – {{path}} bude odeslán znovu od začátku.",
     "uploadRestartedUnverified": "Pozastavené odesílání {{path}} se nepodařilo ověřit ({{error}}) – soubor bude odeslán znovu od začátku.",
     "receivedEntries_few": "Přijaty {{count}} záznamy",
-    "receivedEntries_many": "Přijato {{count}} záznamu"
+    "receivedEntries_many": "Přijato {{count}} záznamu",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Zobrazit všechna připojení",

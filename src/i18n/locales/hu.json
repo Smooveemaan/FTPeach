@@ -600,7 +600,8 @@
     "uploadResumed": "A(z) {{path}} feltöltésének folytatása a(z) {{offset}}. bájttól.",
     "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
     "uploadRestartedMismatch": "A kiszolgálón lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
-    "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől."
+    "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Az összes kapcsolat megjelenítése",

@@ -130,12 +130,9 @@ impl Recent {
             kind: LogKind::Error,
             connection_id: String::new(),
             server: String::new(),
-            line: Some(format!(
-                "Protocol log writer dropped {} records because its queue was full",
-                self.dropped
-            )),
-            key: None,
-            params: None,
+            line: None,
+            key: Some("droppedRecords".to_string()),
+            params: Some(serde_json::json!({ "dropped": self.dropped })),
         };
         if self
             .writer
@@ -794,10 +791,30 @@ mod tests {
                 captured.lock().unwrap().extend_from_slice(batch);
             },
         ));
-        emitter.flush().await;
-        // The overflow notice is queued after records already admitted; flush
-        // again to cover that internal notice too.
-        emitter.flush().await;
+        // Nothing pushes or flushes here. A burst that ends in silence -- the
+        // last records before a connection dropped -- must still say what was
+        // lost, so the notice has to reach the panel on the strength of the
+        // queued records alone, as a translatable event rather than English text.
+        let notice = |record: &LogRecord| {
+            record.key.as_deref() == Some("droppedRecords")
+                && record.line.is_none()
+                && record
+                    .params
+                    .as_ref()
+                    .and_then(|params| params.get("dropped"))
+                    .and_then(serde_json::Value::as_u64)
+                    == Some(10_000 - WRITER_CAPACITY as u64)
+        };
+        for _ in 0..300 {
+            if batches.lock().unwrap().iter().any(notice) {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        assert!(
+            batches.lock().unwrap().iter().any(notice),
+            "the drop notice never reached the panel on its own"
+        );
         emitter.push(
             LogText::Raw("writer recovered".into()),
             LogKind::Status,
@@ -807,12 +824,6 @@ mod tests {
         emitter.flush().await;
         let records = batches.lock().unwrap();
         assert!(records.windows(2).all(|pair| pair[0].seq < pair[1].seq));
-        assert!(records.iter().any(|record| {
-            record
-                .line
-                .as_ref()
-                .is_some_and(|line| line.contains("dropped 9488 records"))
-        }));
         assert_eq!(
             records.last().unwrap().line.as_deref(),
             Some("writer recovered")

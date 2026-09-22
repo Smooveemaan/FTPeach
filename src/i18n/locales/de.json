@@ -600,7 +600,8 @@
     "uploadResumed": "Upload von {{path}} wird bei {{offset}} Bytes fortgesetzt.",
     "uploadRestartedSourceChanged": "Die lokale Datei entspricht nicht mehr dem pausierten Upload von {{path}} – sie wird erneut von vorn gesendet.",
     "uploadRestartedMismatch": "Die Daten auf dem Server stimmen nicht mit der lokalen Datei überein – {{path}} wird erneut von vorn gesendet.",
-    "uploadRestartedUnverified": "Der pausierte Upload von {{path}} konnte nicht überprüft werden ({{error}}) – die Datei wird erneut von vorn gesendet."
+    "uploadRestartedUnverified": "Der pausierte Upload von {{path}} konnte nicht überprüft werden ({{error}}) – die Datei wird erneut von vorn gesendet.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Alle Verbindungen anzeigen",

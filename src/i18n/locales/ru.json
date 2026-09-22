@@ -616,7 +616,8 @@
     "receivedEntries_one": "Получена {{count}} запись",
     "receivedEntries_few": "Получено {{count}} записи",
     "receivedEntries_many": "Получено {{count}} записей",
-    "receivedEntries_other": "Получено {{count}} записи"
+    "receivedEntries_other": "Получено {{count}} записи",
+    "droppedRecords": "Часть записей протокольного лога потеряна: подсистема записи не успевала. Потеряно: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Показать все соединения",

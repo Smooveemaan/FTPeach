@@ -608,7 +608,8 @@
     "uploadRestartedSourceChanged": "Fișierul local nu mai corespunde încărcării întrerupte a {{path}} — va fi trimis din nou de la început.",
     "uploadRestartedMismatch": "Ceea ce se află deja pe server nu corespunde fișierului local — {{path}} va fi trimis din nou de la început.",
     "uploadRestartedUnverified": "Încărcarea întreruptă a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
-    "receivedEntries_few": "S-au primit {{count}} înregistrări"
+    "receivedEntries_few": "S-au primit {{count}} înregistrări",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Afișează toate conexiunile",

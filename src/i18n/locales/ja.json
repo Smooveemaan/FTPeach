@@ -600,7 +600,8 @@
     "uploadResumed": "{{path}} のアップロードを {{offset}} バイト目から再開します。",
     "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
     "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
-    "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。"
+    "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "すべての接続を表示",

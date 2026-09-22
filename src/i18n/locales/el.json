@@ -600,7 +600,8 @@
     "uploadResumed": "Συνέχιση της αποστολής του {{path}} από τα {{offset}} byte.",
     "uploadRestartedSourceChanged": "Το τοπικό αρχείο δεν αντιστοιχεί πλέον στην αποστολή του {{path}} που είχε τεθεί σε παύση — θα σταλεί ξανά από την αρχή.",
     "uploadRestartedMismatch": "Τα δεδομένα που βρίσκονται ήδη στον διακομιστή δεν αντιστοιχούν στο τοπικό αρχείο — το {{path}} θα σταλεί ξανά από την αρχή.",
-    "uploadRestartedUnverified": "Δεν ήταν δυνατή η επαλήθευση της αποστολής του {{path}} που είχε τεθεί σε παύση ({{error}}) — το αρχείο θα σταλεί ξανά από την αρχή."
+    "uploadRestartedUnverified": "Δεν ήταν δυνατή η επαλήθευση της αποστολής του {{path}} που είχε τεθεί σε παύση ({{error}}) — το αρχείο θα σταλεί ξανά από την αρχή.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Εμφάνιση όλων των συνδέσεων",

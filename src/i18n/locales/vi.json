@@ -600,7 +600,8 @@
     "uploadResumed": "Đang tiếp tục tải {{path}} lên từ byte {{offset}}.",
     "uploadRestartedSourceChanged": "Tệp cục bộ không còn khớp với phiên tải lên đang tạm dừng của {{path}} — tệp sẽ được gửi lại từ đầu.",
     "uploadRestartedMismatch": "Dữ liệu đã có trên máy chủ không khớp với tệp cục bộ — {{path}} sẽ được gửi lại từ đầu.",
-    "uploadRestartedUnverified": "Không thể xác minh phiên tải lên đang tạm dừng của {{path}} ({{error}}) — tệp sẽ được gửi lại từ đầu."
+    "uploadRestartedUnverified": "Không thể xác minh phiên tải lên đang tạm dừng của {{path}} ({{error}}) — tệp sẽ được gửi lại từ đầu.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Hiển thị tất cả các kết nối",

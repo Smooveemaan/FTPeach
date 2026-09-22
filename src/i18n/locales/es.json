@@ -608,7 +608,8 @@
     "uploadRestartedSourceChanged": "El archivo local ya no coincide con el envío en pausa de {{path}}: se enviará de nuevo desde el principio.",
     "uploadRestartedMismatch": "Lo que ya está en el servidor no coincide con el archivo local: {{path}} se enviará de nuevo desde el principio.",
     "uploadRestartedUnverified": "No se pudo verificar el envío en pausa de {{path}} ({{error}}): el archivo se enviará de nuevo desde el principio.",
-    "receivedEntries_many": "Se han recibido {{count}} entradas"
+    "receivedEntries_many": "Se han recibido {{count}} entradas",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Mostrar todas las conexiones",

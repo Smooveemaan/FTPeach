@@ -600,7 +600,8 @@
     "uploadResumed": "{{path}} yüklemesi {{offset}} bayttan devam ediyor.",
     "uploadRestartedSourceChanged": "Yerel dosya, duraklatılan {{path}} yüklemesiyle artık eşleşmiyor — dosya baştan yeniden gönderilecek.",
     "uploadRestartedMismatch": "Sunucuda bulunanlar yerel dosyayla eşleşmiyor — {{path}} baştan yeniden gönderilecek.",
-    "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek."
+    "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Tüm bağlantıları göster",

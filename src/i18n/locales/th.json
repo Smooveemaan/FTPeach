@@ -600,7 +600,8 @@
     "uploadResumed": "กำลังอัปโหลด {{path}} ต่อจากไบต์ที่ {{offset}}",
     "uploadRestartedSourceChanged": "ไฟล์ในเครื่องไม่ตรงกับการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้แล้ว — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
     "uploadRestartedMismatch": "ข้อมูลที่มีอยู่บนเซิร์ฟเวอร์ไม่ตรงกับไฟล์ในเครื่อง — จะส่ง {{path}} ใหม่ตั้งแต่ต้น",
-    "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น"
+    "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",

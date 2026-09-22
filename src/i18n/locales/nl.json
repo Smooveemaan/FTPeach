@@ -600,7 +600,8 @@
     "uploadResumed": "Uploaden van {{path}} wordt hervat op {{offset}} bytes.",
     "uploadRestartedSourceChanged": "Het lokale bestand komt niet meer overeen met de gepauzeerde upload van {{path}} — het wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
-    "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden."
+    "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Alle verbindingen weergeven",

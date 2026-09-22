@@ -616,7 +616,8 @@
     "uploadRestartedMismatch": "Дані на сервері не збігаються з локальним файлом — {{path}} буде надіслано наново.",
     "uploadRestartedUnverified": "Не вдалося перевірити призупинене надсилання {{path}} ({{error}}) — файл буде надіслано наново.",
     "receivedEntries_few": "Отримано {{count}} записи",
-    "receivedEntries_many": "Отримано {{count}} записів"
+    "receivedEntries_many": "Отримано {{count}} записів",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Показати всі з'єднання",

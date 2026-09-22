@@ -600,7 +600,8 @@
     "uploadResumed": "Återupptar uppladdningen av {{path}} vid {{offset}} byte.",
     "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
     "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
-    "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början."
+    "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början.",
+    "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",

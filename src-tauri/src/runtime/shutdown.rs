@@ -5,9 +5,10 @@ use crate::runtime::window_bounds::BoundsPersister;
 use crate::security::vault::Vault;
 use crate::session::{self, ConnectingClients, Sessions};
 use crate::store::Store;
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 /// How long the window has to show that it is asking about a quit before the
@@ -20,9 +21,29 @@ const QUIT_PROMPT_TIMEOUT: Duration = Duration::from_secs(10);
 #[derive(Default)]
 pub struct ShutdownCoordinator {
     started: AtomicBool,
+    pending_flush: Mutex<Option<(String, tokio::sync::oneshot::Sender<bool>)>>,
 }
 
 impl ShutdownCoordinator {
+    fn request_flush(&self) -> (String, tokio::sync::oneshot::Receiver<bool>) {
+        let request_id = uuid::Uuid::new_v4().to_string();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        *self.pending_flush.lock().unwrap() = Some((request_id.clone(), sender));
+        (request_id, receiver)
+    }
+
+    /// Only the current main-window handshake can complete the pending drain.
+    pub fn state_flushed(&self, request_id: &str, ok: bool) -> bool {
+        let mut pending = self.pending_flush.lock().unwrap();
+        if pending.as_ref().is_none_or(|(id, _)| id != request_id) {
+            return false;
+        }
+        if let Some((_, sender)) = pending.take() {
+            let _ = sender.send(ok);
+        }
+        true
+    }
+
     pub fn begin(&self) -> bool {
         self.started
             .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
@@ -54,6 +75,8 @@ pub fn quit_route(active_transfers: u32, unsynced_edits: usize) -> QuitRoute {
 /// decision, not wiring, so it lives with shutdown rather than inside
 /// `run()`'s window-event closure.
 pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: Store) {
+    // The close-to-tray preference itself may still be debounced in the UI.
+    flush_renderer(&app).await;
     let close_to_tray = store
         .get_settings()
         .await
@@ -134,7 +157,8 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 /// saved, temporary copies removed (edited ones kept for recovery) and the
 /// vault locked. Installing an update needs the same tidy state before it
 /// hands over to the installer.
-pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
+pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
+    let state_saved = flush_renderer(&app).await;
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
@@ -197,6 +221,30 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) {
     if let Some(emitter) = app.try_state::<crate::runtime::log_emitter::LogEmitter>() {
         emitter.flush().await;
     }
+    state_saved
+}
+
+async fn flush_renderer(app: &AppHandle) -> bool {
+    let coordinator = app.state::<ShutdownCoordinator>();
+    let (request_id, receiver) = coordinator.request_flush();
+    let emitted = app.emit_to(
+        "main",
+        "app:flush-state",
+        serde_json::json!({"requestId": request_id}),
+    );
+    let saved = emitted.is_ok() && wait_for_flush(receiver, Duration::from_secs(3)).await;
+    if !saved {
+        log::warn!("renderer state could not be fully saved before shutdown (failed or timed out)");
+    }
+    coordinator.state_flushed(&request_id, false);
+    saved
+}
+
+async fn wait_for_flush(
+    receiver: tokio::sync::oneshot::Receiver<bool>,
+    deadline: Duration,
+) -> bool {
+    matches!(tokio::time::timeout(deadline, receiver).await, Ok(Ok(true)))
 }
 
 #[cfg(test)]
@@ -216,5 +264,26 @@ mod tests {
         let coordinator = ShutdownCoordinator::default();
         assert!(coordinator.begin());
         assert!(!coordinator.begin());
+    }
+
+    #[tokio::test]
+    async fn only_the_current_flush_request_can_acknowledge_shutdown() {
+        let coordinator = ShutdownCoordinator::default();
+        let (old, old_reply) = coordinator.request_flush();
+        let (current, reply) = coordinator.request_flush();
+        assert!(!coordinator.state_flushed(&old, true));
+        assert!(old_reply.await.is_err());
+        assert!(coordinator.state_flushed(&current, false));
+        assert!(!reply.await.unwrap());
+        assert!(!coordinator.state_flushed(&current, true));
+    }
+
+    #[tokio::test]
+    async fn an_unresponsive_renderer_does_not_prevent_shutdown() {
+        let (_sender, receiver) = tokio::sync::oneshot::channel();
+        assert!(!wait_for_flush(receiver, Duration::from_millis(10)).await);
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        sender.send(true).unwrap();
+        assert!(wait_for_flush(receiver, Duration::from_millis(10)).await);
     }
 }

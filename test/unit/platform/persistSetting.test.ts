@@ -77,3 +77,38 @@ test('failed responses and rejected writes report once and do not block later re
     assert.equal(h.calls.length, 2);
   }
 });
+
+test('shutdown flush cancels debounce and waits through a slow older revision', async () => {
+  const h = harness();
+  h.persist({ width: 1 });
+  const first = h.persist.flush();
+  assert.equal(h.timers.size, 0);
+  h.persist({ width: 2 });
+  let settled = false;
+  const closing = h.persist.flush().then(() => {
+    settled = true;
+  });
+  await settle();
+  assert.equal(settled, false);
+  h.calls[0]!.resolve({ ok: true });
+  await settle();
+  assert.deepEqual(h.calls[1]!.patch, { width: 2 });
+  assert.equal(settled, false);
+  h.calls[1]!.resolve({ ok: true });
+  await Promise.all([first, closing]);
+  assert.deepEqual(h.persist.status(), { pending: false, writing: false });
+});
+
+test('a failed flush retains the patch for an explicit retry', async () => {
+  const h = harness();
+  h.persist({ width: 42 });
+  const failed = assert.rejects(h.persist.flush());
+  h.calls[0]!.reject(new Error('disk unavailable'));
+  await failed;
+  assert.equal(h.persist.status().pending, true);
+  const retry = h.persist.flush();
+  assert.deepEqual(h.calls[1]!.patch, { width: 42 });
+  h.calls[1]!.resolve({ ok: true });
+  await retry;
+  assert.equal(h.persist.status().pending, false);
+});

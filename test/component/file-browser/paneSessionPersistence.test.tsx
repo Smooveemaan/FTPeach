@@ -7,6 +7,7 @@ import { usePaneSessionPersistence } from '../../../src/features/file-browser/pa
 import { createTabsApi } from '../../../src/platform/api/tabs.ts';
 import type { InvokeArgs, InvokeFn, InvokeResult } from '../../../src/platform/ipcContracts.ts';
 import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
+import { flushShutdownState } from '../../../src/platform/shutdownPersistence.ts';
 
 type Handler = (_args: InvokeArgs | undefined) => unknown;
 
@@ -79,6 +80,75 @@ describe('pane session persistence', () => {
         ? String((failure as { message?: unknown }).message)
         : String(failure),
     );
+
+  test('immediate shutdown saves the latest tabs without waiting for debounce', async () => {
+    const calls = installApi({ tabs_get: () => ({}), tabs_set: () => ({ ok: true }) });
+    const h = renderPersistence({ tabs: named('before'), saveSessionOnExit: true });
+    await act(async () => {});
+    h.rerender({ tabs: named('last change'), saveSessionOnExit: true });
+    await act(async () => {
+      expect(await flushShutdownState()).toBe(true);
+    });
+    const writes = calls.filter((call) => call.command === 'tabs_set');
+    expect(writes).toHaveLength(1);
+    expect(JSON.stringify(writes[0]?.args)).toContain('last change');
+  });
+
+  test('disabling session saving during an older write flushes clear last', async () => {
+    let finish!: (_value: unknown) => void;
+    const calls = installApi({
+      tabs_get: () => ({}),
+      tabs_set: () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+      tabs_clear: () => ({ ok: true }),
+    });
+    const h = renderPersistence({ tabs: named('old'), saveSessionOnExit: true });
+    await settle(h);
+    h.rerender({ tabs: named('new'), saveSessionOnExit: false });
+    let done = false;
+    const closing = flushShutdownState().then((ok) => {
+      done = true;
+      return ok;
+    });
+    await act(async () => {});
+    expect(done).toBe(false);
+    await act(async () => {
+      finish({ ok: true });
+      expect(await closing).toBe(true);
+    });
+    expect(calls.filter((call) => call.command.startsWith('tabs_')).at(-1)?.command).toBe(
+      'tabs_clear',
+    );
+  });
+
+  test('returning to an earlier saved snapshot still wins over an in-flight different snapshot', async () => {
+    let release: ((_value: unknown) => void) | undefined;
+    const writes: string[] = [];
+    installApi({
+      tabs_get: () => ({}),
+      tabs_set: (args) => {
+        writes.push(JSON.stringify(args));
+        if (writes.length === 2)
+          return new Promise((resolve) => {
+            release = resolve;
+          });
+        return { ok: true };
+      },
+    });
+    const h = renderPersistence({ tabs: named('original'), saveSessionOnExit: true });
+    await settle(h);
+    await settle(h, { tabs: named('intermediate'), saveSessionOnExit: true });
+    h.rerender({ tabs: named('original'), saveSessionOnExit: true });
+    const closing = flushShutdownState();
+    await act(async () => {
+      release!({ ok: true });
+      expect(await closing).toBe(true);
+    });
+    expect(writes).toHaveLength(3);
+    expect(writes.at(-1)).toContain('original');
+  });
 
   const settle = async (
     harness: { rerender: (_props: HarnessProps) => void },

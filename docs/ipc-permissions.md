@@ -3,6 +3,11 @@
 The `main` WebView receives only the core window/event permissions in
 `src-tauri/capabilities/default.json`. Application commands are grouped as follows:
 
+Shutdown sends `app:flush-state` only to `main`. The acknowledgement command
+`app_state_flushed` checks the invoking window label and the currently pending UUID;
+it cannot initiate shutdown or change settings. Missing/failed replies are logged
+after a three-second deadline. The handler is installed before the main UI mounts.
+
 - Read: `fs_list`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
   `vault_status`, `app_version`, `session_list`, `updater_status`, `updater_check`.

@@ -10,6 +10,17 @@ pub fn app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
 
+/// Acknowledges the backend's bounded save request from the main window only.
+#[tauri::command]
+pub fn app_state_flushed(
+    window: tauri::WebviewWindow,
+    state: State<'_, shutdown::ShutdownCoordinator>,
+    request_id: String,
+    ok: bool,
+) -> bool {
+    window.label() == "main" && state.state_flushed(&request_id, ok)
+}
+
 /// The window settled the transfers. Check for edits once more: an editor
 /// may have saved while the window was waiting for transfers to finish.
 #[tauri::command]

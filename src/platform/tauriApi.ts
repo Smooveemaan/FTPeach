@@ -41,6 +41,8 @@ import type {
 } from './ipcContracts.ts';
 import type { AppSettings } from './api/settings.ts';
 import type { LogEntry } from '../shared/types.ts';
+import { flushShutdownState } from './shutdownPersistence.ts';
+import './persistSetting.ts';
 
 interface VaultStatus {
   configured: boolean;
@@ -358,9 +360,18 @@ export const tauriApi: Window['api'] = {
  * boundary checker say `window.api` appears nowhere outside `platform/`.
  */
 let disposeConsoleForwarding: (() => void) | null = null;
+let disposeShutdownListener: UnlistenFn | null = null;
 
-export function installTauriApi(): void {
+export async function installTauriApi(): Promise<void> {
   window.api = tauriApi;
   disposeConsoleForwarding?.();
   disposeConsoleForwarding = installConsoleForwarding(rawInvoke);
+  disposeShutdownListener?.();
+  disposeShutdownListener = await listen<{ requestId: string }>('app:flush-state', (event) => {
+    const requestId = event.payload.requestId;
+    if (typeof requestId !== 'string') return;
+    void flushShutdownState()
+      .then((ok) => rawInvoke('app_state_flushed', { requestId, ok }))
+      .catch((error: unknown) => console.error('Shutdown state acknowledgement failed', error));
+  });
 }

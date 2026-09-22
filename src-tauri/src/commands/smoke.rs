@@ -65,6 +65,23 @@ pub fn report_phase(phase: &str) {
 }
 
 pub fn finish(app: &tauri::AppHandle, result: &str) {
+    finish_with_expected(app, result, None);
+}
+
+/// Keeps the renderer alive while the real shutdown handshake drains its writes.
+#[tauri::command]
+pub fn smoke_finish(
+    app: tauri::AppHandle,
+    result: String,
+    expected_tabs: usize,
+    expected_orientation: String,
+) {
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
+        finish_with_expected(&app, &result, Some((expected_tabs, expected_orientation)));
+    }
+}
+
+fn finish_with_expected(app: &tauri::AppHandle, result: &str, expected: Option<(usize, String)>) {
     // PageLoad reports both Started and Finished for the result navigation.
     if !app
         .state::<crate::runtime::shutdown::ShutdownCoordinator>()
@@ -80,7 +97,7 @@ pub fn finish(app: &tauri::AppHandle, result: &str) {
 
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
-        match verify_editor_shutdown(&app).await {
+        match verify_editor_shutdown(&app, expected).await {
             Ok(()) => {
                 report_phase("ok");
                 app.exit(0);
@@ -95,7 +112,10 @@ pub fn finish(app: &tauri::AppHandle, result: &str) {
 
 /// Runs the same real Tauri cleanup used by quit and install_now, without
 /// launching an installer or touching anything outside isolated smoke data.
-async fn verify_editor_shutdown(app: &tauri::AppHandle) -> anyhow::Result<()> {
+async fn verify_editor_shutdown(
+    app: &tauri::AppHandle,
+    expected: Option<(usize, String)>,
+) -> anyhow::Result<()> {
     use crate::local_fs::{edit_recovery, open_with::OpenWithWatchers, preview::PreviewPaths};
     let paths = app.state::<PreviewPaths>();
     let folder = paths.open_with_dir.join("shutdown-fixture");
@@ -113,7 +133,27 @@ async fn verify_editor_shutdown(app: &tauri::AppHandle) -> anyhow::Result<()> {
     let window = app
         .get_webview_window("main")
         .ok_or_else(|| anyhow::anyhow!("no main window"))?;
-    crate::runtime::shutdown::wind_down(app.clone(), window).await;
+    let state_saved = crate::runtime::shutdown::wind_down(app.clone(), window).await;
+    if let Some((tabs, orientation)) = expected {
+        anyhow::ensure!(
+            state_saved,
+            "renderer did not acknowledge a successful shutdown flush"
+        );
+        // Read files afresh, as the next process will; no cached Store state.
+        let store = app.state::<Store>();
+        let saved_tabs: Value =
+            serde_json::from_slice(&fs::read(store.data_dir().join("tabs.json"))?)?;
+        let saved_settings: Value =
+            serde_json::from_slice(&fs::read(store.data_dir().join("settings.json"))?)?;
+        anyhow::ensure!(
+            saved_tabs["data"]["tabs"].as_array().map(Vec::len) == Some(tabs),
+            "shutdown lost the last tab"
+        );
+        anyhow::ensure!(
+            saved_settings["data"]["paneOrientation"].as_str() == Some(orientation.as_str()),
+            "shutdown lost the last setting"
+        );
+    }
     anyhow::ensure!(
         app.state::<Vault>().status().await.locked,
         "shutdown did not lock vault"

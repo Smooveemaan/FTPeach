@@ -115,6 +115,7 @@ pub fn run() {
             commands::vault::vault_change_password,
             commands::app::app_version,
             commands::app::app_quit,
+            commands::app::app_state_flushed,
             commands::app::app_system_hour_cycle,
             commands::app::app_open_external,
             commands::app::app_set_window_border,
@@ -159,6 +160,8 @@ pub fn run() {
             commands::tray::tray_hide_window,
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_backend_checks,
+            #[cfg(feature = "smoke-test")]
+            commands::smoke::smoke_finish,
         ])
         .setup(runtime::startup::setup)
         .run(tauri::generate_context!())

@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { registerShutdownWriter } from '../../../platform/shutdownPersistence.ts';
 import { api } from '../../../platform/api/index.ts';
 import type { PersistedTabsState } from '../../../platform/api/tabs.ts';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
@@ -69,6 +70,7 @@ export function usePaneSessionPersistence({
   const revisionRef = useRef(0);
   const savedSnapshotRef = useRef<string | null>(null);
   const reportedFailureRef = useRef<string | null>(null);
+  const writeFailedRef = useRef(false);
 
   // A disk that refuses one write refuses the next one too, and the user
   // changes tabs while it does. The first refusal is the news; repeating it
@@ -85,24 +87,39 @@ export function usePaneSessionPersistence({
       const snapshot = state === null ? null : JSON.stringify(state);
       // Nothing changed since the last write that actually landed. A write that
       // failed leaves the stored snapshot behind, so its retry still goes out.
-      if (snapshot !== null && snapshot === savedSnapshotRef.current) return;
       const revision = ++revisionRef.current;
       writeChainRef.current = writeChainRef.current.then(async () => {
         if (revisionRef.current !== revision) return;
+        if (snapshot !== null && snapshot === savedSnapshotRef.current) return;
         try {
           const result = state === null ? await api.tabs.clear() : await api.tabs.set(state);
           if (!result.ok) {
+            writeFailedRef.current = true;
             reportWriteFailure(commandResultError(result));
             return;
           }
           savedSnapshotRef.current = snapshot;
+          writeFailedRef.current = false;
           reportedFailureRef.current = null;
         } catch (error) {
+          writeFailedRef.current = true;
           reportWriteFailure(error);
         }
       });
+      return writeChainRef.current;
     },
     [reportWriteFailure],
+  );
+
+  useLayoutEffect(
+    () =>
+      registerShutdownWriter('tabs', async () => {
+        if (!hydrated) return;
+        if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+        await writeSession(saveSessionOnExit ? serializePaneTabs(tabs, activeTabId) : null);
+        if (writeFailedRef.current) throw new Error('Tabs could not be saved before exit');
+      }),
+    [hydrated, tabs, activeTabId, saveSessionOnExit, writeSession],
   );
 
   useEffect(() => {
@@ -117,7 +134,7 @@ export function usePaneSessionPersistence({
 
       const shouldPersistSession = storedSettings.saveSessionOnExit !== false;
       persistenceEnabledRef.current = shouldPersistSession;
-      if (!shouldPersistSession) writeSession(null);
+      if (!shouldPersistSession) await writeSession(null);
 
       const initial = hydrationRef.current;
       const restored =
@@ -159,7 +176,7 @@ export function usePaneSessionPersistence({
     persistenceEnabledRef.current = saveSessionOnExit;
     if (!saveSessionOnExit) {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-      writeSession(null);
+      void writeSession(null);
     }
   }, [hydrated, saveSessionOnExit, writeSession]);
 
@@ -169,7 +186,7 @@ export function usePaneSessionPersistence({
     persistTimerRef.current = setTimeout(() => {
       // A failed write here is invisible until the next launch, when the
       // user's tabs come back wrong or not at all. Say so while they can act.
-      writeSession(serializePaneTabs(tabs, activeTabId));
+      void writeSession(serializePaneTabs(tabs, activeTabId));
     }, 400);
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);

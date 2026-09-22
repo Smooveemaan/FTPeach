@@ -37,6 +37,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Quitting or installing an update now saves the latest settings and tabs before
+  closing, including changes still waiting for their save timer.
+
 - A busy protocol log no longer builds an unlimited queue behind a slow disk. It
   reports dropped messages and drains pending records before quitting when the disk responds.
 

@@ -1,5 +1,19 @@
 # Settings and session storage
 
+## State at exit
+
+Before native shutdown, the main renderer receives `app:flush-state` with a fresh
+request ID. Settings cancel their 75 ms debounce and drain serialized revisions;
+tabs cancel their 400 ms debounce, enqueue the current snapshot (or clear if session
+saving is disabled), and await the writer. Failed settings retain their pending patch
+for retry; failed tab writes report failure. All state owners start their drains even
+if another owner is slow or fails. Only `main` can acknowledge the current request
+through `app_state_flushed`. The backend logs a failed acknowledgement or a three-second
+timeout and continues cleanup. Window close reads close-to-tray after this flush;
+hiding preserves the session. Quit and immediate update installation use the same
+handshake. Abrupt termination and an unresponsive renderer cannot guarantee the last
+unsent change (HF-12).
+
 ## Protocol log budgets
 
 The writer admits at most 512 records without waiting on the disk. Text and event

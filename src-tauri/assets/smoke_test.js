@@ -108,6 +108,8 @@
   };
 
   let result = 'ok';
+  let expectedTabs = 0;
+  let expectedOrientation = '';
   try {
     const backendResult = await window.__TAURI_INTERNALS__.invoke('smoke_backend_checks');
     if (backendResult !== 'settings-vault-transfer-ok')
@@ -145,10 +147,22 @@
     await waitFor('.modal-site-manager');
     key('Escape', 'Escape');
     await waitFor('.modal-site-manager', false);
+    const orientation = await waitFor('.orientation-toggle');
+    if (!(orientation instanceof HTMLButtonElement) || orientation.disabled)
+      throw new Error('orientation toggle is unavailable');
+    expectedOrientation = orientation.classList.contains('active') ? 'horizontal' : 'vertical';
+    expectedTabs = document.querySelectorAll('.tab-strip-item').length + 1;
+    const addTab = await waitFor('.tab-strip-add');
+    addTab.click();
+    orientation.click();
+    // Let React commit, but do not wait for the 75/400 ms persistence timers.
+    await nextFrame();
   } catch (error) {
     result = `error: ${error instanceof Error ? error.message : String(error)}`;
   }
-  const url = new URL(window.location.href);
-  url.searchParams.set('ftpeachSmoke', result);
-  window.location.replace(url);
+  await window.__TAURI_INTERNALS__.invoke('smoke_finish', {
+    result,
+    expectedTabs,
+    expectedOrientation,
+  });
 })();

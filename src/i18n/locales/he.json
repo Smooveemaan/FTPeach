@@ -543,7 +543,9 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "העלאות באמצעות WebDAV מוגבלות ל-{{limit}} MiB לכל קובץ.",
     "notifySucceeded_two": "{{count}} קבצים הועברו",
-    "notifyFailed_two": "{{count}} קבצים נכשלו"
+    "notifyFailed_two": "{{count}} קבצים נכשלו",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "התור מלא (עד {{limit}} משימות פעילות או ממתינות). יש להמתין לסיום.",

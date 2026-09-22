@@ -537,7 +537,9 @@
     "notifyFailed_one": "ไม่สำเร็จ {{count}} ไฟล์",
     "notifyFailed_other": "ไม่สำเร็จ {{count}} ไฟล์",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์"
+    "webdavUploadTooLarge": "การอัปโหลดผ่าน WebDAV มีขีดจำกัดอยู่ที่ {{limit}} MiB ต่อไฟล์",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "คิวเต็มแล้ว (งานที่กำลังทำงานหรือรอได้สูงสุด {{limit}} งาน) โปรดรอให้งานเสร็จ",

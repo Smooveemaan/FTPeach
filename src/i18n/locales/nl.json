@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} bestand mislukt",
     "notifyFailed_other": "{{count}} bestanden mislukt",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand."
+    "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "De wachtrij is vol (maximaal {{limit}} actieve of wachtende taken). Wacht tot taken klaar zijn.",

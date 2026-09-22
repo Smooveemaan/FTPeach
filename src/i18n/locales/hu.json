@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} fájl sikertelen",
     "notifyFailed_other": "{{count}} fájl sikertelen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet."
+    "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "A sor megtelt (legfeljebb {{limit}} aktív vagy várakozó feladat). Várja meg a befejezést.",

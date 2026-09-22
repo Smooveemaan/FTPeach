@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} dosya başarısız oldu",
     "notifyFailed_other": "{{count}} dosya başarısız oldu",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır."
+    "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Kuyruk dolu (en fazla {{limit}} etkin veya bekleyen görev). Görevlerin bitmesini bekleyin.",

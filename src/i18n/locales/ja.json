@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} 個のファイルが失敗しました",
     "notifyFailed_other": "{{count}} 個のファイルが失敗しました",
     "notifyBoth": "{{succeeded}}、{{failed}}",
-    "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。"
+    "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大{{limit}}件）。完了するまでお待ちください。",

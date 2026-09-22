@@ -4,6 +4,7 @@ import { useFileClipboard } from '../../../src/features/file-browser/useFileClip
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { useDragMove } from '../../../src/features/file-browser/components/useDragMove.ts';
 import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
+import type { TransferBatchResult } from '../../../src/features/transfers/transferBatchResult.ts';
 
 vi.mock('../../../src/features/file-browser/components/useDragMove.ts', () => ({
   useDragMove: vi.fn(() => ({ cancelDrag: vi.fn(), ghostRef: { current: null }, dragInfo: null })),
@@ -161,4 +162,54 @@ test('pasting a cut between different endpoints is refused and keeps the cut for
   act(() => result.current.pasteClipboard('b', tab.panes.b));
   expect(confirmOverwriteIfNeeded).toHaveBeenCalledTimes(2);
   dispose();
+});
+
+test('a cut stays on the clipboard until its files have actually moved', async () => {
+  const tab = makeTab('tab');
+  Object.assign(tab.panes.a, {
+    kind: 'local',
+    path: 'D:\\work',
+    entries: [{ name: 'file.txt', isDirectory: false, size: 42 }],
+    selected: new Set(['file.txt']),
+  });
+  window.api = {} as unknown as Window['api'];
+  let outcome: TransferBatchResult = {
+    items: [{ name: 'file.txt', outcome: 'failed', sourceRetained: true }],
+    copied: 0,
+    moved: 0,
+    skipped: 0,
+    failed: 1,
+    ok: false,
+    sourceRetained: true,
+  };
+  const copyEntries = vi.fn(async () => outcome);
+  const { result } = renderHook(() =>
+    useFileClipboard({
+      panes: tab.panes,
+      confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
+        await proceed(names as string[], true);
+      }),
+      copyEntries,
+      canCopyBetween: vi.fn(() => true),
+      refreshPane: vi.fn(),
+      movePaneSamePane: vi.fn(),
+    }),
+  );
+
+  act(() => result.current.cutToClipboard('a', tab.panes.a));
+  await act(async () => result.current.pasteClipboard('a', tab.panes.a));
+  // The files are still where they were, so the cut is still worth pasting.
+  expect(result.current.canPaste(tab.panes.a)).toBe(true);
+
+  outcome = {
+    items: [{ name: 'file.txt', outcome: 'moved', sourceRetained: false }],
+    copied: 0,
+    moved: 1,
+    skipped: 0,
+    failed: 0,
+    ok: true,
+    sourceRetained: false,
+  };
+  await act(async () => result.current.pasteClipboard('a', tab.panes.a));
+  expect(result.current.canPaste(tab.panes.a)).toBe(false);
 });

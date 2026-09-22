@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} αρχείο απέτυχε",
     "notifyFailed_other": "{{count}} αρχεία απέτυχαν",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Οι μεταφορτώσεις μέσω WebDAV περιορίζονται στα {{limit}} MiB ανά αρχείο."
+    "webdavUploadTooLarge": "Οι μεταφορτώσεις μέσω WebDAV περιορίζονται στα {{limit}} MiB ανά αρχείο.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Η ουρά είναι πλήρης (έως {{limit}} ενεργές ή εκκρεμείς εργασίες). Περιμένετε να ολοκληρωθούν.",

@@ -549,7 +549,9 @@
     "notifySucceeded_few": "Přeneseny {{count}} soubory",
     "notifySucceeded_many": "Přeneseno {{count}} souboru",
     "notifyFailed_few": "Nepodařilo se přenést {{count}} soubory",
-    "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru"
+    "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Fronta je plná (až {{limit}} aktivních nebo čekajících úloh). Počkejte na dokončení.",

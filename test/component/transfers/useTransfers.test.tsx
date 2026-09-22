@@ -119,7 +119,7 @@ test('dropping a folder and seven files performs one destination listing', async
       .fn()
       .mockResolvedValue({ ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] });
     mockApi.transfer.recursive = recursive;
-    let pending!: Promise<void>;
+    let pending!: Promise<unknown>;
     await act(async () => {
       pending = getApi().handleOsDropFiles(
         {
@@ -157,7 +157,7 @@ test('waiting folders can pause, resume and stop before backend dispatch', async
       return folder.promise;
     };
     const entries = Array.from({ length: 20 }, (_, i) => ({ ...folderEntry, name: `folder${i}` }));
-    let pending!: Promise<void>;
+    let pending!: Promise<unknown>;
     await act(async () => {
       pending = getApi().copyEntries({
         ...localFolderMove(),
@@ -203,7 +203,7 @@ test('all protocols queue the whole selection while folder and file commands rem
         size: 2048,
       })),
     ];
-    const pending: Promise<void>[] = [];
+    const pending: Promise<unknown>[] = [];
     await act(async () => {
       for (const protocol of ['ftp', 'sftp', 'webdav'] as const) {
         pending.push(
@@ -424,7 +424,7 @@ test('recursive cancellation waits for the backend report and rejects immediate 
     mockApi.transfer.cancelRecursive = async (id) => {
       cancelled = id;
     };
-    let running: Promise<void>;
+    let running: Promise<unknown>;
     await act(async () => {
       running = getApi().copyEntries(localFolderMove());
       await Promise.resolve();
@@ -465,7 +465,7 @@ async function startAndPauseWalk({ getApi, mockApi, getSnapshot }: HarnessContex
   mockApi.transfer.cancelRecursive = async (id, intent) => {
     cancels.push([id, intent]);
   };
-  let running!: Promise<void>;
+  let running!: Promise<unknown>;
   await act(async () => {
     running = getApi().copyEntries(localFolderMove());
     await Promise.resolve();
@@ -535,7 +535,7 @@ test('a running folder walk lists its target again as it puts entries in place',
       return walk.promise;
     };
     let refreshed = 0;
-    let running!: Promise<void>;
+    let running!: Promise<unknown>;
     await act(async () => {
       running = getApi().copyEntries({
         ...localFolderMove(),

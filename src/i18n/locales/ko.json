@@ -537,7 +537,9 @@
     "notifyFailed_one": "파일 {{count}}개 실패",
     "notifyFailed_other": "파일 {{count}}개 실패",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다."
+    "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "대기열이 가득 찼습니다(실행 중이거나 대기 중인 작업 최대 {{limit}}개). 완료를 기다리세요.",

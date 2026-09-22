@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} fil misslyckades",
     "notifyFailed_other": "{{count}} filer misslyckades",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil."
+    "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Kön är full (upp till {{limit}} aktiva eller väntande uppgifter). Vänta tills uppgifter slutförs.",

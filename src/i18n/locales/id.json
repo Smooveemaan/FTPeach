@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} file gagal",
     "notifyFailed_other": "{{count}} file gagal",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file."
+    "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",

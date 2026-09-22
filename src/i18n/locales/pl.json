@@ -549,7 +549,9 @@
     "notifySucceeded_few": "Przesłano {{count}} pliki",
     "notifySucceeded_many": "Przesłano {{count}} plików",
     "notifyFailed_few": "Nie przesłano {{count}} plików",
-    "notifyFailed_many": "Nie przesłano {{count}} plików"
+    "notifyFailed_many": "Nie przesłano {{count}} plików",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Kolejka jest pełna (do {{limit}} aktywnych lub oczekujących zadań). Poczekaj na zakończenie.",

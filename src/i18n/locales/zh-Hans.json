@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} 个文件失败",
     "notifyFailed_other": "{{count}} 个文件失败",
     "notifyBoth": "{{succeeded}}、{{failed}}",
-    "webdavUploadTooLarge": "WebDAV 上传的单个文件大小上限为 {{limit}} MiB。"
+    "webdavUploadTooLarge": "WebDAV 上传的单个文件大小上限为 {{limit}} MiB。",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "队列已满（最多 {{limit}} 个正在运行或等待的任务）。请等待任务完成。",

@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} tệp thất bại",
     "notifyFailed_other": "{{count}} tệp thất bại",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp."
+    "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Hàng đợi đã đầy (tối đa {{limit}} tác vụ đang chạy hoặc chờ). Hãy đợi hoàn tất.",

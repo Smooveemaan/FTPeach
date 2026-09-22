@@ -537,7 +537,9 @@
     "notifyFailed_one": "{{count}} Datei fehlgeschlagen",
     "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt."
+    "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt.",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Die Warteschlange ist voll (bis zu {{limit}} aktive oder wartende Aufgaben). Warten Sie auf den Abschluss.",

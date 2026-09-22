@@ -561,7 +561,9 @@
     "notifyFailed_zero": "فشل نقل {{count}} ملف",
     "notifyFailed_two": "فشل نقل {{count}} ملفين",
     "notifyFailed_few": "فشل نقل {{count}} ملفات",
-    "notifyFailed_many": "فشل نقل {{count}} ملفًا"
+    "notifyFailed_many": "فشل نقل {{count}} ملفًا",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "قائمة الانتظار ممتلئة (حتى {{limit}} مهمة نشطة أو منتظرة). انتظر اكتمال المهام.",

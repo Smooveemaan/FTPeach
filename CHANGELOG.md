@@ -40,6 +40,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   keeps a file locked during shutdown. New editor opens pause when retained copies reach
   1 GiB or 30 days; existing edits are never automatically deleted.
 
+- Copying or moving several files now says how many did not make it, and a move that could
+  not finish says the originals are still in place. A cut stays on the clipboard until its
+  files have really moved.
 - A failed file in a batch no longer ends the batch while other files are still being
   written, and very large selections are started in batches instead of all at once.
 - Tabs that could not be saved are now reported right away instead of coming back wrong at

@@ -543,7 +543,9 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Încărcările prin WebDAV sunt limitate la {{limit}} MiB pe fișier.",
     "notifySucceeded_few": "{{count}} fișiere transferate",
-    "notifyFailed_few": "{{count}} fișiere eșuate"
+    "notifyFailed_few": "{{count}} fișiere eșuate",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Coada este plină (până la {{limit}} sarcini active sau în așteptare). Așteptați finalizarea.",

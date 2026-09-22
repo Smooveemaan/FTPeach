@@ -549,7 +549,9 @@
     "notifyFailed_many": "{{count}} файлов не передано",
     "notifyFailed_other": "{{count}} файла не передано",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Через WebDAV можно загрузить файл не больше {{limit}} МиБ."
+    "webdavUploadTooLarge": "Через WebDAV можно загрузить файл не больше {{limit}} МиБ.",
+    "batchFailed": "Не перенесено объектов: {{failed}} из {{total}}.",
+    "sourcesKept": "Исходные файлы остались на месте."
   },
   "transferQueue": {
     "capacity": "Очередь заполнена (до {{limit}} активных или ожидающих задач). Дождитесь завершения задач.",

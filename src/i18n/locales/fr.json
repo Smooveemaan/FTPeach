@@ -543,7 +543,9 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Les téléversements WebDAV sont limités à {{limit}} Mio par fichier.",
     "notifySucceeded_many": "{{count}} fichiers transférés",
-    "notifyFailed_many": "{{count}} fichiers en échec"
+    "notifyFailed_many": "{{count}} fichiers en échec",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "La file est pleine (jusqu’à {{limit}} tâches actives ou en attente). Attendez leur fin.",

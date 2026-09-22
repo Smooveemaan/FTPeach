@@ -107,8 +107,10 @@ export function useFileClipboard({
             refreshTarget: () => refreshPane(targetId, targetPane.path),
             overwriteApproved,
           })
-            .then(() => {
-              if (mode === 'cut') setClipboard(null);
+            .then((result) => {
+              // A cut whose files are still where they were is not spent: the
+              // user can paste it again once the reason is out of the way.
+              if (mode === 'cut' && result.ok && !result.sourceRetained) setClipboard(null);
             })
             .catch((error: unknown) => console.error('Paste failed', error)),
         sourcePane.entries,

@@ -543,7 +543,9 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Las subidas mediante WebDAV tienen un límite de {{limit}} MiB por archivo.",
     "notifySucceeded_many": "{{count}} archivos transferidos",
-    "notifyFailed_many": "{{count}} archivos con error"
+    "notifyFailed_many": "{{count}} archivos con error",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "La cola está llena (hasta {{limit}} tareas activas o en espera). Espere a que terminen.",

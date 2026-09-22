@@ -549,7 +549,9 @@
     "notifySucceeded_few": "{{count}} файли передано",
     "notifySucceeded_many": "{{count}} файлів передано",
     "notifyFailed_few": "{{count}} файли не передано",
-    "notifyFailed_many": "{{count}} файлів не передано"
+    "notifyFailed_many": "{{count}} файлів не передано",
+    "batchFailed": "{{failed}} of {{total}} items were not transferred.",
+    "sourcesKept": "The originals are still in place."
   },
   "transferQueue": {
     "capacity": "Черга заповнена (до {{limit}} активних або очікуваних завдань). Дочекайтеся завершення.",

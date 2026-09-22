@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   saved password is used for the new address, and warns if the connection becomes less secure.
 - Backup copies of bookmarks and settings no longer keep passwords that were moved into
   the vault, changed or deleted, and never keep unencrypted passwords.
+- A downloaded update can no longer be swapped for another file before it installs, and an
+  older installer can no longer be passed off as a newer version.
 
 ### Fixed
 

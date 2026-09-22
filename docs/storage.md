@@ -50,7 +50,8 @@ window and layout values.
 ## Updates
 
 A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates`:
-the installer and a small `pending.json` with its version and signature. The
+the installer and a small `pending.json` with its version and signature. FTPeach's own
+file operations cannot read or write this folder. The
 next launch verifies it and installs it silently before any window appears,
 and the updated FTPeach removes the directory. An update never touches
 `%APPDATA%\FTPeach`.

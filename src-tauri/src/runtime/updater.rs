@@ -15,6 +15,8 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 use tokio::sync::Mutex as AsyncMutex;
 
+const DOWNLOAD_DEADLINE: std::time::Duration = std::time::Duration::from_secs(30 * 60);
+
 #[derive(Default)]
 pub struct UpdaterState {
     /// A check or download is running. A second request does not start
@@ -136,14 +138,14 @@ pub fn install_staged_at_startup(app: &AppHandle) {
     let (Ok(dir), Some(pubkey)) = (staging_dir(app), release_pubkey(app)) else {
         return;
     };
-    let Some(staged) = update_staging::ready_to_install(&dir, &app.package_info().version, &pubkey)
-    else {
+    let current = &app.package_info().version;
+    let Some(staged) = update_staging::ready_to_install(&dir, current, &pubkey) else {
         return;
     };
-    match update_staging::install(&dir, &staged) {
+    match update_staging::install(&dir, current, &pubkey) {
         // Nothing needs an orderly shutdown yet: there is no tray icon, no
         // visible window and no connection.
-        Ok(()) => std::process::exit(0),
+        Ok(_) => std::process::exit(0),
         Err(error) => log::warn!(
             "could not start the installer for {}: {error:#}",
             staged.version
@@ -247,30 +249,36 @@ async fn download_available(app: &AppHandle, state: &UpdaterState) -> anyhow::Re
 async fn download_and_stage(app: &AppHandle, update: &Update) -> anyhow::Result<StagedUpdate> {
     let mut received = 0u64;
     let mut last_percent = None;
-    let bytes = update
-        .download(
-            |chunk, total| {
-                received += chunk as u64;
-                let Some(total) = total.filter(|&total| total > 0) else {
-                    return;
-                };
-                let percent = ((received as f64 / total as f64) * 100.0)
-                    .round()
-                    .min(100.0) as u32;
-                if last_percent != Some(percent) {
-                    last_percent = Some(percent);
-                    send(
-                        app,
-                        UpdaterStatus::Downloading {
-                            version: update.version.clone(),
-                            percent: Some(percent),
-                        },
-                    );
-                }
-            },
-            || {},
-        )
-        .await?;
+    let download = update.download(
+        |chunk, total| {
+            received += chunk as u64;
+            let Some(total) = total.filter(|&total| total > 0) else {
+                return;
+            };
+            let percent = ((received as f64 / total as f64) * 100.0)
+                .round()
+                .min(100.0) as u32;
+            if last_percent != Some(percent) {
+                last_percent = Some(percent);
+                send(
+                    app,
+                    UpdaterStatus::Downloading {
+                        version: update.version.clone(),
+                        percent: Some(percent),
+                    },
+                );
+            }
+        },
+        || {},
+    );
+    // A stalled or endless download must not keep the updater busy forever;
+    // the size is bounded again when the bytes are staged.
+    let bytes = tokio::time::timeout(DOWNLOAD_DEADLINE, download)
+        .await
+        .map_err(|_| anyhow::anyhow!("The update download took too long"))??;
+    if bytes.len() as u64 > update_staging::MAX_INSTALLER_BYTES {
+        anyhow::bail!("The downloaded update is larger than any FTPeach installer");
+    }
     let dir = staging_dir(app)?;
     let (version, signature) = (update.version.clone(), update.signature.clone());
     tokio::task::spawn_blocking(move || update_staging::stage(&dir, &version, &signature, &bytes))
@@ -284,9 +292,9 @@ pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
     let pubkey = release_pubkey(app)
         .ok_or_else(|| anyhow::anyhow!("Updater public key is not configured"))?;
     let current = app.package_info().version.clone();
-    let lookup = dir.clone();
+    let (lookup, lookup_current, lookup_pubkey) = (dir.clone(), current.clone(), pubkey.clone());
     let staged = tokio::task::spawn_blocking(move || {
-        update_staging::ready_to_install(&lookup, &current, &pubkey)
+        update_staging::ready_to_install(&lookup, &lookup_current, &lookup_pubkey)
     })
     .await?;
     let Some(staged) = staged else {
@@ -305,7 +313,9 @@ pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
     }
     // Connections are closed and the vault is locked by now, so a failed
     // start has no session left to return to; the next launch discards it.
-    if let Err(error) = update_staging::install(&dir, &staged) {
+    // The installer is checked again here, held open until it has started:
+    // the check above came before the wind-down, which can take a while.
+    if let Err(error) = update_staging::install(&dir, &current, &pubkey) {
         log::warn!(
             "could not start the installer for {}: {error:#}",
             staged.version

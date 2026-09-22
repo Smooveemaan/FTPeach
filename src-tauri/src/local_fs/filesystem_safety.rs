@@ -214,18 +214,32 @@ fn protected_paths() -> Vec<PathBuf> {
 fn app_owned_paths() -> Vec<PathBuf> {
     app_owned_paths_for(
         std::env::var_os("APPDATA").map(PathBuf::from),
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
         std::env::current_exe()
             .ok()
             .and_then(|exe| exe.parent().map(Path::to_path_buf)),
     )
 }
 
-fn app_owned_paths_for(app_data: Option<PathBuf>, app_dir: Option<PathBuf>) -> Vec<PathBuf> {
+/// The downloaded update waits under the local app data; file operations
+/// must not be able to replace it between its check and its start.
+const UPDATE_STAGING: &str = r"com.smooveemaan.ftpeach\updates";
+
+fn app_owned_paths_for(
+    app_data: Option<PathBuf>,
+    local_app_data: Option<PathBuf>,
+    app_dir: Option<PathBuf>,
+) -> Vec<PathBuf> {
     let mut paths = Vec::new();
     if let Some(app_data) = app_data
         && let Some(data_dir) = absolute_lexical(app_data.join("FTPeach"))
     {
         paths.push(data_dir);
+    }
+    if let Some(local_app_data) = local_app_data
+        && let Some(staging) = absolute_lexical(local_app_data.join(UPDATE_STAGING))
+    {
+        paths.push(staging);
     }
     if let Some(app_dir) = app_dir
         && let Some(app_dir) = absolute_lexical(app_dir)
@@ -511,9 +525,19 @@ mod tests {
             .join("FTPeach");
         assert!(!protected.exists());
 
-        let paths = app_owned_paths_for(Some(roaming), None);
+        let paths = app_owned_paths_for(Some(roaming), None, None);
 
         assert_eq!(paths, vec![protected]);
+    }
+
+    #[test]
+    fn the_update_staging_folder_is_protected_but_not_the_rest_of_local_data() {
+        let local = std::env::temp_dir().join(format!("ftpeach-local-{}", uuid::Uuid::new_v4()));
+        let paths = app_owned_paths_for(None, Some(local.clone()), None);
+        let staging = local.join(r"com.smooveemaan.ftpeach\updates\FTPeach-9.9.9-setup.exe");
+        let recovered = local.join(r"com.smooveemaan.ftpeach\recovered-edits\a\notes.txt");
+        assert!(paths.iter().any(|root| path_is_within(&staging, root)));
+        assert!(!paths.iter().any(|root| path_is_within(&recovered, root)));
     }
 
     #[cfg(windows)]

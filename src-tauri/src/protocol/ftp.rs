@@ -1399,15 +1399,20 @@ impl ProtocolBackend for FtpBackend {
     }
 
     async fn create_file(&mut self, path: &str) -> BackendResult<()> {
-        let path = path.to_string();
-        let data = self.data_channel()?;
-        self.with_stream(move |s| {
-            Box::pin(async move {
-                let stream = data.open(s, format!("STOR {path}"), STORE_OPEN).await?;
-                UploadData(Some(stream)).finish(s).await
-            })
-        })
-        .await
+        if self.exists(path).await? {
+            return Err(super::fail(
+                ErrorCode::AlreadyExists,
+                format!("{path} already exists on the server; it was not replaced"),
+            ));
+        }
+        // STOR truncates a racing target; staging followed by RNTO has the
+        // same race. STOU chooses a different name, so it cannot implement
+        // create-new at the caller's path either. Refuse before creating any
+        // artifact until a server-specific exclusive publication is supported.
+        Err(super::fail(
+            ErrorCode::CreateUnsupported,
+            "This FTP server cannot create a named file without risking replacement. Use SFTP or WebDAV to create a new file safely.",
+        ))
     }
 
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {

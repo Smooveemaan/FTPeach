@@ -305,6 +305,7 @@
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
+    "createUnsupported": "FTP bu adla güvenli bir şekilde yeni dosya oluşturamaz. SFTP veya WebDAV kullanın.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın."
   },
   "settings": {

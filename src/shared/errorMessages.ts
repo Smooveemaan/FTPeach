@@ -26,6 +26,7 @@ const ERROR_CODE_KEYS = {
   vaultLocked: 'settings.security.unlockRequired',
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',
+  createUnsupported: 'errors.createUnsupported',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 

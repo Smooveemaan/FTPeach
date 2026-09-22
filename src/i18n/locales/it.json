@@ -309,6 +309,7 @@
     "connectFailedPrefix": "Impossibile connettersi al server. {{raw}}",
     "alreadyExists": "\"{{name}}\" esiste già",
     "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente.",
+    "createUnsupported": "FTP non può creare in sicurezza un nuovo file con questo nome. Usa SFTP o WebDAV.",
     "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli."
   },
   "settings": {

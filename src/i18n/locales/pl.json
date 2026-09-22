@@ -313,6 +313,7 @@
     "connectFailedPrefix": "Nie udało się połączyć z serwerem. {{raw}}",
     "alreadyExists": "„{{name}}” już istnieje",
     "replaceUnsupported": "Serwer nie zezwolił na nadpisanie istniejącego pliku.",
+    "createUnsupported": "FTP nie może bezpiecznie utworzyć nowego pliku o tej nazwie. Użyj SFTP lub WebDAV.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj."
   },
   "settings": {

@@ -305,6 +305,7 @@
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
     "alreadyExists": "\"{{name}}\" bestaat al",
     "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
+    "createUnsupported": "FTP kan niet veilig een nieuw bestand met deze naam maken. Gebruik SFTP of WebDAV.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan."
   },
   "settings": {

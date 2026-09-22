@@ -1240,6 +1240,48 @@ mod recursive_stop_tests {
         crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap()).unwrap()
     }
 
+    #[tokio::test]
+    async fn create_new_never_truncates_an_existing_or_newly_arrived_ftp_file() {
+        let disk = disk(|_| {});
+        disk.lock().unwrap().dirs.insert("/".into());
+        disk.lock()
+            .unwrap()
+            .files
+            .insert("/existing.txt".into(), b"keep these bytes".to_vec());
+        let port = spawn_server(disk.clone()).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&config(port)).await.unwrap();
+        let error = backend.create_file("/existing.txt").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        let listed = backend.list("/").await.unwrap();
+        assert!(!listed.iter().any(|entry| entry.name == "racing.txt"));
+        disk.lock()
+            .unwrap()
+            .files
+            .insert("/racing.txt".into(), b"arrived after listing".to_vec());
+        let error = backend.create_file("/racing.txt").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        let error = backend.create_file("/absent.txt").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::CreateUnsupported
+        );
+        let files = &disk.lock().unwrap().files;
+        assert_eq!(
+            files.len(),
+            2,
+            "no temporary or final artifact may be left behind"
+        );
+        assert_eq!(files["/existing.txt"], b"keep these bytes");
+        assert_eq!(files["/racing.txt"], b"arrived after listing");
+    }
+
     /// A live session on a server holding `disk`, reached as a real one is.
     async fn connected(disk: &Shared) -> (Sessions, String) {
         connected_at(config(spawn_server(disk.clone()).await)).await

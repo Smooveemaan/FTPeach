@@ -309,6 +309,7 @@
     "connectFailedPrefix": "Impossible de se connecter au serveur. {{raw}}",
     "alreadyExists": "« {{name}} » existe déjà",
     "replaceUnsupported": "Le serveur n'a pas autorisé le remplacement du fichier existant.",
+    "createUnsupported": "FTP ne peut pas créer un nouveau fichier de ce nom en toute sécurité. Utilisez SFTP ou WebDAV.",
     "moveBetweenEndpoints": "Les fichiers ne peuvent être déplacés que sur cet ordinateur ou au sein d'une même connexion au serveur. Copiez-les plutôt."
   },
   "settings": {

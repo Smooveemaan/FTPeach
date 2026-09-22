@@ -62,6 +62,16 @@ smoke remain separate checks.
 
 ## P1 contracts
 
+HF-04 (September 22): creating a named empty file through FTP/FTPS first checks
+for a current conflict, returning `alreadyExists` without writing. If absent,
+it returns `createUnsupported`: this adapter has no exclusive-create/publication
+capability. It sends neither STOR nor RNTO and leaves no staging artifact. A
+staged empty upload followed by ordinary rename would still overwrite a racing
+target. SFTP exclusive creation and WebDAV conditional creation remain available.
+The accepted check-then-rename limitation of HF-02 does not authorize replacement
+by the New file command. A real TCP FTP fixture verifies existing bytes, a file
+arriving after the listing, unsupported creation, and absence of artifacts.
+
 | Audit | Behavior | Regression coverage |
 | --- | --- | --- |
 | A06 | A sidecar records endpoint/account, remote path, known size and an available source version (FTP MDTM, SFTP mtime, WebDAV ETag/Last-Modified). A missing marker or incompatible identity starts a new UUID partial. Legacy fixed-name partials are never adopted. HTTP resume sends If-Range. | transfer_file resume identity tests; WebDAV protocol fixtures |

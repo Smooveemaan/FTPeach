@@ -305,6 +305,7 @@
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
     "alreadyExists": "”{{name}}” finns redan",
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
+    "createUnsupported": "FTP kan inte säkert skapa en ny fil med detta namn. Använd SFTP eller WebDAV.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället."
   },
   "settings": {

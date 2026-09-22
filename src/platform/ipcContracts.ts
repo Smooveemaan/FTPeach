@@ -26,6 +26,7 @@ export type CommandErrorCode =
   | 'vaultLocked'
   | 'alreadyExists'
   | 'replaceUnsupported'
+  | 'createUnsupported'
   | 'internal';
 
 export interface CommandError {
@@ -170,6 +171,7 @@ export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
         'cleanupIncomplete',
         'alreadyExists',
         'replaceUnsupported',
+        'createUnsupported',
       ].includes(value))
   );
 }

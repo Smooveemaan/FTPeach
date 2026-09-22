@@ -305,6 +305,7 @@
     "connectFailedPrefix": "无法连接到服务器。{{raw}}",
     "alreadyExists": "“{{name}}”已经存在",
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
+    "createUnsupported": "FTP 无法安全地创建此名称的新文件。请使用 SFTP 或 WebDAV。",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。"
   },
   "settings": {

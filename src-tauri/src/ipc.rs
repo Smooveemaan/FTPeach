@@ -38,6 +38,8 @@ pub enum ErrorCode {
     /// The server would not let an existing file be replaced, not even by
     /// setting it aside first.
     ReplaceUnsupported,
+    /// The protocol cannot exclusively create a file at the requested name.
+    CreateUnsupported,
     Internal,
 }
 
@@ -356,6 +358,9 @@ impl CommandError {
                 "The server did not allow the existing file to be replaced"
             }
             ErrorCode::Internal => "Command failed",
+            ErrorCode::CreateUnsupported => {
+                "FTP cannot safely create a named file; use SFTP or WebDAV"
+            }
         };
         Self {
             code,
@@ -394,6 +399,7 @@ mod tests {
             (ErrorCode::VaultLocked, "vaultLocked"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
+            (ErrorCode::CreateUnsupported, "createUnsupported"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

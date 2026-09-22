@@ -305,6 +305,7 @@
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
     "alreadyExists": "A „{{name}}” már létezik",
     "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
+    "createUnsupported": "Az FTP nem tud biztonságosan új fájlt létrehozni ezzel a névvel. Használjon SFTP-t vagy WebDAV-ot.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket."
   },
   "settings": {

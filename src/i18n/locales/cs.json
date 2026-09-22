@@ -313,6 +313,7 @@
     "connectFailedPrefix": "Nepodařilo se navázat spojení se serverem. {{raw}}",
     "alreadyExists": "„{{name}}“ již existuje",
     "replaceUnsupported": "Server nepovolil přepsat existující soubor.",
+    "createUnsupported": "FTP nemůže bezpečně vytvořit nový soubor s tímto názvem. Použijte SFTP nebo WebDAV.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte."
   },
   "settings": {

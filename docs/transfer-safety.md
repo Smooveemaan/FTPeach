@@ -122,6 +122,13 @@ A successful download consumes its UUID partial and removes its matching source 
 
 ## Drag and drop contracts (September 13, 2026)
 
+Open-with changes are queued once per copy with the latest dirty revision. An upload
+acknowledges only its captured revision; newer saves remain pending. Failed uploads
+and failed sync acknowledgements keep a retryable question. Later dismisses the
+question without marking the copy synced; disconnect retains unsynced copies for
+recovery. Queue and revision regressions live in `openWithRecovery.test.tsx` and
+`local_fs::open_with::tests` (HF-07).
+
 Internal drags default to Move between local directories or within one remote connection; uploads, downloads and transfers between connections default to Copy. Ctrl requests Copy, Shift requests Move, and Ctrl+Shift is rejected. Copy/delete moves across endpoints are unavailable: `canMoveBetween` in `src/shared/movePolicy.ts` allows Move only between local directories or within one remote connection, and drag-and-drop, paste after Cut and the transfer routing all apply it, for files and folders alike. A refused paste keeps the cut so the user can copy instead; the routing refuses such a Move before any copy starts and never deletes a source after a copy. The backend can still reject a server rename; its error is surfaced without substituting Copy.
 
 A selection reports what each of its names did — copied, moved, skipped or failed — plus whether a move left its source in place (`src/features/transfers/transferBatchResult.ts`). A skip is the user's own answer (a declined overwrite question, a name that left the listing) and is not reported as a failure; a refused item is counted and named once for the whole selection, and a move that could not finish says separately that the originals are still there. Paste after Cut clears the clipboard only when every name actually moved, so a refused or partly refused move can be pasted again. Nothing retries a refused item on its own.

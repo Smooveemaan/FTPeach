@@ -165,11 +165,20 @@ export function useOpenWithLifecycle(
   const confirmUploaded = useCallback(
     (change: OpenWithChange) =>
       reportRejection(
-        openWithApi.markSynced(change.id, change.revision).then((result) => {
-          if (!result.ok) reportAsyncFailure(commandResultError(result));
-        }),
+        openWithApi
+          .markSynced(change.id, change.revision)
+          .then((result) => {
+            if (!result.ok) {
+              retryChanged(change);
+              reportAsyncFailure(commandResultError(result));
+            }
+          })
+          .catch((error: unknown) => {
+            retryChanged(change);
+            throw error;
+          }),
       ),
-    [openWithApi],
+    [openWithApi, retryChanged],
   );
 
   return {

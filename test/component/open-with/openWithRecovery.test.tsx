@@ -118,6 +118,36 @@ test('a closed connection drops its questions but a retry cannot revive them', (
   expect(h.openWithApi.stop).toHaveBeenCalledWith('a');
 });
 
+test('an upload finishing or failing cannot consume or replace a newer queued edit', async () => {
+  const h = openWithHarness();
+  h.open('a');
+  h.open('b');
+  h.emit({ id: 'a', revision: '1' });
+  const uploading = h.hook.result.current.changed!;
+  act(() => h.hook.result.current.dismissChanged(uploading));
+  h.emit({ id: 'b', revision: '1' });
+  h.emit({ id: 'a', revision: '2' });
+  await act(async () => h.hook.result.current.confirmUploaded(uploading));
+  act(() => h.hook.result.current.retryChanged(uploading));
+  const b = h.hook.result.current.changed!;
+  expect(b.id).toBe('b');
+  act(() => h.hook.result.current.dismissChanged(b));
+  expect(h.hook.result.current.changed).toEqual({ id: 'a', revision: '2' });
+  act(() => h.hook.result.current.dismissChanged(uploading));
+  expect(h.hook.result.current.changed?.revision).toBe('2');
+});
+
+test('a refused sync acknowledgement keeps the change retryable', async () => {
+  const h = openWithHarness();
+  h.open('a');
+  h.emit({ id: 'a', revision: '1' });
+  const change = h.hook.result.current.changed!;
+  act(() => h.hook.result.current.dismissChanged(change));
+  h.openWithApi.markSynced.mockResolvedValueOnce({ ok: false, error: 'disk full' });
+  await act(async () => h.hook.result.current.confirmUploaded(change));
+  expect(h.hook.result.current.changed).toEqual(change);
+});
+
 const recovered: RecoveredEdit[] = [
   { name: 'index.html', remotePath: '/www/index.html', savedAt: '2026-09-22T10:00:00Z' },
   { name: 'legacy.txt', remotePath: null, savedAt: '2026-09-22T10:01:00Z' },

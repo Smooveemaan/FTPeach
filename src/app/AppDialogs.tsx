@@ -314,13 +314,18 @@ export default function AppDialogs({ model }: AppDialogsProps) {
               true,
             );
             reportRejection(
-              upload.then((result) => {
-                // Only the revision the question was about counts as uploaded;
-                // a later save is asked about on its own.
-                if (result.ok) openWith.confirmUploaded(change);
-                else if (!result.skipped && !result.alreadyRunning) openWith.retryChanged(change);
-                return refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId);
-              }),
+              upload
+                .catch((error: unknown) => {
+                  openWith.retryChanged(change);
+                  throw error;
+                })
+                .then((result) => {
+                  // Only the revision the question was about counts as uploaded;
+                  // a later save is asked about on its own.
+                  if (result.ok) openWith.confirmUploaded(change);
+                  else if (!result.skipped && !result.alreadyRunning) openWith.retryChanged(change);
+                  return refreshPane(watch.paneId, targetPane.path, targetPane, watch.tabId);
+                }),
             );
           }}
           onClose={() => changed && openWith.dismissChanged(changed)}

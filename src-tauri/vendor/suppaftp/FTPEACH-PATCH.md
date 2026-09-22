@@ -2,7 +2,9 @@
 
 This is the published `suppaftp` 11.0.0 source (MIT OR Apache-2.0, see
 `Cargo.toml` and https://github.com/veeso/suppaftp), used through
-`[patch.crates-io]` in `src-tauri/Cargo.toml`. Only the tokio async client is
+`[patch.crates-io]` in `src-tauri/Cargo.toml` and the standalone
+`src-tauri/fuzz/Cargo.toml`. Keep both workspaces on this source so parser
+regressions and fuzzing exercise the shipped reader. Only the tokio async client is
 patched; every change is marked with a `FTPeach patch:` comment.
 
 1. **Bounded control replies** (`src/types.rs`, `src/async_ftp/tokio_ftp.rs`).

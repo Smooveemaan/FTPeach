@@ -81,6 +81,17 @@ fn key(path: &Path) -> String {
     value
 }
 
+/// A canonical path as the shell and people read it: `C:\…` or
+/// `\\server\share\…` rather than the `\\?\` form `canonicalize` returns.
+pub fn shell_path(path: &Path) -> String {
+    let text = path.to_string_lossy();
+    if let Some(unc) = text.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{unc}")
+    } else {
+        text.strip_prefix(r"\\?\").unwrap_or(&text).to_owned()
+    }
+}
+
 pub fn is_executable(path: &Path) -> bool {
     path.extension()
         .and_then(|value| value.to_str())
@@ -131,6 +142,44 @@ impl ApprovedLocalPaths {
                 paths.insert(canonical_key);
             }
         }
+    }
+
+    /// Resolves a program Open with would launch. Unlike [`Self::validate`],
+    /// appearing in a listing does not make a program acceptable: whether
+    /// the user chose it is the confirmation's decision, not this check's.
+    pub fn canonical_application(&self, requested: &Path) -> CommandResult<PathBuf> {
+        if is_device_path_text(&requested.to_string_lossy()) {
+            return Err(denied("Windows device paths are not allowed"));
+        }
+        self.recheck_application(requested)
+    }
+
+    /// Repeats [`Self::canonical_application`] for a path it returned, which
+    /// on Windows carries the `\\?\` prefix a user-typed path may not.
+    pub fn recheck_application(&self, path: &Path) -> CommandResult<PathBuf> {
+        let not_found = || {
+            CommandError::new(
+                ErrorCode::InvalidInput,
+                "Configured application was not found",
+            )
+        };
+        let canonical = std::fs::canonicalize(path).map_err(|_| not_found())?;
+        if !canonical.is_file() || !is_executable(&canonical) {
+            return Err(not_found());
+        }
+        if is_network_path(&canonical) {
+            let canonical_key = key(&canonical);
+            let confirmed = self
+                .network_paths
+                .lock()
+                .map_err(|_| denied("Local path authorization is unavailable"))?
+                .iter()
+                .any(|root| canonical_key_is_within(&canonical_key, root));
+            if !confirmed {
+                return Err(denied("Network paths require native-dialog confirmation"));
+            }
+        }
+        Ok(canonical)
     }
 
     pub fn validate(&self, requested: &Path, kind: OpenKind) -> CommandResult<PathBuf> {
@@ -193,6 +242,19 @@ mod tests {
             assert!(is_executable(Path::new(name)), "{name}");
         }
         assert!(!is_executable(Path::new("report.pdf")));
+    }
+
+    #[test]
+    fn shell_paths_drop_only_the_verbatim_prefix() {
+        assert_eq!(
+            shell_path(Path::new(r"\\?\C:\Tools\a.exe")),
+            r"C:\Tools\a.exe"
+        );
+        assert_eq!(
+            shell_path(Path::new(r"\\?\UNC\srv\share\a.exe")),
+            r"\\srv\share\a.exe"
+        );
+        assert_eq!(shell_path(Path::new(r"C:\Tools\a.exe")), r"C:\Tools\a.exe");
     }
 
     #[test]
@@ -277,6 +339,37 @@ mod tests {
         );
         assert!(state.validate(&file, OpenKind::Execute).is_ok());
         let _ = std::fs::remove_file(file);
+    }
+
+    #[test]
+    fn listed_programs_are_resolved_but_documents_and_missing_files_are_not() {
+        let root = std::env::temp_dir().join(format!("ftpeach-app-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let program = root.join("Editor.EXE");
+        let document = root.join("notes.txt");
+        std::fs::write(&program, b"MZ").unwrap();
+        std::fs::write(&document, b"text").unwrap();
+        let state = ApprovedLocalPaths::default();
+
+        let canonical = state.canonical_application(&program).unwrap();
+        assert_eq!(canonical, std::fs::canonicalize(&program).unwrap());
+        assert_eq!(state.recheck_application(&canonical).unwrap(), canonical);
+        for rejected in [document, root.join("missing.exe"), root.clone()] {
+            assert_eq!(
+                state.canonical_application(&rejected).unwrap_err().code,
+                ErrorCode::InvalidInput,
+                "{}",
+                rejected.display()
+            );
+        }
+        assert_eq!(
+            state
+                .canonical_application(Path::new(r"\\?\C:\Windows\notepad.exe"))
+                .unwrap_err()
+                .code,
+            ErrorCode::PermissionDenied
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(unix)]

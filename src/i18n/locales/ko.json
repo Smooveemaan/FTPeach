@@ -44,8 +44,14 @@
       },
       "executeRemoteFile": {
         "message": "이 실행 파일 또는 스크립트를 다운로드하여 실행할까요?"
+      },
+      "openWithApplication": {
+        "message": "Open this file with a program not used with FTPeach before?",
+        "approve": "Open"
       }
-    }
+    },
+    "savedAs": "Saved on this computer as: {{name}}",
+    "program": "Program: {{path}}"
   },
   "paneMenu": {
     "newFolder": "새 폴더…",

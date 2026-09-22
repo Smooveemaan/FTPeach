@@ -12,7 +12,8 @@ type ConfirmationKind =
   | 'revealProxyPassword'
   | 'vaultReset'
   | 'executeLocalFile'
-  | 'executeRemoteFile';
+  | 'executeRemoteFile'
+  | 'openWithApplication';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -20,12 +21,15 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   vaultReset: 'securityConfirmation.operations.vaultReset',
   executeLocalFile: 'securityConfirmation.operations.executeLocalFile',
   executeRemoteFile: 'securityConfirmation.operations.executeRemoteFile',
+  openWithApplication: 'securityConfirmation.operations.openWithApplication',
 };
 
 interface ConfirmationPrompt {
   kind: ConfirmationKind;
   locale: string;
   target?: string | null;
+  localName?: string | null;
+  application?: string | null;
   confirmationPhrase?: string | null;
   requiresReauthentication: boolean;
 }
@@ -156,6 +160,18 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
               <br />
               <br />
               {prompt.target}
+            </>
+          )}
+          {prompt?.localName && (
+            <>
+              <br />
+              {t('securityConfirmation.savedAs', { name: prompt.localName })}
+            </>
+          )}
+          {prompt?.application && (
+            <>
+              <br />
+              {t('securityConfirmation.program', { path: prompt.application })}
             </>
           )}
         </p>

@@ -111,14 +111,15 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         case 'fs_reveal_path':
         case 'fs_open_document':
         case 'fs_execute_path':
+          return typeof args?.localPath === 'string' ? args.localPath : '';
         case 'open_with_start':
-          return command === 'open_with_start'
-            ? typeof args?.remotePath === 'string'
-              ? args.remotePath
-              : ''
-            : typeof args?.localPath === 'string'
-              ? args.localPath
-              : '';
+          // The grant covers the whole request: which server, which file and
+          // which program. The backend resolves the rest itself.
+          return JSON.stringify({
+            connectionId: args?.connectionId,
+            remotePath: args?.remotePath,
+            application: args?.application ?? null,
+          });
         case 'sites_reveal_secret':
           return `${describeUnknown(args?.id)}:${describeUnknown(args?.field)}`;
         case 'settings_reveal_proxy_password':

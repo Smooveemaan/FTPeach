@@ -44,8 +44,14 @@
       },
       "executeRemoteFile": {
         "message": "Download and run this executable file or script?"
+      },
+      "openWithApplication": {
+        "message": "Open this file with a program not used with FTPeach before?",
+        "approve": "Open"
       }
-    }
+    },
+    "savedAs": "Saved on this computer as: {{name}}",
+    "program": "Program: {{path}}"
   },
   "paneMenu": {
     "newFolder": "New Folder…",

@@ -92,10 +92,13 @@ pub async fn dialog_select_ca_cert_file(
     Ok(selected)
 }
 
+/// A program picked here is the user's choice, so Open with may use it
+/// without asking again; one typed into settings is confirmed on first use.
 #[tauri::command]
 pub async fn dialog_select_application(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    store: tauri::State<'_, crate::store::Store>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
     let (tx, rx) = tokio::sync::oneshot::channel();
     app.dialog()
@@ -108,6 +111,11 @@ pub async fn dialog_select_application(
     let selected = rx.await.ok().flatten().map(|p| p.to_string());
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
+        if let Ok(program) = approved.canonical_application(std::path::Path::new(path))
+            && let Err(error) = store.trust_application(&program).await
+        {
+            log::warn!("Could not remember the selected Open with program: {error:#}");
+        }
     }
     Ok(selected)
 }

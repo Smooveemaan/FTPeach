@@ -1,4 +1,6 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
+use crate::local_fs::local_open::ApprovedLocalPaths;
+use crate::security::open_with_intent::OpenWithIntent;
 use crate::security::vault::Vault;
 use crate::security::vault_guard::VaultGuard;
 use crate::store::Store;
@@ -47,6 +49,7 @@ pub enum ConfirmationKind {
     VaultReset,
     ExecuteLocalFile,
     ExecuteRemoteFile,
+    OpenWithApplication,
 }
 
 #[derive(Clone, Serialize)]
@@ -55,6 +58,10 @@ pub struct ConfirmationPrompt {
     kind: ConfirmationKind,
     locale: String,
     target: Option<String>,
+    /// The name a downloaded file is saved under, when it differs.
+    local_name: Option<String>,
+    /// The program that opens the file, when one is configured.
+    application: Option<String>,
     confirmation_phrase: Option<String>,
     requires_reauthentication: bool,
 }
@@ -75,28 +82,34 @@ fn normalized_target(operation: &str, target: &str) -> CommandResult<String> {
     Ok(target.to_owned())
 }
 
-fn requires_confirmation(operation: &str, target: &str) -> bool {
+fn requires_confirmation(operation: &str) -> bool {
     matches!(
         operation,
         "sites_reveal_secret"
             | "settings_reveal_proxy_password"
             | "vault_reset"
             | "fs_execute_path"
-    ) || (operation == "open_with_start"
-        && crate::local_fs::local_open::is_executable(Path::new(target)))
+    )
 }
 
-fn should_show_confirmation(operation: &str, target: &str, enabled: bool) -> bool {
-    requires_confirmation(operation, target) && (operation == "vault_reset" || enabled)
+/// Launching a program or script needs a confirmation, and so does handing
+/// even a document to a program the user has not chosen before.
+fn open_with_requires_confirmation(intent: &OpenWithIntent, application_trusted: bool) -> bool {
+    intent.executable || (intent.application.is_some() && !application_trusted)
+}
+
+fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> bool {
+    required && (operation == "vault_reset" || enabled)
 }
 
 fn should_prompt(
     operation: &str,
-    target: &str,
+    required: bool,
     confirmations_enabled: bool,
     requires_reauthentication: bool,
 ) -> bool {
-    requires_reauthentication || should_show_confirmation(operation, target, confirmations_enabled)
+    requires_reauthentication
+        || should_show_confirmation(operation, required, confirmations_enabled)
 }
 
 fn issue_token(
@@ -134,18 +147,36 @@ fn confirmation_prompt(
         "settings_reveal_proxy_password" => (ConfirmationKind::RevealProxyPassword, false),
         "vault_reset" => (ConfirmationKind::VaultReset, false),
         "fs_execute_path" => (ConfirmationKind::ExecuteLocalFile, true),
-        "open_with_start" if crate::local_fs::local_open::is_executable(Path::new(target)) => {
-            (ConfirmationKind::ExecuteRemoteFile, true)
-        }
         _ => return Err(denied("Unsupported confirmation operation")),
     };
     Ok(ConfirmationPrompt {
         kind,
         locale,
         target: include_target.then(|| target.to_owned()),
+        local_name: None,
+        application: None,
         confirmation_phrase: (kind == ConfirmationKind::VaultReset).then(|| "RESET".into()),
         requires_reauthentication,
     })
+}
+
+fn open_with_prompt(intent: &OpenWithIntent, locale: String) -> ConfirmationPrompt {
+    ConfirmationPrompt {
+        kind: if intent.executable {
+            ConfirmationKind::ExecuteRemoteFile
+        } else {
+            ConfirmationKind::OpenWithApplication
+        },
+        locale,
+        target: Some(intent.remote_path.clone()),
+        local_name: intent.renamed_local_name().map(str::to_owned),
+        application: intent
+            .application
+            .as_ref()
+            .map(|path| crate::local_fs::local_open::shell_path(path)),
+        confirmation_phrase: None,
+        requires_reauthentication: false,
+    }
 }
 
 fn reject_pending(state: &AuthorizationState, request_id: &str) {
@@ -258,6 +289,7 @@ pub async fn authorize_sensitive(
     state: State<'_, AuthorizationState>,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
+    approved_paths: State<'_, ApprovedLocalPaths>,
     operation: String,
     target: String,
 ) -> CommandResult<AuthorizationToken> {
@@ -278,7 +310,15 @@ pub async fn authorize_sensitive(
             "Sensitive operation is not permitted for this window",
         ));
     }
-    let target = normalized_target(&operation, &target)?;
+    let open_with = if operation == "open_with_start" {
+        Some(OpenWithIntent::from_request(&target, &approved_paths)?)
+    } else {
+        None
+    };
+    let target = match &open_with {
+        Some(intent) => intent.grant_target(),
+        None => normalized_target(&operation, &target)?,
+    };
     let settings = store.get_settings().await;
     let confirmations_enabled = settings
         .get("showSecurityConfirmations")
@@ -289,9 +329,22 @@ pub async fn authorize_sensitive(
             operation.as_str(),
             "sites_reveal_secret" | "settings_reveal_proxy_password"
         );
+    // A program the user has not chosen before; approving the prompt trusts it.
+    let mut untrusted_application = None;
+    if let Some(application) = open_with
+        .as_ref()
+        .and_then(|intent| intent.application.as_ref())
+        && !store.is_trusted_application(application).await
+    {
+        untrusted_application = Some(application.clone());
+    }
+    let required = match &open_with {
+        Some(intent) => open_with_requires_confirmation(intent, untrusted_application.is_none()),
+        None => requires_confirmation(&operation),
+    };
     if !should_prompt(
         &operation,
-        &target,
+        required,
         confirmations_enabled,
         requires_reauthentication,
     ) {
@@ -302,7 +355,10 @@ pub async fn authorize_sensitive(
         .and_then(|value| value.as_str())
         .unwrap_or("en")
         .to_owned();
-    let prompt = confirmation_prompt(&operation, &target, locale, requires_reauthentication)?;
+    let prompt = match &open_with {
+        Some(intent) => open_with_prompt(intent, locale),
+        None => confirmation_prompt(&operation, &target, locale, requires_reauthentication)?,
+    };
     let app = window.app_handle().clone();
     let request_id = uuid::Uuid::new_v4().to_string();
     let confirmation_label = format!("security-confirmation-{request_id}");
@@ -347,6 +403,11 @@ pub async fn authorize_sensitive(
             ErrorCode::Cancelled,
             "Operation was cancelled",
         ));
+    }
+    if let Some(application) = untrusted_application
+        && let Err(error) = store.trust_application(&application).await
+    {
+        log::warn!("Could not remember the approved Open with program: {error:#}");
     }
     issue_token(&state, &window, operation, target)
 }

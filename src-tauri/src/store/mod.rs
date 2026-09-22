@@ -6,6 +6,7 @@ pub(crate) use settings_schema::validate_settings;
 mod sites;
 mod storage;
 mod tabs;
+mod trusted_applications;
 
 pub(crate) use sites::validate_site_input;
 

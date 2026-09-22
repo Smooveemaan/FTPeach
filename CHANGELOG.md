@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Quitting with edits that have not been uploaded now asks whether to return or keep the
   copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
 
+### Security
+
+- Open with now asks before running a server file whose saved name makes it a program or
+  script, and the first time a program typed into settings opens a file.
+
 ### Fixed
 
 - Failed local copies now wait for outstanding disk writes before removing their temporary

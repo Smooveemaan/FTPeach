@@ -44,8 +44,14 @@
       },
       "executeRemoteFile": {
         "message": "Tải xuống và chạy tệp thực thi hoặc tập lệnh này?"
+      },
+      "openWithApplication": {
+        "message": "Open this file with a program not used with FTPeach before?",
+        "approve": "Open"
       }
-    }
+    },
+    "savedAs": "Saved on this computer as: {{name}}",
+    "program": "Program: {{path}}"
   },
   "paneMenu": {
     "newFolder": "Thư mục mới…",

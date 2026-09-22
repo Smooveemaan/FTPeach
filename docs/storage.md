@@ -30,6 +30,11 @@ saved site id, tab metadata, and synchronized-browsing state. It never stores
 passwords, key passphrases, or ad-hoc connection configuration. Automatic
 reconnection is disabled by default and can be enabled in connection settings.
 
+`trusted_applications.json` lists the canonical paths of programs the user
+picked in the **Browse** dialog or approved in a security confirmation for
+**Open with** (at most 256, oldest dropped first). Deleting it only makes
+FTPeach ask again the next time each program is used.
+
 The “Save the session on exit” setting controls this snapshot. Turning it off
 clears the saved tabs without affecting current connections or transfers and
 prevents further session writes. “Reset Layout and Cache” independently resets

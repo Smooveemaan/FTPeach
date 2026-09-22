@@ -44,8 +44,14 @@
       },
       "executeRemoteFile": {
         "message": "下载并运行此可执行文件或脚本？"
+      },
+      "openWithApplication": {
+        "message": "Open this file with a program not used with FTPeach before?",
+        "approve": "Open"
       }
-    }
+    },
+    "savedAs": "Saved on this computer as: {{name}}",
+    "program": "Program: {{path}}"
   },
   "paneMenu": {
     "newFolder": "新建文件夹…",

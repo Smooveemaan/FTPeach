@@ -44,8 +44,14 @@
       },
       "executeRemoteFile": {
         "message": "इस निष्पादन योग्य फ़ाइल या स्क्रिप्ट को डाउनलोड करके चलाएँ?"
+      },
+      "openWithApplication": {
+        "message": "Open this file with a program not used with FTPeach before?",
+        "approve": "Open"
       }
-    }
+    },
+    "savedAs": "Saved on this computer as: {{name}}",
+    "program": "Program: {{path}}"
   },
   "paneMenu": {
     "newFolder": "नया फ़ोल्डर…",

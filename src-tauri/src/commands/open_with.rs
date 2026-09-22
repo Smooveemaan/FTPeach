@@ -1,11 +1,13 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
 use crate::local_fs::edit_recovery;
+use crate::local_fs::local_open::{ApprovedLocalPaths, OpenKind};
 use crate::local_fs::open_with::OpenWithWatchers;
 use crate::local_fs::preview::{self, PreviewPaths};
-use crate::security::connection_guard::safe_temp_name;
+use crate::security::open_with_intent::OpenWithIntent;
 use crate::session::Sessions;
 use crate::transfer::transfer_pool::TaskFn;
 use serde::Serialize;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
 
@@ -43,12 +45,18 @@ pub async fn open_with_start(
     id: String,
     application: Option<String>,
 ) -> CommandResult<OpenWithStartResult> {
+    let intent = OpenWithIntent::resolve(
+        &connection_id,
+        &remote_path,
+        application.as_deref(),
+        &approved_paths,
+    )?;
     crate::security::sensitive::consume(
         &window,
         &authorization,
         &authorization_token,
         "open_with_start",
-        &remote_path,
+        &intent.grant_target(),
     )?;
     let _admission = OPEN_ADMISSION.lock().await;
     let recovery = recovery_root(&app)?;
@@ -67,12 +75,6 @@ pub async fn open_with_start(
             error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
         });
     };
-    let name = remote_path
-        .trim_end_matches('/')
-        .rsplit('/')
-        .next()
-        .unwrap_or(&remote_path)
-        .to_string();
     let dir = paths.open_with_dir.join(uuid::Uuid::new_v4().to_string());
     if let Err(err) = tokio::fs::create_dir_all(&dir).await {
         return Ok(OpenWithStartResult::Err {
@@ -80,7 +82,7 @@ pub async fn open_with_start(
             error: CommandError::from(err),
         });
     }
-    let local_path = dir.join(safe_temp_name(&name));
+    let local_path = dir.join(&intent.local_name);
 
     let sink = preview::make_preview_progress_sink(app.clone(), connection_id.clone(), id.clone());
     let remote_path_task = remote_path.clone();
@@ -114,31 +116,15 @@ pub async fn open_with_start(
     }
 
     approved_paths.approve_from_listing(&local_path);
-    let open_kind = if crate::local_fs::local_open::is_executable(&local_path) {
-        crate::local_fs::local_open::OpenKind::Execute
-    } else {
-        crate::local_fs::local_open::OpenKind::Document
+    let (local_path, application) = match authorized_launch(&approved_paths, &intent, &local_path) {
+        Ok(launch) => launch,
+        Err(error) => {
+            let _ = tokio::fs::remove_file(&local_path).await;
+            let _ = tokio::fs::remove_dir(&dir).await;
+            return Ok(OpenWithStartResult::Err { ok: false, error });
+        }
     };
-    let local_path = approved_paths.validate(&local_path, open_kind)?;
-    let application = application.filter(|value| !value.trim().is_empty());
-    if let Some(executable) = application.as_deref()
-        && approved_paths
-            .validate(
-                std::path::Path::new(executable),
-                crate::local_fs::local_open::OpenKind::Execute,
-            )
-            .is_err()
-    {
-        let _ = tokio::fs::remove_file(&local_path).await;
-        let _ = tokio::fs::remove_dir(&dir).await;
-        return Ok(OpenWithStartResult::Err {
-            ok: false,
-            error: CommandError::new(
-                ErrorCode::InvalidInput,
-                "Configured application was not found",
-            ),
-        });
-    }
+    let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
     // Recorded before the editor can touch the copy, so a save made straight
     // after opening already differs from the recorded signature.
     watchers.register(&id, local_path.clone(), remote_path.clone());
@@ -160,6 +146,32 @@ pub async fn open_with_start(
         ok: true,
         local_path: local_path.to_string_lossy().into_owned(),
     })
+}
+
+/// The grant covered this class of file and this program. The final path is
+/// checked again right before launch: a document that became a program on
+/// disk, or a program swapped since authorization, is refused.
+fn authorized_launch(
+    approved_paths: &ApprovedLocalPaths,
+    intent: &OpenWithIntent,
+    local_path: &Path,
+) -> CommandResult<(PathBuf, Option<PathBuf>)> {
+    let open_kind = if intent.executable {
+        OpenKind::Execute
+    } else {
+        OpenKind::Document
+    };
+    let local_path = approved_paths.validate(local_path, open_kind)?;
+    let application = match intent.application.as_deref() {
+        Some(authorized) if approved_paths.recheck_application(authorized)? != authorized => {
+            return Err(CommandError::new(
+                ErrorCode::PermissionDenied,
+                "PermissionDenied",
+            ));
+        }
+        authorized => authorized.map(Path::to_path_buf),
+    };
+    Ok((local_path, application))
 }
 
 #[tauri::command]
@@ -254,6 +266,70 @@ pub async fn open_with_discard_recovered_edits(app: AppHandle) -> Result<OkResul
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn workspace() -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("ftpeach-launch-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    /// Mirrors open_with_start: resolve, download under the resolved name,
+    /// approve the copy, then check the launch. Nothing is executed.
+    fn prepare(dir: &Path, remote: &str, application: Option<&Path>) -> (OpenWithIntent, PathBuf) {
+        let approved = ApprovedLocalPaths::default();
+        let intent = OpenWithIntent::resolve(
+            "c1",
+            remote,
+            application.map(|path| path.to_str().unwrap()),
+            &approved,
+        )
+        .unwrap();
+        let local = dir.join(&intent.local_name);
+        std::fs::write(&local, b"payload").unwrap();
+        (intent, local)
+    }
+
+    #[test]
+    fn names_that_turn_into_scripts_are_launched_only_as_programs() {
+        let dir = workspace();
+        let approved = ApprovedLocalPaths::default();
+        for remote in ["/srv/report.cmd.", "/srv/report.cmd ", "/srv/Report.Ps1."] {
+            let (intent, local) = prepare(&dir, remote, None);
+            assert!(intent.executable, "{remote:?}");
+            approved.approve_from_listing(&local);
+            assert!(authorized_launch(&approved, &intent, &local).is_ok());
+            let mut as_document = intent.clone();
+            as_document.executable = false;
+            assert_eq!(
+                authorized_launch(&approved, &as_document, &local)
+                    .unwrap_err()
+                    .code,
+                ErrorCode::PermissionDenied,
+                "{remote:?}"
+            );
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn a_program_replaced_after_authorization_is_refused() {
+        let dir = workspace();
+        let editor = dir.join("editor.exe");
+        let other = dir.join("other.exe");
+        std::fs::write(&editor, b"MZ").unwrap();
+        std::fs::write(&other, b"MZ").unwrap();
+        let approved = ApprovedLocalPaths::default();
+        let (mut intent, local) = prepare(&dir, "/srv/notes.txt", Some(&editor));
+        approved.approve_from_listing(&local);
+        let (_, application) = authorized_launch(&approved, &intent, &local).unwrap();
+        assert_eq!(application, Some(std::fs::canonicalize(&editor).unwrap()));
+
+        std::fs::remove_file(&editor).unwrap();
+        assert!(authorized_launch(&approved, &intent, &local).is_err());
+        intent.application = Some(dir.join("OTHER.exe.").join(".."));
+        assert!(authorized_launch(&approved, &intent, &local).is_err());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 
     #[test]
     fn ok_result_local_path_is_camel_case() {

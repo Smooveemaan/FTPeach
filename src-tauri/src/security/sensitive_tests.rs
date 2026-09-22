@@ -84,26 +84,129 @@ fn secret_confirmation_does_not_expose_internal_identifiers() {
 
 #[test]
 fn confirmation_is_reserved_for_secrets_reset_and_executables() {
-    for (operation, target) in [
-        ("sites_reveal_secret", "site:password"),
-        ("settings_reveal_proxy_password", "proxy"),
-        ("vault_reset", "vault"),
-        ("fs_execute_path", "tool.exe"),
-        ("open_with_start", "/remote/tool.ps1"),
+    for operation in [
+        "sites_reveal_secret",
+        "settings_reveal_proxy_password",
+        "vault_reset",
+        "fs_execute_path",
     ] {
-        assert!(requires_confirmation(operation, target));
+        assert!(requires_confirmation(operation));
     }
 
-    for (operation, target) in [
-        ("fs_delete", "document.txt"),
-        ("fs_reveal_path", "document.txt"),
-        ("fs_open_document", "document.txt"),
-        ("open_with_start", "/remote/document.pdf"),
-        ("app_export_settings", "native-dialog"),
-        ("app_import_settings", "native-dialog"),
+    for operation in [
+        "fs_delete",
+        "fs_reveal_path",
+        "fs_open_document",
+        "app_export_settings",
+        "app_import_settings",
     ] {
-        assert!(!requires_confirmation(operation, target));
+        assert!(!requires_confirmation(operation));
     }
+}
+
+fn open_with(remote_path: &str, application: Option<&str>) -> OpenWithIntent {
+    let request = serde_json::json!({
+        "connectionId": "c1",
+        "remotePath": remote_path,
+        "application": application,
+    });
+    OpenWithIntent::from_request(&request.to_string(), &ApprovedLocalPaths::default()).unwrap()
+}
+
+#[test]
+fn open_with_confirms_scripts_by_the_name_they_are_saved_under() {
+    for remote in [
+        "/remote/tool.ps1",
+        "/remote/report.cmd.",
+        "/remote/report.cmd ",
+        "/remote/report.hta...",
+        "/remote/REPORT.Ps1.",
+    ] {
+        let intent = open_with(remote, None);
+        assert!(open_with_requires_confirmation(&intent, true), "{remote:?}");
+        let prompt = open_with_prompt(&intent, "en".into());
+        assert_eq!(prompt.kind, ConfirmationKind::ExecuteRemoteFile);
+        assert_eq!(prompt.target.as_deref(), Some(remote));
+    }
+    let prompt = open_with_prompt(&open_with("/remote/report.cmd.", None), "en".into());
+    assert_eq!(prompt.local_name.as_deref(), Some("report.cmd"));
+    assert!(!open_with_requires_confirmation(
+        &open_with("/remote/document.pdf", None),
+        true
+    ));
+}
+
+#[test]
+fn open_with_confirms_a_program_the_user_has_not_chosen() {
+    let program = std::env::current_exe().unwrap();
+    let intent = open_with("/remote/notes.txt", program.to_str());
+    assert!(open_with_requires_confirmation(&intent, false));
+    assert!(!open_with_requires_confirmation(&intent, true));
+    let prompt = open_with_prompt(&intent, "en".into());
+    assert_eq!(prompt.kind, ConfirmationKind::OpenWithApplication);
+    assert_eq!(
+        prompt.application.as_deref(),
+        Some(
+            crate::local_fs::local_open::shell_path(&std::fs::canonicalize(program).unwrap())
+                .as_str()
+        )
+    );
+    assert!(!prompt.application.unwrap().starts_with(r"\\?\"));
+}
+
+#[test]
+fn open_with_grant_rejects_another_connection_program_or_path() {
+    let program = std::env::current_exe().unwrap();
+    let approved = open_with("/remote/notes.txt", None);
+    let other_connection = OpenWithIntent::resolve(
+        "c2",
+        "/remote/notes.txt",
+        None,
+        &ApprovedLocalPaths::default(),
+    )
+    .unwrap();
+    for other in [
+        other_connection,
+        open_with("/remote/notes.txt", program.to_str()),
+        open_with("/remote/notes.txt.", None),
+    ] {
+        let state = AuthorizationState::default();
+        grant(
+            &state,
+            "token",
+            "open_with_start",
+            &approved.grant_target(),
+            Instant::now() + TOKEN_TTL,
+        );
+        assert!(
+            consume_for_label(
+                "main",
+                &state,
+                "token",
+                "open_with_start",
+                &other.grant_target()
+            )
+            .is_err()
+        );
+    }
+    let state = AuthorizationState::default();
+    grant(
+        &state,
+        "token",
+        "open_with_start",
+        &approved.grant_target(),
+        Instant::now() + TOKEN_TTL,
+    );
+    assert!(
+        consume_for_label(
+            "main",
+            &state,
+            "token",
+            "open_with_start",
+            &approved.grant_target()
+        )
+        .is_ok()
+    );
 }
 
 #[test]
@@ -124,34 +227,22 @@ fn executable_confirmation_exposes_only_the_canonical_target() {
 
 #[test]
 fn disabled_confirmations_never_suppress_vault_reset() {
-    assert!(should_show_confirmation("vault_reset", "vault", false));
+    assert!(should_show_confirmation("vault_reset", true, false));
     assert!(!should_show_confirmation(
         "sites_reveal_secret",
-        "site:password",
+        true,
         false
     ));
-    assert!(!should_show_confirmation(
-        "fs_execute_path",
-        "tool.exe",
-        false
-    ));
-    assert!(should_show_confirmation(
-        "fs_execute_path",
-        "tool.exe",
-        true
-    ));
+    assert!(!should_show_confirmation("fs_execute_path", true, false));
+    assert!(should_show_confirmation("fs_execute_path", true, true));
+    assert!(!should_show_confirmation("fs_open_document", false, true));
 }
 
 #[test]
 fn enhanced_secret_reveal_always_prompts_for_reauthentication() {
     for operation in ["sites_reveal_secret", "settings_reveal_proxy_password"] {
-        assert!(should_prompt(operation, "secret", false, true));
-        assert!(should_prompt(operation, "secret", true, true));
+        assert!(should_prompt(operation, true, false, true));
+        assert!(should_prompt(operation, true, true, true));
     }
-    assert!(!should_prompt(
-        "sites_reveal_secret",
-        "secret",
-        false,
-        false
-    ));
+    assert!(!should_prompt("sites_reveal_secret", true, false, false));
 }

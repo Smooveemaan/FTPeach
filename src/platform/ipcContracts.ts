@@ -278,6 +278,25 @@ export function commandOutcome(
   );
 }
 
+/**
+ * The outcome of a command that answers with nothing at all when it worked.
+ *
+ * A Rust `CommandResult<()>` resolves with `null` on success and rejects on
+ * failure, where `invoke` turns the rejection into a failed {@link CommandResult}
+ * — so unlike {@link commandOutcome} there is no envelope to check, and the
+ * absence of one is not a contract violation. This states the success case
+ * explicitly, so a caller can check `ok` instead of trusting that a promise
+ * which resolved means the write landed.
+ */
+export async function voidOutcome(
+  invoke: InvokeFn,
+  command: string,
+  args?: InvokeArgs,
+): Promise<CommandResult> {
+  const raw = await invoke(command, args);
+  return hasCommandOutcome(raw) && !raw.ok ? commandFailure(command, raw) : { ok: true };
+}
+
 /** Guard for an optional field that must be a string when present. */
 export function optionalString(value: unknown): boolean {
   return value === undefined || typeof value === 'string';

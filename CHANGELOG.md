@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   keeps a file locked during shutdown. New editor opens pause when retained copies reach
   1 GiB or 30 days; existing edits are never automatically deleted.
 
+- Tabs that could not be saved are now reported right away instead of coming back wrong at
+  the next launch, and the newest tab state is always the one stored.
 - Remote renames, including letter-case changes, only replace an existing file after confirmation.
 - Changing only the letter case of a local file name no longer fails as busy.
 - Uploading from the changed-file dialog no longer asks for overwrite confirmation twice.

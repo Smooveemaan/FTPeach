@@ -47,6 +47,13 @@ clears the saved tabs without affecting current connections or transfers and
 prevents further session writes. “Reset Layout and Cache” independently resets
 window and layout values.
 
+Session writes replace the whole snapshot, so they run one at a time in the
+order their snapshots were taken, and a snapshot a newer one has replaced is
+dropped instead of stored after it. A write the backend refuses — a full disk, a
+read-only profile — is reported to the user once rather than mistaken for a
+stored session; the next change retries it. The same applies to clearing the
+snapshot when session saving is turned off.
+
 ## Updates
 
 A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates`:

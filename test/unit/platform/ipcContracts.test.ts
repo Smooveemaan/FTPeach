@@ -260,3 +260,29 @@ test('command responses that carry no outcome fall back instead of being asserte
   assert.equal(mutation.ok, false, 'a response without an outcome is not a successful save');
   assert.match(String(mutation.error), /sites_save/);
 });
+
+test('a write that answers with nothing is a success, and a refusal stays one', async () => {
+  const respondWith =
+    (value: unknown): InvokeFn =>
+    async <T>() =>
+      value as InvokeResult<T>;
+
+  // `tabs_set` and `tabs_clear` answer with nothing at all when they worked, so
+  // the absence of an envelope is the success case and must not be reported as
+  // an unrecognised shape.
+  assert.deepEqual(await createTabsApi(respondWith(null)).set({ tabs: [] }), { ok: true });
+  assert.deepEqual(await createTabsApi(respondWith(undefined)).clear(), { ok: true });
+
+  const refused = await createTabsApi(
+    respondWith({ ok: false, error: 'Access is denied (os error 5)' }),
+  ).set({ tabs: [] });
+  assert.equal(refused.ok, false, 'a refused write must not pass for a stored session');
+  assert.equal(refused.errorCode, 'permissionDenied');
+  assert.equal(refused.error, 'Access is denied (os error 5)');
+
+  const clearRefused = await createTabsApi(
+    respondWith({ ok: false, errorCode: 'storageFull', error: 'The disk is full' }),
+  ).clear();
+  assert.equal(clearRefused.ok, false);
+  assert.equal(clearRefused.errorCode, 'storageFull');
+});

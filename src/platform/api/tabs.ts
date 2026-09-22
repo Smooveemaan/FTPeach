@@ -1,5 +1,5 @@
-import { checkedResponse, isCommandRecord } from '../ipcContracts.ts';
-import type { InvokeFn } from '../ipcContracts.ts';
+import { checkedResponse, isCommandRecord, voidOutcome } from '../ipcContracts.ts';
+import type { CommandResult, InvokeFn } from '../ipcContracts.ts';
 
 export interface PersistedPane {
   kind?: 'local' | 'remote';
@@ -55,7 +55,10 @@ export function createTabsApi(invoke: InvokeFn) {
     // the pane restore code.
     get: (): Promise<PersistedTabsState> =>
       checkedResponse('tabs_get', invoke('tabs_get'), isPersistedTabsState, () => ({})),
-    set: (state: PersistedTabsState) => invoke('tabs_set', { state }),
-    clear: () => invoke('tabs_clear'),
+    // Both writes answer with nothing when they worked, so the caller has no
+    // way to tell a stored session from a lost one unless the outcome is named.
+    set: (state: PersistedTabsState): Promise<CommandResult> =>
+      voidOutcome(invoke, 'tabs_set', { state }),
+    clear: (): Promise<CommandResult> => voidOutcome(invoke, 'tabs_clear'),
   };
 }

@@ -49,9 +49,9 @@ impl ProxyConfig {
         let host = config
             .get("proxyHost")
             .and_then(|v| v.as_str())
-            .filter(|s| !s.is_empty())
-            .context("proxyHost is required when proxy is enabled")?
-            .to_string();
+            .filter(|s| !s.trim().is_empty())
+            .context("proxyHost is required when proxy is enabled")?;
+        let host = normalize_proxy_host(host)?;
         let port = config
             .get("proxyPort")
             .and_then(|v| v.as_u64())
@@ -80,6 +80,40 @@ impl ProxyConfig {
             password: password.map(super::SensitiveString::from),
         }))
     }
+
+    /// `host:port`, with an IPv6 address in brackets as a URL or a log line
+    /// needs it.
+    pub fn authority(&self) -> String {
+        if self.host.contains(':') {
+            format!("[{}]:{}", self.host, self.port)
+        } else {
+            format!("{}:{}", self.host, self.port)
+        }
+    }
+}
+
+/// The proxy host as every transport uses it: trimmed, and an IPv6 address
+/// without the brackets a user may have typed (`[::1]` and `::1` are the same
+/// proxy). Anything that is neither a plain host name nor an IP address is
+/// refused, so no URL or socket ever reads more into it than a host.
+pub fn normalize_proxy_host(raw: &str) -> anyhow::Result<String> {
+    let trimmed = raw.trim();
+    let inner = trimmed
+        .strip_prefix('[')
+        .and_then(|rest| rest.strip_suffix(']'))
+        .unwrap_or(trimmed);
+    if let Ok(address) = inner.parse::<std::net::Ipv6Addr>() {
+        return Ok(address.to_string());
+    }
+    let is_name = inner == trimmed
+        && !inner.is_empty()
+        && inner
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'.' | b'_'));
+    if !is_name {
+        anyhow::bail!("proxyHost must be a host name or an IP address");
+    }
+    Ok(inner.to_owned())
 }
 
 /// Opens a TCP connection to `target_host:target_port`, transparently
@@ -104,7 +138,7 @@ pub async fn connect(
 
     let mut stream = TcpStream::connect((cfg.host.as_str(), cfg.port))
         .await
-        .with_context(|| format!("could not connect to proxy {}:{}", cfg.host, cfg.port))?;
+        .with_context(|| format!("could not connect to proxy {}", cfg.authority()))?;
 
     match cfg.kind {
         ProxyKind::Socks4 => {
@@ -187,6 +221,35 @@ mod tests {
             cfg.password.as_ref().map(SensitiveString::expose),
             Some("s3cret")
         );
+    }
+
+    #[test]
+    fn proxy_hosts_are_normalised_once_for_every_transport() {
+        for (raw, host, authority) in [
+            ("proxy.local", "proxy.local", "proxy.local:1080"),
+            (" 10.0.0.1 ", "10.0.0.1", "10.0.0.1:1080"),
+            ("::1", "::1", "[::1]:1080"),
+            ("[::1]", "::1", "[::1]:1080"),
+            ("[2001:DB8::1]", "2001:db8::1", "[2001:db8::1]:1080"),
+        ] {
+            let config = json!({"proxyEnabled": true, "proxyHost": raw, "proxyPort": 1080});
+            let cfg = ProxyConfig::from_json_map(config.as_object().unwrap())
+                .unwrap()
+                .unwrap();
+            assert_eq!(cfg.host, host);
+            assert_eq!(cfg.authority(), authority);
+        }
+        for bad in [
+            "[proxy.local]",
+            "user@proxy",
+            "proxy/path",
+            "proxy:8080",
+            "proxy local",
+            "[::1",
+            "fe80::1%eth0",
+        ] {
+            assert!(normalize_proxy_host(bad).is_err(), "{bad}");
+        }
     }
 
     #[test]

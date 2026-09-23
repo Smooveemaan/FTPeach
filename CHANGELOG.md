@@ -68,6 +68,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A proxy given as an IPv6 address, with or without square brackets, now works for WebDAV
+  as it does for FTP and SFTP. A proxy address with a port, a path or a user name in it is
+  refused when the settings are saved.
 - A damaged bookmarks, local paths or settings file no longer replaces its last good
   backup, and opening it again no longer fills the disk with copies of it.
 - Quitting or installing an update now saves the latest settings and tabs before

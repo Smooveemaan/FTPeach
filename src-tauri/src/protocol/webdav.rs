@@ -153,6 +153,10 @@ impl WebDavBackend {
     }
 
     fn build_proxy(cfg: &super::transport::ProxyConfig) -> BackendResult<reqwest::Proxy> {
+        reqwest::Proxy::all(Self::proxy_url(cfg)?).context("invalid proxy configuration")
+    }
+
+    fn proxy_url(cfg: &super::transport::ProxyConfig) -> BackendResult<reqwest::Url> {
         use super::transport::ProxyKind;
         use zeroize::Zeroize;
         let scheme = match cfg.kind {
@@ -163,20 +167,24 @@ impl WebDavBackend {
             ProxyKind::Socks5 => "socks5h",
             ProxyKind::Http => "http",
         };
-        let mut userinfo = match (&cfg.username, &cfg.password) {
-            (Some(user), Some(pass)) => format!(
-                "{}:{}@",
-                utf8_percent_encode(user, NON_ALPHANUMERIC),
-                utf8_percent_encode(pass.expose(), NON_ALPHANUMERIC)
-            ),
-            (Some(user), None) => format!("{}@", utf8_percent_encode(user, NON_ALPHANUMERIC)),
-            _ => String::new(),
-        };
-        let mut url = format!("{scheme}://{userinfo}{}:{}", cfg.host, cfg.port);
-        let result = reqwest::Proxy::all(&url).context("invalid proxy configuration");
-        userinfo.zeroize();
-        url.zeroize();
-        result
+        // Built field by field rather than as one string, so an IPv6 host gets
+        // its brackets and the credentials cannot spill into the authority.
+        let mut url = reqwest::Url::parse(&format!("{scheme}://{}", cfg.authority()))
+            .context("invalid proxy configuration")?;
+        if let Some(user) = &cfg.username {
+            url.set_username(&utf8_percent_encode(user, NON_ALPHANUMERIC).to_string())
+                .ok()
+                .context("invalid proxy user name")?;
+        }
+        if let (Some(_), Some(password)) = (&cfg.username, &cfg.password) {
+            // Encoded first: the URL leaves a `%` as it is, and reqwest would
+            // decode `%20` in a password into a space.
+            let mut encoded = utf8_percent_encode(password.expose(), NON_ALPHANUMERIC).to_string();
+            let set = url.set_password(Some(&encoded));
+            encoded.zeroize();
+            set.ok().context("invalid proxy password")?;
+        }
+        Ok(url)
     }
 
     /// A collection's URL ends in a slash (RFC 4918 section 5.2). Most servers

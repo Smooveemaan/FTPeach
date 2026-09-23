@@ -179,6 +179,9 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
         if host.trim().is_empty() {
             return Err("settings.proxyHost: required when proxy is enabled".into());
         }
+        if crate::protocol::transport::normalize_proxy_host(host).is_err() {
+            return Err("settings.proxyHost: must be a host name or an IP address".into());
+        }
         if patch
             .get("proxyType")
             .and_then(serde_json::Value::as_str)
@@ -193,6 +196,22 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn proxy_host_must_be_a_host_or_an_address() {
+        let patch = |host: &str| {
+            serde_json::json!({"proxyEnabled": true, "proxyHost": host})
+                .as_object()
+                .unwrap()
+                .clone()
+        };
+        for good in ["proxy.local", "10.0.0.1", "::1", "[::1]"] {
+            assert!(validate_settings(&patch(good), false).is_ok(), "{good}");
+        }
+        for bad in ["user@proxy", "proxy:8080", "http://proxy"] {
+            assert!(validate_settings(&patch(bad), false).is_err(), "{bad}");
+        }
+    }
+
     #[test]
     fn recent_sites_can_be_saved_and_imported() {
         for allow_secrets in [false, true] {

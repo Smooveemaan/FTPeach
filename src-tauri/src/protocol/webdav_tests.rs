@@ -859,6 +859,56 @@ async fn failed_propfind_never_attempts_empty_put() {
 mod tests {
     use super::*;
 
+    fn proxy(
+        host: &str,
+        user: Option<&str>,
+        password: Option<&str>,
+    ) -> crate::protocol::transport::ProxyConfig {
+        let mut config = serde_json::json!({"proxyEnabled": true, "proxyType": "http", "proxyHost": host, "proxyPort": 8080});
+        if let Some(user) = user {
+            config["proxyUsername"] = user.into();
+        }
+        if let Some(password) = password {
+            config["proxyPassword"] = password.into();
+        }
+        crate::protocol::transport::ProxyConfig::from_json_map(config.as_object().unwrap())
+            .unwrap()
+            .unwrap()
+    }
+
+    #[test]
+    fn proxy_url_brackets_ipv6_and_encodes_credentials() {
+        for (host, expected) in [
+            ("10.0.0.1", "http://10.0.0.1:8080/"),
+            ("proxy.example", "http://proxy.example:8080/"),
+            ("::1", "http://[::1]:8080/"),
+            ("[::1]", "http://[::1]:8080/"),
+            (" [2001:db8::1] ", "http://[2001:db8::1]:8080/"),
+        ] {
+            let url = WebDavBackend::proxy_url(&proxy(host, None, None)).unwrap();
+            assert_eq!(url.as_str(), expected, "{host}");
+        }
+
+        let user = r"dom\al:ice@x";
+        let password = "p@ss:w/rd#?%20 \u{e9}";
+        let url = WebDavBackend::proxy_url(&proxy("::1", Some(user), Some(password))).unwrap();
+        assert_eq!(url.host_str(), Some("[::1]"));
+        assert_eq!(url.port(), Some(8080));
+        let decode = |raw: &str| {
+            percent_encoding::percent_decode_str(raw)
+                .decode_utf8()
+                .unwrap()
+                .into_owned()
+        };
+        assert_eq!(decode(url.username()), user);
+        assert_eq!(decode(url.password().unwrap()), password);
+        assert!(WebDavBackend::build_proxy(&proxy("::1", Some(user), Some(password))).is_ok());
+
+        // A password without a user name is not sent, as before.
+        let url = WebDavBackend::proxy_url(&proxy("proxy.example", None, Some("secret"))).unwrap();
+        assert_eq!(url.password(), None);
+    }
+
     #[test]
     fn content_range_must_match_resume_offset_and_total() {
         assert!(validate_content_range(Some("bytes 5-9/10"), 5, Some(10)).is_ok());

@@ -11,8 +11,8 @@
 //! batches in order in the file and in the panel alike.
 
 use crate::protocol::{LogKind, LogText};
-use crate::runtime::diagnostics::redact;
 use crate::runtime::log_messages;
+use crate::security::redaction::redact;
 use chrono::{DateTime, Local, NaiveDate};
 use serde::Serialize;
 use std::collections::VecDeque;

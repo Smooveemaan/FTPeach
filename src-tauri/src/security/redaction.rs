@@ -1,11 +1,12 @@
-//! Secret-safe diagnostics primitives. All protocol/file/IPC diagnostic text
-//! crosses this module before it can leave the process.
+//! Removal of secrets from text. All protocol/file/IPC diagnostic text
+//! crosses this module before it can leave the process. It is pure string
+//! processing, so every layer that writes a log can use it, down to the
+//! protocol drivers.
 
 use regex::{Captures, Regex};
 use std::sync::OnceLock;
 
 const REDACTED: &str = "[REDACTED]";
-pub const MAX_RENDERER_LOG_BYTES: usize = 2 * 1024 * 1024;
 
 fn credential_pattern() -> &'static Regex {
     static PATTERN: OnceLock<Regex> = OnceLock::new();

@@ -91,7 +91,12 @@ or force production internals to become public.
 
 The Rust composition root is grouped by responsibility: `security/` owns vault and authorization,
 `transfer/` owns pooling, relay, progress, and throttling, `local_fs/` owns validated local-file
-operations, and `runtime/` owns process/window lifecycle and diagnostics. Every path spells its
+operations, and `runtime/` owns process/window lifecycle and the diagnostic report. The rules
+that remove secrets from text are `security::redaction`: pure string processing that protocol
+drivers, logs and the report all call, so no lower layer imports `runtime` to clean a string.
+`transfer::transfer_pool` does call `runtime::sleep_guard` to keep Windows awake while a transfer
+runs. That is a deliberate, narrow dependency on one process-wide switch; it gets an interface
+only if the pool ever needs testing without it. Every path spells its
 zone out — `crate::security::vault`, `crate::runtime::shutdown`, `crate::local_fs::preview` — so
 the grouping is readable at each import and checkable by
 `scripts/checks/check-rust-boundaries.ts`, which rejects a crate path whose first segment is not a module

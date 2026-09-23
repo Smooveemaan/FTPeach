@@ -1,5 +1,4 @@
 pub(crate) mod app_log;
-pub(crate) mod diagnostics;
 pub(crate) mod log_emitter;
 pub(crate) mod log_messages;
 pub(crate) mod notification;

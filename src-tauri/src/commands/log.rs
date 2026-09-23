@@ -1,11 +1,14 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::runtime::app_log;
-use crate::runtime::diagnostics::redact;
 use crate::runtime::log_emitter::{LogEmitter, LogRecord};
+use crate::security::redaction::redact;
 use crate::store::Store;
 use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_dialog::DialogExt;
+
+/// Largest renderer log the user can save to a file.
+const MAX_RENDERER_LOG_BYTES: usize = 2 * 1024 * 1024;
 
 #[derive(Serialize)]
 pub struct OkFlag {
@@ -113,7 +116,7 @@ pub async fn log_export_diagnostics(
 }
 
 fn validate_log_size(content: &str) -> CommandResult<()> {
-    if content.len() > crate::runtime::diagnostics::MAX_RENDERER_LOG_BYTES {
+    if content.len() > MAX_RENDERER_LOG_BYTES {
         return Err(CommandError::new(
             ErrorCode::ResourceLimit,
             "Log content exceeds the 2 MiB limit",
@@ -128,13 +131,8 @@ mod tests {
 
     #[test]
     fn renderer_log_limit_accepts_boundary_and_rejects_one_more_byte() {
-        assert!(
-            validate_log_size(&"x".repeat(crate::runtime::diagnostics::MAX_RENDERER_LOG_BYTES))
-                .is_ok()
-        );
-        let error =
-            validate_log_size(&"x".repeat(crate::runtime::diagnostics::MAX_RENDERER_LOG_BYTES + 1))
-                .unwrap_err();
+        assert!(validate_log_size(&"x".repeat(MAX_RENDERER_LOG_BYTES)).is_ok());
+        let error = validate_log_size(&"x".repeat(MAX_RENDERER_LOG_BYTES + 1)).unwrap_err();
         assert_eq!(error.code, ErrorCode::ResourceLimit);
     }
 }

@@ -6,7 +6,7 @@
 //! file behind it a user's problem left no trace at all. The diagnostic bundle
 //! carries the end of this file.
 
-use crate::runtime::diagnostics::redact;
+use crate::security::redaction::redact;
 use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
 use tauri::Runtime;

@@ -293,7 +293,7 @@ fn sanitize_event_value(value: serde_json::Value, field: Option<&str>) -> serde_
                 .map(|value| sanitize_event_value(value, field))
                 .collect(),
         ),
-        Value::String(value) => Value::String(crate::runtime::diagnostics::redact(&value)),
+        Value::String(value) => Value::String(crate::security::redaction::redact(&value)),
         other => other,
     }
 }

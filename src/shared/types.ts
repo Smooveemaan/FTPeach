@@ -116,8 +116,8 @@ export interface FileEntry {
   size?: number;
   modifiedAt?: string | number | null;
   createdAt?: string | number | null;
-  permissions?: string;
-  owner?: string;
-  group?: string;
+  permissions?: string | null;
+  owner?: string | null;
+  group?: string | null;
   path?: string;
 }

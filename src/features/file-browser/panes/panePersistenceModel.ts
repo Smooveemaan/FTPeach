@@ -18,8 +18,13 @@ export function restorePaneTabs(
   const sitesById = new Map(
     sites.filter((site) => site.kind !== 'folder').map((site) => [site.id, site]),
   );
+  const seenIds = new Set<string>();
   const tabs = persisted.tabs.map((record) => {
-    const tab = makeTab(typeof record.id === 'string' && record.id ? record.id : createId());
+    // A repeated id would make two tabs one to React and to the active-tab
+    // lookup, so the second copy gets a fresh one.
+    const id = record.id && !seenIds.has(record.id) ? record.id : createId();
+    seenIds.add(id);
+    const tab = makeTab(id);
     tab.name = typeof record.name === 'string' ? record.name : '';
     tab.syncBrowsing = !!record.syncBrowsing;
     PANE_IDS.forEach((id) => {

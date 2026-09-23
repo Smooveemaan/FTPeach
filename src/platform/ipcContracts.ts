@@ -1,4 +1,4 @@
-import type { LogEntry, SiteProtocol } from '../shared/types.ts';
+import type { FileEntry, LogEntry, SiteProtocol } from '../shared/types.ts';
 
 const SITE_PROTOCOLS: readonly SiteProtocol[] = ['ftp', 'ftps', 'sftp', 'webdav'];
 
@@ -360,6 +360,31 @@ export function hasCommandOutcome(
   value: unknown,
 ): value is CommandResult & Record<string, unknown> {
   return isCommandRecord(value) && typeof value.ok === 'boolean';
+}
+
+const nullableString = (value: unknown) => value == null || typeof value === 'string';
+const nullableTime = (value: unknown) => nullableString(value) || optionalNumber(value);
+
+/**
+ * A listing row from either a local or a remote directory. Checks every field
+ * the file list reads: a size that is negative or not finite, or a missing
+ * directory flag, would otherwise sort, sum and render as if it were real.
+ */
+export function isFileEntry(value: unknown): value is FileEntry {
+  return (
+    isCommandRecord(value) &&
+    typeof value.name === 'string' &&
+    value.name !== '' &&
+    typeof value.isDirectory === 'boolean' &&
+    optionalBoolean(value.isHidden) &&
+    (value.size === undefined || (optionalNumber(value.size) && (value.size as number) >= 0)) &&
+    nullableTime(value.modifiedAt) &&
+    nullableTime(value.createdAt) &&
+    nullableString(value.permissions) &&
+    nullableString(value.owner) &&
+    nullableString(value.group) &&
+    optionalString(value.path)
+  );
 }
 
 export function isStringArray(value: unknown): value is string[] {

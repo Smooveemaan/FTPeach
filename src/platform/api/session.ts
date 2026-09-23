@@ -3,6 +3,7 @@ import {
   commandFailure,
   commandOutcome,
   hasCommandOutcome,
+  isFileEntry,
   isRecord,
 } from '../ipcContracts.ts';
 import type { CommandResult, HostKeyDecision, InvokeFn } from '../ipcContracts.ts';
@@ -14,10 +15,6 @@ export interface SessionConnectResult extends CommandResult {
 }
 export interface SessionListResult extends CommandResult {
   entries: FileEntry[];
-}
-
-function isFileEntry(value: unknown): value is FileEntry {
-  return isRecord(value) && typeof value.name === 'string';
 }
 
 function isSessionListResult(value: unknown): value is SessionListResult {

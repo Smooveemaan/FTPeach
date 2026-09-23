@@ -4,6 +4,7 @@ import {
   commandFailure,
   commandOutcome,
   hasCommandOutcome,
+  isFileEntry,
   isRecord,
 } from '../ipcContracts.ts';
 import type { InvokeFn } from '../ipcContracts.ts';
@@ -53,10 +54,6 @@ function onOsDragDrop(callback: (payload: OsDragDropPayload) => void) {
     cancelled = true;
     if (unlisten) unlisten();
   };
-}
-
-function isFileEntry(value: unknown): value is FileEntry {
-  return isRecord(value) && typeof value.name === 'string';
 }
 
 function isFilesystemListResult(value: unknown): value is FilesystemListResult {

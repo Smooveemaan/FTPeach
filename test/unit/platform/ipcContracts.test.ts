@@ -277,11 +277,39 @@ test('a malformed command response is reduced to a reportable failure', async ()
   ).list('c1', '/pub');
   assert.equal(listedWrongEntries.ok, false, 'an entry without a name is not a FileEntry');
 
+  for (const bad of [
+    { name: 'a.txt' },
+    { name: '', isDirectory: false },
+    { name: 'a.txt', isDirectory: 'no' },
+    { name: 'a.txt', isDirectory: false, size: -1 },
+    { name: 'a.txt', isDirectory: false, size: Number.NaN },
+    { name: 'a.txt', isDirectory: false, size: Number.POSITIVE_INFINITY },
+    { name: 'a.txt', isDirectory: false, size: '12' },
+    { name: 'a.txt', isDirectory: false, modifiedAt: {} },
+    { name: 'a.txt', isDirectory: false, permissions: 644 },
+  ]) {
+    const remote = await createSessionApi(respondWith({ ok: true, entries: [bad] })).list(
+      'c1',
+      '/pub',
+    );
+    assert.equal(remote.ok, false, `remote entry ${JSON.stringify(bad)} must be refused`);
+    const local = await createFilesystemApi(
+      respondWith({ ok: true, path: 'C:\\', entries: [bad] }),
+    ).list('C:\\');
+    assert.equal(local.ok, false, `local entry ${JSON.stringify(bad)} must be refused`);
+  }
+
   const listedFine = await createSessionApi(
-    respondWith({ ok: true, entries: [{ name: 'a.txt' }] }),
+    respondWith({
+      ok: true,
+      entries: [
+        { name: 'a.txt', isDirectory: false, size: 0, modifiedAt: null, permissions: null },
+        { name: 'dir', isDirectory: true, size: 4096, modifiedAt: '2026-01-01T00:00:00Z' },
+      ],
+    }),
   ).list('c1', '/pub');
   assert.equal(listedFine.ok, true);
-  assert.equal(listedFine.entries.length, 1);
+  assert.equal(listedFine.entries.length, 2);
 
   // The failure the backend actually reported has to survive the check: a
   // rejected response is malformed against the success contract, but its error

@@ -68,7 +68,11 @@ Hello credential, TPM/provider, or Windows account changes.
 
 `tabs.json` contains UI session data only: pane type, local or remote path,
 saved site id, tab metadata, and synchronized-browsing state. It never stores
-passwords, key passphrases, or ad-hoc connection configuration. Automatic
+passwords, key passphrases, or ad-hoc connection configuration. It holds at most 256
+tabs, ids up to 128 bytes, names up to 1 KiB and paths up to a Windows long path; a
+larger session is refused with `resourceLimit` rather than saved in part, and a file
+over the limits is cut to them on read. A repeated tab id keeps its first tab, and an
+active id naming no kept tab is dropped. Automatic
 reconnection is disabled by default and can be enabled in connection settings.
 
 `trusted_applications.json` lists the canonical paths of programs the user

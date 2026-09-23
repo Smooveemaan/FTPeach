@@ -97,3 +97,25 @@ test('pane persistence returns no restoration for an empty session', () => {
   assert.equal(restorePaneTabs({}, []), null);
   assert.equal(restorePaneTabs({ tabs: [] }, []), null);
 });
+
+test('pane persistence gives a repeated tab id a fresh one', () => {
+  let next = 0;
+  const restored = restorePaneTabs(
+    {
+      activeTabId: 'same',
+      tabs: [
+        { id: 'same', name: 'first' },
+        { id: 'same', name: 'second' },
+      ],
+    },
+    [],
+    () => `generated-${++next}`,
+  );
+
+  assert.ok(restored);
+  assert.deepEqual(
+    restored.tabs.map((tab) => tab.id),
+    ['same', 'generated-1'],
+  );
+  assert.equal(restored.activeTabId, 'same');
+});

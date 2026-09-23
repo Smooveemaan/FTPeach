@@ -3,7 +3,6 @@ export {
   isConnectionDead,
   retainConnectionRequest,
   rememberConnectionLabels,
-  setTransfersStore,
   subscribeTransfers,
   transferForAttempt,
   transferTouchesConnection,

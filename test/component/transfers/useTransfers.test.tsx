@@ -4,14 +4,12 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
 import { act, renderHook } from '@testing-library/react';
-import {
-  getTransfersSnapshot,
-  setTransfersStore,
-  useTransfers,
-} from '../../../src/features/transfers/index.ts';
+import { getTransfersSnapshot, useTransfers } from '../../../src/features/transfers/index.ts';
 import {
   flushTransferUpdates,
+  PENDING_TRANSFER_LIMIT,
   resetTransfersStoreForTests,
+  setTransfersStore,
 } from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import { useOverwriteApproval } from '../../../src/features/transfers/useOverwriteApproval.ts';
@@ -1903,4 +1901,98 @@ test('a progress event flushed after a folder walk settles cannot strand its row
     });
     assert.equal(getSnapshot()[id]!.status, 'done');
   });
+});
+
+test('a retry against a full queue leaves the row exactly as it was', async () => {
+  await withHarness(async ({ getApi, getSnapshot, setSnapshot, calls }) => {
+    const failed = makeTransferRow({
+      id: 'failed',
+      direction: 'down',
+      protocol: 'sftp',
+      name: 'x',
+      bytes: 300,
+      total: 1000,
+      status: 'error',
+      errorMessage: 'Connection lost',
+      errorCode: 'connectionLost',
+      connectionId: 'c1',
+      remoteFile: '/x',
+      localTarget: 'C:/x',
+      startedAt: 1,
+      attemptId: 'old-attempt',
+    });
+    setSnapshot(() => ({
+      failed,
+      ...Object.fromEntries(
+        Array.from({ length: PENDING_TRANSFER_LIMIT }, (_, index) => [
+          `busy-${index}`,
+          makeTransferRow({
+            id: `busy-${index}`,
+            direction: 'down',
+            protocol: 'sftp',
+            name: `busy-${index}`,
+            status: 'queued',
+            connectionId: 'c2',
+            remoteFile: `/busy-${index}`,
+            localTarget: `C:/busy-${index}`,
+            startedAt: 2,
+          }),
+        ]),
+      ),
+    }));
+    await act(async () => {
+      await assert.rejects(getApi().retryTransfer('failed'), /queue is full/);
+    });
+    assert.deepEqual(getSnapshot().failed, failed);
+    assert.equal(calls.download.length, 0);
+  });
+});
+
+test('a retry stopped while it waits for overwrite approval never starts', async () => {
+  let answer!: (_overwrite: boolean) => void;
+  await withHarness(
+    async ({ getApi, getSnapshot, setSnapshot, mockApi, calls }) => {
+      mockApi.fsLocal.list = async (path = '') => ({
+        ok: true,
+        path,
+        entries: [{ name: 'x', isDirectory: false }],
+      });
+      setSnapshot(() => ({
+        failed: makeTransferRow({
+          id: 'failed',
+          direction: 'down',
+          protocol: 'sftp',
+          name: 'x',
+          status: 'error',
+          connectionId: 'c1',
+          remoteFile: '/x',
+          localTarget: 'C:/x',
+          startedAt: 1,
+        }),
+      }));
+      let retry!: Promise<void>;
+      act(() => {
+        retry = getApi().retryTransfer('failed');
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+      assert.equal(getSnapshot().failed?.status, 'queued');
+      await act(async () => {
+        await getApi().stopTransfer('failed');
+      });
+      await act(async () => {
+        answer(true);
+        await retry;
+      });
+      assert.equal(calls.download.length, 0, 'a stopped retry must not start the download');
+      assert.equal(getSnapshot().failed?.status, 'stopped');
+    },
+    {
+      confirmOverwrite: () =>
+        new Promise<boolean>((resolve) => {
+          answer = resolve;
+        }),
+    },
+  );
 });

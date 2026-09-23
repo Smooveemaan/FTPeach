@@ -200,6 +200,36 @@ export function useTransferLifecycle(
     return attemptId;
   };
 
+  /**
+   * Puts an existing row back in the queue for a new attempt: admission
+   * against the queue limit, the old cancel intent and error dropped, and a
+   * fresh attempt id in the same update, so progress from the attempt before
+   * cannot land on this one. `keepBytes` is for a download or a paused
+   * upload that carries on where it stopped; anything else starts over.
+   */
+  const requeueAttempt = (id: string, { keepBytes }: { keepBytes: boolean }) => {
+    if (!hasTransferCapacity(false))
+      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
+    delete cancelIntentRef.current[id];
+    const attemptId = crypto.randomUUID();
+    setTransfersStore((previous) => {
+      const row = previous[id];
+      if (!row) return previous;
+      return {
+        ...previous,
+        [id]: {
+          ...row,
+          attemptId,
+          status: 'queued',
+          bytes: keepBytes ? row.bytes : 0,
+          errorMessage: undefined,
+          errorCode: undefined,
+        },
+      };
+    });
+    return attemptId;
+  };
+
   const settleTransferResult = (
     id: string,
     result: CommandResult,
@@ -277,26 +307,7 @@ export function useTransferLifecycle(
         connectionId,
         total: _localSize,
       });
-    if (existing) {
-      if (!hasTransferCapacity(false))
-        throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
-      delete cancelIntentRef.current[id];
-      setTransfersStore((previous) => {
-        const row = previous[id];
-        if (!row) return previous;
-        return {
-          ...previous,
-          [id]: {
-            ...row,
-            bytes: 0,
-            status: 'queued',
-            errorMessage: undefined,
-            errorCode: undefined,
-          },
-        };
-      });
-    }
-    const attemptId = beginAttempt(id);
+    const attemptId = existing ? requeueAttempt(id, { keepBytes: false }) : beginAttempt(id);
     const result = await api.transfer.upload(
       connectionId,
       attemptId,
@@ -351,20 +362,8 @@ export function useTransferLifecycle(
     const id =
       existing?.id ||
       startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId });
-    if (existing) {
-      if (!hasTransferCapacity(false))
-        throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
-      delete cancelIntentRef.current[id];
-      setTransfersStore((previous) => {
-        const row = previous[id];
-        if (!row) return previous;
-        return {
-          ...previous,
-          [id]: { ...row, status: 'queued', errorMessage: undefined, errorCode: undefined },
-        };
-      });
-    }
-    const attemptId = beginAttempt(id);
+    // A download carries on from its partial, so the bytes it has stay counted.
+    const attemptId = existing ? requeueAttempt(id, { keepBytes: true }) : beginAttempt(id);
     const result = await api.transfer.download(
       connectionId,
       attemptId,
@@ -433,11 +432,8 @@ export function useTransferLifecycle(
     const id =
       existingId ||
       startTransfer({ direction: 'recursive', name: intent.source.path, intent, targetProtocol });
-    const attemptId = beginAttempt(id);
-    setTransfersStore((previous) => ({
-      ...previous,
-      [id]: { ...previous[id]!, status: 'queued' },
-    }));
+    // A walk counts what it has already put in place, paused or not.
+    const attemptId = existingId ? requeueAttempt(id, { keepBytes: true }) : beginAttempt(id);
     const stopFollowing = followLanded(id, attemptId, refreshTarget);
     const waiting = new AbortController();
     waitingRecursive.current.set(id, waiting);
@@ -516,9 +512,6 @@ export function useTransferLifecycle(
       !canRetryTransfer(transfer)
     )
       return;
-    if (!hasTransferCapacity(false))
-      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
-    delete cancelIntentRef.current[id];
     if (transfer.direction === 'recursive') {
       // A paused walk carries on from the journal its attempt kept; any other
       // ending starts over.
@@ -539,21 +532,7 @@ export function useTransferLifecycle(
         ? transfer.status === 'paused' ||
           (transfer.status === 'error' && transfer.errorCode !== 'integrityMismatch')
         : transfer.direction === 'up' && canPauseTransfer(transfer) && transfer.status === 'paused';
-    setTransfersStore((previous) => {
-      const row = previous[id];
-      if (!row) return previous;
-      return {
-        ...previous,
-        [id]: {
-          ...row,
-          status: 'queued',
-          bytes: resume ? row.bytes : 0,
-          errorMessage: undefined,
-          errorCode: undefined,
-        },
-      };
-    });
-    const attemptId = beginAttempt(id);
+    const attemptId = requeueAttempt(id, { keepBytes: resume });
     let overwrite: boolean | null;
     try {
       overwrite = await approveTarget(

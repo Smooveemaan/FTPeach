@@ -4,9 +4,9 @@
   "areas": {
     "frontend-ts": {
       "sources": 209,
-      "lines": 31750,
-      "duplicatedLines": 87,
-      "clones": 9
+      "lines": 31727,
+      "duplicatedLines": 76,
+      "clones": 8
     },
     "css": {
       "sources": 23,

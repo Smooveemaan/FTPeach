@@ -13,6 +13,7 @@ import type {
   OpenWithChange,
   PreviewProgress,
   RecoveredEdit,
+  Unsubscribe,
   VaultLocked,
 } from './ipcContracts.ts';
 import type { DragOutFile } from './api/dragOut.ts';
@@ -44,7 +45,7 @@ declare global {
         /** Tells the backend the user has been seen, postponing the idle lock. */
         noteActivity: () => void;
         /** The backend locked the vault itself; the payload says why. */
-        onLocked: (callback: (locked: VaultLocked) => void) => () => void;
+        onLocked: (callback: (locked: VaultLocked) => void) => Unsubscribe;
         setup: (masterPassword: string) => Promise<CommandResult>;
         enableSystemUnlock: () => Promise<CommandResult>;
         disableSystemUnlock: () => Promise<CommandResult>;
@@ -69,7 +70,7 @@ declare global {
         recent: () => Promise<LogEntry[]>;
         save: (content: string) => Promise<CommandResult & { canceled?: boolean; path?: string }>;
         exportDiagnostics: () => Promise<CommandResult & { canceled?: boolean; path?: string }>;
-        onMessage: (callback: (batch: LogEntry[]) => void) => () => void;
+        onMessage: (callback: (batch: LogEntry[]) => void) => Unsubscribe;
       };
       app: {
         version: () => Promise<string>;
@@ -112,8 +113,8 @@ declare global {
         recoveredEdits: () => Promise<RecoveredEdit[]>;
         revealRecoveredEdits: () => Promise<CommandResult>;
         discardRecoveredEdits: () => Promise<CommandResult>;
-        onChanged: (callback: (payload: OpenWithChange) => void) => () => void;
-        onProgress: (callback: (payload: PreviewProgress) => void) => () => void;
+        onChanged: (callback: (payload: OpenWithChange) => void) => Unsubscribe;
+        onProgress: (callback: (payload: PreviewProgress) => void) => Unsubscribe;
       };
       dragOut: {
         start: (

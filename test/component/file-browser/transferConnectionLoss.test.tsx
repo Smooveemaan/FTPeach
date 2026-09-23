@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { renderHook } from '@testing-library/react';
 import type { SetStateAction } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -30,7 +31,7 @@ test.each([
     let progress: ((_payload: TransferProgress) => void) | undefined;
     vi.spyOn(api.transfer, 'onProgress').mockImplementation((callback) => {
       progress = callback;
-      return () => {};
+      return readyUnsubscribe(() => {});
     });
     setTransfersStore({
       upload: {

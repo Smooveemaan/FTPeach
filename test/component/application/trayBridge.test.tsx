@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { useTrayBridge } from '../../../src/app/tray/useTrayBridge.ts';
@@ -23,9 +24,9 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     setModel: vi.fn(async (_model: TrayModel) => ({ ok: true })),
     onAction: vi.fn((callback: (_action: TrayAction) => void) => {
       onAction = callback;
-      return () => {
+      return readyUnsubscribe(() => {
         onAction = undefined;
-      };
+      });
     }),
   };
   const status = { ...vaultStatus };

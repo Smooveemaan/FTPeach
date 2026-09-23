@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../platform/api/index.ts';
 import type { LogEntry } from '../../shared/types.ts';
+import type { Unsubscribe } from '../../platform/ipcContracts.ts';
 import { hasLogGap, mergeLogBatch } from './logBuffer.ts';
 
 export type { LogEntry } from '../../shared/types.ts';
 
 interface LogApi {
   recent: () => Promise<LogEntry[]>;
-  onMessage: (callback: (batch: LogEntry[]) => void) => () => void;
+  onMessage: (callback: (batch: LogEntry[]) => void) => Unsubscribe;
 }
 
 export interface LogLinesModel {
@@ -63,7 +64,11 @@ export function useLogLines(enabled: boolean, logApi: LogApi = api.log): LogLine
         apply(batch);
       }
     });
-    load();
+    // History read before the listener is in place could miss a batch sent
+    // in between; read after, every later record reaches the listener. A
+    // listener that could not be set up has been reported; the history
+    // still shows what there is.
+    void unsubscribe.ready.then(load);
 
     return () => {
       disposed = true;

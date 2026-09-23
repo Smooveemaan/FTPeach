@@ -23,11 +23,15 @@ export function useUpdater(
   useEffect(() => {
     let subscribed = true;
     const unsubscribe = api.updater.onStatus(setStatus);
-    // The backend has usually reported before this subscription existed. An
-    // event that lands while the snapshot is in flight is newer, so it wins.
-    void api.updater.status().then((current) => {
-      if (subscribed && current) setStatus((previous) => previous ?? current);
-    });
+    // The backend has usually reported before this subscription existed. The
+    // snapshot is read once the listener is in place, so no status can fall
+    // between them; an event that lands while it is in flight is newer, so
+    // it wins.
+    void unsubscribe.ready
+      .then(() => api.updater.status())
+      .then((current) => {
+        if (subscribed && current) setStatus((previous) => previous ?? current);
+      });
     return () => {
       subscribed = false;
       unsubscribe();

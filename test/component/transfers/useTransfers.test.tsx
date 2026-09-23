@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { beforeEach, test, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -801,15 +802,15 @@ function makeMockApi() {
       ...tauriApi.transfer,
       onProgress: (cb: (_payload: TransferProgress) => void) => {
         progressListener = cb;
-        return () => {
+        return readyUnsubscribe(() => {
           progressListener = null;
-        };
+        });
       },
       onDragOutStarted: (cb: (_payload: DragOutTransferStarted) => void) => {
         dragOutListener = cb;
-        return () => {
+        return readyUnsubscribe(() => {
           dragOutListener = null;
-        };
+        });
       },
       upload: (connectionId, id, localFile, remoteTarget, resume, overwrite) => {
         calls.upload.push({ connectionId, id, localFile, remoteTarget, resume, overwrite });

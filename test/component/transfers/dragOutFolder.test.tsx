@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 vi.mock('../../../src/platform/api/index.ts', () => ({
@@ -24,11 +25,11 @@ test('an empty dragged folder appears and completes without any file content eve
   let progress!: (_payload: TransferProgress) => void;
   vi.spyOn(api.transfer, 'onDragOutStarted').mockImplementation((callback) => {
     started = callback;
-    return () => {};
+    return readyUnsubscribe(() => {});
   });
   vi.spyOn(api.transfer, 'onProgress').mockImplementation((callback) => {
     progress = callback;
-    return () => {};
+    return readyUnsubscribe(() => {});
   });
   renderHook(() => useTransferProgressAdapter({ current: {} }));
   const payload: DragOutTransferStarted = {

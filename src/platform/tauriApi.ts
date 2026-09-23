@@ -43,6 +43,7 @@ import type {
 } from './ipcContracts.ts';
 import type { AppSettings } from './api/settings.ts';
 import type { LogEntry } from '../shared/types.ts';
+import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { flushShutdownState } from './shutdownPersistence.ts';
 import './persistSetting.ts';
 
@@ -201,24 +202,44 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
   }
 }
 
-function onEvent<T = unknown>(
+export function onEvent<T = unknown>(
   eventName: string,
   validate: PayloadGuard<T> = (_value: unknown): _value is T => true,
 ): EventSubscription<T> {
   return (callback) => {
     let unlisten: UnlistenFn | null = null;
     let cancelled = false;
-    void listen<unknown>(eventName, (event) => {
+    const ready = listen<unknown>(eventName, (event) => {
       if (validate(event.payload)) callback(event.payload);
       else console.error(`Ignored invalid IPC event payload: ${eventName}`, event.payload);
-    }).then((fn: UnlistenFn) => {
-      if (cancelled) fn();
-      else unlisten = fn;
-    });
-    return () => {
-      cancelled = true;
-      if (unlisten) unlisten();
-    };
+    }).then(
+      (fn: UnlistenFn) => {
+        // Stopped before the listener existed: remove it now it does.
+        if (cancelled) fn();
+        else unlisten = fn;
+        return !cancelled;
+      },
+      (error: unknown) => {
+        // Without the listener the view silently stops updating; say so once
+        // instead of retrying blindly or leaving an unhandled rejection.
+        if (!cancelled) {
+          reportAsyncFailure(
+            new Error(
+              `Could not subscribe to ${eventName}: ${error instanceof Error ? error.message : describeUnknown(error)}`,
+            ),
+          );
+        }
+        return false;
+      },
+    );
+    return Object.assign(
+      () => {
+        cancelled = true;
+        unlisten?.();
+        unlisten = null;
+      },
+      { ready },
+    );
   };
 }
 

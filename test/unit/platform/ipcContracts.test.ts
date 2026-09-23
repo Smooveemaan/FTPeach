@@ -8,6 +8,7 @@ import {
   isUpdaterStatus,
   normalizeCommandError,
   normalizeInvokeResponse,
+  readyUnsubscribe,
 } from '../../../src/platform/ipcContracts.ts';
 import type {
   EventRegistrar,
@@ -30,7 +31,7 @@ test('recursive discard surfaces normalized cleanup failure with retained-path d
     error: 'Unverified objects were retained',
     diagnosticDetails: '[{"path":"/dst/a"}]',
   });
-  const api = createTransferApi(invoke, () => () => () => {});
+  const api = createTransferApi(invoke, () => () => readyUnsubscribe(() => {}));
   await assert.rejects(api.discardRecursive('attempt'), {
     code: 'cleanupIncomplete',
     message: 'Unverified objects were retained',
@@ -111,7 +112,7 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
     validate: PayloadGuard<T> = (_value: unknown): _value is T => true,
   ) => {
     eventValidators.set(name, validate);
-    return () => () => {};
+    return () => readyUnsubscribe(() => {});
   };
   const session = createSessionApi(invoke);
   const transfer = createTransferApi(invoke, onEvent);

@@ -1,9 +1,10 @@
+import { readyUnsubscribe } from '../../src/platform/ipcContracts.ts';
 import type { UpdaterStatus } from '../../src/platform/ipcContracts.ts';
 import defaults from '../../src/shared/settingsDefaults.json';
 import type { FileEntry, ManagedSite } from '../../src/shared/types.ts';
 
 const ok = { ok: true } as const;
-const unsubscribe = () => {};
+const unsubscribe = readyUnsubscribe(() => {});
 const updateListeners = new Set<(_status: UpdaterStatus) => void>();
 const emitUpdate = (status: UpdaterStatus) =>
   updateListeners.forEach((listener) => listener(status));
@@ -230,9 +231,9 @@ export const visualTestApi = {
               },
         );
       }
-      return () => {
+      return readyUnsubscribe(() => {
         updateListeners.delete(callback);
-      };
+      });
     },
   },
   proxy: { test: () => resolved(ok) },
@@ -300,7 +301,7 @@ export const visualTestApi = {
       if (new URLSearchParams(window.location.search).get('tray') === 'quitRequested') {
         window.setTimeout(() => callback({ kind: 'quitRequested' }), 0);
       }
-      return () => {};
+      return unsubscribe;
     },
   },
 } as unknown as Window['api'];

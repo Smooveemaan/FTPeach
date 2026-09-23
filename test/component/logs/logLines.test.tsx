@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import { useLogLines } from '../../../src/features/logs/useLogLines.ts';
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import type { LogEntry } from '../../../src/shared/types.ts';
 import { MAX_LOG_BYTES } from '../../../src/features/logs/logBuffer.ts';
 
@@ -21,7 +22,7 @@ function fakeLogApi(history: () => LogEntry[]) {
       recent: vi.fn(async () => history()),
       onMessage: vi.fn((callback: (_batch: LogEntry[]) => void) => {
         listeners.add(callback);
-        return () => release(callback);
+        return readyUnsubscribe(() => release(callback));
       }),
     },
     send: (batch: LogEntry[]) => {
@@ -61,6 +62,7 @@ test('live records stay bounded while history is stalled', async () => {
       ),
     );
   }
+  await waitFor(() => expect(log.api.recent).toHaveBeenCalled());
   await act(async () => resolve([]));
   expect(result.current.lines.at(-1)?.seq).toBe(2560);
   expect(result.current.lines.length).toBeLessThan(512);
@@ -112,7 +114,26 @@ test('a cleared log stays cleared when the panel is closed and opened again', as
   rerender({ open: false });
   expect(result.current.lines).toEqual([]);
   rerender({ open: true });
-  expect(log.api.recent).toHaveBeenCalledTimes(2);
+  await waitFor(() => expect(log.api.recent).toHaveBeenCalledTimes(2));
   act(() => log.send([entry(3)]));
   await waitFor(() => expect(seqs(result.current.lines)).toEqual([3]));
+});
+
+test('the history is read only once the live listener is in place', async () => {
+  const log = fakeLogApi(() => [entry(1)]);
+  let listening!: (_ready: boolean) => void;
+  const ready = new Promise<boolean>((done) => {
+    listening = done;
+  });
+  log.api.onMessage.mockImplementationOnce((callback) => {
+    log.listeners.add(callback);
+    return Object.assign(() => log.listeners.delete(callback), { ready });
+  });
+  const { result } = renderHook(() => useLogLines(true, log.api));
+  await Promise.resolve();
+  expect(log.api.recent).not.toHaveBeenCalled();
+  await act(async () => listening(true));
+  await waitFor(() => expect(seqs(result.current.lines)).toEqual([1]));
+  act(() => log.send([entry(2)]));
+  expect(seqs(result.current.lines)).toEqual([1, 2]);
 });

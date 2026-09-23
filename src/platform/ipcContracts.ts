@@ -134,7 +134,20 @@ export type InvokeFn = <T = unknown>(
   args?: InvokeArgs,
 ) => Promise<InvokeResult<T>>;
 export type PayloadGuard<T> = (value: unknown) => value is T;
-export type EventSubscription<T> = (callback: (payload: T) => void) => () => void;
+/**
+ * Stops an event subscription. `ready` settles once the listener is in place:
+ * `true` from then on every event reaches the callback, `false` if the
+ * subscription failed (already reported) or was stopped first. It never
+ * rejects. A consumer that also reads a snapshot reads it after `ready`, so no
+ * event can fall between the snapshot and the listener.
+ */
+export type Unsubscribe = (() => void) & { readonly ready: Promise<boolean> };
+export type EventSubscription<T> = (callback: (payload: T) => void) => Unsubscribe;
+
+/** An {@link Unsubscribe} for a listener that is in place synchronously. */
+export function readyUnsubscribe(stop: () => void): Unsubscribe {
+  return Object.assign(stop, { ready: Promise.resolve(true) });
+}
 export type EventRegistrar = <T = unknown>(
   eventName: string,
   validate?: PayloadGuard<T>,

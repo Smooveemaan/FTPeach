@@ -877,6 +877,111 @@ impl FtpBackend {
         .ok()
     }
 
+    async fn download_file(
+        &mut self,
+        remote_path: &str,
+        local_path: &Path,
+        resume: bool,
+        progress: &ProgressSink,
+    ) -> BackendResult<()> {
+        let target = super::transfer_file::DownloadTarget::reserve(local_path).await?;
+        let remote_size = self.known_size(remote_path).await;
+        let version_path = remote_path.to_string();
+        let version = self
+            .with_stream(move |s| {
+                Box::pin(async move {
+                    match s.mdtm(&version_path).await {
+                        Ok(date) => Ok(Some(date.to_string())),
+                        Err(suppaftp::FtpError::UnexpectedResponse(response))
+                            if response.status != Status::NotAvailable =>
+                        {
+                            Ok(None)
+                        }
+                        Err(error) => Err(error.into()),
+                    }
+                })
+            })
+            .await
+            .ok()
+            .flatten();
+        let source = super::transfer_file::SourceIdentity {
+            endpoint: self.endpoint.clone(),
+            remote_path: remote_path.to_string(),
+            size: remote_size,
+            version,
+        };
+        let origin = crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path);
+        let Some(download) = target.prepare(resume, source, origin).await? else {
+            return Ok(());
+        };
+
+        let start_at = download.start();
+        let file = download.open_at(start_at).await;
+        let remote_path_owned = remote_path.to_string();
+        let progress_for_op = progress.clone();
+        let data = self.data_channel()?;
+        let written = self
+            .with_stream(move |s| {
+                Box::pin(async move {
+                    let mut file = file?;
+                    if start_at > 0 {
+                        s.resume_transfer(start_at as usize).await?;
+                    }
+                    let mut data_stream = data
+                        .open(s, format!("RETR {remote_path_owned}"), RETRIEVE_OPEN)
+                        .await?;
+                    let mut buf = vec![0u8; COPY_CHUNK_SIZE];
+                    let mut transferred = start_at;
+                    loop {
+                        let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
+                        let read_result = tokio::time::timeout(
+                            TRANSFER_STALL_TIMEOUT,
+                            data_stream.read(&mut buf[..read_len]),
+                        )
+                        .await
+                        .context("stalled while reading from server")?;
+                        let n = read_result.context("reading from server")?;
+                        if n == 0 {
+                            break; // clean EOF from a well-behaved server
+                        }
+                        file.write_all(&buf[..n])
+                            .await
+                            .context("writing local file")?;
+                        transferred += n as u64;
+                        crate::transfer::rate_limiter::shared()
+                            .acquire(n as u64)
+                            .await;
+                        progress_for_op(ProgressInfo::Progress {
+                            bytes: transferred,
+                            total: remote_size.unwrap_or(0),
+                        });
+                        if let Some(size) = remote_size
+                            && transferred > size
+                        {
+                            return Err(super::fail(
+                                ErrorCode::IntegrityMismatch,
+                                format!("The server sent more than the advertised {size} bytes"),
+                            ));
+                        }
+                    }
+                    file.flush().await.context("flushing local file")?;
+                    tokio::time::timeout(
+                        TRANSFER_STALL_TIMEOUT,
+                        s.finalize_retr_stream(data_stream),
+                    )
+                    .await
+                    .context("download completion timed out")??;
+                    Ok(transferred)
+                })
+            })
+            .await;
+        let written = match written {
+            Err(error) => Err(self.explain_refusal(remote_path, error).await),
+            done => done,
+        };
+        download.finish(written, remote_size).await
+    }
+
     fn data_channel(&self) -> BackendResult<DataChannel> {
         self.data.clone().ok_or_else(|| {
             super::fail(
@@ -1672,137 +1777,10 @@ impl ProtocolBackend for FtpBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = super::transfer_file::reserve(local_path)?;
-        let _mutation = crate::local_fs::mutations::guard().read().await;
-        crate::local_fs::mutations::validate_download_name(local_path)?;
-        crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
-        let remote_size = self.known_size(remote_path).await;
-        let version_path = remote_path.to_string();
-        let version = self
-            .with_stream(move |s| {
-                Box::pin(async move {
-                    match s.mdtm(&version_path).await {
-                        Ok(date) => Ok(Some(date.to_string())),
-                        Err(suppaftp::FtpError::UnexpectedResponse(response))
-                            if response.status != Status::NotAvailable =>
-                        {
-                            Ok(None)
-                        }
-                        Err(error) => Err(error.into()),
-                    }
-                })
-            })
-            .await
-            .ok()
-            .flatten();
-        let source = super::transfer_file::SourceIdentity {
-            endpoint: self.endpoint.clone(),
-            remote_path: remote_path.to_string(),
-            size: remote_size,
-            version,
-        };
-        let (partial_path, start_at) = super::transfer_file::prepare(
-            local_path,
-            resume,
-            source,
-            crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path),
-        )
-        .await?;
-        super::transfer_file::validate_resume_offset(start_at, remote_size)?;
-        if super::transfer_file::commit_if_complete(
-            &partial_path,
-            local_path,
-            start_at,
-            remote_size,
-        )
-        .await?
-        {
-            progress(ProgressInfo::Done);
-            return Ok(());
-        }
-
-        let remote_path_owned = remote_path.to_string();
-        let local_path_owned = local_path.to_path_buf();
-        let partial_path_owned = partial_path.clone();
-        let progress_for_op = progress.clone();
-        let data = self.data_channel()?;
         let result = self
-            .with_stream(move |s| {
-                Box::pin(async move {
-                    let mut file = tokio::fs::File::from_std(super::transfer_file::open_artifact(
-                        &partial_path_owned,
-                        false,
-                    )?);
-
-                    if start_at > 0 {
-                        s.resume_transfer(start_at as usize).await?;
-                        file.seek(std::io::SeekFrom::Start(start_at))
-                            .await
-                            .context("seeking local file")?;
-                    }
-                    let mut data_stream = data
-                        .open(s, format!("RETR {remote_path_owned}"), RETRIEVE_OPEN)
-                        .await?;
-                    let mut buf = vec![0u8; COPY_CHUNK_SIZE];
-                    let mut transferred = start_at;
-                    loop {
-                        let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
-                        let read_result = tokio::time::timeout(
-                            TRANSFER_STALL_TIMEOUT,
-                            data_stream.read(&mut buf[..read_len]),
-                        )
-                        .await
-                        .context("stalled while reading from server")?;
-                        let n = read_result.context("reading from server")?;
-                        if n == 0 {
-                            break; // clean EOF from a well-behaved server
-                        }
-                        file.write_all(&buf[..n])
-                            .await
-                            .context("writing local file")?;
-                        transferred += n as u64;
-                        crate::transfer::rate_limiter::shared()
-                            .acquire(n as u64)
-                            .await;
-                        progress_for_op(ProgressInfo::Progress {
-                            bytes: transferred,
-                            total: remote_size.unwrap_or(0),
-                        });
-                        if let Some(size) = remote_size
-                            && transferred > size
-                        {
-                            return Err(super::fail(
-                                ErrorCode::IntegrityMismatch,
-                                format!("The server sent more than the advertised {size} bytes"),
-                            ));
-                        }
-                    }
-                    file.flush().await.context("flushing local file")?;
-                    tokio::time::timeout(
-                        TRANSFER_STALL_TIMEOUT,
-                        s.finalize_retr_stream(data_stream),
-                    )
-                    .await
-                    .context("download completion timed out")??;
-                    super::transfer_file::validate_length(transferred, remote_size)?;
-                    drop(file);
-                    super::transfer_file::commit(&partial_path_owned, &local_path_owned).await?;
-                    Ok(())
-                })
-            })
+            .download_file(remote_path, local_path, resume, &progress)
             .await;
-        let result = match result {
-            Err(error) => Err(self.explain_refusal(remote_path, error).await),
-            done => done,
-        };
-
-        match &result {
-            Ok(()) => progress(ProgressInfo::Done),
-            Err(err) => {
-                progress(ProgressInfo::failed(err));
-                super::transfer_file::remove_empty_new_partial(&partial_path, start_at).await;
-            }
-        }
+        super::transfer_file::report_outcome(&result, &progress);
         result
     }
 

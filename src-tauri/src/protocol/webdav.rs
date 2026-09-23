@@ -15,7 +15,7 @@ use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use reqwest::{Client, Method, StatusCode};
 use std::path::Path;
 use std::time::Duration;
-use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 mod response;
 
@@ -150,6 +150,127 @@ impl WebDavBackend {
                 "No active connection to the server",
             )
         })
+    }
+
+    async fn download_file(
+        &mut self,
+        remote_path: &str,
+        local_path: &Path,
+        resume: bool,
+        progress: &ProgressSink,
+    ) -> BackendResult<()> {
+        let target = transfer_file::DownloadTarget::reserve(local_path).await?;
+        let remote_size = self.known_size(remote_path).await;
+        let version = self
+            .request(Method::HEAD, remote_path)?
+            .send()
+            .await
+            .ok()
+            .and_then(|response| {
+                if !response.status().is_success() {
+                    return None;
+                }
+                response
+                    .headers()
+                    .get(reqwest::header::ETAG)
+                    .or_else(|| response.headers().get(reqwest::header::LAST_MODIFIED))
+                    .and_then(|v| v.to_str().ok())
+                    .filter(|version| !version.starts_with("W/"))
+                    .map(str::to_owned)
+            });
+        let source = transfer_file::SourceIdentity {
+            endpoint: serde_json::json!(["webdav", self.base_url, self.user]).to_string(),
+            remote_path: remote_path.to_string(),
+            size: remote_size,
+            version: version.clone(),
+        };
+        let origin = crate::local_fs::provenance::Origin::for_url(&self.base_url, remote_path);
+        let Some(download) = target.prepare(resume, source, origin).await? else {
+            return Ok(());
+        };
+
+        let start_at = download.start();
+        // The length the response promises, once it is known; the metadata
+        // size until then.
+        let mut expected_length = remote_size;
+        let written: BackendResult<u64> = async {
+            let range_note = if start_at > 0 {
+                format!(" (Range: bytes={start_at}-)")
+            } else {
+                String::new()
+            };
+            self.log_kind(format!("GET {remote_path}{range_note}"), LogKind::Command);
+            let mut req = self.request(Method::GET, remote_path)?;
+            if start_at > 0 {
+                req = req.header("Range", format!("bytes={start_at}-"));
+                if let Some(version) = &version {
+                    req = req.header(reqwest::header::IF_RANGE, version);
+                }
+            }
+            let res = req.send().await.context("GET request failed")?;
+            resumed_response_start(res.status(), start_at)?;
+            if !res.status().is_success() {
+                return Err(response::status_error(res.status().as_u16(), "GET"));
+            }
+            let range_end = if res.status() == StatusCode::PARTIAL_CONTENT {
+                Some(validate_content_range(
+                    res.headers()
+                        .get(reqwest::header::CONTENT_RANGE)
+                        .and_then(|v| v.to_str().ok()),
+                    start_at,
+                    remote_size,
+                )?)
+            } else {
+                None
+            };
+            let effective_start =
+                if resumed_response_start(res.status(), start_at)? == 0 && start_at > 0 {
+                    self.log_key(
+                        "davResumeUnsupportedServer",
+                        serde_json::json!({ "expected": 206, "status": res.status().as_u16() }),
+                        LogKind::Status,
+                    );
+                    0
+                } else {
+                    start_at
+                };
+
+            let mut file = download.open_at(effective_start).await?;
+
+            let body_end = res
+                .content_length()
+                .and_then(|length| effective_start.checked_add(length));
+            if let (Some(body), Some(range)) = (body_end, range_end) {
+                transfer_file::validate_length(body, Some(range))?;
+            }
+            expected_length = range_end.or(body_end).or(remote_size);
+            if let (Some(expected), Some(advertised)) = (expected_length, remote_size) {
+                transfer_file::validate_length(expected, Some(advertised))?;
+            }
+            let mut transferred = effective_start;
+            let mut res = res;
+            while let Some(chunk) = res.chunk().await.context("reading from server")? {
+                transfer_file::validate_resume_offset(
+                    transferred
+                        .checked_add(chunk.len() as u64)
+                        .context("WebDAV size overflow")?,
+                    expected_length,
+                )?;
+                file.write_all(&chunk).await.context("writing local file")?;
+                crate::transfer::rate_limiter::acquire_paced(chunk.len() as u64, |slice| {
+                    transferred += slice;
+                    progress(ProgressInfo::Progress {
+                        bytes: transferred,
+                        total: remote_size.unwrap_or(0),
+                    });
+                })
+                .await;
+            }
+            file.flush().await.context("flushing local file")?;
+            Ok(transferred)
+        }
+        .await;
+        download.finish(written, expected_length).await
     }
 
     fn build_proxy(cfg: &super::transport::ProxyConfig) -> BackendResult<reqwest::Proxy> {
@@ -945,148 +1066,10 @@ impl ProtocolBackend for WebDavBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = super::transfer_file::reserve(local_path)?;
-        let _mutation = crate::local_fs::mutations::guard().read().await;
-        crate::local_fs::mutations::validate_download_name(local_path)?;
-        crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
-        let remote_size = self.known_size(remote_path).await;
-        let version = self
-            .request(Method::HEAD, remote_path)?
-            .send()
-            .await
-            .ok()
-            .and_then(|response| {
-                if !response.status().is_success() {
-                    return None;
-                }
-                response
-                    .headers()
-                    .get(reqwest::header::ETAG)
-                    .or_else(|| response.headers().get(reqwest::header::LAST_MODIFIED))
-                    .and_then(|v| v.to_str().ok())
-                    .filter(|version| !version.starts_with("W/"))
-                    .map(str::to_owned)
-            });
-        let source = super::transfer_file::SourceIdentity {
-            endpoint: serde_json::json!(["webdav", self.base_url, self.user]).to_string(),
-            remote_path: remote_path.to_string(),
-            size: remote_size,
-            version: version.clone(),
-        };
-        let (partial_path, start_at) = transfer_file::prepare(
-            local_path,
-            resume,
-            source,
-            crate::local_fs::provenance::Origin::for_url(&self.base_url, remote_path),
-        )
-        .await?;
-        transfer_file::validate_resume_offset(start_at, remote_size)?;
-        if transfer_file::commit_if_complete(&partial_path, local_path, start_at, remote_size)
-            .await?
-        {
-            progress(ProgressInfo::Done);
-            return Ok(());
-        }
-
-        let result: BackendResult<()> = async {
-            let range_note = if start_at > 0 {
-                format!(" (Range: bytes={start_at}-)")
-            } else {
-                String::new()
-            };
-            self.log_kind(format!("GET {remote_path}{range_note}"), LogKind::Command);
-            let mut req = self.request(Method::GET, remote_path)?;
-            if start_at > 0 {
-                req = req.header("Range", format!("bytes={start_at}-"));
-                if let Some(version) = &version {
-                    req = req.header(reqwest::header::IF_RANGE, version);
-                }
-            }
-            let res = req.send().await.context("GET request failed")?;
-            resumed_response_start(res.status(), start_at)?;
-            if !res.status().is_success() {
-                return Err(response::status_error(res.status().as_u16(), "GET"));
-            }
-            let range_end = if res.status() == StatusCode::PARTIAL_CONTENT {
-                Some(validate_content_range(
-                    res.headers()
-                        .get(reqwest::header::CONTENT_RANGE)
-                        .and_then(|v| v.to_str().ok()),
-                    start_at,
-                    remote_size,
-                )?)
-            } else {
-                None
-            };
-            let effective_start =
-                if resumed_response_start(res.status(), start_at)? == 0 && start_at > 0 {
-                    self.log_key(
-                        "davResumeUnsupportedServer",
-                        serde_json::json!({ "expected": 206, "status": res.status().as_u16() }),
-                        LogKind::Status,
-                    );
-                    0
-                } else {
-                    start_at
-                };
-
-            let mut file = tokio::fs::File::from_std(super::transfer_file::open_artifact(
-                &partial_path,
-                false,
-            )?);
-            if effective_start == 0 {
-                file.set_len(0).await?;
-            }
-            if effective_start > 0 {
-                file.seek(std::io::SeekFrom::Start(effective_start))
-                    .await
-                    .context("seeking local file")?;
-            }
-
-            let body_end = res
-                .content_length()
-                .and_then(|length| effective_start.checked_add(length));
-            if let (Some(body), Some(range)) = (body_end, range_end) {
-                transfer_file::validate_length(body, Some(range))?;
-            }
-            let expected_length = range_end.or(body_end).or(remote_size);
-            if let (Some(expected), Some(advertised)) = (expected_length, remote_size) {
-                transfer_file::validate_length(expected, Some(advertised))?;
-            }
-            let mut transferred = effective_start;
-            let mut res = res;
-            while let Some(chunk) = res.chunk().await.context("reading from server")? {
-                transfer_file::validate_resume_offset(
-                    transferred
-                        .checked_add(chunk.len() as u64)
-                        .context("WebDAV size overflow")?,
-                    expected_length,
-                )?;
-                file.write_all(&chunk).await.context("writing local file")?;
-                crate::transfer::rate_limiter::acquire_paced(chunk.len() as u64, |slice| {
-                    transferred += slice;
-                    progress(ProgressInfo::Progress {
-                        bytes: transferred,
-                        total: remote_size.unwrap_or(0),
-                    });
-                })
-                .await;
-            }
-            file.flush().await.context("flushing local file")?;
-            transfer_file::validate_length(transferred, expected_length)?;
-            drop(file);
-            transfer_file::commit(&partial_path, local_path).await?;
-            Ok(())
-        }
-        .await;
-
-        match &result {
-            Ok(()) => progress(ProgressInfo::Done),
-            Err(err) => {
-                progress(ProgressInfo::failed(err));
-                transfer_file::remove_empty_new_partial(&partial_path, start_at).await;
-            }
-        }
+        let result = self
+            .download_file(remote_path, local_path, resume, &progress)
+            .await;
+        transfer_file::report_outcome(&result, &progress);
         result
     }
 

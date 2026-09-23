@@ -232,6 +232,118 @@ pub async fn prepare(
     Ok((path, 0))
 }
 
+/// A download's hold on its local destination, from before the server is
+/// asked anything until the file is committed: the destination and resume
+/// record stay reserved and local mutations (moves, deletes of the folder)
+/// stay out for as long as this lives. Every backend's `download` goes
+/// through it, so their local side cannot drift apart:
+///
+/// 1. [`DownloadTarget::reserve`] before reading remote metadata;
+/// 2. [`DownloadTarget::prepare`] with the backend's own [`SourceIdentity`]
+///    (FTP MDTM, SFTP attributes, WebDAV ETag; `None` when the server gives
+///    none, never a made-up value);
+/// 3. the backend's transport writes through [`LocalDownload::open_at`];
+/// 4. [`LocalDownload::finish`] checks the length and commits;
+/// 5. [`report_outcome`] sends the one terminal progress event.
+pub struct DownloadTarget {
+    destination: PathBuf,
+    _mutation: tokio::sync::RwLockReadGuard<'static, ()>,
+    _lease: DownloadReservation,
+}
+
+impl DownloadTarget {
+    pub async fn reserve(destination: &Path) -> Result<Self> {
+        let lease = reserve(destination)?;
+        let mutation = crate::local_fs::mutations::guard().read().await;
+        crate::local_fs::mutations::validate_download_name(destination)?;
+        crate::local_fs::filesystem_safety::validate_write_destination(destination).await?;
+        Ok(Self {
+            destination: destination.to_path_buf(),
+            _mutation: mutation,
+            _lease: lease,
+        })
+    }
+
+    /// Picks the artifact to write: the matching partial to resume, or a new
+    /// one. `None` means a partial already held the whole file and has been
+    /// committed, with nothing left to transfer.
+    pub async fn prepare(
+        self,
+        resume: bool,
+        source: SourceIdentity,
+        origin: crate::local_fs::provenance::Origin,
+    ) -> Result<Option<LocalDownload>> {
+        let expected = source.size;
+        let (partial, start) = prepare(&self.destination, resume, source, origin).await?;
+        validate_resume_offset(start, expected)?;
+        if commit_if_complete(&partial, &self.destination, start, expected).await? {
+            return Ok(None);
+        }
+        Ok(Some(LocalDownload {
+            target: self,
+            partial,
+            start,
+        }))
+    }
+}
+
+/// The artifact a download writes, still held by its [`DownloadTarget`].
+pub struct LocalDownload {
+    target: DownloadTarget,
+    partial: PathBuf,
+    start: u64,
+}
+
+impl LocalDownload {
+    /// Bytes already in the artifact, where the transfer resumes.
+    pub fn start(&self) -> u64 {
+        self.start
+    }
+
+    /// The artifact opened for writing at `offset`: the resume point, or 0
+    /// when the server sends the whole file again, which drops what was there.
+    pub async fn open_at(&self, offset: u64) -> Result<tokio::fs::File> {
+        use tokio::io::AsyncSeekExt;
+        let mut file = tokio::fs::File::from_std(open_artifact(&self.partial, false)?);
+        if offset == 0 {
+            file.set_len(0).await?;
+        } else {
+            file.seek(std::io::SeekFrom::Start(offset))
+                .await
+                .context("seeking local file")?;
+        }
+        Ok(file)
+    }
+
+    /// Ends the local side of the transfer. `written` is the transport's
+    /// outcome: the total length of the artifact, flushed. On success the
+    /// length is checked against `expected` and the artifact committed; on
+    /// any failure, commit included, a partial this attempt created empty is
+    /// removed and a resumable one is kept.
+    pub async fn finish(self, written: Result<u64>, expected: Option<u64>) -> Result<()> {
+        let result = match written {
+            Ok(length) => match validate_length(length, expected) {
+                Ok(()) => commit(&self.partial, &self.target.destination).await,
+                Err(error) => Err(error),
+            },
+            Err(error) => Err(error),
+        };
+        if result.is_err() {
+            remove_empty_new_partial(&self.partial, self.start).await;
+        }
+        result
+    }
+}
+
+/// The terminal progress event for a finished download, whatever step it
+/// ended at, so the queue row always agrees with the returned result.
+pub fn report_outcome(result: &Result<()>, progress: &super::ProgressSink) {
+    match result {
+        Ok(()) => progress(super::ProgressInfo::Done),
+        Err(error) => progress(super::ProgressInfo::failed(error)),
+    }
+}
+
 pub fn validate_resume_offset(start: u64, expected: Option<u64>) -> Result<()> {
     if let Some(size) = expected
         && start > size
@@ -364,6 +476,155 @@ mod tests {
     /// artifact lifecycle, not about which zone it came from.
     fn test_origin() -> crate::local_fs::provenance::Origin {
         crate::local_fs::provenance::Origin::for_url("sftp://files.example.com", "/file")
+    }
+
+    fn identity(size: Option<u64>, version: Option<&str>) -> SourceIdentity {
+        SourceIdentity {
+            endpoint: "server".into(),
+            remote_path: "/file".into(),
+            size,
+            version: version.map(str::to_owned),
+        }
+    }
+
+    /// A fresh directory and the destination a download writes in it.
+    fn scratch() -> (PathBuf, PathBuf) {
+        let root = std::env::temp_dir().join(format!("ftpeach-life-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let destination = root.join("file.bin");
+        (root, destination)
+    }
+
+    async fn start(
+        destination: &Path,
+        resume: bool,
+        source: SourceIdentity,
+    ) -> Result<Option<LocalDownload>> {
+        DownloadTarget::reserve(destination)
+            .await?
+            .prepare(resume, source, test_origin())
+            .await
+    }
+
+    /// A download that has something left to transfer.
+    async fn begin(destination: &Path, resume: bool, source: SourceIdentity) -> LocalDownload {
+        start(destination, resume, source)
+            .await
+            .unwrap()
+            .expect("a partial that is not complete yet")
+    }
+
+    /// Writes `bytes` the way a transport does and reports the total length.
+    async fn write(download: &LocalDownload, offset: u64, bytes: &[u8]) -> Result<u64> {
+        use tokio::io::AsyncWriteExt;
+        let mut file = download.open_at(offset).await?;
+        file.write_all(bytes).await?;
+        file.flush().await?;
+        Ok(offset + bytes.len() as u64)
+    }
+
+    async fn cancel(download: LocalDownload) {
+        let result = download
+            .finish(Err(anyhow::anyhow!("cancelled")), None)
+            .await;
+        assert!(result.is_err());
+    }
+
+    /// Finishes without consent to replace an existing destination.
+    async fn finish(
+        download: LocalDownload,
+        written: Result<u64>,
+        expected: Option<u64>,
+    ) -> Result<()> {
+        crate::protocol::ALLOW_OVERWRITE
+            .scope(false, download.finish(written, expected))
+            .await
+    }
+
+    #[tokio::test]
+    async fn a_download_lifecycle_writes_resumes_and_commits_once() {
+        let (root, destination) = scratch();
+        let source = identity(Some(8), Some("v1"));
+
+        // Fresh, then cancelled halfway: the partial stays for a resume.
+        let download = begin(&destination, true, source.clone()).await;
+        assert_eq!(download.start(), 0);
+        write(&download, 0, b"half").await.unwrap();
+        cancel(download).await;
+        assert!(!destination.exists());
+        assert_eq!(resumable_len(&destination), Some(4));
+
+        // Resumed from the same source, and committed.
+        let download = begin(&destination, true, source).await;
+        assert_eq!(download.start(), 4);
+        let written = write(&download, 4, b"done").await;
+        finish(download, written, Some(8)).await.unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), b"halfdone");
+        assert_eq!(resumable_len(&destination), None);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_complete_partial_commits_without_a_transfer() {
+        let (root, destination) = scratch();
+        let source = identity(Some(8), Some("v1"));
+        let download = begin(&destination, true, source.clone()).await;
+        write(&download, 0, b"complete").await.unwrap();
+        // Cancelled after the last byte, before the commit.
+        cancel(download).await;
+        let next = crate::protocol::ALLOW_OVERWRITE
+            .scope(false, start(&destination, true, source))
+            .await
+            .unwrap();
+        assert!(next.is_none());
+        assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero() {
+        let (root, destination) = scratch();
+        let download = begin(&destination, true, identity(Some(8), Some("v1"))).await;
+        write(&download, 0, b"half").await.unwrap();
+        cancel(download).await;
+        for changed in [identity(None, Some("v1")), identity(Some(8), Some("v2"))] {
+            let download = begin(&destination, true, changed).await;
+            assert_eq!(download.start(), 0);
+            cancel(download).await;
+        }
+        // Unknown size: whatever arrives is the file, an empty one included.
+        let download = begin(&destination, false, identity(None, None)).await;
+        let written = write(&download, 0, b"").await;
+        finish(download, written, None).await.unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), b"");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_short_download_or_a_refused_commit_keeps_the_old_file() {
+        let (root, destination) = scratch();
+        std::fs::write(&destination, b"old").unwrap();
+        for (bytes, what) in [(&b"short"[..], "short"), (&b"complete"[..], "no consent")] {
+            let download = begin(&destination, false, identity(Some(8), None)).await;
+            let written = write(&download, 0, bytes).await;
+            assert!(finish(download, written, Some(8)).await.is_err(), "{what}");
+            assert_eq!(std::fs::read(&destination).unwrap(), b"old", "{what}");
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn the_destination_stays_reserved_and_mutations_wait_until_the_commit() {
+        let (root, destination) = scratch();
+        let download = begin(&destination, false, identity(Some(4), None)).await;
+        // A second download of the same target is refused as busy.
+        assert!(DownloadTarget::reserve(&destination).await.is_err());
+        // A local move or delete cannot run while the artifact is open.
+        assert!(crate::local_fs::mutations::guard().try_write().is_err());
+        let written = write(&download, 0, b"data").await;
+        finish(download, written, Some(4)).await.unwrap();
+        assert!(DownloadTarget::reserve(&destination).await.is_ok());
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[tokio::test]

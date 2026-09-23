@@ -27,8 +27,8 @@ Baseline of 24 September 2026:
 | --- | ---: | ---: | ---: | ---: | ---: |
 | frontend-ts | 209 | 31,750 | 9 | 87 | 0.27% |
 | css | 23 | 4,667 | 1 | 6 | 0.13% |
-| rust-production | 119 | 27,090 | 45 | 481 | 1.78% |
-| rust-tests | 87 | 20,239 | 95 | 888 | 4.39% |
+| rust-production | 119 | 27,131 | 43 | 447 | 1.65% |
+| rust-tests | 87 | 20,369 | 95 | 888 | 4.36% |
 
 ## Findings and decisions
 
@@ -37,7 +37,8 @@ the hotfix plan.
 
 | Where | Lines | Decision |
 | --- | ---: | --- |
-| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, upload/download completion (D-01) | 220 | **Remove**: one local download-artifact lifecycle in `protocol/transfer_file.rs` (HF-26) |
+| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, download preparation and completion (D-01) | 34 | **Removed** (HF-26): `DownloadTarget` and `LocalDownload` in `protocol/transfer_file.rs` |
+| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, upload completion, connect, listing, create-file | 184 | **Defer**: upload completion can follow the download lifecycle once its no-replace guarantees are settled; connect and listing differ in each protocol's handshake and reply parsing |
 | `commands/fs.rs` with itself, mkdir/create-file reservation and checks (D-02) | 61 | **Remove**: the operations move to `local_fs` (HF-27) |
 | `protocol/ftp.rs` with itself: `upload`/`upload_from_reader`, `download`/`download_to_writer`, rustls `verify_tls12/13_signature` | 63 | **Keep**: file and stream transfer loops differ in their source and resume handling, and rustls requires both verifier methods |
 | `commands/session/browse.rs`, validate-and-reserve prologue of mkdir/create/delete | 24 | **Keep**: three lines of prologue per command; the reservation guard has to live in each command's own scope |

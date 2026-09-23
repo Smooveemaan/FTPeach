@@ -426,6 +426,61 @@ impl SftpBackend {
         self.logger.event(key, params, kind);
     }
 
+    async fn download_file(
+        &self,
+        remote_path: &str,
+        local_path: &Path,
+        resume: bool,
+        progress: &ProgressSink,
+    ) -> BackendResult<()> {
+        let target = super::transfer_file::DownloadTarget::reserve(local_path).await?;
+        let raw = self.sftp()?;
+        let attrs = raw
+            .stat(remote_path.to_string())
+            .await
+            .ok()
+            .map(|a| a.attrs);
+        let remote_size = attrs.as_ref().and_then(|a| a.size);
+        let version = attrs
+            .as_ref()
+            .and_then(|a| a.mtime)
+            .map(|mtime| mtime.to_string());
+        let source = super::transfer_file::SourceIdentity {
+            endpoint: self.endpoint.clone(),
+            remote_path: remote_path.to_string(),
+            size: remote_size,
+            version,
+        };
+        let origin = crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path);
+        let Some(download) = target.prepare(resume, source, origin).await? else {
+            return Ok(());
+        };
+
+        let start_at = download.start();
+        let written: BackendResult<u64> = async {
+            let mut file = download.open_at(start_at).await?;
+            let handle = raw
+                .open(
+                    remote_path.to_string(),
+                    OpenFlags::READ,
+                    FileAttributes::empty(),
+                )
+                .await
+                .context("opening remote file")?
+                .handle;
+
+            let read_result =
+                read_pipelined(&raw, &handle, &mut file, start_at, remote_size, progress).await;
+            let closed = raw.close(handle.as_str()).await;
+            let offset = read_result?;
+            closed.context("closing remote file after download")?;
+            file.flush().await.context("flushing local file")?;
+            Ok(offset)
+        }
+        .await;
+        download.finish(written, remote_size).await
+    }
+
     fn sftp(&self) -> BackendResult<Arc<RawSftpSession>> {
         self.sftp.read().unwrap().clone().ok_or_else(|| {
             super::fail(
@@ -1084,94 +1139,10 @@ impl ProtocolBackend for SftpBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let _lease = super::transfer_file::reserve(local_path)?;
-        let _mutation = crate::local_fs::mutations::guard().read().await;
-        crate::local_fs::mutations::validate_download_name(local_path)?;
-        crate::local_fs::filesystem_safety::validate_write_destination(local_path).await?;
-        let raw = match self.sftp() {
-            Ok(raw) => raw,
-            Err(err) => {
-                progress(ProgressInfo::failed(&err));
-                return Err(err);
-            }
-        };
-        let attrs = raw
-            .stat(remote_path.to_string())
-            .await
-            .ok()
-            .map(|a| a.attrs);
-        let remote_size = attrs.as_ref().and_then(|a| a.size);
-        let version = attrs
-            .as_ref()
-            .and_then(|a| a.mtime)
-            .map(|mtime| mtime.to_string());
-        let source = super::transfer_file::SourceIdentity {
-            endpoint: self.endpoint.clone(),
-            remote_path: remote_path.to_string(),
-            size: remote_size,
-            version,
-        };
-        let (partial_path, start_at) = super::transfer_file::prepare(
-            local_path,
-            resume,
-            source,
-            crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path),
-        )
-        .await?;
-        super::transfer_file::validate_resume_offset(start_at, remote_size)?;
-        if super::transfer_file::commit_if_complete(
-            &partial_path,
-            local_path,
-            start_at,
-            remote_size,
-        )
-        .await?
-        {
-            progress(ProgressInfo::Done);
-            return Ok(());
-        }
-
-        let result: BackendResult<()> = async {
-            let mut file = tokio::fs::File::from_std(super::transfer_file::open_artifact(
-                &partial_path,
-                false,
-            )?);
-
-            if start_at > 0 {
-                file.seek(std::io::SeekFrom::Start(start_at))
-                    .await
-                    .context("seeking local file")?;
-            }
-            let handle = raw
-                .open(
-                    remote_path.to_string(),
-                    OpenFlags::READ,
-                    FileAttributes::empty(),
-                )
-                .await
-                .context("opening remote file")?
-                .handle;
-
-            let read_result =
-                read_pipelined(&raw, &handle, &mut file, start_at, remote_size, &progress).await;
-            let closed = raw.close(handle.as_str()).await;
-            let offset = read_result?;
-            closed.context("closing remote file after download")?;
-            file.flush().await.context("flushing local file")?;
-            super::transfer_file::validate_length(offset, remote_size)?;
-            drop(file);
-            super::transfer_file::commit(&partial_path, local_path).await?;
-            Ok(())
-        }
-        .await;
-
-        match &result {
-            Ok(()) => progress(ProgressInfo::Done),
-            Err(err) => {
-                progress(ProgressInfo::failed(err));
-                super::transfer_file::remove_empty_new_partial(&partial_path, start_at).await;
-            }
-        }
+        let result = self
+            .download_file(remote_path, local_path, resume, &progress)
+            .await;
+        super::transfer_file::report_outcome(&result, &progress);
         result
     }
 

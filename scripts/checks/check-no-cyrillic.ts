@@ -1,22 +1,23 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const ignoredDirectories = new Set([
-  '.git',
-  '.local',
-  '.tools',
-  'node_modules',
-  'dist',
-  'target',
-  // Generated browser reports can contain localized UI text.
-  'test-results',
-  'playwright-report',
-  // Third-party sources FTPeach only patches; their text is not ours.
-  'vendor',
-]);
+// The rule is about what the repository publishes, so the files come from git:
+// tracked ones plus new ones not yet added, minus whatever .gitignore excludes.
+// Walking the disk instead made every ignored local output (build reports,
+// graphify, assistant notes) a failure unless it was listed here by hand.
+const files = execFileSync(
+  'git',
+  ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+  { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+)
+  .split('\0')
+  .filter(Boolean);
+// Third-party sources FTPeach only patches; their text is not ours.
+const ignoredDirectories = new Set(['vendor']);
 const allowed = new Set([
   path.normalize('src/i18n/index.ts'),
   path.normalize('src/i18n/locales/ru.json'),
@@ -24,34 +25,34 @@ const allowed = new Set([
 ]);
 const violations: string[] = [];
 
-async function scan(directory: string): Promise<void> {
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (entry.isDirectory() && ignoredDirectories.has(entry.name)) continue;
-    const absolute = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      await scan(absolute);
-      continue;
-    }
-
-    const relative = path.normalize(path.relative(root, absolute));
-    if (allowed.has(relative)) continue;
-    const content = await readFile(absolute);
-    if (content.includes(0)) continue;
-    const text = content.toString('utf8');
-    if (!/\p{Script=Cyrillic}/u.test(text)) continue;
-    const lines = text.split(/\r?\n/);
-    for (const [index, line] of lines.entries()) {
-      if (/\p{Script=Cyrillic}/u.test(line)) {
-        violations.push(`${relative}:${index + 1}`);
-      }
+for (const file of files) {
+  const relative = path.normalize(file);
+  if (allowed.has(relative)) continue;
+  if (file.split('/').some((segment) => ignoredDirectories.has(segment))) continue;
+  let content: Buffer;
+  try {
+    content = await readFile(path.join(root, file));
+  } catch (error) {
+    // A tracked file deleted in the working tree has nothing left to check.
+    if ((error as { code?: string }).code === 'ENOENT') continue;
+    throw error;
+  }
+  if (content.includes(0)) continue;
+  const text = content.toString('utf8');
+  if (!/\p{Script=Cyrillic}/u.test(text)) continue;
+  const lines = text.split(/\r?\n/);
+  for (const [index, line] of lines.entries()) {
+    if (/\p{Script=Cyrillic}/u.test(line)) {
+      violations.push(`${relative}:${index + 1}`);
     }
   }
 }
 
-await scan(root);
 assert.equal(
   violations.length,
   0,
   `Cyrillic is allowed only in the Russian and Ukrainian locale files:\n${violations.join('\n')}`,
 );
-console.log('Cyrillic check passed (Russian and Ukrainian locale files excluded)');
+console.log(
+  `Cyrillic check passed on ${files.length} repository file(s) (Russian and Ukrainian locale files excluded)`,
+);

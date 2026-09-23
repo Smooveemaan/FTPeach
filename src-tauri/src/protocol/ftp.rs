@@ -502,6 +502,9 @@ pub struct FtpBackend {
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
     logger: BackendLogger,
     endpoint: String,
+    /// Scheme and host, for the Mark of the Web a download carries. Never
+    /// the account: the mark is a file attribute any program can read.
+    origin_base: String,
 }
 
 impl Drop for FtpBackend {
@@ -524,6 +527,7 @@ impl Default for FtpBackend {
             keep_alive_handle: None,
             logger: BackendLogger::default(),
             endpoint: String::new(),
+            origin_base: String::new(),
         }
     }
 }
@@ -1138,6 +1142,11 @@ impl ProtocolBackend for FtpBackend {
         let user = config.user.clone();
         let password = config.password.clone();
         let secure = config.secure;
+        self.origin_base = format!(
+            "{}://{}",
+            if secure { "ftps" } else { "ftp" },
+            host.to_lowercase()
+        );
         let allow_invalid_cert = config.allow_invalid_cert;
         let ca_cert_path = config.ca_cert_path.clone();
         let proxy = config.common.proxy.clone();
@@ -1692,8 +1701,13 @@ impl ProtocolBackend for FtpBackend {
             size: remote_size,
             version,
         };
-        let (partial_path, start_at) =
-            super::transfer_file::prepare(local_path, resume, source).await?;
+        let (partial_path, start_at) = super::transfer_file::prepare(
+            local_path,
+            resume,
+            source,
+            crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path),
+        )
+        .await?;
         super::transfer_file::validate_resume_offset(start_at, remote_size)?;
         if super::transfer_file::commit_if_complete(
             &partial_path,

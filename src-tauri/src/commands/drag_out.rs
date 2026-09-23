@@ -57,13 +57,18 @@ pub async fn drag_out_start(
 
     #[cfg(windows)]
     {
+        // The address without the account, so a drop target can mark what
+        // it writes as having come from this server.
+        let origin_base = sessions.origin_base_for(&connection_id).await;
         let reporter = crate::native_drag::windows::TransferReporter::new(
             app,
             progress.inner().clone(),
             connection_id,
             protocol,
         );
-        match crate::native_drag::windows::start_drag(window, reporter, pool, files).await {
+        match crate::native_drag::windows::start_drag(window, reporter, pool, files, origin_base)
+            .await
+        {
             Ok(()) => Ok(DragOutStartResult::Ok { ok: true }),
             Err(err) => Ok(DragOutStartResult::Err {
                 ok: false,

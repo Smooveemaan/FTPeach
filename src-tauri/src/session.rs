@@ -10,6 +10,9 @@ pub struct Session {
     /// The server this session is connected to, as
     /// [`crate::protocol::config::ConnectionConfig::server`] names it.
     pub server: String,
+    /// The same server as an address without the account, which is what a
+    /// downloaded file's Mark of the Web may record.
+    pub origin_base: String,
     pub transfer_pool: TransferPool,
     pub browse_timeout_ms: u64,
 }
@@ -130,6 +133,18 @@ impl Sessions {
         let slot = self.lookup_slot(connection_id);
         let guard = slot.lock().await;
         guard.as_ref().map(|session| session.transfer_pool.clone())
+    }
+
+    /// The address a live session downloads from, without its account.
+    /// Empty when there is no session, which marks nothing rather than
+    /// guessing an origin.
+    pub async fn origin_base_for(&self, connection_id: &str) -> String {
+        let slot = self.lookup_slot(connection_id);
+        let guard = slot.lock().await;
+        guard
+            .as_ref()
+            .map(|session| session.origin_base.clone())
+            .unwrap_or_default()
     }
 
     /// The server a live session is connected to. With no session there is

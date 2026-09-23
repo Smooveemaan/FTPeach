@@ -25,6 +25,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+- Downloaded files are now marked as having come from a server, the same way a browser
+  marks a download. Windows SmartScreen, Office Protected View and script hosts read that
+  mark, so a document from the internet opens in Protected View and a downloaded program
+  is checked before it runs. The mark records the address without your user name or
+  password, survives the file being renamed or a download being resumed, and needs NTFS.
+  A server on your local network is marked as the intranet instead.
 - A network path such as \\server\share is now refused before FTPeach touches it, unless
   you picked it in a file dialog first. Opening, listing, renaming, copying or reading a
   key or certificate from a share you have not chosen no longer reaches the server at all.

@@ -106,6 +106,16 @@ fn utf16_name(name: &str) -> [u16; 260] {
     buf
 }
 
+/// A fixed global block holding `bytes`, for a clipboard format whose
+/// payload is just that.
+fn build_bytes_hglobal(bytes: &[u8]) -> windows::core::Result<HGLOBAL> {
+    let handle = unsafe { GlobalAlloc(GMEM_FIXED, bytes.len())? };
+    // SAFETY: GMEM_FIXED means the handle is the pointer, and the block was
+    // allocated with exactly this length.
+    unsafe { std::ptr::copy_nonoverlapping(bytes.as_ptr(), handle.0 as *mut u8, bytes.len()) };
+    Ok(handle)
+}
+
 /// Builds the `CFSTR_FILEDESCRIPTORW` payload: a `FILEGROUPDESCRIPTORW`
 /// (`cItems` + a packed `FILEDESCRIPTORW[]`) in a `GMEM_FIXED` block, the
 /// same construction style `tauri-plugin-drag`'s vendored `drag` crate used
@@ -597,6 +607,13 @@ struct VirtualDataObject {
     pool: TransferPool,
     cf_descriptor: u16,
     cf_contents: u16,
+    /// `CFSTR_ZONEIDENTIFIER`. A drop target writes the file, so only it can
+    /// mark it; offering this format is how the shell is told what mark to
+    /// write. A target that ignores the format writes an unmarked file, and
+    /// nothing here can change that.
+    cf_zone: u16,
+    /// The mark that format hands over.
+    zone: String,
     reporter: TransferReporter,
     async_mode: AtomicBool,
     in_operation: AtomicBool,
@@ -740,6 +757,15 @@ impl IDataObject_Impl for VirtualDataObject_Impl {
                 pUnkForRelease: ManuallyDrop::new(None),
             });
         }
+        if fmt.cfFormat == self.cf_zone {
+            return Ok(STGMEDIUM {
+                tymed: TYMED_HGLOBAL.0 as u32,
+                u: STGMEDIUM_0 {
+                    hGlobal: build_bytes_hglobal(self.zone.as_bytes())?,
+                },
+                pUnkForRelease: ManuallyDrop::new(None),
+            });
+        }
         if let Some(index) = self.contents_index(fmt) {
             let stream = self.open_stream(&self.expanded_files()?[index]);
             return Ok(STGMEDIUM {
@@ -763,7 +789,10 @@ impl IDataObject_Impl for VirtualDataObject_Impl {
 
     fn QueryGetData(&self, pformatetc: *const FORMATETC) -> HRESULT {
         let fmt = unsafe { &*pformatetc };
-        if fmt.cfFormat == self.cf_descriptor || self.offers_contents(fmt) {
+        if fmt.cfFormat == self.cf_zone
+            || fmt.cfFormat == self.cf_descriptor
+            || self.offers_contents(fmt)
+        {
             S_OK
         } else {
             DV_E_FORMATETC
@@ -814,6 +843,13 @@ impl IDataObject_Impl for VirtualDataObject_Impl {
                 dwAspect: DVASPECT_CONTENT.0,
                 lindex: -1,
                 tymed: TYMED_ISTREAM.0 as u32,
+            },
+            FORMATETC {
+                cfFormat: self.cf_zone,
+                ptd: std::ptr::null_mut(),
+                dwAspect: DVASPECT_CONTENT.0,
+                lindex: -1,
+                tymed: TYMED_HGLOBAL.0 as u32,
             },
         ];
         unsafe { SHCreateStdEnumFmtEtc(&formats) }
@@ -902,6 +938,7 @@ pub async fn start_drag(
     reporter: TransferReporter,
     pool: TransferPool,
     files: Vec<DragOutFile>,
+    origin_base: String,
 ) -> anyhow::Result<()> {
     let (marshal_tx, marshal_rx) = mpsc::channel::<anyhow::Result<RawInterface>>();
     let (keep_tx, keep_rx) = mpsc::channel::<()>();
@@ -917,6 +954,14 @@ pub async fn start_drag(
                 let cf_descriptor =
                     unsafe { RegisterClipboardFormatW(CFSTR_FILEDESCRIPTORW) } as u16;
                 let cf_contents = unsafe { RegisterClipboardFormatW(CFSTR_FILECONTENTS) } as u16;
+                let cf_zone =
+                    unsafe { RegisterClipboardFormatW(windows::core::w!("ZoneIdentifier")) } as u16;
+                // The drop target writes the file, so only it can mark
+                // one; this is what the shell reads to know what to write.
+                // A target that ignores the format writes no mark, and
+                // nothing on this side can change that.
+                let zone = crate::local_fs::provenance::Origin::for_url(&origin_base, "")
+                    .zone_identifier();
                 let data_object: IDataObject = VirtualDataObject {
                     files,
                     folder_transfers: OnceLock::new(),
@@ -925,6 +970,8 @@ pub async fn start_drag(
                     pool,
                     cf_descriptor,
                     cf_contents,
+                    cf_zone,
+                    zone,
                     reporter,
                     async_mode: AtomicBool::new(true),
                     in_operation: AtomicBool::new(false),

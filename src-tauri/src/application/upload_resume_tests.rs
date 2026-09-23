@@ -155,6 +155,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
             remote: remote.clone(),
         }),
         server: connection_id.clone(),
+        origin_base: String::new(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,
     });

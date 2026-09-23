@@ -225,6 +225,7 @@ async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_o
         *sessions.slot_for("test").lock().await = Some(crate::session::Session {
             browse_client: backend(&remote),
             server: "test".into(),
+            origin_base: String::new(),
             transfer_pool: pool.clone(),
             browse_timeout_ms: 1000,
         });

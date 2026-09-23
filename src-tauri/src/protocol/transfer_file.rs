@@ -170,6 +170,7 @@ pub async fn prepare(
     destination: &Path,
     resume: bool,
     source: SourceIdentity,
+    origin: crate::local_fs::provenance::Origin,
 ) -> Result<(PathBuf, u64)> {
     let metadata = sidecar(destination);
     let existing = match open_artifact(&metadata, false) {
@@ -199,6 +200,10 @@ pub async fn prepare(
         if let Ok(file) = open_artifact(&path, false) {
             let start = file.metadata()?.len();
             if source.size.is_some_and(|size| start <= size) {
+                // A resumed artifact already carries the mark, but one
+                // written by a version that did not is caught up here
+                // rather than committed without it.
+                crate::local_fs::provenance::mark(&path, &origin);
                 return Ok((path, start));
             }
         }
@@ -206,6 +211,10 @@ pub async fn prepare(
     let artifact = uuid::Uuid::new_v4();
     let path = artifact_path(destination, artifact);
     open_artifact(&path, true)?.sync_all()?;
+    // Marked on the artifact, not on the finished file: committing is a
+    // rename on the same volume, which carries the stream with it, so the
+    // mark cannot be lost between the last byte and the final name.
+    crate::local_fs::provenance::mark(&path, &origin);
     let record = ResumeRecord { source, artifact };
     let temporary = destination.with_file_name(format!(".ftpeach-{}.json", uuid::Uuid::new_v4()));
     {
@@ -351,6 +360,12 @@ pub async fn discard_resume_artifacts(destination: &Path) {
 mod tests {
     use super::*;
 
+    /// The provenance a download carries; these tests are about the
+    /// artifact lifecycle, not about which zone it came from.
+    fn test_origin() -> crate::local_fs::provenance::Origin {
+        crate::local_fs::provenance::Origin::for_url("sftp://files.example.com", "/file")
+    }
+
     #[tokio::test]
     async fn sibling_downloads_in_one_recursive_operation_cannot_share_metadata() {
         crate::local_fs::target_reservation::OWNER
@@ -389,12 +404,16 @@ mod tests {
             version: Some("v1".into()),
         };
         std::fs::write(partial_path(&destination), b"foreign!").unwrap();
-        let (path, start) = prepare(&destination, true, source.clone()).await.unwrap();
+        let (path, start) = prepare(&destination, true, source.clone(), test_origin())
+            .await
+            .unwrap();
         assert_eq!(start, 0);
         assert_ne!(path, partial_path(&destination));
         std::fs::write(&path, b"half").unwrap();
         assert_eq!(
-            prepare(&destination, true, source.clone()).await.unwrap(),
+            prepare(&destination, true, source.clone(), test_origin())
+                .await
+                .unwrap(),
             (path.clone(), 4)
         );
         for changed in [
@@ -411,9 +430,13 @@ mod tests {
                 ..source.clone()
             },
         ] {
-            let (complete, _) = prepare(&destination, false, source.clone()).await.unwrap();
+            let (complete, _) = prepare(&destination, false, source.clone(), test_origin())
+                .await
+                .unwrap();
             std::fs::write(&complete, b"old-data").unwrap();
-            let (fresh, offset) = prepare(&destination, true, changed).await.unwrap();
+            let (fresh, offset) = prepare(&destination, true, changed, test_origin())
+                .await
+                .unwrap();
             assert_eq!(offset, 0);
             assert_ne!(fresh, path);
             assert_ne!(fresh, complete);
@@ -437,11 +460,15 @@ mod tests {
             size: Some(8),
             version: Some("v1".into()),
         };
-        let (partial, _) = prepare(&destination, false, source.clone()).await.unwrap();
+        let (partial, _) = prepare(&destination, false, source.clone(), test_origin())
+            .await
+            .unwrap();
         std::fs::write(&partial, b"keep").unwrap();
         std::fs::hard_link(&partial, root.join("user-file")).unwrap();
         assert!(open_artifact(&partial, false).is_err());
-        let (fresh, offset) = prepare(&destination, true, source).await.unwrap();
+        let (fresh, offset) = prepare(&destination, true, source, test_origin())
+            .await
+            .unwrap();
         assert_eq!(offset, 0);
         assert_ne!(fresh, partial);
         assert_eq!(std::fs::read(root.join("user-file")).unwrap(), b"keep");
@@ -459,7 +486,9 @@ mod tests {
             size: Some(8),
             version: Some("v1".into()),
         };
-        let (partial, _) = prepare(&destination, false, source.clone()).await.unwrap();
+        let (partial, _) = prepare(&destination, false, source.clone(), test_origin())
+            .await
+            .unwrap();
         std::fs::write(&partial, b"complete").unwrap();
         crate::protocol::ALLOW_OVERWRITE
             .scope(true, commit(&partial, &destination))
@@ -468,7 +497,9 @@ mod tests {
         assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
         assert!(!sidecar(&destination).exists());
         // A local copy committing its own temporary leaves a download's record be.
-        let (downloading, _) = prepare(&destination, false, source).await.unwrap();
+        let (downloading, _) = prepare(&destination, false, source, test_origin())
+            .await
+            .unwrap();
         let copied = root.join(".ftpeach-copy.part");
         std::fs::write(&copied, b"replaced").unwrap();
         crate::protocol::ALLOW_OVERWRITE
@@ -492,7 +523,9 @@ mod tests {
             size: Some(8),
             version: Some("v1".into()),
         };
-        let (partial, _) = prepare(&destination, false, source).await.unwrap();
+        let (partial, _) = prepare(&destination, false, source, test_origin())
+            .await
+            .unwrap();
         std::fs::write(&partial, b"half").unwrap();
         discard_resume_artifacts(&destination).await;
         assert!(!partial.exists());

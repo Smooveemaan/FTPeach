@@ -793,7 +793,13 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
             size: Some(size),
             version: Some("v1".into()),
         };
-        let (partial, start) = transfer_file::prepare(local, resume, source).await?;
+        let (partial, start) = transfer_file::prepare(
+            local,
+            resume,
+            source,
+            crate::local_fs::provenance::Origin::for_url("sftp://files.example.com", remote),
+        )
+        .await?;
         self.0
             .starts
             .lock()
@@ -868,6 +874,7 @@ async fn serve(server: &Arc<Server>) -> (Sessions, String) {
     *sessions.slot_for(&connection_id).lock().await = Some(crate::session::Session {
         browse_client: Box::new(FakeBackend(server.clone())),
         server: connection_id.clone(),
+        origin_base: String::new(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,
     });

@@ -965,7 +965,13 @@ impl ProtocolBackend for WebDavBackend {
             size: remote_size,
             version: version.clone(),
         };
-        let (partial_path, start_at) = transfer_file::prepare(local_path, resume, source).await?;
+        let (partial_path, start_at) = transfer_file::prepare(
+            local_path,
+            resume,
+            source,
+            crate::local_fs::provenance::Origin::for_url(&self.base_url, remote_path),
+        )
+        .await?;
         transfer_file::validate_resume_offset(start_at, remote_size)?;
         if transfer_file::commit_if_complete(&partial_path, local_path, start_at, remote_size)
             .await?

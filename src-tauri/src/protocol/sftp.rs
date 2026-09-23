@@ -383,6 +383,9 @@ pub struct SftpBackend {
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
     logger: BackendLogger,
     endpoint: String,
+    /// Scheme and host, for the Mark of the Web a download carries. Never
+    /// the account: the mark is a file attribute any program can read.
+    origin_base: String,
     /// The server offered `posix-rename@openssh.com`, the only rename that
     /// may replace an existing file.
     posix_rename: bool,
@@ -408,6 +411,7 @@ impl SftpBackend {
             keep_alive_handle: None,
             logger: BackendLogger::default(),
             endpoint: String::new(),
+            origin_base: String::new(),
             posix_rename: false,
         }
     }
@@ -621,6 +625,7 @@ impl ProtocolBackend for SftpBackend {
             serde_json::json!(["sftp", config.host.to_lowercase(), config.port, config.user])
                 .to_string();
         let host = config.host.clone();
+        self.origin_base = format!("sftp://{}", host.to_lowercase());
         let port = config.port;
         let user = config.user.clone();
         let password = config.password.clone();
@@ -1106,8 +1111,13 @@ impl ProtocolBackend for SftpBackend {
             size: remote_size,
             version,
         };
-        let (partial_path, start_at) =
-            super::transfer_file::prepare(local_path, resume, source).await?;
+        let (partial_path, start_at) = super::transfer_file::prepare(
+            local_path,
+            resume,
+            source,
+            crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path),
+        )
+        .await?;
         super::transfer_file::validate_resume_offset(start_at, remote_size)?;
         if super::transfer_file::commit_if_complete(
             &partial_path,

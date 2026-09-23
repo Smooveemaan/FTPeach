@@ -257,7 +257,9 @@ export function useFileBrowserPaneModel(
         ? api.fsLocal.executePath(path)
         : api.fsLocal.openDocument(path);
       return operation.then((result) => {
-        if (!result.ok) reportError(commandResultError(result));
+        // Declining the backend's confirmation is not a failure to report: the
+        // user cancelled it themselves and nothing was run.
+        if (!result.ok && result.errorCode !== 'cancelled') reportError(commandResultError(result));
       });
     },
     openRemoteFile: setOpenWithTarget,

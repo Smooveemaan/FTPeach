@@ -2,6 +2,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import type { SupportedLanguage } from '../../../i18n/index.ts';
 import { matchSupportedLanguage } from '../../../i18n/index.ts';
+import { api } from '../../../platform/api/index.ts';
+import { isCancellation } from '../../../platform/ipcContracts.ts';
 import { friendlyError } from '../../../shared/errorMessages.ts';
 import type { SettingsPatch, SettingsValues } from '../useSettings.ts';
 
@@ -244,6 +246,9 @@ export interface SettingsDraftModel extends SettingsDraft, SettingsDraftSetters 
   hasUnsavedChanges: boolean;
   confirmCloseArmed: boolean;
   setConfirmCloseArmed: Dispatch<SetStateAction<boolean>>;
+  /** True while the backend's confirmation window is up. */
+  securityConfirmationPending: boolean;
+  changeShowSecurityConfirmationsValue: (next: boolean) => Promise<void>;
   markUnsavedChanges: () => void;
   handleSave: (vaultBusy: boolean, proxyPasswordPatch?: ProxyPasswordPatch) => Promise<void>;
   discardAndClose: () => void;
@@ -258,6 +263,8 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   const [saveError, setSaveError] = useState<string>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [confirmCloseArmed, setConfirmCloseArmed] = useState(false);
+  const [securityConfirmationPending, setSecurityConfirmationPending] = useState(false);
+  const securityConfirmationPendingRef = useRef(false);
   const isFirstPreviewRef = useRef(true);
   const originalPatchRef = useRef<SettingsPatch>(initialSettings);
   // The draft as it opened, through the same normalization a save applies.
@@ -284,6 +291,40 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   }, [draft]);
 
   const markUnsavedChanges = () => setHasUnsavedChanges(true);
+
+  /**
+   * Turning the security confirmations off is the one settings change the
+   * backend confirms in a window of its own. It is asked for here, the moment
+   * the switch moves, rather than at Save: the user is still looking at the
+   * setting they changed, and the window is written in the language the dialog
+   * is showing, even when that language is itself an unsaved change.
+   *
+   * The grant that comes back waits in the settings API until Save, so nothing
+   * is turned off before the dialog is saved, and declining simply leaves the
+   * switch as it was.
+   */
+  const changeShowSecurityConfirmationsValue = async (next: boolean) => {
+    if (securityConfirmationPendingRef.current) return;
+    if (next) {
+      api.settings.releaseSecurityChange();
+      dispatch({ field: 'showSecurityConfirmationsValue', value: true });
+      return;
+    }
+    securityConfirmationPendingRef.current = true;
+    setSecurityConfirmationPending(true);
+    try {
+      const confirmation = await api.settings.confirmSecurityChange({
+        showSecurityConfirmations: false,
+      });
+      if (confirmation.ok) {
+        dispatch({ field: 'showSecurityConfirmationsValue', value: false });
+      }
+    } finally {
+      securityConfirmationPendingRef.current = false;
+      setSecurityConfirmationPending(false);
+    }
+  };
+
   const handleSave = async (vaultBusy: boolean, proxyPasswordPatch: ProxyPasswordPatch = {}) => {
     if (vaultBusy || savingRef.current) return;
     savingRef.current = true;
@@ -295,10 +336,14 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
         ...proxyPasswordPatch,
       });
       if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
+        if ('errorCode' in result && result.errorCode === 'cancelled') return;
         throw new Error('error' in result ? String(result.error) : 'Settings could not be saved');
       }
       onClose();
     } catch (error) {
+      // The user declined a confirmation. They know they did; the dialog stays
+      // open with the draft untouched and says nothing further about it.
+      if (isCancellation(error)) return;
       // A new proxy password under enhanced protection needs the vault unlocked.
       if (/vault is locked/i.test(error instanceof Error ? error.message : String(error))) {
         onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
@@ -312,6 +357,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   };
   const discardAndClose = () => {
     if (savingRef.current) return;
+    api.settings.releaseSecurityChange();
     onPreview(pick(originalPatchRef.current, previewedRef.current));
     onClose();
   };
@@ -362,6 +408,8 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     hasUnsavedChanges,
     confirmCloseArmed,
     setConfirmCloseArmed,
+    securityConfirmationPending,
+    changeShowSecurityConfirmationsValue,
     markUnsavedChanges,
     handleSave,
     discardAndClose,

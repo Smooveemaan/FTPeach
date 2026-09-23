@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { mock } from 'node:test';
 import {
   inferErrorCode,
   isDragOutTransferStarted,
@@ -178,6 +178,79 @@ test('security settings go through their own confirmed command before the rest',
     calls.map((call) => call.command),
     ['settings_set_security'],
   );
+});
+
+test('a protection relaxed with the user watching is saved on the grant it was confirmed with', async () => {
+  const calls: Array<{ command: string; args?: InvokeArgs | undefined }> = [];
+  const invoke: InvokeFn = async (command, args) => {
+    calls.push({ command, args });
+    return { ok: true } as const;
+  };
+  const authorize = mock.fn(async () => 'granted-token');
+  const settings = createSettingsApi(invoke, authorize);
+
+  assert.deepEqual(await settings.confirmSecurityChange({ showSecurityConfirmations: false }), {
+    ok: true,
+  });
+  assert.deepEqual(authorize.mock.calls[0]?.arguments, [
+    'settings_set_security',
+    '{"showSecurityConfirmations":false}',
+  ]);
+
+  // The confirmed change is applied on its own grant, ahead of the protected
+  // settings that were not confirmed — applying those first withdraws it.
+  await settings.set({
+    theme: 'dark',
+    showSecurityConfirmations: false,
+    vaultAutoLockMinutes: 0,
+  });
+  assert.deepEqual(calls, [
+    {
+      command: 'settings_set_security',
+      args: {
+        patch: { showSecurityConfirmations: false },
+        authorizationToken: 'granted-token',
+      },
+    },
+    { command: 'settings_set_security', args: { patch: { vaultAutoLockMinutes: 0 } } },
+    { command: 'settings_set', args: { patch: { theme: 'dark' } } },
+  ]);
+
+  // The grant is one save only, and a confirmation the user never saved is
+  // forgotten rather than spent on a later change.
+  calls.length = 0;
+  await settings.set({ showSecurityConfirmations: false });
+  assert.deepEqual(calls, [
+    { command: 'settings_set_security', args: { patch: { showSecurityConfirmations: false } } },
+    { command: 'settings_set', args: { patch: {} } },
+  ]);
+
+  calls.length = 0;
+  await settings.confirmSecurityChange({ showSecurityConfirmations: false });
+  settings.releaseSecurityChange();
+  await settings.set({ showSecurityConfirmations: false });
+  assert.deepEqual(calls, [
+    { command: 'settings_set_security', args: { patch: { showSecurityConfirmations: false } } },
+    { command: 'settings_set', args: { patch: {} } },
+  ]);
+});
+
+test('a declined confirmation is reported as a cancellation and grants nothing', async () => {
+  const calls: string[] = [];
+  const invoke: InvokeFn = async (command) => {
+    calls.push(command);
+    return { ok: true } as const;
+  };
+  const settings = createSettingsApi(invoke, async () => {
+    throw { code: 'cancelled', message: 'Operation was cancelled' };
+  });
+
+  const confirmation = await settings.confirmSecurityChange({ showSecurityConfirmations: false });
+  assert.equal(confirmation.ok, false);
+  assert.equal(confirmation.errorCode, 'cancelled');
+
+  await settings.set({ showSecurityConfirmations: false });
+  assert.deepEqual(calls, ['settings_set_security', 'settings_set']);
 });
 
 /**

@@ -376,3 +376,26 @@ fn switching_off_enhanced_protection_is_always_confirmed() {
     assert_eq!(prompt.kind, ConfirmationKind::UseSystemProtection);
     assert!(prompt.requires_reauthentication);
 }
+
+#[test]
+fn the_prompt_follows_the_language_the_main_window_is_showing() {
+    let saved: JsonMap = serde_json::from_value(serde_json::json!({ "language": "ru" })).unwrap();
+    assert_eq!(prompt_locale(Some("de"), &saved), "de");
+    assert_eq!(prompt_locale(Some("pt-BR"), &saved), "pt-BR");
+    // Anything that is not shaped like a language tag falls back to the saved
+    // language, and an empty settings map to English.
+    for requested in [
+        None,
+        Some(""),
+        Some("x"),
+        Some("../../etc"),
+        Some("a".repeat(64).as_str()),
+    ] {
+        assert_eq!(prompt_locale(requested, &saved), "ru", "{requested:?}");
+        assert_eq!(
+            prompt_locale(requested, &JsonMap::new()),
+            "en",
+            "{requested:?}"
+        );
+    }
+}

@@ -127,6 +127,8 @@ describe('SettingsDialog unsaved-changes gate', () => {
         },
         settings: {
           revealProxyPassword: vi.fn(),
+          confirmSecurityChange: vi.fn(async () => ({ ok: true })),
+          releaseSecurityChange: vi.fn(),
         },
       },
     });
@@ -404,16 +406,59 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(onExportDiagnostics).toHaveBeenCalledOnce();
   });
 
-  test('saves the security confirmation preference', async () => {
+  test('confirms turning the security confirmations off at the switch, not at save', async () => {
     const user = userEvent.setup();
     const { props } = renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
     await user.click(screen.getByRole('checkbox', { name: 'settings.security.showConfirmations' }));
-    await user.click(screen.getByRole('button', { name: 'common.save' }));
 
+    expect(window.api.settings.confirmSecurityChange).toHaveBeenCalledWith({
+      showSecurityConfirmations: false,
+    });
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(
       expect.objectContaining({ showSecurityConfirmations: false }),
     );
+  });
+
+  test('a declined confirmation leaves the switch on and says nothing', async () => {
+    const user = userEvent.setup();
+    vi.mocked(window.api.settings.confirmSecurityChange).mockResolvedValue({
+      ok: false,
+      error: 'Operation was cancelled',
+      errorCode: 'cancelled',
+    });
+    const { props } = renderDialog();
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    const toggle = screen.getByRole<HTMLInputElement>('checkbox', {
+      name: 'settings.security.showConfirmations',
+    });
+    await user.click(toggle);
+
+    await waitFor(() => expect(toggle.checked).toBe(true));
+    expect(screen.queryByRole('alert')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.not.objectContaining({ showSecurityConfirmations: expect.anything() }),
+    );
+  });
+
+  test('a save cancelled in the confirmation window reports nothing and keeps the dialog', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn(async () => ({
+      ok: false,
+      error: 'Operation was cancelled',
+      errorCode: 'cancelled' as const,
+    }));
+    const { props } = renderDialog({ onSave });
+
+    await toggleNotifyOnComplete(user);
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
   });
 });

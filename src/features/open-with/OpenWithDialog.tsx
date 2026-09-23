@@ -54,6 +54,12 @@ export default function OpenWithDialog({
           if (res.ok) void api.openWith.stop(id);
           return;
         }
+        // Declining the backend's confirmation closes the dialog without a
+        // word: the user just said no and knows nothing was opened.
+        if (res.errorCode === 'cancelled') {
+          onClose();
+          return;
+        }
         if (!res.ok || !res.localPath) {
           setError(res.error || 'Open-with operation returned no local path.');
           return;

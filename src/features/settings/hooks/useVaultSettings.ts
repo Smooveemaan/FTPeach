@@ -100,7 +100,10 @@ export function useVaultSettings(): VaultSettingsModel {
     setVaultBusy(true);
     try {
       const result = await action();
-      if (!result.ok) setVaultMessage(result.error || t('settings.security.failed'));
+      // Declining the backend's confirmation is not a failure to report back:
+      // the user cancelled it themselves a moment ago.
+      if (!result.ok && result.errorCode !== 'cancelled')
+        setVaultMessage(result.error || t('settings.security.failed'));
       else setVaultMessage('');
       for (const ref of [masterPasswordRef, masterPasswordConfirmRef, oldMasterPasswordRef]) {
         if (ref.current) ref.current.value = '';

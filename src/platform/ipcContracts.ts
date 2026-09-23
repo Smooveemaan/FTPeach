@@ -34,6 +34,26 @@ export interface CommandError {
   message: string;
   details?: string | undefined;
 }
+
+/**
+ * A failed command raised as a rejection, keeping the code alongside the
+ * message. A caller that has to tell one failure from another — a cancelled
+ * confirmation from a store that would not write — cannot do it by matching
+ * the backend's English text.
+ */
+export class CommandFailure extends Error {
+  readonly code: CommandErrorCode;
+  constructor(message: string, code: CommandErrorCode) {
+    super(message);
+    this.name = 'CommandFailure';
+    this.code = code;
+  }
+}
+
+/** Whether a rejection is the user having declined a confirmation. */
+export function isCancellation(error: unknown): boolean {
+  return error instanceof CommandFailure && error.code === 'cancelled';
+}
 export interface CommandResult {
   ok: boolean;
   error?: string | undefined;

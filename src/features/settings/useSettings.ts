@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useReducer } from 'react';
 
 import { api } from '../../platform/api/index.ts';
+import { CommandFailure } from '../../platform/ipcContracts.ts';
 import type { AppSettings, SettingsSetResult } from '../../platform/api/settings.ts';
 import SETTINGS_DEFAULTS from '../../shared/settingsDefaults.ts';
 import { isValidBinding } from '../../shortcuts/bindings.ts';
@@ -439,7 +440,12 @@ export function useSettings({
   const persistSettingsDialogPatch = useCallback(
     (patch: SettingsPatch) =>
       settingsApi.set(patch).then((next) => {
-        if (next.ok === false) throw new Error(String(next.error || 'Settings could not be saved'));
+        if (next.ok === false) {
+          throw new CommandFailure(
+            String(next.error || 'Settings could not be saved'),
+            next.errorCode ?? 'internal',
+          );
+        }
         dispatch({ type: 'patch', patch: { proxyPasswordSet: !!next.proxyPasswordSet } });
       }),
     [settingsApi],

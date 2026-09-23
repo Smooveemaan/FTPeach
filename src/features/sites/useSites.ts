@@ -124,7 +124,10 @@ export function useSites({
     ) => {
       const result = await operation;
       if (!result.ok) {
-        if (!returnResult) reportError(commandResultError(result));
+        // Declining the backend's confirmation is not a failure to report: the
+        // user cancelled it themselves and nothing was saved.
+        if (!returnResult && result.errorCode !== 'cancelled')
+          reportError(commandResultError(result));
         return returnResult ? result : undefined;
       }
       if (secret && result.secretNotPersisted) onSecretNotPersisted();

@@ -1,3 +1,4 @@
+import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import PasswordInput from '../../../components/PasswordInput.tsx';
@@ -10,7 +11,8 @@ interface SecuritySettingsProps {
   vaultAutoLockValue: string;
   setVaultAutoLockValue: (value: string) => void;
   showSecurityConfirmationsValue: boolean;
-  setShowSecurityConfirmationsValue: (value: boolean) => void;
+  changeShowSecurityConfirmationsValue: (value: boolean) => Promise<void>;
+  securityConfirmationPending: boolean;
 }
 
 export default function SecuritySettings({
@@ -18,7 +20,8 @@ export default function SecuritySettings({
   vaultAutoLockValue,
   setVaultAutoLockValue,
   showSecurityConfirmationsValue,
-  setShowSecurityConfirmationsValue,
+  changeShowSecurityConfirmationsValue,
+  securityConfirmationPending,
 }: SecuritySettingsProps) {
   const { t } = useTranslation();
   const {
@@ -321,7 +324,10 @@ export default function SecuritySettings({
           <input
             type="checkbox"
             checked={showSecurityConfirmationsValue}
-            onChange={(event) => setShowSecurityConfirmationsValue(event.target.checked)}
+            disabled={securityConfirmationPending}
+            onChange={handler((event: ChangeEvent<HTMLInputElement>) =>
+              changeShowSecurityConfirmationsValue(event.target.checked),
+            )}
           />
           <span>{t('settings.security.showConfirmations')}</span>
         </label>

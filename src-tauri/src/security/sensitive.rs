@@ -21,6 +21,22 @@ use zeroize::Zeroize;
 
 const TOKEN_TTL: Duration = Duration::from_secs(30);
 
+/// How long a confirmed change to the protected settings stays usable.
+///
+/// The settings dialog asks for this grant the moment the user relaxes a
+/// protection, not when they press Save, so the grant has to outlive the rest
+/// of their visit to the dialog. It stays bound to the same window, the same
+/// patch and the same vault session as any other, and is still one-time.
+const SETTINGS_TOKEN_TTL: Duration = Duration::from_secs(15 * 60);
+
+fn token_ttl(operation: &str) -> Duration {
+    if operation == "settings_set_security" {
+        SETTINGS_TOKEN_TTL
+    } else {
+        TOKEN_TTL
+    }
+}
+
 struct Grant {
     window: String,
     operation: String,
@@ -160,6 +176,7 @@ fn issue_token(
     operation: String,
     target: String,
 ) -> CommandResult<AuthorizationToken> {
+    let ttl = token_ttl(&operation);
     let token = uuid::Uuid::new_v4().to_string();
     let mut grants = state
         .grants
@@ -172,11 +189,38 @@ fn issue_token(
             window: window.label().to_owned(),
             operation,
             target,
-            expires: Instant::now() + TOKEN_TTL,
+            expires: Instant::now() + ttl,
             vault_epoch: state.vault_epoch(),
         },
     );
     Ok(AuthorizationToken { token })
+}
+
+/// The language the confirmation window is written in.
+///
+/// The main window passes the language it is showing right now, which is not
+/// always the saved one: the settings dialog previews a language change long
+/// before it is saved, and a confirmation raised from that dialog has to speak
+/// the language the user is reading. Only the shape of a language tag is
+/// trusted from there; the window itself falls back to English for a tag it
+/// has no translations for.
+fn prompt_locale(requested: Option<&str>, settings: &JsonMap) -> String {
+    let well_formed = |tag: &&str| {
+        (2..=16).contains(&tag.len())
+            && tag
+                .chars()
+                .all(|character| character.is_ascii_alphanumeric() || character == '-')
+    };
+    requested
+        .filter(well_formed)
+        .or_else(|| {
+            settings
+                .get("language")
+                .and_then(Value::as_str)
+                .filter(well_formed)
+        })
+        .unwrap_or("en")
+        .to_owned()
 }
 
 fn confirmation_prompt(
@@ -474,6 +518,9 @@ pub async fn respond_sensitive_confirmation(
 }
 
 #[tauri::command]
+// A Tauri command takes its managed state as parameters, so four of these are
+// injected rather than passed by the caller, which sends only three.
+#[allow(clippy::too_many_arguments)]
 pub async fn authorize_sensitive(
     window: tauri::WebviewWindow,
     state: State<'_, AuthorizationState>,
@@ -482,6 +529,7 @@ pub async fn authorize_sensitive(
     approved_paths: State<'_, ApprovedLocalPaths>,
     operation: String,
     target: String,
+    locale: Option<String>,
 ) -> CommandResult<AuthorizationToken> {
     const ALLOWED: &[&str] = &[
         "sites_reveal_secret",
@@ -508,11 +556,7 @@ pub async fn authorize_sensitive(
         .get("showSecurityConfirmations")
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
-    let locale = settings
-        .get("language")
-        .and_then(|value| value.as_str())
-        .unwrap_or("en")
-        .to_owned();
+    let locale = prompt_locale(locale.as_deref(), &settings);
     let plan = match operation.as_str() {
         "open_with_start" => plan_open_with(&store, &approved_paths, &target, locale).await?,
         "settings_set_security" => {

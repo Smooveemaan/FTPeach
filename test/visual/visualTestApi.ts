@@ -112,6 +112,8 @@ export const visualTestApi = {
   settings: {
     get: () => resolved(settings),
     set: () => resolved(ok),
+    confirmSecurityChange: () => resolved(ok),
+    releaseSecurityChange: () => {},
     revealProxyPassword: () => resolved(null),
   },
   sites: {

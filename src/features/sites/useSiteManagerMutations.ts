@@ -96,7 +96,9 @@ export function useSiteManagerMutations({
             onVaultUnlockRequired(() => void handleSubmit(allowDuplicate));
             return;
           }
-          setError(result?.error || saveFailedMessage);
+          // Declining the backend's confirmation is not a failure to report:
+          // the user cancelled it themselves and nothing was saved.
+          if (result?.errorCode !== 'cancelled') setError(result?.error || saveFailedMessage);
           return;
         }
         setEditingId(null);
@@ -252,7 +254,7 @@ export function useSiteManagerMutations({
       try {
         const result = await onSave(normalizeSiteForm({ ...createSiteForm(site), name }, site.id));
         if (result?.ok === false) {
-          setError(result.error || saveFailedMessage);
+          if (result.errorCode !== 'cancelled') setError(result.error || saveFailedMessage);
           return;
         }
         setRenamingSiteId(null);

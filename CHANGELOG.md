@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   computer and a server, or between two servers, copy them instead.
 - Quitting with edits that have not been uploaded now asks whether to return or keep the
   copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
+- Turning off security confirmations now asks right away, when you clear the setting,
+  rather than when you save. Cancelling leaves the setting on.
+- Security questions are now written in the language you have just picked in settings,
+  even before you save it.
+- Cancelling a security question no longer leaves an error message on screen.
 
 ### Security
 

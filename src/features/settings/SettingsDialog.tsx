@@ -233,7 +233,8 @@ export default function SettingsDialog({
                 vaultAutoLockValue={draft.vaultAutoLockValue}
                 setVaultAutoLockValue={draft.setVaultAutoLockValue}
                 showSecurityConfirmationsValue={draft.showSecurityConfirmationsValue}
-                setShowSecurityConfirmationsValue={draft.setShowSecurityConfirmationsValue}
+                changeShowSecurityConfirmationsValue={draft.changeShowSecurityConfirmationsValue}
+                securityConfirmationPending={draft.securityConfirmationPending}
               />
             )}
           </div>

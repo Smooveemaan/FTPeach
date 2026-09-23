@@ -30,6 +30,8 @@ describe('saved sites refresh', () => {
     const settingsApi: SettingsApi = {
       get: vi.fn(async () => ({ language: 'en' })),
       set: vi.fn(async () => ({})),
+      confirmSecurityChange: vi.fn(async () => ({ ok: true })),
+      releaseSecurityChange: vi.fn(),
       revealProxyPassword: vi.fn(async () => null),
     };
     const { result } = renderHook(() =>

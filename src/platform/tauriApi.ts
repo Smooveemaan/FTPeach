@@ -8,7 +8,7 @@ import { installConsoleForwarding } from './consoleForwarding.ts';
 import { createFilesystemApi } from './api/filesystem.ts';
 import { createProxyApi } from './api/proxy.ts';
 import { createSessionApi } from './api/session.ts';
-import { createSettingsApi } from './api/settings.ts';
+import { createSettingsApi, securityAuthorizationTarget } from './api/settings.ts';
 import { createSitesApi } from './api/sites.ts';
 import { createTabsApi } from './api/tabs.ts';
 import { createTransferApi } from './api/transfers.ts';
@@ -105,6 +105,29 @@ function isOpenWithStartResult(value: unknown): value is OpenWithStartResult {
   return hasCommandOutcome(value) && optionalString(value.localPath);
 }
 
+/**
+ * The language the window is showing right now, which the settings dialog
+ * changes live, long before the change is saved. The backend writes its
+ * confirmation windows in it so they never arrive in the language the user
+ * has just moved away from.
+ */
+function displayLocale(): string {
+  return document.documentElement.lang;
+}
+
+/**
+ * Obtains a grant for a sensitive command. The backend confirms it with the
+ * user in its own window first, and rejects when they decline.
+ */
+async function authorizeSensitive(operation: string, target: string): Promise<string> {
+  const grant = await rawInvoke<{ token: string }>('plugin:sensitive|authorize_sensitive', {
+    operation,
+    target,
+    locale: displayLocale(),
+  });
+  return grant.token;
+}
+
 async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<InvokeResult<T>> {
   try {
     const sensitiveTarget = (() => {
@@ -129,15 +152,8 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         case 'vault_reset':
         case 'vault_use_system_protection':
           return 'vault';
-        case 'settings_set_security': {
-          // A new proxy password is named by whether there is one, never sent here.
-          const patch = isRecord(args?.patch) ? args.patch : {};
-          return JSON.stringify(
-            typeof patch.proxyPassword === 'string'
-              ? { ...patch, proxyPassword: patch.proxyPassword !== '' }
-              : patch,
-          );
-        }
+        case 'settings_set_security':
+          return securityAuthorizationTarget(isRecord(args?.patch) ? args.patch : {});
         case 'sites_save': {
           // The backend compares the recipient with the stored bookmark; the
           // secrets themselves stay out of the authorization request.
@@ -156,15 +172,15 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
       }
     })();
     if (sensitiveTarget !== null) {
-      const authorization = await rawInvoke<{ token: string }>(
-        'plugin:sensitive|authorize_sensitive',
-        { operation: command, target: sensitiveTarget },
-      );
+      // A caller that already holds a grant — the settings dialog confirms a
+      // relaxed protection at the switch, not at Save — hands it over here
+      // instead of having the user confirm the same change a second time.
+      const authorizationToken =
+        typeof args?.authorizationToken === 'string'
+          ? args.authorizationToken
+          : await authorizeSensitive(command, sensitiveTarget);
       return normalizeInvokeResponse(
-        await rawInvoke<T>(`plugin:sensitive|${command}`, {
-          ...args,
-          authorizationToken: authorization.token,
-        }),
+        await rawInvoke<T>(`plugin:sensitive|${command}`, { ...args, authorizationToken }),
       );
     }
     return normalizeInvokeResponse(await rawInvoke<T>(command, args));
@@ -206,7 +222,7 @@ export const tauriApi: Window['api'] = {
   fsLocal: createFilesystemApi(invoke),
   sites: createSitesApi(invoke),
   tabs: createTabsApi(invoke),
-  settings: createSettingsApi(invoke),
+  settings: createSettingsApi(invoke, authorizeSensitive),
   proxy: createProxyApi(invoke),
   updater: createUpdaterApi(invoke, onEvent),
   openWith: {

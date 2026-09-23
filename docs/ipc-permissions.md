@@ -52,9 +52,11 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
 The highest-risk commands (secret reveal, `vault_reset`, `fs_delete`, local
 path operations, and settings import/export) live in the inlined `sensitive`
 plugin. Its ACL is generated from `build.rs`; the main window has only the
-individual command permissions. Every call requires a 30-second, one-use
-backend token bound to the `main` window, exact operation, and canonical local
-path (or exact logical target).
+individual command permissions. Every call requires a one-use backend token
+bound to the `main` window, exact operation, and canonical local path (or exact
+logical target). A token lives 30 seconds, except a `settings_set_security`
+token, which lives 15 minutes: the settings dialog confirms a relaxed
+protection when the user makes the change and applies it only on Save.
 
 Secret reveal, vault reset, and executable content use an isolated backend-owned
 confirmation window when required. Vault reset and relaxing security settings are

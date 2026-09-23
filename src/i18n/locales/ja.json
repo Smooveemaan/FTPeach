@@ -594,6 +594,7 @@
     "cancelledByUser": "ユーザーによりキャンセルされました",
     "stoppedDash": "停止",
     "resume": "再開",
+    "pause": "Pause",
     "retry": "再試行",
     "stop": "停止",
     "pauseUnsupportedCopy": "サーバー間のコピーは一時停止できません",

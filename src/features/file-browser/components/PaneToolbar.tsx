@@ -138,6 +138,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={homeLabel}
+          aria-label={homeLabel}
           onClick={onHome}
           disabled={disconnected}
         >
@@ -148,6 +149,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={t('paneToolbar.back')}
+          aria-label={t('paneToolbar.back')}
           onClick={onBack}
           disabled={disconnected || !canGoBack}
         >
@@ -158,6 +160,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={t('paneToolbar.forward')}
+          aria-label={t('paneToolbar.forward')}
           onClick={onForward}
           disabled={disconnected || !canGoForward}
         >
@@ -168,6 +171,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={t('paneToolbar.up')}
+          aria-label={t('paneToolbar.up')}
           onClick={onUp}
           disabled={disconnected}
         >
@@ -178,6 +182,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={t('paneToolbar.chooseFolder')}
+          aria-label={t('paneToolbar.chooseFolder')}
           onClick={onChooseFolder}
         >
           <Icon name="folder" />
@@ -188,6 +193,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={t('paneToolbar.newFolder')}
+          aria-label={t('paneToolbar.newFolder')}
           onClick={onNewFolder}
           disabled={disconnected}
         >
@@ -198,6 +204,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-ghost btn-icon"
           data-tooltip={newFileLabel}
+          aria-label={newFileLabel}
           onClick={onNewFile}
           disabled={disconnected || newFileUnsupported}
         >
@@ -208,6 +215,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-primary btn-icon btn-primary-quiet"
           data-tooltip={copyLabel}
+          aria-label={copyLabel}
           onClick={onCopy}
           disabled={copyDisabled}
         >
@@ -218,6 +226,7 @@ export default function PaneToolbar({
         <button
           className="btn btn-danger btn-icon"
           data-tooltip={deleteLabel}
+          aria-label={deleteLabel}
           onClick={onDelete}
           disabled={!hasSelection}
         >

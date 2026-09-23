@@ -264,6 +264,7 @@ function TransferItemRow({
                 type="button"
                 className="retry-btn"
                 data-tooltip={t('transferQueue.resume')}
+                aria-label={t('transferQueue.resume')}
                 onClick={() => onRetry(item.id)}
               >
                 <Icon name="play" size={11} />
@@ -273,7 +274,8 @@ function TransferItemRow({
               <button
                 type="button"
                 className="pause-btn"
-                data-tooltip={t(pauseUnsupported ?? 'transferQueue.status.paused')}
+                data-tooltip={t(pauseUnsupported ?? 'transferQueue.pause')}
+                aria-label={t(pauseUnsupported ?? 'transferQueue.pause')}
                 disabled={pauseUnsupported !== null}
                 onClick={() => onPause(item.id)}
               >
@@ -285,6 +287,11 @@ function TransferItemRow({
                 type="button"
                 className="retry-btn"
                 data-tooltip={
+                  retryUnsupported
+                    ? t('transferQueue.retryUnsupportedConnection')
+                    : t('transferQueue.retry')
+                }
+                aria-label={
                   retryUnsupported
                     ? t('transferQueue.retryUnsupportedConnection')
                     : t('transferQueue.retry')
@@ -301,6 +308,7 @@ function TransferItemRow({
                   type="button"
                   className="stop-btn"
                   data-tooltip={t('transferQueue.stop')}
+                  aria-label={t('transferQueue.stop')}
                   onClick={() => onStop(item.id)}
                 >
                   <Icon name="stop" size={11} />

@@ -90,6 +90,7 @@ export default function ConnectionBar({
       type="button"
       className="btn btn-ghost btn-icon"
       data-tooltip={t('menu.file.saveConnection')}
+      aria-label={t('menu.file.saveConnection')}
       disabled={!(isWebdav ? form.webdavUrl : form.host)}
       onClick={onSaveSite}
     >
@@ -121,6 +122,7 @@ export default function ConnectionBar({
       key="host"
       className="field-host"
       placeholder={t('connectionBar.fields.address')}
+      aria-label={t('connectionBar.fields.address')}
       value={form.host}
       onChange={handleField('host')}
       disabled={isConnected || isBusy}
@@ -132,6 +134,7 @@ export default function ConnectionBar({
       key="port"
       className="field-port"
       placeholder={t('connectionBar.fields.port')}
+      aria-label={t('connectionBar.fields.port')}
       value={form.port}
       onChange={handleField('port')}
       disabled={isConnected || isBusy}
@@ -143,6 +146,7 @@ export default function ConnectionBar({
       key="webdavUrl"
       className="field-webdav-url"
       placeholder={t('connectionBar.fields.address')}
+      aria-label={t('connectionBar.fields.address')}
       value={form.webdavUrl}
       onChange={handleField('webdavUrl')}
       disabled={isConnected || isBusy}
@@ -154,6 +158,7 @@ export default function ConnectionBar({
       key="user"
       className="field-user"
       placeholder={t('connectionBar.fields.user')}
+      aria-label={t('connectionBar.fields.user')}
       value={form.user}
       onChange={handleField('user')}
       disabled={isConnected || isBusy}
@@ -165,6 +170,7 @@ export default function ConnectionBar({
       key="pass"
       className="field-pass"
       placeholder={t('connectionBar.fields.password')}
+      aria-label={t('connectionBar.fields.password')}
       value={form.password}
       onChange={handleField('password')}
       disabled={isConnected || isBusy}
@@ -200,6 +206,7 @@ export default function ConnectionBar({
       key="passphrase"
       className="field-pass"
       placeholder={t('connectionBar.fields.passphrase')}
+      aria-label={t('connectionBar.fields.passphrase')}
       value={form.keyPassphrase}
       onChange={handleField('keyPassphrase')}
       disabled={isConnected || isBusy}
@@ -303,6 +310,11 @@ export default function ConnectionBar({
               ? t('connectionBar.connectTooltip.cancel')
               : t('connectionBar.connectTooltip.connect')
           }
+          aria-label={
+            isBusy
+              ? t('connectionBar.connectTooltip.cancel')
+              : t('connectionBar.connectTooltip.connect')
+          }
           onClick={
             isBusy
               ? (e) => {
@@ -320,6 +332,7 @@ export default function ConnectionBar({
           type="button"
           className={`btn btn-icon connect-toggle-btn state-${connectionVisualState}`}
           data-tooltip={t('connectionBar.connectTooltip.disconnect')}
+          aria-label={t('connectionBar.connectTooltip.disconnect')}
           onClick={onDisconnect}
         >
           <Icon name="power" size={14} />
@@ -334,6 +347,7 @@ export default function ConnectionBar({
       type="button"
       className="btn btn-ghost btn-icon"
       data-tooltip={t('menu.file.manageBookmarks')}
+      aria-label={t('menu.file.manageBookmarks')}
       onClick={onOpenSiteManager}
     >
       <Icon name="bookmark" size={14} />

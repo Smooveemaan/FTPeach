@@ -594,6 +594,7 @@
     "cancelledByUser": "Dibatalkan oleh pengguna",
     "stoppedDash": "dihentikan",
     "resume": "Lanjutkan",
+    "pause": "Pause",
     "retry": "Coba lagi",
     "stop": "Hentikan",
     "pauseUnsupportedCopy": "Jeda tidak didukung saat menyalin antar server",

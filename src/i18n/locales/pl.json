@@ -606,6 +606,7 @@
     "cancelledByUser": "Anulowane przez użytkownika",
     "stoppedDash": "zatrzymano",
     "resume": "Wznów",
+    "pause": "Pause",
     "retry": "Spróbuj ponownie",
     "stop": "Zatrzymaj",
     "pauseUnsupportedCopy": "Podczas kopiowania między serwerami nie można wstrzymać transferu",

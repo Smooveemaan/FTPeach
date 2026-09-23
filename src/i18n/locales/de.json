@@ -594,6 +594,7 @@
     "cancelledByUser": "Vom Benutzer abgebrochen",
     "stoppedDash": "gestoppt",
     "resume": "Fortsetzen",
+    "pause": "Pause",
     "retry": "Wiederholen",
     "stop": "Stoppen",
     "pauseUnsupportedCopy": "Beim Kopieren zwischen Servern ist Pausieren nicht möglich",

@@ -150,7 +150,7 @@ test.each([
     // A folder walk keeps a journal it can resume from, whichever way it goes.
     const pause = container.querySelector('.pause-btn');
     expect(pause).toHaveProperty('disabled', false);
-    expect(pause?.getAttribute('data-tooltip')).toBe('Paused');
+    expect(pause?.getAttribute('data-tooltip')).toBe('Pause');
   },
 );
 

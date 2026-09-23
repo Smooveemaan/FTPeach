@@ -600,6 +600,7 @@
     "cancelledByUser": "Cancelado por el usuario",
     "stoppedDash": "detenido",
     "resume": "Reanudar",
+    "pause": "Pause",
     "retry": "Reintentar",
     "stop": "Detener",
     "pauseUnsupportedCopy": "No se puede pausar al copiar entre servidores",

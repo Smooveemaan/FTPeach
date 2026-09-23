@@ -594,6 +594,7 @@
     "cancelledByUser": "Annulleret af brugeren",
     "stoppedDash": "stoppet",
     "resume": "Genoptag",
+    "pause": "Pause",
     "retry": "Prøv igen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause understøttes ikke ved kopiering mellem servere",

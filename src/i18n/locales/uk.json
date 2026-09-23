@@ -606,6 +606,7 @@
     "cancelledByUser": "Скасовано користувачем",
     "stoppedDash": "зупинено",
     "resume": "Відновити",
+    "pause": "Pause",
     "retry": "Спробувати ще раз",
     "stop": "Зупинити",
     "pauseUnsupportedCopy": "Пауза недоступна під час копіювання між серверами",

@@ -393,6 +393,7 @@ export default function LogPanel({
             type="button"
             className="btn btn-ghost btn-icon header-icon-btn"
             data-tooltip={t('logPanel.filterKinds')}
+            aria-label={t('logPanel.filterKinds')}
             aria-haspopup="menu"
             aria-expanded={kindMenu !== null}
             // The open menu closes on any press outside it; this button's press
@@ -418,6 +419,7 @@ export default function LogPanel({
             type="button"
             className={`btn btn-ghost btn-icon header-icon-btn ${searchFieldShown ? 'active' : ''}`}
             data-tooltip={t('logPanel.searchPlaceholder')}
+            aria-label={t('logPanel.searchPlaceholder')}
             aria-expanded={searchFieldShown}
             onClick={() => (searchFieldShown ? closeSearch() : setSearchOpen(true))}
           >
@@ -469,6 +471,7 @@ export default function LogPanel({
               type="button"
               className="btn btn-ghost btn-icon header-icon-btn"
               data-tooltip={t('logPanel.copyToClipboard')}
+              aria-label={t('logPanel.copyToClipboard')}
               onClick={handler(handleCopy)}
               disabled={visibleLines.length === 0}
             >
@@ -478,6 +481,7 @@ export default function LogPanel({
               type="button"
               className="btn btn-ghost btn-icon header-icon-btn"
               data-tooltip={t('logPanel.saveToFile')}
+              aria-label={t('logPanel.saveToFile')}
               onClick={handler(handleSave)}
               disabled={visibleLines.length === 0}
             >
@@ -487,6 +491,7 @@ export default function LogPanel({
               type="button"
               className="btn btn-ghost btn-icon header-icon-btn"
               data-tooltip={t('logPanel.clearLog')}
+              aria-label={t('logPanel.clearLog')}
               onClick={onClear}
               disabled={lines.length === 0}
             >

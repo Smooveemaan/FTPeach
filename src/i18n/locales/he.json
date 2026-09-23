@@ -600,6 +600,7 @@
     "cancelledByUser": "בוטל על ידי המשתמש",
     "stoppedDash": "נעצר",
     "resume": "המשך",
+    "pause": "Pause",
     "retry": "נסה שוב",
     "stop": "עצור",
     "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",

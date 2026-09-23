@@ -146,6 +146,7 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon ${showLocalPane ? 'active' : ''}`}
           data-tooltip={t('viewToolbar.toggleLeftPane')}
+          aria-label={t('viewToolbar.toggleLeftPane')}
           onClick={toggleLocalPane}
           disabled={showLocalPane && !showRemotePane}
         >
@@ -157,6 +158,7 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon ${showRemotePane ? 'active' : ''}`}
           data-tooltip={t('viewToolbar.toggleRightPane')}
+          aria-label={t('viewToolbar.toggleRightPane')}
           onClick={toggleRemotePane}
           disabled={showRemotePane && !showLocalPane}
         >
@@ -168,6 +170,7 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon ${showTransferQueue ? 'active' : ''}`}
           data-tooltip={t('viewToolbar.toggleTransferQueue')}
+          aria-label={t('viewToolbar.toggleTransferQueue')}
           onClick={toggleTransferQueue}
         >
           <Icon name="arrowDownUp" />
@@ -178,6 +181,7 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon ${logEnabled ? 'active' : ''}`}
           data-tooltip={t('viewToolbar.toggleLog')}
+          aria-label={t('viewToolbar.toggleLog')}
           onClick={toggleLog}
         >
           <Icon name="scrollText" />
@@ -188,6 +192,13 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon orientation-toggle ${effectivePaneOrientation === 'vertical' ? 'active' : ''}`}
           data-tooltip={
+            windowNarrow
+              ? t('viewToolbar.orientationNarrow')
+              : paneOrientation === 'vertical'
+                ? t('viewToolbar.orientationToRow')
+                : t('viewToolbar.orientationToStacked')
+          }
+          aria-label={
             windowNarrow
               ? t('viewToolbar.orientationNarrow')
               : paneOrientation === 'vertical'
@@ -210,6 +221,11 @@ export default function ViewToolbar({
               ? t('viewToolbar.pauseUnsupportedWebdav')
               : t('viewToolbar.pauseActive')
           }
+          aria-label={
+            hasActiveTransfers && !hasPausableTransfers
+              ? t('viewToolbar.pauseUnsupportedWebdav')
+              : t('viewToolbar.pauseActive')
+          }
           onClick={pauseAllTransfers}
           disabled={!hasActiveTransfers || !hasPausableTransfers}
         >
@@ -220,6 +236,7 @@ export default function ViewToolbar({
           type="button"
           className="btn btn-ghost btn-icon armed"
           data-tooltip={t('viewToolbar.resumeAllPaused')}
+          aria-label={t('viewToolbar.resumeAllPaused')}
           onClick={() => resumeAllTransfers(refreshBothPanes)}
         >
           <Icon name="play" />
@@ -230,6 +247,7 @@ export default function ViewToolbar({
           type="button"
           className={`btn btn-ghost btn-icon ${hasActiveTransfers || hasPausedTransfers ? 'armed' : ''}`}
           data-tooltip={t('viewToolbar.stopActive')}
+          aria-label={t('viewToolbar.stopActive')}
           onClick={stopAllTransfers}
           disabled={!hasActiveTransfers && !hasPausedTransfers}
         >
@@ -240,6 +258,7 @@ export default function ViewToolbar({
           type="button"
           className="btn btn-ghost btn-icon armed"
           data-tooltip={t('viewToolbar.retryAllStopped')}
+          aria-label={t('viewToolbar.retryAllStopped')}
           onClick={() => retryAllTransfers(refreshBothPanes)}
         >
           <Icon name="play" />
@@ -250,6 +269,7 @@ export default function ViewToolbar({
           type="button"
           className="btn btn-ghost btn-icon"
           data-tooltip={t('viewToolbar.refreshPanesTooltip')}
+          aria-label={t('viewToolbar.refreshPanesTooltip')}
           onClick={refreshBothPanes}
         >
           <Icon name="refresh" />

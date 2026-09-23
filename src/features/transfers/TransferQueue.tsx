@@ -623,6 +623,7 @@ export default function TransferQueue({
             type="button"
             className="btn btn-ghost btn-icon header-icon-btn"
             data-tooltip={t('menu.transfer.clearCompleted')}
+            aria-label={t('menu.transfer.clearCompleted')}
             onClick={onClearCompleted}
             disabled={!hasCompleted}
           >

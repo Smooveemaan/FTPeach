@@ -594,6 +594,7 @@
     "cancelledByUser": "Kullanıcı tarafından iptal edildi",
     "stoppedDash": "durduruldu",
     "resume": "Devam et",
+    "pause": "Pause",
     "retry": "Tekrar dene",
     "stop": "Durdur",
     "pauseUnsupportedCopy": "Sunucular arası kopyalamada duraklatma desteklenmiyor",

@@ -68,6 +68,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Icon buttons, the connection fields and the search boxes now have names a screen reader
+  reads out, and the pause button in the transfer list is called Pause instead of Paused.
+- While a dialog is open, Tab and the screen reader stay inside the topmost dialog and skip
+  hidden fields; the window can still be moved and closed.
+- With Windows animations turned off, FTPeach no longer animates either.
 - Selecting files by dragging a rectangle in a long folder now selects every file inside it,
   including ones scrolled past, and shrinking the rectangle or holding Ctrl no longer leaves
   or drops the wrong files. Shift+click after re-sorting extends from the file you clicked.

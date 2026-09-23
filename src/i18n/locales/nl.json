@@ -594,6 +594,7 @@
     "cancelledByUser": "Geannuleerd door de gebruiker",
     "stoppedDash": "gestopt",
     "resume": "Hervatten",
+    "pause": "Pause",
     "retry": "Opnieuw proberen",
     "stop": "Stoppen",
     "pauseUnsupportedCopy": "Pauzeren wordt niet ondersteund bij het kopiëren tussen servers",

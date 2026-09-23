@@ -594,6 +594,7 @@
     "cancelledByUser": "已由使用者取消",
     "stoppedDash": "已停止",
     "resume": "繼續",
+    "pause": "Pause",
     "retry": "重試",
     "stop": "停止",
     "pauseUnsupportedCopy": "在伺服器之間複製時無法暫停",

@@ -232,6 +232,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   type="button"
                   className="btn btn-ghost btn-icon"
                   data-tooltip={t('siteManagerDialog.manageLocalPaths')}
+                  aria-label={t('siteManagerDialog.manageLocalPaths')}
                   onClick={onOpenLocalPathManager}
                 >
                   <Icon name="bookmark" size={14} />
@@ -240,6 +241,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   type="button"
                   className="btn btn-ghost btn-icon"
                   data-tooltip={t('saveLocalPath.tooltip')}
+                  aria-label={t('saveLocalPath.tooltip')}
                   onClick={onSaveSite}
                 >
                   <Icon name="star" size={14} />
@@ -257,6 +259,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   type="button"
                   className="btn btn-icon connect-toggle-btn state-connected"
                   data-tooltip={t('connectionBar.connectTooltip.disconnect')}
+                  aria-label={t('connectionBar.connectTooltip.disconnect')}
                   onClick={onDisconnect}
                 >
                   <Icon name="power" size={14} />
@@ -265,6 +268,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   type="button"
                   className="btn btn-ghost btn-icon"
                   data-tooltip={t('menu.file.manageBookmarks')}
+                  aria-label={t('menu.file.manageBookmarks')}
                   onClick={onOpenSiteManager}
                 >
                   <Icon name="bookmark" size={14} />
@@ -273,6 +277,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   type="button"
                   className="btn btn-ghost btn-icon"
                   data-tooltip={t('menu.file.saveConnection')}
+                  aria-label={t('menu.file.saveConnection')}
                   onClick={onSaveSite}
                 >
                   <Icon name="star" size={14} />

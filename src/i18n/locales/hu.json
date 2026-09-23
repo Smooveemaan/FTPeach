@@ -594,6 +594,7 @@
     "cancelledByUser": "Felhasználó által megszakítva",
     "stoppedDash": "leállítva",
     "resume": "Folytatás",
+    "pause": "Pause",
     "retry": "Újrapróbálás",
     "stop": "Leállítás",
     "pauseUnsupportedCopy": "Szerverek közötti másolásnál nem lehet szüneteltetni",

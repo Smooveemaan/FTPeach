@@ -594,6 +594,7 @@
     "cancelledByUser": "Avbrutet av användaren",
     "stoppedDash": "stoppad",
     "resume": "Återuppta",
+    "pause": "Pause",
     "retry": "Försök igen",
     "stop": "Stoppa",
     "pauseUnsupportedCopy": "Paus stöds inte vid kopiering mellan servrar",

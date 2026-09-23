@@ -618,6 +618,7 @@
     "cancelledByUser": "تم إلغاؤه من قبل المستخدم",
     "stoppedDash": "متوقف",
     "resume": "استئناف",
+    "pause": "Pause",
     "retry": "إعادة المحاولة",
     "stop": "إيقاف",
     "pauseUnsupportedCopy": "لا يتم دعم ميزة «الإيقاف المؤقت» عند النسخ بين الخوادم",

@@ -87,4 +87,91 @@ describe('critical dialog accessibility', () => {
     expect(onSubmit).toHaveBeenCalledWith('new name');
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  test('Tab belongs to the dialog on top, and skips hidden fields', async () => {
+    const user = userEvent.setup();
+    const tree = (showUpper: boolean) => (
+      <>
+        <Modal title="Lower" onClose={() => {}}>
+          <button>Lower</button>
+        </Modal>
+        {showUpper && (
+          <Modal title="Upper" onClose={() => {}}>
+            <button>Upper</button>
+            <input aria-label="Hidden" hidden />
+            <div hidden>
+              <button>Inside hidden</button>
+            </div>
+          </Modal>
+        )}
+      </>
+    );
+    const view = render(tree(true));
+    const upper = screen.getByRole('button', { name: 'Upper' });
+    expect(document.activeElement).toBe(upper);
+    const reached = new Set<Element | null>();
+    for (let index = 0; index < 6; index += 1) {
+      await user.tab();
+      reached.add(document.activeElement);
+    }
+    const upperDialog = screen.getByRole('dialog', { name: 'Upper' });
+    for (const element of reached) expect(upperDialog.contains(element)).toBe(true);
+    expect(reached.has(screen.getByText('Inside hidden'))).toBe(false);
+
+    // Once the upper one closes, the lower one traps Tab again.
+    view.rerender(tree(false));
+    screen.getByRole('button', { name: 'Lower' }).focus();
+    await user.tab();
+    expect(screen.getByRole('dialog', { name: 'Lower' }).contains(document.activeElement)).toBe(
+      true,
+    );
+  });
+
+  test('the background is inert while a dialog is open, in whatever order dialogs close', () => {
+    const background = document.createElement('button');
+    const titleBar = document.createElement('div');
+    titleBar.className = 'title-bar';
+    const alreadyInert = document.createElement('div');
+    alreadyInert.setAttribute('inert', '');
+    document.body.append(titleBar, background, alreadyInert);
+    const tree = (lower: boolean, upper: boolean) => (
+      <>
+        {lower && (
+          <Modal title="Lower" onClose={() => {}}>
+            <button>Lower</button>
+          </Modal>
+        )}
+        {upper && (
+          <Modal title="Upper" onClose={() => {}}>
+            <button>Upper</button>
+          </Modal>
+        )}
+      </>
+    );
+    const view = render(tree(true, true));
+    expect(background.hasAttribute('inert')).toBe(true);
+    expect(titleBar.hasAttribute('inert')).toBe(false);
+    expect(screen.getByRole('dialog', { name: 'Lower' }).closest('[inert]')).not.toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Upper' }).closest('[inert]')).toBeNull();
+
+    // The lower dialog closing first must not free what the upper one holds.
+    view.rerender(tree(false, true));
+    expect(background.hasAttribute('inert')).toBe(true);
+    view.rerender(tree(false, false));
+    expect(background.hasAttribute('inert')).toBe(false);
+    expect(alreadyInert.hasAttribute('inert')).toBe(true);
+  });
+
+  test('a dialog with nothing to focus keeps focus on itself', async () => {
+    const user = userEvent.setup();
+    render(
+      <Modal title="Busy" onClose={() => {}} closeDisabled>
+        <p>Working</p>
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Busy' });
+    expect(document.activeElement).toBe(dialog);
+    await user.tab();
+    expect(document.activeElement).toBe(dialog);
+  });
 });

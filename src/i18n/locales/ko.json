@@ -594,6 +594,7 @@
     "cancelledByUser": "사용자에 의해 취소됨",
     "stoppedDash": "중지됨",
     "resume": "재개",
+    "pause": "Pause",
     "retry": "다시 시도",
     "stop": "중지",
     "pauseUnsupportedCopy": "서버 간 복사는 일시 중지할 수 없습니다",

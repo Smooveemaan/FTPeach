@@ -594,6 +594,7 @@
     "cancelledByUser": "Người dùng đã hủy",
     "stoppedDash": "đã dừng",
     "resume": "Tiếp tục",
+    "pause": "Pause",
     "retry": "Thử lại",
     "stop": "Dừng",
     "pauseUnsupportedCopy": "Không thể tạm dừng khi sao chép giữa các máy chủ",

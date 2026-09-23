@@ -31,6 +31,7 @@ export default function SearchFilter({
         type="button"
         className={`btn btn-primary btn-primary-quiet btn-icon pane-search-toggle ${open ? 'active' : ''}`}
         data-tooltip={t('filePane.searchTooltip', { shortcut })}
+        aria-label={t('filePane.searchTooltip', { shortcut })}
         onClick={() => (open ? onClose() : onOpen())}
       >
         <Icon name="search" size={13} />
@@ -41,6 +42,7 @@ export default function SearchFilter({
           type="text"
           tabIndex={open ? undefined : -1}
           placeholder={t('filePane.searchPlaceholder', { shortcut })}
+          aria-label={t('filePane.searchPlaceholder', { shortcut })}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onFocus={onOpen}

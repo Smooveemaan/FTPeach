@@ -600,6 +600,7 @@
     "cancelledByUser": "Anulat de utilizator",
     "stoppedDash": "oprit",
     "resume": "Reia",
+    "pause": "Pause",
     "retry": "Reîncearcă",
     "stop": "Oprește",
     "pauseUnsupportedCopy": "Pauza nu este disponibilă la copierea între servere",

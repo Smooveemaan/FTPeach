@@ -606,6 +606,7 @@
     "cancelledByUser": "Zrušeno uživatelem",
     "stoppedDash": "zastaveno",
     "resume": "Pokračovat",
+    "pause": "Pause",
     "retry": "Zkusit znovu",
     "stop": "Zastavit",
     "pauseUnsupportedCopy": "Při kopírování mezi servery nelze přenos pozastavit",

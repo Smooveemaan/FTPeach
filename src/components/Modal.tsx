@@ -9,6 +9,41 @@ import { holdDialogScrim } from '../platform/windowFrame.ts';
 // reacts.
 const openModals: object[] = [];
 
+// The overlay of each open dialog, by its stack token.
+const overlays = new Map<object, Element>();
+let releaseBackground = () => {};
+
+/**
+ * Makes everything outside the topmost dialog's overlay inert — unreachable by
+ * Tab, clicks and screen readers — except the window's title bar, which still
+ * moves, minimises and closes the window. Run whenever the stack changes:
+ * dialogs mount and close in any order, and only the top one may be live.
+ * Elements that were inert already are left as they were.
+ */
+function syncInertBackground() {
+  releaseBackground();
+  const top = openModals.at(-1);
+  const overlay = top && overlays.get(top);
+  const held: Element[] = [];
+  for (let node = overlay ?? null; node && node !== document.body; node = node.parentElement) {
+    for (const sibling of Array.from(node.parentElement?.children ?? [])) {
+      if (sibling === node || sibling.classList.contains('title-bar')) continue;
+      if (sibling.hasAttribute('inert')) continue;
+      sibling.setAttribute('inert', '');
+      held.push(sibling);
+    }
+  }
+  releaseBackground = () => held.forEach((element) => element.removeAttribute('inert'));
+}
+
+/** Whether `element` can take focus right now: rendered, visible, not inert. */
+function isFocusableNow(element: HTMLElement): boolean {
+  if (element.closest('[inert], [hidden]')) return false;
+  // Not every DOM implements it (jsdom does not); WebView2 always does.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return element.checkVisibility?.({ visibilityProperty: true }) ?? true;
+}
+
 interface ModalFooterActionsProps {
   onCancel: () => void;
   onConfirm: () => void;
@@ -104,8 +139,13 @@ export default function Modal({
       'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
     const getFocusable = () =>
       dialogRef.current
-        ? Array.from(dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector))
+        ? Array.from(dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+            isFocusableNow,
+          )
         : [];
+    const overlay = dialogRef.current?.parentElement;
+    if (overlay) overlays.set(stackToken, overlay);
+    syncInertBackground();
 
     const alreadyFocusedInside =
       dialogRef.current?.contains(document.activeElement) &&
@@ -121,18 +161,25 @@ export default function Modal({
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      // Only the dialog on top owns Tab, as it owns Escape; the one under it
+      // would otherwise pull focus back into itself.
+      if (e.key !== 'Tab' || openModals.at(-1) !== stackToken) return;
       const focusable = getFocusable();
       if (focusable.length === 0) {
         e.preventDefault();
+        dialogRef.current?.focus();
         return;
       }
       const firstEl = focusable[0];
       const lastEl = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === firstEl) {
+      // Focus left on the dialog itself, or somewhere outside it, re-enters
+      // at the edge Tab is heading for.
+      const active = document.activeElement;
+      const outside = active === dialogRef.current || !dialogRef.current?.contains(active);
+      if (e.shiftKey && (active === firstEl || outside)) {
         e.preventDefault();
         lastEl?.focus();
-      } else if (!e.shiftKey && document.activeElement === lastEl) {
+      } else if (!e.shiftKey && (active === lastEl || outside)) {
         e.preventDefault();
         firstEl?.focus();
       }
@@ -141,6 +188,8 @@ export default function Modal({
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      overlays.delete(stackToken);
+      syncInertBackground();
       if (previouslyFocused instanceof HTMLElement && document.contains(previouslyFocused)) {
         // Restoring focus to a bare icon button (e.g. a row's delete/rename
         // action) strands the user outside their list's own keyboard

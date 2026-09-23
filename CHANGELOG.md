@@ -10,18 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   unavailable, instead of risking replacement of an existing file. Use SFTP or WebDAV.
   On those servers New file is shown as unavailable with the reason, instead of asking
   for a name first.
-
 - Files can be moved only on your computer or within one server connection. Between your
   computer and a server, or between two servers, copy them instead.
 - Quitting with edits that have not been uploaded now asks whether to return or keep the
   copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
-- Turning off security confirmations now asks right away, when you clear the setting,
-  rather than when you save. Cancelling leaves the setting on.
-- Security questions are now written in the language you have just picked in settings,
-  even before you save it.
-- Cancelling a security question no longer leaves an error message on screen.
-- The "Show security confirmations" description now says exactly what the setting turns
-  off, and which questions are always asked.
 
 ### Security
 
@@ -31,9 +23,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   is checked before it runs. The mark records the address without your user name or
   password, survives the file being renamed or a download being resumed, and needs NTFS.
   A server on your local network is marked as the intranet instead.
-- A network path such as \\server\share is now refused before FTPeach touches it, unless
-  you picked it in a file dialog first. Opening, listing, renaming, copying or reading a
-  key or certificate from a share you have not chosen no longer reaches the server at all.
 - The first connection to an SSH server now shows its key fingerprint and asks before
   trusting it, so you can compare it with the one the server's administrator gave you.
   The new "Confirm a new SSH server key" setting turns this off, and turning it off asks
@@ -55,6 +44,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   script, and the first time a program typed into settings opens a file.
 - Turning off security confirmations or relaxing the vault's automatic lock now asks for
   confirmation in a separate window, and for the master password when one is set.
+- Turning off security confirmations now asks right away, when you clear the setting,
+  rather than when you save. Cancelling leaves the setting on.
+- Security questions are now written in the language you have just picked in settings,
+  even before you save it.
+- Cancelling a security question no longer leaves an error message on screen.
+- The "Show security confirmations" description now says exactly what the setting turns
+  off, and which questions are always asked.
 - Turning off enhanced protection always asks for the master password, even while the vault
   is unlocked.
 - Changing a bookmark's or the proxy's server, port, user or encryption now asks before the
@@ -74,10 +70,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Quitting or installing an update now saves the latest settings and tabs before
   closing, including changes still waiting for their save timer.
-
-- A busy protocol log no longer builds an unlimited queue behind a slow disk. It
-  reports dropped messages and drains pending records before quitting when the disk responds.
-
 - Failed local copies now wait for outstanding disk writes before removing their temporary
   files, including after cancellation or a full disk.
 - Editor copies survive temporary-folder cleanup and retain later saves when an editor

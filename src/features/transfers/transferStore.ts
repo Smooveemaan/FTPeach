@@ -77,7 +77,6 @@ let exposed = false;
 const listeners = new Set<() => void>();
 const structureListeners = new Set<() => void>();
 const rowListeners = new Map<string, Set<() => void>>();
-const activeIds = new Set<string>();
 const progressIds = new Set<string>();
 let revision = 0;
 let structureRevision = 0;
@@ -144,7 +143,6 @@ export const getTransferSummarySnapshot = (): TransferSummary => summary;
 export const getTransferRevision = (): number => revision;
 export const getTransferStructureRevision = (): number => structureRevision;
 export const getTransferRow = (id: string): TransferRow | undefined => state[id];
-export const getActiveTransferIds = (): ReadonlySet<string> => activeIds;
 export const getProgressTransferIds = (): ReadonlySet<string> => progressIds;
 export function getTransferIds(): readonly string[] {
   if (idsCache?.revision !== structureRevision)
@@ -436,7 +434,6 @@ function replaceRow(id: string, row: TransferRow | undefined): boolean {
         owners?.delete(id);
         if (!owners?.size) targets.delete(target);
       }
-      activeIds.delete(id);
       progressIds.delete(id);
     }
     if (row) {
@@ -444,7 +441,6 @@ function replaceRow(id: string, row: TransferRow | undefined): boolean {
       if (row.status === 'progress') progressIds.add(id);
       attempts.set(row.attemptId || row.id, id);
       if (isActive(row)) {
-        activeIds.add(id);
         const target = transferTargetKey(row);
         if (target) {
           let owners = targets.get(target);
@@ -489,7 +485,6 @@ export function resetTransfersStoreForTests(): void {
   pendingRows.clear();
   structurePending = false;
   exposed = false;
-  activeIds.clear();
   progressIds.clear();
   revision = 0;
   structureRevision = 0;

@@ -26,11 +26,10 @@ function importSpecifiers(file: string, contents: string): string[] {
 }
 
 export function sourceFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(entryPath);
-    return sourceExtensions.has(path.extname(entry.name)) ? [entryPath] : [];
-  });
+  return fs
+    .readdirSync(directory, { recursive: true, withFileTypes: true })
+    .filter((entry) => !entry.isDirectory() && sourceExtensions.has(path.extname(entry.name)))
+    .map((entry) => path.join(entry.parentPath, entry.name));
 }
 
 export function featureName(file: string, featuresRoot: string): string | null {

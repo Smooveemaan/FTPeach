@@ -241,6 +241,42 @@ export function normalizeKeyboardShortcuts(value: unknown): ShortcutOverrides {
   ) as ShortcutOverrides;
 }
 
+export function normalizeLayoutSettings(
+  s: AppSettings,
+): Omit<SettingsState['layout'], 'showHiddenFiles'> {
+  const paneOrientation: PaneOrientation =
+    s.paneOrientation === 'horizontal' || s.paneOrientation === 'vertical'
+      ? s.paneOrientation
+      : (SETTINGS_DEFAULTS.paneOrientation as PaneOrientation);
+  return {
+    localColumns: normalizeColumnsSetting(s.localColumns, SETTINGS_DEFAULTS.localColumns),
+    remoteColumns: normalizeColumnsSetting(s.remoteColumns, SETTINGS_DEFAULTS.remoteColumns),
+    localColumnWidths: normalizeWidthsSetting(
+      s.localColumnWidths,
+      SETTINGS_DEFAULTS.localColumnWidths,
+    ),
+    remoteColumnWidths: normalizeWidthsSetting(
+      s.remoteColumnWidths,
+      SETTINGS_DEFAULTS.remoteColumnWidths,
+    ),
+    transferColumnWidths: isRecord(s.transferColumnWidths)
+      ? (s.transferColumnWidths as ColumnWidths)
+      : SETTINGS_DEFAULTS.transferColumnWidths,
+    transferHiddenColumns: normalizeStringArraySetting(
+      s.transferHiddenColumns,
+      SETTINGS_DEFAULTS.transferHiddenColumns,
+    ),
+    transferColumnOrder: normalizeStringArraySetting(
+      s.transferColumnOrder,
+      SETTINGS_DEFAULTS.transferColumnOrder,
+    ),
+    showLocalPane: s.showLocalPane !== false,
+    showRemotePane: s.showRemotePane !== false,
+    showTransferQueue: s.showTransferQueue !== false,
+    paneOrientation,
+  };
+}
+
 function normalizeValues(settings: AppSettings): SettingsValues {
   const s = settings;
   const stringSetting = (value: unknown, fallback: string) =>
@@ -252,10 +288,6 @@ function normalizeValues(settings: AppSettings): SettingsValues {
   )
     ? (s.overwriteAction as OverwriteAction)
     : (SETTINGS_DEFAULTS.overwriteAction as OverwriteAction);
-  const paneOrientation: PaneOrientation =
-    s.paneOrientation === 'horizontal' || s.paneOrientation === 'vertical'
-      ? s.paneOrientation
-      : (SETTINGS_DEFAULTS.paneOrientation as PaneOrientation);
   return {
     theme: stringSetting(s.theme, SETTINGS_DEFAULTS.theme),
     language: stringSetting(s.language, SETTINGS_DEFAULTS.language),
@@ -304,35 +336,11 @@ function normalizeValues(settings: AppSettings): SettingsValues {
         : SETTINGS_DEFAULTS.vaultAutoLockMinutes,
     showSecurityConfirmations: s.showSecurityConfirmations !== false,
     strictHostKeyCheck: s.strictHostKeyCheck !== false,
-    localColumns: normalizeColumnsSetting(s.localColumns, SETTINGS_DEFAULTS.localColumns),
-    remoteColumns: normalizeColumnsSetting(s.remoteColumns, SETTINGS_DEFAULTS.remoteColumns),
-    localColumnWidths: normalizeWidthsSetting(
-      s.localColumnWidths,
-      SETTINGS_DEFAULTS.localColumnWidths,
-    ),
-    remoteColumnWidths: normalizeWidthsSetting(
-      s.remoteColumnWidths,
-      SETTINGS_DEFAULTS.remoteColumnWidths,
-    ),
-    transferColumnWidths: isRecord(s.transferColumnWidths)
-      ? (s.transferColumnWidths as ColumnWidths)
-      : SETTINGS_DEFAULTS.transferColumnWidths,
-    transferHiddenColumns: normalizeStringArraySetting(
-      s.transferHiddenColumns,
-      SETTINGS_DEFAULTS.transferHiddenColumns,
-    ),
-    transferColumnOrder: normalizeStringArraySetting(
-      s.transferColumnOrder,
-      SETTINGS_DEFAULTS.transferColumnOrder,
-    ),
-    showLocalPane: s.showLocalPane !== false,
-    showRemotePane: s.showRemotePane !== false,
-    showTransferQueue: s.showTransferQueue !== false,
+    ...normalizeLayoutSettings(s),
     showHiddenFiles: !!s.showHiddenFiles,
     coloredTabs: s.coloredTabs !== false,
     minimizeToTray: !!s.minimizeToTray,
     closeToTray: !!s.closeToTray,
-    paneOrientation,
     logEnabled: !!s.logEnabled,
     logShowTimestamps: s.logShowTimestamps !== false,
     logToFile: !!s.logToFile,

@@ -27,11 +27,10 @@ const belowCommands = ['application', 'store', 'protocol', 'security', 'transfer
 const cratePathPattern = /\bcrate::((?:[a-z_][a-z0-9_]*)(?:::[a-z_][a-z0-9_]*)*)/g;
 
 export function sourceFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(entryPath);
-    return path.extname(entry.name) === '.rs' ? [entryPath] : [];
-  });
+  return fs
+    .readdirSync(directory, { recursive: true, withFileTypes: true })
+    .filter((entry) => !entry.isDirectory() && path.extname(entry.name) === '.rs')
+    .map((entry) => path.join(entry.parentPath, entry.name));
 }
 
 /** Top-level directory under `src/`, or `null` for a file sitting in the root. */

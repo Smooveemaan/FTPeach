@@ -110,14 +110,6 @@ function hideNow() {
   if (tooltipEl) tooltipEl.classList.remove('visible');
 }
 
-export function resetTooltipStateForTests(): void {
-  if (hideTimer != null) clearTimeout(hideTimer);
-  hideTimer = null;
-  dismissCleanup = null;
-  tooltipEl?.remove();
-  tooltipEl = null;
-}
-
 export function flashTooltip(anchorEl: HTMLElement, text: string, duration = FLASH_DURATION) {
   if (hideTimer != null) clearTimeout(hideTimer);
   if (dismissCleanup) {

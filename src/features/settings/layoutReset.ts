@@ -1,10 +1,5 @@
-import SETTINGS_DEFAULTS from '../../shared/settingsDefaults.ts';
-import {
-  normalizeColumnsSetting,
-  normalizeStringArraySetting,
-  normalizeWidthsSetting,
-} from './useSettings.ts';
-import type { ColumnWidths, PaneOrientation, SettingsState } from './useSettings.ts';
+import { normalizeLayoutSettings } from './useSettings.ts';
+import type { SettingsState } from './useSettings.ts';
 import type { AppSettings } from '../../platform/api/settings.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 
@@ -25,37 +20,7 @@ interface LayoutApi {
 }
 
 export function applyLayoutResetSettings(settings: AppSettings, targets: LayoutResetTargets) {
-  targets.updateLayout({
-    localColumns: normalizeColumnsSetting(settings.localColumns, SETTINGS_DEFAULTS.localColumns),
-    remoteColumns: normalizeColumnsSetting(settings.remoteColumns, SETTINGS_DEFAULTS.remoteColumns),
-    localColumnWidths: normalizeWidthsSetting(
-      settings.localColumnWidths,
-      SETTINGS_DEFAULTS.localColumnWidths,
-    ),
-    remoteColumnWidths: normalizeWidthsSetting(
-      settings.remoteColumnWidths,
-      SETTINGS_DEFAULTS.remoteColumnWidths,
-    ),
-    transferColumnWidths:
-      settings.transferColumnWidths && typeof settings.transferColumnWidths === 'object'
-        ? (settings.transferColumnWidths as ColumnWidths)
-        : SETTINGS_DEFAULTS.transferColumnWidths,
-    transferHiddenColumns: normalizeStringArraySetting(
-      settings.transferHiddenColumns,
-      SETTINGS_DEFAULTS.transferHiddenColumns,
-    ),
-    transferColumnOrder: normalizeStringArraySetting(
-      settings.transferColumnOrder,
-      SETTINGS_DEFAULTS.transferColumnOrder,
-    ),
-    showLocalPane: settings.showLocalPane !== false,
-    showRemotePane: settings.showRemotePane !== false,
-    showTransferQueue: settings.showTransferQueue !== false,
-    paneOrientation:
-      settings.paneOrientation === 'horizontal' || settings.paneOrientation === 'vertical'
-        ? settings.paneOrientation
-        : (SETTINGS_DEFAULTS.paneOrientation as PaneOrientation),
-  });
+  targets.updateLayout(normalizeLayoutSettings(settings));
   targets.hydrateSectionResizeFromSettings(settings);
 }
 

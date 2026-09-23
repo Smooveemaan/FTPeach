@@ -36,6 +36,7 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
     transferColumnWidths: { name: 320 },
     transferColumnOrder: ['status', 'size'],
     transferHiddenColumns: ['route'],
+    showHiddenFiles: true,
     showLocalPane: false,
     showRemotePane: true,
     showTransferQueue: false,
@@ -59,6 +60,7 @@ test('reset layout applies persisted backend settings and normalizes legacy colu
   assert.deepEqual(recorded.layout.transferColumnWidths, { name: 320 });
   assert.deepEqual(recorded.layout.transferColumnOrder, ['status', 'size']);
   assert.deepEqual(recorded.layout.transferHiddenColumns, ['route']);
+  assert.equal(Object.hasOwn(recorded.layout, 'showHiddenFiles'), false);
   assert.equal(recorded.layout.showLocalPane, false);
   assert.equal(recorded.layout.showRemotePane, true);
   assert.equal(recorded.layout.showTransferQueue, false);

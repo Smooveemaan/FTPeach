@@ -1,0 +1,30 @@
+{
+  "detector": "jscpd 5.2.1",
+  "minTokens": 60,
+  "areas": {
+    "frontend-ts": {
+      "sources": 210,
+      "lines": 31818,
+      "duplicatedLines": 98,
+      "clones": 10
+    },
+    "css": {
+      "sources": 23,
+      "lines": 4667,
+      "duplicatedLines": 6,
+      "clones": 1
+    },
+    "rust-production": {
+      "sources": 119,
+      "lines": 27090,
+      "duplicatedLines": 481,
+      "clones": 45
+    },
+    "rust-tests": {
+      "sources": 87,
+      "lines": 20239,
+      "duplicatedLines": 888,
+      "clones": 95
+    }
+  }
+}

@@ -32,6 +32,7 @@ CLAUDE.md
 .tmp/
 .local/
 test-results/
+duplication-report/
 playwright-report/
 
 # Rust build artifacts. Keep Cargo.lock tracked for reproducible builds.

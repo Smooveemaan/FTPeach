@@ -45,7 +45,7 @@ test('a domain zone importing crate::commands is rejected', async () => {
   assert.equal(errors.length, 1);
   assert.match(
     errors[0] ?? '',
-    /local_fs\/fs_delete\.rs \(local_fs\) reaches into crate::commands/,
+    /local_fs\/fs_delete\.rs: local_fs may not name commands::fs \(allowed: /,
   );
 });
 
@@ -109,7 +109,7 @@ test('a cycle routed through a third module is still found', async () => {
   await writeSource('b/mod.rs', `use crate::c::go;\n`);
   await writeSource('c/mod.rs', `use crate::a::go;\n`);
 
-  const { errors } = runRustBoundaryCheck(root);
+  const { errors } = runRustBoundaryCheck(root, { a: ['b'], b: ['c'], c: ['a'] });
   assert.equal(errors.length, 1);
   assert.match(errors[0] ?? '', /module import cycle:/);
 });
@@ -131,4 +131,126 @@ test('a crate root file is not attributed to any zone', async () => {
 
   const { errors } = runRustBoundaryCheck(root);
   assert.deepEqual(errors, []);
+});
+
+test('a zone without an entry in the table is reported', async () => {
+  await writeSource('newzone/mod.rs', `pub fn go() {}\n`);
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors, ['newzone has no entry in ALLOWED; say which zones it may name']);
+});
+
+test('super:: and self:: paths are resolved, so they cannot slip past the table', async () => {
+  await writeCrateSkeleton();
+  await writeSource('store/mod.rs', `pub mod settings;\n`);
+  await writeSource('store/settings.rs', `use super::super::commands::fs::ok;\n`);
+  await writeSource(
+    'store/sites/queries.rs',
+    `fn go() { self::super::super::super::commands::fs::ok(); }\n`,
+  );
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.equal(errors.length, 2);
+  for (const error of errors) assert.match(error, /store may not name commands::fs/);
+});
+
+test('use groups, aliases and re-exports each name what they import', async () => {
+  await writeCrateSkeleton();
+  await writeSource(
+    'store/mod.rs',
+    `use crate::{ipc::OkResult, commands::{fs::ok as fine}};\npub use crate::commands::settings as Class;\n`,
+  );
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors.sort(), [
+    'store/mod.rs: store may not name commands::fs (allowed: domain, ipc, protocol, security)',
+    'store/mod.rs: store may not name commands::settings (allowed: domain, ipc, protocol, security)',
+  ]);
+});
+
+test('paths in comments and strings are not imports', async () => {
+  await writeCrateSkeleton();
+  await writeSource(
+    'store/mod.rs',
+    [
+      '// use crate::commands::fs::ok;',
+      '/* crate::commands::fs::ok() */',
+      'const HELP: &str = "see crate::commands::fs";',
+      'const RAW: &str = r#"use crate::commands::fs::ok;"#;',
+      '/// Calls `crate::vault::open`, a name that is not a module.',
+      'fn go() {}',
+    ].join('\n'),
+  );
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors, []);
+});
+
+test('test-only code may reach what production may not, and never forms a cycle', async () => {
+  await writeCrateSkeleton();
+  await writeSource(
+    'store/mod.rs',
+    `pub fn go() {}\n#[cfg(test)]\nmod tests {\n    use crate::commands::fs::ok;\n    use crate::security::vault;\n}\n`,
+  );
+  await writeSource(
+    'store/settings_tests.rs',
+    `use crate::commands::settings::apply_speed_limit;\n`,
+  );
+  await writeSource('security/vault.rs', `use crate::store::go;\n`);
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors, []);
+});
+
+test('a test that names a module that does not exist is still caught', async () => {
+  await writeSource('store/tests.rs', `use crate::vault::Vault;\n`);
+  const { errors } = runRustBoundaryCheck(root);
+  assert.match(errors[0] ?? '', /names crate::vault, which is not a top-level module/);
+});
+
+test('root files are zones too: session.rs and ipc.rs are held to the table', async () => {
+  await writeCrateSkeleton();
+  await writeSource('session.rs', `use crate::commands::fs::ok;\n`);
+  await writeSource('ipc.rs', `use crate::domain::Site;\n`);
+  await writeSource('domain/mod.rs', `use crate::ipc::OkResult;\npub struct Site;\n`);
+
+  const { errors } = runRustBoundaryCheck(root);
+  const cycle = errors.find((error) => error.startsWith('module import cycle:'));
+  assert.match(cycle ?? '', /domain\/mod\.rs/);
+  assert.match(cycle ?? '', /ipc\.rs/);
+  assert.deepEqual(errors.filter((error) => error !== cycle).sort(), [
+    'ipc.rs: ipc may not name domain::Site (allowed: nothing in the crate)',
+    'session.rs: session may not name commands::fs (allowed: protocol, transfer)',
+  ]);
+});
+
+test('a narrow exception allows one module of a zone, not the zone', async () => {
+  await writeSource('runtime/sleep_guard.rs', `pub fn shared() {}\n`);
+  await writeSource('runtime/shutdown.rs', `pub fn run() {}\n`);
+  await writeSource(
+    'transfer/transfer_pool.rs',
+    `fn go() {\n    crate::runtime::sleep_guard::shared();\n    crate::runtime::shutdown::run();\n}\n`,
+  );
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors, [
+    'transfer/transfer_pool.rs: transfer may not name runtime::shutdown (allowed: ipc, protocol, runtime::sleep_guard)',
+  ]);
+});
+
+test('a parent re-exporting its child is not a cycle with what the child uses', async () => {
+  await writeSource('store/mod.rs', `mod schema;\npub use schema::validate;\npub struct Map;\n`);
+  await writeSource(
+    'store/schema.rs',
+    `use crate::security::policy::check;\npub fn validate() {}\n`,
+  );
+  await writeSource('security/policy.rs', `use crate::store::Map;\npub fn check() {}\n`);
+
+  const { errors } = runRustBoundaryCheck(root);
+  assert.deepEqual(errors, []);
+});
+
+test('the real crate passes', () => {
+  const { errors, fileCount } = runRustBoundaryCheck(path.resolve('src-tauri', 'src'));
+  assert.deepEqual(errors, []);
+  assert.ok(fileCount > 100);
 });

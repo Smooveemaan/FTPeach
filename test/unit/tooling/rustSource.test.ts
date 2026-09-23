@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { splitInlineTests } from '../../../scripts/checks/check-duplicates.ts';
+import { splitInlineTests } from '../../../scripts/checks/rust-source.ts';
 
 const lines = (text: string) => text.split('\n').map((line) => line.trim());
 

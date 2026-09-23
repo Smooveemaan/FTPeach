@@ -137,7 +137,7 @@ such hops was previously invisible.
 A feature is not self-contained: its styles are in `src/styles/**`, its strings are namespaces in
 `src/i18n/locales/*.json`, and its tests are grouped by area under `test/unit/` and
 `test/component/`. Browser scenarios and snapshots live in `test/visual/`. The CSS cascade
-needs one ordered entrypoint, the DeepL sync needs one file per language, and tests need
+needs one ordered entrypoint, every language needs its own file, and tests need
 different runtime environments. See `test/README.md` for the test layout and commands.
 
 | Feature | Locale namespaces | Stylesheets |

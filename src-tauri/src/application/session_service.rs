@@ -201,6 +201,13 @@ fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSiz
 /// same id waits rather than racing. Cancellation goes through
 /// `ConnectingClients`, which lets a disconnect abandon a stalled connect
 /// without waiting for the lock.
+/// How many connections may be open, or waiting to open, at once.
+///
+/// Two panes per tab and a handful of tabs is the shape of ordinary use; the
+/// rest of this number is headroom. What it bounds is a renderer that asks
+/// for a slot per invented connection id.
+const MAX_SESSIONS: usize = 64;
+
 pub(crate) async fn connect(
     sessions: &Sessions,
     connecting: &ConnectingClients,
@@ -210,6 +217,12 @@ pub(crate) async fn connect(
     connection_id: &str,
     config: JsonMap,
 ) -> Result<(), ConnectFailure> {
+    if !sessions.has_slot(connection_id) && sessions.slot_count() >= MAX_SESSIONS {
+        return Err(ConnectFailure::from_error(CommandError::new(
+            ErrorCode::ResourceLimit,
+            "Too many connections are open",
+        )));
+    }
     let slot = sessions.get_or_create(connection_id);
     let mut guard = slot.lock().await;
     teardown_session(&mut guard, connection_id).await;

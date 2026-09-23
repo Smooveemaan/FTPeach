@@ -91,6 +91,20 @@ impl Sessions {
         }
     }
 
+    /// How many connection slots exist, live or merely reserved.
+    ///
+    /// The renderer mints connection ids, so nothing but this stops it from
+    /// asking for a slot per id until the map is the size of its imagination.
+    pub fn slot_count(&self) -> usize {
+        self.inner.lock().unwrap().len()
+    }
+
+    /// Whether `connection_id` already has a slot. A reconnect on an id the
+    /// map knows costs nothing new, so it is admitted even at the cap.
+    pub fn has_slot(&self, connection_id: &str) -> bool {
+        self.inner.lock().unwrap().contains_key(connection_id)
+    }
+
     pub fn slot_for(&self, connection_id: &str) -> SessionSlot {
         let mut map = self.inner.lock().unwrap();
         map.entry(connection_id.to_string())
@@ -333,5 +347,27 @@ impl ConnectingClients {
         for token in tokens {
             token.cancel();
         }
+    }
+}
+
+#[cfg(test)]
+mod budget_tests {
+    use super::*;
+
+    /// Connection ids come from the renderer, so the map's size is its
+    /// choice unless something counts them.
+    #[test]
+    fn slots_are_counted_and_a_known_id_is_recognized() {
+        let sessions = Sessions::default();
+        assert_eq!(sessions.slot_count(), 0);
+        assert!(!sessions.has_slot("a"));
+        let _slot = sessions.slot_for("a");
+        assert_eq!(sessions.slot_count(), 1);
+        assert!(sessions.has_slot("a"));
+        // A reconnect on the same id costs no new slot.
+        let _again = sessions.slot_for("a");
+        assert_eq!(sessions.slot_count(), 1);
+        let _other = sessions.slot_for("b");
+        assert_eq!(sessions.slot_count(), 2);
     }
 }

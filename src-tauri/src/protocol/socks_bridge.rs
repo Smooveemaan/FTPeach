@@ -18,6 +18,14 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(30);
+/// How many bridged connections may exist at once.
+///
+/// The listener is on the loopback interface, so any process on this machine
+/// can connect to it. Without a bound each of those sockets bought a task
+/// and a 30-second handshake window before it had proved it knows the
+/// credentials; a few thousand of them cost more than the one WebDAV session
+/// the bridge exists for.
+const MAX_BRIDGED_CONNECTIONS: usize = 8;
 
 /// A running bridge; dropping it stops it.
 pub struct SocksBridge {
@@ -47,12 +55,25 @@ pub async fn start(proxy: ProxyConfig) -> Result<SocksBridge> {
     );
     let proxy = Arc::new(proxy);
     let task = tokio::spawn(async move {
-        while let Ok((client, _)) = listener.accept().await {
+        // The connections belong to this task: dropping it, which is what
+        // `SocksBridge`'s `Drop` causes, drops the set and stops them too.
+        // Detached tasks used to outlive the bridge that spawned them.
+        let mut connections = tokio::task::JoinSet::new();
+        loop {
+            while connections.len() >= MAX_BRIDGED_CONNECTIONS {
+                if connections.join_next().await.is_none() {
+                    break;
+                }
+            }
+            let Ok((client, _)) = listener.accept().await else {
+                return;
+            };
             let proxy = proxy.clone();
             let credentials = credentials.clone();
-            tokio::spawn(async move {
+            connections.spawn(async move {
                 let _ = serve(client, &proxy, &credentials).await;
             });
+            while connections.try_join_next().is_some() {}
         }
     });
     Ok(SocksBridge { url, task })
@@ -199,6 +220,45 @@ mod tests {
         let mut expected = vec![4, 1, 1, 187, 0, 0, 0, 1, 0];
         expected.extend_from_slice(b"dav.internal\0");
         assert_eq!(proxy.await.unwrap(), expected);
+    }
+
+    /// A process on this machine can open as many sockets to the bridge as
+    /// it likes; what it cannot do is make the bridge hold one task and one
+    /// handshake window per socket.
+    #[tokio::test]
+    async fn the_bridge_admits_a_bounded_number_of_clients() {
+        let bridge = start(ProxyConfig {
+            kind: ProxyKind::Socks4,
+            host: "127.0.0.1".into(),
+            port: 9,
+            username: None,
+            password: None,
+        })
+        .await
+        .unwrap();
+        let port = reqwest::Url::parse(&bridge.url).unwrap().port().unwrap();
+        // Silent clients: each one occupies a slot until its handshake
+        // window runs out, which is far longer than this test.
+        let mut silent = Vec::new();
+        for _ in 0..(MAX_BRIDGED_CONNECTIONS * 4) {
+            silent.push(TcpStream::connect(("127.0.0.1", port)).await.unwrap());
+        }
+        // The bridge greets only what it admitted. One more client gets its
+        // connection accepted by the OS backlog but no answer.
+        let mut extra = TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+        extra.write_all(&[5, 1, 2]).await.unwrap();
+        let answered =
+            tokio::time::timeout(Duration::from_millis(300), read_array::<2>(&mut extra)).await;
+        assert!(
+            answered.is_err(),
+            "an unbounded bridge answered every client"
+        );
+
+        // Dropping the bridge takes its connections with it rather than
+        // leaving detached tasks behind.
+        drop(bridge);
+        tokio::task::yield_now().await;
+        assert!(TcpStream::connect(("127.0.0.1", port)).await.is_err());
     }
 
     #[tokio::test]

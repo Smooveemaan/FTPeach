@@ -1,9 +1,21 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::protocol::transport;
+use crate::security::sensitive_string::SensitiveString;
 use serde::Deserialize;
 use serde_json::json;
+use std::time::Duration;
 
-#[derive(Debug, Deserialize)]
+/// One test at a time, and no longer than this.
+///
+/// A TCP connect and a proxy handshake each have their own operating-system
+/// timeout, which together say nothing about how long the command may run.
+/// A proxy that accepts the connection and then never answers held a task
+/// indefinitely, once per press of the button.
+const PROXY_TEST_DEADLINE: Duration = Duration::from_secs(20);
+static PROXY_TESTS: std::sync::LazyLock<tokio::sync::Semaphore> =
+    std::sync::LazyLock::new(|| tokio::sync::Semaphore::new(1));
+
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyTestRequest {
     pub proxy_type: String,
@@ -12,7 +24,7 @@ pub struct ProxyTestRequest {
     #[serde(default)]
     pub proxy_username: Option<String>,
     #[serde(default)]
-    pub proxy_password: Option<String>,
+    pub proxy_password: Option<SensitiveString>,
     pub target_host: String,
     pub target_port: u16,
 }
@@ -48,11 +60,20 @@ pub async fn proxy_test(request: ProxyTestRequest) -> CommandResult<()> {
         "proxyHost": request.proxy_host,
         "proxyPort": request.proxy_port,
         "proxyUsername": request.proxy_username,
-        "proxyPassword": request.proxy_password,
+        "proxyPassword": request.proxy_password.as_ref().map(SensitiveString::expose),
     });
     let proxy = transport::ProxyConfig::from_json_map(config.as_object().unwrap())?;
-    transport::connect(&request.target_host, request.target_port, proxy.as_ref())
-        .await
-        .map(|_stream| ())
-        .map_err(|err| CommandError::from_anyhow(&err))
+    let _permit = PROXY_TESTS.try_acquire().map_err(|_| {
+        CommandError::new(ErrorCode::ResourceLimit, "A proxy test is already running")
+    })?;
+    let attempt = transport::connect(&request.target_host, request.target_port, proxy.as_ref());
+    match tokio::time::timeout(PROXY_TEST_DEADLINE, attempt).await {
+        Ok(result) => result
+            .map(|_stream| ())
+            .map_err(|err| CommandError::from_anyhow(&err)),
+        Err(_) => Err(CommandError::new(
+            ErrorCode::TimedOut,
+            "The proxy did not finish the connection in time",
+        )),
+    }
 }

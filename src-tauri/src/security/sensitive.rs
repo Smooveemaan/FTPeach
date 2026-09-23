@@ -20,6 +20,15 @@ use tauri::{Manager, State, WindowEvent};
 use zeroize::Zeroize;
 
 const TOKEN_TTL: Duration = Duration::from_secs(30);
+/// How many unused grants may exist at once.
+///
+/// A grant expires, but nothing stopped the renderer asking for one after
+/// another and keeping every live one in memory. The window that confirms
+/// them is modal enough that a person cannot produce more than a handful.
+const MAX_GRANTS: usize = 32;
+/// How many confirmation windows may be open at once. Each one is a real
+/// OS window, so this is a bound on what the renderer can put on screen.
+const MAX_PENDING_CONFIRMATIONS: usize = 4;
 
 /// How long a confirmed change to the protected settings stays usable.
 ///
@@ -200,6 +209,12 @@ fn issue_token(
         .lock()
         .map_err(|_| denied("Authorization state unavailable"))?;
     grants.retain(|_, grant| grant.expires > Instant::now());
+    if grants.len() >= MAX_GRANTS {
+        return Err(CommandError::new(
+            ErrorCode::ResourceLimit,
+            "Too many authorizations are waiting to be used",
+        ));
+    }
     grants.insert(
         token.clone(),
         Grant {
@@ -668,11 +683,21 @@ pub async fn authorize_sensitive(
     let request_id = uuid::Uuid::new_v4().to_string();
     let confirmation_label = format!("security-confirmation-{request_id}");
     let (tx, rx) = tokio::sync::oneshot::channel();
-    state
-        .pending
-        .lock()
-        .map_err(|_| denied("Authorization state unavailable"))?
-        .insert(
+    {
+        let mut pending = state
+            .pending
+            .lock()
+            .map_err(|_| denied("Authorization state unavailable"))?;
+        // Refuse before the window is built rather than after: each pending
+        // confirmation is a real OS window, and the renderer decides how
+        // many to ask for.
+        if pending.len() >= MAX_PENDING_CONFIRMATIONS {
+            return Err(CommandError::new(
+                ErrorCode::ResourceLimit,
+                "Too many security confirmations are already open",
+            ));
+        }
+        pending.insert(
             request_id.clone(),
             PendingConfirmation {
                 window: confirmation_label.clone(),
@@ -680,6 +705,7 @@ pub async fn authorize_sensitive(
                 response: tx,
             },
         );
+    }
     let confirmation =
         match crate::runtime::confirmation_window::create(&app, &confirmation_label, &request_id) {
             Ok(window) => window,

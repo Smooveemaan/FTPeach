@@ -1,0 +1,5 @@
+{
+  "main": { "raw": 786716, "gzip": 236926 },
+  "securityConfirmation": { "raw": 420937, "gzip": 122822 },
+  "deferred": { "raw": 1255883, "gzip": 396513 }
+}

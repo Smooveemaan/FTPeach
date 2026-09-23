@@ -142,6 +142,13 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      - name: Keep the startup bundle report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bundle-report
+          path: dist/bundle-report.json
+          if-no-files-found: ignore
 
   parser-regressions:
     permissions:

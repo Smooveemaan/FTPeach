@@ -16,15 +16,32 @@ the Site Manager boundary keeps its DnD dependency graph out of the startup path
 chunks intentionally share common dialog code rather than forcing a manual vendor chunk for each
 dependency.
 
-`npm run build` runs `scripts/checks/check-bundle-budget.ts` after Vite and fails when the entry chunk is
-larger than 200 KiB or any JavaScript chunk is larger than 350 KiB. The limits apply to minified,
-uncompressed files and leave enough headroom for small changes while detecting a lost lazy-loading
-boundary.
+`npm run build` runs `scripts/checks/check-bundle-budget.ts` after Vite. The entry chunk alone is
+a few KiB and says nothing about startup: `src/main.tsx` awaits `react-dom/client`, the window's UI
+and, in Tauri, the IPC adapter before the first render. The check therefore follows the Vite
+manifest from the entry through those awaited imports (`STARTUP_IMPORTS`) and their static
+imports, counting each shared chunk and stylesheet once, separately for the main window and the
+security confirmation window. Everything no window awaits is reported as deferred, apart from
+the startup figures.
+
+Budgets are `scripts/checks/bundle-baseline.json` plus 10%, raw and gzip alike; any single
+JavaScript chunk above 950 KiB also fails. An intended increase updates the baseline in the same
+change. Baseline of 24 September 2026:
+
+| Graph | Raw | Gzip |
+| --- | ---: | ---: |
+| Main window startup | 768.3 KiB | 231.4 KiB |
+| Security confirmation startup | 411.1 KiB | 119.9 KiB |
+| Deferred (settings, dialogs, locales, …) | 1226.4 KiB | 387.2 KiB |
+
+CI writes the table with the change against the baseline to the job summary and keeps
+`dist/bundle-report.json` as the `bundle-report` artifact.
 
 Packaged startup timing is intentionally not used as a release gate at this stage. The Windows
 `tauri-driver` setup opened its WebView on `ERR_FILE_NOT_FOUND` for both the baseline and current
 debug binaries, so it could not provide a valid renderer-ready timestamp. Entry size and the bundle
-budget remain the reproducible regression signals; they are not presented as wall-clock timing.
+budget remain the reproducible regression signals; they are not presented as wall-clock timing, and
+cold start to interactive on WebView2 is still not measured.
 
 The icon component was audited alongside the split. Its lookup maps are intentionally dynamic: all
 file-category icons are reachable through extension classification, all site icons are selectable

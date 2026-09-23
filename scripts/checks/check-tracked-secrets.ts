@@ -20,8 +20,13 @@ const secretContentPatterns = [
 const violations = [];
 
 for (const path of tracked) {
-  // The scanner necessarily contains the markers it searches for.
-  if (path === 'scripts/checks/check-tracked-secrets.ts') continue;
+  // The scanners necessarily contain the markers they search for.
+  if (
+    path === 'scripts/checks/check-tracked-secrets.ts' ||
+    path === 'scripts/release/release-trust.ts'
+  ) {
+    continue;
+  }
 
   if (!existsSync(path)) continue;
 

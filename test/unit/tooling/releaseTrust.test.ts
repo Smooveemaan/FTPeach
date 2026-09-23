@@ -7,6 +7,7 @@ import {
   parseAdvisoryRegister,
   privateKeyHits,
   rustsecKind,
+  secretKeyMarkers,
 } from '../../../scripts/release/release-trust.ts';
 
 test('an unsigned binary is reported as the accepted state, not as signed', () => {
@@ -74,8 +75,7 @@ test('required reviewers without administrator bypass pass', () => {
   assert.equal(verdict.ok, true);
 });
 
-const keyFile =
-  'untrusted comment: rsign encrypted secret key\nRWRTY0IyQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9w\n';
+const keyFile = `${secretKeyMarkers[0]}\nRWRTY0IyQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9w\n`;
 const secret = Buffer.from(keyFile).toString('base64');
 
 test('the updater key is found as given, decoded, or by its header', () => {
@@ -88,7 +88,7 @@ test('the updater key is found as given, decoded, or by its header', () => {
     ['the decoded updater private key'],
   );
   assert.deepEqual(privateKeyHits(Buffer.from(keyFile), undefined), [
-    'a "untrusted comment: rsign encrypted secret key" header',
+    `a "${secretKeyMarkers[0]}" header`,
   ]);
 });
 

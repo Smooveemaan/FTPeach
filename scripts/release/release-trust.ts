@@ -122,7 +122,7 @@ export function environmentVerdict(environment: GithubEnvironment): Verdict {
 }
 
 /** Header lines minisign writes in front of a secret key file. */
-const secretKeyMarkers = [
+export const secretKeyMarkers = [
   'untrusted comment: rsign encrypted secret key',
   'minisign encrypted secret key',
 ];

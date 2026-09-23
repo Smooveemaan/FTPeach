@@ -30,6 +30,8 @@ rules:
     pattern-sanitizers:
       # security/connection_guard.rs replaces separators and unsafe components.
       - pattern: safe_temp_name(...)
+      # security/open_with_intent.rs derives local_name with safe_temp_name.
+      - pattern: OpenWithIntent::resolve(...)
   - id: rust-disabled-tls-verification
     languages: [rust]
     severity: ERROR
@@ -53,3 +55,54 @@ rules:
       - pattern: $ELEMENT.outerHTML = $VALUE
       - pattern: $ELEMENT.insertAdjacentHTML(...)
       - pattern: <$TAG ... dangerouslySetInnerHTML={$VALUE} ... />
+  - id: rust-credential-debug
+    languages: [rust]
+    severity: ERROR
+    message: A derived Debug prints this credential in the clear; hold it in SensitiveString, which formats as [REDACTED] (CWE-532).
+    patterns:
+      - pattern-either:
+          - pattern: |
+              #[derive(..., Debug, ...)]
+              struct $STRUCT { ..., $FIELD: $TYPE, ... }
+          - pattern: |
+              #[derive(..., Debug, ...)]
+              pub struct $STRUCT { ..., $FIELD: $TYPE, ... }
+          - pattern: |
+              #[derive(..., Debug, ...)]
+              pub(crate) struct $STRUCT { ..., $FIELD: $TYPE, ... }
+      - metavariable-regex:
+          metavariable: $FIELD
+          regex: (?i).*(password|passphrase|secret|token|private_key).*
+      - metavariable-regex:
+          metavariable: $TYPE
+          regex: ^(String|Option<String>|Vec<u8>|Option<Vec<u8>>)$
+  - id: rust-unbounded-channel
+    languages: [rust]
+    severity: ERROR
+    message: An unbounded channel grows as fast as its sender, which may be a server or the renderer; use a bounded channel with backpressure or a counted drop (CWE-770).
+    paths:
+      exclude:
+        - '*_tests.rs'
+        - 'tests.rs'
+    patterns:
+      - pattern-either:
+          - pattern: tokio::sync::mpsc::unbounded_channel()
+          - pattern: mpsc::unbounded_channel()
+          - pattern: unbounded_channel()
+          - pattern: std::sync::mpsc::channel()
+          - pattern: crossbeam_channel::unbounded()
+      - pattern-not-inside: |
+          mod tests { ... }
+  - id: rust-security-setting-outside-policy
+    languages: [rust]
+    severity: ERROR
+    message: Security settings change only through security::security_policy, which decides what counts as weakening; use its constants instead of the raw key.
+    paths:
+      exclude:
+        - '*_tests.rs'
+        - 'tests.rs'
+        - 'security_policy.rs'
+    patterns:
+      - pattern-regex: '"(showSecurityConfirmations|vaultAutoLockMinutes)"'
+      - pattern-not-inside: |
+          mod tests { ... }

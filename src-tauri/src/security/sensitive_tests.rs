@@ -399,3 +399,57 @@ fn the_prompt_follows_the_language_the_main_window_is_showing() {
         );
     }
 }
+
+#[test]
+fn trusting_a_host_key_is_always_confirmed_for_exactly_the_keys_shown() {
+    let shown = r#"{"host":"sftp.example","port":22,"expected":"aa11","actual":"bb22"}"#;
+    assert!(requires_confirmation("session_trust_host_key"));
+    // Turning confirmations off does not turn this one off.
+    assert!(should_show_confirmation(
+        "session_trust_host_key",
+        true,
+        false
+    ));
+    let plan = plan_host_key(shown, "en".into()).unwrap();
+    assert!(plan.required);
+    let prompt = plan.prompt.unwrap();
+    assert_eq!(prompt.kind, ConfirmationKind::TrustHostKey);
+    assert_eq!(prompt.target.as_deref(), Some("sftp.example:22"));
+    let keys = prompt.host_key.unwrap();
+    assert_eq!(
+        (keys.expected.as_deref(), keys.actual.as_str()),
+        (Some("aa11"), "bb22")
+    );
+
+    // The grant covers the request the user saw, not another server or key.
+    for other in [
+        r#"{"host":"sftp.example","port":22,"expected":"aa11","actual":"cc33"}"#,
+        r#"{"host":"sftp.example","port":2222,"expected":"aa11","actual":"bb22"}"#,
+        r#"{"host":"other.example","port":22,"expected":"aa11","actual":"bb22"}"#,
+        r#"{"host":"sftp.example","port":22,"actual":"bb22"}"#,
+    ] {
+        let state = AuthorizationState::default();
+        grant(
+            &state,
+            "token",
+            "session_trust_host_key",
+            shown,
+            Instant::now() + TOKEN_TTL,
+        );
+        assert!(
+            consume_for_label("main", &state, "token", "session_trust_host_key", other).is_err(),
+            "{other}"
+        );
+    }
+
+    for malformed in [
+        r#"{"host":"","port":22,"actual":"bb22"}"#,
+        r#"{"host":"sftp.example","port":22,"actual":"not hex"}"#,
+        r#"{"host":"sftp.example","port":22,"actual":""}"#,
+    ] {
+        assert!(
+            plan_host_key(malformed, "en".into()).is_err(),
+            "{malformed}"
+        );
+    }
+}

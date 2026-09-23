@@ -103,8 +103,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # One fixture per run: given the directory, this Semgrep reports "No unit
+      # tests found" and exits 0, which verified nothing.
       - name: Verify vulnerable and safe SAST fixtures
-        run: semgrep scan --test .semgrep --metrics=off --disable-version-check
+        run: |
+          for fixture in .semgrep/security.rs .semgrep/security.tsx; do
+            semgrep scan --test --config .semgrep/security.yml "$fixture" --metrics=off --disable-version-check > sast-fixtures.log 2>&1 || { cat sast-fixtures.log; exit 1; }
+            cat sast-fixtures.log
+            grep -q "All tests passed" sast-fixtures.log
+          done
       - name: Scan Rust and renderer sources
         run: semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src
 

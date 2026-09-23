@@ -61,7 +61,7 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
         ("concurrency", 0, 128),
         ("connectTimeout", 0, 86_400_000),
         ("proxyPort", 1, 65_535),
-        ("vaultAutoLockMinutes", 0, 10_080),
+        (crate::security::security_policy::AUTO_LOCK, 0, 10_080),
         ("transferSpeedLimitKBps", 0, 1_000_000_000),
         ("transferQueueHeight", 0, 100_000),
         ("logPanelHeight", 0, 100_000),

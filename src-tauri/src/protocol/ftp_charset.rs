@@ -131,7 +131,7 @@ async fn relay(
     let client_write = Arc::new(Mutex::new(client_write));
     // While set, reply lines go here instead of to suppaftp.
     let divert = Arc::new(std::sync::Mutex::new(
-        None::<tokio::sync::mpsc::UnboundedSender<Vec<u8>>>,
+        None::<tokio::sync::mpsc::Sender<Vec<u8>>>,
     ));
     let replies = {
         let client_write = client_write.clone();
@@ -143,12 +143,15 @@ async fn relay(
                 if line.is_empty() && read_line(&mut reader, &mut line).await? == 0 {
                     return anyhow::Ok(());
                 }
-                let diverted = divert
+                let probe = divert
                     .lock()
                     .unwrap_or_else(std::sync::PoisonError::into_inner)
-                    .as_ref()
-                    .map(|probe| probe.send(line.clone()));
-                if diverted.is_none() {
+                    .clone();
+                if let Some(probe) = probe {
+                    // Waiting here stops reading from the server, so a flood
+                    // during the probe cannot pile up in memory.
+                    let _ = probe.send(line.clone()).await;
+                } else {
                     // vsftpd doubles 0xFF in what it answers, even though it
                     // reads commands byte for byte.
                     let single = undouble_iac(&line);
@@ -187,7 +190,7 @@ async fn relay(
             let telnet = match reads_telnet {
                 Some(telnet) => telnet,
                 None => {
-                    let (sender, mut probe) = tokio::sync::mpsc::unbounded_channel();
+                    let (sender, mut probe) = tokio::sync::mpsc::channel(16);
                     *divert
                         .lock()
                         .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(sender);
@@ -223,9 +226,7 @@ async fn relay(
 
 /// Reads the answers to [`TELNET_PROBE`]: whether the server took the NOOP
 /// behind the Telnet mark. None when the replies stop coming.
-async fn reads_telnet_from(
-    lines: &mut tokio::sync::mpsc::UnboundedReceiver<Vec<u8>>,
-) -> Option<bool> {
+async fn reads_telnet_from(lines: &mut tokio::sync::mpsc::Receiver<Vec<u8>>) -> Option<bool> {
     let mut first = None;
     while let Some(line) = lines.recv().await {
         let Some(code) = final_reply_code(&line) else {

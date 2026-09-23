@@ -648,7 +648,7 @@ pub async fn authorize_sensitive(
     }
     let settings = store.get_settings().await;
     let confirmations_enabled = settings
-        .get("showSecurityConfirmations")
+        .get(security_policy::CONFIRMATIONS)
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
     let locale = prompt_locale(locale.as_deref(), &settings);

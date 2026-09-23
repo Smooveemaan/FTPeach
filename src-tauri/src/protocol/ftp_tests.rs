@@ -664,10 +664,20 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         let _ = tokio::fs::remove_dir_all(dir).await;
     }
 
-    /// A server that answers everything with one endless line, or with
-    /// endless continuation lines, and never closes the connection.
+    #[derive(Clone, Copy, Debug)]
+    enum Flood {
+        /// One line that never ends.
+        Line,
+        /// Continuation lines that never reach a terminal line.
+        Lines,
+        /// Half a reply, then silence with the connection held open.
+        Stall,
+    }
+
+    /// A server that answers everything with `flood` and never closes the
+    /// connection.
     async fn spawn_flooding_server(
-        endless_line: bool,
+        flood: Flood,
         tls: Option<tokio_rustls::TlsAcceptor>,
     ) -> (u16, tokio::task::JoinHandle<()>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -695,18 +705,16 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                             Box::new(tls_stream)
                         }
                     };
-                    let flood: &[u8] = if endless_line {
-                        b"220-"
-                    } else {
-                        b"220-still going\r\n"
+                    let (start, filler): (&[u8], Vec<u8>) = match flood {
+                        Flood::Line => (b"220-", vec![b'x'; 1024]),
+                        Flood::Lines => (b"220-still going\r\n", b"220-still going\r\n".repeat(64)),
+                        Flood::Stall => (b"220-half a rep", Vec::new()),
                     };
-                    let filler = if endless_line {
-                        vec![b'x'; 1024]
-                    } else {
-                        b"220-still going\r\n".repeat(64)
-                    };
-                    if stream.write_all(flood).await.is_err() {
+                    if stream.write_all(start).await.is_err() {
                         return;
+                    }
+                    if filler.is_empty() {
+                        return std::future::pending().await;
                     }
                     // Never a terminal line and never EOF: the client has to
                     // stop on its own budget.
@@ -726,6 +734,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         port: u16,
         secure: bool,
         encoding: &str,
+        timeout_ms: u64,
     ) -> crate::protocol::config::ConnectionConfig {
         let map = json!({
             "protocol": "ftp",
@@ -736,7 +745,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
             "secure": secure,
             "allowInvalidCert": secure,
             "encoding": encoding,
-            "timeoutMs": 30_000
+            "timeout": timeout_ms
         })
         .as_object()
         .unwrap()
@@ -744,8 +753,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
     }
 
-    #[tokio::test]
-    async fn an_endless_control_reply_stops_on_the_client_budget() {
+    fn flooding_tls() -> tokio_rustls::TlsAcceptor {
         let _ = rustls::crypto::ring::default_provider().install_default();
         let decode = |value| {
             base64::engine::general_purpose::STANDARD
@@ -760,16 +768,22 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
             .with_no_client_auth()
             .with_single_cert(vec![cert], key)
             .unwrap();
-        let acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(tls));
+        tokio_rustls::TlsAcceptor::from(Arc::new(tls))
+    }
 
-        for endless_line in [true, false] {
-            for (secure, encoding) in [(false, ""), (true, ""), (false, "windows-1251")] {
+    const FLOODED_CHANNELS: [(bool, &str); 3] = [(false, ""), (true, ""), (false, "windows-1251")];
+
+    #[tokio::test]
+    async fn an_endless_control_reply_stops_on_the_client_budget() {
+        let acceptor = flooding_tls();
+        for flood in [Flood::Line, Flood::Lines] {
+            for (secure, encoding) in FLOODED_CHANNELS {
                 let (port, server) =
-                    spawn_flooding_server(endless_line, secure.then(|| acceptor.clone())).await;
+                    spawn_flooding_server(flood, secure.then(|| acceptor.clone())).await;
                 let mut backend = FtpBackend::new();
                 let error = tokio::time::timeout(
                     Duration::from_secs(20),
-                    backend.connect(&flooding_config(port, secure, encoding)),
+                    backend.connect(&flooding_config(port, secure, encoding, 30_000)),
                 )
                 .await
                 .expect("the client must stop reading instead of following the server")
@@ -777,9 +791,148 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                 assert_eq!(
                     crate::ipc::CommandError::from_anyhow(&error).code,
                     crate::ipc::ErrorCode::ResourceLimit,
-                    "endless_line={endless_line} secure={secure} encoding={encoding:?}: {error:#}"
+                    "{flood:?} secure={secure} encoding={encoding:?}: {error:#}"
                 );
                 assert!(!backend.is_connected());
+                server.abort();
+            }
+        }
+    }
+
+    /// A peer that stops halfway through a reply and keeps the socket open
+    /// is bounded by the configured timeout, and abandoning the connect
+    /// leaves nothing connected behind.
+    #[tokio::test]
+    async fn a_stalled_control_reply_times_out_and_can_be_abandoned() {
+        let acceptor = flooding_tls();
+        for (secure, encoding) in FLOODED_CHANNELS {
+            let (port, server) =
+                spawn_flooding_server(Flood::Stall, secure.then(|| acceptor.clone())).await;
+
+            let mut backend = FtpBackend::new();
+            let error = tokio::time::timeout(
+                Duration::from_secs(10),
+                backend.connect(&flooding_config(port, secure, encoding, 300)),
+            )
+            .await
+            .unwrap_or_else(|_| panic!("secure={secure} encoding={encoding:?}: the configured timeout must end the wait"))
+            .expect_err("half a reply must not be accepted");
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                crate::ipc::ErrorCode::TimedOut,
+                "secure={secure} encoding={encoding:?}: {error:#}"
+            );
+            assert!(!backend.is_connected());
+
+            let mut backend = FtpBackend::new();
+            let abandoned = tokio::time::timeout(
+                Duration::from_millis(200),
+                backend.connect(&flooding_config(port, secure, encoding, 30_000)),
+            )
+            .await;
+            assert!(abandoned.is_err(), "secure={secure} encoding={encoding:?}");
+            assert!(!backend.is_connected());
+            server.abort();
+        }
+    }
+
+    /// The reply budget holds memory down, not only time: the client runs
+    /// in a separate process that Windows refuses more than
+    /// `MEMORY_CAP` of commit, and is fed an endless reply over every
+    /// control channel. Following the server would exhaust the cap within
+    /// seconds on loopback and abort the child.
+    #[cfg(windows)]
+    #[test]
+    fn an_endless_reply_fits_in_a_process_with_a_hard_memory_cap() {
+        use std::os::windows::io::AsRawHandle;
+        use windows::Win32::Foundation::{CloseHandle, HANDLE};
+        use windows::Win32::System::JobObjects::{
+            AssignProcessToJobObject, CreateJobObjectW, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+            JOB_OBJECT_LIMIT_PROCESS_MEMORY, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
+            JobObjectExtendedLimitInformation, SetInformationJobObject,
+        };
+        const MEMORY_CAP: usize = 128 * 1024 * 1024;
+
+        let child_test = module_path!()
+            .split_once("::")
+            .map(|(_, path)| format!("{path}::endless_reply_under_a_memory_cap"))
+            .unwrap();
+        let mut child = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                child_test.as_str(),
+                "--exact",
+                "--ignored",
+                "--test-threads=1",
+            ])
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        // ponytail: the child runs unconstrained until assigned; its test
+        // harness start-up is far below the cap, so the gap cannot hide a
+        // flood. CREATE_SUSPENDED would close it at the cost of raw spawns.
+        let job = unsafe {
+            let job = CreateJobObjectW(None, None).unwrap();
+            let mut limits = JOBOBJECT_EXTENDED_LIMIT_INFORMATION::default();
+            limits.BasicLimitInformation.LimitFlags =
+                JOB_OBJECT_LIMIT_PROCESS_MEMORY | JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            limits.ProcessMemoryLimit = MEMORY_CAP;
+            SetInformationJobObject(
+                job,
+                JobObjectExtendedLimitInformation,
+                std::ptr::from_ref(&limits).cast(),
+                u32::try_from(std::mem::size_of_val(&limits)).unwrap(),
+            )
+            .unwrap();
+            AssignProcessToJobObject(job, HANDLE(child.as_raw_handle())).unwrap();
+            job
+        };
+
+        let deadline = std::time::Instant::now() + Duration::from_secs(120);
+        let status = loop {
+            if let Some(status) = child.try_wait().unwrap() {
+                break Some(status);
+            }
+            if std::time::Instant::now() > deadline {
+                let _ = child.kill();
+                break None;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        };
+        let output = child.wait_with_output().unwrap();
+        unsafe { CloseHandle(job).unwrap() };
+        let report = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            report.contains("1 passed"),
+            "the child must have run the flood: {report}"
+        );
+        assert!(
+            status.is_some_and(|status| status.success()),
+            "the capped child failed or hung ({status:?}): {report}"
+        );
+    }
+
+    #[tokio::test]
+    #[ignore = "child half of an_endless_reply_fits_in_a_process_with_a_hard_memory_cap, which runs it under the cap"]
+    async fn endless_reply_under_a_memory_cap() {
+        let acceptor = flooding_tls();
+        for flood in [Flood::Line, Flood::Lines] {
+            for (secure, encoding) in FLOODED_CHANNELS {
+                let (port, server) =
+                    spawn_flooding_server(flood, secure.then(|| acceptor.clone())).await;
+                let error = FtpBackend::new()
+                    .connect(&flooding_config(port, secure, encoding, 0))
+                    .await
+                    .expect_err("an endless reply must not be accepted");
+                assert_eq!(
+                    crate::ipc::CommandError::from_anyhow(&error).code,
+                    crate::ipc::ErrorCode::ResourceLimit,
+                    "{flood:?} secure={secure} encoding={encoding:?}: {error:#}"
+                );
                 server.abort();
             }
         }

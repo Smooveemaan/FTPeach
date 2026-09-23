@@ -74,6 +74,11 @@ fn https_upgrade(base: &str, location: &str) -> Option<String> {
     .then(|| to.as_str().trim_end_matches('/').to_owned())
 }
 
+/// Whether this address would carry a password in the clear.
+fn is_cleartext(url: &str) -> bool {
+    reqwest::Url::parse(url).is_ok_and(|parsed| parsed.scheme() == "http")
+}
+
 const PROPFIND_BODY: &str = r#"<?xml version="1.0"?><D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/><D:getcontentlength/><D:getlastmodified/></D:prop></D:propfind>"#;
 
 struct UploadBody {
@@ -103,6 +108,10 @@ pub struct WebDavBackend {
     base_url: String,
     user: String,
     password: String,
+    /// Whether this connection earned the right to carry the password: it is
+    /// HTTPS, or the user allowed unencrypted sign-in. It defaults to false,
+    /// so a backend that never connected cannot send one either.
+    send_credentials: bool,
     connected: bool,
     logger: BackendLogger,
     /// Carries the connection's SOCKS4 proxy, which reqwest cannot speak.
@@ -180,6 +189,16 @@ impl WebDavBackend {
         url
     }
 
+    /// The credentials this connection is allowed to put on the wire. An
+    /// unencrypted connection the user did not mark as allowed sends none.
+    fn credentials(&self) -> (&str, &str) {
+        if self.send_credentials {
+            (self.user.as_str(), self.password.as_str())
+        } else {
+            ("", "")
+        }
+    }
+
     fn request(&self, method: Method, path: &str) -> BackendResult<reqwest::RequestBuilder> {
         self.request_url(method, self.build_url(path))
     }
@@ -191,8 +210,9 @@ impl WebDavBackend {
             self.client()?
         };
         let mut req = client.request(method, url);
-        if !self.user.is_empty() || !self.password.is_empty() {
-            req = req.basic_auth(&self.user, Some(self.password.clone()));
+        let (user, password) = self.credentials();
+        if !user.is_empty() || !password.is_empty() {
+            req = req.basic_auth(user, Some(password.to_owned()));
         }
         Ok(req)
     }
@@ -368,7 +388,8 @@ impl WebDavBackend {
     async fn resource_exists(&self, path: &str) -> BackendResult<bool> {
         let client = self.client()?.clone();
         let url = self.build_url(path);
-        match Self::propfind(&client, url, 0, &self.user, &self.password).await {
+        let (user, password) = self.credentials();
+        match Self::propfind(&client, url, 0, user, password).await {
             Ok(xml) => Ok(!parse_propfind(&xml)?.is_empty()),
             Err(error)
                 if crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::NotFound =>
@@ -383,7 +404,8 @@ impl WebDavBackend {
     async fn file_exists(&self, path: &str) -> BackendResult<bool> {
         let client = self.client()?.clone();
         let url = self.build_url(path);
-        match Self::propfind(&client, url, 0, &self.user, &self.password).await {
+        let (user, password) = self.credentials();
+        match Self::propfind(&client, url, 0, user, password).await {
             Ok(xml) => Ok(parse_propfind(&xml)?
                 .first()
                 .is_some_and(|entry| !entry.is_dir)),
@@ -450,6 +472,7 @@ impl ProtocolBackend for WebDavBackend {
         let user = config.user.clone();
         let password = config.password.clone();
         let allow_invalid_cert = config.allow_invalid_cert;
+        let allow_cleartext_auth = config.allow_cleartext_auth;
         let ca_cert_path = config.ca_cert_path.clone();
         let timeout_ms = config.common.timeout_ms;
 
@@ -472,6 +495,14 @@ impl ProtocolBackend for WebDavBackend {
         };
         let build_client = |read_timeout: bool| -> BackendResult<Client> {
             let mut builder = Client::builder().redirect(same_origin_redirects());
+            // reqwest reads HTTP_PROXY/HTTPS_PROXY from the environment by
+            // default. A connection configured without a proxy has to take
+            // the route the settings describe, not one an inherited variable
+            // chooses, so the absence of a proxy is stated rather than left
+            // to a default.
+            if proxy.is_none() {
+                builder = builder.no_proxy();
+            }
             if read_timeout {
                 builder = builder.read_timeout(idle);
             }
@@ -503,11 +534,30 @@ impl ProtocolBackend for WebDavBackend {
 
         self.log_kind("PROPFIND / (Depth: 0)", LogKind::Command);
         let mut webdav_url = webdav_url;
+        // An http:// address does not get the password on the strength of a
+        // redirect that has not happened yet. The first request goes out
+        // unauthenticated, and only an address that is already HTTPS, or a
+        // connection the user marked as allowed to authenticate in the
+        // clear, carries credentials.
+        let has_credentials = !user.is_empty() || !password.is_empty();
+        let mut send_credentials =
+            !is_cleartext(&webdav_url) || allow_cleartext_auth || !has_credentials;
         let probe = async {
             let mut upgraded = false;
             loop {
-                let reply =
-                    Self::propfind(&client, format!("{webdav_url}/"), 0, &user, &password).await;
+                let (probe_user, probe_password) = if send_credentials {
+                    (user.as_str(), password.as_str())
+                } else {
+                    ("", "")
+                };
+                let reply = Self::propfind(
+                    &client,
+                    format!("{webdav_url}/"),
+                    0,
+                    probe_user,
+                    probe_password,
+                )
+                .await;
                 // An http:// address the server moves to https:// on the same
                 // host is taken as that; the user already chose the host.
                 let upgrade = reply.as_ref().err().and_then(|error| {
@@ -520,13 +570,26 @@ impl ProtocolBackend for WebDavBackend {
                     self.log_kind(format!("Redirected to {address}"), LogKind::Status);
                     webdav_url = address;
                     upgraded = true;
+                    // The address is HTTPS now, so the credentials can go.
+                    send_credentials = true;
                     continue;
                 }
-                let reply = reply.map_err(|error| {
-                    if error
+                let needs_login = reply.as_ref().err().is_some_and(|error| {
+                    error
                         .chain()
                         .any(|cause| cause.is::<response::Unauthorized>())
-                    {
+                });
+                // The server wants a password and the connection is still in
+                // the clear. Saying so is the point: no silent cleartext
+                // fallback, and no password sent to find out.
+                if needs_login && !send_credentials {
+                    return Err(super::fail(
+                        ErrorCode::PermissionDenied,
+                        "This WebDAV server asks for a password over an unencrypted connection. Use an https:// address, or allow unencrypted sign-in for this connection.",
+                    ));
+                }
+                let reply = reply.map_err(|error| {
+                    if needs_login {
                         super::fail(
                             ErrorCode::AuthFailed,
                             "The WebDAV server rejected the login",
@@ -569,6 +632,7 @@ impl ProtocolBackend for WebDavBackend {
         self.base_url = webdav_url;
         self.user = user;
         self.password = password;
+        self.send_credentials = send_credentials;
         self.connected = true;
         Ok(())
     }
@@ -602,7 +666,10 @@ impl ProtocolBackend for WebDavBackend {
         self.log_kind(format!("PROPFIND {target} (Depth: 1)"), LogKind::Command);
         let client = self.client()?.clone();
         let url = self.build_url(&target);
-        let (user, password) = (self.user.clone(), self.password.clone());
+        let (user, password) = {
+            let (user, password) = self.credentials();
+            (user.to_owned(), password.to_owned())
+        };
         let xml = match Self::propfind(&client, url, 1, &user, &password).await {
             Ok(xml) => xml,
             Err(err) => {
@@ -795,7 +862,10 @@ impl ProtocolBackend for WebDavBackend {
             return None;
         };
         let url = self.build_url(path);
-        let (user, password) = (self.user.clone(), self.password.clone());
+        let (user, password) = {
+            let (user, password) = self.credentials();
+            (user.to_owned(), password.to_owned())
+        };
         let Ok(xml) = Self::propfind(&client, url, 0, &user, &password).await else {
             return None;
         };

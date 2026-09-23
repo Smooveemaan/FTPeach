@@ -36,6 +36,8 @@ export interface ConnectionForm {
   user: string;
   password: string;
   allowInvalidCert: boolean;
+  /** Sending the password over an unencrypted `http://` WebDAV address. */
+  allowCleartextAuth: boolean;
   caCertPath: string;
   useKeyAuth: boolean;
   keyPath: string;
@@ -59,6 +61,7 @@ export interface ManagedSite {
   hasPassword?: boolean;
   hasKeyPassphrase?: boolean;
   allowInvalidCert?: boolean;
+  allowCleartextAuth?: boolean;
   caCertPath?: string;
   /** FTP file name encoding; empty means UTF-8. */
   encoding?: string;
@@ -83,6 +86,7 @@ export interface SiteForm {
   removePassword: boolean;
   remotePath: string;
   allowInvalidCert: boolean;
+  allowCleartextAuth: boolean;
   caCertPath: string;
   encoding: string;
   useKeyAuth: boolean;

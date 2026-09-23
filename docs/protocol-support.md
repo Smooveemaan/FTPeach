@@ -28,6 +28,10 @@ FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset pr
 - FTP active mode is incompatible with proxies and usually requires firewall/NAT configuration;
 - the first SFTP fingerprint should be independently verified with the administrator;
 - server capabilities may further restrict methods and permissions.
+- a WebDAV address must be an absolute `http://` or `https://` URL with no userinfo,
+  query string or fragment. An `http://` address is probed without credentials and
+  upgraded to `https://` when the server redirects there on the same host and path;
+  signing in over plain HTTP otherwise needs the connection's `allowCleartextAuth` opt-in.
 
 See also [`networking.md`](networking.md).
 

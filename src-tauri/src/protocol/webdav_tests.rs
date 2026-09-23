@@ -121,6 +121,186 @@ async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::tas
     )
 }
 
+/// A cleartext server that records what every request carried, so a test
+/// can assert on the absence of a header rather than on a happy path.
+async fn recording_http_server(
+    reply: &'static str,
+) -> (String, Arc<tokio::sync::Mutex<Vec<String>>>) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let seen = Arc::new(tokio::sync::Mutex::new(Vec::new()));
+    let recorded = Arc::clone(&seen);
+    tokio::spawn(async move {
+        loop {
+            let Ok((mut socket, _)) = listener.accept().await else {
+                return;
+            };
+            let mut header = Vec::new();
+            while !header.ends_with(b"\r\n\r\n") {
+                match socket.read_u8().await {
+                    Ok(byte) => header.push(byte),
+                    Err(_) => break,
+                }
+            }
+            let request = String::from_utf8_lossy(&header).into_owned();
+            let length = request
+                .lines()
+                .find_map(|line| {
+                    let (key, value) = line.split_once(':')?;
+                    key.eq_ignore_ascii_case("content-length")
+                        .then(|| value.trim().parse::<usize>().unwrap_or(0))
+                })
+                .unwrap_or(0);
+            let _ = socket.read_exact(&mut vec![0; length]).await;
+            recorded.lock().await.push(request);
+            let _ = socket.write_all(reply.as_bytes()).await;
+        }
+    });
+    (format!("http://{address}/dav"), seen)
+}
+
+fn webdav_config(url: &str, extra: serde_json::Value) -> crate::protocol::config::ConnectionConfig {
+    let mut map = serde_json::json!({ "protocol": "webdav", "webdavUrl": url })
+        .as_object()
+        .unwrap()
+        .clone();
+    for (key, value) in extra.as_object().unwrap() {
+        map.insert(key.clone(), value.clone());
+    }
+    crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+}
+
+async fn carried_authorization(seen: &Arc<tokio::sync::Mutex<Vec<String>>>) -> bool {
+    seen.lock()
+        .await
+        .iter()
+        .any(|request| request.to_ascii_lowercase().contains("authorization:"))
+}
+
+const COLLECTION_REPLY: &str = "HTTP/1.1 207 Multi-Status\r\nContent-Length: 174\r\nConnection: close\r\n\r\n<multistatus><response><href>/dav/</href><propstat><prop><resourcetype><collection/></resourcetype></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>";
+
+/// The redirect that would make the connection safe arrives in the reply to
+/// a request that has already gone out, so a password sent with the first
+/// PROPFIND is on the wire whatever the server answers.
+#[tokio::test]
+async fn an_unencrypted_server_never_sees_the_password() {
+    for reply in [
+        "HTTP/1.1 301 Moved Permanently\r\nLocation: https://elsewhere.example/dav/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 302 Found\r\nLocation: https://elsewhere.example/dav/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 307 Temporary Redirect\r\nLocation: https://elsewhere.example/dav/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 308 Permanent Redirect\r\nLocation: https://elsewhere.example/dav/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+    ] {
+        let (url, seen) = recording_http_server(reply).await;
+        let config = webdav_config(
+            &url,
+            serde_json::json!({ "user": "u", "password": "hunter2" }),
+        );
+        let mut backend = WebDavBackend::new();
+        assert!(backend.connect(&config).await.is_err(), "{reply}");
+        assert!(!backend.is_connected());
+        assert!(
+            !carried_authorization(&seen).await,
+            "the password was sent for {reply}"
+        );
+        for request in seen.lock().await.iter() {
+            assert!(
+                !request.contains("hunter2"),
+                "password appeared in {request}"
+            );
+        }
+    }
+}
+
+/// Refusing has to say so rather than quietly connecting without the
+/// password or falling back to an anonymous session.
+#[tokio::test]
+async fn cleartext_login_is_refused_until_the_user_allows_it() {
+    let reply = "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+    let (url, seen) = recording_http_server(reply).await;
+    let config = webdav_config(
+        &url,
+        serde_json::json!({ "user": "u", "password": "hunter2" }),
+    );
+    let error = WebDavBackend::new().connect(&config).await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::PermissionDenied
+    );
+    assert!(!carried_authorization(&seen).await);
+
+    let (url, seen) = recording_http_server(reply).await;
+    let allowed = webdav_config(
+        &url,
+        serde_json::json!({ "user": "u", "password": "hunter2", "allowCleartextAuth": true }),
+    );
+    let error = WebDavBackend::new().connect(&allowed).await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::AuthFailed
+    );
+    assert!(carried_authorization(&seen).await);
+}
+
+/// A server that wants no password is still browsable over plain HTTP.
+#[tokio::test]
+async fn an_unencrypted_server_without_a_login_still_connects() {
+    let (url, seen) = recording_http_server(COLLECTION_REPLY).await;
+    let mut backend = WebDavBackend::new();
+    backend
+        .connect(&webdav_config(&url, serde_json::json!({})))
+        .await
+        .expect("anonymous connect");
+    assert!(backend.is_connected());
+    assert!(!carried_authorization(&seen).await);
+}
+
+/// A password in the address is a second, silent place to keep one: it would
+/// be logged with the address, exported with the bookmark, and sent before
+/// anything decided it was safe to send.
+#[test]
+fn a_webdav_address_may_not_carry_credentials_or_a_query() {
+    for url in [
+        "https://user:hunter2@example.com/dav",
+        "https://user@example.com/dav",
+        "https://example.com/dav?token=hunter2",
+        "https://example.com/dav#hunter2",
+    ] {
+        let map = serde_json::json!({ "protocol": "webdav", "webdavUrl": url })
+            .as_object()
+            .unwrap()
+            .clone();
+        assert!(
+            crate::protocol::config::ConnectionConfig::from_json_map(&map).is_err(),
+            "{url} was accepted"
+        );
+    }
+    let map = serde_json::json!({ "protocol": "webdav", "webdavUrl": "https://example.com/dav" })
+        .as_object()
+        .unwrap()
+        .clone();
+    assert!(crate::protocol::config::ConnectionConfig::from_json_map(&map).is_ok());
+}
+
+/// The upgrade exists to move credentials onto TLS, so it must never run the
+/// other way or off the host the user chose.
+#[test]
+fn the_address_is_only_ever_upgraded_never_downgraded() {
+    assert_eq!(
+        https_upgrade("http://example.com/dav", "https://example.com/dav/"),
+        Some("https://example.com/dav".to_string())
+    );
+    for (base, location) in [
+        ("https://example.com/dav", "http://example.com/dav/"),
+        ("http://example.com/dav", "https://elsewhere.example/dav/"),
+        ("http://example.com/dav", "https://example.com/other/"),
+        ("http://example.com/dav", "https://example.com/dav/?token=x"),
+        ("http://example.com/dav", "http://example.com/dav/"),
+    ] {
+        assert_eq!(https_upgrade(base, location), None, "{base} -> {location}");
+    }
+}
+
 #[tokio::test]
 async fn connect_rejects_a_successful_html_login_page() {
     let (mut backend, server) = single_response("200 OK", "<html>Sign in</html>").await;

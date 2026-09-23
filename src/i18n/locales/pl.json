@@ -774,6 +774,10 @@
       "tooltip": "Odznacz to pole, aby zaakceptować certyfikaty serwerowe z podpisem własnym oraz certyfikaty nieprawidłowe",
       "label": "Weryfikuj certyfikat"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Loguj się plikiem prywatnego klucza SSH zamiast hasłem",
       "label": "Logowanie kluczem SSH"

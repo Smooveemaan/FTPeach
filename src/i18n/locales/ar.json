@@ -794,6 +794,10 @@
       "tooltip": "قم بإلغاء تحديد الخانة لقبول الشهادات الموقعة ذاتيًا وشهادات الخادم غير الصالحة",
       "label": "التحقق من الشهادة"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "تسجيل الدخول باستخدام ملف مفتاح SSH خاص بدلاً من كلمة المرور",
       "label": "تسجيل الدخول باستخدام مفتاح SSH"

@@ -754,6 +754,10 @@
       "tooltip": "ยกเลิกการเลือกเพื่อยอมรับใบรับรองเซิร์ฟเวอร์ที่ลงนามเองและใบรับรองเซิร์ฟเวอร์ที่ไม่ถูกต้อง",
       "label": "ตรวจสอบใบรับรอง"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "เข้าสู่ระบบด้วยไฟล์คีย์ SSH ส่วนตัวแทนรหัสผ่าน",
       "label": "เข้าสู่ระบบด้วยคีย์ SSH"

@@ -764,6 +764,10 @@
       "tooltip": "Décochez cette case pour accepter les certificats de serveur auto-signés et non valides",
       "label": "Vérifier le certificat"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Se connecter à l'aide d'un fichier de clé SSH privée plutôt qu'avec un mot de passe",
       "label": "Se connecter avec une clé SSH"

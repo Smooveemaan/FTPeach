@@ -754,6 +754,10 @@
       "tooltip": "Schakel dit vinkje uit om zelfondertekende en ongeldige servercertificaten te accepteren",
       "label": "Certificaat controleren"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Inloggen met een privé-SSH-sleutelbestand in plaats van een wachtwoord",
       "label": "Inloggen met SSH-sleutel"

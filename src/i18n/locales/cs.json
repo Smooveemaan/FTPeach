@@ -774,6 +774,10 @@
       "tooltip": "Zrušte zaškrtnutí, chcete-li povolit certifikáty s vlastním podpisem a neplatné serverové certifikáty",
       "label": "Ověřovat certifikát"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Přihlašovat se souborem soukromého klíče SSH místo hesla",
       "label": "Přihlášení pomocí klíče SSH"

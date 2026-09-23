@@ -194,6 +194,7 @@ fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
         "webdavUrl",
         "secure",
         "allowInvalidCert",
+        "allowCleartextAuth",
         "remotePath",
         "parentId",
         "useKeyAuth",

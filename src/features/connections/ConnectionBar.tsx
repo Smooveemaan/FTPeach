@@ -225,6 +225,25 @@ export default function ConnectionBar({
     </label>
   );
 
+  const cleartextToggle = isWebdav && /^http:\/\//i.test(form.webdavUrl.trim()) && (
+    <label
+      key="cleartext"
+      className="secure-toggle"
+      data-tooltip={t('connectionBar.cleartextToggle.tooltip')}
+    >
+      <input
+        type="checkbox"
+        checked={form.allowCleartextAuth}
+        onChange={(e) => onChange({ ...form, allowCleartextAuth: e.target.checked })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.click();
+        }}
+        disabled={isConnected || isBusy}
+      />
+      {t('connectionBar.cleartextToggle.label')}
+    </label>
+  );
+
   const caCertField = (form.protocol === 'ftps' || isWebdav) && (
     <button
       key="cacert"
@@ -355,6 +374,7 @@ export default function ConnectionBar({
             {userField}
             {credentialFields}
             {secureToggle}
+            {cleartextToggle}
             {authToggle}
           </div>
         </>
@@ -376,6 +396,7 @@ export default function ConnectionBar({
           {userField}
           {credentialFields}
           {secureToggle}
+          {cleartextToggle}
           {authToggle}
         </>
       )}

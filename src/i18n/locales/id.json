@@ -754,6 +754,10 @@
       "tooltip": "Hapus centang untuk menerima sertifikat server yang ditandatangani sendiri dan tidak valid",
       "label": "Verifikasi sertifikat"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Masuk menggunakan file kunci SSH privat, bukan kata sandi",
       "label": "Masuk menggunakan kunci SSH"

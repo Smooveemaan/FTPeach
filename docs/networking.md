@@ -2,6 +2,9 @@
 
 ## Proxy support
 
+A connection set up without a proxy connects directly: the WebDAV client is built with
+`no_proxy()` so that `HTTP_PROXY`/`HTTPS_PROXY` in the environment cannot reroute it.
+
 The global proxy setting applies to new FTP, FTPS, SFTP, and WebDAV connections. FTP/FTPS and
 SFTP tunnel their TCP connections through SOCKS4/4a, SOCKS5, or HTTP CONNECT. WebDAV uses the
 same proxy types through its HTTP client. Proxy credentials are stored in the protected vault.

@@ -186,6 +186,14 @@ impl Store {
                     ),
                 );
                 out.insert(
+                    "allowCleartextAuth".into(),
+                    Value::Bool(
+                        site.get("allowCleartextAuth")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false),
+                    ),
+                );
+                out.insert(
                     "remotePath".into(),
                     Value::String(
                         site.get("remotePath")

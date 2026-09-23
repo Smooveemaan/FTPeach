@@ -754,6 +754,10 @@
       "tooltip": "取消勾选以接受自签名和无效的服务器证书",
       "label": "验证证书"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "使用 SSH 私钥文件而非密码登录",
       "label": "使用 SSH 密钥登录"

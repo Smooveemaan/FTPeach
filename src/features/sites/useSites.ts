@@ -78,6 +78,7 @@ export function buildPaneSitePayload(
     user: pane.form.user,
     password: pane.form.password,
     allowInvalidCert: pane.form.allowInvalidCert,
+    allowCleartextAuth: pane.form.allowCleartextAuth,
     caCertPath: pane.form.caCertPath,
     remotePath: pane.path,
     useKeyAuth: pane.form.useKeyAuth,

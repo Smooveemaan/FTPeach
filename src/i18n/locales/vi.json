@@ -754,6 +754,10 @@
       "tooltip": "Bỏ chọn để chấp nhận các chứng chỉ máy chủ tự ký và không hợp lệ",
       "label": "Xác minh chứng chỉ"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Đăng nhập bằng tệp khóa SSH riêng tư thay vì mật khẩu",
       "label": "Đăng nhập bằng khóa SSH"

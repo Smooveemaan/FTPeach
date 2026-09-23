@@ -69,6 +69,9 @@ export default function SiteEditor({
   const iconTriggerRef = useRef<HTMLButtonElement | null>(null);
   const colorTriggerRef = useRef<HTMLButtonElement | null>(null);
   const isWebdav = form.protocol === 'webdav';
+  // Only an http:// address can leak the password, so the choice is offered
+  // exactly where it exists rather than sitting on every WebDAV bookmark.
+  const isCleartextWebdav = isWebdav && /^http:\/\//i.test(form.webdavUrl.trim());
   const isFtp = form.protocol === 'ftp' || form.protocol === 'ftps';
   const isKeyAuth = form.protocol === 'sftp' && form.useKeyAuth;
   const currentColor = SITE_COLORS.find(({ value }) => value === form.color) || SITE_COLORS[0];
@@ -466,6 +469,24 @@ export default function SiteEditor({
             }
           />
         </div>
+      )}
+      {form.kind !== 'local' && isCleartextWebdav && (
+        <div className="settings-field">
+          <span>{t('connectionBar.cleartextToggle.label')}</span>
+          <input
+            type="checkbox"
+            aria-label={t('connectionBar.cleartextToggle.label')}
+            checked={form.allowCleartextAuth}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, allowCleartextAuth: event.target.checked }))
+            }
+          />
+        </div>
+      )}
+      {form.kind !== 'local' && isCleartextWebdav && (
+        <p className="settings-hint site-field-hint">
+          {t('connectionBar.cleartextToggle.tooltip')}
+        </p>
       )}
       {form.kind !== 'local' && form.protocol === 'sftp' && (
         <div className="settings-field">

@@ -754,6 +754,10 @@
       "tooltip": "Uncheck to accept self-signed and invalid server certificates",
       "label": "Verify certificate"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Log in with a private SSH key file instead of a password",
       "label": "Log in with SSH key"

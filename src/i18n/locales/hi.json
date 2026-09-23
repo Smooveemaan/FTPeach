@@ -754,6 +754,10 @@
       "tooltip": "स्व-हस्ताक्षरित और अमान्य सर्वर प्रमाणपत्र स्वीकार करने के लिए अनचेक करें",
       "label": "प्रमाणपत्र सत्यापित करें"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "पासवर्ड के बजाय निजी SSH कुंजी फ़ाइल से लॉग इन करें",
       "label": "SSH कुंजी से लॉग इन करें"

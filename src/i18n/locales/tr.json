@@ -754,6 +754,10 @@
       "tooltip": "Kendi imzalı ve geçersiz sunucu sertifikalarını kabul etmek için işaretini kaldırın",
       "label": "Sertifikayı doğrula"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Şifre yerine özel bir SSH anahtar dosyasıyla oturum açın",
       "label": "SSH anahtarıyla oturum aç"

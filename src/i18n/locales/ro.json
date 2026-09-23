@@ -764,6 +764,10 @@
       "tooltip": "Debifați această opțiune pentru a accepta certificatele de server autosemnate și nevalide",
       "label": "Verifică certificatul"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Autentificare cu un fișier de cheie SSH privată în loc de parolă",
       "label": "Autentificare cu cheie SSH"

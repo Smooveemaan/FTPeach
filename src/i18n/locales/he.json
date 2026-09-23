@@ -764,6 +764,10 @@
       "tooltip": "בטל את הסימון כדי לקבל אישורי שרת בחתימה עצמית ואישורים לא תקפים",
       "label": "אמת אישור"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "התחבר באמצעות קובץ מפתח SSH פרטי במקום סיסמה",
       "label": "התחבר באמצעות מפתח SSH"

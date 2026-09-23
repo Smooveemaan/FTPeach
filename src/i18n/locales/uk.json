@@ -774,6 +774,10 @@
       "tooltip": "Зніміть позначку, щоб приймати самопідписані та недійсні сертифікати сервера",
       "label": "Перевіряти сертифікат"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Входити за файлом приватного SSH-ключа замість пароля",
       "label": "Вхід за SSH-ключем"

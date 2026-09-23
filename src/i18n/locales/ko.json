@@ -754,6 +754,10 @@
       "tooltip": "자체 서명 인증서와 유효하지 않은 서버 인증서를 허용하려면 선택을 해제하세요",
       "label": "인증서 검증"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "비밀번호 대신 SSH 개인 키 파일로 로그인",
       "label": "SSH 키로 로그인"

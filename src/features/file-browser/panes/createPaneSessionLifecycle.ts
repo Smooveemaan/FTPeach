@@ -79,6 +79,7 @@ export function createPaneSessionLifecycle({
     user: f.user,
     password: f.password,
     allowInvalidCert: !!f.allowInvalidCert,
+    allowCleartextAuth: !!f.allowCleartextAuth,
     caCertPath: f.caCertPath,
     timeout: connectTimeout,
     useKeyAuth: f.protocol === 'sftp' && !!f.useKeyAuth,

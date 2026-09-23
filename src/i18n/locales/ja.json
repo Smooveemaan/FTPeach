@@ -754,6 +754,10 @@
       "tooltip": "オフにすると、自己署名証明書や無効なサーバー証明書を受け入れます",
       "label": "証明書を検証"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "パスワードの代わりに SSH 秘密鍵ファイルでログイン",
       "label": "SSH 鍵でログイン"

@@ -146,6 +146,15 @@ impl Store {
             ),
         );
         record.insert(
+            "allowCleartextAuth".into(),
+            Value::Bool(
+                input
+                    .get("allowCleartextAuth")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false),
+            ),
+        );
+        record.insert(
             "remotePath".into(),
             Value::String(
                 input

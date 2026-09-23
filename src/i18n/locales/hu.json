@@ -754,6 +754,10 @@
       "tooltip": "Törölje a jelölést az önaláírt és érvénytelen szervertanúsítványok elfogadásához",
       "label": "Tanúsítvány ellenőrzése"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Bejelentkezés jelszó helyett privát SSH-kulcsfájllal",
       "label": "Bejelentkezés SSH-kulccsal"

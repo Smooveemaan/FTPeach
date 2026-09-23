@@ -49,6 +49,10 @@ pub struct WebDavConfig {
     pub user: String,
     pub password: String,
     pub allow_invalid_cert: bool,
+    /// The user accepted sending the password over an unencrypted `http://`
+    /// connection. Without it FTPeach probes for an HTTPS address first and
+    /// refuses to authenticate in the clear.
+    pub allow_cleartext_auth: bool,
     pub ca_cert_path: Option<String>,
 }
 
@@ -172,12 +176,27 @@ impl ConnectionConfig {
                 if !matches!(parsed.scheme(), "http" | "https") || parsed.host_str().is_none() {
                     bail!("WebDAV URL must be an absolute HTTP or HTTPS URL");
                 }
+                // A second, silent place to keep a password: it would be
+                // logged with the address, exported with the bookmark and
+                // sent before anything decided it was safe to send.
+                if !parsed.username().is_empty() || parsed.password().is_some() {
+                    bail!(
+                        "WebDAV URL must not carry a user name or password; put them in the account fields"
+                    );
+                }
+                // WebDAV addresses collections by path, and every request
+                // appends segments to this base, so a query string here is
+                // both meaningless and another place a token could hide.
+                if parsed.query().is_some() || parsed.fragment().is_some() {
+                    bail!("WebDAV URL must not contain a query string or fragment");
+                }
                 Ok(Self::Webdav(WebDavConfig {
                     common,
                     url,
                     user,
                     password,
                     allow_invalid_cert: bool_value(map, "allowInvalidCert"),
+                    allow_cleartext_auth: bool_value(map, "allowCleartextAuth"),
                     ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
                 }))
             }
@@ -387,10 +406,19 @@ mod tests {
         assert_eq!(
             label(json!({
                 "protocol":"webdav",
-                "webdavUrl":"https://alice:secret@dav.example.test:8443/remote.php/dav?token=x",
+                "webdavUrl":"https://dav.example.test:8443/remote.php/dav",
                 "user":"alice"
             })),
             "https://dav.example.test:8443"
+        );
+        // The address itself can no longer carry an account, so the label
+        // has nothing of the kind left to strip.
+        assert!(
+            ConnectionConfig::from_json_map(&map(json!({
+                "protocol":"webdav",
+                "webdavUrl":"https://alice:secret@dav.example.test:8443/remote.php/dav?token=x"
+            })))
+            .is_err()
         );
     }
 

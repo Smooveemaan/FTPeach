@@ -754,6 +754,10 @@
       "tooltip": "Deaktivieren, um selbstsignierte und ungültige Serverzertifikate zu akzeptieren",
       "label": "Zertifikat prüfen"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Mit einer privaten SSH-Schlüsseldatei statt mit einem Passwort anmelden",
       "label": "Mit SSH-Schlüssel anmelden"

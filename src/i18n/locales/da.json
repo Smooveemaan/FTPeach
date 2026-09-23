@@ -754,6 +754,10 @@
       "tooltip": "Fjern markeringen for at acceptere selvunderskrevne og ugyldige servercertifikater",
       "label": "Kontrollér certifikat"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Log ind med en privat SSH-nøglefil i stedet for en adgangskode",
       "label": "Log ind med SSH-nøgle"

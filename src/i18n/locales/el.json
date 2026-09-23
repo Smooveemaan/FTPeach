@@ -754,6 +754,10 @@
       "tooltip": "Αποεπιλέξτε αυτό το πλαίσιο για να αποδεχτείτε αυτο-υπογεγραμμένα και μη έγκυρα πιστοποιητικά διακομιστή",
       "label": "Επαλήθευση πιστοποιητικού"
     },
+    "cleartextToggle": {
+      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
+      "label": "Allow unencrypted sign-in"
+    },
     "authToggle": {
       "tooltip": "Σύνδεση με αρχείο ιδιωτικού κλειδιού SSH αντί για κωδικό πρόσβασης",
       "label": "Σύνδεση με κλειδί SSH"

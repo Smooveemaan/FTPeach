@@ -25,6 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+- A WebDAV address that starts with http:// no longer sends the password before the
+  connection is encrypted. FTPeach looks for an https:// address first, and asks you to
+  tick "Allow unencrypted sign-in" if the server insists on a password in the clear.
+- A WebDAV address may no longer contain a user name, a password or a query string; put
+  the account in the user and password fields.
+- A connection set up without a proxy no longer follows a proxy named in Windows
+  environment variables.
 - The vault now locks when Windows locks or the FTPeach window is hidden, even with the
   auto-lock timer turned off, and it does so even if the window has stopped responding.
   Settings and the unlock prompt now say what a lock leaves running.

@@ -43,6 +43,10 @@ Remote listing names are untrusted. Empty names, `.` and `..`, and names contain
 
 FTPS and WebDAV verify TLS certificates by default. SFTP uses TOFU: the first fingerprint is stored in `known_hosts.json`, and a changed key blocks the connection until the user explicitly approves it.
 
+A WebDAV password is only ever put on the wire from an address that has earned it. An `http://` address is probed unauthenticated: if the server redirects to `https://` on the same host and path, the address is upgraded and only the retry carries credentials; a redirect anywhere else is refused, and the upgrade never runs the other way. If the server asks for a password while the connection is still in the clear, the connection fails and says so rather than authenticating or falling back to an anonymous session. Signing in over plain HTTP needs the per-connection `allowCleartextAuth` opt-in, which is offered only for an `http://` address. A server that wants no password is still browsable over plain HTTP. A WebDAV address may not contain URL userinfo, a query string or a fragment, so a bookmark, a log line or a settings export has no second place to carry a secret.
+
+A connection configured without a proxy states that: the HTTP client is built with `no_proxy()`, so `HTTP_PROXY` and `HTTPS_PROXY` in the environment cannot reroute a connection the settings describe as direct. `tests/webdav_proxy_policy.rs` asserts this in its own process.
+
 ### Updater endpoint and application
 
 The production endpoint must use HTTPS, cannot target loopback, and is checked automatically. Tauri also verifies artifact signatures with the configured public key. The private signing key must never be included in the repository or user builds.
@@ -102,6 +106,7 @@ Under enhanced protection, DPAPI fields migrate into the vault only while it is 
 | Renderer XSS/compromise | Strict CSP, custom plugin permissions, one-use authorization tokens, secrets not returned to renderer | The renderer can still invoke non-sensitive operations granted to its window |
 | FTP MITM | No cryptographic protection in plain FTP | Accepted risk; UI recommends FTPS/SFTP |
 | FTPS/WebDAV MITM | TLS validation enabled by default | Users can explicitly enable `allowInvalidCert` |
+| WebDAV password on a cleartext connection | `http://` is probed unauthenticated and upgraded to `https://` before credentials are sent | Users can explicitly enable `allowCleartextAuth`; a server reached over plain HTTP still sees the request itself |
 | First-connection SFTP MITM | TOFU stores the first fingerprint | The first key should be verified through another channel |
 | Changed SSH host key | Fail-closed mismatch and explicit pin reset | A user may approve a malicious replacement without verification |
 | Poisoned update | HTTPS endpoint and signature verification | Release signing and publication still require operational discipline |

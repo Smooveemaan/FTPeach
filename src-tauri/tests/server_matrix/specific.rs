@@ -9,7 +9,7 @@ use std::time::{Duration, Instant};
 macro_rules! specific {
     ($name:ident, $target:literal, $body:path) => {
         #[tokio::test(flavor = "multi_thread")]
-        #[ignore]
+        #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
             run($target, |target| Box::pin($body(target))).await;
         }
@@ -426,7 +426,7 @@ async fn proxy_round_trip(target: Target) {
 macro_rules! proxied {
     ($name:ident, $kind:ident, $proxy:expr) => {
         #[tokio::test(flavor = "multi_thread")]
-        #[ignore]
+        #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
             let target = through(Kind::$kind, $proxy);
             let id = target.id;
@@ -473,7 +473,7 @@ proxied!(proxy_http_auth_webdav, Webdav, http(Some("proxypass")));
 macro_rules! proxied_cp1251 {
     ($name:ident, $host:literal, $proxy:expr) => {
         #[tokio::test(flavor = "multi_thread")]
-        #[ignore]
+        #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
             let mut target = through(Kind::Ftp, $proxy);
             target.config.insert("host".into(), $host.into());
@@ -489,7 +489,7 @@ proxied_cp1251!(proxy_http_ftp_cp1251, "proftpd", http(None));
 macro_rules! proxy_refused {
     ($name:ident, $kind:ident, $proxy:expr) => {
         #[tokio::test(flavor = "multi_thread")]
-        #[ignore]
+        #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
             let target = through(Kind::$kind, $proxy);
             run(target.id, move |_| {

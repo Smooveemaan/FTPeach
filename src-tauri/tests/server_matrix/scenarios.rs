@@ -654,6 +654,26 @@ pub async fn s12_permissions(target: Target) {
         Err(error) if code(&error) == ErrorCode::PermissionDenied => {}
         Err(error) => failures.push(format!("mkdir read-only [{:?}]: {error:#}", code(&error))),
     }
+    // A refused rename or delete is an error, and the file is still there.
+    let inner = join(&dir, "read-only-dir/inner.txt");
+    let moved = join(&dir, "read-only-dir/moved.txt");
+    // Any error will do: vsftpd answers only "550 Rename failed", so the
+    // reason is not always knowable; that it failed and kept the file is.
+    if backend.rename_no_replace(&inner, &moved).await.is_ok() {
+        failures.push("rename in read-only-dir succeeded".to_string());
+        let _ = backend.rename(&moved, &inner).await;
+    }
+    match backend.remove(&inner, false).await {
+        Ok(()) => failures.push("delete in read-only-dir succeeded".to_string()),
+        Err(error) if code(&error) == ErrorCode::PermissionDenied => {}
+        Err(error) => failures.push(format!("delete read-only [{:?}]: {error:#}", code(&error))),
+    }
+    let mut kept = Vec::new();
+    match backend.download_to_writer(&inner, &mut kept).await {
+        Ok(()) if kept == b"inner\n" => {}
+        Ok(()) => failures.push(format!("inner.txt changed: {kept:?}")),
+        Err(error) => failures.push(format!("inner.txt lost [{:?}]: {error:#}", code(&error))),
+    }
     assert!(
         failures.is_empty(),
         "{}:\n  {}",
@@ -941,6 +961,24 @@ pub async fn s19_host_key_pinning(target: Target) {
     let store_dir =
         std::env::temp_dir().join(format!("ftpeach-matrix-tofu-{}", uuid::Uuid::new_v4()));
     let store = std::sync::Arc::new(app_lib::store::Store::new_at(store_dir.clone()));
+    let mut strict = target.config.clone();
+    strict.remove("strictHostKeyCheck");
+    let error = app_lib::protocol::sftp::SftpBackend::new(store.clone())
+        .connect(&parse(&strict))
+        .await
+        .expect_err("the default must refuse an unconfirmed host key");
+    assert_eq!(
+        code(&error),
+        ErrorCode::HostKeyMismatch,
+        "{}: {error:#}",
+        target.id
+    );
+    assert!(
+        !store_dir.join("known_hosts.json").exists(),
+        "{}",
+        target.id
+    );
+
     let config = parse(&target.config);
     for attempt in ["first", "repeat"] {
         let mut backend = app_lib::protocol::sftp::SftpBackend::new(store.clone());

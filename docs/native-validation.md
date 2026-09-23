@@ -12,6 +12,23 @@ The release workflow requires both the shared checks (including packaged smoke a
 | Docker compatibility | Explicit ignored tests against disposable FTP/FTPS/SFTP/WebDAV and TLS endpoints | Every server/version, external network failures or power loss |
 | cargo deny | Current advisory database and license policy for the locked graph | Proof of absence of exploitable bugs; ignored advisories remain accepted risks |
 
+## HF-24 verification run, Windows, 2026-09-23
+
+The lanes, ignored tests and release matrix are in
+[verification-matrix.md](verification-matrix.md), which records each result.
+This run found two regressions only real servers could show, both in
+unpushed commits: FTP login sent `PASS [REDACTED]` (the password became a
+`SensitiveString` with a redacting `Display`), and the matrix and Docker
+suites could not reach SFTP or http:// WebDAV once an unconfirmed host key
+and cleartext sign-in were refused by default. The first is fixed and caught
+by the local FTP fixtures; the suites now opt into both explicitly and assert
+the refusing default.
+
+Server matrix: 616 passed, including IIS. Docker compatibility: 14 and 2
+passed. Rebex FTPS/SFTP and the cross-volume move passed. NOT RUN: the
+symlink fixture (privilege not held), IPv6 loopback (EACCES on this host) and
+the external WebDAV test (no server). Evidence: `.local/hf24-*.log`.
+
 ## P1 hotfix completion, Windows, 2026-09-23
 
 This is the current HF hotfix queue (19 P1 items, including HF-54), not the
@@ -92,7 +109,7 @@ Run npm run check as one invocation. Native smoke uses npm run build:packaged-sm
 
 For live servers, start docker compose -f src-tauri/tests/docker/docker-compose.yml up --detach, then run powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command compatibility on Windows. The helper keeps the verified Release CRT library configured for the entire Cargo invocation. Stop those fixture containers after testing. CI also verifies strict TLS endpoint versions before running Rust.
 
-Four default ignored Rust cases are explicit: the external Rebex FTPS test, external SFTP test, external WebDAV test and Windows file-symlink privilege fixture. The Docker target running zero tests without test-utils/--ignored is NOT compatibility coverage. Physical power loss, external-process ancestor races and TPM require separate fixture hardware or manual testing.
+Every ignored Rust test, with what it needs and the command that runs it, is listed in [verification-matrix.md](verification-matrix.md). The Docker target running zero tests without test-utils/--ignored is NOT compatibility coverage. Physical power loss, external-process ancestor races and TPM require separate fixture hardware or manual testing.
 
 ## P3 run, Windows, 2026-09-07
 

@@ -6,6 +6,7 @@ import {
   ignoredAdvisories,
   parseAdvisoryRegister,
   privateKeyHits,
+  releaseMatrixLines,
   rustsecKind,
   secretKeyMarkers,
 } from '../../../scripts/release/release-trust.ts';
@@ -125,4 +126,30 @@ test('register rows and deny.toml ids are read by column', () => {
     ignoredAdvisories('ignore = [\n  { id = "RUSTSEC-2024-0436", reason = "x" },\n]'),
     ['RUSTSEC-2024-0436'],
   );
+});
+
+test('only ci rows of the release matrix count as passed; the rest are not verified', () => {
+  const doc = [
+    '## Release matrix',
+    '',
+    '| Cell | Lane | How |',
+    '| --- | --- | --- |',
+    '| Default suites | ci | `checks.yml` |',
+    '| Windows Hello unlock | manual | lock, unlock with Hello |',
+    '',
+    '## Later section',
+    '| Other | ci | x |',
+  ].join('\n');
+  assert.deepEqual(releaseMatrixLines(doc), [
+    '| Default suites | passed: required job, `checks.yml` |',
+    '| Windows Hello unlock | **NOT VERIFIED** by this workflow: lock, unlock with Hello |',
+  ]);
+  assert.throws(() => releaseMatrixLines('# Nothing here'), /no release matrix/);
+});
+
+test('the release matrix in the repository parses', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const lines = releaseMatrixLines(await readFile('docs/verification-matrix.md', 'utf8'));
+  assert.ok(lines.some((line) => line.includes('NOT VERIFIED')));
+  assert.ok(lines.some((line) => line.includes('passed: required job')));
 });

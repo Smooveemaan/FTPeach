@@ -136,6 +136,7 @@ jobs:
       - run: npm run licenses:check
       - run: npm run check:rust-boundaries
       - run: npm run check:command-acl
+      - run: npm run check:ignored-tests
       - run: npm run check:duplicates
       - run: npm run lint
       - run: npm run format:check

@@ -5,7 +5,9 @@
 //! a transfer pool's factory, and a hand-written `zeroize()` after an
 //! `.await` never runs when the future is dropped before reaching that line.
 //! Reading the value is deliberately explicit, so a secret only leaves the
-//! wrapper where someone wrote `expose()`, and formatting it prints nothing.
+//! wrapper where someone wrote `expose()`, and Debug prints nothing. There is
+//! deliberately no Display: `format!("PASS {password}")` would compile and
+//! send the placeholder instead of the password.
 //!
 //! This cannot promise the bytes are gone from the process. A `String` that
 //! grew leaves its old buffer behind, `serde_json` held the password while
@@ -52,12 +54,6 @@ impl std::fmt::Debug for SensitiveString {
     }
 }
 
-impl std::fmt::Display for SensitiveString {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("[REDACTED]")
-    }
-}
-
 impl Drop for SensitiveString {
     fn drop(&mut self) {
         self.0.zeroize();
@@ -71,10 +67,9 @@ mod tests {
     const MARKER: &str = "ftpeach-secret-marker";
 
     #[test]
-    fn neither_formatting_trait_prints_the_value() {
+    fn debug_does_not_print_the_value() {
         let secret = SensitiveString::new(MARKER);
         assert_eq!(format!("{secret:?}"), "[REDACTED]");
-        assert_eq!(format!("{secret}"), "[REDACTED]");
         assert_eq!(secret.expose(), MARKER);
     }
 

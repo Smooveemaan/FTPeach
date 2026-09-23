@@ -219,7 +219,7 @@ fn entry_names(entries: &[EntryInfo]) -> Vec<&str> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn ftp_round_trip_against_docker_server() {
     let config = json!({
         "protocol": "ftp",
@@ -244,7 +244,7 @@ async fn ftp_round_trip_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn ftps_round_trip_against_docker_server() {
     ensure_crypto_provider();
     let config = json!({
@@ -272,7 +272,7 @@ async fn ftps_round_trip_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn ftps_rejects_untrusted_docker_certificate() {
     ensure_crypto_provider();
     let config = json!({
@@ -301,7 +301,7 @@ async fn ftps_rejects_untrusted_docker_certificate() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn ftp_resume_against_docker_server() {
     let config = json!({
         "protocol": "ftp",
@@ -324,12 +324,13 @@ async fn ftp_resume_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn sftp_round_trip_against_docker_server() {
     let config = json!({
         "protocol": "sftp",
         "host": "127.0.0.1",
         "port": 2222,
+        "strictHostKeyCheck": false,
         "user": "testuser",
         "password": "testpass",
     })
@@ -373,12 +374,13 @@ async fn put(backend: &mut SftpBackend, local: &std::path::Path, contents: &[u8]
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn sftp_rename_replaces_an_existing_file_against_docker_server() {
     let config = json!({
         "protocol": "sftp",
         "host": "127.0.0.1",
         "port": 2222,
+        "strictHostKeyCheck": false,
         "user": "testuser",
         "password": "testpass",
     })
@@ -444,12 +446,13 @@ async fn sftp_rename_replaces_an_existing_file_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn sftp_tofu_pins_matches_and_rejects_changed_fingerprint() {
     let config = json!({
         "protocol": "sftp",
         "host": "127.0.0.1",
         "port": 2222,
+        "strictHostKeyCheck": false,
         "user": "testuser",
         "password": "testpass",
     })
@@ -460,6 +463,27 @@ async fn sftp_tofu_pins_matches_and_rejects_changed_fingerprint() {
     let store_dir =
         std::env::temp_dir().join(format!("ftpeach-docker-sftp-tofu-{}", uuid::Uuid::new_v4()));
     let store = Store::new_at(store_dir.clone());
+
+    // The default refuses a key nobody confirmed, and pins nothing.
+    let strict = ConnectionConfig::from_json_map(
+        json!({
+            "protocol": "sftp", "host": "127.0.0.1", "port": 2222,
+            "user": "testuser", "password": "testpass",
+        })
+        .as_object()
+        .unwrap(),
+    )
+    .expect("valid config");
+    let mut refused = SftpBackend::new(Arc::new(store.clone()));
+    let error = refused
+        .connect(&strict)
+        .await
+        .expect_err("an unconfirmed host key must be refused by default");
+    assert!(
+        format!("{error:#}").contains("has not been confirmed"),
+        "unexpected strict error: {error:#}"
+    );
+    assert!(!store_dir.join("known_hosts.json").exists());
 
     let mut first = SftpBackend::new(Arc::new(store.clone()));
     first
@@ -514,12 +538,13 @@ async fn sftp_tofu_pins_matches_and_rejects_changed_fingerprint() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn sftp_resume_against_docker_server() {
     let config = json!({
         "protocol": "sftp",
         "host": "127.0.0.1",
         "port": 2222,
+        "strictHostKeyCheck": false,
         "user": "testuser",
         "password": "testpass",
     })
@@ -547,11 +572,12 @@ async fn sftp_resume_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn webdav_round_trip_against_docker_server() {
     let config = json!({
         "protocol": "webdav",
         "webdavUrl": "http://127.0.0.1:6065",
+        "allowCleartextAuth": true,
         "user": "testuser",
         "password": "testpass",
     })
@@ -601,25 +627,26 @@ async fn webdav_tls_round_trip(port: u16, protocol: &str) {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn webdav_custom_ca_over_tls12_against_docker_server() {
     ensure_crypto_provider();
     webdav_tls_round_trip(6443, "tls12").await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn webdav_custom_ca_over_tls13_against_docker_server() {
     ensure_crypto_provider();
     webdav_tls_round_trip(6444, "tls13").await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn webdav_resume_download_against_docker_server() {
     let config = json!({
         "protocol": "webdav",
         "webdavUrl": "http://127.0.0.1:6065",
+        "allowCleartextAuth": true,
         "user": "testuser",
         "password": "testpass",
     })
@@ -637,11 +664,12 @@ async fn webdav_resume_download_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
     let config = json!({
         "protocol": "webdav",
         "webdavUrl": "http://127.0.0.1:6065",
+        "allowCleartextAuth": true,
         "user": "testuser",
         "password": "testpass",
     })
@@ -782,12 +810,13 @@ async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-#[ignore]
+#[ignore = "requires the Docker stack in tests/docker/docker-compose.yml"]
 async fn sftp_cancel_preserves_resumable_partial_against_docker_server() {
     let config = json!({
         "protocol": "sftp",
         "host": "127.0.0.1",
         "port": 2222,
+        "strictHostKeyCheck": false,
         "user": "testuser",
         "password": "testpass",
     })

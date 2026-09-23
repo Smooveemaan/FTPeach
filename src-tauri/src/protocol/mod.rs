@@ -335,7 +335,6 @@ mod log_safety_tests {
     #[test]
     fn sensitive_values_and_event_fields_are_never_formatted_verbatim() {
         let secret = SensitiveString::new("known-secret");
-        assert_eq!(format!("{secret}"), "[REDACTED]");
         assert_eq!(format!("{secret:?}"), "[REDACTED]");
         assert_eq!(secret.expose(), "known-secret");
 

@@ -10,7 +10,8 @@ param(
     [ValidateSet('debug', 'release')]
     [string]$Profile = 'debug',
 
-    # Passed to the test binary by the server-matrix command (filters, --test-threads).
+    # Passed to the test binary by the test and server-matrix commands
+    # (filters, --ignored, --test-threads).
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$TestArgs = @()
 )
@@ -125,7 +126,7 @@ try {
             & cargo check --locked --manifest-path 'src-tauri\Cargo.toml'
         }
         'test' {
-            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets
+            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets -- @TestArgs
         }
         'benchmark-listing' {
             New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null

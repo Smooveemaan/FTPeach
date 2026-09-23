@@ -25,7 +25,7 @@ macro_rules! matrix {
         pub mod $target {
             $(
                 #[tokio::test(flavor = "multi_thread")]
-                #[ignore]
+                #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
                 async fn $scenario() {
                     crate::support::run(stringify!($target), |target| {
                         Box::pin(crate::scenarios::$scenario(target))

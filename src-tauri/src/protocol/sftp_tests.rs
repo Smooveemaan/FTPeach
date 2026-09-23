@@ -919,7 +919,7 @@ mod live_tests {
     use serde_json::json;
 
     #[tokio::test(flavor = "multi_thread")]
-    #[ignore]
+    #[ignore = "reaches the public Rebex demo server over the internet"]
     async fn connects_lists_and_downloads_from_rebex_sftp() {
         let body = async {
             let store = Store::new_at(
@@ -931,6 +931,7 @@ mod live_tests {
                 "protocol": "sftp",
                 "host": "test.rebex.net",
                 "port": 22,
+                "strictHostKeyCheck": false,
                 "user": "demo",
                 "password": "password",
             })

@@ -111,6 +111,80 @@ mod tests {
         assert_eq!(safe_temp_name("name\u{301}"), "name\u{301}");
     }
 
+    /// Windows itself is the oracle: whatever a server names a file, the
+    /// temp name must create one ordinary file of exactly that name, never
+    /// a device, a stream or a differently named file whose type Open with
+    /// would then misjudge. Seeded, so a failure reproduces; add the
+    /// failing name to the explicit cases above.
+    #[cfg(windows)]
+    #[test]
+    fn temp_names_create_exactly_the_named_file() {
+        use rand::{RngExt, SeedableRng};
+        const PIECES: &[&str] = &[
+            "CON",
+            "con",
+            "PRN",
+            "AUX",
+            "NUL",
+            "COM1",
+            "lpt9",
+            "COM\u{b9}",
+            "LPT\u{b3}",
+            "CONIN$",
+            "CONOUT$",
+            "CLOCK$",
+            ".",
+            "..",
+            " ",
+            ":",
+            "::$DATA",
+            "\\",
+            "/",
+            "*",
+            "?",
+            "\"",
+            "<",
+            ">",
+            "|",
+            "\0",
+            "\u{1f}",
+            "\u{7f}",
+            "a",
+            "txt",
+            ".cmd",
+            "\u{6587}",
+            "\u{1f642}",
+            "\u{301}",
+            "\u{200b}",
+            "\u{202e}",
+            "~1",
+            "$",
+            "%",
+            "\u{a0}",
+            "\u{3000}",
+        ];
+        let dir = std::env::temp_dir().join(format!("ftpeach-temp-names-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&dir).unwrap();
+        let mut rng = rand::rngs::StdRng::seed_from_u64(0xf7ea_c400);
+        for _ in 0..2_000 {
+            let name: String = (0..rng.random_range(1..=5))
+                .map(|_| PIECES[rng.random_range(0..PIECES.len())])
+                .collect();
+            let safe = safe_temp_name(&name);
+            let path = dir.join(&safe);
+            std::fs::write(&path, b"x")
+                .unwrap_or_else(|error| panic!("{name:?} -> {safe:?}: {error}"));
+            let listed: Vec<_> = std::fs::read_dir(&dir)
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name())
+                .collect();
+            assert_eq!(listed, [std::ffi::OsString::from(&safe)], "{name:?}");
+            assert!(std::fs::metadata(&path).unwrap().is_file(), "{name:?}");
+            std::fs::remove_file(&path).unwrap();
+        }
+        std::fs::remove_dir(&dir).unwrap();
+    }
+
     #[test]
     fn recursive_remove_depth_limit_is_inclusive_and_bounded() {
         assert!(remote_remove_depth_allowed(0));

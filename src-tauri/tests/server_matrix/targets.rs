@@ -91,9 +91,12 @@ fn ftps(port: u16) -> Map<String, Value> {
     }))
 }
 
+// Disposable servers present a new key each time they are built, so the
+// matrix trusts on first use; S19 checks that the default refuses instead.
 fn sftp(port: u16) -> Map<String, Value> {
     object(json!({
         "protocol": "sftp", "host": "127.0.0.1", "port": port,
+        "strictHostKeyCheck": false,
         "user": "testuser", "password": "testpass",
     }))
 }
@@ -101,13 +104,16 @@ fn sftp(port: u16) -> Map<String, Value> {
 fn sftp_key(port: u16, key: &str) -> Map<String, Value> {
     object(json!({
         "protocol": "sftp", "host": "127.0.0.1", "port": port,
+        "strictHostKeyCheck": false,
         "user": "testuser", "useKeyAuth": true, "keyPath": generated(&format!("keys/{key}")),
     }))
 }
 
+// The http:// servers are loopback fixtures; the https ones ignore the flag.
 fn webdav(url: &str) -> Map<String, Value> {
     object(json!({
         "protocol": "webdav", "webdavUrl": url,
+        "allowCleartextAuth": true,
         "user": "testuser", "password": "testpass",
         "caCertPath": generated("tls/ca.pem"),
     }))

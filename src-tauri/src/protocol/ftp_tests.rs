@@ -69,7 +69,8 @@ mod local_integration_tests {
             let response: &[u8] = match command.to_ascii_uppercase().as_str() {
                 "PBSZ" | "PROT" | "OPTS" | "TYPE" | "NOOP" => b"200 OK\r\n",
                 "USER" => b"331 Password required\r\n",
-                "PASS" => b"230 Logged in\r\n",
+                "PASS" if line == "PASS test" => b"230 Logged in\r\n",
+                "PASS" => b"530 Login incorrect\r\n",
                 "SYST" => b"215 UNIX Type: L8\r\n",
                 "FEAT" => b"211-Features\r\n UTF8\r\n211 End\r\n",
                 "QUIT" => {
@@ -223,7 +224,11 @@ mod local_integration_tests {
                     .write_all(b"331 Password required\r\n")
                     .await
                     .unwrap(),
-                "PASS" => writer.write_all(b"230 Logged in\r\n").await.unwrap(),
+                // The password arrives as typed, not as a redaction placeholder.
+                "PASS" if line == "PASS test" => {
+                    writer.write_all(b"230 Logged in\r\n").await.unwrap()
+                }
+                "PASS" => writer.write_all(b"530 Login incorrect\r\n").await.unwrap(),
                 "SYST" => writer.write_all(b"215 UNIX Type: L8\r\n").await.unwrap(),
                 "FEAT" => writer
                     .write_all(b"211-Features\r\n UTF8\r\n EPSV\r\n211 End\r\n")
@@ -1395,44 +1400,49 @@ mod recursive_stop_tests {
 
     #[tokio::test]
     async fn create_new_never_truncates_an_existing_or_newly_arrived_ftp_file() {
-        let disk = disk(|_| {});
-        disk.lock().unwrap().dirs.insert("/".into());
-        disk.lock()
-            .unwrap()
-            .files
-            .insert("/existing.txt".into(), b"keep these bytes".to_vec());
-        let port = spawn_server(disk.clone()).await;
-        let mut backend = FtpBackend::new();
-        backend.connect(&config(port)).await.unwrap();
-        let error = backend.create_file("/existing.txt").await.unwrap_err();
-        assert_eq!(
-            crate::ipc::CommandError::from_anyhow(&error).code,
-            ErrorCode::AlreadyExists
-        );
-        let listed = backend.list("/").await.unwrap();
-        assert!(!listed.iter().any(|entry| entry.name == "racing.txt"));
-        disk.lock()
-            .unwrap()
-            .files
-            .insert("/racing.txt".into(), b"arrived after listing".to_vec());
-        let error = backend.create_file("/racing.txt").await.unwrap_err();
-        assert_eq!(
-            crate::ipc::CommandError::from_anyhow(&error).code,
-            ErrorCode::AlreadyExists
-        );
-        let error = backend.create_file("/absent.txt").await.unwrap_err();
-        assert_eq!(
-            crate::ipc::CommandError::from_anyhow(&error).code,
-            ErrorCode::CreateUnsupported
-        );
-        let files = &disk.lock().unwrap().files;
-        assert_eq!(
-            files.len(),
-            2,
-            "no temporary or final artifact may be left behind"
-        );
-        assert_eq!(files["/existing.txt"], b"keep these bytes");
-        assert_eq!(files["/racing.txt"], b"arrived after listing");
+        // The same with and without MLST: creation must not lean on it.
+        for offers_mlst in [true, false] {
+            let disk = disk(|disk| disk.offers_mlst = offers_mlst);
+            disk.lock()
+                .unwrap()
+                .files
+                .insert("/existing.txt".into(), b"keep these bytes".to_vec());
+            let port = spawn_server(disk.clone()).await;
+            let mut backend = FtpBackend::new();
+            backend.connect(&config(port)).await.unwrap();
+            let error = backend.create_file("/existing.txt").await.unwrap_err();
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                ErrorCode::AlreadyExists,
+                "MLST offered: {offers_mlst}"
+            );
+            let listed = backend.list("/").await.unwrap();
+            assert!(!listed.iter().any(|entry| entry.name == "racing.txt"));
+            disk.lock()
+                .unwrap()
+                .files
+                .insert("/racing.txt".into(), b"arrived after listing".to_vec());
+            let error = backend.create_file("/racing.txt").await.unwrap_err();
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                ErrorCode::AlreadyExists,
+                "MLST offered: {offers_mlst}"
+            );
+            let error = backend.create_file("/absent.txt").await.unwrap_err();
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                ErrorCode::CreateUnsupported,
+                "MLST offered: {offers_mlst}"
+            );
+            let files = &disk.lock().unwrap().files;
+            assert_eq!(
+                files.len(),
+                2,
+                "no temporary or final artifact may be left behind"
+            );
+            assert_eq!(files["/existing.txt"], b"keep these bytes");
+            assert_eq!(files["/racing.txt"], b"arrived after listing");
+        }
     }
 
     /// A live session on a server holding `disk`, reached as a real one is.
@@ -1492,7 +1502,7 @@ mod recursive_stop_tests {
         let mut endpoints = Vec::new();
         for map in [
             json!({"protocol":"ftp", "host":"127.0.0.1", "port":2131, "user":"testuser", "password":"testpass"}),
-            json!({"protocol":"webdav", "webdavUrl":"http://127.0.0.1:6065", "user":"testuser", "password":"testpass"}),
+            json!({"protocol":"webdav", "webdavUrl":"http://127.0.0.1:6065", "allowCleartextAuth":true, "user":"testuser", "password":"testpass"}),
         ] {
             let config =
                 crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap())
@@ -1963,7 +1973,7 @@ mod live_tests {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    #[ignore]
+    #[ignore = "reaches the public Rebex demo server over the internet"]
     async fn connects_lists_and_downloads_from_rebex_ftps() {
         let body = async {
             ensure_crypto_provider();

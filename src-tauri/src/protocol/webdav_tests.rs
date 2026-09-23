@@ -1603,7 +1603,7 @@ mod live_tests {
     use serde_json::json;
 
     #[tokio::test(flavor = "multi_thread")]
-    #[ignore]
+    #[ignore = "needs a real WebDAV server named by WEBDAV_URL, WEBDAV_USER and WEBDAV_PASS"]
     async fn connects_and_round_trips_a_file() {
         let (Ok(url), Ok(user), Ok(pass)) = (
             std::env::var("WEBDAV_URL"),

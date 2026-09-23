@@ -11,6 +11,7 @@ import {
   ignoredAdvisories,
   parseAdvisoryRegister,
   privateKeyHits,
+  releaseMatrixLines,
   type AuthenticodeResult,
 } from './release-trust.ts';
 
@@ -107,6 +108,17 @@ for (const id of ignoredAdvisories(await readFile('deny.toml', 'utf8'))) {
   const row = register.get(id);
   lines.push(`| ${id} | ${row?.kind ?? 'unregistered'} | ${row?.reviewBy ?? '-'} |`);
 }
+
+lines.push(
+  '',
+  '### Verification matrix',
+  '',
+  'Record manual results in docs/native-validation.md before publishing the draft.',
+  '',
+  '| Cell | Result |',
+  '| --- | --- |',
+  ...releaseMatrixLines(await readFile('docs/verification-matrix.md', 'utf8')),
+);
 
 const report = `${lines.join('\n')}\n`;
 console.log(report);

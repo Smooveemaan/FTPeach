@@ -1288,7 +1288,7 @@ impl ProtocolBackend for FtpBackend {
                 // fixed mask instead, same as FileZilla's own display.
                 this.logged_command(
                     &mut stream,
-                    format!("PASS {password}"),
+                    format!("PASS {}", password.expose()),
                     "PASS ****",
                     &[Status::LoggedIn],
                 )

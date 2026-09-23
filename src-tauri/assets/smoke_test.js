@@ -114,6 +114,24 @@
     const backendResult = await window.__TAURI_INTERNALS__.invoke('smoke_backend_checks');
     if (backendResult !== 'settings-vault-transfer-ok')
       throw new Error(`unexpected backend smoke result: ${backendResult}`);
+    // A real confirmation window, opened the way the application opens one,
+    // must not be able to reach the application's own commands.
+    let confirmationGranted = false;
+    window.__TAURI_INTERNALS__
+      .invoke('plugin:sensitive|authorize_sensitive', {
+        operation: 'vault_reset',
+        target: '',
+      })
+      .then(
+        () => {
+          confirmationGranted = true;
+        },
+        () => {},
+      );
+    const aclResult = await window.__TAURI_INTERNALS__.invoke('smoke_probe_confirmation_acl');
+    if (aclResult !== 'ok') throw new Error(`confirmation window ACL: ${aclResult}`);
+    if (confirmationGranted)
+      throw new Error('the confirmation was granted without anyone confirming it');
     await waitFor('.menu-bar');
     await waitFor('.panes');
     await waitFor('.status-bar');

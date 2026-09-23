@@ -185,6 +185,8 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [checksWorkflow, 'checks.yml', '  rust-test:'],
   [checksWorkflow, 'checks.yml', '  packaged-smoke:'],
   [checksWorkflow, 'checks.yml', 'run: npm run check:release-config'],
+  // Without this step a new app command can ship with no ACL decision at all.
+  [checksWorkflow, 'checks.yml', 'run: npm run check:command-acl'],
   [checksWorkflow, 'checks.yml', 'run: npm run licenses:check'],
   [checksWorkflow, 'checks.yml', 'run: npm run check:tracked-secrets'],
   [checksWorkflow, 'checks.yml', 'run: npm audit --audit-level=high'],

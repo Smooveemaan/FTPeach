@@ -41,10 +41,20 @@ pub fn run() {
             if let Some((_, result)) = _payload
                 .url()
                 .query_pairs()
+                .find(|(key, _)| key == "ftpeachAclProbe")
+            {
+                commands::smoke::record_acl_probe(&result);
+            } else if let Some((_, result)) = _payload
+                .url()
+                .query_pairs()
                 .find(|(key, _)| key == "ftpeachSmoke")
             {
                 commands::smoke::finish(_webview.app_handle(), &result);
             } else if _payload.event() == tauri::webview::PageLoadEvent::Finished
+                // Only the main window drives the smoke run. The confirmation
+                // window loads the same index.html, and the script would set a
+                // second run going there and finish the test from it.
+                && _webview.label() == "main"
                 && let Err(error) = _webview.eval(include_str!("../assets/smoke_test.js"))
             {
                 commands::smoke::finish(_webview.app_handle(), &format!("error: {error}"));
@@ -162,6 +172,8 @@ pub fn run() {
             commands::smoke::smoke_backend_checks,
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_finish,
+            #[cfg(feature = "smoke-test")]
+            commands::smoke::smoke_probe_confirmation_acl,
         ])
         .setup(runtime::startup::setup)
         .run(tauri::generate_context!())

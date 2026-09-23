@@ -1,6 +1,8 @@
 use crate::{security::vault::Vault, store::Store};
 use serde_json::{Map, Value};
 use std::fs;
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
 use tauri::{Manager, State};
 
 #[tauri::command]
@@ -56,6 +58,62 @@ pub async fn smoke_backend_checks(
     }
 
     Ok("settings-vault-transfer-ok".into())
+}
+
+/// What the confirmation window reported about the commands it can reach.
+static ACL_PROBE: Mutex<Option<String>> = Mutex::new(None);
+
+/// The confirmation window has no command it is allowed to answer with, so it
+/// navigates to a URL carrying its verdict and `on_page_load` lands here.
+pub fn record_acl_probe(result: &str) {
+    if let Ok(mut slot) = ACL_PROBE.lock() {
+        *slot = Some(result.to_owned());
+    }
+}
+
+/// Asks a live confirmation window which application commands it can still
+/// call. The window class is the point of the test: its capability file grants
+/// it only the three confirmation commands, so everything else has to be
+/// rejected by the ACL before it reaches any backend code.
+#[tauri::command]
+pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<String, String> {
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
+        return Err("smoke checks are disabled".into());
+    }
+    if let Ok(mut slot) = ACL_PROBE.lock() {
+        *slot = None;
+    }
+    let window = wait_for(Duration::from_secs(10), || {
+        app.webview_windows()
+            .into_iter()
+            .find(|(label, _)| label.starts_with("security-confirmation-"))
+            .map(|(_, window)| window)
+    })
+    .await
+    .ok_or("no confirmation window opened")?;
+    // The window can already exist while its document is still loading, and a
+    // script evaluated into a document that is about to be replaced is lost.
+    // The probe is written to be re-entrant so it can simply be offered again.
+    let verdict = wait_for(Duration::from_secs(20), || {
+        let _ = window.eval(include_str!("../../assets/acl_probe.js"));
+        ACL_PROBE.lock().ok().and_then(|slot| slot.clone())
+    })
+    .await;
+    let _ = window.close();
+    verdict.ok_or_else(|| "confirmation window never reported its ACL probe".to_string())
+}
+
+async fn wait_for<T>(timeout: Duration, mut attempt: impl FnMut() -> Option<T>) -> Option<T> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if let Some(value) = attempt() {
+            return Some(value);
+        }
+        if Instant::now() >= deadline {
+            return None;
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
 }
 
 pub fn report_phase(phase: &str) {

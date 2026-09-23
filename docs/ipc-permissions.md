@@ -1,7 +1,18 @@
 # IPC permission inventory
 
-The `main` WebView receives only the core window/event permissions in
-`src-tauri/capabilities/default.json`. Application commands are grouped as follows:
+Every command the application registers is named in `build.rs`, which gives
+Tauri an application manifest for them. Without that manifest Tauri leaves app
+commands unpermissioned, and an unpermissioned command is reachable from every
+window of the application. With it, each window reaches only what its capability
+file grants: the `main` WebView receives the core window/event permissions and one
+`allow-` permission per app command in `src-tauri/capabilities/default.json`, and
+the confirmation window receives neither.
+
+`npm run check:command-acl` compares the registered commands, the `build.rs`
+lists and both capability files, so a new command cannot ship until someone
+decides which window class may call it. The packaged smoke test then asks a live
+confirmation window which commands it can still reach, and fails if it reaches
+any. Application commands are grouped as follows:
 
 Shutdown sends `app:flush-state` only to `main`. The acknowledgement command
 `app_state_flushed` checks the invoking window label and the currently pending UUID;
@@ -72,7 +83,8 @@ and native-dialog invariants are enforced independently in Rust.
 
 Confirmation windows match `security-confirmation-*` and receive a separate capability
 that can only read their own pending prompt and answer it. They cannot invoke the
-sensitive operation, and the main window cannot invoke their approve command.
+sensitive operation, no application command and no other plugin command, and the main
+window cannot invoke their approve command.
 
 Calling an old top-level command cannot reach these handlers. Calling the plugin
 without a valid token, from another window, for another target, after expiry, or a

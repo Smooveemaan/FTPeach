@@ -420,7 +420,7 @@
       "resetWarning": "Ez véglegesen törli az összes mentett jelszót és kulcsjelmondatot. A folytatáshoz írja be a jelenlegi fő jelszót.",
       "confirmReset": "Mentett jelszavak törlése",
       "showConfirmations": "Biztonsági megerősítések megjelenítése",
-      "showConfirmationsHint": "Megerősítés kérése mentett jelszavak megjelenítése vagy végrehajtható fájlok futtatása előtt. A széf visszaállítása mindig megerősítést igényel.",
+      "showConfirmationsHint": "Kérjen megerősítést mentett jelszó megjelenítése, végrehajtható fájl futtatása, illetve fájl megnyitása előtt olyan programmal, amelyet még nem használt. A széf visszaállítását, mentett jelszó másik szerverre helyezését és e beállítás kikapcsolását mindig meg kell erősíteni.",
       "unavailable": "A széf nem érhető el.",
       "failed": "A széfen végzett művelet sikertelen."
     },

@@ -420,7 +420,7 @@
       "resetWarning": "Thao tác này sẽ xóa vĩnh viễn tất cả mật khẩu và cụm mật khẩu khóa đã lưu. Nhập mật khẩu chính hiện tại để tiếp tục.",
       "confirmReset": "Xóa mật khẩu đã lưu",
       "showConfirmations": "Hiển thị xác nhận bảo mật",
-      "showConfirmationsHint": "Hỏi xác nhận trước khi hiển thị mật khẩu đã lưu hoặc chạy tệp thực thi. Việc đặt lại kho bảo mật luôn cần xác nhận.",
+      "showConfirmationsHint": "Hỏi xác nhận trước khi hiển thị mật khẩu đã lưu, chạy tệp thực thi hoặc mở tệp bằng chương trình chưa từng dùng. Việc đặt lại kho bảo mật, chuyển mật khẩu đã lưu sang máy chủ khác và tắt tùy chọn này luôn cần xác nhận.",
       "unavailable": "Kho bảo mật không khả dụng.",
       "failed": "Thao tác với kho bảo mật không thành công."
     },

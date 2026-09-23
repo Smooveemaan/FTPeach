@@ -420,7 +420,7 @@
       "resetWarning": "Detta raderar alla sparade lösenord och lösenfraser för nycklar permanent. Ange det aktuella huvudlösenordet för att fortsätta.",
       "confirmReset": "Ta bort sparade lösenord",
       "showConfirmations": "Visa säkerhetsbekräftelser",
-      "showConfirmationsHint": "Fråga innan sparade lösenord visas eller körbara filer startas. Återställning av valvet kräver alltid bekräftelse.",
+      "showConfirmationsHint": "Fråga innan ett sparat lösenord visas, en körbar fil körs eller en fil öppnas med ett program som inte har använts tidigare. Återställning av valvet, flytt av ett sparat lösenord till en annan server och avstängning av den här inställningen bekräftas alltid.",
       "unavailable": "Valvet är inte tillgängligt.",
       "failed": "Åtgärden i valvet misslyckades."
     },

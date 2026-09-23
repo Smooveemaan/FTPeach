@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Security questions are now written in the language you have just picked in settings,
   even before you save it.
 - Cancelling a security question no longer leaves an error message on screen.
+- The "Show security confirmations" description now says exactly what the setting turns
+  off, and which questions are always asked.
 
 ### Security
 

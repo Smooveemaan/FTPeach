@@ -420,7 +420,7 @@
       "resetWarning": "Dette sletter alle gemte adgangskoder og adgangssætninger til nøgler permanent. Indtast den aktuelle hovedadgangskode for at fortsætte.",
       "confirmReset": "Slet gemte adgangskoder",
       "showConfirmations": "Vis sikkerhedsbekræftelser",
-      "showConfirmationsHint": "Bed om bekræftelse, før gemte adgangskoder vises eller eksekverbare filer køres. Nulstilling af boksen kræver altid bekræftelse.",
+      "showConfirmationsHint": "Bed om bekræftelse, før en gemt adgangskode vises, en eksekverbar fil køres, eller en fil åbnes med et program, der ikke er brugt før. Nulstilling af boksen, flytning af en gemt adgangskode til en anden server og deaktivering af denne indstilling bekræftes altid.",
       "unavailable": "Boksen er ikke tilgængelig.",
       "failed": "Handlingen på boksen mislykkedes."
     },

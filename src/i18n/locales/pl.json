@@ -428,7 +428,7 @@
       "resetWarning": "Spowoduje to trwałe usunięcie wszystkich zapisanych haseł i fraz hasła kluczy. Wprowadź aktualne hasło główne, aby kontynuować.",
       "confirmReset": "Usuń zapisane hasła",
       "showConfirmations": "Pokazuj potwierdzenia bezpieczeństwa",
-      "showConfirmationsHint": "Pytaj przed pokazaniem zapisanych haseł lub uruchomieniem plików wykonywalnych. Reset sejfu zawsze wymaga potwierdzenia.",
+      "showConfirmationsHint": "Pytaj przed pokazaniem zapisanego hasła, uruchomieniem pliku wykonywalnego lub otwarciem pliku programem, który nie był dotąd używany. Reset sejfu, przeniesienie zapisanego hasła na inny serwer i wyłączenie tej opcji zawsze wymagają potwierdzenia.",
       "unavailable": "Sejf jest niedostępny.",
       "failed": "Operacja na sejfie nie powiodła się."
     },

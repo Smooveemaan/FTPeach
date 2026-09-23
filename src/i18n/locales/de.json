@@ -420,7 +420,7 @@
       "resetWarning": "Dadurch werden alle gespeicherten Passwörter und Schlüssel-Passphrasen endgültig gelöscht. Geben Sie das aktuelle Master-Passwort ein, um fortzufahren.",
       "confirmReset": "Gespeicherte Passwörter löschen",
       "showConfirmations": "Sicherheitsbestätigungen anzeigen",
-      "showConfirmationsHint": "Vor dem Anzeigen gespeicherter Passwörter oder dem Ausführen ausführbarer Dateien nachfragen. Das Zurücksetzen des Tresors muss immer bestätigt werden.",
+      "showConfirmationsHint": "Vor dem Anzeigen eines gespeicherten Passworts, dem Ausführen einer ausführbaren Datei oder dem Öffnen einer Datei mit einem noch nicht verwendeten Programm nachfragen. Das Zurücksetzen des Tresors, das Verschieben eines gespeicherten Passworts auf einen anderen Server und das Deaktivieren dieser Option werden immer bestätigt.",
       "unavailable": "Der Tresor ist nicht verfügbar.",
       "failed": "Der Vorgang im Tresor ist fehlgeschlagen."
     },

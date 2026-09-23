@@ -424,7 +424,7 @@
       "resetWarning": "Isso exclui definitivamente todas as senhas e frases secretas salvas. Digite a senha mestra atual para continuar.",
       "confirmReset": "Excluir senhas salvas",
       "showConfirmations": "Mostrar confirmações de segurança",
-      "showConfirmationsHint": "Pedir confirmação antes de revelar senhas salvas ou executar arquivos executáveis. Redefinir o cofre sempre exige confirmação.",
+      "showConfirmationsHint": "Pedir confirmação antes de mostrar uma senha salva, executar um arquivo executável ou abrir um arquivo com um programa que ainda não foi usado. Redefinir o cofre, mover uma senha salva para outro servidor e desativar esta opção são sempre confirmados.",
       "unavailable": "O cofre não está disponível.",
       "failed": "A operação no cofre falhou."
     },

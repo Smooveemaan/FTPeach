@@ -428,7 +428,7 @@
       "resetWarning": "Tím se trvale smažou všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
       "confirmReset": "Odstranit uložená hesla",
       "showConfirmations": "Zobrazovat bezpečnostní potvrzení",
-      "showConfirmationsHint": "Vyžadovat potvrzení před zobrazením uložených hesel nebo spuštěním spustitelných souborů. Resetování trezoru vyžaduje potvrzení vždy.",
+      "showConfirmationsHint": "Vyžadovat potvrzení před zobrazením uloženého hesla, spuštěním spustitelného souboru nebo otevřením souboru programem, který ještě nebyl použit. Resetování trezoru, přesun uloženého hesla na jiný server a vypnutí této volby se potvrzují vždy.",
       "unavailable": "Trezor není k dispozici.",
       "failed": "Operace s trezorem selhala."
     },

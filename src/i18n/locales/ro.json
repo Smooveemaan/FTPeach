@@ -424,7 +424,7 @@
       "resetWarning": "Această acțiune șterge definitiv toate parolele și frazele de acces ale cheilor salvate. Introduceți parola principală curentă pentru a continua.",
       "confirmReset": "Șterge parolele salvate",
       "showConfirmations": "Afișează confirmările de securitate",
-      "showConfirmationsHint": "Solicită confirmare înainte de afișarea parolelor salvate sau rularea fișierelor executabile. Resetarea seifului necesită întotdeauna confirmare.",
+      "showConfirmationsHint": "Cere confirmare înainte de afișarea unei parole salvate, rularea unui fișier executabil sau deschiderea unui fișier cu un program nefolosit până acum. Resetarea seifului, mutarea unei parole salvate pe alt server și dezactivarea acestei opțiuni se confirmă întotdeauna.",
       "unavailable": "Seiful nu este disponibil.",
       "failed": "Operațiunea pe seif a eșuat."
     },

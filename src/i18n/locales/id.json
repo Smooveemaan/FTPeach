@@ -420,7 +420,7 @@
       "resetWarning": "Tindakan ini menghapus permanen semua kata sandi dan frasa sandi kunci yang tersimpan. Masukkan kata sandi utama saat ini untuk melanjutkan.",
       "confirmReset": "Hapus kata sandi tersimpan",
       "showConfirmations": "Tampilkan konfirmasi keamanan",
-      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan atau menjalankan file yang dapat dieksekusi. Mengatur ulang brankas selalu memerlukan konfirmasi.",
+      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan, menjalankan berkas yang dapat dieksekusi, atau membuka berkas dengan program yang belum pernah dipakai. Mengatur ulang brankas, memindahkan kata sandi tersimpan ke server lain, dan mematikan opsi ini selalu dikonfirmasi.",
       "unavailable": "Brankas tidak tersedia.",
       "failed": "Operasi pada brankas gagal."
     },

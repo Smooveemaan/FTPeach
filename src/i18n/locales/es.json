@@ -424,7 +424,7 @@
       "resetWarning": "Esto eliminará de forma definitiva todas las contraseñas y frases de acceso guardadas. Introduce la contraseña maestra actual para continuar.",
       "confirmReset": "Eliminar las contraseñas guardadas",
       "showConfirmations": "Mostrar confirmaciones de seguridad",
-      "showConfirmationsHint": "Pedir confirmación antes de mostrar contraseñas guardadas o ejecutar archivos ejecutables. Restablecer la bóveda siempre requiere confirmación.",
+      "showConfirmationsHint": "Pedir confirmación antes de mostrar una contraseña guardada, ejecutar un archivo ejecutable o abrir un archivo con un programa que no se haya usado antes. Restablecer la bóveda, trasladar una contraseña guardada a otro servidor y desactivar esta opción se confirman siempre.",
       "unavailable": "La bóveda no está disponible.",
       "failed": "La operación en la bóveda ha fallado."
     },

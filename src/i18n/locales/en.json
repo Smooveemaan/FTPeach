@@ -420,7 +420,7 @@
       "resetWarning": "This permanently deletes every saved password and key passphrase. Enter the current master password to continue.",
       "confirmReset": "Delete saved secrets",
       "showConfirmations": "Show security confirmations",
-      "showConfirmationsHint": "Ask before revealing saved secrets or running executable files. Resetting the vault always requires confirmation.",
+      "showConfirmationsHint": "Ask before revealing a saved password, running an executable file, or opening a file with a program you haven't used before. Resetting the vault, moving a saved password to another server, and turning this off are always confirmed.",
       "unavailable": "The vault is unavailable.",
       "failed": "The vault operation failed."
     },

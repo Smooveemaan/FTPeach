@@ -424,7 +424,7 @@
       "resetWarning": "Cette opération supprime définitivement tous les mots de passe et phrases secrètes de clés enregistrés. Saisissez le mot de passe principal actuel pour continuer.",
       "confirmReset": "Supprimer les mots de passe enregistrés",
       "showConfirmations": "Afficher les confirmations de sécurité",
-      "showConfirmationsHint": "Demander confirmation avant d'afficher des mots de passe enregistrés ou d'exécuter des fichiers exécutables. La réinitialisation du coffre-fort demande toujours une confirmation.",
+      "showConfirmationsHint": "Demander confirmation avant d'afficher un mot de passe enregistré, d'exécuter un fichier exécutable ou d'ouvrir un fichier avec un programme jamais utilisé auparavant. La réinitialisation du coffre-fort, le déplacement d'un mot de passe enregistré vers un autre serveur et la désactivation de cette option demandent toujours une confirmation.",
       "unavailable": "Le coffre-fort n'est pas disponible.",
       "failed": "L'opération sur le coffre-fort a échoué."
     },

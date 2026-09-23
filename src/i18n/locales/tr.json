@@ -420,7 +420,7 @@
       "resetWarning": "Bu işlem, kaydedilmiş tüm şifreleri ve anahtar parolalarını kalıcı olarak siler. Devam etmek için mevcut ana şifreyi girin.",
       "confirmReset": "Kaydedilmiş şifreleri sil",
       "showConfirmations": "Güvenlik onaylarını göster",
-      "showConfirmationsHint": "Kaydedilmiş şifreleri göstermeden veya çalıştırılabilir dosyaları başlatmadan önce onay iste. Kasayı sıfırlamak her zaman onay gerektirir.",
+      "showConfirmationsHint": "Kaydedilmiş bir şifreyi göstermeden, yürütülebilir bir dosyayı çalıştırmadan veya bir dosyayı daha önce kullanılmamış bir programla açmadan önce onay iste. Kasayı sıfırlamak, kaydedilmiş bir şifreyi başka bir sunucuya taşımak ve bu seçeneği kapatmak her zaman onay gerektirir.",
       "unavailable": "Kasa kullanılamıyor.",
       "failed": "Kasa işlemi başarısız oldu."
     },

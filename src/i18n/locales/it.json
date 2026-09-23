@@ -424,7 +424,7 @@
       "resetWarning": "Questa operazione cancella definitivamente tutte le password e le passphrase salvate. Inserisci la password principale attuale per continuare.",
       "confirmReset": "Elimina le password salvate",
       "showConfirmations": "Mostra conferme di sicurezza",
-      "showConfirmationsHint": "Chiedi conferma prima di mostrare password salvate o eseguire file eseguibili. La reimpostazione della cassaforte richiede sempre conferma.",
+      "showConfirmationsHint": "Chiedere conferma prima di mostrare una password salvata, eseguire un file eseguibile o aprire un file con un programma non ancora usato. La reimpostazione della cassaforte, lo spostamento di una password salvata su un altro server e la disattivazione di questa opzione vengono sempre confermati.",
       "unavailable": "La cassaforte non è disponibile.",
       "failed": "L'operazione sulla cassaforte non è riuscita."
     },

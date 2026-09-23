@@ -2,9 +2,10 @@ use crate::ipc::{CommandError, CommandResult};
 use crate::security::auto_lock::AutoLock;
 use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{Vault, VaultStatus};
-use crate::security::vault_guard::VaultGuard;
+use crate::security::vault_guard::{AttemptOutcome, VaultGuard};
 use crate::store::Store;
 use serde::Serialize;
+use std::future::Future;
 use tauri::State;
 
 #[cfg(windows)]
@@ -42,19 +43,71 @@ impl VaultResult {
         }
     }
 
-    fn from_guarded_result(result: anyhow::Result<()>) -> Self {
-        match result {
-            Ok(()) => Self {
-                ok: true,
-                error: None,
-            },
-            Err(_) => Self {
-                ok: false,
-                error: Some(CommandError::from_anyhow(&anyhow::anyhow!(
-                    "Vault authentication failed or temporarily unavailable"
-                ))),
-            },
+    /// One neutral answer for every way authentication can fail, so the
+    /// reply never says whether the password was wrong, whether the limiter
+    /// turned the request away, or how long the wait is.
+    fn authentication_failed() -> Self {
+        Self {
+            ok: false,
+            error: Some(CommandError::from_anyhow(&anyhow::anyhow!(
+                "Vault authentication failed or temporarily unavailable"
+            ))),
         }
+    }
+
+    fn ok() -> Self {
+        Self {
+            ok: true,
+            error: None,
+        }
+    }
+}
+
+/// Everything a vault authentication needs, so the flow can be exercised
+/// without a Tauri window behind it.
+struct VaultAttempt<'a> {
+    vault: &'a Vault,
+    guard: &'a VaultGuard,
+    store: &'a Store,
+}
+
+impl VaultAttempt<'_> {
+    /// Runs one authentication and records exactly what it proved.
+    ///
+    /// `authenticate` is the only step whose failure is the user's
+    /// credential. Whatever follows it happens on an unlocked vault, so its
+    /// failure is reported as itself rather than as a rejected password, and
+    /// it neither counts against the rate limit nor clears it.
+    async fn run<F, Fut>(self, authenticate: F) -> VaultResult
+    where
+        F: FnOnce() -> Fut,
+        Fut: Future<Output = anyhow::Result<()>>,
+    {
+        // A request the limiter turns away never reaches the credential, so
+        // it is not an attempt and must not lengthen its own lockout.
+        let Ok(permit) = self.guard.acquire().await else {
+            return VaultResult::authentication_failed();
+        };
+        let authenticated = authenticate().await;
+        let outcome = if authenticated.is_ok() {
+            AttemptOutcome::Accepted
+        } else {
+            AttemptOutcome::Rejected
+        };
+        // Held until the outcome is on the books, so the next attempt cannot
+        // be judged against a state that predates this one.
+        permit.finish(outcome).await;
+        if authenticated.is_err() {
+            return VaultResult::authentication_failed();
+        }
+        // The vault is unlocked; saying "authentication failed" here would
+        // describe the wrong thing and hide a storage problem.
+        VaultResult::from_result(
+            self.store
+                .migrate_secrets_to_vault(self.vault)
+                .await
+                .map(|_migrated| ()),
+        )
     }
 }
 
@@ -70,14 +123,13 @@ pub async fn vault_setup(
     store: State<'_, Store>,
     master_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
-    let result = async {
-        let _permit = guard.acquire().await?;
-        vault.setup(master_password.expose()).await?;
-        store.migrate_secrets_to_vault(&vault).await?;
-        Ok(())
+    Ok(VaultAttempt {
+        vault: &vault,
+        guard: &guard,
+        store: &store,
     }
-    .await;
-    Ok(VaultResult::from_guarded_result(result))
+    .run(|| async { vault.setup(master_password.expose()).await })
+    .await)
 }
 
 #[tauri::command]
@@ -89,33 +141,27 @@ pub async fn vault_unlock(
     master_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
     let started = std::time::Instant::now();
-    let result = async {
-        let _permit = guard.acquire().await?;
-        vault.unlock(master_password.expose()).await?;
-        let vault_unlocked = started.elapsed();
-        store.migrate_secrets_to_vault(&vault).await?;
-        // Debug-only — see vault.rs's identical `if cfg!(...)` for why this
-        // isn't a `#[cfg(debug_assertions)]` on the statement instead.
-        if cfg!(debug_assertions) {
-            eprintln!(
-                "FTPeach vault command timings: unlock={}ms, migration={}ms, total={}ms",
-                vault_unlocked.as_millis(),
-                started.elapsed().saturating_sub(vault_unlocked).as_millis(),
-                started.elapsed().as_millis(),
-            );
-        }
-        Ok(())
+    let result = VaultAttempt {
+        vault: &vault,
+        guard: &guard,
+        store: &store,
     }
+    .run(|| async { vault.unlock(master_password.expose()).await })
     .await;
-    if result.is_ok() {
-        guard.succeeded().await;
+    if result.ok {
         // Unlocking is the user being present; the idle period starts here
         // rather than at whenever the renderer last reported activity.
         auto_lock.note_activity();
-    } else {
-        guard.failed().await;
     }
-    Ok(VaultResult::from_guarded_result(result))
+    // Debug-only — see vault.rs's identical `if cfg!(...)` for why this
+    // isn't a `#[cfg(debug_assertions)]` on the statement instead.
+    if cfg!(debug_assertions) {
+        eprintln!(
+            "FTPeach vault command timings: unlock and migration took {}ms",
+            started.elapsed().as_millis(),
+        );
+    }
+    Ok(result)
 }
 
 #[tauri::command]
@@ -160,20 +206,20 @@ pub async fn vault_unlock_system(
     auto_lock: State<'_, AutoLock>,
     window: tauri::WebviewWindow,
 ) -> CommandResult<VaultResult> {
-    let result = async {
-        let _permit = guard.acquire().await?;
-        vault.unlock_system(window_handle(&window)?).await?;
-        store.migrate_secrets_to_vault(&vault).await?;
-        Ok(())
+    let result = VaultAttempt {
+        vault: &vault,
+        guard: &guard,
+        store: &store,
     }
+    // A cancelled Windows Hello prompt is a refusal by Windows, which is
+    // what the user asking for the vault back looks like when they change
+    // their mind. It counts like any other refused credential.
+    .run(|| async { vault.unlock_system(window_handle(&window)?).await })
     .await;
-    if result.is_ok() {
-        guard.succeeded().await;
+    if result.ok {
         auto_lock.note_activity();
-    } else {
-        guard.failed().await;
     }
-    Ok(VaultResult::from_guarded_result(result))
+    Ok(result)
 }
 
 #[tauri::command]
@@ -190,19 +236,23 @@ pub async fn vault_change_password(
     old_password: SensitiveString,
     new_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
-    let result = async {
-        let _permit = guard.acquire().await?;
-        vault
-            .change_password(old_password.expose(), new_password.expose())
-            .await
-    }
-    .await;
-    if result.is_ok() {
-        guard.succeeded().await;
-    } else {
-        guard.failed().await;
-    }
-    Ok(VaultResult::from_guarded_result(result))
+    let Ok(permit) = guard.acquire().await else {
+        return Ok(VaultResult::authentication_failed());
+    };
+    let result = vault
+        .change_password(old_password.expose(), new_password.expose())
+        .await;
+    permit
+        .finish(if result.is_ok() {
+            AttemptOutcome::Accepted
+        } else {
+            AttemptOutcome::Rejected
+        })
+        .await;
+    Ok(match result {
+        Ok(()) => VaultResult::ok(),
+        Err(_) => VaultResult::authentication_failed(),
+    })
 }
 
 #[tauri::command]
@@ -221,16 +271,25 @@ pub async fn vault_reset(
         "vault_reset",
         "vault",
     )?;
+    let Ok(permit) = guard.acquire().await else {
+        return Ok(VaultResult::authentication_failed());
+    };
     let result = async {
-        let _permit = guard.acquire().await?;
         vault.reset().await?;
         store.clear_vault_secret_flags().await?;
         Ok(())
     }
     .await;
-    if result.is_ok() {
-        guard.succeeded().await;
-    }
+    // A reset is authorized by the confirmation window, not by a password,
+    // so it proves nothing about one. Completing it does clear the history,
+    // since there is no longer a vault to guess at.
+    permit
+        .finish(if result.is_ok() {
+            AttemptOutcome::Accepted
+        } else {
+            AttemptOutcome::Inconclusive
+        })
+        .await;
     Ok(VaultResult::from_result(result))
 }
 
@@ -255,4 +314,115 @@ pub async fn vault_use_system_protection(
     Ok(VaultResult::from_result(
         store.downgrade_to_system_protection(&vault).await,
     ))
+}
+
+#[cfg(test)]
+mod attempt_tests {
+    use super::*;
+
+    /// Argon2id is deliberately expensive, so these use one vault and reuse
+    /// it rather than setting one up per case.
+    struct Fixture {
+        _root: std::path::PathBuf,
+        vault: Vault,
+        store: Store,
+        guard: VaultGuard,
+    }
+
+    impl Fixture {
+        async fn new() -> Self {
+            let root =
+                std::env::temp_dir().join(format!("ftpeach-attempt-{}", uuid::Uuid::new_v4()));
+            std::fs::create_dir_all(&root).unwrap();
+            let vault = Vault::new(root.clone());
+            vault.setup("correct horse battery staple").await.unwrap();
+            Self {
+                store: Store::new_at(root.clone()),
+                vault,
+                guard: VaultGuard::default(),
+                _root: root,
+            }
+        }
+
+        fn attempt(&self) -> VaultAttempt<'_> {
+            VaultAttempt {
+                vault: &self.vault,
+                guard: &self.guard,
+                store: &self.store,
+            }
+        }
+
+        async fn unlock(&self, password: &str) -> VaultResult {
+            self.vault.lock().await;
+            self.attempt()
+                .run(|| async { self.vault.unlock(password).await })
+                .await
+        }
+    }
+
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self._root);
+        }
+    }
+
+    #[tokio::test]
+    async fn the_right_password_unlocks_and_the_wrong_one_does_not() {
+        let fixture = Fixture::new().await;
+        assert!(fixture.unlock("correct horse battery staple").await.ok);
+        assert!(fixture.vault.is_unlocked().await);
+        let refused = fixture.unlock("wrong").await;
+        assert!(!refused.ok);
+        assert!(!fixture.vault.is_unlocked().await);
+    }
+
+    /// Two attempts at once must not both be measured against a rate-limit
+    /// state that predates either of them.
+    #[tokio::test]
+    async fn concurrent_attempts_are_serialized_and_counted_once_each() {
+        let fixture = Fixture::new().await;
+        fixture.vault.lock().await;
+        let (first, second) = tokio::join!(
+            fixture
+                .attempt()
+                .run(|| async { fixture.vault.unlock("wrong").await }),
+            fixture
+                .attempt()
+                .run(|| async { fixture.vault.unlock("wrong").await }),
+        );
+        // One is refused by the password, the other by the backoff the first
+        // one left behind. Either way neither succeeds and neither is lost.
+        assert!(!first.ok);
+        assert!(!second.ok);
+        assert!(!fixture.vault.is_unlocked().await);
+    }
+
+    /// Every failure reads the same, whatever it was: a wrong password, a
+    /// request the limiter turned away, or a cancelled system prompt.
+    #[tokio::test]
+    async fn refusals_are_indistinguishable_to_the_caller() {
+        let fixture = Fixture::new().await;
+        let wrong = fixture.unlock("wrong").await;
+        let throttled = fixture.unlock("correct horse battery staple").await;
+        assert!(!wrong.ok && !throttled.ok);
+        assert_eq!(
+            format!("{:?}", wrong.error.map(|error| error.message)),
+            format!("{:?}", throttled.error.map(|error| error.message)),
+        );
+    }
+
+    /// A request the limiter refuses never reaches the password, so it must
+    /// not lengthen the wait that refused it.
+    #[tokio::test]
+    async fn a_throttled_request_does_not_lengthen_its_own_lockout() {
+        let fixture = Fixture::new().await;
+        assert!(!fixture.unlock("wrong").await.ok);
+        for _ in 0..20 {
+            assert!(!fixture.unlock("correct horse battery staple").await.ok);
+        }
+        // One real failure means one backoff step, however many requests
+        // bounced off it in the meantime.
+        tokio::time::sleep(std::time::Duration::from_millis(600)).await;
+        assert!(fixture.unlock("correct horse battery staple").await.ok);
+    }
 }

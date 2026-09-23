@@ -16,6 +16,24 @@ struct AttemptState {
     retry_at: Option<Instant>,
 }
 
+/// How an attempt ended, as the rate limiter needs to see it.
+///
+/// Only a credential that was checked and refused may count against the
+/// user. A request the limiter itself turned away, one the user cancelled,
+/// and a storage failure that happened after the password was accepted are
+/// all different things, and counting them as wrong passwords made the
+/// lockout extend itself for reasons the user could not fix.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum AttemptOutcome {
+    /// The credential was checked and accepted.
+    Accepted,
+    /// The credential was checked and refused.
+    Rejected,
+    /// The attempt never reached the credential check, or failed after it
+    /// for a reason that is not the credential.
+    Inconclusive,
+}
+
 /// Rate-limits authentication attempts and serializes vault commands.
 /// The separate KDF executor retains its own slot until blocking work exits,
 /// even when cancellation releases this command permit.
@@ -29,8 +47,26 @@ pub(crate) struct VaultGuard {
     max_backoff: Duration,
 }
 
+/// The right to run one vault authentication, held until its outcome has
+/// been recorded.
+///
+/// The permit used to be released at the end of the block that did the work,
+/// which was before the caller reported what happened. Another attempt could
+/// start in that gap and be judged against a rate-limit state that did not
+/// yet know about the attempt before it. Recording the outcome is what gives
+/// the permit up, so the two cannot come apart.
 pub(crate) struct VaultPermit {
-    _permit: OwnedSemaphorePermit,
+    guard: VaultGuard,
+    permit: Option<OwnedSemaphorePermit>,
+}
+
+impl VaultPermit {
+    /// Records how the attempt ended and releases the slot.
+    pub(crate) async fn finish(mut self, outcome: AttemptOutcome) {
+        self.guard.record(outcome).await;
+        // Explicit, so the slot is free only after the state above is.
+        self.permit = None;
+    }
 }
 
 impl Default for VaultGuard {
@@ -84,13 +120,32 @@ impl VaultGuard {
         {
             anyhow::bail!("Vault authentication failed or temporarily unavailable");
         }
-        Ok(VaultPermit { _permit: permit })
+        drop(attempts);
+        Ok(VaultPermit {
+            guard: self.clone(),
+            permit: Some(permit),
+        })
     }
 
-    pub(crate) async fn failed(&self) {
+    async fn record(&self, outcome: AttemptOutcome) {
+        match outcome {
+            AttemptOutcome::Rejected => self.failed().await,
+            AttemptOutcome::Accepted => self.succeeded().await,
+            // The user proved nothing either way, so the limiter learns
+            // nothing either way.
+            AttemptOutcome::Inconclusive => {}
+        }
+    }
+
+    async fn failed(&self) {
         let now = Instant::now();
         let mut attempts = self.attempts.lock().await;
         attempts.failures.push_back(now);
+        // A permit is only issued below the limit, so the history cannot
+        // outgrow it; the truncate says so rather than relying on it.
+        while attempts.failures.len() > self.max_attempts {
+            attempts.failures.pop_front();
+        }
         attempts.consecutive_failures = attempts.consecutive_failures.saturating_add(1);
         let exponent = attempts.consecutive_failures.saturating_sub(1).min(16);
         let delay = self
@@ -100,7 +155,7 @@ impl VaultGuard {
         attempts.retry_at = Some(now + delay);
     }
 
-    pub(crate) async fn succeeded(&self) {
+    async fn succeeded(&self) {
         let mut attempts = self.attempts.lock().await;
         attempts.failures.clear();
         attempts.consecutive_failures = 0;
@@ -131,7 +186,7 @@ mod tests {
         });
         tokio::task::yield_now().await;
         assert!(!waiting.is_finished());
-        drop(first);
+        first.finish(AttemptOutcome::Inconclusive).await;
         assert!(waiting.await.unwrap().is_ok());
 
         let held = guard.acquire().await.unwrap();
@@ -140,36 +195,102 @@ mod tests {
             async move { guard.acquire().await }
         });
         cancelled.abort();
-        drop(held);
+        held.finish(AttemptOutcome::Inconclusive).await;
         assert!(guard.acquire().await.is_ok());
     }
 
     #[tokio::test]
     async fn applies_backoff_window_and_success_reset() {
         let guard = guard();
-        let permit = guard.acquire().await.unwrap();
-        guard.failed().await;
-        drop(permit);
+        guard
+            .acquire()
+            .await
+            .unwrap()
+            .finish(AttemptOutcome::Rejected)
+            .await;
         assert!(guard.acquire().await.is_err());
         tokio::time::sleep(Duration::from_millis(12)).await;
-        let permit = guard.acquire().await.unwrap();
-        guard.succeeded().await;
-        drop(permit);
+        guard
+            .acquire()
+            .await
+            .unwrap()
+            .finish(AttemptOutcome::Accepted)
+            .await;
         assert!(guard.acquire().await.is_ok());
 
         for delay in [12, 22, 42] {
-            let permit = guard.acquire().await.unwrap();
-            guard.failed().await;
-            drop(permit);
+            guard
+                .acquire()
+                .await
+                .unwrap()
+                .finish(AttemptOutcome::Rejected)
+                .await;
             tokio::time::sleep(Duration::from_millis(delay)).await;
         }
         assert!(guard.acquire().await.is_err());
         tokio::time::sleep(Duration::from_millis(260)).await;
-        let permit = guard.acquire().await.unwrap();
-        guard.failed().await;
-        drop(permit);
+        guard
+            .acquire()
+            .await
+            .unwrap()
+            .finish(AttemptOutcome::Rejected)
+            .await;
         assert!(guard.acquire().await.is_err());
         tokio::time::sleep(Duration::from_millis(12)).await;
         assert!(guard.acquire().await.is_ok());
+    }
+
+    /// A request the limiter turned away is not evidence about the
+    /// password, so it must not lengthen the wait it was turned away by.
+    #[tokio::test]
+    async fn a_refused_request_does_not_extend_its_own_lockout() {
+        let guard = guard();
+        guard
+            .acquire()
+            .await
+            .unwrap()
+            .finish(AttemptOutcome::Rejected)
+            .await;
+        for _ in 0..20 {
+            assert!(guard.acquire().await.is_err());
+        }
+        // Only the one real failure counts, so the first backoff step is
+        // all that has to pass.
+        tokio::time::sleep(Duration::from_millis(12)).await;
+        assert!(guard.acquire().await.is_ok());
+    }
+
+    /// Something that went wrong after the password was accepted says
+    /// nothing about the password.
+    #[tokio::test]
+    async fn an_inconclusive_attempt_leaves_the_history_alone() {
+        let guard = guard();
+        for _ in 0..10 {
+            guard
+                .acquire()
+                .await
+                .unwrap()
+                .finish(AttemptOutcome::Inconclusive)
+                .await;
+        }
+        assert!(guard.acquire().await.is_ok());
+    }
+
+    /// The outcome is recorded while the slot is still held, so a second
+    /// attempt cannot be judged against a state that predates the first.
+    #[tokio::test]
+    async fn the_outcome_is_recorded_before_the_next_attempt_is_admitted() {
+        let guard = guard();
+        let permit = guard.acquire().await.unwrap();
+        let waiting = tokio::spawn({
+            let guard = guard.clone();
+            async move { guard.acquire().await }
+        });
+        tokio::task::yield_now().await;
+        assert!(!waiting.is_finished());
+        permit.finish(AttemptOutcome::Rejected).await;
+        // The waiter resumes only after the failure is on the books, so it
+        // sees the backoff rather than an empty history.
+        assert!(waiting.await.unwrap().is_err());
     }
 }

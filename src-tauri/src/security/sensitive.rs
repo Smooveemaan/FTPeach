@@ -589,12 +589,13 @@ pub async fn respond_sensitive_confirmation(
             vault.unlock(&password).await.is_ok()
         };
         password.zeroize();
-        if verified {
-            guard.succeeded().await;
-        } else {
-            guard.failed().await;
-        }
-        drop(permit);
+        permit
+            .finish(if verified {
+                crate::security::vault_guard::AttemptOutcome::Accepted
+            } else {
+                crate::security::vault_guard::AttemptOutcome::Rejected
+            })
+            .await;
         if !verified {
             return Err(denied("Authentication failed"));
         }

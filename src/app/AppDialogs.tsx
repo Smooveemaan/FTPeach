@@ -16,8 +16,11 @@ import { reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 
 const AboutDialog = lazy(() => import('../components/AboutDialog.tsx'));
-const ExportSettingsDialog = lazy(() => import('../components/ExportSettingsDialog.tsx'));
-const ImportSettingsDialog = lazy(() => import('../components/ImportSettingsDialog.tsx'));
+const SettingsTransferDialog = lazy(() =>
+  import('../features/settings/ui.ts').then(({ SettingsTransferDialog }) => ({
+    default: SettingsTransferDialog,
+  })),
+);
 const OpenWithDialog = lazy(() =>
   import('../features/open-with/ui.ts').then(({ OpenWithDialog }) => ({
     default: OpenWithDialog,
@@ -91,7 +94,7 @@ export interface AppDialogsModel {
     values: SettingsValues;
     preview: SettingsDialogProps['onPreview'];
     save: SettingsDialogProps['onSave'];
-    export: (options: Record<string, unknown>) => Promise<boolean>;
+    export: SiteManagerProps['onExport'];
     import: SiteManagerProps['onImport'];
     exportDiagnostics: SettingsDialogProps['onExportDiagnostics'];
   };
@@ -252,8 +255,9 @@ export default function AppDialogs({ model }: AppDialogsProps) {
         />
       )}
       {dialogs.showExportSettings && (
-        <ExportSettingsDialog
-          onExport={settings.export}
+        <SettingsTransferDialog
+          mode="export"
+          onConfirm={settings.export}
           onClose={() => dialogs.setShowExportSettings(false)}
           initialOptions={{
             includeSettings: true,
@@ -263,8 +267,9 @@ export default function AppDialogs({ model }: AppDialogsProps) {
         />
       )}
       {dialogs.showImportSettings && (
-        <ImportSettingsDialog
-          onImport={settings.import}
+        <SettingsTransferDialog
+          mode="import"
+          onConfirm={settings.import}
           onClose={() => dialogs.setShowImportSettings(false)}
           initialOptions={{
             includeSettings: true,

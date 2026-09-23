@@ -30,6 +30,21 @@ export interface SettingsSetResult extends AppSettings {
   proxyPasswordSet?: boolean | undefined;
 }
 
+/** What a settings export or import covers: `app_export_settings` / `app_import_settings`. */
+export interface SettingsTransferOptions {
+  includeSettings: boolean;
+  includeBookmarks: boolean;
+  includeLocalPaths: boolean;
+}
+export type ExportSettingsResult = CommandResult & { canceled?: boolean };
+export type ImportSettingsResult = CommandResult & {
+  canceled?: boolean;
+  settings?: AppSettings;
+  sitesAdded?: number;
+  sitesSkipped?: number;
+  issues?: string[];
+};
+
 /**
  * Settings that protect the user, and the proxy's address with its password:
  * `settings_set` refuses to relax the first or to move the saved password.

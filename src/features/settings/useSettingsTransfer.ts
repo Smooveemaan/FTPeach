@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { api } from '../../platform/api/index.ts';
-import type { AppSettings } from '../../platform/api/settings.ts';
-import type { CommandResult } from '../../platform/ipcContracts.ts';
+import type { AppSettings, SettingsTransferOptions } from '../../platform/api/settings.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
 
 export interface ImportSitesSummary {
@@ -9,20 +8,7 @@ export interface ImportSitesSummary {
   sitesSkipped: number;
 }
 
-interface SettingsTransferApi {
-  exportSettings: (
-    options: Record<string, unknown>,
-  ) => Promise<CommandResult & { canceled?: boolean }>;
-  importSettings: (options: Record<string, unknown>) => Promise<
-    CommandResult & {
-      canceled?: boolean;
-      settings?: AppSettings;
-      sitesAdded?: number;
-      sitesSkipped?: number;
-      issues?: string[];
-    }
-  >;
-}
+type SettingsTransferApi = Pick<Window['api']['app'], 'exportSettings' | 'importSettings'>;
 
 interface UseSettingsTransferOptions {
   applySettings: (settings: AppSettings) => void;
@@ -32,8 +18,8 @@ interface UseSettingsTransferOptions {
 }
 
 export interface SettingsTransferModel {
-  exportSettings: (options: Record<string, unknown>) => Promise<boolean>;
-  importSettings: (options: Record<string, unknown>) => Promise<ImportSitesSummary | undefined>;
+  exportSettings: (options: SettingsTransferOptions) => Promise<boolean>;
+  importSettings: (options: SettingsTransferOptions) => Promise<ImportSitesSummary | undefined>;
 }
 
 export function useSettingsTransfer({
@@ -43,7 +29,7 @@ export function useSettingsTransfer({
   appApi = api.app,
 }: UseSettingsTransferOptions): SettingsTransferModel {
   const exportSettings = useCallback(
-    async (options: Record<string, unknown>): Promise<boolean> => {
+    async (options: SettingsTransferOptions): Promise<boolean> => {
       const result = await appApi.exportSettings(options);
       if (!result.ok) {
         if (!result.canceled) reportError(commandResultError(result));
@@ -55,7 +41,7 @@ export function useSettingsTransfer({
   );
 
   const importSettings = useCallback(
-    async (options: Record<string, unknown>): Promise<ImportSitesSummary | undefined> => {
+    async (options: SettingsTransferOptions): Promise<ImportSitesSummary | undefined> => {
       const result = await appApi.importSettings(options);
       if (!result.ok) {
         if (!result.canceled) reportError(commandResultError(result));

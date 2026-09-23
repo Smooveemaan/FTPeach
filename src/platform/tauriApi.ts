@@ -41,7 +41,12 @@ import type {
   PayloadGuard,
   RecoveredEdit,
 } from './ipcContracts.ts';
-import type { AppSettings } from './api/settings.ts';
+import type {
+  AppSettings,
+  ExportSettingsResult,
+  ImportSettingsResult,
+  SettingsTransferOptions,
+} from './api/settings.ts';
 import type { LogEntry } from '../shared/types.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { flushShutdownState } from './shutdownPersistence.ts';
@@ -66,14 +71,6 @@ function isVaultStatus(value: unknown): value is VaultStatus {
 
 type SaveFileResult = CommandResult & { canceled?: boolean; path?: string };
 type ResetLayoutResult = CommandResult & { settings?: AppSettings };
-type ExportSettingsResult = CommandResult & { canceled?: boolean };
-type ImportSettingsResult = CommandResult & {
-  canceled?: boolean;
-  settings?: AppSettings;
-  sitesAdded?: number;
-  sitesSkipped?: number;
-  issues?: string[];
-};
 type OpenWithStartResult = CommandResult & { localPath?: string };
 
 function isSaveFileResult(value: unknown): value is SaveFileResult {
@@ -378,14 +375,14 @@ export const tauriApi: Window['api'] = {
         isResetLayoutResult,
         (raw): ResetLayoutResult => commandFailure('app_reset_layout', raw),
       ),
-    exportSettings: (options: Record<string, unknown>): Promise<ExportSettingsResult> =>
+    exportSettings: (options: SettingsTransferOptions): Promise<ExportSettingsResult> =>
       checkedResponse(
         'app_export_settings',
         invoke('app_export_settings', { options }),
         isExportSettingsResult,
         (raw): ExportSettingsResult => commandFailure('app_export_settings', raw),
       ),
-    importSettings: (options: Record<string, unknown>): Promise<ImportSettingsResult> =>
+    importSettings: (options: SettingsTransferOptions): Promise<ImportSettingsResult> =>
       checkedResponse(
         'app_import_settings',
         invoke('app_import_settings', { options }),

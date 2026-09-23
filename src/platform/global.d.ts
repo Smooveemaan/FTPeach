@@ -7,7 +7,12 @@ import type { createTabsApi } from './api/tabs.ts';
 import type { createTransferApi } from './api/transfers.ts';
 import type { createTrayApi } from './api/tray.ts';
 import type { createUpdaterApi } from './api/updater.ts';
-import type { AppSettings } from './api/settings.ts';
+import type {
+  AppSettings,
+  ExportSettingsResult,
+  ImportSettingsResult,
+  SettingsTransferOptions,
+} from './api/settings.ts';
 import type {
   CommandResult,
   OpenWithChange,
@@ -83,18 +88,8 @@ declare global {
           },
         ) => void;
         resetLayout: () => Promise<CommandResult & { settings?: AppSettings }>;
-        exportSettings: (
-          options: Record<string, unknown>,
-        ) => Promise<CommandResult & { canceled?: boolean }>;
-        importSettings: (options: Record<string, unknown>) => Promise<
-          CommandResult & {
-            canceled?: boolean;
-            settings?: AppSettings;
-            sitesAdded?: number;
-            sitesSkipped?: number;
-            issues?: string[];
-          }
-        >;
+        exportSettings: (options: SettingsTransferOptions) => Promise<ExportSettingsResult>;
+        importSettings: (options: SettingsTransferOptions) => Promise<ImportSettingsResult>;
         openExternal: (url: string) => Promise<unknown>;
         openDevtools: () => Promise<unknown>;
         /** Quits without asking about running transfers again. */

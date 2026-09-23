@@ -5,10 +5,8 @@ import Modal, { ModalFooterActions } from '../../components/Modal.tsx';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import UnsavedChangesDialog from '../../components/UnsavedChangesDialog.tsx';
 import { isolate } from '../../shared/bidi.ts';
-import ExportSettingsDialog from '../../components/ExportSettingsDialog.tsx';
-import type { ExportSettingsOptions } from '../../components/ExportSettingsDialog.tsx';
-import ImportSettingsDialog from '../../components/ImportSettingsDialog.tsx';
-import type { ImportSettingsOptions } from '../../components/ImportSettingsDialog.tsx';
+import { SettingsTransferDialog } from '../settings/ui.ts';
+import type { SettingsTransferOptions } from '../../platform/api/settings.ts';
 import Icon from '../../components/Icon.tsx';
 import {
   canSubmitSiteForm,
@@ -49,8 +47,8 @@ export interface SiteManagerDialogProps {
   onApplyLayout: (layout: SiteLayout) => Promise<SiteMutationResult | undefined>;
   onSaveFolder: (payload: SavedSite) => Promise<SiteMutationResult | undefined>;
   onDeleteFolder: (id: string) => Promise<SiteMutationResult | undefined>;
-  onImport: (options: ImportSettingsOptions) => Promise<ImportSummary | undefined>;
-  onExport: (options: ExportSettingsOptions) => Promise<boolean | undefined>;
+  onImport: (options: SettingsTransferOptions) => Promise<ImportSummary | undefined>;
+  onExport: (options: SettingsTransferOptions) => Promise<boolean | undefined>;
   onConnect: (site: ManagedSite) => void;
   onVaultUnlockRequired: (retry: () => void) => void;
   onClose: () => void;
@@ -323,7 +321,7 @@ export default function SiteManagerDialog({
     onFolderDeleted: forgetCollapsedFolder,
   });
 
-  const handleImportConfirm = async (options: ImportSettingsOptions) => {
+  const handleImportConfirm = async (options: SettingsTransferOptions) => {
     const summary = await onImport(options);
     if (summary)
       setTransferStatus({
@@ -333,7 +331,7 @@ export default function SiteManagerDialog({
       });
   };
 
-  const handleExportConfirm = async (options: ExportSettingsOptions) => {
+  const handleExportConfirm = async (options: SettingsTransferOptions) => {
     const ok = await onExport(options);
     if (ok) setTransferStatus({ kind: 'export' });
   };
@@ -666,8 +664,9 @@ export default function SiteManagerDialog({
         />
       )}
       {showExportOptions && (
-        <ExportSettingsDialog
-          onExport={handleExportConfirm}
+        <SettingsTransferDialog
+          mode="export"
+          onConfirm={handleExportConfirm}
           onClose={() => setShowExportOptions(false)}
           initialOptions={{
             includeSettings: false,
@@ -677,8 +676,9 @@ export default function SiteManagerDialog({
         />
       )}
       {showImportOptions && (
-        <ImportSettingsDialog
-          onImport={handleImportConfirm}
+        <SettingsTransferDialog
+          mode="import"
+          onConfirm={handleImportConfirm}
           onClose={() => setShowImportOptions(false)}
           initialOptions={{
             includeSettings: false,

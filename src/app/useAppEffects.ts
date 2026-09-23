@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import type { SettingsState } from '../features/settings/index.ts';
 import { setDateFormatPreference } from '../features/settings/index.ts';
-import i18n, { changeLanguage } from '../i18n/index.ts';
+import { changeLanguage } from '../i18n/index.ts';
+import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 import { applyInterfaceScale } from '../platform/interfaceScale.ts';
 import { applyWindowTheme } from '../platform/windowFrame.ts';
@@ -28,15 +29,10 @@ export function useAppEffects({
   }, [theme]);
 
   useEffect(() => {
-    let cancelled = false;
-    void changeLanguage(language).then((resolvedLanguage) => {
-      if (cancelled) return;
-      document.documentElement.lang = resolvedLanguage;
-      document.documentElement.dir = i18n.dir(resolvedLanguage);
-    });
-    return () => {
-      cancelled = true;
-    };
+    // The latest language wins inside changeLanguage, which also sets the
+    // document's lang and dir with it; a locale that fails to load keeps the
+    // current one and says why.
+    changeLanguage(language).catch(reportAsyncFailure);
   }, [language]);
 
   useEffect(() => {

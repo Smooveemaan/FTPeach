@@ -85,8 +85,6 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
       .then(async (nextPrompt) => {
         const locale = matchSupportedLanguage(nextPrompt.locale) ?? 'en';
         await changeLanguage(locale);
-        document.documentElement.lang = locale;
-        document.documentElement.dir = i18n.dir(locale);
         setPrompt(nextPrompt);
       })
       .catch(() => getCurrentWindow().close());

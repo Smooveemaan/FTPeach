@@ -68,6 +68,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Switching languages quickly, or cancelling a language preview while it loads, no longer
+  leaves an earlier language on screen or the text running the wrong way.
 - Icon buttons, the connection fields and the search boxes now have names a screen reader
   reads out, and the pause button in the transfer list is called Pause instead of Paused.
 - While a dialog is open, Tab and the screen reader stay inside the topmost dialog and skip

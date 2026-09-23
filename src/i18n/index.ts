@@ -97,10 +97,31 @@ export async function loadLanguage(language: SupportedLanguage): Promise<void> {
   return pending;
 }
 
-export async function changeLanguage(language: string): Promise<SupportedLanguage> {
+let latestLanguageRequest = 0;
+
+/**
+ * Switches the interface to `language` once its translations are loaded, and
+ * sets the document's `lang` and `dir` in the same step. The latest call
+ * wins: one that a newer call overtook while its locale was loading changes
+ * nothing and resolves to `null`, as does its load failure — only a failure
+ * of the latest call rejects.
+ */
+export async function changeLanguage(language: string): Promise<SupportedLanguage | null> {
+  const request = ++latestLanguageRequest;
   const supported = matchSupportedLanguage(language) ?? 'en';
-  await loadLanguage(supported);
+  try {
+    await loadLanguage(supported);
+  } catch (error) {
+    if (request !== latestLanguageRequest) return null;
+    throw error;
+  }
+  if (request !== latestLanguageRequest) return null;
   await i18n.changeLanguage(supported);
+  if (request !== latestLanguageRequest) return null;
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = supported;
+    document.documentElement.dir = i18n.dir(supported);
+  }
   return supported;
 }
 

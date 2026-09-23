@@ -98,6 +98,15 @@ export type UpdaterStatus =
   | { state: 'downloading'; version: string; percent?: number }
   | { state: 'available' | 'downloaded'; version: string }
   | { state: 'error'; message: string };
+/** A host key a connection refused, and what the user has to decide about. */
+export interface HostKeyDecision {
+  host: string;
+  port: number;
+  /** The pinned fingerprint, absent on a first connection. */
+  expected?: string;
+  actual: string;
+}
+
 export interface OpenWithChange {
   id: string;
   /** The revision to hand back once exactly this content is uploaded. */

@@ -869,8 +869,24 @@ mod local_integration_tests {
         .as_object()
         .unwrap()
         .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+        let strict = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
         let mut backend = SftpBackend::new(Arc::new(store.clone()));
+
+        // Strict is the default: an unconfirmed first key is refused, and
+        // nothing is written, so the next attempt is still a first sighting.
+        let error = backend.connect(&strict).await.unwrap_err();
+        let refused = error.downcast_ref::<HostKeyMismatchError>().unwrap();
+        assert_eq!(refused.expected, None);
+        assert!(!refused.actual.is_empty());
+        assert!(!backend.is_connected());
+        assert_eq!(
+            store.get_known_host_fingerprint("127.0.0.1", port).await,
+            None
+        );
+
+        let mut map = map;
+        map.insert("strictHostKeyCheck".into(), serde_json::Value::Bool(false));
+        let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
 
         backend.connect(&config).await.unwrap();
         assert!(backend.is_connected());
@@ -886,7 +902,10 @@ mod local_integration_tests {
 
         *server_key.lock().unwrap() = random_host_key();
         let error = backend.connect(&config).await.unwrap_err();
-        assert!(error.downcast_ref::<HostKeyMismatchError>().is_some());
+        let changed = error.downcast_ref::<HostKeyMismatchError>().unwrap();
+        // Trust on first use does not extend to a key that changed.
+        assert!(changed.expected.is_some());
+        assert_ne!(changed.expected.as_deref(), Some(changed.actual.as_str()));
         assert!(!backend.is_connected());
 
         tokio::fs::remove_dir_all(&store_dir).await.unwrap();
@@ -1037,6 +1056,7 @@ mod tofu_tests {
             host: "127.0.0.1".to_string(),
             port,
             mismatch: mismatch.clone(),
+            allow_first_pin: true,
         };
         let config = Arc::new(client::Config::default());
         match client::connect(config, ("127.0.0.1", port), handler).await {
@@ -1091,7 +1111,8 @@ mod tofu_tests {
             .unwrap();
         match try_connect(&store, port_b).await {
             Outcome::Rejected(m) => assert_ne!(
-                m.expected, m.actual,
+                m.expected.as_deref(),
+                Some(m.actual.as_str()),
                 "mismatch must report two different fingerprints"
             ),
             Outcome::Connected => panic!("a changed host key must never be silently accepted"),

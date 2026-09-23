@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "सहेजा गया पासवर्ड रखें और उसे नए सर्वर पर भेजें?",
         "approve": "पासवर्ड रखें"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "इस कंप्यूटर पर इस नाम से सहेजा जाता है: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "सुरक्षा पुष्टिकरण बंद कर दिए जाएँगे।",
       "autoLockNever": "निष्क्रियता के बाद वॉल्ट अब लॉक नहीं होगा।",
-      "autoLockMinutes": "{{minutes}} मिनट की निष्क्रियता के बाद वॉल्ट लॉक हो जाएगा।"
+      "autoLockMinutes": "{{minutes}} मिनट की निष्क्रियता के बाद वॉल्ट लॉक हो जाएगा।",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "इसके लिए सहेजा गया: {{recipient}}",
     "transferTo": "नया सर्वर: {{recipient}}",
-    "transferLessSecure": "नया कनेक्शन एन्क्रिप्टेड नहीं है या सर्वर प्रमाणपत्र की जाँच नहीं करता।"
+    "transferLessSecure": "नया कनेक्शन एन्क्रिप्टेड नहीं है या सर्वर प्रमाणपत्र की जाँच नहीं करता।",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "नया फ़ोल्डर…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "विंडो और फलक आकार रीसेट करें, डिफ़ॉल्ट कॉलम पुनर्स्थापित करें, और इंटरफ़ेस कैश साफ़ करें?",
-    "hostKeyMismatch": "{{error}} {{host}}:{{port}} के लिए सहेजा गया कुंजी फ़िंगरप्रिंट हटाकर फिर भी कनेक्ट करें? ऐसा तभी करें जब आपको पक्का पता हो कि सर्वर वास्तव में फिर से इंस्टॉल या स्थानांतरित किया गया है — वरना आप किसी नकली सर्वर से कनेक्ट हो सकते हैं।",
-    "connectAnyway": "फिर भी कनेक्ट करें",
     "closeTabWithActiveTransfers": "इस टैब में सक्रिय स्थानांतरण हैं। टैब बंद करें और उन्हें रोकें?",
     "closeTabLabel": "टैब बंद करें",
     "overwriteSingleExists": "\"{{name}}\" गंतव्य फ़ोल्डर में पहले से मौजूद है। इसे अधिलेखित करें?",
@@ -403,6 +415,8 @@
       "autoLockHint": "निष्क्रियता के बाद वॉल्ट को लॉक कर देता है। मौजूदा सर्वर कनेक्शन सक्रिय रहते हैं; 0 ऑटो-लॉक अक्षम करता है।",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "मास्टर पासवर्ड बदलें",
       "change": "पासवर्ड बदलें",
       "systemUnlock": "सिस्टम प्रमाणीकरण से अनलॉक करने दें",

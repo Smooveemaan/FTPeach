@@ -6,10 +6,22 @@
   "defaultLocalPath": "",
   "concurrency": 3,
   "connectTimeout": 20000,
-  "localColumns": { "a": ["size", "modifiedAt"], "b": ["size", "modifiedAt"] },
-  "remoteColumns": { "a": ["size", "modifiedAt"], "b": ["size", "modifiedAt"] },
-  "localColumnWidths": { "a": {}, "b": {} },
-  "remoteColumnWidths": { "a": {}, "b": {} },
+  "localColumns": {
+    "a": ["size", "modifiedAt"],
+    "b": ["size", "modifiedAt"]
+  },
+  "remoteColumns": {
+    "a": ["size", "modifiedAt"],
+    "b": ["size", "modifiedAt"]
+  },
+  "localColumnWidths": {
+    "a": {},
+    "b": {}
+  },
+  "remoteColumnWidths": {
+    "a": {},
+    "b": {}
+  },
   "transferColumnWidths": {},
   "transferHiddenColumns": [],
   "transferColumnOrder": [
@@ -46,6 +58,7 @@
   "saveSessionOnExit": true,
   "vaultAutoLockMinutes": 15,
   "showSecurityConfirmations": true,
+  "strictHostKeyCheck": true,
   "transferSpeedLimitKBps": 0,
   "openWithAssociations": {},
   "keyboardShortcuts": {},

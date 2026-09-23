@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Zachować zapisane hasło i wysyłać je na nowy serwer?",
         "approve": "Zachowaj hasło"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Zapisywany na tym komputerze jako: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Potwierdzenia bezpieczeństwa zostaną wyłączone.",
       "autoLockNever": "Sejf nie będzie już blokowany po okresie bezczynności.",
-      "autoLockMinutes": "Sejf zostanie zablokowany po {{minutes}} min bezczynności."
+      "autoLockMinutes": "Sejf zostanie zablokowany po {{minutes}} min bezczynności.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Zapisane dla: {{recipient}}",
     "transferTo": "Nowy serwer: {{recipient}}",
-    "transferLessSecure": "Nowe połączenie nie jest szyfrowane lub nie sprawdza certyfikatu serwera."
+    "transferLessSecure": "Nowe połączenie nie jest szyfrowane lub nie sprawdza certyfikatu serwera.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Nowy folder…",
@@ -204,8 +218,6 @@
   },
   "confirm": {
     "resetLayout": "Czy chcesz zresetować rozmiary okien i paneli, przywrócić domyślne kolumny oraz wyczyścić pamięć podręczną interfejsu?",
-    "hostKeyMismatch": "{{error}} Usunąć zapisany odcisk klucza dla {{host}}:{{port}} i mimo to się połączyć? Rób to tylko wtedy, gdy masz pewność, że serwer naprawdę został ponownie zainstalowany lub przeniesiony — w przeciwnym razie możesz połączyć się z podstawionym serwerem.",
-    "connectAnyway": "Połącz mimo to",
     "closeTabWithActiveTransfers": "Na tej karcie trwają transfery. Zamknąć kartę i je zatrzymać?",
     "closeTabLabel": "Zamknij kartę",
     "overwriteSingleExists": "„{{name}}” już istnieje w folderze docelowym. Czy chcesz to nadpisać?",
@@ -411,6 +423,8 @@
       "autoLockHint": "Blokuje sejf po okresie bezczynności. Otwarte połączenia z serwerami pozostają aktywne; 0 wyłącza automatyczną blokadę.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Zmień hasło główne",
       "change": "Zmień hasło",
       "systemUnlock": "Zezwalaj na odblokowanie przez system",

@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "هل تريد الاحتفاظ بكلمة المرور المحفوظة وإرسالها إلى الخادم الجديد؟",
         "approve": "الاحتفاظ بكلمة المرور"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "يُحفظ على هذا الحاسوب باسم: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "سيتم إيقاف تأكيدات الأمان.",
       "autoLockNever": "لن تُقفل الخزنة بعد فترة من عدم النشاط.",
-      "autoLockMinutes": "ستُقفل الخزنة بعد {{minutes}} دقيقة من عدم النشاط."
+      "autoLockMinutes": "ستُقفل الخزنة بعد {{minutes}} دقيقة من عدم النشاط.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "محفوظة لأجل: {{recipient}}",
     "transferTo": "الخادم الجديد: {{recipient}}",
-    "transferLessSecure": "الاتصال الجديد غير مشفّر أو لا يتحقق من شهادة الخادم."
+    "transferLessSecure": "الاتصال الجديد غير مشفّر أو لا يتحقق من شهادة الخادم.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "مجلد جديد…",
@@ -210,8 +224,6 @@
   },
   "confirm": {
     "resetLayout": "إعادة ضبط أحجام النوافذ والأجزاء، واستعادة الأعمدة الافتراضية، ومسح ذاكرة التخزين المؤقت للواجهة؟",
-    "hostKeyMismatch": "{{error}} هل تريد حذف بصمة المفتاح المحفوظة لـ {{host}}:{{port}} والاتصال رغم ذلك؟ لا تفعل ذلك إلا إذا كنت متأكدًا من أن الخادم أُعيد تثبيته أو نُقل فعلًا — وإلا فقد تتصل بخادم مزيّف.",
-    "connectAnyway": "الاتصال رغم ذلك",
     "closeTabWithActiveTransfers": "في علامة التبويب هذه عمليات نقل جارية. هل تريد إغلاق علامة التبويب وإيقافها؟",
     "closeTabLabel": "إغلاق علامة التبويب",
     "overwriteSingleExists": "\"{{name}}\" موجود بالفعل في مجلد الوجهة. هل تريد استبداله؟",
@@ -419,6 +431,8 @@
       "autoLockHint": "يقفل الخزنة بعد فترة من عدم النشاط. تبقى الاتصالات القائمة بالخوادم نشطة؛ والقيمة 0 تعطّل القفل التلقائي.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "تغيير كلمة المرور الرئيسية",
       "change": "تغيير كلمة المرور",
       "systemUnlock": "السماح بإلغاء القفل عبر النظام",

@@ -15,6 +15,7 @@ use serde_json::Value;
 
 pub const CONFIRMATIONS: &str = "showSecurityConfirmations";
 pub const AUTO_LOCK: &str = "vaultAutoLockMinutes";
+pub const STRICT_HOST_KEY: &str = "strictHostKeyCheck";
 
 /// The protective changes a patch would undo, as shown to the user.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
@@ -24,11 +25,15 @@ pub struct Weakening {
     pub show_security_confirmations: Option<bool>,
     /// The new idle lock in minutes, `0` meaning never.
     pub vault_auto_lock_minutes: Option<u64>,
+    /// `Some(false)`: an unknown SSH host key would be trusted unseen.
+    pub strict_host_key_check: Option<bool>,
 }
 
 impl Weakening {
     pub fn is_empty(&self) -> bool {
-        self.show_security_confirmations.is_none() && self.vault_auto_lock_minutes.is_none()
+        self.show_security_confirmations.is_none()
+            && self.vault_auto_lock_minutes.is_none()
+            && self.strict_host_key_check.is_none()
     }
 }
 
@@ -41,6 +46,13 @@ fn confirmations_enabled(settings: &JsonMap) -> bool {
 
 fn auto_lock_minutes(settings: &JsonMap) -> u64 {
     settings.get(AUTO_LOCK).and_then(Value::as_u64).unwrap_or(0)
+}
+
+fn strict_host_key(settings: &JsonMap) -> bool {
+    settings
+        .get(STRICT_HOST_KEY)
+        .and_then(Value::as_bool)
+        .unwrap_or(true)
 }
 
 /// What `patch` would weaken relative to `current`, the merged settings.
@@ -56,6 +68,9 @@ pub fn weakening(current: &JsonMap, patch: &JsonMap) -> Weakening {
             weakening.vault_auto_lock_minutes = Some(next);
         }
     }
+    if strict_host_key(current) && patch.get(STRICT_HOST_KEY) == Some(&Value::Bool(false)) {
+        weakening.strict_host_key_check = Some(false);
+    }
     weakening
 }
 
@@ -69,15 +84,19 @@ pub fn without_weakening(current: &JsonMap, mut patch: JsonMap) -> JsonMap {
     if weakening.vault_auto_lock_minutes.is_some() {
         patch.remove(AUTO_LOCK);
     }
+    if weakening.strict_host_key_check.is_some() {
+        patch.remove(STRICT_HOST_KEY);
+    }
     patch
 }
 
 /// Everything `settings_set_security` applies: the protective settings,
 /// and the proxy's address together with its password, since changing one
 /// without the other can send the saved password somewhere new.
-pub const PROTECTED_KEYS: [&str; 8] = [
+pub const PROTECTED_KEYS: [&str; 9] = [
     CONFIRMATIONS,
     AUTO_LOCK,
+    STRICT_HOST_KEY,
     "proxyType",
     "proxyHost",
     "proxyPort",

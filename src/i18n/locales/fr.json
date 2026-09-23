@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Conserver le mot de passe enregistré et l'envoyer au nouveau serveur ?",
         "approve": "Conserver le mot de passe"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Enregistré sur cet ordinateur sous le nom : {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Les confirmations de sécurité seront désactivées.",
       "autoLockNever": "Le coffre-fort ne se verrouillera plus après une période d'inactivité.",
-      "autoLockMinutes": "Le coffre-fort se verrouillera après {{minutes}} min d'inactivité."
+      "autoLockMinutes": "Le coffre-fort se verrouillera après {{minutes}} min d'inactivité.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Enregistré pour : {{recipient}}",
     "transferTo": "Nouveau serveur : {{recipient}}",
-    "transferLessSecure": "La nouvelle connexion n'est pas chiffrée ou ne vérifie pas le certificat du serveur."
+    "transferLessSecure": "La nouvelle connexion n'est pas chiffrée ou ne vérifie pas le certificat du serveur.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Nouveau dossier…",
@@ -201,8 +215,6 @@
   },
   "confirm": {
     "resetLayout": "Réinitialiser la taille de la fenêtre et des volets, rétablir les colonnes par défaut et vider le cache de l'interface ?",
-    "hostKeyMismatch": "{{error}} Supprimer l'empreinte de clé enregistrée pour {{host}}:{{port}} et se connecter quand même ? Ne le faites que si vous êtes sûr que le serveur a réellement été réinstallé ou migré ; sinon, vous risquez de vous connecter à un serveur usurpé.",
-    "connectAnyway": "Se connecter quand même",
     "closeTabWithActiveTransfers": "Cet onglet a des transferts en cours. Fermer l'onglet et les arrêter ?",
     "closeTabLabel": "Fermer l'onglet",
     "overwriteSingleExists": "« {{name}} » existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
@@ -407,6 +419,8 @@
       "autoLockHint": "Verrouille le coffre-fort après une période d'inactivité. Les connexions aux serveurs restent actives ; 0 désactive le verrouillage automatique.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Modifier le mot de passe principal",
       "change": "Modifier le mot de passe",
       "systemUnlock": "Autoriser le déverrouillage via le système",

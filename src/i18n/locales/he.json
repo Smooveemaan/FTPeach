@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "לשמור את הסיסמה השמורה ולשלוח אותה לשרת החדש?",
         "approve": "שמירת הסיסמה"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "נשמר במחשב הזה בשם: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "אישורי האבטחה יכובו.",
       "autoLockNever": "הכספת לא תינעל יותר לאחר חוסר פעילות.",
-      "autoLockMinutes": "הכספת תינעל לאחר {{minutes}} דקות של חוסר פעילות."
+      "autoLockMinutes": "הכספת תינעל לאחר {{minutes}} דקות של חוסר פעילות.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "נשמרה עבור: {{recipient}}",
     "transferTo": "שרת חדש: {{recipient}}",
-    "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את אישור השרת."
+    "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את אישור השרת.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "תיקייה חדשה…",
@@ -201,8 +215,6 @@
   },
   "confirm": {
     "resetLayout": "לאפס את גודל החלונות והחלוניות, להחזיר את העמודות לברירת המחדל ולנקות את מטמון הממשק?",
-    "hostKeyMismatch": "{{error}} למחוק את טביעת האצבע של המפתח השמור עבור {{host}}:{{port}} ולהתחבר בכל זאת? עשה זאת רק אם אתה בטוח שהשרת אכן הותקן מחדש או הועבר — אחרת אתה עלול להתחבר לשרת מזויף.",
-    "connectAnyway": "התחבר בכל זאת",
     "closeTabWithActiveTransfers": "יש העברות פעילות בכרטיסייה זו. לסגור אותה ולעצור אותן?",
     "closeTabLabel": "סגור כרטיסייה",
     "overwriteSingleExists": "\"{{name}}\" כבר קיים בתיקיית היעד. האם ברצונך להחליף אותו?",
@@ -407,6 +419,8 @@
       "autoLockHint": "נועל את הכספת לאחר חוסר פעילות. חיבורי שרת קיימים נשארים פעילים; 0 מבטל את הנעילה האוטומטית.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "שינוי סיסמת המאסטר",
       "change": "שינוי סיסמה",
       "systemUnlock": "אפשר ביטול נעילה באמצעות המערכת",

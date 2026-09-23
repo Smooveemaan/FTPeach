@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Das gespeicherte Passwort behalten und an den neuen Server senden?",
         "approve": "Passwort behalten"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Auf diesem Computer gespeichert als: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Sicherheitsbestätigungen werden abgeschaltet.",
       "autoLockNever": "Der Tresor wird bei Inaktivität nicht mehr gesperrt.",
-      "autoLockMinutes": "Der Tresor wird nach {{minutes}} Min. Inaktivität gesperrt."
+      "autoLockMinutes": "Der Tresor wird nach {{minutes}} Min. Inaktivität gesperrt.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Gespeichert für: {{recipient}}",
     "transferTo": "Neuer Server: {{recipient}}",
-    "transferLessSecure": "Die neue Verbindung ist nicht verschlüsselt oder prüft das Serverzertifikat nicht."
+    "transferLessSecure": "Die neue Verbindung ist nicht verschlüsselt oder prüft das Serverzertifikat nicht.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Neuer Ordner…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Fenster- und Bereichsgrößen zurücksetzen, Standardspalten wiederherstellen und den Oberflächen-Cache leeren?",
-    "hostKeyMismatch": "{{error}} Den gespeicherten Schlüssel-Fingerabdruck für {{host}}:{{port}} löschen und trotzdem verbinden? Tun Sie das nur, wenn Sie sicher sind, dass der Server tatsächlich neu installiert oder umgezogen wurde – andernfalls verbinden Sie sich möglicherweise mit einem gefälschten Server.",
-    "connectAnyway": "Trotzdem verbinden",
     "closeTabWithActiveTransfers": "In diesem Tab laufen Übertragungen. Tab schließen und die Übertragungen abbrechen?",
     "closeTabLabel": "Tab schließen",
     "overwriteSingleExists": "„{{name}}“ ist im Zielordner bereits vorhanden. Überschreiben?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Sperrt den Tresor nach Inaktivität. Bestehende Serververbindungen bleiben aktiv; 0 deaktiviert die automatische Sperre.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Master-Passwort ändern",
       "change": "Passwort ändern",
       "systemUnlock": "Systementsperrung zulassen",

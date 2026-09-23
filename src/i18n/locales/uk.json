@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Зберегти пароль і надсилати його на новий сервер?",
         "approve": "Зберегти пароль"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Зберігається на комп’ютері як: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Підтвердження безпеки буде вимкнено.",
       "autoLockNever": "Сховище більше не блокуватиметься після періоду бездіяльності.",
-      "autoLockMinutes": "Сховище блокуватиметься через {{minutes}} хв бездіяльності."
+      "autoLockMinutes": "Сховище блокуватиметься через {{minutes}} хв бездіяльності.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Збережено для: {{recipient}}",
     "transferTo": "Новий сервер: {{recipient}}",
-    "transferLessSecure": "Нове підключення не шифрується або не перевіряє сертифікат сервера."
+    "transferLessSecure": "Нове підключення не шифрується або не перевіряє сертифікат сервера.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Нова папка…",
@@ -204,8 +218,6 @@
   },
   "confirm": {
     "resetLayout": "Скинути розміри вікон і панелей, відновити стовпці за замовчуванням та очистити кеш інтерфейсу?",
-    "hostKeyMismatch": "{{error}} Видалити збережений відбиток ключа для {{host}}:{{port}} і все одно підключитися? Робіть це, лише якщо точно знаєте, що сервер справді перевстановили або перенесли, — інакше ви можете підключитися до підробленого сервера.",
-    "connectAnyway": "Все одно підключитися",
     "closeTabWithActiveTransfers": "На цій вкладці є активні передавання. Закрити вкладку та зупинити їх?",
     "closeTabLabel": "Закрити вкладку",
     "overwriteSingleExists": "«{{name}}» уже існує в папці призначення. Перезаписати?",
@@ -411,6 +423,8 @@
       "autoLockHint": "Блокує сховище після бездіяльності. Відкриті підключення до серверів не розриваються; 0 вимикає автоблокування.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Змінити головний пароль",
       "change": "Змінити пароль",
       "systemUnlock": "Дозволити системне розблокування",

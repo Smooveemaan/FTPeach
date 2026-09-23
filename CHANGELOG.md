@@ -25,6 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+- The first connection to an SSH server now shows its key fingerprint and asks before
+  trusting it, so you can compare it with the one the server's administrator gave you.
+  The new "Confirm a new SSH server key" setting turns this off, and turning it off asks
+  for confirmation like the other protective settings.
+- Trusting a changed or new SSH server key is now confirmed in FTPeach's own window, which
+  shows the key trusted until now next to the one offered. If the stored key changes while
+  you are deciding, the decision is asked again instead of being applied to the new key.
 - A WebDAV address that starts with http:// no longer sends the password before the
   connection is encrypted. FTPeach looks for an https:// address first, and asks you to
   tick "Allow unencrypted sign-in" if the server insists on a password in the clear.

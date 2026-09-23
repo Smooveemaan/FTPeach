@@ -16,7 +16,8 @@ type ConfirmationKind =
   | 'openWithApplication'
   | 'weakenSecuritySettings'
   | 'useSystemProtection'
-  | 'transferSecret';
+  | 'transferSecret'
+  | 'trustHostKey';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -28,6 +29,9 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   weakenSecuritySettings: 'securityConfirmation.operations.weakenSecuritySettings',
   useSystemProtection: 'securityConfirmation.operations.useSystemProtection',
   transferSecret: 'securityConfirmation.operations.transferSecret',
+  // The two host-key decisions read differently enough to deserve their own
+  // wording, so the key is chosen from the prompt rather than the kind.
+  trustHostKey: 'securityConfirmation.operations.trustHostKeyFirst',
 };
 
 interface SecretTransfer {
@@ -39,6 +43,13 @@ interface SecretTransfer {
 interface SecurityChanges {
   showSecurityConfirmations?: boolean | null;
   vaultAutoLockMinutes?: number | null;
+  strictHostKeyCheck?: boolean | null;
+}
+
+interface HostKeyFingerprints {
+  /** The pinned fingerprint, absent on a first connection. */
+  expected?: string | null;
+  actual: string;
 }
 
 interface ConfirmationPrompt {
@@ -49,6 +60,7 @@ interface ConfirmationPrompt {
   application?: string | null;
   securityChanges?: SecurityChanges | null;
   secretTransfer?: SecretTransfer | null;
+  hostKey?: HostKeyFingerprints | null;
   confirmationPhrase?: string | null;
   requiresReauthentication: boolean;
 }
@@ -80,7 +92,11 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
       .catch(() => getCurrentWindow().close());
   }, [i18n, requestId]);
 
-  const translationKey = prompt ? OPERATION_TRANSLATION_KEYS[prompt.kind] : null;
+  const translationKey = prompt
+    ? prompt.kind === 'trustHostKey' && prompt.hostKey?.expected
+      ? 'securityConfirmation.operations.trustHostKeyChanged'
+      : OPERATION_TRANSLATION_KEYS[prompt.kind]
+    : null;
   const title = t('securityConfirmation.title');
   const titleText = prompt ? title : 'FTPeach';
   const [titleRef, titleTruncated] = useTruncated<HTMLSpanElement>([titleText]);
@@ -191,6 +207,30 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
             <>
               <br />
               {t('securityConfirmation.program', { path: prompt.application })}
+            </>
+          )}
+          {prompt?.hostKey && (
+            <>
+              <br />
+              <br />
+              {t('securityConfirmation.hostKey.server', { target: prompt.target })}
+              {prompt.hostKey.expected && (
+                <>
+                  <br />
+                  {t('securityConfirmation.hostKey.expected', {
+                    fingerprint: prompt.hostKey.expected,
+                  })}
+                </>
+              )}
+              <br />
+              {t('securityConfirmation.hostKey.actual', { fingerprint: prompt.hostKey.actual })}
+            </>
+          )}
+          {prompt?.securityChanges?.strictHostKeyCheck === false && (
+            <>
+              <br />
+              <br />
+              {t('securityConfirmation.changes.strictHostKeyOff')}
             </>
           )}
           {prompt?.securityChanges?.showSecurityConfirmations === false && (

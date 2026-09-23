@@ -148,7 +148,6 @@ pub fn run() {
             commands::session::browse::session_delete,
             commands::session::browse::session_rename,
             commands::session::browse::session_chmod,
-            commands::session::connection::session_forget_host_key,
             commands::transfer::transfer_upload,
             commands::transfer::transfer_recursive,
             commands::transfer::transfer_cancel_recursive,

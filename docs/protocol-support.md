@@ -27,6 +27,9 @@ FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset pr
 - FTP transmits credentials and data in plain text;
 - FTP active mode is incompatible with proxies and usually requires firewall/NAT configuration;
 - the first SFTP fingerprint should be independently verified with the administrator;
+- an SSH server's key is pinned per host and port. With `strictHostKeyCheck` on, the
+  default, a key that has not been confirmed stops the connection before authentication;
+  the fingerprint is shown and, once trusted, pinned. A changed key always stops it.
 - server capabilities may further restrict methods and permissions.
 - a WebDAV address must be an absolute `http://` or `https://` URL with no userinfo,
   query string or fragment. An `http://` address is probed without credentials and

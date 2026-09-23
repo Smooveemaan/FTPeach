@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Giữ mật khẩu đã lưu và gửi đến máy chủ mới?",
         "approve": "Giữ mật khẩu"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Lưu trên máy tính này với tên: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Xác nhận bảo mật sẽ bị tắt.",
       "autoLockNever": "Kho bảo mật sẽ không còn khóa sau khi không hoạt động.",
-      "autoLockMinutes": "Kho bảo mật sẽ khóa sau {{minutes}} phút không hoạt động."
+      "autoLockMinutes": "Kho bảo mật sẽ khóa sau {{minutes}} phút không hoạt động.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Đã lưu cho: {{recipient}}",
     "transferTo": "Máy chủ mới: {{recipient}}",
-    "transferLessSecure": "Kết nối mới không được mã hóa hoặc không kiểm tra chứng chỉ máy chủ."
+    "transferLessSecure": "Kết nối mới không được mã hóa hoặc không kiểm tra chứng chỉ máy chủ.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Thư mục mới…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Đặt lại kích thước cửa sổ và khung, khôi phục các cột mặc định và xóa bộ nhớ đệm giao diện?",
-    "hostKeyMismatch": "{{error}} Xóa dấu vân tay khóa đã lưu cho {{host}}:{{port}} và vẫn kết nối? Chỉ làm vậy nếu bạn chắc chắn máy chủ thực sự đã được cài đặt lại hoặc chuyển đi — nếu không, bạn có thể kết nối tới một máy chủ giả mạo.",
-    "connectAnyway": "Vẫn kết nối",
     "closeTabWithActiveTransfers": "Tab này đang có lượt truyền. Đóng tab và dừng các lượt truyền đó?",
     "closeTabLabel": "Đóng tab",
     "overwriteSingleExists": "“{{name}}” đã tồn tại trong thư mục đích. Ghi đè?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Khóa kho bảo mật sau một khoảng thời gian không hoạt động. Các kết nối máy chủ đang mở vẫn hoạt động; 0 sẽ tắt tự động khóa.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Thay đổi mật khẩu chính",
       "change": "Thay đổi mật khẩu",
       "systemUnlock": "Cho phép mở khóa bằng hệ thống",

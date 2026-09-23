@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Manter a senha salva e enviá-la ao novo servidor?",
         "approve": "Manter a senha"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Salvo neste computador como: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "As confirmações de segurança serão desativadas.",
       "autoLockNever": "O cofre não será mais bloqueado após inatividade.",
-      "autoLockMinutes": "O cofre será bloqueado após {{minutes}} min de inatividade."
+      "autoLockMinutes": "O cofre será bloqueado após {{minutes}} min de inatividade.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Salva para: {{recipient}}",
     "transferTo": "Novo servidor: {{recipient}}",
-    "transferLessSecure": "A nova conexão não é criptografada ou não verifica o certificado do servidor."
+    "transferLessSecure": "A nova conexão não é criptografada ou não verifica o certificado do servidor.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Nova pasta…",
@@ -201,8 +215,6 @@
   },
   "confirm": {
     "resetLayout": "Redefinir os tamanhos da janela e dos painéis, restaurar as colunas padrão e limpar o cache da interface?",
-    "hostKeyMismatch": "{{error}} Excluir a impressão digital da chave salva para {{host}}:{{port}} e conectar mesmo assim? Faça isso apenas se tiver certeza de que o servidor foi realmente reinstalado ou migrado — caso contrário, você pode acabar se conectando a um servidor falsificado.",
-    "connectAnyway": "Conectar mesmo assim",
     "closeTabWithActiveTransfers": "Esta aba contém transferências ativas. Fechar a aba e interromper essas transferências?",
     "closeTabLabel": "Fechar aba",
     "overwriteSingleExists": "“{{name}}” já existe na pasta de destino. Deseja sobrescrevê-lo?",
@@ -407,6 +419,8 @@
       "autoLockHint": "Bloqueia o cofre após um período de inatividade. As conexões com os servidores continuam ativas; 0 desativa o bloqueio automático.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Alterar a senha mestra",
       "change": "Alterar senha",
       "systemUnlock": "Permitir o desbloqueio pelo sistema",

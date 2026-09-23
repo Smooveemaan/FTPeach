@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "保留已儲存的密碼並傳送到新伺服器？",
         "approve": "保留密碼"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "在此電腦上儲存為：{{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "安全確認將被關閉。",
       "autoLockNever": "密碼庫在閒置後將不再鎖定。",
-      "autoLockMinutes": "密碼庫將在閒置 {{minutes}} 分鐘後鎖定。"
+      "autoLockMinutes": "密碼庫將在閒置 {{minutes}} 分鐘後鎖定。",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "儲存給：{{recipient}}",
     "transferTo": "新伺服器：{{recipient}}",
-    "transferLessSecure": "新連線未加密，或不驗證伺服器憑證。"
+    "transferLessSecure": "新連線未加密，或不驗證伺服器憑證。",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "新增資料夾…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "要重設視窗和窗格大小、還原預設欄位並清除介面快取嗎？",
-    "hostKeyMismatch": "{{error}} 要刪除 {{host}}:{{port}} 已儲存的金鑰指紋並繼續連線嗎？請僅在確定伺服器確實已重新安裝或遷移時執行 — 否則您可能會連線到偽冒的伺服器。",
-    "connectAnyway": "仍要連線",
     "closeTabWithActiveTransfers": "此分頁有進行中的傳輸。要關閉分頁並停止傳輸嗎？",
     "closeTabLabel": "關閉分頁",
     "overwriteSingleExists": "目的地資料夾中已有「{{name}}」。要覆寫嗎？",
@@ -403,6 +415,8 @@
       "autoLockHint": "閒置一段時間後鎖定密碼庫。現有的伺服器連線會保持；設為 0 可停用自動鎖定。",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "變更主密碼",
       "change": "變更密碼",
       "systemUnlock": "允許透過系統驗證解鎖",

@@ -5,18 +5,12 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import type { ConnectionConfig } from '../../../platform/api/session.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/types.ts';
-import type { Translate } from '../components/fileListModel.ts';
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
 
 type PanePatch = Partial<PaneState> | ((pane: PaneState) => Partial<PaneState>);
 type RequestIds = Record<string, Record<PaneId, number>>;
 type InFlightRefreshes = Record<string, { key: string; promise: Promise<CommandResult | void> }>;
-
-interface ConfirmOptions {
-  confirmLabel?: string;
-  danger?: boolean;
-}
 
 interface PaneSessionLifecycleOptions {
   client?: Pick<Window['api'], 'session'>;
@@ -35,10 +29,8 @@ interface PaneSessionLifecycleOptions {
   ) => Promise<CommandResult | void>;
   pushRecentSite: (siteId: string) => void;
   onVaultUnlockRequired: (retry: () => unknown) => void;
-  requestConfirm: (message: string, onConfirm: () => unknown, options?: ConfirmOptions) => unknown;
   inFlightRefreshesRef: MutableRefObject<InFlightRefreshes>;
   stopTransfersForConnection: (connectionId: string) => Promise<unknown>;
-  t: Translate;
 }
 
 export function createPaneSessionLifecycle({
@@ -53,10 +45,8 @@ export function createPaneSessionLifecycle({
   refreshPane,
   pushRecentSite,
   onVaultUnlockRequired,
-  requestConfirm,
   inFlightRefreshesRef,
   stopTransfersForConnection,
-  t,
 }: PaneSessionLifecycleOptions) {
   const closeConnection = async (connectionId: string) => {
     // Cancellation is signalled synchronously; backend teardown can now cancel
@@ -272,34 +262,27 @@ export function createPaneSessionLifecycle({
         return;
       }
       if (res.hostKeyMismatch) {
-        const { host, port } = res.hostKeyMismatch;
-        requestConfirm(
-          t('confirm.hostKeyMismatch', {
-            error: res.diagnosticDetails || res.error,
-            host,
-            port,
-          }),
-          async () => {
-            const forgetRes = await client.session.forgetHostKey(host, port);
-            if (!forgetRes.ok) {
-              updatePane(
-                id,
-                {
-                  errorMessage:
-                    friendlyError(
-                      forgetRes.errorCode
-                        ? { code: forgetRes.errorCode, message: forgetRes.error }
-                        : forgetRes.error,
-                    ) || '',
-                },
-                tabId,
-              );
-              return;
-            }
-            reportRejection(connectPane(id, f, undefined, tabId, startPath)());
-          },
-          { confirmLabel: t('confirm.connectAnyway'), danger: true },
-        );
+        // The backend's own window shows both fingerprints and is the
+        // confirmation; a cancelled one rejects and leaves the pane idle.
+        const trusted = await client.session.trustHostKey(res.hostKeyMismatch);
+        if (!trusted.ok) {
+          if (trusted.errorCode !== 'cancelled') {
+            updatePane(
+              id,
+              {
+                errorMessage:
+                  friendlyError(
+                    trusted.errorCode
+                      ? { code: trusted.errorCode, message: trusted.error }
+                      : trusted.error,
+                  ) || '',
+              },
+              tabId,
+            );
+          }
+          return;
+        }
+        reportRejection(connectPane(id, f, undefined, tabId, startPath)());
         return;
       }
       updatePane(

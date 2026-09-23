@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Pertahankan kata sandi tersimpan dan kirim ke server baru?",
         "approve": "Pertahankan kata sandi"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Disimpan di komputer ini sebagai: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Konfirmasi keamanan akan dimatikan.",
       "autoLockNever": "Brankas tidak akan terkunci lagi setelah tidak aktif.",
-      "autoLockMinutes": "Brankas akan terkunci setelah {{minutes}} menit tidak aktif."
+      "autoLockMinutes": "Brankas akan terkunci setelah {{minutes}} menit tidak aktif.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Disimpan untuk: {{recipient}}",
     "transferTo": "Server baru: {{recipient}}",
-    "transferLessSecure": "Koneksi baru tidak terenkripsi atau tidak memeriksa sertifikat server."
+    "transferLessSecure": "Koneksi baru tidak terenkripsi atau tidak memeriksa sertifikat server.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Folder Baru…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Atur ulang ukuran jendela dan panel, kembalikan kolom default, dan hapus cache antarmuka?",
-    "hostKeyMismatch": "{{error}} Hapus sidik jari kunci yang tersimpan untuk {{host}}:{{port}} dan tetap terhubung? Lakukan ini hanya jika Anda yakin server benar-benar telah diinstal ulang atau dipindahkan — jika tidak, Anda bisa terhubung ke server palsu.",
-    "connectAnyway": "Tetap terhubung",
     "closeTabWithActiveTransfers": "Tab ini memiliki transfer yang sedang berlangsung. Tutup tab dan hentikan transfernya?",
     "closeTabLabel": "Tutup tab",
     "overwriteSingleExists": "\"{{name}}\" sudah ada di folder tujuan. Apakah ingin menimpanya?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Mengunci brankas setelah tidak ada aktivitas. Koneksi server yang terbuka tetap aktif; 0 menonaktifkan penguncian otomatis.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Ubah kata sandi utama",
       "change": "Ubah kata sandi",
       "systemUnlock": "Izinkan buka kunci melalui sistem",

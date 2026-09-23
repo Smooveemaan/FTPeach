@@ -36,6 +36,7 @@ export interface SettingsSetResult extends AppSettings {
  */
 const SECURITY_SETTINGS = new Set([
   'showSecurityConfirmations',
+  'strictHostKeyCheck',
   'vaultAutoLockMinutes',
   'proxyType',
   'proxyHost',

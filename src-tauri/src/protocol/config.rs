@@ -40,6 +40,9 @@ pub struct SftpConfig {
     pub use_key_auth: bool,
     pub key_path: Option<String>,
     pub key_passphrase: Option<String>,
+    /// Refuse an unknown host key until the user has confirmed it, rather
+    /// than pinning whatever answers first.
+    pub strict_host_key_check: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -166,6 +169,13 @@ impl ConnectionConfig {
                     use_key_auth,
                     key_path,
                     key_passphrase: string(map, "keyPassphrase"),
+                    // Absent means strict: the setting is written into every
+                    // connection by the session service, and a config that
+                    // arrived without it must not silently be the weaker one.
+                    strict_host_key_check: map
+                        .get("strictHostKeyCheck")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(true),
                 }))
             }
             Protocol::Webdav => {

@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "เก็บรหัสผ่านที่บันทึกไว้และส่งไปยังเซิร์ฟเวอร์ใหม่หรือไม่",
         "approve": "เก็บรหัสผ่าน"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "บันทึกบนคอมพิวเตอร์เครื่องนี้เป็น: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "การยืนยันความปลอดภัยจะถูกปิด",
       "autoLockNever": "คลังนิรภัยจะไม่ล็อกหลังจากไม่มีการใช้งานอีกต่อไป",
-      "autoLockMinutes": "คลังนิรภัยจะล็อกหลังจากไม่มีการใช้งาน {{minutes}} นาที"
+      "autoLockMinutes": "คลังนิรภัยจะล็อกหลังจากไม่มีการใช้งาน {{minutes}} นาที",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "บันทึกไว้สำหรับ: {{recipient}}",
     "transferTo": "เซิร์ฟเวอร์ใหม่: {{recipient}}",
-    "transferLessSecure": "การเชื่อมต่อใหม่ไม่ได้เข้ารหัสหรือไม่ตรวจสอบใบรับรองของเซิร์ฟเวอร์"
+    "transferLessSecure": "การเชื่อมต่อใหม่ไม่ได้เข้ารหัสหรือไม่ตรวจสอบใบรับรองของเซิร์ฟเวอร์",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "โฟลเดอร์ใหม่…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "รีเซ็ตขนาดหน้าต่างและแผง คืนค่าคอลัมน์เริ่มต้น และล้างแคชของอินเทอร์เฟซหรือไม่?",
-    "hostKeyMismatch": "{{error}} ลบลายนิ้วมือคีย์ที่บันทึกไว้ของ {{host}}:{{port}} แล้วเชื่อมต่อต่อไปหรือไม่? ทำเช่นนี้เฉพาะเมื่อคุณมั่นใจว่าเซิร์ฟเวอร์ถูกติดตั้งใหม่หรือย้ายจริง — มิฉะนั้นคุณอาจเชื่อมต่อกับเซิร์ฟเวอร์ปลอม",
-    "connectAnyway": "เชื่อมต่อต่อไป",
     "closeTabWithActiveTransfers": "แท็บนี้มีรายการโอนที่กำลังดำเนินการอยู่ จะปิดแท็บนี้และหยุดรายการเหล่านั้นหรือไม่?",
     "closeTabLabel": "ปิดแท็บ",
     "overwriteSingleExists": "\"{{name}}\" มีอยู่แล้วในโฟลเดอร์ปลายทาง จะเขียนทับหรือไม่?",
@@ -403,6 +415,8 @@
       "autoLockHint": "ล็อกคลังนิรภัยเมื่อไม่มีการใช้งาน การเชื่อมต่อกับเซิร์ฟเวอร์ที่มีอยู่ยังคงทำงาน 0 คือปิดการล็อกอัตโนมัติ",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "เปลี่ยนรหัสผ่านหลัก",
       "change": "เปลี่ยนรหัสผ่าน",
       "systemUnlock": "อนุญาตให้ปลดล็อกผ่านระบบ",

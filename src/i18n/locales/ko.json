@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "저장된 비밀번호를 유지하고 새 서버로 보낼까요?",
         "approve": "비밀번호 유지"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "이 컴퓨터에 다음 이름으로 저장됩니다: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "보안 확인이 꺼집니다.",
       "autoLockNever": "보관소가 유휴 상태에서 더 이상 잠기지 않습니다.",
-      "autoLockMinutes": "보관소가 {{minutes}}분 동안 사용하지 않으면 잠깁니다."
+      "autoLockMinutes": "보관소가 {{minutes}}분 동안 사용하지 않으면 잠깁니다.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "저장 대상: {{recipient}}",
     "transferTo": "새 서버: {{recipient}}",
-    "transferLessSecure": "새 연결은 암호화되지 않거나 서버 인증서를 확인하지 않습니다."
+    "transferLessSecure": "새 연결은 암호화되지 않거나 서버 인증서를 확인하지 않습니다.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "새 폴더…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "창 및 패널 크기를 초기화하고, 기본 열을 복원하며, 인터페이스 캐시를 지울까요?",
-    "hostKeyMismatch": "{{error}} {{host}}:{{port}}에 저장된 키 지문을 삭제하고 그래도 연결하시겠습니까? 서버를 실제로 재설치했거나 이전했다고 확신하는 경우에만 진행하세요. 그렇지 않으면 위조된 서버에 연결될 수 있습니다.",
-    "connectAnyway": "그래도 연결",
     "closeTabWithActiveTransfers": "이 탭에는 진행 중인 전송이 있습니다. 탭을 닫고 전송을 중지하시겠습니까?",
     "closeTabLabel": "탭 닫기",
     "overwriteSingleExists": "“{{name}}”이(가) 대상 폴더에 이미 있습니다. 덮어쓰시겠습니까?",
@@ -403,6 +415,8 @@
       "autoLockHint": "일정 시간 활동이 없으면 보관소를 잠급니다. 열려 있는 서버 연결은 유지되며, 0으로 설정하면 자동 잠금이 꺼집니다.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "마스터 비밀번호 변경",
       "change": "비밀번호 변경",
       "systemUnlock": "시스템 인증으로 잠금 해제 허용",

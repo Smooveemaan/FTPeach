@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Kaydedilmiş şifre korunup yeni sunucuya gönderilsin mi?",
         "approve": "Şifreyi koru"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Bu bilgisayarda şu adla kaydedilir: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Güvenlik onayları kapatılacak.",
       "autoLockNever": "Kasa, işlem yapılmadığında artık kilitlenmeyecek.",
-      "autoLockMinutes": "Kasa, {{minutes}} dk işlem yapılmadığında kilitlenecek."
+      "autoLockMinutes": "Kasa, {{minutes}} dk işlem yapılmadığında kilitlenecek.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Şu sunucu için kaydedildi: {{recipient}}",
     "transferTo": "Yeni sunucu: {{recipient}}",
-    "transferLessSecure": "Yeni bağlantı şifrelenmiyor veya sunucu sertifikasını denetlemiyor."
+    "transferLessSecure": "Yeni bağlantı şifrelenmiyor veya sunucu sertifikasını denetlemiyor.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Yeni Klasör…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Pencere ve bölme boyutlarını sıfırlamak, varsayılan sütunları geri yüklemek ve arayüz önbelleğini temizlemek istiyor musunuz?",
-    "hostKeyMismatch": "{{error}} {{host}}:{{port}} için kaydedilmiş anahtar parmak izi silinip yine de bağlanılsın mı? Bunu yalnızca sunucunun gerçekten yeniden kurulduğundan veya taşındığından eminseniz yapın — aksi takdirde bu, sahte olabilecek bir sunucuya bağlanmanıza yol açabilir.",
-    "connectAnyway": "Yine de bağlan",
     "closeTabWithActiveTransfers": "Bu sekmede devam eden aktarımlar var. Sekmeyi kapatıp aktarımları durdurmak ister misiniz?",
     "closeTabLabel": "Sekmeyi kapat",
     "overwriteSingleExists": "\"{{name}}\" hedef klasörde zaten var. Üzerine yazmak istiyor musunuz?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Belirli bir süre işlem yapılmazsa kasayı kilitler. Açık sunucu bağlantıları etkin kalır; 0 otomatik kilitlemeyi kapatır.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",

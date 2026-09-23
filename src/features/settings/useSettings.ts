@@ -45,6 +45,7 @@ export interface SettingsValues {
   saveSessionOnExit: boolean;
   vaultAutoLockMinutes: number;
   showSecurityConfirmations: boolean;
+  strictHostKeyCheck: boolean;
   localColumns: PaneColumns;
   remoteColumns: PaneColumns;
   localColumnWidths: PaneColumnWidths;
@@ -125,7 +126,7 @@ export const SETTING_GROUPS = {
     'openWithAssociations',
   ],
   updates: ['autoCheckUpdates'],
-  security: ['vaultAutoLockMinutes', 'showSecurityConfirmations'],
+  security: ['vaultAutoLockMinutes', 'showSecurityConfirmations', 'strictHostKeyCheck'],
   logging: ['logEnabled', 'logShowTimestamps', 'logToFile'],
   shortcuts: ['keyboardShortcuts'],
 } as const satisfies Record<string, readonly (keyof SettingsValues)[]>;
@@ -302,6 +303,7 @@ function normalizeValues(settings: AppSettings): SettingsValues {
         ? s.vaultAutoLockMinutes
         : SETTINGS_DEFAULTS.vaultAutoLockMinutes,
     showSecurityConfirmations: s.showSecurityConfirmations !== false,
+    strictHostKeyCheck: s.strictHostKeyCheck !== false,
     localColumns: normalizeColumnsSetting(s.localColumns, SETTINGS_DEFAULTS.localColumns),
     remoteColumns: normalizeColumnsSetting(s.remoteColumns, SETTINGS_DEFAULTS.remoteColumns),
     localColumnWidths: normalizeWidthsSetting(

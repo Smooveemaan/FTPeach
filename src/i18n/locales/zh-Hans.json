@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "保留已保存的密码并发送到新服务器？",
         "approve": "保留密码"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "在本计算机上保存为：{{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "安全确认将被关闭。",
       "autoLockNever": "密码库将不再在闲置后锁定。",
-      "autoLockMinutes": "密码库将在闲置 {{minutes}} 分钟后锁定。"
+      "autoLockMinutes": "密码库将在闲置 {{minutes}} 分钟后锁定。",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "保存给：{{recipient}}",
     "transferTo": "新服务器：{{recipient}}",
-    "transferLessSecure": "新连接未加密，或不校验服务器证书。"
+    "transferLessSecure": "新连接未加密，或不校验服务器证书。",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "新建文件夹…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "重置窗口和窗格大小、恢复默认列，并清除界面缓存？",
-    "hostKeyMismatch": "{{error}} 删除 {{host}}:{{port}} 的已保存密钥指纹并继续连接？仅当您确定服务器确实已重新安装或迁移时才这样做——否则可能会连接到伪造的服务器。",
-    "connectAnyway": "仍然连接",
     "closeTabWithActiveTransfers": "此标签页中有正在进行的传输。关闭此标签页并停止这些传输吗？",
     "closeTabLabel": "关闭标签页",
     "overwriteSingleExists": "目标文件夹中已存在“{{name}}”。是否覆盖？",
@@ -403,6 +415,8 @@
       "autoLockHint": "闲置一段时间后锁定密码库。现有的服务器连接仍保持活动状态；设置为 0 可禁用自动锁定。",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "更改主密码",
       "change": "更改密码",
       "systemUnlock": "允许通过系统验证解锁",

@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "¿Conservar la contraseña guardada y enviarla al nuevo servidor?",
         "approve": "Conservar la contraseña"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Se guarda en este equipo como: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Las confirmaciones de seguridad se desactivarán.",
       "autoLockNever": "La bóveda ya no se bloqueará tras un periodo de inactividad.",
-      "autoLockMinutes": "La bóveda se bloqueará tras {{minutes}} min de inactividad."
+      "autoLockMinutes": "La bóveda se bloqueará tras {{minutes}} min de inactividad.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Guardada para: {{recipient}}",
     "transferTo": "Nuevo servidor: {{recipient}}",
-    "transferLessSecure": "La nueva conexión no está cifrada o no comprueba el certificado del servidor."
+    "transferLessSecure": "La nueva conexión no está cifrada o no comprueba el certificado del servidor.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Nueva carpeta…",
@@ -201,8 +215,6 @@
   },
   "confirm": {
     "resetLayout": "¿Restablecer el tamaño de la ventana y de los paneles, recuperar las columnas predeterminadas y borrar la caché de la interfaz?",
-    "hostKeyMismatch": "{{error}} ¿Eliminar la huella de la clave guardada para {{host}}:{{port}} y conectarse de todos modos? Hazlo solo si estás seguro de que el servidor se ha reinstalado o migrado de verdad; de lo contrario, podrías conectarte a un servidor suplantado.",
-    "connectAnyway": "Conectar de todos modos",
     "closeTabWithActiveTransfers": "Esta pestaña contiene transferencias activas. ¿Cerrar la pestaña y detenerlas?",
     "closeTabLabel": "Cerrar pestaña",
     "overwriteSingleExists": "«{{name}}» ya existe en la carpeta de destino. ¿Deseas sobrescribirlo?",
@@ -407,6 +419,8 @@
       "autoLockHint": "Bloquea la bóveda tras un periodo de inactividad. Las conexiones con los servidores siguen activas; 0 desactiva el bloqueo automático.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Cambiar la contraseña maestra",
       "change": "Cambiar contraseña",
       "systemUnlock": "Permitir el desbloqueo mediante el sistema",

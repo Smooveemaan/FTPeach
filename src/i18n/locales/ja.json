@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "保存されたパスワードを保持し、新しいサーバーに送信しますか？",
         "approve": "パスワードを保持"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "このコンピューターに次の名前で保存されます: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "セキュリティ確認が無効になります。",
       "autoLockNever": "保管庫は操作がなくてもロックされなくなります。",
-      "autoLockMinutes": "保管庫は操作がないまま {{minutes}} 分でロックされます。"
+      "autoLockMinutes": "保管庫は操作がないまま {{minutes}} 分でロックされます。",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "保存先: {{recipient}}",
     "transferTo": "新しいサーバー: {{recipient}}",
-    "transferLessSecure": "新しい接続は暗号化されていない、またはサーバー証明書を検証しません。"
+    "transferLessSecure": "新しい接続は暗号化されていない、またはサーバー証明書を検証しません。",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "新しいフォルダー…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "ウィンドウとペインのサイズをリセットし、既定の列に戻して、インターフェースのキャッシュをクリアしますか？",
-    "hostKeyMismatch": "{{error}} {{host}}:{{port}} の保存済み鍵フィンガープリントを削除して接続しますか？ サーバーが本当に再インストールまたは移行されたと確信できる場合にのみ実行してください。そうでない場合、なりすましサーバーに接続する恐れがあります。",
-    "connectAnyway": "このまま接続",
     "closeTabWithActiveTransfers": "このタブには進行中の転送があります。タブを閉じて、転送を停止しますか？",
     "closeTabLabel": "タブを閉じる",
     "overwriteSingleExists": "「{{name}}」は移動先フォルダーに既に存在します。上書きしますか？",
@@ -403,6 +415,8 @@
       "autoLockHint": "一定時間操作がないと保管庫をロックします。既存のサーバー接続は維持されます。0 で自動ロックを無効にします。",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "マスターパスワードの変更",
       "change": "パスワードの変更",
       "systemUnlock": "システムによるロック解除を許可",

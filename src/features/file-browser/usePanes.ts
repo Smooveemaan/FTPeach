@@ -228,10 +228,8 @@ export function usePanes({
     refreshPane,
     pushRecentSite,
     onVaultUnlockRequired,
-    requestConfirm,
     inFlightRefreshesRef,
     stopTransfersForConnection,
-    t,
   });
 
   usePaneSessionPersistence({

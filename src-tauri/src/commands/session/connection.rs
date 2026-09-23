@@ -14,11 +14,18 @@ use crate::store::Store;
 use serde::Serialize;
 use tauri::State;
 
+/// The host key the connection refused, and what the user has to decide
+/// about: keep the pinned fingerprint, or trust this one instead. `expected`
+/// is absent on a first connection, which is the same decision with nothing
+/// to compare against yet.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostKeyMismatchPayload {
     pub host: String,
     pub port: u16,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected: Option<String>,
+    pub actual: String,
 }
 
 #[derive(Serialize)]
@@ -73,6 +80,8 @@ pub async fn session_connect(
                 .map(|mismatch| HostKeyMismatchPayload {
                     host: mismatch.host,
                     port: mismatch.port,
+                    expected: mismatch.expected,
+                    actual: mismatch.actual,
                 }),
         },
     })
@@ -98,13 +107,40 @@ pub async fn session_disconnect(
     Ok(OkResult::Ok { ok: true })
 }
 
+/// Trusts one exact host key for one exact server.
+///
+/// This replaced an unconditional "forget the pinned key": a renderer could
+/// delete the pin and reconnect, and the next key it was offered became the
+/// new first sighting. The grant is issued by the backend's own confirmation
+/// window, which shows both fingerprints, and it is bound to all four values,
+/// so it cannot be spent on another server or another pair of keys. The write
+/// is a compare-and-swap, so a pin that moved on in between makes the
+/// decision stale rather than silently overwriting it.
 #[tauri::command]
-pub async fn session_forget_host_key(
+pub async fn session_trust_host_key(
+    window: tauri::WebviewWindow,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+    authorization_token: String,
     store: State<'_, Store>,
-    host: String,
-    port: u16,
+    request: String,
 ) -> CommandResult<OkResult> {
-    match store.forget_known_host_fingerprint(&host, port).await {
+    let parsed = crate::security::sensitive::host_key_from_request(&request)?;
+    crate::security::sensitive::consume(
+        &window,
+        &authorization,
+        &authorization_token,
+        "session_trust_host_key",
+        &request,
+    )?;
+    match store
+        .trust_known_host_fingerprint(
+            &parsed.host,
+            parsed.port,
+            parsed.expected.as_deref(),
+            &parsed.actual,
+        )
+        .await
+    {
         Ok(()) => Ok(OkResult::Ok { ok: true }),
         Err(err) => Ok(OkResult::Err {
             ok: false,
@@ -125,6 +161,8 @@ mod tests {
             host_key_mismatch: Some(HostKeyMismatchPayload {
                 host: "h".into(),
                 port: 22,
+                expected: Some("aa".into()),
+                actual: "bb".into(),
             }),
         })
         .unwrap();

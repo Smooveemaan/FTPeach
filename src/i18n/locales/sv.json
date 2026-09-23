@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Behålla det sparade lösenordet och skicka det till den nya servern?",
         "approve": "Behåll lösenordet"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Sparas på den här datorn som: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Säkerhetsbekräftelser stängs av.",
       "autoLockNever": "Valvet låses inte längre efter inaktivitet.",
-      "autoLockMinutes": "Valvet låses efter {{minutes}} min inaktivitet."
+      "autoLockMinutes": "Valvet låses efter {{minutes}} min inaktivitet.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Sparat för: {{recipient}}",
     "transferTo": "Ny server: {{recipient}}",
-    "transferLessSecure": "Den nya anslutningen är inte krypterad eller kontrollerar inte serverns certifikat."
+    "transferLessSecure": "Den nya anslutningen är inte krypterad eller kontrollerar inte serverns certifikat.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Ny mapp…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Återställa storlekarna på fönster och rutor, återställa standardkolumnerna och rensa gränssnittets cache?",
-    "hostKeyMismatch": "{{error}} Ta bort det sparade nyckelfingeravtrycket för {{host}}:{{port}} och ansluta ändå? Gör det bara om du är säker på att servern verkligen har installerats om eller flyttats – annars kan du hamna på en förfalskad server.",
-    "connectAnyway": "Anslut ändå",
     "closeTabWithActiveTransfers": "Det pågår överföringar på den här fliken. Stänga fliken och avbryta dem?",
     "closeTabLabel": "Stäng fliken",
     "overwriteSingleExists": "”{{name}}” finns redan i målmappen. Vill du skriva över den?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Låser valvet efter en tids inaktivitet. Befintliga serveranslutningar förblir aktiva; 0 stänger av automatisk låsning.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Ändra huvudlösenord",
       "change": "Ändra lösenord",
       "systemUnlock": "Tillåt upplåsning via systemet",

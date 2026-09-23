@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Keep the saved password and send it to the new server?",
         "approve": "Keep password"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Saved on this computer as: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Security confirmations will be turned off.",
       "autoLockNever": "The vault will no longer lock after inactivity.",
-      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity."
+      "autoLockMinutes": "The vault will lock after {{minutes}} min of inactivity.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Saved for: {{recipient}}",
     "transferTo": "New server: {{recipient}}",
-    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate."
+    "transferLessSecure": "The new connection is not encrypted or does not check the server certificate.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "New Folder…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Reset window and pane sizes, restore default columns, and clear the interface cache?",
-    "hostKeyMismatch": "{{error}} Delete the saved key fingerprint for {{host}}:{{port}} and connect anyway? Only do this if you're sure the server was legitimately reinstalled or migrated — otherwise this could let you connect to a potentially spoofed server.",
-    "connectAnyway": "Connect anyway",
     "closeTabWithActiveTransfers": "This tab has active transfers. Close the tab and stop them?",
     "closeTabLabel": "Close tab",
     "overwriteSingleExists": "\"{{name}}\" already exists in the destination folder. Overwrite it?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Locks the vault after inactivity. Existing server connections remain active; 0 disables auto-lock.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Change master password",
       "change": "Change password",
       "systemUnlock": "Allow system unlock",

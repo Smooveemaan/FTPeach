@@ -233,6 +233,8 @@ export default function SettingsDialog({
                 vaultAutoLockValue={draft.vaultAutoLockValue}
                 setVaultAutoLockValue={draft.setVaultAutoLockValue}
                 showSecurityConfirmationsValue={draft.showSecurityConfirmationsValue}
+                strictHostKeyCheckValue={draft.strictHostKeyCheckValue}
+                changeStrictHostKeyCheckValue={draft.changeStrictHostKeyCheckValue}
                 changeShowSecurityConfirmationsValue={draft.changeShowSecurityConfirmationsValue}
                 securityConfirmationPending={draft.securityConfirmationPending}
               />

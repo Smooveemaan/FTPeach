@@ -5,12 +5,12 @@ import {
   hasCommandOutcome,
   isRecord,
 } from '../ipcContracts.ts';
-import type { CommandResult, InvokeFn } from '../ipcContracts.ts';
+import type { CommandResult, HostKeyDecision, InvokeFn } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/types.ts';
 
 export type ConnectionConfig = Record<string, unknown> & { protocol: string };
 export interface SessionConnectResult extends CommandResult {
-  hostKeyMismatch?: { host: string; port: number };
+  hostKeyMismatch?: HostKeyDecision;
 }
 export interface SessionListResult extends CommandResult {
   entries: FileEntry[];
@@ -31,7 +31,11 @@ function isSessionConnectResult(value: unknown): value is SessionConnectResult {
   const mismatch = value.hostKeyMismatch;
   return (
     mismatch === undefined ||
-    (isRecord(mismatch) && typeof mismatch.host === 'string' && typeof mismatch.port === 'number')
+    (isRecord(mismatch) &&
+      typeof mismatch.host === 'string' &&
+      typeof mismatch.port === 'number' &&
+      typeof mismatch.actual === 'string' &&
+      (mismatch.expected === undefined || typeof mismatch.expected === 'string'))
   );
 }
 
@@ -68,7 +72,18 @@ export function createSessionApi(invoke: InvokeFn) {
       }),
     chmod: (connectionId: string, remotePath: string, mode: string) =>
       commandOutcome(invoke, 'session_chmod', { connectionId, remotePath, mode }),
-    forgetHostKey: (host: string, port: number) =>
-      commandOutcome(invoke, 'session_forget_host_key', { host, port }),
+    /**
+     * Trusts one exact host key for one exact server, after the backend's
+     * own window has shown both fingerprints. `expected` is the pinned
+     * fingerprint, absent on a first connection.
+     */
+    trustHostKey: (request: HostKeyDecision) =>
+      commandOutcome(invoke, 'session_trust_host_key', {
+        request: JSON.stringify(
+          request.expected === undefined
+            ? { host: request.host, port: request.port, actual: request.actual }
+            : request,
+        ),
+      }),
   };
 }

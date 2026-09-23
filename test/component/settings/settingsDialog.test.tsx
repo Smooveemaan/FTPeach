@@ -48,6 +48,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     logToFile: false,
     vaultAutoLockMinutes: 0,
     showSecurityConfirmations: true,
+    strictHostKeyCheck: true,
     keyboardShortcuts: {},
     paneOrientation: 'vertical',
     narrow: false,

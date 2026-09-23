@@ -44,12 +44,10 @@ function harness(
     onVaultUnlockRequired: (callback) => {
       retry = callback;
     },
-    requestConfirm: () => assert.fail('unexpected confirmation'),
     inFlightRefreshesRef: { current: {} },
     stopTransfersForConnection: async (id) => {
       events.push(`stop:${id}`);
     },
-    t: (key) => key,
   });
   return { ...h, tab, requests, events, refreshes, listingErrors, lifecycle, retry: () => retry };
 }
@@ -262,4 +260,46 @@ test('editing a bookmark-filled form drops the bookmark caption along with its i
   });
   assert.equal(h.tab.panes.b.siteId, null);
   assert.equal(h.tab.panes.b.siteLabel, '');
+});
+
+test('a refused host key is answered by the backend window, then the connect is retried', async () => {
+  const mismatch = { host: 'example.test', port: 22, expected: 'aaaa', actual: 'bbbb' };
+  let attempts = 0;
+  const h = harness((command) => {
+    if (command !== 'session_connect') return { ok: true };
+    attempts += 1;
+    return attempts === 1
+      ? { ok: false, error: 'host key mismatch', hostKeyMismatch: mismatch }
+      : { ok: true };
+  });
+  await h.lifecycle.connectPane('b', { ...h.tab.panes.b.form, protocol: 'sftp' })();
+  const trust = h.calls.find((call) => call.command === 'session_trust_host_key');
+  assert.ok(trust, 'the backend was never asked to trust the key');
+  // Exactly the four values the backend confirms and then writes.
+  assert.deepEqual(JSON.parse(String(trust.args?.request)), mismatch);
+  assert.equal(attempts, 2);
+  // The retry is fired, not awaited, so let it settle before reading the pane.
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(h.tab.panes.b.status, 'connected');
+  assert.equal(h.tab.panes.b.errorMessage, '');
+});
+
+test('a first sighting is trusted without an expected fingerprint, and a declined one stops', async () => {
+  const first = { host: 'example.test', port: 22, actual: 'bbbb' };
+  let attempts = 0;
+  const h = harness((command) => {
+    if (command === 'session_trust_host_key')
+      return { ok: false, error: 'Operation was cancelled', errorCode: 'cancelled' };
+    if (command !== 'session_connect') return { ok: true };
+    attempts += 1;
+    return { ok: false, error: 'host key not confirmed', hostKeyMismatch: first };
+  });
+  await h.lifecycle.connectPane('b', { ...h.tab.panes.b.form, protocol: 'sftp' })();
+  const trust = h.calls.find((call) => call.command === 'session_trust_host_key');
+  assert.ok(trust);
+  assert.deepEqual(JSON.parse(String(trust.args?.request)), first);
+  // Declining is an answer, not a failure: no retry and nothing to report.
+  assert.equal(attempts, 1);
+  assert.equal(h.tab.panes.b.status, 'error');
+  assert.equal(h.tab.panes.b.errorMessage, '');
 });

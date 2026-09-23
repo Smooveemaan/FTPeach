@@ -270,23 +270,37 @@ async fn write_pipelined(
     Ok(acknowledged)
 }
 
+/// A host key the connection would not accept on its own: either it
+/// changed, or this is a first sighting and the connection is not allowed to
+/// trust one unseen. Both stop before any credential is offered, and both
+/// need the same answer from the user: trust this exact fingerprint.
 #[derive(Debug)]
 pub struct HostKeyMismatchError {
     pub host: String,
     pub port: u16,
-    pub expected: String,
+    /// The pinned fingerprint, or `None` on a first sighting.
+    pub expected: Option<String>,
     pub actual: String,
 }
 
 impl std::fmt::Display for HostKeyMismatchError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            formatter,
-            "The server key for {}:{} has changed since the last connection (expected SHA256 \
-             fingerprint {}, got {}). This may indicate a spoofed server (a man-in-the-middle \
-             attack) or that the server was reinstalled. Connection stopped.",
-            self.host, self.port, self.expected, self.actual
-        )
+        match &self.expected {
+            Some(expected) => write!(
+                formatter,
+                "The server key for {}:{} has changed since the last connection (expected SHA256 \
+                 fingerprint {}, got {}). This may indicate a spoofed server (a man-in-the-middle \
+                 attack) or that the server was reinstalled. Connection stopped.",
+                self.host, self.port, expected, self.actual
+            ),
+            None => write!(
+                formatter,
+                "This is the first connection to {}:{}, and its SHA256 host key fingerprint {} \
+                 has not been confirmed. Compare it with the fingerprint the server's \
+                 administrator published before trusting it. Connection stopped.",
+                self.host, self.port, self.actual
+            ),
+        }
     }
 }
 
@@ -307,6 +321,9 @@ struct TofuHandler {
     host: String,
     port: u16,
     mismatch: Arc<StdMutex<Option<HostKeyMismatchError>>>,
+    /// Trust on first use. Off, an unknown host is refused until the user
+    /// has seen and confirmed its fingerprint.
+    allow_first_pin: bool,
 }
 
 impl client::Handler for TofuHandler {
@@ -324,16 +341,19 @@ impl client::Handler for TofuHandler {
 
         match self
             .known_hosts
-            .pin_or_verify(&self.host, self.port, &fingerprint)
+            .pin_or_verify(&self.host, self.port, &fingerprint, self.allow_first_pin)
             .await
             .context("pinning host key to known_hosts.json")?
         {
             HostKeyPinOutcome::Pinned | HostKeyPinOutcome::Matched => Ok(true),
-            HostKeyPinOutcome::Mismatched { expected } => {
+            outcome => {
                 *self.mismatch.lock().unwrap() = Some(HostKeyMismatchError {
                     host: self.host.clone(),
                     port: self.port,
-                    expected,
+                    expected: match outcome {
+                        HostKeyPinOutcome::Mismatched { expected } => Some(expected),
+                        _ => None,
+                    },
                     actual: fingerprint,
                 });
                 Ok(false)
@@ -622,6 +642,7 @@ impl ProtocolBackend for SftpBackend {
             host: host.clone(),
             port,
             mismatch: mismatch.clone(),
+            allow_first_pin: !config.strict_host_key_check,
         };
 
         let connect_fut = async {
@@ -743,9 +764,14 @@ impl ProtocolBackend for SftpBackend {
                     );
                     // The mismatch itself stays in the chain for the prompt
                     // that offers to trust the new key.
+                    let summary = if m.expected.is_some() {
+                        "The server host key has changed"
+                    } else {
+                        "The server host key has not been confirmed"
+                    };
                     return Err(anyhow::Error::new(m).context(crate::ipc::CommandError::new(
                         ErrorCode::HostKeyMismatch,
-                        "The server host key has changed",
+                        summary,
                     )));
                 }
                 self.log_key(

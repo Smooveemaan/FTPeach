@@ -43,12 +43,15 @@ impl Drop for SensitiveConnectionConfig {
     }
 }
 
-/// The host whose key stopped matching, when that is why a connect failed.
-/// The command layer turns this into the payload the renderer needs to offer
-/// the "forget this host key" recovery.
+/// The host whose key the connection would not accept, when that is why a
+/// connect failed. The command layer turns this into the payload the
+/// renderer needs to ask the user to trust this exact fingerprint.
 pub(crate) struct HostKeyMismatch {
     pub host: String,
     pub port: u16,
+    /// The pinned fingerprint, or `None` on a first sighting.
+    pub expected: Option<String>,
+    pub actual: String,
 }
 
 pub(crate) struct ConnectFailure {
@@ -221,6 +224,17 @@ pub(crate) async fn connect(
     for (key, value) in proxy_config {
         config.insert(key, value);
     }
+    config.insert(
+        "strictHostKeyCheck".into(),
+        serde_json::Value::Bool(
+            store
+                .get_settings()
+                .await
+                .get(crate::security::security_policy::STRICT_HOST_KEY)
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(true),
+        ),
+    );
 
     let config = SensitiveConnectionConfig(config);
     let typed_config = ConnectionConfig::from_json_map(&config).map_err(|error| {
@@ -254,6 +268,8 @@ pub(crate) async fn connect(
                 .map(|mismatch| HostKeyMismatch {
                     host: mismatch.host.clone(),
                     port: mismatch.port,
+                    expected: mismatch.expected.clone(),
+                    actual: mismatch.actual.clone(),
                 }),
             error: CommandError::from_anyhow(&error),
         });

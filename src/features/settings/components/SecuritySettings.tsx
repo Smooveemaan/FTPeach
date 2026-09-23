@@ -11,7 +11,9 @@ interface SecuritySettingsProps {
   vaultAutoLockValue: string;
   setVaultAutoLockValue: (value: string) => void;
   showSecurityConfirmationsValue: boolean;
+  strictHostKeyCheckValue: boolean;
   changeShowSecurityConfirmationsValue: (value: boolean) => Promise<void>;
+  changeStrictHostKeyCheckValue: (value: boolean) => Promise<void>;
   securityConfirmationPending: boolean;
 }
 
@@ -20,7 +22,9 @@ export default function SecuritySettings({
   vaultAutoLockValue,
   setVaultAutoLockValue,
   showSecurityConfirmationsValue,
+  strictHostKeyCheckValue,
   changeShowSecurityConfirmationsValue,
+  changeStrictHostKeyCheckValue,
   securityConfirmationPending,
 }: SecuritySettingsProps) {
   const { t } = useTranslation();
@@ -334,6 +338,20 @@ export default function SecuritySettings({
           <span>{t('settings.security.showConfirmations')}</span>
         </label>
         <p className="settings-hint">{t('settings.security.showConfirmationsHint')}</p>
+      </div>
+      <div className="settings-option-group">
+        <label className="secure-toggle settings-toggle">
+          <input
+            type="checkbox"
+            checked={strictHostKeyCheckValue}
+            disabled={securityConfirmationPending}
+            onChange={handler((event: ChangeEvent<HTMLInputElement>) =>
+              changeStrictHostKeyCheckValue(event.target.checked),
+            )}
+          />
+          <span>{t('settings.security.strictHostKey')}</span>
+        </label>
+        <p className="settings-hint">{t('settings.security.strictHostKeyHint')}</p>
       </div>
     </section>
   );

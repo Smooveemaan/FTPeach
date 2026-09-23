@@ -22,6 +22,8 @@ pub struct CredentialScope {
     pub url: String,
     pub secure: bool,
     pub allow_invalid_cert: bool,
+    /// A WebDAV bookmark allowed to sign in over plain HTTP.
+    pub allow_cleartext_auth: bool,
     pub ca_cert_path: String,
 }
 
@@ -66,6 +68,7 @@ pub fn site_scope(site: &JsonMap) -> CredentialScope {
         url: text(site, "webdavUrl"),
         secure: flag(site, "secure"),
         allow_invalid_cert: flag(site, "allowInvalidCert"),
+        allow_cleartext_auth: flag(site, "allowCleartextAuth"),
         ca_cert_path: text(site, "caCertPath"),
     }
 }
@@ -79,6 +82,7 @@ pub fn proxy_scope(settings: &JsonMap) -> CredentialScope {
         url: String::new(),
         secure: false,
         allow_invalid_cert: false,
+        allow_cleartext_auth: false,
         ca_cert_path: String::new(),
     }
 }
@@ -134,7 +138,8 @@ pub fn transfer(
         from: before.describe(),
         to: after.describe(),
         less_secure: (before.encrypted() && !after.encrypted())
-            || (!before.allow_invalid_cert && after.allow_invalid_cert),
+            || (!before.allow_invalid_cert && after.allow_invalid_cert)
+            || (!before.allow_cleartext_auth && after.allow_cleartext_auth),
     })
 }
 

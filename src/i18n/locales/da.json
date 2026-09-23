@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Behold den gemte adgangskode og send den til den nye server?",
         "approve": "Behold adgangskode"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Gemmes på denne computer som: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Sikkerhedsbekræftelser slås fra.",
       "autoLockNever": "Boksen låses ikke længere efter inaktivitet.",
-      "autoLockMinutes": "Boksen låses efter {{minutes}} min. inaktivitet."
+      "autoLockMinutes": "Boksen låses efter {{minutes}} min. inaktivitet.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Gemt til: {{recipient}}",
     "transferTo": "Ny server: {{recipient}}",
-    "transferLessSecure": "Den nye forbindelse er ikke krypteret eller kontrollerer ikke serverens certifikat."
+    "transferLessSecure": "Den nye forbindelse er ikke krypteret eller kontrollerer ikke serverens certifikat.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Ny mappe…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Nulstil vindues- og rudestørrelser, gendan standardkolonnerne og ryd brugergrænsefladens cache?",
-    "hostKeyMismatch": "{{error}} Slet det gemte nøgleaftryk for {{host}}:{{port}} og opret forbindelse alligevel? Gør det kun, hvis du er sikker på, at serveren rent faktisk er geninstalleret eller flyttet — ellers kan du ende på en forfalsket server.",
-    "connectAnyway": "Opret forbindelse alligevel",
     "closeTabWithActiveTransfers": "Der er aktive overførsler i denne fane. Vil du lukke fanen og stoppe dem?",
     "closeTabLabel": "Luk fane",
     "overwriteSingleExists": "»{{name}}« findes allerede i målmappen. Skal den overskrives?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Låser boksen efter inaktivitet. Eksisterende serverforbindelser forbliver aktive; 0 slår automatisk låsning fra.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
       "systemUnlock": "Tillad oplåsning via systemet",

@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Păstrați parola salvată și o trimiteți către noul server?",
         "approve": "Păstrează parola"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Se salvează pe acest computer ca: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Confirmările de securitate vor fi dezactivate.",
       "autoLockNever": "Seiful nu se va mai bloca după inactivitate.",
-      "autoLockMinutes": "Seiful se va bloca după {{minutes}} min de inactivitate."
+      "autoLockMinutes": "Seiful se va bloca după {{minutes}} min de inactivitate.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Salvată pentru: {{recipient}}",
     "transferTo": "Server nou: {{recipient}}",
-    "transferLessSecure": "Noua conexiune nu este criptată sau nu verifică certificatul serverului."
+    "transferLessSecure": "Noua conexiune nu este criptată sau nu verifică certificatul serverului.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Folder nou…",
@@ -201,8 +215,6 @@
   },
   "confirm": {
     "resetLayout": "Resetați dimensiunile ferestrei și ale panourilor, restabiliți coloanele implicite și goliți memoria cache a interfeței?",
-    "hostKeyMismatch": "{{error}} Ștergeți amprenta cheii salvate pentru {{host}}:{{port}} și vă conectați oricum? Faceți asta doar dacă sunteți sigur că serverul a fost într-adevăr reinstalat sau mutat — altfel vă puteți conecta la un server falsificat.",
-    "connectAnyway": "Conectare oricum",
     "closeTabWithActiveTransfers": "Această filă conține transferuri în curs. Doriți să închideți fila și să le opriți?",
     "closeTabLabel": "Închide fila",
     "overwriteSingleExists": "„{{name}}” există deja în folderul de destinație. Doriți să îl suprascrieți?",
@@ -407,6 +419,8 @@
       "autoLockHint": "Blochează seiful după o perioadă de inactivitate. Conexiunile existente la servere rămân active; 0 dezactivează blocarea automată.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Schimbă parola principală",
       "change": "Schimbă parola",
       "systemUnlock": "Permite deblocarea prin sistem",

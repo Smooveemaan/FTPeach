@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Να διατηρηθεί ο αποθηκευμένος κωδικός πρόσβασης και να αποστέλλεται στον νέο διακομιστή;",
         "approve": "Διατήρηση κωδικού"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Αποθηκεύεται σε αυτόν τον υπολογιστή ως: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Οι επιβεβαιώσεις ασφαλείας θα απενεργοποιηθούν.",
       "autoLockNever": "Το θησαυροφυλάκιο δεν θα κλειδώνει πλέον μετά από αδράνεια.",
-      "autoLockMinutes": "Το θησαυροφυλάκιο θα κλειδώνει μετά από {{minutes}} λεπτά αδράνειας."
+      "autoLockMinutes": "Το θησαυροφυλάκιο θα κλειδώνει μετά από {{minutes}} λεπτά αδράνειας.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Αποθηκευμένος για: {{recipient}}",
     "transferTo": "Νέος διακομιστής: {{recipient}}",
-    "transferLessSecure": "Η νέα σύνδεση δεν είναι κρυπτογραφημένη ή δεν ελέγχει το πιστοποιητικό του διακομιστή."
+    "transferLessSecure": "Η νέα σύνδεση δεν είναι κρυπτογραφημένη ή δεν ελέγχει το πιστοποιητικό του διακομιστή.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Νέος φάκελος…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "Να γίνει επαναφορά των μεγεθών παραθύρου και πλαισίων, επαναφορά των προεπιλεγμένων στηλών και εκκαθάριση της προσωρινής μνήμης της διεπαφής;",
-    "hostKeyMismatch": "{{error}} Να διαγραφεί το αποθηκευμένο αποτύπωμα κλειδιού για το {{host}}:{{port}} και να γίνει σύνδεση παρ' όλα αυτά; Κάντε το μόνο αν είστε βέβαιοι ότι ο διακομιστής όντως επανεγκαταστάθηκε ή μεταφέρθηκε — αλλιώς μπορεί να συνδεθείτε σε πλαστό διακομιστή.",
-    "connectAnyway": "Σύνδεση παρ' όλα αυτά",
     "closeTabWithActiveTransfers": "Αυτή η καρτέλα περιέχει ενεργές μεταφορές. Θέλετε να κλείσετε την καρτέλα και να τις διακόψετε;",
     "closeTabLabel": "Κλείσιμο καρτέλας",
     "overwriteSingleExists": "Το «{{name}}» υπάρχει ήδη στον φάκελο προορισμού. Θέλετε να το αντικαταστήσετε;",
@@ -403,6 +415,8 @@
       "autoLockHint": "Κλειδώνει το θησαυροφυλάκιο μετά από αδράνεια. Οι υπάρχουσες συνδέσεις με διακομιστές παραμένουν ενεργές· το 0 απενεργοποιεί το αυτόματο κλείδωμα.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Αλλαγή κύριου κωδικού πρόσβασης",
       "change": "Αλλαγή κωδικού πρόσβασης",
       "systemUnlock": "Να επιτρέπεται το ξεκλείδωμα μέσω του συστήματος",

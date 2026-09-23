@@ -166,6 +166,10 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
             password: typeof password === 'string' && password !== '',
           });
         }
+        case 'session_trust_host_key':
+          // The request is already the grant's target: the backend parses
+          // the same string it confirmed.
+          return typeof args?.request === 'string' ? args.request : '';
         case 'app_export_settings':
         case 'app_import_settings':
           return 'native-dialog';

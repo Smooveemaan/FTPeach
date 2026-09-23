@@ -97,6 +97,16 @@ pub enum ConfirmationKind {
     WeakenSecuritySettings,
     UseSystemProtection,
     TransferSecret,
+    TrustHostKey,
+}
+
+/// The two fingerprints a host-key decision is about.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostKeyFingerprints {
+    /// The pinned fingerprint, absent on a first connection.
+    pub expected: Option<String>,
+    pub actual: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -113,6 +123,8 @@ pub struct ConfirmationPrompt {
     security_changes: Option<Weakening>,
     /// A saved password that would be kept for a new recipient.
     secret_transfer: Option<SecretTransfer>,
+    /// The SSH host key the user is being asked to trust.
+    host_key: Option<HostKeyFingerprints>,
     confirmation_phrase: Option<String>,
     requires_reauthentication: bool,
 }
@@ -141,6 +153,7 @@ fn requires_confirmation(operation: &str) -> bool {
             | "vault_reset"
             | "vault_use_system_protection"
             | "fs_execute_path"
+            | "session_trust_host_key"
     )
 }
 
@@ -156,7 +169,11 @@ fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> b
     required
         && (matches!(
             operation,
-            "vault_reset" | "vault_use_system_protection" | "settings_set_security" | "sites_save"
+            "vault_reset"
+                | "vault_use_system_protection"
+                | "settings_set_security"
+                | "sites_save"
+                | "session_trust_host_key"
         ) || enabled)
 }
 
@@ -245,6 +262,7 @@ fn confirmation_prompt(
         application: None,
         security_changes: None,
         secret_transfer: None,
+        host_key: None,
         confirmation_phrase: (kind == ConfirmationKind::VaultReset).then(|| "RESET".into()),
         requires_reauthentication,
     })
@@ -266,9 +284,43 @@ fn open_with_prompt(intent: &OpenWithIntent, locale: String) -> ConfirmationProm
             .map(|path| crate::local_fs::local_open::shell_path(path)),
         security_changes: None,
         secret_transfer: None,
+        host_key: None,
         confirmation_phrase: None,
         requires_reauthentication: false,
     }
+}
+
+/// The server whose host key the user is being asked to trust. The grant
+/// is bound to all four values, so approving one replacement cannot be
+/// spent on another server or on a different pair of keys.
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostKeyRequest {
+    pub host: String,
+    pub port: u16,
+    /// The pinned fingerprint, absent on a first connection.
+    #[serde(default)]
+    pub expected: Option<String>,
+    pub actual: String,
+}
+
+pub fn host_key_from_request(target: &str) -> CommandResult<HostKeyRequest> {
+    let request: HostKeyRequest =
+        serde_json::from_str(target).map_err(|_| denied("Invalid host key request"))?;
+    let sane = |value: &str| {
+        !value.is_empty() && value.len() <= 128 && value.chars().all(|c| c.is_ascii_hexdigit())
+    };
+    if request.host.is_empty()
+        || request.host.len() > 255
+        || !sane(&request.actual)
+        || request
+            .expected
+            .as_deref()
+            .is_some_and(|value| !sane(value))
+    {
+        return Err(denied("Invalid host key request"));
+    }
+    Ok(request)
 }
 
 /// Parses a patch of protected settings. In an authorization request a new
@@ -374,12 +426,37 @@ fn plan_protected_settings(
         requires_reauthentication: vault_configured && !weakening.is_empty(),
         security_changes: (!weakening.is_empty()).then_some(weakening),
         secret_transfer: transfer,
+        host_key: None,
         confirmation_phrase: None,
     };
     Ok(Plan {
         target: security_policy::grant_target(settings, &patch),
         required,
         prompt: Some(prompt),
+        trusts_application: None,
+    })
+}
+
+fn plan_host_key(target: &str, locale: String) -> CommandResult<Plan> {
+    let request = host_key_from_request(target)?;
+    Ok(Plan {
+        prompt: Some(ConfirmationPrompt {
+            kind: ConfirmationKind::TrustHostKey,
+            locale,
+            target: Some(format!("{}:{}", request.host, request.port)),
+            local_name: None,
+            application: None,
+            security_changes: None,
+            secret_transfer: None,
+            host_key: Some(HostKeyFingerprints {
+                expected: request.expected,
+                actual: request.actual,
+            }),
+            confirmation_phrase: None,
+            requires_reauthentication: false,
+        }),
+        target: target.to_owned(),
+        required: true,
         trusts_application: None,
     })
 }
@@ -399,6 +476,7 @@ async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandR
             application: None,
             security_changes: None,
             secret_transfer: transfer,
+            host_key: None,
             confirmation_phrase: None,
             requires_reauthentication: false,
         }),
@@ -545,6 +623,7 @@ pub async fn authorize_sensitive(
         "settings_set_security",
         "vault_use_system_protection",
         "sites_save",
+        "session_trust_host_key",
     ];
     if window.label() != "main" || !ALLOWED.contains(&operation.as_str()) {
         return Err(denied(
@@ -563,6 +642,7 @@ pub async fn authorize_sensitive(
             plan_protected_settings(&settings, vault.is_configured(), &target, locale)?
         }
         "sites_save" => plan_site_save(&store, &target, locale).await?,
+        "session_trust_host_key" => plan_host_key(&target, locale)?,
         _ => plan_operation(&operation, &target, vault.is_configured(), locale)?,
     };
     let requires_reauthentication = plan

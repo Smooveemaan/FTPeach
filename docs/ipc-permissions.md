@@ -55,8 +55,12 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
   `open_with_discard_recovered_edits` act only on the backend-owned recovery folder and
   accept no path from the renderer.
 - Import/export: `app_import_settings`, `app_export_settings`.
+- SSH host keys: `session_trust_host_key` lives in the `sensitive` plugin. Its token names
+  the host, the port, the fingerprint trusted until now and the one being trusted, and the
+  backend writes the new pin only if the stored one is still what the token named. There is
+  no command that deletes a pin.
 - Security settings: `settings_set_security` is the only command that applies
-  `showSecurityConfirmations` and `vaultAutoLockMinutes`, and it also carries the proxy's
+  `showSecurityConfirmations`, `vaultAutoLockMinutes` and `strictHostKeyCheck`, and it also carries the proxy's
   type, host, port, account and password; `settings_set` rejects a patch that would relax
   either setting or move the saved proxy password, and an import keeps the current values.
 - Bookmarks: `sites_save` lives in the `sensitive` plugin. Its token names the bookmark and

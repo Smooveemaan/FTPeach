@@ -39,6 +39,7 @@ export type SettingsDraftValues = Pick<
   | 'logToFile'
   | 'vaultAutoLockMinutes'
   | 'showSecurityConfirmations'
+  | 'strictHostKeyCheck'
   | 'keyboardShortcuts'
 >;
 
@@ -96,6 +97,7 @@ interface SettingsDraft {
   logToFileValue: boolean;
   vaultAutoLockValue: string;
   showSecurityConfirmationsValue: boolean;
+  strictHostKeyCheckValue: boolean;
 }
 
 type DraftAction = {
@@ -143,6 +145,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     logToFileValue: !!settings.logToFile,
     vaultAutoLockValue: settings.vaultAutoLockMinutes ? String(settings.vaultAutoLockMinutes) : '',
     showSecurityConfirmationsValue: settings.showSecurityConfirmations !== false,
+    strictHostKeyCheckValue: settings.strictHostKeyCheck !== false,
   };
 }
 
@@ -206,6 +209,7 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
     logToFile: draft.logToFileValue,
     vaultAutoLockMinutes: vaultAutoLock,
     showSecurityConfirmations: draft.showSecurityConfirmationsValue,
+    strictHostKeyCheck: draft.strictHostKeyCheckValue,
     keyboardShortcuts: draft.shortcutOverridesValue,
   };
 }
@@ -249,6 +253,7 @@ export interface SettingsDraftModel extends SettingsDraft, SettingsDraftSetters 
   /** True while the backend's confirmation window is up. */
   securityConfirmationPending: boolean;
   changeShowSecurityConfirmationsValue: (next: boolean) => Promise<void>;
+  changeStrictHostKeyCheckValue: (next: boolean) => Promise<void>;
   markUnsavedChanges: () => void;
   handleSave: (vaultBusy: boolean, proxyPasswordPatch?: ProxyPasswordPatch) => Promise<void>;
   discardAndClose: () => void;
@@ -293,37 +298,42 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   const markUnsavedChanges = () => setHasUnsavedChanges(true);
 
   /**
-   * Turning the security confirmations off is the one settings change the
-   * backend confirms in a window of its own. It is asked for here, the moment
-   * the switch moves, rather than at Save: the user is still looking at the
-   * setting they changed, and the window is written in the language the dialog
-   * is showing, even when that language is itself an unsaved change.
+   * Turning a protective setting off is confirmed by the backend in a window
+   * of its own. It is asked for here, the moment the switch moves, rather
+   * than at Save: the user is still looking at the setting they changed, and
+   * the window is written in the language the dialog is showing, even when
+   * that language is itself an unsaved change.
    *
-   * The grant that comes back waits in the settings API until Save, so nothing
-   * is turned off before the dialog is saved, and declining simply leaves the
-   * switch as it was.
+   * The grant that comes back waits in the settings API until Save, so
+   * nothing is turned off before the dialog is saved, and declining simply
+   * leaves the switch as it was. One question at a time: the second switch
+   * is disabled while the first is being answered.
    */
-  const changeShowSecurityConfirmationsValue = async (next: boolean) => {
+  const changeProtectedToggle = async (
+    field: 'showSecurityConfirmationsValue' | 'strictHostKeyCheckValue',
+    key: 'showSecurityConfirmations' | 'strictHostKeyCheck',
+    next: boolean,
+  ) => {
     if (securityConfirmationPendingRef.current) return;
     if (next) {
       api.settings.releaseSecurityChange();
-      dispatch({ field: 'showSecurityConfirmationsValue', value: true });
+      dispatch({ field, value: true });
       return;
     }
     securityConfirmationPendingRef.current = true;
     setSecurityConfirmationPending(true);
     try {
-      const confirmation = await api.settings.confirmSecurityChange({
-        showSecurityConfirmations: false,
-      });
-      if (confirmation.ok) {
-        dispatch({ field: 'showSecurityConfirmationsValue', value: false });
-      }
+      const confirmation = await api.settings.confirmSecurityChange({ [key]: false });
+      if (confirmation.ok) dispatch({ field, value: false });
     } finally {
       securityConfirmationPendingRef.current = false;
       setSecurityConfirmationPending(false);
     }
   };
+  const changeShowSecurityConfirmationsValue = (next: boolean) =>
+    changeProtectedToggle('showSecurityConfirmationsValue', 'showSecurityConfirmations', next);
+  const changeStrictHostKeyCheckValue = (next: boolean) =>
+    changeProtectedToggle('strictHostKeyCheckValue', 'strictHostKeyCheck', next);
 
   const handleSave = async (vaultBusy: boolean, proxyPasswordPatch: ProxyPasswordPatch = {}) => {
     if (vaultBusy || savingRef.current) return;
@@ -403,6 +413,8 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setLogToFileValue: setter('logToFileValue'),
     setVaultAutoLockValue: setter('vaultAutoLockValue'),
     setShowSecurityConfirmationsValue: setter('showSecurityConfirmationsValue'),
+    setStrictHostKeyCheckValue: setter('strictHostKeyCheckValue'),
+    changeStrictHostKeyCheckValue,
     saving,
     saveError,
     hasUnsavedChanges,

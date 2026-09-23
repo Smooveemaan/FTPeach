@@ -60,6 +60,14 @@
       "transferSecret": {
         "message": "Het opgeslagen wachtwoord behouden en naar de nieuwe server verzenden?",
         "approve": "Wachtwoord behouden"
+      },
+      "trustHostKeyFirst": {
+        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
+        "approve": "Trust this server"
+      },
+      "trustHostKeyChanged": {
+        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
+        "approve": "Trust the new key"
       }
     },
     "savedAs": "Op deze computer opgeslagen als: {{name}}",
@@ -67,11 +75,17 @@
     "changes": {
       "confirmationsOff": "Beveiligingsbevestigingen worden uitgeschakeld.",
       "autoLockNever": "De kluis wordt niet meer vergrendeld na inactiviteit.",
-      "autoLockMinutes": "De kluis wordt na {{minutes}} min inactiviteit vergrendeld."
+      "autoLockMinutes": "De kluis wordt na {{minutes}} min inactiviteit vergrendeld.",
+      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
     },
     "transferFrom": "Opgeslagen voor: {{recipient}}",
     "transferTo": "Nieuwe server: {{recipient}}",
-    "transferLessSecure": "De nieuwe verbinding is niet versleuteld of controleert het servercertificaat niet."
+    "transferLessSecure": "De nieuwe verbinding is niet versleuteld of controleert het servercertificaat niet.",
+    "hostKey": {
+      "server": "Server: {{target}}",
+      "expected": "Key trusted until now: {{fingerprint}}",
+      "actual": "Key offered now: {{fingerprint}}"
+    }
   },
   "paneMenu": {
     "newFolder": "Nieuwe map…",
@@ -198,8 +212,6 @@
   },
   "confirm": {
     "resetLayout": "De afmetingen van vensters en panelen opnieuw instellen, de standaardkolommen herstellen en de cache van de interface wissen?",
-    "hostKeyMismatch": "{{error}} De opgeslagen sleutelvingerafdruk voor {{host}}:{{port}} verwijderen en toch verbinden? Doe dit alleen als je zeker weet dat de server echt opnieuw is geïnstalleerd of verhuisd — anders maak je mogelijk verbinding met een vervalste server.",
-    "connectAnyway": "Toch verbinden",
     "closeTabWithActiveTransfers": "Op dit tabblad lopen overdrachten. Tabblad sluiten en de overdrachten stoppen?",
     "closeTabLabel": "Tabblad sluiten",
     "overwriteSingleExists": "\"{{name}}\" bestaat al in de doelmap. Overschrijven?",
@@ -403,6 +415,8 @@
       "autoLockHint": "Vergrendelt de kluis na een periode van inactiviteit. Open serververbindingen blijven actief; 0 schakelt automatisch vergrendelen uit.",
       "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
+      "strictHostKey": "Confirm a new SSH server key",
+      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
       "changePassword": "Hoofdwachtwoord wijzigen",
       "change": "Wachtwoord wijzigen",
       "systemUnlock": "Ontgrendelen via het systeem toestaan",

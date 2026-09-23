@@ -31,20 +31,24 @@ Quit and immediate update installation drain admitted log records with a two-sec
 deadline. Daily rotation, age and directory-size policies still apply (HF-15).
 
 FTPeach currently supports the installed Windows storage model. It stores
-`settings.json`, `sites.json`, `known_hosts.json`, and `tabs.json` under
+`settings.json`, `sites.json`, `local-paths.json`, `known_hosts.json`, and `tabs.json` under
 `%APPDATA%\FTPeach`. Each file uses a `{ schemaVersion, data }` envelope,
-atomic replacement, and a per-file write lock. Invalid JSON is preserved as a
-timestamped `*.corrupt-*.bak` file before defaults are used.
+atomic replacement, and a per-file write lock; a bare legacy array or object is read as
+schema 0, and a newer schema keeps the file read-only. Unreadable contents are preserved
+as `*.corrupt-<hash>.bak` before defaults are used. The name follows the content, so the
+same damage is kept once, and only the five newest copies per file are kept.
 
-Before replacing a valid file, the previous snapshot is saved as
-`*.last-good.bak`. For `sites.json` and `settings.json` that snapshot keeps a saved secret
+Before replacing a file, the previous snapshot is saved as `*.last-good.bak`, but only
+if it still decodes as that file's data: syntactically valid JSON of the wrong shape
+never displaces a recoverable backup. The backup is flushed and renamed into place; if
+that fails, the save still happens and the failure is shown as a storage warning. For `sites.json` and `settings.json` that snapshot keeps a saved secret
 only where the new file holds the very same value: a password moved into the vault,
 replaced or deleted is dropped from the backup, and legacy plaintext never reaches it.
 Recovering from the backup therefore cannot bring back a weaker protection format. At
 every start FTPeach applies the same rule to existing backups, deletes
 `sites.pre-stronghold.bak` once no vault migration is in progress, and removes temporary
-files an earlier run left behind. Timestamped `*.corrupt-*.bak` copies are kept byte for
-byte for manual recovery. On a parse/schema error FTPeach keeps a timestamped copy of
+files an earlier run left behind. `*.corrupt-*.bak` copies are kept byte for
+byte for manual recovery. On a parse/schema error FTPeach keeps a copy of
 the broken bytes, tries the last-good snapshot, and only then falls back to
 defaults. It does not overwrite the corrupt original during that read.
 

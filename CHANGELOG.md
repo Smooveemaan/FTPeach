@@ -68,6 +68,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A damaged bookmarks, local paths or settings file no longer replaces its last good
+  backup, and opening it again no longer fills the disk with copies of it.
 - Quitting or installing an update now saves the latest settings and tabs before
   closing, including changes still waiting for their save timer.
 - Failed local copies now wait for outstanding disk writes before removing their temporary

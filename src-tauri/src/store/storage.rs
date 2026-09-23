@@ -35,6 +35,7 @@ pub(super) fn decode_versioned_store(path: &Path, value: Value) -> Result<Value>
                     || name.starts_with("settings.")
                     || name.starts_with("known_hosts.")
                     || name.starts_with("tabs.")
+                    || name.starts_with("local-paths.")
             });
     if !looks_like_envelope {
         return Ok(value);
@@ -69,7 +70,9 @@ pub(super) fn encode_versioned_store(path: &Path, value: Value) -> Value {
 fn is_versioned_store(path: &Path) -> bool {
     matches!(
         path.file_name().and_then(|name| name.to_str()),
-        Some("sites.json" | "settings.json" | "known_hosts.json" | "tabs.json")
+        Some(
+            "sites.json" | "settings.json" | "known_hosts.json" | "tabs.json" | "local-paths.json"
+        )
     )
 }
 
@@ -119,21 +122,76 @@ pub(super) fn backup_without_stale_secrets(previous: Value, next: &Value) -> Val
     }
 }
 
+/// Writes `body` to `tmp`, flushes it and renames it over `target`, so a
+/// reader sees either the old file or the complete new one.
+async fn publish(tmp: &Path, target: &Path, body: &[u8]) -> Result<()> {
+    let written = async {
+        let mut file = tokio::fs::File::create(tmp).await?;
+        file.write_all(body).await?;
+        file.sync_all().await?;
+        drop(file);
+        tokio::fs::rename(tmp, target).await
+    }
+    .await;
+    if written.is_err() {
+        let _ = tokio::fs::remove_file(tmp).await;
+    }
+    Ok(written?)
+}
+
 /// Replaces `path`'s last-good backup with `backup`, atomically.
 async fn write_backup(path: &Path, backup: Value) -> Result<()> {
     let target = path.with_extension("last-good.bak");
     let tmp = path.with_extension(format!("last-good.{}.tmp", std::process::id()));
     let body = serde_json::to_string_pretty(&encode_versioned_store(path, backup))?;
-    tokio::fs::write(&tmp, body).await?;
-    if let Err(error) = tokio::fs::rename(&tmp, &target).await {
-        let _ = tokio::fs::remove_file(&tmp).await;
-        return Err(error.into());
+    publish(&tmp, &target, body.as_bytes()).await
+}
+
+/// Corrupt copies kept per store; older ones are deleted.
+const CORRUPT_COPIES_KEPT: usize = 5;
+
+/// Keeps `raw`, the unreadable contents of `path`, as
+/// `<store>.corrupt-<hash>.bak`. The name follows the content, so reading
+/// the same broken file again adds nothing, and only the newest
+/// [`CORRUPT_COPIES_KEPT`] copies of a store are kept.
+async fn archive_corrupt(path: &Path, raw: &[u8]) -> Result<()> {
+    use sha2::{Digest, Sha256};
+    let hash: String = Sha256::digest(raw)[..8]
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    let target = path.with_extension(format!("corrupt-{hash}.bak"));
+    if tokio::fs::try_exists(&target).await? {
+        return Ok(());
+    }
+    let tmp = path.with_extension(format!("corrupt-{hash}.{}.tmp", std::process::id()));
+    publish(&tmp, &target, raw).await?;
+
+    let prefix = format!("{}.corrupt-", store_name(path));
+    let mut copies = Vec::new();
+    let mut entries = tokio::fs::read_dir(path.parent().unwrap_or(Path::new("."))).await?;
+    while let Some(entry) = entries.next_entry().await? {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if name.starts_with(&prefix) && name.ends_with(".bak") {
+            copies.push((entry.metadata().await?.modified()?, entry.path()));
+        }
+    }
+    copies.sort_by(|a, b| b.0.cmp(&a.0));
+    for (_, stale) in copies.into_iter().skip(CORRUPT_COPIES_KEPT) {
+        tokio::fs::remove_file(stale).await?;
     }
     Ok(())
 }
 
-/// Temporary files this module names `<store>.<pid>.<millis>.tmp` or
-/// `<store>.last-good.<pid>.tmp`, with the pid that wrote them.
+fn store_name(path: &Path) -> &str {
+    path.file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("store")
+}
+
+/// Temporary files this module names `<store>.<pid>.<millis>.tmp`,
+/// `<store>.last-good.<pid>.tmp` or `<store>.corrupt-<hash>.<pid>.tmp`, with
+/// the pid that wrote them.
 fn store_tmp_pid(name: &str) -> Option<u32> {
     let stem = name.strip_suffix(".tmp")?;
     let mut parts = stem.split('.');
@@ -148,6 +206,7 @@ fn store_tmp_pid(name: &str) -> Option<u32> {
     match rest.as_slice() {
         [pid, millis] if millis.bytes().all(|b| b.is_ascii_digit()) => pid.parse().ok(),
         ["last-good", pid] => pid.parse().ok(),
+        [copy, pid] if copy.starts_with("corrupt-") => pid.parse().ok(),
         _ => None,
     }
 }
@@ -274,14 +333,12 @@ impl Store {
                         format!("{error:#}; last-good recovery unavailable"),
                         true,
                     );
-                    let backup = path.with_extension(format!(
-                        "corrupt-{}.bak",
-                        std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .map(|d| d.as_millis())
-                            .unwrap_or(0)
-                    ));
-                    let _ = tokio::fs::copy(path, &backup).await;
+                    if let Err(error) = archive_corrupt(path, raw.as_bytes()).await {
+                        log::warn!(
+                            "Could not keep a copy of the unreadable {}: {error:#}",
+                            path.display()
+                        );
+                    }
                     let last_good = path.with_extension("last-good.bak");
                     match tokio::fs::read_to_string(&last_good).await {
                         Ok(raw) => serde_json::from_str::<Value>(&raw)
@@ -338,7 +395,10 @@ impl Store {
         }
     }
 
-    pub(super) async fn write_json<T: serde::Serialize>(
+    /// Replaces `path` with `data`. The previous contents become the
+    /// last-good backup only if they still decode as a `T`, so a file of the
+    /// wrong shape never displaces a backup that could be recovered.
+    pub(super) async fn write_json<T: serde::Serialize + serde::de::DeserializeOwned>(
         &self,
         path: &PathBuf,
         data: &T,
@@ -371,8 +431,15 @@ impl Store {
             .ok()
             .and_then(|raw| serde_json::from_str::<Value>(&raw).ok())
             .and_then(|value| decode_versioned_store(path, value).ok())
+            .filter(|previous| serde_json::from_value::<T>(previous.clone()).is_ok())
+            && let Err(error) =
+                write_backup(path, backup_without_stale_secrets(previous, &value)).await
         {
-            let _ = write_backup(path, backup_without_stale_secrets(previous, &value)).await;
+            self.storage_issue(
+                path,
+                format!("last-good backup not updated: {error:#}"),
+                false,
+            );
         }
         if let Err(error) = tokio::fs::rename(&tmp, path).await {
             let _ = tokio::fs::remove_file(&tmp).await;

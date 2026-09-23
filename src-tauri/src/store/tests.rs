@@ -1439,3 +1439,134 @@ fn rejects_unknown_store_schema_without_interpreting_payload() {
             .contains("unsupported known_hosts.json schema version 999")
     );
 }
+
+fn local_folder(name: &str) -> JsonMap {
+    let mut folder = JsonMap::new();
+    folder.insert("name".into(), Value::String(name.into()));
+    folder.insert("managerScope".into(), Value::String("localPaths".into()));
+    folder
+}
+
+#[tokio::test]
+async fn local_paths_read_the_legacy_array_and_are_saved_versioned() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("local-paths.json");
+    std::fs::write(
+        &path,
+        br#"[{"id":"legacy","kind":"folder","name":"Old","managerScope":"localPaths"}]"#,
+    )
+    .unwrap();
+    let store = Store::new_at(dir.clone());
+    let names = |sites: Vec<JsonMap>| -> Vec<String> {
+        sites
+            .iter()
+            .filter_map(|site| site.get("name").and_then(Value::as_str).map(str::to_owned))
+            .collect()
+    };
+    assert_eq!(names(store.list_sites().await.unwrap()), ["Old"]);
+
+    store.save_folder(local_folder("New")).await.unwrap();
+    let saved: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    assert_eq!(saved["schemaVersion"], json!(1));
+    assert_eq!(names(store.list_sites().await.unwrap()), ["Old", "New"]);
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
+async fn local_paths_of_an_unknown_future_version_stay_read_only() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("local-paths.json");
+    let future = br#"{"schemaVersion":2,"data":{"folders":[]}}"#;
+    std::fs::write(&path, future).unwrap();
+    let store = Store::new_at(dir.clone());
+    let _ = store.list_sites().await;
+    assert!(!store.storage_warnings().is_empty());
+    assert!(store.save_folder(local_folder("New")).await.is_err());
+    assert_eq!(std::fs::read(&path).unwrap(), future);
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
+async fn a_store_of_the_wrong_shape_never_becomes_the_last_good_backup() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("local-paths.json");
+    let backup = path.with_extension("last-good.bak");
+    let good = r#"{"schemaVersion":1,"data":[{"id":"kept","kind":"folder","name":"Kept","managerScope":"localPaths"}]}"#;
+    std::fs::write(&backup, good).unwrap();
+    std::fs::write(&path, br#"{"schemaVersion":1,"data":{"not":"a list"}}"#).unwrap();
+
+    let store = Store::new_at(dir.clone());
+    let recovered = store.list_sites().await.unwrap();
+    assert_eq!(recovered.len(), 1);
+    store
+        .write_json(&path, &Vec::<JsonMap>::new())
+        .await
+        .unwrap();
+    assert_eq!(std::fs::read_to_string(&backup).unwrap(), good);
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
+async fn a_failed_backup_update_is_reported_and_keeps_the_save() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("settings.json");
+    std::fs::write(&path, br#"{"schemaVersion":1,"data":{"theme":"dark"}}"#).unwrap();
+    // A directory where the backup goes makes publishing it fail, the way
+    // an interrupted or refused rename would.
+    std::fs::create_dir(path.with_extension("last-good.bak")).unwrap();
+    let store = Store::new_at(dir.clone());
+    store
+        .write_json(&path, &json!({"theme": "light"}))
+        .await
+        .unwrap();
+
+    assert!(
+        store
+            .storage_warnings()
+            .iter()
+            .any(|warning| warning.contains("last-good backup not updated"))
+    );
+    assert!(std::fs::read_to_string(&path).unwrap().contains("light"));
+    let leftovers: Vec<_> = std::fs::read_dir(&dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
+        .collect();
+    assert!(leftovers.is_empty());
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
+async fn rereading_a_corrupt_store_keeps_one_copy_and_a_bounded_history() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("sites.json");
+    let copies = || {
+        std::fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with("sites.corrupt-")
+            })
+            .count()
+    };
+    std::fs::write(&path, b"{broken").unwrap();
+    for _ in 0..5 {
+        let _ = Store::new_at(dir.clone()).list_sites().await;
+    }
+    assert_eq!(copies(), 1);
+
+    for n in 0..10 {
+        std::fs::write(&path, format!("{{broken {n}")).unwrap();
+        let _ = Store::new_at(dir.clone()).list_sites().await;
+    }
+    assert_eq!(copies(), 5);
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}

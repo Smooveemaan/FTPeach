@@ -26,6 +26,18 @@ const localEntries: FileEntry[] = [
   },
 ];
 
+/** `?manyFiles=N` lists N files locally, enough to make the list virtualized. */
+function manyFiles(): FileEntry[] | null {
+  const count = Number(new URLSearchParams(window.location.search).get('manyFiles'));
+  if (!count) return null;
+  return Array.from({ length: count }, (_, index) => ({
+    name: `file-${String(index).padStart(4, '0')}.txt`,
+    isDirectory: false,
+    size: 1024,
+    modifiedAt: '2026-09-01T09:30:00Z',
+  }));
+}
+
 const remoteEntries: FileEntry[] = [
   {
     name: 'public_html',
@@ -156,7 +168,7 @@ export const visualTestApi = {
   },
   fsLocal: {
     list: (path = 'C:\\Users\\developer\\Projects') =>
-      resolved({ ok: true, path, entries: localEntries }),
+      resolved({ ok: true, path, entries: manyFiles() ?? localEntries }),
     homedir: () => resolved('C:\\Users\\developer'),
     drives: () => resolved([{ path: 'C:\\', label: 'Windows (C:)' }]),
     mkdir: () => resolved(ok),

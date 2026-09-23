@@ -68,6 +68,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Selecting files by dragging a rectangle in a long folder now selects every file inside it,
+  including ones scrolled past, and shrinking the rectangle or holding Ctrl no longer leaves
+  or drops the wrong files. Shift+click after re-sorting extends from the file you clicked.
 - A proxy given as an IPv6 address, with or without square brackets, now works for WebDAV
   as it does for FTP and SFTP. A proxy address with a port, a path or a user name in it is
   refused when the settings are saved.

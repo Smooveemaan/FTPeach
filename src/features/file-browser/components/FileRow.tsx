@@ -77,6 +77,7 @@ function FileRow({
       aria-selected={selected}
       aria-label={`${isolate(entry.name)}, ${t(entry.isDirectory ? 'filePane.fileTypeFolder' : 'filePane.fileTypeGeneric')}`}
       data-name={entry.name}
+      data-index={index}
       onMouseDown={(e) => onRowMouseDown?.(entry, e)}
       className={`row ${entry.isDirectory ? 'is-dir' : ''} ${selected ? 'selected' : ''} ${entry.isHidden || entry.name.startsWith('.') ? 'is-hidden' : ''} ${dragTarget ? 'drag-target' : ''}`}
       style={

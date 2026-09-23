@@ -45,33 +45,58 @@ export default function useFileSelection({
   listRef,
   side,
 }: FileSelectionOptions): FileSelectionModel {
-  const anchorIndexRef = useRef<number | null>(null);
+  // The range anchor and the active row are kept by name: an index would
+  // point at a different file once the list is sorted or filtered again.
+  const anchorNameRef = useRef<string | null>(null);
+  const activeNameRef = useRef<string | null>(null);
   const activeIndexRef = useRef<number | null>(null);
   const marqueeElRef = useRef<HTMLDivElement | null>(null);
+  const endMarqueeRef = useRef<(() => void) | null>(null);
   const typeaheadRef = useRef({ buffer: '', lastTime: 0 });
   const stateRef = useRef({ sorted, selectedNames, onSelectionChange });
   stateRef.current = { sorted, selectedNames, onSelectionChange };
 
+  const setActive = (index: number | null) => {
+    activeIndexRef.current = index;
+    activeNameRef.current = index == null ? null : (stateRef.current.sorted[index]?.name ?? null);
+  };
+
   useEffect(() => {
-    anchorIndexRef.current = null;
-    activeIndexRef.current = null;
+    anchorNameRef.current = null;
+    setActive(null);
     typeaheadRef.current = { buffer: '', lastTime: 0 };
   }, [entries]);
+
+  useEffect(() => {
+    const name = activeNameRef.current;
+    const index = name == null ? -1 : sorted.findIndex((entry) => entry.name === name);
+    activeIndexRef.current = index < 0 ? null : index;
+    if (index < 0) activeNameRef.current = null;
+  }, [sorted]);
+
+  // A pane that goes away mid-drag (its tab closed) stops the marquee too.
+  useEffect(() => () => endMarqueeRef.current?.(), []);
 
   const selectSingle = (index: number) => {
     const { sorted, onSelectionChange } = stateRef.current;
     const entry = sorted[index];
     if (!entry) return;
-    anchorIndexRef.current = index;
+    anchorNameRef.current = entry.name;
     activeIndexRef.current = index;
+    activeNameRef.current = entry.name;
     onSelectionChange(new Set([entry.name]));
   };
 
   const selectRangeTo = (index: number) => {
     const { sorted, onSelectionChange } = stateRef.current;
-    if (anchorIndexRef.current == null) anchorIndexRef.current = index;
+    const anchorName = anchorNameRef.current;
+    let anchorIndex = anchorName == null ? -1 : sorted.findIndex((e) => e.name === anchorName);
+    if (anchorIndex < 0) {
+      anchorIndex = index;
+      anchorNameRef.current = sorted[index]?.name ?? null;
+    }
     activeIndexRef.current = index;
-    const anchorIndex = anchorIndexRef.current;
+    activeNameRef.current = sorted[index]?.name ?? null;
     const [start, end] = anchorIndex <= index ? [anchorIndex, index] : [index, anchorIndex];
     onSelectionChange(new Set(sorted.slice(start, end + 1).map((e) => e.name)));
   };
@@ -80,8 +105,9 @@ export default function useFileSelection({
     const { sorted, selectedNames, onSelectionChange } = stateRef.current;
     const entry = sorted[index];
     if (!entry) return;
-    anchorIndexRef.current = index;
+    anchorNameRef.current = entry.name;
     activeIndexRef.current = index;
+    activeNameRef.current = entry.name;
     const name = entry.name;
     const next = new Set(selectedNames);
     if (next.has(name)) next.delete(name);
@@ -135,31 +161,41 @@ export default function useFileSelection({
       lastX: e.clientX,
       lastY: e.clientY,
       active: false,
-      accumulated: additive ? new Set(selectedNames) : new Set<string>(),
     };
+    // What Ctrl+drag adds to. It never changes during the drag, so shrinking
+    // the rectangle gives back exactly what was selected before.
+    const initial: ReadonlySet<string> = additive ? new Set(selectedNames) : new Set();
     let autoScrollSpeed = 0;
     let autoScrollRaf: number | null = null;
 
     const anchorY = () =>
       listEl ? state.startY - (listEl.scrollTop - state.startScrollTop) : state.startY;
 
+    // Rows are hit by position in the list model, not by what is mounted: a
+    // virtualized list only renders the rows on screen, and a row scrolled
+    // out of the DOM is still inside the rectangle. Every row has the same
+    // height, so one mounted row gives the position of all of them.
+    const rowsIn = (top: number, bottom: number, left: number, right: number): string[] => {
+      const { sorted } = stateRef.current;
+      const probe = listEl?.querySelector<HTMLElement>('.row[data-index]');
+      if (!probe) return [];
+      const box = probe.getBoundingClientRect();
+      if (box.height <= 0 || box.left >= right || box.right <= left) return [];
+      const origin = box.top - Number(probe.dataset.index) * box.height;
+      const first = Math.max(0, Math.floor((top - origin) / box.height));
+      const last = Math.min(sorted.length - 1, Math.ceil((bottom - origin) / box.height) - 1);
+      return sorted.slice(first, last + 1).map((entry) => entry.name);
+    };
+
     const applySelection = (x2: number, y2: number) => {
       const startY = anchorY();
-      const left = Math.min(state.startX, x2);
-      const right = Math.max(state.startX, x2);
-      const top = Math.min(startY, y2);
-      const bottom = Math.max(startY, y2);
-      if (listEl) {
-        listEl.querySelectorAll<HTMLElement>('.row[data-name]').forEach((rowEl) => {
-          const r = rowEl.getBoundingClientRect();
-          const intersects = r.left < right && r.right > left && r.top < bottom && r.bottom > top;
-          const name = rowEl.dataset.name;
-          if (!name) return;
-          if (intersects) state.accumulated.add(name);
-          else state.accumulated.delete(name);
-        });
-      }
-      onSelectionChange(new Set(state.accumulated));
+      const hit = rowsIn(
+        Math.min(startY, y2),
+        Math.max(startY, y2),
+        Math.min(state.startX, x2),
+        Math.max(state.startX, x2),
+      );
+      stateRef.current.onSelectionChange(new Set([...initial, ...hit]));
     };
 
     const updateMarqueeVisual = (x2: number, y2: number) => {
@@ -223,26 +259,38 @@ export default function useFileSelection({
       applySelection(moveEvent.clientX, moveEvent.clientY);
     };
 
-    const onUp = () => {
+    // Every way a drag can end runs this once: release, cancel, a capture
+    // the browser took away, or the pane unmounting.
+    const stop = () => {
       captureEl.removeEventListener('pointermove', onMove);
       captureEl.removeEventListener('pointerup', onUp);
-      captureEl.removeEventListener('pointercancel', onUp);
+      captureEl.removeEventListener('pointercancel', stop);
+      captureEl.removeEventListener('lostpointercapture', stop);
       if (captureEl.hasPointerCapture(pointerId)) captureEl.releasePointerCapture(pointerId);
       if (autoScrollRaf != null) cancelAnimationFrame(autoScrollRaf);
+      autoScrollRaf = null;
       if (marqueeEl) marqueeEl.style.display = 'none';
+      if (endMarqueeRef.current === stop) endMarqueeRef.current = null;
+    };
+
+    const onUp = () => {
+      stop();
       if (state.active) {
-        anchorIndexRef.current = null;
-        activeIndexRef.current = null;
+        anchorNameRef.current = null;
+        setActive(null);
       } else if (!additive) {
         // A plain click on empty space, no drag — Explorer clears the
         // selection rather than leaving it untouched.
-        onSelectionChange(new Set());
+        stateRef.current.onSelectionChange(new Set());
       }
     };
 
+    endMarqueeRef.current?.();
+    endMarqueeRef.current = stop;
     captureEl.addEventListener('pointermove', onMove);
     captureEl.addEventListener('pointerup', onUp);
-    captureEl.addEventListener('pointercancel', onUp);
+    captureEl.addEventListener('pointercancel', stop);
+    captureEl.addEventListener('lostpointercapture', stop);
   };
 
   const scrollRowIntoView = (index: number) => {
@@ -317,8 +365,8 @@ export default function useFileSelection({
     handleTypeahead,
     clear: () => {
       onSelectionChange(new Set());
-      anchorIndexRef.current = null;
-      activeIndexRef.current = null;
+      anchorNameRef.current = null;
+      setActive(null);
     },
   };
 }

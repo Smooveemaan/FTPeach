@@ -45,6 +45,9 @@ pub async fn open_with_start(
     id: String,
     application: Option<String>,
 ) -> CommandResult<OpenWithStartResult> {
+    if let Some(program) = application.as_deref() {
+        approved_paths.preflight(std::path::Path::new(program))?;
+    }
     let intent = OpenWithIntent::resolve(
         &connection_id,
         &remote_path,

@@ -8,8 +8,22 @@ use crate::local_fs::mutations::guard as mutation_guard;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
+// Resolving a path is the first thing that can reach the network: a UNC
+// address makes Windows contact the server before any later check runs. The
+// thin wrappers below refuse an unconfirmed share from the path's text, then
+// hand the work to the unchanged body.
 #[tauri::command]
-pub async fn fs_validate_copy(source_path: String, dest_path: String) -> OkResult {
+pub async fn fs_validate_copy(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    source_path: String,
+    dest_path: String,
+) -> Result<OkResult, CommandError> {
+    approved_paths.preflight(Path::new(&source_path))?;
+    approved_paths.preflight(Path::new(&dest_path))?;
+    Ok(validate_copy_checked(source_path, dest_path))
+}
+
+fn validate_copy_checked(source_path: String, dest_path: String) -> OkResult {
     match validate_copy_relationship(Path::new(&source_path), Path::new(&dest_path)) {
         Ok(()) => ok(),
         Err(error) => err(error),
@@ -58,6 +72,7 @@ pub async fn fs_list(
                 }
             },
         };
+        approved_paths.preflight(&target)?;
         validate_read_source(&target)
             .await
             .map_err(CommandError::from)?;
@@ -138,7 +153,15 @@ pub async fn fs_drives() -> Vec<Drive> {
 }
 
 #[tauri::command]
-pub async fn fs_mkdir(local_path: String) -> OkResult {
+pub async fn fs_mkdir(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    local_path: String,
+) -> Result<OkResult, CommandError> {
+    approved_paths.preflight(Path::new(&local_path))?;
+    Ok(fs_mkdir_checked(local_path).await)
+}
+
+async fn fs_mkdir_checked(local_path: String) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
         // Kept typed: `err` would flatten the "busy" code into prose.
@@ -171,7 +194,22 @@ pub async fn fs_mkdir(local_path: String) -> OkResult {
 }
 
 #[tauri::command]
-pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<bool>) -> OkResult {
+pub async fn fs_rename(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    old_path: String,
+    new_path: String,
+    overwrite: Option<bool>,
+) -> Result<OkResult, CommandError> {
+    approved_paths.preflight(Path::new(&old_path))?;
+    approved_paths.preflight(Path::new(&new_path))?;
+    Ok(fs_rename_checked(old_path, new_path, overwrite).await)
+}
+
+async fn fs_rename_checked(
+    old_path: String,
+    new_path: String,
+    overwrite: Option<bool>,
+) -> OkResult {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&old_path) {
         Ok(lease) => lease,
         // Kept typed: `err` would flatten the "busy" code into prose.
@@ -264,6 +302,17 @@ pub async fn fs_rename(old_path: String, new_path: String, overwrite: Option<boo
 
 #[tauri::command]
 pub async fn fs_copy_file(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    source_path: String,
+    dest_path: String,
+    overwrite: Option<bool>,
+) -> Result<OkResult, CommandError> {
+    approved_paths.preflight(Path::new(&source_path))?;
+    approved_paths.preflight(Path::new(&dest_path))?;
+    Ok(fs_copy_file_checked(source_path, dest_path, overwrite).await)
+}
+
+async fn fs_copy_file_checked(
     source_path: String,
     dest_path: String,
     overwrite: Option<bool>,
@@ -317,10 +366,15 @@ pub async fn fs_copy_file(
 pub async fn fs_delete(
     window: tauri::WebviewWindow,
     authorization: tauri::State<'_, crate::security::sensitive::AuthorizationState>,
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     authorization_token: String,
     local_path: String,
     permanent: bool,
 ) -> Result<OkResult, CommandError> {
+    // Before anything resolves, stats or opens the path: resolving a UNC
+    // path is itself network access, and even a rejected token would have
+    // canonicalized it first.
+    approved_paths.preflight(Path::new(&local_path))?;
     crate::security::sensitive::consume(
         &window,
         &authorization,
@@ -391,7 +445,7 @@ mod tests {
             for directory in directories {
                 let secret = directory.join("secret");
                 assert!(matches!(
-                    fs_copy_file(
+                    fs_copy_file_checked(
                         secret.to_string_lossy().into_owned(),
                         outside.to_string_lossy().into_owned(),
                         None
@@ -400,11 +454,14 @@ mod tests {
                     OkResult::Err { .. }
                 ));
                 assert!(matches!(
-                    fs_create_file(directory.join("missing").to_string_lossy().into_owned()).await,
+                    fs_create_file_checked(
+                        directory.join("missing").to_string_lossy().into_owned()
+                    )
+                    .await,
                     OkResult::Err { .. }
                 ));
                 assert!(matches!(
-                    fs_mkdir(
+                    fs_mkdir_checked(
                         directory
                             .join("missing/child")
                             .to_string_lossy()
@@ -483,20 +540,20 @@ mod tests {
         let path = |p: &Path| p.to_string_lossy().into_owned();
 
         for overwrite in [None, Some(false)] {
-            let result = fs_rename(path(&source), path(&target), overwrite).await;
+            let result = fs_rename_checked(path(&source), path(&target), overwrite).await;
             assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
-            let result = fs_copy_file(path(&source), path(&target), overwrite).await;
+            let result = fs_copy_file_checked(path(&source), path(&target), overwrite).await;
             assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
             assert_eq!(std::fs::read(&source).unwrap(), b"source");
             assert_eq!(std::fs::read(&target).unwrap(), b"external");
         }
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
 
-        let result = fs_copy_file(path(&source), path(&target), Some(true)).await;
+        let result = fs_copy_file_checked(path(&source), path(&target), Some(true)).await;
         assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
         tokio::fs::write(&target, b"external").await.unwrap();
-        let result = fs_rename(path(&source), path(&target), Some(true)).await;
+        let result = fs_rename_checked(path(&source), path(&target), Some(true)).await;
         assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
         assert!(!source.exists());
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
@@ -519,7 +576,15 @@ mod tests {
 }
 
 #[tauri::command]
-pub async fn fs_create_file(local_path: String) -> OkResult {
+pub async fn fs_create_file(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    local_path: String,
+) -> Result<OkResult, CommandError> {
+    approved_paths.preflight(Path::new(&local_path))?;
+    Ok(fs_create_file_checked(local_path).await)
+}
+
+async fn fs_create_file_checked(local_path: String) -> OkResult {
     use tokio::io::AsyncWriteExt;
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
@@ -553,12 +618,43 @@ pub async fn fs_create_file(local_path: String) -> OkResult {
     }
 }
 
+/// How many probes of a network path may be in flight at once.
+///
+/// A share that stops answering leaves its `metadata` call blocked inside
+/// Windows, and a timeout on the future does not take that OS worker back.
+/// What can be bounded is how many of them there are, so a wedged share
+/// costs a handful of threads rather than one per attempt.
+static NETWORK_PROBES: std::sync::LazyLock<tokio::sync::Semaphore> =
+    std::sync::LazyLock::new(|| tokio::sync::Semaphore::new(4));
+
 #[tauri::command]
-pub async fn fs_is_dir(local_path: String) -> bool {
-    tokio::fs::metadata(&local_path)
+pub async fn fs_is_dir(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    local_path: String,
+) -> Result<bool, CommandError> {
+    // A `metadata` call is enough to reach a share, so an unconfirmed one is
+    // refused rather than answered.
+    approved_paths.preflight(Path::new(&local_path))?;
+    let probe =
+        async {
+            let _permit =
+                if crate::local_fs::local_open::is_network_path(Path::new(&local_path)) {
+                    Some(NETWORK_PROBES.acquire().await.map_err(|error| {
+                        CommandError::new(ErrorCode::Internal, error.to_string())
+                    })?)
+                } else {
+                    None
+                };
+            Ok::<bool, CommandError>(
+                tokio::fs::metadata(&local_path)
+                    .await
+                    .map(|m| m.is_dir())
+                    .unwrap_or(false),
+            )
+        };
+    tokio::time::timeout(std::time::Duration::from_secs(10), probe)
         .await
-        .map(|m| m.is_dir())
-        .unwrap_or(false)
+        .unwrap_or(Ok(false))
 }
 
 async fn open_validated_path(
@@ -607,6 +703,7 @@ macro_rules! open_command {
             authorization_token: String,
             local_path: String,
         ) -> Result<OkResult, CommandError> {
+            approved_paths.preflight(Path::new(&local_path))?;
             crate::security::sensitive::consume(
                 &window,
                 &authorization,
@@ -650,12 +747,12 @@ mod drag_move_tests {
         let target = target.to_string_lossy().into_owned();
         let lease = crate::local_fs::target_reservation::Reservation::acquire(&source).unwrap();
         assert!(matches!(
-            fs_rename(source.clone(), target.clone(), None).await,
+            fs_rename_checked(source.clone(), target.clone(), None).await,
             OkResult::Err { error, .. } if error.code == crate::ipc::ErrorCode::Busy
         ));
         drop(lease);
         assert!(matches!(
-            fs_rename(source, target.clone(), None).await,
+            fs_rename_checked(source, target.clone(), None).await,
             OkResult::Ok { .. }
         ));
         assert_eq!(std::fs::read(&target).unwrap(), b"keep");
@@ -680,7 +777,7 @@ mod drag_move_tests {
         let target = dir.join("target.txt");
         std::fs::write(&source, b"source").unwrap();
         std::fs::write(&target, b"external").unwrap();
-        let result = fs_rename(
+        let result = fs_rename_checked(
             source.to_string_lossy().into(),
             target.to_string_lossy().into(),
             Some(false),
@@ -690,7 +787,7 @@ mod drag_move_tests {
         assert_eq!(std::fs::read(&source).unwrap(), b"source");
         assert_eq!(std::fs::read(&target).unwrap(), b"external");
         std::fs::remove_file(&target).unwrap();
-        let result = fs_rename(
+        let result = fs_rename_checked(
             source.to_string_lossy().into(),
             target.to_string_lossy().into(),
             Some(false),
@@ -725,7 +822,7 @@ mod drag_move_tests {
             std::fs::write(&source, &data).unwrap();
             if overwrite {
                 std::fs::write(&target, b"old").unwrap();
-                let refused = fs_rename(
+                let refused = fs_rename_checked(
                     source.to_string_lossy().into(),
                     target.to_string_lossy().into(),
                     None,
@@ -735,7 +832,7 @@ mod drag_move_tests {
                 assert_eq!(std::fs::read(&source).unwrap(), data);
                 assert_eq!(std::fs::read(&target).unwrap(), b"old");
             }
-            let result = fs_rename(
+            let result = fs_rename_checked(
                 source.to_string_lossy().into(),
                 target.to_string_lossy().into(),
                 Some(overwrite),

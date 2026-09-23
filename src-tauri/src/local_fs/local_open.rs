@@ -64,13 +64,30 @@ fn is_device_path_text(value: &str) -> bool {
         || lower.starts_with("\\device\\")
 }
 
-fn is_network_path(path: &Path) -> bool {
-    let value = path.to_string_lossy().replace('/', "\\");
+pub fn is_network_path(path: &Path) -> bool {
+    network_key(&path.to_string_lossy()).is_some()
+}
+
+/// The `\\server\share\…` a path names, purely from its text, lowercased so
+/// two spellings of the same share compare equal.
+///
+/// Deciding this without touching the filesystem is the point. Resolving a
+/// UNC path is itself network access: `canonicalize` and `metadata` make
+/// Windows contact the server, and on a default configuration that hands it
+/// an authentication attempt. So the question "is this a network path the
+/// user allowed" has to be answered from the string, before any syscall.
+fn network_key(text: &str) -> Option<String> {
+    let value = text.replace('/', "\\");
     let lower = value.to_ascii_lowercase();
-    lower.starts_with("\\\\?\\unc\\")
-        || (value.starts_with("\\\\")
-            && !lower.starts_with("\\\\?\\")
-            && !lower.starts_with("\\\\.\\"))
+    // `\\?\UNC\server\share` is the same share as `\\server\share`.
+    if let Some(rest) = lower.strip_prefix("\\\\?\\unc\\") {
+        return Some(format!("\\\\{rest}"));
+    }
+    // A device or verbatim namespace is refused elsewhere and is not a share.
+    if lower.starts_with("\\\\?\\") || lower.starts_with("\\\\.\\") {
+        return None;
+    }
+    lower.starts_with("\\\\").then_some(lower)
 }
 
 fn key(path: &Path) -> String {
@@ -106,8 +123,37 @@ fn canonicalize_user_path(path: &Path) -> CommandResult<PathBuf> {
 }
 
 impl ApprovedLocalPaths {
+    /// Refuses a network path the user has not chosen, from its text alone.
+    ///
+    /// Every entry point that is about to resolve, stat or open a local path
+    /// calls this first. The later canonical check stays: it catches a path
+    /// that only becomes a share once resolved, such as a local symlink
+    /// pointing at one. This one catches the case that check cannot, where
+    /// resolving the path is already the network access.
+    pub fn preflight(&self, requested: &Path) -> CommandResult<()> {
+        let text = requested.to_string_lossy();
+        if is_device_path_text(&text) {
+            return Err(denied("Windows device paths are not allowed"));
+        }
+        let Some(requested_key) = network_key(&text) else {
+            return Ok(());
+        };
+        let confirmed = self
+            .network_paths
+            .lock()
+            .map_err(|_| denied("Local path authorization is unavailable"))?
+            .iter()
+            .filter_map(|root| network_key(root))
+            .any(|root| canonical_key_is_within(&requested_key, &root));
+        if confirmed {
+            Ok(())
+        } else {
+            Err(denied("Network paths require native-dialog confirmation"))
+        }
+    }
+
     pub fn approve_from_listing(&self, path: &Path) {
-        if is_device_path_text(&path.to_string_lossy()) {
+        if self.preflight(path).is_err() {
             return;
         }
         if let Ok(canonical) = std::fs::canonicalize(path) {
@@ -148,9 +194,7 @@ impl ApprovedLocalPaths {
     /// appearing in a listing does not make a program acceptable: whether
     /// the user chose it is the confirmation's decision, not this check's.
     pub fn canonical_application(&self, requested: &Path) -> CommandResult<PathBuf> {
-        if is_device_path_text(&requested.to_string_lossy()) {
-            return Err(denied("Windows device paths are not allowed"));
-        }
+        self.preflight(requested)?;
         self.recheck_application(requested)
     }
 
@@ -183,6 +227,7 @@ impl ApprovedLocalPaths {
     }
 
     pub fn validate(&self, requested: &Path, kind: OpenKind) -> CommandResult<PathBuf> {
+        self.preflight(requested)?;
         let canonical = canonicalize_user_path(requested)?;
         self.validate_canonical(canonical, kind)
     }
@@ -455,5 +500,82 @@ mod tests {
 
         std::fs::remove_dir(&junction).unwrap();
         std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod preflight_tests {
+    use super::*;
+
+    /// A share nothing in the test environment can reach. A preflight that
+    /// answered by touching the filesystem would hang or take seconds here;
+    /// one that answers from the path's text returns immediately.
+    const UNREACHABLE: &str = r"\\ftpeach-test-no-such-host\share\report.pdf";
+
+    #[test]
+    fn an_unconfirmed_share_is_refused_without_touching_the_filesystem() {
+        let state = ApprovedLocalPaths::default();
+        let started = std::time::Instant::now();
+        let error = state.preflight(Path::new(UNREACHABLE)).unwrap_err();
+        assert_eq!(error.code, ErrorCode::PermissionDenied);
+        assert_eq!(
+            error.message,
+            "Network paths require native-dialog confirmation"
+        );
+        assert!(
+            started.elapsed() < std::time::Duration::from_millis(200),
+            "the preflight waited on the network: {:?}",
+            started.elapsed()
+        );
+    }
+
+    #[test]
+    fn a_confirmed_share_covers_the_paths_below_it_in_either_spelling() {
+        let state = ApprovedLocalPaths::default();
+        state
+            .network_paths
+            .lock()
+            .unwrap()
+            .insert(key(Path::new(r"\\?\UNC\server\share")));
+
+        for allowed in [
+            r"\\server\share",
+            r"\\SERVER\Share\report.pdf",
+            r"\\server\share\sub\report.pdf",
+            "//server/share/report.pdf",
+        ] {
+            assert!(state.preflight(Path::new(allowed)).is_ok(), "{allowed}");
+        }
+        // The grant is stored in the canonical spelling, but a path supplied
+        // in the verbatim namespace stays refused as one, as it is
+        // everywhere else: that is how a device path would be smuggled in.
+        assert_eq!(
+            state
+                .preflight(Path::new(r"\\?\UNC\server\share\report.pdf"))
+                .unwrap_err()
+                .message,
+            "Windows device paths are not allowed"
+        );
+        for refused in [
+            r"\\server\other\report.pdf",
+            r"\\server\shareholder\report.pdf",
+            r"\\other\share\report.pdf",
+        ] {
+            assert!(state.preflight(Path::new(refused)).is_err(), "{refused}");
+        }
+    }
+
+    #[test]
+    fn a_local_path_needs_no_confirmation_and_a_device_path_is_refused() {
+        let state = ApprovedLocalPaths::default();
+        assert!(state.preflight(Path::new(r"C:\reports\report.pdf")).is_ok());
+        assert!(state.preflight(Path::new("reports/report.pdf")).is_ok());
+        for device in [r"\\?\C:\reports\report.pdf", r"\\.\PhysicalDrive0"] {
+            assert_eq!(
+                state.preflight(Path::new(device)).unwrap_err().message,
+                "Windows device paths are not allowed",
+                "{device}"
+            );
+        }
     }
 }

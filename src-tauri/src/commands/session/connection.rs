@@ -51,10 +51,24 @@ pub async fn session_connect(
     log_emitter: State<'_, LogEmitter>,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
+    approved_paths: State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     connection_id: String,
     config: IpcConnectionConfig,
 ) -> Result<SessionConnectResult, CommandError> {
     config.validate()?;
+    let config = config.into_map();
+    // A private key or a CA bundle is read from disk by the protocol backend,
+    // which has no way to ask about provenance. An address on a share the
+    // user never chose is refused here, before the file is opened.
+    for key in ["keyPath", "caCertPath"] {
+        if let Some(path) = config
+            .get(key)
+            .and_then(serde_json::Value::as_str)
+            .filter(|value| !value.is_empty())
+        {
+            approved_paths.preflight(std::path::Path::new(path))?;
+        }
+    }
     let outcome = session_service::connect(
         &sessions,
         &connecting,
@@ -62,7 +76,7 @@ pub async fn session_connect(
         &store,
         &vault,
         &connection_id,
-        config.into_map(),
+        config,
     )
     .await;
 

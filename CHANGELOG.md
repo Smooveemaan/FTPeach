@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+- A network path such as \\server\share is now refused before FTPeach touches it, unless
+  you picked it in a file dialog first. Opening, listing, renaming, copying or reading a
+  key or certificate from a share you have not chosen no longer reaches the server at all.
 - The first connection to an SSH server now shows its key fingerprint and asks before
   trusting it, so you can compare it with the one the server's administrator gave you.
   The new "Confirm a new SSH server key" setting turns this off, and turning it off asks

@@ -48,6 +48,10 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
 - Ordinary list/edit IPC returns only secret-presence flags. Explicit reveal commands require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.
+- Network paths: every command that resolves, stats or opens a local path refuses a
+  `\\server\share` address from its text before any filesystem call, unless a native
+  dialog confirmed that share. That check runs ahead of the authorization token, because
+  normalizing a token's target canonicalizes the path, which is already network access.
 - Open-with bookkeeping: `open_with_stop` and `open_with_mark_synced` (which records that the
   named revision of an open-with copy was uploaded) take only the ID the copy was opened
   under; an unknown ID or malformed revision changes nothing.

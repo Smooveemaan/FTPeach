@@ -68,6 +68,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Creating a local file with a name that is already taken now says so, instead of showing a
+  general error.
 - Switching languages quickly, or cancelling a language preview while it loads, no longer
   leaves an earlier language on screen or the text running the wrong way.
 - Icon buttons, the connection fields and the search boxes now have names a screen reader

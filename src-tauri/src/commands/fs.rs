@@ -162,34 +162,18 @@ pub async fn fs_mkdir(
 }
 
 async fn fs_mkdir_checked(local_path: String) -> OkResult {
-    let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
-        Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
-    };
-    let _mutation = mutation_guard().write().await;
-    if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
-        return err(error);
-    }
-    if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&local_path)) {
-        return err(error);
-    }
-    match tokio::fs::create_dir_all(&local_path).await {
-        Ok(()) => {
-            if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
-                return err(error);
-            }
-            match ensure_path_no_reparse_points_now(Path::new(&local_path)) {
-                Ok(()) => ok(),
-                Err(error) => err(error),
-            }
-        }
-        Err(e) => err(e),
+    outcome(crate::local_fs::local_create::create_dir(Path::new(&local_path)).await)
+}
+
+/// The command's answer for a local operation, keeping the error's code
+/// (busy, exists, permission) rather than flattening it into prose.
+fn outcome(result: anyhow::Result<()>) -> OkResult {
+    match result {
+        Ok(()) => ok(),
+        Err(error) => OkResult::Err {
+            ok: false,
+            error: CommandError::from_anyhow(&error),
+        },
     }
 }
 
@@ -417,6 +401,35 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    async fn create_commands_keep_the_service_error_codes() {
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-create-cmd-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let file = root.join("held.txt").to_string_lossy().into_owned();
+        let code = |result: OkResult| match result {
+            OkResult::Err { error, .. } => Some(error.code),
+            _ => None,
+        };
+        {
+            let _held = crate::local_fs::target_reservation::Reservation::acquire(&file).unwrap();
+            assert_eq!(
+                code(fs_create_file_checked(file.clone()).await),
+                Some(ErrorCode::Busy)
+            );
+            assert_eq!(
+                code(fs_mkdir_checked(file.clone()).await),
+                Some(ErrorCode::Busy)
+            );
+        }
+        assert_eq!(code(fs_create_file_checked(file.clone()).await), None);
+        assert_eq!(
+            code(fs_create_file_checked(file.clone()).await),
+            Some(ErrorCode::AlreadyExists)
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
     async fn protected_app_data_public_commands() {
         const FIXTURE: &str = "FTPEACH_P0_GUARD_FIXTURE";
         if let Some(root) = std::env::var_os(FIXTURE) {
@@ -585,37 +598,7 @@ pub async fn fs_create_file(
 }
 
 async fn fs_create_file_checked(local_path: String) -> OkResult {
-    use tokio::io::AsyncWriteExt;
-    let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
-        Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
-    };
-    let _mutation = mutation_guard().write().await;
-    if let Err(error) = validate_write_destination(Path::new(&local_path)).await {
-        return err(error);
-    }
-    if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&local_path)) {
-        return err(error);
-    }
-    match tokio::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&local_path)
-        .await
-    {
-        Ok(mut f) => {
-            let _ = f.flush().await;
-            ok()
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => err("File already exists"),
-        Err(e) => err(e),
-    }
+    outcome(crate::local_fs::local_create::create_file(Path::new(&local_path)).await)
 }
 
 /// How many probes of a network path may be in flight at once.

@@ -124,6 +124,7 @@ export default function VaultUnlockDialog({
       }
     >
       <p className="settings-hint">{t('settings.security.unlockRequiredHint')}</p>
+      <p className="settings-hint">{t('settings.security.lockScope')}</p>
       <div className="vault-unlock-row">
         {systemUnlock && (
           <button

@@ -1,9 +1,12 @@
 //! Runtime initialization after Tauri installs managed state and plugins.
 use super::log_emitter::LogEmitter;
-use super::{app_log, notification, settings_apply, shutdown, tray, updater, window_bounds};
+use super::{
+    app_log, notification, settings_apply, shutdown, tray, updater, vault_auto_lock, window_bounds,
+};
 #[cfg(feature = "smoke-test")]
 use crate::commands;
 use crate::local_fs::{self, preview::PreviewPaths};
+use crate::security::auto_lock::AutoLock;
 use crate::store::Store;
 use crate::transfer::progress::ProgressEmitter;
 use tauri::{Emitter, Manager};
@@ -95,10 +98,15 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     }
 
     let log_emitter_for_apply = app.state::<LogEmitter>().inner().clone();
+    let app_for_apply = app.handle().clone();
     tauri::async_runtime::spawn(async move {
         settings_apply::apply_at_startup(&store, &log_emitter_for_apply).await;
+        vault_auto_lock::apply_at_startup(&store, app_for_apply.state::<AutoLock>().inner()).await;
         store.scrub_secret_backups().await;
     });
+    // The vault's own protection, so it survives a renderer that stops
+    // running its timers or never finishes loading.
+    vault_auto_lock::start(app.handle());
     updater::check_at_startup(app.handle());
 
     Ok(())

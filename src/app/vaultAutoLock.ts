@@ -1,13 +1,7 @@
-interface VaultStatus {
-  configured: boolean;
-  locked: boolean;
-}
-interface VaultApi {
-  status: () => Promise<VaultStatus>;
-  lock: () => Promise<{ ok?: boolean } | null | undefined>;
+interface VaultActivityApi {
+  noteActivity: () => void;
 }
 interface DocumentTarget {
-  visibilityState: string;
   addEventListener: (
     name: string,
     listener: EventListener,
@@ -15,61 +9,55 @@ interface DocumentTarget {
   ) => unknown;
   removeEventListener: (name: string, listener: EventListener) => unknown;
 }
-interface TimerTarget {
-  setTimeout: (handler: () => void | Promise<void>, timeout: number) => number;
-  clearTimeout: (id: number | undefined) => unknown;
+interface Clock {
+  now: () => number;
 }
-interface VaultAutoLockOptions {
-  minutes: number;
-  vault: VaultApi;
+interface VaultActivityOptions {
+  vault: VaultActivityApi;
   documentTarget?: DocumentTarget;
-  timerTarget?: TimerTarget;
-  onLocked?: () => void;
+  clock?: Clock;
 }
 
-export function installVaultAutoLock({
-  minutes,
+/**
+ * How long one report covers. The backend measures idleness in whole
+ * minutes, so reporting more often than this only adds IPC traffic; at the
+ * shortest idle timeout the user can set it still costs the vault less than
+ * a second of accuracy.
+ */
+const REPORT_INTERVAL_MS = 30_000;
+
+const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+
+/**
+ * Tells the backend when the user has been seen.
+ *
+ * The idle timeout, the clock and the decision to lock all live in the
+ * backend (`security::auto_lock`), which is what makes the vault's
+ * protection survive a renderer that has stopped running its timers. This
+ * side only reports; failing to report lets the vault lock sooner, never
+ * later, so there is nothing here to retry or to recover from.
+ */
+export function installVaultActivityReporting({
   vault,
   documentTarget = document,
-  timerTarget = window,
-  onLocked = () => {},
-}: VaultAutoLockOptions): () => void {
-  if (!(minutes > 0)) return () => {};
-
-  let timer: number | undefined;
-  let stopped = false;
-
-  const lockVault = async () => {
-    if (stopped) return;
-    const status = await vault.status();
-    // `stopped` is set by the returned teardown, which the compiler does not model.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (stopped || !status.configured || status.locked) return;
-    const result = await vault.lock();
-    if (result?.ok === false) return;
-    onLocked();
+  clock = { now: () => Date.now() },
+}: VaultActivityOptions): () => void {
+  let reportedAt = Number.NEGATIVE_INFINITY;
+  const report = () => {
+    const now = clock.now();
+    if (now - reportedAt < REPORT_INTERVAL_MS) return;
+    reportedAt = now;
+    vault.noteActivity();
   };
-  const resetTimer = () => {
-    timerTarget.clearTimeout(timer);
-    timer = timerTarget.setTimeout(lockVault, minutes * 60_000);
-  };
-  const lockWhenProtected = () => {
-    if (documentTarget.visibilityState === 'hidden') void lockVault();
-  };
-  const activityEvents = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 
-  for (const event of activityEvents) {
-    documentTarget.addEventListener(event, resetTimer, { passive: true });
+  for (const event of ACTIVITY_EVENTS) {
+    documentTarget.addEventListener(event, report, { passive: true });
   }
-  documentTarget.addEventListener('visibilitychange', lockWhenProtected);
-  resetTimer();
+  report();
 
   return () => {
-    stopped = true;
-    timerTarget.clearTimeout(timer);
-    for (const event of activityEvents) {
-      documentTarget.removeEventListener(event, resetTimer);
+    for (const event of ACTIVITY_EVENTS) {
+      documentTarget.removeEventListener(event, report);
     }
-    documentTarget.removeEventListener('visibilitychange', lockWhenProtected);
   };
 }

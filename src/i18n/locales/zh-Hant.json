@@ -401,6 +401,8 @@
       "autoLock": "自動鎖定時間（分鐘）",
       "autoLockDisabled": "已停用",
       "autoLockHint": "閒置一段時間後鎖定密碼庫。現有的伺服器連線會保持；設為 0 可停用自動鎖定。",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "變更主密碼",
       "change": "變更密碼",
       "systemUnlock": "允許透過系統驗證解鎖",

@@ -401,6 +401,8 @@
       "autoLock": "Automatisch vergrendelen na, min",
       "autoLockDisabled": "Uitgeschakeld",
       "autoLockHint": "Vergrendelt de kluis na een periode van inactiviteit. Open serververbindingen blijven actief; 0 schakelt automatisch vergrendelen uit.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Hoofdwachtwoord wijzigen",
       "change": "Wachtwoord wijzigen",
       "systemUnlock": "Ontgrendelen via het systeem toestaan",

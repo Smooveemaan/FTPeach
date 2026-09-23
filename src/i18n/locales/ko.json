@@ -401,6 +401,8 @@
       "autoLock": "자동 잠금 시간(분)",
       "autoLockDisabled": "비활성화됨",
       "autoLockHint": "일정 시간 활동이 없으면 보관소를 잠급니다. 열려 있는 서버 연결은 유지되며, 0으로 설정하면 자동 잠금이 꺼집니다.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "마스터 비밀번호 변경",
       "change": "비밀번호 변경",
       "systemUnlock": "시스템 인증으로 잠금 해제 허용",

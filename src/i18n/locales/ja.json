@@ -401,6 +401,8 @@
       "autoLock": "自動ロックまでの時間（分）",
       "autoLockDisabled": "無効",
       "autoLockHint": "一定時間操作がないと保管庫をロックします。既存のサーバー接続は維持されます。0 で自動ロックを無効にします。",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "マスターパスワードの変更",
       "change": "パスワードの変更",
       "systemUnlock": "システムによるロック解除を許可",

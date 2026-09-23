@@ -409,6 +409,8 @@
       "autoLock": "Automatyczna blokada po, min",
       "autoLockDisabled": "Wyłączone",
       "autoLockHint": "Blokuje sejf po okresie bezczynności. Otwarte połączenia z serwerami pozostają aktywne; 0 wyłącza automatyczną blokadę.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Zmień hasło główne",
       "change": "Zmień hasło",
       "systemUnlock": "Zezwalaj na odblokowanie przez system",

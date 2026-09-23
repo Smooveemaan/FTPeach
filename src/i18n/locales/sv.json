@@ -401,6 +401,8 @@
       "autoLock": "Automatisk låsning efter, min",
       "autoLockDisabled": "Inaktiverad",
       "autoLockHint": "Låser valvet efter en tids inaktivitet. Befintliga serveranslutningar förblir aktiva; 0 stänger av automatisk låsning.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Ändra huvudlösenord",
       "change": "Ändra lösenord",
       "systemUnlock": "Tillåt upplåsning via systemet",

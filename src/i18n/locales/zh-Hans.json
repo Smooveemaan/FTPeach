@@ -401,6 +401,8 @@
       "autoLock": "自动锁定时间（分钟）",
       "autoLockDisabled": "已禁用",
       "autoLockHint": "闲置一段时间后锁定密码库。现有的服务器连接仍保持活动状态；设置为 0 可禁用自动锁定。",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "更改主密码",
       "change": "更改密码",
       "systemUnlock": "允许通过系统验证解锁",

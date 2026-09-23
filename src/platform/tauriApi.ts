@@ -23,6 +23,7 @@ import {
   isLogEntryArray,
   isOpenWithChange,
   isRecoveredEditArray,
+  isVaultLocked,
   isPreviewProgress,
   isRecord,
   normalizeCommandError,
@@ -31,6 +32,7 @@ import {
   optionalNumber,
   optionalString,
 } from './ipcContracts.ts';
+import type { VaultLocked } from './ipcContracts.ts';
 import type {
   CommandResult,
   EventSubscription,
@@ -293,6 +295,12 @@ export const tauriApi: Window['api'] = {
     setup: (masterPassword: string) => commandOutcome(invoke, 'vault_setup', { masterPassword }),
     unlock: (masterPassword: string) => commandOutcome(invoke, 'vault_unlock', { masterPassword }),
     lock: () => commandOutcome(invoke, 'vault_lock'),
+    // Reporting that the user is here can only postpone the backend's idle
+    // lock, so a failed report needs no handling beyond not throwing.
+    noteActivity: () => {
+      void invoke('vault_note_activity').catch(() => {});
+    },
+    onLocked: onEvent<VaultLocked>('vault:locked', isVaultLocked),
     enableSystemUnlock: () => commandOutcome(invoke, 'vault_enable_system_unlock'),
     unlockSystem: () => commandOutcome(invoke, 'vault_unlock_system'),
     disableSystemUnlock: () => commandOutcome(invoke, 'vault_disable_system_unlock'),

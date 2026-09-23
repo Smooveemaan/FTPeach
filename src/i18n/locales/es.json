@@ -405,6 +405,8 @@
       "autoLock": "Bloqueo automático tras, min",
       "autoLockDisabled": "Desactivado",
       "autoLockHint": "Bloquea la bóveda tras un periodo de inactividad. Las conexiones con los servidores siguen activas; 0 desactiva el bloqueo automático.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Cambiar la contraseña maestra",
       "change": "Cambiar contraseña",
       "systemUnlock": "Permitir el desbloqueo mediante el sistema",

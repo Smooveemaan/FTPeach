@@ -401,6 +401,8 @@
       "autoLock": "Otomatik kilitlenme süresi, dakika",
       "autoLockDisabled": "Devre dışı",
       "autoLockHint": "Belirli bir süre işlem yapılmazsa kasayı kilitler. Açık sunucu bağlantıları etkin kalır; 0 otomatik kilitlemeyi kapatır.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",

@@ -405,6 +405,8 @@
       "autoLock": "Blocare automată după, min",
       "autoLockDisabled": "Dezactivat",
       "autoLockHint": "Blochează seiful după o perioadă de inactivitate. Conexiunile existente la servere rămân active; 0 dezactivează blocarea automată.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Schimbă parola principală",
       "change": "Schimbă parola",
       "systemUnlock": "Permite deblocarea prin sistem",

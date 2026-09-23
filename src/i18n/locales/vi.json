@@ -401,6 +401,8 @@
       "autoLock": "Tự động khóa sau, phút",
       "autoLockDisabled": "Đã tắt",
       "autoLockHint": "Khóa kho bảo mật sau một khoảng thời gian không hoạt động. Các kết nối máy chủ đang mở vẫn hoạt động; 0 sẽ tắt tự động khóa.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Thay đổi mật khẩu chính",
       "change": "Thay đổi mật khẩu",
       "systemUnlock": "Cho phép mở khóa bằng hệ thống",

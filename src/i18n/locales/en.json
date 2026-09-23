@@ -401,6 +401,8 @@
       "autoLock": "Auto-lock after, min",
       "autoLockDisabled": "Disabled",
       "autoLockHint": "Locks the vault after inactivity. Existing server connections remain active; 0 disables auto-lock.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Change master password",
       "change": "Change password",
       "systemUnlock": "Allow system unlock",

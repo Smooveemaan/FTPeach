@@ -401,6 +401,8 @@
       "autoLock": "Automatische Sperre nach, Min.",
       "autoLockDisabled": "Deaktiviert",
       "autoLockHint": "Sperrt den Tresor nach Inaktivität. Bestehende Serververbindungen bleiben aktiv; 0 deaktiviert die automatische Sperre.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Master-Passwort ändern",
       "change": "Passwort ändern",
       "systemUnlock": "Systementsperrung zulassen",

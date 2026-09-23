@@ -304,6 +304,8 @@ export default function SecuritySettings({
             />
           </label>
           <p className="settings-hint">{t('settings.security.autoLockHint')}</p>
+          <p className="settings-hint">{t('settings.security.autoLockAlways')}</p>
+          <p className="settings-hint">{t('settings.security.lockScope')}</p>
         </div>
       )}
       {vaultStatus?.configured && (

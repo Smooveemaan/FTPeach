@@ -409,6 +409,8 @@
       "autoLock": "Автоблокування через, хв",
       "autoLockDisabled": "Вимкнено",
       "autoLockHint": "Блокує сховище після бездіяльності. Відкриті підключення до серверів не розриваються; 0 вимикає автоблокування.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Змінити головний пароль",
       "change": "Змінити пароль",
       "systemUnlock": "Дозволити системне розблокування",

@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+- The vault now locks when Windows locks or the FTPeach window is hidden, even with the
+  auto-lock timer turned off, and it does so even if the window has stopped responding.
+  Settings and the unlock prompt now say what a lock leaves running.
 - Open with now asks before running a server file whose saved name makes it a program or
   script, and the first time a program typed into settings opens a file.
 - Turning off security confirmations or relaxing the vault's automatic lock now asks for

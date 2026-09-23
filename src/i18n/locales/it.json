@@ -405,6 +405,8 @@
       "autoLock": "Blocco automatico dopo, min",
       "autoLockDisabled": "Disattivato",
       "autoLockHint": "Blocca la cassaforte dopo un periodo di inattività. Le connessioni ai server restano attive; 0 disattiva il blocco automatico.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Cambia la password principale",
       "change": "Cambia password",
       "systemUnlock": "Consenti lo sblocco tramite il sistema",

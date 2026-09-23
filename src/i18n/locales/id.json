@@ -401,6 +401,8 @@
       "autoLock": "Penguncian otomatis setelah, menit",
       "autoLockDisabled": "Nonaktif",
       "autoLockHint": "Mengunci brankas setelah tidak ada aktivitas. Koneksi server yang terbuka tetap aktif; 0 menonaktifkan penguncian otomatis.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Ubah kata sandi utama",
       "change": "Ubah kata sandi",
       "systemUnlock": "Izinkan buka kunci melalui sistem",

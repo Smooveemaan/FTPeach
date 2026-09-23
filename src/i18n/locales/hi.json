@@ -401,6 +401,8 @@
       "autoLock": "ऑटो-लॉक समय, मिनट",
       "autoLockDisabled": "अक्षम",
       "autoLockHint": "निष्क्रियता के बाद वॉल्ट को लॉक कर देता है। मौजूदा सर्वर कनेक्शन सक्रिय रहते हैं; 0 ऑटो-लॉक अक्षम करता है।",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "मास्टर पासवर्ड बदलें",
       "change": "पासवर्ड बदलें",
       "systemUnlock": "सिस्टम प्रमाणीकरण से अनलॉक करने दें",

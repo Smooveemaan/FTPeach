@@ -42,6 +42,9 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
 - Vault management: `vault_setup`, `vault_unlock`, `vault_lock`, system-unlock commands,
   `vault_change_password`. `vault_use_system_protection` lives in the `sensitive` plugin and
   needs a token issued only after the confirmation window verified the master password.
+  `vault_note_activity` takes no argument and only records that the window has seen the
+  user; it can postpone the backend's idle lock but cannot disable it, and it has no effect
+  on the lock that follows a Windows session lock or a hidden window.
 - Ordinary list/edit IPC returns only secret-presence flags. Explicit reveal commands require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.

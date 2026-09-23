@@ -1,4 +1,5 @@
 use crate::ipc::{CommandError, CommandResult};
+use crate::security::auto_lock::AutoLock;
 use crate::security::vault::{Vault, VaultStatus};
 use crate::security::vault_guard::VaultGuard;
 use crate::store::Store;
@@ -85,6 +86,7 @@ pub async fn vault_unlock(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
+    auto_lock: State<'_, AutoLock>,
     mut master_password: String,
 ) -> CommandResult<VaultResult> {
     let started = std::time::Instant::now();
@@ -108,6 +110,9 @@ pub async fn vault_unlock(
     .await;
     if result.is_ok() {
         guard.succeeded().await;
+        // Unlocking is the user being present; the idle period starts here
+        // rather than at whenever the renderer last reported activity.
+        auto_lock.note_activity();
     } else {
         guard.failed().await;
     }
@@ -116,12 +121,25 @@ pub async fn vault_unlock(
 }
 
 #[tauri::command]
-pub async fn vault_lock(vault: State<'_, Vault>) -> CommandResult<VaultResult> {
+pub async fn vault_lock(
+    vault: State<'_, Vault>,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+) -> CommandResult<VaultResult> {
     vault.lock().await;
+    authorization.revoke_all();
     Ok(VaultResult {
         ok: true,
         error: None,
     })
+}
+
+/// The renderer reporting that it has seen the user. It can only postpone
+/// the idle lock, never disable it: the timeout, the clock and the decision
+/// all live in the backend, and a renderer that stops reporting simply lets
+/// the vault lock sooner.
+#[tauri::command]
+pub fn vault_note_activity(auto_lock: State<'_, AutoLock>) {
+    auto_lock.note_activity();
 }
 
 #[tauri::command]
@@ -141,6 +159,7 @@ pub async fn vault_unlock_system(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
+    auto_lock: State<'_, AutoLock>,
     window: tauri::WebviewWindow,
 ) -> CommandResult<VaultResult> {
     let result = async {
@@ -152,6 +171,7 @@ pub async fn vault_unlock_system(
     .await;
     if result.is_ok() {
         guard.succeeded().await;
+        auto_lock.note_activity();
     } else {
         guard.failed().await;
     }

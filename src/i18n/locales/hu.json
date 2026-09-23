@@ -401,6 +401,8 @@
       "autoLock": "Automatikus zárolás ennyi idő után, perc",
       "autoLockDisabled": "Kikapcsolva",
       "autoLockHint": "Tétlenség után zárolja a széfet. A meglévő szerverkapcsolatok aktívak maradnak; a 0 kikapcsolja az automatikus zárolást.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "A fő jelszó módosítása",
       "change": "Jelszó módosítása",
       "systemUnlock": "Feloldás engedélyezése a rendszeren keresztül",

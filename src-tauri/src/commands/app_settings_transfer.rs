@@ -424,6 +424,7 @@ pub async fn app_import_settings(
     authorization_token: String,
     app: AppHandle,
     store: State<'_, Store>,
+    auto_lock: State<'_, crate::security::auto_lock::AutoLock>,
     options: ImportSettingsOptions,
 ) -> CommandResult<ImportResult> {
     crate::security::sensitive::consume(
@@ -597,6 +598,7 @@ pub async fn app_import_settings(
                 if had_prevent_sleep {
                     crate::runtime::settings_apply::apply_prevent_sleep(&next);
                 }
+                crate::runtime::vault_auto_lock::apply_idle_timeout(&next, &auto_lock);
                 settings_out = Some(next);
             }
             Err(error) => {
@@ -624,6 +626,10 @@ pub async fn app_import_settings(
                     Ok(()) => {
                         crate::runtime::settings_apply::apply_transfer_limits(&previous_settings);
                         crate::runtime::settings_apply::apply_prevent_sleep(&previous_settings);
+                        crate::runtime::vault_auto_lock::apply_idle_timeout(
+                            &previous_settings,
+                            &auto_lock,
+                        );
                     }
                     Err(restore) => issues.push(format!("Settings rollback failed: {restore:#}")),
                 }

@@ -1,3 +1,4 @@
+pub(crate) mod auto_lock;
 pub(crate) mod connection_guard;
 pub(crate) mod credential_scope;
 pub(crate) mod dpapi;

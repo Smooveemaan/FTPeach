@@ -157,7 +157,6 @@ export default function Application() {
 
   useAppEffects({
     interface: settings.interface,
-    vaultAutoLockMinutes: settings.security.vaultAutoLockMinutes,
   });
 
   // Saved sites

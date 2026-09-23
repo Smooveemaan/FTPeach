@@ -1,131 +1,78 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { installVaultAutoLock } from '../../../src/app/vaultAutoLock.ts';
+import { installVaultActivityReporting } from '../../../src/app/vaultAutoLock.ts';
 
-type AutoLockOptions = Parameters<typeof installVaultAutoLock>[0];
-type VaultStatus = Awaited<ReturnType<AutoLockOptions['vault']['status']>>;
-type DocumentTarget = NonNullable<AutoLockOptions['documentTarget']>;
-type TimerTarget = NonNullable<AutoLockOptions['timerTarget']>;
+type Options = Parameters<typeof installVaultActivityReporting>[0];
+type DocumentTarget = NonNullable<Options['documentTarget']>;
 type DocumentListener = Parameters<DocumentTarget['addEventListener']>[1];
 
-function harness(status: VaultStatus = { configured: true, locked: false }) {
+function harness() {
   const listeners = new Map<string, DocumentListener>();
-  let callback: (() => void | Promise<void>) | undefined;
-  let delay: number | undefined;
-  let lockCalls = 0;
-  let lockedEvents = 0;
+  let now = 1_000_000;
+  let reports = 0;
   const documentTarget: DocumentTarget = {
-    visibilityState: 'visible',
     addEventListener: (name: string, handler: DocumentListener) => listeners.set(name, handler),
     removeEventListener: (name: string, handler: DocumentListener) => {
       if (listeners.get(name) === handler) listeners.delete(name);
     },
   };
-  const timerTarget: TimerTarget = {
-    setTimeout: (handler: () => void | Promise<void>, timeout: number) => {
-      callback = handler;
-      delay = timeout;
-      return 1;
+  const cleanup = installVaultActivityReporting({
+    vault: {
+      noteActivity: () => {
+        reports += 1;
+      },
     },
-    clearTimeout: () => {},
-  };
-  const vault = {
-    status: async () => status,
-    lock: async () => {
-      lockCalls += 1;
-      return { ok: true };
-    },
-  };
-  const cleanup = installVaultAutoLock({
-    minutes: 15,
-    vault,
     documentTarget,
-    timerTarget,
-    onLocked: () => {
-      lockedEvents += 1;
-    },
+    clock: { now: () => now },
   });
   return {
     listeners,
-    documentTarget,
-    runTimer: async () => {
-      assert.ok(callback);
-      await callback();
+    reports: () => reports,
+    advance: (ms: number) => {
+      now += ms;
     },
-    delay: () => delay,
-    lockCalls: () => lockCalls,
-    lockedEvents: () => lockedEvents,
+    act: (event = 'pointerdown') => {
+      const handler = listeners.get(event);
+      assert.ok(handler, `no listener for ${event}`);
+      handler(new Event(event));
+    },
     cleanup,
   };
 }
 
-test('vault auto-lock uses the configured inactivity period', async () => {
+test('mounting reports once, so an unlocked vault does not start out stale', () => {
   const h = harness();
-  assert.equal(h.delay(), 15 * 60_000);
-  await h.runTimer();
-  assert.equal(h.lockCalls(), 1);
-  assert.equal(h.lockedEvents(), 1);
+  assert.equal(h.reports(), 1);
   h.cleanup();
 });
 
-test('vault locks immediately when the application enters a hidden state', async () => {
+test('every kind of user activity reports the user is present', () => {
   const h = harness();
-  h.documentTarget.visibilityState = 'hidden';
-  const visibilityHandler = h.listeners.get('visibilitychange');
-  assert.ok(visibilityHandler);
-  visibilityHandler(new Event('visibilitychange'));
-  await new Promise((resolve) => setImmediate(resolve));
-  assert.equal(h.lockCalls(), 1);
-  h.cleanup();
-});
-
-test('already locked or unconfigured vaults are left alone', async () => {
-  for (const status of [
-    { configured: true, locked: true },
-    { configured: false, locked: true },
-  ]) {
-    const h = harness(status);
-    await h.runTimer();
-    assert.equal(h.lockCalls(), 0);
-    assert.equal(h.lockedEvents(), 0);
-    h.cleanup();
+  for (const event of ['pointerdown', 'keydown', 'wheel', 'touchstart']) {
+    h.advance(60_000);
+    h.act(event);
   }
+  assert.equal(h.reports(), 5);
+  h.cleanup();
 });
 
-test('cleanup prevents an in-flight status check from locking later', async () => {
-  let resolveStatus: ((_status: VaultStatus) => void) | undefined;
-  const status = new Promise<VaultStatus>((resolve) => {
-    resolveStatus = resolve;
-  });
-  let callback: (() => void | Promise<void>) | undefined;
-  let lockCalls = 0;
-  const cleanup = installVaultAutoLock({
-    minutes: 1,
-    vault: {
-      status: () => status,
-      lock: async () => {
-        lockCalls += 1;
-        return { ok: true };
-      },
-    },
-    documentTarget: {
-      visibilityState: 'visible',
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    },
-    timerTarget: {
-      setTimeout: (handler: () => void | Promise<void>) => {
-        callback = handler;
-        return 1;
-      },
-      clearTimeout: () => {},
-    },
-  });
-  assert.ok(callback);
-  const pending = callback();
-  cleanup();
-  assert.ok(resolveStatus);
-  resolveStatus({ configured: true, locked: false });
-  await pending;
-  assert.equal(lockCalls, 0);
+test('a burst of activity costs one report, not one per event', () => {
+  const h = harness();
+  for (let index = 0; index < 50; index += 1) {
+    h.advance(100);
+    h.act();
+  }
+  assert.equal(h.reports(), 1);
+  h.advance(30_000);
+  h.act();
+  assert.equal(h.reports(), 2);
+  h.cleanup();
+});
+
+test('after cleanup nothing is reported, so the backend can lock on time', () => {
+  const h = harness();
+  h.cleanup();
+  assert.equal(h.listeners.size, 0);
+  h.advance(60_000);
+  assert.equal(h.reports(), 1);
 });

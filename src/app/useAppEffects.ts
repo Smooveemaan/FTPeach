@@ -5,16 +5,14 @@ import i18n, { changeLanguage } from '../i18n/index.ts';
 import { api } from '../platform/api/index.ts';
 import { applyInterfaceScale } from '../platform/interfaceScale.ts';
 import { applyWindowTheme } from '../platform/windowFrame.ts';
-import { installVaultAutoLock } from './vaultAutoLock.ts';
+import { installVaultActivityReporting } from './vaultAutoLock.ts';
 
 interface AppEffectsOptions {
   interface: SettingsState['interface'];
-  vaultAutoLockMinutes: number;
 }
 
 export function useAppEffects({
   interface: { theme, language, interfaceScale, dateFormat },
-  vaultAutoLockMinutes,
 }: AppEffectsOptions): void {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -65,10 +63,16 @@ export function useAppEffects({
   }, [dateFormat]);
 
   useEffect(() => {
-    return installVaultAutoLock({
-      minutes: vaultAutoLockMinutes,
-      vault: api.vault,
-      onLocked: () => window.dispatchEvent(new Event('ftpeach:vault-locked')),
-    });
-  }, [vaultAutoLockMinutes]);
+    // The backend owns the idle timeout and locks on a Windows session lock
+    // or a hidden window, whatever this window is doing; both effects here
+    // only keep the UI in step with it.
+    const stopReporting = installVaultActivityReporting({ vault: api.vault });
+    const stopListening = api.vault.onLocked(() =>
+      window.dispatchEvent(new Event('ftpeach:vault-locked')),
+    );
+    return () => {
+      stopReporting();
+      stopListening();
+    };
+  }, []);
 }

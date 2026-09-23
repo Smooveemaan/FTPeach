@@ -21,6 +21,7 @@ pub use ipc::{CommandError, ErrorCode};
 use local_fs::local_open::ApprovedLocalPaths;
 use runtime::updater::UpdaterState;
 use runtime::{sensitive_plugin, shutdown};
+use security::auto_lock::AutoLock;
 use security::sensitive::AuthorizationState;
 use security::{vault, vault_guard};
 use session::{ConnectingClients, Sessions};
@@ -86,6 +87,7 @@ pub fn run() {
         .manage(shutdown::ShutdownCoordinator::default())
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
+        .manage(AutoLock::default())
         .manage(AuthorizationState::new(vault))
         .invoke_handler(tauri::generate_handler![
             commands::fs::fs_list,
@@ -123,6 +125,7 @@ pub fn run() {
             commands::vault::vault_unlock_system,
             commands::vault::vault_disable_system_unlock,
             commands::vault::vault_change_password,
+            commands::vault::vault_note_activity,
             commands::app::app_version,
             commands::app::app_quit,
             commands::app::app_state_flushed,

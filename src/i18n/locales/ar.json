@@ -417,6 +417,8 @@
       "autoLock": "القفل التلقائي بعد، دقيقة",
       "autoLockDisabled": "معطّل",
       "autoLockHint": "يقفل الخزنة بعد فترة من عدم النشاط. تبقى الاتصالات القائمة بالخوادم نشطة؛ والقيمة 0 تعطّل القفل التلقائي.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "تغيير كلمة المرور الرئيسية",
       "change": "تغيير كلمة المرور",
       "systemUnlock": "السماح بإلغاء القفل عبر النظام",

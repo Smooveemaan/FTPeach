@@ -401,6 +401,8 @@
       "autoLock": "ล็อกอัตโนมัติหลัง (นาที)",
       "autoLockDisabled": "ปิดอยู่",
       "autoLockHint": "ล็อกคลังนิรภัยเมื่อไม่มีการใช้งาน การเชื่อมต่อกับเซิร์ฟเวอร์ที่มีอยู่ยังคงทำงาน 0 คือปิดการล็อกอัตโนมัติ",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "เปลี่ยนรหัสผ่านหลัก",
       "change": "เปลี่ยนรหัสผ่าน",
       "systemUnlock": "อนุญาตให้ปลดล็อกผ่านระบบ",

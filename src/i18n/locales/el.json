@@ -401,6 +401,8 @@
       "autoLock": "Αυτόματο κλείδωμα μετά από, λεπτά",
       "autoLockDisabled": "Απενεργοποιημένο",
       "autoLockHint": "Κλειδώνει το θησαυροφυλάκιο μετά από αδράνεια. Οι υπάρχουσες συνδέσεις με διακομιστές παραμένουν ενεργές· το 0 απενεργοποιεί το αυτόματο κλείδωμα.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Αλλαγή κύριου κωδικού πρόσβασης",
       "change": "Αλλαγή κωδικού πρόσβασης",
       "systemUnlock": "Να επιτρέπεται το ξεκλείδωμα μέσω του συστήματος",

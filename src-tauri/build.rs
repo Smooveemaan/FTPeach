@@ -68,6 +68,7 @@ fn main() {
         "vault_unlock_system",
         "vault_disable_system_unlock",
         "vault_change_password",
+        "vault_note_activity",
         "app_version",
         "app_quit",
         "app_state_flushed",

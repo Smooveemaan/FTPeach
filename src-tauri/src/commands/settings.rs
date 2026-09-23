@@ -4,6 +4,8 @@ use crate::runtime::log_emitter::LogEmitter;
 use crate::runtime::settings_apply::{
     apply_log_date_format, apply_prevent_sleep, apply_transfer_limits,
 };
+use crate::runtime::vault_auto_lock::apply_idle_timeout;
+use crate::security::auto_lock::AutoLock;
 use crate::security::security_policy;
 use crate::security::vault::Vault;
 use crate::store::{JsonMap, Store};
@@ -98,6 +100,7 @@ pub async fn settings_set_security(
     authorization_token: String,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
+    auto_lock: State<'_, AutoLock>,
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
     let patch = crate::security::sensitive::security_patch_from_request(
@@ -115,6 +118,7 @@ pub async fn settings_set_security(
         .iter()
         .any(|(key, value)| current.get(key) != Some(value));
     let next = store.set_settings_with_vault(patch, &vault).await?;
+    apply_idle_timeout(&next, &auto_lock);
     if changed {
         authorization.revoke_all();
     }

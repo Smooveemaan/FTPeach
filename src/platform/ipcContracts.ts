@@ -104,6 +104,13 @@ export interface OpenWithChange {
   revision: string;
 }
 
+/** Why the backend locked the vault without being asked to. */
+export const VAULT_LOCK_REASONS = ['idle', 'sessionLocked', 'windowHidden'] as const;
+export type VaultLockReason = (typeof VAULT_LOCK_REASONS)[number];
+export interface VaultLocked {
+  reason: VaultLockReason;
+}
+
 /** An external-editor edit an earlier run could not upload. */
 export interface RecoveredEdit {
   name: string;
@@ -403,6 +410,10 @@ export function isUpdaterStatus(value: unknown): value is UpdaterStatus {
     );
   }
   return value.state === 'error' && typeof value.message === 'string';
+}
+
+export function isVaultLocked(value: unknown): value is VaultLocked {
+  return isRecord(value) && VAULT_LOCK_REASONS.includes(value.reason as VaultLockReason);
 }
 
 export function isOpenWithChange(value: unknown): value is OpenWithChange {

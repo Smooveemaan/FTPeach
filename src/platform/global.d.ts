@@ -13,6 +13,7 @@ import type {
   OpenWithChange,
   PreviewProgress,
   RecoveredEdit,
+  VaultLocked,
 } from './ipcContracts.ts';
 import type { DragOutFile } from './api/dragOut.ts';
 import type { LogEntry, SiteProtocol } from '../shared/types.ts';
@@ -40,6 +41,10 @@ declare global {
         unlock: (masterPassword: string) => Promise<CommandResult>;
         unlockSystem: () => Promise<CommandResult>;
         lock: () => Promise<CommandResult>;
+        /** Tells the backend the user has been seen, postponing the idle lock. */
+        noteActivity: () => void;
+        /** The backend locked the vault itself; the payload says why. */
+        onLocked: (callback: (locked: VaultLocked) => void) => () => void;
         setup: (masterPassword: string) => Promise<CommandResult>;
         enableSystemUnlock: () => Promise<CommandResult>;
         disableSystemUnlock: () => Promise<CommandResult>;

@@ -401,6 +401,8 @@
       "autoLock": "Automatisk låsning efter, min.",
       "autoLockDisabled": "Deaktiveret",
       "autoLockHint": "Låser boksen efter inaktivitet. Eksisterende serverforbindelser forbliver aktive; 0 slår automatisk låsning fra.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
       "systemUnlock": "Tillad oplåsning via systemet",

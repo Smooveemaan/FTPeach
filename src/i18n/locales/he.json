@@ -405,6 +405,8 @@
       "autoLock": "נעילה אוטומטית לאחר, דקות",
       "autoLockDisabled": "מושבת",
       "autoLockHint": "נועל את הכספת לאחר חוסר פעילות. חיבורי שרת קיימים נשארים פעילים; 0 מבטל את הנעילה האוטומטית.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "שינוי סיסמת המאסטר",
       "change": "שינוי סיסמה",
       "systemUnlock": "אפשר ביטול נעילה באמצעות המערכת",

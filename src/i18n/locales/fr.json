@@ -405,6 +405,8 @@
       "autoLock": "Verrouillage automatique après, min",
       "autoLockDisabled": "Désactivé",
       "autoLockHint": "Verrouille le coffre-fort après une période d'inactivité. Les connexions aux serveurs restent actives ; 0 désactive le verrouillage automatique.",
+      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
+      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "changePassword": "Modifier le mot de passe principal",
       "change": "Modifier le mot de passe",
       "systemUnlock": "Autoriser le déverrouillage via le système",

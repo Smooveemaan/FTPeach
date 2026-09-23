@@ -7,7 +7,7 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | --- | --- | --- |
 | `checks/` | Repository, architecture, locale, and release validation | `npm run check`, `npm run lint`, `npm run i18n:check` |
 | `benchmarks/` | Frontend models, transfer history, and browser measurements | `npm run benchmark:frontend`, `npm run benchmark:transfer-history`, `npm run benchmark:transfer-ui` |
-| `release/` | Release notes, license notices, SBOMs, and advisory reports | `npm run licenses:check`, `npm run sbom:generate`; CI runs release notes and advisory reports |
+| `release/` | Release notes, license notices, SBOMs, advisory reports, the release-environment gate and the trust report | `npm run licenses:check`, `npm run sbom:generate`; CI runs the rest |
 | `packaged-smoke/` | Native application smoke harness | [Instructions](packaged-smoke/README.md) |
 | `manual-tests/` | Manual fixtures and historical Electron verification | [Instructions](manual-tests/README.md) |
 | `with-libsodium.ps1` | Verified native library setup and Cargo/Tauri commands | `npm run rust:check`, `npm run build:tauri` |

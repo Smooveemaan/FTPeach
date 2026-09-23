@@ -1,6 +1,6 @@
 # Signing Tauri updates
 
-Updater artifact signatures protect FTPeach updates from substitution. This is not Windows Authenticode: without a separate code-signing certificate, SmartScreen may still warn about an unknown publisher.
+Updater artifact signatures protect FTPeach updates from substitution. This is not Windows Authenticode: without a separate code-signing certificate, SmartScreen may still warn about an unknown publisher. [release-trust.md](release-trust.md) separates the two and describes key rotation.
 
 ## Keys
 
@@ -24,7 +24,9 @@ Create these secrets in the GitHub `release` environment:
 Configure the environment with required reviewers and disallow administrator
 bypass. Keep both signing secrets at environment scope, not repository or
 organization scope. GitHub does not store deployment-protection rules in the
-workflow file, so repository owners must preserve this setting separately.
+workflow file, so the release workflow reads them from the GitHub API and
+stops before the signing job when approval is not required
+([release-trust.md](release-trust.md)).
 
 The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
 frontend, Rust and packaged smoke gates pass. It builds the Windows NSIS

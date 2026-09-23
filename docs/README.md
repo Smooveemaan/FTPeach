@@ -18,7 +18,7 @@
 
 - [Security design](security.md) and [IPC permissions](ipc-permissions.md).
 - [Dependency policy](dependency-policy.md) and [Rust advisories](rust-advisories.md).
-- [Updater signing](updater-signing.md) and [GitHub automation](github.md).
+- [Updater signing](updater-signing.md), [what a release proves](release-trust.md) and [GitHub automation](github.md).
 - [Third-party notices](legal/THIRD_PARTY_NOTICES.txt) and [asset provenance](legal/ASSET_PROVENANCE.md).
 
 ## Workspace outputs

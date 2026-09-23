@@ -7,6 +7,13 @@ on:
     - cron: '43 3 * * 3'
   workflow_dispatch:
   workflow_call:
+  # A dependency update, Dependabot's included, must not merge on unit tests
+  # alone: the protocol crates only show regressions against real servers.
+  pull_request:
+    paths:
+      - src-tauri/Cargo.lock
+      - src-tauri/Cargo.toml
+      - src-tauri/tests/docker/**
 
 jobs:
   docker-round-trips:

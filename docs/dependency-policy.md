@@ -1,11 +1,15 @@
 # Dependency and supply-chain policy
 
-- Dependabot groups minor/patch updates monthly. Major updates are manual and
-  require a migration note plus the full `npm run check` suite.
+- Dependabot groups minor/patch updates monthly and never merges on its own.
+  Major updates are manual and require a migration note plus the full
+  `npm run check` suite. Any change to the Cargo manifest or lock file also
+  runs the protocol compatibility suite against real servers.
 - Changes to `suppaftp`, `russh`, `russh-sftp`, `reqwest`, `rustls`, Tauri or
   Tauri plugins must link the upstream changelog/security advisory in the PR.
 - CI rejects high/critical npm advisories and all unacknowledged RustSec
-  advisories. Exceptions must be narrow, documented and time-bounded.
+  advisories. Exceptions must be narrow, documented and time-bounded, and the
+  register records whether each is a vulnerability or an unmaintained crate
+  ([rust-advisories.md](rust-advisories.md)).
 - Runtime dependencies must use an OSI-approved license. `GPL`, `AGPL`,
   `SSPL`, unlicensed and unknown packages require explicit owner review.
 - Runtime license texts are bundled from `docs/legal/NPM_THIRD_PARTY_LICENSES.txt`

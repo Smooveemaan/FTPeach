@@ -1,24 +1,14 @@
 import { readFile } from 'node:fs/promises';
+import {
+  advisoryKinds,
+  ignoredAdvisories,
+  parseAdvisoryRegister,
+} from '../release/release-trust.ts';
 
 const deny = await readFile('deny.toml', 'utf8');
 const register = await readFile('docs/rust-advisories.md', 'utf8');
-const ignored = new Set(
-  [...deny.matchAll(/id\s*=\s*"(RUSTSEC-\d{4}-\d{4})"/g)].flatMap((m) =>
-    m[1] === undefined ? [] : [m[1]],
-  ),
-);
-const rows = new Map<string, string[]>();
-
-for (const line of register.split(/\r?\n/)) {
-  if (!line.startsWith('| RUSTSEC-')) continue;
-  const cells = line
-    .split('|')
-    .slice(1, -1)
-    .map((cell) => cell.trim());
-  const advisoryId = cells[0];
-  if (advisoryId === undefined) continue;
-  rows.set(advisoryId, cells);
-}
+const ignored = new Set(ignoredAdvisories(deny));
+const rows = parseAdvisoryRegister(register);
 
 const problems: string[] = [];
 const denyLines = deny.split(/\r?\n/);
@@ -28,10 +18,15 @@ for (const advisory of ignored) {
     problems.push(`${advisory}: missing review-register entry`);
     continue;
   }
-  const [, owner, added, reviewBy, status, control] = row;
+  const { kind, owner, added, reviewBy, status, control } = row;
   const exception = denyLines.find((line) => line.includes(`id = "${advisory}"`));
   if (!exception?.includes(`Review by ${reviewBy};`)) {
     problems.push(`${advisory}: deny.toml review date must match the register`);
+  }
+  // A vulnerability and an unmaintained crate are different risks with
+  // different exits; the register has to say which one it is accepting.
+  if (!(advisoryKinds as readonly string[]).includes(kind)) {
+    problems.push(`${advisory}: kind must be one of ${advisoryKinds.join(', ')}`);
   }
   if (!owner || !added || !reviewBy || !status || !control) {
     problems.push(`${advisory}: owner, dates, status, and compensating control are required`);
@@ -57,5 +52,14 @@ if (problems.length) {
   console.error(`Rust advisory policy check failed:\n${problems.map((p) => `- ${p}`).join('\n')}`);
   process.exitCode = 1;
 } else {
-  console.log(`${ignored.size} Rust advisory exceptions are documented and within review dates.`);
+  const counts = [...rows.values()].reduce<Record<string, number>>((acc, row) => {
+    acc[row.kind] = (acc[row.kind] ?? 0) + 1;
+    return acc;
+  }, {});
+  const breakdown = Object.entries(counts)
+    .map(([kind, count]) => `${count} ${kind}`)
+    .join(', ');
+  console.log(
+    `${ignored.size} Rust advisory exceptions (${breakdown}) are documented and within review dates.`,
+  );
 }

@@ -22,10 +22,33 @@ jobs:
       issues: write
     uses: ./.github/workflows/protocol-compatibility.yml
 
+  # The signing secrets live in the `release` environment. Naming it below
+  # does not prove anyone has to approve the run, so the rules are read first.
+  release-environment:
+    permissions:
+      actions: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Require approval before the signing secrets are released
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node --experimental-strip-types scripts/release/check-release-environment.ts
+
   publish-windows:
     permissions:
       contents: write
-    needs: [gates, protocol-compatibility]
+      id-token: write
+      attestations: write
+    needs: [gates, protocol-compatibility, release-environment]
     runs-on: windows-latest
     timeout-minutes: 45
     environment: release
@@ -96,7 +119,19 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
-      - name: Attach npm and Cargo SBOMs to the draft release
+      - name: Report updater signature, Authenticode, key absence and advisory exceptions
+        shell: powershell
+        env:
+          # Read only to prove the key is absent from what gets published.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts
+
+      - name: Attest build provenance of the installer
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: src-tauri/target/release/bundle/nsis/*-setup.exe
+
+      - name: Attach SBOMs and the trust report to the draft release
         shell: powershell
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,4 +140,4 @@ jobs:
           # signature and latest.json ahead of these audit-only files.
           Copy-Item release/sbom/ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-npm.cdx.json
           Copy-Item release/sbom/ftpeach-cargo.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json
-          gh release upload "$env:GITHUB_REF_NAME" release/sbom/sbom-ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json --clobber
+          gh release upload "$env:GITHUB_REF_NAME" release/sbom/sbom-ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json release/release-trust-report.md --clobber

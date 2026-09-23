@@ -2,9 +2,11 @@
 // is a review signal, never proof that RSA signing is constant-time.
 import { appendFile, readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { ignoredAdvisories, parseAdvisoryRegister, rustsecKind } from './release-trust.ts';
 
 const policy = await readFile('deny.toml', 'utf8');
-const ids = [...policy.matchAll(/id\s*=\s*"(RUSTSEC-\d{4}-\d{4})"/g)].map((m) => m[1]!);
+const ids = ignoredAdvisories(policy);
+const register = parseAdvisoryRegister(await readFile('docs/rust-advisories.md', 'utf8'));
 const lines = ['## Rust advisory review evidence', '', `Checked: ${new Date().toISOString()}`, ''];
 const tree = execFileSync(
   'cargo',
@@ -53,7 +55,16 @@ for (const id of ids) {
   const advisory = await (await get(`${url}/${name}/${id}.md`)).text();
   const versions = advisory.match(/\[versions\]([\s\S]*?)(?:\n\[|\n```)/)?.[1]?.trim();
   if (!versions) throw new Error(`${id}: missing RustSec version metadata (${year})`);
-  lines.push(`**${id} (${name})**`, '', '```toml', versions, '```', '');
+  // The register's class decides how the exception is argued, so it has to
+  // agree with RustSec's, including when RustSec reclassifies an advisory.
+  const kind = rustsecKind(advisory);
+  const declared = register.get(id)?.kind;
+  if (kind !== declared) {
+    throw new Error(
+      `${id}: register says ${declared ?? 'nothing'}, RustSec says ${kind ?? 'unknown'}`,
+    );
+  }
+  lines.push(`**${id} (${name}, ${kind})**`, '', '```toml', versions, '```', '');
 }
 const report = `${lines.join('\n')}\n`;
 console.log(report);

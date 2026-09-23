@@ -174,12 +174,29 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '    uses: ./.github/workflows/checks.yml'],
   // A tag must never settle for the path-filtered subset CI is allowed to skip.
   [releaseWorkflow, 'release.yml', '      force-all: true'],
-  [releaseWorkflow, 'release.yml', '    needs: [gates, protocol-compatibility]'],
   [releaseWorkflow, 'release.yml', '    environment: release'],
   // Pairs with the bundle.targets assertion above.
   [releaseWorkflow, 'release.yml', 'args: --bundles nsis'],
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every generated updater signature'],
+  // HF-52: approvals are read from GitHub, not inferred from `environment:`,
+  // and the report keeps updater signature, Authenticode and advisories apart.
+  [
+    releaseWorkflow,
+    'release.yml',
+    '    needs: [gates, protocol-compatibility, release-environment]',
+  ],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'run: node --experimental-strip-types scripts/release/check-release-environment.ts',
+  ],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'run: node --experimental-strip-types scripts/release/release-trust-report.ts',
+  ],
+  [releaseWorkflow, 'release.yml', 'uses: actions/attest-build-provenance@'],
   [releaseWorkflow, 'release.yml', 'ftpeach-npm.cdx.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-cargo.cdx.json'],
   [checksWorkflow, 'checks.yml', '  rust-test:'],

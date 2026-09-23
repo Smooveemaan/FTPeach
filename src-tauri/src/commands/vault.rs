@@ -1,11 +1,11 @@
 use crate::ipc::{CommandError, CommandResult};
 use crate::security::auto_lock::AutoLock;
+use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{Vault, VaultStatus};
 use crate::security::vault_guard::VaultGuard;
 use crate::store::Store;
 use serde::Serialize;
 use tauri::State;
-use zeroize::Zeroize;
 
 #[cfg(windows)]
 fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isize> {
@@ -68,16 +68,15 @@ pub async fn vault_setup(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
-    mut master_password: String,
+    master_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
     let result = async {
         let _permit = guard.acquire().await?;
-        vault.setup(&master_password).await?;
+        vault.setup(master_password.expose()).await?;
         store.migrate_secrets_to_vault(&vault).await?;
         Ok(())
     }
     .await;
-    master_password.zeroize();
     Ok(VaultResult::from_guarded_result(result))
 }
 
@@ -87,12 +86,12 @@ pub async fn vault_unlock(
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
     auto_lock: State<'_, AutoLock>,
-    mut master_password: String,
+    master_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
     let started = std::time::Instant::now();
     let result = async {
         let _permit = guard.acquire().await?;
-        vault.unlock(&master_password).await?;
+        vault.unlock(master_password.expose()).await?;
         let vault_unlocked = started.elapsed();
         store.migrate_secrets_to_vault(&vault).await?;
         // Debug-only — see vault.rs's identical `if cfg!(...)` for why this
@@ -116,7 +115,6 @@ pub async fn vault_unlock(
     } else {
         guard.failed().await;
     }
-    master_password.zeroize();
     Ok(VaultResult::from_guarded_result(result))
 }
 
@@ -189,12 +187,14 @@ pub async fn vault_disable_system_unlock(vault: State<'_, Vault>) -> CommandResu
 pub async fn vault_change_password(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
-    mut old_password: String,
-    mut new_password: String,
+    old_password: SensitiveString,
+    new_password: SensitiveString,
 ) -> CommandResult<VaultResult> {
     let result = async {
         let _permit = guard.acquire().await?;
-        vault.change_password(&old_password, &new_password).await
+        vault
+            .change_password(old_password.expose(), new_password.expose())
+            .await
     }
     .await;
     if result.is_ok() {
@@ -202,8 +202,6 @@ pub async fn vault_change_password(
     } else {
         guard.failed().await;
     }
-    old_password.zeroize();
-    new_password.zeroize();
     Ok(VaultResult::from_guarded_result(result))
 }
 

@@ -9,6 +9,7 @@
 //! `TcpStream::connect` — behavior for users who never touch the proxy
 //! setting is unchanged from before this module existed.
 
+use super::SensitiveString;
 use super::proxy;
 use crate::store::JsonMap;
 use anyhow::Context;
@@ -33,7 +34,7 @@ pub struct ProxyConfig {
     pub host: String,
     pub port: u16,
     pub username: Option<String>,
-    pub password: Option<String>,
+    pub password: Option<SensitiveString>,
 }
 
 impl ProxyConfig {
@@ -76,7 +77,7 @@ impl ProxyConfig {
             host,
             port,
             username,
-            password,
+            password: password.map(super::SensitiveString::from),
         }))
     }
 }
@@ -122,7 +123,7 @@ pub async fn connect(
                 target_host,
                 target_port,
                 cfg.username.as_deref(),
-                cfg.password.as_deref(),
+                cfg.password.as_ref().map(super::SensitiveString::expose),
             )
             .await
             .context("SOCKS5 proxy handshake failed")?;
@@ -133,7 +134,7 @@ pub async fn connect(
                 target_host,
                 target_port,
                 cfg.username.as_deref(),
-                cfg.password.as_deref(),
+                cfg.password.as_ref().map(super::SensitiveString::expose),
             )
             .await
             .context("HTTP CONNECT proxy handshake failed")?;
@@ -182,7 +183,10 @@ mod tests {
         assert_eq!(cfg.host, "proxy.local");
         assert_eq!(cfg.port, 8080);
         assert_eq!(cfg.username.as_deref(), Some("alice"));
-        assert_eq!(cfg.password.as_deref(), Some("s3cret"));
+        assert_eq!(
+            cfg.password.as_ref().map(SensitiveString::expose),
+            Some("s3cret")
+        );
     }
 
     #[test]

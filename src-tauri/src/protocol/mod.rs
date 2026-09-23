@@ -21,32 +21,9 @@ use std::path::Path;
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncWrite};
 
-/// A credential-bearing value which cannot be accidentally exposed through
-/// formatting. Access is deliberately explicit at the protocol boundary.
-#[derive(Clone, Default)]
-pub struct SensitiveString(String);
-
-impl SensitiveString {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-
-    pub fn expose(&self) -> &str {
-        &self.0
-    }
-}
-
-impl std::fmt::Debug for SensitiveString {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("[REDACTED]")
-    }
-}
-
-impl std::fmt::Display for SensitiveString {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("[REDACTED]")
-    }
-}
+// Secrets are the security zone's business; the protocol layer only
+// carries them. Re-exported under the name its own modules already use.
+pub use crate::security::sensitive_string::SensitiveString;
 
 /// Every backend operation reports failure as an `anyhow::Error`, because a
 /// driver mostly forwards whatever its protocol crate produced. What the app
@@ -54,6 +31,75 @@ impl std::fmt::Display for SensitiveString {
 /// as a typed [`crate::ipc::CommandError`] inside that error; build those with
 /// [`fail`] so both classification points read the code rather than the text.
 pub type BackendResult<T> = anyhow::Result<T>;
+
+#[cfg(test)]
+mod secret_formatting_tests {
+    use crate::protocol::config::ConnectionConfig;
+
+    const MARKER: &str = "ftpeach-secret-marker";
+
+    fn config(value: serde_json::Value) -> ConnectionConfig {
+        ConnectionConfig::from_json_map(value.as_object().unwrap()).unwrap()
+    }
+
+    /// A `Debug` derive on a struct holding a `String` password is one
+    /// `{config:?}` away from a password in the log file, and the types that
+    /// hold one are ordinary enough to be printed that way by accident.
+    #[test]
+    fn no_real_config_type_prints_its_secrets() {
+        let proxy = serde_json::json!({
+            "proxyEnabled": true,
+            "proxyType": "socks5",
+            "proxyHost": "proxy.test",
+            "proxyPort": 1080,
+            "proxyUsername": "alice",
+            "proxyPassword": MARKER,
+        });
+        let mut ftp = proxy.clone();
+        let mut sftp = proxy.clone();
+        let mut webdav = proxy;
+        for (target, extra) in [
+            (
+                &mut ftp,
+                serde_json::json!({ "protocol": "ftp", "host": "ftp.test", "password": MARKER }),
+            ),
+            (
+                &mut sftp,
+                serde_json::json!({
+                    "protocol": "sftp",
+                    "host": "sftp.test",
+                    "password": MARKER,
+                    "keyPassphrase": MARKER,
+                }),
+            ),
+            (
+                &mut webdav,
+                serde_json::json!({
+                    "protocol": "webdav",
+                    "webdavUrl": "https://dav.test/remote",
+                    "password": MARKER,
+                }),
+            ),
+        ] {
+            for (key, value) in extra.as_object().unwrap() {
+                target
+                    .as_object_mut()
+                    .unwrap()
+                    .insert(key.clone(), value.clone());
+            }
+        }
+
+        for value in [ftp, sftp, webdav] {
+            let typed = config(value);
+            let printed = format!("{typed:?}");
+            assert!(!printed.contains(MARKER), "{printed}");
+            // The proxy rides inside the same config; print it on its own
+            // too, since that is how a handshake failure would report it.
+            let proxy = typed.common().proxy.clone().expect("proxy");
+            assert!(!format!("{proxy:?}").contains(MARKER));
+        }
+    }
+}
 
 pub const MAX_REMOTE_PATH_LEN: usize = 4096;
 pub const MAX_REMOTE_FILENAME_LEN: usize = 1024;

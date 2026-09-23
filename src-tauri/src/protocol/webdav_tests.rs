@@ -301,6 +301,24 @@ fn the_address_is_only_ever_upgraded_never_downgraded() {
     }
 }
 
+/// A backend outlives its session: it sits in a pool slot, and until
+/// something drops it a password it no longer needs is still in the struct.
+#[tokio::test]
+async fn disconnect_forgets_its_credentials() {
+    let (url, _seen) = recording_http_server(COLLECTION_REPLY).await;
+    let config = webdav_config(
+        &url,
+        serde_json::json!({ "user": "u", "password": "hunter2", "allowCleartextAuth": true }),
+    );
+    let mut backend = WebDavBackend::new();
+    backend.connect(&config).await.expect("connect");
+    assert_eq!(backend.password.expose(), "hunter2");
+    backend.disconnect().await.expect("disconnect");
+    assert!(backend.password.expose().is_empty());
+    assert!(backend.user.is_empty());
+    assert!(!backend.send_credentials);
+}
+
 #[tokio::test]
 async fn connect_rejects_a_successful_html_login_page() {
     let (mut backend, server) = single_response("200 OK", "<html>Sign in</html>").await;

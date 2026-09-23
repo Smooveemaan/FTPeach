@@ -1,9 +1,9 @@
+use super::SensitiveString;
 use super::transport::ProxyConfig;
 use crate::domain::Protocol;
 use crate::store::JsonMap;
 use anyhow::{Context, Result, anyhow, bail};
 use serde_json::Value;
-use zeroize::Zeroize;
 
 pub const DEFAULT_TIMEOUT_MS: u64 = 20_000;
 
@@ -21,7 +21,7 @@ pub struct FtpConfig {
     pub host: String,
     pub port: u16,
     pub user: String,
-    pub password: String,
+    pub password: SensitiveString,
     pub secure: bool,
     pub allow_invalid_cert: bool,
     pub ca_cert_path: Option<String>,
@@ -36,10 +36,10 @@ pub struct SftpConfig {
     pub host: String,
     pub port: u16,
     pub user: String,
-    pub password: String,
+    pub password: SensitiveString,
     pub use_key_auth: bool,
     pub key_path: Option<String>,
-    pub key_passphrase: Option<String>,
+    pub key_passphrase: Option<SensitiveString>,
     /// Refuse an unknown host key until the user has confirmed it, rather
     /// than pinning whatever answers first.
     pub strict_host_key_check: bool,
@@ -50,7 +50,7 @@ pub struct WebDavConfig {
     pub common: CommonConfig,
     pub url: String,
     pub user: String,
-    pub password: String,
+    pub password: SensitiveString,
     pub allow_invalid_cert: bool,
     /// The user accepted sending the password over an unencrypted `http://`
     /// connection. Without it FTPeach probes for an HTTPS address first and
@@ -143,7 +143,7 @@ impl ConnectionConfig {
                     } else {
                         user
                     },
-                    password,
+                    password: password.into(),
                     secure: protocol == Protocol::Ftps
                         || map.get("secure").and_then(Value::as_bool).unwrap_or(false),
                     allow_invalid_cert: bool_value(map, "allowInvalidCert"),
@@ -165,10 +165,10 @@ impl ConnectionConfig {
                     host: required_string(map, "host")?,
                     port: optional_u16(map, "port")?.unwrap_or(22),
                     user,
-                    password,
+                    password: password.into(),
                     use_key_auth,
                     key_path,
-                    key_passphrase: string(map, "keyPassphrase"),
+                    key_passphrase: string(map, "keyPassphrase").map(SensitiveString::from),
                     // Absent means strict: the setting is written into every
                     // connection by the session service, and a config that
                     // arrived without it must not silently be the weaker one.
@@ -204,7 +204,7 @@ impl ConnectionConfig {
                     common,
                     url,
                     user,
-                    password,
+                    password: password.into(),
                     allow_invalid_cert: bool_value(map, "allowInvalidCert"),
                     allow_cleartext_auth: bool_value(map, "allowCleartextAuth"),
                     ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
@@ -279,46 +279,11 @@ impl ConnectionConfig {
     }
 }
 
-impl Drop for ConnectionConfig {
-    fn drop(&mut self) {
-        let (password, key_passphrase, proxy_password) = match self {
-            Self::Ftp(config) => (
-                &mut config.password,
-                None,
-                config
-                    .common
-                    .proxy
-                    .as_mut()
-                    .and_then(|proxy| proxy.password.as_mut()),
-            ),
-            Self::Sftp(config) => (
-                &mut config.password,
-                config.key_passphrase.as_mut(),
-                config
-                    .common
-                    .proxy
-                    .as_mut()
-                    .and_then(|proxy| proxy.password.as_mut()),
-            ),
-            Self::Webdav(config) => (
-                &mut config.password,
-                None,
-                config
-                    .common
-                    .proxy
-                    .as_mut()
-                    .and_then(|proxy| proxy.password.as_mut()),
-            ),
-        };
-        password.zeroize();
-        if let Some(secret) = key_passphrase {
-            secret.zeroize();
-        }
-        if let Some(secret) = proxy_password {
-            secret.zeroize();
-        }
-    }
-}
+// Every credential field is a `SensitiveString`, which clears itself when
+// the last copy of a config goes out of scope. A hand-written `Drop` on
+// the outer `ConnectionConfig` used to do that, but it only reached the
+// values it named: the clones the protocol backends and the transfer
+// pool's factory keep were plain `String`s that outlived it.
 
 fn string(map: &JsonMap, key: &str) -> Option<String> {
     map.get(key).and_then(Value::as_str).map(str::to_owned)

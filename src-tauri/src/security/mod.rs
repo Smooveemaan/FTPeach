@@ -5,6 +5,7 @@ pub(crate) mod dpapi;
 pub(crate) mod open_with_intent;
 pub(crate) mod security_policy;
 pub(crate) mod sensitive;
+pub(crate) mod sensitive_string;
 pub(crate) mod system_unlock;
 pub(crate) mod vault;
 pub(crate) mod vault_guard;

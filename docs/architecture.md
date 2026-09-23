@@ -19,7 +19,7 @@ React UI -> feature hooks -> platform API -> Tauri commands
 | `application/` | Coordinate connection and file-transfer use cases. |
 | `application/recursive_transfer/` | Own recursive scan, copy, verification, cancellation and source removal. |
 | `session.rs` | Own stable connection slots and access to their transfer pools. |
-| `protocol/` | Implement wire protocols, remote entry parsing and protocol capabilities. |
+| `protocol/` | Implement wire protocols, remote entry parsing and protocol capabilities. Credential fields use `security::sensitive_string::SensitiveString`, re-exported here under the same name. |
 | `transfer/` | Schedule workers, relay bytes, pace traffic and deliver progress. |
 | `local_fs/` | Validate and perform local filesystem and native file actions. |
 | `store/` | Persist sites, settings, tabs and known hosts. |

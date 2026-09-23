@@ -107,7 +107,7 @@ pub struct WebDavBackend {
     idle_timeout: Duration,
     base_url: String,
     user: String,
-    password: String,
+    password: super::SensitiveString,
     /// Whether this connection earned the right to carry the password: it is
     /// HTTPS, or the user allowed unencrypted sign-in. It defaults to false,
     /// so a backend that never connected cannot send one either.
@@ -167,7 +167,7 @@ impl WebDavBackend {
             (Some(user), Some(pass)) => format!(
                 "{}:{}@",
                 utf8_percent_encode(user, NON_ALPHANUMERIC),
-                utf8_percent_encode(pass, NON_ALPHANUMERIC)
+                utf8_percent_encode(pass.expose(), NON_ALPHANUMERIC)
             ),
             (Some(user), None) => format!("{}@", utf8_percent_encode(user, NON_ALPHANUMERIC)),
             _ => String::new(),
@@ -193,7 +193,7 @@ impl WebDavBackend {
     /// unencrypted connection the user did not mark as allowed sends none.
     fn credentials(&self) -> (&str, &str) {
         if self.send_credentials {
-            (self.user.as_str(), self.password.as_str())
+            (self.user.as_str(), self.password.expose())
         } else {
             ("", "")
         }
@@ -546,7 +546,7 @@ impl ProtocolBackend for WebDavBackend {
             let mut upgraded = false;
             loop {
                 let (probe_user, probe_password) = if send_credentials {
-                    (user.as_str(), password.as_str())
+                    (user.as_str(), password.expose())
                 } else {
                     ("", "")
                 };
@@ -641,6 +641,11 @@ impl ProtocolBackend for WebDavBackend {
         self.client = None;
         self.upload_client = None;
         self.socks_bridge = None;
+        // The session is over, so its credentials go with it rather than
+        // sitting in this struct until something else drops it.
+        self.password = super::SensitiveString::default();
+        self.user = String::new();
+        self.send_credentials = false;
         self.connected = false;
         Ok(())
     }
@@ -757,7 +762,7 @@ impl ProtocolBackend for WebDavBackend {
                     self.build_url(&current),
                     0,
                     &self.user,
-                    &self.password,
+                    self.credentials().1,
                 )
                 .await?;
                 anyhow::ensure!(

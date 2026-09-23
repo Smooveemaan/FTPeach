@@ -657,21 +657,24 @@ impl ProtocolBackend for SftpBackend {
             if use_key_auth {
                 let key_path = key_path
                     .ok_or_else(|| super::fail(ErrorCode::InvalidInput, "No key file specified"))?;
-                let key =
-                    load_secret_key(&key_path, key_passphrase.as_deref()).map_err(|error| {
-                        let io = matches!(error, russh::keys::Error::IO(_));
-                        let error = anyhow::Error::from(error)
-                            .context(format!("failed to read key file \"{key_path}\""));
-                        // A missing or locked file keeps its I/O classification.
-                        if io {
-                            error
-                        } else {
-                            error.context(crate::ipc::CommandError::new(
-                                ErrorCode::KeyUnreadable,
-                                "The key file could not be decrypted or parsed",
-                            ))
-                        }
-                    })?;
+                let key = load_secret_key(
+                    &key_path,
+                    key_passphrase.as_ref().map(super::SensitiveString::expose),
+                )
+                .map_err(|error| {
+                    let io = matches!(error, russh::keys::Error::IO(_));
+                    let error = anyhow::Error::from(error)
+                        .context(format!("failed to read key file \"{key_path}\""));
+                    // A missing or locked file keeps its I/O classification.
+                    if io {
+                        error
+                    } else {
+                        error.context(crate::ipc::CommandError::new(
+                            ErrorCode::KeyUnreadable,
+                            "The key file could not be decrypted or parsed",
+                        ))
+                    }
+                })?;
                 // An RSA key signs with SHA-1 (ssh-rsa) unless told otherwise,
                 // and OpenSSH 8.8+ refuses that. A server that lists no
                 // server-sig-algs predates rsa-sha2, so SHA-1 stays for it.
@@ -699,7 +702,7 @@ impl ProtocolBackend for SftpBackend {
                 }
             } else {
                 let auth = session
-                    .authenticate_password(user.as_str(), password.as_str())
+                    .authenticate_password(user.as_str(), password.expose())
                     .await
                     .context("password auth failed")?;
                 let accepted = match auth {
@@ -709,7 +712,7 @@ impl ProtocolBackend for SftpBackend {
                     russh::client::AuthResult::Failure {
                         remaining_methods, ..
                     } if remaining_methods.contains(&russh::MethodKind::KeyboardInteractive) => {
-                        keyboard_interactive(&mut session, &user, &password)
+                        keyboard_interactive(&mut session, &user, password.expose())
                             .await
                             .context("keyboard-interactive auth failed")?
                     }

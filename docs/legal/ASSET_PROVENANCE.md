@@ -15,7 +15,10 @@ third-party interface icons identified in `THIRD_PARTY_NOTICES.txt`.
 
 `assets/images/icon.png` and the application screenshot `assets/images/ftpeach.png`
 are original works by Leonid Lozovskii (Smooveemaan) and are covered by the same
-statement as the application icon above.
+statement as the application icon above. The screenshot is captured from the
+running application by `npm run screenshot:readme`
+(`scripts/screenshot/readme.ts`), which also draws its window frame and shadow;
+it contains no third-party artwork beyond the interface icons noted above.
 
 `assets/images/support.png` is the Ko-fi support button from Ko-fi's official
 press kit. It is Ko-fi's trademark, used only to link to the project's Ko-fi

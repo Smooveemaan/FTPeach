@@ -11,6 +11,7 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | `packaged-smoke/` | Native application smoke harness | [Instructions](packaged-smoke/README.md) |
 | `manual-tests/` | Manual file-type icon fixtures | [Instructions](manual-tests/README.md) |
 | `test-servers/` | The test server matrix: start, stop, run and report; IIS on the host | `npm run servers:up`, `servers:test`, `servers:ci`; [instructions](../docs/test-server-matrix.md) |
+| `screenshot/` | Retakes the README screenshot from the running app against the Docker test servers | `npm run screenshot:readme [local folder]` |
 | `with-libsodium.ps1` | Verified native library setup and Cargo/Tauri commands | `npm run rust:check`, `npm run build:tauri` |
 | `clean.ps1` | Build output and cache cleanup | `npm run clean` |
 

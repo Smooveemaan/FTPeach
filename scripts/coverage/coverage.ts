@@ -7,7 +7,7 @@
 // their percentages are shown side by side and never added or averaged.
 // scripts/coverage/coverage-floors.json holds the per-file floors for the
 // modules behind the P0/P1 guarantees; see docs/coverage.md.
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -25,6 +25,7 @@ interface FileCoverage {
   lines: Counts;
   branches: Counts;
   functions: Counts;
+  lineHits?: Map<number, number>;
 }
 type Report = Map<string, FileCoverage>;
 type Suite = 'unit' | 'component' | 'rust';
@@ -49,6 +50,12 @@ export function parseLcov(text: string): Report {
     if (key === 'SF') {
       current = empty();
       report.set(normalize(value), current);
+    } else if (key === 'end_of_record') {
+      current = null;
+    } else if (current && key === 'DA') {
+      const [number, hits] = value.split(',').map(Number);
+      current.lineHits ??= new Map();
+      current.lineHits.set(number!, hits!);
     } else if (current && ['LF', 'LH', 'BRF', 'BRH', 'FNF', 'FNH'].includes(key ?? '')) {
       const metric = key!.startsWith('L')
         ? 'lines'
@@ -124,6 +131,32 @@ export function checkFloors(report: Report, floors: Record<string, number>): str
   return problems;
 }
 
+/** Intersect zero-context diff hunks with the runner's measured lines. */
+export function changedCoverage(report: Report, diffs: Map<string, string>): Report {
+  const changed: Report = new Map();
+  for (const [file, diff] of diffs) {
+    const lines = new Set<number>();
+    for (const match of diff.matchAll(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/gm)) {
+      const start = Number(match[1]);
+      const count = match[2] === undefined ? 1 : Number(match[2]);
+      for (let line = start; line < start + count; line++) lines.add(line);
+    }
+    if (lines.size === 0) continue;
+    const coverage = report.get(file);
+    if (!coverage || (!coverage.lineHits && coverage.lines.found > 0))
+      throw new Error(`${file}: missing line records for changed-line coverage`);
+    const entry = empty();
+    for (const line of lines) {
+      const hits = coverage.lineHits?.get(line);
+      if (hits === undefined) continue; // Deleted lines and non-measured source do not count.
+      entry.lines.found++;
+      if (hits > 0) entry.lines.hit++;
+    }
+    if (entry.lines.found > 0) changed.set(file, entry);
+  }
+  return changed;
+}
+
 function productionFiles(): string[] {
   return fs
     .readdirSync(path.join(root, 'src'), { recursive: true, withFileTypes: true })
@@ -146,8 +179,15 @@ function run(args: string[]): void {
   }
 }
 
-function section(suite: Suite, report: Report, notes: string[]): string {
+export function section(suite: Suite, report: Report, notes: string[]): string {
   const sum = total(report);
+  const unmeasured =
+    suite === 'unit'
+      ? [...report]
+          .filter(([, file]) => file.lines.found === 0)
+          .map(([file]) => file)
+          .sort()
+      : [];
   return [
     `### ${suite}`,
     '',
@@ -157,6 +197,19 @@ function section(suite: Suite, report: Report, notes: string[]): string {
     '',
     ...notes.map((note) => `- ${note}`),
     '',
+    ...(unmeasured.length === 0
+      ? []
+      : [
+          '<details>',
+          '<summary>Files with no measured lines</summary>',
+          '',
+          '| File | Found lines | Hit lines |',
+          '| --- | ---: | ---: |',
+          ...unmeasured.map((file) => `| \`${file}\` | 0 | 0 |`),
+          '',
+          '</details>',
+          '',
+        ]),
   ].join('\n');
 }
 
@@ -167,6 +220,65 @@ function main(): void {
   );
   const sections: string[] = [];
   const problems: string[] = [];
+  const base = process.env.COVERAGE_DIFF_BASE?.trim();
+  // Resolve before running tests. An unavailable base must fail, never skip the gate.
+  const baseCommit = base
+    ? execFileSync('git', ['rev-parse', '--verify', '--end-of-options', `${base}^{commit}`], {
+        cwd: root,
+        encoding: 'utf8',
+      }).trim()
+    : undefined;
+
+  function checkChanged(suite: Suite, report: Report): void {
+    if (!baseCommit) return;
+    const diffs = new Map(
+      Object.keys(floors[suite]).map((file) => [
+        file,
+        execFileSync(
+          'git',
+          [
+            'diff',
+            '--no-ext-diff',
+            '--no-textconv',
+            '--no-renames',
+            '--no-color',
+            '--unified=0',
+            '--inter-hunk-context=0',
+            baseCommit,
+            '--',
+            file,
+          ],
+          { cwd: root, encoding: 'utf8' },
+        ),
+      ]),
+    );
+    const changed = changedCoverage(report, diffs);
+    const changedFloors = Object.fromEntries(
+      Object.entries(floors[suite]).filter(([file]) => changed.has(file)),
+    );
+    sections.push(
+      [
+        `### ${suite}: changed lines`,
+        '',
+        `Compared with \`${baseCommit}\`; only measured added or modified lines in floored modules count.`,
+        '',
+        ...(changed.size === 0
+          ? ['No measured lines changed in floored modules.']
+          : [
+              '| File | Changed lines | Floor |',
+              '| --- | ---: | ---: |',
+              ...[...changed].map(
+                ([file, coverage]) =>
+                  `| \`${file}\` | ${shown(coverage.lines)} | ${changedFloors[file]}% |`,
+              ),
+            ]),
+        '',
+      ].join('\n'),
+    );
+    problems.push(
+      ...checkFloors(changed, changedFloors).map((problem) => `${suite} changed lines: ${problem}`),
+    );
+  }
 
   if (rust) {
     const lcov = path.join(out, 'rust', 'lcov.info');
@@ -193,6 +305,7 @@ function main(): void {
       ]),
     );
     problems.push(...checkFloors(report, floors.rust));
+    checkChanged('rust', report);
   } else {
     fs.rmSync(path.join(out, 'unit'), { recursive: true, force: true });
     fs.mkdirSync(path.join(out, 'unit'), { recursive: true });
@@ -200,6 +313,8 @@ function main(): void {
       '--experimental-strip-types',
       '--experimental-test-coverage',
       '--test-coverage-include=src/**',
+      '--test-coverage-exclude=src/**/*.d.ts',
+      '--test-coverage-exclude=src/graphify-out/**',
       '--test-reporter=spec',
       '--test-reporter-destination=stdout',
       '--test-reporter=lcov',
@@ -229,6 +344,7 @@ function main(): void {
       ]),
     );
     problems.push(...checkFloors(unit, floors.unit));
+    checkChanged('unit', unit);
 
     const component = parseIstanbulSummary(
       JSON.parse(fs.readFileSync(path.join(out, 'component', 'coverage-summary.json'), 'utf8')),
@@ -246,6 +362,11 @@ function main(): void {
       ]),
     );
     problems.push(...checkFloors(component, floors.component));
+    if (baseCommit)
+      checkChanged(
+        'component',
+        parseLcov(fs.readFileSync(path.join(out, 'component', 'lcov.info'), 'utf8')),
+      );
   }
 
   const summary = sections.join('\n');

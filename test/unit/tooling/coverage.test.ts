@@ -1,11 +1,104 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   checkFloors,
+  changedCoverage,
   parseIstanbulSummary,
   parseLcov,
   percent,
+  section,
 } from '../../../scripts/coverage/coverage.ts';
+
+test('an invalid diff base fails the command before running the suites', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      fileURLToPath(new URL('../../../scripts/coverage/coverage.ts', import.meta.url)),
+    ],
+    { env: { ...process.env, COVERAGE_DIFF_BASE: 'invalid..base' }, encoding: 'utf8' },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /rev-parse/);
+  assert.equal(result.stdout, '');
+});
+
+test('changed-line floor catches an untested addition hidden by whole-file coverage', () => {
+  const file = 'src/shared/lang.ts';
+  const report = parseLcov(`SF:${file}\nDA:100,0\nLF:100\nLH:99\nend_of_record\n`);
+  const floors = { [file]: 98 };
+  assert.deepEqual(checkFloors(report, floors), []);
+  const changed = changedCoverage(report, new Map([[file, '@@ -99,0 +100 @@\n+untested();']]));
+  assert.deepEqual(changed.get(file)!.lines, { found: 1, hit: 0 });
+  assert.match(checkFloors(changed, floors)[0]!, /0\.00% below its floor of 98%/);
+});
+
+test('changed coverage counts only measured new-side lines across diff hunks', () => {
+  const file = 'src-tauri/src/runtime/shutdown.rs';
+  const report = parseLcov(
+    `SF:${file}\nDA:2,3,checksum\nDA:4,0\nDA:9,1\nDA:12,0\nLF:4\nLH:2\nend_of_record\n`,
+  );
+  const diff = [
+    '@@ -2 +2,3 @@ fn stop() {',
+    '-old();',
+    '+covered();',
+    '+// Not a measured line.',
+    '+untested();',
+    '@@ -8 +9 @@',
+    '-old();',
+    '+covered();',
+    '@@ -12,2 +12,0 @@',
+    '-deleted();',
+    '-deleted();',
+  ].join('\r\n');
+  const changed = changedCoverage(report, new Map([[file, diff]]));
+  assert.deepEqual(changed.get(file)!.lines, { found: 3, hit: 2 });
+  assert.deepEqual(checkFloors(changed, { [file]: 60 }), []);
+  assert.match(checkFloors(changed, { [file]: 70 })[0]!, /66\.67% below/);
+});
+
+test('comments, deletions and unchanged files have no changed-line denominator', () => {
+  const file = 'src/a.ts';
+  const report = parseLcov(`SF:${file}\nDA:1,1\nLF:1\nLH:1\nend_of_record\n`);
+  for (const diff of ['', '@@ -1,0 +2 @@\n+// Comment', '@@ -2 +1,0 @@\n-deleted();']) {
+    assert.equal(changedCoverage(report, new Map([[file, diff]])).size, 0);
+  }
+});
+
+test('new and renamed files count all measured added lines', () => {
+  const file = 'src/new.ts';
+  const report = parseLcov(`SF:${file}\nDA:1,1\nDA:3,0\nLF:2\nLH:1\nend_of_record\n`);
+  const changed = changedCoverage(report, new Map([[file, '@@ -0,0 +1,3 @@\n+code']]));
+  assert.deepEqual(changed.get(file)!.lines, { found: 2, hit: 1 });
+});
+
+test('missing LCOV line records cannot silently bypass changed-line floors', () => {
+  const diffs = new Map([['src/a.ts', '@@ -1 +1 @@\n+changed();']]);
+  assert.throws(() => changedCoverage(parseLcov(''), diffs), /missing line records/);
+  assert.throws(
+    () => changedCoverage(parseLcov('SF:src/a.ts\nLF:1\nLH:1\nend_of_record'), diffs),
+    /missing line records/,
+  );
+});
+
+test('unit summary lists unmeasured files without adding them to the denominator', () => {
+  const report = parseLcov(
+    'SF:src/loaded.ts\nLF:4\nLH:3\nend_of_record\n' +
+      'SF:src/z.tsx\nLF:0\nLH:0\nend_of_record\n' +
+      'SF:src/a.ts\nLF:0\nLH:0\nend_of_record\n',
+  );
+  const summary = section('unit', report, ['Skipped or todo tests: 0.']);
+  assert.match(summary, /\| 3 \| 75\.00% \(3\/4\)/);
+  assert.match(summary, /\| `src\/a.ts` \| 0 \| 0 \|\n\| `src\/z.tsx` \| 0 \| 0 \|/);
+  assert.doesNotMatch(summary, /`src\/loaded.ts`/);
+  assert.match(summary, /Skipped or todo tests: 0\./);
+  assert.doesNotMatch(section('component', report, []), /<details>/);
+  assert.doesNotMatch(section('rust', report, []), /<details>/);
+  assert.doesNotMatch(section('unit', parseLcov(''), []), /<details>/);
+});
 
 test('lcov records become per-file counts under repository-relative paths', () => {
   const report = parseLcov(

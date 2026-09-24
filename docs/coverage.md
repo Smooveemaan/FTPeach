@@ -6,7 +6,7 @@ side by side and are never added or averaged.
 | Runner | Command | Counts | Report |
 | --- | --- | --- | --- |
 | Node unit suite | `npm run coverage` | Lines, branches and functions of the modules the suite loads (`--test-coverage-include=src/**`) | `coverage/unit/lcov.info` |
-| Component suite (Vitest, jsdom) | `npm run coverage` | Every file under `src/**/*.{ts,tsx}`, loaded or not | `coverage/component/` (HTML, JSON, summary) |
+| Component suite (Vitest, jsdom) | `npm run coverage` | Every file under `src/**/*.{ts,tsx}`, loaded or not | `coverage/component/` (HTML, JSON, summary, LCOV) |
 | Rust (`cargo llvm-cov`) | `npm run rust:coverage` | Lines and functions of the Windows build of `src-tauri/src`, without test files | `coverage/rust/lcov.info` |
 
 `scripts/coverage/coverage.ts` runs the two frontend suites and prints one table per runner to the
@@ -15,7 +15,8 @@ any report is read. Not in the denominators:
 
 - declarations (`*.d.ts`) and generated `src/graphify-out/`; tests are outside `src/`;
 - Node cannot count a module it never loaded. The report lists every such production file with
-  zero found lines and says how many there are; the component report covers them;
+  zero found lines in the unit section's expandable table and says how many there are;
+  the component report covers them;
 - Rust test files (`tests.rs`, `*_tests.rs`, `src-tauri/tests/`); inline `#[cfg(test)]` modules in
   production files still count, because llvm-cov reports them as part of the file;
 - Rust code behind `cfg(not(windows))`, which the Windows build never compiles. Rust branch coverage
@@ -69,5 +70,27 @@ The last two are low because most of their code needs a Tauri runtime or a quitt
 floors keep them from slipping further, and their scenarios are covered by the native checks in the
 verification matrix.
 
-Not done yet: a floor on the lines a change touches. Add it when a pull request lands untested
-changes in a floored module despite these floors.
+## Changed-line floors
+
+Pull requests also enforce each module's existing floor on its added or modified measured lines,
+separately for each runner. This catches untested additions that a file's overall percentage can
+hide. Only modules in `coverage-floors.json` participate; there is no project-wide or 100% target.
+The report includes a per-file changed-line table and fails if any of those floors is missed.
+
+CI sets `COVERAGE_DIFF_BASE` to the pull request's base commit and fetches full history. Locally,
+set it to a commit or ref before running either coverage command, for example in PowerShell:
+
+```powershell
+$env:COVERAGE_DIFF_BASE = 'HEAD'
+npm run coverage
+npm run rust:coverage
+Remove-Item Env:COVERAGE_DIFF_BASE
+```
+
+The comparison includes tracked staged and unstaged changes against that commit. New files must
+be staged and, if they need a floor, added to `coverage-floors.json`. Renames are treated as
+deletion plus addition, so move the floor to the new path and cover its measured lines.
+Deleted lines and lines absent from LCOV's line records do not count. A change with no measured
+added lines has no changed-line floor. Missing or unmeasured floored files still fail the whole-file check.
+An invalid or unavailable base fails the command rather than silently skipping this check.
+Without `COVERAGE_DIFF_BASE` (including non-PR CI runs), only whole-file floors apply.

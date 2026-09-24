@@ -18,7 +18,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.d.ts', 'src/graphify-out/**'],
-      reporter: ['json', 'json-summary', 'html', 'text-summary'],
+      reporter: ['json', 'json-summary', 'lcovonly', 'html', 'text-summary'],
       reportsDirectory: 'coverage/component',
     },
   },

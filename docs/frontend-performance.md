@@ -40,8 +40,14 @@ CI writes the table with the change against the baseline to the job summary and 
 Packaged startup timing is intentionally not used as a release gate at this stage. The Windows
 `tauri-driver` setup opened its WebView on `ERR_FILE_NOT_FOUND` for both the baseline and current
 debug binaries, so it could not provide a valid renderer-ready timestamp. Entry size and the bundle
-budget remain the reproducible regression signals; they are not presented as wall-clock timing, and
-cold start to interactive on WebView2 is still not measured.
+budget remain the reproducible regression signals; they are not presented as wall-clock timing.
+
+A one-off measurement on 24.09.2026 (release build of `5db31b4`, Windows 11, six launches) read the
+paint timings over WebView2's DevTools port, started with
+`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`. `#root` starts empty, so
+first-contentful-paint is React's first frame of the full main window. From process spawn:
+navigation starts after 294–361 ms, and the UI paints after 515–645 ms (median 594 ms). The first
+launch followed the build, so the OS file cache was warm; a launch after a reboot was not measured.
 
 The icon component was audited alongside the split. Its lookup maps are intentionally dynamic: all
 file-category icons are reachable through extension classification, all site icons are selectable

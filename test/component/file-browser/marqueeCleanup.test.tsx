@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
 import useFileSelection from '../../../src/features/file-browser/components/useFileSelection.ts';
-import type { FileEntry } from '../../../src/shared/types.ts';
+import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
 const entries: FileEntry[] = [{ name: 'a.txt', isDirectory: false }];
 

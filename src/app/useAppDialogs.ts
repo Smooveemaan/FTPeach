@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 import type { MenuItem } from '../components/MenuItems.tsx';
-import type { FileEntry, PaneId, SiteForm } from '../shared/types.ts';
+import type { FileEntry, PaneId } from '../shared/paneContracts.ts';
+import type { SiteForm } from '../features/sites/index.ts';
 
 interface ConfirmState {
   message: string;

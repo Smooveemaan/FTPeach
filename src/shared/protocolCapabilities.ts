@@ -1,4 +1,5 @@
-import type { PaneKind, SiteProtocol } from './types.ts';
+import type { PaneKind } from './paneContracts.ts';
+import type { SiteProtocol } from './siteContracts.ts';
 
 /** The side of an operation, as far as a protocol capability needs to know it. */
 export interface ProtocolEndpoint {

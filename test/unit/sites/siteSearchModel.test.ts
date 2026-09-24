@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSiteSearchIndex, searchSites } from '../../../src/features/sites/siteSearchModel.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 test('indexed search preserves order and matches all public fields and parent names', () => {
   const entries: ManagedSite[] = [

@@ -17,7 +17,9 @@ import type { IconName } from '../../components/Icon.tsx';
 import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
-import type { ManagedSite, SiteForm, SiteProtocol, Translate } from '../../shared/types.ts';
+import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
+import type { SiteForm } from './siteForm.ts';
+import type { Translate } from '../../shared/translate.ts';
 import useDismissableOverlay from '../../hooks/useDismissableOverlay.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 

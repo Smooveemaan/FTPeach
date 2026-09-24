@@ -3,7 +3,8 @@ import type { SettingsState } from '../../features/settings/index.ts';
 import { updateSpeedSample } from '../../features/transfers/index.ts';
 import type { SpeedSamples, TransferRow, TransferSummary } from '../../features/transfers/index.ts';
 import type { TrayModel } from '../../platform/api/tray.ts';
-import type { ManagedSite, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 
 /** The speed limits the tray offers, in KB/s; 0 is no limit. */
 export const SPEED_LIMIT_PRESETS_KBPS: readonly number[] = [0, 512, 1024, 5120, 10240];

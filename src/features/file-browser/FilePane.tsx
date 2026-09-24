@@ -33,7 +33,7 @@ import type { ColumnKey } from './components/fileListModel.ts';
 import useFilePaneKeyboard from './components/useFilePaneKeyboard.ts';
 import useFilePaneSorting from './components/useFilePaneSorting.ts';
 import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
-import type { FileEntry } from '../../shared/types.ts';
+import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { PaneId, PaneKind } from './panes/paneModel.ts';
 
 export interface FilePaneProps {

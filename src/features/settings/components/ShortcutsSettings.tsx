@@ -3,7 +3,7 @@ import Icon from '../../../components/Icon.tsx';
 import ShortcutRecorder from '../../../components/ShortcutRecorder.tsx';
 import { SHORTCUT_ACTIONS, shortcutActionsByScope } from '../../../shortcuts/registry.ts';
 import { effectiveBinding, findConflict } from '../../../shortcuts/resolve.ts';
-import type { PaneId } from '../../../shared/types.ts';
+import type { PaneId } from '../../../shared/paneContracts.ts';
 import type { PaneOrientation, ShortcutOverrides } from '../useSettings.ts';
 
 interface ShortcutsSettingsProps {

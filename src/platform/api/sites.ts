@@ -1,6 +1,6 @@
 import { checkedResponse, commandFailure, hasCommandOutcome, isRecord } from '../ipcContracts.ts';
 import type { CommandResult, InvokeFn } from '../ipcContracts.ts';
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
 
 export type SavedSite = Record<string, unknown> & {

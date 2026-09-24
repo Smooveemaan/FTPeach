@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useState } from 'react';
 import type { SavedSite, SiteMutationResult } from '../../platform/api/sites.ts';
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { createSiteForm, normalizeSiteForm } from './siteForm.ts';
 import { findProbableDuplicate } from './siteManagerModel.ts';
 import type { SiteManagerDialogState } from './useSiteManagerDialogState.ts';

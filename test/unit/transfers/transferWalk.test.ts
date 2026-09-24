@@ -5,7 +5,7 @@ import {
   walkLocalDir,
   walkRemoteDir,
 } from '../../../src/features/transfers/transferWalk.ts';
-import type { FileEntry } from '../../../src/shared/types.ts';
+import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
 test('download validation rejects forbidden segments, devices and traversal at any depth', () => {
   for (const name of [

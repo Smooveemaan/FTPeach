@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OsDragDropPayload } from '../../../platform/api/filesystem.ts';
 import { api } from '../../../platform/api/index.ts';
 import { handler } from '../../../shared/asyncFailure.ts';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
 
 export interface DroppedFile {

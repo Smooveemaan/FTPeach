@@ -1,6 +1,6 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { createSiteSearchIndex, searchSites } from './siteSearchModel.ts';
 
 interface UseSiteSearchOptions {

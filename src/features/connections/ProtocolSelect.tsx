@@ -1,5 +1,5 @@
 import SelectMenu from '../../components/SelectMenu.tsx';
-import type { SiteProtocol } from '../../shared/types.ts';
+import type { SiteProtocol } from '../../shared/siteContracts.ts';
 const PROTOCOLS: ReadonlyArray<{ value: SiteProtocol; label: string }> = [
   { value: 'ftp', label: 'FTP' },
   { value: 'ftps', label: 'FTPS' },

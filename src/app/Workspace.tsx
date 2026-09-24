@@ -10,7 +10,7 @@ import Icon from '../components/Icon.tsx';
 import ErrorBoundary from '../components/ErrorBoundary.tsx';
 import StatusBar from './StatusBar.tsx';
 import TransferLogSection from './TransferLogSection.tsx';
-import type { PaneId } from '../shared/types.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 import type { useFileClipboard } from '../features/file-browser/index.ts';
 
 export interface WorkspaceProps {

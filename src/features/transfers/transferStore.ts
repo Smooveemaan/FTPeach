@@ -1,4 +1,4 @@
-import type { SiteProtocol } from '../../shared/types.ts';
+import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { RecursiveIntent } from '../../platform/api/transfers.ts';
 
 export type TransferDirection = 'up' | 'down' | 'copy' | 'recursive';

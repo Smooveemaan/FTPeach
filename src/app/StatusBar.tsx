@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import LineStylePulse from '../components/LineStylePulse.tsx';
 import { subscribeTransfers } from '../features/transfers/index.ts';
-import type { PaneStatus, Translate } from '../shared/types.ts';
+import type { PaneStatus } from '../shared/paneContracts.ts';
+import type { Translate } from '../shared/translate.ts';
 
 type PaneOrientation = 'horizontal' | 'vertical';
 type ConnectionVisualState = 'idle' | 'connecting' | 'paused' | 'connected';

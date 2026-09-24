@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../platform/api/index.ts';
-import type { LogEntry } from '../../shared/types.ts';
+import type { LogEntry } from '../../shared/logEntry.ts';
 import type { Unsubscribe } from '../../platform/ipcContracts.ts';
 import { hasLogGap, mergeLogBatch } from './logBuffer.ts';
 
-export type { LogEntry } from '../../shared/types.ts';
+export type { LogEntry } from '../../shared/logEntry.ts';
 
 interface LogApi {
   recent: () => Promise<LogEntry[]>;

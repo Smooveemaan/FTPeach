@@ -3,7 +3,7 @@ import { effectiveBinding } from '../shortcuts/resolve.ts';
 import { formatBinding } from '../shortcuts/bindings.ts';
 import type { MenuBarEntry } from '../components/MenuBar.tsx';
 import type { PaneState, TabState } from '../features/file-browser/index.ts';
-import type { PaneId } from '../shared/types.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 import type { ShortcutOverrides } from '../shortcuts/resolve.ts';
 import type { PaneOrientation } from '../features/settings/index.ts';
 import { handler } from '../shared/asyncFailure.ts';

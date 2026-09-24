@@ -6,7 +6,7 @@ import {
   findProbableDuplicate,
   sortManagedEntries,
 } from '../../../src/features/sites/siteManagerModel.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 const entries: ManagedSite[] = [
   { id: 'folder', kind: 'folder', name: 'Servers' },

@@ -1,7 +1,7 @@
 import { canPauseTransfer, type TransferRow, type TransferStatus } from './transferStore.ts';
 import type { IconName } from '../../components/Icon.tsx';
 import type { RecursiveEndpoint } from '../../platform/api/transfers.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { Translate } from '../../shared/translate.ts';
 import { isolate } from '../../shared/bidi.ts';
 
 /**

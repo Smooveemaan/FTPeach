@@ -1,4 +1,4 @@
-import type { LogEntry } from '../../shared/types.ts';
+import type { LogEntry } from '../../shared/logEntry.ts';
 
 /** As many lines as the backend keeps in memory. */
 export const MAX_LOG_LINES = 5000;

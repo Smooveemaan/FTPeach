@@ -1,5 +1,5 @@
 import { lookupByUnknownKey } from './lang.ts';
-import type { FileEntry } from './types.ts';
+import type { FileEntry } from './paneContracts.ts';
 
 const FILE_ICON_BY_EXT = {
   jpg: 'fileImage',

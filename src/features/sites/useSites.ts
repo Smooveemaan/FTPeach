@@ -7,7 +7,7 @@ import type {
   createSitesApi,
 } from '../../platform/api/sites.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
-import type { ConnectionForm, ManagedSite } from '../../shared/types.ts';
+import type { ConnectionForm, ManagedSite } from '../../shared/siteContracts.ts';
 
 type SitesApi = ReturnType<typeof createSitesApi>;
 

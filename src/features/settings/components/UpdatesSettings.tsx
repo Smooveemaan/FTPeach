@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { UpdaterStatus } from '../../../platform/ipcContracts.ts';
-import type { Translate } from '../../../shared/types.ts';
+import type { Translate } from '../../../shared/translate.ts';
 
 interface UpdatesSettingsProps {
   autoCheckUpdatesValue: boolean;

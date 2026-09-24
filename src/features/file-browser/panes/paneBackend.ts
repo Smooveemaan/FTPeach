@@ -1,6 +1,6 @@
 import { joinLocalPath, joinRemotePath } from '../../../shared/paths.ts';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
 

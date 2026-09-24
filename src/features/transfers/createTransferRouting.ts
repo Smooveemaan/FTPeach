@@ -10,7 +10,8 @@ import type {
 } from './transferBatchResult.ts';
 import { canMoveBetween } from '../../shared/movePolicy.ts';
 import { dropDestinationPath, joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
-import type { FileEntry, PaneKind, PaneStatus, SiteProtocol } from '../../shared/types.ts';
+import type { FileEntry, PaneKind, PaneStatus } from '../../shared/paneContracts.ts';
+import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { OverwriteApproval, TransferOverwriteOptions } from './useOverwriteApproval.ts';
 interface TransferPane {
   kind: PaneKind;

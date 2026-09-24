@@ -6,7 +6,7 @@ import { FilePane } from '../../../src/features/file-browser/index.ts';
 import type { FilePaneProps } from '../../../src/features/file-browser/FilePane.tsx';
 import * as fileListModel from '../../../src/features/file-browser/components/fileListModel.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
-import type { FileEntry } from '../../../src/shared/types.ts';
+import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
 vi.mock('react-i18next', async (importOriginal) => {
   const stableT = (key: string) => key;

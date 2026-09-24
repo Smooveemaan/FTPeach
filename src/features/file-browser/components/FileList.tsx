@@ -1,7 +1,7 @@
 import { FixedSizeList } from 'react-window';
 import type { ListChildComponentProps, ReactElementType } from 'react-window';
 import type { CSSProperties, HTMLAttributes, MutableRefObject, ReactNode, RefObject } from 'react';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { Translate } from './fileListModel.ts';
 import type { VirtualListHandle } from './useVirtualizedFileList.ts';
 

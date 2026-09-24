@@ -1,4 +1,4 @@
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 
 export type SiteSortMode = 'manual' | 'name' | 'protocol';
 export type SiteManagerKind = 'bookmarks' | 'localPaths';

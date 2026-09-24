@@ -1,4 +1,4 @@
-import type { ConnectionForm, ManagedSite, SiteForm, SiteProtocol } from '../../shared/types.ts';
+import type { ConnectionForm, ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
 
 export type NormalizedSitePayload = Record<string, unknown> & { id?: string; name: string };
 
@@ -135,4 +135,32 @@ export function canSubmitSiteForm(form: SiteForm): boolean {
     validLimit &&
     (form.protocol === 'webdav' ? form.webdavUrl.trim() : form.host.trim())
   );
+}
+
+export interface SiteForm {
+  maxConnections: string;
+  kind: 'site' | 'local';
+  name: string;
+  localPath: string;
+  protocol: SiteProtocol;
+  host: string;
+  port: string;
+  webdavUrl: string;
+  user: string;
+  password: string;
+  hasPassword: boolean;
+  removePassword: boolean;
+  remotePath: string;
+  allowInvalidCert: boolean;
+  allowCleartextAuth: boolean;
+  caCertPath: string;
+  encoding: string;
+  useKeyAuth: boolean;
+  keyPath: string;
+  keyPassphrase: string;
+  hasKeyPassphrase: boolean;
+  removeKeyPassphrase: boolean;
+  parentId: string | null;
+  icon: string;
+  color: string;
 }

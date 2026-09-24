@@ -1,5 +1,5 @@
 import type { TransferRow, TransferState } from '../../src/features/transfers/transferStore.ts';
-import type { FileEntry } from '../../src/shared/types.ts';
+import type { FileEntry } from '../../src/shared/paneContracts.ts';
 
 export const FIXTURE_VERSION = 1;
 export const QUEUE_SIZES = [1_000, 10_000, 100_000];

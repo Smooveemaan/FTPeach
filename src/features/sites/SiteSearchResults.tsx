@@ -7,7 +7,8 @@ import type { IconName } from '../../components/Icon.tsx';
 import TruncatedText from '../../components/TruncatedText.tsx';
 import { siteMeta } from './siteMeta.ts';
 import { siteMenuItems } from './siteMenuItems.ts';
-import type { ManagedSite, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 
 interface SiteSearchResultsProps {

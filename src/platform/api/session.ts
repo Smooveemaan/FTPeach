@@ -7,7 +7,7 @@ import {
   isRecord,
 } from '../ipcContracts.ts';
 import type { CommandResult, HostKeyDecision, InvokeFn } from '../ipcContracts.ts';
-import type { FileEntry } from '../../shared/types.ts';
+import type { FileEntry } from '../../shared/paneContracts.ts';
 
 export type ConnectionConfig = Record<string, unknown> & { protocol: string };
 export interface SessionConnectResult extends CommandResult {

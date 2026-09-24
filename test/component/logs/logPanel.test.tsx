@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import LogPanel from '../../../src/features/logs/LogPanel.tsx';
 import { flashTooltip } from '../../../src/hooks/useTooltip.ts';
-import type { LogEntry } from '../../../src/shared/types.ts';
+import type { LogEntry } from '../../../src/shared/logEntry.ts';
 import { createLogTimeFormatter } from '../../../src/features/settings/dateFormat.ts';
 
 vi.mock('../../../src/hooks/useTooltip.ts', () => ({ flashTooltip: vi.fn() }));

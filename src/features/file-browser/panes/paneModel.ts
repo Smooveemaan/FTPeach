@@ -1,14 +1,8 @@
-import type {
-  ConnectionForm,
-  ManagedSite,
-  PaneKind,
-  PaneStatus,
-  FileEntry,
-  SiteProtocol,
-  PaneId,
-} from '../../../shared/types.ts';
+import type { ConnectionForm, ManagedSite, SiteProtocol } from '../../../shared/siteContracts.ts';
+import type { PaneKind, PaneStatus, FileEntry, PaneId } from '../../../shared/paneContracts.ts';
 
-export type { ConnectionForm, PaneId, PaneKind, PaneStatus } from '../../../shared/types.ts';
+export type { ConnectionForm } from '../../../shared/siteContracts.ts';
+export type { PaneId, PaneKind, PaneStatus } from '../../../shared/paneContracts.ts';
 
 export interface PaneState {
   id: PaneId;

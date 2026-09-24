@@ -1,5 +1,5 @@
 import { formatBytes, formatDuration, formatSpeed } from '../../shared/format.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { ResizableColumnKey } from './transferColumns.ts';
 import type { TransferRow } from './transferStore.ts';
 import { transferDisplayName, transferRoutePlaces } from './transferPresentation.ts';

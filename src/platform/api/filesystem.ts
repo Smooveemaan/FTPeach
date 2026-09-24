@@ -9,7 +9,7 @@ import {
 } from '../ipcContracts.ts';
 import type { InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
-import type { FileEntry } from '../../shared/types.ts';
+import type { FileEntry } from '../../shared/paneContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
 
 export interface FilesystemListResult extends CommandResult {

@@ -25,7 +25,7 @@ Baseline of 24 September 2026:
 
 | Area | Files | Code lines | Clones | Duplicated lines | Share |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| frontend-ts | 210 | 31,772 | 6 | 51 | 0.16% |
+| frontend-ts | 212 | 31,801 | 6 | 51 | 0.16% |
 | css | 23 | 4,667 | 1 | 6 | 0.13% |
 | rust-production | 120 | 27,149 | 40 | 407 | 1.50% |
 | rust-tests | 88 | 20,462 | 95 | 888 | 4.34% |

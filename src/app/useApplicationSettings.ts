@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { ColumnWidths, SettingsState, SettingsUpdaters } from '../features/settings/index.ts';
 import type { AppSettings } from '../platform/api/settings.ts';
 import { persistSetting } from '../platform/persistSetting.ts';
-import type { PaneId } from '../shared/types.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 
 interface ApplicationSettingsOptions {
   layout: SettingsState['layout'];

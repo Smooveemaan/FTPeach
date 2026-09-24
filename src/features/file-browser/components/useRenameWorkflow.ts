@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useRef, useState } from 'react';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 
 export interface RenameWorkflowModel {
   renamingName: string | null;

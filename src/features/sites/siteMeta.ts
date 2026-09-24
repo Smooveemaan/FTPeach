@@ -3,7 +3,7 @@
 
 import i18n from '../../i18n/index.ts';
 
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 
 export const SITE_ICONS = [
   'bookmark',

@@ -4,7 +4,7 @@ import { reportRejection } from '../../../shared/asyncFailure.ts';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import type { ConnectionConfig } from '../../../platform/api/session.ts';
-import type { ConnectionForm, ManagedSite } from '../../../shared/types.ts';
+import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
 

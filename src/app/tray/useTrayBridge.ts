@@ -4,7 +4,9 @@ import { getTransfersSnapshot, subscribeTransfers } from '../../features/transfe
 import { api } from '../../platform/api/index.ts';
 import { persistSetting } from '../../platform/persistSetting.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
-import type { ManagedSite, PaneId, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { PaneId } from '../../shared/paneContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import {
   buildTrayModel,
   createTransfersSpeedMeter,

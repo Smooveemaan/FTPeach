@@ -25,7 +25,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
-import type { ManagedSite, SiteContainers } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { SiteContainers } from './siteDragModel.ts';
 import {
   buildSiteContainers,
   findSiteContainer,

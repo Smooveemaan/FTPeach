@@ -9,7 +9,7 @@ import {
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 import type { TrayAction, TrayModel } from '../../../src/platform/api/tray.ts';
-import type { Translate } from '../../../src/shared/types.ts';
+import type { Translate } from '../../../src/shared/translate.ts';
 
 vi.mock('../../../src/platform/api/index.ts', () => ({ api: {} }));
 

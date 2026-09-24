@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from 'react';
 import { useRef } from 'react';
-import type { ManagedSite, SiteContainers } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { SiteContainers } from './siteDragModel.ts';
 import { computeVisibleSiteOrder } from './siteDragModel.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 

@@ -1,5 +1,6 @@
 import type { MenuItem } from '../../components/MenuItems.tsx';
-import type { ManagedSite, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 
 export interface SiteMenuActions {

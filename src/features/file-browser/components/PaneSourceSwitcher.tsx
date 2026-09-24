@@ -6,7 +6,8 @@ import type { IconName } from '../../../components/Icon.tsx';
 import MenuItems from '../../../components/MenuItems.tsx';
 import { placeBelowAnchor, readOverlayViewport } from '../../../hooks/useMenuPosition.ts';
 import type { OverlayPlacement } from '../../../hooks/useMenuPosition.ts';
-import type { ConnectionForm, ManagedSite, PaneKind, PaneStatus } from '../../../shared/types.ts';
+import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
+import type { PaneKind, PaneStatus } from '../../../shared/paneContracts.ts';
 import useDismissableOverlay from '../../../hooks/useDismissableOverlay.ts';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 

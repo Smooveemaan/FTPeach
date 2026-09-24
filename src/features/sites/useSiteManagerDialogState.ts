@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useMemo, useReducer } from 'react';
-import type { SiteForm } from '../../shared/types.ts';
+import type { SiteForm } from './siteForm.ts';
 import { createSiteForm } from './siteForm.ts';
 
 export interface SiteDeleteTarget {

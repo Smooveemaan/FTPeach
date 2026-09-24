@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { SiteManagerDialog } from '../../../src/features/sites/ui.ts';
 import type { SiteManagerDialogProps } from '../../../src/features/sites/SiteManagerDialog.tsx';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 import { createPaneSiteForm, createSiteForm } from '../../../src/features/sites/siteForm.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 

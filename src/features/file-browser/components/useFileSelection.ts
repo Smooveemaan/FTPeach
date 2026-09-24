@@ -5,7 +5,7 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useRef } from 'react';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
 import { DRAG_THRESHOLD_PX } from './fileListModel.ts';
 import type { VirtualListHandle } from './useVirtualizedFileList.ts';

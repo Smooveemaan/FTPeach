@@ -8,7 +8,7 @@ import type {
 } from '../../platform/ipcContracts.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
-import type { PaneId } from '../../shared/types.ts';
+import type { PaneId } from '../../shared/paneContracts.ts';
 
 interface ConnectionTab {
   panes: Record<PaneId, { kind: string; status: string; connectionId: string | null }>;

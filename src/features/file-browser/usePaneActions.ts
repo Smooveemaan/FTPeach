@@ -1,6 +1,7 @@
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
 import { canCreateNamedFile } from '../../shared/protocolCapabilities.ts';
-import type { FileEntry, Translate } from '../../shared/types.ts';
+import type { FileEntry } from '../../shared/paneContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import { formatBinding } from '../../shortcuts/bindings.ts';
 import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
 import { effectiveBinding } from '../../shortcuts/resolve.ts';

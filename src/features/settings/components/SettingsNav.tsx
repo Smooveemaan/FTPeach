@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import { useSettingsNavCarousel } from '../hooks/useSettingsNavCarousel.ts';
-import type { Translate } from '../../../shared/types.ts';
+import type { Translate } from '../../../shared/translate.ts';
 
 export type CategoryKey =
   'connection' | 'transfers' | 'interface' | 'shortcuts' | 'security' | 'updates' | 'logging';

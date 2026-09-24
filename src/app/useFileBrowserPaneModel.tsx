@@ -17,7 +17,7 @@ import type { useTransfers } from '../features/transfers/index.ts';
 import { api } from '../platform/api/index.ts';
 import { reportRejection } from '../shared/asyncFailure.ts';
 import { commandResultError } from '../shared/errorMessages.ts';
-import type { PaneId } from '../shared/types.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 import type { ShortcutOverrides } from '../shortcuts/resolve.ts';
 import type { DriveMenu, useAppDialogs } from './useAppDialogs.ts';
 

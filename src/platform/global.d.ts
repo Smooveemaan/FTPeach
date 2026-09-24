@@ -22,7 +22,8 @@ import type {
   VaultLocked,
 } from './ipcContracts.ts';
 import type { DragOutFile } from './api/dragOut.ts';
-import type { LogEntry, SiteProtocol } from '../shared/types.ts';
+import type { LogEntry } from '../shared/logEntry.ts';
+import type { SiteProtocol } from '../shared/siteContracts.ts';
 
 export {};
 

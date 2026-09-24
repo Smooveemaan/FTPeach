@@ -3,7 +3,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useColumnDragReorder } from '../../../hooks/useColumnDragReorder.ts';
 import { useColumnResize } from '../../../hooks/useColumnResize.ts';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import { useDateFormatter } from '../../settings/index.ts';
 import type { ColumnKey, SortKey, Translate } from './fileListModel.ts';
 import { COLUMN_DEFS, MIN_COLUMN_WIDTH, NAME_DEFAULT_WIDTH, isColumnKey } from './fileListModel.ts';

@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import { useLogLines } from '../../../src/features/logs/useLogLines.ts';
 import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
-import type { LogEntry } from '../../../src/shared/types.ts';
+import type { LogEntry } from '../../../src/shared/logEntry.ts';
 import { MAX_LOG_BYTES } from '../../../src/features/logs/logBuffer.ts';
 
 const entry = (seq: number): LogEntry => ({

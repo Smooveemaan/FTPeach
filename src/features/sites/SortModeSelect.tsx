@@ -1,6 +1,6 @@
 import SelectMenu from '../../components/SelectMenu.tsx';
 import type { SiteSortMode } from './siteManagerModel.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { Translate } from '../../shared/translate.ts';
 interface SortModeSelectProps {
   value: SiteSortMode;
   onChange: (value: SiteSortMode) => void;

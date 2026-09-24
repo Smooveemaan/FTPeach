@@ -18,7 +18,7 @@ import type {
   DragOutTransferStarted,
   TransferProgress,
 } from '../../../src/platform/ipcContracts.ts';
-import type { SiteProtocol } from '../../../src/shared/types.ts';
+import type { SiteProtocol } from '../../../src/shared/siteContracts.ts';
 import type { RecursiveIntent, RecursiveReport } from '../../../src/platform/api/transfers.ts';
 import type {
   TransferRow,

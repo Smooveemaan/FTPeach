@@ -2,7 +2,7 @@ import type { MutableRefObject, MouseEvent as ReactMouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import type { DropAction, DropKeys } from './dropAction.ts';
-import type { PaneId } from '../../../shared/types.ts';
+import type { PaneId } from '../../../shared/paneContracts.ts';
 
 export interface DragMovePayload {
   sourceSide: PaneId;

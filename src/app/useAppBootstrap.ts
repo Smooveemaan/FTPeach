@@ -5,7 +5,7 @@ import { detectSystemLanguage } from '../i18n/index.ts';
 import { api } from '../platform/api/index.ts';
 import type { AppSettings, createSettingsApi } from '../platform/api/settings.ts';
 import type { createSitesApi } from '../platform/api/sites.ts';
-import type { ManagedSite } from '../shared/types.ts';
+import type { ManagedSite } from '../shared/siteContracts.ts';
 
 type SettingsApi = ReturnType<typeof createSettingsApi>;
 type SitesApi = ReturnType<typeof createSitesApi>;

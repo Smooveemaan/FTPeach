@@ -8,7 +8,7 @@ import { isCommandErrorCode } from '../../platform/ipcContracts.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
-import type { SiteProtocol } from '../../shared/types.ts';
+import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { TransferInput, TransferStatus } from './transferStore.ts';
 import {
   activeTransferForTarget,

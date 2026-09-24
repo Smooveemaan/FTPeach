@@ -1,4 +1,6 @@
-import type { FileEntry, LogEntry, SiteProtocol } from '../shared/types.ts';
+import type { FileEntry } from '../shared/paneContracts.ts';
+import type { LogEntry } from '../shared/logEntry.ts';
+import type { SiteProtocol } from '../shared/siteContracts.ts';
 
 const SITE_PROTOCOLS: readonly SiteProtocol[] = ['ftp', 'ftps', 'sftp', 'webdav'];
 

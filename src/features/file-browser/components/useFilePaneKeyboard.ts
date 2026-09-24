@@ -1,6 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useCallback } from 'react';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { ShortcutOverrides } from '../../../shortcuts/resolve.ts';
 import { resolveAction } from '../../../shortcuts/resolve.ts';
 import { isTextInput } from '../../../shortcuts/textInput.ts';

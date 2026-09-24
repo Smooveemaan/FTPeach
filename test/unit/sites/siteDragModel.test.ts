@@ -10,7 +10,7 @@ import {
   ROOT,
   siteContainersMatch,
 } from '../../../src/features/sites/siteDragModel.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 const entries: ManagedSite[] = [
   { id: 'folder-a', kind: 'folder', name: 'Folder A' },

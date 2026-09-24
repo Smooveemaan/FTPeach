@@ -6,7 +6,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import SiteTree from '../../../src/features/sites/SiteTree.tsx';
 import { useSiteDragController } from '../../../src/features/sites/useSiteDragController.ts';
 import type { SiteDragControllerOptions } from '../../../src/features/sites/useSiteDragController.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 type SiteDragController = ReturnType<typeof useSiteDragController>;
 

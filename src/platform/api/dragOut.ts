@@ -1,6 +1,6 @@
 import { commandOutcome } from '../ipcContracts.ts';
 import type { InvokeFn } from '../ipcContracts.ts';
-import type { SiteProtocol } from '../../shared/types.ts';
+import type { SiteProtocol } from '../../shared/siteContracts.ts';
 
 export interface DragOutFile {
   remotePath: string;

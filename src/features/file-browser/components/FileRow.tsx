@@ -3,7 +3,7 @@ import Icon from '../../../components/Icon.tsx';
 import { COLUMN_DEFS, fileIconName } from './fileListModel.ts';
 import { isolate } from '../../../shared/bidi.ts';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
 import type { ColumnKey, Translate } from './fileListModel.ts';
 import { useTruncated } from '../../../hooks/useTruncated.ts';

@@ -1,7 +1,8 @@
 import { readyUnsubscribe } from '../../src/platform/ipcContracts.ts';
 import type { UpdaterStatus } from '../../src/platform/ipcContracts.ts';
 import defaults from '../../src/shared/settingsDefaults.json';
-import type { FileEntry, ManagedSite } from '../../src/shared/types.ts';
+import type { FileEntry } from '../../src/shared/paneContracts.ts';
+import type { ManagedSite } from '../../src/shared/siteContracts.ts';
 
 const ok = { ok: true } as const;
 const unsubscribe = readyUnsubscribe(() => {});

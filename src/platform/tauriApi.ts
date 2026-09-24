@@ -47,7 +47,7 @@ import type {
   ImportSettingsResult,
   SettingsTransferOptions,
 } from './api/settings.ts';
-import type { LogEntry } from '../shared/types.ts';
+import type { LogEntry } from '../shared/logEntry.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { flushShutdownState } from './shutdownPersistence.ts';
 import './persistSetting.ts';

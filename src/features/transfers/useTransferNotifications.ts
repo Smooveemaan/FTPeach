@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { api } from '../../platform/api/index.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
-import type { Translate } from '../../shared/types.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { TransferStatus } from './transferStore.ts';
 import { getTransfersSnapshot, subscribeTransferStructure } from './transferStore.ts';
 

@@ -5,7 +5,8 @@ import {
   fileTypeLabel,
   filterAndSortEntries,
 } from '../../src/features/file-browser/components/fileListModel.ts';
-import type { FileEntry, Translate } from '../../src/shared/types.ts';
+import type { FileEntry } from '../../src/shared/paneContracts.ts';
+import type { Translate } from '../../src/shared/translate.ts';
 import { createSiteSearchIndex, searchSites } from '../../src/features/sites/siteSearchModel.ts';
 import { mergeLogBatch } from '../../src/features/logs/logBuffer.ts';
 import { sortManagedEntries } from '../../src/features/sites/siteManagerModel.ts';

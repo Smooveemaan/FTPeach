@@ -1,7 +1,7 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import type { MenuItem } from '../../../components/MenuItems.tsx';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import { formatBinding } from '../../../shortcuts/bindings.ts';
 import type { ShortcutOverrides } from '../../../shortcuts/resolve.ts';
 import { effectiveBinding } from '../../../shortcuts/resolve.ts';

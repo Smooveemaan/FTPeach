@@ -4,7 +4,8 @@ import type { DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 
 import { useSiteDragController } from '../../../src/features/sites/useSiteDragController.ts';
 import { ROOT } from '../../../src/features/sites/siteDragModel.ts';
-import type { ManagedSite, SiteContainers } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
+import type { SiteContainers } from '../../../src/features/sites/siteDragModel.ts';
 
 type SiteDragController = ReturnType<typeof useSiteDragController>;
 type ControllerResult = { current: SiteDragController };

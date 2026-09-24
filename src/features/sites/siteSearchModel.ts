@@ -1,4 +1,4 @@
-import type { ManagedSite } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 
 export interface SiteSearchEntry {
   entry: ManagedSite;

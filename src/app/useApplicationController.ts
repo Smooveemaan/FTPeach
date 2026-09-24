@@ -5,7 +5,7 @@ import { api } from '../platform/api/index.ts';
 import { describeUnknown } from '../platform/ipcContracts.ts';
 import { setAsyncFailureSink } from '../shared/asyncFailure.ts';
 import { friendlyError } from '../shared/errorMessages.ts';
-import type { PaneId, PaneKind, PaneStatus } from '../shared/types.ts';
+import type { PaneId, PaneKind, PaneStatus } from '../shared/paneContracts.ts';
 import type { ShortcutOverrides } from '../shortcuts/resolve.ts';
 import { useAppCommands } from './useAppCommands.ts';
 

@@ -14,7 +14,9 @@ import { CSS } from '@dnd-kit/utilities';
 import Icon from '../../components/Icon.tsx';
 import type { IconName } from '../../components/Icon.tsx';
 import { getInterfaceScale } from '../../platform/interfaceScale.ts';
-import type { ManagedSite, PaneId, PaneStatus, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { PaneId, PaneStatus } from '../../shared/paneContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { TabState } from './panes/paneModel.ts';
 
 const PANE_IDS: readonly PaneId[] = ['a', 'b'];

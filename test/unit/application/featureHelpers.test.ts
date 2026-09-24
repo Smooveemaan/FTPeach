@@ -18,7 +18,7 @@ import {
   moveToFolders,
   permissionStringToOctal,
 } from '../../../src/features/file-browser/usePaneActions.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 type PaneSiteSource = Parameters<typeof buildPaneSitePayload>[1];
 type ConnectionTab = Parameters<typeof collectLiveConnectionIds>[0][number];

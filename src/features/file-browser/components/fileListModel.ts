@@ -1,9 +1,10 @@
 import i18n, { intlLocale } from '../../../i18n/index.ts';
 import { formatBytes } from '../../../shared/format.ts';
 import type { DateFormatter } from '../../settings/index.ts';
-import type { FileEntry, Translate } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
+import type { Translate } from '../../../shared/translate.ts';
 
-export type { Translate } from '../../../shared/types.ts';
+export type { Translate } from '../../../shared/translate.ts';
 /**
  * The optional columns this build knows how to render and sort — the literal
  * keys of {@link COLUMN_DEFS}, not `string`.

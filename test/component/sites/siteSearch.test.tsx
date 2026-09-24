@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { expect, test } from 'vitest';
 import { useSiteSearch } from '../../../src/features/sites/useSiteSearch.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 test('typing reuses search text and replacing site data invalidates the index', () => {
   let reads = 0;

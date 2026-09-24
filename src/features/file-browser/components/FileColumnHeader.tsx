@@ -1,6 +1,6 @@
 import type { KeyboardEvent, MouseEvent, MutableRefObject, ReactNode } from 'react';
 import Icon from '../../../components/Icon.tsx';
-import type { Translate } from '../../../shared/types.ts';
+import type { Translate } from '../../../shared/translate.ts';
 import type { ColumnKey, SortKey } from './fileListModel.ts';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 import type { UseColumnDragReorderResult } from '../../../hooks/useColumnDragReorder.ts';

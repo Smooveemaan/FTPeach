@@ -15,7 +15,7 @@ import type { TrayModelInput } from '../../../src/app/tray/trayModel.ts';
 import { QUICKLIST_LIMIT } from '../../../src/features/sites/index.ts';
 import type { TransferRow } from '../../../src/features/transfers/index.ts';
 import type { TrayModel } from '../../../src/platform/api/tray.ts';
-import type { Translate } from '../../../src/shared/types.ts';
+import type { Translate } from '../../../src/shared/translate.ts';
 
 const t = ((key: string, options?: Record<string, unknown>) =>
   options ? `${key}${JSON.stringify(options)}` : key) as unknown as Translate;

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import { QUICKLIST_LIMIT, siteMeta } from '../../sites/index.ts';
-import type { ManagedSite } from '../../../shared/types.ts';
+import type { ManagedSite } from '../../../shared/siteContracts.ts';
 
 interface PaneConnectEmptyStateProps {
   sites: readonly ManagedSite[];

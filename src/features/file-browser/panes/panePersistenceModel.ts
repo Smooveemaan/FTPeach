@@ -1,5 +1,5 @@
 import type { PersistedPane, PersistedTabsState } from '../../../platform/api/tabs.ts';
-import type { ManagedSite } from '../../../shared/types.ts';
+import type { ManagedSite } from '../../../shared/siteContracts.ts';
 import { PANE_IDS, buildFormFromSite, makePane, makeTab } from './paneModel.ts';
 import type { PaneState, TabState } from './paneModel.ts';
 

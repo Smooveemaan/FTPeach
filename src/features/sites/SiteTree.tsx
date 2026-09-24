@@ -14,7 +14,8 @@ import {
 import type { SiteTreeRowNodeRef } from './components/SiteTreeRows.tsx';
 import { FOLDERS, ROOT } from './siteDragModel.ts';
 import { siteMenuItems } from './siteMenuItems.ts';
-import type { ManagedSite, Translate } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
+import type { Translate } from '../../shared/translate.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 import type { useSiteDragController } from './useSiteDragController.ts';
 import { useSiteTreeNavigation } from './useSiteTreeNavigation.ts';

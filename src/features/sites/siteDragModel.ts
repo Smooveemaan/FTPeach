@@ -1,4 +1,4 @@
-import type { ManagedSite, SiteContainers } from '../../shared/types.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 
 export const FOLDERS = '__folders__';
 export const ROOT = '__root__';
@@ -120,3 +120,13 @@ export function flattenSiteContainers(containers: SiteContainers): string[] {
     ...containers[FOLDERS].flatMap((folderId) => containers[folderId] || []),
   ];
 }
+
+/**
+ * Site ids per container. Any folder id can be a key, but the two synthetic
+ * containers — the folder list and the root list — always exist, so they are
+ * named here instead of being defended against at each lookup.
+ */
+export type SiteContainers = Record<string, string[]> & {
+  __folders__: string[];
+  __root__: string[];
+};

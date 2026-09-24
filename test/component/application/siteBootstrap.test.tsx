@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
 import { useAppBootstrap } from '../../../src/app/useAppBootstrap.ts';
-import type { ManagedSite } from '../../../src/shared/types.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 type BootstrapOptions = Parameters<typeof useAppBootstrap>[0];
 type SettingsApi = NonNullable<BootstrapOptions['settingsApi']>;

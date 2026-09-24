@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { PaneState } from '../features/file-browser/index.ts';
-import type { PaneId } from '../shared/types.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 import type StatusBar from './StatusBar.tsx';
 import type TransferLogSection from './TransferLogSection.tsx';
 import type { WorkspaceProps } from './Workspace.tsx';

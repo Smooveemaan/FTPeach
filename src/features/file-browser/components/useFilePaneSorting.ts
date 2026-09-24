@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useReducer } from 'react';
-import type { FileEntry, Translate } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
+import type { Translate } from '../../../shared/translate.ts';
 import type { SortKey } from './fileListModel.ts';
 import { DEFAULT_FILE_SORT, filterAndSortEntries, nextFileSortState } from './fileListModel.ts';
 

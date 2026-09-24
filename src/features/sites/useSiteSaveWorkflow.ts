@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { SavedSite, SiteMutationResult } from '../../platform/api/sites.ts';
-import type { PaneId, SiteForm } from '../../shared/types.ts';
+import type { PaneId } from '../../shared/paneContracts.ts';
+import type { SiteForm } from './siteForm.ts';
 import type { PaneSiteSource } from './useSites.ts';
 import { createPaneSiteForm, normalizeSiteForm } from './siteForm.ts';
 import { connectionIdentity } from './siteManagerModel.ts';

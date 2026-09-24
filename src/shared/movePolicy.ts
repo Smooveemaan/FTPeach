@@ -1,4 +1,4 @@
-import type { PaneKind } from './types.ts';
+import type { PaneKind } from './paneContracts.ts';
 
 /** The side of a Move, as far as the policy needs to know it. */
 export interface MoveEndpoint {

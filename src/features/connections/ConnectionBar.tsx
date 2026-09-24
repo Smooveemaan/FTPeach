@@ -5,7 +5,8 @@ import ProtocolSelect from './ProtocolSelect.tsx';
 import Icon from '../../components/Icon.tsx';
 import PasswordInput from '../../components/PasswordInput.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
-import type { ConnectionForm, PaneStatus, SiteProtocol } from '../../shared/types.ts';
+import type { ConnectionForm, SiteProtocol } from '../../shared/siteContracts.ts';
+import type { PaneStatus } from '../../shared/paneContracts.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 import { api } from '../../platform/api/index.ts';
 

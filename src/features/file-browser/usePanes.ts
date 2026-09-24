@@ -7,7 +7,8 @@ import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
 import { isolate } from '../../shared/bidi.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
-import type { FileEntry, ManagedSite } from '../../shared/types.ts';
+import type { FileEntry } from '../../shared/paneContracts.ts';
+import type { ManagedSite } from '../../shared/siteContracts.ts';
 import {
   getTransfersSnapshot,
   isTransferNameConflict,

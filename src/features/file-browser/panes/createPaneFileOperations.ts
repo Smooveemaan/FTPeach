@@ -5,7 +5,7 @@ import { commandResultError } from '../../../shared/errorMessages.ts';
 import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
 import type { Translate } from '../components/fileListModel.ts';
 import { backendFor, paneJoin } from './paneBackend.ts';
-import type { FileEntry } from '../../../shared/types.ts';
+import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
 

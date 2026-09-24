@@ -140,6 +140,13 @@ jobs:
       - run: npm run check:rust-boundaries
       - run: npm run check:command-acl
       - run: npm run check:ignored-tests
+      # A behavior change must reach its document and the changelog, or its
+      # commit message must say why not (scripts/checks/check-doc-impact.ts).
+      - run: npm run check:docs-impact
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+      - run: npm run check:verified-by
       - run: npm run check:duplicates
       - name: Keep the duplication report
         if: ${{ always() }}

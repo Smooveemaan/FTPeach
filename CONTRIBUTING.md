@@ -10,6 +10,24 @@ Follow the [development setup](README.md#development) for prerequisites, depende
 npm run check
 ```
 
+A change is done when:
+
+1. **The behavior is tested.** A behavior change or bug fix comes with a test that fails without it, in the suite that owns the area ([test/README.md](test/README.md); Rust tests sit next to their module).
+2. **The documents say what the code now does.** Update the page that describes the behavior in the same change: the [user guide](docs/user-guide.md) for what users see, the matching page in [docs/](docs/README.md) for design and limits. Remove statements that stopped being true. Give each fact one home and link to it rather than repeating it.
+3. **Users are told.** A change users will notice gets one line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md): one short sentence about what they see, without protocol commands, internal terms or backstory. Released sections are not edited.
+4. **Every exception is explained.** When the documents or the changelog need no change, the commit message says why, one trailer each. `npm run check:docs-impact` requires this for code linked to a document in `scripts/checks/check-doc-impact.ts`, and for any change to the app itself:
+
+   ```text
+   Docs-Impact: none - internal refactor, behavior unchanged
+   Changelog: none - tests only
+   ```
+
+   A fix that restores behavior the guide already describes needs no guide change, but usually still deserves a changelog line.
+
+The [user guide](docs/user-guide.md) states only behavior that something checks. Each statement carries a hidden marker, `<!-- verified-by: <gate> <file>::<test name> -->`: `pr` for tests that block every change, `weekly` for the ignored Docker suites run on a schedule, `manual` for a run recorded in [manual checks](docs/manual-checks.md). `npm run check:verified-by` fails when a named test disappears, is switched off or runs somewhere other than the marker says. It cannot tell whether the test asserts what the sentence says; check that when writing the marker.
+
+UI text is translated by hand, with the context of a file manager in mind; machine translation is not used. New text may ship in English and Russian first, with the English text standing in for the other locales until they are translated.
+
 A pull request should explain the problem, solution, tests, and manual verification. Include screenshots for UI changes and describe protocol fixtures without credentials. Architectural boundaries are documented in `docs/architecture.md` and `docs/frontend-architecture.md`. New IPC capabilities, secrets, paths, and remote names require a security review.
 
 ## Comments and API documentation

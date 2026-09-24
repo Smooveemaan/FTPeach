@@ -440,12 +440,8 @@ async fn changed_since_partial(target: Target) {
     // An FTP control connection does not survive a transfer dropped midway.
     let mut backend = connect(&target).await;
     put(&mut backend, &work.local("second"), &remote, &second).await;
-    backend
-        .download(&remote, &destination, true, noop_progress())
-        .await
-        .unwrap_or_else(|error| panic!("{}: resume [{:?}]: {error:#}", target.id, code(&error)));
     assert!(
-        tokio::fs::read(&destination).await.unwrap() == second,
+        resume(&mut backend, &remote, &destination).await == second,
         "{}: the resumed file mixes the old and the new content",
         target.id
     );

@@ -556,12 +556,8 @@ pub async fn s10_resume(target: Target) {
     );
 
     let destination = work.local("download.bin");
-    backend
-        .download(&remote, &destination, true, noop_progress())
-        .await
-        .unwrap_or_else(|error| panic!("{}: resumed download: {error:#}", target.id));
     assert!(
-        tokio::fs::read(&destination).await.unwrap() == content,
+        resume(&mut backend, &remote, &destination).await == content,
         "{}: resumed download differs",
         target.id
     );

@@ -238,7 +238,7 @@ pub(crate) async fn connect(
         config.insert(key, value);
     }
     config.insert(
-        "strictHostKeyCheck".into(),
+        crate::security::security_policy::STRICT_HOST_KEY.into(),
         serde_json::Value::Bool(
             store
                 .get_settings()

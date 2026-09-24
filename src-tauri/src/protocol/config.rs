@@ -173,7 +173,7 @@ impl ConnectionConfig {
                     // connection by the session service, and a config that
                     // arrived without it must not silently be the weaker one.
                     strict_host_key_check: map
-                        .get("strictHostKeyCheck")
+                        .get(crate::security::security_policy::STRICT_HOST_KEY)
                         .and_then(Value::as_bool)
                         .unwrap_or(true),
                 }))

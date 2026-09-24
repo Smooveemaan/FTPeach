@@ -1172,10 +1172,7 @@ impl ProtocolBackend for SftpBackend {
             }
             Err(err) => Err(err),
         };
-        match &result {
-            Ok(()) => progress(ProgressInfo::Done),
-            Err(err) => progress(ProgressInfo::failed(err)),
-        }
+        super::transfer_file::report_outcome(&result, &progress);
         result
     }
 

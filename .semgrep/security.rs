@@ -96,6 +96,8 @@ fn policy_bypass(settings: &mut JsonMap) {
     settings.insert("showSecurityConfirmations".into(), false.into());
     // ruleid: rust-security-setting-outside-policy
     settings.insert("vaultAutoLockMinutes".into(), 0.into());
+    // ruleid: rust-security-setting-outside-policy
+    settings.insert("strictHostKeyCheck".into(), false.into());
     // ok: rust-security-setting-outside-policy
     settings.insert(security_policy::CONFIRMATIONS.into(), true.into());
 }

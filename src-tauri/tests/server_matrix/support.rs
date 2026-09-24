@@ -258,6 +258,15 @@ pub async fn get(backend: &mut Backend, remote: &str) -> Vec<u8> {
     bytes
 }
 
+/// Resume a download into `local` and return what the file holds afterwards.
+pub async fn resume(backend: &mut Backend, remote: &str, local: &Path) -> Vec<u8> {
+    backend
+        .download(remote, local, true, noop_progress())
+        .await
+        .unwrap_or_else(|error| panic!("resume {remote} [{:?}]: {error:#}", code(&error)));
+    tokio::fs::read(local).await.unwrap()
+}
+
 /// Depth-first removal with the backend's own primitives, as the app's
 /// recursive delete does.
 pub fn remove_tree<'a>(

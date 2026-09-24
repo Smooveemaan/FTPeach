@@ -254,12 +254,8 @@ pub async fn c02_drop_mid_transfer(target: Target) {
     );
 
     let mut backend = connect(&target).await;
-    backend
-        .download(&remote, &destination, true, noop_progress())
-        .await
-        .unwrap_or_else(|error| panic!("{}: resume [{:?}]: {error:#}", target.id, code(&error)));
     assert!(
-        tokio::fs::read(&destination).await.unwrap() == content,
+        resume(&mut backend, &remote, &destination).await == content,
         "{}: resumed content",
         target.id
     );

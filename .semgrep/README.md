@@ -25,7 +25,7 @@ Rules cover:
   or private key as a plain `String`/`Vec<u8>` (use `SensitiveString`);
 - unbounded channels outside tests, since the sender may be a server or the
   renderer;
-- the raw `showSecurityConfirmations`/`vaultAutoLockMinutes` keys outside
+- the raw `showSecurityConfirmations`/`vaultAutoLockMinutes`/`strictHostKeyCheck` keys outside
   `security_policy.rs`, so a new path that changes them has to go through the
   policy that decides what counts as weakening;
 - dynamic renderer code and HTML insertion.

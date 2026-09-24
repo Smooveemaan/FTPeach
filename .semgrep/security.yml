@@ -103,6 +103,6 @@ rules:
         - 'tests.rs'
         - 'security_policy.rs'
     patterns:
-      - pattern-regex: '"(showSecurityConfirmations|vaultAutoLockMinutes)"'
+      - pattern-regex: '"(showSecurityConfirmations|vaultAutoLockMinutes|strictHostKeyCheck)"'
       - pattern-not-inside: |
           mod tests { ... }

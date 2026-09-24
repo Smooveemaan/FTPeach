@@ -21,14 +21,14 @@ threshold. A change that deliberately adds or removes duplication updates the ba
 commit. CI writes the table to the job summary and keeps `duplication-report/` as an artifact; each
 area's `jscpd-report.json` lists the clones with file and line.
 
-Baseline of 24 September 2026:
+Baseline of 24 September 2026 (`2a68b2c` plus the upload-outcome and resume-helper cleanups):
 
 | Area | Files | Code lines | Clones | Duplicated lines | Share |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| frontend-ts | 212 | 31,801 | 6 | 51 | 0.16% |
+| frontend-ts | 211 | 31,774 | 6 | 51 | 0.16% |
 | css | 23 | 4,667 | 1 | 6 | 0.13% |
-| rust-production | 120 | 27,169 | 40 | 407 | 1.50% |
-| rust-tests | 88 | 20,519 | 92 | 862 | 4.20% |
+| rust-production | 120 | 27,473 | 41 | 395 | 1.44% |
+| rust-tests | 90 | 21,784 | 92 | 858 | 3.94% |
 
 ## Findings and decisions
 

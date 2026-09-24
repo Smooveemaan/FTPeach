@@ -3,8 +3,8 @@
   "minTokens": 60,
   "areas": {
     "frontend-ts": {
-      "sources": 212,
-      "lines": 31801,
+      "sources": 211,
+      "lines": 31774,
       "duplicatedLines": 51,
       "clones": 6
     },
@@ -16,14 +16,14 @@
     },
     "rust-production": {
       "sources": 120,
-      "lines": 27169,
-      "duplicatedLines": 407,
-      "clones": 40
+      "lines": 27473,
+      "duplicatedLines": 395,
+      "clones": 41
     },
     "rust-tests": {
-      "sources": 88,
-      "lines": 20519,
-      "duplicatedLines": 862,
+      "sources": 90,
+      "lines": 21784,
+      "duplicatedLines": 858,
       "clones": 92
     }
   }

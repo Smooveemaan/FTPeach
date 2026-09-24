@@ -131,7 +131,7 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run check:suite-coverage
+      - run: npm run check:ci-parity
       - run: npm run check:release-config
       - run: npm run licenses:check
       - run: npm run check:rust-boundaries
@@ -147,7 +147,15 @@ jobs:
           if-no-files-found: ignore
       - run: npm run lint
       - run: npm run format:check
-      - run: npm test
+      # The Node and component suites, with coverage and the per-file floors.
+      - run: npm run coverage
+      - name: Keep the coverage report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-frontend
+          path: coverage/
+          if-no-files-found: ignore
       - run: npm run build
       - name: Keep the startup bundle report
         if: ${{ always() }}
@@ -221,6 +229,49 @@ jobs:
       # Check both valid and damaged updater artifacts.
       - name: Verify valid and damaged updater fixtures independently
         run: npm run test:updater-fixtures
+
+  rust-coverage:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: windows-latest
+    # An instrumented build of the whole crate, separate from rust-test's cache.
+    timeout-minutes: 35
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install pinned Rust toolchain and cargo-llvm-cov
+        run: |
+          rustup component add llvm-tools-preview
+          cargo install cargo-llvm-cov --locked --version 0.9.1
+
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      - name: Prepare verified libsodium
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
+      - run: npm run rust:coverage
+      - name: Keep the Rust coverage report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-rust
+          path: coverage/
+          if-no-files-found: ignore
 
   visual-regression:
     permissions:

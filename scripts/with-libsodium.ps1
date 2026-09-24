@@ -4,13 +4,13 @@ param(
 
     [string]$EnvironmentFile,
 
-    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing', 'server-matrix')]
+    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing', 'server-matrix', 'coverage')]
     [string]$Command = 'build',
 
     [ValidateSet('debug', 'release')]
     [string]$Profile = 'debug',
 
-    # Passed to the test binary by the test and server-matrix commands
+    # Passed to the test binary by the test, coverage and server-matrix commands
     # (filters, --ignored, --test-threads).
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$TestArgs = @()
@@ -99,7 +99,7 @@ elseif ($Command -eq 'smoke-build') {
 }
 
 # Object records in the upstream archive refer to libsodium.pdb by basename.
-# Put the matching symbols in both possible linker output directories before
+# Put the matching symbols in every linker output directory (llvm-cov has its own) before
 # Cargo starts; /WX:4099 then reliably detects a missing or mismatched PDB.
 $targetRoot = if ([string]::IsNullOrWhiteSpace($env:CARGO_TARGET_DIR)) {
     Join-Path $workspace 'src-tauri\target'
@@ -107,7 +107,7 @@ $targetRoot = if ([string]::IsNullOrWhiteSpace($env:CARGO_TARGET_DIR)) {
 else {
     $env:CARGO_TARGET_DIR
 }
-foreach ($cargoProfile in @('debug', 'release')) {
+foreach ($cargoProfile in @('debug', 'release', 'llvm-cov-target/debug')) {
     $dependencyDirectory = Join-Path $targetRoot "$cargoProfile\deps"
     New-Item -ItemType Directory -Path $dependencyDirectory -Force | Out-Null
     Copy-Item -LiteralPath $symbols -Destination (Join-Path $dependencyDirectory 'libsodium.pdb') -Force
@@ -127,6 +127,11 @@ try {
         }
         'test' {
             & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets -- @TestArgs
+        }
+        'coverage' {
+            # The same tests as 'test', instrumented; the report is read by scripts/coverage/coverage.ts.
+            New-Item -ItemType Directory -Force -Path 'coverage\rust' | Out-Null
+            & cargo llvm-cov --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets --lcov --output-path 'coverage\rust\lcov.info' -- @TestArgs
         }
         'benchmark-listing' {
             New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null

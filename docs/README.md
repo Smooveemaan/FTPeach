@@ -7,6 +7,7 @@
 - [Frontend performance](frontend-performance.md): measurements and reproducible benchmarks.
 - [Regression coverage](regression-coverage.md): test scenarios and remaining coverage gaps.
 - [Verification matrix](verification-matrix.md): lanes, ignored tests, protocol contracts under faults and the release matrix.
+- [Code coverage](coverage.md): what each runner measures, the floors and the baseline.
 - [Scripts](../scripts/README.md) and [tests](../test/README.md): commands and directory layout.
 
 ## Runtime behavior

@@ -1,0 +1,25 @@
+{
+  "unit": {
+    "src/platform/shutdownPersistence.ts": 98,
+    "src/shared/lang.ts": 98,
+    "src/shared/protocolCapabilities.ts": 98
+  },
+  "component": {
+    "src/features/file-browser/panes/usePaneSessionPersistence.ts": 84,
+    "src/features/open-with/useOpenWithLifecycle.ts": 94,
+    "src/features/transfers/createTransferRouting.ts": 83,
+    "src/features/transfers/transferBatchResult.ts": 98,
+    "src/shared/movePolicy.ts": 98
+  },
+  "rust": {
+    "src-tauri/src/application/recursive_transfer/mod.rs": 85,
+    "src-tauri/src/commands/fs.rs": 46,
+    "src-tauri/src/local_fs/filesystem_safety.rs": 92,
+    "src-tauri/src/local_fs/local_create.rs": 96,
+    "src-tauri/src/local_fs/open_with.rs": 76,
+    "src-tauri/src/local_fs/staged_copy.rs": 95,
+    "src-tauri/src/local_fs/target_reservation.rs": 95,
+    "src-tauri/src/protocol/transfer_file.rs": 94,
+    "src-tauri/src/runtime/shutdown.rs": 31
+  }
+}

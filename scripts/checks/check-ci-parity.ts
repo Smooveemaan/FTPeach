@@ -1,4 +1,4 @@
-// `npm run check` is the local stand-in for CI. That only holds while it still
+// CI parity, not code coverage: `npm run check` is the local stand-in for CI. That only holds while it still
 // runs what CI runs, and nothing enforced that: the script had already drifted
 // behind checks.yml by two steps, so a push could pass locally and fail on the
 // runner over work the developer never had a chance to see.
@@ -23,6 +23,10 @@ const excluded = new Map([
   [
     'test:packaged-smoke',
     'builds and drives a packaged Tauri binary; minutes per run, so CI owns it',
+  ],
+  [
+    'rust:coverage',
+    'an instrumented rebuild of the crate running the tests rust:test already runs',
   ],
 ]);
 

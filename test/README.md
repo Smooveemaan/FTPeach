@@ -48,7 +48,9 @@ npm run test:components -- test/component/sites/siteManager.test.tsx
 ```
 
 `npm run check` includes the project checks and test runners. The
-`check:suite-coverage` command checks that its npm steps stay aligned with CI.
+`check:ci-parity` command checks that its npm steps stay aligned with CI; it does not
+measure code coverage. `npm run coverage` runs both suites with coverage, see
+[docs/coverage.md](../docs/coverage.md).
 Packaged application smoke tests remain a separate CI-owned check.
 
 ## Choosing the runtime

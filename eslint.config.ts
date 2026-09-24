@@ -24,6 +24,7 @@ export default [
       'node_modules/**',
       'vendor/**',
       'src-tauri/target/**',
+      'coverage/**',
     ],
   },
 

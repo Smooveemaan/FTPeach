@@ -912,13 +912,19 @@ impl ProtocolBackend for WebDavBackend {
             format!("PUT {path} (creating empty file)"),
             LogKind::Command,
         );
-        if self.resource_exists(path).await? {
+        let already_exists = || {
             let name = path
                 .trim_end_matches('/')
                 .rsplit('/')
                 .next()
                 .unwrap_or(path);
-            bail!("\"{name}\" already exists");
+            super::fail(
+                ErrorCode::AlreadyExists,
+                format!("\"{name}\" already exists"),
+            )
+        };
+        if self.resource_exists(path).await? {
+            return Err(already_exists());
         }
         let res = self
             .request(Method::PUT, path)?
@@ -928,6 +934,10 @@ impl ProtocolBackend for WebDavBackend {
             .send()
             .await
             .context("PUT request failed")?;
+        // Under If-None-Match: *, 412 is a file that arrived after the PROPFIND.
+        if res.status() == StatusCode::PRECONDITION_FAILED {
+            return Err(already_exists());
+        }
         if !res.status().is_success() {
             return Err(response::status_error(res.status().as_u16(), "PUT"));
         }

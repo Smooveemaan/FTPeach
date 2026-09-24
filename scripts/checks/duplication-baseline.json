@@ -16,15 +16,15 @@
     },
     "rust-production": {
       "sources": 120,
-      "lines": 27149,
+      "lines": 27169,
       "duplicatedLines": 407,
       "clones": 40
     },
     "rust-tests": {
       "sources": 88,
-      "lines": 20462,
-      "duplicatedLines": 888,
-      "clones": 95
+      "lines": 20519,
+      "duplicatedLines": 862,
+      "clones": 92
     }
   }
 }

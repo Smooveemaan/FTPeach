@@ -1,5 +1,39 @@
 # File operation safety
 
+## Guarantee matrix
+
+What an existing target can expect from each operation when the user has not approved replacing
+it. Every IPC entry point defaults to no replacement: only an explicit `overwrite: true` replaces
+(`fs_rename`, `session_rename`, `fs_copy_file`, the transfer commands and the recursive intent).
+Move between different endpoints does not exist: `canMoveBetween` in `src/shared/movePolicy.ts` is
+the one policy for drag and drop, paste after Cut and transfer routing.
+
+| Operation | Local | FTP / FTPS | SFTP | WebDAV |
+| --- | --- | --- | --- | --- |
+| Rename, same-endpoint Move of one entry | No-replace rename by the OS; atomic | Checks the target, then RNFR/RNTO: a file created in between is replaced | `lstat`, then v3 RENAME, which refuses an existing target; a server that replaces anyway (SFTPGo) races the same way as FTP | `MOVE` with `Overwrite: F`; the server refuses atomically |
+| Commit of an upload or download | Download: verified UUID partial, no-replace commit by the OS | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row |
+| New empty file | Exclusive create | Refused as `createUnsupported`; an existing name is `alreadyExists`; nothing is written | Exclusive open (`EXCLUDE`); a taken name is `alreadyExists` | PROPFIND, then `PUT` with `If-None-Match: *`; a taken name is `alreadyExists` |
+| Recursive copy | Each file commits as above; declining or skipping one keeps the source folder | same | same | same |
+| Move of a folder | Verified copy, then handle-based deletion of each unchanged source file | Same-session server rename only | Same-session server rename only | Same-session `MOVE` only |
+
+Approved replacement of an upload renames a server's refusal aside to `.ftpeach-<uuid>.old`,
+publishes the staging file and deletes the old file only afterwards; a failed publication puts it
+back. FTP has no atomic no-replace rename, so no FTP row above is atomic; see
+[conservative limits](#conservative-limits).
+
+| Promise | Tests |
+| --- | --- |
+| No flag keeps the target, locally and remotely | `commands::fs::tests::rename_and_copy_without_an_overwrite_decision_keep_the_existing_target`; `test/unit/file-browser/paneFileOperations.test.ts` |
+| Remote no-replace rename per protocol | `ftp_tests::no_replace_rename_refuses_a_taken_target_and_moves_onto_a_free_one`, `sftp_tests::no_replace_rename_keeps_a_target_the_server_would_overwrite`, `webdav_tests::no_replace_move_onto_a_taken_destination_says_it_exists` |
+| Download commit keeps a target created after the preflight | `transfer_file::tests::no_replace_commit_preserves_a_target_created_after_preflight` |
+| Approved replacement sets aside and restores | `sftp_tests::without_posix_rename_the_existing_file_is_set_aside_then_removed`, `a_set_aside_file_is_put_back_when_the_new_one_cannot_take_its_name` |
+| New file never truncates | `local_create::tests::creates_folders_with_parents_and_files_without_replacing`, `ftp_tests::create_new_never_truncates_an_existing_or_newly_arrived_ftp_file`, `sftp_tests::creating_a_taken_name_says_it_exists_and_opens_nothing_else`, `webdav_tests::a_file_arriving_before_the_empty_put_is_reported_as_existing` |
+| Single local copy is staged | `staged_copy::tests::a_fault_before_commit_keeps_the_old_target_and_leaves_no_partial` |
+| Skipped nested file keeps the Move source | `recursive_transfer::tests::skip_merges_missing_files_and_retains_move_source` |
+| Move between endpoints touches nothing | `test/component/transfers/useTransfers.test.tsx` ("a move between different endpoints touches nothing"), `test/component/file-browser/dragMove.test.tsx` |
+
+## Audit history
+
 The P0 and P1 fixes from the September 2026 audit establish the following behavior.
 
 | Operation | Policy | Regression coverage |

@@ -70,6 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Creating a local file with a name that is already taken now says so, instead of showing a
   general error.
+- The same now applies to new files on SFTP and WebDAV servers, including a file someone else
+  created a moment earlier.
 - Switching languages quickly, or cancelling a language preview while it loads, no longer
   leaves an earlier language on screen or the text running the wrong way.
 - Icon buttons, the connection fields and the search boxes now have names a screen reader

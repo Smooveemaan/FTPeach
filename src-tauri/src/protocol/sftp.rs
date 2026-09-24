@@ -902,14 +902,24 @@ impl ProtocolBackend for SftpBackend {
 
     async fn create_file(&mut self, path: &str) -> BackendResult<()> {
         let raw = self.sftp()?;
-        let handle = raw
+        let opened = raw
             .open(
                 path.to_string(),
                 OpenFlags::WRITE | OpenFlags::CREATE | OpenFlags::EXCLUDE,
                 FileAttributes::empty(),
             )
-            .await?
-            .handle;
+            .await;
+        let handle = match opened {
+            Ok(handle) => handle.handle,
+            // v3 has no "file exists" status: EXCLUDE on a taken name is a plain failure.
+            Err(SftpClientError::Status(status))
+                if status.status_code == StatusCode::Failure
+                    && raw.lstat(path.to_string()).await.is_ok() =>
+            {
+                return Err(already_exists(path));
+            }
+            Err(error) => return Err(error.into()),
+        };
         raw.close(handle).await?;
         Ok(())
     }

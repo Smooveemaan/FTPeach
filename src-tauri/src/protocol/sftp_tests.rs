@@ -282,6 +282,14 @@ mod transfer_tests {
         ) -> Result<Handle, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             disk.flags.push(flags);
+            if flags.contains(OpenFlags::EXCLUDE)
+                && disk
+                    .names
+                    .as_ref()
+                    .is_some_and(|names| names.contains(&filename))
+            {
+                return Err(StatusCode::Failure);
+            }
             if flags.contains(OpenFlags::TRUNCATE) {
                 disk.bytes.clear();
             }
@@ -520,6 +528,27 @@ mod transfer_tests {
             .await
             .unwrap();
         assert_eq!(disk.lock().unwrap().names, names(&["/file", "/free"]));
+    }
+
+    #[tokio::test]
+    async fn creating_a_taken_name_says_it_exists_and_opens_nothing_else() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            names: names(&["/file"]),
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+
+        let error = backend.create_file("/file").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        backend.create_file("/free").await.unwrap();
+        let disk = disk.lock().unwrap();
+        assert!(disk.flags.iter().all(
+            |flags| flags.contains(OpenFlags::EXCLUDE) && !flags.contains(OpenFlags::TRUNCATE)
+        ));
+        assert_eq!(disk.flags.len(), 2);
     }
 
     async fn backend(disk: Arc<StdMutex<Disk>>) -> SftpBackend {

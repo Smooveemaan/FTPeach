@@ -33,21 +33,7 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
     let server = tokio::spawn(async move {
         for method in ["PROPFIND", "HEAD", "GET"] {
             let (mut socket, _) = listener.accept().await.unwrap();
-            let mut header = Vec::new();
-            while !header.ends_with(b"\r\n\r\n") {
-                header.push(socket.read_u8().await.unwrap());
-            }
-            let header = String::from_utf8(header).unwrap();
-            assert!(header.starts_with(method));
-            let length = header
-                .lines()
-                .find_map(|line| {
-                    let (key, value) = line.split_once(':')?;
-                    key.eq_ignore_ascii_case("content-length")
-                        .then(|| value.trim().parse::<usize>().unwrap())
-                })
-                .unwrap_or(0);
-            socket.read_exact(&mut vec![0; length]).await.unwrap();
+            assert!(read_request(&mut socket).await.starts_with(method));
             match method {
                 "PROPFIND" => {
                     let body = "<multistatus><response><href>/file</href><propstat><prop><getcontentlength>3</getcontentlength></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>";
@@ -87,6 +73,25 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
     tokio::fs::remove_dir_all(root).await.unwrap();
 }
 
+/// Reads one request, body included, and returns its header.
+async fn read_request(socket: &mut tokio::net::TcpStream) -> String {
+    let mut header = Vec::new();
+    while !header.ends_with(b"\r\n\r\n") {
+        header.push(socket.read_u8().await.unwrap());
+    }
+    let header = String::from_utf8(header).unwrap();
+    let length = header
+        .lines()
+        .find_map(|line| {
+            let (key, value) = line.split_once(':')?;
+            key.eq_ignore_ascii_case("content-length")
+                .then(|| value.trim().parse::<usize>().unwrap())
+        })
+        .unwrap_or(0);
+    socket.read_exact(&mut vec![0; length]).await.unwrap();
+    header
+}
+
 async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::task::JoinHandle<()>) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
@@ -96,19 +101,7 @@ async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::tas
     );
     let task = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
-        let mut header = Vec::new();
-        while !header.ends_with(b"\r\n\r\n") {
-            header.push(socket.read_u8().await.unwrap());
-        }
-        let length = String::from_utf8_lossy(&header)
-            .lines()
-            .find_map(|line| {
-                let (key, value) = line.split_once(':')?;
-                key.eq_ignore_ascii_case("content-length")
-                    .then(|| value.trim().parse::<usize>().unwrap())
-            })
-            .unwrap_or(0);
-        socket.read_exact(&mut vec![0; length]).await.unwrap();
+        read_request(&mut socket).await;
         socket.write_all(response.as_bytes()).await.unwrap();
     });
     (
@@ -853,6 +846,45 @@ async fn failed_propfind_never_attempts_empty_put() {
         assert_eq!(puts.load(Ordering::SeqCst), 0);
         server.abort();
     }
+}
+
+#[tokio::test]
+async fn a_file_arriving_before_the_empty_put_is_reported_as_existing() {
+    use tokio::io::AsyncWriteExt;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let mut put = String::new();
+        // The PROPFIND finds nothing; by the PUT another client has created the file.
+        for status in ["404 Not Found", "412 Precondition Failed"] {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            put = read_request(&mut socket).await.to_ascii_lowercase();
+            socket
+                .write_all(
+                    format!("HTTP/1.1 {status}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+                        .as_bytes(),
+                )
+                .await
+                .unwrap();
+        }
+        put
+    });
+    let mut backend = WebDavBackend {
+        client: Some(Client::new()),
+        idle_timeout: Duration::from_secs(60),
+        base_url: format!("http://{address}"),
+        ..Default::default()
+    };
+    let error = backend.create_file("/new.txt").await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::AlreadyExists
+    );
+    let put = server.await.unwrap();
+    assert!(
+        put.starts_with("put ") && put.contains("if-none-match: *"),
+        "{put}"
+    );
 }
 
 #[cfg(test)]

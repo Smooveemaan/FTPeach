@@ -7,6 +7,67 @@ export interface MenuPosition {
   left: number;
 }
 
+/** Offsets of an overlay in the scaled root; `inlineStart` counts from the right edge in RTL. */
+export interface OverlayPlacement {
+  top: number;
+  inlineStart: number;
+}
+
+export interface OverlayViewport {
+  width: number;
+  height: number;
+  scale: number;
+  rtl: boolean;
+}
+
+export interface OverlayBox {
+  /** Known size keeps the overlay inside the viewport on that axis; unknown keeps its start edge in. */
+  width?: number | undefined;
+  height?: number | undefined;
+  /** Space between the anchor's bottom and the overlay, in screen pixels. */
+  gap: number;
+  /** Least distance from any viewport edge the overlay is clamped to. */
+  margin: number;
+}
+
+type AnchorRect = Pick<DOMRect, 'left' | 'right' | 'bottom'>;
+
+export function readOverlayViewport(): OverlayViewport {
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    scale: getInterfaceScale(),
+    rtl: document.documentElement.dir === 'rtl',
+  };
+}
+
+/**
+ * Where an overlay opened below its anchor goes. The anchor rectangle and the window size are
+ * screen pixels; the result is in the root's pixels, which the interface scale divides.
+ */
+export function placeBelowAnchor(
+  anchor: AnchorRect,
+  viewport: OverlayViewport,
+  { width, height, gap, margin }: OverlayBox,
+): OverlayPlacement {
+  const viewportWidth = viewport.width / viewport.scale;
+  const viewportHeight = viewport.height / viewport.scale;
+  const start = viewport.rtl
+    ? viewportWidth - anchor.right / viewport.scale
+    : anchor.left / viewport.scale;
+  const below = (anchor.bottom + gap) / viewport.scale;
+  return {
+    top: Math.max(
+      margin,
+      height === undefined ? below : Math.min(below, viewportHeight - height - margin),
+    ),
+    inlineStart: Math.max(
+      margin,
+      width === undefined ? start : Math.min(start, viewportWidth - width - margin),
+    ),
+  };
+}
+
 interface MenuGrid {
   count: number;
   columns: number;
@@ -27,7 +88,6 @@ export function useMenuPosition(
     if (!open) return;
     const update = () => {
       if (!anchor.current) return;
-      const rect = anchor.current.getBoundingClientRect();
       const rows = Math.min(maxRows, Math.ceil(count / columns));
       const width =
         columns * cell +
@@ -35,15 +95,15 @@ export function useMenuPosition(
         padding * 2 +
         (count > columns * maxRows ? scrollbarWidth : 0);
       const height = rows * cell + (rows - 1) * gap + padding * 2;
-      const scale = getInterfaceScale();
-      const preferredLeft =
-        document.documentElement.dir === 'rtl' ? rect.right / scale - width : rect.left / scale;
+      const viewport = readOverlayViewport();
+      const { top, inlineStart } = placeBelowAnchor(
+        anchor.current.getBoundingClientRect(),
+        viewport,
+        { width, height, gap: 2, margin: 8 },
+      );
       setPosition({
-        top: Math.max(
-          8,
-          Math.min((rect.bottom + 2) / scale, window.innerHeight / scale - height - 8),
-        ),
-        left: Math.max(8, Math.min(preferredLeft, window.innerWidth / scale - width - 8)),
+        top,
+        left: viewport.rtl ? viewport.width / viewport.scale - inlineStart - width : inlineStart,
       });
     };
     update();

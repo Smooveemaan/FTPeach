@@ -3,13 +3,9 @@ import { useTranslation } from 'react-i18next';
 import Icon from './Icon.tsx';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
-import { getInterfaceScale } from '../platform/interfaceScale.ts';
+import { placeBelowAnchor, readOverlayViewport } from '../hooks/useMenuPosition.ts';
+import type { OverlayPlacement } from '../hooks/useMenuPosition.ts';
 import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
-
-interface PanelPosition {
-  top: number;
-  inlineStart: number;
-}
 
 interface ToolbarOverflowMenuProps {
   items: readonly MenuItem[];
@@ -18,7 +14,7 @@ interface ToolbarOverflowMenuProps {
 export default function ToolbarOverflowMenu({ items }: ToolbarOverflowMenuProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<PanelPosition | null>(null);
+  const [panelPos, setPanelPos] = useState<OverlayPlacement | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -29,20 +25,13 @@ export default function ToolbarOverflowMenu({ items }: ToolbarOverflowMenuProps)
     setOpen((v) => {
       const next = !v;
       if (next && triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        const scale = getInterfaceScale();
-        const viewportWidth = window.innerWidth / scale;
-        const inlineStart =
-          document.documentElement.dir === 'rtl'
-            ? viewportWidth - rect.right / scale
-            : rect.left / scale;
-        setPanelPos({
-          top: Math.min(
-            (rect.bottom + 2) / scale,
-            window.innerHeight / scale - items.length * 28 - 40,
-          ),
-          inlineStart: Math.max(8, inlineStart),
-        });
+        setPanelPos(
+          placeBelowAnchor(triggerRef.current.getBoundingClientRect(), readOverlayViewport(), {
+            height: items.length * 28 + 32,
+            gap: 2,
+            margin: 8,
+          }),
+        );
       }
       return next;
     });

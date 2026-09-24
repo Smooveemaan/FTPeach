@@ -4,15 +4,11 @@ import { ConnectionBar } from '../../connections/index.ts';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import MenuItems from '../../../components/MenuItems.tsx';
-import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
+import { placeBelowAnchor, readOverlayViewport } from '../../../hooks/useMenuPosition.ts';
+import type { OverlayPlacement } from '../../../hooks/useMenuPosition.ts';
 import type { ConnectionForm, ManagedSite, PaneKind, PaneStatus } from '../../../shared/types.ts';
 import useDismissableOverlay from '../../../hooks/useDismissableOverlay.ts';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
-
-interface PanelPosition {
-  top: number;
-  inlineStart: number;
-}
 
 interface PaneSourceState {
   kind: PaneKind;
@@ -71,7 +67,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
-    const [panelPos, setPanelPos] = useState<PanelPosition | null>(null);
+    const [panelPos, setPanelPos] = useState<OverlayPlacement | null>(null);
 
     const dismiss = useCallback(() => setOpen(false), []);
     useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
@@ -101,17 +97,12 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
       setOpen((v) => {
         const next = !v;
         if (next && triggerRef.current) {
-          const rect = triggerRef.current.getBoundingClientRect();
-          const scale = getInterfaceScale();
-          const viewportWidth = window.innerWidth / scale;
-          const inlineStart =
-            document.documentElement.dir === 'rtl'
-              ? viewportWidth - rect.right / scale
-              : rect.left / scale;
-          setPanelPos({
-            top: (rect.bottom + 2) / scale,
-            inlineStart: Math.max(8, inlineStart),
-          });
+          setPanelPos(
+            placeBelowAnchor(triggerRef.current.getBoundingClientRect(), readOverlayViewport(), {
+              gap: 2,
+              margin: 8,
+            }),
+          );
         }
         return next;
       });

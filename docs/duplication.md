@@ -25,7 +25,7 @@ Baseline of 24 September 2026:
 
 | Area | Files | Code lines | Clones | Duplicated lines | Share |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| frontend-ts | 210 | 31,736 | 7 | 65 | 0.20% |
+| frontend-ts | 210 | 31,772 | 6 | 51 | 0.16% |
 | css | 23 | 4,667 | 1 | 6 | 0.13% |
 | rust-production | 120 | 27,149 | 40 | 407 | 1.50% |
 | rust-tests | 88 | 20,462 | 95 | 888 | 4.34% |
@@ -47,7 +47,7 @@ the hotfix plan.
 | `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu (D-03) | 12 | **Removed** (HF-28): `siteMenuItems` in `features/sites` |
 | `useSettingsTransfer.ts` ↔ `platform/global.d.ts`, import/export result types (D-05) | 12 | **Removed** (HF-29): one contract in `platform/api/settings.ts` |
 | `useTransferLifecycle.ts` with itself, moving an attempt to queued (D-07) | 12 | **Removed** (HF-31): `requeueAttempt` |
-| `ToolbarOverflowMenu.tsx` ↔ `PaneSourceSwitcher.tsx`, overlay position (D-06) | 15 | **Remove**: shared overlay geometry (HF-30) |
+| `ToolbarOverflowMenu.tsx` ↔ `PaneSourceSwitcher.tsx`, overlay position (D-06) | 15 | **Removed** (HF-30): `placeBelowAnchor` in `hooks/useMenuPosition.ts` |
 | `ConnectionSettings.tsx` ↔ `ProxySettings.tsx`, props interface | 13 | **Keep**: the two sections take the same settings slice; the overlap is a type, not behaviour |
 | `SiteTreeRows.tsx`, `useColumnDragReorder.ts`, `useSiteDragController.ts`, `AppDialogs.tsx`, `createPaneSessionLifecycle.ts` with themselves | 44 | **Keep**: branches of one drag or dialog lifecycle that differ in the lines around the clone |
 | `panes.css` ↔ `transfers.css` (D-08) | 7 | **Keep**: two components that look alike without sharing a visual contract |

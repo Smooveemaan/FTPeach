@@ -1,12 +1,16 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { useMenuPosition } from '../../../src/hooks/useMenuPosition.ts';
+import React from 'react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import ToolbarOverflowMenu from '../../../src/components/ToolbarOverflowMenu.tsx';
+import { placeBelowAnchor, useMenuPosition } from '../../../src/hooks/useMenuPosition.ts';
 
 vi.mock('../../../src/platform/interfaceScale.ts', () => ({ getInterfaceScale: () => scale }));
 let scale = 1;
 const grid = { count: 9, columns: 3, cell: 30, gap: 4, padding: 5, maxRows: 3, scrollbarWidth: 0 };
 
 afterEach(() => {
+  cleanup();
   document.documentElement.dir = '';
   scale = 1;
   vi.restoreAllMocks();
@@ -69,5 +73,58 @@ describe('appearance menu position', () => {
       useMenuPosition(trigger, true, { ...grid, count: 20, scrollbarWidth: 10 }),
     );
     expect(result.current).toEqual({ left: 8, top: 8 });
+  });
+});
+
+describe('overlay placement below an anchor', () => {
+  const box = { gap: 2, margin: 8 };
+  const viewport = (scale: number, rtl: boolean) => ({ width: 1200, height: 900, scale, rtl });
+
+  test.each([1, 1.5, 2])('follows the anchor at scale %s in both directions', (scale) => {
+    const rect = { left: 300 * scale, right: 360 * scale, bottom: 100 * scale };
+    expect(placeBelowAnchor(rect, viewport(scale, false), box)).toEqual({
+      top: 100 + 2 / scale,
+      inlineStart: 300,
+    });
+    expect(placeBelowAnchor(rect, viewport(scale, true), box)).toEqual({
+      top: 100 + 2 / scale,
+      inlineStart: 1200 / scale - 360,
+    });
+  });
+
+  test.each([false, true])('keeps a known box inside the bottom and side edges (rtl %s)', (rtl) => {
+    const rect = { left: 1190, right: 1190, bottom: 890 };
+    const placed = placeBelowAnchor(rect, viewport(1, rtl), { ...box, width: 200, height: 150 });
+    expect(placed.top).toBe(900 - 150 - 8);
+    expect(placed.inlineStart).toBe(rtl ? 10 : 1200 - 200 - 8);
+  });
+
+  test('an unknown size only keeps the start edges in the viewport', () => {
+    expect(
+      placeBelowAnchor({ left: -40, right: 1300, bottom: 890 }, viewport(1, false), box),
+    ).toEqual({
+      top: 892,
+      inlineStart: 8,
+    });
+  });
+});
+
+describe('toolbar overflow menu', () => {
+  test('reopening after a resize places the menu from the new viewport', () => {
+    render(<ToolbarOverflowMenu items={[{ label: 'One', onClick: () => {} }]} />);
+    const trigger = screen.getByRole('button');
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue({
+      left: 50,
+      right: 80,
+      bottom: 580,
+    } as DOMRect);
+    const menuTop = () => document.querySelector<HTMLElement>('.toolbar-overflow-menu')?.style.top;
+    vi.stubGlobal('innerHeight', 800);
+    fireEvent.click(trigger);
+    expect(menuTop()).toBe('582px');
+    fireEvent.click(trigger);
+    vi.stubGlobal('innerHeight', 600);
+    fireEvent.click(trigger);
+    expect(menuTop()).toBe('532px');
   });
 });

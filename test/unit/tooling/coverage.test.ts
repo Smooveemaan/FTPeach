@@ -43,3 +43,17 @@ test('a floored file fails when it drops below its floor or leaves the report', 
   assert.match(checkFloors(report, { 'src/a.ts': 80 })[0]!, /75\.00% below its floor of 80%/);
   assert.match(checkFloors(report, { 'src/gone.ts': 1 })[0]!, /not in the report/);
 });
+
+test('a floored file with no measured lines fails instead of counting as 100%', () => {
+  // The unit report lists modules the Node suite never loaded with zero lines.
+  const report = parseLcov('');
+  report.set('src/platform/shutdownPersistence.ts', {
+    lines: { found: 0, hit: 0 },
+    branches: { found: 0, hit: 0 },
+    functions: { found: 0, hit: 0 },
+  });
+  assert.match(
+    checkFloors(report, { 'src/platform/shutdownPersistence.ts': 98 })[0]!,
+    /no measured lines/,
+  );
+});

@@ -31,6 +31,9 @@ pub struct CredentialScope {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SecretTransfer {
+    /// Full scopes bind authorization and the store check; labels are display only.
+    pub before: CredentialScope,
+    pub after: CredentialScope,
     pub from: String,
     pub to: String,
     /// The new recipient is reached without encryption or without
@@ -135,6 +138,8 @@ pub fn transfer(
         return None;
     }
     Some(SecretTransfer {
+        before: before.clone(),
+        after: after.clone(),
         from: before.describe(),
         to: after.describe(),
         less_secure: (before.encrypted() && !after.encrypted())
@@ -152,24 +157,63 @@ pub fn sets_secret(record: &JsonMap, key: &str) -> bool {
     }
 }
 
-/// The move saving `input` over the stored bookmark would make.
-pub fn site_save_transfer(
+/// A bookmark `sites_save` may write: a server (no `kind`, or `"site"`) or a
+/// local folder. Folders have their own command.
+pub fn is_site_kind(input: &JsonMap) -> bool {
+    match input.get("kind") {
+        None | Some(Value::Null) => true,
+        Some(Value::String(kind)) => matches!(kind.as_str(), "site" | "local"),
+        _ => false,
+    }
+}
+
+/// The move saving `input` over the stored bookmark makes, where `replaced`
+/// says whether the save replaces or removes the saved password.
+pub fn site_transfer(
     stored: Option<&(JsonMap, bool)>,
     input: &JsonMap,
+    replaced: bool,
 ) -> Option<SecretTransfer> {
     let (stored, has_password) = stored?;
-    if matches!(
-        input.get("kind").and_then(Value::as_str),
-        Some("local" | "folder")
-    ) {
+    // A local folder is written to its own file and holds no password.
+    if input.get("kind").and_then(Value::as_str) == Some("local") {
         return None;
     }
     transfer(
         &site_scope(stored),
         &site_scope(input),
         *has_password,
-        sets_secret(input, "password") || flag(input, "removePassword"),
+        replaced,
     )
+}
+
+/// The move an authorization request describes: there a new password is
+/// named by `true`, never sent.
+pub fn site_request_transfer(
+    stored: Option<&(JsonMap, bool)>,
+    request: &JsonMap,
+) -> Option<SecretTransfer> {
+    let replaced =
+        request.get("password") == Some(&Value::Bool(true)) || flag(request, "removePassword");
+    site_transfer(stored, request, replaced)
+}
+
+/// Whether the bookmark actually sent to `sites_save` replaces or removes
+/// the saved password: only a real new password does.
+pub fn replaces_site_password(input: &JsonMap) -> bool {
+    flag(input, "removePassword")
+        || input
+            .get("password")
+            .and_then(Value::as_str)
+            .is_some_and(|password| !password.is_empty())
+}
+
+/// The move the bookmark actually sent to `sites_save` makes.
+pub fn site_save_transfer(
+    stored: Option<&(JsonMap, bool)>,
+    input: &JsonMap,
+) -> Option<SecretTransfer> {
+    site_transfer(stored, input, replaces_site_password(input))
 }
 
 /// The value a `sites_save` grant is bound to: the bookmark, and the
@@ -312,7 +356,10 @@ mod tests {
         replaced.insert("password".into(), serde_json::json!("new"));
         assert_eq!(site_save_transfer(Some(&stored), &replaced), None);
         replaced.insert("password".into(), serde_json::json!(true));
-        assert_eq!(site_save_transfer(Some(&stored), &replaced), None);
+        assert_eq!(site_request_transfer(Some(&stored), &replaced), None);
+        // Sent to the save itself, `true` is no new password: the saved one
+        // would still move.
+        assert!(site_save_transfer(Some(&stored), &replaced).is_some());
         let mut removed = edited.clone();
         removed.insert("removePassword".into(), serde_json::json!(true));
         assert_eq!(site_save_transfer(Some(&stored), &removed), None);

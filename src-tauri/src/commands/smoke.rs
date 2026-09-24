@@ -217,21 +217,12 @@ async fn verify_editor_shutdown(
         "shutdown did not lock vault"
     );
     let root = edit_recovery::root(app).ok_or_else(|| anyhow::anyhow!("no recovery root"))?;
+    let recovered = edit_recovery::entries(&root);
+    anyhow::ensure!(recovered.len() == 1, "shutdown lost the edited copy");
     anyhow::ensure!(
-        edit_recovery::list(&root).len() == 1,
-        "shutdown lost the edited copy"
+        recovered[0].edit.name == "edited.txt"
+            && fs::read(&recovered[0].file)? == b"edits before quit or update",
+        "recovery changed the payload"
     );
-    let mut found = false;
-    for entry in fs::read_dir(root)? {
-        let candidate = entry?.path().join("edited.txt");
-        if candidate.is_file() {
-            anyhow::ensure!(
-                fs::read(candidate)? == b"edits before quit or update",
-                "recovery changed the payload"
-            );
-            found = true;
-        }
-    }
-    anyhow::ensure!(found, "recovery has no payload");
     Ok(())
 }

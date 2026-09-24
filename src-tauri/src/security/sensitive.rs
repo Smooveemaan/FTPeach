@@ -1,7 +1,8 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::local_fs::local_open::ApprovedLocalPaths;
 use crate::security::credential_scope::{
-    SecretTransfer, proxy_transfer, site_save_target, site_save_transfer,
+    SecretTransfer, is_site_kind, proxy_transfer, site_request_transfer, site_save_target,
+    site_save_transfer,
 };
 use crate::security::open_with_intent::OpenWithIntent;
 use crate::security::security_policy::{self, Weakening};
@@ -479,7 +480,16 @@ fn plan_host_key(target: &str, locale: String) -> CommandResult<Plan> {
 async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandResult<Plan> {
     let input: JsonMap =
         serde_json::from_str(target).map_err(|_| denied("Invalid bookmark request"))?;
-    let transfer = site_save_transfer_for(store, &input).await;
+    // The request names a new password by `true` or `false` only; a sent
+    // secret or a kind `sites_save` does not write is refused here as well
+    // as at the save itself.
+    if !is_site_kind(&input) || !matches!(input.get("password"), None | Some(Value::Bool(_))) {
+        return Err(denied("Invalid bookmark request"));
+    }
+    let transfer = match input.get("id").and_then(Value::as_str) {
+        Some(id) => site_request_transfer(store.saved_site_credentials(id).await.as_ref(), &input),
+        None => None,
+    };
     Ok(Plan {
         target: site_save_target(&input, transfer.as_ref()),
         required: transfer.is_some(),
@@ -499,7 +509,8 @@ async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandR
     })
 }
 
-/// The password move saving `input` makes against the bookmark as stored now.
+/// The password move saving the bookmark `input` makes against the bookmark
+/// as stored now.
 pub async fn site_save_transfer_for(store: &Store, input: &JsonMap) -> Option<SecretTransfer> {
     let id = input.get("id").and_then(Value::as_str)?;
     let stored = store.saved_site_credentials(id).await;

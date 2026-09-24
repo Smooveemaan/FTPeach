@@ -1,14 +1,18 @@
 use super::*;
 
 impl Store {
+    /// Saves a bookmark that moves no saved password to a new recipient.
     pub async fn save_site(&self, input: JsonMap) -> Result<SaveSiteOutcome> {
-        self.save_site_with_protector(input, Self::protect_secret)
+        self.save_site_with_protector(input, None, Self::protect_secret)
             .await
     }
 
+    /// `confirmed` is the password move the user approved for this save, or
+    /// `None`; any other move the save would make is refused.
     pub(crate) async fn save_site_with_protector<F>(
         &self,
         input: JsonMap,
+        confirmed: Option<&SecretTransfer>,
         protect: F,
     ) -> Result<SaveSiteOutcome>
     where
@@ -77,6 +81,16 @@ impl Store {
                 protect,
             )
         };
+        if !is_local {
+            let new_password_failed = !password.is_empty() && password_not_persisted;
+            ensure_confirmed_move(
+                existing.as_ref(),
+                &input,
+                remove_password || (!password.is_empty() && !new_password_failed),
+                confirmed,
+                new_password_failed,
+            )?;
+        }
 
         let mut record = JsonMap::new();
         record.insert("id".into(), Value::String(id.clone()));

@@ -4,14 +4,19 @@
 //! being deleted with the session's temporary files. They stay until the user
 //! discards them; nothing here expires.
 //!
-//! Each edit gets its own folder holding the file and an `edit.json` naming
-//! the server path it came from, so the folder describes itself and no index
-//! can fall out of step with the files.
+//! Each edit gets its own folder holding an `edit.json` naming the server
+//! path it came from and, in a `file` folder of its own, the file itself, so
+//! the folder describes itself and no index can fall out of step with the
+//! files. The file lives apart from the description because it may be named
+//! anything, `edit.json` (in any case) included. Earlier versions kept both
+//! side by side; those copies are still read.
 use super::open_with::{MANIFEST, Manifest};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 const DESCRIPTION: &str = "edit.json";
+/// The folder beside the description that holds the edited file.
+const PAYLOAD: &str = "file";
 const MAX_RETAINED_BYTES: u64 = 1024 * 1024 * 1024;
 const MAX_RETAINED_AGE: std::time::Duration = std::time::Duration::from_secs(30 * 24 * 60 * 60);
 
@@ -139,8 +144,9 @@ fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::R
     // A live editor may keep writing. Never copy it and then forget its
     // original: that would lose saves made after the snapshot. If rename is
     // denied, retain the original plus manifest and retry on the next start.
-    let destination = folder.join(name);
+    let destination = folder.join(PAYLOAD).join(name);
     let saved = std::fs::write(folder.join(DESCRIPTION), serde_json::to_vec(&description)?)
+        .and_then(|()| std::fs::create_dir(folder.join(PAYLOAD)))
         .and_then(|()| {
             let result = std::fs::rename(file, &destination);
             #[cfg(windows)]
@@ -267,7 +273,63 @@ pub fn collect_abandoned(current: &Path, root: &Path) {
     }
 }
 
-fn entries(root: &Path) -> Vec<(PathBuf, RecoveredEdit)> {
+/// One recovered edit, the folder that holds it and its file.
+pub(crate) struct Recovered {
+    pub folder: PathBuf,
+    pub edit: RecoveredEdit,
+    // Read by tests and the packaged smoke; the app itself reveals the folder.
+    #[cfg_attr(not(any(test, feature = "smoke-test")), allow(dead_code))]
+    pub file: PathBuf,
+}
+
+/// Reads one edit's folder. One whose description is missing, unreadable or
+/// names no file it holds is still listed, under the name of a file it does
+/// hold and with no server path: it may be the only copy of someone's edits,
+/// and the user can find and discard only what is listed.
+fn read_folder(folder: PathBuf) -> Option<Recovered> {
+    let described: Option<RecoveredEdit> = std::fs::read(folder.join(DESCRIPTION))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice(&bytes).ok());
+    if let Some(edit) = described.clone() {
+        let current = folder.join(PAYLOAD).join(&edit.name);
+        // Earlier versions kept the file beside its description.
+        let legacy =
+            (!edit.name.eq_ignore_ascii_case(DESCRIPTION)).then(|| folder.join(&edit.name));
+        if let Some(file) = std::iter::once(current)
+            .chain(legacy)
+            .find(|file| file.is_file())
+        {
+            return Some(Recovered { folder, edit, file });
+        }
+    }
+    let is_description = |path: &Path| {
+        described.is_some()
+            && path.parent() == Some(folder.as_path())
+            && path
+                .file_name()
+                .is_some_and(|name| name.eq_ignore_ascii_case(DESCRIPTION))
+    };
+    let file = [folder.join(PAYLOAD), folder.clone()]
+        .iter()
+        .flat_map(|dir| std::fs::read_dir(dir).into_iter().flatten().flatten())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_file())
+        // Prefer payloads, but a lone description may itself be an old edited
+        // edit.json whose contents happen to parse as metadata. Keep it visible.
+        .min_by_key(|path| is_description(path))?;
+    let saved_at = std::fs::metadata(&file)
+        .and_then(|metadata| metadata.modified())
+        .map(|time| chrono::DateTime::<chrono::Utc>::from(time).to_rfc3339())
+        .unwrap_or_default();
+    let edit = RecoveredEdit {
+        name: file.file_name()?.to_string_lossy().into_owned(),
+        remote_path: None,
+        saved_at,
+    };
+    Some(Recovered { folder, edit, file })
+}
+
+pub(crate) fn entries(root: &Path) -> Vec<Recovered> {
     let Ok(folders) = std::fs::read_dir(root) else {
         return Vec::new();
     };
@@ -275,25 +337,21 @@ fn entries(root: &Path) -> Vec<(PathBuf, RecoveredEdit)> {
         .flatten()
         .map(|folder| folder.path())
         .filter(|folder| is_session_name(folder))
-        .filter_map(|folder| {
-            let edit: RecoveredEdit =
-                serde_json::from_slice(&std::fs::read(folder.join(DESCRIPTION)).ok()?).ok()?;
-            folder.join(&edit.name).is_file().then_some((folder, edit))
-        })
+        .filter_map(read_folder)
         .collect();
-    found.sort_by(|a, b| a.1.saved_at.cmp(&b.1.saved_at));
+    found.sort_by(|a, b| a.edit.saved_at.cmp(&b.edit.saved_at));
     found
 }
 
 pub fn list(root: &Path) -> Vec<RecoveredEdit> {
-    entries(root).into_iter().map(|(_, edit)| edit).collect()
+    entries(root).into_iter().map(|found| found.edit).collect()
 }
 
-/// Deletes the listed edits, and only them: folders without a description
+/// Deletes the listed edits, and only them: folders not named like an edit's
 /// are not this module's to remove.
 pub fn discard(root: &Path) -> std::io::Result<()> {
-    for (folder, _) in entries(root) {
-        std::fs::remove_dir_all(folder)?;
+    for found in entries(root) {
+        std::fs::remove_dir_all(found.folder)?;
     }
     Ok(())
 }
@@ -363,7 +421,7 @@ mod tests {
             let recovered = entries(&fixture.root);
             assert_eq!(recovered.len(), 1);
             assert_eq!(
-                std::fs::read(recovered[0].0.join("live.txt")).unwrap(),
+                std::fs::read(&recovered[0].file).unwrap(),
                 b"second revision after application shutdown"
             );
         }
@@ -394,7 +452,7 @@ mod tests {
         drop(editor);
         collect(&fixture.session, &fixture.root).unwrap();
         assert_eq!(
-            std::fs::read(entries(&fixture.root)[0].0.join("locked.txt")).unwrap(),
+            std::fs::read(&entries(&fixture.root)[0].file).unwrap(),
             b"unsaved editor changes"
         );
     }
@@ -427,7 +485,7 @@ mod tests {
         drop(editor);
         collect(&fixture.session, &fixture.root).unwrap();
         assert_eq!(
-            std::fs::read(entries(&fixture.root)[0].0.join("clean.txt")).unwrap(),
+            std::fs::read(&entries(&fixture.root)[0].file).unwrap(),
             b"saved after the application closed"
         );
     }
@@ -442,7 +500,7 @@ mod tests {
         collect(&fixture.session, &fixture.root).unwrap();
         assert_eq!(list(&fixture.root).len(), 1);
         assert_eq!(
-            std::fs::read(entries(&fixture.root)[0].0.join("unrecorded.txt")).unwrap(),
+            std::fs::read(&entries(&fixture.root)[0].file).unwrap(),
             b"edits after a failed manifest write"
         );
     }
@@ -466,7 +524,7 @@ mod tests {
         editor.sync_all().unwrap();
         drop(editor);
         assert_eq!(
-            std::fs::read(entries(&fixture.root)[0].0.join("live-clean.txt")).unwrap(),
+            std::fs::read(&entries(&fixture.root)[0].file).unwrap(),
             b"first save after shutdown"
         );
     }
@@ -541,9 +599,8 @@ mod tests {
         assert_eq!(edits.len(), 1);
         assert_eq!(edits[0].name, "edited.txt");
         assert_eq!(edits[0].remote_path.as_deref(), Some("/www/edited.txt"));
-        let (folder, _) = &entries(&fixture.root)[0];
         assert_eq!(
-            std::fs::read(folder.join("edited.txt")).unwrap(),
+            std::fs::read(&entries(&fixture.root)[0].file).unwrap(),
             b"the user's unsaved work"
         );
     }
@@ -624,5 +681,114 @@ mod tests {
 
         assert!(list(&fixture.root).is_empty());
         assert!(foreign.exists());
+    }
+
+    // The file may carry any name the server gave it, the description's own
+    // in any case included (Windows names ignore case).
+    #[test]
+    fn a_file_named_like_the_description_is_recovered_and_readable() {
+        for name in ["edit.json", "EDIT.JSON", "Edit.Json", "file"] {
+            let fixture = Fixture::new();
+            let watchers = OpenWithWatchers::new(fixture.session.clone());
+            let file = fixture.download(name, b"{}");
+            watchers.register("a", file.clone(), format!("/{name}"));
+            std::fs::write(&file, br#"{"unsaved":true}"#).unwrap();
+
+            collect(&fixture.session, &fixture.root).unwrap();
+
+            assert!(!file.exists(), "{name}");
+            let found = entries(&fixture.root);
+            assert_eq!(found.len(), 1, "{name}");
+            assert_eq!(found[0].edit.name, name);
+            assert_eq!(found[0].edit.remote_path, Some(format!("/{name}")));
+            assert_eq!(
+                std::fs::read(&found[0].file).unwrap(),
+                br#"{"unsaved":true}"#
+            );
+            discard(&fixture.root).unwrap();
+            assert!(list(&fixture.root).is_empty());
+        }
+    }
+
+    #[test]
+    fn copies_saved_by_earlier_versions_are_still_listed() {
+        let fixture = Fixture::new();
+        let folder = fixture.root.join(uuid::Uuid::new_v4().to_string());
+        std::fs::create_dir_all(&folder).unwrap();
+        std::fs::write(
+            folder.join(DESCRIPTION),
+            br#"{"name":"old.txt","remotePath":"/old.txt","savedAt":"2026-09-01T00:00:00+00:00"}"#,
+        )
+        .unwrap();
+        std::fs::write(folder.join("old.txt"), b"saved beside its description").unwrap();
+
+        let found = entries(&fixture.root);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].edit.remote_path.as_deref(), Some("/old.txt"));
+        assert_eq!(
+            std::fs::read(&found[0].file).unwrap(),
+            b"saved beside its description"
+        );
+    }
+
+    #[test]
+    fn a_legacy_payload_that_parses_as_metadata_stays_visible() {
+        for name in ["edit.json", "EDIT.JSON"] {
+            let fixture = Fixture::new();
+            let folder = fixture.root.join(uuid::Uuid::new_v4().to_string());
+            std::fs::create_dir_all(&folder).unwrap();
+            let content = br#"{"name":"missing.txt","remotePath":"/missing.txt","savedAt":"2026-09-24","userData":"edited copy"}"#;
+            std::fs::write(folder.join(name), content).unwrap();
+            let found = entries(&fixture.root);
+            assert_eq!(found.len(), 1, "{name}");
+            assert_eq!(found[0].edit.name, name);
+            assert_eq!(found[0].edit.remote_path, None);
+            assert_eq!(std::fs::read(&found[0].file).unwrap(), content);
+            discard(&fixture.root).unwrap();
+            assert!(!folder.exists());
+        }
+    }
+
+    // Before the file had a folder of its own, an `edit.json` replaced its
+    // description. Such a copy, or one whose description is lost or names a
+    // file that is not there, stays listed so it can be found and discarded.
+    #[test]
+    fn a_copy_with_a_damaged_description_stays_listed() {
+        let fixture = Fixture::new();
+        let overwritten = fixture.root.join(uuid::Uuid::new_v4().to_string());
+        std::fs::create_dir_all(&overwritten).unwrap();
+        std::fs::write(overwritten.join(DESCRIPTION), br#"{"unsaved":true}"#).unwrap();
+        let mismatched = fixture.root.join(uuid::Uuid::new_v4().to_string());
+        std::fs::create_dir_all(mismatched.join(PAYLOAD)).unwrap();
+        std::fs::write(
+            mismatched.join(DESCRIPTION),
+            br#"{"name":"gone.txt","remotePath":"/gone.txt","savedAt":"x"}"#,
+        )
+        .unwrap();
+        std::fs::write(mismatched.join(PAYLOAD).join("kept.txt"), b"kept").unwrap();
+        let empty = fixture.root.join(uuid::Uuid::new_v4().to_string());
+        std::fs::create_dir_all(&empty).unwrap();
+
+        let mut found: Vec<_> = entries(&fixture.root)
+            .into_iter()
+            .map(|found| {
+                (
+                    found.edit.name,
+                    found.edit.remote_path,
+                    std::fs::read(found.file).unwrap(),
+                )
+            })
+            .collect();
+        found.sort();
+        assert_eq!(
+            found,
+            [
+                ("edit.json".into(), None, br#"{"unsaved":true}"#.to_vec()),
+                ("kept.txt".into(), None, b"kept".to_vec()),
+            ]
+        );
+        discard(&fixture.root).unwrap();
+        assert!(!overwritten.exists() && !mismatched.exists());
+        assert!(empty.exists(), "a folder with nothing in it is not listed");
     }
 }

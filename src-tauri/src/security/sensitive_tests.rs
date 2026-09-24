@@ -453,3 +453,39 @@ fn trusting_a_host_key_is_always_confirmed_for_exactly_the_keys_shown() {
         );
     }
 }
+
+#[tokio::test]
+async fn a_bookmark_grant_covers_only_the_save_it_describes() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-site-grant-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(dir.clone());
+    let site = |value: serde_json::Value| -> JsonMap { serde_json::from_value(value).unwrap() };
+    store
+        .save_site(site(serde_json::json!({
+            "id": "s", "name": "S", "protocol": "ftp", "host": "a.example", "password": "grant-test-secret"
+        })))
+        .await
+        .unwrap();
+
+    // Asked with a new password, the move to b.example needs no prompt...
+    let request = r#"{"id":"s","name":"S","protocol":"ftp","host":"b.example","password":true}"#;
+    let plan = plan_site_save(&store, request, "en".into()).await.unwrap();
+    assert!(!plan.required);
+    // ...but a save sent `password: true` has no new password and would keep
+    // the old one, so it is not the save that grant was issued for.
+    let payload = site(serde_json::from_str(request).unwrap());
+    let moved = site_save_transfer_for(&store, &payload).await;
+    assert!(moved.is_some());
+    assert_ne!(site_save_target(&payload, moved.as_ref()), plan.target);
+
+    for invalid in [
+        r#"{"id":"s","name":"S","kind":"folder","host":"b.example","password":false}"#,
+        r#"{"id":"s","name":"S","kind":7,"host":"b.example","password":false}"#,
+        r#"{"id":"s","name":"S","protocol":"ftp","host":"b.example","password":"sent"}"#,
+    ] {
+        assert!(
+            plan_site_save(&store, invalid, "en".into()).await.is_err(),
+            "{invalid}"
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}

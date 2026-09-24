@@ -13,6 +13,9 @@
              off), create the user, fixtures and three sites
   uninstall  remove everything install added, including the features it enabled
   status     show features, sites and listening ports
+  fixtures   write the fixtures and their permissions afresh, leaving features,
+             user, certificate and sites alone: after a run changed or deleted
+             a fixture, or to apply fixture permissions changed here
 
   Sites (all bound to 127.0.0.1):
     iis_ftp       ftp://127.0.0.1:2121   MS-DOS listing style, explicit FTPS allowed
@@ -26,7 +29,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true, Position = 0)]
-  [ValidateSet('install', 'uninstall', 'status')]
+  [ValidateSet('install', 'uninstall', 'status', 'fixtures')]
   [string]$Action
 )
 
@@ -198,12 +201,46 @@ function New-Fixtures([string]$Base, [int]$BigMb) {
   Write-Fixture (Join-Path $Base '.ftpeach-seed') "version=1 big_mb=$BigMb flags=iis`n"
 }
 
+function Invoke-Icacls {
+  icacls @args /Q | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw "icacls $args failed with $LASTEXITCODE" }
+}
+
 # perms/ as NTFS denies for the test user; run after the site-wide grant.
+# read-only-dir keeps reading but refuses new files, new folders, and deleting
+# or renaming inner.txt. Windows allows a delete by DELETE on the file or by
+# DELETE_CHILD on its folder, and the site-wide Modify grants DELETE, so the
+# file denies DELETE and the folder DELETE_CHILD. `DE`, not `D`: the simple
+# right `D` also denies SYNCHRONIZE, which every ordinary open asks for, so the
+# file could not be read either.
 function Set-FixtureDenies([string]$Base) {
   $perms = Join-Path $Base 'fixtures\perms'
-  icacls (Join-Path $perms 'no-read.txt') /deny "${UserName}:(R)" /Q | Out-Null
-  icacls (Join-Path $perms 'no-read-dir') /deny "${UserName}:(OI)(CI)(R)" /Q | Out-Null
-  icacls (Join-Path $perms 'read-only-dir') /deny "${UserName}:(WD,AD)" /Q | Out-Null
+  $readOnly = Join-Path $perms 'read-only-dir'
+  Invoke-Icacls (Join-Path $perms 'no-read.txt') /deny "${UserName}:(R)"
+  Invoke-Icacls (Join-Path $perms 'no-read-dir') /deny "${UserName}:(OI)(CI)(R)"
+  Invoke-Icacls $readOnly /deny "${UserName}:(WD,AD,DC)"
+  Invoke-Icacls (Join-Path $readOnly 'inner.txt') /deny "${UserName}:(DE)"
+}
+
+# Fresh fixtures with their grant and denies, for one site's directory.
+function Set-SiteFixtures([string]$Path, [int]$BigMb) {
+  New-Fixtures $Path $BigMb
+  Invoke-Icacls $Path /grant "${UserName}:(OI)(CI)M"
+  Set-FixtureDenies $Path
+}
+
+function Get-BigMb {
+  if ($env:FTPEACH_MATRIX_BIG_MB) { [int]$env:FTPEACH_MATRIX_BIG_MB } else { 64 }
+}
+
+function Reset-Fixtures {
+  Assert-Administrator
+  foreach ($site in $Sites) {
+    $path = Join-Path $Root $site.Name
+    if (-not (Test-Path -LiteralPath $path)) { throw "$path is missing; run install first" }
+    Set-SiteFixtures $path (Get-BigMb)
+  }
+  Write-Host 'IIS test fixtures written afresh.'
 }
 
 # Removes a site with the <location> configuration it left in
@@ -264,7 +301,7 @@ function Install-Servers {
     [Convert]::ToBase64String($cert.RawData, 'InsertLineBreaks').Replace("`r`n", "`n") +
     "`n-----END CERTIFICATE-----`n"
   [IO.File]::WriteAllText($CertPem, $pem, [Text.Encoding]::ASCII)
-  $bigMb = if ($env:FTPEACH_MATRIX_BIG_MB) { [int]$env:FTPEACH_MATRIX_BIG_MB } else { 64 }
+  $bigMb = Get-BigMb
 
   Set-WebConfigurationProperty -PSPath 'IIS:\' -Filter 'system.ftpServer/firewallSupport' `
     -Name 'lowDataChannelPort' -Value $PassiveLow
@@ -274,9 +311,7 @@ function Install-Servers {
   foreach ($site in $Sites) {
     $path = Join-Path $Root $site.Name
     Remove-TestSite $site.Name
-    New-Fixtures $path $bigMb
-    icacls $path /grant "${UserName}:(OI)(CI)M" /Q | Out-Null
-    Set-FixtureDenies $path
+    Set-SiteFixtures $path $bigMb
 
     if ($site.Kind -eq 'ftp') {
       New-WebFtpSite -Name $site.Name -IPAddress '127.0.0.1' -Port $site.Port -PhysicalPath $path | Out-Null
@@ -375,4 +410,5 @@ switch ($Action) {
   'install' { Install-Servers }
   'uninstall' { Uninstall-Servers }
   'status' { Get-Status }
+  'fixtures' { Reset-Fixtures }
 }

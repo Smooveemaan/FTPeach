@@ -28,8 +28,9 @@ their count, and [the verification matrix](verification-matrix.md) says what eac
 ## Floors
 
 `scripts/coverage/coverage-floors.json` gives the modules behind the P0/P1 guarantees a floor on
-line coverage, per runner. The command fails when such a file drops below its floor or disappears
-from its report, so a rename has to move its floor too. Floors sit two points below the baseline
+line coverage, per runner. The command fails when such a file drops below its floor, disappears
+from its report or is in it with no measured lines (the unit report lists modules the Node suite
+never loaded with zero lines, which must not pass as 100%), so a rename has to move its floor too. Floors sit two points below the baseline
 below: slack for a harmless refactor, not for a lost test. There is deliberately no floor for the
 whole project and no 100% target.
 

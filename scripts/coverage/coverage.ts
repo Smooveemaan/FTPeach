@@ -50,7 +50,11 @@ export function parseLcov(text: string): Report {
       current = empty();
       report.set(normalize(value), current);
     } else if (current && ['LF', 'LH', 'BRF', 'BRH', 'FNF', 'FNH'].includes(key ?? '')) {
-      const metric = key!.startsWith('L') ? 'lines' : key!.startsWith('B') ? 'branches' : 'functions';
+      const metric = key!.startsWith('L')
+        ? 'lines'
+        : key!.startsWith('B')
+          ? 'branches'
+          : 'functions';
       current[metric][key!.endsWith('F') ? 'found' : 'hit'] += Number(value);
     }
   }
@@ -67,7 +71,10 @@ export function parseIstanbulSummary(summary: IstanbulSummary): Report {
   const report: Report = new Map();
   for (const [file, metrics] of Object.entries(summary)) {
     if (file === 'total') continue;
-    const counts = (metric: IstanbulMetric): Counts => ({ found: metric.total, hit: metric.covered });
+    const counts = (metric: IstanbulMetric): Counts => ({
+      found: metric.total,
+      hit: metric.covered,
+    });
     report.set(normalize(file), {
       lines: counts(metrics.lines),
       branches: counts(metrics.branches),
@@ -88,18 +95,31 @@ function total(report: Report): FileCoverage {
   return sum;
 }
 
-export const percent = ({ found, hit }: Counts): number => (found === 0 ? 100 : (hit / found) * 100);
+export const percent = ({ found, hit }: Counts): number =>
+  found === 0 ? 100 : (hit / found) * 100;
 const shown = (counts: Counts) =>
-  counts.found === 0 ? 'not measured' : `${percent(counts).toFixed(2)}% (${counts.hit}/${counts.found})`;
+  counts.found === 0
+    ? 'not measured'
+    : `${percent(counts).toFixed(2)}% (${counts.hit}/${counts.found})`;
 
-/** Floor failures: a listed file missing from its report, or below its line floor. */
+/**
+ * Floor failures: a listed file missing from its report, with no measured lines, or below its
+ * line floor. No measured lines is a failure, not 100%: the unit report lists every production
+ * file the Node suite never loaded with zero lines, and a floored module that stops being
+ * loaded must not pass as fully covered.
+ */
 export function checkFloors(report: Report, floors: Record<string, number>): string[] {
   const problems: string[] = [];
   for (const [file, floor] of Object.entries(floors)) {
     const coverage = report.get(file);
-    if (!coverage) problems.push(`${file}: not in the report (renamed, deleted or no longer loaded?)`);
+    if (!coverage)
+      problems.push(`${file}: not in the report (renamed, deleted or no longer loaded?)`);
+    else if (coverage.lines.found === 0)
+      problems.push(`${file}: no measured lines (no longer loaded by this suite?)`);
     else if (percent(coverage.lines) < floor)
-      problems.push(`${file}: lines ${percent(coverage.lines).toFixed(2)}% below its floor of ${floor}%`);
+      problems.push(
+        `${file}: lines ${percent(coverage.lines).toFixed(2)}% below its floor of ${floor}%`,
+      );
   }
   return problems;
 }
@@ -150,13 +170,17 @@ function main(): void {
 
   if (rust) {
     const lcov = path.join(out, 'rust', 'lcov.info');
-    if (!fs.existsSync(lcov)) throw new Error(`${lcov} is missing; run npm run rust:coverage first`);
+    if (!fs.existsSync(lcov))
+      throw new Error(`${lcov} is missing; run npm run rust:coverage first`);
     const report = parseLcov(fs.readFileSync(lcov, 'utf8'));
     // Test files are not production code; inline `#[cfg(test)]` modules still count.
     for (const file of report.keys())
-      if (!file.startsWith('src-tauri/src/') || /(^|\/)(tests|\w+_tests)\.rs$/.test(file)) report.delete(file);
+      if (!file.startsWith('src-tauri/src/') || /(^|\/)(tests|\w+_tests)\.rs$/.test(file))
+        report.delete(file);
     const ignored = ['src-tauri/src', 'src-tauri/tests']
-      .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, withFileTypes: true }))
+      .flatMap((dir) =>
+        fs.readdirSync(path.join(root, dir), { recursive: true, withFileTypes: true }),
+      )
       .filter((entry) => entry.isFile() && entry.name.endsWith('.rs'))
       .flatMap((entry) => {
         const file = path.join(entry.parentPath, entry.name);
@@ -212,7 +236,9 @@ function main(): void {
     const results: { numPendingTests: number; numTodoTests: number } = JSON.parse(
       fs.readFileSync(path.join(out, 'component', 'results.json'), 'utf8'),
     );
-    const untouched = [...component.values()].filter((file) => file.lines.found > 0 && file.lines.hit === 0);
+    const untouched = [...component.values()].filter(
+      (file) => file.lines.found > 0 && file.lines.hit === 0,
+    );
     sections.push(
       section('component', component, [
         `Every production file counts, loaded or not: ${untouched.length} files have no line run by any component test.`,
@@ -226,9 +252,12 @@ function main(): void {
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, rust ? 'rust-summary.md' : 'summary.md'), summary);
   console.log(`\n${summary}`);
-  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
   if (problems.length > 0) {
-    console.error(`Coverage floors failed:\n${problems.map((problem) => `- ${problem}`).join('\n')}`);
+    console.error(
+      `Coverage floors failed:\n${problems.map((problem) => `- ${problem}`).join('\n')}`,
+    );
     process.exit(1);
   }
   console.log('Every floored file is at or above its floor.');

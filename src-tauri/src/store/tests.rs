@@ -75,7 +75,10 @@ async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {
         .await
         .unwrap();
     let site: JsonMap = serde_json::from_value(json!({"id":"site", "name":"Site", "protocol":"ftp", "host":"example.test", "password":"site-secret"})).unwrap();
-    store.save_site_with_vault(site, &vault).await.unwrap();
+    store
+        .save_site_with_vault(site, None, &vault)
+        .await
+        .unwrap();
     let settings_before = std::fs::read_to_string(root.join("settings.json")).unwrap();
     let sites_before = std::fs::read(root.join("sites.json")).unwrap();
 
@@ -131,7 +134,7 @@ async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {
     vault.setup("correct horse battery staple").await.unwrap();
     let mut site: JsonMap = serde_json::from_value(json!({"id":"site", "name":"Site", "protocol":"ftp", "host":"example.test", "password":"original"})).unwrap();
     store
-        .save_site_with_vault(site.clone(), &vault)
+        .save_site_with_vault(site.clone(), None, &vault)
         .await
         .unwrap();
     let original = std::fs::read(root.join("sites.json")).unwrap();
@@ -140,34 +143,33 @@ async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {
         .share_mode(1)
         .open(root.join("sites.json"))
         .unwrap();
+    let unchanged = async || {
+        assert_eq!(
+            vault
+                .get_secret("site", "password")
+                .await
+                .unwrap()
+                .unwrap()
+                .as_slice(),
+            b"original"
+        );
+        assert_eq!(std::fs::read(root.join("sites.json")).unwrap(), original);
+    };
     site.insert("password".into(), json!("replacement"));
-    assert!(store.save_site_with_vault(site, &vault).await.is_err());
-    assert_eq!(
-        vault
-            .get_secret("site", "password")
+    assert!(
+        store
+            .save_site_with_vault(site, None, &vault)
             .await
-            .unwrap()
-            .unwrap()
-            .as_slice(),
-        b"original"
+            .is_err()
     );
-    assert_eq!(std::fs::read(root.join("sites.json")).unwrap(), original);
+    unchanged().await;
     assert!(
         store
             .delete_site_with_vault("site".into(), &vault)
             .await
             .is_err()
     );
-    assert_eq!(
-        vault
-            .get_secret("site", "password")
-            .await
-            .unwrap()
-            .unwrap()
-            .as_slice(),
-        b"original"
-    );
-    assert_eq!(std::fs::read(root.join("sites.json")).unwrap(), original);
+    unchanged().await;
     drop(deny_replace);
     vault.lock().await;
     vault.unlock("correct horse battery staple").await.unwrap();
@@ -855,7 +857,7 @@ async fn explicit_remove_password_deletes_only_the_saved_secret() {
     update.insert("removePassword".into(), Value::Bool(true));
 
     store
-        .save_site_with_protector(update, |_| unreachable!())
+        .save_site_with_protector(update, None, |_| unreachable!())
         .await
         .unwrap();
 
@@ -885,7 +887,7 @@ async fn dpapi_failure_does_not_write_the_secret_to_disk() {
     site.insert("password".into(), Value::String(secret.into()));
 
     let result = store
-        .save_site_with_protector(site, |_| Err(anyhow::anyhow!("DPAPI unavailable")))
+        .save_site_with_protector(site, None, |_| Err(anyhow::anyhow!("DPAPI unavailable")))
         .await
         .unwrap();
     let raw = tokio::fs::read_to_string(dir.join("sites.json"))
@@ -1062,7 +1064,7 @@ async fn electron_era_ciphertext_is_flagged_and_replaced_by_a_new_secret() {
     replacement.insert("host".into(), Value::String("example.test".into()));
     replacement.insert("password".into(), Value::String("replacement".into()));
     store
-        .save_site_with_protector(replacement, |bytes| {
+        .save_site_with_protector(replacement, None, |bytes| {
             let mut protected = b"dpapi:".to_vec();
             protected.extend_from_slice(bytes);
             Ok(protected)
@@ -1147,7 +1149,7 @@ async fn a_secret_that_cannot_be_encrypted_is_not_reported_as_saved() {
     let mut replacement = site;
     replacement.insert("password".into(), json!("site-second"));
     let outcome = store
-        .save_site_with_protector(replacement, refuse)
+        .save_site_with_protector(replacement, None, refuse)
         .await
         .unwrap();
     assert!(outcome.secret_not_persisted);
@@ -1361,7 +1363,10 @@ async fn stronghold_migration_and_new_writes_fail_closed() {
         "password".into(),
         Value::String("new-vault-password".into()),
     );
-    store.save_site_with_vault(site, &vault).await.unwrap();
+    store
+        .save_site_with_vault(site, None, &vault)
+        .await
+        .unwrap();
     let raw = tokio::fs::read_to_string(dir.join("sites.json"))
         .await
         .unwrap();
@@ -1569,4 +1574,220 @@ async fn rereading_a_corrupt_store_keeps_one_copy_and_a_bounded_history() {
     }
     assert_eq!(copies(), 5);
     let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+/// A saved password reaches a new server only through the move the user
+/// confirmed (HF-39), checked against the bookmark as the save writes it.
+mod saved_password_recipient {
+    use super::*;
+    use crate::security::credential_scope::{SecretTransfer, site_save_transfer};
+    use crate::store::sites::SaveSiteOutcome;
+
+    const OLD_SECRET: &str = "recipient-test-old-secret";
+
+    fn map(value: Value) -> JsonMap {
+        serde_json::from_value(value).unwrap()
+    }
+
+    fn original() -> JsonMap {
+        map(
+            json!({"id":"s", "name":"S", "protocol":"ftp", "host":"a.example", "user":"u", "password": OLD_SECRET}),
+        )
+    }
+
+    /// The bookmark moved to `b.example`, keeping its saved password.
+    fn to_new_host() -> JsonMap {
+        let mut edited = original();
+        edited.remove("password");
+        edited.insert("host".into(), json!("b.example"));
+        edited
+    }
+
+    async fn recipient(store: &Store, vault: Option<&Vault>) -> (String, String) {
+        let config = match vault {
+            Some(vault) => {
+                store
+                    .connection_config_for_site_with_vault("s", vault)
+                    .await
+            }
+            None => store.connection_config_for_site("s").await,
+        }
+        .unwrap();
+        let text = |key: &str| config[key].as_str().unwrap_or("").to_owned();
+        (text("host"), text("password"))
+    }
+
+    fn unchanged() -> (String, String) {
+        ("a.example".into(), OLD_SECRET.into())
+    }
+
+    /// The transfer `sites_save` binds its grant to for this payload.
+    async fn transfer_for(store: &Store, payload: &JsonMap) -> Option<SecretTransfer> {
+        site_save_transfer(store.saved_site_credentials("s").await.as_ref(), payload)
+    }
+
+    async fn save(
+        store: &Store,
+        vault: Option<&Vault>,
+        payload: JsonMap,
+        confirmed: Option<&SecretTransfer>,
+    ) -> Result<SaveSiteOutcome> {
+        match vault {
+            Some(vault) => store.save_site_with_vault(payload, confirmed, vault).await,
+            None => {
+                store
+                    .save_site_with_protector(payload, confirmed, Store::protect_secret)
+                    .await
+            }
+        }
+    }
+
+    async fn check_every_route(store: &Store, vault: Option<&Vault>) {
+        save(store, vault, original(), None).await.unwrap();
+
+        // `password: true` names a new password in an authorization request
+        // only; a folder is not a server. Neither reaches the store as a
+        // replaced password or as a bookmark without a recipient.
+        for bypass in [
+            json!({"password": true}),
+            json!({"password": 1}),
+            json!({"kind": "folder"}),
+            json!({"kind": "server"}),
+            json!({"removePassword": "yes"}),
+        ] {
+            let mut payload = to_new_host();
+            payload.extend(map(bypass.clone()));
+            let transfer = transfer_for(store, &payload).await;
+            assert!(
+                save(store, vault, payload, transfer.as_ref())
+                    .await
+                    .is_err(),
+                "{bypass}"
+            );
+            assert_eq!(recipient(store, vault).await, unchanged(), "{bypass}");
+        }
+
+        // A move nobody confirmed is refused, whatever the caller skipped.
+        let error = save(store, vault, to_new_host(), None)
+            .await
+            .err()
+            .expect("an unconfirmed move must be refused");
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::PermissionDenied
+        );
+        assert_eq!(recipient(store, vault).await, unchanged());
+
+        // Display labels do not include the CA or every TLS setting. Both
+        // the grant and the transaction must bind the full destination scope.
+        let mut approved = to_new_host();
+        approved.insert("caCertPath".into(), json!("C:\\approved-ca.pem"));
+        let confirmed = transfer_for(store, &approved).await;
+        let granted =
+            crate::security::credential_scope::site_save_target(&approved, confirmed.as_ref());
+        for (key, value) in [
+            ("caCertPath", json!("C:\\different-ca.pem")),
+            ("secure", json!(true)),
+            ("allowInvalidCert", json!(true)),
+            ("allowCleartextAuth", json!(true)),
+        ] {
+            let mut changed = approved.clone();
+            changed.insert(key.into(), value);
+            let actual = transfer_for(store, &changed).await;
+            assert_ne!(
+                granted,
+                crate::security::credential_scope::site_save_target(&changed, actual.as_ref()),
+                "{key} must be part of the grant"
+            );
+            assert!(
+                save(store, vault, changed, confirmed.as_ref())
+                    .await
+                    .is_err(),
+                "{key}"
+            );
+            assert_eq!(recipient(store, vault).await, unchanged());
+        }
+
+        // A move confirmed for a bookmark that changed since is refused too.
+        let stale = transfer_for(store, &to_new_host()).await;
+        assert!(stale.is_some());
+        let mut elsewhere = original();
+        elsewhere.remove("password");
+        elsewhere.insert("port".into(), json!(2121));
+        let port_move = transfer_for(store, &elsewhere).await;
+        save(store, vault, elsewhere, port_move.as_ref())
+            .await
+            .unwrap();
+        assert!(
+            save(store, vault, to_new_host(), stale.as_ref())
+                .await
+                .is_err()
+        );
+        assert_eq!(
+            recipient(store, vault).await,
+            unchanged(),
+            "the confirmed port move keeps host and password"
+        );
+
+        // The move the user confirmed goes through.
+        let confirmed = transfer_for(store, &to_new_host()).await;
+        save(store, vault, to_new_host(), confirmed.as_ref())
+            .await
+            .unwrap();
+        assert_eq!(
+            recipient(store, vault).await,
+            ("b.example".into(), OLD_SECRET.into())
+        );
+    }
+
+    #[tokio::test]
+    async fn with_system_protection() {
+        let root = std::env::temp_dir().join(format!("ftpeach-recipient-{}", uuid::Uuid::new_v4()));
+        let store = Store::new_at(root.clone());
+        check_every_route(&store, None).await;
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[tokio::test]
+    async fn with_the_vault() {
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-recipient-vault-{}", uuid::Uuid::new_v4()));
+        let store = Store::new_at(root.clone());
+        let vault = Vault::new(root.clone());
+        vault.setup("correct horse battery staple").await.unwrap();
+        check_every_route(&store, Some(&vault)).await;
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    /// HF-09 with HF-39: a new password that cannot be protected is not
+    /// saved, so the old one would go to the new server. The whole save is
+    /// refused and the bookmark stays as it was.
+    #[tokio::test]
+    async fn a_new_server_whose_new_password_cannot_be_protected_is_not_saved() {
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-recipient-failed-{}", uuid::Uuid::new_v4()));
+        let store = Store::new_at(root.clone());
+        store.save_site(original()).await.unwrap();
+        let before = std::fs::read(root.join("sites.json")).unwrap();
+        let mut payload = to_new_host();
+        payload.insert("password".into(), json!("recipient-test-new-secret"));
+        // Replacing the password needs no confirmation, so none was given.
+        let transfer = transfer_for(&store, &payload).await;
+        assert_eq!(transfer, None);
+
+        let error = store
+            .save_site_with_protector(payload, None, |_| anyhow::bail!("injected DPAPI failure"))
+            .await
+            .err()
+            .expect("the save must be refused");
+
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::Internal
+        );
+        assert_eq!(std::fs::read(root.join("sites.json")).unwrap(), before);
+        assert_eq!(recipient(&store, None).await, unchanged());
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

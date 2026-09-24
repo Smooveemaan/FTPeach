@@ -106,8 +106,7 @@ impl Store {
         let mut site = sites
             .into_iter()
             .find(|site| site.get("id").and_then(Value::as_str) == Some(id))?;
-        let has_password = site.get("hasPassword").and_then(Value::as_bool) == Some(true)
-            || Self::has_saved_secret(&site, "enc", "plain");
+        let has_password = has_saved_password(&site);
         for key in ["enc", "plain", "keyEnc", "keyPlain"] {
             site.remove(key);
         }
@@ -350,16 +349,22 @@ impl Store {
         Ok(config)
     }
 
+    /// `confirmed` is the password move the user approved for this save, as
+    /// in [`Store::save_site_with_protector`].
     pub async fn save_site_with_vault(
         &self,
         input: JsonMap,
+        confirmed: Option<&SecretTransfer>,
         vault: &Vault,
     ) -> Result<SaveSiteOutcome> {
         let store = self.clone();
         let vault = vault.clone();
+        let confirmed = confirmed.cloned();
         tokio::spawn(async move {
             let _transaction = store.vault_updates.lock().await;
-            store.save_site_with_vault_inner(input, &vault).await
+            store
+                .save_site_with_vault_inner(input, confirmed.as_ref(), &vault)
+                .await
         })
         .await
         .context("site save task failed")?
@@ -368,10 +373,13 @@ impl Store {
     async fn save_site_with_vault_inner(
         &self,
         mut input: JsonMap,
+        confirmed: Option<&SecretTransfer>,
         vault: &Vault,
     ) -> Result<SaveSiteOutcome> {
         if !vault.is_configured() {
-            return self.save_site(input).await;
+            return self
+                .save_site_with_protector(input, confirmed, Self::protect_secret)
+                .await;
         }
         if !vault.is_unlocked().await {
             anyhow::bail!("vault is locked");
@@ -391,12 +399,17 @@ impl Store {
         let existing = sites
             .iter()
             .find(|site| site.get("id").and_then(Value::as_str) == Some(&id));
-        let mut has_password = existing.is_some_and(|site| {
-            site.get("hasPassword")
-                .and_then(Value::as_bool)
-                .unwrap_or(false)
-                || Self::has_saved_secret(site, "enc", "plain")
-        });
+        // Every bookmark save waits for `vault_updates`, so the bookmark read
+        // here is the one the save replaces. The move is checked before the
+        // vault changes; a vault write that fails fails the save.
+        ensure_confirmed_move(
+            existing,
+            &input,
+            crate::security::credential_scope::replaces_site_password(&input),
+            confirmed,
+            false,
+        )?;
+        let mut has_password = existing.is_some_and(has_saved_password);
         let mut has_key_passphrase = existing.is_some_and(|site| {
             site.get("hasKeyPassphrase")
                 .and_then(Value::as_bool)

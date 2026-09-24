@@ -28,7 +28,7 @@ that. Images and seeded volumes take a few GB of disk.
 what the server is for. `servers:up` and `servers:status` print it.
 
 IIS FTP and IIS WebDAV run on the Windows host, not in Docker:
-`scripts/test-servers/iis.ps1 install|uninstall|status` (elevated; it changes
+`scripts/test-servers/iis.ps1 install|uninstall|status|fixtures` (elevated; it changes
 the machine). It works on Windows 11 Home, and relaunches itself in Windows
 PowerShell 5.1 because the DISM and WebAdministration modules fail under
 PowerShell 7. `install` enables the IIS features that were off, creates the
@@ -36,7 +36,10 @@ local user, a self-signed certificate, fixtures under
 `C:\ftpeach-test-servers\iis` and the three sites, and stops IIS's Default Web
 Site when it brought IIS in; `uninstall` reverts all of it. The sites are in
 the catalog as the `iis` profile; `servers:status` lists them when their ports
-answer.
+answer. `fixtures` writes the fixtures and their NTFS permissions afresh without
+touching features, user, certificate or sites: run it after a test changed or
+deleted a fixture (a failed permissions check can delete
+`perms/read-only-dir/inner.txt`), or to apply changed fixture permissions.
 
 ## Ports
 

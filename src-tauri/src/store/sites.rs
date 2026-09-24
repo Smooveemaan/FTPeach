@@ -5,6 +5,7 @@
 use super::{JsonMap, Store};
 use crate::domain::{Protocol, SiteLayoutEntry};
 use crate::ipc::{CommandError, ErrorCode};
+use crate::security::credential_scope::{SecretTransfer, site_transfer};
 use crate::security::vault::{SecretUpdate, Vault};
 use anyhow::{Context, Result};
 use base64::Engine;
@@ -38,6 +39,32 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
         .unwrap_or("")
         .trim();
     validate_name(name, "Site name is required", "Site name is too long")?;
+
+    // The TypeScript types are not a boundary: a folder saved as a site, or
+    // a password that is not a string, would otherwise be read as something
+    // the confirmation of a password move did not describe.
+    if !crate::security::credential_scope::is_site_kind(input) {
+        anyhow::bail!(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Unsupported bookmark kind",
+        ));
+    }
+    for (key, valid) in [
+        ("password", Value::is_string as fn(&Value) -> bool),
+        ("keyPassphrase", Value::is_string),
+        ("removePassword", Value::is_boolean),
+        ("removeKeyPassphrase", Value::is_boolean),
+    ] {
+        if input
+            .get(key)
+            .is_some_and(|value| !value.is_null() && !valid(value))
+        {
+            anyhow::bail!(CommandError::new(
+                ErrorCode::InvalidInput,
+                format!("Invalid {key}"),
+            ));
+        }
+    }
 
     if input.get("kind").and_then(Value::as_str) == Some("local") {
         let local_path = input
@@ -172,6 +199,43 @@ fn parse_parent_id(value: Option<&Value>) -> Result<Option<String>> {
             "parentId must be a string or null",
         )),
     }
+}
+
+/// Whether a stored bookmark has a saved password, in DPAPI, legacy
+/// plaintext or the vault.
+fn has_saved_password(site: &JsonMap) -> bool {
+    site.get("hasPassword").and_then(Value::as_bool) == Some(true)
+        || Store::has_saved_secret(site, "enc", "plain")
+}
+
+/// Refuses a save that would leave the saved password with a recipient
+/// other than the one the caller confirmed (`None`: no move confirmed).
+/// Runs under the lock that serializes bookmark writes, so it judges the
+/// bookmark as it is when the save lands, and `password_replaced` is what
+/// the save really does: a new password that could not be protected is not
+/// saved, so the old one would stay.
+fn ensure_confirmed_move(
+    stored: Option<&JsonMap>,
+    input: &JsonMap,
+    password_replaced: bool,
+    confirmed: Option<&SecretTransfer>,
+    new_password_failed: bool,
+) -> Result<()> {
+    let stored = stored.map(|site| (site.clone(), has_saved_password(site)));
+    let moved = site_transfer(stored.as_ref(), input, password_replaced);
+    if moved.as_ref() == confirmed {
+        return Ok(());
+    }
+    if new_password_failed {
+        anyhow::bail!(CommandError::new(
+            ErrorCode::Internal,
+            "The new password could not be protected; the bookmark was not changed",
+        ));
+    }
+    anyhow::bail!(CommandError::new(
+        ErrorCode::PermissionDenied,
+        "The saved password would go to a server that was not confirmed",
+    ))
 }
 
 /// Whether `entry` belongs in `local_paths_file()` rather than `sites_file()`.

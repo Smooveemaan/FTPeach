@@ -109,7 +109,10 @@ Beside it, `copies.json` records each copy's server path and the modification ti
 of the version the server holds; it contains no passwords. On exit, and at the next start
 after a crash, a copy that differs from that version is moved to
 `%LOCALAPPDATA%\com.smooveemaan.ftpeach\recovered-edits`, one folder per file with an
-`edit.json` naming its server path. Unchanged copies are deleted. FTPeach lists the recovered
+`edit.json` naming its server path and a `file` folder holding the copy, so a file named
+`edit.json` cannot replace its own description. Folders from earlier versions, with the copy beside
+`edit.json`, are still listed; so is a folder whose description is missing or unreadable, under
+the name of the file it holds. If no described payload exists, a lone edit.json stays visible even when its contents parse as a description: it may be an edited file left by the old name collision. Unchanged copies are deleted. FTPeach lists the recovered
 files at start and deletes them only when the user chooses to. New Open with requests are
 refused when editor sessions and recovery copies total 1 GiB, or contain a file last modified
 30 days ago. Save or explicitly discard the retained work before opening more files. Limits

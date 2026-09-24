@@ -664,7 +664,11 @@ pub async fn s12_permissions(target: Target) {
         let _ = backend.rename(&moved, &inner).await;
     }
     match backend.remove(&inner, false).await {
-        Ok(()) => failures.push("delete in read-only-dir succeeded".to_string()),
+        // The fixture is lost for later runs until it is seeded again:
+        // `npm run servers:down`/`up` for Docker, `iis.ps1 fixtures` for IIS.
+        Ok(()) => {
+            failures.push("delete in read-only-dir succeeded; seed the fixtures again".to_string())
+        }
         Err(error) if code(&error) == ErrorCode::PermissionDenied => {}
         Err(error) => failures.push(format!("delete read-only [{:?}]: {error:#}", code(&error))),
     }

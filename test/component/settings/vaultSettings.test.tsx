@@ -198,6 +198,12 @@ test('protection changes refresh status and cancelled resets preserve the setup 
   });
   expect(vault.lock).toHaveBeenCalledOnce();
   expect(vault.useSystemProtection).toHaveBeenCalledOnce();
+  // Leaving enhanced protection in the session that set it up selects system protection.
+  act(() => result.current.setStrongholdSetupArmed(true));
+  await act(async () => {
+    await result.current.selectSystemProtection();
+  });
+  expect(result.current.strongholdSetupArmed).toBe(false);
   vault.status.mockResolvedValue({ ...unlocked, systemUnlockEnabled: true });
   await act(async () => {
     await result.current.toggleSystemUnlock();

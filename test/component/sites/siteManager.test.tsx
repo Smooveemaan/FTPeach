@@ -398,6 +398,27 @@ describe('Site Manager workflows', () => {
     expect(password().value).toBe('typed-by-hand');
   });
 
+  test('the confirmation window taking focus does not drop the reveal it asked for', async () => {
+    const user = userEvent.setup();
+    let answer: (_value: { ok: true; value: string }) => void = () => {};
+    vi.mocked(window.api.sites.revealSecret).mockImplementation(
+      () => new Promise((resolve) => (answer = resolve)),
+    );
+    renderManager();
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    window.dispatchEvent(new Event('blur'));
+    act(() => answer({ ok: true, value: 'revealed' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password').value).toBe(
+        'revealed',
+      ),
+    );
+  });
+
   test('requests vault unlock and retries saving a bookmark', async () => {
     const user = userEvent.setup();
     const onSave = vi

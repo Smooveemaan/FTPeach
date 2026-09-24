@@ -334,6 +334,27 @@ async fn vault_reset_and_removal_forget_the_proxy_password() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[tokio::test]
+async fn a_removed_vault_migration_marker_does_not_come_back_from_its_backup() {
+    let root = std::env::temp_dir().join(format!("ftpeach-marker-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let marker = root.join("vault-migration.json");
+    let backup = root.join("vault-migration.last-good.bak");
+    let body = r#"{"schemaVersion":1,"data":{"version":1,"status":"complete"}}"#;
+    std::fs::write(&marker, body).unwrap();
+    std::fs::write(&backup, body).unwrap();
+    let store = Store::new_at(root.clone());
+    store.clear_vault_secret_flags().await.unwrap();
+    assert!(!marker.exists() && !backup.exists());
+
+    // A backup an earlier version left behind is dropped at startup.
+    std::fs::write(&backup, body).unwrap();
+    store.scrub_secret_backups().await;
+    assert!(!backup.exists());
+    assert!(store.storage_warnings().is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[cfg(windows)]
 #[tokio::test]
 async fn settings_commit_failure_restores_the_vault_proxy_password() {

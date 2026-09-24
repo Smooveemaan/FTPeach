@@ -181,7 +181,12 @@ export function useVaultSettings(): VaultSettingsModel {
 
   const lockVault = () => runVaultAction(() => api.vault.lock());
 
-  const selectSystemProtection = () => runVaultAction(() => api.vault.useSystemProtection());
+  const selectSystemProtection = async () => {
+    const succeeded = await runVaultAction(() => api.vault.useSystemProtection());
+    // Still armed from setting the vault up, it would keep the enhanced option selected.
+    if (succeeded) setStrongholdSetupArmed(false);
+    return succeeded;
+  };
 
   const toggleSystemUnlock = () =>
     runVaultAction(() =>

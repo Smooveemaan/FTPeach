@@ -52,6 +52,9 @@ export function useSiteSecrets({
   // generation on, and a later answer is dropped instead of filling an input
   // it no longer belongs to.
   const generationRef = useRef(0);
+  // The backend asks before revealing in a window of its own, which takes focus
+  // from this one. That blur is the reveal's own doing and must not drop it.
+  const revealingRef = useRef(0);
 
   const resetSecrets = useCallback(() => {
     generationRef.current += 1;
@@ -73,12 +76,15 @@ export function useSiteSecrets({
     const clearWhenHidden = () => {
       if (document.hidden) resetSecrets();
     };
-    window.addEventListener('blur', resetSecrets);
+    const clearOnBlur = () => {
+      if (!revealingRef.current) resetSecrets();
+    };
+    window.addEventListener('blur', clearOnBlur);
     window.addEventListener('ftpeach:vault-locked', resetSecrets);
     document.addEventListener('visibilitychange', clearWhenHidden);
     return () => {
       resetSecrets();
-      window.removeEventListener('blur', resetSecrets);
+      window.removeEventListener('blur', clearOnBlur);
       window.removeEventListener('ftpeach:vault-locked', resetSecrets);
       document.removeEventListener('visibilitychange', clearWhenHidden);
     };
@@ -107,8 +113,11 @@ export function useSiteSecrets({
       // The user typed a password of their own while the answer was on its way.
       const superseded = () =>
         generationRef.current !== generation || (input()?.value ?? '') !== asked;
+      revealingRef.current += 1;
       try {
-        const result = await api.sites.revealSecret(editingId, field);
+        const result = await api.sites.revealSecret(editingId, field).finally(() => {
+          revealingRef.current -= 1;
+        });
         if (superseded()) return false;
         if (!result.ok) {
           if (result.errorCode !== 'cancelled') {

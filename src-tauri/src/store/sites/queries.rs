@@ -652,11 +652,16 @@ impl Store {
             site.remove("hasKeyPassphrase");
         }
         self.write_json(&path, &sites).await?;
-        match tokio::fs::remove_file(self.vault_migration_file()).await {
-            Ok(()) => Ok(()),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(error).context("removing vault migration marker"),
+        // The backup goes too: left alone, it would be read back as the marker.
+        let marker = self.vault_migration_file();
+        for file in [marker.with_extension("last-good.bak"), marker] {
+            match tokio::fs::remove_file(file).await {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error).context("removing vault migration marker"),
+            }
         }
+        Ok(())
     }
     /// Moves every secret out of the unlocked vault into DPAPI and removes
     /// the vault, serialized with the other vault updates. Until the vault

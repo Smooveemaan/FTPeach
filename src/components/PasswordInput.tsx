@@ -47,7 +47,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function 
           type="button"
           className="password-visibility-toggle"
           aria-label={label}
-          title={label}
+          data-tooltip={label}
           aria-pressed={visible}
           disabled={props.disabled}
           onClick={handler(async () => {
@@ -66,7 +66,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function 
           className="password-protected-indicator"
           role="img"
           aria-label={t('common.savedSecretProtected')}
-          title={t('common.savedSecretProtected')}
+          data-tooltip={t('common.savedSecretProtected')}
         >
           <Icon name="lock" size={14} />
         </span>

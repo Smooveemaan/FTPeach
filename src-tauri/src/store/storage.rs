@@ -241,7 +241,14 @@ impl Store {
             }
         }
 
-        let migration: Value = tokio::fs::read_to_string(self.dir.join("vault-migration.json"))
+        // Earlier versions removed the migration marker but not its backup,
+        // which then came back as a "recovered" marker on every read.
+        let marker = self.dir.join("vault-migration.json");
+        if !tokio::fs::try_exists(&marker).await.unwrap_or(true) {
+            let _ = tokio::fs::remove_file(marker.with_extension("last-good.bak")).await;
+        }
+
+        let migration: Value = tokio::fs::read_to_string(&marker)
             .await
             .ok()
             .and_then(|raw| serde_json::from_str(&raw).ok())

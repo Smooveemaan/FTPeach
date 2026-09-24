@@ -47,6 +47,9 @@ export function useAppCommands(
     () =>
       shortcutsApi.onKeyDown((event) => {
         if (event.defaultPrevented || isTextEditingShortcut(event)) return;
+        // This listener captures, so it runs before a recorder can claim the keys.
+        if (event.target instanceof Element && event.target.closest('.shortcut-recorder.recording'))
+          return;
         const action = resolveGlobalAction(event, keyboardShortcutsRef.current);
         if (!action) return;
         const handled = dispatchAppCommand(action, commandsRef.current);

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Dragging files to another disk now copies them, as in Windows Explorer. Hold Shift to move
+  them instead.
 - New file now works over FTP and FTPS without replacing or truncating existing file contents.
 - Files can be moved only on your computer or within one server connection. Between your
   computer and a server, or between two servers, copy them instead.

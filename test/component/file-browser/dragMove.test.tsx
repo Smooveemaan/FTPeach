@@ -57,6 +57,20 @@ test('default actions, modifiers and unsupported moves are consistent', () => {
   );
 });
 
+test('with no modifier a drop onto another disk copies, like Explorer', () => {
+  const other = { ...target, path: 'D:\\data' };
+  expect(resolveDropAction(source, other, null, ['folder'], keys)).toBe('copy');
+  expect(resolveDropAction(source, other, null, ['folder'], { ...keys, shiftKey: true })).toBe(
+    'move',
+  );
+  expect(resolveDropAction(source, target, 'D:\\data', ['folder'], keys)).toBe('copy');
+  const share = { ...source, path: '\\\\nas\\one\\work' };
+  const sameShare = { ...target, path: '\\\\nas\\one\\x' };
+  const otherShare = { ...target, path: '\\\\nas\\two' };
+  expect(resolveDropAction(share, sameShare, null, ['folder'], keys)).toBe('move');
+  expect(resolveDropAction(share, otherShare, null, ['folder'], keys)).toBe('copy');
+});
+
 test('same directory, self and descendants are rejected across panes and breadcrumbs', () => {
   for (const path of ['c:\\WORK', 'C:\\work\\folder', 'C:\\work\\folder\\child']) {
     expect(resolveDropAction(source, target, path, ['folder'], keys)).toBe('invalid');

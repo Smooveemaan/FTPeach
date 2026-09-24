@@ -40,6 +40,11 @@ export function resolveDropAction(
         return 'invalid';
     }
   }
-  const move = keys.shiftKey || (!keys.ctrlKey && same);
+  // Like Explorer: with no modifier, a drop onto another disk copies. Shift still moves there.
+  // ponytail: drive letter or UNC share only; mount points, subst and junctions count as their host volume
+  const volume = (path: string) => /^([a-z]:|\/\/[^/]+\/[^/]+)/.exec(path)?.[1] ?? '';
+  const sameVolume =
+    source.kind !== 'local' || volume(normalize(source.path)) === volume(destination);
+  const move = keys.shiftKey || (!keys.ctrlKey && same && sameVolume);
   return move ? (same ? 'move' : 'invalid') : 'copy';
 }

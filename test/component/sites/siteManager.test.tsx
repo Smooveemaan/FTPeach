@@ -281,6 +281,65 @@ describe('Site Manager workflows', () => {
     await waitFor(() => expect(input.value).toBe(''));
   });
 
+  test('a saved password stays locked until its edit button is pressed', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    const input = screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password');
+    const edit = screen.getByRole('button', { name: 'siteManagerDialog.changeSavedPassword' });
+    expect(input.readOnly).toBe(true);
+    expect(screen.queryByText('siteManagerDialog.savedSecretHint')).toBeNull();
+
+    await user.click(edit);
+    expect(input.readOnly).toBe(false);
+    expect(document.activeElement).toBe(input);
+    expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
+    await user.type(input, 'draft');
+
+    // Pressed again, it drops the draft and keeps the saved password.
+    await user.click(edit);
+    expect(input.readOnly).toBe(true);
+    expect(input.value).toBe('');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ password: '' }));
+  });
+
+  test('limits connections only when a limit is chosen', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    expect(screen.queryByLabelText('siteManagerDialog.connectionLimit.count')).toBeNull();
+    expect(screen.queryByText('siteManagerDialog.maxConnectionsChanged')).toBeNull();
+
+    await user.click(
+      screen.getByRole('button', { name: 'siteManagerDialog.fields.maxConnections' }),
+    );
+    await user.click(
+      screen.getByRole('option', { name: 'siteManagerDialog.connectionLimit.limited' }),
+    );
+    const count = screen.getByLabelText<HTMLInputElement>(
+      'siteManagerDialog.connectionLimit.count',
+    );
+    expect(count.value).toBe('4');
+    expect(screen.getByText('siteManagerDialog.maxConnectionsChanged')).toBeTruthy();
+
+    await user.clear(count);
+    await user.type(count, '1');
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'common.save' }).disabled).toBe(
+      true,
+    );
+    await user.clear(count);
+    await user.type(count, '6');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ maxConnections: 6 }));
+  });
+
   test('a late reveal never fills a field the user moved on from', async () => {
     const user = userEvent.setup();
     const pending: Array<(_value: { ok: true; value: string }) => void> = [];
@@ -332,6 +391,7 @@ describe('Site Manager workflows', () => {
 
     // Asked, then a password typed by hand while it was on its way.
     await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.changeSavedPassword' }));
     await user.type(password(), 'typed-by-hand');
     act(() => pending[2]?.({ ok: true, value: 'secret-of-staging' }));
     await waitFor(() => expect(pending.length).toBe(3));

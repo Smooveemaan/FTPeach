@@ -734,7 +734,7 @@
     "expandFolder": "Udvid »{{name}}«",
     "collapseFolder": "Fold »{{name}}« sammen",
     "noFolder": "Ingen mappe",
-    "maxConnectionsHint": "0 eller tomt: ingen grænse. Ellers 2–128, inklusive én forbindelse til at gennemse mapper. Gælder efter genforbindelse. Hver rude har sin egen grænse.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Skift den kun, hvis filnavne på denne server vises forkert.",
     "encodings": {
       "utf8": "UTF-8 (standard)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Kinesisk (forenklet)",
       "traditionalChinese": "Kinesisk (traditionelt)",
       "korean": "Koreansk"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

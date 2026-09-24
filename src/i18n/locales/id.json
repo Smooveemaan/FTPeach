@@ -734,7 +734,7 @@
     "expandFolder": "Perluas \"{{name}}\"",
     "collapseFolder": "Ciutkan \"{{name}}\"",
     "noFolder": "Tanpa folder",
-    "maxConnectionsHint": "0 atau kosong: tanpa batas. Selain itu 2–128, termasuk satu koneksi untuk menjelajahi folder. Berlaku setelah tersambung kembali. Setiap panel memiliki batas sendiri.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Ubah hanya jika nama file di server ini tampil rusak.",
     "encodings": {
       "utf8": "UTF-8 (default)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Tionghoa Sederhana",
       "traditionalChinese": "Tionghoa Tradisional",
       "korean": "Korea"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

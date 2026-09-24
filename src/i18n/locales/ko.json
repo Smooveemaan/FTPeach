@@ -734,7 +734,7 @@
     "expandFolder": "“{{name}}” 펼치기",
     "collapseFolder": "“{{name}}” 접기",
     "noFolder": "폴더 없음",
-    "maxConnectionsHint": "0 또는 빈칸: 제한 없음. 그 외에는 폴더 탐색용 연결 하나를 포함하여 2–128개. 다시 연결하면 적용됩니다. 창마다 별도로 제한됩니다.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "이 서버의 파일 이름이 깨져 보일 때만 변경하세요.",
     "encodings": {
       "utf8": "UTF-8 (기본값)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "중국어 간체",
       "traditionalChinese": "중국어 번체",
       "korean": "한국어"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

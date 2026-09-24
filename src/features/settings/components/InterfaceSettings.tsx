@@ -137,11 +137,11 @@ export default function InterfaceSettings({
             />
             <button
               type="button"
-              className="btn btn-ghost btn-icon"
+              className="btn btn-icon field-icon-btn"
               aria-label={t('settings.chooseDefaultLocalPath')}
               onClick={handler(chooseDefaultLocalPath)}
             >
-              <Icon name="folder" />
+              <Icon name="folder" size={14} />
             </button>
           </div>
         </label>

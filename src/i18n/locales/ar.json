@@ -774,7 +774,7 @@
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",
     "noFolder": "بدون مجلد",
-    "maxConnectionsHint": "0 أو فارغ: بلا حد. وإلا من 2 إلى 128، بما في ذلك اتصال لتصفح المجلدات. يُطبق بعد إعادة الاتصال. لكل جزء حد مستقل.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "غيّره فقط إذا ظهرت أسماء الملفات على هذا الخادم مشوّهة.",
     "encodings": {
       "utf8": "UTF-8 (افتراضي)",
@@ -792,7 +792,17 @@
       "simplifiedChinese": "الصينية المبسطة",
       "traditionalChinese": "الصينية التقليدية",
       "korean": "الكورية"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

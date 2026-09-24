@@ -734,7 +734,7 @@
     "expandFolder": "Ανάπτυξη «{{name}}»",
     "collapseFolder": "Σύμπτυξη «{{name}}»",
     "noFolder": "Χωρίς φάκελο",
-    "maxConnectionsHint": "0 ή κενό: χωρίς όριο. Διαφορετικά 2–128, μαζί με μία σύνδεση για περιήγηση φακέλων. Ισχύει μετά την επανασύνδεση. Κάθε πλαίσιο έχει το δικό του όριο.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Αλλάξτε την μόνο αν τα ονόματα αρχείων σε αυτόν τον διακομιστή εμφανίζονται αλλοιωμένα.",
     "encodings": {
       "utf8": "UTF-8 (προεπιλογή)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Κινεζική απλοποιημένη",
       "traditionalChinese": "Κινεζική παραδοσιακή",
       "korean": "Κορεατική"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

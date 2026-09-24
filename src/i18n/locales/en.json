@@ -672,7 +672,7 @@
       "remotePath": "Default folder",
       "localPath": "Local folder",
       "folder": "Folder",
-      "maxConnections": "Maximum connections per pane",
+      "maxConnections": "Connections",
       "encoding": "Encoding"
     },
     "icons": {
@@ -734,8 +734,8 @@
     "expandFolder": "Expand \"{{name}}\"",
     "collapseFolder": "Collapse \"{{name}}\"",
     "noFolder": "No folder",
-    "maxConnectionsHint": "0 or blank: no limit. Otherwise 2–128, including one connection for browsing. Applies after reconnecting. Each pane has its own limit.",
-    "encodingHint": "Change it only if file names on this server look garbled.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "encodingHint": "Change it if file names look garbled.",
     "encodings": {
       "utf8": "UTF-8 (default)",
       "cyrillic": "Cyrillic",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Chinese Simplified",
       "traditionalChinese": "Chinese Traditional",
       "korean": "Korean"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

@@ -531,6 +531,7 @@ export default function SiteManagerDialog({
         )}
         {editing ? (
           <SiteEditor
+            key={editingId}
             form={form}
             folders={displayEntries.filter((entry) => entry.kind === 'folder')}
             setForm={setForm}

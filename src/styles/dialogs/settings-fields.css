@@ -348,3 +348,21 @@
 .date-format-dropdown .menu-item-label {
   white-space: nowrap;
 }
+
+/* An icon button beside a field, bare like the settings association rows:
+   no frame, faint until hovered, red only for a remove button. */
+.btn.field-icon-btn,
+.btn.field-icon-btn:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-faint);
+}
+.btn.field-icon-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+.btn.field-icon-btn.saved-secret-remove:hover:not(:disabled) {
+  color: var(--accent-red);
+}
+.btn.field-icon-btn.active {
+  color: var(--accent-primary);
+}

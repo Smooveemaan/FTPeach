@@ -744,7 +744,7 @@
     "noFolder": "Sem pasta",
     "importAdded_many": "{{count}} favoritos adicionados",
     "importSkipped_many": "{{count}} duplicados ignorados",
-    "maxConnectionsHint": "0 ou vazio: sem limite. Caso contrário, 2–128, incluindo uma conexão para navegar nas pastas. Aplica-se após reconectar. Cada painel tem seu próprio limite.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Altere somente se os nomes de arquivos neste servidor aparecerem ilegíveis.",
     "encodings": {
       "utf8": "UTF-8 (padrão)",
@@ -762,7 +762,17 @@
       "simplifiedChinese": "Chinês simplificado",
       "traditionalChinese": "Chinês tradicional",
       "korean": "Coreano"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

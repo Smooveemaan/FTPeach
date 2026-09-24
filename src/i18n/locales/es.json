@@ -744,7 +744,7 @@
     "noFolder": "Sin carpeta",
     "importAdded_many": "Se añadieron {{count}} marcadores",
     "importSkipped_many": "se omitieron {{count}} duplicados",
-    "maxConnectionsHint": "0 o vacío: sin límite. De lo contrario, 2–128, incluida una conexión para explorar carpetas. Se aplica al reconectar. Cada panel tiene su propio límite.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Cámbiela solo si los nombres de archivo de este servidor se ven ilegibles.",
     "encodings": {
       "utf8": "UTF-8 (predeterminada)",
@@ -762,7 +762,17 @@
       "simplifiedChinese": "Chino simplificado",
       "traditionalChinese": "Chino tradicional",
       "korean": "Coreano"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

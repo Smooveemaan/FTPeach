@@ -183,7 +183,7 @@ export function SortableSiteRow({
         data-tooltip={t('connectionBar.connectTooltip.connect')}
         onClick={() => onConnect(site)}
       >
-        <Icon name="play" size={12} />
+        <Icon name="play" size={14} />
       </button>
       <button
         type="button"
@@ -192,7 +192,7 @@ export function SortableSiteRow({
         data-tooltip={t('siteManagerDialog.titleEdit')}
         onClick={() => onEdit(site)}
       >
-        <Icon name="pencil" size={12} />
+        <Icon name="pencil" size={14} />
       </button>
       <button
         type="button"
@@ -201,16 +201,16 @@ export function SortableSiteRow({
         data-tooltip={t('siteManagerDialog.duplicate')}
         onClick={() => onDuplicate(site)}
       >
-        <Icon name="copy" size={12} />
+        <Icon name="copy" size={14} />
       </button>
       <button
         type="button"
-        className="btn btn-ghost btn-icon site-manage-row-btn"
+        className="btn btn-ghost btn-icon site-manage-row-btn site-manage-row-delete"
         aria-label={t('paneMenu.delete')}
         data-tooltip={t('paneMenu.delete')}
         onClick={() => onRequestDelete({ kind: 'site', id: site.id, name: site.name })}
       >
-        <Icon name="trash" size={12} />
+        <Icon name="trash" size={14} />
       </button>
     </div>
   );
@@ -358,7 +358,7 @@ export function SortableFolderRow({
           data-tooltip={t('siteManagerDialog.newBookmarkInFolder')}
           onClick={() => onCreateInFolder(folder.id)}
         >
-          <Icon name="starPlus" size={12} />
+          <Icon name="starPlus" size={14} />
         </button>
         <button
           type="button"
@@ -367,16 +367,16 @@ export function SortableFolderRow({
           data-tooltip={t('filePane.rename')}
           onClick={() => onStartRenameFolder(folder)}
         >
-          <Icon name="pencil" size={12} />
+          <Icon name="pencil" size={14} />
         </button>
         <button
           type="button"
-          className="btn btn-ghost btn-icon site-manage-row-btn"
+          className="btn btn-ghost btn-icon site-manage-row-btn site-manage-row-delete"
           aria-label={t('paneMenu.delete')}
           data-tooltip={t('paneMenu.delete')}
           onClick={() => onRequestDelete({ kind: 'folder', id: folder.id, name: folder.name })}
         >
-          <Icon name="trash" size={12} />
+          <Icon name="trash" size={14} />
         </button>
       </div>
       {/* Hidden while this folder is the one being dragged, not just its

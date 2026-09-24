@@ -275,9 +275,15 @@
 .site-manage-row .site-manage-row-btn:focus-visible:where(html[data-keyboard-navigation] *) {
   opacity: 1;
 }
+/* Bare icons like the settings' association rows: no hover box, red only for
+   delete. */
 .site-manage-row .site-manage-row-btn:hover {
   color: var(--text-primary);
-  background: var(--bg-raised);
+  background: transparent;
+  border-color: transparent;
+}
+.site-manage-row .site-manage-row-btn.site-manage-row-delete:hover {
+  color: var(--accent-red);
 }
 
 
@@ -289,9 +295,16 @@
 }
 
 .site-edit-form .settings-field input.site-connection-limit-input {
-  width: 8ch;
-  justify-self: start;
+  flex: 0 0 var(--site-aux-width);
   appearance: textfield;
+}
+.site-connection-limit-control {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+.site-connection-limit-control .site-folder-select {
+  flex: 1 1 auto;
 }
 
 .site-connection-limit-input::-webkit-outer-spin-button,
@@ -300,7 +313,12 @@
   margin: 0;
 }
 
+/* One grid for every row: a 96px label column, the control column, and at its
+   trailing end an aux column two icon buttons wide. The name row's icon and
+   colour, the port and a saved secret's edit and remove buttons all fill that
+   column, so the controls before them end on the same line. */
 .site-edit-form {
+  --site-aux-width: calc(2 * var(--control-height) + 6px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 
@@ -317,14 +335,6 @@
 }
 .site-edit-form .settings-field > span {
   flex: 0 0 auto;
-}
-
-.site-edit-form .settings-field:has(> .site-connection-limit-input) {
-  grid-template-columns: max-content max-content;
-}
-
-.site-edit-form .settings-field:has(> .site-connection-limit-input) > span {
-  white-space: nowrap;
 }
 
 .site-field-group {
@@ -366,18 +376,63 @@
   flex: 1 1 auto;
 }
 .site-field-group .settings-field .site-address-port-control input:last-child {
-  /* Exactly 5 digits (max TCP port 65535) plus the input's own 8px/side
-     padding and 1px/side border — ch sizes to the current font instead of a
-     guessed px width that leaves the box wider than the text it holds. */
-  flex: 0 0 calc(5ch + 18px);
+  /* The aux column, which holds 5 digits (max TCP port 65535). */
+  flex: 0 0 var(--site-aux-width);
 }
 
-.site-edit-form > .settings-field:has(input[type='checkbox']) {
-  grid-template-columns: minmax(96px, max-content) auto;
-  justify-content: start;
+/* A checkbox starts at the control column with its label after it, however
+   long the translated label runs. */
+.site-edit-form .site-toggle-field {
+  display: flex;
+  gap: 6px;
+  padding-inline-start: 108px;
 }
-.site-edit-form > .settings-field:has(input[type='checkbox']) input {
-  justify-self: start;
+.site-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--control-height);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+/* A saved secret can't be clicked into until its edit button unlocks it. */
+.site-edit-form .saved-secret-control .password-input > input:read-only {
+  pointer-events: none;
+}
+
+.site-advanced > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--text-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+.site-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+.site-advanced > summary:hover {
+  color: var(--text-primary);
+}
+.site-advanced > summary:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline: 1.5px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+.site-advanced > summary svg {
+  transition: transform 0.15s ease;
+}
+.site-advanced > summary svg:dir(rtl) {
+  transform: scaleX(-1);
+}
+.site-advanced[open] > summary svg {
+  transform: rotate(90deg);
+}
+.site-advanced-body {
+  display: grid;
+  row-gap: 14px;
+  margin-top: 14px;
 }
 .saved-secret-control {
   display: flex;
@@ -404,7 +459,7 @@
 /* A hint under a whole row reads like the saved-password hint: it starts at
    the control column (the 96px label plus the 12px gap) and sits 4px below
    the row, which is the form's 14px row gap less 10px. */
-.site-edit-form > .site-field-hint {
+.site-edit-form .site-field-hint {
   margin: -10px 0 0;
   padding-inline-start: 108px;
   font-size: 11px;
@@ -447,10 +502,12 @@
 }
 
 
+/* 6px between the trailing buttons as in every other row; the wider label
+   column makes up the form's usual 12px before the control column. */
 .site-identity-fields {
-  grid-template-columns: 96px minmax(0, 1fr) 26px 26px;
+  grid-template-columns: 102px minmax(0, 1fr) var(--control-height) var(--control-height);
   align-items: center;
-  column-gap: 12px;
+  column-gap: 6px;
 }
 .site-identity-fields .settings-field {
   display: contents;

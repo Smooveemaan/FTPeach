@@ -734,7 +734,7 @@
     "expandFolder": "「{{name}}」を展開",
     "collapseFolder": "「{{name}}」を折りたたむ",
     "noFolder": "フォルダーなし",
-    "maxConnectionsHint": "0 または空欄：無制限。それ以外は 2～128（フォルダー閲覧用の接続 1 つを含む）。再接続後に適用されます。制限はペインごとに独立しています。",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "このサーバーのファイル名が文字化けする場合にのみ変更してください。",
     "encodings": {
       "utf8": "UTF-8 (デフォルト)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "簡体字中国語",
       "traditionalChinese": "繁体字中国語",
       "korean": "韓国語"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

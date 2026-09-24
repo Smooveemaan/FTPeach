@@ -744,7 +744,7 @@
     "expandFolder": "Extinde „{{name}}”",
     "collapseFolder": "Restrânge „{{name}}”",
     "noFolder": "Fără folder",
-    "maxConnectionsHint": "0 sau gol: fără limită. Altfel 2–128, inclusiv o conexiune pentru navigarea în foldere. Se aplică după reconectare. Fiecare panou are propria limită.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Schimbați-o doar dacă numele fișierelor de pe acest server apar deformate.",
     "encodings": {
       "utf8": "UTF-8 (implicită)",
@@ -762,7 +762,17 @@
       "simplifiedChinese": "Chineză simplificată",
       "traditionalChinese": "Chineză tradițională",
       "korean": "Coreeană"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

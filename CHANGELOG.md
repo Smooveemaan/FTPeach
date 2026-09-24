@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   computer and a server, or between two servers, copy them instead.
 - Quitting with edits that have not been uploaded now asks whether to return or keep the
   copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
+- The bookmark editor is tidier: a saved password is changed with its edit button, and
+  encoding, start folder and connection limit sit under Advanced settings.
+- The bookmark editor fits and scrolls in a small window.
 
 ### Security
 

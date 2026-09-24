@@ -15,13 +15,20 @@
 }
 
 
-.modal-site-manager:not(:has(.site-edit-form)) {
+/* Both the list and the form fit a short window: header and footer stay put
+   and the body between them gives up height (the form scrolls). */
+.modal-site-manager {
   display: flex;
   flex-direction: column;
   max-height: calc(var(--app-viewport-h) - 72px);
 }
-.modal-site-manager:not(:has(.site-edit-form)) .modal-header {
+.modal-site-manager .modal-header,
+.modal-site-manager .modal-footer {
   flex: none;
+}
+.modal-site-manager:has(.site-edit-form) .modal-body {
+  min-height: 0;
+  overflow-y: auto;
 }
 .modal-site-manager:not(:has(.site-edit-form)) .modal-body {
   display: flex;

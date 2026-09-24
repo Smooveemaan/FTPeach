@@ -22,7 +22,8 @@ export function createSiteForm(site?: ManagedSite | null): SiteForm {
     password: '',
     hasPassword: !!site?.hasPassword,
     removePassword: false,
-    remotePath: site?.remotePath || '/',
+    // The root is the default, which the field shows as its placeholder.
+    remotePath: site?.remotePath === '/' ? '' : site?.remotePath || '',
     allowInvalidCert: !!site?.allowInvalidCert,
     allowCleartextAuth: !!site?.allowCleartextAuth,
     caCertPath: site?.caCertPath || '',
@@ -59,7 +60,7 @@ export function createPaneSiteForm(pane: {
     ...createSiteForm(),
     ...pane.form,
     name: pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host,
-    remotePath: pane.path,
+    remotePath: pane.path === '/' ? '' : pane.path,
   };
 }
 
@@ -118,13 +119,18 @@ export function normalizeSiteForm(
   };
 }
 
+/** Blank or 0 is no limit; otherwise one browsing connection plus at least one for transfers. */
+export function isValidConnectionLimit(value: string): boolean {
+  const limit = value.trim();
+  return (
+    limit === '' ||
+    (/^\d+$/.test(limit) && (Number(limit) === 0 || (Number(limit) >= 2 && Number(limit) <= 128)))
+  );
+}
+
 export function canSubmitSiteForm(form: SiteForm): boolean {
   if (form.kind === 'local') return !!(form.name.trim() && form.localPath.trim());
   const port = form.port.trim();
-  const limit = form.maxConnections.trim();
-  const validLimit =
-    limit === '' ||
-    (/^\d+$/.test(limit) && (Number(limit) === 0 || (Number(limit) >= 2 && Number(limit) <= 128)));
   const validPort =
     form.protocol === 'webdav' ||
     port === '' ||
@@ -132,7 +138,7 @@ export function canSubmitSiteForm(form: SiteForm): boolean {
   return !!(
     form.name.trim() &&
     validPort &&
-    validLimit &&
+    isValidConnectionLimit(form.maxConnections) &&
     (form.protocol === 'webdav' ? form.webdavUrl.trim() : form.host.trim())
   );
 }

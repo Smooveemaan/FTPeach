@@ -754,7 +754,7 @@
     "expandFolder": "Розгорнути «{{name}}»",
     "collapseFolder": "Згорнути «{{name}}»",
     "noFolder": "Без папки",
-    "maxConnectionsHint": "0 або порожнє поле — без обмежень. Інакше 2–128, включно з одним з’єднанням для перегляду папок. Діє після повторного підключення. Кожна панель має власний ліміт.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Змінюйте, лише якщо імена файлів на цьому сервері відображаються неправильно.",
     "encodings": {
       "utf8": "UTF-8 (за замовчуванням)",
@@ -772,7 +772,17 @@
       "simplifiedChinese": "Китайське спрощене",
       "traditionalChinese": "Китайське традиційне",
       "korean": "Корейське"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

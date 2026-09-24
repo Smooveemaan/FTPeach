@@ -734,7 +734,7 @@
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",
     "noFolder": "无文件夹",
-    "maxConnectionsHint": "0 或留空：无限制。否则为 2–128，包含一个用于浏览文件夹的连接。重新连接后生效。每个窗格的限制独立计算。",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "仅当此服务器上的文件名显示为乱码时才更改。",
     "encodings": {
       "utf8": "UTF-8（默认）",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "简体中文",
       "traditionalChinese": "繁体中文",
       "korean": "韩文"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

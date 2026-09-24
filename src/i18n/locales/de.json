@@ -734,7 +734,7 @@
     "expandFolder": "„{{name}}“ aufklappen",
     "collapseFolder": "„{{name}}“ zuklappen",
     "noFolder": "Kein Ordner",
-    "maxConnectionsHint": "0 oder leer: unbegrenzt. Sonst 2–128, einschließlich einer Verbindung zum Durchsuchen. Gilt nach erneutem Verbinden. Jeder Bereich hat sein eigenes Limit.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Nur ändern, wenn Dateinamen auf diesem Server verstümmelt angezeigt werden.",
     "encodings": {
       "utf8": "UTF-8 (Standard)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Chinesisch (vereinfacht)",
       "traditionalChinese": "Chinesisch (traditionell)",
       "korean": "Koreanisch"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

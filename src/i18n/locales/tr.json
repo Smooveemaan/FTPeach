@@ -734,7 +734,7 @@
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
     "collapseFolder": "\"{{name}}\" klasörünü daralt",
     "noFolder": "Klasör yok",
-    "maxConnectionsHint": "0 veya boş: sınırsız. Aksi halde klasörleri gezmek için bir bağlantı dahil 2–128. Yeniden bağlanınca uygulanır. Her bölmenin kendi sınırı vardır.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Yalnızca bu sunucudaki dosya adları bozuk görünüyorsa değiştirin.",
     "encodings": {
       "utf8": "UTF-8 (varsayılan)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Basitleştirilmiş Çince",
       "traditionalChinese": "Geleneksel Çince",
       "korean": "Korece"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

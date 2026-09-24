@@ -754,7 +754,7 @@
     "expandFolder": "Rozbalit „{{name}}“",
     "collapseFolder": "Sbalit „{{name}}“",
     "noFolder": "Bez složky",
-    "maxConnectionsHint": "0 nebo prázdné: bez omezení. Jinak 2–128, včetně jednoho připojení pro procházení složek. Platí po opětovném připojení. Každý panel má vlastní limit.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Měňte jen tehdy, když se názvy souborů na tomto serveru zobrazují nečitelně.",
     "encodings": {
       "utf8": "UTF-8 (výchozí)",
@@ -772,7 +772,17 @@
       "simplifiedChinese": "Čínské zjednodušené",
       "traditionalChinese": "Čínské tradiční",
       "korean": "Korejské"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

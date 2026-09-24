@@ -18,6 +18,7 @@ import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from '.
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
+import { isValidConnectionLimit } from './siteForm.ts';
 import type { SiteForm } from './siteForm.ts';
 import type { Translate } from '../../shared/translate.ts';
 import useDismissableOverlay from '../../hooks/useDismissableOverlay.ts';
@@ -67,6 +68,15 @@ export default function SiteEditor({
   t,
 }: SiteEditorProps) {
   const [appearanceMenu, setAppearanceMenu] = useState<AppearanceMenu | null>(null);
+  // A saved secret stays locked until its pencil is pressed, so a stray click
+  // can't start overwriting it.
+  const [editingSecret, setEditingSecret] = useState<SecretField | null>(null);
+  const [limitConnections, setLimitConnections] = useState(() => form.maxConnections !== '');
+  const [initialMaxConnections] = useState(form.maxConnections);
+  // Opens by itself only when it holds something other than the defaults.
+  const [advancedOpen] = useState(
+    () => !!(form.remotePath || form.encoding || form.maxConnections),
+  );
   const appearanceRef = useRef<HTMLDivElement | null>(null);
   const iconTriggerRef = useRef<HTMLButtonElement | null>(null);
   const colorTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -114,48 +124,93 @@ export default function SiteEditor({
     hasField: SecretPresenceField,
     removeField: SecretRemovalField,
     removeLabel: string,
+    changeLabel: string,
+  ): ReactNode => {
+    const saved = form[hasField] && !form[removeField];
+    const locked = saved && editingSecret !== field;
+    return (
+      <div className="saved-secret-field">
+        <div className="saved-secret-control">
+          <PasswordInput
+            aria-label={t(
+              field === 'password'
+                ? 'connectionBar.fields.password'
+                : 'connectionBar.fields.passphrase',
+            )}
+            placeholder={
+              form[removeField]
+                ? t('siteManagerDialog.secretWillBeRemoved')
+                : form[hasField]
+                  ? t('siteManagerDialog.savedSecretPlaceholder')
+                  : undefined
+            }
+            ref={secretRef(field)}
+            defaultValue=""
+            onChange={handleSecretInput(removeField)}
+            protectedSecret={saved}
+            onRevealSaved={() => onRevealSecret(field)}
+            readOnly={locked}
+            tabIndex={locked ? -1 : undefined}
+          />
+          {saved && (
+            <button
+              type="button"
+              className={`btn btn-icon field-icon-btn ${locked ? '' : 'active'}`}
+              aria-label={t(changeLabel)}
+              aria-pressed={!locked}
+              data-tooltip={t(changeLabel)}
+              onClick={() => {
+                if (locked) {
+                  setEditingSecret(field);
+                  secretRef(field).current?.focus();
+                } else {
+                  setNativeInputValue(secretRef(field).current, '');
+                  setEditingSecret(null);
+                }
+              }}
+            >
+              <Icon name="pencil" size={14} />
+            </button>
+          )}
+          {saved && (
+            <button
+              type="button"
+              className="btn btn-icon field-icon-btn saved-secret-remove"
+              aria-label={t(removeLabel)}
+              data-tooltip={t(removeLabel)}
+              onClick={() => {
+                setNativeInputValue(secretRef(field).current, '');
+                setForm((current) => ({ ...current, [removeField]: true }));
+              }}
+            >
+              <Icon name="trash" size={14} />
+            </button>
+          )}
+        </div>
+        {saved && !locked && (
+          <span className="saved-secret-hint">{t('siteManagerDialog.savedSecretHint')}</span>
+        )}
+      </div>
+    );
+  };
+  // The checkbox sits in the control column with its label after it, so a long
+  // translated label never pushes it off the form's grid.
+  const toggle = (
+    label: string,
+    checked: boolean,
+    onChange: (checked: boolean) => void,
     extra?: ReactNode,
   ): ReactNode => (
-    <div className="saved-secret-field">
-      <div className="saved-secret-control">
-        <PasswordInput
-          aria-label={t(
-            field === 'password'
-              ? 'connectionBar.fields.password'
-              : 'connectionBar.fields.passphrase',
-          )}
-          placeholder={
-            form[removeField]
-              ? t('siteManagerDialog.secretWillBeRemoved')
-              : form[hasField]
-                ? t('siteManagerDialog.savedSecretPlaceholder')
-                : undefined
-          }
-          ref={secretRef(field)}
-          defaultValue=""
-          onChange={handleSecretInput(removeField)}
-          protectedSecret={form[hasField] && !form[removeField]}
-          onRevealSaved={() => onRevealSecret(field)}
+    <div className="settings-field site-toggle-field">
+      <label className="site-toggle">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
         />
-        {form[hasField] && !form[removeField] && (
-          <button
-            type="button"
-            className="btn btn-danger btn-icon saved-secret-remove"
-            aria-label={t(removeLabel)}
-            data-tooltip={t(removeLabel)}
-            onClick={() => {
-              setNativeInputValue(secretRef(field).current, '');
-              setForm((current) => ({ ...current, [removeField]: true }));
-            }}
-          >
-            <Icon name="trash" />
-          </button>
-        )}
-        {extra}
-      </div>
-      {form[hasField] && !form[removeField] && (
-        <span className="saved-secret-hint">{t('siteManagerDialog.savedSecretHint')}</span>
-      )}
+        <span>{t(label)}</span>
+      </label>
+      {extra}
     </div>
   );
   const field = (
@@ -314,11 +369,11 @@ export default function SiteEditor({
             />
             <button
               type="button"
-              className="btn btn-ghost btn-icon"
+              className="btn btn-icon field-icon-btn"
               aria-label={t('siteManagerDialog.chooseLocalPath')}
               onClick={handler(onChooseLocalPath)}
             >
-              <Icon name="folder" />
+              <Icon name="folder" size={14} />
             </button>
           </div>
         </div>
@@ -375,15 +430,7 @@ export default function SiteEditor({
                 'hasKeyPassphrase',
                 'removeKeyPassphrase',
                 'siteManagerDialog.removeSavedPassphrase',
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-icon"
-                  aria-label={t('siteManagerDialog.fields.keyFile')}
-                  data-tooltip={form.keyPath || t('connectionBar.fields.chooseKeyFile')}
-                  onClick={handler(onChooseKeyFile)}
-                >
-                  <Icon name="key" />
-                </button>,
+                'siteManagerDialog.changeSavedPassphrase',
               )}
               {rsaKeySelected && (
                 <span className="saved-secret-hint" role="status">
@@ -399,110 +446,150 @@ export default function SiteEditor({
                 'hasPassword',
                 'removePassword',
                 'siteManagerDialog.removeSavedPassword',
-                (form.protocol === 'ftps' || isWebdav) && (
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon"
-                    aria-label={t('siteManagerDialog.fields.caCertFile')}
-                    data-tooltip={form.caCertPath || t('connectionBar.fields.chooseCaCertFile')}
-                    disabled={form.allowInvalidCert}
-                    onClick={handler(onChooseCaCertFile)}
-                  >
-                    <Icon name="badgeCheck" />
-                  </button>
-                ),
+                'siteManagerDialog.changeSavedPassword',
               )}
             </div>
           )}
         </div>
       )}
       {form.kind !== 'local' &&
-        field('siteManagerDialog.fields.remotePath', 'remotePath', { placeholder: '/' })}
-      {form.kind !== 'local' && isFtp && (
-        <>
-          <div className="settings-field">
-            <span>{t('siteManagerDialog.fields.encoding')}</span>
-            <SelectMenu
-              label={t('siteManagerDialog.fields.encoding')}
-              value={form.encoding}
-              onChange={(value) => setForm((current) => ({ ...current, encoding: value }))}
-              options={[
-                { value: '', label: t('siteManagerDialog.encodings.utf8') },
-                ...SITE_ENCODINGS.map(({ value, name, script }) => ({
-                  value,
-                  label: `${t(`siteManagerDialog.encodings.${script}`)} (${name})`,
-                })),
-              ]}
-              rootClassName="language-select site-folder-select site-encoding-select"
-              triggerClassName="language-select-trigger"
-              dropdownClassName="language-select-dropdown site-folder-dropdown site-encoding-dropdown"
-              valueClassName="language-select-value"
-              caretClassName="language-select-caret"
-            />
-          </div>
-          <p className="settings-hint site-field-hint">{t('siteManagerDialog.encodingHint')}</p>
-        </>
-      )}
-      {form.kind !== 'local' && (
-        <>
-          {field('siteManagerDialog.fields.maxConnections', 'maxConnections', {
-            type: 'number',
-            min: 0,
-            max: 128,
-            step: 1,
-            placeholder: '0',
-            className: 'site-connection-limit-input',
-            'aria-describedby': 'site-max-connections-hint',
-          })}
-          <p className="settings-hint site-field-hint" id="site-max-connections-hint">
-            {t('siteManagerDialog.maxConnectionsHint')}
-          </p>
-        </>
-      )}
-      {form.kind !== 'local' && (form.protocol === 'ftps' || isWebdav) && (
-        <div className="settings-field">
-          <span>{t('connectionBar.secureToggle.label')}</span>
-          <input
-            type="checkbox"
-            aria-label={t('connectionBar.secureToggle.label')}
-            checked={!form.allowInvalidCert}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, allowInvalidCert: !event.target.checked }))
-            }
-          />
-        </div>
-      )}
-      {form.kind !== 'local' && isCleartextWebdav && (
-        <div className="settings-field">
-          <span>{t('connectionBar.cleartextToggle.label')}</span>
-          <input
-            type="checkbox"
-            aria-label={t('connectionBar.cleartextToggle.label')}
-            checked={form.allowCleartextAuth}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, allowCleartextAuth: event.target.checked }))
-            }
-          />
-        </div>
-      )}
+        (form.protocol === 'ftps' || isWebdav) &&
+        toggle(
+          'connectionBar.secureToggle.label',
+          !form.allowInvalidCert,
+          (checked) => setForm((current) => ({ ...current, allowInvalidCert: !checked })),
+          <button
+            type="button"
+            className="btn btn-icon field-icon-btn"
+            aria-label={t('siteManagerDialog.fields.caCertFile')}
+            data-tooltip={form.caCertPath || t('connectionBar.fields.chooseCaCertFile')}
+            disabled={form.allowInvalidCert}
+            onClick={handler(onChooseCaCertFile)}
+          >
+            <Icon name="badgeCheck" size={14} />
+          </button>,
+        )}
+      {form.kind !== 'local' &&
+        isCleartextWebdav &&
+        toggle('connectionBar.cleartextToggle.label', form.allowCleartextAuth, (checked) =>
+          setForm((current) => ({ ...current, allowCleartextAuth: checked })),
+        )}
       {form.kind !== 'local' && isCleartextWebdav && (
         <p className="settings-hint site-field-hint">
           {t('connectionBar.cleartextToggle.tooltip')}
         </p>
       )}
-      {form.kind !== 'local' && form.protocol === 'sftp' && (
-        <div className="settings-field">
-          <span>{t('connectionBar.authToggle.label')}</span>
-          <input
-            type="checkbox"
-            aria-label={t('connectionBar.authToggle.label')}
-            checked={!!form.useKeyAuth}
-            onChange={(event) => {
-              if (event.target.checked) setNativeInputValue(passwordRef.current, '');
-              setForm((current) => ({ ...current, useKeyAuth: event.target.checked }));
-            }}
-          />
-        </div>
+      {form.kind !== 'local' &&
+        form.protocol === 'sftp' &&
+        toggle(
+          'connectionBar.authToggle.label',
+          !!form.useKeyAuth,
+          (checked) => {
+            if (checked) setNativeInputValue(passwordRef.current, '');
+            setForm((current) => ({ ...current, useKeyAuth: checked }));
+          },
+          isKeyAuth && (
+            <button
+              type="button"
+              className="btn btn-icon field-icon-btn"
+              aria-label={t('siteManagerDialog.fields.keyFile')}
+              data-tooltip={form.keyPath || t('connectionBar.fields.chooseKeyFile')}
+              onClick={handler(onChooseKeyFile)}
+            >
+              <Icon name="key" size={14} />
+            </button>
+          ),
+        )}
+      {form.kind !== 'local' && (
+        <details className="site-advanced" open={advancedOpen}>
+          <summary>
+            <Icon name="chevronRight" size={13} />
+            {t('siteManagerDialog.advancedSettings')}
+          </summary>
+          <div className="site-advanced-body">
+            {field('siteManagerDialog.fields.remotePath', 'remotePath', {
+              placeholder: t('siteManagerDialog.remotePathPlaceholder'),
+            })}
+            {isFtp && (
+              <>
+                <div className="settings-field">
+                  <span>{t('siteManagerDialog.fields.encoding')}</span>
+                  <SelectMenu
+                    label={t('siteManagerDialog.fields.encoding')}
+                    value={form.encoding}
+                    onChange={(value) => setForm((current) => ({ ...current, encoding: value }))}
+                    options={[
+                      { value: '', label: t('siteManagerDialog.encodings.utf8') },
+                      ...SITE_ENCODINGS.map(({ value, name, script }) => ({
+                        value,
+                        label: `${t(`siteManagerDialog.encodings.${script}`)} (${name})`,
+                      })),
+                    ]}
+                    rootClassName="language-select site-folder-select site-encoding-select"
+                    triggerClassName="language-select-trigger"
+                    dropdownClassName="language-select-dropdown site-folder-dropdown site-encoding-dropdown"
+                    valueClassName="language-select-value"
+                    caretClassName="language-select-caret"
+                  />
+                </div>
+                <p className="settings-hint site-field-hint">
+                  {t('siteManagerDialog.encodingHint')}
+                </p>
+              </>
+            )}
+            <div className="settings-field">
+              <span>{t('siteManagerDialog.fields.maxConnections')}</span>
+              <div className="site-connection-limit-control">
+                <SelectMenu
+                  label={t('siteManagerDialog.fields.maxConnections')}
+                  value={limitConnections ? 'limit' : ''}
+                  onChange={(value) => {
+                    setLimitConnections(!!value);
+                    setForm((current) => ({
+                      ...current,
+                      maxConnections: value ? current.maxConnections || '4' : '',
+                    }));
+                  }}
+                  options={[
+                    { value: '', label: t('siteManagerDialog.connectionLimit.none') },
+                    { value: 'limit', label: t('siteManagerDialog.connectionLimit.limited') },
+                  ]}
+                  rootClassName="language-select site-folder-select site-encoding-select"
+                  triggerClassName="language-select-trigger"
+                  dropdownClassName="language-select-dropdown site-folder-dropdown site-encoding-dropdown"
+                  valueClassName="language-select-value"
+                  caretClassName="language-select-caret"
+                />
+                {limitConnections && (
+                  <input
+                    type="number"
+                    min={2}
+                    max={128}
+                    step={1}
+                    className="site-connection-limit-input"
+                    aria-label={t('siteManagerDialog.connectionLimit.count')}
+                    aria-describedby="site-max-connections-hint"
+                    aria-invalid={!isValidConnectionLimit(form.maxConnections)}
+                    value={form.maxConnections}
+                    onChange={onField('maxConnections')}
+                    // An emptied count means no limit, which the select should say.
+                    onBlur={() => {
+                      if (!form.maxConnections.trim()) setLimitConnections(false);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            <p className="settings-hint site-field-hint" id="site-max-connections-hint">
+              {t('siteManagerDialog.maxConnectionsHint')}
+            </p>
+            {form.maxConnections !== initialMaxConnections && (
+              <p className="settings-hint site-field-hint site-field-note" role="status">
+                {t('siteManagerDialog.maxConnectionsChanged')}
+              </p>
+            )}
+          </div>
+        </details>
       )}
       {error && (
         <DismissibleError

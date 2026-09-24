@@ -734,7 +734,7 @@
     "expandFolder": "Mở rộng “{{name}}”",
     "collapseFolder": "Thu gọn “{{name}}”",
     "noFolder": "Không có thư mục",
-    "maxConnectionsHint": "0 hoặc để trống: không giới hạn. Nếu không, 2–128, gồm một kết nối để duyệt thư mục. Áp dụng sau khi kết nối lại. Mỗi khung có giới hạn riêng.",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Chỉ đổi khi tên tệp trên máy chủ này hiển thị bị lỗi.",
     "encodings": {
       "utf8": "UTF-8 (mặc định)",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "Trung giản thể",
       "traditionalChinese": "Trung phồn thể",
       "korean": "Hàn"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

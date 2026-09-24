@@ -734,7 +734,7 @@
     "expandFolder": "展開「{{name}}」",
     "collapseFolder": "摺疊「{{name}}」",
     "noFolder": "無資料夾",
-    "maxConnectionsHint": "0 或留空：無限制。否則為 2–128，包含一個用於瀏覽資料夾的連線。重新連線後生效。每個窗格的限制各自獨立。",
+    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "僅在此伺服器上的檔案名稱顯示為亂碼時才變更。",
     "encodings": {
       "utf8": "UTF-8（預設）",
@@ -752,7 +752,17 @@
       "simplifiedChinese": "簡體中文",
       "traditionalChinese": "繁體中文",
       "korean": "韓文"
-    }
+    },
+    "advancedSettings": "Advanced settings",
+    "remotePathPlaceholder": "Server root (/)",
+    "changeSavedPassword": "Change saved password",
+    "changeSavedPassphrase": "Change saved passphrase",
+    "connectionLimit": {
+      "none": "No limit",
+      "limited": "Limit to…",
+      "count": "Connection limit"
+    },
+    "maxConnectionsChanged": "Applies after reconnecting."
   },
   "connectionBar": {
     "fields": {

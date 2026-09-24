@@ -1,4 +1,5 @@
 {
+  "identifier": "com.smooveemaan.ftpeach.dev",
   "app": {
     "security": {
       "csp": null

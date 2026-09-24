@@ -4,10 +4,13 @@
     "src/shared/lang.ts": 98
   },
   "component": {
+    "src/features/file-browser/usePanes.ts": 96,
     "src/features/file-browser/panes/usePaneSessionPersistence.ts": 84,
     "src/features/open-with/useOpenWithLifecycle.ts": 94,
+    "src/features/settings/hooks/useVaultSettings.ts": 98,
     "src/features/transfers/createTransferRouting.ts": 83,
     "src/features/transfers/transferBatchResult.ts": 98,
+    "src/platform/SecurityConfirmation.tsx": 96,
     "src/shared/movePolicy.ts": 98
   },
   "rust": {

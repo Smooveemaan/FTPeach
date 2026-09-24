@@ -48,13 +48,39 @@ runs; it measures no coverage.
 
 | Runner | Files | Lines | Branches | Functions |
 | --- | ---: | ---: | ---: | ---: |
-| unit | 228 (148 not loaded) | 72.30% (7,380/10,207) | 87.46% | 73.61% |
-| component | 228 (42 with no line run) | 60.57% (4,980/8,222) | 48.34% | 53.10% |
-| rust | 112 | 72.34% (18,488/25,557) | not measured | 69.90% |
+| unit | 227 (148 not loaded) | 72.25% (7,357/10,182) | 87.43% | 73.57% |
+| component | 227 (33 with no line run) | 70.27% (5,778/8,223) | 57.05% | 61.34% |
+| rust | 112 | 72.82% (18,791/25,804) | not measured | 70.51% |
+
+The coverage expansion adds 92 component scenarios and five native drag manifest tests.
+Compared with the measured pre-expansion checkout, component line coverage rose from 60.57%
+to 70.27%, branch coverage from 48.36% to 57.05%, and Rust line coverage from 72.77% to 72.82%.
+The Node suite is unchanged; the component suite now tests complete pane flows rather than
+duplicating the individual navigation helpers' Node tests.
+
+- [Pane flows](../test/component/file-browser/usePanes.test.tsx) exercise navigation history,
+  synchronized browsing, cancellation, late replies, closing active transfers, reconnecting and
+  overwrite decisions. [Context menus](../test/component/file-browser/paneActions.test.ts) and
+  [connection controls](../test/component/file-browser/connectionBar.test.tsx) check the actions
+  and authorization flags passed to those flows.
+- [Security confirmation](../test/component/platform/securityConfirmation.test.tsx) checks
+  keyboard and button approval, phrase/password requirements, retry and cancellation.
+  [Vault settings](../test/component/settings/vaultSettings.test.tsx) cover validation, failed
+  actions, clearing password fields, auto-lock notifications and timer cleanup.
+- [Open-with](../test/component/open-with/openWithDialog.test.tsx) checks download progress,
+  cancellation against the original session, late watcher cleanup and failed results.
+  [Tooltips](../test/component/shared/tooltip.test.tsx) cover focus, hover, positioning and cleanup;
+  layout geometry is simulated in jsdom, not a native browser layout test.
+- [Native manifest tests](../src-tauri/src/native_drag/manifest_tests.rs) run without a server:
+  unsafe or duplicate Windows root names, UTF-16 descriptor lengths and excessive root counts
+  fail before connecting. Recursive folder enumeration still has the separate Docker fixture.
 
 | Floored module | Runner | Baseline lines |
 | --- | --- | ---: |
 | `shared/lang.ts`, `platform/shutdownPersistence.ts` | unit | 100% |
+| `file-browser/usePanes.ts` | component | 98.98% |
+| `settings/hooks/useVaultSettings.ts` | component | 100% |
+| `platform/SecurityConfirmation.tsx` | component | 98.55% |
 | `transfers/transferBatchResult.ts`, `shared/movePolicy.ts` | component | 100% |
 | `open-with/useOpenWithLifecycle.ts` | component | 96.6% |
 | `file-browser/panes/usePaneSessionPersistence.ts` | component | 86.9% |

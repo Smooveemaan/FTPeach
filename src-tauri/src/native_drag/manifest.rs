@@ -27,13 +27,21 @@ pub(super) async fn expand(
     pool: &TransferPool,
     roots: Vec<DragOutFile>,
 ) -> Result<Vec<DragOutFile>> {
+    ensure!(
+        roots.len() <= 100_000,
+        "Drag directory contains too many entries"
+    );
+    let mut root_names = HashSet::new();
     for root in &roots {
         validate_name(&root.name)?;
+        validate_relative_path(&root.name)?;
+        ensure!(
+            root_names.insert(root.name.to_lowercase()),
+            "Duplicate Windows drag path: {}",
+            root.name
+        );
     }
     if roots.iter().all(|file| !file.is_directory) {
-        for root in &roots {
-            validate_relative_path(&root.name)?;
-        }
         return Ok(roots);
     }
     let (tx, rx) = tokio::sync::oneshot::channel();
@@ -84,6 +92,10 @@ pub(super) async fn expand(
     pool.run(uuid::Uuid::new_v4().to_string(), task).await?;
     Ok(rx.await?)
 }
+
+#[cfg(test)]
+#[path = "manifest_tests.rs"]
+mod manifest_tests;
 
 #[cfg(test)]
 mod tests {

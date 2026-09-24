@@ -144,8 +144,13 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
     };
   }, [authenticationError, prompt, requestId]);
 
+  const approvalBlocked =
+    !prompt ||
+    (!!prompt.confirmationPhrase && confirmation !== prompt.confirmationPhrase) ||
+    (prompt.requiresReauthentication && !masterPassword);
+
   const respond = async (approved: boolean) => {
-    if (busy) return;
+    if (busy || (approved && approvalBlocked)) return;
     setBusy(true);
     try {
       await invoke('plugin:sensitive|respond_sensitive_confirmation', {
@@ -326,12 +331,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
         <button
           type="button"
           className="btn btn-primary"
-          disabled={
-            !prompt ||
-            busy ||
-            (!!prompt.confirmationPhrase && confirmation !== prompt.confirmationPhrase) ||
-            (prompt.requiresReauthentication && !masterPassword)
-          }
+          disabled={busy || approvalBlocked}
           onClick={() => void respond(true)}
           autoFocus={!prompt?.confirmationPhrase}
         >

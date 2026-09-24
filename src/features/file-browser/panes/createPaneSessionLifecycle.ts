@@ -282,7 +282,7 @@ export function createPaneSessionLifecycle({
           }
           return;
         }
-        reportRejection(connectPane(id, f, undefined, tabId, startPath)());
+        reportRejection(connectPane(id, f, pane, tabId, startPath)());
         return;
       }
       updatePane(

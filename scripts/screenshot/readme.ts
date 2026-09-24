@@ -210,13 +210,6 @@ async function stage(page: Page, profile: string) {
     async () => (await readFile(knownHosts, 'utf8').catch(() => '')).includes('2222') || undefined,
     300,
   );
-  // The reconnect after trusting a key can come back without the saved password.
-  await connected(page, 'upload', 5).catch(() =>
-    page
-      .locator('.pane[data-side=b]')
-      .getByRole('button', { name: 'Connect', exact: true })
-      .click(),
-  );
   await connected(page, 'upload', 20);
 
   await openBookmark(page, 'WebDAV', true);

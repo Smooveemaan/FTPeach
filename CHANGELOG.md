@@ -71,6 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- After you accept a new or changed SSH server key, FTPeach now signs in with the bookmark's
+  saved password instead of reporting a wrong username or password.
 - A resumed WebDAV download no longer mixes old and new content when the file on the server
   was replaced within the same second; such a download now starts over.
 - A connection that drops in the middle of an FTP or SFTP transfer is now reported as a lost

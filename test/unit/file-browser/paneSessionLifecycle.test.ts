@@ -284,6 +284,29 @@ test('a refused host key is answered by the backend window, then the connect is 
   assert.equal(h.tab.panes.b.errorMessage, '');
 });
 
+test('the connect retried after trusting a key keeps the bookmark and its saved password', async () => {
+  const first = { host: '127.0.0.1', port: 2222, actual: 'bbbb' };
+  let attempts = 0;
+  const h = harness((command) => {
+    if (command !== 'session_connect') return { ok: true };
+    attempts += 1;
+    return attempts === 1
+      ? { ok: false, error: 'host key not confirmed', hostKeyMismatch: first }
+      : { ok: true };
+  });
+  // Opening a bookmark passes its pane in; the tab's state catches up later.
+  const bookmark = { ...h.tab.panes.b, siteId: 'sftp-site' };
+  assert.equal(h.tab.panes.b.siteId, null);
+  await h.lifecycle.connectPane('b', { ...bookmark.form, protocol: 'sftp' }, bookmark, 'tab')();
+  await new Promise((resolve) => setImmediate(resolve));
+  const sites = h.calls
+    .filter((call) => call.command === 'session_connect')
+    .map((call) => (call.args!.config as Record<string, unknown>).siteId);
+  // The backend finds the saved password by the bookmark's id.
+  assert.deepEqual(sites, ['sftp-site', 'sftp-site']);
+  assert.equal(h.tab.panes.b.status, 'connected');
+});
+
 test('a first sighting is trusted without an expected fingerprint, and a declined one stops', async () => {
   const first = { host: 'example.test', port: 22, actual: 'bbbb' };
   let attempts = 0;

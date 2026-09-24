@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} öğe",
     "itemCount_other": "{{count}} öğe",
-    "moveMode": "taşıma"
+    "moveMode": "taşıma",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Dosya değiştirildi",

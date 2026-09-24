@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} item",
-    "moveMode": "pindahkan"
+    "moveMode": "pindahkan",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "File diubah",

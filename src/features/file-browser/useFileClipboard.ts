@@ -1,7 +1,7 @@
 import type { MouseEvent, MutableRefObject } from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { DragEntry, DragInfo } from './components/useDragMove.ts';
+import type { DragEntry, DragInfo, DropMenu } from './components/useDragMove.ts';
 import { useDragMove } from './components/useDragMove.ts';
 import { api } from '../../platform/api/index.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
@@ -44,6 +44,8 @@ export interface FileClipboardModel {
     cancelDrag: () => void | undefined;
     ghostRef: MutableRefObject<HTMLDivElement | null>;
     dragInfo: DragInfo | null;
+    dropMenu: DropMenu | null;
+    closeDropMenu: () => void;
   };
   outboundDragRef: MutableRefObject<boolean>;
 }

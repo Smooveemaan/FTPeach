@@ -24,6 +24,8 @@ interface ActiveDrag {
   isDir: boolean;
   startX: number;
   startY: number;
+  /** 0 for a left-button drag, 2 for a right-button one that ends in the drop menu. */
+  button: number;
   active: boolean;
   isMove?: boolean;
   leftWindow?: boolean;
@@ -36,6 +38,14 @@ export interface DragInfo {
   isMove: boolean;
   isValidTarget: boolean;
   action: DropAction;
+}
+
+/** Explorer's right-drag menu: where it opens and what the drop can do there. */
+export interface DropMenu {
+  x: number;
+  y: number;
+  canMove: boolean;
+  drop: (isMove: boolean) => void;
 }
 
 interface DropTarget {
@@ -77,6 +87,8 @@ export interface DragMoveModel {
   cancelDrag: () => void | undefined;
   ghostRef: MutableRefObject<HTMLDivElement | null>;
   dragInfo: DragInfo | null;
+  dropMenu: DropMenu | null;
+  closeDropMenu: () => void;
 }
 
 export function useDragMove(
@@ -86,6 +98,7 @@ export function useDragMove(
   const dragRef = useRef<ActiveDrag | null>(null);
   const ghostRef = useRef<HTMLDivElement | null>(null);
   const [dragInfo, setDragInfo] = useState<DragInfo | null>(null);
+  const [dropMenu, setDropMenu] = useState<DropMenu | null>(null);
 
   const onDropRef = useRef(onDrop);
   onDropRef.current = onDrop;
@@ -241,7 +254,8 @@ export function useDragMove(
 
       // Active by now either way: the block above starts the drag when the
       // threshold is crossed and returns when it is not.
-      if (!drag.leftWindow) {
+      // A right drag stays in the app: the native drag-out only follows the left button.
+      if (!drag.leftWindow && drag.button === 0) {
         const outOfBounds =
           e.clientX < 0 ||
           e.clientY < 0 ||
@@ -291,10 +305,33 @@ export function useDragMove(
       };
       document.addEventListener('click', suppressClick, { capture: true, once: true });
       setTimeout(() => document.removeEventListener('click', suppressClick, true), 0);
+      if (drag.button === 2) {
+        // Windows raises contextmenu after the right button comes up; the drop menu replaces it.
+        document.addEventListener('contextmenu', suppressClick, { capture: true, once: true });
+        setTimeout(() => document.removeEventListener('contextmenu', suppressClick, true), 100);
+      }
       if (!commit || !e) return;
 
       const target = resolveTarget(e);
       if (!target || !target.side) return;
+      if (drag.button === 2) {
+        const { side: targetSide, folder: targetFolder } = target;
+        if (actionFor(drag, target, { ctrlKey: true, shiftKey: false }) !== 'copy') return;
+        setDropMenu({
+          x: e.clientX,
+          y: e.clientY,
+          canMove: actionFor(drag, target, { ctrlKey: false, shiftKey: true }) === 'move',
+          drop: (isMove) =>
+            onDropRef.current({
+              sourceSide: drag.side,
+              names: drag.names,
+              targetSide,
+              targetFolder,
+              isMove,
+            }),
+        });
+        return;
+      }
       const action = actionFor(drag, target, e);
       if (!action || action === 'invalid') return;
       onDropRef.current({
@@ -308,7 +345,10 @@ export function useDragMove(
 
     finishDragRef.current = finishDrag;
 
-    const handleMouseUp = (e: MouseEvent) => finishDrag(e, true);
+    const handleMouseUp = (e: MouseEvent) => {
+      if (dragRef.current && e.button !== dragRef.current.button) return;
+      finishDrag(e, true);
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && dragRef.current) return finishDrag(undefined, false);
@@ -328,10 +368,10 @@ export function useDragMove(
     };
   }, []);
 
-  // entry: { name, isDirectory }. Left button only — right-click still goes
-  // to the context menu, untouched by any of this.
+  // entry: { name, isDirectory }. Left or right button — a right click that
+  // never crosses the drag threshold still opens the ordinary context menu.
   const startDrag = (side: PaneId, names: string[], entry: DragEntry, e: ReactMouseEvent) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.button !== 2) return;
     dragRef.current = {
       side,
       names,
@@ -339,6 +379,7 @@ export function useDragMove(
       isDir: entry.isDirectory,
       startX: e.clientX,
       startY: e.clientY,
+      button: e.button,
       active: false,
     };
   };
@@ -349,5 +390,12 @@ export function useDragMove(
   // state as an in-app drop.
   const cancelDrag = () => finishDragRef.current?.(undefined, false);
 
-  return { startDrag, cancelDrag, ghostRef, dragInfo };
+  return {
+    startDrag,
+    cancelDrag,
+    ghostRef,
+    dragInfo,
+    dropMenu,
+    closeDropMenu: () => setDropMenu(null),
+  };
 }

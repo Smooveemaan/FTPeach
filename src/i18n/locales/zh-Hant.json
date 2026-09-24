@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} 個項目",
     "itemCount_other": "{{count}} 個項目",
-    "moveMode": "移動"
+    "moveMode": "移動",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "檔案已變更",

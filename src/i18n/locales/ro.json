@@ -175,7 +175,9 @@
     "itemCount_one": "{{count}} element",
     "itemCount_other": "{{count}} de elemente",
     "moveMode": "mutare",
-    "itemCount_few": "{{count}} elemente"
+    "itemCount_few": "{{count}} elemente",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Fișierul a fost modificat",

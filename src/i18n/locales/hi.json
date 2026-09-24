@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} आइटम",
     "itemCount_other": "{{count}} आइटम",
-    "moveMode": "ले जाएँ"
+    "moveMode": "ले जाएँ",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "फ़ाइल बदल गई",

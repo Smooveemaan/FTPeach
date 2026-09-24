@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} 个项目",
     "itemCount_other": "{{count}} 个项目",
-    "moveMode": "移动"
+    "moveMode": "移动",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "文件已更改",

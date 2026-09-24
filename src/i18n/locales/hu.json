@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} elem",
     "itemCount_other": "{{count}} elem",
-    "moveMode": "áthelyezés"
+    "moveMode": "áthelyezés",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "A fájl megváltozott",

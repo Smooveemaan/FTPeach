@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} รายการ",
     "itemCount_other": "{{count}} รายการ",
-    "moveMode": "ย้าย"
+    "moveMode": "ย้าย",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "ไฟล์ถูกแก้ไข",

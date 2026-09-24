@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} objekt",
     "itemCount_other": "{{count}} objekt",
-    "moveMode": "flytta"
+    "moveMode": "flytta",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Filen har ändrats",

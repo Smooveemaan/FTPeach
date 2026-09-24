@@ -7,6 +7,7 @@ import type {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.tsx';
+import ContextMenu from '../components/ContextMenu.tsx';
 import ErrorBoundary from '../components/ErrorBoundary.tsx';
 import StatusBar from './StatusBar.tsx';
 import TransferLogSection from './TransferLogSection.tsx';
@@ -127,6 +128,22 @@ export default function Workspace({
           </>
         )}
       </div>
+      {dragMove.dropMenu && (
+        <ContextMenu
+          x={dragMove.dropMenu.x}
+          y={dragMove.dropMenu.y}
+          minWidth={160}
+          items={[
+            { label: t('dragMove.copyHere'), onClick: () => dragMove.dropMenu?.drop(false) },
+            ...(dragMove.dropMenu.canMove
+              ? [{ label: t('dragMove.moveHere'), onClick: () => dragMove.dropMenu?.drop(true) }]
+              : []),
+            { separator: true },
+            { label: t('common.cancel') },
+          ]}
+          onClose={dragMove.closeDropMenu}
+        />
+      )}
       <StatusBar {...statusBar} />
     </>
   );

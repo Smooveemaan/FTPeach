@@ -184,7 +184,9 @@
     "itemCount_zero": "{{count}} عنصر",
     "itemCount_two": "{{count}} عنصرين",
     "itemCount_few": "{{count}} عناصر",
-    "itemCount_many": "{{count}} عنصرًا"
+    "itemCount_many": "{{count}} عنصرًا",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "تم تغيير الملف",

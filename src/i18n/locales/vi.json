@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} mục",
     "itemCount_other": "{{count}} mục",
-    "moveMode": "di chuyển"
+    "moveMode": "di chuyển",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Tệp đã thay đổi",

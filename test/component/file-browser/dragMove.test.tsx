@@ -80,7 +80,7 @@ test('same directory, self and descendants are rejected across panes and breadcr
   expect(dropDestinationPath('local', 'C:\\a\\b', 'C:\\a')).toBe('C:\\a');
 });
 
-function start() {
+function start(button = 0) {
   document.body.innerHTML =
     '<div class="pane" data-side="a"><div class="pane-list" data-side="a"><div class="row" data-name="folder"></div></div><span data-drop-path="C:\\">root</span></div><div class="pane" data-side="b"><span data-drop-path="C:\\other">other</span></div>';
   const drop = vi.fn();
@@ -98,7 +98,7 @@ function start() {
   );
   act(() =>
     hook.result.current.startDrag('a', ['folder'], { name: 'folder', isDirectory: true }, {
-      button: 0,
+      button,
       clientX: 0,
       clientY: 0,
     } as ReactMouseEvent),
@@ -140,4 +140,20 @@ test('own background has no action and Escape clears the address highlight', () 
   expect(result.current.dragInfo).toBeNull();
   expect(crumb.classList.contains('drag-target')).toBe(false);
   expect(drop).not.toHaveBeenCalled();
+});
+
+test('a right drag opens the drop menu instead of dropping, and its items drop', () => {
+  const { result, crumb, drop } = start(2);
+  fireEvent.mouseUp(crumb, { button: 0 });
+  expect(result.current.dropMenu).toBeNull();
+  fireEvent.mouseUp(crumb, { button: 2, clientX: 40, clientY: 40 });
+  expect(drop).not.toHaveBeenCalled();
+  const menu = result.current.dropMenu!;
+  expect(menu).toMatchObject({ x: 40, y: 40, canMove: true });
+  act(() => menu.drop(true));
+  expect(drop).toHaveBeenCalledWith(
+    expect.objectContaining({ targetFolder: 'C:\\other', isMove: true }),
+  );
+  act(() => result.current.closeDropMenu());
+  expect(result.current.dropMenu).toBeNull();
 });

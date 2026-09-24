@@ -175,7 +175,9 @@
     "itemCount_one": "{{count}} elemento",
     "itemCount_other": "{{count}} elementi",
     "moveMode": "sposta",
-    "itemCount_many": "{{count}} elementi"
+    "itemCount_many": "{{count}} elementi",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "File modificato",

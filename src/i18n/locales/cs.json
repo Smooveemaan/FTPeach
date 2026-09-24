@@ -178,7 +178,9 @@
     "itemCount_other": "{{count}} položek",
     "moveMode": "přesun",
     "itemCount_few": "{{count}} položky",
-    "itemCount_many": "{{count}} položky"
+    "itemCount_many": "{{count}} položky",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Soubor byl změněn",

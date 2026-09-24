@@ -49,7 +49,14 @@ function props(narrow = false): WorkspaceProps {
       if (failure === id) throw new Error(`${id} render failed`);
       return <Counter name={id} />;
     },
-    dragMove: { startDrag: noop, cancelDrag: noop, ghostRef: { current: null }, dragInfo: null },
+    dragMove: {
+      startDrag: noop,
+      cancelDrag: noop,
+      ghostRef: { current: null },
+      dragInfo: null,
+      dropMenu: null,
+      closeDropMenu: noop,
+    },
     statusBar: {
       status: 'idle',
       paneOrientation: 'horizontal',

@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "항목 {{count}}개",
     "itemCount_other": "항목 {{count}}개",
-    "moveMode": "이동"
+    "moveMode": "이동",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "파일이 변경됨",

@@ -27,7 +27,14 @@ test('workspace model derives status counters and section emptiness from domain 
     startResize: noop,
     resetSplitRatio: noop,
     renderPane: () => null,
-    dragMove: { startDrag: noop, cancelDrag: noop, ghostRef: { current: null }, dragInfo: null },
+    dragMove: {
+      startDrag: noop,
+      cancelDrag: noop,
+      ghostRef: { current: null },
+      dragInfo: null,
+      dropMenu: null,
+      closeDropMenu: noop,
+    },
     transferLogLayout: {
       windowNarrow: false,
       showTransferQueue: true,

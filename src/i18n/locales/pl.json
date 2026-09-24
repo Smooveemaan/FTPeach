@@ -178,7 +178,9 @@
     "itemCount_other": "{{count}} elementu",
     "moveMode": "przenoszenie",
     "itemCount_few": "{{count}} elementy",
-    "itemCount_many": "{{count}} elementów"
+    "itemCount_many": "{{count}} elementów",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Plik został zmieniony",

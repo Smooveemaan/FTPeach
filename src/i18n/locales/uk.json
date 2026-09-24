@@ -178,7 +178,9 @@
     "itemCount_other": "{{count}} позиції",
     "moveMode": "переміщення",
     "itemCount_few": "{{count}} позиції",
-    "itemCount_many": "{{count}} позицій"
+    "itemCount_many": "{{count}} позицій",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Файл змінено",

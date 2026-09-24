@@ -172,7 +172,9 @@
   "dragMove": {
     "itemCount_one": "{{count}} στοιχείο",
     "itemCount_other": "{{count}} στοιχεία",
-    "moveMode": "μετακίνηση"
+    "moveMode": "μετακίνηση",
+    "copyHere": "Copy here",
+    "moveHere": "Move here"
   },
   "openWithChanged": {
     "title": "Το αρχείο άλλαξε",

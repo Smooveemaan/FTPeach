@@ -30,13 +30,16 @@ interface AutoWidenRecord {
   widenedWidth: number;
 }
 
-let measureCanvasCtx: CanvasRenderingContext2D | null = null;
+// The canvas is kept, not its context: getContext returns the same 2D context
+// on every call, and a context held here would outlive whatever produced it.
+let measureCanvas: HTMLCanvasElement | null = null;
 function measureTextWidth(text: string, font: string, letterSpacing: string): number {
-  if (!measureCanvasCtx) measureCanvasCtx = document.createElement('canvas').getContext('2d');
-  if (!measureCanvasCtx) return 0;
-  measureCanvasCtx.font = font;
-  if ('letterSpacing' in measureCanvasCtx) measureCanvasCtx.letterSpacing = letterSpacing || '0px';
-  return measureCanvasCtx.measureText(text).width;
+  measureCanvas ??= document.createElement('canvas');
+  const context = measureCanvas.getContext('2d');
+  if (!context) return 0;
+  context.font = font;
+  if ('letterSpacing' in context) context.letterSpacing = letterSpacing || '0px';
+  return context.measureText(text).width;
 }
 
 // Icon size (10) + .sort-indicator's own margin-inline-start (3px), from

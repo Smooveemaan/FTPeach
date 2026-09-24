@@ -67,17 +67,19 @@ interface TransferQueueProps {
   onColumnOrderChange?: ((order: string[]) => void) | undefined;
 }
 
-let transferMeasureCtx: CanvasRenderingContext2D | null = null;
+// The canvas is kept, not its context: getContext returns the same 2D context
+// on every call, and a context held here would outlive whatever produced it.
+let transferMeasureCanvas: HTMLCanvasElement | null = null;
 function measureLabelWidth(text: string, font: string, letterSpacing: string): number {
-  if (!transferMeasureCtx) transferMeasureCtx = document.createElement('canvas').getContext('2d');
-  if (!transferMeasureCtx) return 0;
-  transferMeasureCtx.font = font;
-  if ('letterSpacing' in transferMeasureCtx)
-    transferMeasureCtx.letterSpacing = letterSpacing || '0px';
+  transferMeasureCanvas ??= document.createElement('canvas');
+  const context = transferMeasureCanvas.getContext('2d');
+  if (!context) return 0;
+  context.font = font;
+  if ('letterSpacing' in context) context.letterSpacing = letterSpacing || '0px';
   // The header renders its label through `text-transform: uppercase`
   // (transfers.css); canvas measurement doesn't apply CSS, so match it by
   // hand or the measured width would undershoot an all-caps render.
-  return transferMeasureCtx.measureText(text.toUpperCase()).width;
+  return context.measureText(text.toUpperCase()).width;
 }
 
 /** The "Status" column's minimum must fit whichever status pill is widest,

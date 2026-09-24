@@ -181,3 +181,26 @@ formatting at 10,000, 50,000 and 100,000 entries. Local paired measurements on
 The comparison also asserted identical results for both sorting modes and byte labels.
 These are computation measurements on this workstation, with other validation work
 running concurrently, rather than UI latency guarantees or cross-machine limits.
+
+## Component test pool
+
+Vitest's default `forks` pool built a new jsdom for every test file: 48 files spent about 90 s of
+their summed worker time creating environments. `vmThreads` builds one jsdom per worker and gives
+each file a fresh VM context, so modules, `window.api`, timers and listeners still start clean per
+file. `test/component` now runs on `vmThreads`.
+
+Measured on 24 September 2026 on an idle 16-thread Windows machine, full component suite
+(397 tests), wall time from process start to exit, peak working set summed over the Node processes:
+
+| Pool | Runs (s) | Median | Median peak memory |
+| --- | --- | ---: | ---: |
+| `forks` | 19.7, 20.3, 21.1; 19.6, 19.6, 19.7, 20.0, 20.2 | 19.7 s | 3.0 GiB |
+| `threads` | 19.8, 19.8, 19.9 | 19.8 s | 3.1 GiB |
+| `vmThreads` | 17.6, 19.0, 19.3; 17.4, 17.8, 17.9, 18.1, 18.1 | 17.9 s | 3.1 GiB |
+
+About 9% faster at the same memory; the two rounds' ranges do not overlap. Both pools pass the
+whole suite with `--sequence.shuffle` under four seeds. Shuffling first exposed a leak between
+tests: `TransferQueue` and `useFileColumns` kept the first canvas 2D context they were given, so a
+test that mocked `getContext` set the text widths every later test measured. They now keep the
+canvas and ask it for its context on each measurement. `isolate: false` was not tried: it would
+share module state across files, which these tests are not written for.

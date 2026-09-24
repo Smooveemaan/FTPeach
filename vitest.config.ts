@@ -9,6 +9,9 @@ export default defineConfig({
     // Node tests live in test/unit; each runner owns a separate directory.
     include: ['test/component/**/*.test.{ts,tsx}'],
     restoreMocks: true,
+    // One jsdom per worker instead of per file, still a fresh VM context per
+    // file; measured in docs/frontend-performance.md.
+    pool: 'vmThreads',
     // Used by `npm run coverage`. Every production file counts, loaded or not;
     // see docs/coverage.md for what is left out and why.
     coverage: {

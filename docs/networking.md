@@ -7,7 +7,8 @@ A connection set up without a proxy connects directly: the WebDAV client is buil
 
 The global proxy setting applies to new FTP, FTPS, SFTP, and WebDAV connections. FTP/FTPS and
 SFTP tunnel their TCP connections through SOCKS4/4a, SOCKS5, or HTTP CONNECT. WebDAV uses the
-same proxy types through its HTTP client. Proxy credentials are stored in the protected vault.
+same proxy types through its HTTP client. The proxy password follows the secret-storage mode
+described in [security](security.md#secret-storage-modes).
 
 SOCKS4 supports IPv4 targets and DNS names through SOCKS4a, but the protocol has no IPv6 address
 type. Use SOCKS5 or HTTP CONNECT for an IPv6 literal. FTP active mode is disabled while a proxy is

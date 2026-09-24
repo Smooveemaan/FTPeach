@@ -1,7 +1,7 @@
-# Stage 2: lifecycle and resource budgets
+# Lifecycle and resource budgets
 
-This implements items 6–9 of the optimization plan. Transfer queue storage,
-virtualization and progress batching remain stage 3 work.
+How paused recursive operations, disconnects, local listings and connection
+registries stay within fixed memory and time budgets.
 
 ## Paused recursive operations
 
@@ -15,8 +15,8 @@ instead of requesting a missing journal. Written results are retained.
 Resume consumes its journal; Stop consumes it before attempting safe cleanup.
 Disconnect cancels matching recursive operations and releases their paused
 journals, logging retained target roots. Stop with an unavailable journal
-reports that written results may remain. Safety checks from stage 1 still
-govern deletion. Journals remain in RAM only; crash/restart recovery is not
+reports that written results may remain. The recursive-operation safety checks
+still govern deletion. Journals remain in RAM only; crash/restart recovery is not
 implemented or offered.
 
 ## Disconnect
@@ -98,12 +98,5 @@ journal memory rejection, stalled remove/disconnect with 40 paused uploads,
 10,000 missing session lookups and failed creations, 10,000 frontend metadata
 lifecycles, metadata failure injection, cancellation during enumeration, late
 successful replies after disconnect, and local navigation/unmount cancellation.
-The full Rust and frontend suites also retain stage 1's data-safety scenarios.
 
-Validation: 380 Rust library tests plus 4 example tests passed (9 ignored),
-256 frontend unit tests and 275 component tests passed. ESLint, TypeScript,
-Clippy with warnings denied, formatting, architecture checks and the renderer
-production build with its bundle budget passed.
-
-Live SMB faults, Docker compatibility, packaged WebView checks and long soak
-runs are not covered by these local tests; the release checks remain stage 5.
+Live SMB faults and long soak runs are not covered by any suite.

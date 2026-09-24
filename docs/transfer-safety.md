@@ -32,9 +32,7 @@ back. FTP has no atomic no-replace rename, so no FTP row above is atomic; see
 | Skipped nested file keeps the Move source | `recursive_transfer::tests::skip_merges_missing_files_and_retains_move_source` |
 | Move between endpoints touches nothing | `test/component/transfers/useTransfers.test.tsx` ("a move between different endpoints touches nothing"), `test/component/file-browser/dragMove.test.tsx` |
 
-## Audit history
-
-The P0 and P1 fixes from the September 2026 audit establish the following behavior.
+## Local and transfer policies
 
 | Operation | Policy | Regression coverage |
 | --- | --- | --- |
@@ -59,7 +57,7 @@ network filesystem's durability guarantees. Windows UNC fixtures use the local a
 share when available; set `FTPEACH_REQUIRE_UNC_FIXTURES=1` to require this coverage. Protocol
 fault tests use controlled backends, so they do not replace the real server compatibility suite.
 
-## Recursive P0 contracts (September 13, 2026)
+## Recursive operation contracts
 
 | Phase | Guarantee and conservative fallback |
 | --- | --- |
@@ -69,7 +67,7 @@ fault tests use controlled backends, so they do not replace the real server comp
 | Stop | Only a newly created local object with a matching identity can be removed. Files require the recorded version too; directories must still have their identity and must be empty at the native delete operation. Overwritten destinations are retained. Changed or unverifiable objects are retained and reported using the structured `cleanupIncomplete` code. |
 | Staging | Journals record the operation ID and exact retained staging paths. Recursive Stop never infers ownership from `.ftpeach-<UUID>.part`, never sweeps a folder for matching names and never follows a sidecar to delete its contents. Unverified partials are retained with diagnostics. A stopped upload's matching staging registry entry is forgotten so disconnect cannot subsequently delete that reported retained object. |
 | Remote rollback | Remote files and collections are retained because the adapters do not expose conditional object deletion. In particular, there is no WebDAV LIST-then-recursive-DELETE fallback; a file appearing in that interval cannot be deleted by rollback. |
-| Move | Copy/delete Move is enabled only between local endpoints on Windows. After the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is then opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. A conflict preserves the current source file and already delivered targets. Same-session remote server Rename remains available; other remote moves fail before writes with a Copy fallback. |
+| Move | Copy/delete Move is enabled only between local endpoints on Windows. After the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is then opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. A conflict preserves the current source file and already delivered targets. Same-session remote server Rename remains available; other moves are refused before any write, and the user can copy instead. |
 
 The source-deletion phase is irreversible and its journal never rolls back the destination,
 including after a later cancellation. This change does not claim protection against malicious
@@ -93,10 +91,9 @@ nonempty/replaced directories; and frontend notification of incomplete Stop clea
 FTP tests exercise cancellation with retained artifacts. Real-server compatibility and packaged
 smoke remain separate checks.
 
+## Resume, staging and pool contracts
 
-## P1 contracts
-
-HF-04 (September 22, revised September 24): creating a named empty file through FTP/FTPS
+Creating a named empty file through FTP/FTPS
 first checks for a current conflict, returning `alreadyExists` without writing. If absent, it
 sends `APPE` with an empty body and waits for the server's completion reply. `APPE` creates a
 missing file and appends to an existing one, so zero bytes leave the content of a file that
@@ -140,7 +137,7 @@ standard v3 RENAME for no-replace, never the overwriting posix-rename extension;
 Overwrite: F. Servers that violate SFTP v3 no-replace semantics can still replace a target
 created after the preliminary lstat. Server behavior requires compatibility testing.
 
-The accepted HF-02 policy (September 22, 2026) keeps ordinary FTP rename available: a free
+The accepted HF-02 policy keeps ordinary FTP rename available: a free
 name does not trigger an overwrite question, and a detected conflict requires confirmation.
 FTPeach checks the destination immediately before rename but does not claim atomic protection
 against another client creating it in that interval. Closing HF-02 accepts this protocol
@@ -155,19 +152,18 @@ commit and ancestor replacement still require separate handle-level adversarial 
 
 ### Validation
 
-The P1 regression suites run through npm test and npm run rust:test. Clippy, lint/TypeScript,
-format checks, Rust boundaries, i18n and production bundle checks are separate acceptance checks.
-P3 uses locale fixtures and excludes generated browser reports from source-language checks. The site-manager baseline was visually reviewed against the translated sort-field sizing test before updating. See [native validation](native-validation.md) for current results.
+These regression suites run through `npm test` and `npm run rust:test`, both part of `npm run check`.
+See [native validation](native-validation.md) and the [verification matrix](verification-matrix.md) for what else runs and when.
 Packaged smoke, physical power loss and the external server compatibility matrix are not covered
 by these unit/component/local-server results.
 
-The Windows file-symlink fixture is explicitly ignored by default because it requires a privilege. P3 ran it explicitly and passed; the earlier P1 run returned OS error 1314. Run `artifact_symlink_cannot_write_to_its_target --ignored` on a host with
+The Windows file-symlink fixture is ignored by default because it requires a privilege. Run `artifact_symlink_cannot_write_to_its_target --ignored` on a host with
 Developer Mode or SeCreateSymbolicLinkPrivilege. Hardlink fixtures and existing junction/reparse
-checks run normally. The three earlier ignored Rust tests remain ignored as well.
+checks run normally.
 
 A successful download consumes its UUID partial and removes its matching source metadata sidecar. Interrupted downloads may retain both; recursive Stop does not delete unverified artifacts.
 
-## Drag and drop contracts (September 13, 2026)
+## Open with uploads
 
 Open-with changes are queued once per copy with the latest dirty revision. An upload
 acknowledges only its captured revision; newer saves remain pending. While a copy's
@@ -180,6 +176,8 @@ Later dismisses the
 question without marking the copy synced; disconnect retains unsynced copies for
 recovery. Queue and revision regressions live in `openWithRecovery.test.tsx` and
 `local_fs::open_with::tests` (HF-07).
+
+## Drag and drop contracts
 
 Internal drags default to Move between local directories or within one remote connection; uploads, downloads and transfers between connections default to Copy. Ctrl requests Copy, Shift requests Move, and Ctrl+Shift is rejected. Copy/delete moves across endpoints are unavailable: `canMoveBetween` in `src/shared/movePolicy.ts` allows Move only between local directories or within one remote connection, and drag-and-drop, paste after Cut and the transfer routing all apply it, for files and folders alike. A refused paste keeps the cut so the user can copy instead; the routing refuses such a Move before any copy starts and never deletes a source after a copy. The backend can still reject a server rename; its error is surfaced without substituting Copy.
 

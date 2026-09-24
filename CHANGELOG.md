@@ -100,7 +100,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Editor copies survive temporary-folder cleanup and retain later saves when an editor
   keeps a file locked during shutdown. New editor opens pause when retained copies reach
   1 GiB or 30 days; existing edits are never automatically deleted.
-
 - Copying or moving several files now says how many did not make it, and a move that could
   not finish says the originals are still in place. A cut stays on the clipboard until its
   files have really moved.

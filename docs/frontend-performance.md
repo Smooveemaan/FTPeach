@@ -120,7 +120,9 @@ one-second stalled-speed display tick does not repeat the queue sort when transf
 
 Renderer-side folder contents, multi-selection copies, deletes after a move, and operating-system
 drops share a concurrency limit of eight operations. This prevents a large top-level selection from
-creating an unbounded `Promise.all` fan-out even though nested folder contents were already bounded.
+creating an unbounded `Promise.all` fan-out. A selection is also admitted to the transfer queue at
+most 64 items at a time, as earlier ones settle, so a 10,000-file selection does not build its
+whole queue in the renderer first.
 Selected entries are indexed by name once before routing, avoiding repeated linear scans of large
 directory listings.
 
@@ -137,7 +139,7 @@ then scans that index without rebuilding strings or looking up parents. Search p
 original result ordering and site references; replacing a site or parent invalidates the index.
 `npm run benchmark:frontend` reports index construction separately from query time.
 
-The log buffer retains at most 500 entries. An oversized batch still consumes an ID per event,
+The log buffer retains at most 5,000 entries and 4 MiB of text, as many as the backend keeps. An oversized batch still consumes an ID per event,
 but only retained entries are copied into stamped objects. Empty batches preserve snapshot
 identity. IDs are allocated at subscription delivery, so React Strict Mode updater replay cannot
 consume extra IDs. The benchmark includes 10,000–100,000-entry incoming batches.
@@ -146,7 +148,8 @@ The queue's one-second stalled-speed timer runs only while a row has `progress` 
 completed and empty queues do not request idle timer renders. Active transfers retain their
 existing stalled-speed updates.
 
-Local measurements on 7 September 2026 (median of five warm runs):
+Local measurements on 7 September 2026, when the log buffer kept 500 entries (median of five
+warm runs):
 
 | Entries | Build site index | Query prepared index | Append log batch, retain 500 |
 | ---: | ---: | ---: | ---: |

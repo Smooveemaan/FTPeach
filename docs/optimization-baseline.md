@@ -1,4 +1,4 @@
-# Stage 0: reproducible baseline and P0 regressions
+# Transfer store baseline and recursive-operation regressions
 
 Run `npm run benchmark:baseline -- .local/benchmarks/stage-0.json` on an idle machine, without tests or another benchmark running. Repeat the command into a second file before treating a difference as a regression. This is a measurement tool, not a timing assertion in ordinary CI. Keep Node version, hardware, power mode and fixture version fixed when comparing revisions.
 
@@ -12,7 +12,7 @@ The JSON includes schema/fixture versions, commit and dirty flag, environment, a
 
 The older `benchmark:frontend`, `benchmark:transfer-history` and `benchmark:transfer-ui` commands remain available. Their completed-history and Chromium results are separate scenarios, not interchangeable with the mixed-queue baseline.
 
-## P0 acceptance matrix
+## Recursive-operation acceptance matrix
 
 All tests below are in `src-tauri/src/application/recursive_transfer/tests.rs` and run with `npm run rust:test`. Local files are created only under unique temporary roots; remote cases use the in-memory `Server`, never a user's server. Hooks interrupt after a delivered file or inject a mutation after the final scan, without timing-dependent sleeps.
 
@@ -30,9 +30,9 @@ All tests below are in `src-tauri/src/application/recursive_transfer/tests.rs` a
 | Protected Windows handles deny writes/replacement through deletion | `protected_file_rejects_writes_and_replacement_until_handle_deletion` |
 | Unsupported remote copy/delete Move fails before writes | `copy_delete_moves_with_remote_endpoints_are_rejected_before_writes` |
 
-Stage 1 predates this baseline: existing regressions are retained and the missing local directory/overwrite and in-place Stop cases are added. Passing now verifies the fixed behavior; it does not claim that the historical bugs were rerun on an old executable. The remote rollback path refuses deletion without ownership, so it does not open a WebDAV LIST/DELETE race at all. Real protocol implementations still need the disposable-server compatibility suite before release.
+Passing verifies the fixed behavior; it does not claim that the historical bugs were rerun on an old executable. The remote rollback path refuses deletion without ownership, so it does not open a WebDAV LIST/DELETE race at all. Real protocol implementations still need the disposable-server compatibility suite before release.
 
-See [transfer safety](transfer-safety.md#recursive-p0-contracts-september-13-2026) for supported guarantees and explicit limits: remote Copy uses size/mtime, remote copy/delete Move is refused, unverified rollback objects remain, and local Move needs protected Windows handles. Equal-size remote changes with unchanged server mtime are not detected.
+See [transfer safety](transfer-safety.md#recursive-operation-contracts) for supported guarantees and explicit limits: remote Copy uses size/mtime, remote copy/delete Move is refused, unverified rollback objects remain, and local Move needs protected Windows handles. Equal-size remote changes with unchanged server mtime are not detected.
 
 ## Initial measurement (September 13, 2026)
 

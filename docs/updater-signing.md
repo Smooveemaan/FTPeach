@@ -6,7 +6,7 @@ Updater artifact signatures protect FTPeach updates from substitution. This is n
 
 `src-tauri/tauri.conf.json` contains only the public key. Never store the private key or its password in the repository, `.env`, release artifacts, or CI logs. Losing the private key prevents existing installations from accepting updates signed by a new pair, so keep a separate backup in secure storage.
 
-If no private key matches the current `plugins.updater.pubkey`, generate a new production pair before the first public release:
+Generating a pair is needed only to rotate the key; follow the rotation order in [release-trust.md](release-trust.md#the-updater-private-key), because installations accept only updates signed for the public key they already have:
 
 ```powershell
 npm.cmd exec tauri signer generate -- --write-keys C:\secure\ftpeach-updater.key
@@ -29,7 +29,7 @@ stops before the signing job when approval is not required
 ([release-trust.md](release-trust.md)).
 
 The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
-frontend, Rust and packaged smoke gates pass. It builds the Windows NSIS
+frontend, Rust, packaged smoke and protocol compatibility gates pass. It builds the Windows NSIS
 installer, creates its `.sig` and `latest.json`, verifies every signature with
 the configured production public key, attaches npm and Cargo CycloneDX SBOMs,
 and publishes a draft GitHub Release. Before publishing the draft, verify the

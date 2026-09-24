@@ -14,15 +14,19 @@ decides which window class may call it. The packaged smoke test then asks a live
 confirmation window which commands it can still reach, and fails if it reaches
 any. Application commands are grouped as follows:
 
-Shutdown sends `app:flush-state` only to `main`. The acknowledgement command
-`app_state_flushed` checks the invoking window label and the currently pending UUID;
-it cannot initiate shutdown or change settings. Missing/failed replies are logged
-after a three-second deadline when quitting, or a 400 ms one before hiding to the
-tray, where nothing is lost by giving up on the handshake. The handler is installed before the main UI mounts.
-
-- Read: `fs_list`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
+- Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
-  `vault_status`, `app_version`, `session_list`, `updater_status`, `updater_check`.
+  `vault_status`, `app_version`, `app_system_hour_cycle`, `session_list`, `log_recent`,
+  `updater_status`, `updater_check`.
+- Window and shell: `app_set_window_border`, `app_reset_layout`, `app_open_external`, which
+  opens only an `https://` URL, and `debug_open_devtools`, which does nothing in a release build.
+- Native pickers: `dialog_select_local_dir`, `dialog_select_key_file`,
+  `dialog_select_ca_cert_file` and `dialog_select_application`. A network share or a program picked
+  there is approved for later commands.
+- Drag-out: `drag_out_start` and `drag_out_start_local` start a native drag to Explorer while
+  the mouse button is still down.
+- Updater: `updater_download` and `updater_install`; the staged installer is verified again
+  before it runs, as described in [security](security.md#updater-endpoint-and-application).
 - Write: `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `sites_save`,
   `sites_save_folder`, `sites_apply_layout`, `settings_set`, `tabs_set`, `proxy_test`,
   session/transfer commands, logging, notifications, `tray_set_model`, `tray_hide_window`
@@ -45,7 +49,8 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
   `vault_note_activity` takes no argument and only records that the window has seen the
   user; it can postpone the backend's idle lock but cannot disable it, and it has no effect
   on the lock that follows a Windows session lock or a hidden window.
-- Ordinary list/edit IPC returns only secret-presence flags. Explicit reveal commands require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
+- Ordinary list/edit IPC returns only secret-presence flags. The reveal commands,
+  `sites_reveal_secret` and `settings_reveal_proxy_password`, require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.
 - Network paths: every command that resolves, stats or opens a local path refuses a
@@ -70,6 +75,17 @@ tray, where nothing is lost by giving up on the handshake. The handler is instal
 - Bookmarks: `sites_save` lives in the `sensitive` plugin. Its token names the bookmark and
   any move of its saved password to a new server, port, account or TLS policy; such a move
   is confirmed in the backend window first.
+
+The main window asks for a token with `authorize_sensitive`. A confirmation window uses
+`sensitive_confirmation_prompt`, `sensitive_confirmation_ready` and
+`respond_sensitive_confirmation`, and nothing else. The `smoke_*` commands exist only in the
+`smoke-test` build that the packaged smoke test runs.
+
+Shutdown sends `app:flush-state` only to `main`. The acknowledgement command
+`app_state_flushed` checks the invoking window label and the currently pending UUID;
+it cannot initiate shutdown or change settings. Missing/failed replies are logged
+after a three-second deadline when quitting, or a 400 ms one before hiding to the
+tray, where nothing is lost by giving up on the handshake. The handler is installed before the main UI mounts.
 
 The highest-risk commands (secret reveal, `vault_reset`, `fs_delete`, local
 path operations, and settings import/export) live in the inlined `sensitive`

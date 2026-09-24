@@ -12,6 +12,7 @@ test/
     sites/               Site models, forms and drag calculations
     transfers/           Queue state, speed and recursive traversal
     settings/            Date formatting and layout reset
+    logs/                Log buffer retention
     platform/            IPC contracts, errors and native window helpers
     shared/              Formatting, paths, locale helpers and resize reducer
     tooling/             Repository boundary checker tests
@@ -22,6 +23,9 @@ test/
     sites/               Site manager, drag controller and tree regressions
     transfers/           Transfer hook lifecycle
     settings/            Settings dialog
+    logs/                Log panel and connection labels
+    open-with/           Open with dialog and edit recovery
+    updater/             Update checks and installation
     platform/            Interface scale and Tauri adapter tests
     shared/              Dialogs, menus, drag and resize hooks
     helpers/             Global setup and Tauri test adapter
@@ -91,8 +95,7 @@ harness together rather than splitting a suite solely because it is long.
 ## Visual snapshots and updater fixtures
 
 `visual/main.tsx` renders the production application against `visual/visualTestApi.ts`.
-Snapshots in `visual/application.spec.ts-snapshots/` are Windows baselines, matching
-CI. Run `npm run test:visual:update` only after an intentional UI change, and inspect
+Snapshots in `visual/*.spec.ts-snapshots/` are Windows baselines, matching CI. Run `npm run test:visual:update` only after an intentional UI change, and inspect
 the resulting images before committing them.
 
 The harness accepts `?lang=<code>`. RTL scenarios wait for the application's

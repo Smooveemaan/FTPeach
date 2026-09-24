@@ -1,6 +1,6 @@
 # Audit regression coverage
 
-These are permanent suites included by npm test or npm run rust:test. The local audit harness asserted the old bugs; it is not an acceptance suite. P2 moved recursive execution to Rust, so backend tests now own traversal and destructive-phase assertions.
+These are permanent suites included by `npm test` or `npm run rust:test`. Recursive execution runs in Rust, so backend tests own traversal and destructive-phase assertions.
 
 | Audit | Observable assertion | Permanent suite |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ These are permanent suites included by npm test or npm run rust:test. The local 
 
 A07's file-symlink fixture is ignored by default because it requires Windows Developer Mode or SeCreateSymbolicLinkPrivilege. UNC fixtures must be explicitly required with FTPEACH_REQUIRE_UNC_FIXTURES=1 to prevent an unavailable administrative share from being treated as coverage. These limitations remain separate from passing ordinary unit tests. Native and real-server outcomes are recorded in [native validation](native-validation.md).
 
-P3 additionally ran the Windows symlink fixture explicitly and required UNC public-command fixtures successfully. The default ignored annotation remains portable to unprivileged hosts. Docker regressions now exercise foreign legacy partial preservation and real cancellation/Range resume against third-party servers.
+Docker regressions exercise foreign legacy partial preservation and real cancellation/Range resume against third-party servers.
 
 ## Security chains
 
@@ -55,4 +55,4 @@ Each row is a whole chain, from the renderer's request to the effect it must not
 | HF-51 | An unconfirmed share is refused from its text before any filesystem call; a confirmed one covers the paths below it in either spelling | [local open](../src-tauri/src/local_fs/local_open.rs) | A reachable share needs `FTPEACH_REQUIRE_UNC_FIXTURES=1` |
 | HF-14 | Concurrent unlock attempts are serialized and each counted once; a throttled request does not lengthen its own lockout | [vault command](../src-tauri/src/commands/vault.rs) | — |
 
-SAST rules guard the same chains from new code: a derived `Debug` on a plain-string credential, unbounded channels outside tests, and the raw security-setting keys outside `security_policy.rs` ([policy](../.semgrep/README.md)). The fixture step in CI used to report "No unit tests found" and pass; it now tests each fixture file and requires "All tests passed".
+SAST rules guard the same chains from new code: a derived `Debug` on a plain-string credential, unbounded channels outside tests, and the raw security-setting keys outside `security_policy.rs` ([policy](../.semgrep/README.md)). CI tests each rule fixture file and requires "All tests passed".

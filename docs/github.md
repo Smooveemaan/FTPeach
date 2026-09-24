@@ -3,20 +3,17 @@
 The public repository is `Smooveemaan/FTPeach`. Workflow responsibilities are
 listed in [the GitHub configuration guide](../.github/WORKFLOWS.md).
 
-## Before the first public push
+## Before pushing
 
 - Run `npm run check` from the repository root and review the result. CI also
   runs supply-chain, SAST, protocol compatibility and packaged application checks.
-- Review the exact files and Git history that will be published. The tracked
-  secret check inspects current working files, not previous commits.
-  Ignoring or deleting a file does not remove it from history.
+- Review the exact commits that will be published. The tracked secret check
+  inspects current working files, not previous commits, and ignoring or
+  deleting a file does not remove it from history.
 - Exclude local settings, credentials, private keys, assistant instructions,
   development notes, logs and generated output. Review screenshots for private
   server names, addresses and paths.
-- If development history contains private material, prepare a separate repository
-  from a reviewed source snapshot, or sanitize a separate copy of that history.
-  Do not mirror all development refs or push old tags without reviewing them.
-- Verify [asset provenance](legal/ASSET_PROVENANCE.md), the [license](../LICENSE)
+- After a dependency or asset change, verify [asset provenance](legal/ASSET_PROVENANCE.md), the [license](../LICENSE)
   and [third-party notices](legal/THIRD_PARTY_NOTICES.txt).
 
 ## Repository settings
@@ -32,8 +29,7 @@ files do not establish that they are enabled.
   is available. Enable secret scanning and push protection where available.
 - Configure the protected `release` environment and its signing secrets as
   described in [updater signing](updater-signing.md).
-- Verify the repository description, default branch and issue labels. Create a
-  first release before relying on the README's latest-release download link.
+- Verify the repository description, default branch and issue labels.
 
 ## CI on forks
 

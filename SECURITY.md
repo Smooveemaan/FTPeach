@@ -23,7 +23,7 @@ The threat model in [`docs/security.md`](docs/security.md) documents the risks F
 
 - Plain FTP sends passwords and files unencrypted.
 - A connection with **Allow invalid certificates** enabled can be intercepted.
-- The first SFTP connection to a host trusts its key, and a user can approve a changed host key.
+- With **Confirm a new SSH server key** turned off, the first SFTP connection to a host trusts its key; in any mode a user can approve a changed host key.
 - Malware running as the signed-in Windows user, or with access to the FTPeach process memory, can reach saved secrets.
 - Under system protection, saved secrets are readable by anyone signed in as that Windows user, without a master password.
 - An application opened through **Open with** can keep, sync, or leak the file it received.

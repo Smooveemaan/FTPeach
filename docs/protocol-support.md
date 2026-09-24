@@ -3,15 +3,18 @@
 | Capability | FTP | FTPS | SFTP | WebDAV |
 | --- | --- | --- | --- | --- |
 | Encryption | No | Explicit TLS | SSH | HTTPS with `https://` |
-| Server verification | No | PKI certificate | TOFU host key | PKI certificate |
+| Server verification | No | PKI certificate | Pinned host key, confirmed on first use | PKI certificate |
 | List/create/mkdir/rename/delete | Yes | Yes | Yes | Yes |
 | Upload/download | Yes | Yes | Yes | Yes |
 | Resume upload | Yes | Yes | Yes | No |
 | Resume download | Yes | Yes | Yes | Yes |
 | `chmod` | No | No | Yes | No |
-| Server-to-server relay | Yes | Yes | Yes | Yes |
+| Server-to-server copy (relay) | Yes | Yes | Yes | Yes |
+| Move within one connection | Yes | Yes | Yes | Yes |
 | SOCKS4/4a, SOCKS5, HTTP CONNECT | Yes | Yes | Yes | Yes |
 | Active data mode | Yes | Yes | Not applicable | Not applicable |
+
+Moving files between the computer and a server, or between two connections, is refused for every protocol; copy them instead.
 
 FTPS means explicit TLS (`AUTH TLS`), not implicit FTPS. TLS certificate verification is enabled; `allowInvalidCert` should be used only for deliberately trusted self-signed or legacy servers.
 

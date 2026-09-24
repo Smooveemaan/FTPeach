@@ -1,34 +1,6 @@
 # Settings and session storage
 
-## State at exit
-
-Before native shutdown, the main renderer receives `app:flush-state` with a fresh
-request ID. Settings cancel their 75 ms debounce and drain serialized revisions;
-tabs cancel their 400 ms debounce, enqueue the current snapshot (or clear if session
-saving is disabled), and await the writer. Failed settings retain their pending patch
-for retry; failed tab writes report failure. All state owners start their drains even
-if another owner is slow or fails. Only `main` can acknowledge the current request
-through `app_state_flushed`. The backend logs a failed acknowledgement or a three-second
-timeout and continues cleanup. Window close reads close-to-tray after the same
-handshake, but waits only 400 ms for it: hiding to the tray loses nothing if the
-debounce fires by itself a moment later, and the window has to disappear when the
-button is clicked. Hiding preserves the session. Quit and immediate update installation use the same
-handshake. Abrupt termination and an unresponsive renderer cannot guarantee the last
-unsent change (HF-12).
-
-## Protocol log budgets
-
-The writer admits at most 512 records without waiting on the disk. Text and event
-parameters are capped at 8 KiB, connection/server labels at 512 bytes each, and
-batches at 128 records (therefore below 1.3 MiB of payload). The recent ring retains
-at most 5,000 records and 4 MiB of accounted payload. Overflow drops disk/live
-records, keeps bounded recent history and queues one aggregate drop notice when
-the writer recovers; it never logs that notice recursively. The notice is a
-translated event (`log.droppedRecords`), so the panel shows it in the interface
-language while the log file and diagnostic bundle keep the English sentence. Renderer history and
-live batches waiting for a history response also have 5,000-entry/4 MiB limits.
-Quit and immediate update installation drain admitted log records with a two-second
-deadline. Daily rotation, age and directory-size policies still apply (HF-15).
+## Files and backups
 
 FTPeach currently supports the installed Windows storage model. It stores
 `settings.json`, `sites.json`, `local-paths.json`, `known_hosts.json`, and `tabs.json` under
@@ -91,6 +63,36 @@ dropped instead of stored after it. A write the backend refuses — a full disk,
 read-only profile — is reported to the user once rather than mistaken for a
 stored session; the next change retries it. The same applies to clearing the
 snapshot when session saving is turned off.
+
+## State at exit
+
+Before native shutdown, the main renderer receives `app:flush-state` with a fresh
+request ID. Settings cancel their 75 ms debounce and drain serialized revisions;
+tabs cancel their 400 ms debounce, enqueue the current snapshot (or clear if session
+saving is disabled), and await the writer. Failed settings retain their pending patch
+for retry; failed tab writes report failure. All state owners start their drains even
+if another owner is slow or fails. Only `main` can acknowledge the current request
+through `app_state_flushed`. The backend logs a failed acknowledgement or a three-second
+timeout and continues cleanup. Window close reads close-to-tray after the same
+handshake, but waits only 400 ms for it: hiding to the tray loses nothing if the
+debounce fires by itself a moment later, and the window has to disappear when the
+button is clicked. Hiding preserves the session. Quit and immediate update installation use the same
+handshake. Abrupt termination and an unresponsive renderer cannot guarantee the last
+unsent change (HF-12).
+
+## Protocol log budgets
+
+The writer admits at most 512 records without waiting on the disk. Text and event
+parameters are capped at 8 KiB, connection/server labels at 512 bytes each, and
+batches at 128 records (therefore below 1.3 MiB of payload). The recent ring retains
+at most 5,000 records and 4 MiB of accounted payload. Overflow drops disk/live
+records, keeps bounded recent history and queues one aggregate drop notice when
+the writer recovers; it never logs that notice recursively. The notice is a
+translated event (`log.droppedRecords`), so the panel shows it in the interface
+language while the log file and diagnostic bundle keep the English sentence. Renderer history and
+live batches waiting for a history response also have 5,000-entry/4 MiB limits.
+Quit and immediate update installation drain admitted log records with a two-second
+deadline. Daily rotation, age and directory-size policies still apply (HF-15).
 
 ## Updates
 

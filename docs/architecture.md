@@ -24,6 +24,8 @@ React UI -> feature hooks -> platform API -> Tauri commands
 | `local_fs/` | Validate and perform local filesystem and native file actions. |
 | `store/` | Persist sites, settings, tabs and known hosts. |
 | `security/` | Protect secrets and enforce authorization and connection policy. |
+| `runtime/` | Own process and window lifecycle: startup, shutdown, tray, logging, updater staging, confirmation windows and the vault auto-lock. |
+| `native_drag/` | Build the Windows data object for dragging remote and local files out to Explorer. |
 | `domain/`, `ipc.rs` | Define shared data and wire contracts respectively. |
 
 Recursive transfers expose only `Endpoint`, `Intent`, `Report`, `run` and `cancel`.
@@ -125,7 +127,8 @@ error type to be translated at every boundary would cost more than the coupling 
 ## Narrow dependencies
 
 `SftpBackend::new` takes an `Arc<dyn KnownHostsStore>`, not a `Store`. The backend performs one
-persistence operation — pinning or verifying a host key on first sight — and
+persistence operation — checking a host key against its pin, and pinning an unknown one only
+when the connection's policy allows trust on first use — and
 `protocol/known_hosts.rs` declares exactly that; `store/known_hosts.rs` implements it. The interface restricts the backend to host-key persistence.
 
 Remote path validation and authorization live in `security/`: `security/connection_guard.rs` for remote paths

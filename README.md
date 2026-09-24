@@ -6,7 +6,7 @@ A desktop file transfer client for Windows.
 [![Latest release](https://img.shields.io/github/v/release/Smooveemaan/ftpeach)](https://github.com/Smooveemaan/ftpeach/releases/latest)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Browse local and remote folders side by side, move files between servers, and keep track of every transfer in one window. FTPeach supports **FTP, FTPS, SFTP, and WebDAV**, with tabs, saved connections, and an interface available in 27 languages.
+Browse local and remote folders side by side, copy files between servers, and keep track of every transfer in one window. FTPeach supports **FTP, FTPS, SFTP, and WebDAV**, with tabs, saved connections, and an interface available in 27 languages.
 
 **[Download for Windows](https://github.com/Smooveemaan/ftpeach/releases/latest)** · [Release notes](CHANGELOG.md) · [Documentation](docs/README.md) · [Report a bug](https://github.com/Smooveemaan/ftpeach/issues)
 

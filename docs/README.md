@@ -9,13 +9,16 @@
 - [Verification matrix](verification-matrix.md): lanes, ignored tests, protocol contracts under faults and the release matrix.
 - [Test server matrix](test-server-matrix.md): the client against many real servers, proxies and faulty links; running it and adding a server.
 - [Code coverage](coverage.md): what each runner measures, the floors and the baseline.
+- [Duplication](duplication.md): the per-area gate, its baseline and the decisions on each clone.
+- [Transfer store baseline](optimization-baseline.md): reproducible queue and listing benchmarks.
+- [Decision records](adr/): choices that are easy to question later, with their reasons.
 - [Scripts](../scripts/README.md) and [tests](../test/README.md): commands and directory layout.
 
 ## Runtime behavior
 
 - [Protocol support](protocol-support.md) and [networking](networking.md).
 - [Storage](storage.md) and [transfer safety](transfer-safety.md).
-- [Resilience validation](p2-resilience.md) and [native validation](native-validation.md).
+- [Resilience design](p2-resilience.md), [lifecycle and resource budgets](optimization-lifecycle.md) and [native validation](native-validation.md).
 
 ## Security and releases
 

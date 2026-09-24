@@ -13,28 +13,29 @@ The release workflow requires both the shared checks (including packaged smoke a
 | [Server matrix](test-server-matrix.md) | Weekly and on demand: about thirty server implementations and configurations, IIS, SOCKS/HTTP proxies, relays between servers and Toxiproxy faults (latency, drops, a silent server) | Not a release gate; active-mode FTP only on Linux runners; real WAN conditions |
 | cargo deny | Current advisory database and license policy for the locked graph | Proof of absence of exploitable bugs; ignored advisories remain accepted risks |
 
-## HF-24 verification run, Windows, 2026-09-23
+## Recorded runs
 
-The lanes, ignored tests and release matrix are in
-[verification-matrix.md](verification-matrix.md), which records each result.
-This run found two regressions only real servers could show, both in
-unpushed commits: FTP login sent `PASS [REDACTED]` (the password became a
-`SensitiveString` with a redacting `Display`), and the matrix and Docker
-suites could not reach SFTP or http:// WebDAV once an unconfirmed host key
-and cleartext sign-in were refused by default. The first is fixed and caught
-by the local FTP fixtures; the suites now opt into both explicitly and assert
-the refusing default.
+Each row is what one Windows run proved on that date; counts are not updated
+afterwards. Evidence logs stay in the maintainer's `.local/` folder. NOT RUN
+means the check did not execute, never that it passed. Per-test results for the
+ignored suites are in [verification-matrix.md](verification-matrix.md).
 
-Server matrix: 616 passed, including IIS. Docker compatibility: 14 and 2
-passed. Rebex FTPS/SFTP and the cross-volume move passed. NOT RUN: the
-symlink fixture (privilege not held), IPv6 loopback (EACCES on this host) and
-the external WebDAV test (no server). Evidence: `.local/hf24-*.log`.
+| Date | Scope | Passed | NOT RUN |
+| --- | --- | --- | --- |
+| 2026-09-24 | `npm run check` on `2a68b2c` before the next release; fresh `npm audit` and `cargo deny` | 350 Node, 488 component, 73 browser, 586 Rust library, 4 example and 22 parser tests; lint, formatting, policies, localization, licenses, duplication, coverage floors, Clippy, bundle budget, updater fixtures; no npm advisories, cargo deny clean; Semgrep 0 findings; Docker compatibility 14 and 2 | Server matrix, packaged smoke, privileged Windows fixtures |
+| 2026-09-23 | HF-24 verification | Server matrix 616 including IIS; Docker compatibility 14 and 2; Rebex FTPS/SFTP; cross-volume move | Symlink fixture (privilege not held), IPv6 loopback (EACCES), external WebDAV (no server) |
+| 2026-09-23 | P1 hotfix completion on `0c9fc61` | `npm run check`: 301 Node, 361 component, 65 browser, 504 Rust library, 4 example and 22 parser tests; packaged build and smoke | Docker compatibility, server matrix, privileged fixtures, cargo deny, production installation |
+| 2026-09-22 | P0 completion | Rust suites; `cross_volume_disk_move` C: to D:; editor-handle recovery; packaged smoke through `shutdown::wind_down`; rename on IIS FTP, Unix-listing FTP, FTPS and WebDAV | 29 server-matrix profiles |
+| 2026-09-07 | P3 acceptance | Packaged build and smoke; Docker compatibility 12; strict TLS endpoints; symlink fixture; UNC public commands with `FTPEACH_REQUIRE_UNC_FIXTURES=1`; cargo deny with eight documented exceptions | — |
 
-## P1 hotfix completion, Windows, 2026-09-23
+The HF-24 run found two regressions only real servers could show: FTP login
+sent `PASS [REDACTED]` once the password became a `SensitiveString`, and the
+matrix and Docker suites could not reach SFTP or `http://` WebDAV once an
+unconfirmed host key and cleartext sign-in were refused by default. Both are
+fixed; the local FTP fixtures now catch the first, and the suites opt into both
+explicitly and assert the refusing default.
 
-This is the current HF hotfix queue (19 P1 items, including HF-54), not the
-older A06-A18 audit in transfer-safety.md. The implementation revision is
-`0c9fc61`; P0 completion remains recorded separately below.
+## Hotfix traceability
 
 | Item | Implementation commits | Regression evidence |
 | --- | --- | --- |
@@ -46,7 +47,7 @@ older A06-A18 audit in transfer-safety.md. The implementation revision is
 | HF-42 | `89a5784`, `0c9fc61` | Bounded FTP/FTPS/encoding-relay replies and active peers; standalone fuzz workspace uses the same patched reader |
 | HF-43 | `7a0a615` | Held updater object, path substitution and rollback fixtures; no installer launched |
 | HF-09, HF-10 | `66ed95e` | Failed encryption retains prior secret; delayed reveal cannot overwrite a different site or newer input |
-| HF-04 | `8d23084` | Real TCP FTP fixture: existing bytes and a file arriving after listing survive; unsupported creation leaves no artifacts |
+| HF-04 | `8d23084`, `afd4455` | Real TCP FTP fixture: existing bytes and a file arriving after the check survive an empty `APPE`; a refused `APPE` stores nothing |
 | HF-07 | `f061d1c`, `ea077bd`, `25068be` | Revision queue, A/B/C edits, edits during upload, failure/retry, disconnect and native recovery |
 | HF-05 | `e9f10a3` | Per-item batch results, retained originals and cut clipboard behavior |
 | HF-06 | `5712c79` | Deferred worker barrier and bounded batch admission |
@@ -56,11 +57,13 @@ older A06-A18 audit in transfer-safety.md. The implementation revision is
 | HF-22 | `fdb8668` | CI classifier recognizes frontend JSON compiled into Rust |
 | HF-54 | `5712c79`, `75d3bd2`, `e9f10a3` | Batch/persistence reproductions run in the normal unit/component suites |
 
-HF-04 closes with an explicit functional restriction: New file on FTP/FTPS
-returns `createUnsupported` when the requested name is free, because the adapter
-has no exclusive publication capability. It never sends STOR/RNTO for this
-operation. Existing targets return `alreadyExists`; SFTP/WebDAV creation remains
-available. This is distinct from the accepted FTP rename race in HF-02.
+Two items closed with a recorded protocol limit. HF-02: FTP rename to an
+apparently free name proceeds without an overwrite prompt and a detected
+conflict requires confirmation, but another client can still create the target
+between the check and RNTO. HF-04: New file on FTP/FTPS sends an empty `APPE`,
+so a file that arrives after the check keeps its content, but success does not
+prove the file is new, and a server answering 502/504 yields `createUnsupported`.
+There is never a STOR fallback.
 
 The packaged smoke adds a tab and changes pane orientation, then immediately
 enters the real `wind_down` shared by quit and immediate update installation.
@@ -69,64 +72,10 @@ files, as well as verifying editor recovery and vault locking. It does not launc
 an installer. A crashed/unresponsive renderer has a bounded fallback with a log
 diagnostic, not a guarantee of preserving changes it never sent.
 
-Full `npm run check`: PASS in one invocation, exit 0, on `0c9fc61`.
-301 Node unit tests, 361 component tests, 65 browser tests, 504 Rust library
-tests, four Rust example tests and 22 parser regression tests passed. The same
-invocation passed lint/TypeScript, formatting, source policies, localization,
-licenses, Clippy, production build/bundle checks and valid/damaged updater
-fixtures. Packaged native build and smoke passed separately.
-
-Evidence: `.local/p1-completion-check.log`, `.local/p1-smoke-build.log`,
-`.local/p1-smoke.log`. Nine Rust tests remain ignored in the default suite;
-they are not passes. Docker compatibility, external server matrix, privileged
-Windows fixtures, fresh cargo deny and production installation were not rerun
-for this completion; their separate release requirements remain in force.
-
-## P0 completion checks, Windows, 2026-09-22
-
-- Rust: 454 library tests and four example tests passed; nine remain ignored by default.
-- The explicit `cross_volume_disk_move` fixture passed between C: and D:, including
-  no-replace collision and approved overwrite. The fixture first verifies error 17 from
-  an ordinary rename to prove it is really exercising two volumes.
-- Native recovery tests hold editor handles with and without delete sharing, and with
-  exclusive access. Late saves survive shutdown even when the copy was initially clean.
-- Packaged WebView2 smoke verifies edited-copy recovery and vault locking through the real
-  `shutdown::wind_down` shared by quit and immediate update installation. It does not launch
-  a production installer. Smoke storage explicitly uses its isolated LOCALAPPDATA because
-  Windows KnownFolder resolution can ignore the process environment override.
-- The rename scenario passed on IIS FTP, FTP with Unix listings, FTPS and WebDAV. The
-  matrix output also contains 29 NOT RUN profiles; they are not server coverage.
-- Unit/component tests, lint/TypeScript, Clippy and production build/bundle checks passed.
-
-Evidence: `.local/p0-completion-*.log`, `.local/p0-cross-volume.log`,
-`.local/p0-iis-rename.log`, `.local/p0-smoke*.log`. HF-02 was closed with an explicitly
-accepted FTP limitation: rename to an apparently free name proceeds without an overwrite
-prompt; a detected conflict requires confirmation. The check-then-rename race with another
-client remains possible. Passing these tests does not prove atomic no-replace on FTP.
-
 ## Reproduction
 
-Run npm run check as one invocation. Native smoke uses npm run build:packaged-smoke followed by npm run test:packaged-smoke; see [harness instructions](../scripts/packaged-smoke/README.md). Run cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses for a fresh dependency check.
+Run `npm run check` as one invocation. Native smoke uses `npm run build:packaged-smoke` followed by `npm run test:packaged-smoke`; see [harness instructions](../scripts/packaged-smoke/README.md). Run `cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses` for a fresh dependency check.
 
-For live servers, start docker compose -f src-tauri/tests/docker/docker-compose.yml up --detach, then run powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command compatibility on Windows. The helper keeps the verified Release CRT library configured for the entire Cargo invocation. Stop those fixture containers after testing. CI also verifies strict TLS endpoint versions before running Rust.
+For live servers, start `docker compose -f src-tauri/tests/docker/docker-compose.yml up --detach`, then run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command compatibility` on Windows. The helper keeps the verified Release CRT library configured for the entire Cargo invocation. Stop those fixture containers after testing. CI also verifies strict TLS endpoint versions before running Rust.
 
 Every ignored Rust test, with what it needs and the command that runs it, is listed in [verification-matrix.md](verification-matrix.md). The Docker target running zero tests without test-utils/--ignored is NOT compatibility coverage. Physical power loss, external-process ancestor races and TPM require separate fixture hardware or manual testing.
-
-## P3 run, Windows, 2026-09-07
-
-Fresh cargo deny: advisories ok, licenses ok with eight documented exceptions. Dependency paths were captured with cargo tree --locked -i for rsa, paste, unic-char-range and bincode@1.3.3. Local logs use .local/logs/p3-*.log. The full check result is recorded below.
-
-The site-manager screenshot was inspected as expected/actual: the sort trigger changes from a fixed width to the translated option width, consistent with the existing English/Russian geometry test. The reviewed baseline was updated; the geometry test still checks stable width after selection and matching dropdown width.
-
-| P3 acceptance run | Result | Local evidence |
-| --- | --- | --- |
-| Packaged native build and smoke | PASS: real WebView2 process exits successfully after checks | p3-smoke-build.log, p3-smoke.log |
-| Docker compatibility | PASS: 12 passed, zero failed/ignored | p3-compatibility.log |
-| Strict TLS endpoints | PASS: each accepts its configured version and rejects the other | p3-tls-endpoints.log |
-| Windows file-symlink artifact | PASS: explicit ignored fixture preserves target bytes | p3-symlink.log |
-| Protected public commands with required UNC | PASS with FTPEACH_REQUIRE_UNC_FIXTURES=1 | p3-unc.log |
-| Fresh advisories/licenses | PASS with eight unchanged exceptions | p3-cargo-deny.log |
-
-The additional Windows fixtures used the existing test binary built from the unchanged safety modules. The default suite still reports four ignored tests; the symlink case was separately executed, while the three public-server tests were not. Real-server resume fixtures now preserve deliberately incorrect legacy partial bytes and verify that cancellation/resume consumes the owned UUID artifact and requests the missing HTTP range. Per-run remote resume directories prevent a failed earlier run from poisoning later SFTP mkdir checks.
-
-Full npm run check: PASS in one invocation, exit 0. 191 Node tests, 103 component tests, eight visual tests and 239 Rust tests passed; four Rust cases were ignored in the default invocation as detailed above. Lint/TypeScript, formatting, source policies, Clippy, production build/bundle budget and valid/damaged updater fixtures passed. Evidence: .local/logs/p3-check.log.

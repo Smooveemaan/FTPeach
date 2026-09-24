@@ -110,8 +110,13 @@
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  padding-inline-end: 30px;
   transition: border-color 0.45s ease, box-shadow 0.45s ease;
+}
+
+/* Reserve room for the eye/lock icon only while one is shown, so an empty
+   field's placeholder gets the whole width instead of clipping early. */
+.password-input:has(> .password-visibility-toggle, > .password-protected-indicator) > input {
+  padding-inline-end: 30px;
 }
 
 .password-input.is-invalid > input {
@@ -181,8 +186,11 @@
 }
 
 
+/* Cancel the label's 8px hit-area padding on both sides so the visible gap
+   is the bar's own 8px gap between neighbours (checkbox after checkbox too)
+   and its 14px padding at the edge, not gap + padding. */
 .connection-bar .secure-toggle {
-  margin-inline-start: -8px;
+  margin-inline: -8px;
 }
 
 .secure-toggle {

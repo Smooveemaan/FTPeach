@@ -62,12 +62,12 @@
         "approve": "שמירת הסיסמה"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "זהו החיבור הראשון לשרת הזה. לפני מתן אמון, יש להשוות את טביעת האצבע שלהלן לזו שנמסרה על ידי מנהל השרת.",
+        "approve": "מתן אמון בשרת הזה"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "המפתח שבו השרת הזה מזדהה השתנה. זה קורה לאחר התקנה מחדש, אבל כך נראית גם התחזות.",
+        "approve": "מתן אמון במפתח החדש"
       }
     },
     "savedAs": "נשמר במחשב הזה בשם: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "אישורי האבטחה יכובו.",
       "autoLockNever": "הכספת לא תינעל יותר לאחר חוסר פעילות.",
       "autoLockMinutes": "הכספת תינעל לאחר {{minutes}} דקות של חוסר פעילות.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "מפתח לא מוכר של שרת SSH יתקבל ללא שאלה בחיבור הראשון."
     },
     "transferFrom": "נשמרה עבור: {{recipient}}",
     "transferTo": "שרת חדש: {{recipient}}",
     "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את אישור השרת.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "שרת: {{target}}",
+      "expected": "המפתח שהיה מהימן עד עכשיו: {{fingerprint}}",
+      "actual": "המפתח המוצע כעת: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -417,10 +417,10 @@
       "autoLock": "נעילה אוטומטית לאחר, דקות",
       "autoLockDisabled": "מושבת",
       "autoLockHint": "נועל את הכספת לאחר חוסר פעילות. חיבורי שרת קיימים נשארים פעילים; 0 מבטל את הנעילה האוטומטית.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "הכספת ננעלת גם כש-Windows ננעל או כשחלון FTPeach מוסתר, בלי קשר לטיימר הזה.",
+      "lockScope": "הנעילה אינה מנתקת חיבורים פתוחים, כולל העברות חדשות שהם מתחילים. שמירה או הצגה של סיסמה ידרשו ביטול נעילה מחדש.",
+      "strictHostKey": "אישור מפתח חדש של שרת SSH",
+      "strictHostKeyHint": "שואל לפני מתן אמון במפתח של שרת SSH בפעם הראשונה ומציג את טביעת האצבע שלו. בלי זה, המפתח הראשון שמציע שרת כלשהו מתקבל בשקט.",
       "changePassword": "שינוי סיסמת המאסטר",
       "change": "שינוי סיסמה",
       "systemUnlock": "אפשר ביטול נעילה באמצעות המערכת",
@@ -600,7 +600,7 @@
     "cancelledByUser": "בוטל על ידי המשתמש",
     "stoppedDash": "נעצר",
     "resume": "המשך",
-    "pause": "Pause",
+    "pause": "השהיה",
     "retry": "נסה שוב",
     "stop": "עצור",
     "pauseUnsupportedCopy": "השהיה אינה נתמכת בעת העתקה בין שרתים",
@@ -780,8 +780,8 @@
       "label": "אמת אישור"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "כתובת http:// שולחת את הסיסמה ללא הצפנה. FTPeach מנסה קודם https:// ולא מתחבר בלי האפשרות הזו.",
+      "label": "אפשר כניסה ללא הצפנה"
     },
     "authToggle": {
       "tooltip": "התחבר באמצעות קובץ מפתח SSH פרטי במקום סיסמה",

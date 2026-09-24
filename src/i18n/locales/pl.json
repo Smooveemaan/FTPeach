@@ -62,12 +62,12 @@
         "approve": "Zachowaj hasło"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "To pierwsze połączenie z tym serwerem. Zanim mu zaufasz, porównaj poniższy odcisk z odciskiem przekazanym przez administratora serwera.",
+        "approve": "Zaufaj serwerowi"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Klucz, którym ten serwer się przedstawia, zmienił się. Tak bywa po ponownej instalacji, ale tak samo wygląda podszywanie się pod serwer.",
+        "approve": "Zaufaj nowemu kluczowi"
       }
     },
     "savedAs": "Zapisywany na tym komputerze jako: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Potwierdzenia bezpieczeństwa zostaną wyłączone.",
       "autoLockNever": "Sejf nie będzie już blokowany po okresie bezczynności.",
       "autoLockMinutes": "Sejf zostanie zablokowany po {{minutes}} min bezczynności.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Nieznany klucz serwera SSH zostanie przy pierwszym połączeniu zaakceptowany bez pytania."
     },
     "transferFrom": "Zapisane dla: {{recipient}}",
     "transferTo": "Nowy serwer: {{recipient}}",
     "transferLessSecure": "Nowe połączenie nie jest szyfrowane lub nie sprawdza certyfikatu serwera.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Serwer: {{target}}",
+      "expected": "Klucz zaufany do tej pory: {{fingerprint}}",
+      "actual": "Klucz przedstawiony teraz: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -421,10 +421,10 @@
       "autoLock": "Automatyczna blokada po, min",
       "autoLockDisabled": "Wyłączone",
       "autoLockHint": "Blokuje sejf po okresie bezczynności. Otwarte połączenia z serwerami pozostają aktywne; 0 wyłącza automatyczną blokadę.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Sejf blokuje się także po zablokowaniu Windows lub ukryciu okna FTPeach, niezależnie od tego licznika czasu.",
+      "lockScope": "Blokada nie przerywa otwartych połączeń ani nowych transferów, które w nich startują. Zapisanie lub pokazanie hasła wymaga ponownego odblokowania.",
+      "strictHostKey": "Potwierdzaj nowy klucz serwera SSH",
+      "strictHostKeyHint": "Pyta przed pierwszym zaufaniem kluczowi serwera SSH i pokazuje jego odcisk. Bez tego pierwszy klucz przedstawiony przez serwer jest akceptowany bez ostrzeżenia.",
       "changePassword": "Zmień hasło główne",
       "change": "Zmień hasło",
       "systemUnlock": "Zezwalaj na odblokowanie przez system",
@@ -606,7 +606,7 @@
     "cancelledByUser": "Anulowane przez użytkownika",
     "stoppedDash": "zatrzymano",
     "resume": "Wznów",
-    "pause": "Pause",
+    "pause": "Wstrzymaj",
     "retry": "Spróbuj ponownie",
     "stop": "Zatrzymaj",
     "pauseUnsupportedCopy": "Podczas kopiowania między serwerami nie można wstrzymać transferu",
@@ -790,8 +790,8 @@
       "label": "Weryfikuj certyfikat"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Adres http:// wysyła hasło bez szyfrowania. FTPeach najpierw próbuje https:// i bez tej opcji się nie zaloguje.",
+      "label": "Zezwalaj na logowanie bez szyfrowania"
     },
     "authToggle": {
       "tooltip": "Loguj się plikiem prywatnego klucza SSH zamiast hasłem",

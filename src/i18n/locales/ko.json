@@ -62,12 +62,12 @@
         "approve": "비밀번호 유지"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "이 서버에 처음 연결합니다. 신뢰하기 전에 아래 지문을 서버 관리자에게서 받은 지문과 비교하세요.",
+        "approve": "이 서버 신뢰"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "이 서버가 자신을 증명하는 키가 변경되었습니다. 재설치 후에 이런 일이 생기지만, 서버를 사칭하는 경우에도 똑같이 보입니다.",
+        "approve": "새 키 신뢰"
       }
     },
     "savedAs": "이 컴퓨터에 다음 이름으로 저장됩니다: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "보안 확인이 꺼집니다.",
       "autoLockNever": "보관소가 유휴 상태에서 더 이상 잠기지 않습니다.",
       "autoLockMinutes": "보관소가 {{minutes}}분 동안 사용하지 않으면 잠깁니다.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "처음 연결할 때 알 수 없는 SSH 서버 키를 묻지 않고 신뢰합니다."
     },
     "transferFrom": "저장 대상: {{recipient}}",
     "transferTo": "새 서버: {{recipient}}",
     "transferLessSecure": "새 연결은 암호화되지 않거나 서버 인증서를 확인하지 않습니다.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "서버: {{target}}",
+      "expected": "지금까지 신뢰한 키: {{fingerprint}}",
+      "actual": "현재 제시된 키: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "자동 잠금 시간(분)",
       "autoLockDisabled": "비활성화됨",
       "autoLockHint": "일정 시간 활동이 없으면 보관소를 잠급니다. 열려 있는 서버 연결은 유지되며, 0으로 설정하면 자동 잠금이 꺼집니다.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "이 타이머 설정과 관계없이 Windows가 잠기거나 FTPeach 창이 숨겨지면 보관소도 잠깁니다.",
+      "lockScope": "잠가도 열려 있는 연결은 끊기지 않으며, 그 연결에서 시작되는 새 전송도 계속됩니다. 비밀번호를 저장하거나 표시하려면 다시 잠금 해제해야 합니다.",
+      "strictHostKey": "새 SSH 서버 키 확인",
+      "strictHostKeyHint": "SSH 서버의 키를 처음 신뢰하기 전에 묻고 지문을 표시합니다. 이 옵션이 없으면 서버가 처음 제시한 키를 알리지 않고 신뢰합니다.",
       "changePassword": "마스터 비밀번호 변경",
       "change": "비밀번호 변경",
       "systemUnlock": "시스템 인증으로 잠금 해제 허용",
@@ -594,7 +594,7 @@
     "cancelledByUser": "사용자에 의해 취소됨",
     "stoppedDash": "중지됨",
     "resume": "재개",
-    "pause": "Pause",
+    "pause": "일시 중지",
     "retry": "다시 시도",
     "stop": "중지",
     "pauseUnsupportedCopy": "서버 간 복사는 일시 중지할 수 없습니다",
@@ -770,8 +770,8 @@
       "label": "인증서 검증"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "http:// 주소는 비밀번호를 암호화하지 않고 보냅니다. FTPeach는 먼저 https://를 시도하며, 이 옵션이 없으면 로그인하지 않습니다.",
+      "label": "암호화되지 않은 로그인 허용"
     },
     "authToggle": {
       "tooltip": "비밀번호 대신 SSH 개인 키 파일로 로그인",

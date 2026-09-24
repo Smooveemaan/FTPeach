@@ -62,12 +62,12 @@
         "approve": "Διατήρηση κωδικού"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Αυτή είναι η πρώτη σύνδεση με αυτόν τον διακομιστή. Πριν τον εμπιστευτείτε, συγκρίνετε το αποτύπωμα παρακάτω με αυτό που σας έδωσε ο διαχειριστής του διακομιστή.",
+        "approve": "Εμπιστοσύνη στον διακομιστή"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Το κλειδί με το οποίο ταυτοποιείται αυτός ο διακομιστής άλλαξε. Αυτό συμβαίνει μετά από επανεγκατάσταση, αλλά έτσι φαίνεται και ένας διακομιστής που υποδύεται τον πραγματικό.",
+        "approve": "Εμπιστοσύνη στο νέο κλειδί"
       }
     },
     "savedAs": "Αποθηκεύεται σε αυτόν τον υπολογιστή ως: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Οι επιβεβαιώσεις ασφαλείας θα απενεργοποιηθούν.",
       "autoLockNever": "Το θησαυροφυλάκιο δεν θα κλειδώνει πλέον μετά από αδράνεια.",
       "autoLockMinutes": "Το θησαυροφυλάκιο θα κλειδώνει μετά από {{minutes}} λεπτά αδράνειας.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Ένα άγνωστο κλειδί διακομιστή SSH θα γίνεται αποδεκτό χωρίς ερώτηση στην πρώτη σύνδεση."
     },
     "transferFrom": "Αποθηκευμένος για: {{recipient}}",
     "transferTo": "Νέος διακομιστής: {{recipient}}",
     "transferLessSecure": "Η νέα σύνδεση δεν είναι κρυπτογραφημένη ή δεν ελέγχει το πιστοποιητικό του διακομιστή.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Διακομιστής: {{target}}",
+      "expected": "Κλειδί που ήταν έμπιστο μέχρι τώρα: {{fingerprint}}",
+      "actual": "Κλειδί που προσφέρεται τώρα: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Αυτόματο κλείδωμα μετά από, λεπτά",
       "autoLockDisabled": "Απενεργοποιημένο",
       "autoLockHint": "Κλειδώνει το θησαυροφυλάκιο μετά από αδράνεια. Οι υπάρχουσες συνδέσεις με διακομιστές παραμένουν ενεργές· το 0 απενεργοποιεί το αυτόματο κλείδωμα.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Το θησαυροφυλάκιο κλειδώνει επίσης όταν κλειδώνουν τα Windows ή όταν κρύβεται το παράθυρο του FTPeach, ανεξάρτητα από αυτό το χρονόμετρο.",
+      "lockScope": "Το κλείδωμα δεν διακόπτει τις ανοιχτές συνδέσεις, ούτε τις νέες μεταφορές που ξεκινούν μέσα από αυτές. Για αποθήκευση ή εμφάνιση κωδικού πρόσβασης θα χρειαστεί νέο ξεκλείδωμα.",
+      "strictHostKey": "Επιβεβαίωση νέου κλειδιού διακομιστή SSH",
+      "strictHostKeyHint": "Ρωτά πριν εμπιστευτεί για πρώτη φορά το κλειδί ενός διακομιστή SSH και δείχνει το αποτύπωμά του. Χωρίς αυτό, το πρώτο κλειδί που προσφέρει ένας διακομιστής γίνεται αποδεκτό σιωπηλά.",
       "changePassword": "Αλλαγή κύριου κωδικού πρόσβασης",
       "change": "Αλλαγή κωδικού πρόσβασης",
       "systemUnlock": "Να επιτρέπεται το ξεκλείδωμα μέσω του συστήματος",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Ακυρώθηκε από τον χρήστη",
     "stoppedDash": "διακόπηκε",
     "resume": "Συνέχιση",
-    "pause": "Pause",
+    "pause": "Παύση",
     "retry": "Επανάληψη",
     "stop": "Διακοπή",
     "pauseUnsupportedCopy": "Δεν είναι δυνατή η παύση κατά την αντιγραφή μεταξύ διακομιστών",
@@ -770,8 +770,8 @@
       "label": "Επαλήθευση πιστοποιητικού"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Μια διεύθυνση http:// στέλνει τον κωδικό πρόσβασης χωρίς κρυπτογράφηση. Το FTPeach δοκιμάζει πρώτα το https:// και χωρίς αυτή την επιλογή δεν συνδέεται.",
+      "label": "Να επιτρέπεται σύνδεση χωρίς κρυπτογράφηση"
     },
     "authToggle": {
       "tooltip": "Σύνδεση με αρχείο ιδιωτικού κλειδιού SSH αντί για κωδικό πρόσβασης",

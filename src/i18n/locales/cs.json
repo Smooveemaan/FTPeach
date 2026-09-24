@@ -62,12 +62,12 @@
         "approve": "Zachovat heslo"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Toto je první připojení k tomuto serveru. Než mu začnete důvěřovat, porovnejte otisk níže s tím, který vám dal správce serveru.",
+        "approve": "Důvěřovat serveru"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Klíč, kterým se server prokazuje, se změnil. To se stává po přeinstalaci, ale přesně tak vypadá i podvržený server.",
+        "approve": "Důvěřovat novému klíči"
       }
     },
     "savedAs": "Ukládá se na tomto počítači jako: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Bezpečnostní potvrzení budou vypnuta.",
       "autoLockNever": "Trezor se po nečinnosti už nebude uzamykat.",
       "autoLockMinutes": "Trezor se uzamkne po {{minutes}} min nečinnosti.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Neznámý klíč SSH serveru bude při prvním připojení přijat bez dotazu."
     },
     "transferFrom": "Uloženo pro: {{recipient}}",
     "transferTo": "Nový server: {{recipient}}",
     "transferLessSecure": "Nové připojení není šifrované nebo neověřuje certifikát serveru.",
     "hostKey": {
       "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "expected": "Dosud důvěryhodný klíč: {{fingerprint}}",
+      "actual": "Nyní nabízený klíč: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -421,10 +421,10 @@
       "autoLock": "Automatické uzamčení po, min",
       "autoLockDisabled": "Vypnuto",
       "autoLockHint": "Po době nečinnosti uzamkne trezor. Otevřená připojení k serverům zůstanou aktivní; 0 automatické uzamčení vypne.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Trezor se uzamkne také při uzamčení Windows nebo skrytí okna FTPeach, bez ohledu na tento časovač.",
+      "lockScope": "Uzamčení nepřeruší otevřená připojení ani nové přenosy, které v nich začnou. Uložení nebo zobrazení hesla bude vyžadovat nové odemknutí.",
+      "strictHostKey": "Potvrzovat nový klíč SSH serveru",
+      "strictHostKeyHint": "Před prvním přijetím klíče SSH serveru se zeptá a zobrazí jeho otisk. Bez toho se první klíč, který server nabídne, přijme bez upozornění.",
       "changePassword": "Změnit hlavní heslo",
       "change": "Změnit heslo",
       "systemUnlock": "Povolit odemknutí přes systém",
@@ -606,7 +606,7 @@
     "cancelledByUser": "Zrušeno uživatelem",
     "stoppedDash": "zastaveno",
     "resume": "Pokračovat",
-    "pause": "Pause",
+    "pause": "Pozastavit",
     "retry": "Zkusit znovu",
     "stop": "Zastavit",
     "pauseUnsupportedCopy": "Při kopírování mezi servery nelze přenos pozastavit",
@@ -790,8 +790,8 @@
       "label": "Ověřovat certifikát"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Adresa http:// posílá heslo nešifrovaně. FTPeach nejprve zkusí https:// a bez tohoto zaškrtnutí se nepřihlásí.",
+      "label": "Povolit nešifrované přihlášení"
     },
     "authToggle": {
       "tooltip": "Přihlašovat se souborem soukromého klíče SSH místo hesla",

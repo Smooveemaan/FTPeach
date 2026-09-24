@@ -62,12 +62,12 @@
         "approve": "पासवर्ड रखें"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "यह इस सर्वर से पहला कनेक्शन है। इस पर भरोसा करने से पहले नीचे दिए फ़िंगरप्रिंट का मिलान सर्वर व्यवस्थापक द्वारा दिए गए फ़िंगरप्रिंट से करें।",
+        "approve": "इस सर्वर पर भरोसा करें"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "यह सर्वर जिस कुंजी से अपनी पहचान देता है, वह बदल गई है। ऐसा दोबारा इंस्टॉल करने के बाद होता है, लेकिन कोई नकली सर्वर भी ठीक ऐसा ही दिखता है।",
+        "approve": "नई कुंजी पर भरोसा करें"
       }
     },
     "savedAs": "इस कंप्यूटर पर इस नाम से सहेजा जाता है: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "सुरक्षा पुष्टिकरण बंद कर दिए जाएँगे।",
       "autoLockNever": "निष्क्रियता के बाद वॉल्ट अब लॉक नहीं होगा।",
       "autoLockMinutes": "{{minutes}} मिनट की निष्क्रियता के बाद वॉल्ट लॉक हो जाएगा।",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "पहले कनेक्शन पर किसी अज्ञात SSH सर्वर कुंजी पर बिना पूछे भरोसा कर लिया जाएगा।"
     },
     "transferFrom": "इसके लिए सहेजा गया: {{recipient}}",
     "transferTo": "नया सर्वर: {{recipient}}",
     "transferLessSecure": "नया कनेक्शन एन्क्रिप्टेड नहीं है या सर्वर प्रमाणपत्र की जाँच नहीं करता।",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "सर्वर: {{target}}",
+      "expected": "अब तक भरोसेमंद कुंजी: {{fingerprint}}",
+      "actual": "अभी दी गई कुंजी: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "ऑटो-लॉक समय, मिनट",
       "autoLockDisabled": "अक्षम",
       "autoLockHint": "निष्क्रियता के बाद वॉल्ट को लॉक कर देता है। मौजूदा सर्वर कनेक्शन सक्रिय रहते हैं; 0 ऑटो-लॉक अक्षम करता है।",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Windows लॉक होने पर या FTPeach विंडो छिपने पर भी वॉल्ट लॉक हो जाता है, चाहे यह टाइमर कुछ भी हो।",
+      "lockScope": "लॉक करने से खुले कनेक्शन नहीं टूटते, उनसे शुरू होने वाले नए स्थानान्तरण भी चलते रहते हैं। पासवर्ड सहेजने या दिखाने के लिए फिर से अनलॉक करना होगा।",
+      "strictHostKey": "नई SSH सर्वर कुंजी की पुष्टि करें",
+      "strictHostKeyHint": "किसी SSH सर्वर की कुंजी पर पहली बार भरोसा करने से पहले पूछता है और उसका फ़िंगरप्रिंट दिखाता है। इसके बिना, किसी भी सर्वर की पहली कुंजी पर चुपचाप भरोसा कर लिया जाता है।",
       "changePassword": "मास्टर पासवर्ड बदलें",
       "change": "पासवर्ड बदलें",
       "systemUnlock": "सिस्टम प्रमाणीकरण से अनलॉक करने दें",
@@ -594,7 +594,7 @@
     "cancelledByUser": "उपयोगकर्ता द्वारा रद्द कर दिया गया",
     "stoppedDash": "बंद किया गया",
     "resume": "फिर से शुरू करें",
-    "pause": "Pause",
+    "pause": "रोकें",
     "retry": "पुनः प्रयास करें",
     "stop": "बंद करें",
     "pauseUnsupportedCopy": "सर्वरों के बीच कॉपी करते समय रोकना समर्थित नहीं है",
@@ -770,8 +770,8 @@
       "label": "प्रमाणपत्र सत्यापित करें"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "http:// पता पासवर्ड को बिना एन्क्रिप्शन के भेजता है। FTPeach पहले https:// आज़माता है और इस विकल्प के बिना साइन इन नहीं करता।",
+      "label": "बिना एन्क्रिप्शन के साइन इन की अनुमति दें"
     },
     "authToggle": {
       "tooltip": "पासवर्ड के बजाय निजी SSH कुंजी फ़ाइल से लॉग इन करें",

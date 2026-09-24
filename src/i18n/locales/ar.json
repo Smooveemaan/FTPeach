@@ -62,12 +62,12 @@
         "approve": "الاحتفاظ بكلمة المرور"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "هذا أول اتصال بهذا الخادم. قبل أن تثق به، قارن البصمة أدناه بالبصمة التي أعطاك إياها مسؤول الخادم.",
+        "approve": "الوثوق بهذا الخادم"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "تغيّر المفتاح الذي يعرّف به هذا الخادم نفسه. يحدث هذا بعد إعادة التثبيت، لكنه أيضًا ما يبدو عليه خادم منتحل.",
+        "approve": "الوثوق بالمفتاح الجديد"
       }
     },
     "savedAs": "يُحفظ على هذا الحاسوب باسم: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "سيتم إيقاف تأكيدات الأمان.",
       "autoLockNever": "لن تُقفل الخزنة بعد فترة من عدم النشاط.",
       "autoLockMinutes": "ستُقفل الخزنة بعد {{minutes}} دقيقة من عدم النشاط.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "سيُوثق بمفتاح خادم SSH غير المعروف دون سؤال عند الاتصال الأول."
     },
     "transferFrom": "محفوظة لأجل: {{recipient}}",
     "transferTo": "الخادم الجديد: {{recipient}}",
     "transferLessSecure": "الاتصال الجديد غير مشفّر أو لا يتحقق من شهادة الخادم.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "الخادم: {{target}}",
+      "expected": "المفتاح الموثوق به حتى الآن: {{fingerprint}}",
+      "actual": "المفتاح المقدَّم الآن: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -429,10 +429,10 @@
       "autoLock": "القفل التلقائي بعد، دقيقة",
       "autoLockDisabled": "معطّل",
       "autoLockHint": "يقفل الخزنة بعد فترة من عدم النشاط. تبقى الاتصالات القائمة بالخوادم نشطة؛ والقيمة 0 تعطّل القفل التلقائي.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "تُقفل الخزنة أيضًا عند قفل Windows أو إخفاء نافذة FTPeach، بصرف النظر عن هذا المؤقت.",
+      "lockScope": "لا يقطع القفل الاتصالات المفتوحة، بما في ذلك عمليات النقل الجديدة التي تبدؤها. ويتطلب حفظ كلمة مرور أو إظهارها إلغاء القفل مجددًا.",
+      "strictHostKey": "تأكيد مفتاح خادم SSH الجديد",
+      "strictHostKeyHint": "يسأل قبل الوثوق بمفتاح خادم SSH لأول مرة ويعرض بصمته. من دون ذلك، يُوثق بصمت بأول مفتاح يقدّمه أي خادم.",
       "changePassword": "تغيير كلمة المرور الرئيسية",
       "change": "تغيير كلمة المرور",
       "systemUnlock": "السماح بإلغاء القفل عبر النظام",
@@ -618,7 +618,7 @@
     "cancelledByUser": "تم إلغاؤه من قبل المستخدم",
     "stoppedDash": "متوقف",
     "resume": "استئناف",
-    "pause": "Pause",
+    "pause": "إيقاف مؤقت",
     "retry": "إعادة المحاولة",
     "stop": "إيقاف",
     "pauseUnsupportedCopy": "لا يتم دعم ميزة «الإيقاف المؤقت» عند النسخ بين الخوادم",
@@ -810,8 +810,8 @@
       "label": "التحقق من الشهادة"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "عنوان http:// يرسل كلمة المرور دون تشفير. يجرّب FTPeach عنوان https:// أولًا، ولا يسجّل الدخول دون هذا الخيار.",
+      "label": "السماح بتسجيل الدخول دون تشفير"
     },
     "authToggle": {
       "tooltip": "تسجيل الدخول باستخدام ملف مفتاح SSH خاص بدلاً من كلمة المرور",

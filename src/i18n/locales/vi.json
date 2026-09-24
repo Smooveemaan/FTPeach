@@ -62,12 +62,12 @@
         "approve": "Giữ mật khẩu"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Đây là lần đầu kết nối tới máy chủ này. Trước khi tin cậy, hãy so sánh dấu vân tay bên dưới với dấu vân tay mà quản trị viên máy chủ đã cung cấp cho bạn.",
+        "approve": "Tin cậy máy chủ này"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Khóa mà máy chủ này dùng để xác minh danh tính đã thay đổi. Điều này xảy ra sau khi cài đặt lại, nhưng một máy chủ giả mạo cũng trông y như vậy.",
+        "approve": "Tin cậy khóa mới"
       }
     },
     "savedAs": "Lưu trên máy tính này với tên: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Xác nhận bảo mật sẽ bị tắt.",
       "autoLockNever": "Kho bảo mật sẽ không còn khóa sau khi không hoạt động.",
       "autoLockMinutes": "Kho bảo mật sẽ khóa sau {{minutes}} phút không hoạt động.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Khóa máy chủ SSH chưa biết sẽ được tin cậy mà không hỏi ở lần kết nối đầu tiên."
     },
     "transferFrom": "Đã lưu cho: {{recipient}}",
     "transferTo": "Máy chủ mới: {{recipient}}",
     "transferLessSecure": "Kết nối mới không được mã hóa hoặc không kiểm tra chứng chỉ máy chủ.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Máy chủ: {{target}}",
+      "expected": "Khóa được tin cậy đến nay: {{fingerprint}}",
+      "actual": "Khóa được đưa ra lúc này: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Tự động khóa sau, phút",
       "autoLockDisabled": "Đã tắt",
       "autoLockHint": "Khóa kho bảo mật sau một khoảng thời gian không hoạt động. Các kết nối máy chủ đang mở vẫn hoạt động; 0 sẽ tắt tự động khóa.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Kho bảo mật cũng khóa khi Windows khóa hoặc khi cửa sổ FTPeach bị ẩn, bất kể bộ hẹn giờ này đặt thế nào.",
+      "lockScope": "Khóa kho không ngắt các kết nối đang mở, kể cả các lượt truyền mới bắt đầu qua chúng. Để lưu hoặc hiển thị mật khẩu, bạn cần mở khóa lại.",
+      "strictHostKey": "Xác nhận khóa máy chủ SSH mới",
+      "strictHostKeyHint": "Hỏi trước khi tin cậy khóa của máy chủ SSH lần đầu và hiển thị dấu vân tay của khóa. Nếu tắt, khóa đầu tiên mà bất kỳ máy chủ nào đưa ra sẽ được tin cậy mà không thông báo.",
       "changePassword": "Thay đổi mật khẩu chính",
       "change": "Thay đổi mật khẩu",
       "systemUnlock": "Cho phép mở khóa bằng hệ thống",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Người dùng đã hủy",
     "stoppedDash": "đã dừng",
     "resume": "Tiếp tục",
-    "pause": "Pause",
+    "pause": "Tạm dừng",
     "retry": "Thử lại",
     "stop": "Dừng",
     "pauseUnsupportedCopy": "Không thể tạm dừng khi sao chép giữa các máy chủ",
@@ -744,7 +744,7 @@
       "turkish": "Thổ Nhĩ Kỳ",
       "hebrew": "Do Thái",
       "arabic": "Ả Rập",
-      "baltic": "Baltic",
+      "baltic": "Ban-tích",
       "vietnamese": "Tiếng Việt",
       "thai": "Thái",
       "japanese": "Nhật",
@@ -770,8 +770,8 @@
       "label": "Xác minh chứng chỉ"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Địa chỉ http:// gửi mật khẩu không được mã hóa. FTPeach thử https:// trước và sẽ không đăng nhập nếu không bật tùy chọn này.",
+      "label": "Cho phép đăng nhập không mã hóa"
     },
     "authToggle": {
       "tooltip": "Đăng nhập bằng tệp khóa SSH riêng tư thay vì mật khẩu",

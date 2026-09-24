@@ -62,12 +62,12 @@
         "approve": "保留密碼"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "這是首次連線到此伺服器。信任它之前，請將下方的指紋與伺服器管理員提供給您的指紋進行比對。",
+        "approve": "信任此伺服器"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "此伺服器用來證明身分的金鑰已變更。重新安裝後會出現這種情況，但冒充的伺服器看起來也是如此。",
+        "approve": "信任新金鑰"
       }
     },
     "savedAs": "在此電腦上儲存為：{{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "安全確認將被關閉。",
       "autoLockNever": "密碼庫在閒置後將不再鎖定。",
       "autoLockMinutes": "密碼庫將在閒置 {{minutes}} 分鐘後鎖定。",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "首次連線時，未知的 SSH 伺服器金鑰將不經詢問直接受到信任。"
     },
     "transferFrom": "儲存給：{{recipient}}",
     "transferTo": "新伺服器：{{recipient}}",
     "transferLessSecure": "新連線未加密，或不驗證伺服器憑證。",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "伺服器：{{target}}",
+      "expected": "先前信任的金鑰：{{fingerprint}}",
+      "actual": "目前提供的金鑰：{{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "自動鎖定時間（分鐘）",
       "autoLockDisabled": "已停用",
       "autoLockHint": "閒置一段時間後鎖定密碼庫。現有的伺服器連線會保持；設為 0 可停用自動鎖定。",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "無論此計時器如何設定，Windows 鎖定或 FTPeach 視窗隱藏時，密碼庫也會鎖定。",
+      "lockScope": "鎖定不會中斷已開啟的連線，也不影響透過這些連線開始的新傳輸。儲存或顯示密碼時需要再次解鎖。",
+      "strictHostKey": "確認新的 SSH 伺服器金鑰",
+      "strictHostKeyHint": "首次信任 SSH 伺服器的金鑰前先詢問，並顯示其指紋。關閉此選項後，任何伺服器首次提供的金鑰都會被默默信任。",
       "changePassword": "變更主密碼",
       "change": "變更密碼",
       "systemUnlock": "允許透過系統驗證解鎖",
@@ -594,7 +594,7 @@
     "cancelledByUser": "已由使用者取消",
     "stoppedDash": "已停止",
     "resume": "繼續",
-    "pause": "Pause",
+    "pause": "暫停",
     "retry": "重試",
     "stop": "停止",
     "pauseUnsupportedCopy": "在伺服器之間複製時無法暫停",
@@ -770,8 +770,8 @@
       "label": "驗證憑證"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "http:// 位址會以未加密方式傳送密碼。FTPeach 會先嘗試 https://，未勾選此選項時不會登入。",
+      "label": "允許未加密登入"
     },
     "authToggle": {
       "tooltip": "使用 SSH 私密金鑰檔案而非密碼登入",

@@ -62,12 +62,12 @@
         "approve": "Păstrează parola"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Este prima conexiune la acest server. Înainte de a avea încredere în el, comparați amprenta de mai jos cu cea primită de la administratorul serverului.",
+        "approve": "Ai încredere în acest server"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Cheia cu care se identifică acest server s-a schimbat. Asta se întâmplă după o reinstalare, dar tot așa arată și un server fals.",
+        "approve": "Ai încredere în noua cheie"
       }
     },
     "savedAs": "Se salvează pe acest computer ca: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Confirmările de securitate vor fi dezactivate.",
       "autoLockNever": "Seiful nu se va mai bloca după inactivitate.",
       "autoLockMinutes": "Seiful se va bloca după {{minutes}} min de inactivitate.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "O cheie necunoscută de server SSH va fi acceptată fără întrebare la prima conexiune."
     },
     "transferFrom": "Salvată pentru: {{recipient}}",
     "transferTo": "Server nou: {{recipient}}",
     "transferLessSecure": "Noua conexiune nu este criptată sau nu verifică certificatul serverului.",
     "hostKey": {
       "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "expected": "Cheia de încredere până acum: {{fingerprint}}",
+      "actual": "Cheia oferită acum: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -417,10 +417,10 @@
       "autoLock": "Blocare automată după, min",
       "autoLockDisabled": "Dezactivat",
       "autoLockHint": "Blochează seiful după o perioadă de inactivitate. Conexiunile existente la servere rămân active; 0 dezactivează blocarea automată.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Seiful se blochează și când Windows se blochează sau fereastra FTPeach este ascunsă, indiferent de acest temporizator.",
+      "lockScope": "Blocarea nu întrerupe conexiunile deschise, inclusiv transferurile noi pornite prin ele. Salvarea sau afișarea unei parole va cere o nouă deblocare.",
+      "strictHostKey": "Confirmă cheile noi ale serverelor SSH",
+      "strictHostKeyHint": "Întreabă înainte de a accepta prima dată cheia unui server SSH și îi afișează amprenta. Fără această opțiune, prima cheie oferită de orice server este acceptată fără avertisment.",
       "changePassword": "Schimbă parola principală",
       "change": "Schimbă parola",
       "systemUnlock": "Permite deblocarea prin sistem",
@@ -530,7 +530,7 @@
   },
   "exportSettingsDialog": {
     "title": "Exportă setările",
-    "confirmLabel": "Export…",
+    "confirmLabel": "Exportă…",
     "includeSettings": "Setări ale aplicației",
     "includeBookmarks": "Marcaje",
     "includeLocalPaths": "Căi locale",
@@ -538,7 +538,7 @@
   },
   "importSettingsDialog": {
     "title": "Importă setările",
-    "confirmLabel": "Import…",
+    "confirmLabel": "Importă…",
     "includeSettings": "Setări ale aplicației",
     "includeBookmarks": "Marcaje",
     "includeLocalPaths": "Căi locale",
@@ -600,7 +600,7 @@
     "cancelledByUser": "Anulat de utilizator",
     "stoppedDash": "oprit",
     "resume": "Reia",
-    "pause": "Pause",
+    "pause": "Pauză",
     "retry": "Reîncearcă",
     "stop": "Oprește",
     "pauseUnsupportedCopy": "Pauza nu este disponibilă la copierea între servere",
@@ -714,8 +714,8 @@
     "addBookmark": "Marcaj nou",
     "addLocalBookmark": "Adaugă marcaj pentru un folder local",
     "chooseLocalPath": "Alegeți un folder local",
-    "importBookmarks": "Import",
-    "exportBookmarks": "Export",
+    "importBookmarks": "Importă",
+    "exportBookmarks": "Exportă",
     "importAdded_one": "Adăugat {{count}} marcaj",
     "importAdded_few": "Adăugate {{count}} marcaje",
     "importAdded_other": "Adăugate {{count}} de marcaje",
@@ -780,8 +780,8 @@
       "label": "Verifică certificatul"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "O adresă http:// trimite parola necriptată. FTPeach încearcă mai întâi https:// și nu se autentifică fără această opțiune.",
+      "label": "Permite autentificarea necriptată"
     },
     "authToggle": {
       "tooltip": "Autentificare cu un fișier de cheie SSH privată în loc de parolă",

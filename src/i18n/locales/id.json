@@ -62,12 +62,12 @@
         "approve": "Pertahankan kata sandi"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Ini koneksi pertama ke server ini. Sebelum memercayainya, bandingkan sidik jari di bawah dengan yang diberikan administrator server kepada Anda.",
+        "approve": "Percayai server ini"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Kunci yang dipakai server ini untuk mengidentifikasi diri telah berubah. Hal ini terjadi setelah instalasi ulang, tetapi seperti inilah juga tampilan server palsu.",
+        "approve": "Percayai kunci baru"
       }
     },
     "savedAs": "Disimpan di komputer ini sebagai: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Konfirmasi keamanan akan dimatikan.",
       "autoLockNever": "Brankas tidak akan terkunci lagi setelah tidak aktif.",
       "autoLockMinutes": "Brankas akan terkunci setelah {{minutes}} menit tidak aktif.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Kunci server SSH yang tidak dikenal akan dipercaya tanpa bertanya pada koneksi pertama."
     },
     "transferFrom": "Disimpan untuk: {{recipient}}",
     "transferTo": "Server baru: {{recipient}}",
     "transferLessSecure": "Koneksi baru tidak terenkripsi atau tidak memeriksa sertifikat server.",
     "hostKey": {
       "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "expected": "Kunci yang dipercaya sampai sekarang: {{fingerprint}}",
+      "actual": "Kunci yang ditawarkan sekarang: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Penguncian otomatis setelah, menit",
       "autoLockDisabled": "Nonaktif",
       "autoLockHint": "Mengunci brankas setelah tidak ada aktivitas. Koneksi server yang terbuka tetap aktif; 0 menonaktifkan penguncian otomatis.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Brankas juga terkunci saat Windows dikunci atau jendela FTPeach disembunyikan, apa pun pengaturan timer ini.",
+      "lockScope": "Mengunci tidak memutus koneksi yang terbuka, termasuk transfer baru yang dimulai melaluinya. Menyimpan atau menampilkan kata sandi mengharuskan Anda membuka kunci lagi.",
+      "strictHostKey": "Konfirmasi kunci server SSH baru",
+      "strictHostKeyHint": "Bertanya sebelum memercayai kunci server SSH untuk pertama kali dan menampilkan sidik jarinya. Tanpa ini, kunci pertama yang ditawarkan server mana pun dipercaya tanpa pemberitahuan.",
       "changePassword": "Ubah kata sandi utama",
       "change": "Ubah kata sandi",
       "systemUnlock": "Izinkan buka kunci melalui sistem",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Dibatalkan oleh pengguna",
     "stoppedDash": "dihentikan",
     "resume": "Lanjutkan",
-    "pause": "Pause",
+    "pause": "Jeda",
     "retry": "Coba lagi",
     "stop": "Hentikan",
     "pauseUnsupportedCopy": "Jeda tidak didukung saat menyalin antar server",
@@ -672,7 +672,7 @@
       "localPath": "Folder lokal",
       "folder": "Folder",
       "maxConnections": "Koneksi maksimum per panel",
-      "encoding": "Encoding"
+      "encoding": "Pengodean"
     },
     "icons": {
       "bookmark": "Bookmark",
@@ -689,7 +689,7 @@
       "default": "Tanpa warna",
       "peach": "Persik",
       "red": "Merah",
-      "amber": "Amber",
+      "amber": "Ambar",
       "green": "Hijau",
       "blue": "Biru",
       "purple": "Ungu",
@@ -770,8 +770,8 @@
       "label": "Verifikasi sertifikat"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Alamat http:// mengirim kata sandi tanpa enkripsi. FTPeach mencoba https:// terlebih dahulu dan tidak akan masuk tanpa opsi ini.",
+      "label": "Izinkan masuk tanpa enkripsi"
     },
     "authToggle": {
       "tooltip": "Masuk menggunakan file kunci SSH privat, bukan kata sandi",

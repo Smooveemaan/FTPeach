@@ -62,12 +62,12 @@
         "approve": "เก็บรหัสผ่าน"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "นี่เป็นการเชื่อมต่อครั้งแรกกับเซิร์ฟเวอร์นี้ ก่อนเชื่อถือ ให้เปรียบเทียบลายนิ้วมือด้านล่างกับลายนิ้วมือที่ผู้ดูแลเซิร์ฟเวอร์ให้ไว้",
+        "approve": "เชื่อถือเซิร์ฟเวอร์นี้"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "คีย์ที่เซิร์ฟเวอร์นี้ใช้ยืนยันตัวตนมีการเปลี่ยนแปลง ซึ่งเกิดขึ้นได้หลังการติดตั้งใหม่ แต่ก็เป็นลักษณะเดียวกับการปลอมตัวเป็นเซิร์ฟเวอร์",
+        "approve": "เชื่อถือคีย์ใหม่"
       }
     },
     "savedAs": "บันทึกบนคอมพิวเตอร์เครื่องนี้เป็น: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "การยืนยันความปลอดภัยจะถูกปิด",
       "autoLockNever": "คลังนิรภัยจะไม่ล็อกหลังจากไม่มีการใช้งานอีกต่อไป",
       "autoLockMinutes": "คลังนิรภัยจะล็อกหลังจากไม่มีการใช้งาน {{minutes}} นาที",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "คีย์เซิร์ฟเวอร์ SSH ที่ไม่รู้จักจะได้รับความเชื่อถือโดยไม่ถามเมื่อเชื่อมต่อครั้งแรก"
     },
     "transferFrom": "บันทึกไว้สำหรับ: {{recipient}}",
     "transferTo": "เซิร์ฟเวอร์ใหม่: {{recipient}}",
     "transferLessSecure": "การเชื่อมต่อใหม่ไม่ได้เข้ารหัสหรือไม่ตรวจสอบใบรับรองของเซิร์ฟเวอร์",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "เซิร์ฟเวอร์: {{target}}",
+      "expected": "คีย์ที่เชื่อถือมาจนถึงตอนนี้: {{fingerprint}}",
+      "actual": "คีย์ที่เสนอมาตอนนี้: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "ล็อกอัตโนมัติหลัง (นาที)",
       "autoLockDisabled": "ปิดอยู่",
       "autoLockHint": "ล็อกคลังนิรภัยเมื่อไม่มีการใช้งาน การเชื่อมต่อกับเซิร์ฟเวอร์ที่มีอยู่ยังคงทำงาน 0 คือปิดการล็อกอัตโนมัติ",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "คลังนิรภัยจะล็อกด้วยเมื่อ Windows ล็อกหรือเมื่อหน้าต่าง FTPeach ถูกซ่อน ไม่ว่าตัวจับเวลานี้จะตั้งไว้อย่างไร",
+      "lockScope": "การล็อกไม่ตัดการเชื่อมต่อที่เปิดอยู่ รวมถึงการโอนใหม่ที่เริ่มผ่านการเชื่อมต่อนั้น การบันทึกหรือแสดงรหัสผ่านจะต้องปลดล็อกอีกครั้ง",
+      "strictHostKey": "ยืนยันคีย์เซิร์ฟเวอร์ SSH ใหม่",
+      "strictHostKeyHint": "ถามก่อนเชื่อถือคีย์ของเซิร์ฟเวอร์ SSH เป็นครั้งแรก และแสดงลายนิ้วมือของคีย์ หากปิดไว้ คีย์แรกที่เซิร์ฟเวอร์ใดก็ตามเสนอมาจะได้รับความเชื่อถือโดยไม่แจ้ง",
       "changePassword": "เปลี่ยนรหัสผ่านหลัก",
       "change": "เปลี่ยนรหัสผ่าน",
       "systemUnlock": "อนุญาตให้ปลดล็อกผ่านระบบ",
@@ -594,7 +594,7 @@
     "cancelledByUser": "ถูกยกเลิกโดยผู้ใช้",
     "stoppedDash": "หยุดแล้ว",
     "resume": "ดำเนินการต่อ",
-    "pause": "Pause",
+    "pause": "หยุดชั่วคราว",
     "retry": "ลองอีกครั้ง",
     "stop": "หยุด",
     "pauseUnsupportedCopy": "ไม่สนับสนุนการหยุดชั่วคราวเมื่อคัดลอกข้อมูลระหว่างเซิร์ฟเวอร์",
@@ -770,8 +770,8 @@
       "label": "ตรวจสอบใบรับรอง"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "ที่อยู่ http:// จะส่งรหัสผ่านโดยไม่เข้ารหัส FTPeach จะลอง https:// ก่อน และจะไม่ลงชื่อเข้าใช้หากไม่ได้เลือกตัวเลือกนี้",
+      "label": "อนุญาตให้ลงชื่อเข้าใช้โดยไม่เข้ารหัส"
     },
     "authToggle": {
       "tooltip": "เข้าสู่ระบบด้วยไฟล์คีย์ SSH ส่วนตัวแทนรหัสผ่าน",

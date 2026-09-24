@@ -62,12 +62,12 @@
         "approve": "Şifreyi koru"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Bu sunucuya ilk bağlantı. Güvenmeden önce aşağıdaki parmak izini sunucu yöneticisinin size verdiğiyle karşılaştırın.",
+        "approve": "Bu sunucuya güven"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Bu sunucunun kendini tanıttığı anahtar değişti. Bu, yeniden kurulumdan sonra olur; ancak sahte bir sunucu da tam olarak böyle görünür.",
+        "approve": "Yeni anahtara güven"
       }
     },
     "savedAs": "Bu bilgisayarda şu adla kaydedilir: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Güvenlik onayları kapatılacak.",
       "autoLockNever": "Kasa, işlem yapılmadığında artık kilitlenmeyecek.",
       "autoLockMinutes": "Kasa, {{minutes}} dk işlem yapılmadığında kilitlenecek.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Bilinmeyen bir SSH sunucu anahtarına ilk bağlantıda sorulmadan güvenilecek."
     },
     "transferFrom": "Şu sunucu için kaydedildi: {{recipient}}",
     "transferTo": "Yeni sunucu: {{recipient}}",
     "transferLessSecure": "Yeni bağlantı şifrelenmiyor veya sunucu sertifikasını denetlemiyor.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Sunucu: {{target}}",
+      "expected": "Şimdiye kadar güvenilen anahtar: {{fingerprint}}",
+      "actual": "Şimdi sunulan anahtar: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Otomatik kilitlenme süresi, dakika",
       "autoLockDisabled": "Devre dışı",
       "autoLockHint": "Belirli bir süre işlem yapılmazsa kasayı kilitler. Açık sunucu bağlantıları etkin kalır; 0 otomatik kilitlemeyi kapatır.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Bu zamanlayıcıdan bağımsız olarak, Windows kilitlendiğinde veya FTPeach penceresi gizlendiğinde de kasa kilitlenir.",
+      "lockScope": "Kilitleme açık bağlantıları kesmez; bu bağlantıların başlattığı yeni aktarımlar da sürer. Bir şifreyi kaydetmek veya göstermek için kilidi yeniden açmanız gerekir.",
+      "strictHostKey": "Yeni SSH sunucu anahtarını onayla",
+      "strictHostKeyHint": "Bir SSH sunucusunun anahtarına ilk kez güvenmeden önce sorar ve parmak izini gösterir. Bu olmadan, herhangi bir sunucunun sunduğu ilk anahtara sessizce güvenilir.",
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Kullanıcı tarafından iptal edildi",
     "stoppedDash": "durduruldu",
     "resume": "Devam et",
-    "pause": "Pause",
+    "pause": "Duraklat",
     "retry": "Tekrar dene",
     "stop": "Durdur",
     "pauseUnsupportedCopy": "Sunucular arası kopyalamada duraklatma desteklenmiyor",
@@ -689,7 +689,7 @@
       "default": "Renk yok",
       "peach": "Şeftali",
       "red": "Kırmızı",
-      "amber": "Amber",
+      "amber": "Kehribar",
       "green": "Yeşil",
       "blue": "Mavi",
       "purple": "Mor",
@@ -770,8 +770,8 @@
       "label": "Sertifikayı doğrula"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "http:// adresi şifreyi açık metin olarak gönderir. FTPeach önce https:// dener ve bu seçenek olmadan oturum açmaz.",
+      "label": "Şifrelenmemiş oturum açmaya izin ver"
     },
     "authToggle": {
       "tooltip": "Şifre yerine özel bir SSH anahtar dosyasıyla oturum açın",

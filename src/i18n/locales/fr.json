@@ -62,12 +62,12 @@
         "approve": "Conserver le mot de passe"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Il s'agit de la première connexion à ce serveur. Avant de lui faire confiance, comparez l'empreinte ci-dessous avec celle que vous a fournie l'administrateur du serveur.",
+        "approve": "Faire confiance à ce serveur"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "La clé par laquelle ce serveur s'identifie a changé. Cela arrive après une réinstallation, mais c'est aussi à cela que ressemble une usurpation.",
+        "approve": "Faire confiance à la nouvelle clé"
       }
     },
     "savedAs": "Enregistré sur cet ordinateur sous le nom : {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Les confirmations de sécurité seront désactivées.",
       "autoLockNever": "Le coffre-fort ne se verrouillera plus après une période d'inactivité.",
       "autoLockMinutes": "Le coffre-fort se verrouillera après {{minutes}} min d'inactivité.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Une clé de serveur SSH inconnue sera acceptée sans confirmation lors de la première connexion."
     },
     "transferFrom": "Enregistré pour : {{recipient}}",
     "transferTo": "Nouveau serveur : {{recipient}}",
     "transferLessSecure": "La nouvelle connexion n'est pas chiffrée ou ne vérifie pas le certificat du serveur.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Serveur : {{target}}",
+      "expected": "Clé approuvée jusqu'ici : {{fingerprint}}",
+      "actual": "Clé présentée maintenant : {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -417,10 +417,10 @@
       "autoLock": "Verrouillage automatique après, min",
       "autoLockDisabled": "Désactivé",
       "autoLockHint": "Verrouille le coffre-fort après une période d'inactivité. Les connexions aux serveurs restent actives ; 0 désactive le verrouillage automatique.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Le coffre-fort se verrouille aussi quand Windows est verrouillé ou que la fenêtre de FTPeach est masquée, quelle que soit la valeur de ce minuteur.",
+      "lockScope": "Le verrouillage laisse les connexions ouvertes actives, y compris les nouveaux transferts qu'elles lancent. Enregistrer ou afficher un mot de passe demande de déverrouiller à nouveau.",
+      "strictHostKey": "Confirmer une nouvelle clé de serveur SSH",
+      "strictHostKeyHint": "Demande confirmation avant d'accepter pour la première fois la clé d'un serveur SSH et affiche son empreinte. Sans cette option, la première clé présentée par un serveur est acceptée sans avertissement.",
       "changePassword": "Modifier le mot de passe principal",
       "change": "Modifier le mot de passe",
       "systemUnlock": "Autoriser le déverrouillage via le système",
@@ -600,7 +600,7 @@
     "cancelledByUser": "Annulé par l'utilisateur",
     "stoppedDash": "arrêté",
     "resume": "Reprendre",
-    "pause": "Pause",
+    "pause": "Mettre en pause",
     "retry": "Réessayer",
     "stop": "Arrêter",
     "pauseUnsupportedCopy": "La pause n'est pas prise en charge lors d'une copie entre serveurs",
@@ -780,8 +780,8 @@
       "label": "Vérifier le certificat"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Une adresse http:// envoie le mot de passe sans chiffrement. FTPeach essaie d'abord https:// et refuse de se connecter sans cette option.",
+      "label": "Autoriser la connexion non chiffrée"
     },
     "authToggle": {
       "tooltip": "Se connecter à l'aide d'un fichier de clé SSH privée plutôt qu'avec un mot de passe",

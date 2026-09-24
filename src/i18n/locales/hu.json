@@ -62,12 +62,12 @@
         "approve": "Jelszó megtartása"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Ez az első kapcsolódás ehhez a szerverhez. Mielőtt megbízna benne, vesse össze az alábbi ujjlenyomatot azzal, amelyet a szerver rendszergazdájától kapott.",
+        "approve": "Szerver elfogadása"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "A kulcs, amellyel a szerver azonosítja magát, megváltozott. Ez újratelepítés után előfordul, de egy hamis szerver is pontosan így néz ki.",
+        "approve": "Új kulcs elfogadása"
       }
     },
     "savedAs": "Mentés ezen a számítógépen a következő néven: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "A biztonsági megerősítések ki lesznek kapcsolva.",
       "autoLockNever": "A széf tétlenség után többé nem záródik be.",
       "autoLockMinutes": "A széf {{minutes}} perc tétlenség után bezárul.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Az ismeretlen SSH-szerverkulcsot első kapcsolódáskor kérdés nélkül elfogadja a program."
     },
     "transferFrom": "Ehhez mentve: {{recipient}}",
     "transferTo": "Új szerver: {{recipient}}",
     "transferLessSecure": "Az új kapcsolat nem titkosított, vagy nem ellenőrzi a szerver tanúsítványát.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Szerver: {{target}}",
+      "expected": "Eddig elfogadott kulcs: {{fingerprint}}",
+      "actual": "Most felkínált kulcs: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Automatikus zárolás ennyi idő után, perc",
       "autoLockDisabled": "Kikapcsolva",
       "autoLockHint": "Tétlenség után zárolja a széfet. A meglévő szerverkapcsolatok aktívak maradnak; a 0 kikapcsolja az automatikus zárolást.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "A széf akkor is zárolódik, ha a Windows zárolódik, vagy az FTPeach ablaka rejtve van, függetlenül ettől az időzítőtől.",
+      "lockScope": "A zárolás nem bontja a nyitott kapcsolatokat, és az általuk indított új átvitelek is futnak. Jelszó mentéséhez vagy megjelenítéséhez újra fel kell oldani a széfet.",
+      "strictHostKey": "Új SSH-szerverkulcs megerősítése",
+      "strictHostKeyHint": "Rákérdez, mielőtt először elfogadná egy SSH-szerver kulcsát, és megjeleníti az ujjlenyomatát. Enélkül a szerver által felkínált első kulcsot szó nélkül elfogadja.",
       "changePassword": "A fő jelszó módosítása",
       "change": "Jelszó módosítása",
       "systemUnlock": "Feloldás engedélyezése a rendszeren keresztül",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Felhasználó által megszakítva",
     "stoppedDash": "leállítva",
     "resume": "Folytatás",
-    "pause": "Pause",
+    "pause": "Szüneteltetés",
     "retry": "Újrapróbálás",
     "stop": "Leállítás",
     "pauseUnsupportedCopy": "Szerverek közötti másolásnál nem lehet szüneteltetni",
@@ -770,8 +770,8 @@
       "label": "Tanúsítvány ellenőrzése"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "A http:// cím titkosítatlanul küldi el a jelszót. Az FTPeach először a https://-t próbálja, és e beállítás nélkül nem jelentkezik be.",
+      "label": "Titkosítatlan bejelentkezés engedélyezése"
     },
     "authToggle": {
       "tooltip": "Bejelentkezés jelszó helyett privát SSH-kulcsfájllal",

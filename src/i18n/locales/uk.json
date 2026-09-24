@@ -62,12 +62,12 @@
         "approve": "Зберегти пароль"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Це перше підключення до цього сервера. Перш ніж довіряти йому, звірте відбиток нижче з тим, який вам надав адміністратор сервера.",
+        "approve": "Довіряти серверу"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Ключ, яким сервер себе підтверджує, змінився. Так буває після перевстановлення, але так само виглядає і підміна.",
+        "approve": "Довіряти новому ключу"
       }
     },
     "savedAs": "Зберігається на комп’ютері як: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Підтвердження безпеки буде вимкнено.",
       "autoLockNever": "Сховище більше не блокуватиметься після періоду бездіяльності.",
       "autoLockMinutes": "Сховище блокуватиметься через {{minutes}} хв бездіяльності.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "Невідомий ключ SSH-сервера прийматиметься без запитання під час першого підключення."
     },
     "transferFrom": "Збережено для: {{recipient}}",
     "transferTo": "Новий сервер: {{recipient}}",
     "transferLessSecure": "Нове підключення не шифрується або не перевіряє сертифікат сервера.",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "Сервер: {{target}}",
+      "expected": "Ключ, якому довіряли досі: {{fingerprint}}",
+      "actual": "Ключ, запропонований зараз: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -421,10 +421,10 @@
       "autoLock": "Автоблокування через, хв",
       "autoLockDisabled": "Вимкнено",
       "autoLockHint": "Блокує сховище після бездіяльності. Відкриті підключення до серверів не розриваються; 0 вимикає автоблокування.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Сховище також блокується під час блокування Windows і коли вікно FTPeach приховано, незалежно від цього таймера.",
+      "lockScope": "Блокування не розриває відкриті підключення, зокрема нові передавання через них. Щоб зберегти або показати пароль, доведеться знову розблокувати сховище.",
+      "strictHostKey": "Підтверджувати новий ключ SSH-сервера",
+      "strictHostKeyHint": "Запитує, перш ніж уперше довіряти ключу SSH-сервера, і показує його відбиток. Без цього перший запропонований сервером ключ приймається мовчки.",
       "changePassword": "Змінити головний пароль",
       "change": "Змінити пароль",
       "systemUnlock": "Дозволити системне розблокування",
@@ -606,7 +606,7 @@
     "cancelledByUser": "Скасовано користувачем",
     "stoppedDash": "зупинено",
     "resume": "Відновити",
-    "pause": "Pause",
+    "pause": "Призупинити",
     "retry": "Спробувати ще раз",
     "stop": "Зупинити",
     "pauseUnsupportedCopy": "Пауза недоступна під час копіювання між серверами",
@@ -790,8 +790,8 @@
       "label": "Перевіряти сертифікат"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "Адреса http:// надсилає пароль без шифрування. FTPeach спершу пробує https:// і без цього прапорця не входить.",
+      "label": "Дозволити вхід без шифрування"
     },
     "authToggle": {
       "tooltip": "Входити за файлом приватного SSH-ключа замість пароля",

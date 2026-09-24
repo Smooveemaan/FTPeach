@@ -62,12 +62,12 @@
         "approve": "パスワードを保持"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "このサーバーへの初めての接続です。信頼する前に、下のフィンガープリントがサーバー管理者から伝えられたものと一致するか確認してください。",
+        "approve": "このサーバーを信頼"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "このサーバーが自身を証明するためのキーが変更されました。再インストール後に起こることですが、なりすましの場合も同じように見えます。",
+        "approve": "新しいキーを信頼"
       }
     },
     "savedAs": "このコンピューターに次の名前で保存されます: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "セキュリティ確認が無効になります。",
       "autoLockNever": "保管庫は操作がなくてもロックされなくなります。",
       "autoLockMinutes": "保管庫は操作がないまま {{minutes}} 分でロックされます。",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "初回接続時に、未知の SSH サーバーキーが確認なしで信頼されます。"
     },
     "transferFrom": "保存先: {{recipient}}",
     "transferTo": "新しいサーバー: {{recipient}}",
     "transferLessSecure": "新しい接続は暗号化されていない、またはサーバー証明書を検証しません。",
     "hostKey": {
-      "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "server": "サーバー: {{target}}",
+      "expected": "これまで信頼していたキー: {{fingerprint}}",
+      "actual": "今回提示されたキー: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "自動ロックまでの時間（分）",
       "autoLockDisabled": "無効",
       "autoLockHint": "一定時間操作がないと保管庫をロックします。既存のサーバー接続は維持されます。0 で自動ロックを無効にします。",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "このタイマーの設定にかかわらず、Windows がロックされたときや FTPeach のウィンドウが非表示になったときにも保管庫はロックされます。",
+      "lockScope": "ロックしても開いている接続は切断されず、その接続で開始される新しい転送も続行されます。パスワードを保存または表示するには、再度ロックを解除する必要があります。",
+      "strictHostKey": "新しい SSH サーバーキーを確認する",
+      "strictHostKeyHint": "SSH サーバーのキーを初めて信頼する前に確認を求め、そのフィンガープリントを表示します。オフにすると、サーバーが最初に提示したキーが確認なしで信頼されます。",
       "changePassword": "マスターパスワードの変更",
       "change": "パスワードの変更",
       "systemUnlock": "システムによるロック解除を許可",
@@ -594,7 +594,7 @@
     "cancelledByUser": "ユーザーによりキャンセルされました",
     "stoppedDash": "停止",
     "resume": "再開",
-    "pause": "Pause",
+    "pause": "一時停止",
     "retry": "再試行",
     "stop": "停止",
     "pauseUnsupportedCopy": "サーバー間のコピーは一時停止できません",
@@ -770,8 +770,8 @@
       "label": "証明書を検証"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "http:// のアドレスではパスワードが暗号化されずに送信されます。FTPeach はまず https:// を試し、この設定がオンでなければサインインしません。",
+      "label": "暗号化なしのサインインを許可"
     },
     "authToggle": {
       "tooltip": "パスワードの代わりに SSH 秘密鍵ファイルでログイン",

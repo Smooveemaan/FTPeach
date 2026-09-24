@@ -62,12 +62,12 @@
         "approve": "Behåll lösenordet"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Det här är den första anslutningen till servern. Jämför fingeravtrycket nedan med det som serverns administratör gav dig innan du litar på den.",
+        "approve": "Lita på servern"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Nyckeln som servern identifierar sig med har ändrats. Det händer efter en ominstallation, men det är också så en falsk server ser ut.",
+        "approve": "Lita på den nya nyckeln"
       }
     },
     "savedAs": "Sparas på den här datorn som: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Säkerhetsbekräftelser stängs av.",
       "autoLockNever": "Valvet låses inte längre efter inaktivitet.",
       "autoLockMinutes": "Valvet låses efter {{minutes}} min inaktivitet.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "En okänd SSH-servernyckel godkänns utan fråga vid första anslutningen."
     },
     "transferFrom": "Sparat för: {{recipient}}",
     "transferTo": "Ny server: {{recipient}}",
     "transferLessSecure": "Den nya anslutningen är inte krypterad eller kontrollerar inte serverns certifikat.",
     "hostKey": {
       "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "expected": "Nyckel som hittills varit betrodd: {{fingerprint}}",
+      "actual": "Nyckel som erbjuds nu: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Automatisk låsning efter, min",
       "autoLockDisabled": "Inaktiverad",
       "autoLockHint": "Låser valvet efter en tids inaktivitet. Befintliga serveranslutningar förblir aktiva; 0 stänger av automatisk låsning.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Valvet låses också när Windows låses eller FTPeach-fönstret döljs, oavsett den här timern.",
+      "lockScope": "Låsning bryter inte öppna anslutningar, inte heller nya överföringar som startas i dem. För att spara eller visa ett lösenord måste du låsa upp igen.",
+      "strictHostKey": "Bekräfta ny SSH-servernyckel",
+      "strictHostKeyHint": "Frågar innan en SSH-servers nyckel godkänns första gången och visar dess fingeravtryck. Utan detta godkänns den första nyckel som en server erbjuder utan förvarning.",
       "changePassword": "Ändra huvudlösenord",
       "change": "Ändra lösenord",
       "systemUnlock": "Tillåt upplåsning via systemet",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Avbrutet av användaren",
     "stoppedDash": "stoppad",
     "resume": "Återuppta",
-    "pause": "Pause",
+    "pause": "Pausa",
     "retry": "Försök igen",
     "stop": "Stoppa",
     "pauseUnsupportedCopy": "Paus stöds inte vid kopiering mellan servrar",
@@ -770,8 +770,8 @@
       "label": "Verifiera certifikatet"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "En http://-adress skickar lösenordet okrypterat. FTPeach försöker först med https:// och loggar inte in utan det här alternativet.",
+      "label": "Tillåt okrypterad inloggning"
     },
     "authToggle": {
       "tooltip": "Logga in med en privat SSH-nyckelfil i stället för ett lösenord",

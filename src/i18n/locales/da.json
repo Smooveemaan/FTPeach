@@ -62,12 +62,12 @@
         "approve": "Behold adgangskode"
       },
       "trustHostKeyFirst": {
-        "message": "This is the first connection to this server. Compare the fingerprint below with the one the server's administrator gave you before trusting it.",
-        "approve": "Trust this server"
+        "message": "Dette er den første forbindelse til serveren. Sammenlign fingeraftrykket nedenfor med det, serverens administrator har givet dig, før du stoler på den.",
+        "approve": "Stol på serveren"
       },
       "trustHostKeyChanged": {
-        "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
-        "approve": "Trust the new key"
+        "message": "Den nøgle, serveren identificerer sig med, er ændret. Det sker efter en geninstallation, men det er også sådan, en falsk server ser ud.",
+        "approve": "Stol på den nye nøgle"
       }
     },
     "savedAs": "Gemmes på denne computer som: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "Sikkerhedsbekræftelser slås fra.",
       "autoLockNever": "Boksen låses ikke længere efter inaktivitet.",
       "autoLockMinutes": "Boksen låses efter {{minutes}} min. inaktivitet.",
-      "strictHostKeyOff": "An unknown SSH server key will be trusted without asking, on the first connection."
+      "strictHostKeyOff": "En ukendt SSH-servernøgle bliver godkendt uden at spørge ved første forbindelse."
     },
     "transferFrom": "Gemt til: {{recipient}}",
     "transferTo": "Ny server: {{recipient}}",
     "transferLessSecure": "Den nye forbindelse er ikke krypteret eller kontrollerer ikke serverens certifikat.",
     "hostKey": {
       "server": "Server: {{target}}",
-      "expected": "Key trusted until now: {{fingerprint}}",
-      "actual": "Key offered now: {{fingerprint}}"
+      "expected": "Nøgle, der hidtil er stolet på: {{fingerprint}}",
+      "actual": "Nøgle, der tilbydes nu: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -413,10 +413,10 @@
       "autoLock": "Automatisk låsning efter, min.",
       "autoLockDisabled": "Deaktiveret",
       "autoLockHint": "Låser boksen efter inaktivitet. Eksisterende serverforbindelser forbliver aktive; 0 slår automatisk låsning fra.",
-      "autoLockAlways": "The vault also locks when Windows locks or the FTPeach window is hidden, whatever this timer says.",
-      "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
-      "strictHostKey": "Confirm a new SSH server key",
-      "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
+      "autoLockAlways": "Boksen låses også, når Windows låses, eller FTPeach-vinduet skjules, uanset denne timer.",
+      "lockScope": "Låsning afbryder ikke åbne forbindelser, heller ikke nye overførsler, de starter. Når du gemmer eller viser en adgangskode, skal du låse op igen.",
+      "strictHostKey": "Bekræft ny SSH-servernøgle",
+      "strictHostKeyHint": "Spørger, før en SSH-servers nøgle godkendes første gang, og viser dens fingeraftryk. Uden dette godkendes den første nøgle, en server tilbyder, uden varsel.",
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
       "systemUnlock": "Tillad oplåsning via systemet",
@@ -594,7 +594,7 @@
     "cancelledByUser": "Annulleret af brugeren",
     "stoppedDash": "stoppet",
     "resume": "Genoptag",
-    "pause": "Pause",
+    "pause": "Sæt på pause",
     "retry": "Prøv igen",
     "stop": "Stop",
     "pauseUnsupportedCopy": "Pause understøttes ikke ved kopiering mellem servere",
@@ -770,8 +770,8 @@
       "label": "Kontrollér certifikat"
     },
     "cleartextToggle": {
-      "tooltip": "An http:// address sends the password unencrypted. FTPeach tries https:// first and refuses to sign in without this.",
-      "label": "Allow unencrypted sign-in"
+      "tooltip": "En http://-adresse sender adgangskoden ukrypteret. FTPeach prøver https:// først og logger ikke ind uden dette flueben.",
+      "label": "Tillad ukrypteret login"
     },
     "authToggle": {
       "tooltip": "Log ind med en privat SSH-nøglefil i stedet for en adgangskode",

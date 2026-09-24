@@ -317,7 +317,7 @@
     "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
     "alreadyExists": "„{{name}}“ existiert bereits",
     "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen.",
-    "createUnsupported": "FTP kann eine neue Datei mit diesem Namen nicht sicher erstellen. Verwenden Sie SFTP oder WebDAV.",
+    "createUnsupported": "Dieser FTP-Server unterstützt das Erstellen neuer Dateien nicht. Versuchen Sie SFTP oder WebDAV, falls der Server sie anbietet.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen."
   },
   "settings": {

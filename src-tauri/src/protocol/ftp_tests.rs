@@ -1064,6 +1064,11 @@ mod recursive_stop_tests {
         deletes_to_refuse: usize,
         /// RNTO onto an existing file is refused, as IIS does.
         refuses_replacing_rename: bool,
+        /// A file another client stores the moment APPE arrives.
+        arrives_on_appe: Option<(String, Vec<u8>)>,
+        refuses_appe: bool,
+        /// APPE takes the data, then fails the transfer instead of 226.
+        fails_appe_completion: bool,
         /// How long the server takes over each 4 KiB it receives.
         pace: Duration,
     }
@@ -1186,6 +1191,9 @@ mod recursive_stop_tests {
         let mut buf = vec![0u8; 4096];
         loop {
             match data.read(&mut buf).await {
+                Ok(0) if append && disk.lock().unwrap().fails_appe_completion => {
+                    return "451 Local error in processing".to_string();
+                }
                 Ok(0) => return "226 Transfer complete".to_string(),
                 Ok(n) => {
                     if let Some(file) = disk.lock().unwrap().files.get_mut(&path) {
@@ -1357,7 +1365,14 @@ mod recursive_stop_tests {
                         None => "550 The system cannot find the path specified.".to_string(),
                     }
                 }
+                "APPE" if disk.lock().unwrap().refuses_appe => "502 Not implemented".to_string(),
                 "STOR" | "APPE" => {
+                    if command == "APPE" {
+                        let mut disk = disk.lock().unwrap();
+                        if let Some((racer, bytes)) = disk.arrives_on_appe.take() {
+                            disk.files.insert(racer, bytes);
+                        }
+                    }
                     store(&disk, path, command == "APPE", &mut passive, &mut writer).await
                 }
                 "QUIT" => {
@@ -1416,33 +1431,46 @@ mod recursive_stop_tests {
                 ErrorCode::AlreadyExists,
                 "MLST offered: {offers_mlst}"
             );
-            let listed = backend.list("/").await.unwrap();
-            assert!(!listed.iter().any(|entry| entry.name == "racing.txt"));
-            disk.lock()
-                .unwrap()
-                .files
-                .insert("/racing.txt".into(), b"arrived after listing".to_vec());
-            let error = backend.create_file("/racing.txt").await.unwrap_err();
-            assert_eq!(
-                crate::ipc::CommandError::from_anyhow(&error).code,
-                ErrorCode::AlreadyExists,
-                "MLST offered: {offers_mlst}"
-            );
-            let error = backend.create_file("/absent.txt").await.unwrap_err();
-            assert_eq!(
-                crate::ipc::CommandError::from_anyhow(&error).code,
-                ErrorCode::CreateUnsupported,
-                "MLST offered: {offers_mlst}"
-            );
+            // Another client stores it after the existence check, just
+            // before APPE: the command succeeds and adds nothing to it.
+            disk.lock().unwrap().arrives_on_appe =
+                Some(("/racing.txt".into(), b"arrived after the check".to_vec()));
+            backend.create_file("/racing.txt").await.unwrap();
+            backend.create_file("/absent.txt").await.unwrap();
             let files = &disk.lock().unwrap().files;
-            assert_eq!(
-                files.len(),
-                2,
-                "no temporary or final artifact may be left behind"
-            );
+            assert_eq!(files.len(), 3, "no temporary artifact may be left behind");
             assert_eq!(files["/existing.txt"], b"keep these bytes");
-            assert_eq!(files["/racing.txt"], b"arrived after listing");
+            assert_eq!(files["/racing.txt"], b"arrived after the check");
+            assert_eq!(files["/absent.txt"], b"");
         }
+    }
+
+    #[tokio::test]
+    async fn create_new_reports_a_refused_or_failed_append_without_storing() {
+        let refusing = disk(|disk| disk.refuses_appe = true);
+        let port = spawn_server(refusing.clone()).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&config(port)).await.unwrap();
+        let error = backend.create_file("/absent.txt").await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::CreateUnsupported
+        );
+        assert!(
+            refusing.lock().unwrap().files.is_empty(),
+            "no STOR fallback"
+        );
+
+        let failing = disk(|disk| disk.fails_appe_completion = true);
+        let port = spawn_server(failing.clone()).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&config(port)).await.unwrap();
+        let error = backend.create_file("/absent.txt").await.unwrap_err();
+        assert_ne!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::CreateUnsupported,
+            "a failed transfer is not a missing command"
+        );
     }
 
     /// A live session on a server holding `disk`, reached as a real one is.

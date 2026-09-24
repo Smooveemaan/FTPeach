@@ -333,7 +333,7 @@
     "connectFailedPrefix": "تعذر الاتصال بالخادم. {{raw}}",
     "alreadyExists": "\"{{name}}\" موجود بالفعل",
     "replaceUnsupported": "لم يسمح الخادم بالكتابة فوق الملف الموجود.",
-    "createUnsupported": "لا يتيح FTP إنشاء ملف جديد بهذا الاسم بأمان. استخدم SFTP أو WebDAV.",
+    "createUnsupported": "خادم FTP هذا لا يدعم إنشاء ملفات جديدة. جرّب SFTP أو WebDAV إذا كان الخادم يوفّرهما.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلاً من ذلك."
   },
   "settings": {

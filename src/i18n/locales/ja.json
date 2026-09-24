@@ -317,7 +317,7 @@
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
     "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
-    "createUnsupported": "FTPでは、この名前の新しいファイルを安全に作成できません。SFTPまたはWebDAVを使用してください。",
+    "createUnsupported": "このFTPサーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTPまたはWebDAVをお試しください。",
     "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。"
   },
   "settings": {

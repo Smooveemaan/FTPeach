@@ -321,7 +321,7 @@
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
     "alreadyExists": "„{{name}}” există deja",
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
-    "createUnsupported": "FTP nu poate crea în siguranță un fișier nou cu acest nume. Folosiți SFTP sau WebDAV.",
+    "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb."
   },
   "settings": {

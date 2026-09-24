@@ -10,7 +10,6 @@ import { otherPaneId } from './panes/paneModel.ts';
 import type { ConnectionForm, PaneId, PaneState } from './panes/paneModel.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
-import { canCreateNamedFile } from '../../shared/protocolCapabilities.ts';
 import type { FileSearchHandle } from './components/useFileSearch.ts';
 import type { DroppedFile } from './components/useFileDragDrop.ts';
 import type { PathCrumb } from './components/PathBar.tsx';
@@ -236,7 +235,7 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
       onNavigateHome={() => actions.goHome(id, pane, disconnected, sites)}
       onMoveTo={(folderOrder) => actions.moveTo(id, pane, folderOrder)}
       onNewFolder={disconnected ? undefined : () => actions.newFolder(id)}
-      onNewFile={disconnected || !canCreateNamedFile(pane) ? undefined : () => actions.newFile(id)}
+      onNewFile={disconnected ? undefined : () => actions.newFile(id)}
       onCopyToOtherPane={
         actions.canCopyBetween(pane, otherPane)
           ? () => actions.copySelected(id, pane, otherId, otherPane)
@@ -299,7 +298,6 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
           onUp={() => actions.goUp(id)}
           onChooseFolder={pane.kind === 'local' ? actions.chooseLocalDir(id) : undefined}
           onNewFolder={() => actions.newFolder(id)}
-          newFileUnsupported={!canCreateNamedFile(pane)}
           onNewFile={() => actions.newFile(id)}
           onDelete={() => actions.deleteSelected(id)}
           onCopy={() => actions.copySelected(id, pane, otherId, otherPane)}

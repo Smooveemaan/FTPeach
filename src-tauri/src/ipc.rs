@@ -358,9 +358,7 @@ impl CommandError {
                 "The server did not allow the existing file to be replaced"
             }
             ErrorCode::Internal => "Command failed",
-            ErrorCode::CreateUnsupported => {
-                "FTP cannot safely create a named file; use SFTP or WebDAV"
-            }
+            ErrorCode::CreateUnsupported => "The FTP server does not support creating new files",
         };
         Self {
             code,

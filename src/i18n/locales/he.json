@@ -321,7 +321,7 @@
     "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
     "alreadyExists": "\"{{name}}\" כבר קיים",
     "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים.",
-    "createUnsupported": "FTP לא יכול ליצור בבטחה קובץ חדש בשם הזה. השתמשו ב־SFTP או ב־WebDAV.",
+    "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסו SFTP או WebDAV אם השרת מציע אותם.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת."
   },
   "settings": {

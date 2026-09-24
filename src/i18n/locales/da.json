@@ -317,7 +317,7 @@
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",
     "alreadyExists": "»{{name}}« findes allerede",
     "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
-    "createUnsupported": "FTP kan ikke sikkert oprette en ny fil med dette navn. Brug SFTP eller WebDAV.",
+    "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopier dem i stedet."
   },
   "settings": {

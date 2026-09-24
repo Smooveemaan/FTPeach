@@ -6,10 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Creating a new empty file over FTP or FTPS now reports that safe creation is
-  unavailable, instead of risking replacement of an existing file. Use SFTP or WebDAV.
-  On those servers New file is shown as unavailable with the reason, instead of asking
-  for a name first.
+- New file now works over FTP and FTPS without replacing or truncating existing file contents.
 - Files can be moved only on your computer or within one server connection. Between your
   computer and a server, or between two servers, copy them instead.
 - Quitting with edits that have not been uploaded now asks whether to return or keep the

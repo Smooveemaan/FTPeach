@@ -1,8 +1,7 @@
 {
   "unit": {
     "src/platform/shutdownPersistence.ts": 98,
-    "src/shared/lang.ts": 98,
-    "src/shared/protocolCapabilities.ts": 98
+    "src/shared/lang.ts": 98
   },
   "component": {
     "src/features/file-browser/panes/usePaneSessionPersistence.ts": 84,

@@ -76,6 +76,27 @@ async fn round_trip(mut backend: impl ProtocolBackend, config: &ConnectionConfig
     assert!(!uploaded.is_directory);
     assert_eq!(uploaded.size, content.len() as u64);
 
+    // New file refuses a taken name; the download below proves its bytes kept.
+    backend
+        .create_file(&file_path)
+        .await
+        .expect_err("creating over an existing file must be refused");
+    let empty_file = format!("{dir}/empty.txt");
+    backend
+        .create_file(&empty_file)
+        .await
+        .expect("create empty file");
+    let entries = backend.list(dir).await.expect("list after create");
+    let created = entries
+        .iter()
+        .find(|e| e.name == "empty.txt")
+        .unwrap_or_else(|| panic!("empty.txt missing: {:?}", entry_names(&entries)));
+    assert_eq!(created.size, 0);
+    backend
+        .remove(&empty_file, false)
+        .await
+        .expect("remove empty file");
+
     let local_download = std::env::temp_dir().join(format!(
         "ftpeach-docker-test-download-{}.txt",
         dir.replace('/', "-")

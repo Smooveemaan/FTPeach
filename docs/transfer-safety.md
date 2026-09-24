@@ -12,7 +12,7 @@ the one policy for drag and drop, paste after Cut and transfer routing.
 | --- | --- | --- | --- | --- |
 | Rename, same-endpoint Move of one entry | No-replace rename by the OS; atomic | Checks the target, then RNFR/RNTO: a file created in between is replaced | `lstat`, then v3 RENAME, which refuses an existing target; a server that replaces anyway (SFTPGo) races the same way as FTP | `MOVE` with `Overwrite: F`; the server refuses atomically |
 | Commit of an upload or download | Download: verified UUID partial, no-replace commit by the OS | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row |
-| New empty file | Exclusive create | Refused as `createUnsupported`; an existing name is `alreadyExists`; nothing is written | Exclusive open (`EXCLUDE`); a taken name is `alreadyExists` | PROPFIND, then `PUT` with `If-None-Match: *`; a taken name is `alreadyExists` |
+| New empty file | Exclusive create | Checks the target, then an empty `APPE`: a file created in between keeps its content; an existing name is `alreadyExists`; 502/504 is `createUnsupported` | Exclusive open (`EXCLUDE`); a taken name is `alreadyExists` | PROPFIND, then `PUT` with `If-None-Match: *`; a taken name is `alreadyExists` |
 | Recursive copy | Each file commits as above; declining or skipping one keeps the source folder | same | same | same |
 | Move of a folder | Verified copy, then handle-based deletion of each unchanged source file | Same-session server rename only | Same-session server rename only | Same-session `MOVE` only |
 
@@ -27,7 +27,7 @@ back. FTP has no atomic no-replace rename, so no FTP row above is atomic; see
 | Remote no-replace rename per protocol | `ftp_tests::no_replace_rename_refuses_a_taken_target_and_moves_onto_a_free_one`, `sftp_tests::no_replace_rename_keeps_a_target_the_server_would_overwrite`, `webdav_tests::no_replace_move_onto_a_taken_destination_says_it_exists` |
 | Download commit keeps a target created after the preflight | `transfer_file::tests::no_replace_commit_preserves_a_target_created_after_preflight` |
 | Approved replacement sets aside and restores | `sftp_tests::without_posix_rename_the_existing_file_is_set_aside_then_removed`, `a_set_aside_file_is_put_back_when_the_new_one_cannot_take_its_name` |
-| New file never truncates | `local_create::tests::creates_folders_with_parents_and_files_without_replacing`, `ftp_tests::create_new_never_truncates_an_existing_or_newly_arrived_ftp_file`, `sftp_tests::creating_a_taken_name_says_it_exists_and_opens_nothing_else`, `webdav_tests::a_file_arriving_before_the_empty_put_is_reported_as_existing` |
+| New file never truncates | `local_create::tests::creates_folders_with_parents_and_files_without_replacing`, `ftp_tests::create_new_never_truncates_an_existing_or_newly_arrived_ftp_file`, `create_new_reports_a_refused_or_failed_append_without_storing`, `sftp_tests::creating_a_taken_name_says_it_exists_and_opens_nothing_else`, `webdav_tests::a_file_arriving_before_the_empty_put_is_reported_as_existing`; against real servers, `round_trip` in `src-tauri/tests/docker_integration.rs` for all four protocols |
 | Single local copy is staged | `staged_copy::tests::a_fault_before_commit_keeps_the_old_target_and_leaves_no_partial` |
 | Skipped nested file keeps the Move source | `recursive_transfer::tests::skip_merges_missing_files_and_retains_move_source` |
 | Move between endpoints touches nothing | `test/component/transfers/useTransfers.test.tsx` ("a move between different endpoints touches nothing"), `test/component/file-browser/dragMove.test.tsx` |
@@ -96,18 +96,18 @@ smoke remain separate checks.
 
 ## P1 contracts
 
-HF-04 (September 22): creating a named empty file through FTP/FTPS first checks
-for a current conflict, returning `alreadyExists` without writing. If absent,
-it returns `createUnsupported`: this adapter has no exclusive-create/publication
-capability. It sends neither STOR nor RNTO and leaves no staging artifact. A
-staged empty upload followed by ordinary rename would still overwrite a racing
-target. SFTP exclusive creation and WebDAV conditional creation remain available.
-The accepted check-then-rename limitation of HF-02 does not authorize replacement
-by the New file command. Because the answer cannot depend on the name, the UI does
-not ask for one: `canCreateNamedFile` in `src/shared/protocolCapabilities.ts` gates
-the toolbar button, the pane menu item and the keyboard shortcut, and the disabled
-control carries the reason as its label. A real TCP FTP fixture verifies existing bytes, a file
-arriving after the listing, unsupported creation, and absence of artifacts.
+HF-04 (September 22, revised September 24): creating a named empty file through FTP/FTPS
+first checks for a current conflict, returning `alreadyExists` without writing. If absent, it
+sends `APPE` with an empty body and waits for the server's completion reply. `APPE` creates a
+missing file and appends to an existing one, so zero bytes leave the content of a file that
+arrived after the check as it was; STOR, or a staged upload followed by RNTO, would truncate or
+replace it. The guarantee is about content only: the server may still update the racing file's
+modification time or run upload hooks, and success does not prove that the file is new. A
+server answering `APPE` with 502 or 504 yields `createUnsupported`; any other refusal or a
+failed completion reaches the user through the ordinary error mapping. There is never a STOR
+fallback. SFTP exclusive creation and WebDAV conditional creation are unchanged. A real TCP FTP
+fixture verifies existing bytes, a file stored between the check and `APPE`, a refused `APPE`
+with no STOR fallback, and a failed completion.
 
 | Audit | Behavior | Regression coverage |
 | --- | --- | --- |

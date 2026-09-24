@@ -8,8 +8,6 @@ import { DIVIDER_WIDTH, ITEM_WIDTH, useOverflowFold } from '../../../hooks/useOv
 interface PaneToolbarProps {
   isLocal: boolean;
   disconnected: boolean;
-  /** The protocol cannot create a named file safely, so the action is refused. */
-  newFileUnsupported: boolean;
   homeLabel: string;
   canGoBack: boolean;
   canGoForward: boolean;
@@ -30,7 +28,6 @@ interface PaneToolbarProps {
 export default function PaneToolbar({
   isLocal,
   disconnected,
-  newFileUnsupported,
   homeLabel,
   canGoBack,
   canGoForward,
@@ -50,10 +47,7 @@ export default function PaneToolbar({
   const { t, i18n } = useTranslation();
   const rtl = i18n.dir() === 'rtl';
   const deleteLabel = t('paneMenu.delete');
-  // The reason stands in for the label, so the answer is there before a name is typed.
-  const newFileLabel = newFileUnsupported
-    ? t('errors.createUnsupported')
-    : t('paneToolbar.newFile');
+  const newFileLabel = t('paneToolbar.newFile');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const foldOrder = [
@@ -116,7 +110,7 @@ export default function PaneToolbar({
             ? [
                 {
                   label: newFileLabel,
-                  disabled: disconnected || newFileUnsupported,
+                  disabled: disconnected,
                   onClick: onNewFile,
                 },
               ]
@@ -206,7 +200,7 @@ export default function PaneToolbar({
           data-tooltip={newFileLabel}
           aria-label={newFileLabel}
           onClick={onNewFile}
-          disabled={disconnected || newFileUnsupported}
+          disabled={disconnected}
         >
           <Icon name="filePlus" />
         </button>

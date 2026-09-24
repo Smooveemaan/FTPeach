@@ -1,5 +1,4 @@
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
-import { canCreateNamedFile } from '../../shared/protocolCapabilities.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { Translate } from '../../shared/translate.ts';
 import { formatBinding } from '../../shortcuts/bindings.ts';
@@ -123,10 +122,8 @@ export function usePaneActions({
             onClick: () => setNewFolderTarget(id),
           },
           {
-            // The reason replaces the label rather than appearing after the
-            // user has already been asked for a name.
-            label: canCreateNamedFile(pane) ? t('paneMenu.newFile') : t('errors.createUnsupported'),
-            disabled: disabledForRemote || !canCreateNamedFile(pane),
+            label: t('paneMenu.newFile'),
+            disabled: disabledForRemote,
             onClick: () => setNewFileTarget(id),
           },
           {

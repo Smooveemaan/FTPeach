@@ -52,7 +52,7 @@ runs; it measures no coverage.
 
 | Floored module | Runner | Baseline lines |
 | --- | --- | ---: |
-| `shared/lang.ts`, `shared/protocolCapabilities.ts`, `platform/shutdownPersistence.ts` | unit | 100% |
+| `shared/lang.ts`, `platform/shutdownPersistence.ts` | unit | 100% |
 | `transfers/transferBatchResult.ts`, `shared/movePolicy.ts` | component | 100% |
 | `open-with/useOpenWithLifecycle.ts` | component | 96.6% |
 | `file-browser/panes/usePaneSessionPersistence.ts` | component | 86.9% |

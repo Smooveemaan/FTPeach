@@ -1519,14 +1519,40 @@ impl ProtocolBackend for FtpBackend {
                 format!("{path} already exists on the server; it was not replaced"),
             ));
         }
-        // STOR truncates a racing target; staging followed by RNTO has the
-        // same race. STOU chooses a different name, so it cannot implement
-        // create-new at the caller's path either. Refuse before creating any
-        // artifact until a server-specific exclusive publication is supported.
-        Err(super::fail(
-            ErrorCode::CreateUnsupported,
-            "This FTP server cannot create a named file without risking replacement. Use SFTP or WebDAV to create a new file safely.",
-        ))
+        // An empty APPE creates a missing file and adds nothing to one that
+        // appeared since the check, so no content is ever replaced. STOR would
+        // truncate that racing file, and so would staging followed by RNTO; a
+        // refused APPE therefore never falls back to either. The price is that
+        // success does not prove the file is new: it may be the racing one.
+        let target = path.to_string();
+        let data = self.data_channel()?;
+        let created = self
+            .with_stream(move |s| {
+                Box::pin(async move {
+                    let upload = UploadData(Some(
+                        data.open(s, format!("APPE {target}"), STORE_OPEN).await?,
+                    ));
+                    upload.finish(s).await
+                })
+            })
+            .await;
+        match created {
+            Err(error)
+                if error.chain().any(|cause| {
+                    matches!(
+                        cause.downcast_ref::<suppaftp::FtpError>(),
+                        Some(suppaftp::FtpError::UnexpectedResponse(response))
+                            if matches!(response.status, Status::NotImplemented | Status::NotImplementedParameter)
+                    )
+                }) =>
+            {
+                Err(error.context(crate::ipc::CommandError::new(
+                    ErrorCode::CreateUnsupported,
+                    format!("The server does not support creating {path}"),
+                )))
+            }
+            created => created,
+        }
     }
 
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {

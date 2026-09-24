@@ -121,7 +121,8 @@ test('friendlyError localizes every structured command error code', () => {
     vaultLocked: 'Unlock vault',
     alreadyExists: 'A file or folder with that name already exists.',
     replaceUnsupported: "The server didn't allow the existing file to be replaced.",
-    createUnsupported: 'FTP cannot safely create a new file with this name. Use SFTP or WebDAV.',
+    createUnsupported:
+      'This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.',
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

@@ -45,6 +45,3 @@ src-tauri/tests/docker/matrix/generated/
 
 # Downloaded native build tools and libraries.
 .tools/
-
-# Graphify knowledge-graph output.
-graphify-out/

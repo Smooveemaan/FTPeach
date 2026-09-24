@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import { chromium } from '@playwright/test';
 
+mkdirSync('.local/benchmarks', { recursive: true });
 const server = await createServer({
   server: { host: '127.0.0.1', port: 4187, strictPort: true, watch: null },
 });
@@ -132,7 +133,7 @@ try {
           document.documentElement.dir = 'rtl';
           document.documentElement.style.zoom = '1.25';
         });
-        await page.screenshot({ path: '.local/stage3-queue-rtl.png' });
+        await page.screenshot({ path: '.local/benchmarks/stage3-queue-rtl.png' });
         if ((await page.locator('.transfer-item').count()) > 100)
           throw new Error('Narrow RTL virtualization failed');
       }
@@ -140,9 +141,8 @@ try {
     }
   }
 } finally {
-  mkdirSync('.local', { recursive: true });
   writeFileSync(
-    `.local/stage3-ui-after.json`,
+    `.local/benchmarks/stage3-ui-after.json`,
     JSON.stringify(
       {
         commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),

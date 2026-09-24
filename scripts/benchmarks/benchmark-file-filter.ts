@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { filterAndSortEntries } from '../../src/features/file-browser/components/fileListModel.ts';
 
 const entries = Array.from({ length: 100_000 }, (_, i) => ({
@@ -34,4 +34,5 @@ const result = {
   samples,
 };
 console.log(JSON.stringify(result));
-writeFileSync('.local/stage3-file-filter.json', JSON.stringify(result, null, 2));
+mkdirSync('.local/benchmarks', { recursive: true });
+writeFileSync('.local/benchmarks/stage3-file-filter.json', JSON.stringify(result, null, 2));

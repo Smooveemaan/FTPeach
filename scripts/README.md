@@ -9,7 +9,7 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | `benchmarks/` | Frontend models, transfer history, and browser measurements | `npm run benchmark:frontend`, `npm run benchmark:transfer-history`, `npm run benchmark:transfer-ui` |
 | `release/` | Release notes, license notices, SBOMs, advisory reports, the release-environment gate and the trust report | `npm run licenses:check`, `npm run sbom:generate`; CI runs the rest |
 | `packaged-smoke/` | Native application smoke harness | [Instructions](packaged-smoke/README.md) |
-| `manual-tests/` | Manual fixtures and historical Electron verification | [Instructions](manual-tests/README.md) |
+| `manual-tests/` | Manual file-type icon fixtures | [Instructions](manual-tests/README.md) |
 | `with-libsodium.ps1` | Verified native library setup and Cargo/Tauri commands | `npm run rust:check`, `npm run build:tauri` |
 | `clean.ps1` | Build output and cache cleanup | `npm run clean` |
 
@@ -23,5 +23,6 @@ of validation.
 
 Use `npm run clean -- -WhatIf` to preview cleanup paths. Use
 `npm run clean -- -ArtifactsOnly` to remove generated frontend output, reports and
-Tauri schemas while keeping native build caches. Local audit logs belong in
+Tauri schemas/permissions while keeping native build caches (including fuzz targets).
+Reports include coverage and duplication output. Local audit logs belong in
 `.local/logs/`; `.local/`, `.tools/` SDKs and `node_modules/` are retained by cleanup.

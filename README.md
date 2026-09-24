@@ -1,6 +1,6 @@
 # <img src="assets/images/icon.png" width="24" height="24" alt=""> FTPeach
 
-A desktop file transfer client for Windows, with modern design.
+A desktop file transfer client for Windows.
 
 [![CI](https://github.com/Smooveemaan/ftpeach/actions/workflows/ci.yml/badge.svg)](https://github.com/Smooveemaan/ftpeach/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/Smooveemaan/ftpeach)](https://github.com/Smooveemaan/ftpeach/releases/latest)
@@ -24,7 +24,7 @@ FTPeach supports **Windows 10 and 11, x64**.
 2. Open FTPeach and enter your server's connection details.
 3. Browse your folders and drag files to the destination pane. Follow their progress in the transfer queue.
 
-You can save connections for your next session. FTPeach checks for updates automatically and verifies update signatures before installation.
+You can save connections for your next session. With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and installs them on the next launch or when you choose to restart. Update signatures are verified before installation.
 
 The project is in pre-release; see the [changelog](CHANGELOG.md) for changes between versions. macOS and Linux are not currently supported.
 
@@ -48,15 +48,22 @@ The project is in pre-release; see the [changelog](CHANGELOG.md) for changes bet
 
 Server-to-server copying is relayed through your computer. Available operations also depend on the server's capabilities and your permissions.
 
-FTPS uses explicit TLS (`AUTH TLS`); implicit FTPS is not supported. WebDAV uploads are limited to **512 MiB per file**. WebDAV downloads resume when the server supports range requests and safely restart otherwise.
+FTPS uses explicit TLS (`AUTH TLS`); implicit FTPS is not supported. WebDAV uploads are streamed, but interrupted uploads must restart from the beginning. WebDAV downloads resume when the server supports range requests and safely restart otherwise.
+
+For WebDAV, enter a full `https://` URL, including the server's WebDAV path. Signing in over unencrypted HTTP requires an explicit opt-in for that connection.
 
 See [protocol support](docs/protocol-support.md) for the full compatibility matrix, or [networking](docs/networking.md) for proxy and connection settings.
 
 ## Passwords and server verification
 
-FTPeach stores saved passwords in a protected local vault. You can add a master password for additional protection. Keep it somewhere safe: a lost master password cannot be recovered.
+Saved passwords and SSH-key passphrases follow the protection mode selected in settings:
 
-For SFTP, FTPeach remembers the server key on the first connection. Verify that first fingerprint with your server administrator. If the key later changes, FTPeach blocks the connection until you confirm the new fingerprint.
+- **System protection** (default) encrypts secrets for your Windows account, without a master password. Anyone acting as that Windows user can access them.
+- **Enhanced protection** stores secrets in a vault encrypted with a master password. You can optionally enable Windows Hello to unlock it on this computer.
+
+Keep the master password safe: it cannot be recovered, and it remains the recovery method if Windows Hello becomes unavailable.
+
+For SFTP, the default settings require you to confirm the server's key before the first connection can authenticate. Verify the displayed fingerprint with your server administrator before trusting it. FTPeach remembers the approved key and blocks subsequent connections if it changes, pending a new confirmation.
 
 For implementation details, see the [security design](docs/security.md). To report a vulnerability privately, follow the [security policy](SECURITY.md).
 
@@ -115,8 +122,12 @@ Run these from the repository root:
 | `npm run format:check` | Check formatting without changing files. |
 | `npm run build` | Build the renderer and check bundle size budgets. |
 | `npm run rust:test` | Run the default Rust test suite. |
-| `npm run build:tauri` | Build the production desktop installer. |
-| `npm run check` | Run the full local pull-request gate, including tests, lint, Clippy, licenses, and build checks. |
+| `npm run rust:build:release` | Build the native release executable without packaging an installer. |
+| `npm run build:tauri` | Build the production installer and signed update artifacts; requires updater signing credentials. |
+| `npm run check` | Run the local validation suite, including coverage, browser tests, Clippy, licenses, and build checks. |
+| `npm run clean` | Remove generated output, reports, and native build caches; see [cleanup options](#clean-up-build-output). |
+
+For a local release executable, run `npm run build` followed by `npm run rust:build:release`. Installer builds require the signing setup described in [updater signing](docs/updater-signing.md); their output is under `%LOCALAPPDATA%\FTPeachBuild\target\release\bundle\nsis`.
 
 ### Visual tests and validation
 
@@ -135,11 +146,15 @@ Before submitting a pull request, run:
 npm run check
 ```
 
+`npm run check` does not run packaged application smoke tests or the live-server compatibility matrix. Those have separate setup and commands in the [verification matrix](docs/verification-matrix.md).
+
 See the [test guide](test/README.md) for individual suites and the [contribution guide](CONTRIBUTING.md) for review expectations.
 
 ### Clean up build output
 
-Preview the cleanup targets with `npm run clean -- -WhatIf`. Use `npm run clean -- -ArtifactsOnly` to remove generated output while retaining native build caches, or `npm run clean` to remove those caches too. The next build recreates removed output.
+Preview the cleanup targets with `npm run clean -- -WhatIf`. Use `npm run clean -- -ArtifactsOnly` to remove renderer output, coverage and duplication reports, browser test results, and generated Tauri files while retaining native build caches.
+
+`npm run clean` also removes native and fuzz build caches, including `%LOCALAPPDATA%\FTPeachBuild` outside the repository. The next build recreates removed output. Both modes preserve `node_modules/`, the verified libsodium SDK, and private working materials in `.local/`.
 
 See the [script guide](scripts/README.md) for benchmarks, release tooling, and cleanup details.
 

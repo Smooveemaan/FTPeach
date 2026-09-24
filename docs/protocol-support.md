@@ -23,7 +23,7 @@ FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset pr
 
 ## Limitations
 
-- WebDAV uploads use a buffered PUT and are limited to 512 MiB before the file is read;
+- WebDAV uploads use a streaming PUT with bounded buffers; upload resume is not supported, and server-side size limits still apply;
 - FTP transmits credentials and data in plain text;
 - FTP active mode is incompatible with proxies and usually requires firewall/NAT configuration;
 - the first SFTP fingerprint should be independently verified with the administrator;

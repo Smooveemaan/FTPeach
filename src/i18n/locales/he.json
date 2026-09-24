@@ -611,6 +611,7 @@
   },
   "log": {
     "connecting": "מתחבר ל-{{addr}}...",
+    "activeModeViaProxy": "מצב FTP פעיל אינו זמין דרך פרוקסי — נעשה שימוש במצב פסיבי.",
     "connectFailed": "החיבור נכשל: {{error}}",
     "connected": "ההתחברות הצליחה.",
     "receivedEntries_one": "התקבלה {{count}} רשומה",

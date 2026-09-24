@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Đang kết nối với {{addr}}...",
+    "activeModeViaProxy": "Không thể dùng chế độ FTP chủ động qua proxy — đang sử dụng chế độ thụ động.",
     "connectFailed": "Không kết nối được: {{error}}",
     "connected": "Đã đăng nhập.",
     "receivedEntries_one": "Đã nhận {{count}} mục",

@@ -79,6 +79,33 @@ fn is_cleartext(url: &str) -> bool {
     reqwest::Url::parse(url).is_ok_and(|parsed| parsed.scheme() == "http")
 }
 
+/// The version a partial download is tied to: a strong ETag, else
+/// Last-Modified. None when the file changed within the second the reply was
+/// dated (RFC 9110 8.8.2.2): it can change again in that second without a new
+/// Last-Modified, and servers such as nginx build their ETag from that same
+/// second, so the version could not tell the new content from the old.
+fn resume_version(headers: &reqwest::header::HeaderMap) -> Option<String> {
+    let date = |name| {
+        headers
+            .get(name)
+            .and_then(|value| value.to_str().ok())
+            .and_then(parse_http_date)
+    };
+    if let (Some(modified), Some(dated)) = (
+        date(reqwest::header::LAST_MODIFIED),
+        date(reqwest::header::DATE),
+    ) && modified >= dated
+    {
+        return None;
+    }
+    headers
+        .get(reqwest::header::ETAG)
+        .or_else(|| headers.get(reqwest::header::LAST_MODIFIED))
+        .and_then(|value| value.to_str().ok())
+        .filter(|version| !version.starts_with("W/"))
+        .map(str::to_owned)
+}
+
 const PROPFIND_BODY: &str = r#"<?xml version="1.0"?><D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/><D:getcontentlength/><D:getlastmodified/></D:prop></D:propfind>"#;
 
 struct UploadBody {
@@ -166,18 +193,8 @@ impl WebDavBackend {
             .send()
             .await
             .ok()
-            .and_then(|response| {
-                if !response.status().is_success() {
-                    return None;
-                }
-                response
-                    .headers()
-                    .get(reqwest::header::ETAG)
-                    .or_else(|| response.headers().get(reqwest::header::LAST_MODIFIED))
-                    .and_then(|v| v.to_str().ok())
-                    .filter(|version| !version.starts_with("W/"))
-                    .map(str::to_owned)
-            });
+            .filter(|response| response.status().is_success())
+            .and_then(|response| resume_version(response.headers()));
         let source = transfer_file::SourceIdentity {
             endpoint: serde_json::json!(["webdav", self.base_url, self.user]).to_string(),
             remote_path: remote_path.to_string(),

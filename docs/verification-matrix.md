@@ -12,7 +12,7 @@ never as a pass.
 | --- | --- | --- |
 | default | `npm run check` (Rust: `npm run rust:test`) | every push, CI `rust-test` and `lint-test-build` on Windows |
 | compatibility | `src-tauri/tests/docker/docker-compose.yml`, then `scripts/with-libsodium.ps1 -Command compatibility` | CI `protocol-compatibility`: weekly, on Cargo changes and as a release gate |
-| server matrix | `npm run servers:up -- all`, then `npm run servers:test` | by hand before a release; IIS targets need `scripts/test-servers/iis.ps1 install` |
+| server matrix | `npm run servers:up -- all`, then `npm run servers:test` ([how](test-server-matrix.md)) | CI `server-matrix`: weekly and on demand, by profile, not a gate; by hand before a release; IIS targets need `scripts/test-servers/iis.ps1 install` |
 | packaged smoke | `npm run build:packaged-smoke`, then `npm run test:packaged-smoke` | CI `packaged-smoke`, a release gate |
 | fuzz | `src-tauri/fuzz`, 60 s per target | weekly `security-audit`; saved inputs replay in the default lane |
 | native | one command per test below, on a host that has the prerequisite | by hand |

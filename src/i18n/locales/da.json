@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Opretter forbindelse til {{addr}}...",
+    "activeModeViaProxy": "Aktiv FTP-tilstand kan ikke bruges via en proxy — passiv tilstand bruges i stedet.",
     "connectFailed": "Forbindelsen mislykkedes: {{error}}",
     "connected": "Logget ind.",
     "receivedEntries_one": "Modtog {{count}} post",

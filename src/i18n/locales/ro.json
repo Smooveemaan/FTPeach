@@ -611,6 +611,7 @@
   },
   "log": {
     "connecting": "Conectare la {{addr}}...",
+    "activeModeViaProxy": "Modul FTP activ nu este disponibil prin proxy — se folosește modul pasiv.",
     "connectFailed": "Conectarea a eșuat: {{error}}",
     "connected": "Autentificat.",
     "receivedEntries_one": "S-a primit {{count}} înregistrare",

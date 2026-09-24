@@ -372,6 +372,208 @@ async fn untrusted_https(target: Target) {
     backend.list("/").await.expect("list");
 }
 
+// The server's own access log shows which protocol the requests came in on.
+specific!(nginx_norange_h2_speaks_http2, "nginx_norange_h2", http2);
+async fn http2(target: Target) {
+    let mut backend = connect(&target).await;
+    let work = Work::new(&target, &mut backend).await;
+    let marker = format!("h2-{}.txt", uuid::Uuid::new_v4().simple());
+    put(&mut backend, &work.local("f"), &work.path(&marker), b"h2").await;
+    assert_eq!(get(&mut backend, &work.path(&marker)).await, b"h2");
+    work.finish(&mut backend).await;
+
+    let container = format!("ftpeach-test-matrix-{}-1", target.service);
+    let logs = std::process::Command::new("docker")
+        .args(["logs", "--since", "10m", &container])
+        .output()
+        .unwrap_or_else(|error| panic!("docker logs {container}: {error}"));
+    let logs =
+        String::from_utf8_lossy(&logs.stdout).into_owned() + &String::from_utf8_lossy(&logs.stderr);
+    let requests: Vec<&str> = logs.lines().filter(|line| line.contains(&marker)).collect();
+    assert!(
+        !requests.is_empty(),
+        "{}: no request for {marker} in the access log",
+        target.id
+    );
+    assert!(
+        requests.iter().all(|line| line.contains("HTTP/2.0")),
+        "{}: requests not over HTTP/2: {requests:#?}",
+        target.id
+    );
+}
+
+/// A resume must not splice an old partial onto a file that changed since:
+/// the server's ETag / Last-Modified after an upload has to tell the two
+/// apart, even for an overwrite of the same size within the same second.
+async fn changed_since_partial(target: Target) {
+    let mut backend = connect(&target).await;
+    let work = Work::new(&target, &mut backend).await;
+    let len = target
+        .max_upload_bytes
+        .map_or(32 << 20, |limit| limit.min(32 << 20)) as usize;
+    let first: Vec<u8> = (0..len as u32).map(|i| (i % 251) as u8).collect();
+    let second: Vec<u8> = first.iter().map(|byte| !byte).collect();
+    let remote = work.path("changing.bin");
+    put(&mut backend, &work.local("first"), &remote, &first).await;
+
+    let destination = work.local("download.bin");
+    let moved = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+    let sink = moved.clone();
+    let progress: app_lib::protocol::ProgressSink = std::sync::Arc::new(move |info| {
+        if let app_lib::protocol::ProgressInfo::Progress { bytes, .. } = info {
+            sink.store(bytes, std::sync::atomic::Ordering::SeqCst);
+        }
+    });
+    // Stop the download part way, as closing the app would.
+    {
+        let download = backend.download(&remote, &destination, false, progress);
+        tokio::pin!(download);
+        tokio::select! {
+            result = &mut download => panic!("{}: download finished before it could be stopped: {:?}", target.id, result.map_err(|error| format!("{error:#}"))),
+            () = async {
+                while moved.load(std::sync::atomic::Ordering::SeqCst) < 1024 * 1024 {
+                    tokio::time::sleep(Duration::from_millis(1)).await;
+                }
+            } => {}
+        }
+    }
+    // An FTP control connection does not survive a transfer dropped midway.
+    let mut backend = connect(&target).await;
+    put(&mut backend, &work.local("second"), &remote, &second).await;
+    backend
+        .download(&remote, &destination, true, noop_progress())
+        .await
+        .unwrap_or_else(|error| panic!("{}: resume [{:?}]: {error:#}", target.id, code(&error)));
+    assert!(
+        tokio::fs::read(&destination).await.unwrap() == second,
+        "{}: the resumed file mixes the old and the new content",
+        target.id
+    );
+    work.finish(&mut backend).await;
+}
+
+specific!(
+    apache_basic_resume_after_change,
+    "apache_basic",
+    changed_since_partial
+);
+specific!(
+    nginx_davext_resume_after_change,
+    "nginx_davext",
+    changed_since_partial
+);
+specific!(
+    rclone_resume_after_change,
+    "rclone_webdav",
+    changed_since_partial
+);
+specific!(
+    sftpgo_webdav_resume_after_change,
+    "sftpgo_webdav",
+    changed_since_partial
+);
+specific!(
+    nextcloud_resume_after_change,
+    "nextcloud",
+    changed_since_partial
+);
+
+// Active mode. The server connects back to the address the client sends in
+// PORT/EPRT, so the client has to reach the container directly: on Linux it
+// connects to the container's bridge address, which the container can reach
+// back. Docker Desktop (Windows, macOS) routes neither way.
+
+async fn active_mode(target: Target) {
+    if !cfg!(target_os = "linux") {
+        not_run(format_args!(
+            "{}: active mode needs the container reachable at its bridge address (Linux Docker only)",
+            target.id
+        ));
+        return;
+    }
+    let container = format!("ftpeach-test-matrix-{}-1", target.service);
+    let inspected = std::process::Command::new("docker")
+        .args([
+            "inspect",
+            "-f",
+            "{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}|{{range $port, $bound := .NetworkSettings.Ports}}{{range $bound}}{{$port}}={{.HostPort}} {{end}}{{end}}",
+            &container,
+        ])
+        .output()
+        .unwrap_or_else(|error| panic!("docker inspect {container}: {error}"));
+    let inspected = String::from_utf8_lossy(&inspected.stdout).into_owned();
+    let (addresses, ports) = inspected.split_once('|').unwrap_or_default();
+    let address = addresses
+        .split_whitespace()
+        .next()
+        .unwrap_or_else(|| panic!("{container} has no bridge address"))
+        .to_string();
+    // The port inside the container that the target's published port maps to.
+    let published = target.config["port"].to_string();
+    let port: u16 = ports
+        .split_whitespace()
+        .find_map(|mapping| {
+            let (inside, host) = mapping.split_once('=')?;
+            (host == published).then(|| inside.trim_end_matches("/tcp").parse().ok())?
+        })
+        .unwrap_or_else(|| panic!("{container} does not publish port {published}: {ports}"));
+    let mut target = target;
+    target.config.insert("host".into(), address.into());
+    target.config.insert("port".into(), port.into());
+    target.config.insert("activeMode".into(), true.into());
+    let mut backend = connect(&target).await;
+    let work = Work::new(&target, &mut backend).await;
+    put(
+        &mut backend,
+        &work.local("f"),
+        &work.path("active.txt"),
+        b"active",
+    )
+    .await;
+    assert_eq!(get(&mut backend, &work.path("active.txt")).await, b"active");
+    let listed = backend.list(&work.remote).await.expect("active LIST");
+    assert_eq!(names(&listed), ["active.txt"], "{}", target.id);
+    work.finish(&mut backend).await;
+}
+
+specific!(vsftpd_active_mode, "vsftpd_plain", active_mode);
+specific!(pyftpdlib_active_mode, "pyftpdlib", active_mode);
+
+/// A proxy tunnel cannot take the server's connection back, so with a proxy
+/// the client stays passive (docs/networking.md), says so in the protocol log,
+/// and the transfer still works.
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
+async fn proxy_socks5_ftp_active_mode_stays_passive() {
+    let mut target = through(Kind::Ftp, socks5());
+    target.config.insert("activeMode".into(), true.into());
+    run_proxied(target, |target| {
+        Box::pin(async move {
+            let said = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+            let sink = said.clone();
+            let mut backend = crate::support::backend(target.kind);
+            backend.set_log_sink(Some(std::sync::Arc::new(move |text, _| {
+                if let app_lib::protocol::LogText::Key { key, .. } = text
+                    && key == "activeModeViaProxy"
+                {
+                    sink.store(true, std::sync::atomic::Ordering::SeqCst);
+                }
+            })));
+            backend
+                .connect(&parse(&target.config))
+                .await
+                .expect("connect");
+            drop(backend);
+            assert!(
+                said.load(std::sync::atomic::Ordering::SeqCst),
+                "no log line for the ignored active mode"
+            );
+            proxy_round_trip(target).await;
+        })
+    })
+    .await;
+}
+
 // Proxies. Targets are addressed by compose service name, so the proxy
 // resolves them (the client has no DNS entry for `vsftpd`).
 
@@ -404,6 +606,19 @@ fn through(kind: Kind, proxy: Value) -> Target {
     target
 }
 
+/// Needs the `proxy` profile and the profile of the server behind the proxy.
+async fn run_proxied(target: Target, scenario: impl FnOnce(Target) -> Scenario) {
+    let behind = crate::targets::target(target.id);
+    if !selected(&behind) {
+        not_run(format_args!(
+            "{} (behind the proxy) is not selected",
+            behind.id
+        ));
+        return;
+    }
+    run_target(target, scenario).await;
+}
+
 async fn proxy_round_trip(target: Target) {
     let mut backend = connect(&target).await;
     let work = Work::new(&target, &mut backend).await;
@@ -428,9 +643,10 @@ macro_rules! proxied {
         #[tokio::test(flavor = "multi_thread")]
         #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
-            let target = through(Kind::$kind, $proxy);
-            let id = target.id;
-            run(id, move |_| Box::pin(proxy_round_trip(target))).await;
+            run_proxied(through(Kind::$kind, $proxy), |target| {
+                Box::pin(proxy_round_trip(target))
+            })
+            .await;
         }
     };
 }
@@ -477,8 +693,7 @@ macro_rules! proxied_cp1251 {
         async fn $name() {
             let mut target = through(Kind::Ftp, $proxy);
             target.config.insert("host".into(), $host.into());
-            let id = target.id;
-            run(id, move |_| Box::pin(cp1251_iac_names(target))).await;
+            run_proxied(target, |target| Box::pin(cp1251_iac_names(target))).await;
         }
     };
 }
@@ -491,8 +706,7 @@ macro_rules! proxy_refused {
         #[tokio::test(flavor = "multi_thread")]
         #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
         async fn $name() {
-            let target = through(Kind::$kind, $proxy);
-            run(target.id, move |_| {
+            run_proxied(through(Kind::$kind, $proxy), |target| {
                 Box::pin(async move {
                     let code = expect_refusal(&target, &target.config).await;
                     assert_eq!(code, ErrorCode::ProxyFailed);
@@ -515,3 +729,80 @@ proxy_refused!(
     Webdav,
     http(Some("wrong"))
 );
+
+// Relay: the app copies between two sites by piping one backend's download
+// into the other's upload, never through a local file.
+
+async fn relay(source: Target, destination: Target) {
+    use app_lib::protocol::ProgressInfo;
+    use app_lib::relay::{RELAY_BUF_SIZE, relay_download, relay_upload};
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    let mut from = connect(&source).await;
+    let mut to = connect(&destination).await;
+    let from_work = Work::new(&source, &mut from).await;
+    let to_work = Work::new(&destination, &mut to).await;
+    // Several relay buffers, not a multiple of any of them.
+    let payload: Vec<u8> = (0..3 * RELAY_BUF_SIZE as u32 + 12_345)
+        .map(|i| (i.wrapping_mul(2_654_435_761) >> 24) as u8)
+        .collect();
+    let name = "relay éà 中文.bin";
+    put(
+        &mut from,
+        &from_work.local("f"),
+        &from_work.path(name),
+        &payload,
+    )
+    .await;
+
+    let reported = Arc::new(AtomicU64::new(0));
+    let seen = reported.clone();
+    let progress: app_lib::protocol::ProgressSink = Arc::new(move |info| {
+        if let ProgressInfo::Progress { bytes, .. } = info {
+            seen.store(bytes, Ordering::SeqCst);
+        }
+    });
+    let (source_path, destination_path) = (from_work.path(name), to_work.path(name));
+    let (writer, reader) = tokio::io::duplex(RELAY_BUF_SIZE);
+    let (total_tx, total_rx) = tokio::sync::oneshot::channel();
+    let (sent, received) = tokio::join!(
+        relay_download(&mut from, &source_path, writer, total_tx, progress),
+        relay_upload(&mut to, &destination_path, reader, total_rx),
+    );
+    let label = format!("{} -> {}", source.id, destination.id);
+    sent.unwrap_or_else(|error| panic!("{label}: source [{:?}]: {error:#}", code(&error)));
+    received.unwrap_or_else(|error| panic!("{label}: destination [{:?}]: {error:#}", code(&error)));
+    assert_eq!(
+        reported.load(Ordering::SeqCst),
+        payload.len() as u64,
+        "{label}: progress"
+    );
+    assert!(
+        get(&mut to, &to_work.path(name)).await == payload,
+        "{label}: content differs"
+    );
+
+    from_work.finish(&mut from).await;
+    to_work.finish(&mut to).await;
+}
+
+macro_rules! relayed {
+    ($name:ident, $source:literal, $destination:literal) => {
+        #[tokio::test(flavor = "multi_thread")]
+        #[ignore = "requires the server matrix: npm run servers:up, then servers:test"]
+        async fn $name() {
+            run_pair($source, $destination, |source, destination| {
+                Box::pin(relay(source, destination))
+            })
+            .await;
+        }
+    };
+}
+
+relayed!(relay_vsftpd_to_nextcloud, "vsftpd", "nextcloud");
+relayed!(relay_openssh_to_apache, "openssh_chroot", "apache_basic");
+relayed!(relay_apache_to_proftpd, "apache_basic", "proftpd");
+relayed!(relay_proftpd_to_dropbear, "proftpd", "dropbear");
+relayed!(relay_nginx_to_sftpgo_sftp, "nginx_davext", "sftpgo_sftp");
+relayed!(relay_sftpgo_webdav_to_vsftpd, "sftpgo_webdav", "vsftpd");

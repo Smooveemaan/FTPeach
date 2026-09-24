@@ -28,10 +28,17 @@ patched; every change is marked with a `FTPeach patch:` comment.
    program answering first; it is not protection against a network attacker
    who can also intercept the control connection.
 
+3. **A control connection closed before the reply** (`src/async_ftp/tokio_ftp.rs`,
+   `read_response_in`). EOF on the first line of a reply returned
+   `FtpError::BadResponse`, as if the server had sent garbage, while EOF in the
+   middle of a multiline reply was already an `UnexpectedEof` connection
+   error. Both are now `FtpError::ConnectionError(UnexpectedEof)`, which
+   FTPeach reports as `connectionLost`.
+
 `rustfmt.toml` here turns formatting off so `cargo fmt --all` leaves this
 copy alone and the patch stays a small diff against the published crate.
 
 To move to a newer suppaftp: extract the new version next to this file,
-re-apply the two changes above (search for `FTPeach patch:`), and run
+re-apply the three changes above (search for `FTPeach patch:`), and run
 `npm run rust:test` -- `protocol::ftp::protocol_tests::local_integration_tests`
 covers both.

@@ -1145,7 +1145,15 @@ where
     pub async fn read_response_in(&mut self, expected_code: &[Status]) -> FtpResult<Response> {
         let mut line = Vec::new();
         let mut body: Vec<u8> = Vec::new();
-        self.read_line(&mut line).await?;
+        // FTPeach patch: a control connection closed before the reply is a lost
+        // connection, as it already is in the middle of a multiline reply below,
+        // not a malformed reply.
+        if self.read_line(&mut line).await? == 0 {
+            return Err(FtpError::ConnectionError(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "connection closed before the response",
+            )));
+        }
         body.extend(line.iter());
 
         trace!("CC IN: {:?}", line);

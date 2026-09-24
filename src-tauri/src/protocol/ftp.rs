@@ -177,6 +177,25 @@ fn command_refused(error: &anyhow::Error) -> bool {
     })
 }
 
+/// A greeting other than 220 turns the session away before any login (SFTPGo
+/// answers `500 Access denied` past its connections per address). Replies the
+/// general classification already names, such as 421 "too many", keep theirs.
+fn refused_greeting(error: anyhow::Error) -> anyhow::Error {
+    let replied = error.chain().any(|source| {
+        matches!(
+            source.downcast_ref::<suppaftp::FtpError>(),
+            Some(suppaftp::FtpError::UnexpectedResponse(_))
+        )
+    });
+    if replied && crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::Internal {
+        return error.context(crate::ipc::CommandError::new(
+            ErrorCode::ConnectionRefused,
+            "The server refused the connection",
+        ));
+    }
+    error
+}
+
 /// Whether the server completes a TLS handshake on a fresh connection, as an
 /// implicit FTPS server does before it sends any greeting.
 async fn answers_tls(
@@ -1267,6 +1286,10 @@ impl ProtocolBackend for FtpBackend {
             serde_json::json!({ "addr": &addr }),
             LogKind::Status,
         );
+        if config.active_mode && proxy.is_some() {
+            // A proxy tunnel cannot take the server's connection back.
+            self.log_key("activeModeViaProxy", serde_json::json!({}), LogKind::Status);
+        }
 
         let this = &*self;
         let connect_fut = async {
@@ -1324,7 +1347,10 @@ impl ProtocolBackend for FtpBackend {
                 }
             };
             let mut stream = tokio::select! {
-                stream = &mut greeting => stream.context("FTP handshake failed")?,
+                stream = &mut greeting => match stream {
+                    Ok(stream) => stream,
+                    Err(error) => return Err(refused_greeting(error.context("FTP handshake failed"))),
+                },
                 () = implicit => {
                     return Err(super::fail(
                         ErrorCode::TlsNegotiationFailed,

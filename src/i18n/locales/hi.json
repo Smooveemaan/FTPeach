@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "{{addr}} से कनेक्ट हो रहा है...",
+    "activeModeViaProxy": "प्रॉक्सी के ज़रिए सक्रिय FTP मोड उपलब्ध नहीं है — पैसिव मोड का उपयोग किया जा रहा है।",
     "connectFailed": "कनेक्शन विफल: {{error}}",
     "connected": "लॉग इन किया गया।",
     "receivedEntries_one": "{{count}} प्रविष्टि प्राप्त हुई",

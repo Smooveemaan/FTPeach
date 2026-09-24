@@ -31,12 +31,13 @@ fn listed(variable: &str) -> Option<Vec<String>> {
     )
 }
 
-fn selected(target: &Target) -> bool {
+pub fn selected(target: &Target) -> bool {
     let profiles = listed("FTPEACH_MATRIX");
     let targets = listed("FTPEACH_MATRIX_TARGETS");
-    // As with `servers:up -- all`: Nextcloud (heavy) is slow to start and IIS
-    // changes the Windows host (iis.ps1), so both run only when named.
-    let opt_in = matches!(target.profile, "heavy" | "iis");
+    // As with `servers:up -- all`: Nextcloud (heavy) is slow to start, chaos
+    // waits out throttled links and IIS changes the Windows host (iis.ps1), so
+    // they run only when named.
+    let opt_in = matches!(target.profile, "heavy" | "chaos" | "iis");
     if profiles.is_none() && targets.is_none() {
         return !opt_in;
     }
@@ -61,22 +62,69 @@ fn timeout() -> Duration {
 }
 
 pub async fn run(id: &str, scenario: impl FnOnce(Target) -> Scenario) {
-    let target = target(id);
+    run_target(target(id), scenario).await;
+}
+
+/// [`run`] for a target built in the test, such as one behind a proxy.
+pub async fn run_target(target: Target, scenario: impl FnOnce(Target) -> Scenario) {
+    let id = target.id;
     if !selected(&target) {
-        println!("NOT RUN: {id} is not selected by FTPEACH_MATRIX / FTPEACH_MATRIX_TARGETS");
+        not_run(format_args!(
+            "{id} is not selected by FTPEACH_MATRIX / FTPEACH_MATRIX_TARGETS"
+        ));
         return;
     }
     let _ = rustls::crypto::ring::default_provider().install_default();
-    let lock = SERVICE_LOCKS
-        .lock()
-        .unwrap()
-        .entry(target.service)
-        .or_default()
-        .clone();
-    let _guard = lock.lock().await;
+    let _guard = service_lock(target.service).lock_owned().await;
     tokio::time::timeout(timeout(), scenario(target))
         .await
         .unwrap_or_else(|_| panic!("{id}: scenario timed out after {:?}", timeout()));
+}
+
+/// A test that passes without running. The thread libtest runs a test on is
+/// named after it, so the line says which test it was (scripts/test-servers/ci.ts
+/// counts them from that).
+pub fn not_run(why: impl std::fmt::Display) {
+    let thread = std::thread::current();
+    println!("NOT RUN [{}]: {why}", thread.name().unwrap_or("?"));
+}
+
+fn service_lock(service: &'static str) -> Arc<tokio::sync::Mutex<()>> {
+    SERVICE_LOCKS
+        .lock()
+        .unwrap()
+        .entry(service)
+        .or_default()
+        .clone()
+}
+
+/// A scenario between two servers: both must be selected, and both services
+/// are locked in name order so two pairs never wait on each other.
+pub async fn run_pair(
+    source: &str,
+    destination: &str,
+    scenario: impl FnOnce(Target, Target) -> Scenario,
+) {
+    let (source, destination) = (target(source), target(destination));
+    if !selected(&source) || !selected(&destination) {
+        not_run(format_args!(
+            "{} -> {} needs both selected by FTPEACH_MATRIX / FTPEACH_MATRIX_TARGETS",
+            source.id, destination.id
+        ));
+        return;
+    }
+    let _ = rustls::crypto::ring::default_provider().install_default();
+    let mut services = vec![source.service, destination.service];
+    services.sort_unstable();
+    services.dedup();
+    let mut guards = Vec::new();
+    for service in services {
+        guards.push(service_lock(service).lock_owned().await);
+    }
+    let label = format!("{} -> {}", source.id, destination.id);
+    tokio::time::timeout(timeout(), scenario(source, destination))
+        .await
+        .unwrap_or_else(|_| panic!("{label}: scenario timed out after {:?}", timeout()));
 }
 
 pub fn code(error: &anyhow::Error) -> ErrorCode {

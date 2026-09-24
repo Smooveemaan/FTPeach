@@ -124,6 +124,10 @@ fn webdav(url: &str) -> Map<String, Value> {
 fn iis(mut config: Map<String, Value>) -> Map<String, Value> {
     config.insert("user".into(), "ftpeach_test".into());
     config.insert("password".into(), "FTPeach-test-2026!".into());
+    // A cold IIS WebDAV answers the 10 000-entry PROPFIND after about 25 s
+    // (curl, first byte; 3.4 s warm), past the 20 s default. A request the
+    // client drops does not warm it either, so every retry waits as long.
+    config.insert("timeout".into(), 60_000.into());
     if config.contains_key("caCertPath") {
         config.insert(
             "caCertPath".into(),
@@ -146,6 +150,23 @@ fn iis_target(id: &'static str, kind: Kind, config: Map<String, Value>) -> Targe
         max_url_segments: (kind == Kind::Webdav).then_some(32),
         ..base(id, "iis", "iis", kind, iis(config), "")
     }
+}
+
+/// SFTPGo's `max_per_host_connections` default, shared by its FTP and SFTP
+/// services; connections a previous scenario just closed can still count
+/// against it for a moment.
+const SFTPGO_CONNECTIONS: usize = 20;
+
+/// Behind toxiproxy, with a short client timeout so a silent server fails
+/// in seconds.
+fn chaos_target(
+    id: &'static str,
+    kind: Kind,
+    mut config: Map<String, Value>,
+    root: &'static str,
+) -> Target {
+    config.insert("timeout".into(), 5_000.into());
+    base(id, "chaos", "toxiproxy", kind, config, root)
 }
 
 fn base(
@@ -309,6 +330,7 @@ pub fn target(id: &str) -> Target {
         // cannot be told from a link to a file.
         "sftpgo_ftp" => Target {
             symlinks: false,
+            max_connections: Some(SFTPGO_CONNECTIONS),
             ..base("sftpgo_ftp", "ftp", "sftpgo", Ftp, ftps(2171), "")
         },
 
@@ -357,7 +379,10 @@ pub fn target(id: &str) -> Target {
             )
         },
         "proftpd_sftp" => base("proftpd_sftp", "sftp", "proftpd-sftp", Sftp, sftp(2241), ""),
-        "sftpgo_sftp" => base("sftpgo_sftp", "sftp", "sftpgo", Sftp, sftp(2251), ""),
+        "sftpgo_sftp" => Target {
+            max_connections: Some(SFTPGO_CONNECTIONS),
+            ..base("sftpgo_sftp", "sftp", "sftpgo", Sftp, sftp(2251), "")
+        },
         // Dropbear drops unauthenticated connections above five per address.
         "dropbear" => Target {
             max_connections: Some(5),
@@ -465,6 +490,9 @@ pub fn target(id: &str) -> Target {
         "sftpgo_webdav" => Target {
             perms: false,
             symlinks: false,
+            // WebDAV logins hold no connection SFTPGo counts; they are turned
+            // away (503) only while its FTP and SFTP connections fill the limit.
+            login_drops: true,
             ..base(
                 "sftpgo_webdav",
                 "webdav",
@@ -493,6 +521,16 @@ pub fn target(id: &str) -> Target {
         "iis_ftps" => iis_target("iis_ftps", Ftp, ftps(2121)),
         "iis_ftp_unix" => iis_target("iis_ftp_unix", Ftp, ftp(2122)),
         "iis_webdav" => iis_target("iis_webdav", Webdav, webdav("http://127.0.0.1:18180/")),
+        // Toxiproxy (profile chaos): one server per protocol behind it. The
+        // chaos tests share its toxics, so they lock its service.
+        "chaos_ftp" => chaos_target("chaos_ftp", Ftp, ftp(19000), ""),
+        "chaos_sftp" => chaos_target("chaos_sftp", Sftp, sftp(19001), "/home"),
+        "chaos_webdav" => chaos_target(
+            "chaos_webdav",
+            Webdav,
+            webdav("http://127.0.0.1:19002/"),
+            "",
+        ),
         other => panic!("unknown matrix target {other}"),
     }
 }

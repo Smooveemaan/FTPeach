@@ -11,6 +11,7 @@
 //! that does not answer fails.
 #![cfg(feature = "test-utils")]
 
+mod chaos;
 mod scenarios;
 mod specific;
 mod support;
@@ -92,6 +93,18 @@ mod common {
             s15_disk_full,
             s16_connections,
             s17_not_found,
+        ]
+    );
+}
+
+mod chaos_links {
+    matrix!(
+        [chaos_ftp, chaos_sftp, chaos_webdav],
+        [
+            c01_slow_link,
+            c02_drop_mid_transfer,
+            c03_silent_server,
+            c04_drop_during_listing,
         ]
     );
 }

@@ -1,0 +1,216 @@
+name: Server matrix
+
+# The client against many real FTP/FTPS, SFTP and WebDAV servers, proxies and
+# faulty links (src-tauri/tests/docker/matrix, docs/test-server-matrix.md).
+# Weekly and on demand only: it never blocks a pull request.
+
+permissions: {}
+
+on:
+  schedule:
+    - cron: '17 4 * * 6'
+  workflow_dispatch:
+
+concurrency:
+  group: server-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    name: ${{ matrix.name }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ftp
+            up: ftp
+            test: ftp
+            only: ''
+            timeout: 75
+          - name: sftp
+            up: sftp
+            test: sftp
+            only: ''
+            timeout: 60
+          - name: webdav
+            up: webdav
+            test: webdav
+            only: ''
+            timeout: 60
+          - name: baseline
+            up: baseline
+            test: baseline
+            only: ''
+            timeout: 45
+          # Nextcloud, and the relay into it from vsftpd.
+          - name: heavy
+            up: ftp heavy
+            test: ftp heavy
+            only: '--only common::nextcloud:: --only specific::nextcloud_ --only specific::relay_vsftpd_to_nextcloud'
+            timeout: 90
+          # Proxies, Toxiproxy and relays between servers of different
+          # profiles: what needs several profiles up at once.
+          - name: proxy-chaos
+            up: ftp sftp webdav proxy chaos
+            test: ftp sftp webdav proxy chaos
+            only: '--only specific::proxy_ --only specific::relay_ --only chaos_links::'
+            timeout: 60
+    env:
+      FTPEACH_MATRIX_PREBUILT: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+          shared-key: server-matrix
+
+      - name: Install Linux build dependencies
+        run: >-
+          sudo apt-get update && sudo apt-get install --yes
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Lets the buildx cache below talk to the Actions cache.
+      - uses: crazy-max/ghaction-github-runtime@04d248b84655b509d8c44dc1d6f990c879747487 # v4.0.0
+
+      - name: Build matrix images with the Actions cache
+        if: matrix.name != 'baseline'
+        working-directory: src-tauri/tests/docker/matrix
+        # Bake reads the compose file; one target per image, since several
+        # services share one. Build contexts resolve from this directory.
+        run: |
+          targets="$(docker buildx bake --print | jq -r '.target | to_entries | unique_by(.value.tags[0]) | map(.key) | join(" ")')"
+          # shellcheck disable=SC2086
+          docker buildx bake --load \
+            --set '*.cache-from=type=gha,scope=server-matrix' \
+            --set '*.cache-to=type=gha,scope=server-matrix,mode=max' \
+            $targets
+
+      - name: Start servers
+        run: npm run servers:up -- ${{ matrix.up }}
+
+      - name: Run the matrix scenario by scenario
+        id: matrix
+        run: npm run servers:ci -- ${{ matrix.test }} ${{ matrix.only }} --minutes 20
+
+      - name: Report setup failure
+        if: failure() && steps.matrix.outcome == 'skipped'
+        run: |
+          echo 'NOT RUN: server setup or build failed before any test; see the job log.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Collect container logs
+        if: failure()
+        run: |
+          docker compose -f src-tauri/tests/docker/matrix/docker-compose.yml --profile '*' logs --no-color > matrix-containers.log 2>&1 || true
+          docker compose -f src-tauri/tests/docker/docker-compose.yml logs --no-color >> matrix-containers.log 2>&1 || true
+
+      - name: Upload container logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: server-matrix-${{ matrix.name }}-logs
+          path: matrix-containers.log
+          retention-days: 14
+
+      - name: Stop servers
+        if: always()
+        run: npm run servers:down -- --volumes --baseline
+
+  windows-iis:
+    name: windows-iis
+    permissions:
+      contents: read
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+          shared-key: server-matrix-windows
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      - name: Prepare verified libsodium
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
+
+      # The runner is disposable and elevated; on Windows Server the script
+      # uses Install-WindowsFeature instead of the client's optional features.
+      - name: Install IIS FTP and WebDAV test sites
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
+
+      - name: Show IIS test sites
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 status
+
+      - name: Run the IIS targets scenario by scenario
+        id: matrix
+        run: npm run servers:ci -- iis --minutes 20
+
+      - name: Report setup failure
+        if: failure() && steps.matrix.outcome == 'skipped'
+        shell: bash
+        run: |
+          echo 'NOT RUN: IIS setup or build failed before any test; see the job log.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload IIS logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: server-matrix-windows-iis-logs
+          path: |
+            C:\inetpub\logs\LogFiles
+            C:\Windows\System32\LogFiles\HTTPERR
+          retention-days: 14
+          if-no-files-found: ignore
+
+  notify-regression:
+    if: ${{ always() && github.event_name == 'schedule' && (needs.docker.result == 'failure' || needs.windows-iis.result == 'failure') }}
+    needs: [docker, windows-iis]
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update server matrix regression issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title='Scheduled server matrix failed'
+          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number')"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --body "The scheduled server matrix failed again: ${RUN_URL}"
+          else
+            gh issue create --title "${title}" --body "The scheduled server matrix (docs/test-server-matrix.md) failed: ${RUN_URL}"
+          fi

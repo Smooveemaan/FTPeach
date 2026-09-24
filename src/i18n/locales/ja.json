@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "{{addr}} に接続中...",
+    "activeModeViaProxy": "プロキシ経由ではアクティブFTPモードを使用できません。パッシブモードを使用します。",
     "connectFailed": "接続に失敗しました：{{error}}",
     "connected": "ログインしました。",
     "receivedEntries_one": "{{count}} 件のエントリを受信しました",

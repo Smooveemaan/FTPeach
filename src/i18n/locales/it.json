@@ -611,6 +611,7 @@
   },
   "log": {
     "connecting": "Connessione a {{addr}}...",
+    "activeModeViaProxy": "La modalità FTP attiva non è disponibile tramite proxy: viene usata la modalità passiva.",
     "connectFailed": "Connessione non riuscita: {{error}}",
     "connected": "Accesso effettuato.",
     "receivedEntries_one": "Ricevuta {{count}} voce",

@@ -632,6 +632,7 @@
   },
   "log": {
     "connecting": "جارٍ الاتصال بـ {{addr}}...",
+    "activeModeViaProxy": "وضع FTP النشط غير متاح عبر الوكيل — يُستخدم الوضع السلبي.",
     "connectFailed": "فشل الاتصال: {{error}}",
     "connected": "تم تسجيل الدخول.",
     "receivedEntries_one": "تم استلام {{count}} سجل",

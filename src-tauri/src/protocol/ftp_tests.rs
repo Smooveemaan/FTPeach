@@ -943,6 +943,66 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         }
     }
 
+    /// A server that closes the control connection instead of replying has
+    /// dropped the link; it did not send a malformed reply.
+    #[tokio::test]
+    async fn a_control_connection_closed_before_a_reply_is_connection_lost() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (socket, _) = listener.accept().await.unwrap();
+            let (reader, mut writer) = socket.into_split();
+            writer.write_all(b"220 about to vanish\r\n").await.unwrap();
+            let _ = BufReader::new(reader).lines().next_line().await;
+        });
+        let error = FtpBackend::new()
+            .connect(&flooding_config(port, false, "", 5_000))
+            .await
+            .expect_err("a vanished server must not log in");
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::ConnectionLost,
+            "{error:#}"
+        );
+        server.await.unwrap();
+    }
+
+    /// A greeting other than 220 is the server turning the session away, not
+    /// an unknown failure; 421 "too many" keeps its own resource-limit code.
+    #[tokio::test]
+    async fn a_refusing_greeting_is_connection_refused() {
+        for (greeting, expected) in [
+            (
+                "500 Access denied",
+                crate::ipc::ErrorCode::ConnectionRefused,
+            ),
+            (
+                "421 Too many connections from your address",
+                crate::ipc::ErrorCode::ResourceLimit,
+            ),
+        ] {
+            let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let port = listener.local_addr().unwrap().port();
+            let server = tokio::spawn(async move {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                socket
+                    .write_all(format!("{greeting}\r\n").as_bytes())
+                    .await
+                    .unwrap();
+            });
+            let error = FtpBackend::new()
+                .connect(&flooding_config(port, false, "", 5_000))
+                .await
+                .expect_err("a refusing greeting must not log in");
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                expected,
+                "{greeting}: {error:#}"
+            );
+            server.await.unwrap();
+        }
+    }
+
     /// Active mode: the listener is open to anyone, so a data connection
     /// from another address must be ignored, not taken for the server's.
     #[tokio::test]

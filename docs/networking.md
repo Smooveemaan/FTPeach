@@ -11,7 +11,8 @@ same proxy types through its HTTP client. Proxy credentials are stored in the pr
 
 SOCKS4 supports IPv4 targets and DNS names through SOCKS4a, but the protocol has no IPv6 address
 type. Use SOCKS5 or HTTP CONNECT for an IPv6 literal. FTP active mode is disabled while a proxy is
-enabled because an outbound proxy tunnel cannot accept the server's reverse data connection.
+enabled because an outbound proxy tunnel cannot accept the server's reverse data connection; the
+connection uses passive mode and the protocol log says so.
 
 ## FTP passive and active modes
 
@@ -40,6 +41,13 @@ Loopback regression tests (when IPv6 loopback is allowed by the host) cover dire
 FTP passive data connections, FTPS certificate rejection, and structured TLS/SSH/proxy errors.
 Real NAT and firewall behavior remains environment-dependent; use the built-in proxy test and the
 protocol log when validating a deployment network.
+
+The [test server matrix](test-server-matrix.md) exercises these paths against real software: every
+proxy type with and without credentials (Dante, 3proxy, Squid), a server that advertises an
+unreachable PASV address, an EPSV-only server, active mode (on Linux runners) and active mode
+staying passive behind a proxy, and Toxiproxy faults on FTP control and data, SFTP and WebDAV: a
+slow link, a drop mid-transfer (reported as a lost connection, then resumed), a server that stops
+answering (a timeout within the site's timeout) and a drop during a large listing.
 
 ## Connection diagnostics
 

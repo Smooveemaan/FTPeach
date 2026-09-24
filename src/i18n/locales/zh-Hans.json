@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "正在连接到 {{addr}}...",
+    "activeModeViaProxy": "通过代理无法使用主动FTP模式——将使用被动模式。",
     "connectFailed": "连接失败：{{error}}",
     "connected": "已登录。",
     "receivedEntries_one": "已接收 {{count}} 条记录",

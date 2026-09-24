@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "正在連線到 {{addr}}…",
+    "activeModeViaProxy": "透過 Proxy 無法使用主動 FTP 模式 — 將使用被動模式。",
     "connectFailed": "連線失敗：{{error}}",
     "connected": "已登入。",
     "receivedEntries_one": "已收到 {{count}} 個項目",

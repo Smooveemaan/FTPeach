@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Verbinding maken met {{addr}}...",
+    "activeModeViaProxy": "De actieve FTP-modus is niet beschikbaar via een proxy — de passieve modus wordt gebruikt.",
     "connectFailed": "Verbinding mislukt: {{error}}",
     "connected": "Ingelogd.",
     "receivedEntries_one": "{{count}} item ontvangen",

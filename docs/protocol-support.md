@@ -15,9 +15,15 @@
 
 FTPS means explicit TLS (`AUTH TLS`), not implicit FTPS. TLS certificate verification is enabled; `allowInvalidCert` should be used only for deliberately trusted self-signed or legacy servers.
 
+## Unsupported variants and authentication
+
+- **Implicit FTPS** (TLS before the greeting, usually port 990) is not supported. Such a server is refused at once with a TLS negotiation error that names implicit FTPS, not after a timeout. Use explicit FTPS on the server's regular port.
+- **WebDAV Digest authentication** is not supported; WebDAV signs in with Basic authentication, over HTTPS or with `allowCleartextAuth`. A server that accepts only Digest fails sign-in with an authentication error.
+- **SSH keyboard-interactive authentication** is supported: hidden prompts are answered with the site password, so servers that disable the `password` method still accept the login. Public-key authentication covers Ed25519, RSA and ECDSA keys, including passphrase-protected ones.
+
 ## Resume and integrity
 
-Downloads are written to a sibling `*.ftpeach-part` file. FTP/FTPS and SFTP resume from the partial file size; WebDAV sends a Range request and validates `Content-Range`. If a server ignores Range, the download safely restarts. The partial file replaces the destination only after its size is verified.
+Downloads are written to a hidden sibling `.ftpeach-<id>.part` file. A download resumes only when the remote file still has the size and version (FTP `MDTM`, SFTP modification time, WebDAV strong `ETag` or `Last-Modified`) recorded when the partial was started. FTP/FTPS and SFTP resume from the partial file size; WebDAV sends a Range request with `If-Range` and validates `Content-Range`. A WebDAV version read in the same second the file was last modified is not trusted, since the file could change again within that second without a new version; such a download restarts instead of resuming. If a server ignores Range, the download safely restarts. The partial file replaces the destination only after its size is verified.
 
 FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset produces an integrity error. WebDAV upload resume is not supported.
 
@@ -25,6 +31,12 @@ FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset pr
 
 - WebDAV uploads use a streaming PUT with bounded buffers; upload resume is not supported, and server-side size limits still apply;
 - FTP transmits credentials and data in plain text;
+- FTP/FTPS and SFTP tell file versions apart only to the second (FTP `MDTM`, SFTP
+  modification time) and give no server time to compare with. A file replaced by another of
+  the same size within the second a download started is not detected, and resuming that
+  download joins old and new content. WebDAV avoids this by comparing `Last-Modified` with
+  the reply's `Date`; to be safe on FTP or SFTP, download a file that is being rewritten
+  again from the start instead of resuming it;
 - FTP active mode is incompatible with proxies and usually requires firewall/NAT configuration;
 - the first SFTP fingerprint should be independently verified with the administrator;
 - an SSH server's key is pinned per host and port. With `strictHostKeyCheck` on, the
@@ -52,7 +64,12 @@ authorities, invalid certificates, and endpoints restricted to TLS 1.2 or TLS
 informational for ordinary pull requests and does not make a public server a
 required dependency of the main CI pipeline.
 
-Maintainers can reproduce it on a Docker host from `src-tauri`:
+The broader [test server matrix](test-server-matrix.md) runs weekly and on
+demand in its own workflow: about thirty server implementations and
+configurations, IIS, proxies, relays between different servers and faulty
+links. It is informational and never blocks a pull request or a release.
+
+Maintainers can reproduce the compatibility workflow on a Docker host from `src-tauri`:
 
 ```sh
 docker compose -f tests/docker/docker-compose.yml up --detach

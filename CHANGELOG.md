@@ -65,6 +65,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A resumed WebDAV download no longer mixes old and new content when the file on the server
+  was replaced within the same second; such a download now starts over.
+- A connection that drops in the middle of an FTP or SFTP transfer is now reported as a lost
+  connection instead of an unknown error or a timeout, and SFTP now waits only as long as
+  the timeout set for the site.
+- A server that turns a connection away because it is busy or full is now reported as such
+  (WebDAV 429 and 503, an FTP server refusing at the greeting) instead of an unknown error.
+- The protocol log now says when FTP active mode is not used because the site connects
+  through a proxy.
 - Creating a local file with a name that is already taken now says so, instead of showing a
   general error.
 - The same now applies to new files on SFTP and WebDAV servers, including a file someone else

@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Csatlakozás ide: {{addr}}...",
+    "activeModeViaProxy": "Az aktív FTP-mód proxyn keresztül nem érhető el — a kapcsolat passzív módot használ.",
     "connectFailed": "A kapcsolat létrehozása nem sikerült: {{error}}",
     "connected": "Bejelentkezve.",
     "receivedEntries_one": "{{count}} bejegyzés érkezett",

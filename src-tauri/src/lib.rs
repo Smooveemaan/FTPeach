@@ -11,9 +11,9 @@ mod session;
 pub mod store;
 mod transfer;
 
-// Expose the pool only for protocol integration tests.
+// Expose the pool and the server-to-server relay only for protocol integration tests.
 #[cfg(feature = "test-utils")]
-pub use transfer::transfer_pool;
+pub use transfer::{relay, transfer_pool};
 // The server matrix asserts failure categories, not message text.
 #[cfg(feature = "test-utils")]
 pub use ipc::{CommandError, ErrorCode};

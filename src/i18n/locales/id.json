@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Sedang terhubung ke {{addr}}...",
+    "activeModeViaProxy": "Mode FTP aktif tidak tersedia melalui proxy — menggunakan mode pasif.",
     "connectFailed": "Koneksi gagal: {{error}}",
     "connected": "Berhasil masuk.",
     "receivedEntries_one": "Menerima {{count}} entri",

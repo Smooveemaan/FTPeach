@@ -618,6 +618,7 @@
   },
   "log": {
     "connecting": "Nawiązywanie połączenia z {{addr}}...",
+    "activeModeViaProxy": "Aktywny tryb FTP jest niedostępny przez serwer proxy — używany jest tryb pasywny.",
     "connectFailed": "Nie udało się nawiązać połączenia: {{error}}",
     "connected": "Zalogowano się.",
     "receivedEntries_one": "Otrzymano {{count}} wpis",

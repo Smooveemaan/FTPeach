@@ -30,7 +30,9 @@ pub(super) fn status_error(status: u16, operation: &str) -> anyhow::Error {
             ));
         }
         407 => ErrorCode::ProxyFailed,
-        413 => ErrorCode::ResourceLimit,
+        // Too many requests, or a server out of capacity: SFTPGo answers 503
+        // past its connections per address.
+        413 | 429 | 503 => ErrorCode::ResourceLimit,
         507 => ErrorCode::StorageFull,
         403 => ErrorCode::PermissionDenied,
         404 => ErrorCode::NotFound,

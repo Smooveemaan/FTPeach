@@ -2,7 +2,67 @@
   {
     "name": "vsftpd",
     "listen": "0.0.0.0:19000",
-    "upstream": "vsftpd:21",
+    "upstream": "vsftpd-chaos:21",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31040",
+    "listen": "0.0.0.0:31040",
+    "upstream": "vsftpd-chaos:31040",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31041",
+    "listen": "0.0.0.0:31041",
+    "upstream": "vsftpd-chaos:31041",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31042",
+    "listen": "0.0.0.0:31042",
+    "upstream": "vsftpd-chaos:31042",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31043",
+    "listen": "0.0.0.0:31043",
+    "upstream": "vsftpd-chaos:31043",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31044",
+    "listen": "0.0.0.0:31044",
+    "upstream": "vsftpd-chaos:31044",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31045",
+    "listen": "0.0.0.0:31045",
+    "upstream": "vsftpd-chaos:31045",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31046",
+    "listen": "0.0.0.0:31046",
+    "upstream": "vsftpd-chaos:31046",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31047",
+    "listen": "0.0.0.0:31047",
+    "upstream": "vsftpd-chaos:31047",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31048",
+    "listen": "0.0.0.0:31048",
+    "upstream": "vsftpd-chaos:31048",
+    "enabled": true
+  },
+  {
+    "name": "vsftpd_data_31049",
+    "listen": "0.0.0.0:31049",
+    "upstream": "vsftpd-chaos:31049",
     "enabled": true
   },
   {

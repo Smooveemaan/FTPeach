@@ -481,6 +481,33 @@ impl SftpBackend {
         download.finish(written, remote_size).await
     }
 
+    /// russh-sftp keeps a request waiting after the SSH connection goes away
+    /// and fails it only at its own request timeout, as `Timeout`. A closed
+    /// session tells a dropped link from a server that is merely slow.
+    async fn lost_if_closed<T>(&self, result: BackendResult<T>) -> BackendResult<T> {
+        let Err(error) = result else { return result };
+        let timed_out = error.chain().any(|source| {
+            matches!(
+                source.downcast_ref::<SftpClientError>(),
+                Some(SftpClientError::Timeout)
+            )
+        });
+        let closed = timed_out
+            && self
+                .session
+                .lock()
+                .await
+                .as_ref()
+                .is_none_or(|session| session.is_closed());
+        if closed {
+            return Err(error.context(crate::ipc::CommandError::new(
+                ErrorCode::ConnectionLost,
+                "The server closed the connection",
+            )));
+        }
+        Err(error)
+    }
+
     fn sftp(&self) -> BackendResult<Arc<RawSftpSession>> {
         self.sftp.read().unwrap().clone().ok_or_else(|| {
             super::fail(
@@ -795,6 +822,13 @@ impl ProtocolBackend for SftpBackend {
                 .await
                 .context("requesting sftp subsystem failed")?;
             let raw = RawSftpSession::new(channel.into_stream());
+            // A request the server leaves unanswered fails after the site's
+            // timeout, as an idle FTP or WebDAV transfer does (60 s when unset).
+            raw.set_timeout(if timeout_ms == 0 {
+                60
+            } else {
+                timeout_ms.div_ceil(1000)
+            });
             let version = raw.init().await.context("sftp init failed")?;
             let posix_rename = version
                 .extensions
@@ -888,11 +922,13 @@ impl ProtocolBackend for SftpBackend {
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
-        self.list_entries(path, false).await
+        let result = self.list_entries(path, false).await;
+        self.lost_if_closed(result).await
     }
 
     async fn list_for_recursive(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
-        self.list_entries(path, true).await
+        let result = self.list_entries(path, true).await;
+        self.lost_if_closed(result).await
     }
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
         let raw = self.sftp()?;
@@ -1062,7 +1098,7 @@ impl ProtocolBackend for SftpBackend {
         }
         .await;
         let _ = raw.close(handle.as_str()).await;
-        read
+        self.lost_if_closed(read).await
     }
 
     async fn upload(
@@ -1125,6 +1161,7 @@ impl ProtocolBackend for SftpBackend {
         }
         .await;
 
+        let result = self.lost_if_closed(result).await;
         let result = match result {
             Ok(()) => {
                 let actual = self.known_size(remote_path).await;
@@ -1152,6 +1189,7 @@ impl ProtocolBackend for SftpBackend {
         let result = self
             .download_file(remote_path, local_path, resume, &progress)
             .await;
+        let result = self.lost_if_closed(result).await;
         super::transfer_file::report_outcome(&result, &progress);
         result
     }
@@ -1175,7 +1213,7 @@ impl ProtocolBackend for SftpBackend {
         let progress: ProgressSink = Arc::new(|_| {});
         let result = read_pipelined(&raw, &handle, writer, 0, None, &progress).await;
         let closed = raw.close(handle.as_str()).await;
-        result?;
+        self.lost_if_closed(result).await?;
         closed.context("closing remote file")?;
         Ok(())
     }
@@ -1199,7 +1237,7 @@ impl ProtocolBackend for SftpBackend {
         let progress: ProgressSink = Arc::new(|_| {});
         let result = write_pipelined(&raw, &handle, reader, 0, 0, &progress).await;
         let closed = raw.close(handle.as_str()).await;
-        result?;
+        self.lost_if_closed(result).await?;
         closed.context("closing remote file after upload")?;
         Ok(())
     }

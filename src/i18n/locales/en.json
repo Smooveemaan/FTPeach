@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Connecting to {{addr}}...",
+    "activeModeViaProxy": "Active FTP mode is not available through a proxy — using passive mode.",
     "connectFailed": "Connection failed: {{error}}",
     "connected": "Logged in.",
     "receivedEntries_one": "Received {{count}} entry",

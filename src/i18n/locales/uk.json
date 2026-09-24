@@ -618,6 +618,7 @@
   },
   "log": {
     "connecting": "Підключення до {{addr}}...",
+    "activeModeViaProxy": "Активний режим FTP недоступний через проксі — використовується пасивний режим.",
     "connectFailed": "Помилка підключення: {{error}}",
     "connected": "Вхід виконано.",
     "receivedEntries_one": "Отримано {{count}} запис",

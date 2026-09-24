@@ -121,7 +121,7 @@ services:
 
   vsftpd:
     <<: *server
-    profiles: [ftp, chaos]
+    profiles: [ftp]
     build: images/vsftpd
     image: ftpeach-matrix-vsftpd:local
     ports:
@@ -733,9 +733,23 @@ services:
   # ---------------------------------------------------------------- chaos
 
   # Fault injection in front of one server per protocol. Tests add toxics
-  # (latency, bandwidth, reset_peer, timeout) through the API on 8474. Only the
-  # FTP control connection goes through it: PASV still points at vsftpd's own
-  # published data ports.
+  # (latency, bandwidth, reset_peer, timeout) through the API on 8474.
+  # vsftpd-chaos publishes nothing: its control port and its passive data ports
+  # are reached only through toxiproxy, so faults hit FTP data too.
+  vsftpd-chaos:
+    <<: *server
+    profiles: [chaos]
+    image: ftpeach-matrix-vsftpd:local
+    build: images/vsftpd
+    volumes:
+      - ./config/vsftpd/chaos.conf:/etc/vsftpd/variant.conf:ro
+      - ./generated/tls:/tls:ro
+      - vsftpd-data:/home/testuser
+    depends_on: *ftp-deps
+    healthcheck:
+      <<: *tcp-health
+      test: ['CMD', 'bash', '-c', '</dev/tcp/127.0.0.1/21']
+
   toxiproxy:
     <<: *server
     profiles: [chaos]
@@ -744,6 +758,7 @@ services:
     ports:
       - '127.0.0.1:8474:8474'
       - '127.0.0.1:19000-19009:19000-19009'
+      - '127.0.0.1:31040-31049:31040-31049'
     volumes:
       - ./config/toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
     healthcheck:

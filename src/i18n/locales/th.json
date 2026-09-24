@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "กำลังเชื่อมต่อกับ {{addr}}...",
+    "activeModeViaProxy": "ไม่สามารถใช้โหมด FTP แบบแอคทีฟผ่านพร็อกซีได้ — จะใช้โหมดพาสซีฟแทน",
     "connectFailed": "การเชื่อมต่อไม่สำเร็จ: {{error}}",
     "connected": "เข้าสู่ระบบแล้ว",
     "receivedEntries_one": "ได้รับ {{count}} รายการ",

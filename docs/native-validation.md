@@ -10,6 +10,7 @@ The release workflow requires both the shared checks (including packaged smoke a
 | Packaged smoke feature | Real WebView2/dist process, backend settings/vault/basic local-copy probes, dialogs, RTL and contrast | Production installer/update installation, complete ACL matrix, Explorer, native drag, Windows Hello/TPM |
 | Local protocol fixtures | Controlled stalls, status errors, cancellation, byte budgets | Third-party server behavior |
 | Docker compatibility | Explicit ignored tests against disposable FTP/FTPS/SFTP/WebDAV and TLS endpoints | Every server/version, external network failures or power loss |
+| [Server matrix](test-server-matrix.md) | Weekly and on demand: about thirty server implementations and configurations, IIS, SOCKS/HTTP proxies, relays between servers and Toxiproxy faults (latency, drops, a silent server) | Not a release gate; active-mode FTP only on Linux runners; real WAN conditions |
 | cargo deny | Current advisory database and license policy for the locked graph | Proof of absence of exploitable bugs; ignored advisories remain accepted risks |
 
 ## HF-24 verification run, Windows, 2026-09-23

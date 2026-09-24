@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "{{addr}} adresine bağlanılıyor...",
+    "activeModeViaProxy": "Aktif FTP modu proxy üzerinden kullanılamaz — pasif mod kullanılıyor.",
     "connectFailed": "Bağlantı kurulamadı: {{error}}",
     "connected": "Giriş yapıldı.",
     "receivedEntries_one": "{{count}} kayıt alındı",

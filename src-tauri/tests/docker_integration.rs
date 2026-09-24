@@ -717,6 +717,9 @@ async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
         .await
         .expect("upload cancel fixture");
     setup.disconnect().await.expect("disconnect setup backend");
+    // A version read in the second the file was written vouches for no
+    // partial (webdav::resume_version), and this test is about resuming.
+    tokio::time::sleep(Duration::from_millis(1100)).await;
 
     let factory_config = config.clone();
     let factory: BackendFactory = Arc::new(move || {

@@ -12,13 +12,13 @@ npm run servers:up -- ftp sftp        # build, start, wait for healthchecks, pri
 npm run servers:up -- all             # ftp sftp webdav proxy baseline
 npm run servers:up -- heavy           # Nextcloud; first start takes several minutes
 npm run servers:status
-npm run servers:test                  # the client against what `all` starts; add `heavy` / `iis` to test those
+npm run servers:test                  # the client against what `all` starts; add `heavy` / `chaos` / `iis` to test those
 npm run servers:down                  # add --volumes to drop fixtures, --baseline for the CI stack
 ```
 
 Profiles: `ftp`, `sftp`, `webdav`, `heavy` (Nextcloud), `proxy`, `chaos`
-(Toxiproxy in front of `vsftpd`, `openssh-chroot` and `apache-basic`), and
-`baseline`. SFTPGo belongs to `ftp`, `sftp` and `webdav`.
+(Toxiproxy in front of `vsftpd-chaos`, `openssh-chroot` and `apache-basic`),
+and `baseline`. SFTPGo belongs to `ftp`, `sftp` and `webdav`.
 
 Everything is published on 127.0.0.1 only. All profiles together, Nextcloud
 included, idle at about 750 MB of RAM; transfers and Nextcloud indexing add to
@@ -59,7 +59,7 @@ deleted a fixture (a failed permissions check can delete
 | rclone_webdav / nextcloud | 18111 / 18101 | |
 | dante SOCKS5+4 / dante_auth / threeproxy SOCKS4a | 11080 / 11081 / 11082 | |
 | squid / squid_auth (HTTP CONNECT) | 13128 / 13129 | |
-| toxiproxy API / proxies | 8474 / 19000-19009 | |
+| toxiproxy API / proxies | 8474 / 19000-19009 | 31040-31049 (vsftpd-chaos) |
 | IIS FTP / IIS FTP Unix / IIS WebDAV (host) | 2121 / 2122 / 18180 | 32000-32009 |
 
 Proxies sit on 11080+ and 13128+ rather than the usual 1080/3128, which local
@@ -118,8 +118,12 @@ Checked with curl, OpenSSH and openssl against the running containers:
   `apache_digest` rejects Basic with `401`.
 - Dante does not implement SOCKS4a, hence `threeproxy`.
 - Nextcloud does not index the 255-byte fixture name (its limit is 250).
-- Behind Toxiproxy only the FTP control connection is proxied; passive data
-  goes straight to vsftpd, which therefore runs with `pasv_promiscuous=YES`.
+- `vsftpd-chaos` publishes no port of its own: Toxiproxy listens on its control
+  port (19000) and on each of its passive ports (31040-31049, forwarded to the
+  same port), so faults reach FTP data as well as control. The chaos tests
+  (`chaos_links::*`) cover a 300 ms / 256 KB/s link, a drop mid-download
+  (`connectionLost`, then resume), a server that stops answering (`timedOut`
+  within the site timeout) and a drop during a 10 000-entry listing.
 - IIS FTP replaces every non-ASCII character in names with `?` (one per UTF-16
   unit, so the loss is irreversible) until the client sends `OPTS UTF8 ON`,
   although FEAT advertises `UTF8`. FEAT has no `MLST`, so listings must be
@@ -136,6 +140,10 @@ Checked with curl, OpenSSH and openssl against the running containers:
   as a denied resource, not a rejected login.
 - IIS FTP answers a missing file and a file in a missing folder with the same
   bare `550 The system cannot find the path specified.`
+- A cold IIS WebDAV (after a long idle; restarting the pool alone is not
+  enough) takes about 25 s to the first byte of the 10 000-entry PROPFIND, and
+  3-4 s warm. A request dropped before the answer does not warm it, so a client
+  on the 20 s default times out every time; the IIS targets use 60 s.
 - The IIS fixtures leave out what NTFS cannot hold: the name with `"` and
   `case.txt` next to `Case.txt`; `perms/` is made with NTFS denies. Run the
   IIS targets with `npm run servers:test -- iis`; no selection and `all` skip

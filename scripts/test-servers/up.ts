@@ -12,6 +12,7 @@ const usage = [
   'Usage: npm run servers:up -- <profile...>',
   `Profiles: ${matrixProfiles.join(', ')}, baseline, iis (host, prints how to install), all (everything except heavy, chaos and iis)`,
   'FTPEACH_MATRIX_BIG_MB sets the size of fixtures/sizes/big.bin (default 64).',
+  'FTPEACH_MATRIX_PREBUILT=1 starts the images already built (CI builds them with a cache).',
 ].join('\n');
 
 const selected = parseProfiles(process.argv.slice(2), usage);
@@ -40,7 +41,7 @@ if (matrix.length > 0) {
     ...matrix.flatMap((profile) => ['--profile', profile]),
     'up',
     '--detach',
-    '--build',
+    ...(process.env.FTPEACH_MATRIX_PREBUILT === '1' ? [] : ['--build']),
     '--wait',
     // Nextcloud installs itself and indexes the fixtures on first start.
     '--wait-timeout',

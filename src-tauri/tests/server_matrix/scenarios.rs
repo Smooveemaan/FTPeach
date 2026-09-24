@@ -7,6 +7,9 @@ use app_lib::ErrorCode;
 use app_lib::protocol::ProtocolBackend;
 use std::time::{Duration, Instant};
 
+// The chaos scenarios run through the same `matrix!` wiring.
+pub use crate::chaos::*;
+
 fn not_applicable(target: &Target, why: &str) {
     println!("NOT APPLICABLE: {}: {why}", target.id);
 }

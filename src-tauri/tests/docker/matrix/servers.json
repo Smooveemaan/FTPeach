@@ -389,7 +389,7 @@
       "address": "http://127.0.0.1:8474/",
       "user": "",
       "password": "",
-      "notes": "19000 -> vsftpd:21, 19001 -> openssh-chroot:22, 19002 -> apache-basic:80"
+      "notes": "19000 -> vsftpd-chaos:21 (passive 31040-31049 too), 19001 -> openssh-chroot:22, 19002 -> apache-basic:80"
     },
     {
       "id": "iis_ftp",

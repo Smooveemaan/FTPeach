@@ -618,6 +618,7 @@
   },
   "log": {
     "connecting": "Připojování k {{addr}}...",
+    "activeModeViaProxy": "Aktivní režim FTP není přes proxy server k dispozici — používá se pasivní režim.",
     "connectFailed": "Připojení se nezdařilo: {{error}}",
     "connected": "Přihlášeno.",
     "receivedEntries_one": "Přijat {{count}} záznam",

@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "Ansluter till {{addr}}...",
+    "activeModeViaProxy": "Aktivt FTP-läge är inte tillgängligt via en proxy — passivt läge används.",
     "connectFailed": "Anslutningen misslyckades: {{error}}",
     "connected": "Inloggad.",
     "receivedEntries_one": "{{count}} post togs emot",

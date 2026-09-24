@@ -294,6 +294,46 @@ fn the_address_is_only_ever_upgraded_never_downgraded() {
     }
 }
 
+/// A same-size overwrite in the second nginx dated its reply keeps the ETag,
+/// so a version from that second must not let a resume splice old onto new.
+#[test]
+fn a_version_from_the_second_the_file_changed_is_not_trusted() {
+    let headers = |pairs: &[(&'static str, &'static str)]| {
+        let mut map = reqwest::header::HeaderMap::new();
+        for (name, value) in pairs {
+            map.insert(*name, reqwest::header::HeaderValue::from_static(value));
+        }
+        map
+    };
+    let modified = ("last-modified", "Thu, 24 Sep 2026 10:00:00 GMT");
+    let etag = ("etag", "\"66f28e20-2000000\"");
+    assert_eq!(
+        resume_version(&headers(&[
+            etag,
+            modified,
+            ("date", "Thu, 24 Sep 2026 10:00:01 GMT")
+        ])),
+        Some("\"66f28e20-2000000\"".to_string())
+    );
+    assert_eq!(
+        resume_version(&headers(&[
+            etag,
+            modified,
+            ("date", "Thu, 24 Sep 2026 10:00:00 GMT")
+        ])),
+        None
+    );
+    assert_eq!(
+        resume_version(&headers(&[
+            modified,
+            ("date", "Thu, 24 Sep 2026 10:05:00 GMT")
+        ])),
+        Some(modified.1.to_string())
+    );
+    assert_eq!(resume_version(&headers(&[etag])), Some(etag.1.to_string()));
+    assert_eq!(resume_version(&headers(&[("etag", "W/\"weak\"")])), None);
+}
+
 /// A backend outlives its session: it sits in a pool slot, and until
 /// something drops it a password it no longer needs is still in the struct.
 #[tokio::test]
@@ -1811,6 +1851,8 @@ fn http_statuses_name_proxy_and_space_failures() {
         (401, ErrorCode::PermissionDenied),
         (407, ErrorCode::ProxyFailed),
         (413, ErrorCode::ResourceLimit),
+        (429, ErrorCode::ResourceLimit),
+        (503, ErrorCode::ResourceLimit),
         (507, ErrorCode::StorageFull),
     ] {
         let error = response::status_error(status, "PUT");

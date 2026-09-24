@@ -604,6 +604,7 @@
   },
   "log": {
     "connecting": "{{addr}}에 연결 중...",
+    "activeModeViaProxy": "프록시를 통해서는 액티브 FTP 모드를 사용할 수 없습니다. 패시브 모드를 사용합니다.",
     "connectFailed": "연결에 실패했습니다: {{error}}",
     "connected": "로그인했습니다.",
     "receivedEntries_one": "{{count}}개 항목을 수신했습니다",

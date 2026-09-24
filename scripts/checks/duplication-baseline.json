@@ -3,10 +3,10 @@
   "minTokens": 60,
   "areas": {
     "frontend-ts": {
-      "sources": 209,
-      "lines": 31727,
-      "duplicatedLines": 76,
-      "clones": 8
+      "sources": 210,
+      "lines": 31736,
+      "duplicatedLines": 65,
+      "clones": 7
     },
     "css": {
       "sources": 23,

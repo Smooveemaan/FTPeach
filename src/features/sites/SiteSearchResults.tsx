@@ -6,6 +6,7 @@ import Icon from '../../components/Icon.tsx';
 import type { IconName } from '../../components/Icon.tsx';
 import TruncatedText from '../../components/TruncatedText.tsx';
 import { siteMeta } from './siteMeta.ts';
+import { siteMenuItems } from './siteMenuItems.ts';
 import type { ManagedSite, Translate } from '../../shared/types.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 
@@ -48,18 +49,7 @@ export default function SiteSearchResults({
 }: SiteSearchResultsProps) {
   const [contextMenu, setContextMenu] = useState<SearchContextMenu | null>(null);
 
-  const getMenuItems = (site: ManagedSite): MenuItem[] => [
-    { label: t('connectionBar.connectTooltip.connect'), onClick: () => onConnect(site) },
-    { label: t('siteManagerDialog.titleEdit'), onClick: () => onEdit(site) },
-    { label: t('siteManagerDialog.duplicate'), onClick: () => onDuplicate(site) },
-    { label: t('filePane.rename'), onClick: () => onStartRenameSite(site) },
-    { separator: true },
-    {
-      label: t('paneMenu.delete'),
-      danger: true,
-      onClick: () => onRequestDelete({ kind: 'site', id: site.id, name: site.name }),
-    },
-  ];
+  const siteActions = { onConnect, onEdit, onDuplicate, onStartRenameSite, onRequestDelete };
 
   return (
     <>
@@ -70,7 +60,7 @@ export default function SiteSearchResults({
           ) : (
             sites.map((site) => {
               const parent = site.parentId ? entriesById.get(site.parentId) : null;
-              const items = getMenuItems(site);
+              const items = siteMenuItems(site, t, siteActions);
               const isRenaming = renamingSiteId === site.id;
               return (
                 <div

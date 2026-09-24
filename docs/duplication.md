@@ -25,7 +25,7 @@ Baseline of 24 September 2026:
 
 | Area | Files | Code lines | Clones | Duplicated lines | Share |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| frontend-ts | 209 | 31,727 | 8 | 76 | 0.24% |
+| frontend-ts | 210 | 31,736 | 7 | 65 | 0.20% |
 | css | 23 | 4,667 | 1 | 6 | 0.13% |
 | rust-production | 120 | 27,149 | 40 | 407 | 1.50% |
 | rust-tests | 88 | 20,462 | 95 | 888 | 4.34% |
@@ -44,7 +44,7 @@ the hotfix plan.
 | `protocol/ftp.rs` with itself: `upload`/`upload_from_reader`, `download`/`download_to_writer`, rustls `verify_tls12/13_signature` | 63 | **Keep**: file and stream transfer loops differ in their source and resume handling, and rustls requires both verifier methods |
 | `commands/session/browse.rs`, validate-and-reserve prologue of mkdir/create/delete | 24 | **Keep**: three lines of prologue per command; the reservation guard has to live in each command's own scope |
 | `commands/dialog.rs`, native picker boilerplate | 23 | **Defer**: a picker helper when another picker is added; the filters and what is approved differ per picker |
-| `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu (D-03) | 12 | **Remove**: one site-menu factory (HF-28) |
+| `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu (D-03) | 12 | **Removed** (HF-28): `siteMenuItems` in `features/sites` |
 | `useSettingsTransfer.ts` ↔ `platform/global.d.ts`, import/export result types (D-05) | 12 | **Removed** (HF-29): one contract in `platform/api/settings.ts` |
 | `useTransferLifecycle.ts` with itself, moving an attempt to queued (D-07) | 12 | **Removed** (HF-31): `requeueAttempt` |
 | `ToolbarOverflowMenu.tsx` ↔ `PaneSourceSwitcher.tsx`, overlay position (D-06) | 15 | **Remove**: shared overlay geometry (HF-30) |

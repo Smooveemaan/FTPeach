@@ -13,6 +13,7 @@ import {
 } from './components/SiteTreeRows.tsx';
 import type { SiteTreeRowNodeRef } from './components/SiteTreeRows.tsx';
 import { FOLDERS, ROOT } from './siteDragModel.ts';
+import { siteMenuItems } from './siteMenuItems.ts';
 import type { ManagedSite, Translate } from '../../shared/types.ts';
 import type { SiteDeleteTarget } from './useSiteManagerDialogState.ts';
 import type { useSiteDragController } from './useSiteDragController.ts';
@@ -140,18 +141,7 @@ export default function SiteTree({
     setContextMenu({ x: e.clientX, y: e.clientY, items });
   };
 
-  const siteMenuItems = (site: ManagedSite): MenuItem[] => [
-    { label: t('connectionBar.connectTooltip.connect'), onClick: () => onConnect(site) },
-    { label: t('siteManagerDialog.titleEdit'), onClick: () => onEdit(site) },
-    { label: t('siteManagerDialog.duplicate'), onClick: () => onDuplicate(site) },
-    { label: t('filePane.rename'), onClick: () => onStartRenameSite(site) },
-    { separator: true },
-    {
-      label: t('paneMenu.delete'),
-      danger: true,
-      onClick: () => onRequestDelete({ kind: 'site', id: site.id, name: site.name }),
-    },
-  ];
+  const siteActions = { onConnect, onEdit, onDuplicate, onStartRenameSite, onRequestDelete };
 
   const folderMenuItems = (folder: ManagedSite): MenuItem[] => [
     {
@@ -168,7 +158,7 @@ export default function SiteTree({
   ];
 
   const renderSiteRow = (site: ManagedSite, level = 1) => {
-    const items = siteMenuItems(site);
+    const items = siteMenuItems(site, t, siteActions);
     return (
       <SortableSiteRow
         key={site.id}

@@ -747,6 +747,7 @@ export default function Application() {
             />
           ),
           quitPending: quitWhenIdle.pending ? { onCancel: quitWhenIdle.cancel } : undefined,
+          narrow: windowNarrow,
         }}
       />
 

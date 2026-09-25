@@ -330,3 +330,27 @@ test('three recent connections fit a disconnected pane in the default layout', a
   expect(scrolled.offCentre).toBeCloseTo(geometry.offCentre, 1);
   expect(scrolled.contentWidth).toBe(geometry.contentWidth);
 });
+
+/* Columns wider than a narrow pane scroll sideways instead of running off its
+   edge, and the header scrolls with them, so a column's title stays over its
+   cells. */
+test('file columns scroll sideways with their header', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 720 });
+  await openHarness(page);
+  const pane = page.locator('.pane').first();
+  const list = pane.locator('.pane-list');
+  const overflow = await list.evaluate((element) => element.scrollWidth - element.clientWidth);
+  expect(overflow).toBeGreaterThan(0);
+  await list.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await expect
+    .poll(() => pane.locator('.row-header').evaluate((header) => header.scrollLeft))
+    .toBe(overflow);
+  const headerCell = pane.locator('.row-header .col-header').last();
+  const rowCell = pane.locator('.pane-list .row').first().locator('span').last();
+  const [header, cell] = await Promise.all([headerCell.boundingBox(), rowCell.boundingBox()]);
+  expect(Math.abs(header!.x - cell!.x)).toBeLessThan(1);
+  const listBox = (await list.boundingBox())!;
+  expect(cell!.x + cell!.width).toBeLessThanOrEqual(listBox.x + listBox.width + 0.5);
+});

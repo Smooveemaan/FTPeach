@@ -422,7 +422,17 @@ function FilePane({
           once a pane gets squeezed past that (see theme.css), this whole
           body (header row included) clips away instead of the header
           insisting on its own always-visible slot. */}
-      <div className="pane-body">
+      <div
+        className="pane-body"
+        // Scroll does not bubble; capturing it here serves the plain and the
+        // virtualized list alike, and the header follows the rows sideways.
+        onScrollCapture={(event) => {
+          const list = event.target as HTMLElement;
+          if (!list.classList.contains('pane-list')) return;
+          const header = event.currentTarget.querySelector<HTMLElement>('.row-header');
+          if (header) header.scrollLeft = list.scrollLeft;
+        }}
+      >
         {!disconnected && (
           <FileColumnHeader
             activeColumns={activeColumns}

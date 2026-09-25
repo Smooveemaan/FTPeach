@@ -1,5 +1,6 @@
 import { readyUnsubscribe } from '../../src/platform/ipcContracts.ts';
-import type { UpdaterStatus } from '../../src/platform/ipcContracts.ts';
+import type { RecoveredEdit, UpdaterStatus } from '../../src/platform/ipcContracts.ts';
+import type { LogEntry } from '../../src/shared/logEntry.ts';
 import defaults from '../../src/shared/settingsDefaults.json';
 import type { FileEntry } from '../../src/shared/paneContracts.ts';
 import type { ManagedSite } from '../../src/shared/siteContracts.ts';
@@ -121,6 +122,32 @@ const settings = {
 };
 
 const resolved = <T>(value: T) => Promise.resolve(value);
+
+/** `?log=1`: a session's worth of history, every kind of line, for the log panel. */
+function logHistory(): LogEntry[] {
+  if (!new URLSearchParams(window.location.search).get('log')) return [];
+  const base = { connectionId: 'visual-remote', ts: Date.parse('2026-09-01T10:05:00Z') };
+  const lines: Omit<LogEntry, 'seq' | 'connectionId' | 'ts'>[] = [
+    { kind: 'status', key: 'connecting', params: { addr: 'sftp.example.com:22' } },
+    { kind: 'status', key: 'tlsInit' },
+    { kind: 'command', line: 'USER deploy' },
+    { kind: 'response', line: '331 Password required for deploy' },
+    { kind: 'status', key: 'connected' },
+    { kind: 'status', key: 'receivedEntries', params: { count: 4 } },
+    { kind: 'status', key: 'davResumeUnsupportedServer', params: { expected: 206, status: 200 } },
+    { kind: 'error', key: 'listFailed', params: { error: 'Permission denied' } },
+  ];
+  return lines.map((line, index) => ({ ...base, ...line, seq: index + 1, ts: base.ts + index }));
+}
+
+/** `?recoveredEdits=1`: edits an earlier run kept, offered once on start. */
+const recoveredEdits = (): RecoveredEdit[] =>
+  new URLSearchParams(window.location.search).get('recoveredEdits')
+    ? [
+        { name: 'index.html', remotePath: '/var/www/index.html', savedAt: '2026-09-01T10:05:00Z' },
+        { name: 'notes.txt', remotePath: null, savedAt: '2026-08-31T18:20:00Z' },
+      ]
+    : [];
 
 export const visualTestApi = {
   settings: {
@@ -254,7 +281,7 @@ export const visualTestApi = {
     start: () => resolved(ok),
     stop: () => resolved(ok),
     markSynced: () => resolved(ok),
-    recoveredEdits: () => resolved([]),
+    recoveredEdits: () => resolved(recoveredEdits()),
     revealRecoveredEdits: () => resolved(ok),
     discardRecoveredEdits: () => resolved(ok),
     onChanged: () => unsubscribe,
@@ -262,7 +289,7 @@ export const visualTestApi = {
   },
   log: {
     setFileLogging: () => resolved(ok),
-    recent: () => resolved([]),
+    recent: () => resolved(logHistory()),
     save: () => resolved(ok),
     exportDiagnostics: () => resolved(ok),
     onMessage: () => unsubscribe,

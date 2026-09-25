@@ -4,6 +4,7 @@ import Modal from '../../components/Modal.tsx';
 import { formatBytes } from '../../shared/format.ts';
 import type { OpenWithOpened } from './useOpenWithLifecycle.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { api } from '../../platform/api/index.ts';
 
 interface OpenWithDialogProps {
@@ -61,7 +62,7 @@ export default function OpenWithDialog({
           return;
         }
         if (!res.ok || !res.localPath) {
-          setError(res.error || 'Open-with operation returned no local path.');
+          setError(friendlyError(commandResultError(res)) || t('errors.internal'));
           return;
         }
         onOpened({ id, localPath: res.localPath, remotePath });

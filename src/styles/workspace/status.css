@@ -23,13 +23,27 @@
   font-family: var(--font-mono);
 }
 
+/* Never wider than the bar: the status text gives way first, so an update
+   action or the quit cancel stays whole in the narrowest window. */
 .status-bar .status-left {
   flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
+}
+
+.status-left > * {
+  flex-shrink: 0;
+}
+.status-left > .status-text {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-transfers {

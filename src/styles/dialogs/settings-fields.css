@@ -327,18 +327,6 @@
   gap: 8px;
   min-width: 0;
 }
-.date-format-select {
-  min-width: 0;
-}
-.date-part-select {
-  width: 112px;
-}
-.time-part-select {
-  width: 64px;
-}
-.date-format-select .language-select-trigger {
-  width: 100%;
-}
 .date-format-select .date-format-dropdown {
   inset-inline-start: auto;
   inset-inline-end: 0;

@@ -344,7 +344,9 @@
   position: relative;
   flex: 1 1 auto;
   overflow-y: auto;
-  overflow-x: hidden;
+  /* Columns wider than the pane scroll sideways; FilePane keeps the column
+     header in step. */
+  overflow-x: auto;
   background: var(--bg-panel);
   transition: background-color 0ms;
 }
@@ -370,6 +372,10 @@
   padding-block: 5px;
   padding-inline: 12px 0;
   cursor: default;
+}
+/* As wide as its columns, so a hover or selection tint spans a row scrolled sideways. */
+.pane-list .row {
+  min-width: max-content;
 }
 .row:hover { background: var(--bg-panel-alt); }
 .row.selected {
@@ -581,7 +587,6 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
   mask-image: var(--truncate-fade);
   -webkit-mask-image: var(--truncate-fade);
 }
-.row .col-modifiedAt,
 .row .col-permissions,
 .row .col-owner,
 .row .col-group { color: var(--text-faint); }

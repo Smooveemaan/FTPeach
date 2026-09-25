@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The bookmark editor is tidier: a saved password is changed with its edit button, and
   encoding, start folder and connection limit sit under Advanced settings.
 - The bookmark editor fits and scrolls in a small window.
+- A file pane too narrow for its columns scrolls sideways instead of cutting off the last
+  column.
+- In a narrow window, the status bar hides the pane file counts while files are
+  transferring, and an update's install button always stays whole.
 
 ### Security
 
@@ -71,6 +75,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The date and time format lists in Settings are wide enough for their translated names.
+- A long tooltip, such as the plain FTP warning in French or Greek, gets a third line
+  instead of being cut off.
+- An error while opening a file in another application is shown in your language.
 - After you accept a new or changed SSH server key, FTPeach now signs in with the bookmark's
   saved password instead of reporting a wrong username or password.
 - A resumed WebDAV download no longer mixes old and new content when the file on the server

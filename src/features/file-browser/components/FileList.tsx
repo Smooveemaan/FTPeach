@@ -65,7 +65,6 @@ export default function FileList({
           }}
           outerElementType={outerElementType}
           className={className}
-          style={{ overflowX: 'hidden' }}
           height={viewportSize.height}
           width={viewportSize.width}
           itemCount={entries.length}

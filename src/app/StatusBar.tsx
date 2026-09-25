@@ -22,6 +22,8 @@ interface StatusBarProps {
   activeTransfersCount: number;
   hasPausedTransfers: boolean;
   update?: ReactNode;
+  /** The window is in its narrow layout, where the pane counts give way to a transfer. */
+  narrow?: boolean;
   /** Quitting waits for the transfers; offers to stop waiting. */
   quitPending?: { onCancel: () => void } | undefined;
 }
@@ -45,6 +47,7 @@ export default function StatusBar({
   activeTransfersCount,
   hasPausedTransfers,
   update,
+  narrow = false,
   quitPending,
 }: StatusBarProps) {
   const { t } = useTranslation();
@@ -84,14 +87,19 @@ export default function StatusBar({
       </span>
       <span className="status-right">
         {syncBrowsing && <span className="sync-indicator">⇄ {t('menu.view.syncBrowsing')}</span>}
-        <span>
-          {t(firstCountKey, { count: leftCount })}
-          {leftSelectedCount > 0 && t('statusBar.selectedSuffix', { count: leftSelectedCount })}
-        </span>
-        <span>
-          {t(secondCountKey, { count: rightCount })}
-          {rightSelectedCount > 0 && t('statusBar.selectedSuffix', { count: rightSelectedCount })}
-        </span>
+        {!(narrow && hasActiveTransfers) && (
+          <>
+            <span>
+              {t(firstCountKey, { count: leftCount })}
+              {leftSelectedCount > 0 && t('statusBar.selectedSuffix', { count: leftSelectedCount })}
+            </span>
+            <span>
+              {t(secondCountKey, { count: rightCount })}
+              {rightSelectedCount > 0 &&
+                t('statusBar.selectedSuffix', { count: rightSelectedCount })}
+            </span>
+          </>
+        )}
       </span>
     </div>
   );

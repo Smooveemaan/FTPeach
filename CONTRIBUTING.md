@@ -26,7 +26,7 @@ A change is done when:
 
 The [user guide](docs/user-guide.md) states only behavior that something checks. Each statement carries a hidden marker, `<!-- verified-by: <gate> <file>::<test name> -->`: `pr` for tests that block every change, `weekly` for the ignored Docker suites run on a schedule, `manual` for a run recorded in [manual checks](docs/manual-checks.md). `npm run check:verified-by` fails when a named test disappears, is switched off or runs somewhere other than the marker says. It cannot tell whether the test asserts what the sentence says; check that when writing the marker.
 
-UI text is translated by hand, with the context of a file manager in mind; machine translation is not used. New text may ship in English and Russian first, with the English text standing in for the other locales until they are translated.
+UI text is translated by hand, with the context of a file manager in mind; machine translation is not used. New text may ship in English and Russian first, with the English text standing in for the other locales until they are translated. `npm run i18n:audit` opens every screen, menu and dialog the test harness reaches in each language and in a pseudo-locale (English made longer and bracketed), and lists text that is cut off, overlaps or never went through a translation in `test-results/i18n-audit/summary.md`, with screenshots.
 
 A pull request should explain the problem, solution, tests, and manual verification. Include screenshots for UI changes and describe protocol fixtures without credentials. Architectural boundaries are documented in `docs/architecture.md` and `docs/frontend-architecture.md`. New IPC capabilities, secrets, paths, and remote names require a security review.
 

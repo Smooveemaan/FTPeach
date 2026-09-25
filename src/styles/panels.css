@@ -335,7 +335,9 @@
   white-space: normal;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  /* useTooltip fits a width for two lines; a third keeps the end of a long
+     translation (a warning, say) that no 400px width fits into two. */
+  -webkit-line-clamp: 3;
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);

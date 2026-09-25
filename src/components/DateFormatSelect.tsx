@@ -39,6 +39,7 @@ function FormatSelect({
     <SelectMenu
       {...props}
       options={localized}
+      fitToOptions
       rootClassName={`language-select date-format-select ${className}`}
       triggerClassName="language-select-trigger"
       dropdownClassName="language-select-dropdown date-format-dropdown"

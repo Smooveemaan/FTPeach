@@ -49,7 +49,7 @@ function fitWidth(el: HTMLElement) {
     el.style.width = `${Math.ceil(naturalWidth)}px`;
   } else if (linesAt(cap) > 2) {
     // Even the cap can't fit two lines; leave it there and let the CSS
-    // line-clamp ellipsize the overflow.
+    // line-clamp take a third line and ellipsize the rest.
     el.style.width = `${cap}px`;
   } else {
     let lo = 1;

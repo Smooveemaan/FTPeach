@@ -104,7 +104,7 @@ test('backend cancellation closes quietly without registering an edit', async ()
 
 test.each([
   [{ ok: false, error: 'download failed' }, 'download failed'],
-  [{ ok: true }, 'Open-with operation returned no local path.'],
+  [{ ok: true }, 'errors.internal'],
 ])(
   'failed or malformed success never registers an editable copy: %j',
   async (response, message) => {

@@ -86,7 +86,9 @@
   .status-right > span { overflow: hidden; text-overflow: ellipsis; }
 }
 
-.status-text.state-idle { color: var(--accent-red); }
+.status-text.state-idle { color: var(--text-faint); }
+.status-text.state-error { color: var(--accent-red); }
 .status-text.state-connecting,
 .status-text.state-paused { color: var(--accent-amber); }
 .status-text.state-connected { color: var(--accent-green); }
+.status-text.state-transferring { color: var(--accent-primary); }

@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import LineStylePulse from '../components/LineStylePulse.tsx';
 import { subscribeTransfers } from '../features/transfers/index.ts';
 import type { PaneStatus } from '../shared/paneContracts.ts';
-import type { Translate } from '../shared/translate.ts';
+import type { connectionVisualState } from './useApplicationController.ts';
 
 type PaneOrientation = 'horizontal' | 'vertical';
-type ConnectionVisualState = 'idle' | 'connecting' | 'paused' | 'connected';
+type ConnectionVisualState = ReturnType<typeof connectionVisualState>;
 
 interface StatusBarProps {
   status: PaneStatus;
@@ -28,13 +28,7 @@ interface StatusBarProps {
   quitPending?: { onCancel: () => void } | undefined;
 }
 
-interface StatusDescription {
-  text: string;
-  state: ConnectionVisualState;
-}
-
 export default function StatusBar({
-  status,
   paneOrientation,
   leftCount,
   rightCount,
@@ -45,7 +39,6 @@ export default function StatusBar({
   logLineCount,
   hasActiveTransfers,
   activeTransfersCount,
-  hasPausedTransfers,
   update,
   narrow = false,
   quitPending,
@@ -62,7 +55,6 @@ export default function StatusBar({
     setTick((t) => t + 1);
   }, [logLineCount]);
 
-  const { text, state } = describeStatus(status, hasActiveTransfers, hasPausedTransfers, t);
   const [firstCountKey, secondCountKey] =
     paneOrientation === 'vertical'
       ? ['statusBar.topCount', 'statusBar.bottomCount']
@@ -71,7 +63,9 @@ export default function StatusBar({
     <div className="status-bar">
       <span className="status-left">
         <LineStylePulse state={connectionVisualState} tick={tick} size={12} />
-        <span className={`status-text state-${state}`}>{text}</span>
+        <span className={`status-text state-${connectionVisualState}`}>
+          {t(STATUS_TEXT_KEYS[connectionVisualState])}
+        </span>
         <span className="status-transfers">
           {t('statusBar.transfers', { count: activeTransfersCount })}
         </span>
@@ -105,19 +99,11 @@ export default function StatusBar({
   );
 }
 
-function describeStatus(
-  status: PaneStatus,
-  hasActiveTransfers: boolean,
-  hasPausedTransfers: boolean,
-  t: Translate,
-): StatusDescription {
-  if (status === 'connected') {
-    if (hasActiveTransfers) return { text: t('statusBar.status.transferring'), state: 'connected' };
-    if (hasPausedTransfers) return { text: t('statusBar.status.paused'), state: 'paused' };
-    return { text: t('statusBar.status.connected'), state: 'connected' };
-  }
-  if (status === 'connecting')
-    return { text: t('statusBar.status.connecting'), state: 'connecting' };
-  if (status === 'error') return { text: t('statusBar.status.connectFailed'), state: 'idle' };
-  return { text: t('statusBar.status.disconnected'), state: 'idle' };
-}
+const STATUS_TEXT_KEYS = {
+  idle: 'statusBar.status.disconnected',
+  error: 'statusBar.status.connectFailed',
+  connecting: 'statusBar.status.connecting',
+  paused: 'statusBar.status.paused',
+  connected: 'statusBar.status.connected',
+  transferring: 'statusBar.status.transferring',
+} as const satisfies Record<ConnectionVisualState, string>;

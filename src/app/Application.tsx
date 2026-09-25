@@ -618,7 +618,11 @@ export default function Application() {
       status: aggregateStatus,
       paneOrientation: effectivePaneOrientation,
       syncBrowsing,
-      connectionVisualState: connectionVisualState(aggregateStatus, hasPausedTransfers),
+      connectionVisualState: connectionVisualState(
+        aggregateStatus,
+        hasActiveTransfers,
+        hasPausedTransfers,
+      ),
       hasActiveTransfers,
       activeTransfersCount,
       hasPausedTransfers,

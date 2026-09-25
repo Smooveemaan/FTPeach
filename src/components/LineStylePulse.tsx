@@ -1,6 +1,6 @@
 interface LineStylePulseProps {
   tick: string | number;
-  state?: 'idle' | 'connecting' | 'paused' | 'connected';
+  state?: 'idle' | 'error' | 'connecting' | 'paused' | 'connected' | 'transferring';
   size?: number;
 }
 

@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   column.
 - In a narrow window, the status bar hides the pane file counts while files are
   transferring, and an update's install button always stays whole.
+- The status bar shows transfers in orange, and no longer turns yellow while files are still
+  transferring. Disconnected is grey; red now means only a failed connection.
 
 ### Security
 

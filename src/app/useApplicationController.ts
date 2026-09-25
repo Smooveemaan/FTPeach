@@ -139,9 +139,16 @@ export function useApplicationCommandBindings(options: ApplicationCommandBinding
   );
 }
 
-export function connectionVisualState(status: PaneStatus, hasPausedTransfers: boolean) {
-  if (status === 'connected') return hasPausedTransfers ? 'paused' : 'connected';
-  return status === 'connecting' ? 'connecting' : 'idle';
+export function connectionVisualState(
+  status: PaneStatus,
+  hasActiveTransfers: boolean,
+  hasPausedTransfers: boolean,
+) {
+  if (status === 'connected') {
+    if (hasActiveTransfers) return 'transferring';
+    return hasPausedTransfers ? 'paused' : 'connected';
+  }
+  return status;
 }
 
 export function associatedApplication(path: string, associations: Record<string, string>) {

@@ -56,10 +56,12 @@ body:has(.modal-overlay) .title-bar::after {
   flex: 0 0 auto;
   opacity: 0.3;
 }
-.line-pulse.state-idle { color: var(--accent-red); }
+.line-pulse.state-idle { color: var(--text-faint); }
+.line-pulse.state-error { color: var(--accent-red); }
 .line-pulse.state-connecting,
 .line-pulse.state-paused { color: var(--accent-amber); }
 .line-pulse.state-connected { color: var(--accent-green); }
+.line-pulse.state-transferring { color: var(--accent-primary); }
 
 .line-pulse.lit {
   animation: lamp-flash 0.8s ease;

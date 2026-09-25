@@ -219,7 +219,7 @@ async function stage(page: Page, profile: string) {
   await page.keyboard.press('Control+,');
   const settings = page.locator('.modal').last();
   await settings.getByText('Transfers', { exact: true }).click();
-  await settings.getByLabel('Speed limit, KB/s').fill('250');
+  await settings.getByLabel('Speed limit, KB/s').fill('2000');
   await settings.getByRole('button', { name: 'Save' }).click();
   await settings.waitFor({ state: 'hidden' });
 
@@ -234,20 +234,21 @@ async function stage(page: Page, profile: string) {
 
   // The newest transfer is listed first, so the paused one is started first.
   const copy = left.getByRole('button', { name: 'Copy to pane on the right' });
-  await list.getByText('video.mp4', { exact: true }).click();
+  await list.getByText('archive.zip', { exact: true }).click();
   await copy.click();
   await waitFor(
-    'video.mp4 to reach 1%',
-    async () => (await progress(page, 'video.mp4')) >= 1 || undefined,
+    'archive.zip to reach 1%',
+    async () => (await progress(page, 'archive.zip')) >= 1 || undefined,
     60,
   );
   await page.getByRole('button', { name: 'Pause active transfers' }).click();
-  await list.getByText('archive.zip', { exact: true }).click();
+  await list.getByText('video.mp4', { exact: true }).click();
   await copy.click();
-  await list.getByText('archive.zip', { exact: true }).click({ modifiers: ['Control'] });
+  await list.getByText('video.mp4', { exact: true }).click({ modifiers: ['Control'] });
+  // The two refreshes below add about 4% more at this speed.
   await waitFor(
-    'archive.zip to reach 50%',
-    async () => (await progress(page, 'archive.zip')) >= 50 || undefined,
+    'video.mp4 to reach 46%',
+    async () => (await progress(page, 'video.mp4')) >= 46 || undefined,
     120,
   );
   // Two listings put the server's replies in the log instead of the sign-in.

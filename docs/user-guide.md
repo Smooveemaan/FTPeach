@@ -17,6 +17,12 @@ animations are disabled.
 
 <!-- verified-by: manual Selection rectangle with system animations disabled -->
 
+When the rectangle runs past the edge of the list, it has no border on that
+side, so it reads as carrying on beyond the visible rows rather than ending at
+the edge.
+
+<!-- verified-by: manual Selection rectangle past the edge of the list -->
+
 ## Pausing, stopping and resuming transfers
 
 **Pause** keeps what has been transferred so far. Resuming a paused upload over

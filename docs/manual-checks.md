@@ -32,3 +32,15 @@ Repeat the run and update the record when the behavior it covers changes.
 - Regression check: `test/visual/marquee-selection.spec.ts` checks immediate
   rectangle coordinates and the absence of transitions with reduced motion both
   enabled and disabled; the reduced-motion case fails before the fix.
+
+### Selection rectangle past the edge of the list
+
+- Version: 0.2.3 development (8495c6f)
+- Date: 2026-09-25
+- Steps: in a folder long enough to scroll, drag a selection rectangle past the
+  top and the bottom edge of the file list so the list scrolls under it.
+- Result: the maintainer confirmed that the rectangle has no border on the side
+  cut off by the list's edge, at the top and at the bottom.
+- Regression check: `test/visual/marquee-selection.spec.ts` checks the same for
+  the left and right edges, and that a rectangle inside the list keeps all four
+  borders.

@@ -195,7 +195,12 @@ export default function useFileSelection({
         Math.min(state.startX, x2),
         Math.max(state.startX, x2),
       );
-      stateRef.current.onSelectionChange(new Set([...initial, ...hit]));
+      const next = new Set([...initial, ...hit]);
+      // Selection lives in app state: an unchanged set still re-renders the
+      // whole window, once per mouse move.
+      const current = stateRef.current.selectedNames;
+      if (next.size === current.size && [...next].every((name) => current.has(name))) return;
+      stateRef.current.onSelectionChange(next);
     };
 
     const updateMarqueeVisual = (x2: number, y2: number) => {
@@ -207,6 +212,13 @@ export default function useFileSelection({
       let bottom = Math.max(startY, y2);
       if (listEl) {
         const clip = listEl.getBoundingClientRect();
+        // A side cut off by the list's edge loses its border, as in Explorer:
+        // the rectangle reads as carrying on past the scroll, not ending there.
+        const border = (cut: boolean) => (cut ? 'transparent' : '');
+        marqueeEl.style.borderLeftColor = border(left < clip.left);
+        marqueeEl.style.borderRightColor = border(right > clip.right);
+        marqueeEl.style.borderTopColor = border(top < clip.top);
+        marqueeEl.style.borderBottomColor = border(bottom > clip.bottom);
         left = Math.max(left, clip.left);
         right = Math.min(right, clip.right);
         top = Math.max(top, clip.top);

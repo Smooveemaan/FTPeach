@@ -1,4 +1,3 @@
-import { getInterfaceScale } from '../../platform/interfaceScale.ts';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   CSSProperties,
@@ -384,16 +383,12 @@ function FilePane({
       onMouseDownCapture={onActivate}
       aria-activedescendant={activeRowId}
     >
-      {dragDrop.dragPoint && !dragDrop.dragRejected && (
-        <div
-          className="drag-move-ghost active"
-          style={{
-            transform: `translate(${dragDrop.dragPoint.x / getInterfaceScale() + 14}px, ${dragDrop.dragPoint.y / getInterfaceScale() - 12}px)`,
-          }}
-        >
-          <span className="mode">Copy</span>
-        </div>
-      )}
+      <div
+        ref={dragDrop.ghostRef}
+        className={`drag-move-ghost ${dragDrop.showGhost && !dragDrop.dragRejected ? 'active' : ''}`}
+      >
+        <span className="mode">Copy</span>
+      </div>
       <PaneTitleBar
         title={title}
         titleSlot={titleSlot}

@@ -189,7 +189,9 @@ button, input, select, textarea {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* A positive duration would animate even normally instant geometry:
+       transition-property defaults to all, including drag coordinates. */
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }

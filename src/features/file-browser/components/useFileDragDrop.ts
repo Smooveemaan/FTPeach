@@ -1,11 +1,13 @@
 import type {
   MutableRefObject,
+  RefObject,
   DragEvent as ReactDragEvent,
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OsDragDropPayload } from '../../../platform/api/filesystem.ts';
 import { api } from '../../../platform/api/index.ts';
+import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import { handler } from '../../../shared/asyncFailure.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
@@ -43,7 +45,9 @@ interface DragDropState {
 
 export interface FileDragDropModel {
   dragOver: boolean;
-  dragPoint: { x: number; y: number } | null;
+  showGhost: boolean;
+  /** The "Copy" badge beside the cursor, moved by hand so a drag does not re-render the pane. */
+  ghostRef: RefObject<HTMLDivElement | null>;
   dragOverPath: string | null;
   /** The pane is under an OS drag it cannot accept — see the state below. */
   dragRejected: boolean;
@@ -63,7 +67,15 @@ export default function useFileDragDrop({
   outboundDragRef,
 }: FileDragDropOptions): FileDragDropModel {
   const [dragOver, setDragOver] = useState(false);
-  const [dragPoint, setDragPoint] = useState<{ x: number; y: number } | null>(null);
+  const [showGhost, setShowGhost] = useState(false);
+  const ghostRef = useRef<HTMLDivElement | null>(null);
+  const moveGhost = (point: { x: number; y: number } | null) => {
+    setShowGhost(!!point);
+    const el = ghostRef.current;
+    if (!el || !point) return;
+    const scale = getInterfaceScale();
+    el.style.transform = `translate(${point.x / scale + 14}px, ${point.y / scale - 12}px)`;
+  };
   const [dragOverPath, setDragOverPath] = useState<string | null>(null);
   const crumbPath = (el: EventTarget | null) =>
     el instanceof Element
@@ -107,7 +119,7 @@ export default function useFileDragDrop({
     if (dragClearTimeoutRef.current) clearTimeout(dragClearTimeoutRef.current);
     dragClearTimeoutRef.current = setTimeout(() => {
       setDragOver(false);
-      setDragPoint(null);
+      setShowGhost(false);
       setDragOverPath(null);
       setDragRejected(false);
       setDragOverRowName(null);
@@ -140,7 +152,7 @@ export default function useFileDragDrop({
     setDragRejected(!dragStateRef.current.onDropFiles);
     document.body.classList.toggle('drag-drop-forbidden', !accepts);
     document.body.classList.add('drag-move-active');
-    setDragPoint(accepts ? { x: e.clientX, y: e.clientY } : null);
+    moveGhost(accepts ? { x: e.clientX, y: e.clientY } : null);
     const path = accepts ? crumbPath(e.target) : null;
     setDragOverPath(path);
     const entry = accepts ? rowFromEvent(e) : null;
@@ -163,7 +175,7 @@ export default function useFileDragDrop({
     const entry = rowFromEvent(e);
     const targetFolder = crumbPath(e.target) ?? (entry && entry.isDirectory ? entry.name : null);
     setDragOver(false);
-    setDragPoint(null);
+    setShowGhost(false);
     setDragOverPath(null);
     setDragRejected(false);
     setDragOverRowName(null);
@@ -189,39 +201,43 @@ export default function useFileDragDrop({
   useEffect(() => {
     const elementAtPoint = (point: OsDragDropPayload['point']) =>
       point && document.elementFromPoint(point.x, point.y);
-    const isOwnPane = (el: Element | null) =>
-      el?.closest<HTMLElement>('[data-side]')?.dataset.side === dragStateRef.current.side;
-    const folderNameAtPoint = (point: OsDragDropPayload['point']) => {
-      const crumb = crumbPath(elementAtPoint(point));
+    const folderNameAt = (el: Element | null) => {
+      const crumb = crumbPath(el);
       if (crumb) return crumb;
-      const rowEl = elementAtPoint(point)?.closest<HTMLElement>('.row');
+      const rowEl = el?.closest<HTMLElement>('.row');
       if (!rowEl) return null;
       const entry = dragStateRef.current.sorted.find((en) => en.name === rowEl.dataset.name);
       return entry && entry.isDirectory ? entry.name : null;
     };
-    const clear = () => {
+    const clear = (bodyToo: boolean) => {
       if (dragClearTimeoutRef.current) clearTimeout(dragClearTimeoutRef.current);
       setDragOver(false);
-      setDragPoint(null);
+      setShowGhost(false);
       setDragOverPath(null);
       setDragRejected(false);
       setDragOverRowName(null);
-      document.body.classList.remove('drag-move-active', 'drag-drop-forbidden');
+      if (bodyToo) document.body.classList.remove('drag-move-active', 'drag-drop-forbidden');
     };
     return api.fsLocal.onOsDragDrop(
       handler(async (evt: OsDragDropPayload) => {
-        if (evt.type === 'leave' || !isOwnPane(elementAtPoint(evt.point))) {
-          clear();
+        // One hit test per event, shared by everything below: each pane gets
+        // every event, and hit tests after a class change on <body> restyle
+        // the whole document.
+        const el = elementAtPoint(evt.point);
+        const paneSide = el?.closest<HTMLElement>('[data-side]')?.dataset.side;
+        if (evt.type === 'leave' || paneSide !== dragStateRef.current.side) {
+          // The body classes belong to the pane under the cursor; a pane the
+          // cursor is not over must not take them away from it.
+          clear(evt.type === 'leave' || paneSide === undefined);
           return;
         }
         if (evt.type === 'enter' || evt.type === 'over') {
           if (dragStateRef.current.outboundDragRef?.current) return;
           if (dragClearTimeoutRef.current) clearTimeout(dragClearTimeoutRef.current);
-          const accepts =
-            !!dragStateRef.current.onDropFiles && isDropArea(elementAtPoint(evt.point));
-          const overFolder = accepts ? folderNameAtPoint(evt.point) : null;
-          const path = accepts ? crumbPath(elementAtPoint(evt.point)) : null;
-          setDragPoint(accepts ? evt.point : null);
+          const accepts = !!dragStateRef.current.onDropFiles && isDropArea(el);
+          const overFolder = accepts ? folderNameAt(el) : null;
+          const path = accepts ? crumbPath(el) : null;
+          moveGhost(accepts ? evt.point : null);
           setDragOverPath(path);
           setDragOver(!overFolder);
           setDragRejected(!dragStateRef.current.onDropFiles);
@@ -231,15 +247,14 @@ export default function useFileDragDrop({
           return;
         }
         // Only 'drop' events reach this point.
-        const targetFolder = folderNameAtPoint(evt.point);
-        clear();
+        const targetFolder = folderNameAt(el);
+        clear(true);
         const { onDropFiles: drop, outboundDragRef: outbound } = dragStateRef.current;
         // Our own drag-out, dropped back inside the window: the paths are the
         // pane's own entries, and a local pane would try to copy them onto
         // themselves.
         if (outbound?.current) return;
-        if (!evt.paths || evt.paths.length === 0 || !drop || !isDropArea(elementAtPoint(evt.point)))
-          return;
+        if (!evt.paths || evt.paths.length === 0 || !drop || !isDropArea(el)) return;
         const files = await Promise.all(
           evt.paths.map(async (path) => ({
             name: path.split(/[\\/]/).filter(Boolean).pop() || path,
@@ -254,7 +269,8 @@ export default function useFileDragDrop({
 
   return {
     dragOver,
-    dragPoint,
+    showGhost,
+    ghostRef,
     dragOverPath,
     dragRejected,
     dragOverRowName,

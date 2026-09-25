@@ -9,6 +9,14 @@ For installing FTPeach and the list of supported protocols, see the
 [README](../README.md). For what changed between versions, see the
 [changelog](../CHANGELOG.md).
 
+## Selecting files
+
+The selection rectangle follows the pointer without animation and stays within
+the file list when dragged into the neighbouring pane, including when system
+animations are disabled.
+
+<!-- verified-by: manual Selection rectangle with system animations disabled -->
+
 ## Pausing, stopping and resuming transfers
 
 **Pause** keeps what has been transferred so far. Resuming a paused upload over

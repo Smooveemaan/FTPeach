@@ -18,4 +18,17 @@ Record a run as:
 
 Repeat the run and update the record when the behavior it covers changes.
 
-No manual checks are recorded yet.
+### Selection rectangle with system animations disabled
+
+- Version: 0.2.3 development (b9445a5 with the reduced-motion transition fix)
+- Date: 2026-09-25
+- Steps: at 100% interface scale in Windows WebView2, drag a selection rectangle
+  back and forth and across the boundary between the two panes. Repeat with the
+  reduced-motion transition duration changed from 0.01ms to 0s.
+- Result: before the fix, the maintainer reproduced stutter and the rectangle
+  jumping into the right pane. Captured geometry showed active CSS transitions
+  during the gesture. After the change, the maintainer confirmed smooth movement
+  in response to a request to check smoothness and confinement to the pane.
+- Regression check: `test/visual/marquee-selection.spec.ts` checks immediate
+  rectangle coordinates and the absence of transitions with reduced motion both
+  enabled and disabled; the reduced-motion case fails before the fix.

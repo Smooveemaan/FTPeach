@@ -102,3 +102,57 @@ test('Shift+click after sorting extends from the file clicked, not from its old 
   await list.locator('.row[data-name="file-0005.txt"]').click({ modifiers: ['Shift'] });
   await expect(selectedCount(page)).toHaveText(/\(4 selected\)/);
 });
+
+for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  test(`marquee geometry follows each pointer move immediately with motion ${reducedMotion}`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion });
+    const { list, box, startX } = await openLongList(page);
+    const startY = box.y + box.height / 2;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    // Activate the rectangle before reversing direction. Read in the event's
+    // frame: waiting for a locator assertion would hide a CSS transition.
+    await page.mouse.move(startX - 80, startY - 60);
+    const samples = await list.evaluate(
+      (el, { startX, startY }) => {
+        const marquee = el.closest('.pane')!.querySelector('.marquee-select')!;
+        const clip = el.getBoundingClientRect();
+        return [
+          { x: clip.right + 40, y: startY + 60 },
+          { x: clip.left - 40, y: startY - 60 },
+          { x: startX + 10, y: startY + 20 },
+        ].map(({ x, y }) => {
+          el.dispatchEvent(
+            new PointerEvent('pointermove', { clientX: x, clientY: y, bubbles: true }),
+          );
+          const rect = marquee.getBoundingClientRect();
+          return {
+            actual: [rect.left, rect.top, rect.right, rect.bottom],
+            expected: [
+              Math.max(clip.left, Math.min(startX, x)),
+              Math.max(clip.top, Math.min(startY, y)),
+              Math.min(clip.right, Math.max(startX, x)),
+              Math.min(clip.bottom, Math.max(startY, y)),
+            ],
+            animations: marquee.getAnimations().length,
+            // Which sides lost their border because the list cut them off.
+            cut: (['Left', 'Right', 'Top', 'Bottom'] as const).filter(
+              (side) => getComputedStyle(marquee)[`border${side}Color`] === 'rgba(0, 0, 0, 0)',
+            ),
+          };
+        });
+      },
+      { startX, startY },
+    );
+    await page.mouse.up();
+    expect(samples.map((sample) => sample.cut)).toEqual([['Right'], ['Left'], []]);
+    for (const sample of samples) {
+      expect(sample.animations).toBe(0);
+      sample.actual.forEach((edge, i) => {
+        expect(Math.abs(edge - sample.expected[i]!)).toBeLessThan(0.1);
+      });
+    }
+  });
+}

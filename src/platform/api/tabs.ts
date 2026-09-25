@@ -13,7 +13,8 @@ export interface PersistedTab {
   panes?: Partial<Record<'a' | 'b', PersistedPane>>;
 }
 export interface PersistedTabsState {
-  activeTabId?: string;
+  /** Null when the tab it named no longer exists (the store normalises it). */
+  activeTabId?: string | null;
   tabs?: PersistedTab[];
 }
 
@@ -42,7 +43,7 @@ function isPersistedTab(value: unknown): value is PersistedTab {
 function isPersistedTabsState(value: unknown): value is PersistedTabsState {
   return (
     isCommandRecord(value) &&
-    (value.activeTabId === undefined || typeof value.activeTabId === 'string') &&
+    (value.activeTabId == null || typeof value.activeTabId === 'string') &&
     (value.tabs === undefined || (Array.isArray(value.tabs) && value.tabs.every(isPersistedTab)))
   );
 }

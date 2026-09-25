@@ -357,6 +357,9 @@ test('command responses that carry no outcome fall back instead of being asserte
   const tabs = createTabsApi(respondWith({ tabs: [{ panes: { a: { kind: 'ftp' } } }] }));
   assert.deepEqual(await tabs.get(), {}, 'an unknown pane kind must not restore a tab');
   assert.deepEqual(await createTabsApi(respondWith('tabs')).get(), {});
+  // The store writes a null active tab when the one it named is gone.
+  const emptySession = { activeTabId: null, tabs: [] };
+  assert.deepEqual(await createTabsApi(respondWith(emptySession)).get(), emptySession);
 
   const mutation = await createSitesApi(respondWith({ id: 'site-1' })).save({ id: 'site-1' });
   assert.equal(mutation.ok, false, 'a response without an outcome is not a successful save');

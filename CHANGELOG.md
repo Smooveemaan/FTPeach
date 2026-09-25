@@ -82,6 +82,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A selection rectangle that runs past the edge of the file list no longer shows a border
   there, so it no longer looks as if the selection ends at the edge.
 - Dragging files in from Explorer follows the pointer more smoothly.
+- Saved tabs are restored even when the tab that was open last no longer exists.
 - The date and time format lists in Settings are wide enough for their translated names.
 - A long tooltip, such as the plain FTP warning in French or Greek, gets a third line
   instead of being cut off.

@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} mục",
     "itemCount_other": "{{count}} mục",
     "moveMode": "di chuyển",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Sao chép vào đây",
+    "moveHere": "Di chuyển vào đây"
   },
   "openWithChanged": {
     "title": "Tệp đã thay đổi",
@@ -731,7 +731,7 @@
     "expandFolder": "Mở rộng “{{name}}”",
     "collapseFolder": "Thu gọn “{{name}}”",
     "noFolder": "Không có thư mục",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Tối thiểu 2: một kết nối để duyệt thư mục, các kết nối còn lại để truyền tệp. Mỗi khung có giới hạn riêng.",
     "encodingHint": "Chỉ đổi khi tên tệp trên máy chủ này hiển thị bị lỗi.",
     "encodings": {
       "utf8": "UTF-8 (mặc định)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Trung phồn thể",
       "korean": "Hàn"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Cài đặt nâng cao",
+    "remotePathPlaceholder": "Thư mục gốc của máy chủ (/)",
+    "changeSavedPassword": "Đổi mật khẩu đã lưu",
+    "changeSavedPassphrase": "Đổi cụm mật khẩu đã lưu",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Không giới hạn",
+      "limited": "Giới hạn ở…",
+      "count": "Giới hạn kết nối"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Áp dụng sau khi kết nối lại.",
+    "footerFolders": "Thư mục: {{count}}",
+    "footerSites": "Dấu trang: {{count}}",
+    "footerPaths": "Đường dẫn: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Không thể kết nối",
       "disconnected": "Chưa kết nối"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Đã xuất: {{parts}}",
+    "imported": "Đã nhập: {{parts}}",
+    "importAdded": "Đã thêm: {{count}}",
+    "importSkipped": "Mục trùng lặp đã bỏ qua: {{count}}",
+    "importNothingNew": "Không có gì mới để nhập",
+    "exportedShort": "Đã xuất",
+    "importedShort": "Đã nhập",
+    "importNothingNewShort": "Không có gì mới",
+    "importSkippedShort": "Đã bỏ qua: {{count}}",
+    "quitPendingShort": "Đang thoát…",
+    "cancelQuitLong": "Hủy thoát",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Hiện/ẩn khung bên trái",

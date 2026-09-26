@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} आइटम",
     "itemCount_other": "{{count}} आइटम",
     "moveMode": "ले जाएँ",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "यहाँ कॉपी करें",
+    "moveHere": "यहाँ ले जाएँ"
   },
   "openWithChanged": {
     "title": "फ़ाइल बदल गई",
@@ -731,7 +731,7 @@
     "expandFolder": "\"{{name}}\" का विस्तार करें",
     "collapseFolder": "\"{{name}}\" को समेटें",
     "noFolder": "कोई फ़ोल्डर नहीं",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "कम से कम 2: एक कनेक्शन फ़ोल्डर ब्राउज़ करता है, बाकी फ़ाइलें स्थानांतरित करते हैं। हर फलक की अपनी सीमा होती है।",
     "encodingHint": "इसे केवल तभी बदलें जब इस सर्वर पर फ़ाइल नाम बिगड़े हुए दिखें।",
     "encodings": {
       "utf8": "UTF-8 (डिफ़ॉल्ट)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "पारंपरिक चीनी",
       "korean": "कोरियाई"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "उन्नत सेटिंग्स",
+    "remotePathPlaceholder": "सर्वर रूट (/)",
+    "changeSavedPassword": "सहेजा गया पासवर्ड बदलें",
+    "changeSavedPassphrase": "सहेजा गया पासफ़्रेज़ बदलें",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "कोई सीमा नहीं",
+      "limited": "इतने तक सीमित करें…",
+      "count": "कनेक्शन सीमा"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "फिर से कनेक्ट करने के बाद लागू होगा।",
+    "footerFolders": "फ़ोल्डर: {{count}}",
+    "footerSites": "बुकमार्क: {{count}}",
+    "footerPaths": "पथ: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "कनेक्ट नहीं हो सका",
       "disconnected": "कनेक्ट नहीं है"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "निर्यात किया गया: {{parts}}",
+    "imported": "आयात किया गया: {{parts}}",
+    "importAdded": "जोड़े गए: {{count}}",
+    "importSkipped": "छोड़े गए डुप्लिकेट: {{count}}",
+    "importNothingNew": "आयात करने के लिए कुछ भी नया नहीं है",
+    "exportedShort": "निर्यात किया गया",
+    "importedShort": "आयात किया गया",
+    "importNothingNewShort": "कुछ नया नहीं",
+    "importSkippedShort": "छोड़े गए: {{count}}",
+    "quitPendingShort": "बाहर निकल रहा है…",
+    "cancelQuitLong": "बाहर निकलना रद्द करें",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "बायां फलक दिखाएँ/छिपाएँ",

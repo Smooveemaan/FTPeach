@@ -173,8 +173,8 @@
     "itemCount_one": "항목 {{count}}개",
     "itemCount_other": "항목 {{count}}개",
     "moveMode": "이동",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "여기에 복사",
+    "moveHere": "여기로 이동"
   },
   "openWithChanged": {
     "title": "파일이 변경됨",
@@ -731,7 +731,7 @@
     "expandFolder": "“{{name}}” 펼치기",
     "collapseFolder": "“{{name}}” 접기",
     "noFolder": "폴더 없음",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "최소 2개: 연결 하나는 폴더 탐색에, 나머지는 파일 전송에 사용됩니다. 창마다 제한이 따로 적용됩니다.",
     "encodingHint": "이 서버의 파일 이름이 깨져 보일 때만 변경하세요.",
     "encodings": {
       "utf8": "UTF-8 (기본값)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "중국어 번체",
       "korean": "한국어"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "고급 설정",
+    "remotePathPlaceholder": "서버 루트 (/)",
+    "changeSavedPassword": "저장된 비밀번호 변경",
+    "changeSavedPassphrase": "저장된 암호 문구 변경",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "제한 없음",
+      "limited": "제한 설정…",
+      "count": "연결 수 제한"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "다시 연결한 후 적용됩니다.",
+    "footerFolders": "폴더: {{count}}",
+    "footerSites": "북마크: {{count}}",
+    "footerPaths": "경로: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "연결할 수 없습니다",
       "disconnected": "연결되지 않음"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "내보냄: {{parts}}",
+    "imported": "가져옴: {{parts}}",
+    "importAdded": "추가됨: {{count}}",
+    "importSkipped": "건너뛴 중복: {{count}}",
+    "importNothingNew": "새로 가져올 항목이 없습니다",
+    "exportedShort": "내보내기 완료",
+    "importedShort": "가져오기 완료",
+    "importNothingNewShort": "새 항목 없음",
+    "importSkippedShort": "건너뜀: {{count}}",
+    "quitPendingShort": "종료 중…",
+    "cancelQuitLong": "종료 취소",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "왼쪽 창 표시/숨기기",

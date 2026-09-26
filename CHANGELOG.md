@@ -29,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   and shows the full text in a tooltip.
 - Animations play even when Windows animation effects are turned off. Error messages that
   fade out no longer vanish at once in that case.
+- The Copy here and Move here menu, the bookmark editor's connection limit and advanced
+  settings, and the import and export messages are translated into every language.
 
 ### Security
 

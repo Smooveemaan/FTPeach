@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} 个项目",
     "itemCount_other": "{{count}} 个项目",
     "moveMode": "移动",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "复制到此处",
+    "moveHere": "移动到此处"
   },
   "openWithChanged": {
     "title": "文件已更改",
@@ -731,7 +731,7 @@
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",
     "noFolder": "无文件夹",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "至少 2 个：一个连接用于浏览文件夹，其余用于传输文件。每个窗格有各自的上限。",
     "encodingHint": "仅当此服务器上的文件名显示为乱码时才更改。",
     "encodings": {
       "utf8": "UTF-8（默认）",
@@ -750,19 +750,19 @@
       "traditionalChinese": "繁体中文",
       "korean": "韩文"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "高级设置",
+    "remotePathPlaceholder": "服务器根目录（/）",
+    "changeSavedPassword": "更改已保存的密码",
+    "changeSavedPassphrase": "更改已保存的密码短语",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "不限制",
+      "limited": "限制为…",
+      "count": "连接数上限"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "重新连接后生效。",
+    "footerFolders": "文件夹：{{count}}",
+    "footerSites": "书签：{{count}}",
+    "footerPaths": "路径：{{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "无法连接",
       "disconnected": "未连接"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "已导出：{{parts}}",
+    "imported": "已导入：{{parts}}",
+    "importAdded": "已添加：{{count}}",
+    "importSkipped": "已跳过重复项：{{count}}",
+    "importNothingNew": "没有可导入的新内容",
+    "exportedShort": "已导出",
+    "importedShort": "已导入",
+    "importNothingNewShort": "无新内容",
+    "importSkippedShort": "已跳过：{{count}}",
+    "quitPendingShort": "正在退出…",
+    "cancelQuitLong": "取消退出",
+    "listSeparator": "、"
   },
   "viewToolbar": {
     "toggleLeftPane": "显示/隐藏左侧窗格",

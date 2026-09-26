@@ -176,8 +176,8 @@
     "itemCount_other": "{{count}} פריטים",
     "moveMode": "העברה",
     "itemCount_two": "{{count}} פריטים",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "העתק לכאן",
+    "moveHere": "העבר לכאן"
   },
   "openWithChanged": {
     "title": "הקובץ שונה",
@@ -739,7 +739,7 @@
     "expandFolder": "הרחב את \"{{name}}\"",
     "collapseFolder": "קפל את \"{{name}}\"",
     "noFolder": "ללא תיקייה",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "לפחות 2: חיבור אחד לעיון בתיקיות, והשאר להעברת קבצים. לכל חלונית מגבלה משלה.",
     "encodingHint": "שנו אותו רק אם שמות הקבצים בשרת הזה מוצגים משובשים.",
     "encodings": {
       "utf8": "UTF-8 (ברירת מחדל)",
@@ -758,19 +758,19 @@
       "traditionalChinese": "סינית מסורתית",
       "korean": "קוריאני"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "הגדרות מתקדמות",
+    "remotePathPlaceholder": "שורש השרת (/)",
+    "changeSavedPassword": "שנה את הסיסמה השמורה",
+    "changeSavedPassphrase": "שנה את ביטוי הסיסמה השמור",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "ללא מגבלה",
+      "limited": "הגבל ל…",
+      "count": "מגבלת חיבורים"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "ייכנס לתוקף לאחר התחברות מחדש.",
+    "footerFolders": "תיקיות: {{count}}",
+    "footerSites": "סימניות: {{count}}",
+    "footerPaths": "נתיבים: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -854,17 +854,18 @@
       "connectFailed": "לא ניתן להתחבר",
       "disconnected": "לא מחובר"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "הייצוא הושלם: {{parts}}",
+    "imported": "הייבוא הושלם: {{parts}}",
+    "importAdded": "נוספו: {{count}}",
+    "importSkipped": "כפילויות שדולגו: {{count}}",
+    "importNothingNew": "אין חדש לייבוא",
+    "exportedShort": "הייצוא הושלם",
+    "importedShort": "הייבוא הושלם",
+    "importNothingNewShort": "אין חדש",
+    "importSkippedShort": "דולגו: {{count}}",
+    "quitPendingShort": "יציאה…",
+    "cancelQuitLong": "בטל את היציאה",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "הצג/הסתר את החלונית השמאלית",

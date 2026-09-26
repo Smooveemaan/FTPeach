@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} element",
     "itemCount_other": "{{count}} elementer",
     "moveMode": "flyt",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Kopiér hertil",
+    "moveHere": "Flyt hertil"
   },
   "openWithChanged": {
     "title": "Filen er ændret",
@@ -731,7 +731,7 @@
     "expandFolder": "Udvid »{{name}}«",
     "collapseFolder": "Fold »{{name}}« sammen",
     "noFolder": "Ingen mappe",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Mindst 2: én forbindelse gennemser mapper, resten overfører filer. Hver rude har sin egen grænse.",
     "encodingHint": "Skift den kun, hvis filnavne på denne server vises forkert.",
     "encodings": {
       "utf8": "UTF-8 (standard)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Kinesisk (traditionelt)",
       "korean": "Koreansk"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Avancerede indstillinger",
+    "remotePathPlaceholder": "Serverens rod (/)",
+    "changeSavedPassword": "Skift gemt adgangskode",
+    "changeSavedPassphrase": "Skift gemt adgangssætning",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Ingen grænse",
+      "limited": "Begræns til…",
+      "count": "Forbindelsesgrænse"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Træder i kraft efter genforbindelse.",
+    "footerFolders": "Mapper: {{count}}",
+    "footerSites": "Bogmærker: {{count}}",
+    "footerPaths": "Stier: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Det var ikke muligt at oprette forbindelse",
       "disconnected": "Ikke forbundet"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Eksporteret: {{parts}}",
+    "imported": "Importeret: {{parts}}",
+    "importAdded": "Tilføjet: {{count}}",
+    "importSkipped": "Dubletter sprunget over: {{count}}",
+    "importNothingNew": "Intet nyt at importere",
+    "exportedShort": "Eksporteret",
+    "importedShort": "Importeret",
+    "importNothingNewShort": "Intet nyt",
+    "importSkippedShort": "Sprunget over: {{count}}",
+    "quitPendingShort": "Afslutter…",
+    "cancelQuitLong": "Annuller afslutning",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Vis/skjul venstre rude",

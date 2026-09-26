@@ -179,8 +179,8 @@
     "moveMode": "переміщення",
     "itemCount_few": "{{count}} позиції",
     "itemCount_many": "{{count}} позицій",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Копіювати сюди",
+    "moveHere": "Перемістити сюди"
   },
   "openWithChanged": {
     "title": "Файл змінено",
@@ -747,7 +747,7 @@
     "expandFolder": "Розгорнути «{{name}}»",
     "collapseFolder": "Згорнути «{{name}}»",
     "noFolder": "Без папки",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Щонайменше 2: одне з’єднання для перегляду папок, решта — для передавання файлів. Кожна панель має власний ліміт.",
     "encodingHint": "Змінюйте, лише якщо імена файлів на цьому сервері відображаються неправильно.",
     "encodings": {
       "utf8": "UTF-8 (за замовчуванням)",
@@ -766,16 +766,16 @@
       "traditionalChinese": "Китайське традиційне",
       "korean": "Корейське"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Додаткові налаштування",
+    "remotePathPlaceholder": "Корінь сервера (/)",
+    "changeSavedPassword": "Змінити збережений пароль",
+    "changeSavedPassphrase": "Змінити збережену парольну фразу",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Без обмежень",
+      "limited": "Обмежити до…",
+      "count": "Ліміт з’єднань"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
+    "maxConnectionsChanged": "Застосується після повторного підключення.",
     "footerFolders": "Папки: {{count}}",
     "footerSites": "Сайти: {{count}}",
     "footerPaths": "Шляхи: {{count}}"
@@ -872,7 +872,8 @@
     "importNothingNewShort": "Нічого нового",
     "importSkippedShort": "Пропущено: {{count}}",
     "quitPendingShort": "Вихід…",
-    "cancelQuitLong": "Скасувати вихід"
+    "cancelQuitLong": "Скасувати вихід",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Показати/сховати ліву панель",

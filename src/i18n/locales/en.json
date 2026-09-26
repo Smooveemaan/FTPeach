@@ -856,7 +856,8 @@
     "importNothingNewShort": "Nothing new",
     "importSkippedShort": "Skipped: {{count}}",
     "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "cancelQuitLong": "Cancel quit",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Show/hide left pane",

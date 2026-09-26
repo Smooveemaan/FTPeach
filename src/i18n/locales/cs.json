@@ -179,8 +179,8 @@
     "moveMode": "přesun",
     "itemCount_few": "{{count}} položky",
     "itemCount_many": "{{count}} položky",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Kopírovat sem",
+    "moveHere": "Přesunout sem"
   },
   "openWithChanged": {
     "title": "Soubor byl změněn",
@@ -747,7 +747,7 @@
     "expandFolder": "Rozbalit „{{name}}“",
     "collapseFolder": "Sbalit „{{name}}“",
     "noFolder": "Bez složky",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Nejméně 2: jedno připojení prochází složky, ostatní přenášejí soubory. Každý panel má vlastní limit.",
     "encodingHint": "Měňte jen tehdy, když se názvy souborů na tomto serveru zobrazují nečitelně.",
     "encodings": {
       "utf8": "UTF-8 (výchozí)",
@@ -766,19 +766,19 @@
       "traditionalChinese": "Čínské tradiční",
       "korean": "Korejské"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Pokročilá nastavení",
+    "remotePathPlaceholder": "Kořen serveru (/)",
+    "changeSavedPassword": "Změnit uložené heslo",
+    "changeSavedPassphrase": "Změnit uloženou přístupovou frázi",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Bez omezení",
+      "limited": "Omezit na…",
+      "count": "Limit připojení"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Projeví se po opětovném připojení.",
+    "footerFolders": "Složky: {{count}}",
+    "footerSites": "Záložky: {{count}}",
+    "footerPaths": "Cesty: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -862,17 +862,18 @@
       "connectFailed": "Nepodařilo se připojit",
       "disconnected": "Není připojeno"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Exportováno: {{parts}}",
+    "imported": "Importováno: {{parts}}",
+    "importAdded": "Přidáno: {{count}}",
+    "importSkipped": "Přeskočené duplikáty: {{count}}",
+    "importNothingNew": "Nic nového k importu",
+    "exportedShort": "Exportováno",
+    "importedShort": "Importováno",
+    "importNothingNewShort": "Nic nového",
+    "importSkippedShort": "Přeskočeno: {{count}}",
+    "quitPendingShort": "Ukončování…",
+    "cancelQuitLong": "Zrušit ukončení",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Zobrazit/skrýt levý panel",

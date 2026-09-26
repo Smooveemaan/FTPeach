@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} öğe",
     "itemCount_other": "{{count}} öğe",
     "moveMode": "taşıma",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Buraya kopyala",
+    "moveHere": "Buraya taşı"
   },
   "openWithChanged": {
     "title": "Dosya değiştirildi",
@@ -731,7 +731,7 @@
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
     "collapseFolder": "\"{{name}}\" klasörünü daralt",
     "noFolder": "Klasör yok",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "En az 2: bir bağlantı klasörlere göz atar, diğerleri dosyaları aktarır. Her bölmenin kendi sınırı vardır.",
     "encodingHint": "Yalnızca bu sunucudaki dosya adları bozuk görünüyorsa değiştirin.",
     "encodings": {
       "utf8": "UTF-8 (varsayılan)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Geleneksel Çince",
       "korean": "Korece"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Gelişmiş ayarlar",
+    "remotePathPlaceholder": "Sunucu kökü (/)",
+    "changeSavedPassword": "Kaydedilmiş şifreyi değiştir",
+    "changeSavedPassphrase": "Kaydedilmiş anahtar parolasını değiştir",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Sınırsız",
+      "limited": "Şununla sınırla…",
+      "count": "Bağlantı sınırı"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Yeniden bağlandıktan sonra uygulanır.",
+    "footerFolders": "Klasörler: {{count}}",
+    "footerSites": "Yer imleri: {{count}}",
+    "footerPaths": "Yollar: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Bağlanılamadı",
       "disconnected": "Bağlı değil"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Dışa aktarıldı: {{parts}}",
+    "imported": "İçe aktarıldı: {{parts}}",
+    "importAdded": "Eklendi: {{count}}",
+    "importSkipped": "Atlanan yinelenenler: {{count}}",
+    "importNothingNew": "İçe aktarılacak yeni bir şey yok",
+    "exportedShort": "Dışa aktarıldı",
+    "importedShort": "İçe aktarıldı",
+    "importNothingNewShort": "Yeni bir şey yok",
+    "importSkippedShort": "Atlandı: {{count}}",
+    "quitPendingShort": "Çıkılıyor…",
+    "cancelQuitLong": "Çıkışı iptal et",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Sol bölmeyi göster/gizle",

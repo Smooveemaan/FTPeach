@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} στοιχείο",
     "itemCount_other": "{{count}} στοιχεία",
     "moveMode": "μετακίνηση",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Αντιγραφή εδώ",
+    "moveHere": "Μετακίνηση εδώ"
   },
   "openWithChanged": {
     "title": "Το αρχείο άλλαξε",
@@ -731,7 +731,7 @@
     "expandFolder": "Ανάπτυξη «{{name}}»",
     "collapseFolder": "Σύμπτυξη «{{name}}»",
     "noFolder": "Χωρίς φάκελο",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Τουλάχιστον 2: μία σύνδεση για περιήγηση στους φακέλους, οι υπόλοιπες για μεταφορά αρχείων. Κάθε πλαίσιο έχει το δικό του όριο.",
     "encodingHint": "Αλλάξτε την μόνο αν τα ονόματα αρχείων σε αυτόν τον διακομιστή εμφανίζονται αλλοιωμένα.",
     "encodings": {
       "utf8": "UTF-8 (προεπιλογή)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Κινεζική παραδοσιακή",
       "korean": "Κορεατική"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Ρυθμίσεις για προχωρημένους",
+    "remotePathPlaceholder": "Ρίζα διακομιστή (/)",
+    "changeSavedPassword": "Αλλαγή αποθηκευμένου κωδικού πρόσβασης",
+    "changeSavedPassphrase": "Αλλαγή αποθηκευμένης φράσης πρόσβασης",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Χωρίς όριο",
+      "limited": "Όριο σε…",
+      "count": "Όριο συνδέσεων"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Ισχύει μετά την επανασύνδεση.",
+    "footerFolders": "Φάκελοι: {{count}}",
+    "footerSites": "Σελιδοδείκτες: {{count}}",
+    "footerPaths": "Διαδρομές: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Δεν ήταν δυνατή η σύνδεση",
       "disconnected": "Χωρίς σύνδεση"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Έγινε εξαγωγή: {{parts}}",
+    "imported": "Έγινε εισαγωγή: {{parts}}",
+    "importAdded": "Προστέθηκαν: {{count}}",
+    "importSkipped": "Διπλότυπα που παραλείφθηκαν: {{count}}",
+    "importNothingNew": "Δεν υπάρχει τίποτα νέο για εισαγωγή",
+    "exportedShort": "Έγινε εξαγωγή",
+    "importedShort": "Έγινε εισαγωγή",
+    "importNothingNewShort": "Τίποτα νέο",
+    "importSkippedShort": "Παραλείφθηκαν: {{count}}",
+    "quitPendingShort": "Έξοδος…",
+    "cancelQuitLong": "Ακύρωση εξόδου",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Εμφάνιση/απόκρυψη αριστερού πλαισίου",

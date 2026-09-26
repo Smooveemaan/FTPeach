@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} รายการ",
     "itemCount_other": "{{count}} รายการ",
     "moveMode": "ย้าย",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "คัดลอกมาที่นี่",
+    "moveHere": "ย้ายมาที่นี่"
   },
   "openWithChanged": {
     "title": "ไฟล์ถูกแก้ไข",
@@ -731,7 +731,7 @@
     "expandFolder": "ขยาย \"{{name}}\"",
     "collapseFolder": "ยุบ \"{{name}}\"",
     "noFolder": "ไม่มีโฟลเดอร์",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "อย่างน้อย 2: หนึ่งการเชื่อมต่อใช้เรียกดูโฟลเดอร์ ส่วนที่เหลือใช้โอนไฟล์ แต่ละแผงมีขีดจำกัดของตัวเอง",
     "encodingHint": "เปลี่ยนเฉพาะเมื่อชื่อไฟล์บนเซิร์ฟเวอร์นี้แสดงผลผิดเพี้ยน",
     "encodings": {
       "utf8": "UTF-8 (ค่าเริ่มต้น)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "จีนตัวเต็ม",
       "korean": "เกาหลี"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "การตั้งค่าขั้นสูง",
+    "remotePathPlaceholder": "รูทของเซิร์ฟเวอร์ (/)",
+    "changeSavedPassword": "เปลี่ยนรหัสผ่านที่บันทึกไว้",
+    "changeSavedPassphrase": "เปลี่ยนวลีรหัสผ่านที่บันทึกไว้",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "ไม่จำกัด",
+      "limited": "จำกัดที่…",
+      "count": "ขีดจำกัดการเชื่อมต่อ"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "จะมีผลหลังจากเชื่อมต่อใหม่",
+    "footerFolders": "โฟลเดอร์: {{count}}",
+    "footerSites": "บุ๊กมาร์ก: {{count}}",
+    "footerPaths": "พาธ: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "ไม่สามารถเชื่อมต่อได้",
       "disconnected": "ไม่เชื่อมต่อ"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "ส่งออกแล้ว: {{parts}}",
+    "imported": "นำเข้าแล้ว: {{parts}}",
+    "importAdded": "เพิ่มแล้ว: {{count}}",
+    "importSkipped": "ข้ามรายการที่ซ้ำ: {{count}}",
+    "importNothingNew": "ไม่มีรายการใหม่ให้นำเข้า",
+    "exportedShort": "ส่งออกแล้ว",
+    "importedShort": "นำเข้าแล้ว",
+    "importNothingNewShort": "ไม่มีรายการใหม่",
+    "importSkippedShort": "ข้ามแล้ว: {{count}}",
+    "quitPendingShort": "กำลังออก…",
+    "cancelQuitLong": "ยกเลิกการออก",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "แสดง/ซ่อนแผงซ้าย",

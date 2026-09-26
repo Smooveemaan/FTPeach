@@ -872,7 +872,8 @@
     "importNothingNewShort": "Ничего нового",
     "importSkippedShort": "Пропущено: {{count}}",
     "quitPendingShort": "Выход…",
-    "cancelQuitLong": "Отменить выход"
+    "cancelQuitLong": "Отменить выход",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Показать/скрыть левую панель",

@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} items",
     "moveMode": "verplaatsen",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Hierheen kopiëren",
+    "moveHere": "Hierheen verplaatsen"
   },
   "openWithChanged": {
     "title": "Bestand gewijzigd",
@@ -731,7 +731,7 @@
     "expandFolder": "\"{{name}}\" uitvouwen",
     "collapseFolder": "\"{{name}}\" samenvouwen",
     "noFolder": "Geen map",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Minstens 2: één verbinding bladert door mappen, de rest draagt bestanden over. Elk paneel heeft een eigen limiet.",
     "encodingHint": "Wijzig dit alleen als bestandsnamen op deze server onleesbaar zijn.",
     "encodings": {
       "utf8": "UTF-8 (standaard)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Chinees (traditioneel)",
       "korean": "Koreaans"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Geavanceerde instellingen",
+    "remotePathPlaceholder": "Hoofdmap van de server (/)",
+    "changeSavedPassword": "Opgeslagen wachtwoord wijzigen",
+    "changeSavedPassphrase": "Opgeslagen wachtwoordzin wijzigen",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Geen limiet",
+      "limited": "Beperken tot…",
+      "count": "Verbindingslimiet"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Wordt toegepast na opnieuw verbinden.",
+    "footerFolders": "Mappen: {{count}}",
+    "footerSites": "Bladwijzers: {{count}}",
+    "footerPaths": "Paden: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Er kon geen verbinding worden gemaakt",
       "disconnected": "Geen verbinding"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Geëxporteerd: {{parts}}",
+    "imported": "Geïmporteerd: {{parts}}",
+    "importAdded": "Toegevoegd: {{count}}",
+    "importSkipped": "Overgeslagen duplicaten: {{count}}",
+    "importNothingNew": "Niets nieuws om te importeren",
+    "exportedShort": "Geëxporteerd",
+    "importedShort": "Geïmporteerd",
+    "importNothingNewShort": "Niets nieuws",
+    "importSkippedShort": "Overgeslagen: {{count}}",
+    "quitPendingShort": "Afsluiten…",
+    "cancelQuitLong": "Afsluiten annuleren",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Linkerpaneel weergeven/verbergen",

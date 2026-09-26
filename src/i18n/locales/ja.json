@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} 個の項目",
     "itemCount_other": "{{count}} 個の項目",
     "moveMode": "移動",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "ここにコピー",
+    "moveHere": "ここに移動"
   },
   "openWithChanged": {
     "title": "ファイルが変更されました",
@@ -731,7 +731,7 @@
     "expandFolder": "「{{name}}」を展開",
     "collapseFolder": "「{{name}}」を折りたたむ",
     "noFolder": "フォルダーなし",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "最低 2: 1 つの接続でフォルダーを参照し、残りでファイルを転送します。上限はペインごとに設定されます。",
     "encodingHint": "このサーバーのファイル名が文字化けする場合にのみ変更してください。",
     "encodings": {
       "utf8": "UTF-8 (デフォルト)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "繁体字中国語",
       "korean": "韓国語"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "詳細設定",
+    "remotePathPlaceholder": "サーバーのルート (/)",
+    "changeSavedPassword": "保存済みのパスワードを変更",
+    "changeSavedPassphrase": "保存済みのパスフレーズを変更",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "制限なし",
+      "limited": "上限を設定…",
+      "count": "接続数の上限"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "再接続後に適用されます。",
+    "footerFolders": "フォルダー: {{count}}",
+    "footerSites": "ブックマーク: {{count}}",
+    "footerPaths": "パス: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "接続できませんでした",
       "disconnected": "未接続"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "エクスポートしました: {{parts}}",
+    "imported": "インポートしました: {{parts}}",
+    "importAdded": "追加: {{count}}",
+    "importSkipped": "スキップした重複: {{count}}",
+    "importNothingNew": "インポートする新しい項目はありません",
+    "exportedShort": "エクスポートしました",
+    "importedShort": "インポートしました",
+    "importNothingNewShort": "新しい項目なし",
+    "importSkippedShort": "スキップ: {{count}}",
+    "quitPendingShort": "終了しています…",
+    "cancelQuitLong": "終了をキャンセル",
+    "listSeparator": "、"
   },
   "viewToolbar": {
     "toggleLeftPane": "左ペインの表示／非表示",

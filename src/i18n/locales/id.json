@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} item",
     "moveMode": "pindahkan",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Salin ke sini",
+    "moveHere": "Pindahkan ke sini"
   },
   "openWithChanged": {
     "title": "File diubah",
@@ -731,7 +731,7 @@
     "expandFolder": "Perluas \"{{name}}\"",
     "collapseFolder": "Ciutkan \"{{name}}\"",
     "noFolder": "Tanpa folder",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Minimal 2: satu koneksi untuk menjelajah folder, sisanya untuk mentransfer file. Setiap panel memiliki batasnya sendiri.",
     "encodingHint": "Ubah hanya jika nama file di server ini tampil rusak.",
     "encodings": {
       "utf8": "UTF-8 (default)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Tionghoa Tradisional",
       "korean": "Korea"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Pengaturan lanjutan",
+    "remotePathPlaceholder": "Akar server (/)",
+    "changeSavedPassword": "Ubah kata sandi yang tersimpan",
+    "changeSavedPassphrase": "Ubah frasa sandi yang tersimpan",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Tanpa batas",
+      "limited": "Batasi hingga…",
+      "count": "Batas koneksi"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Berlaku setelah terhubung ulang.",
+    "footerFolders": "Folder: {{count}}",
+    "footerSites": "Bookmark: {{count}}",
+    "footerPaths": "Jalur: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Tidak dapat terhubung",
       "disconnected": "Tidak terhubung"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Diekspor: {{parts}}",
+    "imported": "Diimpor: {{parts}}",
+    "importAdded": "Ditambahkan: {{count}}",
+    "importSkipped": "Duplikat dilewati: {{count}}",
+    "importNothingNew": "Tidak ada yang baru untuk diimpor",
+    "exportedShort": "Diekspor",
+    "importedShort": "Diimpor",
+    "importNothingNewShort": "Tidak ada yang baru",
+    "importSkippedShort": "Dilewati: {{count}}",
+    "quitPendingShort": "Keluar…",
+    "cancelQuitLong": "Batalkan keluar",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Tampilkan/sembunyikan panel kiri",

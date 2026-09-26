@@ -185,8 +185,8 @@
     "itemCount_two": "{{count}} عنصرين",
     "itemCount_few": "{{count}} عناصر",
     "itemCount_many": "{{count}} عنصرًا",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "نسخ هنا",
+    "moveHere": "نقل هنا"
   },
   "openWithChanged": {
     "title": "تم تغيير الملف",
@@ -763,7 +763,7 @@
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",
     "noFolder": "بدون مجلد",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "اتصالان على الأقل: اتصال لتصفح المجلدات، والباقي لنقل الملفات. لكل جزء حدّه الخاص.",
     "encodingHint": "غيّره فقط إذا ظهرت أسماء الملفات على هذا الخادم مشوّهة.",
     "encodings": {
       "utf8": "UTF-8 (افتراضي)",
@@ -782,19 +782,19 @@
       "traditionalChinese": "الصينية التقليدية",
       "korean": "الكورية"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "إعدادات متقدمة",
+    "remotePathPlaceholder": "جذر الخادم (/)",
+    "changeSavedPassword": "تغيير كلمة المرور المحفوظة",
+    "changeSavedPassphrase": "تغيير عبارة المرور المحفوظة",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "بلا حد",
+      "limited": "تحديد بـ…",
+      "count": "حد الاتصالات"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "يُطبَّق بعد إعادة الاتصال.",
+    "footerFolders": "المجلدات: {{count}}",
+    "footerSites": "الإشارات المرجعية: {{count}}",
+    "footerPaths": "المسارات: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -878,17 +878,18 @@
       "connectFailed": "تعذر الاتصال",
       "disconnected": "غير متصل"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "تم التصدير: {{parts}}",
+    "imported": "تم الاستيراد: {{parts}}",
+    "importAdded": "تمت الإضافة: {{count}}",
+    "importSkipped": "المكررات التي تم تخطيها: {{count}}",
+    "importNothingNew": "لا يوجد جديد للاستيراد",
+    "exportedShort": "تم التصدير",
+    "importedShort": "تم الاستيراد",
+    "importNothingNewShort": "لا جديد",
+    "importSkippedShort": "تم التخطي: {{count}}",
+    "quitPendingShort": "جارٍ الخروج…",
+    "cancelQuitLong": "إلغاء الخروج",
+    "listSeparator": "، "
   },
   "viewToolbar": {
     "toggleLeftPane": "إظهار/إخفاء الجزء الأيسر",

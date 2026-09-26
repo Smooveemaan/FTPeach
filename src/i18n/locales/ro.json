@@ -176,8 +176,8 @@
     "itemCount_other": "{{count}} de elemente",
     "moveMode": "mutare",
     "itemCount_few": "{{count}} elemente",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Copiază aici",
+    "moveHere": "Mută aici"
   },
   "openWithChanged": {
     "title": "Fișierul a fost modificat",
@@ -739,7 +739,7 @@
     "expandFolder": "Extinde „{{name}}”",
     "collapseFolder": "Restrânge „{{name}}”",
     "noFolder": "Fără folder",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Cel puțin 2: o conexiune navighează prin foldere, restul transferă fișiere. Fiecare panou are propria limită.",
     "encodingHint": "Schimbați-o doar dacă numele fișierelor de pe acest server apar deformate.",
     "encodings": {
       "utf8": "UTF-8 (implicită)",
@@ -758,19 +758,19 @@
       "traditionalChinese": "Chineză tradițională",
       "korean": "Coreeană"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Setări avansate",
+    "remotePathPlaceholder": "Rădăcina serverului (/)",
+    "changeSavedPassword": "Schimbă parola salvată",
+    "changeSavedPassphrase": "Schimbă fraza de acces salvată",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Fără limită",
+      "limited": "Limitează la…",
+      "count": "Limită de conexiuni"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Se aplică după reconectare.",
+    "footerFolders": "Foldere: {{count}}",
+    "footerSites": "Marcaje: {{count}}",
+    "footerPaths": "Căi: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -854,17 +854,18 @@
       "connectFailed": "Nu s-a putut conecta",
       "disconnected": "Nu este conectat"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Exportat: {{parts}}",
+    "imported": "Importat: {{parts}}",
+    "importAdded": "Adăugate: {{count}}",
+    "importSkipped": "Duplicate omise: {{count}}",
+    "importNothingNew": "Nimic nou de importat",
+    "exportedShort": "Exportat",
+    "importedShort": "Importat",
+    "importNothingNewShort": "Nimic nou",
+    "importSkippedShort": "Omise: {{count}}",
+    "quitPendingShort": "Se închide…",
+    "cancelQuitLong": "Anulează ieșirea",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Afișează/ascunde panoul din stânga",

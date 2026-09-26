@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} elem",
     "itemCount_other": "{{count}} elem",
     "moveMode": "áthelyezés",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Másolás ide",
+    "moveHere": "Áthelyezés ide"
   },
   "openWithChanged": {
     "title": "A fájl megváltozott",
@@ -731,7 +731,7 @@
     "expandFolder": "„{{name}}” kibontása",
     "collapseFolder": "„{{name}}” összecsukása",
     "noFolder": "Nincs mappa",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Legalább 2: egy kapcsolat a mappák böngészésére, a többi a fájlok átvitelére szolgál. Minden panelnek saját korlátja van.",
     "encodingHint": "Csak akkor változtassa meg, ha a kiszolgálón lévő fájlnevek olvashatatlanok.",
     "encodings": {
       "utf8": "UTF-8 (alapértelmezett)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Hagyományos kínai",
       "korean": "Koreai"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Speciális beállítások",
+    "remotePathPlaceholder": "A szerver gyökérmappája (/)",
+    "changeSavedPassword": "Mentett jelszó módosítása",
+    "changeSavedPassphrase": "Mentett jelmondat módosítása",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Nincs korlát",
+      "limited": "Legfeljebb…",
+      "count": "Kapcsolatkorlát"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Újracsatlakozás után lép érvénybe.",
+    "footerFolders": "Mappák: {{count}}",
+    "footerSites": "Könyvjelzők: {{count}}",
+    "footerPaths": "Elérési utak: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Nem sikerült csatlakozni",
       "disconnected": "Nincs csatlakozva"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Exportálva: {{parts}}",
+    "imported": "Importálva: {{parts}}",
+    "importAdded": "Hozzáadva: {{count}}",
+    "importSkipped": "Kihagyott duplikátumok: {{count}}",
+    "importNothingNew": "Nincs új elem az importáláshoz",
+    "exportedShort": "Exportálva",
+    "importedShort": "Importálva",
+    "importNothingNewShort": "Nincs új elem",
+    "importSkippedShort": "Kihagyva: {{count}}",
+    "quitPendingShort": "Kilépés…",
+    "cancelQuitLong": "Kilépés megszakítása",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Bal oldali panel megjelenítése/elrejtése",

@@ -36,7 +36,7 @@ export function useSettingsTransfer({
     (options: SettingsTransferOptions) =>
       PARTS.filter((part) => options[part])
         .map((part) => t(`exportSettingsDialog.${part}`))
-        .join(', '),
+        .join(t('statusBar.listSeparator')),
     [t],
   );
 

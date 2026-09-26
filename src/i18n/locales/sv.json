@@ -173,8 +173,8 @@
     "itemCount_one": "{{count}} objekt",
     "itemCount_other": "{{count}} objekt",
     "moveMode": "flytta",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Kopiera hit",
+    "moveHere": "Flytta hit"
   },
   "openWithChanged": {
     "title": "Filen har ändrats",
@@ -731,7 +731,7 @@
     "expandFolder": "Expandera ”{{name}}”",
     "collapseFolder": "Komprimera ”{{name}}”",
     "noFolder": "Ingen mapp",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Minst 2: en anslutning bläddrar i mappar, resten överför filer. Varje panel har en egen gräns.",
     "encodingHint": "Ändra den bara om filnamn på den här servern visas felaktigt.",
     "encodings": {
       "utf8": "UTF-8 (standard)",
@@ -750,19 +750,19 @@
       "traditionalChinese": "Kinesisk (traditionell)",
       "korean": "Koreansk"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Avancerade inställningar",
+    "remotePathPlaceholder": "Serverns rot (/)",
+    "changeSavedPassword": "Ändra sparat lösenord",
+    "changeSavedPassphrase": "Ändra sparad lösenfras",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Ingen gräns",
+      "limited": "Begränsa till…",
+      "count": "Anslutningsgräns"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Gäller efter återanslutning.",
+    "footerFolders": "Mappar: {{count}}",
+    "footerSites": "Bokmärken: {{count}}",
+    "footerPaths": "Sökvägar: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -846,17 +846,18 @@
       "connectFailed": "Det gick inte att ansluta",
       "disconnected": "Inte ansluten"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Exporterat: {{parts}}",
+    "imported": "Importerat: {{parts}}",
+    "importAdded": "Tillagda: {{count}}",
+    "importSkipped": "Överhoppade dubbletter: {{count}}",
+    "importNothingNew": "Inget nytt att importera",
+    "exportedShort": "Exporterat",
+    "importedShort": "Importerat",
+    "importNothingNewShort": "Inget nytt",
+    "importSkippedShort": "Överhoppade: {{count}}",
+    "quitPendingShort": "Avslutar…",
+    "cancelQuitLong": "Avbryt avslutning",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Visa/dölj vänster panel",

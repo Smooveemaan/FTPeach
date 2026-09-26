@@ -179,8 +179,8 @@
     "moveMode": "przenoszenie",
     "itemCount_few": "{{count}} elementy",
     "itemCount_many": "{{count}} elementów",
-    "copyHere": "Copy here",
-    "moveHere": "Move here"
+    "copyHere": "Kopiuj tutaj",
+    "moveHere": "Przenieś tutaj"
   },
   "openWithChanged": {
     "title": "Plik został zmieniony",
@@ -747,7 +747,7 @@
     "expandFolder": "Rozwiń „{{name}}”",
     "collapseFolder": "Zwiń „{{name}}”",
     "noFolder": "Bez folderu",
-    "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
+    "maxConnectionsHint": "Co najmniej 2: jedno połączenie przegląda foldery, pozostałe przesyłają pliki. Każdy panel ma własny limit.",
     "encodingHint": "Zmieniaj tylko wtedy, gdy nazwy plików na tym serwerze wyświetlają się nieprawidłowo.",
     "encodings": {
       "utf8": "UTF-8 (domyślne)",
@@ -766,19 +766,19 @@
       "traditionalChinese": "Chińskie tradycyjne",
       "korean": "Koreańskie"
     },
-    "advancedSettings": "Advanced settings",
-    "remotePathPlaceholder": "Server root (/)",
-    "changeSavedPassword": "Change saved password",
-    "changeSavedPassphrase": "Change saved passphrase",
+    "advancedSettings": "Ustawienia zaawansowane",
+    "remotePathPlaceholder": "Katalog główny serwera (/)",
+    "changeSavedPassword": "Zmień zapisane hasło",
+    "changeSavedPassphrase": "Zmień zapisaną frazę hasła",
     "connectionLimit": {
-      "none": "No limit",
-      "limited": "Limit to…",
-      "count": "Connection limit"
+      "none": "Bez limitu",
+      "limited": "Ogranicz do…",
+      "count": "Limit połączeń"
     },
-    "maxConnectionsChanged": "Applies after reconnecting.",
-    "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "maxConnectionsChanged": "Zostanie zastosowane po ponownym połączeniu.",
+    "footerFolders": "Foldery: {{count}}",
+    "footerSites": "Zakładki: {{count}}",
+    "footerPaths": "Ścieżki: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -862,17 +862,18 @@
       "connectFailed": "Nie udało się nawiązać połączenia",
       "disconnected": "Brak połączenia"
     },
-    "exported": "Exported: {{parts}}",
-    "imported": "Imported: {{parts}}",
-    "importAdded": "Added: {{count}}",
-    "importSkipped": "Duplicates skipped: {{count}}",
-    "importNothingNew": "Nothing new to import",
-    "exportedShort": "Exported",
-    "importedShort": "Imported",
-    "importNothingNewShort": "Nothing new",
-    "importSkippedShort": "Skipped: {{count}}",
-    "quitPendingShort": "Quitting…",
-    "cancelQuitLong": "Cancel quit"
+    "exported": "Wyeksportowano: {{parts}}",
+    "imported": "Zaimportowano: {{parts}}",
+    "importAdded": "Dodano: {{count}}",
+    "importSkipped": "Pominięte duplikaty: {{count}}",
+    "importNothingNew": "Nie ma nic nowego do zaimportowania",
+    "exportedShort": "Wyeksportowano",
+    "importedShort": "Zaimportowano",
+    "importNothingNewShort": "Nic nowego",
+    "importSkippedShort": "Pominięto: {{count}}",
+    "quitPendingShort": "Zamykanie…",
+    "cancelQuitLong": "Anuluj wyjście",
+    "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Pokaż/ukryj lewy panel",

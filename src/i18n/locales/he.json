@@ -720,14 +720,6 @@
     "chooseLocalPath": "בחר תיקייה מקומית",
     "importBookmarks": "ייבוא",
     "exportBookmarks": "ייצוא",
-    "importAdded_one": "נוספה {{count}} סימנייה",
-    "importAdded_other": "נוספו {{count}} סימניות",
-    "importAdded_two": "נוספו {{count}} סימניות",
-    "importSkipped_one": "דולגה {{count}} כפילות",
-    "importSkipped_other": "דולגו {{count}} כפילויות",
-    "importSkipped_two": "דולגו {{count}} כפילויות",
-    "importNothingNew": "אין חדש לייבוא",
-    "exportSuccess": "הייצוא הושלם",
     "sortMode": "מיון סימניות",
     "sortManual": "ידני",
     "sortName": "לפי שם",
@@ -775,7 +767,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -858,7 +853,18 @@
       "connecting": "מתחבר",
       "connectFailed": "לא ניתן להתחבר",
       "disconnected": "לא מחובר"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "הצג/הסתר את החלונית השמאלית",

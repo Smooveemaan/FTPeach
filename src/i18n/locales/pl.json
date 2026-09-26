@@ -728,16 +728,6 @@
     "chooseLocalPath": "Wybierz folder lokalny",
     "importBookmarks": "Importuj",
     "exportBookmarks": "Eksportuj",
-    "importAdded_one": "Dodano {{count}} zakładkę",
-    "importAdded_few": "Dodano {{count}} zakładki",
-    "importAdded_many": "Dodano {{count}} zakładek",
-    "importAdded_other": "Dodano {{count}} zakładek",
-    "importSkipped_one": "pominięto {{count}} duplikat",
-    "importSkipped_few": "pominięto {{count}} duplikaty",
-    "importSkipped_many": "pominięto {{count}} duplikatów",
-    "importSkipped_other": "pominięto {{count}} duplikatów",
-    "importNothingNew": "Nie ma nic nowego do zaimportowania",
-    "exportSuccess": "Wyeksportowano",
     "sortMode": "Sortowanie zakładek",
     "sortManual": "Ręcznie",
     "sortName": "Według nazwy",
@@ -785,7 +775,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -868,7 +861,18 @@
       "connecting": "Łączenie",
       "connectFailed": "Nie udało się nawiązać połączenia",
       "disconnected": "Brak połączenia"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Pokaż/ukryj lewy panel",

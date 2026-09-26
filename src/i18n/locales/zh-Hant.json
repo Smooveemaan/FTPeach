@@ -712,12 +712,6 @@
     "chooseLocalPath": "選擇本機資料夾",
     "importBookmarks": "匯入",
     "exportBookmarks": "匯出",
-    "importAdded_one": "已新增 {{count}} 個書籤",
-    "importAdded_other": "已新增 {{count}} 個書籤",
-    "importSkipped_one": "略過 {{count}} 個重複項目",
-    "importSkipped_other": "略過 {{count}} 個重複項目",
-    "importNothingNew": "沒有可匯入的新項目",
-    "exportSuccess": "已匯出",
     "sortMode": "書籤排序",
     "sortManual": "手動",
     "sortName": "按名稱",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "連線中",
       "connectFailed": "無法連線",
       "disconnected": "未連線"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "顯示/隱藏左窗格",

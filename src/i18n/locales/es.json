@@ -720,12 +720,6 @@
     "chooseLocalPath": "Elegir carpeta local",
     "importBookmarks": "Importar",
     "exportBookmarks": "Exportar",
-    "importAdded_one": "Se añadió {{count}} marcador",
-    "importAdded_other": "Se añadieron {{count}} marcadores",
-    "importSkipped_one": "se omitió {{count}} duplicado",
-    "importSkipped_other": "se omitieron {{count}} duplicados",
-    "importNothingNew": "No hay nada nuevo que importar",
-    "exportSuccess": "Exportado",
     "sortMode": "Ordenación de marcadores",
     "sortManual": "Manual",
     "sortName": "Por nombre",
@@ -745,8 +739,6 @@
     "expandFolder": "Desplegar «{{name}}»",
     "collapseFolder": "Contraer «{{name}}»",
     "noFolder": "Sin carpeta",
-    "importAdded_many": "Se añadieron {{count}} marcadores",
-    "importSkipped_many": "se omitieron {{count}} duplicados",
     "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Cámbiela solo si los nombres de archivo de este servidor se ven ilegibles.",
     "encodings": {
@@ -775,7 +767,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -858,7 +853,18 @@
       "connecting": "Conectando",
       "connectFailed": "No se ha podido conectar",
       "disconnected": "No conectado"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Mostrar/ocultar el panel izquierdo",

@@ -15,6 +15,7 @@ import type { useAppDialogs } from './useAppDialogs.ts';
 import type { RecoveredEditsModel, useOpenWithLifecycle } from '../features/open-with/index.ts';
 import { reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
+import type { NoticeMessage } from '../hooks/useStatusNotice.ts';
 
 const AboutDialog = lazy(() => import('../components/AboutDialog.tsx'));
 const SettingsTransferDialog = lazy(() =>
@@ -97,6 +98,8 @@ export interface AppDialogsModel {
     save: SettingsDialogProps['onSave'];
     export: SiteManagerProps['onExport'];
     import: SiteManagerProps['onImport'];
+    /** The status bar line File → Export/Import reports to; the managers show it themselves. */
+    notify: (message: NoticeMessage) => void;
     exportDiagnostics: SettingsDialogProps['onExportDiagnostics'];
   };
   dialogs: DialogControls;
@@ -258,7 +261,10 @@ export default function AppDialogs({ model }: AppDialogsProps) {
       {dialogs.showExportSettings && (
         <SettingsTransferDialog
           mode="export"
-          onConfirm={settings.export}
+          onConfirm={async (options) => {
+            const message = await settings.export(options);
+            if (message) settings.notify(message);
+          }}
           onClose={() => dialogs.setShowExportSettings(false)}
           initialOptions={{
             includeSettings: true,
@@ -270,7 +276,10 @@ export default function AppDialogs({ model }: AppDialogsProps) {
       {dialogs.showImportSettings && (
         <SettingsTransferDialog
           mode="import"
-          onConfirm={settings.import}
+          onConfirm={async (options) => {
+            const message = await settings.import(options);
+            if (message) settings.notify(message);
+          }}
           onClose={() => dialogs.setShowImportSettings(false)}
           initialOptions={{
             includeSettings: true,

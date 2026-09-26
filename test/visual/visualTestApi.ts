@@ -326,7 +326,13 @@ export const visualTestApi = {
     setWindowTheme: () => {},
     resetLayout: () => resolved(ok),
     exportSettings: () => resolved(ok),
-    importSettings: () => resolved(ok),
+    /** `?import=sites` reports added and duplicate sites, the longest message. */
+    importSettings: () =>
+      resolved(
+        new URLSearchParams(window.location.search).get('import') === 'sites'
+          ? { ok: true, sitesAdded: 12, sitesSkipped: 3 }
+          : ok,
+      ),
     openExternal: () => resolved(ok),
     openDevtools: () => resolved(ok),
     quit: () => resolved(ok),

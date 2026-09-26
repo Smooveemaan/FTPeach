@@ -661,11 +661,6 @@
   width: max-content;
   transition: transform 0.15s ease;
 }
-@media (prefers-reduced-motion: reduce) {
-  .modal-settings.narrow .settings-nav-tabs {
-    transition: none;
-  }
-}
 .modal-settings.narrow .settings-nav-arrow {
   display: inline-flex;
   align-items: center;

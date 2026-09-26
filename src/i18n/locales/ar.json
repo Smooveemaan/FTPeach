@@ -744,20 +744,6 @@
     "chooseLocalPath": "اختر مجلدًا محليًّا",
     "importBookmarks": "استيراد",
     "exportBookmarks": "تصدير",
-    "importAdded_one": "تمت إضافة {{count}} إشارة مرجعية",
-    "importAdded_other": "تمت إضافة {{count}} إشارة مرجعية",
-    "importAdded_zero": "تمت إضافة {{count}} إشارة مرجعية",
-    "importAdded_two": "تمت إضافة {{count}} إشارتين مرجعيتين",
-    "importAdded_few": "تمت إضافة {{count}} إشارات مرجعية",
-    "importAdded_many": "تمت إضافة {{count}} إشارةً مرجعيةً",
-    "importSkipped_one": "تم تخطي {{count}} مكرر",
-    "importSkipped_other": "تم تخطي {{count}} مكرر",
-    "importSkipped_zero": "تم تخطي {{count}} مكرر",
-    "importSkipped_two": "تم تخطي {{count}} مكررين",
-    "importSkipped_few": "تم تخطي {{count}} مكررات",
-    "importSkipped_many": "تم تخطي {{count}} مكررًا",
-    "importNothingNew": "لا يوجد جديد للاستيراد",
-    "exportSuccess": "تم التصدير",
     "sortMode": "فرز الإشارات المرجعية",
     "sortManual": "يدوي",
     "sortName": "حسب الاسم",
@@ -805,7 +791,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -888,7 +877,18 @@
       "connecting": "جارٍ الاتصال",
       "connectFailed": "تعذر الاتصال",
       "disconnected": "غير متصل"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "إظهار/إخفاء الجزء الأيسر",

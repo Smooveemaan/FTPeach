@@ -712,12 +712,6 @@
     "chooseLocalPath": "Yerel klasör seç",
     "importBookmarks": "İçe Aktar",
     "exportBookmarks": "Dışa Aktar",
-    "importAdded_one": "{{count}} yer imi eklendi",
-    "importAdded_other": "{{count}} yer imi eklendi",
-    "importSkipped_one": "{{count}} yinelenen atlandı",
-    "importSkipped_other": "{{count}} yinelenen atlandı",
-    "importNothingNew": "İçe aktarılacak yeni bir şey yok",
-    "exportSuccess": "Dışa aktarıldı",
     "sortMode": "Yer imlerini sıralama",
     "sortManual": "Manuel",
     "sortName": "Adına göre",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Bağlanıyor",
       "connectFailed": "Bağlanılamadı",
       "disconnected": "Bağlı değil"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Sol bölmeyi göster/gizle",

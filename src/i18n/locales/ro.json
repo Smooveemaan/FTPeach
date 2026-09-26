@@ -720,14 +720,6 @@
     "chooseLocalPath": "Alegeți un folder local",
     "importBookmarks": "Importă",
     "exportBookmarks": "Exportă",
-    "importAdded_one": "Adăugat {{count}} marcaj",
-    "importAdded_few": "Adăugate {{count}} marcaje",
-    "importAdded_other": "Adăugate {{count}} de marcaje",
-    "importSkipped_one": "omis {{count}} duplicat",
-    "importSkipped_few": "omise {{count}} duplicate",
-    "importSkipped_other": "omise {{count}} de duplicate",
-    "importNothingNew": "Nimic nou de importat",
-    "exportSuccess": "Exportat",
     "sortMode": "Sortarea marcajelor",
     "sortManual": "Manual",
     "sortName": "După nume",
@@ -775,7 +767,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -858,7 +853,18 @@
       "connecting": "Se conectează",
       "connectFailed": "Nu s-a putut conecta",
       "disconnected": "Nu este conectat"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Afișează/ascunde panoul din stânga",

@@ -94,7 +94,7 @@
 
 .site-manage-list {
 
-  flex: 0 1 512px;
+  flex: 0 1 calc(512px - var(--site-manager-footer-height));
   min-height: 0;
   overflow-y: auto;
 

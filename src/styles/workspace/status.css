@@ -19,7 +19,9 @@
   min-width: 0;
   white-space: nowrap;
   display: flex;
-  gap: 14px;
+  /* One spacing at every width, the bar's own gap: a tight bar shortens its
+     texts (FIT in StatusBar.tsx) instead of squeezing the space between them. */
+  gap: 12px;
   font-family: var(--font-mono);
 }
 
@@ -55,6 +57,41 @@
   opacity: 0.6;
 }
 
+/* Stays in the DOM while empty, so screen readers announce the next message. */
+.status-left > .status-notice {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-faint);
+}
+/* Empty, it would still add a gap before whatever follows. */
+.status-left > .status-notice:empty {
+  margin-inline-end: -6px;
+}
+/* A message takes the place of the status, the update and the counts; see
+   .notice-replaced in foundation.css. The icon and the update status are not
+   ours to mark, so they are named here. */
+.status-bar.is-leaving :is(.line-pulse, .status-update, .status-quit) {
+  animation: fade-out 0.3s ease forwards;
+}
+.status-bar.is-returning :is(.line-pulse, .status-update, .status-quit) {
+  animation: fade-in 0.3s ease;
+}
+/* The wait to quit stays, but moves as its neighbours come and go: it fades
+   out and in with the message instead of jumping. */
+.status-bar.is-notice .status-quit {
+  animation:
+    fade-in 0.3s ease,
+    fade-out 0.3s ease 7.4s forwards;
+}
+/* The separator fades with the message. */
+.status-notice:not(:first-child) > .notice-text::before {
+  content: '·';
+  margin-inline-end: 6px;
+  opacity: 0.6;
+}
+
 .status-update,
 .status-quit {
   display: inline-flex;
@@ -82,8 +119,20 @@
   text-decoration: underline;
 }
 @container (max-width: 900px) {
-  .status-bar .status-right { gap: 8px; overflow: hidden; }
+  .status-bar .status-right { overflow: hidden; }
   .status-right > span { overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Reduced to its icon, sync browsing is as small as it gets: the right side
+   keeps it whole and the left side's status text gives way instead. */
+.status-bar:has(> .status-right > .sync-indicator[role='img']) > .status-left {
+  flex-shrink: 1;
+}
+.status-right:has(> .sync-indicator[role='img']) {
+  flex-shrink: 0;
+}
+.status-right > .sync-indicator[role='img'] {
+  overflow: visible;
 }
 
 .status-text.state-idle { color: var(--text-faint); }

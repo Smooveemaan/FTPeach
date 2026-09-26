@@ -712,12 +712,6 @@
     "chooseLocalPath": "ローカルフォルダーを選択",
     "importBookmarks": "インポート",
     "exportBookmarks": "エクスポート",
-    "importAdded_one": "{{count}} 件のブックマークを追加しました",
-    "importAdded_other": "{{count}} 件のブックマークを追加しました",
-    "importSkipped_one": "重複{{count}}件をスキップ",
-    "importSkipped_other": "重複{{count}}件をスキップ",
-    "importNothingNew": "インポートする新しい項目はありません",
-    "exportSuccess": "エクスポートしました",
     "sortMode": "ブックマークの並べ替え",
     "sortManual": "手動",
     "sortName": "名前順",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "接続中",
       "connectFailed": "接続できませんでした",
       "disconnected": "未接続"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "左ペインの表示／非表示",

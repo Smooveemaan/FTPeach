@@ -712,12 +712,6 @@
     "chooseLocalPath": "Chọn thư mục cục bộ",
     "importBookmarks": "Nhập",
     "exportBookmarks": "Xuất",
-    "importAdded_one": "Đã thêm {{count}} dấu trang",
-    "importAdded_other": "Đã thêm {{count}} dấu trang",
-    "importSkipped_one": "đã bỏ qua {{count}} mục trùng lặp",
-    "importSkipped_other": "đã bỏ qua {{count}} mục trùng lặp",
-    "importNothingNew": "Không có gì mới để nhập",
-    "exportSuccess": "Đã xuất",
     "sortMode": "Sắp xếp dấu trang",
     "sortManual": "Thủ công",
     "sortName": "Theo tên",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Đang kết nối",
       "connectFailed": "Không thể kết nối",
       "disconnected": "Chưa kết nối"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Hiện/ẩn khung bên trái",

@@ -17,6 +17,7 @@ import { useOpenWithLifecycle, useRecoveredEdits } from '../features/open-with/i
 import { useAppBootstrap } from './useAppBootstrap.ts';
 import { useAppDialogs } from './useAppDialogs.ts';
 import { useAppEffects } from './useAppEffects.ts';
+import { useStatusNotice } from '../hooks/useStatusNotice.ts';
 import { useWorkspaceLayout } from './useWorkspaceLayout.ts';
 import { useFileBrowserPaneModel } from './useFileBrowserPaneModel.tsx';
 import AppBanners from './AppBanners.tsx';
@@ -350,6 +351,7 @@ export default function Application() {
     freeConnectTargetPaneId,
   });
 
+  const [statusNotice, showStatusNotice] = useStatusNotice();
   const { exportSettings: handleExportSettings, importSettings: handleImportSettings } =
     useSettingsTransfer({ applySettings, refreshSites, reportError });
 
@@ -636,6 +638,7 @@ export default function Application() {
       save: persistSettingsDialogPatch,
       export: handleExportSettings,
       import: handleImportSettings,
+      notify: showStatusNotice,
     },
     dialogs,
     updater: { status: updateStatus, check: checkForUpdates },
@@ -751,6 +754,7 @@ export default function Application() {
             />
           ),
           quitPending: quitWhenIdle.pending ? { onCancel: quitWhenIdle.cancel } : undefined,
+          notice: statusNotice,
           narrow: windowNarrow,
         }}
       />

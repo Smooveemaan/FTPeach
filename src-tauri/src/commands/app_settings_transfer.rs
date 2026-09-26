@@ -145,6 +145,9 @@ pub enum ImportResult {
     #[serde(rename_all = "camelCase")]
     Ok {
         ok: bool,
+        // Absent, not null: the frontend's response check accepts a missing
+        // map but rejects null, and would report a finished import as failed.
+        #[serde(skip_serializing_if = "Option::is_none")]
         settings: Option<JsonMap>,
         sites_added: usize,
         sites_skipped: usize,

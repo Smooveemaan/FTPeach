@@ -1103,3 +1103,27 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     ]);
   });
 });
+
+test('the footer counts the entries and an import here reports in their place', async () => {
+  const user = userEvent.setup();
+  const onImport = vi.fn(async () => ({ text: 'Imported: Bookmarks', short: 'Imported' }));
+  const { container } = renderManager({ onImport });
+  const footer = requireHtml(container.querySelector('.site-manager-footer'));
+  expect(within(footer).getByText('siteManagerDialog.footerFolders')).toBeTruthy();
+  expect(within(footer).getByText('siteManagerDialog.footerSites')).toBeTruthy();
+
+  await user.click(screen.getByRole('button', { name: 'siteManagerDialog.importBookmarks' }));
+  await user.click(screen.getByRole('button', { name: 'importSettingsDialog.confirmLabel' }));
+  expect(onImport).toHaveBeenCalledOnce();
+  expect(footer.className).toContain('is-leaving');
+  // jsdom has no AnimationEvent, so React listens for the prefixed name there.
+  fireEvent(
+    within(footer).getByText('siteManagerDialog.footerFolders'),
+    new Event('webkitAnimationEnd', { bubbles: true }),
+  );
+  // Screen readers get the full text; jsdom lays nothing out, so it fits.
+  expect(within(footer).getByRole('status').textContent).toBe(
+    'Imported: BookmarksImported: Bookmarks',
+  );
+  expect(within(footer).queryByText('siteManagerDialog.footerFolders')).toBeNull();
+});

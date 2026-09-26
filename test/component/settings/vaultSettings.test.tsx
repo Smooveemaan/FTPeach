@@ -119,7 +119,7 @@ test('unlock IPC errors expire and pending error timers are removed on unmount',
   input('password', 'secret');
   await act(async () => fireEvent.click(screen.getByText('unlock', { selector: 'button' })));
   expect(screen.getByText('offline')).toBeTruthy();
-  await act(async () => vi.advanceTimersByTime(1800));
+  await act(async () => vi.advanceTimersByTime(2000));
   expect(screen.queryByText('offline')).toBeNull();
   expect(screen.getByTestId('invalid').textContent).toBe('false');
   await act(async () => fireEvent.click(screen.getByText('unlock', { selector: 'button' })));

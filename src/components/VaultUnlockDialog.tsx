@@ -64,7 +64,7 @@ export default function VaultUnlockDialog({
       setError('');
       setPasswordInvalid(false);
       errorTimerRef.current = null;
-    }, 1800);
+    }, 2000);
   };
 
   const unlock = async () => {

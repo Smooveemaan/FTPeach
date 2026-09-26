@@ -712,12 +712,6 @@
     "chooseLocalPath": "เลือกโฟลเดอร์ในเครื่อง",
     "importBookmarks": "นำเข้า",
     "exportBookmarks": "ส่งออก",
-    "importAdded_one": "เพิ่ม {{count}} บุ๊กมาร์กแล้ว",
-    "importAdded_other": "เพิ่ม {{count}} บุ๊กมาร์กแล้ว",
-    "importSkipped_one": "ข้าม {{count}} รายการที่ซ้ำ",
-    "importSkipped_other": "ข้าม {{count}} รายการที่ซ้ำ",
-    "importNothingNew": "ไม่มีรายการใหม่ให้นำเข้า",
-    "exportSuccess": "ส่งออกแล้ว",
     "sortMode": "การจัดเรียงบุ๊กมาร์ก",
     "sortManual": "กำหนดเอง",
     "sortName": "ตามชื่อ",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "กำลังเชื่อมต่อ",
       "connectFailed": "ไม่สามารถเชื่อมต่อได้",
       "disconnected": "ไม่เชื่อมต่อ"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "แสดง/ซ่อนแผงซ้าย",

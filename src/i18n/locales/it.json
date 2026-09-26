@@ -720,12 +720,6 @@
     "chooseLocalPath": "Scegli una cartella locale",
     "importBookmarks": "Importa",
     "exportBookmarks": "Esporta",
-    "importAdded_one": "Aggiunto {{count}} segnalibro",
-    "importAdded_other": "Aggiunti {{count}} segnalibri",
-    "importSkipped_one": "saltato {{count}} duplicato",
-    "importSkipped_other": "saltati {{count}} duplicati",
-    "importNothingNew": "Niente di nuovo da importare",
-    "exportSuccess": "Esportato",
     "sortMode": "Ordinamento dei segnalibri",
     "sortManual": "Manuale",
     "sortName": "Per nome",
@@ -745,8 +739,6 @@
     "expandFolder": "Espandi “{{name}}”",
     "collapseFolder": "Comprimi “{{name}}”",
     "noFolder": "Nessuna cartella",
-    "importAdded_many": "Aggiunti {{count}} segnalibri",
-    "importSkipped_many": "saltati {{count}} duplicati",
     "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Cambiala solo se i nomi dei file su questo server appaiono illeggibili.",
     "encodings": {
@@ -775,7 +767,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -858,7 +853,18 @@
       "connecting": "Connessione in corso",
       "connectFailed": "Impossibile connettersi",
       "disconnected": "Non connesso"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Mostra/nascondi il riquadro sinistro",

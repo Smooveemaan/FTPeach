@@ -712,12 +712,6 @@
     "chooseLocalPath": "Choose local folder",
     "importBookmarks": "Import",
     "exportBookmarks": "Export",
-    "importAdded_one": "Added {{count}} bookmark",
-    "importAdded_other": "Added {{count}} bookmarks",
-    "importSkipped_one": "skipped {{count}} duplicate",
-    "importSkipped_other": "skipped {{count}} duplicates",
-    "importNothingNew": "Nothing new to import",
-    "exportSuccess": "Exported",
     "sortMode": "Bookmark sorting",
     "sortManual": "Manual",
     "sortName": "By name",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Connecting",
       "connectFailed": "Couldn't connect",
       "disconnected": "Not connected"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Show/hide left pane",

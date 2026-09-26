@@ -69,13 +69,13 @@ function transfer(results: { export?: ExportSettingsResult; import?: ImportSetti
   return { model: result.current, appApi, applySettings, refreshSites, reportError };
 }
 
-test('a cancelled export or import is not an error', async () => {
+test('a cancelled export or import is not an error and has nothing to say', async () => {
   const { model, reportError } = transfer({
     export: { ok: false, canceled: true },
     import: { ok: false, canceled: true },
   });
   await act(async () => {
-    expect(await model.exportSettings(options)).toBe(false);
+    expect(await model.exportSettings(options)).toBeUndefined();
     expect(await model.importSettings(options)).toBeUndefined();
   });
   expect(reportError).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ test('a failed export or import is reported and changes nothing', async () => {
     import: { ok: false, error: 'not a settings file', errorCode: 'invalidInput' },
   });
   await act(async () => {
-    expect(await model.exportSettings(options)).toBe(false);
+    expect(await model.exportSettings(options)).toBeUndefined();
     expect(await model.importSettings(options)).toBeUndefined();
   });
   expect(reportError).toHaveBeenCalledTimes(2);
@@ -95,17 +95,43 @@ test('a failed export or import is reported and changes nothing', async () => {
   expect(refreshSites).not.toHaveBeenCalled();
 });
 
-test('a successful import applies the settings and reloads the sites it added', async () => {
+test('a successful import applies the settings, reloads the sites and says what it did', async () => {
   const settings = { theme: 'dark' };
   const { model, appApi, applySettings, refreshSites } = transfer({
     import: { ok: true, settings, sitesAdded: 2, sitesSkipped: 1 },
   });
-  let summary: unknown;
+  let message: unknown;
   await act(async () => {
-    summary = await model.importSettings(options);
+    message = await model.importSettings(options);
   });
   expect(appApi.importSettings).toHaveBeenCalledWith(options);
   expect(applySettings).toHaveBeenCalledWith(settings);
   expect(refreshSites).toHaveBeenCalledOnce();
-  expect(summary).toEqual({ sitesAdded: 2, sitesSkipped: 1 });
+  expect(message).toEqual({
+    text: 'statusBar.imported · statusBar.importAdded · statusBar.importSkipped',
+    short: 'statusBar.importedShort · statusBar.importAdded · statusBar.importSkippedShort',
+  });
+});
+
+test('an export says what it wrote', async () => {
+  const { model } = transfer({});
+  await act(async () => {
+    expect(await model.exportSettings(options)).toEqual({
+      text: 'statusBar.exported',
+      short: 'statusBar.exportedShort',
+    });
+  });
+});
+
+test('an import that brought in only duplicates says there was nothing new', async () => {
+  const { model, refreshSites } = transfer({
+    import: { ok: true, sitesAdded: 0, sitesSkipped: 3 },
+  });
+  await act(async () => {
+    expect(await model.importSettings(options)).toEqual({
+      text: 'statusBar.importNothingNew · statusBar.importSkipped',
+      short: 'statusBar.importNothingNewShort · statusBar.importSkippedShort',
+    });
+  });
+  expect(refreshSites).not.toHaveBeenCalled();
 });

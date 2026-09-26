@@ -728,16 +728,6 @@
     "chooseLocalPath": "Выбрать локальную папку",
     "importBookmarks": "Импорт",
     "exportBookmarks": "Экспорт",
-    "importAdded_one": "Добавлена {{count}} закладка",
-    "importAdded_few": "Добавлено {{count}} закладки",
-    "importAdded_many": "Добавлено {{count}} закладок",
-    "importAdded_other": "Добавлено {{count}} закладки",
-    "importSkipped_one": "пропущен {{count}} дубликат",
-    "importSkipped_few": "пропущено {{count}} дубликата",
-    "importSkipped_many": "пропущено {{count}} дубликатов",
-    "importSkipped_other": "пропущено {{count}} дубликата",
-    "importNothingNew": "Нечего импортировать",
-    "exportSuccess": "Экспортировано",
     "sortMode": "Сортировка закладок",
     "sortManual": "Вручную",
     "sortName": "По имени",
@@ -785,7 +775,10 @@
       "limited": "Ограничить до…",
       "count": "Лимит соединений"
     },
-    "maxConnectionsChanged": "Применится после переподключения."
+    "maxConnectionsChanged": "Применится после переподключения.",
+    "footerFolders": "Папки: {{count}}",
+    "footerSites": "Сайты: {{count}}",
+    "footerPaths": "Пути: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -868,7 +861,18 @@
       "connecting": "Подключение",
       "connectFailed": "Не удалось подключиться",
       "disconnected": "Нет подключения"
-    }
+    },
+    "exported": "Экспортировано: {{parts}}",
+    "imported": "Импортировано: {{parts}}",
+    "importAdded": "Добавлено: {{count}}",
+    "importSkipped": "Пропущено дубликатов: {{count}}",
+    "importNothingNew": "Ничего нового для импорта",
+    "exportedShort": "Экспортировано",
+    "importedShort": "Импортировано",
+    "importNothingNewShort": "Ничего нового",
+    "importSkippedShort": "Пропущено: {{count}}",
+    "quitPendingShort": "Выход…",
+    "cancelQuitLong": "Отменить выход"
   },
   "viewToolbar": {
     "toggleLeftPane": "Показать/скрыть левую панель",

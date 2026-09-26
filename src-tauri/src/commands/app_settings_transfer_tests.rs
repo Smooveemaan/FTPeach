@@ -13,6 +13,12 @@ fn import_result_sites_added_is_camel_case() {
         value.get("sitesAdded").is_some(),
         "expected sitesAdded, got {value}"
     );
+    // A bookmarks-only import carries no settings; null here was rejected by
+    // `isImportSettingsResult` and shown as an unexpected error.
+    assert!(
+        value.get("settings").is_none(),
+        "expected no settings key, got {value}"
+    );
 }
 
 #[test]

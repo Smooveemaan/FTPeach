@@ -23,6 +23,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   transferring, and an update's install button always stays whole.
 - The status bar shows transfers in orange, and no longer turns yellow while files are still
   transferring. Disconnected is grey; red now means only a failed connection.
+- After exporting or importing settings, the status bar says what was exported or imported and
+  how many bookmarks were added or skipped as duplicates.
+- When the status bar runs short of room, it shortens its texts instead of cutting them off,
+  and shows the full text in a tooltip.
+- Animations play even when Windows animation effects are turned off. Error messages that
+  fade out no longer vanish at once in that case.
 
 ### Security
 
@@ -76,7 +82,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Help → Documentation opens the user documentation, and the license link in About works.
+- Importing bookmarks without application settings no longer reports an unexpected error, and
+  the imported bookmarks appear right away.- Help → Documentation opens the user documentation, and the license link in About works.
 - The warning about a shortcut already in use names the pane of the other action instead of
   showing `{{side}}`.
 - The question before running a program on your computer shows its usual path, without

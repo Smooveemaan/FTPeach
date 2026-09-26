@@ -712,12 +712,6 @@
     "chooseLocalPath": "选择本地文件夹",
     "importBookmarks": "导入",
     "exportBookmarks": "导出",
-    "importAdded_one": "已添加 {{count}} 个书签",
-    "importAdded_other": "已添加 {{count}} 个书签",
-    "importSkipped_one": "跳过 {{count}} 个重复项",
-    "importSkipped_other": "跳过 {{count}} 个重复项",
-    "importNothingNew": "没有可导入的新内容",
-    "exportSuccess": "已导出",
     "sortMode": "书签排序",
     "sortManual": "手动",
     "sortName": "按名称",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "正在连接",
       "connectFailed": "无法连接",
       "disconnected": "未连接"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "显示/隐藏左侧窗格",

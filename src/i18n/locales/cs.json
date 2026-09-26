@@ -728,16 +728,6 @@
     "chooseLocalPath": "Vybrat místní složku",
     "importBookmarks": "Importovat",
     "exportBookmarks": "Exportovat",
-    "importAdded_one": "Přidána {{count}} záložka",
-    "importAdded_other": "Přidáno {{count}} záložek",
-    "importAdded_few": "Přidány {{count}} záložky",
-    "importAdded_many": "Přidáno {{count}} záložky",
-    "importSkipped_one": "přeskočen {{count}} duplikát",
-    "importSkipped_other": "přeskočeno {{count}} duplikátů",
-    "importSkipped_few": "přeskočeny {{count}} duplikáty",
-    "importSkipped_many": "přeskočeno {{count}} duplikátu",
-    "importNothingNew": "Nic nového k importu",
-    "exportSuccess": "Exportováno",
     "sortMode": "Třídění záložek",
     "sortManual": "Ručně",
     "sortName": "Podle názvu",
@@ -785,7 +775,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -868,7 +861,18 @@
       "connecting": "Připojování",
       "connectFailed": "Nepodařilo se připojit",
       "disconnected": "Není připojeno"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Zobrazit/skrýt levý panel",

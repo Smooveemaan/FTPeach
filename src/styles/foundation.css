@@ -181,21 +181,6 @@ button, input, select, textarea {
   outline-offset: 2px;
 }
 
-/* Windows "Show animations" off: nothing slides, fades or pulses. State still
-   changes, just at once. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    /* A positive duration would animate even normally instant geometry:
-       transition-property defaults to all, including drag coordinates. */
-    transition-duration: 0s !important;
-    scroll-behavior: auto !important;
-  }
-}
-
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -223,4 +208,31 @@ button, input, select, textarea {
    button centers them geometrically, regardless of surrounding line-height. */
 .icon-window-close {
   display: block;
+}
+
+/* A short message taking the place of a status line's usual content (see
+   useNoticeSwap): 0.3s that content fades out, 0.3s the message fades in, it
+   stays, 0.3s it fades out -- 8s in all, NOTICE_MS in useStatusNotice.ts,
+   which then removes it -- and 0.3s the content fades back in, all together. */
+.is-leaving .notice-replaced {
+  animation: fade-out 0.3s ease forwards;
+}
+.is-returning .notice-replaced {
+  animation: fade-in 0.3s ease;
+}
+/* Mounted 0.3s after the message arrives, so it fades out 7.4s later. */
+.notice-text {
+  animation:
+    fade-in 0.3s ease,
+    fade-out 0.3s ease 7.4s forwards;
+}
+
+/* Read by screen readers, not shown. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

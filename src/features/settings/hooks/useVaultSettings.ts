@@ -92,7 +92,7 @@ export function useVaultSettings(): VaultSettingsModel {
       setVaultMessage('');
       setVaultUnlockInvalid(false);
       vaultUnlockErrorTimerRef.current = null;
-    }, 1800);
+    }, 2000);
   };
 
   const runVaultAction = async (action: () => Promise<CommandResult>) => {

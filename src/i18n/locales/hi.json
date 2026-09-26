@@ -712,12 +712,6 @@
     "chooseLocalPath": "स्थानीय फ़ोल्डर चुनें",
     "importBookmarks": "आयात करें",
     "exportBookmarks": "निर्यात करें",
-    "importAdded_one": "{{count}} बुकमार्क जोड़ा गया",
-    "importAdded_other": "{{count}} बुकमार्क जोड़े गए",
-    "importSkipped_one": "{{count}} डुप्लिकेट छोड़ा गया",
-    "importSkipped_other": "{{count}} डुप्लिकेट छोड़े गए",
-    "importNothingNew": "आयात करने के लिए कुछ भी नया नहीं है",
-    "exportSuccess": "निर्यात किया गया",
     "sortMode": "बुकमार्क सॉर्टिंग",
     "sortManual": "मैनुअल",
     "sortName": "नाम से",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "कनेक्ट हो रहा है",
       "connectFailed": "कनेक्ट नहीं हो सका",
       "disconnected": "कनेक्ट नहीं है"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "बायां फलक दिखाएँ/छिपाएँ",

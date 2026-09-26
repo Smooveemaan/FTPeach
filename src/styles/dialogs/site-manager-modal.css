@@ -9,8 +9,17 @@
   padding: 10px 14px;
   background: var(--bg-panel-alt);
 }
+/* The list's footer is always there and a fixed height, which the list gives
+   up (see .site-manage-list): the window is as tall as it was without it. */
+.modal-site-manager {
+  --site-manager-footer-height: 26px;
+}
 .modal-site-manager:has(.site-manager-footer) .modal-footer {
-  padding: 5px 14px;
+  box-sizing: border-box;
+  height: var(--site-manager-footer-height);
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 0 14px;
   background: var(--bg-base);
 }
 
@@ -45,12 +54,19 @@
   }
 }
 
+/* Set like the app's status bar, whose messages it repeats. */
 .site-manager-footer {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-faint);
+}
+/* Spaced like the status bar's Left and Right. */
+.site-manager-counts {
+  display: inline-flex;
+  gap: 12px;
 }
 .site-manager-footer.truncated {
   mask-image: var(--truncate-fade);

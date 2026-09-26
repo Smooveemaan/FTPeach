@@ -712,12 +712,6 @@
     "chooseLocalPath": "Lokale map kiezen",
     "importBookmarks": "Importeren",
     "exportBookmarks": "Exporteren",
-    "importAdded_one": "{{count}} bladwijzer toegevoegd",
-    "importAdded_other": "{{count}} bladwijzers toegevoegd",
-    "importSkipped_one": "{{count}} duplicaat overgeslagen",
-    "importSkipped_other": "{{count}} duplicaten overgeslagen",
-    "importNothingNew": "Niets nieuws om te importeren",
-    "exportSuccess": "Geëxporteerd",
     "sortMode": "Sorteren van bladwijzers",
     "sortManual": "Handmatig",
     "sortName": "Op naam",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Verbinding maken",
       "connectFailed": "Er kon geen verbinding worden gemaakt",
       "disconnected": "Geen verbinding"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Linkerpaneel weergeven/verbergen",

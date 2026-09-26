@@ -728,16 +728,6 @@
     "chooseLocalPath": "Вибрати локальну папку",
     "importBookmarks": "Імпорт",
     "exportBookmarks": "Експорт",
-    "importAdded_one": "Додано {{count}} закладку",
-    "importAdded_few": "Додано {{count}} закладки",
-    "importAdded_many": "Додано {{count}} закладок",
-    "importAdded_other": "Додано {{count}} закладки",
-    "importSkipped_one": "пропущено {{count}} дублікат",
-    "importSkipped_few": "пропущено {{count}} дублікати",
-    "importSkipped_many": "пропущено {{count}} дублікатів",
-    "importSkipped_other": "пропущено {{count}} дублікати",
-    "importNothingNew": "Немає нічого нового для імпорту",
-    "exportSuccess": "Експортовано",
     "sortMode": "Сортування закладок",
     "sortManual": "Вручну",
     "sortName": "За назвою",
@@ -785,7 +775,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Папки: {{count}}",
+    "footerSites": "Сайти: {{count}}",
+    "footerPaths": "Шляхи: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -868,7 +861,18 @@
       "connecting": "Підключення",
       "connectFailed": "Не вдалося підключитися",
       "disconnected": "Не підключено"
-    }
+    },
+    "exported": "Експортовано: {{parts}}",
+    "imported": "Імпортовано: {{parts}}",
+    "importAdded": "Додано: {{count}}",
+    "importSkipped": "Пропущено дублікатів: {{count}}",
+    "importNothingNew": "Нічого нового для імпорту",
+    "exportedShort": "Експортовано",
+    "importedShort": "Імпортовано",
+    "importNothingNewShort": "Нічого нового",
+    "importSkippedShort": "Пропущено: {{count}}",
+    "quitPendingShort": "Вихід…",
+    "cancelQuitLong": "Скасувати вихід"
   },
   "viewToolbar": {
     "toggleLeftPane": "Показати/сховати ліву панель",

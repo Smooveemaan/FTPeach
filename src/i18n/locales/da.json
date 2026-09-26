@@ -712,12 +712,6 @@
     "chooseLocalPath": "Vælg lokal mappe",
     "importBookmarks": "Importér",
     "exportBookmarks": "Eksportér",
-    "importAdded_one": "Tilføjede {{count}} bogmærke",
-    "importAdded_other": "Tilføjede {{count}} bogmærker",
-    "importSkipped_one": "sprang {{count}} duplikat over",
-    "importSkipped_other": "sprang {{count}} duplikater over",
-    "importNothingNew": "Intet nyt at importere",
-    "exportSuccess": "Eksporteret",
     "sortMode": "Sortering af bogmærker",
     "sortManual": "Manuel",
     "sortName": "Efter navn",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Opretter forbindelse",
       "connectFailed": "Det var ikke muligt at oprette forbindelse",
       "disconnected": "Ikke forbundet"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Vis/skjul venstre rude",

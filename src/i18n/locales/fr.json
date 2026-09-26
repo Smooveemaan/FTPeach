@@ -720,12 +720,6 @@
     "chooseLocalPath": "Choisir un dossier local",
     "importBookmarks": "Importer",
     "exportBookmarks": "Exporter",
-    "importAdded_one": "{{count}} signet ajouté",
-    "importAdded_other": "{{count}} signets ajoutés",
-    "importSkipped_one": "{{count}} doublon ignoré",
-    "importSkipped_other": "{{count}} doublons ignorés",
-    "importNothingNew": "Rien de nouveau à importer",
-    "exportSuccess": "Exporté",
     "sortMode": "Tri des signets",
     "sortManual": "Manuel",
     "sortName": "Par nom",
@@ -745,8 +739,6 @@
     "expandFolder": "Développer « {{name}} »",
     "collapseFolder": "Réduire « {{name}} »",
     "noFolder": "Aucun dossier",
-    "importAdded_many": "{{count}} signets ajoutés",
-    "importSkipped_many": "{{count}} doublons ignorés",
     "maxConnectionsHint": "At least 2: one connection browses folders, the rest transfer files. Each pane has its own limit.",
     "encodingHint": "Ne le changez que si les noms de fichiers de ce serveur s’affichent mal.",
     "encodings": {
@@ -775,7 +767,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -858,7 +853,18 @@
       "connecting": "Connexion en cours",
       "connectFailed": "Impossible de se connecter",
       "disconnected": "Non connecté"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Afficher/masquer le volet de gauche",

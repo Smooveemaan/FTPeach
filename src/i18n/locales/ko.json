@@ -712,12 +712,6 @@
     "chooseLocalPath": "로컬 폴더 선택",
     "importBookmarks": "가져오기",
     "exportBookmarks": "내보내기",
-    "importAdded_one": "북마크 {{count}}개 추가됨",
-    "importAdded_other": "북마크 {{count}}개 추가됨",
-    "importSkipped_one": "중복 {{count}}개 건너뜀",
-    "importSkipped_other": "중복 {{count}}개 건너뜀",
-    "importNothingNew": "새로 가져올 항목이 없습니다",
-    "exportSuccess": "내보내기 완료",
     "sortMode": "북마크 정렬",
     "sortManual": "수동",
     "sortName": "이름순",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "연결 중",
       "connectFailed": "연결할 수 없습니다",
       "disconnected": "연결되지 않음"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "왼쪽 창 표시/숨기기",

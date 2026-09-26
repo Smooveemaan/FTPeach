@@ -26,19 +26,17 @@ import { useSiteManagerMutations } from './useSiteManagerMutations.ts';
 import { useSiteSearch } from './useSiteSearch.ts';
 import { useSiteSecrets } from './useSiteSecrets.ts';
 import { useTruncated } from '../../hooks/useTruncated.ts';
+import { useFitLevel } from '../../hooks/useFitLevel.ts';
+import NoticeText from '../../components/NoticeText.tsx';
+import { useNoticeSwap, useStatusNotice } from '../../hooks/useStatusNotice.ts';
+import type { NoticeMessage } from '../../hooks/useStatusNotice.ts';
 import { entriesForManager, sortManagedEntries } from './siteManagerModel.ts';
 import type { SiteManagerKind, SiteSortMode } from './siteManagerModel.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
 import type { SiteForm } from './siteForm.ts';
-import type { Translate } from '../../shared/translate.ts';
 import type { SavedSite, SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 import { api } from '../../platform/api/index.ts';
-
-interface ImportSummary {
-  sitesAdded: number;
-  sitesSkipped: number;
-}
 
 export interface SiteManagerDialogProps {
   managerKind?: SiteManagerKind;
@@ -49,24 +47,12 @@ export interface SiteManagerDialogProps {
   onApplyLayout: (layout: SiteLayout) => Promise<SiteMutationResult | undefined>;
   onSaveFolder: (payload: SavedSite) => Promise<SiteMutationResult | undefined>;
   onDeleteFolder: (id: string) => Promise<SiteMutationResult | undefined>;
-  onImport: (options: SettingsTransferOptions) => Promise<ImportSummary | undefined>;
-  onExport: (options: SettingsTransferOptions) => Promise<boolean | undefined>;
+  /** Resolve to the message the footer shows, or undefined when cancelled or failed. */
+  onImport: (options: SettingsTransferOptions) => Promise<NoticeMessage | undefined>;
+  onExport: (options: SettingsTransferOptions) => Promise<NoticeMessage | undefined>;
   onConnect: (site: ManagedSite) => void;
   onVaultUnlockRequired: (retry: () => void) => void;
   onClose: () => void;
-}
-
-type TransferStatus = { kind: 'import'; added: number; skipped: number } | { kind: 'export' };
-
-function siteManagerFooterMessage(status: TransferStatus, t: Translate): string {
-  if (status.kind === 'export') return t('siteManagerDialog.exportSuccess');
-  if (status.added === 0 && status.skipped === 0) return t('siteManagerDialog.importNothingNew');
-  return [
-    t('siteManagerDialog.importAdded', { count: status.added }),
-    status.skipped > 0 ? t('siteManagerDialog.importSkipped', { count: status.skipped }) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
 }
 
 const collapsedFolderIds = new Set<string>();
@@ -116,9 +102,30 @@ export default function SiteManagerDialog({
 
   const [sortMode, setSortMode] = useState<SiteSortMode>('manual');
   const [rsaKeySelected, setRsaKeySelected] = useState(false);
-  const [transferStatus, setTransferStatus] = useState<TransferStatus | null>(null);
-  const footerMessage = transferStatus ? siteManagerFooterMessage(transferStatus, t) : null;
-  const [footerRef, footerTruncated] = useTruncated<HTMLDivElement>([footerMessage]);
+  // The footer counts what the manager holds; an export or import started here
+  // reports in its place, the way the app's status bar does.
+  const [notice, showNotice] = useStatusNotice();
+  const { showingNotice, phaseClass, onReplacedAnimationEnd } = useNoticeSwap(notice);
+  const folderCount = managedEntries.filter((entry) => entry.kind === 'folder').length;
+  // Separate values, spaced like the status bar's Left and Right; the dot
+  // belongs to messages, which are one phrase.
+  const footerCounts = [
+    t('siteManagerDialog.footerFolders', { count: folderCount }),
+    t(isLocalPathManager ? 'siteManagerDialog.footerPaths' : 'siteManagerDialog.footerSites', {
+      count: managedEntries.length - folderCount,
+    }),
+  ];
+  // A message too long for the footer falls back to its short form.
+  const [footerFitRef, footerFitLevel] = useFitLevel<HTMLDivElement>(
+    1,
+    `${showingNotice}|${notice?.id}`,
+  );
+  const [footerRef, footerTruncated] = useTruncated<HTMLDivElement>([
+    showingNotice,
+    notice?.id,
+    footerFitLevel,
+    footerCounts.join(),
+  ]);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [showImportOptions, setShowImportOptions] = useState(false);
   const displayEntries = useMemo(
@@ -324,18 +331,13 @@ export default function SiteManagerDialog({
   });
 
   const handleImportConfirm = async (options: SettingsTransferOptions) => {
-    const summary = await onImport(options);
-    if (summary)
-      setTransferStatus({
-        kind: 'import',
-        added: summary.sitesAdded,
-        skipped: summary.sitesSkipped,
-      });
+    const message = await onImport(options);
+    if (message) showNotice(message);
   };
 
   const handleExportConfirm = async (options: SettingsTransferOptions) => {
-    const ok = await onExport(options);
-    if (ok) setTransferStatus({ kind: 'export' });
+    const message = await onExport(options);
+    if (message) showNotice(message);
   };
 
   const toggleFolder = (id: string) => {
@@ -418,14 +420,30 @@ export default function SiteManagerDialog({
               confirmDisabled={!canSubmit || saving}
             />
           ) : (
-            footerMessage && (
-              <div
-                ref={footerRef}
-                className={`site-manager-footer${footerTruncated ? ' truncated' : ''}`}
-              >
-                {footerMessage}
-              </div>
-            )
+            <div
+              ref={(el) => {
+                footerRef.current = el;
+                footerFitRef.current = el;
+              }}
+              className={`site-manager-footer${phaseClass}${footerTruncated ? ' truncated' : ''}`}
+            >
+              {!showingNotice && (
+                <span
+                  className="site-manager-counts notice-replaced"
+                  onAnimationEnd={onReplacedAnimationEnd}
+                >
+                  {footerCounts.map((count) => (
+                    <span key={count}>{count}</span>
+                  ))}
+                </span>
+              )}
+              {/* Stays mounted so each message is announced. */}
+              <span role="status">
+                {showingNotice && notice && (
+                  <NoticeText key={notice.id} notice={notice} short={footerFitLevel >= 1} />
+                )}
+              </span>
+            </div>
           )
         }
       >

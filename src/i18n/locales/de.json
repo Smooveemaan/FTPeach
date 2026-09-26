@@ -712,12 +712,6 @@
     "chooseLocalPath": "Lokalen Ordner auswählen",
     "importBookmarks": "Importieren",
     "exportBookmarks": "Exportieren",
-    "importAdded_one": "{{count}} Lesezeichen hinzugefügt",
-    "importAdded_other": "{{count}} Lesezeichen hinzugefügt",
-    "importSkipped_one": "{{count}} Duplikat übersprungen",
-    "importSkipped_other": "{{count}} Duplikate übersprungen",
-    "importNothingNew": "Nichts Neues zum Importieren",
-    "exportSuccess": "Exportiert",
     "sortMode": "Lesezeichen sortieren",
     "sortManual": "Manuell",
     "sortName": "Nach Namen",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Wird verbunden",
       "connectFailed": "Verbindung konnte nicht hergestellt werden",
       "disconnected": "Nicht verbunden"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Linken Bereich ein-/ausblenden",

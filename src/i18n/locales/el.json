@@ -712,12 +712,6 @@
     "chooseLocalPath": "Επιλογή τοπικού φακέλου",
     "importBookmarks": "Εισαγωγή",
     "exportBookmarks": "Εξαγωγή",
-    "importAdded_one": "Προστέθηκε {{count}} σελιδοδείκτης",
-    "importAdded_other": "Προστέθηκαν {{count}} σελιδοδείκτες",
-    "importSkipped_one": "παραλείφθηκε {{count}} διπλότυπο",
-    "importSkipped_other": "παραλείφθηκαν {{count}} διπλότυπα",
-    "importNothingNew": "Δεν υπάρχει τίποτα νέο για εισαγωγή",
-    "exportSuccess": "Έγινε εξαγωγή",
     "sortMode": "Ταξινόμηση σελιδοδεικτών",
     "sortManual": "Χειροκίνητα",
     "sortName": "Κατά όνομα",
@@ -765,7 +759,10 @@
       "limited": "Limit to…",
       "count": "Connection limit"
     },
-    "maxConnectionsChanged": "Applies after reconnecting."
+    "maxConnectionsChanged": "Applies after reconnecting.",
+    "footerFolders": "Folders: {{count}}",
+    "footerSites": "Sites: {{count}}",
+    "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -848,7 +845,18 @@
       "connecting": "Γίνεται σύνδεση",
       "connectFailed": "Δεν ήταν δυνατή η σύνδεση",
       "disconnected": "Χωρίς σύνδεση"
-    }
+    },
+    "exported": "Exported: {{parts}}",
+    "imported": "Imported: {{parts}}",
+    "importAdded": "Added: {{count}}",
+    "importSkipped": "Duplicates skipped: {{count}}",
+    "importNothingNew": "Nothing new to import",
+    "exportedShort": "Exported",
+    "importedShort": "Imported",
+    "importNothingNewShort": "Nothing new",
+    "importSkippedShort": "Skipped: {{count}}",
+    "quitPendingShort": "Quitting…",
+    "cancelQuitLong": "Cancel quit"
   },
   "viewToolbar": {
     "toggleLeftPane": "Εμφάνιση/απόκρυψη αριστερού πλαισίου",

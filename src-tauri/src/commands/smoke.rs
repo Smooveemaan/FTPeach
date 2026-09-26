@@ -9,10 +9,14 @@ use tauri::{Manager, State};
 pub async fn smoke_backend_checks(
     store: State<'_, Store>,
     vault: State<'_, Vault>,
+    #[allow(unused_variables)] window: tauri::WebviewWindow,
 ) -> Result<String, String> {
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
         return Err("smoke checks are disabled".into());
     }
+
+    #[cfg(windows)]
+    crate::runtime::window_scale::smoke_check(&window).await?;
 
     let mut patch = Map::new();
     patch.insert("dateFormat".into(), Value::String("yyyy-MM-dd".into()));

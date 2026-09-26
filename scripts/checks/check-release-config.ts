@@ -143,8 +143,12 @@ for (const endpoint of endpoints) {
 const permissions = capabilities?.permissions;
 assert.ok(Array.isArray(permissions), 'Tauri capability permissions must be an array');
 assert.ok(
-  permissions.includes('core:webview:allow-set-webview-zoom'),
-  'Interface scaling requires the WebView set-zoom permission',
+  permissions.includes('allow-app-set-interface-scale'),
+  'Interface scaling requires the bounded app scale command',
+);
+assert.ok(
+  !permissions.includes('core:webview:allow-set-webview-zoom'),
+  'Direct WebView zoom bypasses native DPI compensation',
 );
 assert.ok(!permissions.includes('core:default'), 'Do not grant the broad core:default permission');
 assert.ok(

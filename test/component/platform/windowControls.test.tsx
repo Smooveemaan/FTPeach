@@ -58,7 +58,7 @@ test('unmount releases a subscription that completes asynchronously', async () =
   expect(win.isMaximized).not.toHaveBeenCalled();
 });
 
-test('out of order resize responses cannot restore stale maximized state', async () => {
+test('resize bursts share one pending read and do not publish stale maximized state', async () => {
   const win = nativeWindow();
   const release = vi.fn();
   let resize!: () => void;
@@ -73,17 +73,40 @@ test('out of order resize responses cannot restore stale maximized state', async
   const next = deferred<boolean>();
   win.isMaximized = vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(next.promise);
   await act(async () => {
-    resize();
-    resize();
+    for (let index = 0; index < 50; index += 1) resize();
+  });
+  expect(win.isMaximized).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    old.resolve(true);
+  });
+  expect(win.isMaximized).toHaveBeenCalledTimes(2);
+  expect(result.current.maximized).toBe(false);
+  await act(async () => {
     next.resolve(true);
   });
   expect(result.current.maximized).toBe(true);
-  await act(async () => {
-    old.resolve(false);
-  });
-  expect(result.current.maximized).toBe(true);
+  expect(win.isMaximized).toHaveBeenCalledTimes(2);
   unmount();
   expect(release).toHaveBeenCalledTimes(1);
+});
+
+test('unmount drops a resize read queued behind an in-flight request', async () => {
+  const pending = deferred<boolean>();
+  const win = nativeWindow();
+  win.isMaximized = vi.fn(() => pending.promise);
+  let resize!: () => void;
+  win.onResized = async (callback) => {
+    resize = callback;
+    return vi.fn<() => void>();
+  };
+  const load = async () => win;
+  const { unmount } = renderHook(() => useWindowControls(false, load, true));
+  await act(async () => {});
+  resize();
+  expect(win.isMaximized).toHaveBeenCalledTimes(1);
+  unmount();
+  await act(async () => pending.resolve(false));
+  expect(win.isMaximized).toHaveBeenCalledTimes(1);
 });
 
 test('commands honor current tray preference and report native failures', async () => {

@@ -6,6 +6,13 @@
 
 ## Current map
 
+Theme changes use `WebviewWindow.setBackgroundColor` to update both the host window
+and WebView2's default background with an opaque color. Updating only `Window` leaves
+the webview background at its startup color.
+
+Viewport constraints use CSS viewport units in `foundation.css`; resizing does not
+write pixel dimensions back into inherited root custom properties from JavaScript.
+
 - `app/` composes dialogs, commands, bootstrap and status UI. `Application` wires feature
   facades and renders the shell; `useApplicationMenuCommands` owns the global keyboard/menu
   command surface. `applicationWorkspaceModel` maps pane, transfer, log and layout state to the
@@ -98,8 +105,11 @@ Preferences that every row reads have an explicit owner rather than an ambient g
 - **Date format.** `features/settings/dateFormat.ts` owns the preference. `createDateFormatter`
   is pure, so a formatter can be built and asserted with no ambient state to reset;
   `useDateFormatter()` subscribes the components that render timestamps.
-- **Interface scale.** `platform/interfaceScale.ts` owns both halves — `applyInterfaceScale`
-  writes the `--interface-scale` custom property, `getInterfaceScale` reads it.
+- **Interface scale.** `platform/interfaceScale.ts` sends the user preference to
+  `app_set_interface_scale`. Layout coordinates stay in CSS pixels (`--interface-scale`
+  remains 1). On Windows, `runtime/window_scale.rs` fixes WebView2 rasterization at 1
+  and applies monitor DPI times the user factor through page zoom. Native DPI-change
+  events reapply the latest in-memory preference; other platforms use ordinary page zoom.
 
 `shared/asyncFailure.ts`'s failure sink is the one global on purpose; the reason is
 written at the top of that file.

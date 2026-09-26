@@ -12,6 +12,9 @@ pub(crate) mod update_staging;
 pub(crate) mod updater;
 pub(crate) mod vault_auto_lock;
 pub(crate) mod window_bounds;
+#[cfg(windows)]
+pub(crate) mod window_resize;
+pub(crate) mod window_scale;
 
 pub(crate) mod confirmation_window;
 pub(crate) mod startup;

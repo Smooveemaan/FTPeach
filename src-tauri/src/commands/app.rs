@@ -5,6 +5,27 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
+/// Applies the main window's user zoom; native code owns monitor DPI compensation.
+#[tauri::command]
+pub async fn app_set_interface_scale(
+    window: tauri::WebviewWindow,
+    scale: f64,
+) -> CommandResult<()> {
+    if window.label() != "main" {
+        return Err(CommandError::new(
+            crate::ipc::ErrorCode::PermissionDenied,
+            "Main window only",
+        ));
+    }
+    window
+        .state::<crate::runtime::window_scale::InterfaceScale>()
+        .set(scale)
+        .map_err(|message| CommandError::new(crate::ipc::ErrorCode::InvalidInput, message))?;
+    crate::runtime::window_scale::apply(&window)
+        .await
+        .map_err(CommandError::from)
+}
+
 #[tauri::command]
 pub fn app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()

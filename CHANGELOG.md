@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Resizing the window is smoother on Windows, with reduced black edge artifacts
+  and no flashing white line in the verified multi-monitor setup.
+- The embedded browser background follows the selected theme; text-edge fades
+  refresh shortly after resizing settles.
+
 - Dragging files to another disk now copies them, as in Windows Explorer. Hold Shift to move
   them instead.
 - Dragging files with the right mouse button now asks whether to copy or move them.

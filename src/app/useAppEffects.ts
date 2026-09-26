@@ -36,14 +36,7 @@ export function useAppEffects({
   }, [language]);
 
   useEffect(() => {
-    void applyInterfaceScale(interfaceScale);
-    const updateViewportVars = () => {
-      document.documentElement.style.setProperty('--app-viewport-w', `${window.innerWidth}px`);
-      document.documentElement.style.setProperty('--app-viewport-h', `${window.innerHeight}px`);
-    };
-    updateViewportVars();
-    window.addEventListener('resize', updateViewportVars);
-    return () => window.removeEventListener('resize', updateViewportVars);
+    void applyInterfaceScale(interfaceScale).catch(reportAsyncFailure);
   }, [interfaceScale]);
 
   useEffect(() => {

@@ -76,6 +76,7 @@ fn main() {
         "app_system_hour_cycle",
         "app_open_external",
         "app_set_window_border",
+        "app_set_interface_scale",
         "debug_open_devtools",
         "app_reset_layout",
         "log_recent",

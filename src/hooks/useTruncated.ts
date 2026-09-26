@@ -44,9 +44,18 @@ export function useTruncated<T extends HTMLElement = HTMLDivElement>(
       setTruncated(clipped);
     };
     check();
-    const observer = new ResizeObserver(check);
+    // Measuring text ranges is cosmetic work; keep it out of each resize frame.
+    // Content changes still run check() immediately through this effect's deps.
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(check, 100);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(resizeTimer);
+      observer.disconnect();
+    };
     // Re-checks on every caller-supplied dep in addition to the ResizeObserver,
     // which only fires on the element's own box size — not on content swaps
     // (e.g. a recycled virtualized row) that leave the box size unchanged.

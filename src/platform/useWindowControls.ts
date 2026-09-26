@@ -45,7 +45,7 @@ export function useWindowControls(
 
   useEffect(() => {
     if (!available) return;
-    const session = { cancelled: false, request: 0 };
+    const session = { cancelled: false };
     const isCancelled = () => session.cancelled;
     let unlisten: (() => void) | undefined;
     reportRejection(
@@ -53,10 +53,25 @@ export function useWindowControls(
         const nativeWindow = await getWindow();
         if (isCancelled()) return;
         windowRef.current = nativeWindow;
+        let refreshing = false;
+        let refreshPending = false;
+        const hasPendingRefresh = () => refreshPending;
         const refresh = async () => {
-          const request = ++session.request;
-          const value = await nativeWindow.isMaximized();
-          if (!isCancelled() && request === session.request) setMaximized(value);
+          if (isCancelled()) return;
+          refreshPending = true;
+          if (refreshing) return;
+          refreshing = true;
+          try {
+            do {
+              refreshPending = false;
+              const value = await nativeWindow.isMaximized();
+              if (!isCancelled() && !hasPendingRefresh()) setMaximized(value);
+              // Resize events received during the request need only one fresh
+              // read, rather than one concurrent IPC call per intermediate size.
+            } while (hasPendingRefresh() && !isCancelled());
+          } finally {
+            refreshing = false;
+          }
         };
         const release = await nativeWindow.onResized(handler(refresh));
         if (isCancelled()) {

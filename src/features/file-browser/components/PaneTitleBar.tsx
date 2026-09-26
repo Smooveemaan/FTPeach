@@ -44,8 +44,7 @@ export function usePaneSourceMinWidth({
   onWidthChange,
 }: PaneSourceMinWidthOptions): PaneSourceMinWidthModel {
   const sourceRef = useRef<HTMLElement>(null);
-  const [sourceWidth, setSourceWidth] = useState(0);
-  const [formWidth, setFormWidth] = useState(0);
+  const [minWidth, setMinWidth] = useState<number>();
   useLayoutEffect(() => {
     const element = sourceRef.current;
     if (!element) return undefined;
@@ -53,23 +52,39 @@ export function usePaneSourceMinWidth({
     // the address field there may shrink (down to its min-width). The pane
     // takes the rest of the row as its floor, so the port is never cut off
     // whatever the protocol, its warning or the language's source label add.
+    let previousWidth: number | undefined | null = null;
     const measure = () => {
-      setSourceWidth(element.getBoundingClientRect().width);
-      const row = element.querySelector<HTMLElement>('.connection-row');
-      const address = row?.querySelector<HTMLElement>('.field-host, .field-webdav-url');
-      const pane = element.closest<HTMLElement>('.pane');
-      setFormWidth(
-        row && address && pane
-          ? Math.ceil(
-              row.scrollWidth -
-                address.offsetWidth +
-                (parseFloat(getComputedStyle(address).minWidth) || 0) +
-                pane.offsetWidth -
-                row.clientWidth,
-            )
-          : 0,
-      );
+      let nextWidth: number | undefined;
+      if (disconnected) {
+        const row = element.querySelector<HTMLElement>('.connection-row');
+        const address = row?.querySelector<HTMLElement>('.field-host, .field-webdav-url');
+        const pane = element.closest<HTMLElement>('.pane');
+        nextWidth =
+          row && address && pane
+            ? Math.ceil(
+                row.scrollWidth -
+                  address.offsetWidth +
+                  (parseFloat(getComputedStyle(address).minWidth) || 0) +
+                  pane.offsetWidth -
+                  row.clientWidth,
+              )
+            : undefined;
+        if (nextWidth === 0) nextWidth = undefined;
+      } else {
+        const sourceWidth = element.getBoundingClientRect().width;
+        nextWidth =
+          sourceWidth > 0
+            ? 24 + sourceWidth + ITEM_WIDTH + DIVIDER_WIDTH + ITEM_WIDTH + 12
+            : undefined;
+      }
+      // The form stretches with the pane, but its minimum usually stays fixed.
+      // Publish only that minimum, not intermediate widths of the whole form.
+      if (nextWidth !== previousWidth) {
+        previousWidth = nextWidth;
+        setMinWidth(nextWidth);
+      }
     };
+    measure();
     const resizes = new ResizeObserver(measure);
     resizes.observe(element);
     const mutations = new MutationObserver(measure);
@@ -78,12 +93,7 @@ export function usePaneSourceMinWidth({
       resizes.disconnect();
       mutations.disconnect();
     };
-  }, []);
-  const minWidth = disconnected
-    ? formWidth || undefined
-    : sourceWidth > 0
-      ? 24 + sourceWidth + ITEM_WIDTH + DIVIDER_WIDTH + ITEM_WIDTH + 12
-      : undefined;
+  }, [disconnected]);
   useLayoutEffect(() => onWidthChange?.(minWidth), [minWidth, onWidthChange]);
   return { sourceRef, paneStyle: minWidth ? { ...style, minWidth } : style };
 }

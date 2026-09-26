@@ -1,5 +1,13 @@
 # Native and dependency validation
 
+The packaged smoke reads the Windows WebView2 controller to verify rasterization
+scale 1, disabled automatic rasterization changes, and page zoom equal to monitor
+DPI times the latest user preference. Unit tests reject invalid zoom requests;
+component tests ensure the renderer does not multiply by its own (already zoomed)
+devicePixelRatio. Physical moves between monitors and transient resize bands still
+require manual verification, including the original frame/shadow and UI scales
+80%, 100%, 125% and 150%. No screenshot can prove the absence of a brief flash.
+
 ## Release gates
 
 The release workflow requires both the shared checks (including packaged smoke and cargo deny) and the reusable protocol compatibility workflow before publishing. Compatibility runs the ignored Docker integration target explicitly; it publishes result counts or a NOT RUN reason in the job summary. Full stdout, including ignored/skipped counts, remains in CI job logs. A setup failure is not a pass.
@@ -73,6 +81,13 @@ an installer. A crashed/unresponsive renderer has a bounded fallback with a log
 diagnostic, not a guarantee of preserving changes it never sent.
 
 ## Reproduction
+
+The Windows regression test
+`runtime::window_resize::tests::container_matches_client_before_downstream_size_handler`
+resizes hidden native windows and checks the child bounds inside the downstream
+`WM_SIZE` handler. It verifies message ordering, not WebView2/DWM presentation.
+Visible resize artifacts still require a manual run, including rapid expansion
+and contraction, maximize/restore, and light/dark themes.
 
 Run `npm run check` as one invocation. Native smoke uses `npm run build:packaged-smoke` followed by `npm run test:packaged-smoke`; see [harness instructions](../scripts/packaged-smoke/README.md). Run `cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses` for a fresh dependency check.
 

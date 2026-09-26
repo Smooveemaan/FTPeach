@@ -75,9 +75,15 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
 
     let store = app.state::<Store>().inner().clone();
     if let Some(main_window) = app.get_webview_window("main") {
+        #[cfg(windows)]
+        super::window_resize::install(&main_window);
+        super::window_scale::refresh(&main_window);
         let persister = window_bounds::BoundsPersister::new(store.clone());
         let window_for_events = main_window.clone();
         main_window.on_window_event(move |event| match event {
+            tauri::WindowEvent::ScaleFactorChanged { .. } => {
+                super::window_scale::refresh(&window_for_events);
+            }
             tauri::WindowEvent::Resized(_) | tauri::WindowEvent::Moved(_) => {
                 persister.schedule(window_for_events.clone());
             }

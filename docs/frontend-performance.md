@@ -1,5 +1,53 @@
 # Frontend performance
 
+## Window resizing
+
+On Windows, WebView2's `ShouldDetectMonitorScaleChanges` is disabled and
+`RasterizationScale` is fixed at 1;
+page zoom is the native monitor scale times the user's interface-scale preference.
+`runtime/window_scale.rs` applies these together on the UI thread at startup, on
+preference changes, and on native `ScaleFactorChanged` events. WRY retains ownership
+of the bounds in physical pixels. This uses the supported controller API, without
+changing Windows settings or passing a browser scale flag. Failed controller updates
+attempt to restore the previous rasterization, zoom and detection settings.
+
+The controller-API version passed a [manual resize and monitor-scaling check](manual-checks.md#webview-rasterization-and-monitor-scaling-during-resize):
+the white line was absent, black edge artifacts were minimal, and interface size
+changed correctly between the external and laptop displays. That run used a
+temporary shadowless build. That diagnostic override has been removed;
+the production configuration retains the existing frame/shadow. The
+[repeat with that frame restored](manual-checks.md#resize-with-the-original-window-frame-restored)
+kept the white line absent, but made black edge areas more noticeable. The
+remaining black-edge issue is not resolved.
+The packaged smoke checks actual controller properties; it cannot detect transient
+edge pixels or simulate a physical monitor transition.
+
+On Windows, `runtime/window_resize.rs` sizes the main WebView's native container
+in `WM_WINDOWPOSCHANGED`, before forwarding the message to the normal WRY/Tao
+handlers. WRY's `WM_SIZE` path updates the WebView2 controller before its container;
+the hook brings the container forward without replacing the controller update.
+It runs on the window thread, leaves position/focus/z-order alone, skips minimized
+windows, and removes its subclass when the parent is destroyed. It applies only
+to the main window. It does not synchronize Chromium's presentation with DWM.
+
+`useTruncated` waits for 100 ms without an observed size change before remeasuring
+text for fade masks. Mounting and content changes still measure immediately. Cleanup
+cancels the pending measurement. This defers cosmetic range measurements while the
+window or a column is being resized; it does not delay the layout itself.
+
+`useOverflowFold` keeps the observed width outside React state. It updates state only
+when the number of toolbar buttons moved into the overflow menu changes. The observer
+stays subscribed across renders and uses the current button widths and order.
+The effect on native resize latency still needs manual verification.
+
+`useWindowControls` allows one native maximized-state query at a time. Resize events
+received while it runs request a single follow-up read; obsolete responses are not
+published, and unmounting drops the pending read.
+
+`usePaneSourceMinWidth` publishes only the minimum width used by the current pane
+mode. A disconnected pane does not store the stretching form's full width in React
+state. Its minimum still includes the fixed controls and the address field's floor.
+
 ## Bundle baseline
 
 Production bundle sizes are measured with `npm run build`. Sizes below are minified output from

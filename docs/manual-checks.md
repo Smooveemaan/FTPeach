@@ -18,6 +18,34 @@ Record a run as:
 
 Repeat the run and update the record when the behavior it covers changes.
 
+### WebView rasterization and monitor scaling during resize
+
+- Version: 0.2.3 development, working tree with `runtime/window_scale.rs`.
+- Date: 2026-09-27
+- Setup: Windows WebView2, production frontend with a Rust debug build, native
+  controller rasterization set to 1, no browser scale flag. A diagnostic build
+  override temporarily disabled the main window shadow.
+- Steps: rapidly widen and narrow the application, then move it between the
+  external main monitor and the laptop display.
+- Result: the maintainer confirmed no flashing white line, only minimal remaining
+  black edge artifacts, and correct interface scaling between the two displays.
+- Limit: the original frame, rounded corners and shadow require a separate repeat;
+  this run does not establish the absence of artifacts with that styling restored.
+- Automated coverage: packaged smoke reads the real controller properties;
+  unit/component tests cover invalid scale requests and the frontend IPC contract.
+
+### Resize with the original window frame restored
+
+- Version: 0.2.3 development, the same native-scale working tree, built with the
+  ordinary configuration and no browser scale flag or shadow override.
+- Date: 2026-09-27
+- Steps: repeat rapid resizing after restoring the original frame, rounded corners
+  and shadow.
+- Result: the maintainer confirmed that the flashing white line remained absent,
+  but the black edge areas became more noticeable than in the shadowless run.
+- Limit: the black-edge issue remains open; this run does not establish a fully
+  artifact-free resize with the original appearance.
+
 ### Selection rectangle with system animations disabled
 
 - Version: 0.2.3 development (b9445a5 with the reduced-motion transition fix)
@@ -44,3 +72,11 @@ Repeat the run and update the record when the behavior it covers changes.
 - Regression check: `test/visual/marquee-selection.spec.ts` checks the same for
   the left and right edges, and that a rectangle inside the list keeps all four
   borders.
+
+### Earlier native container sizing during resize
+
+- Date: 2026-09-27.
+- Version: 0.2.3 working tree, Windows, original frame and shadow enabled.
+- Change tested: resize the WebView container after `WM_NCCALCSIZE`, before the parent completes its size change.
+- Manual result: the maintainer confirmed correct monitor transitions, reported that the black area seemed slightly larger, and supplied a screenshot showing gaps near the rounded right corners.
+- Outcome: rejected the experiment and restored container sizing in `WM_WINDOWPOSCHANGED`. The regression test verified notification order, not visual presentation. Remaining black-edge artifacts are unresolved.

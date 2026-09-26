@@ -1,4 +1,6 @@
 :root {
+  --app-viewport-w: 100vw;
+  --app-viewport-h: 100vh;
   /* Peach — dark. Soft dark leaf-green base (the twig, not the fruit),
      coral-peach accent (the fruit itself) — same idea as the app icon. */
   --bg-base: #141312;

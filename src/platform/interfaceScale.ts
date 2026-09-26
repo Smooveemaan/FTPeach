@@ -1,4 +1,4 @@
-import { getCurrentWebview } from '@tauri-apps/api/webview';
+import { invoke } from '@tauri-apps/api/core';
 
 /**
  * Interface scale: one owner for the write and the read.
@@ -18,7 +18,7 @@ export async function applyInterfaceScale(percent: number): Promise<void> {
   document.documentElement.style.setProperty('--interface-scale', '1');
   document.documentElement.dataset.interfaceScale = String(Math.round(scale * 100));
   if ('__TAURI_INTERNALS__' in window) {
-    await getCurrentWebview().setZoom(scale);
+    await invoke('app_set_interface_scale', { scale });
   }
 }
 

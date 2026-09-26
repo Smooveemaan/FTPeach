@@ -1,7 +1,7 @@
 import { invoke as rawInvoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { UnlistenFn } from '@tauri-apps/api/event';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Theme } from '@tauri-apps/api/window';
 import { createDragOutApi } from './api/dragOut.ts';
 import { installConsoleForwarding } from './consoleForwarding.ts';
@@ -343,16 +343,15 @@ export const tauriApi: Window['api'] = {
       return result === 'h12' || result === 'h23' ? result : null;
     },
     /*
-     * Three surfaces, none of which CSS can reach, all of which have to follow
+     * Native appearance, which CSS cannot reach, has to follow
      * the theme the document just switched to:
      *
      *   - `setTheme` is the OS-level dark/light flag. On 'system' it takes
      *     null, handing the choice back to the setting the CSS resolves
      *     against too.
-     *   - `setBackgroundColor` is the window surface under the webview, seen
-     *     while a resize outruns the repaint. tauri.conf.json can only give it
-     *     one static value, so it is wrong in one of the two themes until this
-     *     restates it.
+     *   - WebviewWindow.setBackgroundColor updates both the host window and
+     *     WebView2's default background. Window.setBackgroundColor alone leaves
+     *     the webview at its startup color when the theme changes.
      *   - `app_set_window_border` is the 1px border Windows 11 draws outside
      *     the client area. `setTheme` does not recolor it on a frameless
      *     window -- see the command in commands/app.rs.
@@ -362,9 +361,9 @@ export const tauriApi: Window['api'] = {
       colors: { background: [number, number, number]; border: [number, number, number] },
     ) => {
       const native: Theme | null = theme === 'dark' || theme === 'light' ? theme : null;
-      const appWindow = getCurrentWindow();
-      void appWindow.setTheme(native);
-      void appWindow.setBackgroundColor(colors.background);
+      const appWindow = getCurrentWebviewWindow();
+      void appWindow.setTheme(native).catch(reportAsyncFailure);
+      void appWindow.setBackgroundColor([...colors.background, 255]).catch(reportAsyncFailure);
       const [red, green, blue] = colors.border;
       void invoke('app_set_window_border', { red, green, blue });
     },

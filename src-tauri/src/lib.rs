@@ -87,6 +87,7 @@ pub fn run() {
         .manage(shutdown::ShutdownCoordinator::default())
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
+        .manage(runtime::window_scale::InterfaceScale::default())
         .manage(AutoLock::default())
         .manage(AuthorizationState::new(vault))
         .invoke_handler(tauri::generate_handler![
@@ -132,6 +133,7 @@ pub fn run() {
             commands::app::app_system_hour_cycle,
             commands::app::app_open_external,
             commands::app::app_set_window_border,
+            commands::app::app_set_interface_scale,
             commands::app::debug_open_devtools,
             commands::app::app_reset_layout,
             commands::log::log_recent,

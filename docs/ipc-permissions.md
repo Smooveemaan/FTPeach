@@ -8,6 +8,16 @@ file grants: the `main` WebView receives the core window/event permissions and o
 `allow-` permission per app command in `src-tauri/capabilities/default.json`, and
 the confirmation window receives neither.
 
+The main window also grants `core:webview:allow-set-webview-background-color` so
+theme changes can recolor WebView2's default background as well as the host window.
+This permission changes presentation only and is not granted to confirmation windows.
+
+`allow-app-set-interface-scale` replaces direct WebView zoom permission. The command
+accepts only finite factors from 0.8 to 1.5 and only the `main` window. It changes
+presentation, keeps the current preference in memory, and applies monitor DPI on the
+backend. It cannot change OS scaling or write settings. Confirmation windows have no
+permission to call it.
+
 `npm run check:command-acl` compares the registered commands, the `build.rs`
 lists and both capability files, so a new command cannot ship until someone
 decides which window class may call it. The packaged smoke test then asks a live
@@ -18,7 +28,7 @@ any. Application commands are grouped as follows:
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
   `vault_status`, `app_version`, `app_system_hour_cycle`, `session_list`, `log_recent`,
   `updater_status`, `updater_check`.
-- Window and shell: `app_set_window_border`, `app_reset_layout`, `app_open_external`, which
+- Window and shell: `app_set_interface_scale`, `app_set_window_border`, `app_reset_layout`, `app_open_external`, which
   opens only an `https://` URL, and `debug_open_devtools`, which does nothing in a release build.
 - Native pickers: `dialog_select_local_dir`, `dialog_select_key_file`,
   `dialog_select_ca_cert_file` and `dialog_select_application`. A network share or a program picked

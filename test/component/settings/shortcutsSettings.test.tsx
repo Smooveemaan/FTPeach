@@ -5,7 +5,10 @@ import ShortcutsSettings from '../../../src/features/settings/components/Shortcu
 import type { ShortcutOverrides } from '../../../src/features/settings/useSettings.ts';
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    t: (key: string, options?: object) =>
+      options ? `${key}(${Object.values(options).join(',')})` : key,
+  }),
 }));
 
 function Harness() {
@@ -46,4 +49,19 @@ test('reset buttons reflect actual differences, including recording the default 
   fireEvent.click(reset);
   expect(reset).toHaveProperty('disabled', true);
   expect(resetAll).toHaveProperty('disabled', true);
+});
+
+test('a conflict names the other action with its pane side', () => {
+  render(
+    <ShortcutsSettings
+      shortcutOverridesValue={{ 'save-site': 'Ctrl+KeyF' }}
+      setShortcutOverridesValue={() => {}}
+      paneOrientation="horizontal"
+    />,
+  );
+  expect(
+    screen.getByText(
+      'settings.shortcuts.conflict(settings.shortcuts.actions.search(paneSide.left))',
+    ),
+  ).toBeTruthy();
 });

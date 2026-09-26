@@ -711,6 +711,7 @@
     "revealFailed": "לא ניתן להציג את הסיסמה השמורה",
     "savedSecretPlaceholder": "נשמר",
     "savedSecretHint": "השאר ריק כדי לשמור את הסיסמה הנוכחית",
+    "savedSecretReplaceHint": "הסיסמה החדשה תישמר יחד עם הסימנייה",
     "removeSavedPassword": "הסר סיסמה שמורה",
     "removeSavedPassphrase": "הסר את ביטוי הסיסמה השמור",
     "secretWillBeRemoved": "יוסר בעת השמירה",

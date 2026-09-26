@@ -53,8 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   script, and the first time a program typed into settings opens a file.
 - Turning off security confirmations or relaxing the vault's automatic lock now asks for
   confirmation in a separate window, and for the master password when one is set.
-- Turning off security confirmations now asks right away, when you clear the setting,
-  rather than when you save. Cancelling leaves the setting on.
+  Cancelling leaves the setting as it was.
 - Security questions are now written in the language you have just picked in settings,
   even before you save it.
 - Cancelling a security question no longer leaves an error message on screen.
@@ -77,12 +76,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- File selection no longer stutters or lets its rectangle jump outside the pane when
-  system animations are disabled.
+- Help → Documentation opens the user documentation, and the license link in About works.
+- The warning about a shortcut already in use names the pane of the other action instead of
+  showing `{{side}}`.
+- The question before running a program on your computer shows its usual path, without
+  `\\?\` in front.
+- The protocol log strikes through only the name of a closed connection, not the colon.
+- While you type a new password for a saved bookmark, the hint below says it will be saved.
 - A selection rectangle that runs past the edge of the file list no longer shows a border
   there, so it no longer looks as if the selection ends at the edge.
 - Dragging files in from Explorer follows the pointer more smoothly.
-- Saved tabs are restored even when the tab that was open last no longer exists.
 - The date and time format lists in Settings are wide enough for their translated names.
 - A long tooltip, such as the plain FTP warning in French or Greek, gets a third line
   instead of being cut off.
@@ -143,8 +146,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   they are uploaded. They are kept, and FTPeach offers them the next time it starts.
 - When several files opened in other applications change at once, FTPeach now asks about each
   of them.
-- Saving again in the editor while the previous upload is still running no longer produces a
-  question that cannot be answered; FTPeach asks once the upload has finished.
 
 ## [0.2.3] - 2026-09-22
 

@@ -703,6 +703,7 @@
     "revealFailed": "Das gespeicherte Passwort konnte nicht angezeigt werden",
     "savedSecretPlaceholder": "Gespeichert",
     "savedSecretHint": "Leer lassen, um das aktuelle Passwort beizubehalten",
+    "savedSecretReplaceHint": "Das neue Passwort wird zusammen mit dem Lesezeichen gespeichert",
     "removeSavedPassword": "Gespeichertes Passwort entfernen",
     "removeSavedPassphrase": "Gespeicherte Passphrase entfernen",
     "secretWillBeRemoved": "Wird beim Speichern entfernt",

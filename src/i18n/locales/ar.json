@@ -735,6 +735,7 @@
     "revealFailed": "تعذر عرض كلمة المرور المحفوظة",
     "savedSecretPlaceholder": "تم الحفظ",
     "savedSecretHint": "اترك الحقل فارغًا للاحتفاظ بكلمة المرور الحالية",
+    "savedSecretReplaceHint": "ستُحفظ كلمة المرور الجديدة مع الإشارة المرجعية",
     "removeSavedPassword": "إزالة كلمة المرور المحفوظة",
     "removeSavedPassphrase": "إزالة عبارة المرور المحفوظة",
     "secretWillBeRemoved": "سيتم حذفها عند الحفظ",

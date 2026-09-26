@@ -711,6 +711,7 @@
     "revealFailed": "Nu s-a putut afișa parola salvată",
     "savedSecretPlaceholder": "Salvat",
     "savedSecretHint": "Lăsați necompletat pentru a păstra parola actuală",
+    "savedSecretReplaceHint": "Parola nouă va fi salvată odată cu marcajul",
     "removeSavedPassword": "Șterge parola salvată",
     "removeSavedPassphrase": "Șterge fraza de acces salvată",
     "secretWillBeRemoved": "Va fi eliminată la salvare",

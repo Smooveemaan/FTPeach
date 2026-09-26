@@ -703,6 +703,7 @@
     "revealFailed": "Den gemte adgangskode kunne ikke vises",
     "savedSecretPlaceholder": "Gemt",
     "savedSecretHint": "Lad feltet være tomt for at beholde den aktuelle adgangskode",
+    "savedSecretReplaceHint": "Den nye adgangskode gemmes sammen med bogmærket",
     "removeSavedPassword": "Slet gemt adgangskode",
     "removeSavedPassphrase": "Slet gemt adgangssætning",
     "secretWillBeRemoved": "Fjernes, når du gemmer",

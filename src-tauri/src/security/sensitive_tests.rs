@@ -227,6 +227,18 @@ fn executable_confirmation_exposes_only_the_canonical_target() {
 }
 
 #[test]
+fn executable_confirmation_shows_the_path_without_the_verbatim_prefix() {
+    let prompt = confirmation_prompt(
+        "fs_execute_path",
+        "\\\\?\\C:\\safe\\tool.exe",
+        "en".into(),
+        false,
+    )
+    .unwrap();
+    assert_eq!(prompt.target.as_deref(), Some("C:\\safe\\tool.exe"));
+}
+
+#[test]
 fn disabled_confirmations_never_suppress_vault_reset() {
     assert!(should_show_confirmation("vault_reset", true, false));
     assert!(!should_show_confirmation(

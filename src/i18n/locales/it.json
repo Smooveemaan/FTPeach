@@ -711,6 +711,7 @@
     "revealFailed": "Impossibile visualizzare la password salvata",
     "savedSecretPlaceholder": "Salvato",
     "savedSecretHint": "Lascia vuoto per mantenere la password attuale",
+    "savedSecretReplaceHint": "La nuova password verrà salvata insieme al segnalibro",
     "removeSavedPassword": "Rimuovi la password salvata",
     "removeSavedPassphrase": "Rimuovi la passphrase salvata",
     "secretWillBeRemoved": "Verrà rimosso al momento del salvataggio",

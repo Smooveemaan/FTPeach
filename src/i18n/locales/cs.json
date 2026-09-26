@@ -719,6 +719,7 @@
     "revealFailed": "Nelze zobrazit uložené heslo",
     "savedSecretPlaceholder": "Uloženo",
     "savedSecretHint": "Ponechte prázdné, chcete-li zachovat aktuální heslo",
+    "savedSecretReplaceHint": "Nové heslo se uloží spolu se záložkou",
     "removeSavedPassword": "Odstranit uložené heslo",
     "removeSavedPassphrase": "Odstranit uloženou přístupovou frázi",
     "secretWillBeRemoved": "Bude odstraněno po uložení",

@@ -703,6 +703,7 @@
     "revealFailed": "Tidak dapat menampilkan kata sandi yang tersimpan",
     "savedSecretPlaceholder": "Tersimpan",
     "savedSecretHint": "Biarkan kosong untuk mempertahankan kata sandi saat ini",
+    "savedSecretReplaceHint": "Kata sandi baru akan disimpan bersama bookmark",
     "removeSavedPassword": "Hapus kata sandi yang tersimpan",
     "removeSavedPassphrase": "Hapus frasa sandi yang tersimpan",
     "secretWillBeRemoved": "Akan dihapus saat disimpan",

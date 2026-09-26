@@ -703,6 +703,7 @@
     "revealFailed": "Het opgeslagen wachtwoord kon niet worden weergegeven",
     "savedSecretPlaceholder": "Opgeslagen",
     "savedSecretHint": "Laat leeg om het huidige wachtwoord te behouden",
+    "savedSecretReplaceHint": "Het nieuwe wachtwoord wordt samen met de bladwijzer opgeslagen",
     "removeSavedPassword": "Opgeslagen wachtwoord verwijderen",
     "removeSavedPassphrase": "Opgeslagen wachtwoordzin verwijderen",
     "secretWillBeRemoved": "Wordt verwijderd bij het opslaan",

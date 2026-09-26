@@ -298,11 +298,15 @@ describe('Site Manager workflows', () => {
     expect(document.activeElement).toBe(input);
     expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
     await user.type(input, 'draft');
+    expect(screen.getByText('siteManagerDialog.savedSecretReplaceHint')).toBeTruthy();
 
     // Pressed again, it drops the draft and keeps the saved password.
     await user.click(edit);
     expect(input.readOnly).toBe(true);
     expect(input.value).toBe('');
+    await user.click(edit);
+    expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
+    await user.click(edit);
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ password: '' }));
   });

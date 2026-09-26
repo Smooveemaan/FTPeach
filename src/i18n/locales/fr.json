@@ -711,6 +711,7 @@
     "revealFailed": "Impossible d'afficher le mot de passe enregistré",
     "savedSecretPlaceholder": "Enregistré",
     "savedSecretHint": "Laissez ce champ vide pour conserver le mot de passe actuel",
+    "savedSecretReplaceHint": "Le nouveau mot de passe sera enregistré avec le signet",
     "removeSavedPassword": "Supprimer le mot de passe enregistré",
     "removeSavedPassphrase": "Supprimer la phrase secrète enregistrée",
     "secretWillBeRemoved": "Sera supprimé lors de l'enregistrement",

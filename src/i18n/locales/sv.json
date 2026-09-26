@@ -703,6 +703,7 @@
     "revealFailed": "Det gick inte att visa det sparade lösenordet",
     "savedSecretPlaceholder": "Sparat",
     "savedSecretHint": "Lämna fältet tomt för att behålla det aktuella lösenordet",
+    "savedSecretReplaceHint": "Det nya lösenordet sparas tillsammans med bokmärket",
     "removeSavedPassword": "Ta bort sparat lösenord",
     "removeSavedPassphrase": "Ta bort sparad lösenfras",
     "secretWillBeRemoved": "Tas bort när du sparar",

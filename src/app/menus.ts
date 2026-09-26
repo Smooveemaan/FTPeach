@@ -310,7 +310,9 @@ export function buildMenus(ctx: MenusContext): MenuBarEntry[] {
         {
           label: t('menu.help.documentation'),
           onClick: handler(() =>
-            api.app.openExternal('https://github.com/Smooveemaan/ftpeach#readme'),
+            api.app.openExternal(
+              'https://github.com/Smooveemaan/ftpeach/blob/master/docs/README.md',
+            ),
           ),
         },
         {

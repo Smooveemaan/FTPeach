@@ -719,6 +719,7 @@
     "revealFailed": "Не вдалося показати збережений пароль",
     "savedSecretPlaceholder": "Збережено",
     "savedSecretHint": "Залиште поле порожнім, щоб зберегти поточний пароль",
+    "savedSecretReplaceHint": "Новий пароль збережеться разом із закладкою",
     "removeSavedPassword": "Видалити збережений пароль",
     "removeSavedPassphrase": "Видалити збережену парольну фразу",
     "secretWillBeRemoved": "Буде видалено під час збереження",

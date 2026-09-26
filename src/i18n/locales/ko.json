@@ -703,6 +703,7 @@
     "revealFailed": "저장된 비밀번호를 표시할 수 없습니다",
     "savedSecretPlaceholder": "저장됨",
     "savedSecretHint": "현재 비밀번호를 유지하려면 비워 두세요",
+    "savedSecretReplaceHint": "새 비밀번호는 북마크와 함께 저장됩니다",
     "removeSavedPassword": "저장된 비밀번호 삭제",
     "removeSavedPassphrase": "저장된 암호 문구 삭제",
     "secretWillBeRemoved": "저장 시 삭제됩니다",

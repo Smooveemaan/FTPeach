@@ -703,6 +703,7 @@
     "revealFailed": "无法显示已保存的密码",
     "savedSecretPlaceholder": "已保存",
     "savedSecretHint": "留空以保留当前密码",
+    "savedSecretReplaceHint": "新密码将随书签一起保存",
     "removeSavedPassword": "删除已保存的密码",
     "removeSavedPassphrase": "删除已保存的密码短语",
     "secretWillBeRemoved": "保存时将被删除",

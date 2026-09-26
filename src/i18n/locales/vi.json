@@ -703,6 +703,7 @@
     "revealFailed": "Không thể hiển thị mật khẩu đã lưu",
     "savedSecretPlaceholder": "Đã lưu",
     "savedSecretHint": "Để trống để giữ nguyên mật khẩu hiện tại",
+    "savedSecretReplaceHint": "Mật khẩu mới sẽ được lưu cùng với dấu trang",
     "removeSavedPassword": "Xóa mật khẩu đã lưu",
     "removeSavedPassphrase": "Xóa cụm mật khẩu đã lưu",
     "secretWillBeRemoved": "Sẽ bị xóa khi lưu",

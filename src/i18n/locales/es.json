@@ -711,6 +711,7 @@
     "revealFailed": "No se ha podido mostrar la contraseña guardada",
     "savedSecretPlaceholder": "Guardado",
     "savedSecretHint": "Déjalo en blanco para conservar la contraseña actual",
+    "savedSecretReplaceHint": "La nueva contraseña se guardará junto con el marcador",
     "removeSavedPassword": "Eliminar la contraseña guardada",
     "removeSavedPassphrase": "Eliminar la frase de acceso guardada",
     "secretWillBeRemoved": "Se eliminará al guardar",

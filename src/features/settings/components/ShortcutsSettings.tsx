@@ -26,6 +26,9 @@ export default function ShortcutsSettings({
       ? t(pane === 'a' ? 'paneSide.top' : 'paneSide.bottom')
       : t(pane === 'a' ? 'paneSide.left' : 'paneSide.right');
 
+  const shortcutLabel = (entry: (typeof SHORTCUT_ACTIONS)[number]) =>
+    entry.pane ? t(entry.labelKey, { side: shortcutPaneSideWord(entry.pane) }) : t(entry.labelKey);
+
   return (
     <div className="settings-option-list">
       <div className="settings-option-group">
@@ -69,11 +72,7 @@ export default function ShortcutsSettings({
               const overridden = binding !== entry.default;
               return (
                 <div className="settings-shortcut-row" key={entry.id}>
-                  <span className="settings-shortcut-label">
-                    {entry.pane
-                      ? t(entry.labelKey, { side: shortcutPaneSideWord(entry.pane) })
-                      : t(entry.labelKey)}
-                  </span>
+                  <span className="settings-shortcut-label">{shortcutLabel(entry)}</span>
                   <ShortcutRecorder
                     value={binding}
                     onChange={(next) =>
@@ -123,7 +122,7 @@ export default function ShortcutsSettings({
                     <span className="settings-hint settings-warning settings-shortcut-conflict">
                       <Icon name="triangleAlert" size={12} />
                       {t('settings.shortcuts.conflict', {
-                        action: t(conflictEntry.labelKey),
+                        action: shortcutLabel(conflictEntry),
                       })}
                     </span>
                   )}

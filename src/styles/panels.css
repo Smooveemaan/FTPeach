@@ -285,6 +285,8 @@
 }
 .log-line-conn-tag.closed {
   opacity: 0.55;
+}
+.log-line-conn-tag.closed .log-line-conn-name {
   text-decoration: line-through;
 }
 

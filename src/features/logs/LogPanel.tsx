@@ -353,8 +353,8 @@ export default function LogPanel({
         {showTimestamps && <span className="log-line-time">{formatTime.time(entry.ts)}</span>}
         {showConnectionTags && entry.connectionId && (
           <>
-            {/* The space after the colon stays outside the tag, so a closed
-                connection's strike-through stops at the colon. */}
+            {/* A closed connection strikes through only its name, not the
+                colon or the space after it. */}
             <span
               className={`log-line-conn-tag ${isOpen ? '' : 'closed'}`}
               data-tooltip={
@@ -366,7 +366,7 @@ export default function LogPanel({
               }
               onClick={() => toggleFilter(entry)}
             >
-              {getLabel(entry)}:
+              <span className="log-line-conn-name">{getLabel(entry)}</span>:
             </span>{' '}
           </>
         )}

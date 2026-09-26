@@ -703,6 +703,7 @@
     "revealFailed": "Kaydedilen şifre gösterilemedi",
     "savedSecretPlaceholder": "Kaydedildi",
     "savedSecretHint": "Mevcut şifreyi korumak için boş bırakın",
+    "savedSecretReplaceHint": "Yeni şifre yer imiyle birlikte kaydedilecek",
     "removeSavedPassword": "Kaydedilmiş şifreyi sil",
     "removeSavedPassphrase": "Kaydedilmiş anahtar parolasını sil",
     "secretWillBeRemoved": "Kaydedince silinecek",

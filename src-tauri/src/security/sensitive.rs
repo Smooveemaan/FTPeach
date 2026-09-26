@@ -273,7 +273,7 @@ fn confirmation_prompt(
     Ok(ConfirmationPrompt {
         kind,
         locale,
-        target: include_target.then(|| target.to_owned()),
+        target: include_target.then(|| crate::local_fs::local_open::shell_path(Path::new(target))),
         local_name: None,
         application: None,
         security_changes: None,

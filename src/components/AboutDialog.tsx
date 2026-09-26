@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from './Modal.tsx';
 
 const PROJECT_URL = 'https://github.com/Smooveemaan/ftpeach';
-const LICENSE_URL = `${PROJECT_URL}/blob/main/LICENSE`;
+const LICENSE_URL = `${PROJECT_URL}/blob/master/LICENSE`;
 const ISSUES_URL = `${PROJECT_URL}/issues`;
 
 interface AboutDialogProps {

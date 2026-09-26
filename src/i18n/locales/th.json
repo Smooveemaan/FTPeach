@@ -703,6 +703,7 @@
     "revealFailed": "ไม่สามารถแสดงรหัสผ่านที่บันทึกไว้ได้",
     "savedSecretPlaceholder": "บันทึกแล้ว",
     "savedSecretHint": "เว้นว่างไว้เพื่อเก็บรหัสผ่านปัจจุบันไว้",
+    "savedSecretReplaceHint": "รหัสผ่านใหม่จะถูกบันทึกพร้อมกับบุ๊กมาร์ก",
     "removeSavedPassword": "ลบรหัสผ่านที่บันทึกไว้",
     "removeSavedPassphrase": "ลบวลีรหัสผ่านที่บันทึกไว้",
     "secretWillBeRemoved": "จะถูกลบเมื่อบันทึก",

@@ -703,6 +703,7 @@
     "revealFailed": "A mentett jelszót nem sikerült megjeleníteni",
     "savedSecretPlaceholder": "Mentve",
     "savedSecretHint": "Hagyja üresen a jelenlegi jelszó megtartásához",
+    "savedSecretReplaceHint": "Az új jelszó a könyvjelzővel együtt mentődik el",
     "removeSavedPassword": "A mentett jelszó eltávolítása",
     "removeSavedPassphrase": "A mentett jelmondat eltávolítása",
     "secretWillBeRemoved": "Mentéskor törlődik",

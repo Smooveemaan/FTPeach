@@ -711,6 +711,7 @@
     "revealFailed": "Não foi possível exibir a senha salva",
     "savedSecretPlaceholder": "Salvo",
     "savedSecretHint": "Deixe em branco para manter a senha atual",
+    "savedSecretReplaceHint": "A nova senha será salva junto com o favorito",
     "removeSavedPassword": "Remover senha salva",
     "removeSavedPassphrase": "Remover a frase secreta salva",
     "secretWillBeRemoved": "Será removido ao salvar",

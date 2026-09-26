@@ -719,6 +719,7 @@
     "revealFailed": "Nie udało się wyświetlić zapisanego hasła",
     "savedSecretPlaceholder": "Zapisano",
     "savedSecretHint": "Pozostaw puste, aby zachować bieżące hasło",
+    "savedSecretReplaceHint": "Nowe hasło zostanie zapisane razem z zakładką",
     "removeSavedPassword": "Usuń zapisane hasło",
     "removeSavedPassphrase": "Usuń zapisaną frazę hasła",
     "secretWillBeRemoved": "Zostanie usunięte po zapisaniu",

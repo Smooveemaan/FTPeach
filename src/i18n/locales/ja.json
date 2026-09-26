@@ -703,6 +703,7 @@
     "revealFailed": "保存済みのパスワードを表示できませんでした",
     "savedSecretPlaceholder": "保存済み",
     "savedSecretHint": "現在のパスワードを保持するには空欄のままにしてください",
+    "savedSecretReplaceHint": "新しいパスワードはブックマークと一緒に保存されます",
     "removeSavedPassword": "保存済みのパスワードを削除",
     "removeSavedPassphrase": "保存済みのパスフレーズを削除",
     "secretWillBeRemoved": "保存時に削除されます",

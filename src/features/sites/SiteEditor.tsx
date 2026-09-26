@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type {
+  ChangeEvent,
   ChangeEventHandler,
   CSSProperties,
   Dispatch,
@@ -71,6 +72,9 @@ export default function SiteEditor({
   // A saved secret stays locked until its pencil is pressed, so a stray click
   // can't start overwriting it.
   const [editingSecret, setEditingSecret] = useState<SecretField | null>(null);
+  // The inputs are uncontrolled; this only tells the hint whether a new
+  // secret has been typed over the saved one.
+  const [typedSecrets, setTypedSecrets] = useState<Partial<Record<SecretField, boolean>>>({});
   const [limitConnections, setLimitConnections] = useState(() => form.maxConnections !== '');
   const [initialMaxConnections] = useState(form.maxConnections);
   // Opens by itself only when it holds something other than the defaults.
@@ -116,8 +120,15 @@ export default function SiteEditor({
 
   const secretRef = (field: SecretField) => (field === 'password' ? passwordRef : keyPassphraseRef);
 
-  const handleSecretInput = (removeField: SecretRemovalField) => () =>
-    setForm((current) => (current[removeField] ? { ...current, [removeField]: false } : current));
+  const handleSecretInput =
+    (field: SecretField, removeField: SecretRemovalField) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const typed = event.target.value !== '';
+      setTypedSecrets((current) =>
+        current[field] === typed ? current : { ...current, [field]: typed },
+      );
+      setForm((current) => (current[removeField] ? { ...current, [removeField]: false } : current));
+    };
 
   const secret = (
     field: SecretField,
@@ -146,7 +157,7 @@ export default function SiteEditor({
             }
             ref={secretRef(field)}
             defaultValue=""
-            onChange={handleSecretInput(removeField)}
+            onChange={handleSecretInput(field, removeField)}
             protectedSecret={saved}
             onRevealSaved={() => onRevealSecret(field)}
             readOnly={locked}
@@ -188,7 +199,13 @@ export default function SiteEditor({
           )}
         </div>
         {saved && !locked && (
-          <span className="saved-secret-hint">{t('siteManagerDialog.savedSecretHint')}</span>
+          <span className="saved-secret-hint">
+            {t(
+              typedSecrets[field]
+                ? 'siteManagerDialog.savedSecretReplaceHint'
+                : 'siteManagerDialog.savedSecretHint',
+            )}
+          </span>
         )}
       </div>
     );

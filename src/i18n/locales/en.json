@@ -703,6 +703,7 @@
     "revealFailed": "Could not show the saved secret",
     "savedSecretPlaceholder": "Saved",
     "savedSecretHint": "Leave blank to keep the current password",
+    "savedSecretReplaceHint": "The new password will be saved when you save the bookmark",
     "removeSavedPassword": "Remove saved password",
     "removeSavedPassphrase": "Remove saved passphrase",
     "secretWillBeRemoved": "Will be removed when saved",

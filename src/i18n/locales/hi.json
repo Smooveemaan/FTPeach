@@ -703,6 +703,7 @@
     "revealFailed": "सहेजा गया पासवर्ड नहीं दिखाया जा सका",
     "savedSecretPlaceholder": "सहेजा गया",
     "savedSecretHint": "मौजूदा पासवर्ड रखने के लिए खाली छोड़ें",
+    "savedSecretReplaceHint": "नया पासवर्ड बुकमार्क के साथ सहेजा जाएगा",
     "removeSavedPassword": "सहेजा गया पासवर्ड हटाएं",
     "removeSavedPassphrase": "सहेजे गए पासफ़्रेज़ को हटाएँ",
     "secretWillBeRemoved": "सहेजे जाने पर हटा दिया जाएगा",

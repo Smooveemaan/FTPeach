@@ -703,6 +703,7 @@
     "revealFailed": "無法顯示已儲存的密碼",
     "savedSecretPlaceholder": "已儲存",
     "savedSecretHint": "留空以保留目前的密碼",
+    "savedSecretReplaceHint": "新密碼將隨書籤一併儲存",
     "removeSavedPassword": "移除已儲存的密碼",
     "removeSavedPassphrase": "移除已儲存的密語",
     "secretWillBeRemoved": "儲存時將會移除",

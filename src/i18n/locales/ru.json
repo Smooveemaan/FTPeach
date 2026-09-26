@@ -719,6 +719,7 @@
     "revealFailed": "Не удалось показать сохранённый пароль",
     "savedSecretPlaceholder": "Сохранено",
     "savedSecretHint": "Оставьте поле пустым, чтобы сохранить текущий пароль",
+    "savedSecretReplaceHint": "Новый пароль сохранится вместе с закладкой",
     "removeSavedPassword": "Удалить сохранённый пароль",
     "removeSavedPassphrase": "Удалить сохранённую парольную фразу",
     "secretWillBeRemoved": "Будет удалено при сохранении",

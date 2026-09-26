@@ -45,17 +45,43 @@ export function usePaneSourceMinWidth({
 }: PaneSourceMinWidthOptions): PaneSourceMinWidthModel {
   const sourceRef = useRef<HTMLElement>(null);
   const [sourceWidth, setSourceWidth] = useState(0);
+  const [formWidth, setFormWidth] = useState(0);
   useLayoutEffect(() => {
     const element = sourceRef.current;
     if (!element) return undefined;
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) setSourceWidth(entry.contentRect.width);
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
+    // The connection form's first row holds everything up to the port, and only
+    // the address field there may shrink (down to its min-width). The pane
+    // takes the rest of the row as its floor, so the port is never cut off
+    // whatever the protocol, its warning or the language's source label add.
+    const measure = () => {
+      setSourceWidth(element.getBoundingClientRect().width);
+      const row = element.querySelector<HTMLElement>('.connection-row');
+      const address = row?.querySelector<HTMLElement>('.field-host, .field-webdav-url');
+      const pane = element.closest<HTMLElement>('.pane');
+      setFormWidth(
+        row && address && pane
+          ? Math.ceil(
+              row.scrollWidth -
+                address.offsetWidth +
+                (parseFloat(getComputedStyle(address).minWidth) || 0) +
+                pane.offsetWidth -
+                row.clientWidth,
+            )
+          : 0,
+      );
+    };
+    const resizes = new ResizeObserver(measure);
+    resizes.observe(element);
+    const mutations = new MutationObserver(measure);
+    mutations.observe(element, { childList: true, subtree: true, characterData: true });
+    return () => {
+      resizes.disconnect();
+      mutations.disconnect();
+    };
   }, []);
-  const minWidth =
-    !disconnected && sourceWidth > 0
+  const minWidth = disconnected
+    ? formWidth || undefined
+    : sourceWidth > 0
       ? 24 + sourceWidth + ITEM_WIDTH + DIVIDER_WIDTH + ITEM_WIDTH + 12
       : undefined;
   useLayoutEffect(() => onWidthChange?.(minWidth), [minWidth, onWidthChange]);

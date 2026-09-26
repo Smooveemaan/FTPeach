@@ -255,10 +255,6 @@
 }
 
 
-.pane:has(.pane-titlebar.form-open) {
-  min-width: 366px;
-}
-
 /* Its own row below .pane-titlebar again — merging it in with the search
    box left neither one enough room once the toolbar icons were added
    alongside them too, especially with both panes open side by side. */

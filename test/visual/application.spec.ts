@@ -334,6 +334,39 @@ test('three recent connections fit a disconnected pane in the default layout', a
 /* Columns wider than a narrow pane scroll sideways instead of running off its
    edge, and the header scrolls with them, so a column's title stays over its
    cells. */
+/* The disconnected pane's floor is measured from its connection form, so the
+   port field, the last one on the form's first row, stays whole however far
+   the window or the pane divider narrows it, whichever protocol is picked. */
+test('a narrowed disconnected pane keeps its port field whole', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 740 });
+  await openHarness(page);
+  await page.getByRole('menuitem', { name: en.menu.file.title, exact: true }).click();
+  await page.getByRole('menuitem', { name: en.menu.file.disconnect, exact: true }).click();
+  const pane = page.locator('.pane').nth(1);
+  const divider = page.locator('.pane-resizer:not(.vertical)').first();
+  const cut = () =>
+    pane.locator('.field-port, .field-webdav-url').evaluate((field) => {
+      const bar = field.closest('.connection-bar')!.getBoundingClientRect();
+      return field.getBoundingClientRect().right - (bar.right - 14);
+    });
+  const options = page.locator('.protocol-select-dropdown [role="option"]');
+  await pane.locator('.protocol-select-trigger').click();
+  const count = await options.count();
+  await page.keyboard.press('Escape');
+  for (let index = 0; index < count; index += 1) {
+    await pane.locator('.protocol-select-trigger').click();
+    await options.nth(index).click();
+    await page.setViewportSize({ width: 800, height: 740 });
+    expect(await cut(), `protocol ${index}, narrow window`).toBeLessThanOrEqual(0.5);
+    const box = (await divider.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(790, box.y + 200, { steps: 5 });
+    await page.mouse.up();
+    expect(await cut(), `protocol ${index}, divider dragged`).toBeLessThanOrEqual(0.5);
+  }
+});
+
 test('file columns scroll sideways with their header', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 720 });
   await openHarness(page);

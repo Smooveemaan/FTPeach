@@ -84,8 +84,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and
-  the imported bookmarks appear right away.- Help → Documentation opens the user documentation, and the license link in About works.
+  the imported bookmarks appear right away.
+- Help → Documentation opens the user documentation, and the license link in About works.
 - The warning about a shortcut already in use names the pane of the other action instead of
   showing `{{side}}`.
 - The question before running a program on your computer shows its usual path, without

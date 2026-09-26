@@ -190,6 +190,12 @@
 /* The gap above the first line, held at the top across the panel's width
    while the lines scroll, fading them out beneath it instead of running them
    into the header. */
+/* The empty message fills the body's full height, so the 6px strip below
+   would push it past the body's bottom edge and show a scrollbar for nothing. */
+.log-panel-body:has(> .transfer-empty) {
+  overflow-y: hidden;
+}
+
 .log-panel-body::before {
   content: '';
   position: sticky;

@@ -51,7 +51,7 @@ test('reset buttons reflect actual differences, including recording the default 
   expect(resetAll).toHaveProperty('disabled', true);
 });
 
-test('a conflict names the other action with its pane side', () => {
+test('a conflict icon names the other action with its pane side and goes to it', () => {
   render(
     <ShortcutsSettings
       shortcutOverridesValue={{ 'save-site': 'Ctrl+KeyF' }}
@@ -59,9 +59,25 @@ test('a conflict names the other action with its pane side', () => {
       paneOrientation="horizontal"
     />,
   );
+  const [conflict] = screen.getAllByRole('button', {
+    name: 'settings.shortcuts.conflict(settings.shortcuts.actions.search(paneSide.left))',
+  });
+  fireEvent.click(conflict!);
   expect(
-    screen.getByText(
-      'settings.shortcuts.conflict(settings.shortcuts.actions.search(paneSide.left))',
-    ),
-  ).toBeTruthy();
+    document.activeElement?.closest('[data-shortcut-action]')?.getAttribute('data-shortcut-action'),
+  ).toBe('search-local');
+});
+
+test('a key shared by three actions lists both others', () => {
+  render(
+    <ShortcutsSettings
+      shortcutOverridesValue={{ 'save-site': 'Ctrl+KeyF', 'open-settings': 'Ctrl+KeyF' }}
+      setShortcutOverridesValue={() => {}}
+      paneOrientation="horizontal"
+    />,
+  );
+  const labels = screen
+    .getAllByRole('button', { name: /^settings.shortcuts.conflict/ })
+    .map((button) => button.getAttribute('aria-label'));
+  expect(labels.some((label) => label?.split('statusBar.listSeparator').length === 2)).toBe(true);
 });

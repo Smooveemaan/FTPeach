@@ -44,15 +44,15 @@ export function resolveAction(
   return null;
 }
 
-export function findConflict(
+/** Every other action in the scope bound to the same keys. */
+export function findConflicts(
   actionId: string,
   binding: string | null,
   scope: ShortcutScope,
   overrides?: ShortcutOverrides | null,
-): string | null {
-  if (!binding) return null;
-  for (const [otherId, otherBinding] of effectiveBindingsByScope(scope, overrides)) {
-    if (otherId !== actionId && otherBinding === binding) return otherId;
-  }
-  return null;
+): string[] {
+  if (!binding) return [];
+  return [...effectiveBindingsByScope(scope, overrides)]
+    .filter(([otherId, otherBinding]) => otherId !== actionId && otherBinding === binding)
+    .map(([otherId]) => otherId);
 }

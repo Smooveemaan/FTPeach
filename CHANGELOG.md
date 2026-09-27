@@ -114,6 +114,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - An empty folder with more columns than fit scrolls sideways, like a full one.
 - Open with… asks which program to open the file with, instead of always using the default
   one.
+- A shortcut used by other actions shows a warning icon next to its reset button. Its tooltip
+  names every other action with those keys, and clicking it goes to the first one.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

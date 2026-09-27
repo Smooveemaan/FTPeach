@@ -10,7 +10,7 @@ import {
   parseBinding,
 } from '../../../src/shortcuts/bindings.ts';
 import type { ShortcutKeyboardEvent } from '../../../src/shortcuts/bindings.ts';
-import { effectiveBinding, findConflict, resolveAction } from '../../../src/shortcuts/resolve.ts';
+import { effectiveBinding, findConflicts, resolveAction } from '../../../src/shortcuts/resolve.ts';
 import { normalizeKeyboardShortcuts } from '../../../src/features/settings/useSettings.ts';
 
 function fakeEvent({
@@ -95,13 +95,16 @@ test('resolveAction only matches actions in the requested scope', () => {
   assert.equal(resolveAction(fakeEvent({ code: 'F2' }), 'pane', {}), 'rename');
 });
 
-test('findConflict flags two same-scope actions sharing a binding, ignores cross-scope overlap', () => {
+test('findConflicts lists every same-scope action sharing a binding, ignores cross-scope overlap', () => {
   const overrides = { paste: 'F5' }; // pane-scope 'paste' now collides with global-scope 'refresh'
-  assert.equal(findConflict('refresh', 'F5', 'global', overrides), null);
-  assert.equal(findConflict('paste', 'F5', 'pane', overrides), null);
+  assert.deepEqual(findConflicts('refresh', 'F5', 'global', overrides), []);
+  assert.deepEqual(findConflicts('paste', 'F5', 'pane', overrides), []);
 
   const sameScope = { paste: 'Ctrl+KeyC' }; // collides with pane-scope 'copy'
-  assert.equal(findConflict('paste', 'Ctrl+KeyC', 'pane', sameScope), 'copy');
+  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', 'pane', sameScope), ['copy']);
+
+  const twice = { paste: 'Ctrl+KeyC', rename: 'Ctrl+KeyC' };
+  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', 'pane', twice).sort(), ['copy', 'rename']);
 });
 
 test('normalizeKeyboardShortcuts drops unknown ids and malformed bindings, keeps valid overrides and explicit unbinds', () => {

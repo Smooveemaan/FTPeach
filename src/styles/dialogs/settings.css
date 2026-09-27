@@ -433,11 +433,15 @@
   color: var(--text-primary);
 }
 
-.settings-shortcut-conflict {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  grid-column: 1 / -1;
+/* Always shown, unlike the hover-revealed actions beside it. */
+.settings-shortcut-conflict-btn.btn-icon {
+  background: transparent;
+  border-color: transparent;
+  color: var(--accent-amber);
+}
+.settings-shortcut-conflict-btn.btn-icon:hover {
+  border-color: transparent;
+  color: var(--text-primary);
 }
 
 .shortcut-recorder {

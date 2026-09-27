@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import ShortcutRecorder from '../../../components/ShortcutRecorder.tsx';
 import { SHORTCUT_ACTIONS, shortcutActionsByScope } from '../../../shortcuts/registry.ts';
-import { effectiveBinding, findConflict } from '../../../shortcuts/resolve.ts';
+import { effectiveBinding, findConflicts } from '../../../shortcuts/resolve.ts';
 import type { PaneId } from '../../../shared/paneContracts.ts';
 import type { PaneOrientation, ShortcutOverrides } from '../useSettings.ts';
 
@@ -62,16 +62,25 @@ export default function ShortcutsSettings({
             <div className="settings-shortcuts-scope-header">{t(titleKey)}</div>
             {shortcutActionsByScope(scope).map((entry) => {
               const binding = effectiveBinding(entry.id, shortcutOverridesValue);
-              const conflictId = findConflict(
+              const conflicts = findConflicts(
                 entry.id,
                 binding,
                 entry.scope,
                 shortcutOverridesValue,
-              );
-              const conflictEntry = conflictId && SHORTCUT_ACTIONS.find((a) => a.id === conflictId);
+              ).flatMap((id) => SHORTCUT_ACTIONS.filter((action) => action.id === id));
+              const conflictText =
+                conflicts.length > 0
+                  ? t('settings.shortcuts.conflict', {
+                      action: conflicts.map(shortcutLabel).join(t('statusBar.listSeparator')),
+                    })
+                  : undefined;
               const overridden = binding !== entry.default;
               return (
-                <div className="settings-shortcut-row" key={entry.id}>
+                <div
+                  className="settings-shortcut-row"
+                  key={entry.id}
+                  data-shortcut-action={entry.id}
+                >
                   <span className="settings-shortcut-label">{shortcutLabel(entry)}</span>
                   <ShortcutRecorder
                     value={binding}
@@ -85,6 +94,25 @@ export default function ShortcutsSettings({
                     }
                   />
                   <div className="settings-shortcut-actions">
+                    {conflictText && (
+                      <button
+                        type="button"
+                        className="btn btn-icon settings-shortcut-conflict-btn"
+                        aria-label={conflictText}
+                        data-tooltip={conflictText}
+                        // Shows the first action sharing these keys, ready to be
+                        // given other ones.
+                        onClick={() =>
+                          document
+                            .querySelector<HTMLElement>(
+                              `[data-shortcut-action="${conflicts[0]!.id}"] .shortcut-recorder`,
+                            )
+                            ?.focus()
+                        }
+                      >
+                        <Icon name="triangleAlert" size={14} />
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="btn btn-icon settings-shortcut-icon-btn"
@@ -118,14 +146,6 @@ export default function ShortcutsSettings({
                       <Icon name="trash" size={14} />
                     </button>
                   </div>
-                  {conflictEntry && (
-                    <span className="settings-hint settings-warning settings-shortcut-conflict">
-                      <Icon name="triangleAlert" size={12} />
-                      {t('settings.shortcuts.conflict', {
-                        action: shortcutLabel(conflictEntry),
-                      })}
-                    </span>
-                  )}
                 </div>
               );
             })}

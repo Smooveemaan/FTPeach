@@ -63,18 +63,60 @@ fn enable_native_rounding(window: &tauri::WebviewWindow) {
 #[cfg(not(windows))]
 fn enable_native_rounding(_: &tauri::WebviewWindow) {}
 
+const WIDTH: f64 = 460.0;
+const HEIGHT: f64 = 170.0;
+
+/// The theme the main window shows: the saved choice, or Windows' own for
+/// "system", read from the main window.
+fn light_theme(app: &tauri::AppHandle, preference: Option<&str>) -> bool {
+    match preference {
+        Some("light") => true,
+        Some("dark") => false,
+        _ => app
+            .get_webview_window("main")
+            .and_then(|main| main.theme().ok())
+            .is_some_and(|theme| theme == tauri::Theme::Light),
+    }
+}
+
 pub(crate) fn create(
     app: &tauri::AppHandle,
     label: &str,
     request_id: &str,
+    theme: Option<&str>,
 ) -> tauri::Result<tauri::WebviewWindow> {
+    let light = light_theme(app, theme);
+    let theme = if light { "light" } else { "dark" };
+    // Matches --bg-panel, so the window shows no other color before it paints.
+    let background = if light {
+        tauri::utils::config::Color(250, 249, 247, 255)
+    } else {
+        tauri::utils::config::Color(26, 25, 23, 255)
+    };
+    // Born over the main window, so it starts on that window's monitor and a
+    // DPI change on the way there cannot resize it off center.
+    let (x, y) = app
+        .get_webview_window("main")
+        .and_then(|main| {
+            let scale = main.scale_factor().ok()?;
+            let position = main.outer_position().ok()?.to_logical::<f64>(scale);
+            let size = main.outer_size().ok()?.to_logical::<f64>(scale);
+            Some((
+                position.x + (size.width - WIDTH) / 2.0,
+                position.y + (size.height - HEIGHT) / 2.0,
+            ))
+        })
+        .unwrap_or((100.0, 100.0));
     let window = WebviewWindowBuilder::new(
         app,
         label,
-        WebviewUrl::App(format!("index.html?security-confirmation={request_id}").into()),
+        WebviewUrl::App(
+            format!("index.html?security-confirmation={request_id}&theme={theme}").into(),
+        ),
     )
     .title("FTPeach")
-    .inner_size(460.0, 170.0)
+    .position(x, y)
+    .inner_size(WIDTH, HEIGHT)
     .min_inner_size(400.0, 160.0)
     .resizable(false)
     .maximizable(false)
@@ -82,7 +124,7 @@ pub(crate) fn create(
     .decorations(false)
     .shadow(false)
     .always_on_top(true)
-    .background_color(tauri::utils::config::Color(26, 25, 23, 255))
+    .background_color(background)
     .visible(false)
     .build()?;
     enable_native_rounding(&window);

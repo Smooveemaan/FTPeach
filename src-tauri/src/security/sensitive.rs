@@ -718,14 +718,18 @@ pub async fn authorize_sensitive(
             },
         );
     }
-    let confirmation =
-        match crate::runtime::confirmation_window::create(&app, &confirmation_label, &request_id) {
-            Ok(window) => window,
-            Err(_) => {
-                reject_pending(&state, &request_id);
-                return Err(denied("Confirmation could not be displayed"));
-            }
-        };
+    let confirmation = match crate::runtime::confirmation_window::create(
+        &app,
+        &confirmation_label,
+        &request_id,
+        settings.get("theme").and_then(Value::as_str),
+    ) {
+        Ok(window) => window,
+        Err(_) => {
+            reject_pending(&state, &request_id);
+            return Err(denied("Confirmation could not be displayed"));
+        }
+    };
     let close_app = app.clone();
     let close_request_id = request_id.clone();
     confirmation.on_window_event(move |event| {

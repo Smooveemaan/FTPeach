@@ -103,6 +103,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   FTPeach window.
 - The More and bookmark menus stay inside a narrow or scaled-up window, and scroll when it is
   too short for them.
+- A master password that is too short or does not match its confirmation is reported in red,
+  and the message fades out after a moment.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

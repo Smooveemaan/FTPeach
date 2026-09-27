@@ -84,15 +84,20 @@ export function useVaultSettings(): VaultSettingsModel {
     [],
   );
 
-  const showVaultUnlockError = (message = '') => {
+  /** Shows an error that fades out and then goes, so a repeat shows it afresh. */
+  const showVaultError = (message: string) => {
     if (vaultUnlockErrorTimerRef.current) clearTimeout(vaultUnlockErrorTimerRef.current);
     setVaultMessage(message);
-    setVaultUnlockInvalid(true);
     vaultUnlockErrorTimerRef.current = setTimeout(() => {
       setVaultMessage('');
       setVaultUnlockInvalid(false);
       vaultUnlockErrorTimerRef.current = null;
     }, 2000);
+  };
+
+  const showVaultUnlockError = (message = '') => {
+    showVaultError(message);
+    setVaultUnlockInvalid(true);
   };
 
   const runVaultAction = async (action: () => Promise<CommandResult>) => {
@@ -125,8 +130,8 @@ export function useVaultSettings(): VaultSettingsModel {
     const password = masterPasswordRef.current?.value || '';
     const confirmation = masterPasswordConfirmRef.current?.value || '';
     if ([...password].length < MIN_MASTER_PASSWORD_LENGTH)
-      return setVaultMessage(t('settings.security.passwordTooShort'));
-    if (password !== confirmation) return setVaultMessage(t('settings.security.passwordMismatch'));
+      return showVaultError(t('settings.security.passwordTooShort'));
+    if (password !== confirmation) return showVaultError(t('settings.security.passwordMismatch'));
     return runVaultAction(() => api.vault.setup(password));
   };
 
@@ -164,8 +169,8 @@ export function useVaultSettings(): VaultSettingsModel {
     const next = masterPasswordRef.current?.value || '';
     const confirmation = masterPasswordConfirmRef.current?.value || '';
     if ([...next].length < MIN_MASTER_PASSWORD_LENGTH)
-      return setVaultMessage(t('settings.security.passwordTooShort'));
-    if (next !== confirmation) return setVaultMessage(t('settings.security.passwordMismatch'));
+      return showVaultError(t('settings.security.passwordTooShort'));
+    if (next !== confirmation) return showVaultError(t('settings.security.passwordMismatch'));
     const succeeded = await runVaultAction(() =>
       api.vault.changePassword(oldMasterPasswordRef.current?.value || '', next),
     );

@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import { usePaneRefresh } from '../../../src/features/file-browser/panes/usePaneRefresh.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
+import { friendlyError } from '../../../src/shared/errorMessages.ts';
 import {
   markConnectionDead,
   resetTransfersStoreForTests,
@@ -250,4 +251,42 @@ test('switching a pane away from local aborts its listing and clears the spinner
   expect(updatePane.mock.calls.some(([, patch]) => 'entries' in patch)).toBe(false);
   expect(updatePane).toHaveBeenLastCalledWith('a', { loading: false }, tab.id);
   unmount();
+});
+
+test('a listing that works clears only the error a failed listing put up', async () => {
+  const tab = makeTab('tab');
+  tab.panes.b.kind = 'remote';
+  tab.panes.b.connectionId = 'session';
+  tab.panes.b.status = 'connected';
+  const failure = { ok: false, errorCode: 'invalidInput', error: 'Invalid URL', entries: [] };
+  const list = vi.fn().mockResolvedValue({ ok: true, entries: [] });
+  window.api = { session: { list } } as unknown as Window['api'];
+  let message = 'Could not delete folder';
+  const setErrorMessage = (next: string | ((_current: string) => string)) => {
+    message = typeof next === 'function' ? next(message) : next;
+  };
+  const { result } = renderHook(() =>
+    usePaneRefresh({
+      panes: tab.panes,
+      activeTabId: tab.id,
+      updatePane: vi.fn(),
+      reportError: (error) => setErrorMessage(friendlyError(error) ?? ''),
+      setErrorMessage,
+      defaultLocalPath: '',
+    }),
+  );
+  await act(async () => {
+    await result.current.refreshPane('b', '/');
+  });
+  expect(message, 'a delete error survives the refresh after it').toBe('Could not delete folder');
+
+  list.mockResolvedValueOnce(failure);
+  await act(async () => {
+    await result.current.refreshPane('b', '/');
+  });
+  expect(message).not.toBe('Could not delete folder');
+  await act(async () => {
+    await result.current.refreshPane('b', '/');
+  });
+  expect(message).toBe('');
 });

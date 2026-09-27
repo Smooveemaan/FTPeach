@@ -663,33 +663,32 @@ impl SftpBackend {
         Ok(entries)
     }
 
-    fn remove_with_depth<'a>(
-        &'a mut self,
-        path: &'a str,
-        is_dir: bool,
-        depth: u32,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = BackendResult<()>> + Send + 'a>> {
-        Box::pin(async move {
+    /// Removes a tree depth-first from an explicit stack, so a deep folder
+    /// costs memory for its path list rather than nested futures.
+    async fn remove_tree(&mut self, root: &str) -> BackendResult<()> {
+        let mut stack = vec![(root.to_string(), 0, false)];
+        while let Some((path, depth, emptied)) = stack.pop() {
+            if emptied {
+                self.sftp()?.rmdir(path).await?;
+                continue;
+            }
             if !remote_remove_depth_allowed(depth) {
                 return Err(anyhow!(
                     "Folder nesting too deep to remove (> {MAX_REMOTE_REMOVE_DEPTH} levels)"
                 ));
             }
-            if !is_dir {
-                let raw = self.sftp()?;
-                raw.remove(path.to_string()).await?;
-                return Ok(());
-            }
-            let entries = self.list_for_recursive(path).await?;
+            let entries = self.list_for_recursive(&path).await?;
+            stack.push((path.clone(), depth, true));
             for entry in entries {
                 let child = format!("{}/{}", path.trim_end_matches('/'), entry.name);
-                self.remove_with_depth(&child, entry.is_directory, depth + 1)
-                    .await?;
+                if entry.is_directory {
+                    stack.push((child, depth + 1, false));
+                } else {
+                    self.sftp()?.remove(child).await?;
+                }
             }
-            let raw = self.sftp()?;
-            raw.rmdir(path.to_string()).await?;
-            Ok(())
-        })
+        }
+        Ok(())
     }
 }
 
@@ -961,7 +960,12 @@ impl ProtocolBackend for SftpBackend {
     }
 
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {
-        self.remove_with_depth(path, is_dir, 0).await
+        if is_dir {
+            self.remove_tree(path).await
+        } else {
+            self.sftp()?.remove(path.to_string()).await?;
+            Ok(())
+        }
     }
     fn supports_empty_directory_remove(&self) -> bool {
         true

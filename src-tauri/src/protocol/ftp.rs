@@ -1208,38 +1208,44 @@ impl FtpBackend {
         .await
     }
 
-    fn remove_with_depth<'a>(
-        &'a mut self,
-        path: &'a str,
-        is_dir: bool,
-        depth: u32,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = BackendResult<()>> + Send + 'a>> {
-        Box::pin(async move {
+    async fn remove_file(&mut self, path: &str) -> BackendResult<()> {
+        let target = path.to_string();
+        match self
+            .with_stream(move |s| Box::pin(async move { Ok(s.rm(&target).await?) }))
+            .await
+        {
+            Err(error) => Err(self.explain_refusal(path, error).await),
+            done => done,
+        }
+    }
+
+    /// Removes a tree depth-first from an explicit stack, so a deep folder
+    /// costs memory for its path list rather than nested futures.
+    async fn remove_tree(&mut self, root: &str) -> BackendResult<()> {
+        let mut stack = vec![(root.to_string(), 0, false)];
+        while let Some((path, depth, emptied)) = stack.pop() {
+            if emptied {
+                self.with_stream(move |s| Box::pin(async move { Ok(s.rmdir(&path).await?) }))
+                    .await?;
+                continue;
+            }
             if !remote_remove_depth_allowed(depth) {
                 return Err(anyhow!(
                     "Folder nesting too deep to remove (> {MAX_REMOTE_REMOVE_DEPTH} levels)"
                 ));
             }
-            if !is_dir {
-                let target = path.to_string();
-                return match self
-                    .with_stream(move |s| Box::pin(async move { Ok(s.rm(&target).await?) }))
-                    .await
-                {
-                    Err(error) => Err(self.explain_refusal(path, error).await),
-                    done => done,
-                };
-            }
-            let entries = self.list_for_recursive(path).await?;
+            let entries = self.list_for_recursive(&path).await?;
+            stack.push((path.clone(), depth, true));
             for entry in entries {
                 let child = format!("{}/{}", path.trim_end_matches('/'), entry.name);
-                self.remove_with_depth(&child, entry.is_directory, depth + 1)
-                    .await?;
+                if entry.is_directory {
+                    stack.push((child, depth + 1, false));
+                } else {
+                    self.remove_file(&child).await?;
+                }
             }
-            let path = path.to_string();
-            self.with_stream(move |s| Box::pin(async move { Ok(s.rmdir(&path).await?) }))
-                .await
-        })
+        }
+        Ok(())
     }
 }
 
@@ -1582,7 +1588,11 @@ impl ProtocolBackend for FtpBackend {
     }
 
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {
-        self.remove_with_depth(path, is_dir, 0).await
+        if is_dir {
+            self.remove_tree(path).await
+        } else {
+            self.remove_file(path).await
+        }
     }
     fn supports_empty_directory_remove(&self) -> bool {
         true

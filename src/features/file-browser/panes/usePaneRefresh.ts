@@ -1,8 +1,8 @@
-import type { MutableRefObject } from 'react';
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useCallback, useEffect, useRef } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
-import { commandResultError } from '../../../shared/errorMessages.ts';
+import { commandResultError, friendlyError } from '../../../shared/errorMessages.ts';
 import { isConnectionDead, retainConnectionRequest } from '../../transfers/index.ts';
 import { backendFor } from './paneBackend.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
@@ -18,7 +18,7 @@ interface UsePaneRefreshOptions {
   activeTabId: string;
   updatePane: UpdatePane;
   reportError: (error: FriendlyErrorInput) => unknown;
-  setErrorMessage: (message: string) => unknown;
+  setErrorMessage: Dispatch<SetStateAction<string>>;
   defaultLocalPath: string;
 }
 
@@ -47,6 +47,9 @@ export function usePaneRefresh({
 }: UsePaneRefreshOptions): PaneRefreshModel {
   const requestIdsRef = useRef<PaneRequestIds>({});
   const inFlightRefreshesRef = useRef<PaneRefreshes>({});
+  // The message a failed listing put up. A later listing that works takes back
+  // only that one, never an error some other action just reported.
+  const listingErrorRef = useRef('');
   const localRequests = useRef(
     new Map<string, { controller: AbortController; tabId: string; id: PaneId; kind: string }>(),
   );
@@ -141,7 +144,9 @@ export function usePaneRefresh({
             },
             tabId,
           );
-          setErrorMessage('');
+          const listingError = listingErrorRef.current;
+          listingErrorRef.current = '';
+          if (listingError) setErrorMessage((current) => (current === listingError ? '' : current));
         } else {
           updatePane(id, { loading: false }, tabId);
           // A listing that lands after the user closed this session failed for
@@ -151,6 +156,7 @@ export function usePaneRefresh({
             pane.kind === 'remote' && !!pane.connectionId && isConnectionDead(pane.connectionId);
           // Initial listing failures are shown by connectPane in the remote pane.
           if (!closedOnPurpose && (pane.kind !== 'remote' || pane.status !== 'connecting')) {
+            listingErrorRef.current = friendlyError(commandResultError(result)) ?? '';
             reportError(commandResultError(result));
           }
         }

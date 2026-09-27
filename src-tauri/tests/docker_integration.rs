@@ -47,6 +47,22 @@ async fn round_trip(mut backend: impl ProtocolBackend, config: &ConnectionConfig
         .await
         .expect("remove empty folder");
 
+    // Deeper than the 40 levels removal used to stop at.
+    let deep_root = format!("{dir}/deep");
+    let mut deep = deep_root.clone();
+    backend.mkdir(&deep).await.expect("mkdir deep root");
+    for _ in 0..60 {
+        deep.push_str("/d");
+        backend.mkdir(&deep).await.expect("mkdir deep level");
+    }
+    backend
+        .remove(&deep_root, true)
+        .await
+        .expect("remove deeply nested folder");
+    assert!(
+        !entry_names(&backend.list(dir).await.expect("list after deep remove")).contains(&"deep")
+    );
+
     let file_path = format!("{dir}/hello.txt");
     let content = b"FTPeach docker integration test payload\n".to_vec();
     let local_upload = std::env::temp_dir().join(format!(

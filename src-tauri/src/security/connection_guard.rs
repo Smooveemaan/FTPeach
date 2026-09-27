@@ -14,7 +14,9 @@ pub fn is_safe_remote_path_argument(path: &str) -> bool {
     !path.is_empty() && !path.contains(['\r', '\n'])
 }
 
-pub const MAX_REMOTE_REMOVE_DEPTH: u32 = 40;
+/// Only a guard against a server that lists folders without end: removal
+/// walks an explicit stack, so real trees of any sane depth fit.
+pub const MAX_REMOTE_REMOVE_DEPTH: u32 = 1024;
 
 pub fn remote_remove_depth_allowed(depth: u32) -> bool {
     depth <= MAX_REMOTE_REMOVE_DEPTH

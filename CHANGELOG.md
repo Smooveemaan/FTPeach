@@ -94,6 +94,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   every few dozen files. Pausing no longer shows a notification.
 - An FTP server refusing a file's data connection no longer makes its pane look
   disconnected.
+- Deleting a deeply nested folder on an FTP or SFTP server removes all of it, not only the
+  first 40 levels.
+- An error from deleting files on a server stays visible instead of vanishing right away.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

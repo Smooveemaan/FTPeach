@@ -41,7 +41,7 @@ interface ConfirmOptions {
 }
 interface UsePanesOptions {
   reportError: (error: FriendlyErrorInput) => unknown;
-  setErrorMessage: (message: string) => unknown;
+  setErrorMessage: Dispatch<SetStateAction<string>>;
   requestConfirm: (message: string, onConfirm: () => unknown, options?: ConfirmOptions) => unknown;
   connectTimeout: number;
   paneOrientation: 'horizontal' | 'vertical';

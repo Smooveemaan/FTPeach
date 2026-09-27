@@ -383,6 +383,11 @@
   opacity: 0.75;
 }
 
+/* Cut and waiting to be pasted, as in Explorer. */
+.row.is-cut {
+  opacity: 0.5;
+}
+
 body.drag-move-active .row:hover:not(.selected) {
   background: none;
 }

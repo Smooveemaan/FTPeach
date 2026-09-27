@@ -48,6 +48,7 @@ interface FileBrowserPaneModelOptions {
   copyToClipboard: ReturnType<typeof useFileClipboard>['copyToClipboard'];
   cutToClipboard: ReturnType<typeof useFileClipboard>['cutToClipboard'];
   canPaste: ReturnType<typeof useFileClipboard>['canPaste'];
+  cutNames: ReturnType<typeof useFileClipboard>['cutNames'];
   pasteClipboard: ReturnType<typeof useFileClipboard>['pasteClipboard'];
 
   switchPaneToLocal: ReturnType<typeof usePanes>['switchPaneToLocal'];
@@ -120,6 +121,7 @@ export function useFileBrowserPaneModel(
     copyToClipboard,
     cutToClipboard,
     canPaste,
+    cutNames,
     pasteClipboard,
     switchPaneToLocal,
     startPaneConnect,
@@ -318,6 +320,7 @@ export function useFileBrowserPaneModel(
     copyToClipboard,
     cutToClipboard,
     canPaste,
+    cutNames,
     pasteClipboard,
   };
 

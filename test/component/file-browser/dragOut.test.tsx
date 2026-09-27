@@ -213,3 +213,23 @@ test('a cut stays on the clipboard until its files have actually moved', async (
   await act(async () => result.current.pasteClipboard('a', tab.panes.a));
   expect(result.current.canPaste(tab.panes.a)).toBe(false);
 });
+
+test('a cut marks its names in the folder it came from, and a copy marks nothing', () => {
+  const tab = makeTab('tab');
+  Object.assign(tab.panes.a, { kind: 'local', path: 'D:\\work', selected: new Set(['a.txt']) });
+  const { result } = renderHook(() =>
+    useFileClipboard({
+      panes: tab.panes,
+      confirmOverwriteIfNeeded: vi.fn(),
+      copyEntries: vi.fn(),
+      canCopyBetween: vi.fn(),
+      refreshPane: vi.fn(),
+      movePaneSamePane: vi.fn(),
+    }),
+  );
+  act(() => result.current.cutToClipboard('a', tab.panes.a));
+  expect([...(result.current.cutNames(tab.panes.a) ?? [])]).toEqual(['a.txt']);
+  expect(result.current.cutNames({ ...tab.panes.a, path: 'D:\\other' })).toBeUndefined();
+  act(() => result.current.copyToClipboard('a', tab.panes.a));
+  expect(result.current.cutNames(tab.panes.a)).toBeUndefined();
+});

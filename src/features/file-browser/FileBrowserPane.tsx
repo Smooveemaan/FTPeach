@@ -96,6 +96,7 @@ export interface PaneActionsModel {
   copyToClipboard: (id: PaneId, pane: PaneState) => unknown;
   cutToClipboard: (id: PaneId, pane: PaneState) => unknown;
   canPaste: (pane: PaneState) => boolean;
+  cutNames: (pane: PaneState) => ReadonlySet<string> | undefined;
   pasteClipboard: (id: PaneId, pane: PaneState) => unknown;
 }
 
@@ -243,6 +244,7 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
       }
       onCopySelection={() => actions.copyToClipboard(id, pane)}
       onCutSelection={() => actions.cutToClipboard(id, pane)}
+      cutNames={actions.cutNames(pane)}
       onPaste={actions.canPaste(pane) ? () => actions.pasteClipboard(id, pane) : undefined}
       onPathSubmit={(path) =>
         actions.navigate(id, pane.kind === 'remote' && !path.startsWith('/') ? `/${path}` : path)

@@ -49,6 +49,8 @@ export interface FilePaneProps {
   onCrumbClick: (path: string) => void;
   onDriveMenuOpen?: ((event: ReactMouseEvent<HTMLSpanElement>) => void) | undefined;
   onSelectionChange: (selectedNames: Set<string>) => void;
+  /** Names held by a cut, shown paler until they are pasted. */
+  cutNames?: ReadonlySet<string> | undefined;
   onRowDoubleClick: (entry: FileEntry) => unknown;
   toolbar?: ReactNode | undefined;
   loading: boolean;
@@ -101,6 +103,7 @@ function FilePane({
   crumbs,
   entries,
   selectedNames,
+  cutNames,
   onCrumbClick,
   onDriveMenuOpen,
   onSelectionChange,
@@ -347,6 +350,7 @@ function FilePane({
         side={side}
         style={style}
         selected={selectedNames.has(entry.name)}
+        cut={!!cutNames?.has(entry.name)}
         dragTarget={dragOverRowName === entry.name}
         gridTemplateColumns={rowGridTemplateColumns}
         nameWidth={widthOf('name')}

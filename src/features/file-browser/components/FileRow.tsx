@@ -36,6 +36,7 @@ interface FileRowProps {
   side: PaneId;
   style?: CSSProperties | undefined;
   selected: boolean;
+  cut: boolean;
   dragTarget: boolean;
   gridTemplateColumns: string;
   nameWidth: number;
@@ -57,6 +58,7 @@ function FileRow({
   side,
   style,
   selected,
+  cut,
   dragTarget,
   gridTemplateColumns,
   nameWidth,
@@ -79,7 +81,7 @@ function FileRow({
       data-name={entry.name}
       data-index={index}
       onMouseDown={(e) => onRowMouseDown?.(entry, e)}
-      className={`row ${entry.isDirectory ? 'is-dir' : ''} ${selected ? 'selected' : ''} ${entry.isHidden || entry.name.startsWith('.') ? 'is-hidden' : ''} ${dragTarget ? 'drag-target' : ''}`}
+      className={`row ${entry.isDirectory ? 'is-dir' : ''} ${selected ? 'selected' : ''} ${entry.isHidden || entry.name.startsWith('.') ? 'is-hidden' : ''} ${dragTarget ? 'drag-target' : ''} ${cut ? 'is-cut' : ''}`}
       style={
         {
           ...style,

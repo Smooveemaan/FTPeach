@@ -32,6 +32,7 @@ export interface FileClipboardModel {
   copyToClipboard: (id: PaneId, pane: PaneState) => void;
   cutToClipboard: (id: PaneId, pane: PaneState) => void;
   canPaste: (targetPane: PaneState) => boolean;
+  cutNames: (pane: PaneState) => ReadonlySet<string> | undefined;
   pasteClipboard: (targetId: PaneId, targetPane: PaneState) => void;
   copySelectedWithConfirm: (
     sourcePane: PaneState,
@@ -84,6 +85,14 @@ export function useFileClipboard({
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
   const copyToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'copy' });
   const cutToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'cut' });
+  /** The names a cut is holding in this folder, which the list shows paler. */
+  const cutNames = (pane: PaneState): ReadonlySet<string> | undefined =>
+    clipboard?.mode === 'cut' &&
+    clipboard.pane.kind === pane.kind &&
+    clipboard.pane.path === pane.path &&
+    clipboard.pane.connectionId === pane.connectionId
+      ? clipboard.pane.selected
+      : undefined;
   const canPaste = (targetPane: PaneState) =>
     !!clipboard && clipboard.pane.selected.size > 0 && canCopyBetween(clipboard.pane, targetPane);
   const pasteClipboard = (targetId: PaneId, targetPane: PaneState) => {
@@ -225,6 +234,7 @@ export function useFileClipboard({
     copyToClipboard,
     cutToClipboard,
     canPaste,
+    cutNames,
     pasteClipboard,
     copySelectedWithConfirm,
     dragMove,

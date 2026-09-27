@@ -78,6 +78,7 @@ function makeModel(paneA: PaneState): FileBrowserPaneModel {
       copyToClipboard: vi.fn(),
       cutToClipboard: vi.fn(),
       canPaste: () => false,
+      cutNames: () => undefined,
       pasteClipboard: vi.fn(),
       switchToLocal: vi.fn(),
       startConnect: vi.fn(),

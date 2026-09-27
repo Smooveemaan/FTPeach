@@ -151,3 +151,7 @@ opt-level = 3
 # active-mode data connections are accepted only from the server. See
 # vendor/suppaftp/FTPEACH-PATCH.md.
 suppaftp = { path = "vendor/suppaftp" }
+# wry reports every allowed drop effect back to the source of an OS drop, so
+# Explorer could treat a copy into FTPeach as a move. See
+# vendor/wry/FTPEACH-PATCH.md.
+wry = { path = "vendor/wry" }

@@ -365,11 +365,27 @@ export default function Application() {
 
   const {
     status: updateStatus,
-    checkForUpdates,
+    checkForUpdates: runUpdateCheck,
     installUpdate,
     downloadUpdate,
     banner: updateBanner,
   } = useUpdateBanner(settings.updates.autoCheckUpdates, hasActiveTransfers);
+  // A check the user asked for says so when there is nothing new; the status
+  // bar otherwise only speaks up about an update.
+  const manualUpdateCheck = useRef(false);
+  const checkForUpdates = () => {
+    manualUpdateCheck.current = true;
+    return runUpdateCheck();
+  };
+  useEffect(() => {
+    if (!manualUpdateCheck.current || !updateStatus || updateStatus.state === 'checking') return;
+    manualUpdateCheck.current = false;
+    if (updateStatus.state === 'not-available')
+      showStatusNotice({
+        text: t('settings.updateStatus.notAvailable'),
+        short: t('statusBar.upToDate'),
+      });
+  }, [updateStatus, showStatusNotice, t]);
 
   const {
     copyToClipboard,

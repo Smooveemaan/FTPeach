@@ -109,6 +109,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Files and folders cut with Ctrl+X look paler until they are pasted.
 - The log's filter menu stays open while you tick several kinds, and closes on a click outside
   it.
+- Check for Updates says in the status bar when FTPeach is already up to date.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

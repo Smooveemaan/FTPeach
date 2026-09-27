@@ -856,6 +856,7 @@
     "importNothingNewShort": "新しい項目なし",
     "importSkippedShort": "スキップ: {{count}}",
     "quitPendingShort": "終了しています…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "終了をキャンセル",
     "listSeparator": "、"
   },

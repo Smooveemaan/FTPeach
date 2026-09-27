@@ -856,6 +856,7 @@
     "importNothingNewShort": "无新内容",
     "importSkippedShort": "已跳过：{{count}}",
     "quitPendingShort": "正在退出…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "取消退出",
     "listSeparator": "、"
   },

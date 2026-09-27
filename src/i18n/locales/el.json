@@ -856,6 +856,7 @@
     "importNothingNewShort": "Τίποτα νέο",
     "importSkippedShort": "Παραλείφθηκαν: {{count}}",
     "quitPendingShort": "Έξοδος…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Ακύρωση εξόδου",
     "listSeparator": ", "
   },

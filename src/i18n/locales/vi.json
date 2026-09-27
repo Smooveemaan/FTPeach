@@ -856,6 +856,7 @@
     "importNothingNewShort": "Không có gì mới",
     "importSkippedShort": "Đã bỏ qua: {{count}}",
     "quitPendingShort": "Đang thoát…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Hủy thoát",
     "listSeparator": ", "
   },

@@ -856,6 +856,7 @@
     "importNothingNewShort": "새 항목 없음",
     "importSkippedShort": "건너뜀: {{count}}",
     "quitPendingShort": "종료 중…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "종료 취소",
     "listSeparator": ", "
   },

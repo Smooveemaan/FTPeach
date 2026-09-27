@@ -856,6 +856,7 @@
     "importNothingNewShort": "Nincs új elem",
     "importSkippedShort": "Kihagyva: {{count}}",
     "quitPendingShort": "Kilépés…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Kilépés megszakítása",
     "listSeparator": ", "
   },

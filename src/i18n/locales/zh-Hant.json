@@ -856,6 +856,7 @@
     "importNothingNewShort": "沒有新項目",
     "importSkippedShort": "已略過：{{count}}",
     "quitPendingShort": "正在結束…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "取消結束",
     "listSeparator": "、"
   },

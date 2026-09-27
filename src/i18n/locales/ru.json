@@ -872,6 +872,7 @@
     "importNothingNewShort": "Ничего нового",
     "importSkippedShort": "Пропущено: {{count}}",
     "quitPendingShort": "Выход…",
+    "upToDate": "Версия актуальна",
     "cancelQuitLong": "Отменить выход",
     "listSeparator": ", "
   },

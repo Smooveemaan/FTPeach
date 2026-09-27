@@ -856,6 +856,7 @@
     "importNothingNewShort": "Intet nyt",
     "importSkippedShort": "Sprunget over: {{count}}",
     "quitPendingShort": "Afslutter…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Annuller afslutning",
     "listSeparator": ", "
   },

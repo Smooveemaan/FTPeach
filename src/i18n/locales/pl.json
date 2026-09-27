@@ -872,6 +872,7 @@
     "importNothingNewShort": "Nic nowego",
     "importSkippedShort": "Pominięto: {{count}}",
     "quitPendingShort": "Zamykanie…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Anuluj wyjście",
     "listSeparator": ", "
   },

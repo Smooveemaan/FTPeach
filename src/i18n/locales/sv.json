@@ -856,6 +856,7 @@
     "importNothingNewShort": "Inget nytt",
     "importSkippedShort": "Överhoppade: {{count}}",
     "quitPendingShort": "Avslutar…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Avbryt avslutning",
     "listSeparator": ", "
   },

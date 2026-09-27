@@ -856,6 +856,7 @@
     "importNothingNewShort": "कुछ नया नहीं",
     "importSkippedShort": "छोड़े गए: {{count}}",
     "quitPendingShort": "बाहर निकल रहा है…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "बाहर निकलना रद्द करें",
     "listSeparator": ", "
   },

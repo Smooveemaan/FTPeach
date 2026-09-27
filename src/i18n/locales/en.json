@@ -856,6 +856,7 @@
     "importNothingNewShort": "Nothing new",
     "importSkippedShort": "Skipped: {{count}}",
     "quitPendingShort": "Quitting…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Cancel quit",
     "listSeparator": ", "
   },

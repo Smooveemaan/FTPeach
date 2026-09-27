@@ -856,6 +856,7 @@
     "importNothingNewShort": "ไม่มีรายการใหม่",
     "importSkippedShort": "ข้ามแล้ว: {{count}}",
     "quitPendingShort": "กำลังออก…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "ยกเลิกการออก",
     "listSeparator": ", "
   },

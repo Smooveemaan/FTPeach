@@ -856,6 +856,7 @@
     "importNothingNewShort": "Niets nieuws",
     "importSkippedShort": "Overgeslagen: {{count}}",
     "quitPendingShort": "Afsluiten…",
+    "upToDate": "Up to date",
     "cancelQuitLong": "Afsluiten annuleren",
     "listSeparator": ", "
   },

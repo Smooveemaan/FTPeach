@@ -58,7 +58,9 @@
   border-bottom: none;
   background: transparent;
   color: var(--text-secondary);
-  padding: 7px 10px;
+  /* One pixel higher than even: the label's capitals, and the dot and icon
+     centered on them, then sit in the middle of the tab. */
+  padding: 6px 10px 8px;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   cursor: pointer;
   font-size: 12px;
@@ -104,13 +106,25 @@
 }
 
 
-.tab-strip-item.compact.active .tab-strip-label { padding-inline-end: 20px; }
+/* The dot and the icon center on the label's capitals, which sit a little
+   below the middle of its line box. */
+.tab-strip-content > svg {
+  position: relative;
+  top: 1px;
+}
+
+.tab-strip-content > svg + .tab-strip-label {
+  /* The icon's own inset already adds to the gap before the label. */
+  margin-inline-start: -1px;
+}
 
 .tab-strip-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex: 0 0 auto;
+  position: relative;
+  top: 1px;
   /* Neutral by default — "nothing connected yet" isn't an error and
      shouldn't read as one. .error below is the only state that uses red. */
   background: var(--text-faint);
@@ -161,15 +175,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
+  /* Whole pixels keep it square at every interface scale. */
+  width: 16px;
+  height: 16px;
   flex: 0 0 auto;
   border-radius: 3px;
   color: var(--text-faint);
-  font-size: 12px;
-  line-height: 1;
+  /* Centered in the tab, as far from its end as from its top and bottom. */
   position: relative;
-  top: 2px;
+  top: 1px;
+  margin-inline-end: -3px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease;
@@ -178,18 +193,38 @@
   opacity: 1;
   pointer-events: auto;
 }
-.tab-strip-close:hover { background: var(--bg-raised); color: var(--accent-red); }
+.tab-strip-close:hover {
+  background: color-mix(in srgb, var(--accent-red) 16%, transparent);
+  color: var(--accent-red);
+}
 
 .tab-strip-close.floating {
   position: absolute;
-  inset-inline-end: 6px;
+  inset-inline-end: 7px;
+  margin-inline-end: 0;
   top: 50%;
   transform: translateY(-50%);
-  background: var(--bg-panel);
+  --tab-fill: var(--bg-base);
+  background: var(--tab-fill);
 }
-.tab-strip-close-glyph {
-  position: relative;
-  top: -1px;
+.tab-strip-item.active .tab-strip-close.floating { --tab-fill: var(--bg-panel); }
+.tab-strip-item .tab-strip-close.floating:hover {
+  background: color-mix(in srgb, var(--accent-red) 16%, var(--tab-fill));
+}
+/* Over a shrunk tab the × sits on the label's end: the label fades out into
+   it instead of stopping at a hard edge. */
+.tab-strip-close.floating::before {
+  content: '';
+  position: absolute;
+  inset-inline-end: 100%;
+  top: -2px;
+  bottom: -2px;
+  width: 16px;
+  background: linear-gradient(to left, var(--tab-fill), transparent);
+  pointer-events: none;
+}
+[dir='rtl'] .tab-strip-close.floating::before {
+  background: linear-gradient(to right, var(--tab-fill), transparent);
 }
 
 

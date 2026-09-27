@@ -132,7 +132,6 @@ export function usePaneActions({
           },
           {
             label: t('paneMenu.refresh'),
-            shortcut: shortcutLabel('refresh'),
             disabled: disabledForRemote,
             onClick: () => refreshPane(id, pane.path),
           },
@@ -175,6 +174,22 @@ export function usePaneActions({
             ),
         });
         if (pane.kind === 'remote') {
+          // Same as a double click: the associated or the system's program.
+          items.push({
+            label: t('paneMenu.open'),
+            disabled: !pane.connectionId,
+            onClick: () => {
+              const connectionId = pane.connectionId;
+              if (!connectionId) return;
+              setOpenWithTarget({
+                path: paneJoin(pane, entry.name),
+                size: entry.size,
+                connectionId,
+                paneId: id,
+                tabId: activeTabId,
+              });
+            },
+          });
           items.push({
             label: t('paneMenu.openWith'),
             disabled: !pane.connectionId,
@@ -240,7 +255,6 @@ export function usePaneActions({
       items.push({ separator: true });
       items.push({
         label: t('paneMenu.refresh'),
-        shortcut: shortcutLabel('refresh'),
         onClick: () => refreshPane(id, pane.path),
       });
       return items;

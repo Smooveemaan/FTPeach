@@ -362,7 +362,16 @@ try {
   const page = await waitFor('the main window', async () => browser.contexts()[0]?.pages()[0], 30);
   await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
   await stage(page, profile);
-  writeFileSync(output, await compose(await page.screenshot()));
+  // WebView2 applies monitor DPI through page zoom. Playwright's explicit
+  // screenshot clip mixes CSS and device pixels there, cropping the window.
+  // Let Chromium capture the complete native viewport without a clip.
+  const cdp = await page.context().newCDPSession(page);
+  const capture = await cdp.send('Page.captureScreenshot', {
+    format: 'png',
+    captureBeyondViewport: false,
+  });
+  await cdp.detach();
+  writeFileSync(output, await compose(Buffer.from(capture.data, 'base64')));
   console.log(`Saved ${path.relative(root, output)}. Look at it before committing.`);
   await page.getByRole('button', { name: 'Stop active transfers' }).click();
   await browser.close();

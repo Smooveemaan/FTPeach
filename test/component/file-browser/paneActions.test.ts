@@ -137,6 +137,22 @@ test('SFTP permissions and open-with retain the entry and its original session',
   expect(options.setOpenWithTarget).toHaveBeenCalledOnce();
 });
 
+test('Open on a remote file opens it with the default program, without asking', () => {
+  const { options, menu } = setup();
+  const items = menu('b')(file);
+  const labels = items.map((item) => item.label);
+  expect(labels.indexOf('paneMenu.open')).toBe(labels.indexOf('paneMenu.openWith') - 1);
+  items.find((item) => item.label === 'paneMenu.open')!.onClick!();
+  expect(options.selectApplication).not.toHaveBeenCalled();
+  expect(options.setOpenWithTarget).toHaveBeenCalledWith({
+    path: '/target/file.txt',
+    size: 42,
+    connectionId: 'session',
+    paneId: 'b',
+    tabId: 'tab',
+  });
+});
+
 test('open-with opens nothing when choosing the program is cancelled', async () => {
   const { options, menu } = setup();
   options.selectApplication.mockResolvedValue(null);

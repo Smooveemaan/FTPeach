@@ -88,6 +88,11 @@ move and changes nothing. Copy the files instead.
 
 ## Editing server files in another program
 
+**Open** in a server file's menu opens it with its usual program without asking
+you to choose an application.
+
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Open on a remote file opens it with the default program, without asking -->
+
 When you open a file from a server in another program and change it, your
 changes are kept if you quit FTPeach or it closes unexpectedly. At the next
 start, FTPeach offers them back until you delete them. Copies you did not

@@ -115,16 +115,17 @@ function describeTab(
 
 const PAN_CLICK_THRESHOLD = 4;
 
-const MIN_TAB_WIDTH = 76;
-const MAX_TAB_WIDTH = 134;
-const MIN_TAB_WIDTH_COMPACT = MAX_TAB_WIDTH / 2;
+// Below MIN_TAB_WIDTH a label keeps too few letters to tell tabs apart, so the
+// strip scrolls instead of shrinking the tabs further.
+const MIN_TAB_WIDTH = 92;
+const MAX_TAB_WIDTH = 160;
 const TAB_GAP = 3;
 const SCROLL_PADDING = 10; // .tab-strip-scroll's own left padding (no right padding — the "+" button's own margin provides that gap)
 const ADD_BUTTON_SPACE = 40; // "+" button width + its margins on both sides
 const ITEM_PADDING = 22; // .tab-strip-item's own 7px 10px padding plus its 1px borders, horizontal sum
 const ICON_SPACE = 19; // a bookmark's icon (13px) + the gap after it (6px)
 const DOT_SPACE = 12; // status dot (6px) + the gap before the label (6px) — only tabs with a status dot pay this
-const CLOSE_BUTTON_SPACE = 21; // close button (15px) + the gap before it (6px) — only paid once a 2nd tab makes closing possible
+const CLOSE_BUTTON_SPACE = 19; // close button (16px) + the gap before it (6px) - its -3px end margin — only paid once a 2nd tab makes closing possible
 
 function SortableTab({
   id,
@@ -295,31 +296,21 @@ export default function TabStrip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth, labelsKey, tabs.length]);
 
-  const { tabWidth, compact, lockstepOverflow } = useMemo(() => {
-    if (!needsShrink) {
-      return { tabWidth: undefined, compact: false, lockstepOverflow: false };
-    }
+  const { tabWidth, overflow } = useMemo(() => {
+    if (!needsShrink) return { tabWidth: undefined, overflow: false };
     const n = tabs.length;
-    if (containerWidth === 0) {
-      return { tabWidth: MAX_TAB_WIDTH, compact: false, lockstepOverflow: false };
-    }
+    if (containerWidth === 0) return { tabWidth: MAX_TAB_WIDTH, overflow: false };
     const available = containerWidth - ADD_BUTTON_SPACE - SCROLL_PADDING - TAB_GAP * (n - 1);
     const perTab = available / n;
-    if (perTab >= MIN_TAB_WIDTH) {
-      return { tabWidth: Math.min(perTab, MAX_TAB_WIDTH), compact: false, lockstepOverflow: false };
-    }
-    if (perTab >= MIN_TAB_WIDTH_COMPACT) {
-      return { tabWidth: perTab, compact: true, lockstepOverflow: false };
-    }
-    return { tabWidth: MIN_TAB_WIDTH_COMPACT, compact: true, lockstepOverflow: true };
+    if (perTab >= MIN_TAB_WIDTH)
+      return { tabWidth: Math.min(perTab, MAX_TAB_WIDTH), overflow: false };
+    return { tabWidth: MIN_TAB_WIDTH, overflow: true };
   }, [needsShrink, containerWidth, tabs.length]);
-
-  const overflow = lockstepOverflow;
 
   const [truncated, setTruncated] = useState<boolean[]>([]);
   useLayoutEffect(() => {
     setTruncated(labelRefs.current.map((el) => !!el && el.scrollWidth > el.clientWidth + 1));
-  }, [tabWidth, compact, containerWidth, labelsKey, tabs.length]);
+  }, [tabWidth, containerWidth, labelsKey, tabs.length]);
 
   useEffect(() => {
     const index = tabs.findIndex((t) => t.id === activeTabId);
@@ -432,7 +423,7 @@ export default function TabStrip({
                   role="tab"
                   aria-selected={active}
                   tabIndex={active ? 0 : -1}
-                  className={`tab-strip-item ${active ? 'active' : ''} ${compact ? 'compact' : ''} ${savedColor && !colored ? 'muted-identity' : ''}`}
+                  className={`tab-strip-item ${active ? 'active' : ''} ${tabWidth ? 'shrunk' : ''} ${savedColor && !colored ? 'muted-identity' : ''}`}
                   style={{ width: tabWidth }}
                   data-tooltip={label}
                   onClick={() => {
@@ -504,14 +495,11 @@ export default function TabStrip({
                       </span>
                     )}
                   </span>
-                  {/* Below MIN_TAB_WIDTH (compact), only the active tab keeps a
-                  close button — at those widths a hover-reveal × on every
-                  tab is more likely to be mis-clicked than used, and
-                  dropping it off the inactive ones is what buys back the
-                  room to keep shrinking toward MIN_TAB_WIDTH_COMPACT. */}
-                  {tabs.length > 1 && (!compact || active) && (
+                  {/* Once the tabs are shrunk the × floats over the label's
+                  faded end instead of keeping empty room for itself. */}
+                  {tabs.length > 1 && (
                     <span
-                      className={`tab-strip-close ${compact ? 'floating' : ''}`}
+                      className={`tab-strip-close ${tabWidth ? 'floating' : ''}`}
                       data-tooltip={t('menu.file.closeTab')}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -519,7 +507,7 @@ export default function TabStrip({
                         onClose(tab.id);
                       }}
                     >
-                      <span className="tab-strip-close-glyph">×</span>
+                      <Icon name="windowClose" size={12} />
                     </span>
                   )}
                 </SortableTab>

@@ -2,194 +2,124 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
-## [Unreleased]
+## [0.3.0] - 2026-09-27
+
+### Added
+
+- Open with… asks which program to open the file with, instead of always using the default one.
+- Open in a server file's menu opens it with its usual program, like a double click.
+- Dragging files with the right mouse button asks whether to copy or move them.
+- The first connection to an SSH server shows its key fingerprint and asks before trusting it.
+  The new "Confirm a new SSH server key" setting turns this off.
+- A shortcut used by another action shows a warning icon; its tooltip names the other actions,
+  and clicking it goes to the first one.
+- After exporting or importing settings, the status bar says what was exported or imported and
+  how many bookmarks were added or skipped.
 
 ### Changed
 
-- Resizing the window is smoother on Windows, with reduced black edge artifacts
-  and no flashing white line in the verified multi-monitor setup.
-- The embedded browser background follows the selected theme; text-edge fades
-  refresh shortly after resizing settles.
-
-- Dragging files to another disk now copies them, as in Windows Explorer. Hold Shift to move
-  them instead.
-- Dragging files with the right mouse button now asks whether to copy or move them.
-- New file now works over FTP and FTPS without replacing or truncating existing file contents.
+- Dragging files to another disk copies them, as in Windows Explorer. Hold Shift to move them.
 - Files can be moved only on your computer or within one server connection. Between your
   computer and a server, or between two servers, copy them instead.
-- Quitting with edits that have not been uploaded now asks whether to return or keep the
-  copies for recovery and exit. The changed-file dialog offers Later to defer an upload.
-- The bookmark editor is tidier: a saved password is changed with its edit button, and
-  encoding, start folder and connection limit sit under Advanced settings.
-- The bookmark editor fits and scrolls in a small window.
-- A file pane too narrow for its columns scrolls sideways instead of cutting off the last
-  column.
-- In a narrow window, the status bar hides the pane file counts while files are
-  transferring, and an update's install button always stays whole.
-- The status bar shows transfers in orange, and no longer turns yellow while files are still
-  transferring. Disconnected is grey; red now means only a failed connection.
-- After exporting or importing settings, the status bar says what was exported or imported and
-  how many bookmarks were added or skipped as duplicates.
-- When the status bar runs short of room, it shortens its texts instead of cutting them off,
-  and shows the full text in a tooltip.
-- Animations play even when Windows animation effects are turned off. Error messages that
-  fade out no longer vanish at once in that case.
-- The Copy here and Move here menu, the bookmark editor's connection limit and advanced
-  settings, and the import and export messages are translated into every language.
+- Quitting with edits that have not been uploaded asks whether to go back or keep them for later.
+  The changed-file dialog has a Later button.
+- When several files opened in other applications change at once, FTPeach asks about each one.
+- The bookmark editor is tidier: a saved password is changed with its edit button, and encoding,
+  start folder and connection limit are under Advanced settings. It also fits a small window.
+- The status bar shows transfers in orange, disconnected in grey, and red only for a failed
+  connection.
+- In a narrow window, the status bar shortens its texts instead of cutting them off and shows
+  the full text in a tooltip.
+- A file pane too narrow for its columns scrolls sideways instead of cutting off the last column.
+- Resizing the window is smoother on Windows, with reduced black edge artifacts and no
+  flashing white line in the verified multi-monitor setup.
+- Animations play even when Windows animation effects are turned off.
+- Screen readers read out the names of icon buttons, connection fields and search boxes, and
+  Tab stays inside the dialog on top.
+- New texts are translated into every language.
+- Many open tabs keep more of their names and scroll sooner, and every tab shows its close button
+  on hover.
 
 ### Security
 
-- Downloaded files are now marked as having come from a server, the same way a browser
-  marks a download. Windows SmartScreen, Office Protected View and script hosts read that
-  mark, so a document from the internet opens in Protected View and a downloaded program
-  is checked before it runs. The mark records the address without your user name or
-  password, survives the file being renamed or a download being resumed, and needs NTFS.
-  A server on your local network is marked as the intranet instead.
-- The first connection to an SSH server now shows its key fingerprint and asks before
-  trusting it, so you can compare it with the one the server's administrator gave you.
-  The new "Confirm a new SSH server key" setting turns this off, and turning it off asks
-  for confirmation like the other protective settings.
-- Trusting a changed or new SSH server key is now confirmed in FTPeach's own window, which
-  shows the key trusted until now next to the one offered. If the stored key changes while
-  you are deciding, the decision is asked again instead of being applied to the new key.
-- A WebDAV address that starts with http:// no longer sends the password before the
-  connection is encrypted. FTPeach looks for an https:// address first, and asks you to
-  tick "Allow unencrypted sign-in" if the server insists on a password in the clear.
-- A WebDAV address may no longer contain a user name, a password or a query string; put
-  the account in the user and password fields.
-- A connection set up without a proxy no longer follows a proxy named in Windows
-  environment variables.
-- The vault now locks when Windows locks or the FTPeach window is hidden, even with the
-  auto-lock timer turned off, and it does so even if the window has stopped responding.
-  Settings and the unlock prompt now say what a lock leaves running.
-- Open with now asks before running a server file whose saved name makes it a program or
-  script, and the first time a program typed into settings opens a file.
-- Turning off security confirmations or relaxing the vault's automatic lock now asks for
-  confirmation in a separate window, and for the master password when one is set.
-  Cancelling leaves the setting as it was.
-- Security questions are now written in the language you have just picked in settings,
-  even before you save it.
-- Cancelling a security question no longer leaves an error message on screen.
-- The "Show security confirmations" description now says exactly what the setting turns
-  off, and which questions are always asked.
-- Turning off enhanced protection always asks for the master password, even while the vault
-  is unlocked.
-- Changing a bookmark's or the proxy's server, port, user or encryption now asks before the
-  saved password is used for the new address, and warns if the connection becomes less secure.
-- Backup copies of bookmarks and settings no longer keep passwords that were moved into
-  the vault, changed or deleted, and never keep unencrypted passwords.
-- A downloaded update can no longer be swapped for another file before it installs, and an
-  older installer can no longer be passed off as a newer version.
-- An FTP server that answers with an endless reply is disconnected instead of filling
-  memory, and in active mode files are accepted only from the server itself.
-- A proxy password that cannot be encrypted is reported as an error instead of a saved
-  setting, and the password saved before is kept.
-- A saved password shown with the eye button no longer appears in another bookmark's field
-  or over a password just typed, and never after the vault locks.
+- Downloaded files are marked as coming from the internet, like browser downloads, so Windows
+  and Office check them before they open or run.
+- Trusting a changed SSH server key is confirmed in FTPeach's own window, which shows the old
+  and the new key side by side.
+- A WebDAV address starting with http:// no longer sends the password unencrypted unless you
+  allow it.
+- A WebDAV address can no longer contain a user name, a password or a query string.
+- A connection set up without a proxy no longer uses a proxy from Windows environment variables.
+- Saved passwords lock when Windows locks or the window is minimized or hidden, even with the
+  auto-lock timer off.
+- Open with asks before running a server file that is a program or script.
+- Turning off security confirmations or relaxing the automatic lock asks for confirmation
+  and the master password when one is set. Turning off enhanced protection always asks for
+  the master password.
+- Changing a bookmark's server, port, user or encryption asks before the saved password is used
+  for the new address.
+- Backups of bookmarks and settings no longer keep old or unencrypted passwords.
+- A downloaded update can no longer be swapped or replaced by an older version before it
+  installs.
+- An FTP server can no longer fill memory with an endless reply, and in active mode files are
+  accepted only from the server itself.
+- A proxy password that cannot be encrypted is reported as an error, and the old one is kept.
+- A password shown with the eye button no longer appears in another bookmark or after the
+  vault locks.
 
 ### Fixed
 
+- New file works over FTP and FTPS without emptying an existing file.
+- Creating a file with a name that is already taken says so instead of showing a general error.
+- Renaming, moving or downloading a file no longer replaces an existing one unless you agree.
+- Changing only the letter case of a local file name no longer fails.
+- A failed copy no longer leaves a half-written file behind or damages the file it was replacing.
+- Copying or moving several files says how many failed, and a cut stays on the clipboard until
+  its files have really moved.
+- One failed file no longer stops the rest of a batch.
+- Changes to a file opened in another application are no longer lost if FTPeach closes first;
+  FTPeach offers them at the next start.
+- Uploading from the changed-file dialog no longer asks to overwrite twice.
 - Resuming a paused transfer no longer asks again whether to replace the file.
-- Copying thousands of files shows one notification when all of them are done, instead of one
-  every few dozen files. Pausing no longer shows a notification.
-- An FTP server refusing a file's data connection no longer makes its pane look
-  disconnected.
-- Deleting a deeply nested folder on an FTP or SFTP server removes all of it, not only the
-  first 40 levels.
-- An error from deleting files on a server stays visible instead of vanishing right away.
-- Saved passwords lock as soon as the window is minimized or hidden to the tray, and within a
-  second of Windows locking, instead of up to five seconds later.
-- The security confirmation window follows the light theme and opens centered over the
-  FTPeach window.
-- The More and bookmark menus stay inside a narrow or scaled-up window, and scroll when it is
-  too short for them.
-- A master password that is too short or does not match its confirmation is reported in red,
-  and the message fades out after a moment.
-- Tabs show their whole name when there is room for it.
-- Files and folders cut with Ctrl+X look paler until they are pasted.
-- The log's filter menu stays open while you tick several kinds, and closes on a click outside
-  it.
-- Check for Updates says in the status bar when FTPeach is already up to date.
+- Copying thousands of files shows one notification at the end instead of many.
+- Stop all also stops files of a large selection that have not started yet.
+- Deleting a deeply nested folder on an FTP or SFTP server removes all of it.
+- An error from deleting files on a server stays visible.
+- An FTP server refusing a data connection no longer makes the pane look disconnected.
+- A dropped FTP or SFTP connection is reported as a lost connection instead of an unknown error.
+- A busy or full server is reported as such instead of an unknown error.
+- A resumed WebDAV download no longer mixes old and new content.
+- After accepting a new SSH server key, FTPeach signs in with the saved password.
+- The protocol log says when FTP active mode is skipped because of a proxy.
+- A proxy given as an IPv6 address works for WebDAV, and a proxy address with a port, path or
+  user name in it is refused.
+- A damaged settings or bookmarks file no longer replaces its backup or fills the disk.
+- Quitting or installing an update saves the latest settings and tabs first.
+- Tabs that could not be saved are reported right away.
+- Importing bookmarks without settings no longer reports an error, and they appear right away.
+- Selecting files with a rectangle in a long folder selects every file inside it, and
+  Shift+click after re-sorting extends from the right file.
 - Alt+Left and Alt+Right work right after clicking a folder in the path bar.
-- An empty folder with more columns than fit scrolls sideways, like a full one.
-- Open with… asks which program to open the file with, instead of always using the default
-  one.
-- A shortcut used by other actions shows a warning icon next to its reset button. Its tooltip
-  names every other action with those keys, and clicking it goes to the first one.
-- Stop all also stops the files of a large selection that have not started yet.
-- A narrowed pane no longer cuts off the port field of its connection form.
-- Importing bookmarks without application settings no longer reports an unexpected error, and
-  the imported bookmarks appear right away.
-- Help → Documentation opens the user documentation, and the license link in About works.
-- The warning about a shortcut already in use names the pane of the other action instead of
-  showing `{{side}}`.
-- The question before running a program on your computer shows its usual path, without
-  `\\?\` in front.
-- The protocol log strikes through only the name of a closed connection, not the colon.
-- While you type a new password for a saved bookmark, the hint below says it will be saved.
-- A selection rectangle that runs past the edge of the file list no longer shows a border
-  there, so it no longer looks as if the selection ends at the edge.
-- Dragging files in from Explorer follows the pointer more smoothly.
-- The date and time format lists in Settings are wide enough for their translated names.
-- A long tooltip, such as the plain FTP warning in French or Greek, gets a third line
-  instead of being cut off.
-- An error while opening a file in another application is shown in your language.
-- After you accept a new or changed SSH server key, FTPeach now signs in with the bookmark's
-  saved password instead of reporting a wrong username or password.
-- A resumed WebDAV download no longer mixes old and new content when the file on the server
-  was replaced within the same second; such a download now starts over.
-- A connection that drops in the middle of an FTP or SFTP transfer is now reported as a lost
-  connection instead of an unknown error or a timeout, and SFTP now waits only as long as
-  the timeout set for the site.
-- A server that turns a connection away because it is busy or full is now reported as such
-  (WebDAV 429 and 503, an FTP server refusing at the greeting) instead of an unknown error.
-- The protocol log now says when FTP active mode is not used because the site connects
-  through a proxy.
-- Creating a local file with a name that is already taken now says so, instead of showing a
-  general error.
-- The same now applies to new files on SFTP and WebDAV servers, including a file someone else
-  created a moment earlier.
-- Switching languages quickly, or cancelling a language preview while it loads, no longer
-  leaves an earlier language on screen or the text running the wrong way.
-- Icon buttons, the connection fields and the search boxes now have names a screen reader
-  reads out, and the pause button in the transfer list is called Pause instead of Paused.
-- While a dialog is open, Tab and the screen reader stay inside the topmost dialog and skip
-  hidden fields; the window can still be moved and closed.
-- With Windows animations turned off, FTPeach no longer animates either.
-- Selecting files by dragging a rectangle in a long folder now selects every file inside it,
-  including ones scrolled past, and shrinking the rectangle or holding Ctrl no longer leaves
-  or drops the wrong files. Shift+click after re-sorting extends from the file you clicked.
-- A proxy given as an IPv6 address, with or without square brackets, now works for WebDAV
-  as it does for FTP and SFTP. A proxy address with a port, a path or a user name in it is
-  refused when the settings are saved.
-- A damaged bookmarks, local paths or settings file no longer replaces its last good
-  backup, and opening it again no longer fills the disk with copies of it.
-- Quitting or installing an update now saves the latest settings and tabs before
-  closing, including changes still waiting for their save timer.
-- Failed local copies now wait for outstanding disk writes before removing their temporary
-  files, including after cancellation or a full disk.
-- Editor copies survive temporary-folder cleanup and retain later saves when an editor
-  keeps a file locked during shutdown. New editor opens pause when retained copies reach
-  1 GiB or 30 days; existing edits are never automatically deleted.
-- Copying or moving several files now says how many did not make it, and a move that could
-  not finish says the originals are still in place. A cut stays on the clipboard until its
-  files have really moved.
-- A failed file in a batch no longer ends the batch while other files are still being
-  written, and very large selections are started in batches instead of all at once.
-- Tabs that could not be saved are now reported right away instead of coming back wrong at
-  the next launch, and the newest tab state is always the one stored.
-- Remote renames, including letter-case changes, only replace an existing file after confirmation.
-- Changing only the letter case of a local file name no longer fails as busy.
-- Uploading from the changed-file dialog no longer asks for overwrite confirmation twice.
-- Download commits now refuse to replace existing files unless overwrite was explicitly allowed.
-- Renaming or moving a file into a folder no longer replaces a file with the same name there
-  unless you agreed to overwrite it.
-- A failed copy of a single file no longer leaves a half-written file behind or damages the
-  file it was about to replace.
-- Changes to a file opened in another application are no longer lost if FTPeach closes before
-  they are uploaded. They are kept, and FTPeach offers them the next time it starts.
-- When several files opened in other applications change at once, FTPeach now asks about each
-  of them.
+- Files cut with Ctrl+X look paler until they are pasted.
+- Tabs show their whole name when there is room.
+- Bookmark and tab icons keep their size next to a long name.
+- The bookmark manager's buttons fit a narrow window at a large interface scale.
+- Refresh in a pane's menu no longer shows F5, which refreshes both panes.
+- An empty folder scrolls sideways like a full one.
+- A narrow pane no longer cuts off the port field.
+- The More and bookmark menus stay inside a small window.
+- The log's filter menu stays open while you tick several kinds.
+- Long tooltips wrap instead of being cut off, and the date and time lists fit their names.
+- Check for Updates says when FTPeach is already up to date.
+- Help → Documentation and the license link in About work.
+- Switching languages quickly no longer leaves an earlier language on screen.
+- Errors from opening a file in another application are shown in your language.
+- Security questions use the language just picked in settings, and cancelling one no longer
+  shows an error.
+- The security confirmation window follows the theme and opens centered over FTPeach.
+- A master password that is too short or does not match is reported in red.
+- The warning about a shortcut in use names the pane instead of showing `{{side}}`.
+- Program paths no longer show `\\?\` in front.
 
 ## [0.2.3] - 2026-09-22
 

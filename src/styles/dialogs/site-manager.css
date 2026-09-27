@@ -78,6 +78,22 @@
   height: var(--control-height-lg);
 }
 
+/* A narrow window has no room to size the sort order for its longest option:
+   it fits the chosen one, so the action buttons stay on the same row. The
+   open list keeps its own width. */
+@media (max-width: 560px) {
+  .site-manage-sort {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .site-manage-sort > .select-menu-sizer {
+    display: none;
+  }
+  .site-manage-toolbar .site-manage-sort > .site-manage-sort-dropdown:not(.select-menu-sizer) {
+    width: max-content;
+  }
+}
+
 /* Parent-folder hint shown under a search-result bookmark's name — the flat
    result list drops the folder grouping SiteTree normally conveys, so this
    is the only remaining cue for which folder (if any) the match lives in. */

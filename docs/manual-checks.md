@@ -18,6 +18,18 @@ Record a run as:
 
 Repeat the run and update the record when the behavior it covers changes.
 
+### README capture with Windows display scaling
+
+- Version: 0.3.0 release working tree.
+- Date: 2026-09-27
+- Steps: run `npm run screenshot:readme` against the baseline Docker servers
+  and confirm the local SFTP key in the application.
+- Result: the default Playwright screenshot cropped the right and bottom of
+  the window. Capturing the native viewport through CDP without an explicit
+  clip produced the complete window at the current display scale. The generated
+  image was inspected: both panes, window controls, transfers, log and status
+  bar are visible.
+
 ### WebView rasterization and monitor scaling during resize
 
 - Version: 0.2.3 development, working tree with `runtime/window_scale.rs`.

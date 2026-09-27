@@ -437,6 +437,9 @@ interface IconProps {
   color?: string | undefined;
 }
 
+// An icon beside a long label keeps its size; the label gives way instead.
+const NO_SHRINK = { flexShrink: 0 } as const;
+
 export default function Icon({ name, size = 14, color }: IconProps) {
   const fillIcon = name in FILL_ICONS ? FILL_ICONS[name as keyof typeof FILL_ICONS] : undefined;
   if (fillIcon) {
@@ -448,6 +451,7 @@ export default function Icon({ name, size = 14, color }: IconProps) {
         height={size}
         viewBox="0 0 256 256"
         fill={color || fillIcon.color}
+        style={NO_SHRINK}
         aria-hidden="true"
         focusable="false"
       >
@@ -469,7 +473,7 @@ export default function Icon({ name, size = 14, color }: IconProps) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={color ? { color } : undefined}
+      style={color ? { ...NO_SHRINK, color } : NO_SHRINK}
       aria-hidden="true"
       focusable="false"
     >

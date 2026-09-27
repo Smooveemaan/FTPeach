@@ -1,36 +1,138 @@
 name: Bug report
-description: Report a defect (not a security vulnerability)
+description: Something in FTPeach does not work as it should (not a security vulnerability)
 title: '[Bug]: '
 labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: 'Report vulnerabilities privately according to SECURITY.md.'
-  - type: input
-    id: version
+      value: |
+        Thanks for taking the time to report a problem.
+
+        **Found a security vulnerability?** Do not open a public issue; report it privately as described in [SECURITY.md](https://github.com/Smooveemaan/ftpeach/blob/master/SECURITY.md).
+
+        Before posting, please remove passwords, private keys, server addresses, user names and private paths from everything you paste or attach.
+  - type: checkboxes
+    id: preflight
     attributes:
-      label: FTPeach and Windows versions
+      label: Before you start
+      options:
+        - label: I searched [existing issues](https://github.com/Smooveemaan/ftpeach/issues?q=is%3Aissue) and this has not been reported yet.
+          required: true
+        - label: I can reproduce this in the [latest release](https://github.com/Smooveemaan/ftpeach/releases/latest), or I explain below why I cannot update.
+          required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A short, clear description of the problem.
+      placeholder: Uploading a folder over SFTP stops at 99% and the transfer never finishes.
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
+      description: The exact steps that make the problem appear, starting from a fresh launch if possible.
+      placeholder: |
+        1. Connect to an SFTP server.
+        2. Drag a folder with 500 small files to the remote pane.
+        3. Watch the transfer queue.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Expected and actual behavior
+      label: Expected behavior
+      placeholder: All files are uploaded and the job is marked as complete.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What you saw instead, including the exact text of any error message.
+      placeholder: The job stays at 99% and the last file is shown as "Waiting".
+    validations:
+      required: true
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Every time
+        - Sometimes
+        - Happened once
+    validations:
+      required: true
+  - type: input
+    id: ftpeach-version
+    attributes:
+      label: FTPeach version
+      description: Shown in **Help → About**.
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version
+      description: Press Win+R, run `winver`, and copy the version and build.
+      placeholder: Windows 11 24H2 (build 26100.2605)
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Where in FTPeach the problem shows up.
+      options:
+        - Connecting or signing in
+        - File panes, tabs or navigation
+        - Transfers and the transfer queue
+        - Editing files in another program
+        - Saved connections, passwords or the vault
+        - Settings, import or export
+        - Updates or installation
+        - Interface, layout or translation
+        - Other
     validations:
       required: true
   - type: dropdown
     id: protocol
     attributes:
       label: Protocol
-      options: [Not applicable, FTP, FTPS, SFTP, WebDAV]
+      multiple: true
+      options:
+        - Not applicable
+        - FTP
+        - FTPS (explicit TLS)
+        - SFTP
+        - WebDAV
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: Server software
+      description: If the problem involves a server, which software and version runs on it (for example vsftpd 3.0.5, OpenSSH 9.6, FileZilla Server 1.8, Nextcloud 29). Do not include its address.
+      placeholder: OpenSSH 9.6
   - type: textarea
     id: logs
     attributes:
-      label: Logs
-      description: Remove secrets, personal paths, and addresses.
+      label: Log
+      description: |
+        Copy the relevant lines from the log panel, or enable **Settings → Logging → Write log to file** and take them from `%APPDATA%\FTPeach\logs`.
+        Passwords and tokens are redacted automatically, but server names, IP addresses and paths are not: please review before posting.
+      render: text
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Screenshots and diagnostic bundle
+      description: |
+        Drag screenshots or a screen recording here if they help to show the problem.
+        For hard-to-reproduce problems, attach a bundle from **Settings → Logging → Export diagnostic bundle** after reviewing its contents.
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Workarounds you found, when it started happening, proxy or VPN in use, antivirus, and so on.

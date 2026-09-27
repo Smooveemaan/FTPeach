@@ -1,0 +1,94 @@
+name: Translation problem
+description: Wrong, missing, cut-off or awkward text in one of the interface languages
+title: '[Translation]: '
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        FTPeach is translated by hand into 27 languages, and native speakers' feedback is very welcome.
+        New text may appear in English first until it is translated; you can still report it so it gets translated sooner.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Arabic
+        - Chinese (Simplified)
+        - Chinese (Traditional)
+        - Czech
+        - Danish
+        - Dutch
+        - English
+        - French
+        - German
+        - Greek
+        - Hebrew
+        - Hindi
+        - Hungarian
+        - Indonesian
+        - Italian
+        - Japanese
+        - Korean
+        - Polish
+        - Portuguese (Brazil)
+        - Romanian
+        - Russian
+        - Spanish
+        - Swedish
+        - Thai
+        - Turkish
+        - Ukrainian
+        - Vietnamese
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of problem
+      multiple: true
+      options:
+        - Wrong or misleading translation
+        - Text is still in English
+        - Text is cut off or overlaps other elements
+        - Grammar, spelling or punctuation
+        - Inconsistent terminology
+        - Right-to-left layout problem
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where does the text appear?
+      description: The window, dialog, menu or setting that shows it.
+      placeholder: Settings → Logging, the hint under "Write log to file"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+      description: Copy the text exactly as shown, or attach a screenshot below.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested text
+      description: What it should say instead, and why if it is not obvious (for example, the usual term in other file managers).
+      render: text
+  - type: input
+    id: ftpeach-version
+    attributes:
+      label: FTPeach version
+      description: Shown in **Help → About**.
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Especially helpful for cut-off or overlapping text. Please hide server names and private paths.

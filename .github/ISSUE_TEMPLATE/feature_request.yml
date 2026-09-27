@@ -1,0 +1,79 @@
+name: Feature request
+description: Suggest a new feature or an improvement to an existing one
+title: '[Feature]: '
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping to shape FTPeach. A good request explains the problem first: it lets us find the best solution, which may differ from the first one that comes to mind.
+
+        FTPeach currently supports Windows 10 and 11 only, and the protocols listed in the [protocol support](https://github.com/Smooveemaan/ftpeach/blob/master/docs/protocol-support.md) page.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you start
+      options:
+        - label: I searched [existing issues](https://github.com/Smooveemaan/ftpeach/issues?q=is%3Aissue) and this has not been requested yet.
+          required: true
+        - label: I checked the [user guide](https://github.com/Smooveemaan/ftpeach/blob/master/docs/user-guide.md) and the feature does not exist yet.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation and why the current behavior gets in the way.
+      placeholder: I upload the same set of folders to three servers every day and have to repeat the drag and drop for each of them.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to happen?
+      description: How you imagine it working, from the user's point of view.
+      placeholder: Let me select several saved connections and upload the selection to all of them at once.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Workarounds you use today, or how other file transfer clients handle this.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Connecting or signing in
+        - File panes, tabs or navigation
+        - Transfers and the transfer queue
+        - Editing files in another program
+        - Saved connections, passwords or the vault
+        - Settings, import or export
+        - Updates or installation
+        - Interface, layout or translation
+        - New protocol or platform
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: importance
+    attributes:
+      label: How important is this for you?
+      options:
+        - Nice to have
+        - It would noticeably improve my daily work
+        - I cannot use FTPeach for my work without it
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Mockups, screenshots or links that help to explain the idea.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to implement this myself and open a pull request after we agree on the approach.

@@ -1,5 +1,8 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Report a security vulnerability
     url: https://github.com/Smooveemaan/ftpeach/security/policy
-    about: Follow the security policy to report vulnerabilities privately.
+    about: Do not open a public issue; follow the security policy to report it privately.
+  - name: Read the documentation
+    url: https://github.com/Smooveemaan/ftpeach/blob/master/docs/README.md
+    about: The user guide, protocol support, networking and security design.

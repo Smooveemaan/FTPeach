@@ -20,6 +20,7 @@ import {
   PENDING_TRANSFER_LIMIT,
   markConnectionDead,
   setTransfersStore,
+  stopOpenTransferBatches,
   subscribeTransfers,
   subscribeTransferStructure,
   transferTouchesConnection,
@@ -194,9 +195,12 @@ export function useTransferLifecycle(
     return id;
   };
 
-  const beginAttempt = (id: string) => {
+  const beginAttempt = (id: string, overwrite?: boolean) => {
     const attemptId = crypto.randomUUID();
-    setTransfersStore((previous) => ({ ...previous, [id]: { ...previous[id]!, attemptId } }));
+    setTransfersStore((previous) => ({
+      ...previous,
+      [id]: { ...previous[id]!, attemptId, ...(overwrite === undefined ? {} : { overwrite }) },
+    }));
     return attemptId;
   };
 
@@ -207,7 +211,10 @@ export function useTransferLifecycle(
    * cannot land on this one. `keepBytes` is for a download or a paused
    * upload that carries on where it stopped; anything else starts over.
    */
-  const requeueAttempt = (id: string, { keepBytes }: { keepBytes: boolean }) => {
+  const requeueAttempt = (
+    id: string,
+    { keepBytes, overwrite }: { keepBytes: boolean; overwrite?: boolean },
+  ) => {
     if (!hasTransferCapacity(false))
       throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
     delete cancelIntentRef.current[id];
@@ -222,6 +229,7 @@ export function useTransferLifecycle(
           attemptId,
           status: 'queued',
           bytes: keepBytes ? row.bytes : 0,
+          ...(overwrite === undefined ? {} : { overwrite }),
           errorMessage: undefined,
           errorCode: undefined,
         },
@@ -307,7 +315,9 @@ export function useTransferLifecycle(
         connectionId,
         total: _localSize,
       });
-    const attemptId = existing ? requeueAttempt(id, { keepBytes: false }) : beginAttempt(id);
+    const attemptId = existing
+      ? requeueAttempt(id, { keepBytes: false, overwrite })
+      : beginAttempt(id, overwrite);
     const result = await api.transfer.upload(
       connectionId,
       attemptId,
@@ -363,7 +373,9 @@ export function useTransferLifecycle(
       existing?.id ||
       startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId });
     // A download carries on from its partial, so the bytes it has stay counted.
-    const attemptId = existing ? requeueAttempt(id, { keepBytes: true }) : beginAttempt(id);
+    const attemptId = existing
+      ? requeueAttempt(id, { keepBytes: true, overwrite })
+      : beginAttempt(id, overwrite);
     const result = await api.transfer.download(
       connectionId,
       attemptId,
@@ -405,7 +417,7 @@ export function useTransferLifecycle(
       targetConnectionId,
       remoteTarget: targetPath,
     });
-    const attemptId = beginAttempt(id);
+    const attemptId = beginAttempt(id, overwrite);
     const result = await api.transfer.remoteCopy(
       sourceConnectionId,
       targetConnectionId,
@@ -535,16 +547,23 @@ export function useTransferLifecycle(
     const attemptId = requeueAttempt(id, { keepBytes: resume });
     let overwrite: boolean | null;
     try {
-      overwrite = await approveTarget(
-        transfer.direction === 'down'
-          ? { kind: 'local', path: transfer.localTarget }
-          : {
-              kind: 'remote',
-              connectionId:
-                transfer.direction === 'up' ? transfer.connectionId : transfer.targetConnectionId,
-              path: transfer.remoteTarget,
-            },
-      );
+      // A resumed pause carries on under the answer its first attempt got: the
+      // file there may be what that attempt was allowed to replace.
+      overwrite =
+        transfer.status === 'paused' && transfer.overwrite !== undefined
+          ? transfer.overwrite
+          : await approveTarget(
+              transfer.direction === 'down'
+                ? { kind: 'local', path: transfer.localTarget }
+                : {
+                    kind: 'remote',
+                    connectionId:
+                      transfer.direction === 'up'
+                        ? transfer.connectionId
+                        : transfer.targetConnectionId,
+                    path: transfer.remoteTarget,
+                  },
+            );
     } catch (error) {
       settleTransferResult(id, { ok: false, error: String(error) }, attemptId, {
         kind: 'local',
@@ -559,6 +578,11 @@ export function useTransferLifecycle(
       }));
       return;
     }
+    setTransfersStore((previous) =>
+      previous[id]?.attemptId === attemptId
+        ? { ...previous, [id]: { ...previous[id], overwrite } }
+        : previous,
+    );
     if (transfer.direction === 'up') {
       const result = await api.transfer.upload(
         transfer.connectionId,
@@ -733,10 +757,13 @@ export function useTransferLifecycle(
         return transfer !== undefined && canPauseTransfer(transfer);
       })
       .forEach((id) => reportRejection(pauseTransfer(id)));
-  const stopAllTransfers = () =>
+  const stopAllTransfers = () => {
+    // Selections still admitting items would otherwise refill the queue.
+    stopOpenTransferBatches();
     idsWithStatus('progress', 'queued', 'paused', 'cancelling').forEach((id) =>
       reportRejection(stopTransfer(id)),
     );
+  };
   const resumeAllTransfers = (refreshTargets?: RefreshCallback) =>
     idsWithStatus('paused').forEach((id) => reportRejection(retryTransfer(id, refreshTargets)));
   const retryAllTransfers = (refreshTargets?: RefreshCallback) =>

@@ -3,7 +3,11 @@ import { api } from '../../platform/api/index.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
 import type { Translate } from '../../shared/translate.ts';
 import type { TransferStatus } from './transferStore.ts';
-import { getTransfersSnapshot, subscribeTransferStructure } from './transferStore.ts';
+import {
+  getTransfersSnapshot,
+  hasOpenTransferBatches,
+  subscribeTransferStructure,
+} from './transferStore.ts';
 
 export function useTransferNotifications(t: Translate): void {
   const notifiedRef = useRef(new Map<string, TransferStatus>());
@@ -15,9 +19,15 @@ export function useTransferNotifications(t: Translate): void {
         const retained = new Set(values.map((row) => row.id));
         for (const id of notifiedRef.current.keys())
           if (!retained.has(id)) notifiedRef.current.delete(id);
-        const active = values.some(
-          (item) => item.status === 'progress' || item.status === 'queued',
-        );
+        // A pause is not an ending, and neither is the gap between two parts
+        // of a selection still being admitted.
+        const active =
+          hasOpenTransferBatches() ||
+          values.some((item) =>
+            (['progress', 'queued', 'cancelling', 'paused'] as TransferStatus[]).includes(
+              item.status,
+            ),
+          );
         if (wasActiveRef.current && !active) {
           let succeeded = 0;
           let failed = 0;

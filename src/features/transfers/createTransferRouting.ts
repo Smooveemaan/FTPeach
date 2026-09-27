@@ -3,6 +3,7 @@ import type { TransferLifecycleModel, RefreshCallback } from './useTransferLifec
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { mapSettled, mapWithConcurrency } from '../../shared/lang.ts';
 import { emptyBatch, failedBatch, summarizeBatch } from './transferBatchResult.ts';
+import { beginTransferBatch } from './transferStore.ts';
 import type {
   TransferBatchResult,
   TransferItemOutcome,
@@ -216,12 +217,14 @@ export function createTransferRouting(
     names: string[],
     limit: number,
     moving: boolean,
+    stopped: () => boolean,
     work: (name: string) => Promise<TransferItemOutcome>,
   ): Promise<TransferItemResult[]> => {
     const settled = await mapSettled(
       names,
       limit,
-      (name) => runItem(name, moving, () => work(name)),
+      // After "Stop all" the rest of the selection is not admitted.
+      (name) => runItem(name, moving, () => (stopped() ? Promise.resolve('skipped') : work(name))),
       // Every name is attempted: one destination refusing a file says nothing
       // about the next, and the result names both anyway.
       { stopOnError: false },
@@ -233,16 +236,19 @@ export function createTransferRouting(
     );
   };
 
-  const copyEntriesUnchecked = async ({
-    sourcePane,
-    targetPane,
-    names,
-    targetFolder,
-    move,
-    refreshSource,
-    refreshTarget,
-    overwriteApproved = false,
-  }: CopyEntriesOptions): Promise<TransferItemResult[]> => {
+  const copyEntriesUnchecked = async (
+    {
+      sourcePane,
+      targetPane,
+      names,
+      targetFolder,
+      move,
+      refreshSource,
+      refreshTarget,
+      overwriteApproved = false,
+    }: CopyEntriesOptions,
+    stopped: () => boolean,
+  ): Promise<TransferItemResult[]> => {
     if (names.length === 0) return [];
     // Every UI entry point already offers only Copy here; this keeps a caller
     // that asks anyway from reaching the copy, let alone a delete.
@@ -262,21 +268,28 @@ export function createTransferRouting(
         names.filter((name) => !sourceEntriesByName.get(name)?.isDirectory),
       ];
       const grouped = await mapWithConcurrency(groups, TRANSFER_ADMISSION_LIMIT, (group) =>
-        copyEntriesUnchecked({
-          sourcePane,
-          targetPane,
-          names: group,
-          ...(targetFolder === undefined ? {} : { targetFolder }),
-          ...(move === undefined ? {} : { move }),
-          ...(refreshSource ? { refreshSource } : {}),
-          ...(refreshTarget ? { refreshTarget } : {}),
-          overwriteApproved,
-        }),
+        copyEntriesUnchecked(
+          {
+            sourcePane,
+            targetPane,
+            names: group,
+            ...(targetFolder === undefined ? {} : { targetFolder }),
+            ...(move === undefined ? {} : { move }),
+            ...(refreshSource ? { refreshSource } : {}),
+            ...(refreshTarget ? { refreshTarget } : {}),
+            overwriteApproved,
+          },
+          stopped,
+        ),
       );
       return grouped.flat();
     }
     const results: TransferItemResult[] = [];
     for (const name of folders) {
+      if (stopped()) {
+        results.push({ name, outcome: 'skipped', sourceRetained: !!move });
+        continue;
+      }
       const sourcePath =
         sourcePane.kind === 'local'
           ? joinLocalPath(sourcePane.path, name)
@@ -310,7 +323,7 @@ export function createTransferRouting(
       if (move) {
         try {
           results.push(
-            ...(await runItems(names, RENDERER_FANOUT_LIMIT, true, async (name) => {
+            ...(await runItems(names, RENDERER_FANOUT_LIMIT, true, stopped, async (name) => {
               if (!sourceEntriesByName.has(name)) return 'skipped';
               const destination = joinLocalPath(targetDir, name);
               const overwrite = overwriteApproved
@@ -331,7 +344,7 @@ export function createTransferRouting(
         return results;
       }
       results.push(
-        ...(await runItems(names, RENDERER_FANOUT_LIMIT, false, async (name) => {
+        ...(await runItems(names, RENDERER_FANOUT_LIMIT, false, stopped, async (name) => {
           const entry = sourceEntriesByName.get(name);
           if (!entry) return 'skipped';
           return copyLocalEntry(sourcePane.path, entry, targetDir, overwriteApproved);
@@ -343,7 +356,7 @@ export function createTransferRouting(
 
     if (sourcePane.kind === 'remote' && targetPane.kind === 'remote') {
       results.push(
-        ...(await runItems(names, TRANSFER_ADMISSION_LIMIT, !!move, async (name) => {
+        ...(await runItems(names, TRANSFER_ADMISSION_LIMIT, !!move, stopped, async (name) => {
           const entry = sourceEntriesByName.get(name);
           if (!entry) return 'skipped';
           if (entry.isDirectory && move) {
@@ -397,7 +410,7 @@ export function createTransferRouting(
     }
 
     results.push(
-      ...(await runItems(names, TRANSFER_ADMISSION_LIMIT, !!move, async (name) => {
+      ...(await runItems(names, TRANSFER_ADMISSION_LIMIT, !!move, stopped, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return 'skipped';
         const report =
@@ -429,6 +442,7 @@ export function createTransferRouting(
 
   // Files dropped from the operating system
   const handleOsDropFilesUnchecked = async (
+    stopped: () => boolean,
     targetPane: TransferPane,
     files: OsDropFile[],
     targetFolder?: string | null,
@@ -443,7 +457,7 @@ export function createTransferRouting(
     // straight across and folders go through the recursive walk. Nothing here
     // needs a session, which is why this works with no server connected.
     if (targetPane.kind === 'local') {
-      const results = await runItems(names, RENDERER_FANOUT_LIMIT, false, async (name) => {
+      const results = await runItems(names, RENDERER_FANOUT_LIMIT, false, stopped, async (name) => {
         const file = fileByName.get(name)!;
         const destination = joinLocalPath(targetDir, file.name);
         return file.isDirectory
@@ -461,30 +475,36 @@ export function createTransferRouting(
       refreshTarget?.();
       return results;
     }
-    const results = await runItems(names, TRANSFER_ADMISSION_LIMIT, false, async (name) => {
-      const file = fileByName.get(name)!;
-      if (file.isDirectory) {
-        return uploadFolderEntry(
+    const results = await runItems(
+      names,
+      TRANSFER_ADMISSION_LIMIT,
+      false,
+      stopped,
+      async (name) => {
+        const file = fileByName.get(name)!;
+        if (file.isDirectory) {
+          return uploadFolderEntry(
+            targetPane.connectionId!,
+            targetPane.protocol!,
+            file.path,
+            file.name,
+            targetDir,
+            overwriteApproved,
+            refreshTarget,
+          );
+        }
+        const report = await runUpload(
           targetPane.connectionId!,
           targetPane.protocol!,
           file.path,
           file.name,
           targetDir,
+          file.size,
           overwriteApproved,
-          refreshTarget,
         );
-      }
-      const report = await runUpload(
-        targetPane.connectionId!,
-        targetPane.protocol!,
-        file.path,
-        file.name,
-        targetDir,
-        file.size,
-        overwriteApproved,
-      );
-      return report.ok ? 'copied' : 'failed';
-    });
+        return report.ok ? 'copied' : 'failed';
+      },
+    );
     refreshTarget?.();
     return results;
   };
@@ -495,14 +515,17 @@ export function createTransferRouting(
    * policy refuses — is the batch's own failure and is reported as such.
    */
   const reportOperation = async (
-    operation: () => Promise<TransferItemResult[]>,
+    operation: (stopped: () => boolean) => Promise<TransferItemResult[]>,
     moving = false,
   ): Promise<TransferBatchResult> => {
+    const batch = beginTransferBatch();
     let result;
     try {
-      result = summarizeBatch(await operation(), moving);
+      result = summarizeBatch(await operation(batch.stopped), moving);
     } catch (error) {
       result = failedBatch(error instanceof Error ? error.message : String(error), moving);
+    } finally {
+      batch.end();
     }
     if (result.message !== undefined) setErrorMessage(result.message);
     return result;
@@ -510,9 +533,9 @@ export function createTransferRouting(
   const copyEntries = (options: CopyEntriesOptions) =>
     options.names.length === 0
       ? Promise.resolve(emptyBatch())
-      : reportOperation(() => copyEntriesUnchecked(options), !!options.move);
-  const handleOsDropFiles = (...args: Parameters<typeof handleOsDropFilesUnchecked>) =>
-    reportOperation(() => handleOsDropFilesUnchecked(...args));
+      : reportOperation((stopped) => copyEntriesUnchecked(options, stopped), !!options.move);
+  const handleOsDropFiles: TransferRoutingModel['handleOsDropFiles'] = (...args) =>
+    reportOperation((stopped) => handleOsDropFilesUnchecked(stopped, ...args));
 
   return { copyEntries, handleOsDropFiles };
 }

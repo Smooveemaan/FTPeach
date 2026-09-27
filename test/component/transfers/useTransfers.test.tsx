@@ -1371,6 +1371,48 @@ test('dropping a download that is already running does not start a second writer
   });
 });
 
+test('resuming a paused transfer reuses its overwrite answer instead of asking again', async () => {
+  const prompts: string[] = [];
+  await withHarness(
+    async ({ getApi, setSnapshot, mockApi, calls }) => {
+      mockApi.session.list = async () => ({
+        ok: true,
+        entries: [{ name: 'file.bin', isDirectory: false, size: 1 }],
+      });
+      setSnapshot(() => ({
+        pausedRow: makeTransferRow({
+          id: 'pausedRow',
+          direction: 'up',
+          protocol: 'sftp',
+          name: 'file.bin',
+          bytes: 500,
+          total: 1000,
+          status: 'paused',
+          overwrite: true,
+          connectionId: 'c1',
+          localFile: 'D:\\drop\\file.bin',
+          remoteTarget: '/upload/file.bin',
+          startedAt: 1,
+        }),
+      }));
+      mockApi._nextUpload = resolvedDeferred<CommandResult>({ ok: true });
+      await act(async () => {
+        await getApi().retryTransfer('pausedRow');
+      });
+      assert.deepEqual(prompts, []);
+      assert.equal(calls.upload.at(-1)?.overwrite, true);
+      assert.equal(calls.upload.at(-1)?.resume, true);
+    },
+    {
+      overwriteAction: 'ask',
+      confirmOverwrite: async (path) => {
+        prompts.push(path);
+        return true;
+      },
+    },
+  );
+});
+
 test('retryTransfer resumes paused uploads and downloads, but restarts stopped ones', async () => {
   await withHarness(async ({ getApi, getSnapshot, setSnapshot, mockApi, calls }) => {
     setSnapshot(() => ({
@@ -1871,6 +1913,65 @@ test('OS notification fires once per queue drain, tallying succeeded/failed, not
     assert.equal(calls.notifyTransfersComplete.length, 2);
     assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
     assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+  });
+});
+
+test('a pause is not the end of the queue, so it sends no notification', async () => {
+  await withHarness(async ({ setSnapshot, calls }) => {
+    setSnapshot(() => ({
+      a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+      b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+    }));
+    setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+    setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'paused') }));
+    assert.equal(calls.notifyTransfersComplete.length, 0);
+    setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
+    assert.equal(calls.notifyTransfersComplete.length, 1);
+    assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+  });
+});
+
+const dropFiles = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    path: `D:\\drop\\f${i}`,
+    name: `f${i}`,
+    isDirectory: false,
+  }));
+const remoteDropTarget = {
+  kind: 'remote' as const,
+  status: 'connected' as const,
+  connectionId: 'c1',
+  protocol: 'sftp' as const,
+  path: '/upload',
+  entries: [],
+};
+
+test('a selection larger than one admission round notifies once, when all of it is done', async () => {
+  await withHarness(async ({ getApi, mockApi, calls }) => {
+    mockApi._nextUpload.resolve({ ok: true });
+    await act(async () => {
+      await getApi().handleOsDropFiles(remoteDropTarget, dropFiles(150));
+    });
+    assert.equal(calls.upload.length, 150);
+    assert.equal(calls.notifyTransfersComplete.length, 1);
+    assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 150);
+  });
+});
+
+test('stopping everything also stops the part of a selection not yet admitted', async () => {
+  await withHarness(async ({ getApi, mockApi, calls }) => {
+    let batch!: Promise<unknown>;
+    await act(async () => {
+      batch = getApi().handleOsDropFiles(remoteDropTarget, dropFiles(150));
+    });
+    const admitted = calls.upload.length;
+    assert.ok(admitted > 0 && admitted < 150);
+    await act(async () => {
+      getApi().stopAllTransfers();
+      mockApi._nextUpload.resolve({ ok: false, error: 'Cancelled', errorCode: 'cancelled' });
+      await batch;
+    });
+    assert.equal(calls.upload.length, admitted);
   });
 });
 

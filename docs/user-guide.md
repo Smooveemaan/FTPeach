@@ -32,6 +32,11 @@ again from the beginning, because WebDAV cannot add to a partly uploaded file.
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::retryTransfer resumes paused uploads and downloads, but restarts stopped ones -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
 
+Resuming a paused transfer does not ask again whether to replace the file
+there: it keeps the answer given when the transfer started.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::resuming a paused transfer reuses its overwrite answer instead of asking again -->
+
 **Stop** cancels the transfer. Retrying a stopped upload starts it over.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->

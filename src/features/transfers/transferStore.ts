@@ -14,6 +14,8 @@ interface TransferBase {
   /** What a folder walk last reported putting in place on its target. */
   landed?: number | undefined;
   startedAt: number;
+  /** The overwrite answer the transfer ran under, reused when a pause resumes. */
+  overwrite?: boolean | undefined;
   errorMessage?: string | undefined;
   // Widened to `string` on purpose, and not narrowed to `CommandErrorCode`:
   // this field arrives across the IPC boundary, where the backend can send a
@@ -180,6 +182,34 @@ export function flushTransferUpdates(): void {
 function publish(deferred = false): void {
   if (deferred) publishTimer ??= setTimeout(flushTransferUpdates, 16);
   else flushTransferUpdates();
+}
+/**
+ * Selections still admitting their items. A big selection admits a few dozen
+ * transfers at a time, so the queue can sit empty between two of them while
+ * the selection itself is far from done.
+ */
+let openBatches = 0;
+/** Bumped by "Stop all": a selection that began before it admits nothing more. */
+let stopGeneration = 0;
+export function beginTransferBatch(): { stopped: () => boolean; end: () => void } {
+  const generation = stopGeneration;
+  openBatches++;
+  let ended = false;
+  return {
+    stopped: () => stopGeneration !== generation,
+    end: () => {
+      if (ended) return;
+      ended = true;
+      openBatches--;
+      structureRevision++;
+      structurePending = true;
+      publish();
+    },
+  };
+}
+export const hasOpenTransferBatches = (): boolean => openBatches > 0;
+export function stopOpenTransferBatches(): void {
+  stopGeneration++;
 }
 export const COMPLETED_RETENTION = 1000;
 export const PENDING_TRANSFER_LIMIT = 1000;
@@ -489,6 +519,7 @@ export function resetTransfersStoreForTests(): void {
   revision = 0;
   structureRevision = 0;
   idsCache = undefined;
+  openBatches = 0;
   for (const key of Object.keys(counts)) counts[key as keyof typeof counts] = 0;
   summary = makeSummary();
   state = {};

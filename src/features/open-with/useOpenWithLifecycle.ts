@@ -16,6 +16,8 @@ interface ConnectionTab {
 
 export interface OpenWithTarget {
   path: string;
+  /** The program the user just chose; otherwise the extension's association. */
+  application?: string | undefined;
   size?: number | undefined;
   connectionId: string;
   paneId: PaneId;

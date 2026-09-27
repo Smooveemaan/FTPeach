@@ -112,6 +112,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Check for Updates says in the status bar when FTPeach is already up to date.
 - Alt+Left and Alt+Right work right after clicking a folder in the path bar.
 - An empty folder with more columns than fit scrolls sideways, like a full one.
+- Open with… asks which program to open the file with, instead of always using the default
+  one.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

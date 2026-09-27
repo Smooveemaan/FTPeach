@@ -210,7 +210,8 @@ export const visualTestApi = {
     selectDir: () => resolved(null),
     selectKeyFile: () => resolved(null),
     selectCaCertFile: () => resolved(null),
-    selectApplication: () => resolved(null),
+    // Open with… asks for a program first; the audit picks one to reach its dialog.
+    selectApplication: () => resolved('C:\\Program Files\\Editor\\editor.exe'),
     pathForFile: () => null,
     isDir: () => resolved(false),
     onOsDragDrop: () => unsubscribe,

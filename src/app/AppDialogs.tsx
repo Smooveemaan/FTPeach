@@ -293,7 +293,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           remotePath={openWith.target.path}
           connectionId={openWith.target.connectionId}
           size={openWith.target.size}
-          application={openWith.applicationFor(openWith.target.path)}
+          application={openWith.target.application ?? openWith.applicationFor(openWith.target.path)}
           onOpened={openWith.registerOpened}
           onClose={() => openWith.setTarget(null)}
         />

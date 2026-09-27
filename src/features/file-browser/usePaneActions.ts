@@ -1,4 +1,5 @@
-import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
+import { api } from '../../platform/api/index.ts';
+import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { Translate } from '../../shared/translate.ts';
 import { formatBinding } from '../../shortcuts/bindings.ts';
@@ -54,6 +55,8 @@ interface PaneActionsOptions {
   setMoveToTarget: (value: { id: PaneId; names: string[]; folders: string[] }) => unknown;
   setChmodTarget: (value: { id: PaneId; entry: FileEntry; mode: string }) => unknown;
   setOpenWithTarget: (value: OpenWithTarget) => unknown;
+  /** Asks for the program "Open with…" uses; null when the user cancels. */
+  selectApplication?: () => Promise<string | null>;
   clipboard?: Pick<Clipboard, 'writeText'> | null;
 }
 
@@ -100,6 +103,7 @@ export function usePaneActions({
   setMoveToTarget,
   setChmodTarget,
   setOpenWithTarget,
+  selectApplication = () => api.fsLocal.selectApplication(),
   clipboard = navigator.clipboard,
 }: PaneActionsOptions): PaneActionsModel {
   const copyPath = (text: string) => clipboard?.writeText(text).catch(reportAsyncFailure);
@@ -175,14 +179,21 @@ export function usePaneActions({
             label: t('paneMenu.openWith'),
             disabled: !pane.connectionId,
             onClick: () => {
-              if (!pane.connectionId) return;
-              setOpenWithTarget({
-                path: paneJoin(pane, entry.name),
-                size: entry.size,
-                connectionId: pane.connectionId,
-                paneId: id,
-                tabId: activeTabId,
-              });
+              const connectionId = pane.connectionId;
+              if (!connectionId) return;
+              reportRejection(
+                selectApplication().then((application) => {
+                  if (!application) return;
+                  setOpenWithTarget({
+                    path: paneJoin(pane, entry.name),
+                    application,
+                    size: entry.size,
+                    connectionId,
+                    paneId: id,
+                    tabId: activeTabId,
+                  });
+                }),
+              );
             },
           });
         }

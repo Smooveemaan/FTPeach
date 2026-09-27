@@ -192,6 +192,7 @@ pub fn hide_to_tray(window: WebviewWindow) {
         }
         inner.hidden = true;
         let _ = window.hide();
+        crate::runtime::vault_auto_lock::enforce_now(&handle);
     });
     if let Err(error) = result {
         log::warn!("could not hide the window to the tray: {error}");

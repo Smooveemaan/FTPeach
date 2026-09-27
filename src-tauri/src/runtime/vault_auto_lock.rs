@@ -15,9 +15,9 @@ use serde::Serialize;
 use std::time::Duration;
 use tauri::{Emitter, Manager};
 
-/// Short enough that a locked screen is followed quickly, long enough that
-/// the idle timeout, which is set in whole minutes, costs nothing to track.
-const TICK: Duration = Duration::from_secs(5);
+/// Short enough that a locked screen is followed within a second; one session
+/// query per tick costs nothing. Hiding the window does not wait for it.
+const TICK: Duration = Duration::from_secs(1);
 
 /// The payload every window receives when the vault locks itself.
 #[derive(Clone, Serialize)]
@@ -48,6 +48,12 @@ pub fn start(app: &tauri::AppHandle) {
             enforce(&app).await;
         }
     });
+}
+
+/// Applies the policy at once, for a window that was just minimized or hidden.
+pub fn enforce_now(app: &tauri::AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move { enforce(&app).await });
 }
 
 async fn enforce(app: &tauri::AppHandle) {

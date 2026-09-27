@@ -84,7 +84,13 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
             tauri::WindowEvent::ScaleFactorChanged { .. } => {
                 super::window_scale::refresh(&window_for_events);
             }
-            tauri::WindowEvent::Resized(_) | tauri::WindowEvent::Moved(_) => {
+            tauri::WindowEvent::Resized(_) => {
+                persister.schedule(window_for_events.clone());
+                if window_for_events.is_minimized().unwrap_or(false) {
+                    super::vault_auto_lock::enforce_now(window_for_events.app_handle());
+                }
+            }
+            tauri::WindowEvent::Moved(_) => {
                 persister.schedule(window_for_events.clone());
             }
             tauri::WindowEvent::CloseRequested { api, .. } => {

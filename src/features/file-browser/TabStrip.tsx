@@ -121,7 +121,8 @@ const MIN_TAB_WIDTH_COMPACT = MAX_TAB_WIDTH / 2;
 const TAB_GAP = 3;
 const SCROLL_PADDING = 10; // .tab-strip-scroll's own left padding (no right padding — the "+" button's own margin provides that gap)
 const ADD_BUTTON_SPACE = 40; // "+" button width + its margins on both sides
-const ITEM_PADDING = 20; // .tab-strip-item's own 7px 10px padding, horizontal sum
+const ITEM_PADDING = 22; // .tab-strip-item's own 7px 10px padding plus its 1px borders, horizontal sum
+const ICON_SPACE = 19; // a bookmark's icon (13px) + the gap after it (6px)
 const DOT_SPACE = 12; // status dot (6px) + the gap before the label (6px) — only tabs with a status dot pay this
 const CLOSE_BUTTON_SPACE = 21; // close button (15px) + the gap before it (6px) — only paid once a 2nd tab makes closing possible
 
@@ -282,6 +283,7 @@ export default function TabStrip({
           sum +
           ITEM_PADDING +
           (d.status ? DOT_SPACE : 0) +
+          (d.icon ? ICON_SPACE : 0) +
           labelWidth +
           (n > 1 ? CLOSE_BUTTON_SPACE : 0)
         );

@@ -31,7 +31,9 @@
   align-items: flex-end;
   gap: 3px;
   min-width: 0;
-  max-width: 100%;
+  /* Room for "+" is kept whatever the tabs measure, so a new tab can always
+     be opened. */
+  max-width: calc(100% - 40px);
   padding: 0 0 0 10px;
   overflow: hidden;
   cursor: grab;

@@ -71,9 +71,8 @@ test.each([
 );
 
 test('a server reply about the data channel does not read as a lost connection', async () => {
-  const { isConnectionLoss } = await import(
-    '../../../src/features/file-browser/panes/paneModel.ts'
-  );
+  const { isConnectionLoss } =
+    await import('../../../src/features/file-browser/panes/paneModel.ts');
   expect(
     isConnectionLoss(
       'FTP: Invalid response: [425] 425 Unable to identify the local data socket: Address already in use',

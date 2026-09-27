@@ -263,6 +263,12 @@ describe('FilePane interactions', () => {
     expect(props.onNavigateHome).toHaveBeenCalledTimes(1);
   });
 
+  test('an empty folder still spans its columns, so it scrolls sideways', () => {
+    const { container } = renderPane({ entries: [] });
+    const spacer = requireHtml(container.querySelector('.pane-list-width'));
+    expect(spacer.style.gridTemplateColumns).not.toBe('');
+  });
+
   test('Alt+Left still goes back with focus on a path bar button', () => {
     const { container, props } = renderPane({ onNavigateBack: vi.fn() });
     const crumb = requireHtml(container.querySelector('.pane button'));

@@ -31,6 +31,8 @@ interface FileListProps {
   disconnected: boolean;
   filterText: string;
   emptyMessage?: ReactNode;
+  /** The rows' columns, which an empty list still spans so it scrolls sideways. */
+  gridTemplateColumns?: string | undefined;
   t: Translate;
 }
 
@@ -54,6 +56,7 @@ export default function FileList({
   disconnected,
   filterText,
   emptyMessage,
+  gridTemplateColumns,
   t,
 }: FileListProps) {
   if (virtualized) {
@@ -97,6 +100,11 @@ export default function FileList({
         <div className="pane-empty" role="status">
           {filterText ? t('filePane.nothingFound') : emptyMessage || t('filePane.emptyFolder')}
         </div>
+      )}
+      {entries.length === 0 && gridTemplateColumns && (
+        // No rows to be as wide as the columns, so the header, which scrolls
+        // in step with the list, would have nothing to scroll to.
+        <div className="row pane-list-width" aria-hidden="true" style={{ gridTemplateColumns }} />
       )}
       {entries.length > 0 && entries.map((entry, index) => renderRow(entry, index))}
     </div>

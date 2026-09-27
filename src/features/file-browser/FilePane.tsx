@@ -503,6 +503,7 @@ function FilePane({
           disconnected={disconnected}
           filterText={filterText}
           emptyMessage={emptyMessage}
+          gridTemplateColumns={rowGridTemplateColumns}
           t={t}
         />
 

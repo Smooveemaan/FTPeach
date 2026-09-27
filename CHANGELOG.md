@@ -101,6 +101,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   second of Windows locking, instead of up to five seconds later.
 - The security confirmation window follows the light theme and opens centered over the
   FTPeach window.
+- The More and bookmark menus stay inside a narrow or scaled-up window, and scroll when it is
+  too short for them.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

@@ -941,6 +941,9 @@ body.column-reorder-active .col-resize-handle:hover::after {
 }
 .toolbar-overflow-menu.menu-dropdown {
   position: fixed;
+  /* Taller than a short window: scroll inside it rather than run off it. */
+  max-height: calc(var(--app-viewport-h) - 16px);
+  overflow-y: auto;
 }
 
 

@@ -4,8 +4,7 @@ import { ConnectionBar } from '../../connections/index.ts';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import MenuItems from '../../../components/MenuItems.tsx';
-import { placeBelowAnchor, readOverlayViewport } from '../../../hooks/useMenuPosition.ts';
-import type { OverlayPlacement } from '../../../hooks/useMenuPosition.ts';
+import { useAnchoredOverlay } from '../../../hooks/useMenuPosition.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
 import type { PaneKind, PaneStatus } from '../../../shared/paneContracts.ts';
 import useDismissableOverlay from '../../../hooks/useDismissableOverlay.ts';
@@ -68,7 +67,8 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
-    const [panelPos, setPanelPos] = useState<OverlayPlacement | null>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
+    const panelPos = useAnchoredOverlay(open, triggerRef, panelRef);
 
     const dismiss = useCallback(() => setOpen(false), []);
     useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
@@ -94,20 +94,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
           : t('paneSourceSwitcher.remote');
     const [labelRef, labelTruncated] = useTruncated<HTMLSpanElement>([label]);
 
-    const toggleOpen = () => {
-      setOpen((v) => {
-        const next = !v;
-        if (next && triggerRef.current) {
-          setPanelPos(
-            placeBelowAnchor(triggerRef.current.getBoundingClientRect(), readOverlayViewport(), {
-              gap: 2,
-              margin: 8,
-            }),
-          );
-        }
-        return next;
-      });
-    };
+    const toggleOpen = () => setOpen((v) => !v);
 
     const sourceButton = (
       <div className="pane-source-anchor" ref={rootRef}>
@@ -131,6 +118,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
 
         {open && panelPos && (
           <div
+            ref={panelRef}
             className="menu-dropdown pane-source-menu"
             style={{ top: panelPos.top, insetInlineStart: panelPos.inlineStart }}
           >

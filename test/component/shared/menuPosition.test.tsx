@@ -118,6 +118,14 @@ describe('toolbar overflow menu', () => {
       right: 80,
       bottom: 580,
     } as DOMRect);
+    const original = HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('toolbar-overflow-menu')
+        ? ({ width: 100, height: 60 } as DOMRect)
+        : original.call(this);
+    });
     const menuTop = () => document.querySelector<HTMLElement>('.toolbar-overflow-menu')?.style.top;
     vi.stubGlobal('innerHeight', 800);
     fireEvent.click(trigger);
@@ -126,5 +134,29 @@ describe('toolbar overflow menu', () => {
     vi.stubGlobal('innerHeight', 600);
     fireEvent.click(trigger);
     expect(menuTop()).toBe('532px');
+  });
+
+  test('a menu wider than the room right of its trigger is kept inside the window', () => {
+    render(<ToolbarOverflowMenu items={[{ label: 'One', onClick: () => {} }]} />);
+    const trigger = screen.getByRole('button');
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue({
+      left: 350,
+      right: 380,
+      bottom: 40,
+    } as DOMRect);
+    const original = HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('toolbar-overflow-menu')
+        ? ({ width: 200, height: 60 } as DOMRect)
+        : original.call(this);
+    });
+    vi.stubGlobal('innerWidth', 400);
+    vi.stubGlobal('innerHeight', 600);
+    fireEvent.click(trigger);
+    expect(
+      document.querySelector<HTMLElement>('.toolbar-overflow-menu')?.style.insetInlineStart,
+    ).toBe('192px');
   });
 });

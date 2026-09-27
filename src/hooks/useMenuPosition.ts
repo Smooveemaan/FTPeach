@@ -68,6 +68,44 @@ export function placeBelowAnchor(
   };
 }
 
+/**
+ * Places an open overlay below its trigger. It is placed once to render, then
+ * measured and placed again, so its real width and height keep it inside the
+ * window: an estimate falls short once the interface is scaled up or the
+ * labels are long.
+ */
+export function useAnchoredOverlay(
+  open: boolean,
+  trigger: RefObject<HTMLElement | null>,
+  panel: RefObject<HTMLElement | null>,
+): OverlayPlacement | null {
+  const [placement, setPlacement] = useState<OverlayPlacement | null>(null);
+  const placed = placement !== null;
+  useLayoutEffect(() => {
+    if (!open) {
+      setPlacement(null);
+      return;
+    }
+    const update = () => {
+      if (!trigger.current) return;
+      const viewport = readOverlayViewport();
+      const size = panel.current?.getBoundingClientRect();
+      setPlacement(
+        placeBelowAnchor(trigger.current.getBoundingClientRect(), viewport, {
+          width: size && size.width / viewport.scale,
+          height: size && size.height / viewport.scale,
+          gap: 2,
+          margin: 8,
+        }),
+      );
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [open, placed, trigger, panel]);
+  return open ? placement : null;
+}
+
 interface MenuGrid {
   count: number;
   columns: number;

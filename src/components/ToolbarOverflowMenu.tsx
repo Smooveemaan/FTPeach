@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from './Icon.tsx';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
-import { placeBelowAnchor, readOverlayViewport } from '../hooks/useMenuPosition.ts';
-import type { OverlayPlacement } from '../hooks/useMenuPosition.ts';
+import { useAnchoredOverlay } from '../hooks/useMenuPosition.ts';
 import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
 
 interface ToolbarOverflowMenuProps {
@@ -14,28 +13,15 @@ interface ToolbarOverflowMenuProps {
 export default function ToolbarOverflowMenu({ items }: ToolbarOverflowMenuProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<OverlayPlacement | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelPos = useAnchoredOverlay(open, triggerRef, panelRef);
 
   const dismiss = useCallback(() => setOpen(false), []);
   useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
 
-  const toggleOpen = () => {
-    setOpen((v) => {
-      const next = !v;
-      if (next && triggerRef.current) {
-        setPanelPos(
-          placeBelowAnchor(triggerRef.current.getBoundingClientRect(), readOverlayViewport(), {
-            height: items.length * 28 + 32,
-            gap: 2,
-            margin: 8,
-          }),
-        );
-      }
-      return next;
-    });
-  };
+  const toggleOpen = () => setOpen((v) => !v);
 
   return (
     <div className="toolbar-overflow-anchor" ref={rootRef}>
@@ -53,6 +39,7 @@ export default function ToolbarOverflowMenu({ items }: ToolbarOverflowMenuProps)
 
       {open && panelPos && (
         <div
+          ref={panelRef}
           className="menu-dropdown toolbar-overflow-menu"
           style={{ top: panelPos.top, insetInlineStart: panelPos.inlineStart }}
         >

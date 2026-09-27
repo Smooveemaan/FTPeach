@@ -16,14 +16,22 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .map_err(|_| "Confirmation could not be focused")
 }
 
+/// The child is sized in logical pixels. Its physical size is taken from that
+/// at the parent's scale: when it has just crossed to the parent's monitor,
+/// Windows may not have resized it for that monitor's scale yet.
 pub(crate) fn center_over_parent(parent: &tauri::WebviewWindow, child: &tauri::WebviewWindow) {
-    let (Ok(parent_position), Ok(parent_size), Ok(child_size)) = (
+    let (Ok(parent_position), Ok(parent_size), Ok(parent_scale), Ok(child_size), Ok(child_scale)) = (
         parent.outer_position(),
         parent.outer_size(),
+        parent.scale_factor(),
         child.outer_size(),
+        child.scale_factor(),
     ) else {
         return;
     };
+    let child_size = child_size
+        .to_logical::<f64>(child_scale)
+        .to_physical::<u32>(parent_scale);
     let x = i64::from(parent_position.x)
         + (i64::from(parent_size.width) - i64::from(child_size.width)) / 2;
     let y = i64::from(parent_position.y)
@@ -93,20 +101,6 @@ pub(crate) fn create(
     } else {
         tauri::utils::config::Color(26, 25, 23, 255)
     };
-    // Born over the main window, so it starts on that window's monitor and a
-    // DPI change on the way there cannot resize it off center.
-    let (x, y) = app
-        .get_webview_window("main")
-        .and_then(|main| {
-            let scale = main.scale_factor().ok()?;
-            let position = main.outer_position().ok()?.to_logical::<f64>(scale);
-            let size = main.outer_size().ok()?.to_logical::<f64>(scale);
-            Some((
-                position.x + (size.width - WIDTH) / 2.0,
-                position.y + (size.height - HEIGHT) / 2.0,
-            ))
-        })
-        .unwrap_or((100.0, 100.0));
     let window = WebviewWindowBuilder::new(
         app,
         label,
@@ -115,7 +109,6 @@ pub(crate) fn create(
         ),
     )
     .title("FTPeach")
-    .position(x, y)
     .inner_size(WIDTH, HEIGHT)
     .min_inner_size(400.0, 160.0)
     .resizable(false)
@@ -128,5 +121,10 @@ pub(crate) fn create(
     .visible(false)
     .build()?;
     enable_native_rounding(&window);
+    // Moved over the main window before its page loads, so it has taken that
+    // monitor's scale by the time it sizes itself to its content.
+    if let Some(main) = app.get_webview_window("main") {
+        center_over_parent(&main, &window);
+    }
     Ok(window)
 }

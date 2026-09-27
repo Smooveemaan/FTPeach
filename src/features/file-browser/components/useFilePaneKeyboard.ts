@@ -70,6 +70,18 @@ export default function useFilePaneKeyboard({
         event.preventDefault();
         return;
       }
+      // History moves the whole pane, so it also works with focus on one of its
+      // buttons, such as a path bar folder just clicked.
+      if (action === 'navigate-back' && onNavigateBack) {
+        onNavigateBack();
+        event.preventDefault();
+        return;
+      }
+      if (action === 'navigate-forward' && onNavigateForward) {
+        onNavigateForward();
+        event.preventDefault();
+        return;
+      }
       if (event.target !== event.currentTarget) return;
 
       const findSelectedEntry = () => {
@@ -87,10 +99,6 @@ export default function useFilePaneKeyboard({
         onDeleteSelected({ permanent: true });
       } else if (action === 'navigate-up' && onNavigateUp) {
         onNavigateUp();
-      } else if (action === 'navigate-back' && onNavigateBack) {
-        onNavigateBack();
-      } else if (action === 'navigate-forward' && onNavigateForward) {
-        onNavigateForward();
       } else if (action === 'navigate-home' && onNavigateHome) {
         onNavigateHome();
       } else if (action === 'move-to' && onMoveTo && selectedNames.size > 0) {

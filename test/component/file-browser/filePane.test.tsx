@@ -263,6 +263,14 @@ describe('FilePane interactions', () => {
     expect(props.onNavigateHome).toHaveBeenCalledTimes(1);
   });
 
+  test('Alt+Left still goes back with focus on a path bar button', () => {
+    const { container, props } = renderPane({ onNavigateBack: vi.fn() });
+    const crumb = requireHtml(container.querySelector('.pane button'));
+    crumb.focus();
+    fireEvent.keyDown(crumb, { key: 'ArrowLeft', code: 'ArrowLeft', altKey: true });
+    expect(props.onNavigateBack).toHaveBeenCalledTimes(1);
+  });
+
   test('F7/Shift+F7 create a new folder/file and F8 copies the selection to the other pane', () => {
     const { container, props } = renderPane({
       selectedNames: new Set(['beta.txt']),

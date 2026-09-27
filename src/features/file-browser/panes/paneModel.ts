@@ -62,8 +62,11 @@ export const buildFormFromSite = (site: ManagedSite): ConnectionForm => ({
   keyPassphrase: '',
 });
 
+// A server reply such as "[425] ... data socket ..." came over a control
+// connection that is still alive; only a lost connection sends none.
 export const isConnectionLoss = (error = ''): boolean =>
   !/cancel(?:ed|led) by user/i.test(error) &&
+  !/\[\d{3}\]/.test(error) &&
   /connection (?:closed|reset|lost|aborted)|broken pipe|socket|unexpected eof|timed? out/i.test(
     error,
   );

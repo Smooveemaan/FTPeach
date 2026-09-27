@@ -69,3 +69,15 @@ test.each([
     expect(tabs[0]?.panes.b.status).toBe(marked ? 'error' : 'connected');
   },
 );
+
+test('a server reply about the data channel does not read as a lost connection', async () => {
+  const { isConnectionLoss } = await import(
+    '../../../src/features/file-browser/panes/paneModel.ts'
+  );
+  expect(
+    isConnectionLoss(
+      'FTP: Invalid response: [425] 425 Unable to identify the local data socket: Address already in use',
+    ),
+  ).toBe(false);
+  expect(isConnectionLoss('Connection reset by peer (os error 10054)')).toBe(true);
+});

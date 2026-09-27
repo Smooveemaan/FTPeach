@@ -92,6 +92,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Resuming a paused transfer no longer asks again whether to replace the file.
 - Copying thousands of files shows one notification when all of them are done, instead of one
   every few dozen files. Pausing no longer shows a notification.
+- An FTP server refusing a file's data connection no longer makes its pane look
+  disconnected.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

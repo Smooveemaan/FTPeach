@@ -21,10 +21,20 @@ listed in [the GitHub configuration guide](../.github/WORKFLOWS.md).
 These settings live on GitHub and must be verified separately; committed workflow
 files do not establish that they are enabled.
 
-- Protect `master` against deletion and force pushes, require pull requests and
-  linear history, and require the checks produced by `checks.yml`. Select the
-  actual check names from a completed CI run, including `supply-chain`, `sast`,
-  `lint-test-build`, `rust-test`, `visual-regression` and `packaged-smoke`.
+- Protect `master` and the `v*` release tags with the rulesets in
+  [`.github/rulesets/`](../.github/rulesets/): on GitHub, open **Settings → Rules →
+  Rulesets → New ruleset → Import a ruleset** and import each file.
+  - `master.json` blocks deletion and force pushes, requires linear history and a
+    pull request merged by squash or rebase, with resolved review threads, and
+    requires every job of `checks.yml` as reported by `ci.yml` (`checks / <job>`),
+    on a branch that is up to date with `master`. A job skipped by the change
+    filter counts as passing; `changes` is required so that a failed filter
+    cannot skip the rest. When a job is added to or renamed in `checks.yml`,
+    update this list.
+  - `release-tags.json` blocks creating, moving and deleting `v*` tags, which
+    trigger a signed release.
+  - Repository administrators bypass both rulesets, so the maintainer can still
+    push to `master` and tag releases directly.
 - Enable private vulnerability reporting so the route in [SECURITY.md](../SECURITY.md)
   is available. Enable secret scanning and push protection where available.
 - Configure the protected `release` environment and its signing secrets as

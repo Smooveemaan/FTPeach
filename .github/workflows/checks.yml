@@ -262,12 +262,12 @@ jobs:
         with:
           node-version: 24
 
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
       - name: Install pinned Rust toolchain and cargo-llvm-cov
         run: |
           rustup component add llvm-tools-preview
           cargo install cargo-llvm-cov --locked --version 0.9.1
-
-      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
 
       - name: Download pinned libsodium archive
         shell: powershell

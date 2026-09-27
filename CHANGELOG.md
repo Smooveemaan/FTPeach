@@ -107,6 +107,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   and the message fades out after a moment.
 - Tabs show their whole name when there is room for it.
 - Files and folders cut with Ctrl+X look paler until they are pasted.
+- The log's filter menu stays open while you tick several kinds, and closes on a click outside
+  it.
 - Stop all also stops the files of a large selection that have not started yet.
 - A narrowed pane no longer cuts off the port field of its connection form.
 - Importing bookmarks without application settings no longer reports an unexpected error, and

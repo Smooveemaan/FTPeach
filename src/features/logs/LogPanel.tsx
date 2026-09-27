@@ -546,6 +546,7 @@ export default function LogPanel({
             items={LOG_KINDS.map((kind) => ({
               label: t(KIND_LABEL_KEYS[kind]),
               checked: !hiddenKinds.has(kind),
+              keepOpen: true,
               onClick: () => toggleKind(kind),
             }))}
           />,

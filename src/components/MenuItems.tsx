@@ -11,6 +11,8 @@ export interface MenuItem {
   onClick?: (() => void) | undefined;
   glyph?: ReactNode | undefined;
   checked?: boolean | undefined;
+  /** A toggle that leaves the menu open, so several can be set in a row. */
+  keepOpen?: boolean | undefined;
   icon?: ReactNode | undefined;
   shortcut?: string | undefined;
   scrollStart?: boolean | undefined;
@@ -63,7 +65,7 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
         className={`menu-item ${item.danger ? 'danger' : ''} ${item.className || ''}`}
         disabled={item.disabled}
         onClick={() => {
-          onAction();
+          if (!item.keepOpen) onAction();
           item.onClick?.();
         }}
       >

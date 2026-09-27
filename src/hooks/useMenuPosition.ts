@@ -1,5 +1,6 @@
-import type { RefObject } from 'react';
-import { useLayoutEffect, useState } from 'react';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import useDismissableOverlay from './useDismissableOverlay.ts';
 import { getInterfaceScale } from '../platform/interfaceScale.ts';
 
 export interface MenuPosition {
@@ -104,6 +105,27 @@ export function useAnchoredOverlay(
     return () => window.removeEventListener('resize', update);
   }, [open, placed, trigger, panel]);
   return open ? placement : null;
+}
+
+export interface AnchoredMenu {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  rootRef: RefObject<HTMLDivElement | null>;
+  triggerRef: RefObject<HTMLButtonElement | null>;
+  panelRef: RefObject<HTMLDivElement | null>;
+  panelPos: OverlayPlacement | null;
+}
+
+/** A menu opened from a button: its state, refs and placement, closed from outside. */
+export function useAnchoredMenu(): AnchoredMenu {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelPos = useAnchoredOverlay(open, triggerRef, panelRef);
+  const dismiss = useCallback(() => setOpen(false), []);
+  useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
+  return { open, setOpen, rootRef, triggerRef, panelRef, panelPos };
 }
 
 interface MenuGrid {

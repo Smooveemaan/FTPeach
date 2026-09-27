@@ -1,10 +1,8 @@
-import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from './Icon.tsx';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
-import { useAnchoredOverlay } from '../hooks/useMenuPosition.ts';
-import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
+import { useAnchoredMenu } from '../hooks/useMenuPosition.ts';
 
 interface ToolbarOverflowMenuProps {
   items: readonly MenuItem[];
@@ -12,14 +10,7 @@ interface ToolbarOverflowMenuProps {
 
 export default function ToolbarOverflowMenu({ items }: ToolbarOverflowMenuProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const panelPos = useAnchoredOverlay(open, triggerRef, panelRef);
-
-  const dismiss = useCallback(() => setOpen(false), []);
-  useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
+  const { open, setOpen, rootRef, triggerRef, panelRef, panelPos } = useAnchoredMenu();
 
   const toggleOpen = () => setOpen((v) => !v);
 

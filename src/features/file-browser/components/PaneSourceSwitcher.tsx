@@ -1,13 +1,12 @@
-import { forwardRef, useCallback, useRef, useState } from 'react';
+import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConnectionBar } from '../../connections/index.ts';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import MenuItems from '../../../components/MenuItems.tsx';
-import { useAnchoredOverlay } from '../../../hooks/useMenuPosition.ts';
+import { useAnchoredMenu } from '../../../hooks/useMenuPosition.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
 import type { PaneKind, PaneStatus } from '../../../shared/paneContracts.ts';
-import useDismissableOverlay from '../../../hooks/useDismissableOverlay.ts';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
 
 interface PaneSourceState {
@@ -64,14 +63,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
     forwardedRef,
   ) {
     const { t } = useTranslation();
-    const [open, setOpen] = useState(false);
-    const rootRef = useRef<HTMLDivElement>(null);
-    const triggerRef = useRef<HTMLButtonElement>(null);
-    const panelRef = useRef<HTMLDivElement>(null);
-    const panelPos = useAnchoredOverlay(open, triggerRef, panelRef);
-
-    const dismiss = useCallback(() => setOpen(false), []);
-    useDismissableOverlay({ open, rootRef, onDismiss: dismiss, restoreFocusRef: triggerRef });
+    const { open, setOpen, rootRef, triggerRef, panelRef, panelPos } = useAnchoredMenu();
 
     const isConnected = pane.status === 'connected';
     const showForm = pane.kind === 'remote' && !isConnected;

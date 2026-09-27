@@ -118,14 +118,11 @@ describe('toolbar overflow menu', () => {
       right: 80,
       bottom: 580,
     } as DOMRect);
-    const original = HTMLElement.prototype.getBoundingClientRect;
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      return this.classList.contains('toolbar-overflow-menu')
-        ? ({ width: 100, height: 60 } as DOMRect)
-        : original.call(this);
-    });
+    // The trigger keeps its own rectangle; everything else measures as the menu.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 100,
+      height: 60,
+    } as DOMRect);
     const menuTop = () => document.querySelector<HTMLElement>('.toolbar-overflow-menu')?.style.top;
     vi.stubGlobal('innerHeight', 800);
     fireEvent.click(trigger);
@@ -144,14 +141,11 @@ describe('toolbar overflow menu', () => {
       right: 380,
       bottom: 40,
     } as DOMRect);
-    const original = HTMLElement.prototype.getBoundingClientRect;
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      return this.classList.contains('toolbar-overflow-menu')
-        ? ({ width: 200, height: 60 } as DOMRect)
-        : original.call(this);
-    });
+    // The trigger keeps its own rectangle; everything else measures as the menu.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 200,
+      height: 60,
+    } as DOMRect);
     vi.stubGlobal('innerWidth', 400);
     vi.stubGlobal('innerHeight', 600);
     fireEvent.click(trigger);

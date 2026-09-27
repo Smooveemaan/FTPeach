@@ -122,8 +122,9 @@
   white-space: nowrap;
 
   min-width: 0;
-
-  max-width: 14ch;
+  /* Room permitting, a tab shows its whole name; the strip shrinks every tab
+     alike once they stop fitting. */
+  max-width: 40ch;
 }
 .tab-strip-label.idle { color: var(--text-faint); }
 .tab-strip-item.active .tab-strip-label.idle { color: var(--text-secondary); }

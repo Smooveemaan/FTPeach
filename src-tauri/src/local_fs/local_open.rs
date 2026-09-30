@@ -18,38 +18,13 @@ pub enum OpenKind {
     Execute,
 }
 
-const EXECUTABLE_EXTENSIONS: &[&str] = &[
-    "exe",
-    "com",
-    "bat",
-    "cmd",
-    "ps1",
-    "psm1",
-    "psd1",
-    "msi",
-    "msp",
-    "mst",
-    "lnk",
-    "url",
-    "hta",
-    "js",
-    "jse",
-    "vbs",
-    "vbe",
-    "wsf",
-    "wsh",
-    "scr",
-    "cpl",
-    "reg",
-    "inf",
-    "scf",
-    "application",
-    "appref-ms",
-    "gadget",
-    "jar",
-    "chm",
-    "iso",
-];
+/// Shared with the renderer, which picks the open or execute command from it.
+static EXECUTABLE_EXTENSIONS: std::sync::LazyLock<Vec<String>> = std::sync::LazyLock::new(|| {
+    serde_json::from_str(include_str!(
+        "../../../src/shared/executableExtensions.json"
+    ))
+    .expect("shared executable extensions must be a JSON array of strings")
+});
 
 fn denied(message: &str) -> CommandError {
     CommandError::new(ErrorCode::PermissionDenied, message)
@@ -112,7 +87,7 @@ pub fn shell_path(path: &Path) -> String {
 pub fn is_executable(path: &Path) -> bool {
     path.extension()
         .and_then(|value| value.to_str())
-        .is_some_and(|ext| EXECUTABLE_EXTENSIONS.contains(&ext.to_ascii_lowercase().as_str()))
+        .is_some_and(|ext| EXECUTABLE_EXTENSIONS.contains(&ext.to_ascii_lowercase()))
 }
 
 fn canonicalize_user_path(path: &Path) -> CommandResult<PathBuf> {

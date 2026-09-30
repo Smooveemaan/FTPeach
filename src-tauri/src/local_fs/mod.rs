@@ -16,3 +16,4 @@ pub(crate) mod target_reservation;
 
 #[cfg(windows)]
 pub(crate) mod verified_move;
+pub(crate) mod windows_names;

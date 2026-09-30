@@ -2,6 +2,14 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- A folder download that contains a name Windows cannot use no longer reports an unexpected error.
+- Dragging a server file to Explorer refuses a name like `a:b`, which Windows would not store as
+  a plain file, as downloading it already did.
+
 ## [0.3.0] - 2026-09-27
 
 ### Added

@@ -17,27 +17,12 @@ pub(crate) fn validate_download_name(path: &std::path::Path) -> anyhow::Result<(
             let name = name
                 .to_str()
                 .ok_or_else(|| anyhow::anyhow!("Invalid local filename"))?;
-            let stem = name.split('.').next().unwrap_or("").to_uppercase();
-            let reserved = matches!(
-                stem.as_str(),
-                "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$"
-            ) || ["COM", "LPT"].iter().any(|prefix| {
-                stem.strip_prefix(prefix).is_some_and(|n| {
-                    matches!(
-                        n,
-                        "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "¹" | "²" | "³"
-                    )
-                })
-            });
-            anyhow::ensure!(
-                !reserved
-                    && !name.ends_with(['.', ' '])
-                    && !name
-                        .chars()
-                        .any(|c| c.is_control() || "<>:\"|?*".contains(c)),
-                "{}: invalid Windows download name",
-                path.display()
-            );
+            super::windows_names::validate_file_name(name).map_err(|_| {
+                crate::ipc::CommandError::new(
+                    crate::ipc::ErrorCode::InvalidInput,
+                    format!("{}: invalid Windows download name", path.display()),
+                )
+            })?;
         }
     }
     Ok(())
@@ -65,6 +50,15 @@ mod tests {
             );
         }
         assert!(validate_download_name(std::path::Path::new("C:/downloads/normal.txt")).is_ok());
+    }
+    #[test]
+    fn a_refused_download_name_reports_invalid_input() {
+        let error =
+            validate_download_name(std::path::Path::new("C:/downloads/CON.txt")).unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::InvalidInput
+        );
     }
     #[tokio::test]
     async fn mutations_wait_until_the_download_releases_its_guard() {

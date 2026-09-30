@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateWindowsDownloadName } from '../../../src/features/transfers/transferWalk.ts';
+import { validateWindowsDownloadName } from '../../../src/features/transfers/windowsDownloadName.ts';
+import names from '../../fixtures/windows-names.json' with { type: 'json' };
 
 test('download validation rejects forbidden segments, devices and traversal at any depth', () => {
   for (const name of [
@@ -35,5 +36,18 @@ test('download validation rejects forbidden segments, devices and traversal at a
     'مرحبا.txt',
   ]) {
     assert.doesNotThrow(() => validateWindowsDownloadName(name));
+  }
+});
+
+test('the renderer pre-check gives the same verdict as the backend on every shared name', () => {
+  for (const name of names.rejected) {
+    assert.throws(
+      () => validateWindowsDownloadName(name),
+      /Invalid Windows download name/,
+      JSON.stringify(name),
+    );
+  }
+  for (const name of names.accepted) {
+    assert.doesNotThrow(() => validateWindowsDownloadName(name), JSON.stringify(name));
   }
 });

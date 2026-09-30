@@ -391,3 +391,28 @@ test('a write that answers with nothing is a success, and a refusal stays one', 
   assert.equal(clearRefused.ok, false);
   assert.equal(clearRefused.errorCode, 'storageFull');
 });
+
+test('opening a local path runs programs and scripts only through the execute command', async () => {
+  const commands: string[] = [];
+  const api = createFilesystemApi(async (command) => {
+    commands.push(command);
+    return { ok: true };
+  });
+  for (const path of [
+    'C:\\a.exe',
+    'C:\\a.PS1',
+    'C:\\setup.appref-ms',
+    'C:\\a.pdf',
+    'C:\\README',
+    'C:\\dir.exe\\README',
+  ])
+    await api.openPath(path);
+  assert.deepEqual(commands, [
+    'fs_execute_path',
+    'fs_execute_path',
+    'fs_execute_path',
+    'fs_open_document',
+    'fs_open_document',
+    'fs_open_document',
+  ]);
+});

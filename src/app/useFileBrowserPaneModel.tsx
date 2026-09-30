@@ -221,49 +221,12 @@ export function useFileBrowserPaneModel(
     openDriveMenu,
     updatePane,
     join: paneJoin,
-    openLocalPath: (path) => {
-      const extension = path.split('.').pop()?.toLocaleLowerCase() ?? '';
-      const executableExtensions = new Set([
-        'exe',
-        'com',
-        'bat',
-        'cmd',
-        'ps1',
-        'psm1',
-        'psd1',
-        'msi',
-        'msp',
-        'mst',
-        'lnk',
-        'url',
-        'hta',
-        'js',
-        'jse',
-        'vbs',
-        'vbe',
-        'wsf',
-        'wsh',
-        'scr',
-        'cpl',
-        'reg',
-        'inf',
-        'scf',
-        'application',
-        'appref-ms',
-        'gadget',
-        'jar',
-        'chm',
-        'iso',
-      ]);
-      const operation = executableExtensions.has(extension)
-        ? api.fsLocal.executePath(path)
-        : api.fsLocal.openDocument(path);
-      return operation.then((result) => {
+    openLocalPath: (path) =>
+      api.fsLocal.openPath(path).then((result) => {
         // Declining the backend's confirmation is not a failure to report: the
         // user cancelled it themselves and nothing was run.
         if (!result.ok && result.errorCode !== 'cancelled') reportError(commandResultError(result));
-      });
-    },
+      }),
     openRemoteFile: setOpenWithTarget,
     dropFiles: (paneId, pane, files, targetFolder) =>
       confirmOverwriteIfNeeded(

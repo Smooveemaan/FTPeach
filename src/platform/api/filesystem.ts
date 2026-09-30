@@ -11,6 +11,7 @@ import type { InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
+import executableExtensions from '../../shared/executableExtensions.json' with { type: 'json' };
 
 export interface FilesystemListResult extends CommandResult {
   path: string;
@@ -72,6 +73,10 @@ function isLocalDrive(value: unknown): value is LocalDrive {
 function isSelectedSshKey(value: unknown): value is SelectedSshKey {
   return isRecord(value) && typeof value.path === 'string' && typeof value.isRsa === 'boolean';
 }
+
+// The backend refuses the wrong one of the two commands, so both sides read
+// the same list: src-tauri/src/local_fs/local_open.rs.
+const EXECUTABLE_EXTENSIONS: ReadonlySet<string> = new Set(executableExtensions);
 
 const isOptionalPath = (value: unknown): value is string | null =>
   value === null || typeof value === 'string';
@@ -137,8 +142,14 @@ export function createFilesystemApi(invoke: InvokeFn) {
       commandOutcome(invoke, 'fs_delete', { localPath, permanent }),
     createFile: (localPath: string) => commandOutcome(invoke, 'fs_create_file', { localPath }),
     revealPath: (localPath: string) => commandOutcome(invoke, 'fs_reveal_path', { localPath }),
-    openDocument: (localPath: string) => commandOutcome(invoke, 'fs_open_document', { localPath }),
-    executePath: (localPath: string) => commandOutcome(invoke, 'fs_execute_path', { localPath }),
+    openPath: (localPath: string) =>
+      commandOutcome(
+        invoke,
+        EXECUTABLE_EXTENSIONS.has(localPath.split('.').pop()?.toLocaleLowerCase() ?? '')
+          ? 'fs_execute_path'
+          : 'fs_open_document',
+        { localPath },
+      ),
     selectDir: () => selection('dialog_select_local_dir'),
     selectKeyFile: (): Promise<SelectedSshKey | null> =>
       checkedResponse(

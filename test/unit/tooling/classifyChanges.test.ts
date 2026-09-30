@@ -8,7 +8,7 @@ import {
 } from '../../../scripts/checks/classify-changes.ts';
 
 test('files compiled into both builds run both halves of CI', () => {
-  for (const path of ['src/shared/settingsDefaults.json', 'src/i18n/locales/en.json']) {
+  for (const path of CROSS_LANGUAGE_SOURCES) {
     assert.deepEqual(classifyChanges([path]), { rust: true, frontend: true }, path);
   }
 });
@@ -63,9 +63,12 @@ test('empty and NUL-separated input is read the way git writes it', () => {
 
 test('the listed crossings are the ones the crate actually compiles', async () => {
   const sources = await Promise.all(
-    ['src/store/settings.rs', 'src/store/settings_schema.rs', 'src/runtime/log_messages.rs'].map(
-      (path) => readFile(new URL(`../../../src-tauri/${path}`, import.meta.url), 'utf8'),
-    ),
+    [
+      'src/store/settings.rs',
+      'src/store/settings_schema.rs',
+      'src/runtime/log_messages.rs',
+      'src/local_fs/local_open.rs',
+    ].map((path) => readFile(new URL(`../../../src-tauri/${path}`, import.meta.url), 'utf8')),
   );
   const included = sources.join('\n');
   for (const path of CROSS_LANGUAGE_SOURCES) {

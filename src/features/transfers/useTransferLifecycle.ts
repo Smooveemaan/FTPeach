@@ -25,7 +25,7 @@ import {
   subscribeTransferStructure,
   transferTouchesConnection,
 } from './transferStore.ts';
-import { validateWindowsDownloadName } from './transferWalk.ts';
+import { validateWindowsDownloadName } from './windowsDownloadName.ts';
 import { useTransferNotifications } from './useTransferNotifications.ts';
 import { useTransferProgressAdapter } from './useTransferProgressAdapter.ts';
 

@@ -19,6 +19,7 @@ export interface ChangeClassification {
  */
 export const CROSS_LANGUAGE_SOURCES: readonly string[] = [
   'src/shared/settingsDefaults.json',
+  'src/shared/executableExtensions.json',
   'src/i18n/locales/en.json',
 ];
 

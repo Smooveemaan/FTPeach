@@ -1,5 +1,5 @@
 use super::DragOutFile;
-use crate::local_fs::mutations::validate_download_name;
+use crate::local_fs::windows_names::validate_file_name;
 use crate::security::connection_guard::is_safe_path_segment;
 use crate::transfer::transfer_pool::{TaskFn, TransferPool};
 use anyhow::{Result, ensure};
@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 fn validate_name(name: &str) -> Result<()> {
     ensure!(is_safe_path_segment(name), "Unsafe drag entry name");
-    validate_download_name(std::path::Path::new(name))
+    Ok(validate_file_name(name)?)
 }
 
 fn validate_relative_path(name: &str) -> Result<()> {
@@ -175,6 +175,10 @@ mod tests {
             "folder\\CON",
             "folder\\bad:stream",
             "folder\\trailing.",
+            // One letter and a colon read as a drive when the name is parsed
+            // as a path, which hid the stream separator from the check.
+            "a:b",
+            "folder\\x:y",
         ] {
             assert!(validate_relative_path(name).is_err(), "{name}");
         }

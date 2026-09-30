@@ -121,17 +121,20 @@ pub(crate) fn staged_path(key: &Key) -> Option<String> {
         .map(|entry| entry.staging_path.clone())
 }
 
-/// Stop has reported this unverified object as retained. Do not later delete
-/// it during disconnect, or consume a newer upload's staging record.
-pub(crate) fn forget_retained(key: &Key, staging_path: &str) {
+/// Drops the record of this exact staging file, so disconnect will not delete
+/// it later, without consuming a newer upload's record for the same
+/// destination. Says whether the record was this one: only then does the
+/// caller own the file.
+pub(crate) fn forget_retained(key: &Key, staging_path: &str) -> bool {
     let mut state = state().lock().unwrap();
-    if state
+    let ours = state
         .paused
         .get(key)
-        .is_some_and(|entry| entry.staging_path == staging_path)
-    {
+        .is_some_and(|entry| entry.staging_path == staging_path);
+    if ours {
         state.paused.remove(key);
     }
+    ours
 }
 
 /// Claiming an entry removes it: from here on the caller owns that staging file

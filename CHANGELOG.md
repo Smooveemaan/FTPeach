@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Testing a proxy that works no longer reports a failure.
 - Showing a bookmark's password when none is saved no longer reports an error.
 - Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
+- Stopping a folder upload no longer reports "Cleanup is incomplete": the files already uploaded
+  stay on the server, and the unfinished one is removed.
 
 ## [0.3.0] - 2026-09-27
 

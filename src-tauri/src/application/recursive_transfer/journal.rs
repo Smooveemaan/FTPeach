@@ -166,6 +166,12 @@ pub(super) fn close_connection(connection_id: &str) {
 /// comes. A folder that is not empty by then holds something the walk did not
 /// make, and stays. The stop has already happened, so whatever cannot be
 /// removed is returned to the caller and left.
+///
+/// A server cannot delete "only if this is still ours", so on a server what
+/// already landed stays, as a stopped copy does anywhere: that is what the
+/// user asked for, not a failure to report. Only the stopped file's staging
+/// goes, the way a stopped single upload's does, and only by the exact path
+/// the upload recorded for this destination.
 pub(super) async fn take_back(
     sessions: &Sessions,
     target: &Endpoint,
@@ -175,16 +181,26 @@ pub(super) async fn take_back(
     if journal.source_deletion_started {
         return errors;
     }
-    if let Some(relative) = &journal.in_flight {
-        if let Endpoint::Remote { connection_id, .. } = target {
+    if let Endpoint::Remote { connection_id, .. } = target {
+        if let Some(relative) = &journal.in_flight {
             let key = crate::transfer::upload_staging::Key {
                 connection_id: connection_id.clone(),
                 remote_path: target.path(relative),
             };
             for path in &journal.staging {
-                crate::transfer::upload_staging::forget_retained(&key, path);
+                if crate::transfer::upload_staging::forget_retained(&key, path) {
+                    crate::application::transfer_service::cleanup_remote_partial(
+                        sessions,
+                        connection_id,
+                        path,
+                    )
+                    .await;
+                }
             }
         }
+        return errors;
+    }
+    if let Some(relative) = &journal.in_flight {
         // A path (including an exact staging path) alone cannot prove that
         // its current contents still belong to this operation.
         errors.push(CommandError::new(

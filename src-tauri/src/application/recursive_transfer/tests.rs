@@ -1222,7 +1222,7 @@ async fn a_paused_upload_carries_on_from_its_staging_file() {
 }
 
 #[tokio::test]
-async fn stopping_a_paused_upload_retains_unverifiable_objects_and_foreign_staging() {
+async fn stopping_a_paused_upload_keeps_what_landed_and_removes_only_its_own_staging() {
     let server = Arc::new(Server::default());
     let quiet = ProgressEmitter::for_tests(|_| {});
     let (root, sessions, intent, _) = paused_upload(&server, &quiet, "/dst/stopped").await;
@@ -1246,22 +1246,33 @@ async fn stopping_a_paused_upload_retains_unverifiable_objects_and_foreign_stagi
         .lock()
         .unwrap()
         .insert("/dst/stopped/a".into(), b"external".to_vec());
-    let before = server.written.lock().unwrap().clone();
-    let error = discard(&sessions, &intent.id).await.unwrap_err();
-    assert_eq!(error.code, ErrorCode::CleanupIncomplete);
-    let details = error.details.unwrap();
-    assert!(details.contains("Cleanup incomplete"));
-    assert!(details.contains(&intent.id));
-    assert!(details.contains(".part"));
+    let staging: Vec<String> = server
+        .written
+        .lock()
+        .unwrap()
+        .keys()
+        .filter(|path| path.starts_with("/dst/stopped/sub/.ftpeach-"))
+        .cloned()
+        .collect();
+    let mut expected = server.written.lock().unwrap().clone();
+    for path in &staging {
+        expected.remove(path);
+    }
+    // Stopping is the user's call: nothing to report, and on a server what
+    // landed stays, because nothing there can be deleted only if still ours.
+    discard(&sessions, &intent.id).await.unwrap();
     assert!(
         crate::transfer::upload_staging::staged_path(&upload_resume::Key {
             connection_id: intent.target.connection().into(),
             remote_path: intent.target.path("sub/big"),
         })
         .is_none(),
-        "disconnect must not delete a retained staging file"
+        "the staging record is used up"
     );
-    assert_eq!(*server.written.lock().unwrap(), before);
+    // The upload's own staging went; files that landed, a file someone else
+    // wrote and another operation's staging file all stayed.
+    assert_eq!(*server.written.lock().unwrap(), expected);
+    assert!(expected.contains_key(&foreign));
     assert!(!server.made.lock().unwrap().is_empty());
     std::fs::remove_dir_all(root).unwrap();
 }

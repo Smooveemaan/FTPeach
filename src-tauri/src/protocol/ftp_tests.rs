@@ -1894,7 +1894,7 @@ mod recursive_stop_tests {
 
     /// Uploads the folder and stops it once its file is partway onto the
     /// server, answering with how long the stop took to settle.
-    async fn stop_midway(disk: &Shared) -> (Duration, Report) {
+    async fn stop_midway(disk: &Shared) -> Duration {
         let (sessions, connection_id) = connected(disk).await;
         let root = source_folder();
         let intent = upload(&root, &connection_id);
@@ -1921,7 +1921,22 @@ mod recursive_stop_tests {
             .unwrap();
         let took = stopped.elapsed();
         let _ = std::fs::remove_dir_all(root);
-        (took, report)
+        assert_eq!(
+            report.errors[0].code,
+            ErrorCode::Cancelled,
+            "{:?}",
+            report.errors
+        );
+        // The user stopped it: what landed stays, and that is not a failure.
+        assert!(
+            report
+                .errors
+                .iter()
+                .all(|error| error.code != ErrorCode::CleanupIncomplete),
+            "{:?}",
+            report.errors
+        );
+        took
     }
 
     fn assert_nothing_left(disk: &Shared) {
@@ -1984,47 +1999,30 @@ mod recursive_stop_tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-    async fn a_stopped_folder_upload_settles_at_once_and_reports_retained_objects() {
+    async fn a_stopped_folder_upload_settles_at_once_and_keeps_what_landed() {
         // Slow enough that the whole file takes seconds to arrive.
         let disk = disk(|disk| disk.pace = Duration::from_millis(50));
-        let (took, report) = stop_midway(&disk).await;
-        assert_eq!(
-            report.errors[0].code,
-            ErrorCode::Cancelled,
-            "{:?}",
-            report.errors
-        );
+        let took = stop_midway(&disk).await;
         // Closed rather than reset, the data connection went on delivering
         // the file, and the server answered QUIT only once all of it was in.
         assert!(took < Duration::from_secs(2), "the stop took {took:?}");
+        let disk = disk.lock().unwrap();
+        assert!(disk.dirs.contains("/1"));
         assert!(
-            report
-                .errors
-                .iter()
-                .any(|error| error.code == ErrorCode::CleanupIncomplete)
+            !disk.files.keys().any(|path| path.contains(".ftpeach-")),
+            "{:?}",
+            disk.files.keys()
         );
-        assert!(disk.lock().unwrap().dirs.contains("/1"));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-    async fn unverified_staging_is_not_deleted_by_folder_rollback() {
+    async fn staging_the_server_will_not_delete_does_not_turn_a_stop_into_a_failure() {
         let disk = disk(|disk| {
             disk.pace = Duration::from_millis(50);
             disk.deletes_to_refuse = 1;
         });
-        let (_, report) = stop_midway(&disk).await;
-        assert_eq!(
-            report.errors[0].code,
-            ErrorCode::Cancelled,
-            "{:?}",
-            report.errors
-        );
-        assert!(
-            report
-                .errors
-                .iter()
-                .any(|error| error.code == ErrorCode::CleanupIncomplete)
-        );
+        // Logged, as a stopped single upload's is; the stop itself went as asked.
+        stop_midway(&disk).await;
         let disk = disk.lock().unwrap();
         assert!(disk.dirs.contains("/1"));
         assert!(!disk.files.is_empty());

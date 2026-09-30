@@ -49,7 +49,7 @@ Upload retries restart in fresh staging unless a paused upload passes the source
 Downloads resume only with a compatible source-identity sidecar (see A06 below).
 If a connection is lost or staging cleanup fails, a `.ftpeach-<uuid>.part` artifact can remain
 on the server. Cleanup is bounded and logged; it never substitutes the final destination.
-Recursive Stop follows the more conservative ownership rules below and reports retained objects to the renderer.
+Recursive Stop follows the more conservative ownership rules below.
 Once a server receives the final rename, cancellation cannot roll back a committed replacement.
 
 The tests model process interruption before local commit, not physical power loss or every
@@ -64,8 +64,8 @@ fault tests use controlled backends, so they do not replace the real server comp
 | Resume | The journal records the delivered destination as well as the source size/mtime. Before any resumed writes or skips, every recorded destination must still be a file with the saved receipt. Missing, replaced, changed or unverifiable destinations fail with an integrity conflict; the user must resolve it and restart. Explicit overwrite on the old attempt does not bypass this check. |
 | Local receipts | Windows receipts include volume/file identity, change time, last-write time, size, type and a USN change-journal revision where available. Without USN, files up to 1 MiB receive a SHA-256 digest; larger files have no strong receipt and cannot authorize resumed skips or deletion. Local source receipts are checked after copying and again before a resumed skip. Timestamps alone are insufficient, including change time, because fast writes can share a clock tick. |
 | Remote receipts | Current adapters expose file type, size and modification time through bounded listings. Missing metadata fails verification. This is metadata-based Copy verification, not a content hash: equal-size changes with unchanged server mtime cannot be detected. No full reread of large files was introduced. Remote receipts never authorize destructive rollback or copy/delete Move. |
-| Stop | Only a newly created local object with a matching identity can be removed. Files require the recorded version too; directories must still have their identity and must be empty at the native delete operation. Overwritten destinations are retained. Changed or unverifiable objects are retained and reported using the structured `cleanupIncomplete` code. |
-| Staging | Journals record the operation ID and exact retained staging paths. Recursive Stop never infers ownership from `.ftpeach-<UUID>.part`, never sweeps a folder for matching names and never follows a sidecar to delete its contents. Unverified partials are retained with diagnostics. A stopped upload's matching staging registry entry is forgotten so disconnect cannot subsequently delete that reported retained object. |
+| Stop | Only a newly created local object with a matching identity can be removed. Files require the recorded version too; directories must still have their identity and must be empty at the native delete operation. Overwritten destinations are retained. Changed or unverifiable local objects are retained and reported using the structured `cleanupIncomplete` code. On a server, everything already delivered is retained without a report: the user stopped the copy, and a stopped copy keeps what it made. |
+| Staging | Journals record the operation ID and exact retained staging paths. Recursive Stop never infers ownership from `.ftpeach-<UUID>.part`, never sweeps a folder for matching names and never follows a sidecar to delete its contents. A stopped upload's staging file is removed only when the staging registry still holds that exact path for that destination, the same authority a stopped single upload uses; a failed removal is logged. Unverified local partials are retained with diagnostics. |
 | Remote rollback | Remote files and collections are retained because the adapters do not expose conditional object deletion. In particular, there is no WebDAV LIST-then-recursive-DELETE fallback; a file appearing in that interval cannot be deleted by rollback. |
 | Move | Copy/delete Move is enabled only between local endpoints on Windows. After the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is then opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. A conflict preserves the current source file and already delivered targets. Same-session remote server Rename remains available; other moves are refused before any write, and the user can copy instead. |
 
@@ -87,7 +87,7 @@ recopying a changed source requires explicit overwrite consent or a new destinat
 Regression tests cover destination removal/edit/type replacement on upload, download and relay
 resume; local edits and replacements with restored size/mtime; source changes injected after the
 final scan; destination changes before source deletion; sharing violations; foreign staging;
-nonempty/replaced directories; and frontend notification of incomplete Stop cleanup. Controlled
+nonempty/replaced directories; and frontend notification of incomplete local Stop cleanup. Controlled
 FTP tests exercise cancellation with retained artifacts. Real-server compatibility and packaged
 smoke remain separate checks.
 

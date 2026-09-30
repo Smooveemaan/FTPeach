@@ -112,7 +112,7 @@ async fn relay_staged(
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
-async fn cleanup_remote_partial(
+pub(crate) async fn cleanup_remote_partial(
     sessions: &Sessions,
     connection_id: &str,
     partial: &str,

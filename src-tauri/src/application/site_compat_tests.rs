@@ -178,7 +178,7 @@ async fn resolved(store: &Store, vault: &Vault, request: &Value) -> Value {
     if let Err(error) = request.validate() {
         return refused(&error);
     }
-    match session_service::resolve_connection_config(store, vault, request.into_map()).await {
+    match session_service::resolve_connection_config(store, vault, request).await {
         Ok(config) => describe(&config),
         Err(error) => refused(&error),
     }

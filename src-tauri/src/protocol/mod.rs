@@ -39,7 +39,7 @@ mod secret_formatting_tests {
     const MARKER: &str = "ftpeach-secret-marker";
 
     fn config(value: serde_json::Value) -> ConnectionConfig {
-        ConnectionConfig::from_json_map(value.as_object().unwrap()).unwrap()
+        ConnectionConfig::for_test(value.as_object().unwrap()).unwrap()
     }
 
     /// A `Debug` derive on a struct holding a `String` password is one

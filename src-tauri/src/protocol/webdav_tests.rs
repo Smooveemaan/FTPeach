@@ -160,7 +160,7 @@ fn webdav_config(url: &str, extra: serde_json::Value) -> crate::protocol::config
     for (key, value) in extra.as_object().unwrap() {
         map.insert(key.clone(), value.clone());
     }
-    crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+    crate::protocol::config::ConnectionConfig::for_test(&map).unwrap()
 }
 
 async fn carried_authorization(seen: &Arc<tokio::sync::Mutex<Vec<String>>>) -> bool {
@@ -264,7 +264,7 @@ fn a_webdav_address_may_not_carry_credentials_or_a_query() {
             .unwrap()
             .clone();
         assert!(
-            crate::protocol::config::ConnectionConfig::from_json_map(&map).is_err(),
+            crate::protocol::config::ConnectionConfig::for_test(&map).is_err(),
             "{url} was accepted"
         );
     }
@@ -272,7 +272,7 @@ fn a_webdav_address_may_not_carry_credentials_or_a_query() {
         .as_object()
         .unwrap()
         .clone();
-    assert!(crate::protocol::config::ConnectionConfig::from_json_map(&map).is_ok());
+    assert!(crate::protocol::config::ConnectionConfig::for_test(&map).is_ok());
 }
 
 /// The upgrade exists to move credentials onto TLS, so it must never run the
@@ -359,7 +359,7 @@ async fn connect_rejects_a_successful_html_login_page() {
         .as_object()
         .unwrap()
         .clone();
-    let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+    let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
     assert!(backend.connect(&config).await.is_err());
     assert!(!backend.is_connected());
     server.await.unwrap();
@@ -372,7 +372,7 @@ async fn a_401_is_a_rejected_login_at_connect_and_a_denied_resource_after() {
         .as_object()
         .unwrap()
         .clone();
-    let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+    let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
     let error = backend.connect(&config).await.unwrap_err();
     assert_eq!(
         crate::ipc::CommandError::from_anyhow(&error).code,
@@ -936,16 +936,14 @@ mod tests {
         user: Option<&str>,
         password: Option<&str>,
     ) -> crate::protocol::transport::ProxyConfig {
-        let mut config = serde_json::json!({"proxyEnabled": true, "proxyType": "http", "proxyHost": host, "proxyPort": 8080});
-        if let Some(user) = user {
-            config["proxyUsername"] = user.into();
-        }
-        if let Some(password) = password {
-            config["proxyPassword"] = password.into();
-        }
-        crate::protocol::transport::ProxyConfig::from_json_map(config.as_object().unwrap())
-            .unwrap()
-            .unwrap()
+        crate::protocol::transport::ProxyConfig::new(
+            Some("http"),
+            host,
+            8080,
+            user,
+            password.map(Into::into),
+        )
+        .unwrap()
     }
 
     #[test]
@@ -1022,7 +1020,7 @@ mod tests {
                 "proxyPassword": MARKER,
             });
             let config =
-                crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap())
+                crate::protocol::config::ConnectionConfig::for_test(map.as_object().unwrap())
                     .unwrap();
             let error = WebDavBackend::new().connect(&config).await.unwrap_err();
             let error = crate::ipc::CommandError::from_anyhow(&error);
@@ -1483,7 +1481,7 @@ mod local_integration_tests {
                 .as_object()
                 .unwrap()
                 .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let mut backend = WebDavBackend::new();
 
         backend.connect(&config).await.unwrap();
@@ -1509,7 +1507,7 @@ mod local_integration_tests {
             .as_object()
             .unwrap()
             .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let mut backend = WebDavBackend::new();
         let temp_dir =
             std::env::temp_dir().join(format!("ftpeach-webdav-{}", uuid::Uuid::new_v4()));
@@ -1573,7 +1571,7 @@ mod local_integration_tests {
             .as_object()
             .unwrap()
             .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let mut backend = WebDavBackend::new();
         let temp_dir =
             std::env::temp_dir().join(format!("ftpeach-webdav-{}", uuid::Uuid::new_v4()));
@@ -1638,7 +1636,7 @@ mod local_integration_tests {
             .as_object()
             .unwrap()
             .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let temp_dir =
             std::env::temp_dir().join(format!("ftpeach-webdav-{}", uuid::Uuid::new_v4()));
         tokio::fs::create_dir(&temp_dir).await.unwrap();
@@ -1732,7 +1730,7 @@ mod local_integration_tests {
         .as_object()
         .unwrap()
         .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let mut backend = WebDavBackend::new();
 
         let error = backend.connect(&config).await.unwrap_err();
@@ -1761,7 +1759,7 @@ mod local_integration_tests {
         .as_object()
         .unwrap()
         .clone();
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
         let mut backend = WebDavBackend::new();
 
         let error = backend.connect(&config).await.unwrap_err();
@@ -1796,7 +1794,7 @@ mod live_tests {
                     .as_object()
                     .unwrap()
                     .clone();
-            let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
 
             backend
                 .connect(&config)

@@ -1,9 +1,9 @@
 //! Resolves connection settings, opens the browse client and transfer pool,
 //! and tears both down on disconnect or connection failure.
 
-use crate::domain::Protocol;
+use crate::domain::{ConnectionConfig as IpcConnectionConfig, Protocol};
 use crate::ipc::{CommandError, ErrorCode};
-use crate::protocol::config::ConnectionConfig;
+use crate::protocol::config::{ConnectionConfig, DEFAULT_TIMEOUT_MS};
 use crate::protocol::sftp::HostKeyMismatchError;
 use crate::protocol::{ftp::FtpBackend, sftp::SftpBackend, webdav::WebDavBackend};
 use crate::runtime::log_emitter::LogEmitter;
@@ -95,7 +95,7 @@ pub(crate) fn create_backend(
 /// Merges the saved site's stored configuration under the runtime one.
 ///
 /// A connect that names a `siteId` takes its credentials from the vault, but
-/// keeps the three fields the pane can override for this session.
+/// keeps the concurrency the request names.
 async fn resolve_config(
     store: &Store,
     vault: &Vault,
@@ -113,7 +113,7 @@ async fn resolve_config(
         .connection_config_for_site_with_vault(&site_id, vault)
         .await
         .map_err(|error| CommandError::from_anyhow(&error))?;
-    for key in ["concurrency", "timeout", "activeMode"] {
+    for key in ["concurrency"] {
         if let Some(value) = runtime_config.get(key) {
             config.insert(key.into(), value.clone());
         }
@@ -200,30 +200,22 @@ fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSiz
 pub(crate) async fn resolve_connection_config(
     store: &Store,
     vault: &Vault,
-    config: JsonMap,
+    request: IpcConnectionConfig,
 ) -> Result<ConnectionConfig, CommandError> {
-    let mut config = resolve_config(store, vault, config).await?;
-    let proxy_config = store
-        .proxy_config_for_connect(vault)
+    let timeout_ms = request.timeout.unwrap_or(DEFAULT_TIMEOUT_MS);
+    let active_mode = request
+        .compatibility
+        .get("activeMode")
+        .and_then(serde_json::Value::as_bool)
+        .unwrap_or(false);
+    let config = resolve_config(store, vault, request.into_map()).await?;
+    let defaults = store
+        .connection_defaults(vault, timeout_ms, active_mode)
         .await
         .map_err(|error| CommandError::from_anyhow(&error))?;
-    for (key, value) in proxy_config {
-        config.insert(key, value);
-    }
-    config.insert(
-        crate::security::security_policy::STRICT_HOST_KEY.into(),
-        serde_json::Value::Bool(
-            store
-                .get_settings()
-                .await
-                .get(crate::security::security_policy::STRICT_HOST_KEY)
-                .and_then(serde_json::Value::as_bool)
-                .unwrap_or(true),
-        ),
-    );
 
     let config = SensitiveConnectionConfig(config);
-    ConnectionConfig::from_json_map(&config).map_err(|error| CommandError {
+    ConnectionConfig::from_json_map(&config, &defaults).map_err(|error| CommandError {
         code: ErrorCode::InvalidInput,
         message: "Invalid connection configuration".into(),
         details: Some(format!("{error:#}")),
@@ -250,7 +242,7 @@ pub(crate) async fn connect(
     store: &Store,
     vault: &Vault,
     connection_id: &str,
-    config: JsonMap,
+    config: IpcConnectionConfig,
 ) -> Result<(), ConnectFailure> {
     if !sessions.has_slot(connection_id) && sessions.slot_count() >= MAX_SESSIONS {
         return Err(ConnectFailure::from_error(CommandError::new(

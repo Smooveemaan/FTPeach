@@ -1,1 +1,4 @@
-{}
+{
+  "/direct/extra-fields/http-proxy-no-password/config": "A proxyPassword field in a direct connect request no longer becomes the saved proxy's password: the proxy comes from the saved settings only (a bug fix; the renderer never sends one).",
+  "/direct/extra-fields/http-proxy-no-password/secrets/proxyPassword": "The same: the proxy has no password, as saved."
+}

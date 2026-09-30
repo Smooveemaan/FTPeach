@@ -189,7 +189,7 @@ mod local_integration_tests {
         .as_object()
         .unwrap()
         .clone();
-        crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap()
+        crate::protocol::config::ConnectionConfig::for_test(&config).unwrap()
     }
 
     async fn serve_control(socket: TcpStream, server: TestServer) {
@@ -556,7 +556,7 @@ mod local_integration_tests {
             .as_object()
             .unwrap()
             .clone();
-            crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+            crate::protocol::config::ConnectionConfig::for_test(&map).unwrap()
         };
 
         let mut strict_backend = FtpBackend::new();
@@ -646,7 +646,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
             .as_object()
             .unwrap()
             .clone();
-            crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+            crate::protocol::config::ConnectionConfig::for_test(&map).unwrap()
         };
 
         let mut wrong_ca_backend = FtpBackend::new();
@@ -755,7 +755,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         .as_object()
         .unwrap()
         .clone();
-        crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap()
+        crate::protocol::config::ConnectionConfig::for_test(&map).unwrap()
     }
 
     fn flooding_tls() -> tokio_rustls::TlsAcceptor {
@@ -1470,7 +1470,7 @@ mod recursive_stop_tests {
             "user": "local",
             "password": "test"
         });
-        crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap()).unwrap()
+        crate::protocol::config::ConnectionConfig::for_test(map.as_object().unwrap()).unwrap()
     }
 
     #[tokio::test]
@@ -1593,7 +1593,7 @@ mod recursive_stop_tests {
             json!({"protocol":"webdav", "webdavUrl":"http://127.0.0.1:6065", "allowCleartextAuth":true, "user":"testuser", "password":"testpass"}),
         ] {
             let config =
-                crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap())
+                crate::protocol::config::ConnectionConfig::for_test(map.as_object().unwrap())
                     .unwrap();
             let (sessions, id) = connected_with_pool(config, PoolSize::Unlimited).await;
             sessions
@@ -2070,7 +2070,7 @@ mod live_tests {
             .as_object()
             .unwrap()
             .clone();
-            let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
 
             backend
                 .connect(&config)

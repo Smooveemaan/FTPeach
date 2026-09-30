@@ -268,7 +268,7 @@ async fn ftp_round_trip_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -296,7 +296,7 @@ async fn ftps_round_trip_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -323,7 +323,7 @@ async fn ftps_rejects_untrusted_docker_certificate() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     let mut backend = FtpBackend::new();
     let error = tokio::time::timeout(Duration::from_secs(15), backend.connect(&config))
@@ -350,7 +350,7 @@ async fn ftp_resume_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -374,7 +374,7 @@ async fn sftp_round_trip_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     // atmoz/sftp chroots testuser to a root-owned home dir with only
     // /upload writable underneath (see docker-compose.yml's command).
@@ -424,7 +424,7 @@ async fn sftp_rename_replaces_an_existing_file_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
     let store_dir = std::env::temp_dir().join(format!(
         "ftpeach-docker-sftp-replace-{}",
         uuid::Uuid::new_v4()
@@ -496,13 +496,13 @@ async fn sftp_tofu_pins_matches_and_rejects_changed_fingerprint() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
     let store_dir =
         std::env::temp_dir().join(format!("ftpeach-docker-sftp-tofu-{}", uuid::Uuid::new_v4()));
     let store = Store::new_at(store_dir.clone());
 
     // The default refuses a key nobody confirmed, and pins nothing.
-    let strict = ConnectionConfig::from_json_map(
+    let strict = ConnectionConfig::for_test(
         json!({
             "protocol": "sftp", "host": "127.0.0.1", "port": 2222,
             "user": "testuser", "password": "testpass",
@@ -588,7 +588,7 @@ async fn sftp_resume_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
     let store_dir = std::env::temp_dir().join(format!(
         "ftpeach-docker-sftp-resume-{}",
         uuid::Uuid::new_v4()
@@ -621,7 +621,7 @@ async fn webdav_round_trip_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -649,7 +649,7 @@ async fn webdav_tls_round_trip(port: u16, protocol: &str) {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid TLS WebDAV config");
+    let config = ConnectionConfig::for_test(&config).expect("valid TLS WebDAV config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -690,7 +690,7 @@ async fn webdav_resume_download_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
 
     tokio::time::timeout(
         Duration::from_secs(30),
@@ -713,7 +713,7 @@ async fn webdav_cancel_preserves_resumable_partial_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
     let root = std::env::temp_dir().join(format!("ftpeach-docker-cancel-{}", uuid::Uuid::new_v4()));
     tokio::fs::create_dir_all(&root)
         .await
@@ -863,7 +863,7 @@ async fn sftp_cancel_preserves_resumable_partial_against_docker_server() {
     .as_object()
     .unwrap()
     .clone();
-    let config = ConnectionConfig::from_json_map(&config).expect("valid config");
+    let config = ConnectionConfig::for_test(&config).expect("valid config");
     let store_dir = std::env::temp_dir().join(format!(
         "ftpeach-docker-sftp-cancel-store-{}",
         uuid::Uuid::new_v4()

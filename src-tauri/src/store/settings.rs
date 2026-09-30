@@ -5,12 +5,24 @@
 
 use super::{JsonMap, Store};
 use crate::ipc::{CommandError, ErrorCode};
+use crate::protocol::SensitiveString;
+use crate::protocol::transport::ProxyConfig;
 use crate::security::vault::{SecretUpdate, Vault};
 use anyhow::{Context, Result};
 use base64::Engine;
 use serde_json::Value;
 use std::path::PathBuf;
 use zeroize::{Zeroize, Zeroizing};
+
+/// What a connection takes from the application's settings rather than
+/// from its server; see [`Store::connection_defaults`].
+#[derive(Debug)]
+pub struct ConnectionDefaults {
+    pub timeout_ms: u64,
+    pub active_mode: bool,
+    pub strict_host_key_check: bool,
+    pub proxy: Option<ProxyConfig>,
+}
 
 /// Where a settings write leaves the proxy password.
 enum ProxyPasswordWrite {
@@ -241,55 +253,97 @@ impl Store {
         settings.get("hasProxyPassword").and_then(Value::as_bool) == Some(true)
     }
 
-    /// Reads the global proxy settings and, if enabled, resolves the saved
-    /// password — ready to merge straight into a connect-time config map.
-    /// Called once per connect attempt from
-    /// `application/session_service.rs`: the proxy password never
-    /// round-trips through the renderer on connect, only through this
-    /// backend path (see `reveal_proxy_password` for the one place it *does*
-    /// cross to the renderer — the settings-dialog "show password" action,
-    /// on demand only). A password held by a locked vault fails the connect
-    /// with "vault is locked", which the renderer answers with the unlock
-    /// dialog.
-    pub async fn proxy_config_for_connect(&self, vault: &Vault) -> Result<JsonMap> {
+    /// The settings a connect applies on top of the server's own: the
+    /// host-key policy and the proxy as saved, and the timeout and FTP mode
+    /// the window sends with the connect. Those two are not read here
+    /// because the settings dialog applies them to new connections while it
+    /// previews them, before they are saved.
+    ///
+    /// The proxy password is resolved here once per connect and never goes
+    /// to the renderer on this path (`reveal_proxy_password` is the one place
+    /// it does, on demand). A password held by a locked vault fails the
+    /// connect with "vault is locked", which the renderer answers with the
+    /// unlock dialog.
+    pub async fn connection_defaults(
+        &self,
+        vault: &Vault,
+        timeout_ms: u64,
+        active_mode: bool,
+    ) -> Result<ConnectionDefaults> {
         let settings = self.get_settings().await;
-        let mut out = JsonMap::new();
-        let requested = settings
-            .get("proxyEnabled")
-            .and_then(Value::as_bool)
-            .unwrap_or(false);
-        let enabled = requested
-            && settings
-                .get("proxyHost")
-                .and_then(Value::as_str)
-                .is_some_and(|host| !host.trim().is_empty())
-            && settings
-                .get("proxyPort")
-                .and_then(Value::as_u64)
-                .is_some_and(|port| (1..=u16::MAX as u64).contains(&port));
-        out.insert("proxyEnabled".into(), Value::Bool(enabled));
-        if !enabled {
-            return Ok(out);
-        }
-        for key in ["proxyType", "proxyHost", "proxyPort", "proxyUsername"] {
-            if let Some(v) = settings.get(key) {
-                out.insert(key.into(), v.clone());
+        Ok(ConnectionDefaults {
+            timeout_ms,
+            active_mode,
+            strict_host_key_check: crate::security::security_policy::strict_host_key(&settings),
+            proxy: self.saved_proxy(&settings, vault).await?,
+        })
+    }
+
+    /// The proxy every connection goes through, if one is switched on with
+    /// an address. A switch saved without one, as older versions allowed,
+    /// connects directly.
+    async fn saved_proxy(&self, settings: &JsonMap, vault: &Vault) -> Result<Option<ProxyConfig>> {
+        let host = settings
+            .get("proxyHost")
+            .and_then(Value::as_str)
+            .filter(|host| !host.trim().is_empty());
+        let port = settings
+            .get("proxyPort")
+            .and_then(Value::as_u64)
+            .and_then(|port| u16::try_from(port).ok())
+            .filter(|port| *port != 0);
+        let (true, Some(host), Some(port)) = (
+            settings.get("proxyEnabled").and_then(Value::as_bool) == Some(true),
+            host,
+            port,
+        ) else {
+            return Ok(None);
+        };
+        let password = if vault.is_configured() && Self::proxy_password_in_vault(settings) {
+            match vault.get_proxy_password().await? {
+                Some(secret) => Some(SensitiveString::from(
+                    String::from_utf8(secret.to_vec()).context("vault secret is not UTF-8")?,
+                )),
+                None => None,
             }
+        } else {
+            Some(SensitiveString::from(Self::decrypt_secret(
+                settings,
+                "proxyPasswordEnc",
+                "proxyPasswordPlain",
+            )))
+        };
+        let username = settings.get("proxyUsername").and_then(Value::as_str);
+        let lengths = [
+            ("proxyHost", host.len(), 255),
+            ("proxyUsername", username.map_or(0, str::len), 1024),
+            (
+                "proxyPassword",
+                password
+                    .as_ref()
+                    .map_or(0, |password| password.expose().len()),
+                16 * 1024,
+            ),
+        ];
+        let too_long = lengths.iter().find(|(_, length, limit)| length > limit);
+        match too_long {
+            Some((key, _, limit)) => Err(anyhow::anyhow!("{key} exceeds the {limit}-byte limit")),
+            None => ProxyConfig::new(
+                settings.get("proxyType").and_then(Value::as_str),
+                host,
+                port,
+                username,
+                password,
+            ),
         }
-        if vault.is_configured() && Self::proxy_password_in_vault(&settings) {
-            if let Some(secret) = vault.get_proxy_password().await? {
-                let password =
-                    String::from_utf8(secret.to_vec()).context("vault secret is not UTF-8")?;
-                out.insert("proxyPassword".into(), Value::String(password));
-            }
-        } else if Self::has_saved_secret(&settings, "proxyPasswordEnc", "proxyPasswordPlain") {
-            let password =
-                Self::decrypt_secret(&settings, "proxyPasswordEnc", "proxyPasswordPlain");
-            if !password.is_empty() {
-                out.insert("proxyPassword".into(), Value::String(password));
-            }
-        }
-        Ok(out)
+        .map(Some)
+        .map_err(|error| {
+            anyhow::anyhow!(CommandError {
+                code: ErrorCode::InvalidInput,
+                message: "Invalid connection configuration".into(),
+                details: Some(format!("{error:#}")),
+            })
+        })
     }
 
     /// Resolves the saved proxy password for the settings dialog's "show

@@ -149,13 +149,13 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
           "keyPassphrase": null,
           "password": "<empty>",
-          "proxyPassword": "$secret:5"
+          "proxyPassword": null
         },
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },

@@ -1,6 +1,7 @@
 mod known_hosts;
 mod secret_fields;
 mod settings;
+pub use settings::ConnectionDefaults;
 mod settings_schema;
 pub(crate) use settings_schema::validate_settings;
 mod sites;

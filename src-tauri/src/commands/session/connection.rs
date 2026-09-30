@@ -64,12 +64,12 @@ pub async fn session_connect(
     config: IpcConnectionConfig,
 ) -> CommandResult<ConnectOutcome> {
     config.validate()?;
-    let config = config.into_map();
     // A private key or a CA bundle is read from disk by the protocol backend,
     // which has no way to ask about provenance. An address on a share the
     // user never chose is refused here, before the file is opened.
     for key in ["keyPath", "caCertPath"] {
         if let Some(path) = config
+            .compatibility
             .get(key)
             .and_then(serde_json::Value::as_str)
             .filter(|value| !value.is_empty())

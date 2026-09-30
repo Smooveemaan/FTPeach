@@ -1,7 +1,7 @@
 use super::SensitiveString;
 use super::transport::ProxyConfig;
 use crate::domain::Protocol;
-use crate::store::JsonMap;
+use crate::store::{ConnectionDefaults, JsonMap};
 use anyhow::{Context, Result, anyhow, bail};
 use serde_json::Value;
 
@@ -67,7 +67,7 @@ pub enum ConnectionConfig {
 }
 
 impl ConnectionConfig {
-    pub fn from_json_map(map: &JsonMap) -> Result<Self> {
+    pub fn from_json_map(map: &JsonMap, defaults: &ConnectionDefaults) -> Result<Self> {
         for (key, limit) in [
             ("host", 255usize),
             ("user", 1024),
@@ -75,9 +75,6 @@ impl ConnectionConfig {
             ("webdavUrl", 4096),
             ("keyPath", 4096),
             ("caCertPath", 4096),
-            ("proxyHost", 255),
-            ("proxyUsername", 1024),
-            ("proxyPassword", 16 * 1024),
             ("password", 16 * 1024),
             ("keyPassphrase", 16 * 1024),
         ] {
@@ -106,7 +103,7 @@ impl ConnectionConfig {
             "webdav" => Protocol::Webdav,
             other => bail!("unsupported protocol: {other}"),
         };
-        let timeout_ms = optional_u64(map, "timeout")?.unwrap_or(DEFAULT_TIMEOUT_MS);
+        let timeout_ms = defaults.timeout_ms;
         if timeout_ms > 86_400_000 {
             bail!("timeout must not exceed 86400000 ms");
         }
@@ -124,7 +121,7 @@ impl ConnectionConfig {
             },
             timeout_ms,
             concurrency,
-            proxy: ProxyConfig::from_json_map(map)?,
+            proxy: defaults.proxy.clone(),
         };
         let user = string(map, "user").unwrap_or_default();
         let password = string(map, "password").unwrap_or_default();
@@ -148,7 +145,7 @@ impl ConnectionConfig {
                         || map.get("secure").and_then(Value::as_bool).unwrap_or(false),
                     allow_invalid_cert: bool_value(map, "allowInvalidCert"),
                     ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
-                    active_mode: bool_value(map, "activeMode"),
+                    active_mode: defaults.active_mode,
                     encoding: super::ftp_charset::parse(
                         &string(map, "encoding").unwrap_or_default(),
                     )?,
@@ -169,13 +166,7 @@ impl ConnectionConfig {
                     use_key_auth,
                     key_path,
                     key_passphrase: string(map, "keyPassphrase").map(SensitiveString::from),
-                    // Absent means strict: the setting is written into every
-                    // connection by the session service, and a config that
-                    // arrived without it must not silently be the weaker one.
-                    strict_host_key_check: map
-                        .get(crate::security::security_policy::STRICT_HOST_KEY)
-                        .and_then(Value::as_bool)
-                        .unwrap_or(true),
+                    strict_host_key_check: defaults.strict_host_key_check,
                 }))
             }
             Protocol::Webdav => {
@@ -211,6 +202,38 @@ impl ConnectionConfig {
                 }))
             }
         }
+    }
+
+    /// A connection described the way tests write one: the fields a direct
+    /// connect sends, with the application settings it depends on
+    /// (`timeout`, `activeMode`, `strictHostKeyCheck` and the `proxy*`
+    /// keys) in the same object. A setting left out takes the value a new
+    /// profile starts with.
+    #[cfg(any(test, feature = "test-utils"))]
+    pub fn for_test(description: &JsonMap) -> Result<Self> {
+        let proxy = match description.get("proxyEnabled").and_then(Value::as_bool) {
+            Some(true) => Some(ProxyConfig::new(
+                description.get("proxyType").and_then(Value::as_str),
+                description
+                    .get("proxyHost")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default(),
+                optional_u16(description, "proxyPort")?.unwrap_or_default(),
+                description.get("proxyUsername").and_then(Value::as_str),
+                string(description, "proxyPassword").map(SensitiveString::from),
+            )?),
+            _ => None,
+        };
+        let defaults = ConnectionDefaults {
+            timeout_ms: optional_u64(description, "timeout")?.unwrap_or(DEFAULT_TIMEOUT_MS),
+            active_mode: bool_value(description, "activeMode"),
+            strict_host_key_check: description
+                .get("strictHostKeyCheck")
+                .and_then(Value::as_bool)
+                .unwrap_or(true),
+            proxy,
+        };
+        Self::from_json_map(description, &defaults)
     }
 
     pub fn protocol(&self) -> Protocol {
@@ -328,18 +351,14 @@ mod tests {
     fn connection_limit_validates_runtime_and_saved_values() {
         for limit in [json!(0), json!(2), json!(5), json!(128), json!(null)] {
             assert!(
-                ConnectionConfig::from_json_map(&map(
-                    json!({"host":"test", "maxConnections":limit})
-                ))
-                .is_ok()
+                ConnectionConfig::for_test(&map(json!({"host":"test", "maxConnections":limit})))
+                    .is_ok()
             );
         }
         for limit in [json!(1), json!(129), json!(-1), json!(2.5), json!("bad")] {
             assert!(
-                ConnectionConfig::from_json_map(&map(
-                    json!({"host":"test", "maxConnections":limit})
-                ))
-                .is_err()
+                ConnectionConfig::for_test(&map(json!({"host":"test", "maxConnections":limit})))
+                    .is_err()
             );
         }
     }
@@ -352,24 +371,20 @@ mod tests {
     fn rejects_connection_strings_above_their_boundaries() {
         let accepted =
             map(json!({"protocol":"ftp", "host":"x".repeat(255), "user":"u".repeat(1024)}));
-        assert!(ConnectionConfig::from_json_map(&accepted).is_ok());
+        assert!(ConnectionConfig::for_test(&accepted).is_ok());
         for value in [
             json!({"protocol":"ftp", "host":"x".repeat(256)}),
             json!({"protocol":"ftp", "host":"example.test", "user":"u".repeat(1025)}),
-            json!({"protocol":"ftp", "host":"example.test", "proxyHost":"p".repeat(256)}),
         ] {
-            let error = ConnectionConfig::from_json_map(&map(value)).unwrap_err();
+            let error = ConnectionConfig::for_test(&map(value)).unwrap_err();
             assert!(error.downcast_ref::<crate::ipc::CommandError>().is_some());
         }
     }
 
     #[test]
     fn log_label_names_the_server_without_the_account() {
-        let label = |value: serde_json::Value| {
-            ConnectionConfig::from_json_map(&map(value))
-                .unwrap()
-                .log_label()
-        };
+        let label =
+            |value: serde_json::Value| ConnectionConfig::for_test(&map(value)).unwrap().log_label();
         assert_eq!(
             label(json!({"protocol":"ftps", "host":"example.test", "user":"alice"})),
             "ftps://example.test:21"
@@ -389,7 +404,7 @@ mod tests {
         // The address itself can no longer carry an account, so the label
         // has nothing of the kind left to strip.
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol":"webdav",
                 "webdavUrl":"https://alice:secret@dav.example.test:8443/remote.php/dav?token=x"
             })))
@@ -399,7 +414,7 @@ mod tests {
 
     #[test]
     fn separates_protocol_specific_fields() {
-        let config = ConnectionConfig::from_json_map(&map(json!({
+        let config = ConnectionConfig::for_test(&map(json!({
             "protocol": "sftp", "host": "example.test", "port": 22,
             "useKeyAuth": true, "keyPath": "/key", "timeout": 0
         })))
@@ -415,43 +430,43 @@ mod tests {
     #[test]
     fn validates_numeric_values_and_webdav_url() {
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "port": 70000
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "webdav", "webdavUrl": "/relative"
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "remotePath": "/safe/../escape"
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "timeout": 86_400_001
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "concurrency": 129
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "sftp", "host": "x", "useKeyAuth": true
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "proxyEnabled": true,
                 "proxyPort": 1080
             })))
@@ -461,7 +476,7 @@ mod tests {
 
     #[test]
     fn accepts_numeric_strings_from_legacy_saved_sites() {
-        let config = ConnectionConfig::from_json_map(&map(json!({
+        let config = ConnectionConfig::for_test(&map(json!({
             "protocol": "sftp", "host": "example.test", "port": "2222"
         })))
         .unwrap();
@@ -474,13 +489,13 @@ mod tests {
     #[test]
     fn rejects_crlf_in_ftp_credentials_to_block_command_injection() {
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "user": "evil\r\nDELE /other"
             })))
             .is_err()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "password": "evil\r\nDELE /other"
             })))
             .is_err()
@@ -489,7 +504,7 @@ mod tests {
 
     #[test]
     fn parses_custom_ca_cert_path_for_ftps_and_webdav() {
-        let config = ConnectionConfig::from_json_map(&map(json!({
+        let config = ConnectionConfig::for_test(&map(json!({
             "protocol": "ftps", "host": "example.test", "caCertPath": "/ca.pem"
         })))
         .unwrap();
@@ -498,7 +513,7 @@ mod tests {
         };
         assert_eq!(config.ca_cert_path.as_deref(), Some("/ca.pem"));
 
-        let config = ConnectionConfig::from_json_map(&map(json!({
+        let config = ConnectionConfig::for_test(&map(json!({
             "protocol": "webdav", "webdavUrl": "https://example.test/dav", "caCertPath": ""
         })))
         .unwrap();
@@ -511,13 +526,13 @@ mod tests {
     #[test]
     fn accepts_ipv6_targets_for_tcp_and_webdav_protocols() {
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "sftp", "host": "2001:db8::1", "port": 22
             })))
             .is_ok()
         );
         assert!(
-            ConnectionConfig::from_json_map(&map(json!({
+            ConnectionConfig::for_test(&map(json!({
                 "protocol": "webdav", "webdavUrl": "https://[2001:db8::1]/dav"
             })))
             .is_ok()

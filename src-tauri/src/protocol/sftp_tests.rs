@@ -898,7 +898,7 @@ mod local_integration_tests {
         .as_object()
         .unwrap()
         .clone();
-        let strict = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+        let strict = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
         let mut backend = SftpBackend::new(Arc::new(store.clone()));
 
         // Strict is the default: an unconfirmed first key is refused, and
@@ -919,7 +919,7 @@ mod local_integration_tests {
 
         let mut map = map;
         map.insert("strictHostKeyCheck".into(), serde_json::Value::Bool(false));
-        let config = crate::protocol::config::ConnectionConfig::from_json_map(&map).unwrap();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
 
         backend.connect(&config).await.unwrap();
         assert!(backend.is_connected());
@@ -971,7 +971,7 @@ mod live_tests {
             .as_object()
             .unwrap()
             .clone();
-            let config = crate::protocol::config::ConnectionConfig::from_json_map(&config).unwrap();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
 
             backend
                 .connect(&config)

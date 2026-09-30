@@ -199,12 +199,78 @@ fn proxy_patch(extra: Value) -> JsonMap {
 #[cfg(windows)]
 async fn connect_proxy_password(store: &Store, vault: &Vault) -> Option<String> {
     store
-        .proxy_config_for_connect(vault)
+        .connection_defaults(vault, 0, false)
         .await
         .unwrap()
-        .get("proxyPassword")
-        .and_then(Value::as_str)
-        .map(str::to_owned)
+        .proxy
+        .and_then(|proxy| proxy.password)
+        .map(|password| password.expose().to_owned())
+}
+
+#[tokio::test]
+async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
+    let root = std::env::temp_dir().join(format!("ftpeach-defaults-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    // The timeout and FTP mode are the window's, as sent.
+    let defaults = store.connection_defaults(&vault, 1234, true).await.unwrap();
+    assert_eq!((defaults.timeout_ms, defaults.active_mode), (1234, true));
+    assert!(defaults.strict_host_key_check);
+    assert!(defaults.proxy.is_none());
+
+    store
+        .set_settings(serde_json::from_value(json!({"strictHostKeyCheck": false})).unwrap())
+        .await
+        .unwrap();
+    store
+        .set_settings(
+            serde_json::from_value(json!({"proxyEnabled": true, "proxyType": "socks4", "proxyHost": " [::1] ", "proxyPort": 1080, "proxyUsername": ""})).unwrap(),
+        )
+        .await
+        .unwrap();
+    let defaults = store.connection_defaults(&vault, 0, false).await.unwrap();
+    assert!(!defaults.strict_host_key_check);
+    let proxy = defaults.proxy.unwrap();
+    assert_eq!(proxy.authority(), "[::1]:1080");
+    assert!(proxy.username.is_none() && proxy.password.is_none());
+
+    // A switch an older version saved without an address, or with a port
+    // out of range, connects directly.
+    for (host, port) in [
+        (json!(""), json!(1080)),
+        (json!("proxy.test"), json!(0)),
+        (json!("proxy.test"), json!(70000)),
+    ] {
+        std::fs::write(
+            root.join("settings.json"),
+            json!({"proxyEnabled": true, "proxyHost": host, "proxyPort": port}).to_string(),
+        )
+        .unwrap();
+        assert!(
+            store
+                .connection_defaults(&vault, 0, false)
+                .await
+                .unwrap()
+                .proxy
+                .is_none()
+        );
+    }
+    for host in ["proxy.test/path".to_owned(), "p".repeat(256)] {
+        std::fs::write(
+            root.join("settings.json"),
+            json!({"proxyEnabled": true, "proxyHost": host, "proxyPort": 1080}).to_string(),
+        )
+        .unwrap();
+        let refused = store
+            .connection_defaults(&vault, 0, false)
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&refused).code,
+            crate::ipc::ErrorCode::InvalidInput
+        );
+    }
+    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[cfg(windows)]
@@ -250,7 +316,10 @@ async fn proxy_password_moves_with_enhanced_protection() {
 
     // A locked vault blocks connecting and changing the password, not other settings.
     vault.lock().await;
-    let locked = store.proxy_config_for_connect(&vault).await.unwrap_err();
+    let locked = store
+        .connection_defaults(&vault, 0, false)
+        .await
+        .unwrap_err();
     assert!(format!("{locked:#}").contains("vault is locked"));
     assert!(store.reveal_proxy_password(&vault).await.is_err());
     let locked = store

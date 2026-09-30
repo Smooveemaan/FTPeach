@@ -136,7 +136,7 @@ pub fn noop_progress() -> ProgressSink {
 }
 
 pub fn parse(config: &Map<String, Value>) -> ConnectionConfig {
-    ConnectionConfig::from_json_map(config).expect("valid matrix config")
+    ConnectionConfig::for_test(config).expect("valid matrix config")
 }
 
 /// A backend for the target's kind. SFTP pins host keys in a throwaway store.

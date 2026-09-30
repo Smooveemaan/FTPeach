@@ -2,7 +2,6 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::protocol::transport;
 use crate::security::sensitive_string::SensitiveString;
 use serde::Deserialize;
-use serde_json::json;
 use std::time::Duration;
 
 /// One test at a time, and no longer than this.
@@ -54,19 +53,17 @@ pub async fn proxy_test(request: ProxyTestRequest) -> CommandResult<()> {
             "Proxy host is required",
         ));
     }
-    let config = json!({
-        "proxyEnabled": true,
-        "proxyType": request.proxy_type,
-        "proxyHost": request.proxy_host,
-        "proxyPort": request.proxy_port,
-        "proxyUsername": request.proxy_username,
-        "proxyPassword": request.proxy_password.as_ref().map(SensitiveString::expose),
-    });
-    let proxy = transport::ProxyConfig::from_json_map(config.as_object().unwrap())?;
+    let proxy = transport::ProxyConfig::new(
+        Some(&request.proxy_type),
+        &request.proxy_host,
+        request.proxy_port,
+        request.proxy_username.as_deref(),
+        request.proxy_password,
+    )?;
     let _permit = PROXY_TESTS.try_acquire().map_err(|_| {
         CommandError::new(ErrorCode::ResourceLimit, "A proxy test is already running")
     })?;
-    let attempt = transport::connect(&request.target_host, request.target_port, proxy.as_ref());
+    let attempt = transport::connect(&request.target_host, request.target_port, Some(&proxy));
     match tokio::time::timeout(PROXY_TEST_DEADLINE, attempt).await {
         Ok(result) => result
             .map(|_stream| ())

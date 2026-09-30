@@ -108,7 +108,7 @@ mod tests {
         use crate::transfer::transfer_pool::{BackendFactory, BoxBackend, PoolSize};
         use std::sync::Arc;
         let _ = rustls::crypto::ring::default_provider().install_default();
-        let config = ConnectionConfig::from_json_map(
+        let config = ConnectionConfig::for_test(
             serde_json::json!({
                 "protocol": "webdav", "webdavUrl": "http://127.0.0.1:6065", "allowCleartextAuth": true,
                 "user": "testuser", "password": "testpass"

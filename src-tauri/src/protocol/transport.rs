@@ -11,7 +11,6 @@
 
 use super::SensitiveString;
 use super::proxy;
-use crate::store::JsonMap;
 use anyhow::Context;
 use tokio::net::TcpStream;
 
@@ -22,12 +21,9 @@ pub enum ProxyKind {
     Http,
 }
 
-/// Global proxy settings, resolved once per connect attempt. Constructed
-/// from the same connect-time config map `ftp.rs`/`sftp.rs::connect()`
-/// already receive — `commands/session.rs::session_connect` merges these
-/// fields in from `settings.json` (via `Store::proxy_config_for_connect`)
-/// before any backend's `connect()` runs, so this is global state riding
-/// through the per-connect config, not a per-site/per-connection setting.
+/// The global proxy, resolved once per connect attempt from the saved
+/// settings (`Store::connection_defaults`), or from the settings dialog's
+/// form for a proxy test. It is application state, not a per-site setting.
 #[derive(Debug, Clone)]
 pub struct ProxyConfig {
     pub kind: ProxyKind,
@@ -38,47 +34,28 @@ pub struct ProxyConfig {
 }
 
 impl ProxyConfig {
-    pub fn from_json_map(config: &JsonMap) -> anyhow::Result<Option<Self>> {
-        let enabled = config
-            .get("proxyEnabled")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
-        if !enabled {
-            return Ok(None);
-        }
-        let host = config
-            .get("proxyHost")
-            .and_then(|v| v.as_str())
-            .filter(|s| !s.trim().is_empty())
-            .context("proxyHost is required when proxy is enabled")?;
-        let host = normalize_proxy_host(host)?;
-        let port = config
-            .get("proxyPort")
-            .and_then(|v| v.as_u64())
-            .context("proxyPort is required when proxy is enabled")?;
-        let port = u16::try_from(port).context("proxyPort is out of range")?;
-        let kind = match config.get("proxyType").and_then(|v| v.as_str()) {
-            Some("socks4") => ProxyKind::Socks4,
-            Some("http") => ProxyKind::Http,
-            _ => ProxyKind::Socks5,
-        };
-        let username = config
-            .get("proxyUsername")
-            .and_then(|v| v.as_str())
-            .filter(|s| !s.is_empty())
-            .map(str::to_string);
-        let password = config
-            .get("proxyPassword")
-            .and_then(|v| v.as_str())
-            .filter(|s| !s.is_empty())
-            .map(str::to_string);
-        Ok(Some(Self {
-            kind,
-            host,
+    /// `kind` is the settings' `proxyType`: `socks4`, `http`, or SOCKS5 for
+    /// anything else. An empty user name or password counts as none.
+    pub fn new(
+        kind: Option<&str>,
+        host: &str,
+        port: u16,
+        username: Option<&str>,
+        password: Option<SensitiveString>,
+    ) -> anyhow::Result<Self> {
+        Ok(Self {
+            kind: match kind {
+                Some("socks4") => ProxyKind::Socks4,
+                Some("http") => ProxyKind::Http,
+                _ => ProxyKind::Socks5,
+            },
+            host: normalize_proxy_host(host)?,
             port,
-            username,
-            password: password.map(super::SensitiveString::from),
-        }))
+            username: username
+                .filter(|username| !username.is_empty())
+                .map(str::to_owned),
+            password: password.filter(|password| !password.is_empty()),
+        })
     }
 
     /// `host:port`, with an IPv6 address in brackets as a URL or a log line
@@ -187,38 +164,17 @@ pub async fn connect(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     #[test]
-    fn from_json_map_is_none_when_disabled_or_absent() {
-        assert!(
-            ProxyConfig::from_json_map(&Default::default())
-                .unwrap()
-                .is_none()
-        );
-        let config = json!({"proxyEnabled": false, "proxyHost": "proxy.local", "proxyPort": 1080})
-            .as_object()
-            .unwrap()
-            .clone();
-        assert!(ProxyConfig::from_json_map(&config).unwrap().is_none());
-    }
-
-    #[test]
-    fn from_json_map_parses_full_config() {
-        let config = json!({
-            "proxyEnabled": true,
-            "proxyType": "http",
-            "proxyHost": "proxy.local",
-            "proxyPort": 8080,
-            "proxyUsername": "alice",
-            "proxyPassword": "s3cret",
-        })
-        .as_object()
-        .unwrap()
-        .clone();
-        let cfg = ProxyConfig::from_json_map(&config)
-            .unwrap()
-            .expect("should parse");
+    fn a_proxy_reads_its_kind_and_drops_empty_credentials() {
+        let cfg = ProxyConfig::new(
+            Some("http"),
+            "proxy.local",
+            8080,
+            Some("alice"),
+            Some("s3cret".into()),
+        )
+        .unwrap();
         assert_eq!(cfg.kind, ProxyKind::Http);
         assert_eq!(cfg.host, "proxy.local");
         assert_eq!(cfg.port, 8080);
@@ -227,6 +183,15 @@ mod tests {
             cfg.password.as_ref().map(SensitiveString::expose),
             Some("s3cret")
         );
+        let cfg = ProxyConfig::new(Some("socks4"), "p", 1, Some(""), Some("".into())).unwrap();
+        assert_eq!(cfg.kind, ProxyKind::Socks4);
+        assert!(cfg.username.is_none() && cfg.password.is_none());
+        for kind in [None, Some("socks5"), Some("unknown")] {
+            assert_eq!(
+                ProxyConfig::new(kind, "p", 1, None, None).unwrap().kind,
+                ProxyKind::Socks5
+            );
+        }
     }
 
     #[test]
@@ -238,10 +203,7 @@ mod tests {
             ("[::1]", "::1", "[::1]:1080"),
             ("[2001:DB8::1]", "2001:db8::1", "[2001:db8::1]:1080"),
         ] {
-            let config = json!({"proxyEnabled": true, "proxyHost": raw, "proxyPort": 1080});
-            let cfg = ProxyConfig::from_json_map(config.as_object().unwrap())
-                .unwrap()
-                .unwrap();
+            let cfg = ProxyConfig::new(None, raw, 1080, None, None).unwrap();
             assert_eq!(cfg.host, host);
             assert_eq!(cfg.authority(), authority);
         }
@@ -256,32 +218,6 @@ mod tests {
         ] {
             assert!(normalize_proxy_host(bad).is_err(), "{bad}");
         }
-    }
-
-    #[test]
-    fn from_json_map_defaults_type_to_socks5() {
-        let config = json!({"proxyEnabled": true, "proxyHost": "proxy.local", "proxyPort": 1080})
-            .as_object()
-            .unwrap()
-            .clone();
-        let cfg = ProxyConfig::from_json_map(&config)
-            .unwrap()
-            .expect("should parse");
-        assert_eq!(cfg.kind, ProxyKind::Socks5);
-    }
-
-    #[test]
-    fn from_json_map_requires_host_and_port() {
-        let missing_host = json!({"proxyEnabled": true, "proxyPort": 1080})
-            .as_object()
-            .unwrap()
-            .clone();
-        assert!(ProxyConfig::from_json_map(&missing_host).is_err());
-        let missing_port = json!({"proxyEnabled": true, "proxyHost": "proxy.local"})
-            .as_object()
-            .unwrap()
-            .clone();
-        assert!(ProxyConfig::from_json_map(&missing_port).is_err());
     }
 
     #[tokio::test]

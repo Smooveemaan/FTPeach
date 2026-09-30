@@ -48,7 +48,7 @@ fn auto_lock_minutes(settings: &JsonMap) -> u64 {
     settings.get(AUTO_LOCK).and_then(Value::as_u64).unwrap_or(0)
 }
 
-fn strict_host_key(settings: &JsonMap) -> bool {
+pub(crate) fn strict_host_key(settings: &JsonMap) -> bool {
     settings
         .get(STRICT_HOST_KEY)
         .and_then(Value::as_bool)

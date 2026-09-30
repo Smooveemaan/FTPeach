@@ -11,6 +11,7 @@
 use app_lib::protocol::ProtocolBackend;
 use app_lib::protocol::config::ConnectionConfig;
 use app_lib::protocol::webdav::WebDavBackend;
+use app_lib::store::ConnectionDefaults;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 const BODY: &str = "<multistatus><response><href>/dav/</href><propstat><prop><resourcetype><collection/></resourcetype></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>";
@@ -70,7 +71,16 @@ async fn a_connection_without_a_proxy_ignores_the_environment_proxy() {
         .as_object()
         .unwrap()
         .clone();
-    let config = ConnectionConfig::from_json_map(&map).unwrap();
+    let config = ConnectionConfig::from_json_map(
+        &map,
+        &ConnectionDefaults {
+            timeout_ms: 20_000,
+            active_mode: false,
+            strict_host_key_check: true,
+            proxy: None,
+        },
+    )
+    .unwrap();
 
     // SAFETY: this binary runs one test, and nothing else in the process
     // reads the environment while the variable is set.

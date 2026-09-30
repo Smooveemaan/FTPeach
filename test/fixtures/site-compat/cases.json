@@ -1,0 +1,937 @@
+{
+  "about": "Inputs for the saved-site and connection compatibility goldens (src-tauri/src/site_compat_tests.rs). \"$secret:N\" stands for fixture secret N and \"$dpapi:N\" for it protected with DPAPI on the machine running the test; \"$dpapi:bad\" is a value DPAPI cannot open. Outputs record secrets by the same labels, never by value.",
+  "stores": [
+    {
+      "name": "current-save-output",
+      "note": "What the current save projection writes, in the versioned file format.",
+      "sites": {
+        "schemaVersion": 1,
+        "data": [
+          { "id": "folder-1", "kind": "folder", "name": "Work", "parentId": null },
+          {
+            "id": "ftp-1",
+            "name": "Plain FTP",
+            "icon": "bookmark",
+            "color": "",
+            "protocol": "ftp",
+            "host": "ftp.example.test",
+            "port": 21,
+            "user": "alice",
+            "maxConnections": 4,
+            "webdavUrl": "",
+            "secure": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": false,
+            "remotePath": "/pub",
+            "parentId": "folder-1",
+            "useKeyAuth": false,
+            "keyPath": "",
+            "caCertPath": "",
+            "encoding": "windows-1251",
+            "enc": "$dpapi:1"
+          },
+          {
+            "id": "ftps-1",
+            "name": "FTPS",
+            "icon": "server",
+            "color": "red",
+            "protocol": "ftps",
+            "host": "ftps.example.test",
+            "port": 990,
+            "user": "bob",
+            "webdavUrl": "",
+            "secure": false,
+            "allowInvalidCert": true,
+            "allowCleartextAuth": false,
+            "remotePath": "/",
+            "parentId": null,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "caCertPath": "C:\\certs\\ca.pem",
+            "encoding": "",
+            "enc": "$dpapi:1"
+          },
+          {
+            "id": "sftp-key",
+            "name": "SFTP key",
+            "icon": "bookmark",
+            "color": "",
+            "protocol": "sftp",
+            "host": "sftp.example.test",
+            "port": 2222,
+            "user": "carol",
+            "maxConnections": 0,
+            "webdavUrl": "",
+            "secure": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": false,
+            "remotePath": "/home/carol",
+            "parentId": null,
+            "useKeyAuth": true,
+            "keyPath": "C:\\keys\\id_ed25519",
+            "caCertPath": "",
+            "encoding": "",
+            "enc": "$dpapi:1",
+            "keyEnc": "$dpapi:2"
+          },
+          {
+            "id": "dav-https",
+            "name": "WebDAV",
+            "icon": "bookmark",
+            "color": "",
+            "protocol": "webdav",
+            "host": "",
+            "port": null,
+            "user": "dave",
+            "maxConnections": 8,
+            "webdavUrl": "https://dav.example.test/remote.php/dav/",
+            "secure": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": false,
+            "remotePath": "/",
+            "parentId": null,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "caCertPath": "",
+            "encoding": "",
+            "enc": "$dpapi:1"
+          },
+          {
+            "id": "dav-http",
+            "name": "WebDAV over HTTP",
+            "icon": "bookmark",
+            "color": "",
+            "protocol": "webdav",
+            "host": "",
+            "port": null,
+            "user": "erin",
+            "webdavUrl": "http://dav.example.test:8080/dav",
+            "secure": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": true,
+            "remotePath": "/",
+            "parentId": null,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "caCertPath": "",
+            "encoding": ""
+          }
+        ]
+      },
+      "localPaths": {
+        "schemaVersion": 1,
+        "data": [
+          {
+            "id": "local-folder",
+            "kind": "folder",
+            "name": "Disks",
+            "parentId": null,
+            "managerScope": "localPaths"
+          },
+          {
+            "id": "local-1",
+            "kind": "local",
+            "name": "Downloads",
+            "localPath": "C:\\Users\\me\\Downloads",
+            "parentId": "local-folder",
+            "icon": "folder",
+            "color": null
+          }
+        ]
+      },
+      "saves": [
+        {
+          "note": "The renderer's payload for an unchanged FTP bookmark.",
+          "payload": {
+            "id": "ftp-1",
+            "name": "Plain FTP",
+            "protocol": "ftp",
+            "host": "ftp.example.test",
+            "port": 21,
+            "webdavUrl": "",
+            "user": "alice",
+            "password": "",
+            "removePassword": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": false,
+            "caCertPath": "",
+            "encoding": "windows-1251",
+            "remotePath": "/pub",
+            "maxConnections": 4,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "keyPassphrase": "",
+            "removeKeyPassphrase": false,
+            "parentId": "folder-1",
+            "icon": "bookmark",
+            "color": ""
+          }
+        },
+        {
+          "note": "Leaving maxConnections out keeps the stored limit.",
+          "payload": {
+            "id": "ftp-1",
+            "name": "Plain FTP",
+            "protocol": "ftp",
+            "host": "ftp.example.test",
+            "port": 21,
+            "user": "alice",
+            "parentId": "folder-1"
+          }
+        },
+        {
+          "note": "An explicit null limit replaces the stored one.",
+          "payload": {
+            "id": "ftp-1",
+            "name": "Plain FTP",
+            "protocol": "ftp",
+            "host": "ftp.example.test",
+            "port": 21,
+            "user": "alice",
+            "maxConnections": null,
+            "parentId": "folder-1"
+          }
+        },
+        {
+          "note": "Changing the password of the FTPS bookmark.",
+          "payload": {
+            "id": "ftps-1",
+            "name": "FTPS",
+            "protocol": "ftps",
+            "host": "ftps.example.test",
+            "port": 990,
+            "webdavUrl": "",
+            "user": "bob",
+            "password": "$secret:4",
+            "removePassword": false,
+            "allowInvalidCert": true,
+            "allowCleartextAuth": false,
+            "caCertPath": "C:\\certs\\ca.pem",
+            "encoding": "",
+            "remotePath": "/",
+            "maxConnections": 0,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "keyPassphrase": "",
+            "removeKeyPassphrase": false,
+            "parentId": null,
+            "icon": "server",
+            "color": "red"
+          }
+        },
+        {
+          "note": "Moving the FTPS bookmark's saved password to plain FTP, unconfirmed.",
+          "payload": {
+            "id": "ftps-1",
+            "name": "FTPS",
+            "protocol": "ftp",
+            "host": "ftps.example.test",
+            "port": 990,
+            "user": "bob",
+            "password": "",
+            "parentId": null
+          }
+        },
+        {
+          "note": "Removing the key passphrase and the password of the SFTP bookmark.",
+          "payload": {
+            "id": "sftp-key",
+            "name": "SFTP key",
+            "protocol": "sftp",
+            "host": "sftp.example.test",
+            "port": 2222,
+            "user": "carol",
+            "removePassword": true,
+            "removeKeyPassphrase": true,
+            "useKeyAuth": true,
+            "keyPath": "C:\\keys\\id_ed25519",
+            "remotePath": "/home/carol",
+            "parentId": null
+          }
+        },
+        {
+          "note": "A new bookmark without an id, host or user given.",
+          "payload": {
+            "name": "New DAV",
+            "protocol": "webdav",
+            "webdavUrl": "https://new.example.test/dav"
+          }
+        },
+        {
+          "note": "A new bookmark whose legacy spelling says FTPS.",
+          "payload": {
+            "id": "new-legacy",
+            "name": "Legacy FTPS",
+            "protocol": "ftp",
+            "secure": true,
+            "host": "legacy.example.test",
+            "password": "$secret:4"
+          }
+        },
+        {
+          "note": "Refused: an unknown protocol.",
+          "payload": { "id": "bad-1", "name": "Bad", "protocol": "gopher", "host": "x" }
+        },
+        {
+          "note": "Refused: a port outside 1-65535.",
+          "payload": { "id": "bad-2", "name": "Bad", "protocol": "ftp", "host": "x", "port": 0 }
+        },
+        {
+          "note": "Refused: a connection limit of 1.",
+          "payload": {
+            "id": "bad-3",
+            "name": "Bad",
+            "protocol": "ftp",
+            "host": "x",
+            "maxConnections": 1
+          }
+        },
+        {
+          "note": "Accepted: a start folder that is not absolute (the save does not check it).",
+          "payload": {
+            "id": "rel-path",
+            "name": "Relative",
+            "protocol": "ftp",
+            "host": "x",
+            "remotePath": "pub"
+          }
+        },
+        {
+          "note": "Saving a local path bookmark.",
+          "payload": {
+            "id": "local-1",
+            "kind": "local",
+            "name": "Downloads",
+            "localPath": "C:\\Users\\me\\Downloads",
+            "parentId": "local-folder",
+            "icon": "folder",
+            "color": ""
+          }
+        }
+      ],
+      "importExtra": [
+        {
+          "kind": "site",
+          "name": "Unknown key",
+          "protocol": "ftp",
+          "host": "u.example.test",
+          "timeout": 5000
+        },
+        {
+          "kind": "site",
+          "name": "Legacy FTPS",
+          "protocol": "ftp",
+          "secure": true,
+          "host": "l.example.test",
+          "port": 21,
+          "user": "x"
+        },
+        {
+          "kind": "site",
+          "name": "Secret",
+          "protocol": "ftp",
+          "host": "s.example.test",
+          "enc": "AAAA"
+        }
+      ]
+    },
+    {
+      "name": "legacy-array-shapes",
+      "note": "The unversioned array format, with shapes an older or hand-edited file may hold.",
+      "sites": [
+        {
+          "id": "legacy-ftps",
+          "name": "Old FTPS",
+          "protocol": "ftp",
+          "secure": true,
+          "host": "old.example.test",
+          "port": 21,
+          "user": "frank",
+          "plain": "$secret:1"
+        },
+        {
+          "id": "string-numbers",
+          "name": "Strings",
+          "protocol": "sftp",
+          "host": "s.example.test",
+          "port": "2222",
+          "maxConnections": "3",
+          "user": "gina",
+          "keyPlain": "$secret:2",
+          "useKeyAuth": true,
+          "keyPath": "C:\\keys\\id_rsa"
+        },
+        {
+          "id": "null-metadata",
+          "name": null,
+          "icon": null,
+          "color": null,
+          "parentId": null,
+          "protocol": "ftp",
+          "host": "n.example.test",
+          "port": null,
+          "user": null,
+          "remotePath": null,
+          "encoding": null,
+          "maxConnections": null
+        },
+        { "id": "no-protocol", "name": "No protocol", "host": "np.example.test" },
+        {
+          "id": "extra-keys",
+          "name": "Extra",
+          "protocol": "ftp",
+          "host": "e.example.test",
+          "timeout": 1234,
+          "activeMode": true,
+          "concurrency": 3,
+          "futureField": "kept?",
+          "proxyEnabled": true,
+          "proxyHost": "evil.example.test",
+          "proxyPort": 1080,
+          "strictHostKeyCheck": false,
+          "password": "$secret:5"
+        },
+        {
+          "id": "anonymous",
+          "name": "Anonymous",
+          "protocol": "ftp",
+          "host": "anon.example.test",
+          "port": 0,
+          "user": ""
+        },
+        {
+          "id": "undecryptable",
+          "name": "Electron era",
+          "protocol": "ftp",
+          "host": "u.example.test",
+          "enc": "$dpapi:bad",
+          "keyEnc": "$dpapi:bad"
+        },
+        {
+          "id": "bad-port",
+          "name": "Bad port",
+          "protocol": "ftp",
+          "host": "b.example.test",
+          "port": "twenty-one"
+        },
+        {
+          "id": "bad-limit",
+          "name": "Bad limit",
+          "protocol": "ftp",
+          "host": "b.example.test",
+          "maxConnections": 1
+        },
+        {
+          "id": "relative-path",
+          "name": "Relative",
+          "protocol": "ftp",
+          "host": "r.example.test",
+          "remotePath": "pub"
+        },
+        { "id": "upper-protocol", "name": "Upper", "protocol": "FTPS", "host": "u.example.test" },
+        {
+          "id": "bad-encoding",
+          "name": "Klingon",
+          "protocol": "ftp",
+          "host": "k.example.test",
+          "encoding": "klingon"
+        },
+        {
+          "id": "wrong-types",
+          "name": "Types",
+          "protocol": "ftp",
+          "host": 5,
+          "user": true,
+          "allowInvalidCert": "yes",
+          "secure": "true",
+          "remotePath": 7
+        },
+        { "id": "empty-host", "name": "No host", "protocol": "sftp", "host": "   " },
+        {
+          "id": "webdav-userinfo",
+          "name": "DAV",
+          "protocol": "webdav",
+          "webdavUrl": "https://u:p@dav.example.test/"
+        },
+        { "id": "local-in-sites", "kind": "local", "name": "Old local", "localPath": "D:\\data" },
+        {
+          "id": "local-scope-folder",
+          "kind": "folder",
+          "name": "Old local folder",
+          "managerScope": "localPaths"
+        },
+        {
+          "id": "bookmark-folder",
+          "kind": "folder",
+          "name": "Bookmarks",
+          "managerScope": "bookmarks",
+          "parentId": "ignored"
+        }
+      ],
+      "saves": [
+        {
+          "note": "The renderer's payload for the legacy FTPS bookmark as the site manager shows it.",
+          "payload": {
+            "id": "legacy-ftps",
+            "name": "Old FTPS",
+            "protocol": "ftp",
+            "host": "old.example.test",
+            "port": 21,
+            "webdavUrl": "",
+            "user": "frank",
+            "password": "",
+            "removePassword": false,
+            "allowInvalidCert": false,
+            "allowCleartextAuth": false,
+            "caCertPath": "",
+            "encoding": "",
+            "remotePath": "/",
+            "maxConnections": 0,
+            "useKeyAuth": false,
+            "keyPath": "",
+            "keyPassphrase": "",
+            "removeKeyPassphrase": false,
+            "parentId": null,
+            "icon": "bookmark",
+            "color": ""
+          }
+        },
+        {
+          "note": "The same bookmark saved as FTPS.",
+          "payload": {
+            "id": "legacy-ftps",
+            "name": "Old FTPS",
+            "protocol": "ftps",
+            "host": "old.example.test",
+            "port": 21,
+            "user": "frank",
+            "password": "",
+            "parentId": null
+          }
+        },
+        {
+          "note": "Saving the bookmark with string numbers without naming its limit.",
+          "payload": {
+            "id": "string-numbers",
+            "name": "Strings",
+            "protocol": "sftp",
+            "host": "s.example.test",
+            "port": 2222,
+            "user": "gina",
+            "useKeyAuth": true,
+            "keyPath": "C:\\keys\\id_rsa"
+          }
+        },
+        {
+          "note": "Saving the bookmark with extra keys drops them.",
+          "payload": {
+            "id": "extra-keys",
+            "name": "Extra",
+            "protocol": "ftp",
+            "host": "e.example.test"
+          }
+        },
+        {
+          "note": "A replacement password for the Electron-era bookmark.",
+          "payload": {
+            "id": "undecryptable",
+            "name": "Electron era",
+            "protocol": "ftp",
+            "host": "u.example.test",
+            "password": "$secret:4"
+          }
+        }
+      ],
+      "importExtra": []
+    }
+  ],
+  "vault": {
+    "note": "Enhanced protection: secrets live in the vault, sites.json keeps flags.",
+    "sites": {
+      "schemaVersion": 1,
+      "data": [
+        {
+          "id": "vault-ftp",
+          "name": "Vault FTP",
+          "icon": "bookmark",
+          "color": "",
+          "protocol": "ftp",
+          "host": "v.example.test",
+          "port": 21,
+          "user": "hank",
+          "webdavUrl": "",
+          "secure": false,
+          "allowInvalidCert": false,
+          "allowCleartextAuth": false,
+          "remotePath": "/",
+          "parentId": null,
+          "useKeyAuth": false,
+          "keyPath": "",
+          "caCertPath": "",
+          "encoding": "",
+          "hasPassword": true,
+          "hasKeyPassphrase": false
+        },
+        {
+          "id": "vault-sftp",
+          "name": "Vault SFTP",
+          "icon": "bookmark",
+          "color": "",
+          "protocol": "sftp",
+          "host": "vs.example.test",
+          "port": 22,
+          "user": "ivy",
+          "webdavUrl": "",
+          "secure": false,
+          "allowInvalidCert": false,
+          "allowCleartextAuth": false,
+          "remotePath": "/",
+          "parentId": null,
+          "useKeyAuth": true,
+          "keyPath": "C:\\keys\\vault",
+          "caCertPath": "",
+          "encoding": "",
+          "hasPassword": true,
+          "hasKeyPassphrase": true
+        },
+        {
+          "id": "vault-empty",
+          "name": "No secrets",
+          "protocol": "ftps",
+          "host": "ve.example.test",
+          "hasPassword": false
+        }
+      ]
+    },
+    "secrets": [
+      { "siteId": "vault-ftp", "field": "password", "value": "$secret:1" },
+      { "siteId": "vault-sftp", "field": "password", "value": "$secret:1" },
+      { "siteId": "vault-sftp", "field": "keyPassphrase", "value": "$secret:2" }
+    ]
+  },
+  "settings": {
+    "none": {},
+    "strict-off": { "strictHostKeyCheck": false },
+    "active-mode-saved": { "ftpActiveMode": true, "connectTimeout": 5000 },
+    "socks5-proxy": {
+      "proxyEnabled": true,
+      "proxyType": "socks5",
+      "proxyHost": "proxy.example.test",
+      "proxyPort": 1080,
+      "proxyUsername": "pat",
+      "proxyPassword": "$secret:3"
+    },
+    "http-proxy-no-password": {
+      "proxyEnabled": true,
+      "proxyType": "http",
+      "proxyHost": "[::1]",
+      "proxyPort": 3128,
+      "proxyUsername": ""
+    },
+    "proxy-without-host": { "proxyEnabled": true, "proxyHost": "", "proxyPort": 1080 }
+  },
+  "directRequests": [
+    {
+      "name": "ftp",
+      "request": {
+        "siteId": null,
+        "protocol": "ftp",
+        "secure": false,
+        "host": "ftp.example.test",
+        "port": 21,
+        "webdavUrl": "",
+        "user": "alice",
+        "password": "$secret:4",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": false,
+        "caCertPath": "",
+        "timeout": 20000,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": true
+      }
+    },
+    {
+      "name": "ftps-legacy-spelling",
+      "request": {
+        "siteId": null,
+        "protocol": "ftp",
+        "secure": true,
+        "host": "ftps.example.test",
+        "port": 990,
+        "webdavUrl": "",
+        "user": "bob",
+        "password": "$secret:4",
+        "allowInvalidCert": true,
+        "allowCleartextAuth": false,
+        "caCertPath": "C:\\certs\\ca.pem",
+        "timeout": 0,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    {
+      "name": "ftps-canonical-spelling",
+      "request": {
+        "siteId": null,
+        "protocol": "ftps",
+        "host": "ftps.example.test",
+        "port": 990,
+        "webdavUrl": "",
+        "user": "bob",
+        "password": "$secret:4",
+        "allowInvalidCert": true,
+        "allowCleartextAuth": false,
+        "caCertPath": "C:\\certs\\ca.pem",
+        "timeout": 0,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    {
+      "name": "anonymous-ftp-default-port",
+      "request": {
+        "siteId": null,
+        "protocol": "ftp",
+        "secure": false,
+        "host": " ftp.example.test ",
+        "webdavUrl": "",
+        "user": "",
+        "password": "",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": false,
+        "caCertPath": "",
+        "timeout": 20000,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    {
+      "name": "sftp-key",
+      "request": {
+        "siteId": null,
+        "protocol": "sftp",
+        "secure": false,
+        "host": "2001:db8::1",
+        "webdavUrl": "",
+        "user": "carol",
+        "password": "",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": false,
+        "caCertPath": "",
+        "timeout": 30000,
+        "useKeyAuth": true,
+        "keyPath": "C:\\keys\\id_ed25519",
+        "keyPassphrase": "$secret:5",
+        "activeMode": true
+      }
+    },
+    {
+      "name": "sftp-password",
+      "request": {
+        "siteId": null,
+        "protocol": "sftp",
+        "secure": false,
+        "host": "sftp.example.test",
+        "port": 2222,
+        "webdavUrl": "",
+        "user": "carol",
+        "password": "$secret:4",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": false,
+        "caCertPath": "",
+        "timeout": 20000,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    {
+      "name": "webdav-https",
+      "request": {
+        "siteId": null,
+        "protocol": "webdav",
+        "secure": false,
+        "host": "",
+        "webdavUrl": "https://dav.example.test:8443/remote.php/dav/",
+        "user": "dave",
+        "password": "$secret:4",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": false,
+        "caCertPath": "",
+        "timeout": 20000,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    {
+      "name": "webdav-http-cleartext",
+      "request": {
+        "siteId": null,
+        "protocol": "webdav",
+        "secure": false,
+        "host": "",
+        "webdavUrl": "http://dav.example.test/dav",
+        "user": "erin",
+        "password": "$secret:4",
+        "allowInvalidCert": false,
+        "allowCleartextAuth": true,
+        "caCertPath": "",
+        "timeout": 20000,
+        "useKeyAuth": false,
+        "keyPath": "",
+        "keyPassphrase": "",
+        "activeMode": false
+      }
+    },
+    { "name": "refused-no-host", "request": { "protocol": "ftp", "host": "", "timeout": 20000 } },
+    {
+      "name": "refused-blank-host",
+      "request": { "protocol": "sftp", "host": "   ", "timeout": 20000 }
+    },
+    {
+      "name": "refused-no-url",
+      "request": { "protocol": "webdav", "webdavUrl": "", "timeout": 20000 }
+    },
+    {
+      "name": "refused-relative-url",
+      "request": { "protocol": "webdav", "webdavUrl": "dav.example.test/x", "timeout": 20000 }
+    },
+    {
+      "name": "refused-url-account",
+      "request": {
+        "protocol": "webdav",
+        "webdavUrl": "https://a:b@dav.example.test/",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-url-query",
+      "request": {
+        "protocol": "webdav",
+        "webdavUrl": "https://dav.example.test/?t=1",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-crlf-user",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "user": "u\r\nDELE /",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-crlf-password",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "password": "p\nDELE /",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-timeout",
+      "request": { "protocol": "ftp", "host": "x.example.test", "timeout": 86400001 }
+    },
+    {
+      "name": "refused-key-without-path",
+      "request": {
+        "protocol": "sftp",
+        "host": "x.example.test",
+        "useKeyAuth": true,
+        "keyPath": "",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-long-host",
+      "request": {
+        "protocol": "ftp",
+        "host": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.test",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "refused-bad-encoding",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "encoding": "klingon",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "encoding-and-limit",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "encoding": "shift_jis",
+        "maxConnections": 3,
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "unknown-protocol",
+      "request": { "protocol": "gopher", "host": "x.example.test", "timeout": 20000 }
+    },
+    {
+      "name": "extra-fields",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "timeout": 20000,
+        "url": "https://ignored.example.test/",
+        "proxyEnabled": true,
+        "proxyHost": "request-proxy.example.test",
+        "proxyPort": 9,
+        "proxyPassword": "$secret:5",
+        "strictHostKeyCheck": false,
+        "concurrency": 2,
+        "futureField": 1,
+        "remotePath": "/start"
+      }
+    },
+    {
+      "name": "extra-fields-sftp",
+      "request": {
+        "protocol": "sftp",
+        "host": "x.example.test",
+        "timeout": 20000,
+        "strictHostKeyCheck": false,
+        "concurrency": 128,
+        "remotePath": "/start/../up"
+      }
+    },
+    {
+      "name": "refused-concurrency",
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "timeout": 20000,
+        "concurrency": 129
+      }
+    },
+    {
+      "name": "sftp-without-passphrase-field",
+      "request": {
+        "protocol": "sftp",
+        "host": "x.example.test",
+        "user": "u",
+        "password": "$secret:4",
+        "timeout": 20000
+      }
+    }
+  ]
+}

@@ -195,6 +195,41 @@ fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSiz
     }
 }
 
+/// The protocol configuration a connect request resolves to: the saved site
+/// it names, the proxy and host-key settings, and the request's own fields.
+pub(crate) async fn resolve_connection_config(
+    store: &Store,
+    vault: &Vault,
+    config: JsonMap,
+) -> Result<ConnectionConfig, CommandError> {
+    let mut config = resolve_config(store, vault, config).await?;
+    let proxy_config = store
+        .proxy_config_for_connect(vault)
+        .await
+        .map_err(|error| CommandError::from_anyhow(&error))?;
+    for (key, value) in proxy_config {
+        config.insert(key, value);
+    }
+    config.insert(
+        crate::security::security_policy::STRICT_HOST_KEY.into(),
+        serde_json::Value::Bool(
+            store
+                .get_settings()
+                .await
+                .get(crate::security::security_policy::STRICT_HOST_KEY)
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(true),
+        ),
+    );
+
+    let config = SensitiveConnectionConfig(config);
+    ConnectionConfig::from_json_map(&config).map_err(|error| CommandError {
+        code: ErrorCode::InvalidInput,
+        message: "Invalid connection configuration".into(),
+        details: Some(format!("{error:#}")),
+    })
+}
+
 /// Opens a session for `connection_id`, replacing whatever occupied the slot.
 ///
 /// Holds the slot lock for the whole pipeline, so a second connect for the
@@ -227,36 +262,9 @@ pub(crate) async fn connect(
     let mut guard = slot.lock().await;
     teardown_session(&mut guard, connection_id).await;
 
-    let mut config = resolve_config(store, vault, config)
+    let typed_config = resolve_connection_config(store, vault, config)
         .await
         .map_err(ConnectFailure::from_error)?;
-    let proxy_config = store
-        .proxy_config_for_connect(vault)
-        .await
-        .map_err(|error| ConnectFailure::from_error(CommandError::from_anyhow(&error)))?;
-    for (key, value) in proxy_config {
-        config.insert(key, value);
-    }
-    config.insert(
-        crate::security::security_policy::STRICT_HOST_KEY.into(),
-        serde_json::Value::Bool(
-            store
-                .get_settings()
-                .await
-                .get(crate::security::security_policy::STRICT_HOST_KEY)
-                .and_then(serde_json::Value::as_bool)
-                .unwrap_or(true),
-        ),
-    );
-
-    let config = SensitiveConnectionConfig(config);
-    let typed_config = ConnectionConfig::from_json_map(&config).map_err(|error| {
-        ConnectFailure::from_error(CommandError {
-            code: ErrorCode::InvalidInput,
-            message: "Invalid connection configuration".into(),
-            details: Some(format!("{error:#}")),
-        })
-    })?;
     let protocol = typed_config.protocol();
     let concurrency = typed_config.common().concurrency;
     let browse_timeout_ms = typed_config.common().timeout_ms;

@@ -43,7 +43,7 @@ fn strip_settings_secrets(mut settings: JsonMap) -> JsonMap {
     settings
 }
 
-fn strip_site_secrets(mut site: JsonMap) -> JsonMap {
+pub(crate) fn strip_site_secrets(mut site: JsonMap) -> JsonMap {
     for key in [
         "password",
         "keyPassphrase",
@@ -184,7 +184,7 @@ fn validate_import_settings(patch: &JsonMap) -> Result<(), String> {
     crate::store::validate_settings(patch, false)
 }
 
-fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
+pub(crate) fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
     const ALLOWED: &[&str] = &[
         "id",
         "kind",
@@ -268,7 +268,7 @@ fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
     crate::store::validate_site_input(record).map_err(|error| format!("sites[{index}]: {error:#}"))
 }
 
-struct ImportSitesOutcome {
+pub(crate) struct ImportSitesOutcome {
     pub added: usize,
     pub skipped: usize,
 }
@@ -319,7 +319,7 @@ fn site_identity_key(record: &JsonMap) -> String {
     )
 }
 
-async fn import_sites(
+pub(crate) async fn import_sites(
     store: &Store,
     sites: Vec<serde_json::Value>,
     existing: &[JsonMap],

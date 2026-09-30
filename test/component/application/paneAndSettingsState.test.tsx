@@ -51,4 +51,22 @@ describe('pane and settings state', () => {
     expect(settingsApi.set).toHaveBeenCalledWith({ theme: 'dark' });
     expect(result.current.settings.connection.proxyPasswordSet).toBe(true);
   });
+
+  // The pane lifecycle reads these two from `settings.connection` for every
+  // connect, so a connect started while the dialog is open (from the tray
+  // menu, say) uses the previewed values, not the saved ones.
+  test('a previewed timeout and FTP mode apply to connections before they are saved', () => {
+    const settingsApi = { set: vi.fn(async () => ({})) };
+    const { result } = renderHook(() =>
+      useSettings({ settingsApi, logApi: { setFileLogging: vi.fn() } }),
+    );
+    act(() =>
+      result.current.applySettingsDialogPatch({ connectTimeout: 5000, ftpActiveMode: true }),
+    );
+    expect(result.current.settings.connection).toMatchObject({
+      connectTimeout: 5000,
+      ftpActiveMode: true,
+    });
+    expect(settingsApi.set).not.toHaveBeenCalled();
+  });
 });

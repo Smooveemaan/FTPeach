@@ -9,8 +9,8 @@ mod scan;
 use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp};
 use self::journal::{Journal, Paused};
 use self::manifest::Entry;
+use self::model::check_cancel;
 pub use self::model::{Endpoint, Intent, Report};
-use self::model::{check_cancel, unit};
 use self::scan::scan;
 use crate::application::transfer_service::{self, CancelIntent};
 use crate::application::upload_resume;
@@ -287,7 +287,7 @@ async fn run_inner(
             safety::validate_copy_relationship(Path::new(source), Path::new(target))?;
         }
         if let (Endpoint::Remote { path: source, connection_id: a }, Endpoint::Remote { path: target, connection_id: b }) = (&intent.source, &intent.target) {
-            unit(transfer_service::transfer_validate_remote_copy(source.clone(), target.clone(), a.clone(), b.clone(), intent.moving))?;
+            transfer_service::transfer_validate_remote_copy(source.clone(), target.clone(), a.clone(), b.clone(), intent.moving)?;
             if intent.moving {
                 // A move takes the source away as well as filling the target.
                 let _source = reserve(sessions, &intent.source, Access::Write).await?;

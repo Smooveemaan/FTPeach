@@ -3,7 +3,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import type { SupportedLanguage } from '../../../i18n/index.ts';
 import { matchSupportedLanguage } from '../../../i18n/index.ts';
 import { api } from '../../../platform/api/index.ts';
-import { isCancellation } from '../../../platform/ipcContracts.ts';
+import { CommandFailure, isCancellation } from '../../../platform/ipcContracts.ts';
 import { friendlyError } from '../../../shared/errorMessages.ts';
 import type { SettingsPatch, SettingsValues } from '../useSettings.ts';
 
@@ -347,6 +347,10 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
       });
       if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
         if ('errorCode' in result && result.errorCode === 'cancelled') return;
+        if ('errorCode' in result && result.errorCode === 'vaultLocked') {
+          onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
+          return;
+        }
         throw new Error('error' in result ? String(result.error) : 'Settings could not be saved');
       }
       onClose();
@@ -355,7 +359,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
       // open with the draft untouched and says nothing further about it.
       if (isCancellation(error)) return;
       // A new proxy password under enhanced protection needs the vault unlocked.
-      if (/vault is locked/i.test(error instanceof Error ? error.message : String(error))) {
+      if (error instanceof CommandFailure && error.code === 'vaultLocked') {
         onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
         return;
       }

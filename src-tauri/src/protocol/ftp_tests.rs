@@ -1654,12 +1654,8 @@ mod recursive_stop_tests {
                             false,
                             Some(false),
                         )
-                        .await
-                        .unwrap();
-                        assert!(
-                            matches!(result, crate::ipc::OkResult::Ok { .. }),
-                            "{name}: {result:?}"
-                        );
+                        .await;
+                        assert!(result.is_ok(), "{name}: {result:?}");
                     }
                 });
             }

@@ -28,7 +28,6 @@ fn is_local_paths_entry(site: &JsonMap) -> bool {
 pub enum ExportResult {
     Ok { ok: bool, path: String },
     Canceled { ok: bool, canceled: bool },
-    Err { ok: bool, error: CommandError },
 }
 
 fn strip_settings_secrets(mut settings: JsonMap) -> JsonMap {
@@ -132,10 +131,7 @@ pub async fn app_export_settings(
             ok: true,
             path: path_str,
         }),
-        Err(e) => Ok(ExportResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&anyhow::anyhow!(e.to_string())),
-        }),
+        Err(e) => Err(CommandError::from_anyhow(&anyhow::anyhow!(e.to_string()))),
     }
 }
 
@@ -156,11 +152,16 @@ pub enum ImportResult {
         ok: bool,
         canceled: bool,
     },
-    Err {
-        ok: bool,
-        error: CommandError,
-        issues: Vec<String>,
-    },
+}
+
+/// An import that stopped. What stopped it goes to the log with the error.
+fn import_failed(mut error: CommandError, issues: Vec<String>) -> CommandError {
+    let issues = issues.join("\n");
+    error.details = Some(match error.details.take() {
+        Some(details) => format!("{issues}\n{details}"),
+        None => issues,
+    });
+    error
 }
 
 const MAX_IMPORT_BYTES: u64 = 4 * 1024 * 1024;
@@ -457,25 +458,23 @@ pub async fn app_import_settings(
     let metadata = match tokio::fs::metadata(&path_string).await {
         Ok(metadata) => metadata,
         Err(error) => {
-            return Ok(ImportResult::Err {
-                ok: false,
-                error: CommandError::from(error),
-                issues: vec!["Cannot inspect the selected import file".into()],
-            });
+            return Err(import_failed(
+                CommandError::from(error),
+                vec!["Cannot inspect the selected import file".into()],
+            ));
         }
     };
     if metadata.len() > MAX_IMPORT_BYTES {
-        return Ok(ImportResult::Err {
-            ok: false,
-            error: CommandError::new(
+        return Err(import_failed(
+            CommandError::new(
                 ErrorCode::ResourceLimit,
                 "Import file exceeds the 4 MiB limit",
             ),
-            issues: vec![format!(
+            vec![format!(
                 "File size is {} bytes; maximum is {MAX_IMPORT_BYTES}",
                 metadata.len()
             )],
-        });
+        ));
     }
     use tokio::io::AsyncReadExt;
     let raw = match tokio::fs::File::open(&path_string).await {
@@ -486,55 +485,50 @@ pub async fn app_import_settings(
                 .read_to_end(&mut bytes)
                 .await
             {
-                return Ok(ImportResult::Err {
-                    ok: false,
-                    error: CommandError::from(error),
-                    issues: vec!["Cannot read the selected import file".into()],
-                });
+                return Err(import_failed(
+                    CommandError::from(error),
+                    vec!["Cannot read the selected import file".into()],
+                ));
             }
             if bytes.len() as u64 > MAX_IMPORT_BYTES {
-                return Ok(ImportResult::Err {
-                    ok: false,
-                    error: CommandError::new(
+                return Err(import_failed(
+                    CommandError::new(
                         ErrorCode::ResourceLimit,
                         "Import file exceeds the 4 MiB limit",
                     ),
-                    issues: vec!["File grew beyond the size limit while being read".into()],
-                });
+                    vec!["File grew beyond the size limit while being read".into()],
+                ));
             }
             match String::from_utf8(bytes) {
                 Ok(raw) => raw,
                 Err(_) => {
-                    return Ok(ImportResult::Err {
-                        ok: false,
-                        error: CommandError::new(
+                    return Err(import_failed(
+                        CommandError::new(
                             ErrorCode::InvalidInput,
                             "Import file must be UTF-8 JSON",
                         ),
-                        issues: vec!["Invalid UTF-8".into()],
-                    });
+                        vec!["Invalid UTF-8".into()],
+                    ));
                 }
             }
         }
         Err(e) => {
-            return Ok(ImportResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&anyhow::anyhow!(e.to_string())),
-                issues: vec!["Cannot read the selected import file".into()],
-            });
+            return Err(import_failed(
+                CommandError::from_anyhow(&anyhow::anyhow!(e.to_string())),
+                vec!["Cannot read the selected import file".into()],
+            ));
         }
     };
     let mut data: ImportDocument = match serde_json::from_str(&raw) {
         Ok(d) => d,
         Err(e) => {
-            return Ok(ImportResult::Err {
-                ok: false,
-                error: CommandError::new(
+            return Err(import_failed(
+                CommandError::new(
                     ErrorCode::InvalidInput,
                     "Import file does not match the supported schema",
                 ),
-                issues: vec![e.to_string()],
-            });
+                vec![e.to_string()],
+            ));
         }
     };
 
@@ -574,11 +568,10 @@ pub async fn app_import_settings(
         }
     }
     if !issues.is_empty() {
-        return Ok(ImportResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "Import validation failed"),
+        return Err(import_failed(
+            CommandError::new(ErrorCode::InvalidInput, "Import validation failed"),
             issues,
-        });
+        ));
     }
 
     let previous_settings = store.get_settings().await;
@@ -606,11 +599,10 @@ pub async fn app_import_settings(
                 settings_out = Some(next);
             }
             Err(error) => {
-                return Ok(ImportResult::Err {
-                    ok: false,
-                    error: CommandError::from_anyhow(&error),
-                    issues: vec!["Settings could not be saved".into()],
-                });
+                return Err(import_failed(
+                    CommandError::from_anyhow(&error),
+                    vec!["Settings could not be saved".into()],
+                ));
             }
         }
     }
@@ -640,11 +632,7 @@ pub async fn app_import_settings(
                 if let Err(restore) = store.replace_sites_for_import(&previous_sites).await {
                     issues.push(format!("Sites rollback failed: {restore:#}"));
                 }
-                return Ok(ImportResult::Err {
-                    ok: false,
-                    error: CommandError::from_anyhow(&error),
-                    issues,
-                });
+                return Err(import_failed(CommandError::from_anyhow(&error), issues));
             }
         }
     }

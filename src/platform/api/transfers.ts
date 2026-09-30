@@ -1,10 +1,10 @@
 import {
   checkedResponse,
   commandFailure,
-  commandOutcome,
   isCommandRecord,
   isDragOutTransferStarted,
   isTransferProgress,
+  voidOutcome,
 } from '../ipcContracts.ts';
 import type { EventRegistrar, InvokeFn } from '../ipcContracts.ts';
 
@@ -115,7 +115,7 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       targetConnectionId: string,
       moving: boolean,
     ) =>
-      commandOutcome(invoke, 'transfer_validate_remote_copy', {
+      voidOutcome(invoke, 'transfer_validate_remote_copy', {
         sourcePath,
         targetPath,
         sourceConnectionId,
@@ -130,7 +130,7 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       resume: boolean,
       overwrite = false,
     ) =>
-      commandOutcome(invoke, 'transfer_upload', {
+      voidOutcome(invoke, 'transfer_upload', {
         connectionId,
         transferId,
         localPath,
@@ -146,7 +146,7 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       resume: boolean,
       overwrite = false,
     ) =>
-      commandOutcome(invoke, 'transfer_download', {
+      voidOutcome(invoke, 'transfer_download', {
         connectionId,
         transferId,
         remotePath,
@@ -155,7 +155,7 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
         overwrite,
       }),
     cancel: (connectionId: string, transferId: string, intent: 'pause' | 'stop') =>
-      invoke('transfer_cancel', { connectionId, transferId, intent }),
+      voidOutcome(invoke, 'transfer_cancel', { connectionId, transferId, intent }),
     remoteCopy: (
       sourceConnectionId: string,
       targetConnectionId: string,
@@ -164,7 +164,7 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       targetPath: string,
       overwrite = false,
     ) =>
-      commandOutcome(invoke, 'transfer_remote_copy', {
+      voidOutcome(invoke, 'transfer_remote_copy', {
         sourceConnectionId,
         targetConnectionId,
         transferId,
@@ -177,7 +177,11 @@ export function createTransferApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       targetConnectionId: string,
       transferId: string,
     ) =>
-      invoke('transfer_cancel_remote_copy', { sourceConnectionId, targetConnectionId, transferId }),
+      voidOutcome(invoke, 'transfer_cancel_remote_copy', {
+        sourceConnectionId,
+        targetConnectionId,
+        transferId,
+      }),
     onProgress: onEvent('transfer:progress', isTransferProgress),
     onDragOutStarted: onEvent('transfer:dragOutStarted', isDragOutTransferStarted),
   };

@@ -92,7 +92,7 @@ export function useSiteManagerMutations({
       try {
         const result = await onSave(payload);
         if (!result?.ok) {
-          if (result?.errorCode === 'vaultLocked' || /vault is locked/i.test(result?.error || '')) {
+          if (result?.errorCode === 'vaultLocked') {
             onVaultUnlockRequired(() => void handleSubmit(allowDuplicate));
             return;
           }

@@ -1,13 +1,11 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
 import {
-  inferErrorCode,
   isDragOutTransferStarted,
   isPreviewProgress,
   isTransferProgress,
   isUpdaterStatus,
   normalizeCommandError,
-  normalizeInvokeResponse,
   readyUnsubscribe,
 } from '../../../src/platform/ipcContracts.ts';
 import type {
@@ -39,7 +37,7 @@ test('recursive discard surfaces normalized cleanup failure with retained-path d
   });
 });
 
-test('normalizes typed and legacy command errors without dropping diagnostics', () => {
+test('a typed command error keeps its code and diagnostics; anything else is internal', () => {
   assert.deepEqual(
     normalizeCommandError({ code: 'timedOut', message: 'Timeout', details: 'socket 1' }),
     {
@@ -48,13 +46,14 @@ test('normalizes typed and legacy command errors without dropping diagnostics', 
       details: 'socket 1',
     },
   );
-  assert.equal(inferErrorCode('Connection refused (os error 10061)'), 'connectionRefused');
-  assert.deepEqual(normalizeInvokeResponse({ ok: false, error: 'Canceled by user' }), {
-    ok: false,
-    error: 'Canceled by user',
-    errorCode: 'cancelled',
-    diagnosticDetails: 'Canceled by user',
-  });
+  // The text is kept for the log, never read for a code.
+  for (const untyped of [
+    'Connection refused (os error 10061)',
+    'Canceled by user',
+    { code: 'somethingNew', message: 'From a newer backend' },
+  ]) {
+    assert.equal(normalizeCommandError(untyped).code, 'internal', JSON.stringify(untyped));
+  }
 });
 
 test('validates event contracts before state receives them', () => {
@@ -266,16 +265,15 @@ test('a malformed command response is reduced to a reportable failure', async ()
     async <T>() =>
       value as InvokeResult<T>;
 
-  const listedGarbage = await createSessionApi(
-    respondWith({ ok: true, entries: 'not-an-array' }),
-  ).list('c1', '/pub');
-  assert.equal(listedGarbage.ok, false, 'a non-array entries field must not reach the pane');
+  const listedGarbage = await createSessionApi(respondWith({ entries: 'not-an-array' })).list(
+    'c1',
+    '/pub',
+  );
+  assert.equal(listedGarbage.ok, false, 'a listing that is not an array must not reach the pane');
   assert.deepEqual(listedGarbage.entries, []);
   assert.match(String(listedGarbage.error), /session_list/);
 
-  const listedWrongEntries = await createSessionApi(
-    respondWith({ ok: true, entries: [{ size: 12 }] }),
-  ).list('c1', '/pub');
+  const listedWrongEntries = await createSessionApi(respondWith([{ size: 12 }])).list('c1', '/pub');
   assert.equal(listedWrongEntries.ok, false, 'an entry without a name is not a FileEntry');
 
   for (const bad of [
@@ -289,25 +287,19 @@ test('a malformed command response is reduced to a reportable failure', async ()
     { name: 'a.txt', isDirectory: false, modifiedAt: {} },
     { name: 'a.txt', isDirectory: false, permissions: 644 },
   ]) {
-    const remote = await createSessionApi(respondWith({ ok: true, entries: [bad] })).list(
-      'c1',
-      '/pub',
-    );
+    const remote = await createSessionApi(respondWith([bad])).list('c1', '/pub');
     assert.equal(remote.ok, false, `remote entry ${JSON.stringify(bad)} must be refused`);
-    const local = await createFilesystemApi(
-      respondWith({ ok: true, path: 'C:\\', entries: [bad] }),
-    ).list('C:\\');
+    const local = await createFilesystemApi(respondWith({ path: 'C:\\', entries: [bad] })).list(
+      'C:\\',
+    );
     assert.equal(local.ok, false, `local entry ${JSON.stringify(bad)} must be refused`);
   }
 
   const listedFine = await createSessionApi(
-    respondWith({
-      ok: true,
-      entries: [
-        { name: 'a.txt', isDirectory: false, size: 0, modifiedAt: null, permissions: null },
-        { name: 'dir', isDirectory: true, size: 4096, modifiedAt: '2026-01-01T00:00:00Z' },
-      ],
-    }),
+    respondWith([
+      { name: 'a.txt', isDirectory: false, size: 0, modifiedAt: null, permissions: null },
+      { name: 'dir', isDirectory: true, size: 4096, modifiedAt: '2026-01-01T00:00:00Z' },
+    ]),
   ).list('c1', '/pub');
   assert.equal(listedFine.ok, true);
   assert.equal(listedFine.entries.length, 2);
@@ -316,7 +308,11 @@ test('a malformed command response is reduced to a reportable failure', async ()
   // rejected response is malformed against the success contract, but its error
   // is the thing worth showing.
   const refused = await createSessionApi(
-    respondWith({ ok: false, error: 'Connection refused (os error 10061)' }),
+    respondWith({
+      ok: false,
+      error: 'Connection refused (os error 10061)',
+      errorCode: 'connectionRefused',
+    }),
   ).list('c1', '/pub');
   assert.equal(refused.ok, false);
   assert.equal(refused.errorCode, 'connectionRefused');
@@ -379,7 +375,11 @@ test('a write that answers with nothing is a success, and a refusal stays one', 
   assert.deepEqual(await createTabsApi(respondWith(undefined)).clear(), { ok: true });
 
   const refused = await createTabsApi(
-    respondWith({ ok: false, error: 'Access is denied (os error 5)' }),
+    respondWith({
+      ok: false,
+      error: 'Access is denied (os error 5)',
+      errorCode: 'permissionDenied',
+    }),
   ).set({ tabs: [] });
   assert.equal(refused.ok, false, 'a refused write must not pass for a stored session');
   assert.equal(refused.errorCode, 'permissionDenied');

@@ -1,4 +1,4 @@
-import { checkedResponse, commandFailure, hasCommandOutcome, isRecord } from '../ipcContracts.ts';
+import { checkedResponse, commandFailure, isRecord, voidOutcome } from '../ipcContracts.ts';
 import type { CommandResult, InvokeFn } from '../ipcContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
@@ -22,26 +22,23 @@ function isManagedSiteArray(value: unknown): value is ManagedSite[] {
   );
 }
 
-function isSiteMutationResult(value: unknown): value is SiteMutationResult {
+/** What `sites_save` and `sites_save_folder` answer when they worked. */
+interface SiteSaved {
+  id: string;
+  secretNotPersisted: boolean;
+}
+
+function isSiteSaved(value: unknown): value is SiteSaved {
   return (
-    hasCommandOutcome(value) &&
-    (value.id === undefined || typeof value.id === 'string') &&
-    (value.secretNotPersisted === undefined || typeof value.secretNotPersisted === 'boolean')
+    isRecord(value) && typeof value.id === 'string' && typeof value.secretNotPersisted === 'boolean'
   );
 }
 
-function isRevealSecretResult(value: unknown): value is RevealSecretResult {
-  return hasCommandOutcome(value) && (value.value === undefined || typeof value.value === 'string');
-}
-
 export function createSitesApi(invoke: InvokeFn) {
-  const mutation = (command: string, args?: Record<string, unknown>) =>
-    checkedResponse(
-      command,
-      invoke(command, args),
-      isSiteMutationResult,
-      (raw): SiteMutationResult => commandFailure(command, raw),
-    );
+  const save = (command: string, args: Record<string, unknown>): Promise<SiteMutationResult> =>
+    checkedResponse(command, invoke(command, args), isSiteSaved, (raw) =>
+      commandFailure(command, raw),
+    ).then((result) => ('ok' in result ? result : { ok: true, ...result }));
 
   return {
     list: async (): Promise<ManagedSite[]> => {
@@ -59,11 +56,14 @@ export function createSitesApi(invoke: InvokeFn) {
       reportAsyncFailure(commandFailure('sites_list', result).error);
       return [];
     },
-    save: (site: SavedSite) => mutation('sites_save', { site }),
-    delete: (id: string) => mutation('sites_delete', { id }),
-    saveFolder: (folder: SavedSite) => mutation('sites_save_folder', { folder }),
-    deleteFolder: (id: string) => mutation('sites_delete_folder', { id }),
-    applyLayout: (layout: SiteLayout) => mutation('sites_apply_layout', { layout }),
+    save: (site: SavedSite) => save('sites_save', { site }),
+    delete: (id: string): Promise<SiteMutationResult> =>
+      voidOutcome(invoke, 'sites_delete', { id }),
+    saveFolder: (folder: SavedSite) => save('sites_save_folder', { folder }),
+    deleteFolder: (id: string): Promise<SiteMutationResult> =>
+      voidOutcome(invoke, 'sites_delete_folder', { id }),
+    applyLayout: (layout: SiteLayout): Promise<SiteMutationResult> =>
+      voidOutcome(invoke, 'sites_apply_layout', { layout }),
     // A failure to answer these is not distinguishable from a "no" for the
     // caller's purposes — both mean "do not offer the migration prompt" — so
     // they normalize to false rather than widening to a CommandResult.
@@ -81,12 +81,15 @@ export function createSitesApi(invoke: InvokeFn) {
         (value): value is boolean => typeof value === 'boolean',
         () => false,
       ),
-    revealSecret: (id: string, field: 'password' | 'keyPassphrase') =>
+    // No stored secret answers `null`, which is a success with nothing in it.
+    revealSecret: (id: string, field: 'password' | 'keyPassphrase'): Promise<RevealSecretResult> =>
       checkedResponse(
         'sites_reveal_secret',
         invoke('sites_reveal_secret', { id, field }),
-        isRevealSecretResult,
+        (value): value is string | null => value === null || typeof value === 'string',
         (raw): RevealSecretResult => commandFailure('sites_reveal_secret', raw),
+      ).then((value) =>
+        typeof value === 'string' ? { ok: true, value } : (value ?? { ok: true }),
       ),
   };
 }

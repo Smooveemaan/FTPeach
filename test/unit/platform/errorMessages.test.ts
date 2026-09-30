@@ -23,40 +23,23 @@ beforeEach(async () => {
   await i18n.changeLanguage('en');
 });
 
-test('friendlyError recognizes a real 530 login-failure reply', () => {
-  // basic-ftp's Error message is the server's raw reply line, no prefix —
-  // this is the shape session:connect actually surfaces.
-  assert.equal(friendlyError('530 Login incorrect.'), 'Incorrect username or password.');
-  // Multi-line reply: code at the start, followed by "-" on the first line.
-  assert.equal(
-    friendlyError('530-Please login with USER and PASS.'),
-    'Incorrect username or password.',
-  );
-  // Preceded by other text, not just at the very start of the message.
-  assert.equal(friendlyError('FTP error: 530 Not logged in.'), 'Incorrect username or password.');
-});
-
-test('friendlyError does not mislabel an unrelated message containing "530" as a substring', () => {
-  assert.equal(
-    friendlyError('Transfer failed after 530000 bytes'),
+test('a message without a code is shown as it is, never read for one', () => {
+  for (const raw of [
+    '530 Login incorrect.',
+    'TCP connect failed: No such host is known. (os error 11001)',
+    'opening file failed (os error 32)',
     'Transfer failed after 530000 bytes',
-  );
-  assert.equal(
-    friendlyError('Cannot access /backup/2026-530/report.txt'),
-    'Cannot access /backup/2026-530/report.txt',
-  );
+    'retried 10061 times',
+  ]) {
+    assert.equal(friendlyError(raw), raw);
+  }
 });
 
-test('friendlyError still recognizes the other login-failure patterns', () => {
-  assert.equal(friendlyError('Login incorrect'), 'Incorrect username or password.');
+test('friendlyConnectError wraps an untranslated error, passes a translated one through', () => {
   assert.equal(
-    friendlyError('All configured authentication methods failed'),
-    'Incorrect username or password.',
+    friendlyConnectError({ code: 'hostNotFound', message: 'Server not found' }),
+    'Server not found. Check that the address is correct.',
   );
-});
-
-test('friendlyConnectError wraps an unrecognized error, passes a recognized one through', () => {
-  assert.equal(friendlyConnectError('530 Login incorrect.'), 'Incorrect username or password.');
   assert.equal(
     friendlyConnectError('some unrecognized raw error'),
     "Couldn't connect to the server. some unrecognized raw error",
@@ -94,6 +77,7 @@ test('friendlyError localizes every structured command error code', () => {
   const expected = {
     authFailed: 'Incorrect username or password.',
     connectionRefused: 'The server refused the connection. Check the address and port.',
+    hostNotFound: 'Server not found. Check that the address is correct.',
     timedOut:
       'The server is not responding (connection timed out). Check the address, port, and network connection.',
     hostKeyMismatch: 'The server host key has changed.',
@@ -118,6 +102,7 @@ test('friendlyError localizes every structured command error code', () => {
     storageFull: 'Not enough disk space.',
     keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
+    fileInUse: 'The file is in use by another process.',
     vaultLocked: 'Unlock vault',
     alreadyExists: 'A file or folder with that name already exists.',
     replaceUnsupported: "The server didn't allow the existing file to be replaced.",
@@ -143,60 +128,6 @@ test('commandResultError preserves the structured code used for localization', (
   );
 });
 
-test('friendlyError recognizes Windows socket error codes reaching it via anyhow context chains', () => {
-  assert.equal(
-    friendlyError('TCP connect failed: Connection refused (os error 10061)'),
-    'The server refused the connection. Check the address and port.',
-  );
-  assert.equal(
-    friendlyError(
-      'TCP connect failed: failed to lookup address information: No such host is known. (os error 11001)',
-    ),
-    'Server not found. Check that the address is correct.',
-  );
-  assert.equal(
-    friendlyError('reading from server: Connection reset by peer (os error 10054)'),
-    'The connection to the server was unexpectedly closed.',
-  );
-});
-
-test('friendlyError covers every translated recognition branch', () => {
-  const cases: ReadonlyArray<readonly [string, string]> = [
-    [
-      'socket read failed (os error 10060)',
-      'The server is not responding (connection timed out). Check the address, port, and network connection.',
-    ],
-    [
-      'network route failed (os error 10051)',
-      'The server is unreachable — check your network connection.',
-    ],
-    [
-      'certificate verify failed',
-      'The server presented an invalid certificate. If you trust this server, disable certificate verification in the connection settings.',
-    ],
-    [
-      'Cannot parse privateKey',
-      "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
-    ],
-    ['opening file failed (os error 5)', "You don't have permission for this operation."],
-    ['550 Permission denied', "You don't have permission for this operation."],
-    ['opening path failed (os error 2)', 'File or folder not found.'],
-    ['creating file failed (os error 80)', 'A file or folder with that name already exists.'],
-    ['opening file failed (os error 32)', 'The file is in use by another process.'],
-    ['writing file failed (os error 112)', 'Not enough disk space.'],
-  ];
-
-  for (const [raw, expected] of cases) {
-    assert.equal(friendlyError(raw), expected, raw);
-  }
-});
-
-test('friendlyError still passes an unrelated message with a numeric suffix through unchanged', () => {
-  // Guards against a careless numeric pattern swallowing unrelated text —
-  // "os error 10061" must be the literal marker, not just any number.
-  assert.equal(friendlyError('retried 10061 times'), 'retried 10061 times');
-});
-
 test('friendlyError matches the real host-key-mismatch text despite the host:port in the middle', () => {
   const raw =
     'The server key for 192.0.2.1:22 changed since the previous connection (expected SHA256 fingerprint aaa, received bbb). The connection was stopped.';
@@ -207,7 +138,7 @@ test('friendlyError supports a secondary Unicode locale', async () => {
   await changeLanguage('ru');
 
   assert.equal(
-    friendlyError('530 Login incorrect.'),
+    friendlyError({ code: 'authFailed', message: 'Authentication failed' }),
     '\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u043b\u043e\u0433\u0438\u043d \u0438\u043b\u0438 \u043f\u0430\u0440\u043e\u043b\u044c.',
   );
 });

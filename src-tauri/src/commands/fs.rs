@@ -1,4 +1,4 @@
-use crate::ipc::{CommandError, ErrorCode, OkResult, err, ok};
+use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validate_copy_relationship, validate_read_source,
     validate_write_destination, validated_delete_target,
@@ -17,31 +17,20 @@ pub async fn fs_validate_copy(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     source_path: String,
     dest_path: String,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     approved_paths.preflight(Path::new(&source_path))?;
     approved_paths.preflight(Path::new(&dest_path))?;
-    Ok(validate_copy_checked(source_path, dest_path))
+    Ok(validate_copy_relationship(
+        Path::new(&source_path),
+        Path::new(&dest_path),
+    )?)
 }
 
-fn validate_copy_checked(source_path: String, dest_path: String) -> OkResult {
-    match validate_copy_relationship(Path::new(&source_path), Path::new(&dest_path)) {
-        Ok(()) => ok(),
-        Err(error) => err(error),
-    }
-}
-
+/// A local folder's entries, and the path they were listed under.
 #[derive(Serialize)]
-#[serde(rename_all = "camelCase", untagged)]
-pub enum FsListResult {
-    Ok {
-        ok: bool,
-        path: String,
-        entries: Vec<FsEntry>,
-    },
-    Err {
-        ok: bool,
-        error: CommandError,
-    },
+pub struct FsList {
+    path: String,
+    entries: Vec<FsEntry>,
 }
 
 #[tauri::command]
@@ -49,7 +38,7 @@ pub async fn fs_list(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: Option<String>,
     request_key: Option<String>,
-) -> Result<FsListResult, CommandError> {
+) -> CommandResult<FsList> {
     let request = fs_listing::ListingRequest::start(request_key).map_err(CommandError::from)?;
     let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
     let listing = async {
@@ -65,10 +54,10 @@ pub async fn fs_list(
             None => match dirs_home() {
                 Some(h) => h,
                 None => {
-                    return Ok(FsListResult::Err {
-                        ok: false,
-                        error: CommandError::new(ErrorCode::NotFound, "Home directory not found"),
-                    });
+                    return Err(CommandError::new(
+                        ErrorCode::NotFound,
+                        "Home directory not found",
+                    ));
                 }
             },
         };
@@ -95,16 +84,12 @@ pub async fn fs_list(
                 })
                 .await
                 .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
-                Ok(FsListResult::Ok {
-                    ok: true,
+                Ok(FsList {
                     path: target.to_string_lossy().into_owned(),
                     entries,
                 })
             }
-            Err(e) => Ok(FsListResult::Err {
-                ok: false,
-                error: CommandError::from(e),
-            }),
+            Err(e) => Err(CommandError::from(e)),
         }
     };
     tokio::select! {
@@ -156,25 +141,13 @@ pub async fn fs_drives() -> Vec<Drive> {
 pub async fn fs_mkdir(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: String,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     approved_paths.preflight(Path::new(&local_path))?;
-    Ok(fs_mkdir_checked(local_path).await)
+    fs_mkdir_checked(local_path).await
 }
 
-async fn fs_mkdir_checked(local_path: String) -> OkResult {
-    outcome(crate::local_fs::local_create::create_dir(Path::new(&local_path)).await)
-}
-
-/// The command's answer for a local operation, keeping the error's code
-/// (busy, exists, permission) rather than flattening it into prose.
-fn outcome(result: anyhow::Result<()>) -> OkResult {
-    match result {
-        Ok(()) => ok(),
-        Err(error) => OkResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&error),
-        },
-    }
+async fn fs_mkdir_checked(local_path: String) -> CommandResult<()> {
+    Ok(crate::local_fs::local_create::create_dir(Path::new(&local_path)).await?)
 }
 
 #[tauri::command]
@@ -183,26 +156,20 @@ pub async fn fs_rename(
     old_path: String,
     new_path: String,
     overwrite: Option<bool>,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     approved_paths.preflight(Path::new(&old_path))?;
     approved_paths.preflight(Path::new(&new_path))?;
-    Ok(fs_rename_checked(old_path, new_path, overwrite).await)
+    fs_rename_checked(old_path, new_path, overwrite).await
 }
 
 async fn fs_rename_checked(
     old_path: String,
     new_path: String,
     overwrite: Option<bool>,
-) -> OkResult {
+) -> CommandResult<()> {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&old_path) {
         Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
+        Err(error) => return Err(error.into()),
     };
     // One lease already protects both names when their reservation keys match.
     let same_key = crate::local_fs::target_reservation::key(None, &old_path)
@@ -213,13 +180,7 @@ async fn fs_rename_checked(
         crate::local_fs::target_reservation::Reservation::acquire(&new_path).map(Some)
     } {
         Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
+        Err(error) => return Err(error.into()),
     };
     let _mutation = mutation_guard().write().await;
     let case_only =
@@ -227,31 +188,31 @@ async fn fs_rename_checked(
     if !case_only
         && let Err(error) = validate_copy_relationship(Path::new(&old_path), Path::new(&new_path))
     {
-        return err(error);
+        return Err(error.into());
     }
     let old_path = match validated_delete_target(Path::new(&old_path)).await {
         Ok(Some((path, _))) => path,
-        Ok(None) => return err("Source does not exist"),
-        Err(error) => return err(error),
+        Ok(None) => return Err(anyhow::anyhow!("Source does not exist").into()),
+        Err(error) => return Err(error.into()),
     };
     if let Err(error) = validate_write_destination(Path::new(&new_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     // Repeat both checks immediately before the path-based operation. This
     // catches a component replaced after the initial canonical validation.
     let old_path = match validated_delete_target(&old_path).await {
         Ok(Some((path, _))) => path,
-        Ok(None) => return err("Source does not exist"),
-        Err(error) => return err(error),
+        Ok(None) => return Err(anyhow::anyhow!("Source does not exist").into()),
+        Err(error) => return Err(error.into()),
     };
     if let Err(error) = validate_write_destination(Path::new(&new_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = ensure_path_no_reparse_points_now(&old_path) {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&new_path)) {
-        return err(error);
+        return Err(error.into());
     }
     // Only an explicit `true` may replace: a caller that omits the flag has
     // not resolved a conflict, so an existing target must survive.
@@ -278,10 +239,7 @@ async fn fs_rename_checked(
         }
         other => other,
     };
-    match result {
-        Ok(()) => ok(),
-        Err(e) => err(e),
-    }
+    Ok(result?)
 }
 
 #[tauri::command]
@@ -290,60 +248,50 @@ pub async fn fs_copy_file(
     source_path: String,
     dest_path: String,
     overwrite: Option<bool>,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     approved_paths.preflight(Path::new(&source_path))?;
     approved_paths.preflight(Path::new(&dest_path))?;
-    Ok(fs_copy_file_checked(source_path, dest_path, overwrite).await)
+    fs_copy_file_checked(source_path, dest_path, overwrite).await
 }
 
 async fn fs_copy_file_checked(
     source_path: String,
     dest_path: String,
     overwrite: Option<bool>,
-) -> OkResult {
+) -> CommandResult<()> {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&dest_path) {
         Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
+        Err(error) => return Err(error.into()),
     };
     let _mutation = mutation_guard().write().await;
     if let Err(error) = validate_copy_relationship(Path::new(&source_path), Path::new(&dest_path)) {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = validate_read_source(Path::new(&source_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = validate_write_destination(Path::new(&dest_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = validate_read_source(Path::new(&source_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = validate_write_destination(Path::new(&dest_path)).await {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&source_path)) {
-        return err(error);
+        return Err(error.into());
     }
     if let Err(error) = ensure_path_no_reparse_points_now(Path::new(&dest_path)) {
-        return err(error);
+        return Err(error.into());
     }
-    match crate::local_fs::staged_copy::copy_file(
+    Ok(crate::local_fs::staged_copy::copy_file(
         Path::new(&source_path),
         Path::new(&dest_path),
         overwrite == Some(true),
         &tokio_util::sync::CancellationToken::new(),
     )
-    .await
-    {
-        Ok(()) => ok(),
-        Err(error) => err(error),
-    }
+    .await?)
 }
 
 #[tauri::command]
@@ -354,7 +302,7 @@ pub async fn fs_delete(
     authorization_token: String,
     local_path: String,
     permanent: bool,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     // Before anything resolves, stats or opens the path: resolving a UNC
     // path is itself network access, and even a rejected token would have
     // canonicalized it first.
@@ -366,19 +314,13 @@ pub async fn fs_delete(
         "fs_delete",
         &local_path,
     )?;
-    Ok(fs_delete_authorized(local_path, permanent).await)
+    fs_delete_authorized(local_path, permanent).await
 }
 
-async fn fs_delete_authorized(local_path: String, permanent: bool) -> OkResult {
+async fn fs_delete_authorized(local_path: String, permanent: bool) -> CommandResult<()> {
     let _lease0 = match crate::local_fs::target_reservation::Reservation::acquire(&local_path) {
         Ok(lease) => lease,
-        // Kept typed: `err` would flatten the "busy" code into prose.
-        Err(error) => {
-            return OkResult::Err {
-                ok: false,
-                error: error.into(),
-            };
-        }
+        Err(error) => return Err(error.into()),
     };
     let _mutation = mutation_guard().write().await;
     if permanent {
@@ -406,10 +348,7 @@ mod tests {
             std::env::temp_dir().join(format!("ftpeach-create-cmd-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&root).unwrap();
         let file = root.join("held.txt").to_string_lossy().into_owned();
-        let code = |result: OkResult| match result {
-            OkResult::Err { error, .. } => Some(error.code),
-            _ => None,
-        };
+        let code = |result: CommandResult<()>| result.err().map(|error| error.code);
         {
             let _held = crate::local_fs::target_reservation::Reservation::acquire(&file).unwrap();
             assert_eq!(
@@ -457,47 +396,47 @@ mod tests {
             }
             for directory in directories {
                 let secret = directory.join("secret");
-                assert!(matches!(
-                    fs_copy_file_checked(
+                assert!(
+                    (fs_copy_file_checked(
                         secret.to_string_lossy().into_owned(),
                         outside.to_string_lossy().into_owned(),
                         None
                     )
-                    .await,
-                    OkResult::Err { .. }
-                ));
-                assert!(matches!(
-                    fs_create_file_checked(
+                    .await)
+                        .is_err()
+                );
+                assert!(
+                    (fs_create_file_checked(
                         directory.join("missing").to_string_lossy().into_owned()
                     )
-                    .await,
-                    OkResult::Err { .. }
-                ));
-                assert!(matches!(
-                    fs_mkdir_checked(
+                    .await)
+                        .is_err()
+                );
+                assert!(
+                    (fs_mkdir_checked(
                         directory
                             .join("missing/child")
                             .to_string_lossy()
                             .into_owned()
                     )
-                    .await,
-                    OkResult::Err { .. }
-                ));
-                assert!(matches!(
-                    fs_delete_authorized(secret.to_string_lossy().into_owned(), true).await,
-                    OkResult::Err { .. }
-                ));
-                assert!(matches!(
-                    fs_delete_authorized(directory.to_string_lossy().into_owned(), true).await,
-                    OkResult::Err { .. }
-                ));
+                    .await)
+                        .is_err()
+                );
+                assert!(
+                    (fs_delete_authorized(secret.to_string_lossy().into_owned(), true).await)
+                        .is_err()
+                );
+                assert!(
+                    (fs_delete_authorized(directory.to_string_lossy().into_owned(), true).await)
+                        .is_err()
+                );
                 assert_eq!(std::fs::read(app.join("secret")).unwrap(), b"keep");
             }
-            assert!(matches!(
-                fs_delete_authorized(root.join("roaming").to_string_lossy().into_owned(), true)
-                    .await,
-                OkResult::Err { .. }
-            ));
+            assert!(
+                (fs_delete_authorized(root.join("roaming").to_string_lossy().into_owned(), true)
+                    .await)
+                    .is_err()
+            );
             assert!(!outside.exists());
             return;
         }
@@ -537,7 +476,7 @@ mod tests {
         let result =
             fs_delete_authorized(root.join("folder").to_string_lossy().into_owned(), false).await;
 
-        assert!(matches!(result, OkResult::Ok { ok: true }), "{result:?}");
+        assert!(result.is_ok(), "{result:?}");
         assert!(!root.join("folder").exists());
         let _ = tokio::fs::remove_dir_all(root).await;
     }
@@ -554,20 +493,20 @@ mod tests {
 
         for overwrite in [None, Some(false)] {
             let result = fs_rename_checked(path(&source), path(&target), overwrite).await;
-            assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
+            assert!(result.is_err(), "{overwrite:?}");
             let result = fs_copy_file_checked(path(&source), path(&target), overwrite).await;
-            assert!(matches!(result, OkResult::Err { .. }), "{overwrite:?}");
+            assert!(result.is_err(), "{overwrite:?}");
             assert_eq!(std::fs::read(&source).unwrap(), b"source");
             assert_eq!(std::fs::read(&target).unwrap(), b"external");
         }
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
 
         let result = fs_copy_file_checked(path(&source), path(&target), Some(true)).await;
-        assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
+        assert!(result.is_ok(), "{result:?}");
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
         tokio::fs::write(&target, b"external").await.unwrap();
         let result = fs_rename_checked(path(&source), path(&target), Some(true)).await;
-        assert!(matches!(result, OkResult::Ok { .. }), "{result:?}");
+        assert!(result.is_ok(), "{result:?}");
         assert!(!source.exists());
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
         let _ = tokio::fs::remove_dir_all(root).await;
@@ -582,7 +521,7 @@ mod tests {
 
         let result = fs_delete_authorized(file.to_string_lossy().into_owned(), true).await;
 
-        assert!(matches!(result, OkResult::Ok { ok: true }), "{result:?}");
+        assert!(result.is_ok(), "{result:?}");
         assert!(!file.exists());
         let _ = tokio::fs::remove_dir_all(root).await;
     }
@@ -592,13 +531,13 @@ mod tests {
 pub async fn fs_create_file(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: String,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     approved_paths.preflight(Path::new(&local_path))?;
-    Ok(fs_create_file_checked(local_path).await)
+    fs_create_file_checked(local_path).await
 }
 
-async fn fs_create_file_checked(local_path: String) -> OkResult {
-    outcome(crate::local_fs::local_create::create_file(Path::new(&local_path)).await)
+async fn fs_create_file_checked(local_path: String) -> CommandResult<()> {
+    Ok(crate::local_fs::local_create::create_file(Path::new(&local_path)).await?)
 }
 
 /// How many probes of a network path may be in flight at once.
@@ -645,7 +584,7 @@ async fn open_validated_path(
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: String,
     kind: crate::local_fs::local_open::OpenKind,
-) -> Result<OkResult, CommandError> {
+) -> CommandResult<()> {
     let canonical = approved_paths.validate(Path::new(&local_path), kind)?;
     if kind == crate::local_fs::local_open::OpenKind::Reveal {
         #[cfg(windows)]
@@ -660,19 +599,13 @@ async fn open_validated_path(
             app.opener()
                 .open_path(parent.to_string_lossy().into_owned(), None::<String>)
         };
-        return match result {
-            Ok(()) => Ok(ok()),
-            Err(e) => Ok(err(e)),
-        };
+        return Ok(result.map_err(anyhow::Error::from)?);
     }
     use tauri_plugin_opener::OpenerExt;
-    match app
+    Ok(app
         .opener()
         .open_path(canonical.to_string_lossy().into_owned(), None::<String>)
-    {
-        Ok(()) => Ok(ok()),
-        Err(e) => Ok(err(e)),
-    }
+        .map_err(anyhow::Error::from)?)
 }
 
 macro_rules! open_command {
@@ -685,7 +618,7 @@ macro_rules! open_command {
             approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
             authorization_token: String,
             local_path: String,
-        ) -> Result<OkResult, CommandError> {
+        ) -> CommandResult<()> {
             approved_paths.preflight(Path::new(&local_path))?;
             crate::security::sensitive::consume(
                 &window,
@@ -731,12 +664,12 @@ mod drag_move_tests {
         let lease = crate::local_fs::target_reservation::Reservation::acquire(&source).unwrap();
         assert!(matches!(
             fs_rename_checked(source.clone(), target.clone(), None).await,
-            OkResult::Err { error, .. } if error.code == crate::ipc::ErrorCode::Busy
+            Err(error) if error.code == crate::ipc::ErrorCode::Busy
         ));
         drop(lease);
         assert!(matches!(
             fs_rename_checked(source, target.clone(), None).await,
-            OkResult::Ok { .. }
+            Ok(())
         ));
         assert_eq!(std::fs::read(&target).unwrap(), b"keep");
         assert_eq!(
@@ -766,7 +699,7 @@ mod drag_move_tests {
             Some(false),
         )
         .await;
-        assert!(matches!(result, OkResult::Err { .. }));
+        assert!(result.is_err());
         assert_eq!(std::fs::read(&source).unwrap(), b"source");
         assert_eq!(std::fs::read(&target).unwrap(), b"external");
         std::fs::remove_file(&target).unwrap();
@@ -776,7 +709,7 @@ mod drag_move_tests {
             Some(false),
         )
         .await;
-        assert!(matches!(result, OkResult::Ok { .. }));
+        assert!(result.is_ok());
         assert!(!source.exists());
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
         std::fs::remove_file(&target).unwrap();
@@ -811,7 +744,7 @@ mod drag_move_tests {
                     None,
                 )
                 .await;
-                assert!(matches!(refused, OkResult::Err { .. }));
+                assert!(refused.is_err());
                 assert_eq!(std::fs::read(&source).unwrap(), data);
                 assert_eq!(std::fs::read(&target).unwrap(), b"old");
             }
@@ -821,11 +754,7 @@ mod drag_move_tests {
                 Some(overwrite),
             )
             .await;
-            assert!(
-                matches!(result, OkResult::Ok { .. }),
-                "{}",
-                serde_json::to_string(&result).unwrap()
-            );
+            assert!(result.is_ok(), "{result:?}");
             assert!(!source.exists());
             assert_eq!(std::fs::read(&target).unwrap(), data);
             assert_eq!(std::fs::read_dir(&target_dir).unwrap().count(), 1);

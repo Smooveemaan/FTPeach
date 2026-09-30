@@ -1,6 +1,6 @@
 //! The wire between the renderer and the backend: the machine-readable
-//! failure codes, the error every command can return, and the response
-//! envelopes. What a site or a connection *is* lives in `domain`.
+//! failure codes and the error every command fails with. What a site or a
+//! connection *is* lives in `domain`.
 
 use serde::Serialize;
 
@@ -9,6 +9,8 @@ use serde::Serialize;
 pub enum ErrorCode {
     AuthFailed,
     ConnectionRefused,
+    /// The server's name did not resolve to an address.
+    HostNotFound,
     TimedOut,
     HostKeyMismatch,
     InvalidCertificate,
@@ -31,6 +33,8 @@ pub enum ErrorCode {
     KeyUnreadable,
     /// Another operation is already reading or writing the same place.
     Busy,
+    /// Another program has the local file open and will not share it.
+    FileInUse,
     VaultLocked,
     /// Something already stands where this would go, and replacing it was
     /// not asked for.
@@ -56,33 +60,10 @@ pub struct CommandError {
 
 pub type CommandResult<T> = Result<T, CommandError>;
 
-/// The bare success/failure envelope shared by every command whose only
-/// payload is "it worked". It lives here, with the wire types, because both
-/// the command layer and the domain modules it calls into produce it —
-/// owning it in either one would make the other depend on its caller.
-#[derive(Debug, Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum OkResult {
-    Ok { ok: bool },
-    Err { ok: bool, error: CommandError },
-}
-
 /// Every command that needs a live connection reports its absence the same
-/// way, so the message lives with the envelope rather than in whichever
+/// way, so the message lives with the error type rather than in whichever
 /// command module happened to spell it first.
 pub(crate) const NO_SESSION: &str = "No active connection";
-
-pub(crate) fn ok() -> OkResult {
-    OkResult::Ok { ok: true }
-}
-
-pub(crate) fn err(e: impl std::fmt::Display) -> OkResult {
-    let details = e.to_string();
-    OkResult::Err {
-        ok: false,
-        error: CommandError::from_anyhow(&anyhow::anyhow!(details)),
-    }
-}
 
 impl From<anyhow::Error> for CommandError {
     fn from(error: anyhow::Error) -> Self {
@@ -231,6 +212,15 @@ impl CommandError {
     /// below it survives any rewording upstream.
     fn code_for_io_error(error: &std::io::Error) -> Option<ErrorCode> {
         use std::io::ErrorKind;
+        // Windows failures std leaves `Uncategorized`.
+        #[cfg(windows)]
+        match error.raw_os_error() {
+            // ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION
+            Some(32 | 33) => return Some(ErrorCode::FileInUse),
+            // WSAHOST_NOT_FOUND, WSANO_DATA: the resolver found no address.
+            Some(11001 | 11004) => return Some(ErrorCode::HostNotFound),
+            _ => {}
+        }
         Some(match error.kind() {
             ErrorKind::TimedOut => ErrorCode::TimedOut,
             ErrorKind::ConnectionRefused => ErrorCode::ConnectionRefused,
@@ -241,6 +231,12 @@ impl CommandError {
             | ErrorKind::UnexpectedEof => ErrorCode::ConnectionLost,
             ErrorKind::NotFound => ErrorCode::NotFound,
             ErrorKind::PermissionDenied => ErrorCode::PermissionDenied,
+            ErrorKind::AlreadyExists => ErrorCode::AlreadyExists,
+            ErrorKind::StorageFull => ErrorCode::StorageFull,
+            ErrorKind::ResourceBusy => ErrorCode::FileInUse,
+            ErrorKind::NetworkDown | ErrorKind::NetworkUnreachable | ErrorKind::HostUnreachable => {
+                ErrorCode::NetworkUnreachable
+            }
             ErrorKind::Interrupted => ErrorCode::Cancelled,
             // `Other` and the kinds that say nothing about the cause fall
             // through to the message matching, which can still recognize a
@@ -290,13 +286,13 @@ impl CommandError {
         {
             ErrorCode::ProxyFailed
         } else if lower.contains("permission denied")
-            || lower.contains("os error 5")
+            || lower.contains("(os error 5)")
             || lower.contains("403")
         {
             ErrorCode::PermissionDenied
         } else if lower.contains("not found")
-            || lower.contains("os error 2")
-            || lower.contains("os error 3")
+            || lower.contains("(os error 2)")
+            || lower.contains("(os error 3)")
         {
             ErrorCode::NotFound
         } else if lower.contains("cancel") {
@@ -334,6 +330,7 @@ impl CommandError {
         let message = match code {
             ErrorCode::AuthFailed => "Authentication failed",
             ErrorCode::ConnectionRefused => "Connection refused",
+            ErrorCode::HostNotFound => "Server not found",
             ErrorCode::TimedOut => "Operation timed out",
             ErrorCode::HostKeyMismatch => "Server host key changed",
             ErrorCode::InvalidCertificate => "Server certificate is invalid",
@@ -352,6 +349,7 @@ impl CommandError {
             ErrorCode::StorageFull => "Not enough storage space on the server",
             ErrorCode::KeyUnreadable => "The private key could not be read",
             ErrorCode::Busy => "Another operation is using this location",
+            ErrorCode::FileInUse => "The file is in use by another process",
             ErrorCode::VaultLocked => "Vault is locked",
             ErrorCode::AlreadyExists => "A file or folder with that name already exists",
             ErrorCode::ReplaceUnsupported => {
@@ -376,6 +374,7 @@ mod tests {
         let cases = [
             (ErrorCode::AuthFailed, "authFailed"),
             (ErrorCode::ConnectionRefused, "connectionRefused"),
+            (ErrorCode::HostNotFound, "hostNotFound"),
             (ErrorCode::TimedOut, "timedOut"),
             (ErrorCode::HostKeyMismatch, "hostKeyMismatch"),
             (ErrorCode::InvalidCertificate, "invalidCertificate"),
@@ -394,6 +393,7 @@ mod tests {
             (ErrorCode::StorageFull, "storageFull"),
             (ErrorCode::KeyUnreadable, "keyUnreadable"),
             (ErrorCode::Busy, "busy"),
+            (ErrorCode::FileInUse, "fileInUse"),
             (ErrorCode::VaultLocked, "vaultLocked"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
@@ -481,6 +481,61 @@ mod tests {
         assert_eq!(
             sftp(StatusCode::Failure, "No space left on device"),
             ErrorCode::StorageFull
+        );
+    }
+
+    /// What the user is told about the operating system's own failures. The
+    /// raw codes are Windows': std names some with an `io::ErrorKind`, and
+    /// leaves the rest `Uncategorized`.
+    #[test]
+    fn os_errors_classify_by_kind_or_windows_code() {
+        let code = |raw: i32| {
+            CommandError::from_anyhow(&anyhow::Error::from(std::io::Error::from_raw_os_error(raw)))
+                .code
+        };
+        let cases = [
+            (2, ErrorCode::NotFound),
+            (3, ErrorCode::NotFound),
+            (5, ErrorCode::PermissionDenied),
+            // ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION
+            (32, ErrorCode::FileInUse),
+            (33, ErrorCode::FileInUse),
+            // ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
+            (39, ErrorCode::StorageFull),
+            (112, ErrorCode::StorageFull),
+            // ERROR_BUSY
+            (170, ErrorCode::FileInUse),
+            // ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS
+            (80, ErrorCode::AlreadyExists),
+            (183, ErrorCode::AlreadyExists),
+            // WSAENETDOWN, WSAENETUNREACH, WSAEHOSTUNREACH
+            (10050, ErrorCode::NetworkUnreachable),
+            (10051, ErrorCode::NetworkUnreachable),
+            (10065, ErrorCode::NetworkUnreachable),
+            (10060, ErrorCode::TimedOut),
+            (10061, ErrorCode::ConnectionRefused),
+            // WSAHOST_NOT_FOUND, WSANO_DATA
+            (11001, ErrorCode::HostNotFound),
+            (11004, ErrorCode::HostNotFound),
+        ];
+        for (raw, expected) in cases {
+            assert_eq!(code(raw), expected, "os error {raw}");
+        }
+        // Only text reaches the last-resort matcher, where "os error 3" used
+        // to match inside "os error 32".
+        let text = anyhow::anyhow!("{}", std::io::Error::from_raw_os_error(32));
+        assert_eq!(CommandError::from_anyhow(&text).code, ErrorCode::Internal);
+    }
+
+    /// A name that does not resolve, as the resolver really reports it.
+    #[tokio::test]
+    async fn an_unresolvable_host_name_is_reported_as_such() {
+        let Err(error) = tokio::net::lookup_host("nonexistent.invalid:21").await else {
+            panic!("nonexistent.invalid resolved");
+        };
+        assert_eq!(
+            CommandError::from_anyhow(&anyhow::Error::from(error)).code,
+            ErrorCode::HostNotFound
         );
     }
 

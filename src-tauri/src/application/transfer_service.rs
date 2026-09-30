@@ -1,5 +1,5 @@
 use crate::application::upload_resume;
-use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
+use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validate_read_source, validate_write_destination,
 };
@@ -27,24 +27,27 @@ pub fn transfer_validate_remote_copy(
     source_connection_id: String,
     target_connection_id: String,
     moving: bool,
-) -> OkResult {
+) -> CommandResult<()> {
     if !is_safe_path(&source_path) || !is_safe_path(&target_path) {
-        return crate::ipc::err("Invalid remote path");
+        return Err(anyhow::anyhow!("Invalid remote path").into());
     }
     if source_connection_id != target_connection_id {
         // Different sessions can still expose the same filesystem through
         // aliases or different protocols. Without identity capabilities, a
         // recursive copy/delete cannot safely implement directory move.
         return if moving {
-            crate::ipc::err("Cannot safely move folders between remote sessions; use Copy instead")
+            Err(anyhow::anyhow!(
+                "Cannot safely move folders between remote sessions; use Copy instead"
+            )
+            .into())
         } else {
-            crate::ipc::ok()
+            Ok(())
         };
     }
-    match crate::protocol::validate_remote_relationship(&source_path, &target_path) {
-        Ok(()) => crate::ipc::ok(),
-        Err(error) => crate::ipc::err(error),
-    }
+    Ok(crate::protocol::validate_remote_relationship(
+        &source_path,
+        &target_path,
+    )?)
 }
 
 fn remote_partial_path(target: &str) -> String {
@@ -109,7 +112,11 @@ async fn relay_staged(
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
-async fn cleanup_remote_partial(sessions: &Sessions, connection_id: &str, partial: &str) {
+async fn cleanup_remote_partial(
+    sessions: &Sessions,
+    connection_id: &str,
+    partial: &str,
+) {
     // Only the wait for the browsing connection is kept short. A removal cut
     // off mid-reply would cost FTP that connection, and the pane its listing
     // with it, so once started it gets as long as a server that still answers
@@ -224,18 +231,15 @@ async fn run_pool_task(
     transfer_id: String,
     remote_path: &str,
     task_for: impl FnOnce(ProgressSink) -> TaskFn,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(remote_path) {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "Invalid remote path"),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Invalid remote path",
+        ));
     }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
     let sink = make_progress_sink(progress.clone(), connection_id.clone(), transfer_id.clone());
     let on_dispatch = dispatch_notifier(progress.clone(), connection_id, transfer_id.clone());
@@ -243,11 +247,8 @@ async fn run_pool_task(
         .run_notified(transfer_id, task_for(sink), on_dispatch)
         .await
     {
-        Ok(()) => Ok(OkResult::Ok { ok: true }),
-        Err(err) => Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&err),
-        }),
+        Ok(()) => Ok(()),
+        Err(err) => Err(CommandError::from_anyhow(&err)),
     }
 }
 
@@ -285,25 +286,25 @@ pub async fn transfer_upload(
     remote_path: String,
     resume: bool,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     let reservation =
         Reservation::acquire_remote(sessions, &connection_id, &remote_path, Access::Write)
             .await
             .map_err(CommandError::from)?;
     let local = PathBuf::from(local_path);
     if let Err(error) = validate_read_source(&local).await {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, error.to_string()),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            error.to_string(),
+        ));
     }
     // Pin the source before a byte moves. A later attempt may only append to
     // this attempt's staging file by proving it is still reading the same file.
     let Some(pin) = upload_resume::pin(&local).await else {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "Cannot read the local file"),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Cannot read the local file",
+        ));
     };
     let key = upload_resume::Key {
         connection_id: connection_id.clone(),
@@ -372,9 +373,7 @@ pub async fn transfer_upload(
     // far enough to create its own. A pause hands it to the next attempt; every
     // other unfinished ending abandons it.
     let paused = upload_resume::take_pause_mark(&transfer_id);
-    if !matches!(&result, Ok(OkResult::Ok { ok: true }))
-        && (resumed || started.load(std::sync::atomic::Ordering::SeqCst))
-    {
+    if result.is_err() && (resumed || started.load(std::sync::atomic::Ordering::SeqCst)) {
         if paused {
             upload_resume::remember(
                 key,
@@ -400,16 +399,16 @@ pub async fn transfer_download(
     local_path: String,
     resume: bool,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     let owner = crate::local_fs::target_reservation::OWNER
         .try_with(Clone::clone)
         .unwrap_or_else(|_| uuid::Uuid::new_v4().to_string());
     let local = PathBuf::from(local_path);
     if let Err(error) = validate_write_destination(&local).await {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, error.to_string()),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            error.to_string(),
+        ));
     }
     run_pool_task(
         sessions,
@@ -453,21 +452,18 @@ pub async fn transfer_cancel(
     connection_id: String,
     transfer_id: String,
     intent: CancelIntent,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     // Marked before the pool is told to cancel, so the upload this aborts is
     // guaranteed to observe the mark when it unwinds.
     if intent == CancelIntent::Pause {
         upload_resume::mark_paused(&transfer_id);
     }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
-    Ok(OkResult::Ok {
-        ok: pool.cancel(&transfer_id),
-    })
+    // A transfer that already ended has nothing left to cancel.
+    pool.cancel(&transfer_id);
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -480,12 +476,12 @@ pub async fn transfer_remote_copy(
     source_path: String,
     target_path: String,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(&source_path) || !is_safe_path(&target_path) {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "Invalid remote path"),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Invalid remote path",
+        ));
     }
     let reservation = Arc::new(
         Reservation::acquire_remote(sessions, &target_connection_id, &target_path, Access::Write)
@@ -493,16 +489,10 @@ pub async fn transfer_remote_copy(
             .map_err(CommandError::from)?,
     );
     let Some(source_pool) = sessions.pool_for(&source_connection_id).await else {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
     let Some(target_pool) = sessions.pool_for(&target_connection_id).await else {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
     let dispatch_connection_id = target_connection_id.clone();
     let sink = make_progress_sink(progress.clone(), target_connection_id, transfer_id.clone());
@@ -597,11 +587,8 @@ pub async fn transfer_remote_copy(
         Err(err) => sink(ProgressInfo::failed(err)),
     }
     match result {
-        Ok(()) => Ok(OkResult::Ok { ok: true }),
-        Err(err) => Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&err),
-        }),
+        Ok(()) => Ok(()),
+        Err(err) => Err(CommandError::from_anyhow(&err)),
     }
 }
 
@@ -610,14 +597,14 @@ pub async fn transfer_cancel_remote_copy(
     source_connection_id: String,
     target_connection_id: String,
     transfer_id: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     let source_pool = sessions.pool_for(&source_connection_id).await;
     let target_pool = sessions.pool_for(&target_connection_id).await;
-    let a = source_pool
-        .map(|p| p.cancel(&format!("{transfer_id}:src")))
-        .unwrap_or(false);
-    let b = target_pool
-        .map(|p| p.cancel(&format!("{transfer_id}:dst")))
-        .unwrap_or(false);
-    Ok(OkResult::Ok { ok: a || b })
+    if let Some(pool) = source_pool {
+        pool.cancel(&format!("{transfer_id}:src"));
+    }
+    if let Some(pool) = target_pool {
+        pool.cancel(&format!("{transfer_id}:dst"));
+    }
+    Ok(())
 }

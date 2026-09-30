@@ -1,4 +1,4 @@
-use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
+use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::protocol::EntryInfo;
 use crate::session::{ConnectingClients, Sessions, teardown_session};
@@ -39,41 +39,25 @@ async fn with_browse_timeout<T>(
     }
 }
 
-#[derive(serde::Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum SessionListResult {
-    Ok { ok: bool, entries: Vec<EntryInfo> },
-    Err { ok: bool, error: CommandError },
-}
-
 #[tauri::command]
 pub async fn session_list(
     sessions: State<'_, Sessions>,
     connecting: State<'_, ConnectingClients>,
     connection_id: String,
     remote_path: Option<String>,
-) -> CommandResult<SessionListResult> {
+) -> CommandResult<Vec<EntryInfo>> {
     if let Some(path) = remote_path.as_deref()
         && let Err(error) = crate::protocol::validate_remote_path(path)
     {
-        return Ok(SessionListResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&error),
-        });
+        return Err(CommandError::from_anyhow(&error));
     }
     if !remote_path.as_deref().is_none_or(is_safe_path) {
-        return Ok(SessionListResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, UNSAFE_PATH_MSG),
-        });
+        return Err(invalid_path());
     }
     let slot = sessions.lookup_slot(&connection_id);
     let mut guard = slot.lock().await;
     let Some(session) = guard.as_mut() else {
-        return Ok(SessionListResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
     let timeout_ms = session.browse_timeout_ms;
     let token = connecting.start(&connection_id);
@@ -89,30 +73,21 @@ pub async fn session_list(
     let result = match outcome {
         BrowseOutcome::Completed(Ok(entries)) => {
             match crate::protocol::validate_listing(&entries) {
-                Ok(()) => Ok(SessionListResult::Ok { ok: true, entries }),
-                Err(error) => Ok(SessionListResult::Err {
-                    ok: false,
-                    error: CommandError::from_anyhow(&error),
-                }),
+                Ok(()) => Ok(entries),
+                Err(error) => Err(CommandError::from_anyhow(&error)),
             }
         }
-        BrowseOutcome::Completed(Err(err)) => Ok(SessionListResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&err),
-        }),
+        BrowseOutcome::Completed(Err(err)) => Err(CommandError::from_anyhow(&err)),
         BrowseOutcome::TimedOut => {
             teardown_session(&mut guard, &connection_id).await;
-            Ok(SessionListResult::Err {
-                ok: false,
-                error: CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG),
-            })
+            Err(CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG))
         }
         BrowseOutcome::Cancelled => {
             teardown_session(&mut guard, &connection_id).await;
-            Ok(SessionListResult::Err {
-                ok: false,
-                error: CommandError::new(ErrorCode::Cancelled, "Operation cancelled"),
-            })
+            Err(CommandError::new(
+                ErrorCode::Cancelled,
+                "Operation cancelled",
+            ))
         }
     };
     drop(guard);
@@ -125,10 +100,7 @@ macro_rules! run_unit_browse_operation {
         let slot = $sessions.lookup_slot(&$connection_id);
         let mut guard = slot.lock().await;
         let Some(session) = guard.as_mut() else {
-            return Ok(OkResult::Err {
-                ok: false,
-                error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-            });
+            return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
         };
         let timeout_ms = session.browse_timeout_ms;
         let token = $connecting.start(&$connection_id);
@@ -140,24 +112,15 @@ macro_rules! run_unit_browse_operation {
         .await;
         $connecting.finish(&$connection_id);
         let result = match outcome {
-            BrowseOutcome::Completed(Ok(())) => Ok(OkResult::Ok { ok: true }),
-            BrowseOutcome::Completed(Err(err)) => Ok(OkResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&err),
-            }),
+            BrowseOutcome::Completed(Ok(())) => Ok(()),
+            BrowseOutcome::Completed(Err(err)) => Err(CommandError::from_anyhow(&err)),
             BrowseOutcome::TimedOut => {
                 teardown_session(&mut guard, &$connection_id).await;
-                Ok(OkResult::Err {
-                    ok: false,
-                    error: CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG),
-                })
+                Err(CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG))
             }
             BrowseOutcome::Cancelled => {
                 teardown_session(&mut guard, &$connection_id).await;
-                Ok(OkResult::Err {
-                    ok: false,
-                    error: CommandError::new(ErrorCode::Cancelled, "Operation cancelled"),
-                })
+                Err(CommandError::new(ErrorCode::Cancelled, "Operation cancelled"))
             }
         };
         drop(guard);
@@ -166,11 +129,8 @@ macro_rules! run_unit_browse_operation {
     }};
 }
 
-fn invalid_path_result() -> CommandResult<OkResult> {
-    Ok(OkResult::Err {
-        ok: false,
-        error: CommandError::new(ErrorCode::InvalidInput, UNSAFE_PATH_MSG),
-    })
+fn invalid_path() -> CommandError {
+    CommandError::new(ErrorCode::InvalidInput, UNSAFE_PATH_MSG)
 }
 
 #[tauri::command]
@@ -179,9 +139,9 @@ pub async fn session_mkdir(
     connecting: State<'_, ConnectingClients>,
     connection_id: String,
     remote_path: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(&remote_path) {
-        return invalid_path_result();
+        return Err(invalid_path());
     }
     let _target =
         Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
@@ -196,9 +156,9 @@ pub async fn session_create_file(
     connecting: State<'_, ConnectingClients>,
     connection_id: String,
     remote_path: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(&remote_path) {
-        return invalid_path_result();
+        return Err(invalid_path());
     }
     let _target =
         Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
@@ -220,9 +180,9 @@ pub async fn session_delete(
     connection_id: String,
     remote_path: String,
     is_dir: bool,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(&remote_path) {
-        return invalid_path_result();
+        return Err(invalid_path());
     }
     let _target =
         Reservation::acquire_remote(&sessions, &connection_id, &remote_path, Access::Write)
@@ -246,15 +206,12 @@ pub async fn session_rename(
     old_path: String,
     new_path: String,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     if !is_safe_path(&old_path) || !is_safe_path(&new_path) {
-        return invalid_path_result();
+        return Err(invalid_path());
     }
     if let Err(error) = crate::protocol::validate_remote_relationship(&old_path, &new_path) {
-        return Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&error),
-        });
+        return Err(CommandError::from_anyhow(&error));
     }
     let _source = Reservation::acquire_remote(&sessions, &connection_id, &old_path, Access::Write)
         .await
@@ -291,21 +248,18 @@ pub async fn session_chmod(
     connection_id: String,
     remote_path: String,
     mode: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     let mode = match parse_permission_mode(&mode) {
         Some(mode) => mode,
         None => {
-            return Ok(OkResult::Err {
-                ok: false,
-                error: CommandError::new(
-                    ErrorCode::InvalidInput,
-                    "Permission mode must be an octal value from 0000 to 7777",
-                ),
-            });
+            return Err(CommandError::new(
+                ErrorCode::InvalidInput,
+                "Permission mode must be an octal value from 0000 to 7777",
+            ));
         }
     };
     if !is_safe_path(&remote_path) {
-        return invalid_path_result();
+        return Err(invalid_path());
     }
     run_unit_browse_operation!(
         sessions,

@@ -981,6 +981,60 @@ mod tests {
         assert_eq!(url.password(), None);
     }
 
+    /// A failure's `details` cross IPC to the renderer. A proxy password is
+    /// in the URL reqwest is handed, and must not come back in the error that
+    /// a refused or rejecting proxy produces.
+    #[tokio::test]
+    async fn a_failing_proxy_keeps_its_password_out_of_the_error() {
+        use base64::Engine;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        const MARKER: &str = "proxy-secret-7f3a";
+        let encoded = base64::engine::general_purpose::STANDARD.encode(format!("u:{MARKER}"));
+
+        let refused = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let refused_port = refused.local_addr().unwrap().port();
+        drop(refused);
+        let rejecting = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let rejecting_port = rejecting.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (mut socket, _) = rejecting.accept().await.unwrap();
+            let mut request = [0; 4096];
+            let _ = socket.read(&mut request).await;
+            let _ = socket
+                .write_all(
+                    b"HTTP/1.1 407 Proxy Authentication Required\r\nContent-Length: 0\r\n\r\n",
+                )
+                .await;
+        });
+
+        for port in [refused_port, rejecting_port] {
+            let map = serde_json::json!({
+                "protocol": "webdav",
+                "webdavUrl": "https://webdav.invalid/dav/",
+                "user": "user",
+                "password": "server-password",
+                "timeout": 5,
+                "proxyEnabled": true,
+                "proxyType": "http",
+                "proxyHost": "127.0.0.1",
+                "proxyPort": port,
+                "proxyUsername": "u",
+                "proxyPassword": MARKER,
+            });
+            let config =
+                crate::protocol::config::ConnectionConfig::from_json_map(map.as_object().unwrap())
+                    .unwrap();
+            let error = WebDavBackend::new().connect(&config).await.unwrap_err();
+            let error = crate::ipc::CommandError::from_anyhow(&error);
+            // Both went out to the proxy: neither stopped at the configuration.
+            assert_ne!(error.code, ErrorCode::InvalidInput, "{port}: {error:?}");
+            let text = format!("{} {}", error.message, error.details.unwrap_or_default());
+            assert!(!text.contains(MARKER), "{port}: {text}");
+            assert!(!text.contains(&encoded), "{port}: {text}");
+        }
+        server.await.unwrap();
+    }
+
     #[test]
     fn content_range_must_match_resume_offset_and_total() {
         assert!(validate_content_range(Some("bytes 5-9/10"), 5, Some(10)).is_ok());

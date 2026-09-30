@@ -5,7 +5,7 @@
 //! builds on, and recycle_bin.rs for the Windows recycle-bin alternative
 //! `fs_delete` (in commands/fs.rs) dispatches to instead on that platform.
 
-use crate::ipc::{OkResult, err, ok};
+use crate::ipc::CommandResult;
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, is_reparse_point, validated_delete_target,
 };
@@ -45,15 +45,15 @@ fn is_busy(e: &std::io::Error) -> bool {
     matches!(e.raw_os_error(), Some(32) | Some(33)) // ERROR_SHARING_VIOLATION / ERROR_LOCK_VIOLATION
 }
 
-pub(crate) async fn fs_delete_permanently(local_path: String) -> OkResult {
+pub(crate) async fn fs_delete_permanently(local_path: String) -> CommandResult<()> {
     for attempt in 0..2 {
         let target = match validated_delete_target(Path::new(&local_path)).await {
             Ok(Some(target)) => target,
-            Ok(None) => return ok(),
-            Err(error) => return err(error),
+            Ok(None) => return Ok(()),
+            Err(error) => return Err(error.into()),
         };
         if let Err(error) = ensure_path_no_reparse_points_now(&target.0) {
-            return err(error);
+            return Err(error.into());
         }
         let result = if target.1 {
             remove_tree_without_reparse_points(&target.0).await
@@ -67,15 +67,15 @@ pub(crate) async fn fs_delete_permanently(local_path: String) -> OkResult {
             }
         };
         match result {
-            Ok(()) => return ok(),
+            Ok(()) => return Ok(()),
             Err(e) if attempt == 0 && is_busy(&e) => {
                 tokio::time::sleep(std::time::Duration::from_millis(250)).await;
             }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return ok(),
-            Err(e) => return err(e),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(e.into()),
         }
     }
-    ok()
+    Ok(())
 }
 
 #[cfg(test)]

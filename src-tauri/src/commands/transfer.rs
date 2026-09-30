@@ -1,5 +1,5 @@
 //! Transfer IPC adapters. Workflows live in the application layer.
-use crate::ipc::{CommandResult, OkResult};
+use crate::ipc::CommandResult;
 use crate::session::Sessions;
 use crate::transfer::progress::ProgressEmitter;
 use tauri::State;
@@ -55,7 +55,7 @@ pub fn transfer_validate_remote_copy(
     source_connection_id: String,
     target_connection_id: String,
     moving: bool,
-) -> OkResult {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_validate_remote_copy(
         source_path,
         target_path,
@@ -76,7 +76,7 @@ pub async fn transfer_upload(
     remote_path: String,
     resume: bool,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_upload(
         &sessions,
         &progress,
@@ -101,7 +101,7 @@ pub async fn transfer_download(
     local_path: String,
     resume: bool,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_download(
         &sessions,
         &progress,
@@ -122,7 +122,7 @@ pub async fn transfer_cancel(
     connection_id: String,
     transfer_id: String,
     intent: crate::application::transfer_service::CancelIntent,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_cancel(
         &sessions,
         connection_id,
@@ -143,7 +143,7 @@ pub async fn transfer_remote_copy(
     source_path: String,
     target_path: String,
     overwrite: Option<bool>,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_remote_copy(
         &sessions,
         &progress,
@@ -164,7 +164,7 @@ pub async fn transfer_cancel_remote_copy(
     source_connection_id: String,
     target_connection_id: String,
     transfer_id: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     crate::application::transfer_service::transfer_cancel_remote_copy(
         &sessions,
         source_connection_id,

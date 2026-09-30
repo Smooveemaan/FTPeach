@@ -1,5 +1,5 @@
 //! Recursive operation contracts and common outcome checks.
-use crate::ipc::{CommandError, ErrorCode, OkResult};
+use crate::ipc::{CommandError, ErrorCode};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -77,11 +77,4 @@ pub(super) fn check_cancel(token: &CancellationToken) -> Result<()> {
         );
     }
     Ok(())
-}
-pub(super) fn unit(result: OkResult) -> Result<()> {
-    match result {
-        OkResult::Ok { ok: true } => Ok(()),
-        OkResult::Err { error, .. } => Err(error.into()),
-        _ => anyhow::bail!("File operation did not complete"),
-    }
 }

@@ -1,4 +1,4 @@
-import { isUpdaterStatus } from '../ipcContracts.ts';
+import { isUpdaterStatus, voidOutcome } from '../ipcContracts.ts';
 import type { EventRegistrar, InvokeFn, UpdaterStatus } from '../ipcContracts.ts';
 
 export function createUpdaterApi(invoke: InvokeFn, onEvent: EventRegistrar) {
@@ -7,9 +7,9 @@ export function createUpdaterApi(invoke: InvokeFn, onEvent: EventRegistrar) {
       const status = await invoke('updater_status');
       return isUpdaterStatus(status) ? status : null;
     },
-    check: () => invoke('updater_check'),
-    download: () => invoke('updater_download'),
-    install: () => invoke('updater_install'),
+    check: () => voidOutcome(invoke, 'updater_check'),
+    download: () => voidOutcome(invoke, 'updater_download'),
+    install: () => voidOutcome(invoke, 'updater_install'),
     onStatus: onEvent('updater:status', isUpdaterStatus),
   };
 }

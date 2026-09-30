@@ -143,11 +143,10 @@ pub fn app_open_external(app: AppHandle, url: String) {
     }
 }
 
+/// The settings a layout reset left behind.
 #[derive(Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum ResetLayoutResult {
-    Ok { ok: bool, settings: JsonMap },
-    Err { ok: bool, error: CommandError },
+pub struct ResetLayout {
+    settings: JsonMap,
 }
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1180.0;
@@ -157,11 +156,11 @@ const DEFAULT_WINDOW_HEIGHT: f64 = 740.0;
 pub async fn app_reset_layout(
     app: AppHandle,
     store: State<'_, Store>,
-) -> CommandResult<ResetLayoutResult> {
+) -> CommandResult<ResetLayout> {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.clear_all_browsing_data();
     }
-    let result = match store.reset_layout_settings().await {
+    match store.reset_layout_settings().await {
         Ok(settings) => {
             if let Some(window) = app.get_webview_window("main") {
                 if window.is_maximized().unwrap_or(false) {
@@ -173,14 +172,10 @@ pub async fn app_reset_layout(
                 ));
                 let _ = window.center();
             }
-            ResetLayoutResult::Ok { ok: true, settings }
+            Ok(ResetLayout { settings })
         }
-        Err(e) => ResetLayoutResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&anyhow::anyhow!(e.to_string())),
-        },
-    };
-    Ok(result)
+        Err(e) => Err(CommandError::from_anyhow(&anyhow::anyhow!(e.to_string()))),
+    }
 }
 
 #[path = "app_settings_transfer.rs"]

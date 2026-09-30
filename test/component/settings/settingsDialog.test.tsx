@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import SettingsDialog from '../../../src/features/settings/SettingsDialog.tsx';
 import type { SettingsDialogProps } from '../../../src/features/settings/SettingsDialog.tsx';
+import { CommandFailure } from '../../../src/platform/ipcContracts.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -98,7 +99,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     const user = userEvent.setup();
     const onSave = vi
       .fn()
-      .mockResolvedValueOnce({ ok: false, error: 'Vault is locked' })
+      .mockResolvedValueOnce({ ok: false, error: 'Vault is locked', errorCode: 'vaultLocked' })
       .mockResolvedValueOnce({ ok: true });
     const onVaultUnlockRequired = vi.fn();
     const { props } = renderDialog({ onSave, onVaultUnlockRequired });
@@ -113,6 +114,19 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(onSave).toHaveBeenCalledTimes(2);
     const [[firstPatch], [retriedPatch]] = onSave.mock.calls as [[unknown], [unknown]];
     expect(retriedPatch).toEqual(firstPatch);
+  });
+  test('a save refused by the locked vault asks to unlock it, whichever way it fails', async () => {
+    const user = userEvent.setup();
+    const onSave = vi
+      .fn()
+      .mockRejectedValueOnce(new CommandFailure('Vault is locked', 'vaultLocked'));
+    const onVaultUnlockRequired = vi.fn();
+    const { props } = renderDialog({ onSave, onVaultUnlockRequired });
+    await toggleNotifyOnComplete(user);
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    await waitFor(() => expect(onVaultUnlockRequired).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
   });
   beforeEach(() => {
     Object.defineProperty(window, 'api', {

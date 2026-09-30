@@ -269,7 +269,7 @@ pub(crate) async fn connect(
         create_backend(protocol, connection_id, &server_label, log_emitter, store);
     let connect_result = tokio::select! {
         res = browse_client.connect(&typed_config) => res,
-        _ = token.cancelled() => Err(anyhow::anyhow!("Canceled by user")),
+        _ = token.cancelled() => Err(CommandError::new(ErrorCode::Cancelled, "Operation cancelled").into()),
     };
     connecting.finish(connection_id);
 

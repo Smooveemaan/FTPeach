@@ -2,21 +2,7 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::native_drag::DragOutFile;
 use crate::session::Sessions;
 use crate::transfer::progress::ProgressEmitter;
-use serde::Serialize;
 use tauri::{AppHandle, State, Window};
-
-#[derive(Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum DragOutStartResult {
-    #[serde(rename_all = "camelCase")]
-    Ok {
-        ok: bool,
-    },
-    Err {
-        ok: bool,
-        error: CommandError,
-    },
-}
 
 /// Starts a native OS drag-and-drop session for one or more remote files,
 /// letting the user drop them onto Explorer (or any other drop target) to
@@ -41,18 +27,15 @@ pub async fn drag_out_start(
     connection_id: String,
     protocol: String,
     files: Vec<DragOutFile>,
-) -> CommandResult<DragOutStartResult> {
+) -> CommandResult<()> {
     if files.is_empty() {
-        return Ok(DragOutStartResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "No files to drag"),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "No files to drag",
+        ));
     }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
-        return Ok(DragOutStartResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
 
     #[cfg(windows)]
@@ -69,23 +52,17 @@ pub async fn drag_out_start(
         match crate::native_drag::windows::start_drag(window, reporter, pool, files, origin_base)
             .await
         {
-            Ok(()) => Ok(DragOutStartResult::Ok { ok: true }),
-            Err(err) => Ok(DragOutStartResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&err),
-            }),
+            Ok(()) => Ok(()),
+            Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
     #[cfg(not(windows))]
     {
         let _ = (window, app, progress, pool, connection_id, protocol, files);
-        Ok(DragOutStartResult::Err {
-            ok: false,
-            error: CommandError::new(
-                ErrorCode::InvalidInput,
-                "Dragging files out to the OS file explorer isn't supported on this platform yet",
-            ),
-        })
+        Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Dragging files out to the OS file explorer isn't supported on this platform yet",
+        ))
     }
 }
 
@@ -97,50 +74,27 @@ pub async fn drag_out_start(
 ///
 /// Resolves once the drag gesture completes (dropped or cancelled).
 #[tauri::command]
-pub async fn drag_out_start_local(
-    window: Window,
-    paths: Vec<String>,
-) -> CommandResult<DragOutStartResult> {
+pub async fn drag_out_start_local(window: Window, paths: Vec<String>) -> CommandResult<()> {
     if paths.is_empty() {
-        return Ok(DragOutStartResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::InvalidInput, "No files to drag"),
-        });
+        return Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "No files to drag",
+        ));
     }
 
     #[cfg(windows)]
     {
         match crate::native_drag::windows::start_local_drag(window, paths).await {
-            Ok(()) => Ok(DragOutStartResult::Ok { ok: true }),
-            Err(err) => Ok(DragOutStartResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&err),
-            }),
+            Ok(()) => Ok(()),
+            Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
     #[cfg(not(windows))]
     {
         let _ = (window, paths);
-        Ok(DragOutStartResult::Err {
-            ok: false,
-            error: CommandError::new(
-                ErrorCode::InvalidInput,
-                "Dragging files out to the OS file explorer isn't supported on this platform yet",
-            ),
-        })
-    }
-}
-
-// See commands/preview.rs's serde_field_casing module for why this needs
-// its own per-variant rename_all and a test guarding it.
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ok_result_is_camel_case() {
-        let value = serde_json::to_value(DragOutStartResult::Ok { ok: true }).unwrap();
-        assert_eq!(value["result"], "ok");
-        assert_eq!(value["ok"], true);
+        Err(CommandError::new(
+            ErrorCode::InvalidInput,
+            "Dragging files out to the OS file explorer isn't supported on this platform yet",
+        ))
     }
 }

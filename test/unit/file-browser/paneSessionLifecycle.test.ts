@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createPaneSessionLifecycle } from '../../../src/features/file-browser/panes/createPaneSessionLifecycle.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { CommandResult } from '../../../src/platform/ipcContracts.ts';
-import { paneClient } from '../helpers/paneClient.ts';
+import { CONNECTED, hostKeyUnconfirmed, paneClient } from '../helpers/paneClient.ts';
 
 function harness(
   reply?: Parameters<typeof paneClient>[0],
@@ -115,17 +115,17 @@ test('WebDAV accepts an absolute URL with a custom port', async () => {
 });
 
 test('cancellation invalidates a pending connection and closes its late successful result', async () => {
-  let resolve: (_result: CommandResult) => void = () => assert.fail('missing pending request');
+  let resolve: (_result: unknown) => void = () => assert.fail('missing pending request');
   const h = harness((command) =>
     command === 'session_connect'
-      ? new Promise<CommandResult>((done) => {
+      ? new Promise((done) => {
           resolve = done;
         })
       : { ok: true },
   );
   const connecting = h.lifecycle.connectPane('b')();
   h.lifecycle.cancelConnectPane('b');
-  resolve({ ok: true });
+  resolve(CONNECTED);
   await connecting;
   assert.equal(h.tab.panes.b.status, 'idle');
   assert.deepEqual(h.refreshes, []);
@@ -137,7 +137,13 @@ test('cancellation invalidates a pending connection and closes its late successf
 
 test('locked vault exposes a retry that can complete after unlock', async () => {
   let locked = true;
-  const h = harness(() => (locked ? { ok: false, errorCode: 'vaultLocked' } : { ok: true }));
+  const h = harness((command) =>
+    command !== 'session_connect'
+      ? { ok: true }
+      : locked
+        ? { ok: false, errorCode: 'vaultLocked' }
+        : CONNECTED,
+  );
   await h.lifecycle.connectPane('b')();
   assert.equal(h.tab.panes.b.status, 'idle');
   assert.ok(h.retry());
@@ -164,10 +170,10 @@ test('disconnect invalidates requests, stops transfers before IPC and clears nav
 });
 
 test('a previous validation error stays cleared throughout connection and first listing', async () => {
-  let finish!: (_result: CommandResult) => void;
+  let finish!: (_result: unknown) => void;
   const h = harness((command) =>
     command === 'session_connect'
-      ? new Promise<CommandResult>((resolve) => {
+      ? new Promise((resolve) => {
           finish = resolve;
         })
       : { ok: true },
@@ -176,7 +182,7 @@ test('a previous validation error stays cleared throughout connection and first 
   h.tab.panes.b.status = 'error';
   const pending = h.lifecycle.connectPane('b')();
   assert.equal(h.tab.panes.b.errorMessage, '');
-  finish({ ok: true });
+  finish(CONNECTED);
   await Promise.resolve();
   await Promise.resolve();
   await pending;
@@ -184,15 +190,15 @@ test('a previous validation error stays cleared throughout connection and first 
   assert.equal(h.tab.panes.b.errorMessage, '');
 });
 
-for (const lateResult of [{ ok: true }, { ok: false, errorCode: 'cancelled' }] as CommandResult[]) {
+for (const lateResult of [CONNECTED, { ok: false, errorCode: 'cancelled' }]) {
   test(
     'replacing a pending connection isolates its late ' +
-      (lateResult.ok ? 'success' : 'cancellation'),
+      (lateResult === CONNECTED ? 'success' : 'cancellation'),
     async () => {
-      const pending: ((_result: CommandResult) => void)[] = [];
+      const pending: ((_result: unknown) => void)[] = [];
       const h = harness((command) =>
         command === 'session_connect'
-          ? new Promise<CommandResult>((resolve) => {
+          ? new Promise((resolve) => {
               pending.push(resolve);
             })
           : { ok: true },
@@ -208,7 +214,7 @@ for (const lateResult of [{ ok: true }, { ok: false, errorCode: 'cancelled' }] a
             call.command === 'session_cancel_connect' && call.args?.connectionId === firstId,
         ),
       );
-      pending[1]!({ ok: true });
+      pending[1]!(CONNECTED);
       await second;
       pending[0]!(lateResult);
       await first;
@@ -268,9 +274,7 @@ test('a refused host key is answered by the backend window, then the connect is 
   const h = harness((command) => {
     if (command !== 'session_connect') return { ok: true };
     attempts += 1;
-    return attempts === 1
-      ? { ok: false, error: 'host key mismatch', hostKeyMismatch: mismatch }
-      : { ok: true };
+    return attempts === 1 ? hostKeyUnconfirmed(mismatch) : CONNECTED;
   });
   await h.lifecycle.connectPane('b', { ...h.tab.panes.b.form, protocol: 'sftp' })();
   const trust = h.calls.find((call) => call.command === 'session_trust_host_key');
@@ -290,9 +294,7 @@ test('the connect retried after trusting a key keeps the bookmark and its saved 
   const h = harness((command) => {
     if (command !== 'session_connect') return { ok: true };
     attempts += 1;
-    return attempts === 1
-      ? { ok: false, error: 'host key not confirmed', hostKeyMismatch: first }
-      : { ok: true };
+    return attempts === 1 ? hostKeyUnconfirmed(first) : CONNECTED;
   });
   // Opening a bookmark passes its pane in; the tab's state catches up later.
   const bookmark = { ...h.tab.panes.b, siteId: 'sftp-site' };
@@ -315,7 +317,7 @@ test('a first sighting is trusted without an expected fingerprint, and a decline
       return { ok: false, error: 'Operation was cancelled', errorCode: 'cancelled' };
     if (command !== 'session_connect') return { ok: true };
     attempts += 1;
-    return { ok: false, error: 'host key not confirmed', hostKeyMismatch: first };
+    return hostKeyUnconfirmed(first);
   });
   await h.lifecycle.connectPane('b', { ...h.tab.panes.b.form, protocol: 'sftp' })();
   const trust = h.calls.find((call) => call.command === 'session_trust_host_key');

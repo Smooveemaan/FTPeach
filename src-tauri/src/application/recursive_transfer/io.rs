@@ -1,5 +1,5 @@
 //! Local and protocol adapters used by recursive phases.
-use super::model::{Endpoint, Intent, check_cancel, unit};
+use super::model::{Endpoint, Intent, check_cancel};
 use crate::application::transfer_service;
 use crate::ipc::{CommandError, ErrorCode};
 use crate::local_fs::target_reservation::{Access, Reservation};
@@ -250,8 +250,8 @@ pub(super) async fn copy_file(
         (Endpoint::Local { .. }, Endpoint::Local { .. }) => {
             copy_local(&source, &target, overwrite, token).await
         }
-        (Endpoint::Local { .. }, Endpoint::Remote { connection_id, .. }) => unit(
-            transfer_service::transfer_upload(
+        (Endpoint::Local { .. }, Endpoint::Remote { connection_id, .. }) => {
+            Ok(transfer_service::transfer_upload(
                 sessions,
                 progress.context("Progress emitter unavailable")?,
                 connection_id.clone(),
@@ -261,10 +261,10 @@ pub(super) async fn copy_file(
                 resume,
                 Some(overwrite),
             )
-            .await?,
-        ),
-        (Endpoint::Remote { connection_id, .. }, Endpoint::Local { .. }) => unit(
-            transfer_service::transfer_download(
+            .await?)
+        }
+        (Endpoint::Remote { connection_id, .. }, Endpoint::Local { .. }) => {
+            Ok(transfer_service::transfer_download(
                 sessions,
                 progress.context("Progress emitter unavailable")?,
                 connection_id.clone(),
@@ -274,8 +274,8 @@ pub(super) async fn copy_file(
                 resume,
                 Some(overwrite),
             )
-            .await?,
-        ),
+            .await?)
+        }
         (
             Endpoint::Remote {
                 connection_id: source_id,
@@ -285,19 +285,17 @@ pub(super) async fn copy_file(
                 connection_id: target_id,
                 ..
             },
-        ) => unit(
-            transfer_service::transfer_remote_copy(
-                sessions,
-                progress.context("Progress emitter unavailable")?,
-                source_id.clone(),
-                target_id.clone(),
-                format!("{}:file", intent.id),
-                source,
-                target,
-                Some(overwrite),
-            )
-            .await?,
-        ),
+        ) => Ok(transfer_service::transfer_remote_copy(
+            sessions,
+            progress.context("Progress emitter unavailable")?,
+            source_id.clone(),
+            target_id.clone(),
+            format!("{}:file", intent.id),
+            source,
+            target,
+            Some(overwrite),
+        )
+        .await?),
     }
 }
 

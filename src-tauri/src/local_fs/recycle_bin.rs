@@ -5,7 +5,7 @@
 //! only the final removal mechanism (SHFileOperationW vs remove_file/
 //! remove_dir) differs.
 
-use crate::ipc::{OkResult, err, ok};
+use crate::ipc::CommandResult;
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validated_delete_target,
 };
@@ -14,11 +14,11 @@ use std::path::Path;
 use windows::Win32::UI::Shell::{SHFILEOPSTRUCTW, SHFileOperationW};
 use windows::core::PCWSTR;
 
-pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> OkResult {
+pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> CommandResult<()> {
     let target = match validated_delete_target(Path::new(&local_path)).await {
         Ok(Some((target, _))) => target,
-        Ok(None) => return ok(),
-        Err(error) => return err(error),
+        Ok(None) => return Ok(()),
+        Err(error) => return Err(error.into()),
     };
 
     let mut source: Vec<u16> = target.as_os_str().encode_wide().collect();
@@ -46,12 +46,12 @@ pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> OkResult {
     .await;
 
     match result {
-        Ok(Ok((0, _))) => ok(),
-        Ok(Ok((_, true))) => ok(),
-        Ok(Ok((code, false))) => err(anyhow::anyhow!("Windows file operation failed ({code})")),
-        Ok(Err(error)) => err(error),
-        Err(error) => err(anyhow::anyhow!(
-            "Windows file operation task failed: {error}"
-        )),
+        Ok(Ok((0, _))) => Ok(()),
+        Ok(Ok((_, true))) => Ok(()),
+        Ok(Ok((code, false))) => {
+            Err(anyhow::anyhow!("Windows file operation failed ({code})").into())
+        }
+        Ok(Err(error)) => Err(error.into()),
+        Err(error) => Err(anyhow::anyhow!("Windows file operation task failed: {error}").into()),
     }
 }

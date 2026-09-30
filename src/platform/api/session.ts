@@ -1,10 +1,9 @@
 import {
   checkedResponse,
   commandFailure,
-  commandOutcome,
-  hasCommandOutcome,
   isFileEntry,
   isRecord,
+  voidOutcome,
 } from '../ipcContracts.ts';
 import type { CommandResult, HostKeyDecision, InvokeFn } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
@@ -17,23 +16,35 @@ export interface SessionListResult extends CommandResult {
   entries: FileEntry[];
 }
 
-function isSessionListResult(value: unknown): value is SessionListResult {
+function isFileEntryArray(value: unknown): value is FileEntry[] {
+  return Array.isArray(value) && value.every(isFileEntry);
+}
+
+/** How `session_connect` ended when it did not fail. */
+type ConnectOutcome =
+  { outcome: 'connected' } | ({ outcome: 'hostKeyUnconfirmed' } & HostKeyDecision);
+
+function isConnectOutcome(value: unknown): value is ConnectOutcome {
+  if (!isRecord(value)) return false;
+  if (value.outcome === 'connected') return true;
   return (
-    hasCommandOutcome(value) && Array.isArray(value.entries) && value.entries.every(isFileEntry)
+    value.outcome === 'hostKeyUnconfirmed' &&
+    typeof value.host === 'string' &&
+    typeof value.port === 'number' &&
+    typeof value.actual === 'string' &&
+    (value.expected === undefined || typeof value.expected === 'string')
   );
 }
 
-function isSessionConnectResult(value: unknown): value is SessionConnectResult {
-  if (!hasCommandOutcome(value)) return false;
-  const mismatch = value.hostKeyMismatch;
-  return (
-    mismatch === undefined ||
-    (isRecord(mismatch) &&
-      typeof mismatch.host === 'string' &&
-      typeof mismatch.port === 'number' &&
-      typeof mismatch.actual === 'string' &&
-      (mismatch.expected === undefined || typeof mismatch.expected === 'string'))
-  );
+/**
+ * A host key the connection would not accept on its own is a decision, not a
+ * failure. Its one caller reads it from a failed result: `ok: false` with the
+ * key to confirm.
+ */
+function connectResult(outcome: ConnectOutcome): SessionConnectResult {
+  if (outcome.outcome === 'connected') return { ok: true };
+  const { outcome: _outcome, ...hostKeyMismatch } = outcome;
+  return { ok: false, errorCode: 'hostKeyMismatch', hostKeyMismatch };
 }
 
 export function createSessionApi(invoke: InvokeFn) {
@@ -42,40 +53,42 @@ export function createSessionApi(invoke: InvokeFn) {
       checkedResponse(
         'session_connect',
         invoke('session_connect', { connectionId, config }),
-        isSessionConnectResult,
+        isConnectOutcome,
         (raw) => commandFailure('session_connect', raw),
-      ),
-    cancelConnect: (connectionId: string) => invoke('session_cancel_connect', { connectionId }),
-    disconnect: (connectionId: string) => invoke('session_disconnect', { connectionId }),
+      ).then((result) => ('outcome' in result ? connectResult(result) : result)),
+    cancelConnect: (connectionId: string) =>
+      voidOutcome(invoke, 'session_cancel_connect', { connectionId }),
+    disconnect: (connectionId: string) =>
+      voidOutcome(invoke, 'session_disconnect', { connectionId }),
     list: (connectionId: string, remotePath: string): Promise<SessionListResult> =>
       checkedResponse(
         'session_list',
         invoke('session_list', { connectionId, remotePath }),
-        isSessionListResult,
-        (raw) => ({ ...commandFailure('session_list', raw), entries: [] }),
-      ),
+        isFileEntryArray,
+        (raw): SessionListResult => ({ ...commandFailure('session_list', raw), entries: [] }),
+      ).then((entries) => (Array.isArray(entries) ? { ok: true, entries } : entries)),
     mkdir: (connectionId: string, remotePath: string) =>
-      commandOutcome(invoke, 'session_mkdir', { connectionId, remotePath }),
+      voidOutcome(invoke, 'session_mkdir', { connectionId, remotePath }),
     createFile: (connectionId: string, remotePath: string) =>
-      commandOutcome(invoke, 'session_create_file', { connectionId, remotePath }),
+      voidOutcome(invoke, 'session_create_file', { connectionId, remotePath }),
     delete: (connectionId: string, remotePath: string, isDir: boolean) =>
-      commandOutcome(invoke, 'session_delete', { connectionId, remotePath, isDir }),
+      voidOutcome(invoke, 'session_delete', { connectionId, remotePath, isDir }),
     rename: (connectionId: string, oldPath: string, newPath: string, overwrite: boolean) =>
-      commandOutcome(invoke, 'session_rename', {
+      voidOutcome(invoke, 'session_rename', {
         connectionId,
         oldPath,
         newPath,
         overwrite,
       }),
     chmod: (connectionId: string, remotePath: string, mode: string) =>
-      commandOutcome(invoke, 'session_chmod', { connectionId, remotePath, mode }),
+      voidOutcome(invoke, 'session_chmod', { connectionId, remotePath, mode }),
     /**
      * Trusts one exact host key for one exact server, after the backend's
      * own window has shown both fingerprints. `expected` is the pinned
      * fingerprint, absent on a first connection.
      */
     trustHostKey: (request: HostKeyDecision) =>
-      commandOutcome(invoke, 'session_trust_host_key', {
+      voidOutcome(invoke, 'session_trust_host_key', {
         request: JSON.stringify(
           request.expected === undefined
             ? { host: request.host, port: request.port, actual: request.actual }

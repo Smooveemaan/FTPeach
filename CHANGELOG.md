@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A folder download that contains a name Windows cannot use no longer reports an unexpected error.
 - Dragging a server file to Explorer refuses a name like `a:b`, which Windows would not store as
   a plain file, as downloading it already did.
+- Connecting to an address that does not exist says the server was not found, instead of
+  reporting an unexpected error.
+- A file another program has open, a name that is already taken and a full disk each get their
+  own message, instead of "not found" or an unexpected error.
+- When an FTP or SFTP connection cannot reach the configured proxy, the message says so instead of
+  blaming the server.
+- Testing a proxy that works no longer reports a failure.
+- Showing a bookmark's password when none is saved no longer reports an error.
 
 ## [0.3.0] - 2026-09-27
 

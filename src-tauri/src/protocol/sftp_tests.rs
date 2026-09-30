@@ -905,6 +905,10 @@ mod local_integration_tests {
         // nothing is written, so the next attempt is still a first sighting.
         let error = backend.connect(&strict).await.unwrap_err();
         let refused = error.downcast_ref::<HostKeyMismatchError>().unwrap();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::HostKeyMismatch
+        );
         assert_eq!(refused.expected, None);
         assert!(!refused.actual.is_empty());
         assert!(!backend.is_connected());

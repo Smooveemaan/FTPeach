@@ -6,7 +6,7 @@
 
 use crate::application::session_service;
 use crate::domain::ConnectionConfig as IpcConnectionConfig;
-use crate::ipc::{CommandError, CommandResult, OkResult};
+use crate::ipc::CommandResult;
 use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Sessions};
@@ -14,33 +14,41 @@ use crate::store::Store;
 use serde::Serialize;
 use tauri::State;
 
-/// The host key the connection refused, and what the user has to decide
-/// about: keep the pinned fingerprint, or trust this one instead. `expected`
-/// is absent on a first connection, which is the same decision with nothing
-/// to compare against yet.
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HostKeyMismatchPayload {
-    pub host: String,
-    pub port: u16,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected: Option<String>,
-    pub actual: String,
+/// How a connect that did not fail ended. A host key the connection would
+/// not accept on its own is not a failure but a decision for the user: keep
+/// the pinned fingerprint, or trust this one instead. `expected` is absent on
+/// a first connection, which is the same decision with nothing to compare
+/// against yet.
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "outcome", rename_all = "camelCase")]
+pub enum ConnectOutcome {
+    Connected,
+    #[serde(rename_all = "camelCase")]
+    HostKeyUnconfirmed {
+        host: String,
+        port: u16,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        expected: Option<String>,
+        actual: String,
+    },
 }
 
-#[derive(Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum SessionConnectResult {
-    Ok {
-        ok: bool,
-    },
-    #[serde(rename_all = "camelCase")]
-    Err {
-        ok: bool,
-        error: CommandError,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        host_key_mismatch: Option<HostKeyMismatchPayload>,
-    },
+impl ConnectOutcome {
+    fn from_service(outcome: Result<(), session_service::ConnectFailure>) -> CommandResult<Self> {
+        match outcome {
+            Ok(()) => Ok(Self::Connected),
+            Err(session_service::ConnectFailure {
+                host_key_mismatch: Some(mismatch),
+                ..
+            }) => Ok(Self::HostKeyUnconfirmed {
+                host: mismatch.host,
+                port: mismatch.port,
+                expected: mismatch.expected,
+                actual: mismatch.actual,
+            }),
+            Err(failure) => Err(failure.error),
+        }
+    }
 }
 
 #[tauri::command]
@@ -54,7 +62,7 @@ pub async fn session_connect(
     approved_paths: State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     connection_id: String,
     config: IpcConnectionConfig,
-) -> Result<SessionConnectResult, CommandError> {
+) -> CommandResult<ConnectOutcome> {
     config.validate()?;
     let config = config.into_map();
     // A private key or a CA bundle is read from disk by the protocol backend,
@@ -84,31 +92,18 @@ pub async fn session_connect(
         sessions.remove_if_empty(&connection_id, &slot);
     }
 
-    Ok(match outcome {
-        Ok(()) => SessionConnectResult::Ok { ok: true },
-        Err(failure) => SessionConnectResult::Err {
-            ok: false,
-            error: failure.error,
-            host_key_mismatch: failure
-                .host_key_mismatch
-                .map(|mismatch| HostKeyMismatchPayload {
-                    host: mismatch.host,
-                    port: mismatch.port,
-                    expected: mismatch.expected,
-                    actual: mismatch.actual,
-                }),
-        },
-    })
+    ConnectOutcome::from_service(outcome)
 }
 
 #[tauri::command]
 pub async fn session_cancel_connect(
     connecting: State<'_, ConnectingClients>,
     connection_id: String,
-) -> CommandResult<OkResult> {
-    Ok(OkResult::Ok {
-        ok: connecting.cancel(&connection_id),
-    })
+) -> CommandResult<()> {
+    // Nothing connecting under this id is not a failure: there is nothing
+    // left to stop.
+    connecting.cancel(&connection_id);
+    Ok(())
 }
 
 #[tauri::command]
@@ -116,9 +111,9 @@ pub async fn session_disconnect(
     sessions: State<'_, Sessions>,
     connecting: State<'_, ConnectingClients>,
     connection_id: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     session_service::disconnect(&sessions, &connecting, &connection_id).await;
-    Ok(OkResult::Ok { ok: true })
+    Ok(())
 }
 
 /// Trusts one exact host key for one exact server.
@@ -137,7 +132,7 @@ pub async fn session_trust_host_key(
     authorization_token: String,
     store: State<'_, Store>,
     request: String,
-) -> CommandResult<OkResult> {
+) -> CommandResult<()> {
     let parsed = crate::security::sensitive::host_key_from_request(&request)?;
     crate::security::sensitive::consume(
         &window,
@@ -146,43 +141,62 @@ pub async fn session_trust_host_key(
         "session_trust_host_key",
         &request,
     )?;
-    match store
+    Ok(store
         .trust_known_host_fingerprint(
             &parsed.host,
             parsed.port,
             parsed.expected.as_deref(),
             &parsed.actual,
         )
-        .await
-    {
-        Ok(()) => Ok(OkResult::Ok { ok: true }),
-        Err(err) => Ok(OkResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&err),
-        }),
-    }
+        .await?)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ipc::CommandError;
+
+    fn failure(host_key: Option<(Option<&str>, &str)>) -> session_service::ConnectFailure {
+        session_service::ConnectFailure {
+            error: CommandError::new(crate::ipc::ErrorCode::HostKeyMismatch, "changed"),
+            host_key_mismatch: host_key.map(|(expected, actual)| {
+                session_service::HostKeyMismatch {
+                    host: "h".into(),
+                    port: 22,
+                    expected: expected.map(str::to_owned),
+                    actual: actual.into(),
+                }
+            }),
+        }
+    }
 
     #[test]
-    fn connect_err_host_key_mismatch_is_camel_case() {
-        let value = serde_json::to_value(SessionConnectResult::Err {
-            ok: false,
-            error: CommandError::new(crate::ipc::ErrorCode::HostKeyMismatch, "mismatch"),
-            host_key_mismatch: Some(HostKeyMismatchPayload {
-                host: "h".into(),
-                port: 22,
-                expected: Some("aa".into()),
-                actual: "bb".into(),
-            }),
-        })
-        .unwrap();
-        assert!(
-            value.get("hostKeyMismatch").is_some(),
-            "expected hostKeyMismatch, got {value}"
+    fn an_unconfirmed_host_key_is_an_outcome_the_renderer_decides_on() {
+        let changed = ConnectOutcome::from_service(Err(failure(Some((Some("aa"), "bb"))))).unwrap();
+        assert_eq!(
+            serde_json::to_value(&changed).unwrap(),
+            serde_json::json!({
+                "outcome": "hostKeyUnconfirmed",
+                "host": "h",
+                "port": 22,
+                "expected": "aa",
+                "actual": "bb",
+            })
         );
+        let first = ConnectOutcome::from_service(Err(failure(Some((None, "bb"))))).unwrap();
+        assert_eq!(
+            serde_json::to_value(&first).unwrap(),
+            serde_json::json!({ "outcome": "hostKeyUnconfirmed", "host": "h", "port": 22, "actual": "bb" })
+        );
+        assert_eq!(
+            serde_json::to_value(ConnectOutcome::from_service(Ok(())).unwrap()).unwrap(),
+            serde_json::json!({ "outcome": "connected" })
+        );
+    }
+
+    #[test]
+    fn any_other_connect_failure_rejects_with_its_error() {
+        let error = ConnectOutcome::from_service(Err(failure(None))).unwrap_err();
+        assert_eq!(error.code, crate::ipc::ErrorCode::HostKeyMismatch);
     }
 }

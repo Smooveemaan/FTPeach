@@ -1,4 +1,4 @@
-import { commandOutcome } from '../ipcContracts.ts';
+import { voidOutcome } from '../ipcContracts.ts';
 import type { InvokeFn } from '../ipcContracts.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
 
@@ -15,9 +15,9 @@ export function createDragOutApi(invoke: InvokeFn) {
     // `transfer:dragOutStarted` event — a Transfers row needs one, and the
     // backend has no other cheap way to know it.
     start: (connectionId: string, protocol: SiteProtocol, files: DragOutFile[]) =>
-      commandOutcome(invoke, 'drag_out_start', { connectionId, protocol, files }),
+      voidOutcome(invoke, 'drag_out_start', { connectionId, protocol, files }),
     // Local files are already on disk, so the shell copies them itself: no
     // session, no protocol and no Transfers row, just the paths.
-    startLocal: (paths: string[]) => commandOutcome(invoke, 'drag_out_start_local', { paths }),
+    startLocal: (paths: string[]) => voidOutcome(invoke, 'drag_out_start_local', { paths }),
   };
 }

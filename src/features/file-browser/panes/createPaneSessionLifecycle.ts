@@ -256,7 +256,7 @@ export function createPaneSessionLifecycle({
         return;
       }
       updatePane(id, { status: 'error' }, tabId);
-      if (res.errorCode === 'vaultLocked' || /vault is locked/i.test(res.error || '')) {
+      if (res.errorCode === 'vaultLocked') {
         updatePane(id, { status: 'idle', errorMessage: '' }, tabId);
         onVaultUnlockRequired(() => connectPane(id, f, pane, tabId, startPath)());
         return;

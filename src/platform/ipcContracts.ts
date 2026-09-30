@@ -4,32 +4,40 @@ import type { SiteProtocol } from '../shared/siteContracts.ts';
 
 const SITE_PROTOCOLS: readonly SiteProtocol[] = ['ftp', 'ftps', 'sftp', 'webdav'];
 
-export type CommandErrorCode =
-  | 'authFailed'
-  | 'connectionRefused'
-  | 'timedOut'
-  | 'hostKeyMismatch'
-  | 'invalidCertificate'
-  | 'tlsNegotiationFailed'
-  | 'sshNegotiationFailed'
-  | 'proxyFailed'
-  | 'notFound'
-  | 'permissionDenied'
-  | 'cancelled'
-  | 'integrityMismatch'
-  | 'cleanupIncomplete'
-  | 'networkUnreachable'
-  | 'connectionLost'
-  | 'invalidInput'
-  | 'resourceLimit'
-  | 'storageFull'
-  | 'keyUnreadable'
-  | 'busy'
-  | 'vaultLocked'
-  | 'alreadyExists'
-  | 'replaceUnsupported'
-  | 'createUnsupported'
-  | 'internal';
+/**
+ * Every failure code a command can report: `ipc::ErrorCode` in the backend,
+ * which is the authority. `errorCodeParity.test.ts` fails when the two differ.
+ */
+export const COMMAND_ERROR_CODES = [
+  'authFailed',
+  'connectionRefused',
+  'hostNotFound',
+  'timedOut',
+  'hostKeyMismatch',
+  'invalidCertificate',
+  'tlsNegotiationFailed',
+  'sshNegotiationFailed',
+  'proxyFailed',
+  'notFound',
+  'permissionDenied',
+  'cancelled',
+  'integrityMismatch',
+  'cleanupIncomplete',
+  'networkUnreachable',
+  'connectionLost',
+  'invalidInput',
+  'resourceLimit',
+  'storageFull',
+  'keyUnreadable',
+  'busy',
+  'fileInUse',
+  'vaultLocked',
+  'alreadyExists',
+  'replaceUnsupported',
+  'createUnsupported',
+  'internal',
+] as const;
+export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];
 
 export interface CommandError {
   code: CommandErrorCode;
@@ -155,27 +163,6 @@ export type EventRegistrar = <T = unknown>(
   validate?: PayloadGuard<T>,
 ) => EventSubscription<T>;
 
-const ERROR_PATTERNS: ReadonlyArray<readonly [CommandErrorCode, RegExp]> = [
-  ['hostKeyMismatch', /HOST_KEY_MISMATCH|host key mismatch/i],
-  [
-    'authFailed',
-    /(?:^|\s)530[ -]|login incorrect|auth fail|authentication methods failed|\b401\b/i,
-  ],
-  ['connectionRefused', /os error 10061|connection refused/i],
-  ['timedOut', /os error 10060|timed out/i],
-  ['invalidCertificate', /certificate|CERT_|SELF_SIGNED/i],
-  ['tlsNegotiationFailed', /TLS (?:handshake|negotiation) failed/i],
-  ['sshNegotiationFailed', /SSH (?:handshake|negotiation) failed|no common .*algorithm/i],
-  ['proxyFailed', /proxy (?:handshake failed|rejected)|could not connect to proxy/i],
-  ['permissionDenied', /permission denied|no permission|os error 5\b|\b403\b/i],
-  ['notFound', /not found|os error [23]\b/i],
-  ['cancelled', /cancell?ed by user/i],
-  ['integrityMismatch', /integrity|checksum|hash mismatch/i],
-  ['networkUnreachable', /os error 100(?:50|51|65)/i],
-  ['connectionLost', /os error 100(?:52|53|54)/i],
-  ['vaultLocked', /vault is locked/i],
-];
-
 /**
  * Turns an unknown value into text fit to show a user or write to a log.
  *
@@ -209,27 +196,7 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isCommandErrorCode(value: unknown): value is CommandErrorCode {
-  return (
-    typeof value === 'string' &&
-    (ERROR_PATTERNS.some(([code]) => code === value) ||
-      [
-        'invalidInput',
-        'resourceLimit',
-        'storageFull',
-        'keyUnreadable',
-        'busy',
-        'internal',
-        'cleanupIncomplete',
-        'alreadyExists',
-        'replaceUnsupported',
-        'createUnsupported',
-      ].includes(value))
-  );
-}
-
-export function inferErrorCode(message: unknown): CommandErrorCode {
-  const text = typeof message === 'string' ? message : '';
-  return ERROR_PATTERNS.find(([, pattern]) => pattern.test(text))?.[0] ?? 'internal';
+  return COMMAND_ERROR_CODES.includes(value as CommandErrorCode);
 }
 
 export function normalizeCommandError(error: unknown): CommandError {
@@ -240,25 +207,11 @@ export function normalizeCommandError(error: unknown): CommandError {
       details: error.details == null ? undefined : describeUnknown(error.details),
     };
   }
+  // Not a `CommandError`: Tauri refused the call before the command ran (bad
+  // arguments, a missing permission), or something broke. Its text says what;
+  // no code is guessed from it.
   const message = describeUnknown(error) || 'Unknown command error';
-  return { code: inferErrorCode(message), message, details: message };
-}
-
-/**
- * Converts a failed legacy invoke response into a typed {@link CommandResult}.
- *
- * Error details are normalized through {@link normalizeCommandError}.
- */
-export function normalizeInvokeResponse<T>(value: T): T | CommandResult {
-  if (!isRecord(value) || value.ok !== false || !value.error) return value;
-  const error = normalizeCommandError(value.error);
-  return {
-    ...value,
-    ok: false,
-    error: error.message,
-    errorCode: isCommandErrorCode(value.errorCode) ? value.errorCode : error.code,
-    diagnosticDetails: error.details,
-  };
+  return { code: 'internal', message, details: message };
 }
 
 /**
@@ -317,27 +270,11 @@ export async function checkedResponse<T, F = T>(
 }
 
 /**
- * The common case of {@link checkedResponse}: a command whose whole response is
- * a plain {@link CommandResult}. Declaring one through `invoke<CommandResult>`
- * only asserted the shape; this proves it.
- */
-export function commandOutcome(
-  invoke: InvokeFn,
-  command: string,
-  args?: InvokeArgs,
-): Promise<CommandResult> {
-  return checkedResponse(command, invoke(command, args), hasCommandOutcome, (raw) =>
-    commandFailure(command, raw),
-  );
-}
-
-/**
  * The outcome of a command that answers with nothing at all when it worked.
  *
  * A Rust `CommandResult<()>` resolves with `null` on success and rejects on
- * failure, where `invoke` turns the rejection into a failed {@link CommandResult}
- * — so unlike {@link commandOutcome} there is no envelope to check, and the
- * absence of one is not a contract violation. This states the success case
+ * failure, where `invoke` turns the rejection into a failed {@link CommandResult}.
+ * This states the success case
  * explicitly, so a caller can check `ok` instead of trusting that a promise
  * which resolved means the write landed.
  */

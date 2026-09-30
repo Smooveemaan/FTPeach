@@ -17,7 +17,6 @@ import { createUpdaterApi } from './api/updater.ts';
 import {
   checkedResponse,
   commandFailure,
-  commandOutcome,
   describeUnknown,
   hasCommandOutcome,
   isLogEntryArray,
@@ -27,10 +26,10 @@ import {
   isPreviewProgress,
   isRecord,
   normalizeCommandError,
-  normalizeInvokeResponse,
   optionalBoolean,
   optionalNumber,
   optionalString,
+  voidOutcome,
 } from './ipcContracts.ts';
 import type { VaultLocked } from './ipcContracts.ts';
 import type {
@@ -81,8 +80,9 @@ function isSettingsMap(value: unknown): value is AppSettings | undefined {
   return value === undefined || (isRecord(value) && !Array.isArray(value));
 }
 
-function isResetLayoutResult(value: unknown): value is ResetLayoutResult {
-  return hasCommandOutcome(value) && isSettingsMap(value.settings);
+/** What `app_reset_layout` answers when it worked. */
+function isResetLayout(value: unknown): value is { settings: AppSettings } {
+  return isRecord(value) && isRecord(value.settings) && !Array.isArray(value.settings);
 }
 
 function isExportSettingsResult(value: unknown): value is ExportSettingsResult {
@@ -101,8 +101,9 @@ function isImportSettingsResult(value: unknown): value is ImportSettingsResult {
   );
 }
 
-function isOpenWithStartResult(value: unknown): value is OpenWithStartResult {
-  return hasCommandOutcome(value) && optionalString(value.localPath);
+/** What `open_with_start` answers when the editor was opened. */
+function isOpenWithStarted(value: unknown): value is { localPath: string } {
+  return isRecord(value) && typeof value.localPath === 'string';
 }
 
 /**
@@ -183,13 +184,18 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         typeof args?.authorizationToken === 'string'
           ? args.authorizationToken
           : await authorizeSensitive(command, sensitiveTarget);
-      return normalizeInvokeResponse(
-        await rawInvoke<T>(`plugin:sensitive|${command}`, { ...args, authorizationToken }),
-      );
+      return await rawInvoke<T>(`plugin:sensitive|${command}`, { ...args, authorizationToken });
     }
-    return normalizeInvokeResponse(await rawInvoke<T>(command, args));
+    return await rawInvoke<T>(command, args);
   } catch (rawError) {
     const error = normalizeCommandError(rawError);
+    // A failure with a code is an answer the caller shows where it happened: a
+    // wrong password, a missing file, a declined confirmation. Only one nothing
+    // classified is worth a line in the application log, with the detail that
+    // says where it came from; the log redacts what it writes.
+    if (error.code === 'internal') {
+      console.warn(`${command} failed: ${error.message}`, error.details ?? '');
+    }
     return {
       ok: false,
       error: error.message,
@@ -259,12 +265,12 @@ export const tauriApi: Window['api'] = {
       checkedResponse(
         'open_with_start',
         invoke('open_with_start', { connectionId, remotePath, id, application }),
-        isOpenWithStartResult,
+        isOpenWithStarted,
         (raw): OpenWithStartResult => commandFailure('open_with_start', raw),
-      ),
-    stop: (id: string) => invoke('open_with_stop', { id }),
+      ).then((result) => ('ok' in result ? result : { ok: true, ...result })),
+    stop: (id: string) => voidOutcome(invoke, 'open_with_stop', { id }),
     markSynced: (id: string, revision: string) =>
-      commandOutcome(invoke, 'open_with_mark_synced', { id, revision }),
+      voidOutcome(invoke, 'open_with_mark_synced', { id, revision }),
     recoveredEdits: (): Promise<RecoveredEdit[]> =>
       checkedResponse(
         'open_with_recovered_edits',
@@ -272,8 +278,8 @@ export const tauriApi: Window['api'] = {
         isRecoveredEditArray,
         (): RecoveredEdit[] => [],
       ),
-    revealRecoveredEdits: () => commandOutcome(invoke, 'open_with_reveal_recovered_edits'),
-    discardRecoveredEdits: () => commandOutcome(invoke, 'open_with_discard_recovered_edits'),
+    revealRecoveredEdits: () => voidOutcome(invoke, 'open_with_reveal_recovered_edits'),
+    discardRecoveredEdits: () => voidOutcome(invoke, 'open_with_discard_recovered_edits'),
     onChanged: onEvent('openWith:changed', isOpenWithChange),
     onProgress: onEvent('preview:progress', isPreviewProgress),
   },
@@ -314,23 +320,23 @@ export const tauriApi: Window['api'] = {
           'Unable to read vault status.',
       );
     },
-    setup: (masterPassword: string) => commandOutcome(invoke, 'vault_setup', { masterPassword }),
-    unlock: (masterPassword: string) => commandOutcome(invoke, 'vault_unlock', { masterPassword }),
-    lock: () => commandOutcome(invoke, 'vault_lock'),
+    setup: (masterPassword: string) => voidOutcome(invoke, 'vault_setup', { masterPassword }),
+    unlock: (masterPassword: string) => voidOutcome(invoke, 'vault_unlock', { masterPassword }),
+    lock: () => voidOutcome(invoke, 'vault_lock'),
     // Reporting that the user is here can only postpone the backend's idle
     // lock, so a failed report needs no handling beyond not throwing.
     noteActivity: () => {
       void invoke('vault_note_activity').catch(() => {});
     },
     onLocked: onEvent<VaultLocked>('vault:locked', isVaultLocked),
-    enableSystemUnlock: () => commandOutcome(invoke, 'vault_enable_system_unlock'),
-    unlockSystem: () => commandOutcome(invoke, 'vault_unlock_system'),
-    disableSystemUnlock: () => commandOutcome(invoke, 'vault_disable_system_unlock'),
+    enableSystemUnlock: () => voidOutcome(invoke, 'vault_enable_system_unlock'),
+    unlockSystem: () => voidOutcome(invoke, 'vault_unlock_system'),
+    disableSystemUnlock: () => voidOutcome(invoke, 'vault_disable_system_unlock'),
     changePassword: (oldPassword: string, newPassword: string) =>
-      commandOutcome(invoke, 'vault_change_password', { oldPassword, newPassword }),
-    reset: () => commandOutcome(invoke, 'vault_reset'),
+      voidOutcome(invoke, 'vault_change_password', { oldPassword, newPassword }),
+    reset: () => voidOutcome(invoke, 'vault_reset'),
     // The master password is asked for by the backend's confirmation window.
-    useSystemProtection: () => commandOutcome(invoke, 'vault_use_system_protection'),
+    useSystemProtection: () => voidOutcome(invoke, 'vault_use_system_protection'),
   },
   app: {
     version: async (): Promise<string> => {
@@ -371,9 +377,9 @@ export const tauriApi: Window['api'] = {
       checkedResponse(
         'app_reset_layout',
         invoke('app_reset_layout'),
-        isResetLayoutResult,
+        isResetLayout,
         (raw): ResetLayoutResult => commandFailure('app_reset_layout', raw),
-      ),
+      ).then((result) => ('ok' in result ? result : { ok: true, ...result })),
     exportSettings: (options: SettingsTransferOptions): Promise<ExportSettingsResult> =>
       checkedResponse(
         'app_export_settings',

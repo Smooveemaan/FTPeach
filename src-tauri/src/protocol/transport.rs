@@ -136,9 +136,15 @@ pub async fn connect(
             .with_context(|| format!("could not connect to {target_host}:{target_port}"));
     };
 
+    // Whatever the OS says went wrong, it went wrong reaching the proxy the
+    // user configured, not the server: the proxy settings are what to check.
     let mut stream = TcpStream::connect((cfg.host.as_str(), cfg.port))
         .await
-        .with_context(|| format!("could not connect to proxy {}", cfg.authority()))?;
+        .with_context(|| format!("could not connect to proxy {}", cfg.authority()))
+        .context(crate::ipc::CommandError::new(
+            crate::ipc::ErrorCode::ProxyFailed,
+            "Proxy connection failed",
+        ))?;
 
     match cfg.kind {
         ProxyKind::Socks4 => {
@@ -305,5 +311,34 @@ mod tests {
             .await
             .expect("IPv6 connect must work when the loopback listener is available");
         accept_task.await.unwrap();
+    }
+
+    /// What the user is told when a name does not resolve depends on whose
+    /// name it was: the server's, or the proxy's they configured.
+    #[tokio::test]
+    async fn an_unresolvable_server_and_an_unresolvable_proxy_are_told_apart() {
+        let code = |error: &anyhow::Error| crate::ipc::CommandError::from_anyhow(error).code;
+        let proxy = ProxyConfig {
+            kind: ProxyKind::Socks5,
+            host: "proxy.invalid".into(),
+            port: 1080,
+            username: None,
+            password: None,
+        };
+        let (direct, proxied) = tokio::join!(
+            connect("nonexistent.invalid", 21, None),
+            connect("example.com", 21, Some(&proxy)),
+        );
+        let (direct, proxied) = (direct.unwrap_err(), proxied.unwrap_err());
+        assert_eq!(
+            code(&direct),
+            crate::ipc::ErrorCode::HostNotFound,
+            "{direct:#}"
+        );
+        assert_eq!(
+            code(&proxied),
+            crate::ipc::ErrorCode::ProxyFailed,
+            "{proxied:#}"
+        );
     }
 }

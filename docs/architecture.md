@@ -127,26 +127,41 @@ The renderer never states what it is authorized to do; it can only ask.
 
 ### Command failures
 
-- Most commands return `CommandResult<T>` (`Result<T, CommandError>`) and
-  fail by returning `Err`, so the promise rejects with
-  `{ code, message, details? }`. Some commands instead resolve an
-  `{ ok: false, error }` envelope; `session_connect`, for example, reports a
-  changed SSH host key that way, next to the error.
-- `code` is an `ErrorCode` from the closed camelCase list in `ipc.rs`,
-  mirrored by hand in `platform/ipcContracts.ts`.
-- `message` is English fallback text; `details` is the error chain, for
-  diagnostics. The application log redacts what it writes.
+A command returns `CommandResult<T>` (`Result<T, CommandError>`) and fails
+by returning `Err`: the promise rejects with `{ code, message, details? }`.
+A command that can do nothing but succeed returns `T` directly.
+
+- `code` is an `ErrorCode` from the closed camelCase list in `ipc.rs`.
+  `COMMAND_ERROR_CODES` in `platform/ipcContracts.ts` is the renderer's
+  copy, and `test/unit/platform/errorCodeParity.test.ts` fails when the two
+  differ.
+- `message` is English fallback text. `details` is the error chain, for
+  diagnostics; it never carries a password, passphrase, proxy password or
+  grant token.
+- A call that can end in more than one successful state says which in `T`.
+  `session_connect` answers `{ outcome: "connected" }` or
+  `{ outcome: "hostKeyUnconfirmed", host, port, expected?, actual }`, because a
+  host key the user has to confirm is a decision, not a failure; a save
+  answers whether the password could be stored; a file dialog answers when it
+  was cancelled.
 - A failure the backend understands is created typed, with
   `protocol::fail(code, message)` or `CommandError::new`.
-  `CommandError::from_anyhow` classifies the rest: a typed error inside the
-  chain first, then a server reply code, then the `io::ErrorKind`, and the
-  error text last.
+  `CommandError::from_anyhow` classifies the rest, in order: a typed error in
+  the chain, a server reply code, the `io::ErrorKind` or the Windows error
+  code std leaves uncategorized, and the error text last. It is the only
+  place a code is read from text.
 
 In the renderer, `platform/tauriApi.ts` turns a rejection into a
 `{ ok: false, error, errorCode, diagnosticDetails }` value, so the `api`
-wrappers do not throw. A failure without a code gets one guessed from its text
-(`inferErrorCode` in `platform/ipcContracts.ts`), and
-`shared/errorMessages.ts` turns the code into translated text.
+wrappers never throw, and a wrapper turns a success into `{ ok: true, … }`.
+A rejection that is not a `CommandError` (a call Tauri refused before the
+command ran) is `internal`. `shared/errorMessages.ts` chooses the text by
+code alone.
+
+Only an `internal` failure is logged: `invoke` writes it to the console
+with its details, and the console is forwarded to `ftpeach-app.log`, which
+redacts what it writes. Every other code is an answer the caller shows where
+it happened, and would only fill the log.
 
 ## Connection lifecycle
 
@@ -285,15 +300,17 @@ cover the threat model and the capability files.
 
 ```text
 protocol crate / io / OS ──► driver adds context, or fail(code, …) ──► anyhow::Error
-      ──► CommandError::from_anyhow (typed code, else text match)
-      ──► command returns Err(CommandError) or { ok: false }   [Rust]
-──────────────── IPC rejection { code, message, details } or envelope ────────────────
-      ──► platform/tauriApi.ts: rejection → { ok: false, errorCode, … }
+      ──► CommandError::from_anyhow (typed error, reply, io kind, text last)
+      ──► command returns Err(CommandError)                   [Rust]
+─────────────────── IPC rejection { code, message, details } ───────────────────
+      ──► platform/tauriApi.ts: rejection → { ok: false, errorCode, … },
+          internal ones logged
       ──► shared/errorMessages.ts: code → translated text      [renderer]
 ```
 
-Transfer failures travel the same way inside `transfer:progress` events,
-classified once by the driver (`ProgressInfo::failed`).
+A transfer that fails reports it in a `transfer:progress` event instead,
+classified once by the driver (`ProgressInfo::failed`) and narrowed to the
+few categories a transfer row tells apart (`transfer/error_kind.rs`).
 
 ## Where things go
 
@@ -303,5 +320,5 @@ classified once by the driver (`ProgressInfo::failed`).
 | A protocol | A module implementing `ProtocolBackend`, one arm in `application/session_service.rs::create_backend`, and the `Protocol` enum. |
 | A command | `commands/<area>.rs`, its registration and capability, and `platform/api/<area>.ts`. |
 | A setting | `settingsDefaults.json`, the settings group in `features/settings/useSettings.ts`, its dialog section. |
-| An error kind | `ipc::ErrorCode`, the TypeScript list in `platform/ipcContracts.ts`, a translation in `shared/errorMessages.ts`. |
+| An error code | `ipc::ErrorCode` and its fallback message, `COMMAND_ERROR_CODES` in `platform/ipcContracts.ts`, a translation in `shared/errorMessages.ts`. Add one only when the user is told something different or the renderer acts differently. |
 | A UI feature | A directory under `src/features/` with an `index.ts`; wire it in `app/`. |

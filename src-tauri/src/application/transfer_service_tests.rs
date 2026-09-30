@@ -276,44 +276,44 @@ fn remote_staging_names_are_distinct_siblings() {
 
 #[test]
 fn remote_directory_move_requires_a_shared_session_and_non_nested_target() {
-    assert!(matches!(
+    assert!(
         transfer_validate_remote_copy(
             "/folder".into(),
             "/folder/child".into(),
             "same".into(),
             "same".into(),
             true
-        ),
-        OkResult::Err { .. }
-    ));
-    assert!(matches!(
+        )
+        .is_err()
+    );
+    assert!(
         transfer_validate_remote_copy(
             "/folder".into(),
             "/alias/child".into(),
             "first".into(),
             "second".into(),
             true
-        ),
-        OkResult::Err { .. }
-    ));
-    assert!(matches!(
+        )
+        .is_err()
+    );
+    assert!(
         transfer_validate_remote_copy(
             "/folder".into(),
             "/other/folder".into(),
             "same".into(),
             "same".into(),
             true
-        ),
-        OkResult::Ok { ok: true }
-    ));
-    assert!(matches!(
+        )
+        .is_ok()
+    );
+    assert!(
         transfer_validate_remote_copy(
             "/folder".into(),
             "/folder".into(),
             "first".into(),
             "second".into(),
             false
-        ),
-        OkResult::Ok { ok: true }
-    ));
+        )
+        .is_ok()
+    );
 }

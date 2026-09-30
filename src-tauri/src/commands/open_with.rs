@@ -1,4 +1,4 @@
-use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION, OkResult};
+use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::edit_recovery;
 use crate::local_fs::local_open::{ApprovedLocalPaths, OpenKind};
 use crate::local_fs::open_with::OpenWithWatchers;
@@ -15,18 +15,11 @@ use tauri_plugin_opener::OpenerExt;
 // cannot all pass the same remaining storage budget.
 static OPEN_ADMISSION: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
+/// Where the copy an editor was opened on lives.
 #[derive(Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum OpenWithStartResult {
-    #[serde(rename_all = "camelCase")]
-    Ok {
-        ok: bool,
-        local_path: String,
-    },
-    Err {
-        ok: bool,
-        error: CommandError,
-    },
+#[serde(rename_all = "camelCase")]
+pub struct OpenWithStarted {
+    local_path: String,
 }
 
 #[tauri::command]
@@ -44,7 +37,7 @@ pub async fn open_with_start(
     remote_path: String,
     id: String,
     application: Option<String>,
-) -> CommandResult<OpenWithStartResult> {
+) -> CommandResult<OpenWithStarted> {
     if let Some(program) = application.as_deref() {
         approved_paths.preflight(std::path::Path::new(program))?;
     }
@@ -73,17 +66,11 @@ pub async fn open_with_start(
     .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?
     .map_err(|error| CommandError::from_anyhow(&error))?;
     let Some(pool) = sessions.pool_for(&connection_id).await else {
-        return Ok(OpenWithStartResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::ConnectionLost, NO_SESSION),
-        });
+        return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
     let dir = paths.open_with_dir.join(uuid::Uuid::new_v4().to_string());
     if let Err(err) = tokio::fs::create_dir_all(&dir).await {
-        return Ok(OpenWithStartResult::Err {
-            ok: false,
-            error: CommandError::from(err),
-        });
+        return Err(CommandError::from(err));
     }
     let local_path = dir.join(&intent.local_name);
 
@@ -100,10 +87,7 @@ pub async fn open_with_start(
     if let Err(err) = pool.run(id.clone(), task).await {
         let _ = tokio::fs::remove_file(&local_path).await;
         let _ = tokio::fs::remove_dir(&dir).await;
-        return Ok(OpenWithStartResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&err),
-        });
+        return Err(CommandError::from_anyhow(&err));
     }
 
     // Unknown remote sizes cannot bypass admission. This downloaded copy
@@ -124,7 +108,7 @@ pub async fn open_with_start(
         Err(error) => {
             let _ = tokio::fs::remove_file(&local_path).await;
             let _ = tokio::fs::remove_dir(&dir).await;
-            return Ok(OpenWithStartResult::Err { ok: false, error });
+            return Err(error);
         }
     };
     let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
@@ -138,15 +122,11 @@ pub async fn open_with_start(
         watchers.forget(&id);
         let _ = tokio::fs::remove_file(&local_path).await;
         let _ = tokio::fs::remove_dir(&dir).await;
-        return Ok(OpenWithStartResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())),
-        });
+        return Err(CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())));
     }
 
     watchers.start(app, id);
-    Ok(OpenWithStartResult::Ok {
-        ok: true,
+    Ok(OpenWithStarted {
         local_path: local_path.to_string_lossy().into_owned(),
     })
 }
@@ -178,9 +158,9 @@ fn authorized_launch(
 }
 
 #[tauri::command]
-pub fn open_with_stop(watchers: State<'_, OpenWithWatchers>, id: String) -> OkResult {
+pub fn open_with_stop(watchers: State<'_, OpenWithWatchers>, id: String) -> CommandResult<()> {
     watchers.stop(&id);
-    OkResult::Ok { ok: true }
+    Ok(())
 }
 
 /// Called once `revision` of the copy has been uploaded, and only then.
@@ -189,14 +169,14 @@ pub fn open_with_mark_synced(
     watchers: State<'_, OpenWithWatchers>,
     id: String,
     revision: String,
-) -> OkResult {
+) -> CommandResult<()> {
     if watchers.mark_synced(&id, &revision) {
-        OkResult::Ok { ok: true }
+        Ok(())
     } else {
-        OkResult::Err {
-            ok: false,
-            error: CommandError::new(ErrorCode::NotFound, "No such open-with copy"),
-        }
+        Err(CommandError::new(
+            ErrorCode::NotFound,
+            "No such open-with copy",
+        ))
     }
 }
 
@@ -230,38 +210,20 @@ pub async fn open_with_recovered_edits(
 
 /// Opens the recovery folder itself; the renderer never names a path here.
 #[tauri::command]
-pub fn open_with_reveal_recovered_edits(app: AppHandle) -> Result<OkResult, CommandError> {
+pub fn open_with_reveal_recovered_edits(app: AppHandle) -> CommandResult<()> {
     let root = recovery_root(&app)?;
-    Ok(
-        match app
-            .opener()
-            .open_path(root.to_string_lossy().into_owned(), None::<String>)
-        {
-            Ok(()) => OkResult::Ok { ok: true },
-            Err(error) => OkResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())),
-            },
-        },
-    )
+    app.opener()
+        .open_path(root.to_string_lossy().into_owned(), None::<String>)
+        .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))
 }
 
 #[tauri::command]
-pub async fn open_with_discard_recovered_edits(app: AppHandle) -> Result<OkResult, CommandError> {
+pub async fn open_with_discard_recovered_edits(app: AppHandle) -> CommandResult<()> {
     let root = recovery_root(&app)?;
-    Ok(
-        match tokio::task::spawn_blocking(move || edit_recovery::discard(&root)).await {
-            Ok(Ok(())) => OkResult::Ok { ok: true },
-            Ok(Err(error)) => OkResult::Err {
-                ok: false,
-                error: CommandError::from(error),
-            },
-            Err(error) => OkResult::Err {
-                ok: false,
-                error: CommandError::new(ErrorCode::Internal, error.to_string()),
-            },
-        },
-    )
+    match tokio::task::spawn_blocking(move || edit_recovery::discard(&root)).await {
+        Ok(result) => Ok(result?),
+        Err(error) => Err(CommandError::new(ErrorCode::Internal, error.to_string())),
+    }
 }
 
 // See commands/preview.rs's serde_field_casing module for why this needs
@@ -336,8 +298,7 @@ mod tests {
 
     #[test]
     fn ok_result_local_path_is_camel_case() {
-        let value = serde_json::to_value(OpenWithStartResult::Ok {
-            ok: true,
+        let value = serde_json::to_value(OpenWithStarted {
             local_path: "C:\\x".into(),
         })
         .unwrap();

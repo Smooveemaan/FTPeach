@@ -2,10 +2,9 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import {
   checkedResponse,
   commandFailure,
-  commandOutcome,
-  hasCommandOutcome,
   isFileEntry,
   isRecord,
+  voidOutcome,
 } from '../ipcContracts.ts';
 import type { InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
@@ -57,9 +56,15 @@ function onOsDragDrop(callback: (payload: OsDragDropPayload) => void) {
   };
 }
 
-function isFilesystemListResult(value: unknown): value is FilesystemListResult {
+/** What `fs_list` answers when it worked. */
+interface FilesystemList {
+  path: string;
+  entries: FileEntry[];
+}
+
+function isFilesystemList(value: unknown): value is FilesystemList {
   return (
-    hasCommandOutcome(value) &&
+    isRecord(value) &&
     typeof value.path === 'string' &&
     Array.isArray(value.entries) &&
     value.entries.every(isFileEntry)
@@ -107,9 +112,13 @@ export function createFilesystemApi(invoke: InvokeFn) {
       const result = checkedResponse(
         'fs_list',
         invoke('fs_list', { localPath, ...(requestKey ? { requestKey } : {}) }),
-        isFilesystemListResult,
-        (raw) => ({ ...commandFailure('fs_list', raw), path: localPath ?? '', entries: [] }),
-      );
+        isFilesystemList,
+        (raw): FilesystemListResult => ({
+          ...commandFailure('fs_list', raw),
+          path: localPath ?? '',
+          entries: [],
+        }),
+      ).then((listing) => ('ok' in listing ? listing : { ok: true, ...listing }));
       signal?.addEventListener('abort', cancel, { once: true });
       return result.finally(() => signal?.removeEventListener('abort', cancel));
     },
@@ -127,23 +136,23 @@ export function createFilesystemApi(invoke: InvokeFn) {
         (value): value is LocalDrive[] => Array.isArray(value) && value.every(isLocalDrive),
         () => [],
       ),
-    mkdir: (localPath: string) => commandOutcome(invoke, 'fs_mkdir', { localPath }),
+    mkdir: (localPath: string) => voidOutcome(invoke, 'fs_mkdir', { localPath }),
     rename: (oldPath: string, newPath: string, overwrite: boolean) =>
-      commandOutcome(invoke, 'fs_rename', {
+      voidOutcome(invoke, 'fs_rename', {
         oldPath,
         newPath,
         overwrite,
       }),
     copyFile: (sourcePath: string, destPath: string, overwrite = false) =>
-      commandOutcome(invoke, 'fs_copy_file', { sourcePath, destPath, overwrite }),
+      voidOutcome(invoke, 'fs_copy_file', { sourcePath, destPath, overwrite }),
     validateCopy: (sourcePath: string, destPath: string) =>
-      commandOutcome(invoke, 'fs_validate_copy', { sourcePath, destPath }),
+      voidOutcome(invoke, 'fs_validate_copy', { sourcePath, destPath }),
     delete: (localPath: string, permanent = false) =>
-      commandOutcome(invoke, 'fs_delete', { localPath, permanent }),
-    createFile: (localPath: string) => commandOutcome(invoke, 'fs_create_file', { localPath }),
-    revealPath: (localPath: string) => commandOutcome(invoke, 'fs_reveal_path', { localPath }),
+      voidOutcome(invoke, 'fs_delete', { localPath, permanent }),
+    createFile: (localPath: string) => voidOutcome(invoke, 'fs_create_file', { localPath }),
+    revealPath: (localPath: string) => voidOutcome(invoke, 'fs_reveal_path', { localPath }),
     openPath: (localPath: string) =>
-      commandOutcome(
+      voidOutcome(
         invoke,
         EXECUTABLE_EXTENSIONS.has(localPath.split('.').pop()?.toLocaleLowerCase() ?? '')
           ? 'fs_execute_path'

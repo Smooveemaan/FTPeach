@@ -1,26 +1,18 @@
 use crate::domain::{SavedSite, SiteLayoutEntry};
-use crate::ipc::{CommandError, CommandResult};
+use crate::ipc::CommandResult;
 use crate::security::vault::Vault;
 use crate::store::{JsonMap, Store};
 use serde::Serialize;
 use tauri::State;
 
+/// A bookmark or folder that was saved. `secret_not_persisted` is the one
+/// thing a successful save can still have to tell: the password it carried
+/// could not be stored, so the user has to be told to enter it next time.
 #[derive(Serialize)]
-#[serde(tag = "result", rename_all = "camelCase")]
-pub enum SiteOpResult {
-    Saved {
-        ok: bool,
-        id: String,
-        #[serde(rename = "secretNotPersisted")]
-        secret_not_persisted: bool,
-    },
-    Ok {
-        ok: bool,
-    },
-    Err {
-        ok: bool,
-        error: CommandError,
-    },
+#[serde(rename_all = "camelCase")]
+pub struct SiteSaved {
+    id: String,
+    secret_not_persisted: bool,
 }
 
 #[tauri::command]
@@ -53,14 +45,6 @@ pub async fn sites_has_plaintext_secret(store: State<'_, Store>) -> CommandResul
     Ok(store.has_plaintext_secret().await)
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RevealedSecretResult {
-    ok: bool,
-    value: Option<String>,
-    error: Option<CommandError>,
-}
-
 #[tauri::command]
 pub async fn sites_reveal_secret(
     window: tauri::WebviewWindow,
@@ -70,7 +54,7 @@ pub async fn sites_reveal_secret(
     vault: State<'_, Vault>,
     id: String,
     field: String,
-) -> CommandResult<RevealedSecretResult> {
+) -> CommandResult<Option<String>> {
     crate::security::sensitive::consume(
         &window,
         &authorization,
@@ -87,18 +71,7 @@ pub async fn sites_reveal_secret(
     } else {
         store.reveal_dpapi_secret(&id, &field).await
     };
-    Ok(match result {
-        Ok(value) => RevealedSecretResult {
-            ok: true,
-            value,
-            error: None,
-        },
-        Err(error) => RevealedSecretResult {
-            ok: false,
-            value: None,
-            error: Some(CommandError::from_anyhow(&error)),
-        },
-    })
+    Ok(result?)
 }
 
 #[tauri::command]
@@ -114,7 +87,7 @@ pub async fn sites_save(
     store: State<'_, Store>,
     vault: State<'_, Vault>,
     site: SavedSite,
-) -> CommandResult<SiteOpResult> {
+) -> CommandResult<SiteSaved> {
     let transfer = crate::security::sensitive::site_save_transfer_for(&store, &site.0).await;
     crate::security::sensitive::consume(
         &window,
@@ -125,22 +98,13 @@ pub async fn sites_save(
     )?;
     // The store checks the move again under its write lock, against the
     // bookmark and the password as they are when the save lands.
-    Ok(
-        match store
-            .save_site_with_vault(site.0, transfer.as_ref(), &vault)
-            .await
-        {
-            Ok(saved) => SiteOpResult::Saved {
-                ok: true,
-                id: saved.id,
-                secret_not_persisted: saved.secret_not_persisted,
-            },
-            Err(e) => SiteOpResult::Err {
-                ok: false,
-                error: CommandError::from_anyhow(&e),
-            },
-        },
-    )
+    let saved = store
+        .save_site_with_vault(site.0, transfer.as_ref(), &vault)
+        .await?;
+    Ok(SiteSaved {
+        id: saved.id,
+        secret_not_persisted: saved.secret_not_persisted,
+    })
 }
 
 #[tauri::command]
@@ -148,60 +112,32 @@ pub async fn sites_delete(
     store: State<'_, Store>,
     vault: State<'_, Vault>,
     id: String,
-) -> CommandResult<SiteOpResult> {
-    Ok(match store.delete_site_with_vault(id, &vault).await {
-        Ok(()) => SiteOpResult::Ok { ok: true },
-        Err(e) => SiteOpResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&e),
-        },
-    })
+) -> CommandResult<()> {
+    Ok(store.delete_site_with_vault(id, &vault).await?)
 }
 
 #[tauri::command]
 pub async fn sites_save_folder(
     store: State<'_, Store>,
     folder: JsonMap,
-) -> CommandResult<SiteOpResult> {
-    Ok(match store.save_folder(folder).await {
-        Ok(id) => SiteOpResult::Saved {
-            ok: true,
-            id,
-            secret_not_persisted: false,
-        },
-        Err(e) => SiteOpResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&e),
-        },
+) -> CommandResult<SiteSaved> {
+    Ok(SiteSaved {
+        id: store.save_folder(folder).await?,
+        secret_not_persisted: false,
     })
 }
 
 #[tauri::command]
-pub async fn sites_delete_folder(
-    store: State<'_, Store>,
-    id: String,
-) -> CommandResult<SiteOpResult> {
-    Ok(match store.delete_folder(&id).await {
-        Ok(()) => SiteOpResult::Ok { ok: true },
-        Err(e) => SiteOpResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&e),
-        },
-    })
+pub async fn sites_delete_folder(store: State<'_, Store>, id: String) -> CommandResult<()> {
+    Ok(store.delete_folder(&id).await?)
 }
 
 #[tauri::command]
 pub async fn sites_apply_layout(
     store: State<'_, Store>,
     layout: Vec<SiteLayoutEntry>,
-) -> CommandResult<SiteOpResult> {
-    Ok(match store.apply_layout(layout).await {
-        Ok(()) => SiteOpResult::Ok { ok: true },
-        Err(e) => SiteOpResult::Err {
-            ok: false,
-            error: CommandError::from_anyhow(&e),
-        },
-    })
+) -> CommandResult<()> {
+    Ok(store.apply_layout(layout).await?)
 }
 
 #[cfg(test)]
@@ -210,8 +146,7 @@ mod tests {
 
     #[test]
     fn saved_result_reports_secret_persistence_in_camel_case() {
-        let value = serde_json::to_value(SiteOpResult::Saved {
-            ok: true,
+        let value = serde_json::to_value(SiteSaved {
             id: "site-1".into(),
             secret_not_persisted: true,
         })

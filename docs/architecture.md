@@ -1,199 +1,307 @@
 # FTPeach architecture
 
-The React renderer owns presentation and user intent. The application layer owns recursive file-operation orchestration. Privileged operations pass through `src/platform/api/*` and narrowly scoped Tauri commands. Rust validates IPC and owns connections, files, settings, and secrets. Protocol backends implement the common `ProtocolBackend` interface.
+FTPeach is a Windows desktop file manager for local folders and FTP, FTPS,
+SFTP and WebDAV servers. It is a Tauri 2 application: a React/TypeScript
+renderer draws the interface and expresses what the user wants, and a Rust
+backend owns everything with consequences — connections, files, settings,
+secrets and the operating system.
+
+This page describes the structure that stays stable. Rules for where frontend
+code goes are in [frontend architecture](frontend-architecture.md); behavior
+guarantees are in [transfer safety](transfer-safety.md),
+[storage](storage.md) and [security](security.md).
+
+## Processes and windows
 
 ```text
-React UI -> feature hooks -> platform API -> Tauri commands
-                                      -> Sessions -> browse ProtocolBackend
-                                                  -> TransferPool -> workers
-                                      -> Store / Vault / filesystem
+┌────────────── WebView2: main window ──────────────┐   ┌─ WebView2: confirmation ─┐
+│ React renderer (src/)                             │   │ same bundle, loaded with │
+│   app/ ── features/* ── platform/api ── invoke ───┼─┐ │ ?security-confirmation=  │
+└───────────────────────────────────────────────────┘ │ │ narrow capability only   │
+                                                      │ └────────────┬─────────────┘
+                     Tauri IPC: commands + events     │              │
+┌──────────────────────── Rust process (src-tauri/src) ┴──────────────┴─────────────┐
+│ commands/ ─ application/ ─ session.rs ─ transfer/ ─ protocol/ ── network          │
+│            local_fs/ ─ store/ ─ security/ ─ runtime/ (tray, window, updater, log) │
+└───────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+- **Main window.** The whole interface. It is treated as untrusted input: a
+  compromised renderer must not be able to read secrets, delete files or trust
+  a host key without the user seeing a native confirmation.
+- **Confirmation window.** A second window the backend opens for sensitive
+  operations. It loads the same bundle, renders only
+  `platform/SecurityConfirmation.tsx` and has its own capability file
+  (`src-tauri/capabilities/security-confirmation.json`) that allows almost
+  nothing.
+- **Backend.** One process, one Tokio runtime. Global state is registered in
+  `lib.rs` with `.manage(...)`; `runtime/startup.rs` wires the tray, window
+  events and emitters after that.
+
+## Frontend ownership
+
+`src/main.tsx` installs the IPC adapter and mounts `app/Application.tsx`, the
+composition root. Code is grouped by what the user would name:
+
+| Area | Owns |
+| --- | --- |
+| `app/` | The shell: title bar, menus, dialogs, status bar, tray bridge, layout. Composes features; nothing imports it. |
+| `features/file-browser/` | Tabs, panes, navigation, selection, clipboard, local and remote file operations. |
+| `features/transfers/` | The transfer queue: rows, lifecycle, overwrite approval, routing of copies, moves and OS drops. |
+| `features/sites/` | Saved sites and local paths, the site manager, its tree and drag and drop. |
+| `features/settings/` | Settings state and the settings dialog, including vault settings. |
+| `features/logs/`, `open-with/`, `connections/`, `updater/` | Their own workflows. |
+| `platform/` | The only code that talks to Tauri: `tauriApi.ts` (invoke and events) and typed wrappers in `platform/api/`. |
+| `components/`, `hooks/`, `shared/`, `shortcuts/`, `i18n/` | Reusable UI, UI mechanics and plain functions. They never import a feature. |
+
+State lives with its owner and flows down as props; there is no global store
+and no React context. Two deliberate exceptions keep hot paths cheap: the
+transfer queue is a module-level store read with `useSyncExternalStore`
+(`features/transfers/transferStore.ts`), sized for 100,000 rows, and the
+async-failure sink in `shared/asyncFailure.ts`.
+
+Logic that must be testable without React is written as plain factories that
+take their collaborators as arguments (`features/file-browser/panes/create*.ts`,
+`features/transfers/createTransferRouting.ts`); hooks wrap them. A feature's
+public API is its `index.ts`, plus `ui.ts` for components, so Node tests can
+import the headless part without JSX. `npm run lint` enforces the import rules.
 
 ## Backend ownership
 
-| Location | Responsibility |
+| Zone | Owns |
 | --- | --- |
-| `lib.rs` | Compose plugins, managed state and the IPC command registry. |
-| `runtime/startup.rs` | Initialize emitters, tray and window event wiring after state registration. |
-| `commands/` | Validate IPC input, authorize calls and translate service results. |
-| `application/` | Coordinate connection and file-transfer use cases. |
-| `application/recursive_transfer/` | Own recursive scan, copy, verification, cancellation and source removal. |
-| `session.rs` | Own stable connection slots and access to their transfer pools. |
-| `protocol/` | Implement wire protocols, remote entry parsing and protocol capabilities. Credential fields use `security::sensitive_string::SensitiveString`, re-exported here under the same name. |
-| `transfer/` | Schedule workers, relay bytes, pace traffic and deliver progress. |
-| `local_fs/` | Validate and perform local filesystem and native file actions. |
-| `store/` | Persist sites, settings, tabs and known hosts. |
-| `security/` | Protect secrets and enforce authorization and connection policy. |
-| `runtime/` | Own process and window lifecycle: startup, shutdown, tray, logging, updater staging, confirmation windows and the vault auto-lock. |
-| `native_drag/` | Build the Windows data object for dragging remote and local files out to Explorer. |
-| `domain/`, `ipc.rs` | Define shared data and wire contracts respectively. |
+| `lib.rs` | Plugins, managed state and the command registry. Wiring only. |
+| `commands/` | Tauri commands: deserialize arguments, authorize, call a service, shape the response. No business rules. |
+| `application/` | Use cases that span zones: opening and closing sessions (`session_service`), single transfers (`transfer_service`), resumable uploads, and recursive copy/move (`recursive_transfer/`). |
+| `session.rs` | `Sessions`: one slot per renderer-chosen `connectionId`, holding the browse connection and that connection's transfer pool. |
+| `protocol/` | The `ProtocolBackend` trait, its FTP, SFTP and WebDAV drivers, listing parsers, the TCP/proxy transport, and the typed per-protocol connection config. |
+| `transfer/` | Worker pools, server-to-server relay, progress events, rate and concurrency limits, upload staging. |
+| `local_fs/` | Every operation on the user's own disk: listing, create, rename, delete, recycle bin, staged copy, verified move, reservations, open-with copies. |
+| `store/` | JSON persistence in `%APPDATA%\FTPeach` and secret-field placement. |
+| `security/` | Vault, DPAPI, Windows Hello unlock, sensitive-operation grants, path and name guards, redaction. |
+| `runtime/` | Process lifecycle: startup, shutdown, tray, window geometry and scale, logging, updater staging, auto-lock. |
+| `native_drag/` | Dragging remote and local files out to Explorer as OLE virtual files. |
+| `domain/`, `ipc.rs` | Shared data types, and the IPC wire types (`ErrorCode`, `CommandError`). |
 
-Recursive transfers expose only `Endpoint`, `Intent`, `Report`, `run` and `cancel`.
-Their `io`, `manifest`, `model` and `scan` modules are private; Rust visibility enforces
-this boundary. Tests live with their owner: recursive cases in
-`application/recursive_transfer/tests.rs`, staged upload and relay cases in
-`application/transfer_service_tests.rs`.
+Dependencies point down: `commands` calls the zones below it and nothing
+calls `commands` except the registry in `lib.rs` and
+`runtime/sensitive_plugin.rs`. Command modules do not import each other;
+anything two of them need lives with its owner. `npm run check:rust-boundaries`
+enforces the table of allowed edges in `scripts/checks/check-rust-boundaries.ts`
+and rejects cycles.
 
-Startup constructs one `Store` and derives the vault directory from it. Progress updates
-replace the pending message in place, retaining its map key and scheduled timer. FTP permission
-normalization writes directly into one nine-byte string, without temporary vectors or strings.
+## IPC
 
-## Browse session lifecycle
+The renderer reaches the backend only through `src/platform`. Features import
+`api` from `platform/api/index.ts`; each namespace (`api.session`,
+`api.transfer`, `api.fsLocal`, `api.sites`, `api.settings`, `api.vault`, …)
+wraps a group of commands, checks every response shape at runtime and returns
+typed values. Nothing outside `src/platform` imports `@tauri-apps/api`.
 
-`Sessions` keeps a stable slot for every `connectionId`. A slot mutex serializes connect, list, mkdir, rename, remove, and disconnect operations for one connection, while different IDs operate concurrently. Connect has a separate cancellation token, allowing disconnect to cancel a stalled connection without waiting for the slot lock.
+**Commands** are named `<area>_<verb>` (`session_connect`, `transfer_upload`,
+`fs_delete`) and take camelCase arguments. Every command is listed in
+`lib.rs` or, when it needs a grant, in `runtime/sensitive_plugin.rs`, and in
+the capability files; `npm run check:command-acl` fails when the lists
+disagree. Adding a command means: the function in `commands/<area>.rs`, its
+registration, its capability entry, and a wrapper in `platform/api/`.
 
-A successful session contains one `browse_client`, a browse-command timeout, and a `TransferPool`. Reconnecting destroys the old session. Shutdown first stops the pool and waits for transfer tasks, then closes the browse client.
+**Events** carry what the backend starts on its own:
 
-`application/session_service.rs` owns the pipeline: resolving a site's stored configuration,
-opening the browse client, sizing and building its transfer pool, and tearing the session down.
-`commands/session/connection.rs` translates -- it validates the incoming config and shapes the
-service's outcome into the response the renderer expects. `commands/session/browse.rs` owns
-listing and remote filesystem mutations. All browse mutations, including delete, share the same
-timeout/cancellation teardown pipeline; frontend-facing command names stay unchanged.
+| Event | Payload |
+| --- | --- |
+| `transfer:progress` | Batched progress, completion and failure for transfers. |
+| `transfer:dragOutStarted` | A download Explorer began pulling during a drag-out. |
+| `protocol:log` | Batches of protocol log lines. |
+| `preview:progress`, `openWith:changed` | Open-with downloads and edited copies. |
+| `vault:locked` | The vault locked, with the reason. |
+| `updater:status`, `tray:action` | Updater state; tray menu clicks. |
 
-## Renderer composition root
+**Sensitive commands** (delete, reveal a secret, trust a host key, execute a
+file, relax protection, import/export settings, …) are served by the
+`sensitive` plugin. The renderer first asks `authorize_sensitive` for a grant;
+the backend derives the exact target from the request, shows the
+confirmation window when the operation needs one, and returns a one-time
+token bound to the window, the operation, that target and the vault session.
+The command then consumes the token against the target it computes itself.
+The renderer never states what it is authorized to do; it can only ask.
 
-`app/Application.tsx` composes feature hooks and view models; it does not own reusable domain
-logic. Cross-feature shell behavior lives in `app/useApplicationController.ts`: user-facing error
-normalization, vault-unlock recovery, global command bindings, and small derived presentation
-states. Feature-specific behavior remains in its feature directory, while `Workspace` and
-`AppDialogs` remain presentation boundaries.
+### Command failures
 
-## Transfer pool
+- Most commands return `CommandResult<T>` (`Result<T, CommandError>`) and
+  fail by returning `Err`, so the promise rejects with
+  `{ code, message, details? }`. Some commands instead resolve an
+  `{ ok: false, error }` envelope; `session_connect`, for example, reports a
+  changed SSH host key that way, next to the error.
+- `code` is an `ErrorCode` from the closed camelCase list in `ipc.rs`,
+  mirrored by hand in `platform/ipcContracts.ts`.
+- `message` is English fallback text; `details` is the error chain, for
+  diagnostics. The application log redacts what it writes.
+- A failure the backend understands is created typed, with
+  `protocol::fail(code, message)` or `CommandError::new`.
+  `CommandError::from_anyhow` classifies the rest: a typed error inside the
+  chain first, then a server reply code, then the `io::ErrorKind`, and the
+  error text last.
 
-Each worker is a separate authenticated `ProtocolBackend`. A fixed pool limits connections according to the configured value; an unlimited pool grows only to the number of waiting tasks. Transfer tasks never borrow the browse client, so uploads do not block navigation.
+In the renderer, `platform/tauriApi.ts` turns a rejection into a
+`{ ok: false, error, errorCode, diagnosticDetails }` value, so the `api`
+wrappers do not throw. A failure without a code gets one guessed from its text
+(`inferErrorCode` in `platform/ipcContracts.ts`), and
+`shared/errorMessages.ts` turns the code into translated text.
 
-Tasks wait in a FIFO queue. Canceling a queued task removes it; an active task receives a `CancellationToken`, while non-interruptible I/O is stopped by disconnecting its worker. Lost workers are replaced. Destroying the pool rejects new tasks and closes workers. Server-to-server copies reserve workers from the source and target pools and relay bytes through a bounded in-memory pipe; relay transfers do not support resume.
+## Connection lifecycle
 
-Protocol backends share `protocol::backend_logger::BackendLogger` for sink ownership,
-thread-safe emission, and structured events. FTP, SFTP, and WebDAV keep wire-level formatting in
-their own modules while relying on the shared component for logging lifecycle state. Logging has
-no on/off switch: every line reaches `runtime::log_emitter::LogEmitter`, which keeps the last
-5,000 records in memory whether or not the log panel is open. A single writer task sends them to
-the panel as `protocol:log` batches and, when the user turns it on, appends them to a daily
-`ftpeach-YYYY-MM-DD.log`. The panel reads the history with `log_recent` when it opens, and the
-diagnostic bundle is built from the same records plus the end of the application log
-(`ftpeach-app.log`, written by `runtime::app_log` in every build).
+A pane connects with `session_connect(connectionId, config)`. The
+`connectionId` is minted by the renderer per pane and connection attempt; the
+backend caps the number of slots. The connection settings travel as a JSON map
+until the last step:
 
-WebDAV connection and file-operation orchestration stays in `protocol/webdav.rs`. Parsing of
-PROPFIND responses, href normalization, HTTP dates, and resumed-response range validation lives in
-`protocol/webdav/response.rs`; this keeps untrusted response interpretation independently
-reviewable without widening the protocol module's public API.
+| Step | What happens | Secrets |
+| --- | --- | --- |
+| 1. Renderer (`features/file-browser/panes/createPaneSessionLifecycle.ts`) | Sends either a saved site's `siteId` or the typed server fields, plus the timeout and active-mode settings. | A typed password or passphrase for an unsaved connection. |
+| 2. IPC edge (`commands/session/connection.rs`) | Deserializes `domain::ConnectionConfig`, validates the fields of an unsaved connection, converts it to a map, and refuses a key or CA file on a share the user never chose. | Passed on unchanged. |
+| 3. Saved site (`application/session_service.rs`, `store/sites`) | For a `siteId`, the store builds the map from `sites.json` and keeps the renderer's timeout, active mode and concurrency. | Decrypted here, from DPAPI or the vault. |
+| 4. Global settings (`session_service`) | Adds the proxy settings and whether an unknown SSH host key needs confirmation. | The proxy password. |
+| 5. Protocol config (`protocol/config.rs`) | `ConnectionConfig::from_json_map` builds the per-protocol `protocol::config::ConnectionConfig` and checks the protocol's rules. | `SensitiveString`, zeroized on drop. |
+| 6. `ProtocolBackend::connect` | Opens the browse connection. | Used and dropped. |
 
-## Data and invariants
+On success `application/session_service.rs` builds a `TransferPool` whose
+factory opens further backends from the same `ConnectionConfig`, and stores
+both in the slot. The slot's async mutex serializes browse operations for one
+connection (list, mkdir, rename, delete, disconnect); different connections
+run in parallel. Transfers never take the browse lock. A connect has its own
+cancellation token, so a disconnect can abandon a stalled connect without
+waiting for the lock. Teardown stops the pool, waits for its tasks, removes
+staging files that can no longer be resumed, then closes the browse
+connection, all under a deadline.
 
-The store serializes JSON writes and uses a temporary sibling followed by an atomic replacement. The renderer receives only non-secret site records; the backend resolves secrets by `siteId` through DPAPI or Stronghold. See [`storage.md`](storage.md) and [`security.md`](security.md).
+**Adding a connection property.** A property of one server goes into
+`domain::ConnectionConfig` in `domain/connection.rs` and its map conversion,
+its TypeScript mirror in `shared/siteContracts.ts`, the per-protocol struct and
+`from_json_map` in `protocol/config.rs`, and, if sites save it, the record
+built in `store/sites/mutations.rs`, the listing in `store/sites/queries.rs`
+and the import check in `commands/app_settings_transfer.rs`. A property that
+applies to every connection is a setting in `src/shared/settingsDefaults.json`,
+read where `session_service` adds the global settings.
 
-Rust unit tests that need private implementation details live in adjacent test modules rather than
-inside production files: `store/tests.rs` covers the store facade, while
-`commands/app_settings_transfer_tests.rs` covers settings import/export. FTP, SFTP, WebDAV, proxy
-handshakes, sensitive-operation authorization, and vault persistence each keep their suites in an
-adjacent `*_tests.rs` file. They remain child modules, so moving them does not weaken their coverage
-or force production internals to become public.
+## Protocol abstraction
 
-The Rust composition root is grouped by responsibility: `security/` owns vault and authorization,
-`transfer/` owns pooling, relay, progress, and throttling, `local_fs/` owns validated local-file
-operations, and `runtime/` owns process/window lifecycle and the diagnostic report. The rules
-that remove secrets from text are `security::redaction`: pure string processing that protocol
-drivers, logs and the report all call, so no lower layer imports `runtime` to clean a string.
-`transfer::transfer_pool` does call `runtime::sleep_guard` to keep Windows awake while a transfer
-runs. That is a deliberate, narrow dependency on one process-wide switch; it gets an interface
-only if the pool ever needs testing without it. Every path spells its
-zone out — `crate::security::vault`, `crate::runtime::shutdown`, `crate::local_fs::preview` — so
-the grouping is readable at each import and checkable by
-`scripts/checks/check-rust-boundaries.ts`, which rejects a crate path whose first segment is not a module
-`lib.rs` declares. Smoke-test JavaScript is an application
-asset in `src-tauri/assets/`, not Rust source.
+`protocol::ProtocolBackend` is the only interface the rest of the backend
+uses for a server: connect, list, mkdir, create, remove, rename, chmod, size,
+ranged read, upload/download to a path, and streaming to or from a
+reader/writer. Methods a protocol cannot perform safely have default
+implementations that refuse (`rename_no_replace`, `read_range`,
+`remove_empty_directory`), so a new protocol fails closed until it proves
+otherwise. Backends are `Box<dyn ProtocolBackend>`, which is why the trait
+uses `async_trait`.
 
-`run()` is wiring only. Deciding what a window close means — hide to tray, shut down, or first ask
-the window while transfers run — lives in
-`runtime::shutdown::on_close_requested`, and bringing the process in line with the saved settings
-at startup lives in `runtime::settings_apply::apply_at_startup`, beside the same functions the
-settings-save and settings-import paths call.
+Drivers return `anyhow::Result`: most failures are whatever the protocol crate
+reported, and the driver adds context. Failures the driver itself decides on
+carry a typed `CommandError` inside the `anyhow::Error`.
 
-## Wire and vocabulary
+Each driver is one module with the workarounds its servers need, documented
+at the code that needs them: `ftp.rs` (with `ftp_charset.rs` for non-UTF-8
+servers and `list_parse.rs` for LIST formats), `sftp.rs` (host keys through
+the narrow `protocol::known_hosts::KnownHostsStore` trait), `webdav.rs` (with
+`webdav/response.rs` for PROPFIND parsing). FTP and SFTP open every TCP
+connection through `transport.rs`, which applies the proxy: SOCKS4/4a, SOCKS5
+and HTTP CONNECT handshakes are written by hand in `proxy.rs` so no byte of
+the server's greeting is lost. WebDAV uses reqwest; `socks_bridge.rs` exists
+only to work around a SOCKS4 bug in reqwest's dependency and names the
+upstream fix that will retire it.
 
-`ipc.rs` is the wire and nothing else: `ErrorCode`, `CommandError`, `CommandResult`, and the
-`OkResult` envelope, with the test that pins every code's camelCase spelling. What a connection,
-a saved site or a settings blob *is* lives in `domain/` — `domain/connection.rs`,
-`domain/site.rs`, `domain/settings.rs`.
+FTPeach carries patched copies of `suppaftp` and `wry` in `src-tauri/vendor/`;
+each has a `FTPEACH-PATCH.md` listing its changes.
 
-Persistence and protocols import `domain` for shared data types.
+## Transfers
 
-They import `ipc` for `CommandError` and `ErrorCode`, and that is deliberate: the failure
-vocabulary is one shared type family with a pinned wire contract, and giving persistence a second
-error type to be translated at every boundary would cost more than the coupling it removes.
+A transfer runs on a worker from the connection's `TransferPool`, never on the
+browse connection. Workers are separate authenticated backends. A pool grows
+with demand, up to the site's connection limit minus the browse connection; a
+process-wide limiter applies the global concurrency setting, and a
+process-wide rate limiter applies the speed limit. Queued tasks can be
+cancelled; running ones get a `CancellationToken`, and I/O that cannot be
+interrupted is stopped by dropping its worker, which the pool replaces.
 
-## Narrow dependencies
+- **Single files** (`application/transfer_service.rs`): uploads go to a
+  hidden staging name and are renamed into place; downloads write a partial
+  file with a resume record that proves it belongs to the same source.
+  Replacing an existing file is explicit, and protocols without an atomic
+  no-replace rename refuse rather than guess.
+- **Server to server**: the bytes are relayed through this computer over a
+  bounded in-memory pipe between a worker of each pool; relays do not resume.
+- **Folders** (`application/recursive_transfer/`): the renderer sends one
+  intent; the backend scans, reserves, copies, verifies and, for a move,
+  deletes the source only after everything landed unchanged. Its public
+  surface is `Endpoint`, `Intent`, `Report`, `run` and `cancel`.
+- **Progress** reaches the renderer as batched `transfer:progress` events.
 
-`SftpBackend::new` takes an `Arc<dyn KnownHostsStore>`, not a `Store`. The backend performs one
-persistence operation — checking a host key against its pin, and pinning an unknown one only
-when the connection's policy allows trust on first use — and
-`protocol/known_hosts.rs` declares exactly that; `store/known_hosts.rs` implements it. The interface restricts the backend to host-key persistence.
+In the renderer, `features/transfers/` keeps one row per transfer in the
+external store, owns retry, pause and cancel, and asks for overwrite
+decisions before a transfer starts. [Transfer safety](transfer-safety.md) and
+[resilience](p2-resilience.md) list the guarantees and limits.
 
-Remote path validation and authorization live in `security/`: `security/connection_guard.rs` for remote paths
-and `security/sensitive.rs` for authorization, beside `local_fs/filesystem_safety.rs`'s local-path
-guard, which stays with the local filesystem it guards.
+## Persistence
 
-## Crate zone direction
+`store::Store` owns `%APPDATA%\FTPeach`:
 
-`application/`, `store/`, `protocol/`, `security/`, `transfer/`, and `local_fs/` sit below the Tauri command
-layer: `commands/` calls them, never the reverse. `scripts/checks/check-rust-boundaries.ts`, run by
-`npm run check`, holds every zone to a written table of what its production code may name
-(`ALLOWED`); the root files `session.rs` and `ipc.rs` are zones too, and `ipc` names nothing. A zone
-missing from the table fails the check. Two entries name one module instead of a zone:
-`transfer` may use `runtime::sleep_guard` and `security` may use `runtime::confirmation_window`,
-and nothing else of `runtime`. Only `runtime` may name `commands`, because
-`runtime::sensitive_plugin` registers the commands that need a confirmed grant. The same script
-rejects one `commands/` module naming another and reports any import cycle between crate modules,
-however long.
+| File | Content |
+| --- | --- |
+| `settings.json` | Settings; the proxy password only as a DPAPI blob or a vault flag. |
+| `sites.json`, `local-paths.json` | Saved sites and folders; saved local paths. Secrets as DPAPI blobs or vault flags. |
+| `tabs.json` | Restored tabs and panes. No connection state, listings or secrets. |
+| `known_hosts.json` | Pinned SSH host-key fingerprints. |
+| `trusted_applications.json` | Applications the user allowed for "Open with". |
+| `vault.json` + snapshot | The Stronghold vault under enhanced protection. |
 
-The check reads Rust lexically, not through the compiler. It follows `use` declarations with their
-groups and aliases (`crate::a::{b, c as d}`), paths written inline, and paths starting with
-`crate::`, `super::`, `self::` or a child module's name; comments and string literals are blanked
-first, so text never counts as an import. Code only tests compile (`tests.rs`, `*_tests.rs`, every
-`#[cfg(test)]` item) is held only to naming real top-level modules: tests may reach into what they
-test, and their edges never form a cycle. A module naming its own ancestor or descendant is
-containment, not a dependency. It does not follow paths generated by macros, `#[path]` attributes,
-`super::` inside an inline `mod` block of a production file, or what a glob import brings in
-(`use a::*` counts as naming `a`).
+Writes go through `store/storage.rs`: one lock per file, a temporary sibling,
+then an atomic replace. Reads are tolerant: a record written by any earlier
+version must still load, and unknown or missing fields fall back to defaults
+rather than failing. `src/shared/settingsDefaults.json` is the single source
+of setting names, types and defaults for both sides. [Storage](storage.md)
+has the details.
 
-Command modules do not see each other, so anything two of them need lives with its owner:
-`pool_for` is a method on `Sessions`, `NO_SESSION` sits with the response envelopes in `ipc`,
-`LogEmitter` in `runtime`, `classify_transfer_error` in `transfer`,
-`DragOutFile` in `native_drag`, and `apply_speed_limit`/`apply_prevent_sleep`/
-`apply_log_date_format` in `runtime/settings_apply.rs`.
+## Security boundaries
 
-Two consequences of that rule are visible in the tree. The `OkResult`/`ok`/`err` envelope that
-local delete and the command layer both produce lives in `ipc.rs` with the other wire types, not
-in `commands/fs.rs`. And the `sensitive` plugin's handler list — which commands sit behind an
-authorization prompt — lives in `runtime/sensitive_plugin.rs`, because choosing the gated commands
-is process wiring; `security/sensitive.rs` keeps the authorization rules themselves.
+- **Secrets never reach the renderer** unless the user reveals one through a
+  grant. Site records sent to the renderer carry `hasPassword` flags only.
+  In Rust, secrets are `SensitiveString`, which redacts itself in `Debug` and
+  zeroizes on drop.
+- **Every renderer argument is untrusted.** Remote names are checked as
+  single path segments before any local path is built; remote paths are
+  refused if they carry CR/LF; local paths are canonicalized and checked
+  against protected locations; a name Windows would not store as given (a
+  device, a stream separator, a trailing dot) is refused before a file is
+  created, by `local_fs::windows_names`, and the renderer repeats that check
+  only to keep a doomed download out of the queue.
+- **Destructive and revealing operations need a grant** (see IPC above).
+- **Text written to disk or exported is redacted**: `security::redaction`
+  cleans the protocol log, the application log, saved logs and the
+  diagnostic bundle.
 
-Saved-site persistence is split by lifecycle rather than file size. `store/sites/queries.rs` owns
-listing, connection configuration, secret resolution, and migrations;
-`store/sites/mutations.rs` owns site/folder CRUD and layout updates. `store/sites.rs` retains shared
-validation and module boundaries, while the public `Store` API remains unchanged.
+[Security design](security.md) and [IPC permissions](ipc-permissions.md)
+cover the threat model and the capability files.
 
-General application commands stay in `commands/app.rs`. Settings import/export has its own
-`commands/app_settings_transfer.rs` module because it owns a separate validation, redaction,
-native-dialog, persistence, and rollback workflow.
+## Error flow
 
-- the frontend does not call `invoke` outside the platform boundary;
-- transfer code does not hold a browse-session lock during a transfer;
-- remote names are validated before a local path is constructed;
-- new capabilities, secrets, and destructive operations require a security review.
+```text
+protocol crate / io / OS ──► driver adds context, or fail(code, …) ──► anyhow::Error
+      ──► CommandError::from_anyhow (typed code, else text match)
+      ──► command returns Err(CommandError) or { ok: false }   [Rust]
+──────────────── IPC rejection { code, message, details } or envelope ────────────────
+      ──► platform/tauriApi.ts: rejection → { ok: false, errorCode, … }
+      ──► shared/errorMessages.ts: code → translated text      [renderer]
+```
 
-## Executable safety contracts
+Transfer failures travel the same way inside `transfer:progress` events,
+classified once by the driver (`ProgressInfo::failed`).
 
-[File operation safety](transfer-safety.md) records Windows drive/UNC identity, protected-path scope, operation-owned artifacts, overwrite, resume and cancellation policies. [Regression coverage](regression-coverage.md) links each A01–A18 contract to its permanent suite. [P2 resilience](p2-resilience.md) describes the backend recursive coordinator, manifest budgets and storage recovery.
+## Where things go
 
-Closed pools reject admission; replacement failure settles queued callers, and paired relay admission never holds a worker while waiting for another pool. These are exercised in transfer_pool.rs by replacement_failure_finishes_all_waiters_and_rejects_new_work, same_pool_single_worker_relay_fails_without_starting_either_leg and opposite_relays_and_cancellation_release_both_workers.
-
-Zero concurrency means unlimited demand-driven workers; zero connect timeout is valid and uses a 60-second transfer idle default. Zero speed limit disables pacing. A known file length of zero means empty; missing metadata stays None, and relay skips only the unavailable size comparison. See settings schema tests, rate_limiter tests, transfer_file::tests::known_zero_is_not_unknown and relay tests. Metadata agreement is not a content hash.
-
-Protocol capabilities differ: FTP has no portable no-replace rename, so its no-replace commit checks the target just before RNFR/RNTO and refuses one that exists; SFTP uses v3 RENAME; WebDAV uses Overwrite: F for no-replace. Unknown-length WebDAV uploads stream without a buffered fallback. Move between the computer and a server, or between two connections, is refused for every protocol (`src/shared/movePolicy.ts`); the [guarantee matrix](transfer-safety.md#guarantee-matrix) lists what each operation promises per protocol. These contracts and residual alias/race risks require real server validation before release.
-
-## Comment conventions
-
-Use English. Rust module docs describe responsibility and invariants; API docs describe contracts, side effects and limitations; inline comments explain non-obvious reasons and ordering. Preserve unsafe justifications, cancellation, ownership, security checks and protocol quirks. Avoid restating code or embedding refactoring history in current contracts; historical decisions belong in change history or ADRs.
+| To add | Start in |
+| --- | --- |
+| A connection property | `domain/connection.rs` and `protocol/config.rs` (see above). |
+| A protocol | A module implementing `ProtocolBackend`, one arm in `application/session_service.rs::create_backend`, and the `Protocol` enum. |
+| A command | `commands/<area>.rs`, its registration and capability, and `platform/api/<area>.ts`. |
+| A setting | `settingsDefaults.json`, the settings group in `features/settings/useSettings.ts`, its dialog section. |
+| An error kind | `ipc::ErrorCode`, the TypeScript list in `platform/ipcContracts.ts`, a translation in `shared/errorMessages.ts`. |
+| A UI feature | A directory under `src/features/` with an `index.ts`; wire it in `app/`. |

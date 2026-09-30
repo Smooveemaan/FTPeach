@@ -2,7 +2,7 @@
 
 ## Code and development
 
-- [Architecture](architecture.md): Rust modules and application boundaries.
+- [Architecture](architecture.md): processes, ownership, IPC, connections, transfers, persistence and security boundaries.
 - [Frontend architecture](frontend-architecture.md): feature ownership and import rules.
 - [Frontend performance](frontend-performance.md): measurements and reproducible benchmarks.
 - [Regression coverage](regression-coverage.md): test scenarios and remaining coverage gaps.

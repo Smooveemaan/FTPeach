@@ -163,7 +163,7 @@ See the [script guide](scripts/README.md) for benchmarks, release tooling, and c
 | If you want to… | Start here |
 | --- | --- |
 | Know what happens when a transfer stops or a file already exists | [User guide](docs/user-guide.md) |
-| Understand the code structure | [Rust architecture](docs/architecture.md) and [frontend architecture](docs/frontend-architecture.md) |
+| Understand the code structure | [Architecture](docs/architecture.md) and [frontend architecture](docs/frontend-architecture.md) |
 | Understand connections and transfers | [Protocol support](docs/protocol-support.md), [networking](docs/networking.md), and [transfer safety](docs/transfer-safety.md) |
 | Learn how settings and credentials are handled | [Storage](docs/storage.md) and [security design](docs/security.md) |
 | Investigate performance | [Frontend measurements and benchmarks](docs/frontend-performance.md) |

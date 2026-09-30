@@ -26,12 +26,13 @@ test('dragging a remote folder and file out of the window starts native drag wit
   window.api = { dragOut: { start } } as unknown as Window['api'];
   const { result } = renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      confirmOverwriteIfNeeded: vi.fn(),
-      copyEntries: vi.fn(),
-      canCopyBetween: vi.fn(),
-      refreshPane: vi.fn(),
-      movePaneSamePane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded: vi.fn(),
+        canCopyBetween: vi.fn(),
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries: vi.fn() },
     }),
   );
   await act(async () => {
@@ -66,12 +67,13 @@ test('dragging local entries out of the window hands the shell their full paths'
   window.api = { dragOut: { start, startLocal } } as unknown as Window['api'];
   const { result } = renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      confirmOverwriteIfNeeded: vi.fn(),
-      copyEntries: vi.fn(),
-      canCopyBetween: vi.fn(),
-      refreshPane: vi.fn(),
-      movePaneSamePane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded: vi.fn(),
+        canCopyBetween: vi.fn(),
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries: vi.fn() },
     }),
   );
   await act(async () => {
@@ -93,17 +95,17 @@ test('dragging local entries out of the window hands the shell their full paths'
 test('Ctrl-copy within a pane uses the transfer route and preserves an absolute breadcrumb target', () => {
   const tab = makeTab('tab');
   const copyEntries = vi.fn().mockResolvedValue(undefined);
-  const movePaneSamePane = vi.fn();
   renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      copyEntries,
-      movePaneSamePane,
-      confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
-        proceed(names, false);
-      }),
-      canCopyBetween: vi.fn(() => true),
-      refreshPane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
+          proceed(names, false);
+        }),
+        canCopyBetween: vi.fn(() => true),
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries },
     }),
   );
   act(() =>
@@ -120,7 +122,6 @@ test('Ctrl-copy within a pane uses the transfer route and preserves an absolute 
   expect(copyEntries).toHaveBeenCalledWith(
     expect.objectContaining({ move: false, targetFolder: 'C:\\parent' }),
   );
-  expect(movePaneSamePane).not.toHaveBeenCalled();
 });
 
 test('pasting a cut between different endpoints is refused and keeps the cut for a copy', () => {
@@ -142,12 +143,13 @@ test('pasting a cut between different endpoints is refused and keeps the cut for
   const confirmOverwriteIfNeeded = vi.fn().mockResolvedValue(undefined);
   const { result } = renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      confirmOverwriteIfNeeded,
-      copyEntries: vi.fn(),
-      canCopyBetween: () => true,
-      refreshPane: vi.fn(),
-      movePaneSamePane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded,
+        canCopyBetween: () => true,
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries: vi.fn() },
     }),
   );
   act(() => result.current.cutToClipboard('a', tab.panes.a));
@@ -185,14 +187,15 @@ test('a cut stays on the clipboard until its files have actually moved', async (
   const copyEntries = vi.fn(async () => outcome);
   const { result } = renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
-        await proceed(names as string[], true);
-      }),
-      copyEntries,
-      canCopyBetween: vi.fn(() => true),
-      refreshPane: vi.fn(),
-      movePaneSamePane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded: vi.fn(async (_pane, _folder, names, proceed) => {
+          await proceed(names as string[], true);
+        }),
+        canCopyBetween: vi.fn(() => true),
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries },
     }),
   );
 
@@ -219,12 +222,13 @@ test('a cut marks its names in the folder it came from, and a copy marks nothing
   Object.assign(tab.panes.a, { kind: 'local', path: 'D:\\work', selected: new Set(['a.txt']) });
   const { result } = renderHook(() =>
     useFileClipboard({
-      panes: tab.panes,
-      confirmOverwriteIfNeeded: vi.fn(),
-      copyEntries: vi.fn(),
-      canCopyBetween: vi.fn(),
-      refreshPane: vi.fn(),
-      movePaneSamePane: vi.fn(),
+      browser: {
+        panes: tab.panes,
+        confirmOverwriteIfNeeded: vi.fn(),
+        canCopyBetween: vi.fn(),
+        refreshPane: vi.fn(),
+      },
+      transfers: { copyEntries: vi.fn() },
     }),
   );
   act(() => result.current.cutToClipboard('a', tab.panes.a));

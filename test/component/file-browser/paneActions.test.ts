@@ -11,7 +11,12 @@ function setup() {
   tab.panes.b.path = '/target';
   tab.panes.b.connectionId = 'session';
   tab.panes.b.status = 'connected';
-  const options = {
+  const options = mocks(tab);
+  return { tab, options, menu: actions(options).buildPaneMenu };
+}
+
+function mocks(tab: ReturnType<typeof makeTab>) {
+  return {
     t: (key: string) => key,
     panes: tab.panes,
     activeTabId: tab.id,
@@ -31,7 +36,48 @@ function setup() {
     selectApplication: vi.fn().mockResolvedValue('C:/Apps/editor.exe'),
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
   };
-  return { tab, options, menu: usePaneActions(options).buildPaneMenu };
+}
+
+// The flat mocks above, handed over the way FileBrowserPane hands them.
+function actions(
+  options: ReturnType<typeof mocks>,
+  clipboard: Pick<Clipboard, 'writeText'> | null = options.clipboard,
+) {
+  return usePaneActions({
+    t: options.t,
+    browser: {
+      panes: options.panes,
+      activeTabId: options.activeTabId,
+      paneJoin: options.paneJoin,
+      navigatePane: options.navigatePane,
+      refreshPane: options.refreshPane,
+      canCopyBetween: options.canCopyBetween,
+      confirmOverwriteIfNeeded: options.confirmOverwriteIfNeeded,
+      deletePaneSelected: options.deletePaneSelected,
+      deletePaneEntry: options.deletePaneEntry,
+      connectPane: vi.fn(),
+      siteConnectPane: vi.fn(),
+      goPaneHome: vi.fn(),
+    },
+    sites: [],
+    shell: {
+      dialogs: {
+        setNewFolderTarget: options.setNewFolderTarget,
+        setNewFileTarget: options.setNewFileTarget,
+        setMoveToTarget: options.setMoveToTarget,
+        setChmodTarget: options.setChmodTarget,
+        setShowSiteManagerDialog: vi.fn(),
+        setShowLocalPathManagerDialog: vi.fn(),
+        driveMenu: null,
+        setDriveMenu: vi.fn(),
+      },
+      transfers: { copyEntries: options.copyEntries, handleOsDropFiles: vi.fn() },
+      openWith: { setTarget: options.setOpenWithTarget },
+      reportError: vi.fn(),
+    },
+    selectApplication: options.selectApplication,
+    clipboard,
+  });
 }
 const file: FileEntry = { name: 'file.txt', isDirectory: false, size: 42 };
 
@@ -172,7 +218,7 @@ test('clipboard failures are reported and a missing clipboard leaves the menu us
     await menu('a')(file).find((item) => item.label === 'paneMenu.copyPath')!.onClick!();
     expect(options.clipboard.writeText).toHaveBeenCalledWith('C:\\source\\file.txt');
     expect(sink).toHaveBeenCalledWith(failure);
-    const noClipboard = usePaneActions({ ...options, clipboard: null }).buildPaneMenu('a')(file);
+    const noClipboard = actions(options, null).buildPaneMenu('a')(file);
     expect(() =>
       noClipboard.find((item) => item.label === 'paneMenu.copyPath')!.onClick!(),
     ).not.toThrow();

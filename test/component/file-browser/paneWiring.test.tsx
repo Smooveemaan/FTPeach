@@ -6,11 +6,12 @@ import type { ComponentProps, ReactElement } from 'react';
 import { act, render } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { useFileBrowserPaneModel } from '../../../src/app/useFileBrowserPaneModel.tsx';
+import FileBrowserPane from '../../../src/features/file-browser/FileBrowserPane.tsx';
 import type { FilePaneProps } from '../../../src/features/file-browser/FilePane.tsx';
 import type PaneSourceSwitcher from '../../../src/features/file-browser/components/PaneSourceSwitcher.tsx';
 import type PaneToolbar from '../../../src/features/file-browser/components/PaneToolbar.tsx';
-import { usePaneActions } from '../../../src/features/file-browser/usePaneActions.ts';
+import type { FileClipboardModel } from '../../../src/features/file-browser/useFileClipboard.ts';
+import type { PanesModel } from '../../../src/features/file-browser/usePanes.ts';
 import { paneJoin } from '../../../src/features/file-browser/panes/paneBackend.ts';
 import { makePane } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { PaneId, PaneState } from '../../../src/features/file-browser/panes/paneModel.ts';
@@ -172,94 +173,40 @@ type Harness = Omit<ReturnType<typeof harness>, 'mount' | 'title' | 'toolbar'>;
 
 // The only place that knows how Application puts a pane together.
 function mount(h: Harness, id: PaneId) {
-  return <CurrentPane h={h} id={id} />;
-}
-
-function CurrentPane({ h, id }: { h: Harness; id: PaneId }) {
-  const { browser, clipboard, dialogs, transfers } = h;
-  const { buildPaneMenu, moveToFolders } = usePaneActions({
-    t: (key: string) => key,
-    keyboardShortcuts: null,
-    panes: browser.panes,
-    activeTabId: browser.activeTabId,
-    paneJoin: browser.paneJoin,
-    navigatePane: browser.navigatePane,
-    refreshPane: browser.refreshPane,
-    canCopyBetween: browser.canCopyBetween,
-    confirmOverwriteIfNeeded: browser.confirmOverwriteIfNeeded,
-    copyEntries: transfers.copyEntries,
-    deletePaneSelected: browser.deletePaneSelected,
-    deletePaneEntry: browser.deletePaneEntry,
-    setNewFolderTarget: dialogs.setNewFolderTarget,
-    setNewFileTarget: dialogs.setNewFileTarget,
-    setMoveToTarget: dialogs.setMoveToTarget,
-    setChmodTarget: dialogs.setChmodTarget,
-    setOpenWithTarget: h.openWith.setTarget,
-  });
-  const { renderPane } = useFileBrowserPaneModel({
-    panes: browser.panes,
-    activeTabId: browser.activeTabId,
-    searchInputRefs: { a: { current: null }, b: { current: null } },
-    orderedSites: h.sites,
-    localPaths: [],
-    sites: h.sites,
-    showHiddenFiles: false,
-    keyboardShortcuts: null,
-    paneOrientation: 'horizontal',
-    reportError: h.reportError,
-    localColumns: { a: [], b: [] },
-    remoteColumns: { a: [], b: [] },
-    localColumnWidths: { a: {}, b: {} },
-    remoteColumnWidths: { a: {}, b: {} },
-    changeLocalColumns: () => vi.fn(),
-    changeRemoteColumns: () => vi.fn(),
-    changeLocalColumnWidths: () => vi.fn(),
-    changeRemoteColumnWidths: () => vi.fn(),
-    dragMoveStart: clipboard.dragMove.startDrag,
-    outboundDragRef: clipboard.outboundDragRef,
-    copySelectedWithConfirm: clipboard.copySelectedWithConfirm,
-    copyToClipboard: clipboard.copyToClipboard,
-    cutToClipboard: clipboard.cutToClipboard,
-    canPaste: clipboard.canPaste,
-    cutNames: clipboard.cutNames,
-    pasteClipboard: clipboard.pasteClipboard,
-    switchPaneToLocal: browser.switchPaneToLocal,
-    startPaneConnect: browser.startPaneConnect,
-    setPaneForm: browser.setPaneForm,
-    connectPane: browser.connectPane,
-    disconnectPane: browser.disconnectPane,
-    cancelConnectPane: browser.cancelConnectPane,
-    siteConnectPane: browser.siteConnectPane,
-    activatePane: browser.activatePane,
-    handleSaveSite: h.saveSite,
-    openSiteManager: (paneId) => dialogs.setShowSiteManagerDialog(paneId),
-    openLocalPathManager: (paneId) => dialogs.setShowLocalPathManagerDialog(paneId),
-    crumbsFor: browser.crumbsFor,
-    navigatePane: browser.navigatePane,
-    openDirectory: browser.openDirectory,
-    updatePane: browser.updatePane,
-    paneJoin: browser.paneJoin,
-    setOpenWithTarget: h.openWith.setTarget,
-    confirmOverwriteIfNeeded: browser.confirmOverwriteIfNeeded,
-    handleOsDropFiles: transfers.handleOsDropFiles,
-    refreshPane: browser.refreshPane,
-    renamePaneEntry: browser.renamePaneEntry,
-    deletePaneSelected: browser.deletePaneSelected,
-    setMoveToTarget: dialogs.setMoveToTarget,
-    moveToFolders,
-    buildPaneMenu,
-    canCopyBetween: browser.canCopyBetween,
-    goPaneHome: browser.goPaneHome,
-    goPaneBack: browser.goPaneBack,
-    goPaneForward: browser.goPaneForward,
-    paneParent: browser.paneParent,
-    chooseLocalDir: browser.chooseLocalDir,
-    setNewFolderTarget: dialogs.setNewFolderTarget,
-    setNewFileTarget: dialogs.setNewFileTarget,
-    driveMenu: dialogs.driveMenu as never,
-    setDriveMenu: dialogs.setDriveMenu,
-  });
-  return renderPane(id, {});
+  return (
+    <FileBrowserPane
+      id={id}
+      style={{}}
+      searchInputRef={{ current: null }}
+      browser={h.browser as unknown as PanesModel}
+      clipboard={h.clipboard as unknown as FileClipboardModel}
+      sites={{ connectableSites: h.sites, orderedSites: h.sites, localPaths: [] }}
+      settings={{
+        layout: {
+          showHiddenFiles: false,
+          localColumns: { a: [], b: [] },
+          remoteColumns: { a: [], b: [] },
+          localColumnWidths: { a: {}, b: {} },
+          remoteColumnWidths: { a: {}, b: {} },
+        },
+        shortcuts: { keyboardShortcuts: {} },
+      }}
+      columns={{
+        changeLocalColumns: () => vi.fn(),
+        changeRemoteColumns: () => vi.fn(),
+        changeLocalColumnWidths: () => vi.fn(),
+        changeRemoteColumnWidths: () => vi.fn(),
+      }}
+      paneOrientation="horizontal"
+      shell={{
+        dialogs: h.dialogs,
+        transfers: h.transfers,
+        openWith: h.openWith,
+        saveSite: h.saveSite,
+        reportError: h.reportError,
+      }}
+    />
+  );
 }
 
 describe('reconnecting a pane', () => {

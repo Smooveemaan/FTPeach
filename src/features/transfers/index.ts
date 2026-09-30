@@ -13,3 +13,4 @@ export type { SpeedSamples } from './transferSpeed.ts';
 export { isTransferNameConflict } from './nameConflict.ts';
 export type { FileEntryLike } from './nameConflict.ts';
 export { useTransfers } from './useTransfers.ts';
+export type { TransfersModel } from './useTransfers.ts';

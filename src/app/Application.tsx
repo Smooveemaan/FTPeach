@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import TitleBar from './TitleBar.tsx';
 import MenuBar from '../components/MenuBar.tsx';
 import ViewToolbar from './ViewToolbar.tsx';
@@ -7,19 +8,18 @@ import { useLogLines, useRememberedConnectionLabels } from '../features/logs/ind
 import { useTranslation } from 'react-i18next';
 import { useTooltip } from '../hooks/useTooltip.ts';
 import {
+  FileBrowserPane,
   TabStrip,
   useFileClipboard,
-  usePaneActions,
   usePanes,
 } from '../features/file-browser/index.ts';
-import type { FileSearchHandle } from '../features/file-browser/index.ts';
+import type { FileBrowserShell, FileSearchHandle } from '../features/file-browser/index.ts';
 import { useOpenWithLifecycle, useRecoveredEdits } from '../features/open-with/index.ts';
 import { useAppBootstrap } from './useAppBootstrap.ts';
 import { useAppDialogs } from './useAppDialogs.ts';
 import { useAppEffects } from './useAppEffects.ts';
 import { useStatusNotice } from '../hooks/useStatusNotice.ts';
 import { useWorkspaceLayout } from './useWorkspaceLayout.ts';
-import { useFileBrowserPaneModel } from './useFileBrowserPaneModel.tsx';
 import AppBanners from './AppBanners.tsx';
 import Workspace from './Workspace.tsx';
 import {
@@ -47,6 +47,7 @@ import { buildApplicationWorkspaceModel } from './applicationWorkspaceModel.ts';
 import { buildApplicationDialogsModel } from './applicationDialogsModel.ts';
 import { handler } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
+import type { PaneId } from '../shared/paneContracts.ts';
 
 export default function Application() {
   const { t } = useTranslation();
@@ -54,7 +55,7 @@ export default function Application() {
   const { errorMessage, setErrorMessage, reportError, dismissError } = useApplicationError();
   const dialogs = useAppDialogs();
   // Only the names Application itself reads; the whole object goes to the
-  // dialogs model, so a new dialog does not need a line here.
+  // dialogs model and the panes, so a new dialog does not need a line here.
   const {
     setShowSettings,
     setShowAbout,
@@ -65,14 +66,8 @@ export default function Application() {
     setShowExportSettings,
     setShowImportSettings,
     newFolderTarget,
-    setNewFolderTarget,
     newFileTarget,
-    setNewFileTarget,
     moveToTarget,
-    setMoveToTarget,
-    setChmodTarget,
-    driveMenu,
-    setDriveMenu,
     confirmState,
     vaultUnlockRetries,
     setVaultUnlockRetries,
@@ -128,22 +123,20 @@ export default function Application() {
 
   // Settings and theme
 
-  const {
-    applySettings,
-    changeTheme,
-    changeLocalColumns,
-    changeRemoteColumns,
-    changeLocalColumnWidths,
-    changeRemoteColumnWidths,
-    changeTransferColumnWidths,
-    changeTransferColumnOrder,
-    changeTransferHiddenColumns,
-  } = useApplicationSettings({
+  // The pane columns go to the panes as they are; the rest is read here.
+  const applicationSettings = useApplicationSettings({
     layout,
     applySettings: applySettingsState,
     hydrateLayout: hydrateSectionResizeFromSettings,
     update: updateSettings,
   });
+  const {
+    applySettings,
+    changeTheme,
+    changeTransferColumnWidths,
+    changeTransferColumnOrder,
+    changeTransferHiddenColumns,
+  } = applicationSettings;
 
   const {
     sites,
@@ -160,34 +153,11 @@ export default function Application() {
     interface: settings.interface,
   });
 
-  // Saved sites
-
   // Panes and tabs
 
   const handleVaultUnlockRequired = useVaultUnlockRecovery(setVaultUnlockRetries);
 
-  const {
-    runUpload,
-    retryTransfer,
-    pauseTransfer,
-    stopTransfer,
-    stopTransfersForConnection,
-    pauseAllTransfers,
-    stopAllTransfers,
-    resumeAllTransfers,
-    retryAllTransfers,
-    clearCompletedTransfers,
-    copyEntries,
-    handleOsDropFiles,
-    hasCompletedTransfers,
-    hasActiveTransfers,
-    hasPausableTransfers,
-    canResumeAllTransfers,
-    activeTransfersCount,
-    hasPausedTransfers,
-    hasRetryableTransfers,
-    transfersEmpty,
-  } = useTransfers({
+  const transfers = useTransfers({
     setErrorMessage: reportError,
     overwriteAction: settings.transfers.overwriteAction,
     confirmOverwrite: (path) =>
@@ -199,61 +169,32 @@ export default function Application() {
         }),
       ),
   });
+  const {
+    runUpload,
+    retryTransfer,
+    pauseTransfer,
+    stopTransfer,
+    stopTransfersForConnection,
+    pauseAllTransfers,
+    stopAllTransfers,
+    resumeAllTransfers,
+    retryAllTransfers,
+    clearCompletedTransfers,
+    hasCompletedTransfers,
+    hasActiveTransfers,
+    hasPausableTransfers,
+    canResumeAllTransfers,
+    activeTransfersCount,
+    hasPausedTransfers,
+    hasRetryableTransfers,
+    transfersEmpty,
+  } = transfers;
 
   const quitWhenIdle = useQuitWhenIdle({ hasActiveTransfers });
 
-  const {
-    tabs,
-    activeTabId,
-    setActiveTabId,
-    panes,
-    syncBrowsing,
-    syncEligible,
-    updatePane,
-    updateTab,
-    reorderTab,
-    setPaneForm,
-    paneJoin,
-    crumbsFor,
-    paneParent,
-    refreshPane,
-    navigatePane,
-    openDirectory,
-    goPaneBack,
-    goPaneForward,
-    refreshBothPanes,
-    toggleSync,
-    startPaneConnect,
-    switchPaneToLocal,
-    connectPane,
-    disconnectPane,
-    cancelConnectPane,
-    siteConnectPane,
-    connectSavedSite,
-    recentSiteIds,
-    openNewTab,
-    closeTab,
-    reopenClosedTab,
-    canReopenClosedTab,
-    deletePaneSelected,
-    deletePaneEntry,
-    submitNewFolder,
-    submitNewFile,
-    renamePaneEntry,
-    movePaneSamePane,
-    chooseLocalDir,
-    goPaneHome,
-    confirmOverwriteIfNeeded,
-    canCopyBetween,
-    aggregateStatus,
-    soleConnectedRemotePane,
-    connectedRemotePanes,
-    freeConnectTargetPaneId,
-    openConnectionIds,
-    connectionLabels,
-    lastActivePaneId,
-    activatePane,
-  } = usePanes({
+  // `connectTimeout` and `ftpActiveMode` come from the live settings on every
+  // render: the settings dialog previews them before they are saved.
+  const browser = usePanes({
     reportError,
     setErrorMessage,
     requestConfirm,
@@ -266,7 +207,8 @@ export default function Application() {
     onVaultUnlockRequired: handler(handleVaultUnlockRequired),
     stopTransfersForConnection,
   });
-  const logConnectionLabels = useRememberedConnectionLabels(connectionLabels);
+  const { tabs, activeTabId, panes } = browser;
+  const logConnectionLabels = useRememberedConnectionLabels(browser.connectionLabels);
   const routeConnectionLabels = useMemo(
     () =>
       new Map(
@@ -292,25 +234,14 @@ export default function Application() {
   // a transfer should still name its server once that connection is closed.
   useEffect(() => rememberConnectionLabels(routeConnectionLabels), [routeConnectionLabels]);
 
-  const {
-    target: openWithTarget,
-    setTarget: setOpenWithTarget,
-    watches: openWithWatches,
-    changed: openWithChanged,
-    dismissChanged: dismissOpenWithChanged,
-    confirmUploaded: confirmOpenWithUploaded,
-    retryChanged: retryOpenWithChanged,
-    uploadStarted: openWithUploadStarted,
-    uploadSettled: openWithUploadSettled,
-    registerOpened: handleOpenWithOpened,
-  } = useOpenWithLifecycle(tabs);
+  const openWith = useOpenWithLifecycle(tabs);
   const recoveredEdits = useRecoveredEdits();
 
   // These dialogs resolve against the active tab. Blocking tab commands while
   // one is open keeps that implicit target stable until the action completes.
   const modalOpen = !!(
-    openWithTarget ||
-    openWithChanged ||
+    openWith.target ||
+    openWith.changed ||
     newFolderTarget ||
     newFileTarget ||
     moveToTarget ||
@@ -320,18 +251,9 @@ export default function Application() {
     quitWhenIdle.promptOpen
   );
 
-  const {
-    connectableSites: flatSites,
-    orderedSites,
-    localPaths,
-    saveSite: handleSiteManagerSave,
-    deleteSite: handleSiteDelete,
-    saveFolder: handleSaveFolder,
-    deleteFolder: handleDeleteFolder,
-    applyLayout: handleApplyLayout,
-  } = useSites({
+  const savedSites = useSites({
     sites,
-    recentSiteIds,
+    recentSiteIds: browser.recentSiteIds,
     refreshSites,
     reportError,
     onSecretNotPersisted: () => setSecretNotPersistedNotice(true),
@@ -341,14 +263,14 @@ export default function Application() {
     t,
     transfers: { activeTransfersCount, hasPausableTransfers, canResumeAllTransfers },
     pauseAllTransfers,
-    resumeAllTransfers: () => resumeAllTransfers(refreshBothPanes),
+    resumeAllTransfers: () => resumeAllTransfers(browser.refreshBothPanes),
     quit: quitWhenIdle,
     settings: settings.transfers,
     updateTransfers: updateSettings.transfers,
-    recentSites: orderedSites,
-    connectableSites: flatSites,
-    connectSavedSite,
-    freeConnectTargetPaneId,
+    recentSites: savedSites.orderedSites,
+    connectableSites: savedSites.connectableSites,
+    connectSavedSite: browser.connectSavedSite,
+    freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
   });
 
   const [statusNotice, showStatusNotice] = useStatusNotice();
@@ -359,8 +281,8 @@ export default function Application() {
     panes,
     activeTabId,
     setShowSaveSite,
-    saveSite: handleSiteManagerSave,
-    updatePane,
+    saveSite: savedSites.saveSite,
+    updatePane: browser.updatePane,
   });
 
   const {
@@ -387,43 +309,7 @@ export default function Application() {
       });
   }, [updateStatus, showStatusNotice, t]);
 
-  const {
-    copyToClipboard,
-    cutToClipboard,
-    canPaste,
-    cutNames,
-    pasteClipboard,
-    copySelectedWithConfirm,
-    dragMove,
-    outboundDragRef,
-  } = useFileClipboard({
-    confirmOverwriteIfNeeded,
-    copyEntries,
-    canCopyBetween,
-    refreshPane,
-    movePaneSamePane,
-    panes,
-  });
-
-  const { buildPaneMenu, moveToFolders } = usePaneActions({
-    t,
-    keyboardShortcuts: settings.shortcuts.keyboardShortcuts,
-    panes,
-    activeTabId,
-    paneJoin,
-    navigatePane,
-    refreshPane,
-    canCopyBetween,
-    confirmOverwriteIfNeeded,
-    copyEntries,
-    deletePaneSelected,
-    deletePaneEntry,
-    setNewFolderTarget,
-    setNewFileTarget,
-    setMoveToTarget,
-    setChmodTarget,
-    setOpenWithTarget,
-  });
+  const clipboard = useFileClipboard({ browser, transfers });
 
   const [transferLayoutVersion, setTransferLayoutVersion] = useState(0);
   const resetLayout = useResetLayout({
@@ -449,33 +335,33 @@ export default function Application() {
       searchLocal: () => searchInputRefs.a.current?.toggle(),
       searchRemote: () => searchInputRefs.b.current?.toggle(),
       toggleHiddenFiles,
-      freeConnectTargetPaneId,
-      startPaneConnect,
-      refreshBothPanes,
+      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
+      startPaneConnect: browser.startPaneConnect,
+      refreshBothPanes: browser.refreshBothPanes,
       panes,
       handleSaveSite,
       setShowSettings,
-      openNewTab,
+      openNewTab: browser.openNewTab,
       tabs,
-      closeTab,
-      reopenClosedTab,
+      closeTab: browser.closeTab,
+      reopenClosedTab: browser.reopenClosedTab,
       activeTabId,
-      setActiveTabId,
+      setActiveTabId: browser.setActiveTabId,
     },
     menu: {
       modalOpen,
-      openNewTab,
+      openNewTab: browser.openNewTab,
       tabs,
-      closeTab,
-      reopenClosedTab,
-      canReopenClosedTab,
+      closeTab: browser.closeTab,
+      reopenClosedTab: browser.reopenClosedTab,
+      canReopenClosedTab: browser.canReopenClosedTab,
       activeTabId,
-      freeConnectTargetPaneId,
-      startPaneConnect,
-      soleConnectedRemotePane,
-      connectedRemotePanes,
-      connectionLabels,
-      disconnectPane,
+      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
+      startPaneConnect: browser.startPaneConnect,
+      soleConnectedRemotePane: browser.soleConnectedRemotePane,
+      connectedRemotePanes: browser.connectedRemotePanes,
+      connectionLabels: browser.connectionLabels,
+      disconnectPane: browser.disconnectPane,
       handleSaveSite,
       setShowExportSettings,
       setShowImportSettings,
@@ -483,9 +369,9 @@ export default function Application() {
       theme: settings.interface.theme,
       changeTheme,
       resetLayout,
-      syncBrowsing,
-      syncEligible,
-      toggleSync,
+      syncBrowsing: browser.syncBrowsing,
+      syncEligible: browser.syncEligible,
+      toggleSync: browser.toggleSync,
       showHiddenFiles: layout.showHiddenFiles,
       toggleHiddenFiles,
       showLocalPane: layout.showLocalPane,
@@ -499,13 +385,13 @@ export default function Application() {
       effectivePaneOrientation,
       windowNarrow,
       togglePaneOrientation,
-      refreshBothPanes,
+      refreshBothPanes: browser.refreshBothPanes,
       panes,
-      canCopyBetween,
-      copySelectedWithConfirm,
+      canCopyBetween: browser.canCopyBetween,
+      copySelectedWithConfirm: clipboard.copySelectedWithConfirm,
       hasCompletedTransfers,
       clearCompletedTransfers,
-      refreshPane,
+      refreshPane: browser.refreshPane,
       openSiteManager: () => setShowSiteManagerDialog(true),
       openLocalPathManager: () => setShowLocalPathManagerDialog(true),
       openSettings: () => setShowSettings(true),
@@ -515,71 +401,30 @@ export default function Application() {
     },
   });
 
-  // Pane view models
-
-  const { renderPane } = useFileBrowserPaneModel({
-    panes,
-    activeTabId,
-    searchInputRefs,
-    orderedSites,
-    localPaths,
-    sites: flatSites,
-    showHiddenFiles: layout.showHiddenFiles,
-    keyboardShortcuts: settings.shortcuts.keyboardShortcuts,
-    paneOrientation: effectivePaneOrientation,
+  // What a pane cannot do inside the file browser: the dialogs, transfers and
+  // error banner this shell owns.
+  const paneShell: FileBrowserShell = {
+    dialogs,
+    transfers,
+    openWith,
+    saveSite: handleSaveSite,
     reportError,
-    localColumns: layout.localColumns,
-    remoteColumns: layout.remoteColumns,
-    localColumnWidths: layout.localColumnWidths,
-    remoteColumnWidths: layout.remoteColumnWidths,
-    changeLocalColumns,
-    changeRemoteColumns,
-    changeLocalColumnWidths,
-    changeRemoteColumnWidths,
-    dragMoveStart: dragMove.startDrag,
-    outboundDragRef,
-    copySelectedWithConfirm,
-    copyToClipboard,
-    cutToClipboard,
-    canPaste,
-    cutNames,
-    pasteClipboard,
-    switchPaneToLocal,
-    startPaneConnect,
-    setPaneForm,
-    connectPane,
-    disconnectPane,
-    cancelConnectPane,
-    siteConnectPane,
-    activatePane,
-    handleSaveSite,
-    openSiteManager: (paneId) => setShowSiteManagerDialog(paneId),
-    openLocalPathManager: (paneId) => setShowLocalPathManagerDialog(paneId),
-    crumbsFor,
-    navigatePane,
-    openDirectory,
-    updatePane,
-    paneJoin,
-    setOpenWithTarget,
-    confirmOverwriteIfNeeded,
-    handleOsDropFiles,
-    refreshPane,
-    renamePaneEntry,
-    deletePaneSelected,
-    setMoveToTarget,
-    moveToFolders,
-    buildPaneMenu,
-    canCopyBetween,
-    goPaneHome,
-    goPaneBack,
-    goPaneForward,
-    paneParent,
-    chooseLocalDir,
-    setNewFolderTarget,
-    setNewFileTarget,
-    driveMenu,
-    setDriveMenu,
-  });
+  };
+  const renderPane = (id: PaneId, style: CSSProperties) => (
+    <FileBrowserPane
+      key={`${activeTabId}:${id}`}
+      id={id}
+      style={style}
+      searchInputRef={searchInputRefs[id]}
+      browser={browser}
+      clipboard={clipboard}
+      sites={savedSites}
+      settings={settings}
+      columns={applicationSettings}
+      paneOrientation={effectivePaneOrientation}
+      shell={paneShell}
+    />
+  );
 
   const workspaceModel = buildApplicationWorkspaceModel({
     effectivePaneOrientation,
@@ -591,7 +436,7 @@ export default function Application() {
     startResize,
     resetSplitRatio,
     renderPane,
-    dragMove,
+    dragMove: clipboard.dragMove,
     transferLogLayout: {
       windowNarrow,
       showTransferQueue: layout.showTransferQueue,
@@ -611,7 +456,7 @@ export default function Application() {
     },
     transfer: {
       empty: transfersEmpty,
-      onRetry: (id) => retryTransfer(id, refreshBothPanes),
+      onRetry: (id) => retryTransfer(id, browser.refreshBothPanes),
       onPause: handler(pauseTransfer),
       onStop: handler(stopTransfer),
       onClearCompleted: clearCompletedTransfers,
@@ -628,18 +473,18 @@ export default function Application() {
       empty: logLines.length === 0,
       lines: logLines,
       onClear: clearLogLines,
-      activeConnectionIds: openConnectionIds,
+      activeConnectionIds: browser.openConnectionIds,
       connectionLabels: logConnectionLabels,
       showTimestamps: logging.logShowTimestamps,
       formatTime: formatLogTime,
     },
     panes,
     status: {
-      status: aggregateStatus,
+      status: browser.aggregateStatus,
       paneOrientation: effectivePaneOrientation,
-      syncBrowsing,
+      syncBrowsing: browser.syncBrowsing,
       connectionVisualState: connectionVisualState(
-        aggregateStatus,
+        browser.aggregateStatus,
         hasActiveTransfers,
         hasPausedTransfers,
       ),
@@ -662,44 +507,33 @@ export default function Application() {
     updater: { status: updateStatus, check: checkForUpdates },
     siteActions: {
       sites,
-      save: handleSiteManagerSave,
+      save: savedSites.saveSite,
       saveFromPane: handleSaveSiteFromPane,
-      delete: handleSiteDelete,
-      saveFolder: handleSaveFolder,
-      deleteFolder: handleDeleteFolder,
-      applyLayout: handleApplyLayout,
-      connect: connectSavedSite,
+      delete: savedSites.deleteSite,
+      saveFolder: savedSites.saveFolder,
+      deleteFolder: savedSites.deleteFolder,
+      applyLayout: savedSites.applyLayout,
+      connect: browser.connectSavedSite,
     },
     panes,
     activeTabId,
     tabs,
     paneActions: {
-      submitNewFolder,
-      submitNewFile,
-      confirmOverwriteIfNeeded,
-      movePaneSamePane,
+      submitNewFolder: browser.submitNewFolder,
+      submitNewFile: browser.submitNewFile,
+      confirmOverwriteIfNeeded: browser.confirmOverwriteIfNeeded,
+      movePaneSamePane: browser.movePaneSamePane,
     },
-    openWith: {
-      target: openWithTarget,
-      setTarget: setOpenWithTarget,
-      watches: openWithWatches,
-      changed: openWithChanged,
-      dismissChanged: dismissOpenWithChanged,
-      confirmUploaded: confirmOpenWithUploaded,
-      retryChanged: retryOpenWithChanged,
-      uploadStarted: openWithUploadStarted,
-      uploadSettled: openWithUploadSettled,
-      registerOpened: handleOpenWithOpened,
-    },
+    openWith,
     recoveredEdits,
     openWithAssociations: settings.transfers.openWithAssociations,
     runUpload,
-    refreshPane,
+    refreshPane: browser.refreshPane,
     windowNarrow,
     services: {
       exportDiagnostics: api.log.exportDiagnostics,
       chmod: api.session.chmod,
-      paneJoin,
+      paneJoin: browser.paneJoin,
       reportError,
     },
   });
@@ -712,15 +546,15 @@ export default function Application() {
       <TabStrip
         tabs={tabs}
         activeTabId={activeTabId}
-        onSelect={setActiveTabId}
-        onClose={closeTab}
-        onNew={openNewTab}
-        onRename={(tabId, name) => updateTab(tabId, { name })}
-        onReorder={reorderTab}
-        sites={flatSites}
+        onSelect={browser.setActiveTabId}
+        onClose={browser.closeTab}
+        onNew={browser.openNewTab}
+        onRename={(tabId, name) => browser.updateTab(tabId, { name })}
+        onReorder={browser.reorderTab}
+        sites={savedSites.connectableSites}
         colored={settings.interface.coloredTabs}
         disabled={modalOpen}
-        lastActivePaneId={lastActivePaneId}
+        lastActivePaneId={browser.lastActivePaneId}
       />
 
       <ViewToolbar
@@ -745,7 +579,7 @@ export default function Application() {
         hasRetryableTransfers={hasRetryableTransfers}
         stopAllTransfers={stopAllTransfers}
         retryAllTransfers={retryAllTransfers}
-        refreshBothPanes={refreshBothPanes}
+        refreshBothPanes={browser.refreshBothPanes}
         keyboardShortcuts={settings.shortcuts.keyboardShortcuts}
       />
 

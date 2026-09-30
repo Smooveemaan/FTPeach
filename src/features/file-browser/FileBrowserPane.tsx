@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import type { CSSProperties, MouseEvent as ReactMouseEvent, MutableRefObject } from 'react';
+import type { CSSProperties, MutableRefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FilePane from './FilePane.tsx';
@@ -7,18 +7,17 @@ import PaneConnectEmptyState from './components/PaneConnectEmptyState.tsx';
 import PaneSourceSwitcher from './components/PaneSourceSwitcher.tsx';
 import PaneToolbar from './components/PaneToolbar.tsx';
 import { otherPaneId } from './panes/paneModel.ts';
-import type { ConnectionForm, PaneId, PaneState } from './panes/paneModel.ts';
-import type { FileEntry } from '../../shared/paneContracts.ts';
+import type { PaneId } from './panes/paneModel.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { FileSearchHandle } from './components/useFileSearch.ts';
-import type { DroppedFile } from './components/useFileDragDrop.ts';
-import type { PathCrumb } from './components/PathBar.tsx';
-import type { MenuItem } from '../../components/MenuItems.tsx';
-import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
-import type { OpenWithTarget } from '../open-with/index.ts';
 import { isColumnKey } from './components/fileListModel.ts';
 import { useDateFormatter } from '../settings/index.ts';
+import type { SettingsState } from '../settings/index.ts';
 import type { ColumnKey } from './components/fileListModel.ts';
+import type { FileClipboardModel } from './useFileClipboard.ts';
+import type { FileBrowserShell } from './usePaneActions.ts';
+import { usePaneActions } from './usePaneActions.ts';
+import type { PanesModel } from './usePanes.ts';
 
 // Typed as ColumnKey rather than string so a name that COLUMN_DEFS does not
 // define fails to compile here instead of rendering `undefined.render(...)`.
@@ -32,119 +31,65 @@ const REMOTE_COLUMNS: readonly ColumnKey[] = [
   'group',
 ];
 
-export interface PaneColumnsModel {
-  local: Record<PaneId, string[]>;
-  remote: Record<PaneId, string[]>;
-  localWidths: Record<PaneId, Record<string, number>>;
-  remoteWidths: Record<PaneId, Record<string, number>>;
-  changeLocal: (id: PaneId) => (columns: string[]) => unknown;
-  changeRemote: (id: PaneId) => (columns: string[]) => unknown;
-  changeLocalWidths: (id: PaneId) => (widths: Record<string, number>) => unknown;
-  changeRemoteWidths: (id: PaneId) => (widths: Record<string, number>) => unknown;
+/** Saves a pane's column choice; `app/` persists it with the other settings. */
+export interface PaneColumnChanges {
+  changeLocalColumns: (id: PaneId) => (columns: string[]) => unknown;
+  changeRemoteColumns: (id: PaneId) => (columns: string[]) => unknown;
+  changeLocalColumnWidths: (id: PaneId) => (widths: Record<string, number>) => unknown;
+  changeRemoteColumnWidths: (id: PaneId) => (widths: Record<string, number>) => unknown;
 }
 
-export interface PaneActionsModel {
-  switchToLocal: (id: PaneId) => unknown;
-  startConnect: (id: PaneId) => unknown;
-  setForm: (id: PaneId, form: ConnectionForm) => unknown;
-  connect: (id: PaneId) => () => unknown;
-  disconnect: (id: PaneId) => unknown;
-  cancelConnect: (id: PaneId) => unknown;
-  connectSite: (id: PaneId, site: ManagedSite) => unknown;
-  activate: (id: PaneId) => unknown;
-  saveSite: (id: PaneId) => () => unknown;
-  openSiteManager: (id: PaneId) => unknown;
-  openLocalPathManager: (id: PaneId) => unknown;
-  openSavedLocalPath?: (id: PaneId, site: ManagedSite) => unknown;
-  crumbsFor: (pane: PaneState) => PathCrumb[];
-  navigate: (id: PaneId, path: string) => unknown;
-  openDirectory: (id: PaneId, name: string) => unknown;
-  openDriveMenu: (id: PaneId) => (event: ReactMouseEvent<HTMLSpanElement>) => unknown;
-  updatePane: (id: PaneId, patch: Partial<PaneState>) => unknown;
-  join: (pane: PaneState, name: string) => string;
-  openLocalPath: (path: string) => unknown;
-  openRemoteFile: (target: OpenWithTarget) => unknown;
-  dropFiles: (
-    id: PaneId,
-    pane: PaneState,
-    files: DroppedFile[],
-    targetFolder: string | null,
-  ) => unknown;
-  rename: (id: PaneId, entry: FileEntry, newName: string) => unknown;
-  deleteSelected: (id: PaneId, tabId?: string, permanent?: boolean) => unknown;
-  moveTo: (id: PaneId, pane: PaneState, folderOrder: string[]) => unknown;
-  buildMenu: (
-    id: PaneId,
-  ) => (
-    entry: FileEntry | null,
-    options: { permanent: boolean; folderOrder: string[] },
-  ) => MenuItem[];
-  canCopyBetween: (source: PaneState, target: PaneState) => boolean;
-  goHome: (
-    id: PaneId,
-    pane: PaneState,
-    disconnected: boolean,
-    sites: readonly ManagedSite[],
-  ) => unknown;
-  goBack: (id: PaneId) => unknown;
-  goForward: (id: PaneId) => unknown;
-  goUp: (id: PaneId) => unknown;
-  chooseLocalDir: (id: PaneId) => () => unknown;
-  newFolder: (id: PaneId) => unknown;
-  newFile: (id: PaneId) => unknown;
-  copySelected: (id: PaneId, pane: PaneState, otherId: PaneId, otherPane: PaneState) => unknown;
-  copyToClipboard: (id: PaneId, pane: PaneState) => unknown;
-  cutToClipboard: (id: PaneId, pane: PaneState) => unknown;
-  canPaste: (pane: PaneState) => boolean;
-  cutNames: (pane: PaneState) => ReadonlySet<string> | undefined;
-  pasteClipboard: (id: PaneId, pane: PaneState) => unknown;
-}
-
-export interface FileBrowserPaneModel {
-  panes: Record<PaneId, PaneState>;
-  activeTabId: string;
-  searchInputRef?: MutableRefObject<FileSearchHandle | null> | null | undefined;
-  orderedSites: readonly ManagedSite[];
-  localPaths?: readonly ManagedSite[] | undefined;
-  sites: readonly ManagedSite[];
-  columns: PaneColumnsModel;
-  actions: PaneActionsModel;
-  dragMoveStart: (
-    side: PaneId,
-    names: string[],
-    entry: FileEntry,
-    event: ReactMouseEvent<HTMLElement>,
-  ) => unknown;
-  outboundDragRef: MutableRefObject<boolean>;
-  showHiddenFiles: boolean;
-  keyboardShortcuts?: ShortcutOverrides | null | undefined;
-  paneOrientation: 'horizontal' | 'vertical';
-}
-
-interface FileBrowserPaneProps {
+export interface FileBrowserPaneProps {
   id: PaneId;
   style?: CSSProperties;
-  model: FileBrowserPaneModel;
+  searchInputRef?: MutableRefObject<FileSearchHandle | null> | null | undefined;
+  browser: PanesModel;
+  clipboard: FileClipboardModel;
+  sites: {
+    connectableSites: readonly ManagedSite[];
+    orderedSites: readonly ManagedSite[];
+    localPaths: readonly ManagedSite[];
+  };
+  settings: {
+    layout: Pick<
+      SettingsState['layout'],
+      | 'showHiddenFiles'
+      | 'localColumns'
+      | 'remoteColumns'
+      | 'localColumnWidths'
+      | 'remoteColumnWidths'
+    >;
+    shortcuts: Pick<SettingsState['shortcuts'], 'keyboardShortcuts'>;
+  };
+  columns: PaneColumnChanges;
+  paneOrientation: 'horizontal' | 'vertical';
+  shell: FileBrowserShell;
 }
 
-function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
+function FileBrowserPane({
+  id,
+  style,
+  searchInputRef,
+  browser,
+  clipboard,
+  sites,
+  settings,
+  columns,
+  paneOrientation,
+  shell,
+}: FileBrowserPaneProps) {
   const { t } = useTranslation();
-  const {
-    panes,
-    activeTabId,
-    searchInputRef,
-    orderedSites,
-    localPaths = [],
-    sites,
-    columns,
-    actions,
-    dragMoveStart,
-    outboundDragRef,
-    showHiddenFiles,
+  const { layout } = settings;
+  const { keyboardShortcuts } = settings.shortcuts;
+  const actions = usePaneActions({
+    t,
     keyboardShortcuts,
-    paneOrientation,
-  } = model;
+    browser,
+    sites: sites.connectableSites,
+    shell,
+  });
   const formatDate = useDateFormatter();
+  const { panes, activeTabId } = browser;
   const pane = panes[id];
   const otherId = otherPaneId(id);
   const otherPane = panes[otherId];
@@ -152,10 +97,13 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
   // The persisted list is plain strings — settings written by another build can
   // name a column this one does not have — so it is narrowed here, once, rather
   // than trusted all the way down to COLUMN_DEFS.
-  const persistedColumns = (pane.kind === 'local' ? columns.local : columns.remote)[id];
+  const persistedColumns = (pane.kind === 'local' ? layout.localColumns : layout.remoteColumns)[id];
   const visibleColumns = useMemo(() => persistedColumns.filter(isColumnKey), [persistedColumns]);
-  const columnWidths = (pane.kind === 'local' ? columns.localWidths : columns.remoteWidths)[id];
+  const columnWidths = (
+    pane.kind === 'local' ? layout.localColumnWidths : layout.remoteColumnWidths
+  )[id];
   const disconnected = pane.kind === 'remote' && pane.status !== 'connected';
+  const showHiddenFiles = layout.showHiddenFiles;
   const entries = useMemo(
     () =>
       showHiddenFiles
@@ -163,6 +111,13 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
         : pane.entries.filter((entry) => !entry.isHidden && !entry.name.startsWith('.')),
     [pane.entries, showHiddenFiles],
   );
+  const copySelected = () =>
+    clipboard.copySelectedWithConfirm(
+      pane,
+      otherPane,
+      () => browser.refreshPane(id, pane.path),
+      () => browser.refreshPane(otherId, otherPane.path),
+    );
 
   return (
     <FilePane
@@ -172,44 +127,46 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
       style={style}
       updatedAt={pane.refreshedAt}
       disconnected={disconnected}
-      onActivate={() => actions.activate(id)}
+      onActivate={() => browser.activatePane(id)}
       searchInputRef={searchInputRef}
       titleSlot={
         <PaneSourceSwitcher
           pane={pane}
-          orderedSites={orderedSites}
-          localPaths={localPaths}
+          orderedSites={sites.orderedSites}
+          localPaths={sites.localPaths}
           updatedAt={pane.refreshedAt}
           formatDate={formatDate}
-          onSwitchLocal={() => actions.switchToLocal(id)}
-          onStartConnect={() => actions.startConnect(id)}
-          onFormChange={(form) => actions.setForm(id, form)}
-          onDismissError={() => actions.updatePane(id, { errorMessage: '' })}
+          onSwitchLocal={() => browser.switchPaneToLocal(id)}
+          onStartConnect={() => browser.startPaneConnect(id)}
+          onFormChange={(form) => browser.setPaneForm(id, form)}
+          onDismissError={() => browser.updatePane(id, { errorMessage: '' })}
           onConnect={actions.connect(id)}
-          onDisconnect={() => actions.disconnect(id)}
-          onCancelConnect={() => actions.cancelConnect(id)}
-          onSiteConnect={(site) => actions.connectSite(id, site)}
-          onLocalPathOpen={(site) => actions.openSavedLocalPath?.(id, site)}
-          onSaveSite={actions.saveSite(id)}
-          onOpenSiteManager={() => actions.openSiteManager(id)}
-          onOpenLocalPathManager={() => actions.openLocalPathManager(id)}
+          onDisconnect={() => browser.disconnectPane(id)}
+          onCancelConnect={() => browser.cancelConnectPane(id)}
+          onSiteConnect={(site) => browser.siteConnectPane(id, site)}
+          onLocalPathOpen={(site) => browser.switchPaneToLocal(id, activeTabId, site.localPath)}
+          onSaveSite={shell.saveSite(id)}
+          onOpenSiteManager={() => shell.dialogs.setShowSiteManagerDialog(id)}
+          onOpenLocalPathManager={() => shell.dialogs.setShowLocalPathManagerDialog(id)}
         />
       }
-      crumbs={actions.crumbsFor(pane)}
+      crumbs={browser.crumbsFor(pane)}
       entries={entries}
       selectedNames={pane.selected}
-      onCrumbClick={(path) => actions.navigate(id, path)}
-      onDriveMenuOpen={pane.kind === 'local' ? actions.openDriveMenu(id) : undefined}
-      onSelectionChange={(selected) => actions.updatePane(id, { selected })}
+      onCrumbClick={(path) => void browser.navigatePane(id, path)}
+      onDriveMenuOpen={
+        pane.kind === 'local' ? (event) => void actions.openDriveMenu(id)(event) : undefined
+      }
+      onSelectionChange={(selected) => browser.updatePane(id, { selected })}
       onRowDoubleClick={(entry) => {
         if (entry.isDirectory) {
-          actions.openDirectory(id, entry.name);
+          browser.openDirectory(id, entry.name);
         } else if (pane.kind === 'local') {
-          actions.openLocalPath(actions.join(pane, entry.name));
+          void actions.openLocalFile(browser.paneJoin(pane, entry.name));
         } else {
           if (!pane.connectionId) return;
-          actions.openRemoteFile({
-            path: actions.join(pane, entry.name),
+          shell.openWith.setTarget({
+            path: browser.paneJoin(pane, entry.name),
             size: entry.size,
             connectionId: pane.connectionId,
             paneId: id,
@@ -222,53 +179,52 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
         // Server pane has nowhere to put it until one exists.
         disconnected
           ? undefined
-          : (files, targetFolder) => actions.dropFiles(id, pane, files, targetFolder)
+          : (files, targetFolder) => actions.dropFiles(id, files, targetFolder)
       }
-      dragMoveStart={dragMoveStart}
-      outboundDragRef={outboundDragRef}
-      onRename={(entry, newName) => actions.rename(id, entry, newName)}
+      dragMoveStart={clipboard.dragMove.startDrag}
+      outboundDragRef={clipboard.outboundDragRef}
+      onRename={(entry, newName) => browser.renamePaneEntry(id, entry, newName)}
       onDeleteSelected={({ permanent = false } = {}) =>
-        actions.deleteSelected(id, activeTabId, permanent)
+        browser.deletePaneSelected(id, activeTabId, permanent)
       }
-      onNavigateUp={disconnected ? undefined : () => actions.goUp(id)}
-      onNavigateBack={disconnected ? undefined : () => actions.goBack(id)}
-      onNavigateForward={disconnected ? undefined : () => actions.goForward(id)}
-      onNavigateHome={() => actions.goHome(id, pane, disconnected, sites)}
-      onMoveTo={(folderOrder) => actions.moveTo(id, pane, folderOrder)}
-      onNewFolder={disconnected ? undefined : () => actions.newFolder(id)}
-      onNewFile={disconnected ? undefined : () => actions.newFile(id)}
-      onCopyToOtherPane={
-        actions.canCopyBetween(pane, otherPane)
-          ? () => actions.copySelected(id, pane, otherId, otherPane)
-          : undefined
-      }
-      onCopySelection={() => actions.copyToClipboard(id, pane)}
-      onCutSelection={() => actions.cutToClipboard(id, pane)}
-      cutNames={actions.cutNames(pane)}
-      onPaste={actions.canPaste(pane) ? () => actions.pasteClipboard(id, pane) : undefined}
+      onNavigateUp={disconnected ? undefined : () => browser.paneParent(id)}
+      onNavigateBack={disconnected ? undefined : () => browser.goPaneBack(id)}
+      onNavigateForward={disconnected ? undefined : () => browser.goPaneForward(id)}
+      onNavigateHome={() => actions.goHome(id)}
+      onMoveTo={(folderOrder) => actions.moveTo(id, folderOrder)}
+      onNewFolder={disconnected ? undefined : () => shell.dialogs.setNewFolderTarget(id)}
+      onNewFile={disconnected ? undefined : () => shell.dialogs.setNewFileTarget(id)}
+      onCopyToOtherPane={browser.canCopyBetween(pane, otherPane) ? copySelected : undefined}
+      onCopySelection={() => clipboard.copyToClipboard(id, pane)}
+      onCutSelection={() => clipboard.cutToClipboard(id, pane)}
+      cutNames={clipboard.cutNames(pane)}
+      onPaste={clipboard.canPaste(pane) ? () => clipboard.pasteClipboard(id, pane) : undefined}
       onPathSubmit={(path) =>
-        actions.navigate(id, pane.kind === 'remote' && !path.startsWith('/') ? `/${path}` : path)
+        browser.navigatePane(
+          id,
+          pane.kind === 'remote' && !path.startsWith('/') ? `/${path}` : path,
+        )
       }
-      getContextMenuItems={actions.buildMenu(id)}
+      getContextMenuItems={actions.buildPaneMenu(id)}
       keyboardShortcuts={keyboardShortcuts}
       availableColumns={availableColumns}
       visibleColumns={visibleColumns}
-      onVisibleColumnsChange={(pane.kind === 'local' ? columns.changeLocal : columns.changeRemote)(
-        id,
-      )}
+      onVisibleColumnsChange={(pane.kind === 'local'
+        ? columns.changeLocalColumns
+        : columns.changeRemoteColumns)(id)}
       columnWidths={columnWidths}
       onColumnWidthsChange={(pane.kind === 'local'
-        ? columns.changeLocalWidths
-        : columns.changeRemoteWidths)(id)}
+        ? columns.changeLocalColumnWidths
+        : columns.changeRemoteColumnWidths)(id)}
       loading={pane.loading}
       emptyMessage={
         pane.kind === 'remote' ? (
           disconnected ? (
             <PaneConnectEmptyState
-              sites={sites}
-              orderedSites={orderedSites}
-              onSiteConnect={(site) => actions.connectSite(id, site)}
-              onOpenSiteManager={() => actions.openSiteManager(id)}
+              sites={sites.connectableSites}
+              orderedSites={sites.orderedSites}
+              onSiteConnect={(site) => browser.siteConnectPane(id, site)}
+              onOpenSiteManager={() => shell.dialogs.setShowSiteManagerDialog(id)}
             />
           ) : (
             t('filePane.emptyFolder')
@@ -284,7 +240,7 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
           canGoBack={pane.history.length > 0}
           canGoForward={pane.future.length > 0}
           hasSelection={pane.selected.size > 0}
-          copyDisabled={!actions.canCopyBetween(pane, otherPane) || pane.selected.size === 0}
+          copyDisabled={!browser.canCopyBetween(pane, otherPane) || pane.selected.size === 0}
           copyLabel={
             paneOrientation === 'vertical'
               ? id === 'a'
@@ -294,15 +250,15 @@ function FileBrowserPane({ id, style, model }: FileBrowserPaneProps) {
                 ? t('filePane.copyToPaneRight')
                 : t('filePane.copyToPaneLeft')
           }
-          onHome={() => actions.goHome(id, pane, disconnected, sites)}
-          onBack={() => actions.goBack(id)}
-          onForward={() => actions.goForward(id)}
-          onUp={() => actions.goUp(id)}
-          onChooseFolder={pane.kind === 'local' ? actions.chooseLocalDir(id) : undefined}
-          onNewFolder={() => actions.newFolder(id)}
-          onNewFile={() => actions.newFile(id)}
-          onDelete={() => actions.deleteSelected(id)}
-          onCopy={() => actions.copySelected(id, pane, otherId, otherPane)}
+          onHome={() => actions.goHome(id)}
+          onBack={() => browser.goPaneBack(id)}
+          onForward={() => browser.goPaneForward(id)}
+          onUp={() => browser.paneParent(id)}
+          onChooseFolder={pane.kind === 'local' ? browser.chooseLocalDir(id) : undefined}
+          onNewFolder={() => shell.dialogs.setNewFolderTarget(id)}
+          onNewFile={() => shell.dialogs.setNewFileTarget(id)}
+          onDelete={() => browser.deletePaneSelected(id)}
+          onCopy={copySelected}
         />
       }
     />

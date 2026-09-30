@@ -7,11 +7,11 @@ import { api } from '../../platform/api/index.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
 import { canMoveBetween } from '../../shared/movePolicy.ts';
-import type { useTransfers } from '../transfers/index.ts';
+import type { TransfersModel } from '../transfers/index.ts';
 import { resolveDropAction } from './components/dropAction.ts';
 import { paneJoin } from './panes/paneBackend.ts';
 import type { PaneId, PaneState } from './panes/paneModel.ts';
-import type { usePanes } from './usePanes.ts';
+import type { PanesModel } from './usePanes.ts';
 
 interface ClipboardState {
   id: PaneId;
@@ -20,12 +20,11 @@ interface ClipboardState {
 }
 
 interface FileClipboardOptions {
-  confirmOverwriteIfNeeded: ReturnType<typeof usePanes>['confirmOverwriteIfNeeded'];
-  copyEntries: ReturnType<typeof useTransfers>['copyEntries'];
-  canCopyBetween: ReturnType<typeof usePanes>['canCopyBetween'];
-  refreshPane: ReturnType<typeof usePanes>['refreshPane'];
-  movePaneSamePane: ReturnType<typeof usePanes>['movePaneSamePane'];
-  panes: Record<PaneId, PaneState>;
+  browser: Pick<
+    PanesModel,
+    'panes' | 'confirmOverwriteIfNeeded' | 'canCopyBetween' | 'refreshPane'
+  >;
+  transfers: Pick<TransfersModel, 'copyEntries'>;
 }
 
 export interface FileClipboardModel {
@@ -51,13 +50,9 @@ export interface FileClipboardModel {
   outboundDragRef: MutableRefObject<boolean>;
 }
 
-export function useFileClipboard({
-  confirmOverwriteIfNeeded,
-  copyEntries,
-  canCopyBetween,
-  refreshPane,
-  panes,
-}: FileClipboardOptions): FileClipboardModel {
+export function useFileClipboard({ browser, transfers }: FileClipboardOptions): FileClipboardModel {
+  const { panes, confirmOverwriteIfNeeded, canCopyBetween, refreshPane } = browser;
+  const { copyEntries } = transfers;
   const { t } = useTranslation();
   const copySelectedWithConfirm = (
     sourcePane: PaneState,

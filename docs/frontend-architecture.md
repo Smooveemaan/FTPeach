@@ -27,7 +27,11 @@ write pixel dimensions back into inherited root custom properties from JavaScrip
   recent-site state, session persistence, and the memoized connection view model live in focused
   modules under `panes/`. Persistence serialization is dependency-free and intentionally excludes
   connection state, directory entries and credentials. `components/PaneToolbar` and
-  `components/useDragMove` own pane controls and file-drag payloads;
+  `components/useDragMove` own pane controls and file-drag payloads. `FileBrowserPane` receives
+  the `usePanes` and `useFileClipboard` models whole, the site lists, the layout settings and a
+  small shell for what only `app/` owns (its dialogs, transfers, "Open with" and the error
+  banner); `usePaneActions` holds the per-pane decisions: the context menu, reconnecting through
+  the bookmark, opening local files, OS drops, going home, Move to and the drive menu;
 - `features/sites/` owns saved-site editing, tree layout and drag/drop. `SiteManagerDialog` composes
   the UI, while dedicated hooks own secret lifetime, search state, persistence mutations and drag
   behavior; secret values stay in DOM refs and never enter React form state. `SiteTree` composes

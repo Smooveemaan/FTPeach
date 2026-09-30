@@ -42,29 +42,19 @@ export interface ConnectionForm {
   keyPassphrase: string;
 }
 
-export interface ManagedSite {
-  maxConnections?: number;
+/**
+ * An entry of `sites_list`: a server bookmark, a local folder or a folder.
+ * The server fields are present on a bookmark and absent on the other two.
+ */
+export interface ManagedSite extends Partial<ServerSettings> {
   id: string;
   kind?: SiteKind;
   name: string;
   parentId?: string | null;
   managerScope?: 'bookmarks' | 'localPaths';
-  protocol?: SiteProtocol;
-  host?: string;
-  port?: number;
-  webdavUrl?: string;
-  user?: string;
   localPath?: string;
-  remotePath?: string;
   hasPassword?: boolean;
   hasKeyPassphrase?: boolean;
-  allowInvalidCert?: boolean;
-  allowCleartextAuth?: boolean;
-  caCertPath?: string;
-  /** FTP file name encoding; empty means UTF-8. */
-  encoding?: string;
-  useKeyAuth?: boolean;
-  keyPath?: string;
   icon?: string;
   color?: string;
 }

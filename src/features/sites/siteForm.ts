@@ -1,4 +1,9 @@
-import type { ConnectionForm, ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
+import type {
+  ConnectionForm,
+  ManagedSite,
+  ServerSettings,
+  SiteProtocol,
+} from '../../shared/siteContracts.ts';
 
 export type NormalizedSitePayload = Record<string, unknown> & { id?: string; name: string };
 
@@ -90,27 +95,29 @@ export function normalizeSiteForm(
     };
   }
   const defaultPort = DEFAULT_SITE_PORTS[form.protocol] || '21';
-  const parsedPort = Number(form.port.trim() || defaultPort);
-  return {
-    ...identity,
-    name: form.name.trim(),
+  const server: ServerSettings = {
     protocol: form.protocol,
     host: form.host.trim(),
     // Form controls expose strings, but the typed Rust contract expects a JSON number.
-    port: parsedPort,
+    port: Number(form.port.trim() || defaultPort),
     webdavUrl: form.webdavUrl.trim(),
     user: form.user.trim(),
-    password: form.useKeyAuth ? '' : secrets.password,
-    removePassword: form.removePassword,
+    remotePath: form.remotePath.trim() || '/',
     allowInvalidCert: form.allowInvalidCert,
     allowCleartextAuth: form.allowCleartextAuth,
     caCertPath: form.caCertPath,
-    // Only FTP names files in a server-chosen encoding.
-    encoding: form.protocol === 'ftp' || form.protocol === 'ftps' ? form.encoding : '',
-    remotePath: form.remotePath.trim() || '/',
-    maxConnections: Number(form.maxConnections.trim() || 0),
     useKeyAuth: form.useKeyAuth,
     keyPath: form.keyPath,
+    // Only FTP names files in a server-chosen encoding.
+    encoding: form.protocol === 'ftp' || form.protocol === 'ftps' ? form.encoding : '',
+    maxConnections: Number(form.maxConnections.trim() || 0),
+  };
+  return {
+    ...identity,
+    ...server,
+    name: form.name.trim(),
+    password: form.useKeyAuth ? '' : secrets.password,
+    removePassword: form.removePassword,
     keyPassphrase: secrets.keyPassphrase,
     removeKeyPassphrase: form.removeKeyPassphrase,
     parentId: form.parentId,

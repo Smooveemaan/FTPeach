@@ -165,19 +165,25 @@ it happened, and would only fill the log.
 
 ## Connection lifecycle
 
-A pane connects with `session_connect(connectionId, config)`. The
+A pane connects with `session_connect(connectionId, request, settings)`. The
 `connectionId` is minted by the renderer per pane and connection attempt; the
-backend caps the number of slots. The connection settings travel as a JSON map
-until the last step:
+backend caps the number of slots. Every step works with typed values:
 
 | Step | What happens | Secrets |
 | --- | --- | --- |
-| 1. Renderer (`features/file-browser/panes/createPaneSessionLifecycle.ts`) | Sends either a saved site's `siteId` or the typed server fields, plus the timeout and active-mode settings. | A typed password or passphrase for an unsaved connection. |
-| 2. IPC edge (`commands/session/connection.rs`) | Deserializes `domain::ConnectionConfig`, validates the fields of an unsaved connection, converts it to a map, and refuses a key or CA file on a share the user never chose. | Passed on unchanged. |
-| 3. Saved site (`application/session_service.rs`, `store/sites`) | For a `siteId`, the store builds the map from `sites.json` and keeps the renderer's timeout, active mode and concurrency. | Decrypted here, from DPAPI or the vault. |
-| 4. Global settings (`session_service`) | Adds the proxy settings and whether an unknown SSH host key needs confirmation. | The proxy password. |
-| 5. Protocol config (`protocol/config.rs`) | `ConnectionConfig::from_json_map` builds the per-protocol `protocol::config::ConnectionConfig` and checks the protocol's rules. | `SensitiveString`, zeroized on drop. |
+| 1. Renderer (`features/file-browser/panes/createPaneSessionLifecycle.ts`) | Sends a `ConnectRequest`: a saved site by its id, or a typed-in server as `ServerSettings` with its credentials. Sends the timeout and FTP mode apart, as `WindowConnectionSettings`, because the settings dialog applies them to new connections while it previews them. | A typed password or passphrase for a typed-in server. A saved site's never. |
+| 2. IPC edge (`commands/session/connection.rs`) | Resolves the server and credentials (step 3), then refuses a key or CA file on a share the user never chose. | Passed on. |
+| 3. Saved site (`application/session_service.rs`, `store/sites`) | For a saved site, `Store::saved_server` reads its record from `sites.json` into `ServerSettings`, protecting a plaintext secret left in the file first. | Read here from DPAPI or the vault into `Credentials`. |
+| 4. Connection defaults (`store/settings.rs`) | `Store::connection_defaults` adds the saved proxy and host-key policy to the window's timeout and FTP mode. | The proxy password. |
+| 5. Protocol config (`protocol/config.rs`) | `ConnectionConfig::build` makes the per-protocol configuration from the server, the credentials and the defaults, and holds every check a connect makes. | `SensitiveString`, zeroized on drop. |
 | 6. `ProtocolBackend::connect` | Opens the browse connection. | Used and dropped. |
+
+`ServerSettings` (`domain/connection.rs`) is what a saved site stores about its
+server and what a typed-in connect sends. Its one reader accepts every form an
+earlier version stored, such as numeric strings and FTPS written as `ftp` with
+`secure: true`, and its writer produces what `sites.json` keeps and
+`sites_list` returns. The credential scope that decides when a saved password
+needs confirming to move reads a bookmark through it too.
 
 On success `application/session_service.rs` builds a `TransferPool` whose
 factory opens further backends from the same `ConnectionConfig`, and stores
@@ -189,14 +195,13 @@ waiting for the lock. Teardown stops the pool, waits for its tasks, removes
 staging files that can no longer be resumed, then closes the browse
 connection, all under a deadline.
 
-**Adding a connection property.** A property of one server goes into
-`domain::ConnectionConfig` in `domain/connection.rs` and its map conversion,
-its TypeScript mirror in `shared/siteContracts.ts`, the per-protocol struct and
-`from_json_map` in `protocol/config.rs`, and, if sites save it, the record
-built in `store/sites/mutations.rs`, the listing in `store/sites/queries.rs`
-and the import check in `commands/app_settings_transfer.rs`. A property that
-applies to every connection is a setting in `src/shared/settingsDefaults.json`,
-read where `session_service` adds the global settings.
+**Adding a connection property.** A property of one server is a field of
+`ServerSettings`, read in `from_json`, written in `to_json` and named in `KEYS`
+(which the import allowlist uses), mirrored in `shared/siteContracts.ts`, and
+used in `ConnectionConfig::build`. What a bookmark may store is checked by
+`validate_site_input` in `store/sites.rs`. A property that applies to every
+connection is a setting in `src/shared/settingsDefaults.json`, read by
+`Store::connection_defaults`.
 
 ## Protocol abstraction
 

@@ -7,6 +7,7 @@ import {
 } from '../../../src/features/sites/siteForm.ts';
 import { siteManagerDialogReducer } from '../../../src/features/sites/useSiteManagerDialogState.ts';
 import type { SiteManagerDialogState } from '../../../src/features/sites/useSiteManagerDialogState.ts';
+import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 test('connection limit round trips and rejects values without a transfer slot', () => {
   const form = createSiteForm({ id: 'ftp', name: 'FTP', host: 'example.test', maxConnections: 5 });
@@ -49,6 +50,19 @@ test('site form normalization trims persisted fields and preserves secret intent
   assert.equal(payload.parentId, 'folder-1');
   assert.equal(payload.password, '');
   assert.equal(payload.removePassword, false);
+});
+
+test('a missing, null or empty host and user open the editor the same way', () => {
+  const forms = [{}, { host: null, user: null }, { host: '', user: '' }].map((fields) =>
+    createSiteForm({ id: 's', name: 'S', ...fields } as ManagedSite),
+  );
+  for (const form of forms) {
+    assert.deepEqual(form, forms[0]);
+    assert.equal(form.host, '');
+    assert.equal(form.user, '');
+    assert.equal(canSubmitSiteForm(form), false);
+    assert.equal(normalizeSiteForm(form).host, '');
+  }
 });
 
 test('site form validation switches its required address by protocol', () => {

@@ -355,6 +355,30 @@ mod tests {
     }
 
     #[test]
+    fn a_missing_null_or_empty_host_and_user_mean_the_same() {
+        for protocol in ["ftp", "ftps", "sftp"] {
+            for host in [None, Some(json!(null)), Some(json!("")), Some(json!(5))] {
+                let mut site = map(json!({ "protocol": protocol }));
+                if let Some(host) = host {
+                    site.insert("host".into(), host);
+                }
+                let error = ConnectionConfig::for_test(&site).unwrap_err();
+                assert_eq!(error.to_string(), "host is required", "{site:?}");
+            }
+        }
+        for user in [None, Some(json!(null)), Some(json!(""))] {
+            let mut site = map(json!({ "protocol": "ftp", "host": "example.test" }));
+            if let Some(user) = user {
+                site.insert("user".into(), user);
+            }
+            let ConnectionConfig::Ftp(config) = ConnectionConfig::for_test(&site).unwrap() else {
+                panic!("an FTP config");
+            };
+            assert_eq!(config.user, "anonymous", "{site:?}");
+        }
+    }
+
+    #[test]
     fn rejects_connection_strings_above_their_boundaries() {
         let accepted =
             map(json!({"protocol":"ftp", "host":"x".repeat(255), "user":"u".repeat(1024)}));

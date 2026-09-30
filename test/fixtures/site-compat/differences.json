@@ -23,7 +23,7 @@
   "/direct/webdav-url-alias/*/secrets": "The same.",
   "/direct/webdav-url-alias/*/server": "The same.",
   "/direct/webdav-url-alias/*/refused": "The same.",
-  "/stores/*/list/sites/Ok/*/user": "sites_list returns a server's fields the way a connect reads them: a user name or host that is missing, null or not text lists as an empty string instead of being passed through. The renderer already read both the same way.",
+  "/stores/*/list/sites/Ok/*/user": "sites_list returns a server's fields the way a connect reads them: a user name or host that is missing, null or not text lists as an empty string instead of being passed through. The renderer read both the same way everywhere but two places: the site subtitle, which showed a null host as the text null, and saving a pane as a bookmark, which matched an existing bookmark by strict equality and so did not reuse one whose host or user was null.",
   "/stores/*/list/sites/Ok/*/host": "The same.",
   "/vault/list/*/user": "The same.",
   "/stores/*/list/sites/Ok/*/port": "A number stored as a numeric string lists as a number, and one nothing can read lists as unset; connecting to that site is still refused.",

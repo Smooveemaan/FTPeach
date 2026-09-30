@@ -362,7 +362,7 @@ mod tests {
         assert!(matches!(saved, ConnectRequest::SavedSite { site_id } if site_id == "s"));
         let direct: ConnectRequest = serde_json::from_value(json!({
             "kind": "direct",
-            "server": {"protocol": "sftp", "host": "h", "password": "not here"},
+            "server": {"protocol": "sftp", "host": "h", "port": "2222", "password": "not here"},
             "credentials": {"password": "p"}
         }))
         .unwrap();
@@ -374,6 +374,8 @@ mod tests {
             panic!("a direct request")
         };
         assert_eq!(server.host, "h");
+        // 0.3.0 refused a port sent as text here; a saved site always took one.
+        assert_eq!(server.port, Some(2222));
         assert_eq!(credentials.password.expose(), "p");
         assert!(credentials.key_passphrase.is_none());
     }

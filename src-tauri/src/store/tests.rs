@@ -893,6 +893,41 @@ async fn save_site_rejects_missing_or_invalid_fields() {
 }
 
 #[tokio::test]
+async fn a_saved_host_or_user_that_is_missing_null_or_not_text_is_stored_empty() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(dir.clone());
+    let variants = [
+        json!({}),
+        json!({"host": null, "user": null}),
+        json!({"host": "", "user": ""}),
+        json!({"host": 5, "user": 5}),
+    ];
+    let mut read = Vec::new();
+    for fields in &variants {
+        let mut input =
+            json!({"name": "DAV", "protocol": "webdav", "webdavUrl": "https://dav.example.test/"});
+        input
+            .as_object_mut()
+            .unwrap()
+            .extend(fields.as_object().unwrap().clone());
+        let saved = store
+            .save_site(input.as_object().unwrap().clone())
+            .await
+            .unwrap();
+        read.push(read_saved(&store, &saved.id).await.0);
+    }
+    let raw = std::fs::read_to_string(dir.join("sites.json")).unwrap();
+    let stored: Vec<JsonMap> = stored_payload(&raw, &dir.join("sites.json"));
+    assert_eq!(stored.len(), variants.len());
+    for site in &stored {
+        assert_eq!((&site["host"], &site["user"]), (&json!(""), &json!("")));
+    }
+    assert!(read.iter().all(|server| *server == read[0]));
+
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}
+
+#[tokio::test]
 async fn save_folder_rejects_missing_or_blank_name() {
     let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
     let store = Store::new_at(dir.clone());

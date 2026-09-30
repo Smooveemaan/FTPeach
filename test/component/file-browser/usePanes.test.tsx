@@ -429,3 +429,29 @@ test('remote create refuses a visible collision and rename retries only after ov
   await act(async () => options.requestConfirm.mock.calls[0]![1]());
   expect(client.session.rename).toHaveBeenLastCalledWith(id, '/old', '/exists', true);
 });
+
+// The settings dialog previews these two before they are saved, so a connect
+// takes whatever the caller passes on the render it starts from.
+test('a connect sends the timeout and FTP mode of the latest render, and a bookmark starts in its folder', async () => {
+  const { result, rerender, options } = await open();
+  options.connectTimeout = 5000;
+  options.ftpActiveMode = true;
+  rerender();
+  await act(async () =>
+    result.current.siteConnectPane('b', {
+      id: 'site-1',
+      name: 'Bookmark',
+      protocol: 'ftp',
+      host: 'example',
+      remotePath: '/start',
+    }),
+  );
+  await waitFor(() => expect(result.current.panes.b.status).toBe('connected'));
+  expect(client.session.connect).toHaveBeenCalledExactlyOnceWith(
+    result.current.panes.b.connectionId,
+    { kind: 'savedSite', siteId: 'site-1' },
+    { timeoutMs: 5000, activeMode: true },
+  );
+  expect(client.session.list).toHaveBeenCalledWith(result.current.panes.b.connectionId, '/start');
+  expect(result.current.panes.b.path).toBe('/start');
+});

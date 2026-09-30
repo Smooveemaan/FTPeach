@@ -1,7 +1,6 @@
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { RecursiveIntent } from '../../platform/api/transfers.ts';
 
-export type TransferDirection = 'up' | 'down' | 'copy' | 'recursive';
 export type TransferStatus =
   'cancelling' | 'queued' | 'progress' | 'paused' | 'stopped' | 'done' | 'error';
 interface TransferBase {
@@ -115,6 +114,11 @@ function makeSummary(): TransferSummary {
     activeTransfersCount: counts.active,
     hasPausableTransfers: counts.pausable > 0,
     hasPausedTransfers: counts.paused > 0,
+    // Resume-all takes the shared pause button over as soon as nothing still
+    // running can be paused, even while such transfers carry on: a WebDAV
+    // upload beside the paused rows must not lock them out of resuming. A
+    // pause still winding down holds it back, since resume-all would skip that
+    // row and leave it to land paused on its own afterwards.
     canResumeAllTransfers: counts.paused > 0 && counts.pausable === 0 && counts.cancelling === 0,
     hasRetryableTransfers: counts.retryable > 0,
   };

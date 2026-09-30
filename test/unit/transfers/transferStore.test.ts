@@ -22,6 +22,7 @@ import {
   PENDING_TRANSFER_LIMIT,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
+import type { SiteProtocol } from '../../../src/shared/siteContracts.ts';
 
 test('connection metadata follows live rows and pending responses through 10k disconnects', () => {
   resetTransfersStoreForTests();
@@ -380,4 +381,95 @@ test('retention caps failures apart from successes, including a row that just fa
   assert.equal(after.active?.status, 'error');
   assert.equal(after['failed-500'], undefined, 'the oldest failure makes room');
   assert.equal(Object.keys(after).length, COMPLETED_RETENTION * 2);
+});
+
+function summaryOf(rows: Record<string, TransferRow>) {
+  resetTransfersStoreForTests();
+  setTransfersStore(rows);
+  return getTransferSummarySnapshot();
+}
+
+function upload(id: string, protocol: SiteProtocol, status: TransferRow['status']): TransferRow {
+  return {
+    id,
+    direction: 'up',
+    protocol,
+    name: id,
+    connectionId: 'c',
+    localFile: `C:\\${id}`,
+    remoteTarget: `/${id}`,
+    status,
+    bytes: 0,
+    startedAt: 0,
+  };
+}
+
+test('transfer summary ignores byte-only detail and exposes command capabilities', () => {
+  const summary = summaryOf({
+    upload: upload('upload', 'webdav', 'progress'),
+    download: {
+      id: 'download',
+      direction: 'down',
+      protocol: 'sftp',
+      name: 'download',
+      connectionId: 'c',
+      remoteFile: '/download',
+      localTarget: 'C:\\download',
+      status: 'paused',
+      bytes: 20,
+      startedAt: 0,
+    },
+    failed: upload('failed', 'ftp', 'error'),
+  });
+  assert.equal(summary.transfersEmpty, false);
+  assert.equal(summary.hasActiveTransfers, true);
+  assert.equal(summary.activeTransfersCount, 1);
+  assert.equal(summary.hasPausableTransfers, false, 'a WebDAV upload cannot pause');
+  assert.equal(summary.hasPausedTransfers, true);
+  assert.equal(summary.hasCompletedTransfers, true);
+  assert.equal(summary.canResumeAllTransfers, true);
+  assert.equal(summary.hasRetryableTransfers, true);
+  resetTransfersStoreForTests();
+});
+
+test('resume-all takes the shared button once nothing left running can pause', () => {
+  const webdav = upload('webdav', 'webdav', 'progress');
+  const ftp = upload('ftp', 'ftp', 'paused');
+  const sftp = (status: 'paused' | 'progress' | 'cancelling') => upload('sftp', 'sftp', status);
+
+  assert.equal(
+    summaryOf({ webdav, ftp, sftp: sftp('paused') }).canResumeAllTransfers,
+    true,
+    'a WebDAV upload still running must not lock the paused rows out',
+  );
+  assert.equal(
+    summaryOf({ webdav, ftp, sftp: sftp('progress') }).canResumeAllTransfers,
+    false,
+    'a row pause-all can still reach keeps the button on Pause',
+  );
+  assert.equal(
+    summaryOf({ webdav, ftp, sftp: sftp('cancelling') }).canResumeAllTransfers,
+    false,
+    'a pause still winding down would be skipped by resume-all',
+  );
+  assert.equal(summaryOf({ webdav }).canResumeAllTransfers, false);
+  resetTransfersStoreForTests();
+});
+
+test('an empty queue and a row on a dead connection summarize as nothing to do', () => {
+  assert.deepEqual(summaryOf({}), {
+    transfersEmpty: true,
+    hasCompletedTransfers: false,
+    hasActiveTransfers: false,
+    activeTransfersCount: 0,
+    hasPausableTransfers: false,
+    hasPausedTransfers: false,
+    canResumeAllTransfers: false,
+    hasRetryableTransfers: false,
+  });
+  setTransfersStore({ failed: upload('failed', 'sftp', 'stopped') });
+  assert.equal(getTransferSummarySnapshot().hasRetryableTransfers, true);
+  markConnectionDead('c');
+  assert.equal(getTransferSummarySnapshot().hasRetryableTransfers, false);
+  resetTransfersStoreForTests();
 });

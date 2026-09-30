@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  compareByKey,
   DEFAULT_FILE_SORT,
   filterAndSortEntries,
   fileIconName,
@@ -16,17 +15,18 @@ test('file pane model maps known extensions and keeps a neutral fallback', () =>
   assert.equal(fileIconName({ name: 'README', isDirectory: false }), 'file');
 });
 
-test('file pane model comparators sort primitive column values', () => {
-  const bySize = compareByKey('size', (key) => key);
-  assert.ok(
-    bySize(
-      { name: 'small', isDirectory: false, size: 1 },
-      { name: 'large', isDirectory: false, size: 2 },
-    ) < 0,
-  );
-
-  const byName = compareByKey('name', (key) => key);
-  assert.ok(byName({ name: 'a', isDirectory: false }, { name: 'b', isDirectory: false }) < 0);
+test('file pane model sorts numeric and name columns in both directions', () => {
+  const entries = [
+    { name: 'b-large', isDirectory: false, size: 2 },
+    { name: 'a-small', isDirectory: false, size: 1 },
+    { name: 'folder', isDirectory: true },
+  ];
+  const sorted = (sortKey: 'size' | 'name', sortDir: 'asc' | 'desc') =>
+    filterAndSortEntries(entries, { sortKey, sortDir, t: (key) => key }).map((e) => e.name);
+  assert.deepEqual(sorted('size', 'asc'), ['folder', 'a-small', 'b-large']);
+  assert.deepEqual(sorted('size', 'desc'), ['folder', 'b-large', 'a-small']);
+  assert.deepEqual(sorted('name', 'asc'), ['folder', 'a-small', 'b-large']);
+  assert.deepEqual(sorted('name', 'desc'), ['folder', 'b-large', 'a-small']);
 });
 
 test('file pane model filters case-insensitively and keeps folders first while sorting', () => {

@@ -119,19 +119,6 @@ function nameCollator(): Intl.Collator {
   return cachedCollator.collator;
 }
 
-export function compareByKey(key: SortKey, t: Translate): (a: FileEntry, b: FileEntry) => number {
-  if (key === 'name') return (a, b) => nameCollator().compare(a.name, b.name);
-  const { sortValue } = COLUMN_DEFS[key];
-  return (a, b) => {
-    const aValue = sortValue(a, t);
-    const bValue = sortValue(b, t);
-    if (typeof aValue === 'string' || typeof bValue === 'string') {
-      return nameCollator().compare(String(aValue), String(bValue));
-    }
-    return aValue - bValue;
-  };
-}
-
 function compareSortValues(
   aValue: string | number,
   bValue: string | number,

@@ -1,7 +1,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import { useQuitWhenIdle } from '../../../src/app/quit/useQuitWhenIdle.ts';
-import { computeTransferSummary } from '../../../src/features/transfers/useTransferSummary.ts';
+import {
+  getTransferSummarySnapshot,
+  resetTransfersStoreForTests,
+  setTransfersStore,
+} from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 
 vi.mock('../../../src/platform/api/index.ts', () => ({ api: {} }));
@@ -102,14 +106,27 @@ test('quitting when idle waits for the transfers, including ones started meanwhi
 });
 
 test('paused and failed transfers do not hold the quit up', () => {
-  const rows = {
-    paused: { id: 'paused', status: 'paused', direction: 'down', bytes: 1, total: 2 },
-    failed: { id: 'failed', status: 'error', direction: 'down', bytes: 1, total: 2 },
-  } as unknown as Record<string, TransferRow>;
+  const row = (id: string, status: TransferRow['status']): TransferRow => ({
+    id,
+    status,
+    direction: 'down',
+    protocol: 'sftp',
+    name: id,
+    connectionId: 'c',
+    remoteFile: `/${id}`,
+    localTarget: `C:\\${id}`,
+    bytes: 1,
+    total: 2,
+    startedAt: 0,
+  });
+  const rows = { paused: row('paused', 'paused'), failed: row('failed', 'error') };
   const view = setup(true);
   act(() => view.result.current.request());
   act(() => view.result.current.quitWhenIdle());
-  view.setActive(computeTransferSummary(rows).hasActiveTransfers);
+  resetTransfersStoreForTests();
+  setTransfersStore(rows);
+  view.setActive(getTransferSummarySnapshot().hasActiveTransfers);
+  resetTransfersStoreForTests();
   expect(view.quit).toHaveBeenCalledOnce();
 });
 

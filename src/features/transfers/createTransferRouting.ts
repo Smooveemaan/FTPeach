@@ -54,6 +54,16 @@ const RENDERER_FANOUT_LIMIT = 8;
  * ones settle instead, which keeps the order and the visible queue intact.
  */
 const TRANSFER_ADMISSION_LIMIT = 64;
+// Paused, stopped, skipped or already queued is the user's call, not a refusal.
+const outcomeOf = (
+  report: { ok: boolean; skipped?: boolean; alreadyRunning?: boolean; cancelled?: boolean },
+  done: 'copied' | 'moved',
+): TransferItemOutcome =>
+  report.ok
+    ? done
+    : report.skipped || report.alreadyRunning || report.cancelled
+      ? 'skipped'
+      : 'failed';
 const MOVE_BETWEEN_ENDPOINTS =
   'Files can be moved only within this computer or within one server connection';
 
@@ -125,7 +135,8 @@ export function createTransferRouting(
       refreshTarget,
       target.protocol ?? undefined,
     );
-    return report.ok ? (moving ? 'moved' : 'copied') : 'failed';
+    // A walk's `skipped` counts files inside it, so only its ending is read here.
+    return outcomeOf({ ok: report.ok, cancelled: !!report.cancelled }, moving ? 'moved' : 'copied');
   };
 
   // A dropped path has no pane behind it, so the walk gets a stand-in built
@@ -401,7 +412,7 @@ export function createTransferRouting(
             targetDir,
             overwriteApproved,
           );
-          return copied.ok ? 'copied' : 'failed';
+          return outcomeOf(copied, 'copied');
         })),
       );
       refreshTarget?.();
@@ -433,7 +444,7 @@ export function createTransferRouting(
                 true,
                 overwriteApproved,
               );
-        return report.ok ? 'copied' : 'failed';
+        return outcomeOf(report, 'copied');
       })),
     );
     refreshTarget?.();
@@ -502,7 +513,7 @@ export function createTransferRouting(
           file.size,
           overwriteApproved,
         );
-        return report.ok ? 'copied' : 'failed';
+        return outcomeOf(report, 'copied');
       },
     );
     refreshTarget?.();

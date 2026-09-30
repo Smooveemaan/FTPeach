@@ -54,6 +54,66 @@ test('a selection reports what each file did, not just that it finished', async 
   expect(setError).toHaveBeenCalledWith('1 of 3 items were not transferred.');
 });
 
+test('a transfer the user paused, stopped or skipped is not reported as failed', async () => {
+  window.api = tauriApi;
+  const runUpload = vi.fn(async (_id, _protocol, source: string) =>
+    source.endsWith('paused.txt')
+      ? { ok: false, errorCode: 'cancelled' as const, cancelled: true }
+      : source.endsWith('queued.txt')
+        ? { ok: false, alreadyRunning: true }
+        : { ok: false, skipped: true },
+  );
+  const setError = vi.fn();
+  const routing = createTransferRouting(
+    { runRecursive: vi.fn(), runUpload, runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    vi.fn().mockResolvedValue(false),
+    'ask',
+    setError,
+  );
+
+  const result = await routing.copyEntries({
+    sourcePane: localPane(['paused.txt', 'queued.txt', 'kept.txt']),
+    targetPane: remotePane(),
+    names: ['paused.txt', 'queued.txt', 'kept.txt'],
+    move: false,
+  });
+
+  expect(result).toMatchObject({ ok: true, failed: 0, skipped: 3 });
+  expect(setError).not.toHaveBeenCalled();
+});
+
+test('a folder walk counts as skipped only when the user ended it', async () => {
+  window.api = tauriApi;
+  const walk = { ok: false, outcome: 'failed' as const, scanned: 2, completed: 0, errors: [] };
+  const endings = {
+    '/upload/paused': { ...walk, cancelled: true },
+    // `skipped` counts files inside the walk; a walk that failed still failed.
+    '/upload/broken': { ...walk, skipped: 2, cancelled: false },
+  };
+  const runRecursive = vi.fn(
+    async (intent: { target: { path: string } }) =>
+      endings[intent.target.path as keyof typeof endings],
+  );
+  const routing = createTransferRouting(
+    { runRecursive, runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    vi.fn().mockResolvedValue(false),
+    'ask',
+    vi.fn(),
+  );
+
+  const result = await routing.copyEntries({
+    sourcePane: {
+      ...localPane([]),
+      entries: ['paused', 'broken'].map((name) => ({ name, isDirectory: true, size: 0 })),
+    },
+    targetPane: remotePane(),
+    names: ['paused', 'broken'],
+    move: false,
+  });
+
+  expect(result.items.map((item) => item.outcome)).toEqual(['skipped', 'failed']);
+});
+
 test('a move that was refused says the originals are still in place', async () => {
   const rename = vi.fn(async (source: string) =>
     source.endsWith('locked.txt') ? { ok: false, error: 'Access is denied' } : { ok: true },

@@ -105,7 +105,7 @@ export interface TransferLifecycleModel {
     refreshTarget?: RefreshCallback,
     /** The remote target's protocol, which decides whether the walk can pause. */
     targetProtocol?: SiteProtocol,
-  ) => Promise<RecursiveReport>;
+  ) => Promise<RecursiveReport & Settled>;
   runUpload: (
     connectionId: string,
     protocol: SiteProtocol,
@@ -116,7 +116,7 @@ export interface TransferLifecycleModel {
     /** The destination was already approved for overwrite; don't ask again. */
     overwriteApproved?: boolean,
   ) => Promise<
-    | CommandResult
+    | (CommandResult & Settled)
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
     | { ok: boolean; skipped: boolean; alreadyRunning?: never }
   >;
@@ -130,7 +130,7 @@ export interface TransferLifecycleModel {
     /** The destination was already approved for overwrite; don't ask again. */
     overwriteApproved?: boolean,
   ) => Promise<
-    | CommandResult
+    | (CommandResult & Settled)
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
     | { ok: boolean; skipped: boolean; alreadyRunning?: never }
   >;
@@ -144,7 +144,7 @@ export interface TransferLifecycleModel {
     /** The destination was already approved for overwrite; don't ask again. */
     overwriteApproved?: boolean,
   ) => Promise<
-    | CommandResult
+    | (CommandResult & Settled)
     | { ok: boolean; alreadyRunning: boolean; skipped?: never }
     | { ok: boolean; skipped: boolean; alreadyRunning?: never }
   >;
@@ -158,6 +158,9 @@ export interface TransferLifecycleModel {
   retryAllTransfers: (refreshTargets?: RefreshCallback) => void;
   clearCompletedTransfers: () => void;
 }
+
+/** The user paused or stopped the transfer: its ending is their call, not a refusal. */
+type Settled = { cancelled?: boolean };
 
 export function useTransferLifecycle(
   setErrorMessage: (message?: string) => unknown,
@@ -244,7 +247,7 @@ export function useTransferLifecycle(
     attemptId: string,
     _target: TransferTarget,
   ) => {
-    if (getTransferRow(id)?.attemptId !== attemptId) return;
+    if (getTransferRow(id)?.attemptId !== attemptId) return false;
     const intent = cancelIntentRef.current[id];
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
       setErrorMessage(friendlyError(commandResultError(result)) || undefined);
@@ -262,6 +265,7 @@ export function useTransferLifecycle(
           }
         : previous,
     );
+    return !!intent;
   };
 
   const runUpload = async (
@@ -326,12 +330,12 @@ export function useTransferLifecycle(
       resume,
       overwrite,
     );
-    settleTransferResult(id, result, attemptId, {
+    const cancelled = settleTransferResult(id, result, attemptId, {
       kind: 'remote',
       connectionId,
       path: remoteTarget,
     });
-    return result;
+    return { ...result, cancelled };
   };
 
   const runDownload = async (
@@ -384,8 +388,11 @@ export function useTransferLifecycle(
       resume,
       overwrite,
     );
-    settleTransferResult(id, result, attemptId, { kind: 'local', path: localTarget });
-    return result;
+    const cancelled = settleTransferResult(id, result, attemptId, {
+      kind: 'local',
+      path: localTarget,
+    });
+    return { ...result, cancelled };
   };
 
   const runRemoteCopy = async (
@@ -426,12 +433,12 @@ export function useTransferLifecycle(
       targetPath,
       overwrite,
     );
-    settleTransferResult(id, result, attemptId, {
+    const cancelled = settleTransferResult(id, result, attemptId, {
       kind: 'remote',
       connectionId: targetConnectionId,
       path: targetPath,
     });
-    return result;
+    return { ...result, cancelled };
   };
 
   const runRecursive = async (
@@ -491,7 +498,7 @@ export function useTransferLifecycle(
     if (dispatch.started && !report.paused && cancelIntentRef.current[id] === 'paused') {
       delete cancelIntentRef.current[id];
     }
-    settleTransferResult(
+    const cancelled = settleTransferResult(
       id,
       {
         ok: report.ok,
@@ -510,7 +517,7 @@ export function useTransferLifecycle(
         return { ...previous, [id]: { ...rest, ...(resumeFrom ? { attemptId: resumeFrom } : {}) } };
       });
     }
-    return report;
+    return { ...report, cancelled };
   };
 
   const retryTransfer = async (id: string, refreshTarget?: RefreshCallback) => {

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   blaming the server.
 - Testing a proxy that works no longer reports a failure.
 - Showing a bookmark's password when none is saved no longer reports an error.
+- Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
 
 ## [0.3.0] - 2026-09-27
 

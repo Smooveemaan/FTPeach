@@ -2283,9 +2283,9 @@
                 "name": "Legacy FTPS",
                 "parentId": null,
                 "port": 21,
-                "protocol": "ftp",
+                "protocol": "ftps",
                 "remotePath": "/",
-                "secure": true,
+                "secure": false,
                 "useKeyAuth": false,
                 "user": "x",
                 "webdavUrl": ""
@@ -3384,11 +3384,11 @@
               "host": "ftps.example.test",
               "port": 990,
               "protocol": "ftps",
-              "secure": false,
+              "secure": true,
               "url": ""
             },
             "from": "ftps://bob@ftps.example.test:990",
-            "lessSecure": false,
+            "lessSecure": true,
             "to": "ftp://bob@ftps.example.test:990"
           }
         },
@@ -3685,7 +3685,7 @@
                   "caCertPath": "",
                   "color": null,
                   "encoding": "",
-                  "host": null,
+                  "host": "",
                   "icon": null,
                   "id": "<new>",
                   "keyPath": "",
@@ -3696,7 +3696,7 @@
                   "remotePath": "/",
                   "secure": false,
                   "useKeyAuth": false,
-                  "user": null,
+                  "user": "",
                   "webdavUrl": "https://new.example.test/dav"
                 }
               ],
@@ -3863,11 +3863,11 @@
                   "name": "Legacy FTPS",
                   "parentId": null,
                   "port": null,
-                  "protocol": "ftp",
+                  "protocol": "ftps",
                   "remotePath": "/",
-                  "secure": true,
+                  "secure": false,
                   "useKeyAuth": false,
-                  "user": null,
+                  "user": "",
                   "webdavUrl": ""
                 }
               ],
@@ -4496,7 +4496,7 @@
                   "remotePath": "pub",
                   "secure": false,
                   "useKeyAuth": false,
-                  "user": null,
+                  "user": "",
                   "webdavUrl": ""
                 }
               ],
@@ -4691,7 +4691,7 @@
           "caCertPath": "",
           "host": "",
           "port": 0,
-          "protocol": "",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -4714,7 +4714,7 @@
           "host": "ftps.example.test",
           "port": 990,
           "protocol": "ftps",
-          "secure": false,
+          "secure": true,
           "url": ""
         },
         "sftp-key": {
@@ -7239,9 +7239,9 @@
                 "name": "Old FTPS",
                 "parentId": null,
                 "port": 21,
-                "protocol": "ftp",
+                "protocol": "ftps",
                 "remotePath": "/",
-                "secure": true,
+                "secure": false,
                 "useKeyAuth": false,
                 "user": "frank",
                 "webdavUrl": ""
@@ -7254,9 +7254,55 @@
                 "encoding": "",
                 "hasKeyPassphrase": false,
                 "hasPassword": false,
-                "host": "e.example.test",
+                "host": "s.example.test",
                 "icon": null,
                 "id": "<new 5>",
+                "keyPath": "C:\\keys\\id_rsa",
+                "maxConnections": 3,
+                "name": "Strings",
+                "parentId": null,
+                "port": 2222,
+                "protocol": "sftp",
+                "remotePath": "/",
+                "secure": false,
+                "useKeyAuth": true,
+                "user": "gina",
+                "webdavUrl": ""
+              },
+              {
+                "allowCleartextAuth": false,
+                "allowInvalidCert": false,
+                "caCertPath": "",
+                "color": null,
+                "encoding": "",
+                "hasKeyPassphrase": false,
+                "hasPassword": false,
+                "host": "np.example.test",
+                "icon": null,
+                "id": "<new 6>",
+                "keyPath": "",
+                "maxConnections": null,
+                "name": "No protocol",
+                "parentId": null,
+                "port": null,
+                "protocol": "ftp",
+                "remotePath": "/",
+                "secure": false,
+                "useKeyAuth": false,
+                "user": "",
+                "webdavUrl": ""
+              },
+              {
+                "allowCleartextAuth": false,
+                "allowInvalidCert": false,
+                "caCertPath": "",
+                "color": null,
+                "encoding": "",
+                "hasKeyPassphrase": false,
+                "hasPassword": false,
+                "host": "e.example.test",
+                "icon": null,
+                "id": "<new 7>",
                 "keyPath": "",
                 "maxConnections": null,
                 "name": "Extra",
@@ -7266,7 +7312,7 @@
                 "remotePath": "/",
                 "secure": false,
                 "useKeyAuth": false,
-                "user": null,
+                "user": "",
                 "webdavUrl": ""
               },
               {
@@ -7279,7 +7325,7 @@
                 "hasPassword": false,
                 "host": "u.example.test",
                 "icon": null,
-                "id": "<new 6>",
+                "id": "<new 8>",
                 "keyPath": "",
                 "maxConnections": null,
                 "name": "Electron era",
@@ -7289,7 +7335,30 @@
                 "remotePath": "/",
                 "secure": false,
                 "useKeyAuth": false,
-                "user": null,
+                "user": "",
+                "webdavUrl": ""
+              },
+              {
+                "allowCleartextAuth": false,
+                "allowInvalidCert": false,
+                "caCertPath": "",
+                "color": null,
+                "encoding": "",
+                "hasKeyPassphrase": false,
+                "hasPassword": false,
+                "host": "b.example.test",
+                "icon": null,
+                "id": "<new 9>",
+                "keyPath": "",
+                "maxConnections": null,
+                "name": "Bad port",
+                "parentId": null,
+                "port": null,
+                "protocol": "ftp",
+                "remotePath": "/",
+                "secure": false,
+                "useKeyAuth": false,
+                "user": "",
                 "webdavUrl": ""
               },
               {
@@ -7302,7 +7371,7 @@
                 "hasPassword": false,
                 "host": "r.example.test",
                 "icon": null,
-                "id": "<new 7>",
+                "id": "<new 10>",
                 "keyPath": "",
                 "maxConnections": null,
                 "name": "Relative",
@@ -7312,7 +7381,7 @@
                 "remotePath": "pub",
                 "secure": false,
                 "useKeyAuth": false,
-                "user": null,
+                "user": "",
                 "webdavUrl": ""
               },
               {
@@ -7323,9 +7392,9 @@
                 "encoding": "",
                 "hasKeyPassphrase": false,
                 "hasPassword": false,
-                "host": null,
+                "host": "",
                 "icon": null,
-                "id": "<new 8>",
+                "id": "<new 11>",
                 "keyPath": "",
                 "maxConnections": null,
                 "name": "DAV",
@@ -7335,7 +7404,7 @@
                 "remotePath": "/",
                 "secure": false,
                 "useKeyAuth": false,
-                "user": null,
+                "user": "",
                 "webdavUrl": "https://u:p@dav.example.test/"
               }
             ],
@@ -7344,36 +7413,28 @@
         },
         "outcome": {
           "Ok": {
-            "added": 8,
-            "skipped": 0
+            "added": 11,
+            "skipped": 1
           }
         },
         "verdicts": [
           "accepted",
-          {
-            "refused": "sites[1]: maxConnections must be 0 (unlimited) or between 2 and 128"
-          },
+          "accepted",
           {
             "refused": "sites[2]: Site name is required"
           },
-          {
-            "refused": "sites[3]: Unsupported protocol: "
-          },
+          "accepted",
           "accepted",
           {
             "refused": "sites[5]: Port must be between 1 and 65535"
           },
           "accepted",
-          {
-            "refused": "sites[7]: Port must be between 1 and 65535"
-          },
+          "accepted",
           {
             "refused": "sites[8]: maxConnections must be 0 (unlimited) or between 2 and 128"
           },
           "accepted",
-          {
-            "refused": "sites[10]: Unsupported protocol: FTPS"
-          },
+          "accepted",
           {
             "refused": "sites[11]: Unsupported file name encoding"
           },
@@ -7569,9 +7630,9 @@
               "name": "Old FTPS",
               "parentId": null,
               "port": 21,
-              "protocol": "ftp",
+              "protocol": "ftps",
               "remotePath": "/",
-              "secure": true,
+              "secure": false,
               "useKeyAuth": false,
               "user": "frank",
               "webdavUrl": ""
@@ -7589,10 +7650,10 @@
               "id": "string-numbers",
               "keyPath": "C:\\keys\\id_rsa",
               "kind": "site",
-              "maxConnections": "3",
+              "maxConnections": 3,
               "name": "Strings",
               "parentId": null,
-              "port": "2222",
+              "port": 2222,
               "protocol": "sftp",
               "remotePath": "/",
               "secure": false,
@@ -7621,7 +7682,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7641,11 +7702,11 @@
               "name": "No protocol",
               "parentId": null,
               "port": null,
-              "protocol": null,
+              "protocol": "ftp",
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7669,7 +7730,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7717,7 +7778,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7736,12 +7797,12 @@
               "maxConnections": null,
               "name": "Bad port",
               "parentId": null,
-              "port": "twenty-one",
+              "port": null,
               "protocol": "ftp",
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7765,7 +7826,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7789,7 +7850,7 @@
               "remotePath": "pub",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7809,11 +7870,11 @@
               "name": "Upper",
               "parentId": null,
               "port": null,
-              "protocol": "FTPS",
+              "protocol": "ftp",
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7837,7 +7898,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7848,7 +7909,7 @@
               "encoding": "",
               "hasKeyPassphrase": false,
               "hasPassword": false,
-              "host": 5,
+              "host": "",
               "icon": null,
               "id": "wrong-types",
               "keyPath": "",
@@ -7861,7 +7922,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": true,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7885,7 +7946,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": ""
             },
             {
@@ -7896,7 +7957,7 @@
               "encoding": "",
               "hasKeyPassphrase": false,
               "hasPassword": false,
-              "host": null,
+              "host": "",
               "icon": null,
               "id": "webdav-userinfo",
               "keyPath": "",
@@ -7909,7 +7970,7 @@
               "remotePath": "/",
               "secure": false,
               "useKeyAuth": false,
-              "user": null,
+              "user": "",
               "webdavUrl": "https://u:p@dav.example.test/"
             },
             {
@@ -8127,7 +8188,7 @@
               "caCertPath": "",
               "host": "old.example.test",
               "port": 21,
-              "protocol": "ftp",
+              "protocol": "ftps",
               "secure": true,
               "url": ""
             },
@@ -8158,14 +8219,25 @@
             "sites": {
               "data": [
                 {
+                  "allowCleartextAuth": false,
+                  "allowInvalidCert": false,
+                  "caCertPath": "",
+                  "color": null,
+                  "enc": "$dpapi:1",
+                  "encoding": "",
                   "host": "old.example.test",
+                  "icon": null,
                   "id": "legacy-ftps",
+                  "keyPath": "",
                   "name": "Old FTPS",
-                  "plain": "$secret:1",
+                  "parentId": null,
                   "port": 21,
-                  "protocol": "ftp",
-                  "secure": true,
-                  "user": "frank"
+                  "protocol": "ftps",
+                  "remotePath": "/",
+                  "secure": false,
+                  "useKeyAuth": false,
+                  "user": "frank",
+                  "webdavUrl": ""
                 },
                 {
                   "host": "s.example.test",
@@ -8298,39 +8370,10 @@
           },
           "note": "The same bookmark saved as FTPS.",
           "outcome": {
-            "refused": {
-              "code": "permissionDenied",
-              "details": null,
-              "message": "The saved password would go to a server that was not confirmed"
-            }
+            "id": "legacy-ftps",
+            "secretNotPersisted": false
           },
-          "transfer": {
-            "after": {
-              "account": "frank",
-              "allowCleartextAuth": false,
-              "allowInvalidCert": false,
-              "caCertPath": "",
-              "host": "old.example.test",
-              "port": 21,
-              "protocol": "ftps",
-              "secure": false,
-              "url": ""
-            },
-            "before": {
-              "account": "frank",
-              "allowCleartextAuth": false,
-              "allowInvalidCert": false,
-              "caCertPath": "",
-              "host": "old.example.test",
-              "port": 21,
-              "protocol": "ftp",
-              "secure": true,
-              "url": ""
-            },
-            "from": "ftps://frank@old.example.test:21",
-            "lessSecure": true,
-            "to": "ftps://frank@old.example.test:21"
-          }
+          "transfer": null
         },
         {
           "filesAfter": {
@@ -8374,7 +8417,7 @@
                   "id": "string-numbers",
                   "keyEnc": "$dpapi:2",
                   "keyPath": "C:\\keys\\id_rsa",
-                  "maxConnections": "3",
+                  "maxConnections": 3,
                   "name": "Strings",
                   "parentId": null,
                   "port": 2222,
@@ -8588,7 +8631,7 @@
                   "remotePath": "/",
                   "secure": false,
                   "useKeyAuth": false,
-                  "user": null,
+                  "user": "",
                   "webdavUrl": ""
                 },
                 {
@@ -8785,7 +8828,7 @@
                   "remotePath": "/",
                   "secure": false,
                   "useKeyAuth": false,
-                  "user": null,
+                  "user": "",
                   "webdavUrl": ""
                 },
                 {
@@ -8915,7 +8958,7 @@
           "caCertPath": "",
           "host": "",
           "port": 0,
-          "protocol": "",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -8948,7 +8991,7 @@
           "caCertPath": "",
           "host": "old.example.test",
           "port": 21,
-          "protocol": "ftp",
+          "protocol": "ftps",
           "secure": true,
           "url": ""
         },
@@ -8959,7 +9002,7 @@
           "caCertPath": "",
           "host": "",
           "port": 0,
-          "protocol": "",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -8970,7 +9013,7 @@
           "caCertPath": "",
           "host": "",
           "port": 0,
-          "protocol": "",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -8981,7 +9024,7 @@
           "caCertPath": "",
           "host": "np.example.test",
           "port": 0,
-          "protocol": "",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -9036,7 +9079,7 @@
           "caCertPath": "",
           "host": "u.example.test",
           "port": 0,
-          "protocol": "ftps",
+          "protocol": "ftp",
           "secure": false,
           "url": ""
         },
@@ -9192,7 +9235,7 @@
         "remotePath": "/",
         "secure": false,
         "useKeyAuth": false,
-        "user": null,
+        "user": "",
         "webdavUrl": ""
       }
     ],

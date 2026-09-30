@@ -146,113 +146,17 @@ impl Store {
                     out.insert("color".into(), get("color"));
                     return out;
                 }
-                let mut out = JsonMap::new();
+                let mut out = ServerSettings::from_json_or_unset(&site).to_json();
                 let get = |k: &str| site.get(k).cloned().unwrap_or(Value::Null);
                 out.insert("id".into(), get("id"));
                 out.insert("kind".into(), Value::String("site".into()));
-                out.insert("parentId".into(), get("parentId"));
-                out.insert("name".into(), get("name"));
-                out.insert("icon".into(), get("icon"));
-                out.insert("color".into(), get("color"));
-                out.insert("protocol".into(), get("protocol"));
-                out.insert("host".into(), get("host"));
-                out.insert("port".into(), get("port"));
-                out.insert("maxConnections".into(), get("maxConnections"));
-                out.insert(
-                    "webdavUrl".into(),
-                    Value::String(
-                        site.get("webdavUrl")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .into(),
-                    ),
-                );
-                out.insert("user".into(), get("user"));
-                out.insert(
-                    "secure".into(),
-                    Value::Bool(
-                        site.get("secure")
-                            .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
-                    ),
-                );
-                out.insert(
-                    "allowInvalidCert".into(),
-                    Value::Bool(
-                        site.get("allowInvalidCert")
-                            .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
-                    ),
-                );
-                out.insert(
-                    "allowCleartextAuth".into(),
-                    Value::Bool(
-                        site.get("allowCleartextAuth")
-                            .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
-                    ),
-                );
-                out.insert(
-                    "remotePath".into(),
-                    Value::String(
-                        site.get("remotePath")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("/")
-                            .into(),
-                    ),
-                );
-                out.insert(
-                    "hasPassword".into(),
-                    Value::Bool(
-                        site.get("hasPassword")
-                            .and_then(Value::as_bool)
-                            .unwrap_or(false)
-                            || Self::has_saved_secret(&site, "enc", "plain"),
-                    ),
-                );
-                out.insert(
-                    "useKeyAuth".into(),
-                    Value::Bool(
-                        site.get("useKeyAuth")
-                            .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
-                    ),
-                );
-                out.insert(
-                    "keyPath".into(),
-                    Value::String(
-                        site.get("keyPath")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .into(),
-                    ),
-                );
-                out.insert(
-                    "caCertPath".into(),
-                    Value::String(
-                        site.get("caCertPath")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .into(),
-                    ),
-                );
-                out.insert(
-                    "encoding".into(),
-                    Value::String(
-                        site.get("encoding")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .into(),
-                    ),
-                );
+                for key in ["parentId", "name", "icon", "color"] {
+                    out.insert(key.into(), get(key));
+                }
+                out.insert("hasPassword".into(), Value::Bool(has_saved_password(&site)));
                 out.insert(
                     "hasKeyPassphrase".into(),
-                    Value::Bool(
-                        site.get("hasKeyPassphrase")
-                            .and_then(Value::as_bool)
-                            .unwrap_or(false)
-                            || Self::has_saved_secret(&site, "keyEnc", "keyPlain"),
-                    ),
+                    Value::Bool(has_saved_key_passphrase(&site)),
                 );
                 out
             })
@@ -406,12 +310,7 @@ impl Store {
             false,
         )?;
         let mut has_password = existing.is_some_and(has_saved_password);
-        let mut has_key_passphrase = existing.is_some_and(|site| {
-            site.get("hasKeyPassphrase")
-                .and_then(Value::as_bool)
-                .unwrap_or(false)
-                || Self::has_saved_secret(site, "keyEnc", "keyPlain")
-        });
+        let mut has_key_passphrase = existing.is_some_and(has_saved_key_passphrase);
 
         let password = input
             .get("password")

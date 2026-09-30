@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
 - Stopping a folder upload no longer reports "Cleanup is incomplete": the files already uploaded
   stay on the server, and the unfinished one is removed.
+- Moving a saved password from an FTPS bookmark to plain FTP is marked as less secure when you are
+  asked to confirm it.
+- A bookmark saved as FTPS in an older format shows as FTPS instead of FTP, and saving it no
+  longer asks to confirm moving its password.
 
 ## [0.3.0] - 2026-09-27
 

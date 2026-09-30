@@ -7,6 +7,7 @@
 //! scope below is everything that decides the recipient; when it changes
 //! and the saved password would stay, the user confirms the move in a
 //! backend window that shows the old and the new recipient.
+use crate::domain::{Protocol, ServerSettings};
 use crate::store::JsonMap;
 use serde::Serialize;
 use serde_json::Value;
@@ -62,17 +63,26 @@ fn port(record: &JsonMap, key: &str) -> u64 {
     }
 }
 
+/// A bookmark's recipient, read as a connect reads its server: FTPS is one
+/// recipient however it was stored.
 pub fn site_scope(site: &JsonMap) -> CredentialScope {
+    let server = ServerSettings::from_json_or_unset(site);
     CredentialScope {
-        protocol: text(site, "protocol").to_ascii_lowercase(),
-        host: text(site, "host").to_ascii_lowercase(),
-        port: port(site, "port"),
-        account: text(site, "user"),
-        url: text(site, "webdavUrl"),
-        secure: flag(site, "secure"),
-        allow_invalid_cert: flag(site, "allowInvalidCert"),
-        allow_cleartext_auth: flag(site, "allowCleartextAuth"),
-        ca_cert_path: text(site, "caCertPath"),
+        protocol: match server.protocol {
+            Protocol::Ftp => "ftp",
+            Protocol::Ftps => "ftps",
+            Protocol::Sftp => "sftp",
+            Protocol::Webdav => "webdav",
+        }
+        .into(),
+        host: server.host.trim().to_ascii_lowercase(),
+        port: server.port.map_or(0, u64::from),
+        account: server.user.trim().to_owned(),
+        url: server.webdav_url.trim().to_owned(),
+        secure: server.protocol == Protocol::Ftps,
+        allow_invalid_cert: server.allow_invalid_cert,
+        allow_cleartext_auth: server.allow_cleartext_auth,
+        ca_cert_path: server.ca_cert_path.trim().to_owned(),
     }
 }
 
@@ -338,6 +348,20 @@ mod tests {
                 .unwrap()
                 .less_secure
         );
+    }
+
+    #[test]
+    fn ftps_is_one_encrypted_recipient_however_it_was_stored() {
+        let canonical = site(serde_json::json!({"protocol": "ftps", "host": "a.example"}));
+        let legacy =
+            site(serde_json::json!({"protocol": "ftp", "secure": true, "host": "a.example"}));
+        let plain = site(serde_json::json!({"protocol": "ftp", "host": "a.example"}));
+        assert_eq!(site_scope(&canonical), site_scope(&legacy));
+        for stored in [&canonical, &legacy] {
+            let moved = transfer(&site_scope(stored), &site_scope(&plain), true, false).unwrap();
+            assert!(moved.less_secure);
+            assert_eq!(moved.from, "ftps://a.example");
+        }
     }
 
     #[test]

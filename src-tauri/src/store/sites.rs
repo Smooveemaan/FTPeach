@@ -211,6 +211,13 @@ fn has_saved_password(site: &JsonMap) -> bool {
         || Store::has_saved_secret(site, "enc", "plain")
 }
 
+/// Whether a stored bookmark has a saved key passphrase, as
+/// [`has_saved_password`] says of its password.
+fn has_saved_key_passphrase(site: &JsonMap) -> bool {
+    site.get("hasKeyPassphrase").and_then(Value::as_bool) == Some(true)
+        || Store::has_saved_secret(site, "keyEnc", "keyPlain")
+}
+
 /// Refuses a save that would leave the saved password with a recipient
 /// other than the one the caller confirmed (`None`: no move confirmed).
 /// Runs under the lock that serializes bookmark writes, so it judges the

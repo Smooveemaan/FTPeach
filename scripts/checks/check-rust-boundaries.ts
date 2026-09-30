@@ -77,7 +77,8 @@ export const ALLOWED: Record<string, readonly string[]> = {
   store: ['domain', 'ipc', 'protocol', 'security'],
   // Security decides and asks; `runtime::confirmation_window` is how the
   // question is put on screen.
-  security: ['ipc', 'local_fs', 'runtime::confirmation_window', 'store'],
+  // `domain` gives a bookmark's server the way a connect reads it.
+  security: ['domain', 'ipc', 'local_fs', 'runtime::confirmation_window', 'store'],
   local_fs: ['ipc', 'protocol', 'session'],
   // Credentials hold their secrets in the wrapper that forgets them.
   domain: ['ipc', 'security::sensitive_string'],

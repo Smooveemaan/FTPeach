@@ -121,105 +121,28 @@ impl Store {
                 secret_not_persisted: false,
             });
         }
-        for key in ["name", "icon", "color", "protocol", "host", "port", "user"] {
+        let mut server = ServerSettings::from_json(&input)
+            .map_err(|error| CommandError::new(ErrorCode::InvalidInput, format!("{error:#}")))?;
+        // A save that leaves the connection limit out keeps the stored one.
+        if !input.contains_key("maxConnections") {
+            server.max_connections = existing
+                .as_ref()
+                .and_then(|site| ServerSettings::from_json_or_unset(site).max_connections);
+        }
+        let named_limit = input.contains_key("maxConnections")
+            || existing
+                .as_ref()
+                .is_some_and(|site| site.contains_key("maxConnections"));
+        record.extend(server.to_json());
+        if !named_limit {
+            record.remove("maxConnections");
+        }
+        for key in ["name", "icon", "color"] {
             record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
         }
-        if let Some(limit) = input.get("maxConnections").or_else(|| {
-            existing
-                .as_ref()
-                .and_then(|site| site.get("maxConnections"))
-        }) {
-            record.insert("maxConnections".into(), limit.clone());
-        }
-        record.insert(
-            "webdavUrl".into(),
-            Value::String(
-                input
-                    .get("webdavUrl")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .into(),
-            ),
-        );
-        record.insert(
-            "secure".into(),
-            Value::Bool(
-                input
-                    .get("secure")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false),
-            ),
-        );
-        record.insert(
-            "allowInvalidCert".into(),
-            Value::Bool(
-                input
-                    .get("allowInvalidCert")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false),
-            ),
-        );
-        record.insert(
-            "allowCleartextAuth".into(),
-            Value::Bool(
-                input
-                    .get("allowCleartextAuth")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false),
-            ),
-        );
-        record.insert(
-            "remotePath".into(),
-            Value::String(
-                input
-                    .get("remotePath")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("/")
-                    .into(),
-            ),
-        );
         record.insert(
             "parentId".into(),
             parent_id.clone().map(Value::String).unwrap_or(Value::Null),
-        );
-        record.insert(
-            "useKeyAuth".into(),
-            Value::Bool(
-                input
-                    .get("useKeyAuth")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false),
-            ),
-        );
-        record.insert(
-            "keyPath".into(),
-            Value::String(
-                input
-                    .get("keyPath")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .into(),
-            ),
-        );
-        record.insert(
-            "caCertPath".into(),
-            Value::String(
-                input
-                    .get("caCertPath")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .into(),
-            ),
-        );
-        record.insert(
-            "encoding".into(),
-            Value::String(
-                input
-                    .get("encoding")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .into(),
-            ),
         );
         if let Some((field, value)) = pw_field {
             record.insert(field, value);

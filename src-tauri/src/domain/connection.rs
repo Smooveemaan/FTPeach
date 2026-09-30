@@ -90,6 +90,76 @@ impl ServerSettings {
             max_connections: number(record, "maxConnections")?,
         })
     }
+
+    /// [`Self::from_json`] for showing a stored site rather than connecting
+    /// to it: a protocol or number it cannot read counts as unset, so the
+    /// site still lists and can be corrected. Connecting to it is refused.
+    pub fn from_json_or_unset(record: &JsonMap) -> Self {
+        let mut readable = record.clone();
+        if readable
+            .get("protocol")
+            .and_then(Value::as_str)
+            .is_some_and(|protocol| !matches!(protocol, "ftp" | "ftps" | "sftp" | "webdav"))
+        {
+            readable.remove("protocol");
+        }
+        for key in ["port", "maxConnections"] {
+            if number(&readable, key).is_err() {
+                readable.remove(key);
+            }
+        }
+        Self::from_json(&readable).expect("every field that can fail was checked")
+    }
+
+    /// The fields as `sites.json` stores them, which `sites_list` also
+    /// returns. FTPS is written as `protocol: "ftps"`, with `secure: false`
+    /// kept for versions that still read it.
+    pub fn to_json(&self) -> JsonMap {
+        let text = |value: &str| Value::String(value.to_owned());
+        JsonMap::from_iter([
+            ("protocol".to_owned(), serde_json::json!(self.protocol)),
+            ("host".to_owned(), text(&self.host)),
+            ("port".to_owned(), serde_json::json!(self.port)),
+            ("webdavUrl".to_owned(), text(&self.webdav_url)),
+            ("user".to_owned(), text(&self.user)),
+            ("secure".to_owned(), Value::Bool(false)),
+            ("remotePath".to_owned(), text(&self.remote_path)),
+            (
+                "allowInvalidCert".to_owned(),
+                Value::Bool(self.allow_invalid_cert),
+            ),
+            (
+                "allowCleartextAuth".to_owned(),
+                Value::Bool(self.allow_cleartext_auth),
+            ),
+            ("caCertPath".to_owned(), text(&self.ca_cert_path)),
+            ("useKeyAuth".to_owned(), Value::Bool(self.use_key_auth)),
+            ("keyPath".to_owned(), text(&self.key_path)),
+            ("encoding".to_owned(), text(&self.encoding)),
+            (
+                "maxConnections".to_owned(),
+                serde_json::json!(self.max_connections),
+            ),
+        ])
+    }
+
+    /// The keys [`Self::to_json`] writes.
+    pub const KEYS: [&str; 14] = [
+        "protocol",
+        "host",
+        "port",
+        "webdavUrl",
+        "user",
+        "secure",
+        "remotePath",
+        "allowInvalidCert",
+        "allowCleartextAuth",
+        "caCertPath",
+        "useKeyAuth",
+        "keyPath",
+        "encoding",
+        "maxConnections",
+    ];
 }
 
 fn number(record: &JsonMap, key: &str) -> Result<Option<u16>> {
@@ -251,6 +321,38 @@ mod tests {
         ] {
             assert!(read(json!({ "port": port })).is_err(), "{port}");
         }
+    }
+
+    #[test]
+    fn what_is_written_reads_back_the_same() {
+        let server = read(json!({
+            "protocol": "ftp", "secure": true, "host": "h", "port": "2121", "user": "u",
+            "remotePath": "/pub", "allowInvalidCert": true, "caCertPath": "C:\\ca.pem",
+            "encoding": "windows-1251", "maxConnections": 4
+        }))
+        .unwrap();
+        let written = server.to_json();
+        let mut keys: Vec<&str> = written.keys().map(String::as_str).collect();
+        let mut expected = ServerSettings::KEYS.to_vec();
+        keys.sort_unstable();
+        expected.sort_unstable();
+        assert_eq!(keys, expected);
+        assert_eq!(written["protocol"], "ftps");
+        assert_eq!(written["secure"], false);
+        assert_eq!(written["port"], 2121);
+        assert_eq!(ServerSettings::from_json(&written).unwrap(), server);
+    }
+
+    #[test]
+    fn a_site_that_cannot_be_read_still_lists_with_those_fields_unset() {
+        let server = ServerSettings::from_json_or_unset(
+            json!({"protocol": "FTPS", "secure": true, "host": "h", "port": "twenty-one", "maxConnections": -1})
+                .as_object()
+                .unwrap(),
+        );
+        assert_eq!(server.protocol, Protocol::Ftps);
+        assert_eq!((server.port, server.max_connections), (None, None));
+        assert_eq!(server.host, "h");
     }
 
     #[test]

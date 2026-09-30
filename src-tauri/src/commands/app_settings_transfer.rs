@@ -185,27 +185,15 @@ fn validate_import_settings(patch: &JsonMap) -> Result<(), String> {
 }
 
 pub(crate) fn validate_import_site(record: &JsonMap, index: usize) -> Result<(), String> {
-    const ALLOWED: &[&str] = &[
+    // What a bookmark, a local folder and a folder hold besides a server's
+    // settings.
+    const ENTRY: &[&str] = &[
         "id",
         "kind",
         "name",
         "icon",
         "color",
-        "protocol",
-        "host",
-        "port",
-        "user",
-        "webdavUrl",
-        "secure",
-        "allowInvalidCert",
-        "allowCleartextAuth",
-        "remotePath",
         "parentId",
-        "useKeyAuth",
-        "keyPath",
-        "caCertPath",
-        "encoding",
-        "maxConnections",
         "localPath",
         "managerScope",
         // strip_site_secrets sets these on export; import_sites recomputes them.
@@ -228,7 +216,9 @@ pub(crate) fn validate_import_site(record: &JsonMap, index: usize) -> Result<(),
                 "sites[{index}].{key}: secret fields cannot be imported"
             ));
         }
-        if !ALLOWED.contains(&key.as_str()) {
+        if !ENTRY.contains(&key.as_str())
+            && !crate::domain::ServerSettings::KEYS.contains(&key.as_str())
+        {
             return Err(format!("sites[{index}].{key}: unknown field"));
         }
     }

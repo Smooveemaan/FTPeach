@@ -79,7 +79,8 @@ export const ALLOWED: Record<string, readonly string[]> = {
   // question is put on screen.
   security: ['ipc', 'local_fs', 'runtime::confirmation_window', 'store'],
   local_fs: ['ipc', 'protocol', 'session'],
-  domain: ['ipc'],
+  // Credentials hold their secrets in the wrapper that forgets them.
+  domain: ['ipc', 'security::sensitive_string'],
   // The wire types depend on nothing in the crate.
   ipc: [],
 };

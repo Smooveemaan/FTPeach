@@ -1,9 +1,9 @@
 use super::SensitiveString;
 use super::transport::ProxyConfig;
-use crate::domain::Protocol;
-use crate::store::{ConnectionDefaults, JsonMap};
-use anyhow::{Context, Result, anyhow, bail};
-use serde_json::Value;
+use crate::domain::{Credentials, Protocol, ServerSettings};
+use crate::ipc::{CommandError, ErrorCode};
+use crate::store::ConnectionDefaults;
+use anyhow::{Context, Result, bail};
 
 pub const DEFAULT_TIMEOUT_MS: u64 = 20_000;
 
@@ -11,7 +11,6 @@ pub const DEFAULT_TIMEOUT_MS: u64 = 20_000;
 pub struct CommonConfig {
     pub max_connections: Option<u16>,
     pub timeout_ms: u64,
-    pub concurrency: Option<u16>,
     pub proxy: Option<ProxyConfig>,
 }
 
@@ -67,112 +66,121 @@ pub enum ConnectionConfig {
 }
 
 impl ConnectionConfig {
-    pub fn from_json_map(map: &JsonMap, defaults: &ConnectionDefaults) -> Result<Self> {
-        for (key, limit) in [
-            ("host", 255usize),
-            ("user", 1024),
-            ("remotePath", super::MAX_REMOTE_PATH_LEN),
-            ("webdavUrl", 4096),
-            ("keyPath", 4096),
-            ("caCertPath", 4096),
-            ("password", 16 * 1024),
-            ("keyPassphrase", 16 * 1024),
+    /// The configuration a protocol backend connects with: the server and
+    /// its credentials, with the application's connection settings. What is
+    /// checked here is what a connection needs, for a saved site and a
+    /// direct connect alike: sizes, a start folder without traversal, a host
+    /// or an absolute URL, a key file for key sign-in, and no line breaks in
+    /// FTP credentials.
+    pub fn build(
+        server: &ServerSettings,
+        credentials: Credentials,
+        defaults: &ConnectionDefaults,
+    ) -> Result<Self> {
+        let Credentials {
+            password,
+            key_passphrase,
+        } = credentials;
+        for (key, length, limit) in [
+            ("host", server.host.len(), 255usize),
+            ("user", server.user.len(), 1024),
+            (
+                "remotePath",
+                server.remote_path.len(),
+                super::MAX_REMOTE_PATH_LEN,
+            ),
+            ("webdavUrl", server.webdav_url.len(), 4096),
+            ("keyPath", server.key_path.len(), 4096),
+            ("caCertPath", server.ca_cert_path.len(), 4096),
+            ("password", password.expose().len(), 16 * 1024),
+            (
+                "keyPassphrase",
+                key_passphrase
+                    .as_ref()
+                    .map_or(0, |value| value.expose().len()),
+                16 * 1024,
+            ),
         ] {
-            if map
-                .get(key)
-                .and_then(Value::as_str)
-                .is_some_and(|value| value.len() > limit)
-            {
-                bail!(crate::ipc::CommandError::new(
-                    crate::ipc::ErrorCode::ResourceLimit,
+            if length > limit {
+                bail!(CommandError::new(
+                    ErrorCode::ResourceLimit,
                     format!("{key} exceeds the {limit}-byte limit"),
                 ));
             }
         }
-        if let Some(remote_path) = map.get("remotePath").and_then(Value::as_str)
-            && (!remote_path.starts_with('/')
-                || remote_path.contains('\0')
-                || remote_path.split('/').any(|segment| segment == ".."))
+        let remote_path = &server.remote_path;
+        if !remote_path.starts_with('/')
+            || remote_path.contains('\0')
+            || remote_path.split('/').any(|segment| segment == "..")
         {
             bail!("remotePath must be an absolute remote path without traversal");
         }
-        let protocol = match map.get("protocol").and_then(Value::as_str).unwrap_or("ftp") {
-            "ftp" => Protocol::Ftp,
-            "ftps" => Protocol::Ftps,
-            "sftp" => Protocol::Sftp,
-            "webdav" => Protocol::Webdav,
-            other => bail!("unsupported protocol: {other}"),
-        };
-        let timeout_ms = defaults.timeout_ms;
-        if timeout_ms > 86_400_000 {
+        if defaults.timeout_ms > 86_400_000 {
             bail!("timeout must not exceed 86400000 ms");
         }
-        let concurrency = optional_u16(map, "concurrency")?;
-        if concurrency.is_some_and(|value| value > 128) {
-            bail!("concurrency must not exceed 128");
+        if server
+            .max_connections
+            .is_some_and(|value| value == 1 || value > 128)
+        {
+            bail!("maxConnections must be 0 (unlimited) or between 2 and 128");
         }
         let common = CommonConfig {
-            max_connections: {
-                let limit = optional_u16(map, "maxConnections")?;
-                if limit.is_some_and(|value| value == 1 || value > 128) {
-                    bail!("maxConnections must be 0 (unlimited) or between 2 and 128");
-                }
-                limit
-            },
-            timeout_ms,
-            concurrency,
+            max_connections: server.max_connections,
+            timeout_ms: defaults.timeout_ms,
             proxy: defaults.proxy.clone(),
         };
-        let user = string(map, "user").unwrap_or_default();
-        let password = string(map, "password").unwrap_or_default();
+        let host = || {
+            if server.host.trim().is_empty() {
+                bail!("host is required");
+            }
+            Ok(server.host.clone())
+        };
+        let file = |path: &str| (!path.is_empty()).then(|| path.to_owned());
 
-        match protocol {
+        match server.protocol {
             Protocol::Ftp | Protocol::Ftps => {
-                if user.contains(['\r', '\n']) || password.contains(['\r', '\n']) {
+                if server.user.contains(['\r', '\n']) || password.expose().contains(['\r', '\n']) {
                     bail!("user/password must not contain carriage return or newline characters");
                 }
                 Ok(Self::Ftp(FtpConfig {
                     common,
-                    host: required_string(map, "host")?,
-                    port: optional_u16(map, "port")?.unwrap_or(21),
-                    user: if user.is_empty() {
+                    host: host()?,
+                    port: server.port.unwrap_or(21),
+                    user: if server.user.is_empty() {
                         "anonymous".into()
                     } else {
-                        user
+                        server.user.clone()
                     },
-                    password: password.into(),
-                    secure: protocol == Protocol::Ftps
-                        || map.get("secure").and_then(Value::as_bool).unwrap_or(false),
-                    allow_invalid_cert: bool_value(map, "allowInvalidCert"),
-                    ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
+                    password,
+                    secure: server.protocol == Protocol::Ftps,
+                    allow_invalid_cert: server.allow_invalid_cert,
+                    ca_cert_path: file(&server.ca_cert_path),
                     active_mode: defaults.active_mode,
-                    encoding: super::ftp_charset::parse(
-                        &string(map, "encoding").unwrap_or_default(),
-                    )?,
+                    encoding: super::ftp_charset::parse(&server.encoding)?,
                 }))
             }
             Protocol::Sftp => {
-                let use_key_auth = bool_value(map, "useKeyAuth");
-                let key_path = string(map, "keyPath").filter(|value| !value.is_empty());
-                if use_key_auth && key_path.is_none() {
+                let key_path = file(&server.key_path);
+                if server.use_key_auth && key_path.is_none() {
                     bail!("keyPath is required when key authentication is enabled");
                 }
                 Ok(Self::Sftp(SftpConfig {
                     common,
-                    host: required_string(map, "host")?,
-                    port: optional_u16(map, "port")?.unwrap_or(22),
-                    user,
-                    password: password.into(),
-                    use_key_auth,
+                    host: host()?,
+                    port: server.port.unwrap_or(22),
+                    user: server.user.clone(),
+                    password,
+                    use_key_auth: server.use_key_auth,
                     key_path,
-                    key_passphrase: string(map, "keyPassphrase").map(SensitiveString::from),
+                    key_passphrase,
                     strict_host_key_check: defaults.strict_host_key_check,
                 }))
             }
             Protocol::Webdav => {
-                let url = required_string(map, "webdavUrl")?
-                    .trim_end_matches('/')
-                    .to_string();
+                if server.webdav_url.trim().is_empty() {
+                    bail!("webdavUrl is required");
+                }
+                let url = server.webdav_url.trim_end_matches('/').to_string();
                 let parsed = reqwest::Url::parse(&url).context("invalid WebDAV URL")?;
                 if !matches!(parsed.scheme(), "http" | "https") || parsed.host_str().is_none() {
                     bail!("WebDAV URL must be an absolute HTTP or HTTPS URL");
@@ -194,46 +202,59 @@ impl ConnectionConfig {
                 Ok(Self::Webdav(WebDavConfig {
                     common,
                     url,
-                    user,
-                    password: password.into(),
-                    allow_invalid_cert: bool_value(map, "allowInvalidCert"),
-                    allow_cleartext_auth: bool_value(map, "allowCleartextAuth"),
-                    ca_cert_path: string(map, "caCertPath").filter(|value| !value.is_empty()),
+                    user: server.user.clone(),
+                    password,
+                    allow_invalid_cert: server.allow_invalid_cert,
+                    allow_cleartext_auth: server.allow_cleartext_auth,
+                    ca_cert_path: file(&server.ca_cert_path),
                 }))
             }
         }
     }
 
     /// A connection described the way tests write one: the fields a direct
-    /// connect sends, with the application settings it depends on
-    /// (`timeout`, `activeMode`, `strictHostKeyCheck` and the `proxy*`
-    /// keys) in the same object. A setting left out takes the value a new
-    /// profile starts with.
+    /// connect sends for the server and its credentials, with the
+    /// application settings it depends on (`timeout`, `activeMode`,
+    /// `strictHostKeyCheck` and the `proxy*` keys) in the same object. A
+    /// setting left out takes the value a new profile starts with.
     #[cfg(any(test, feature = "test-utils"))]
-    pub fn for_test(description: &JsonMap) -> Result<Self> {
+    pub fn for_test(description: &crate::store::JsonMap) -> Result<Self> {
+        use serde_json::Value;
+        let text = |key: &str| description.get(key).and_then(Value::as_str);
         let proxy = match description.get("proxyEnabled").and_then(Value::as_bool) {
             Some(true) => Some(ProxyConfig::new(
-                description.get("proxyType").and_then(Value::as_str),
+                text("proxyType"),
+                text("proxyHost").unwrap_or_default(),
                 description
-                    .get("proxyHost")
-                    .and_then(Value::as_str)
+                    .get("proxyPort")
+                    .and_then(Value::as_u64)
+                    .and_then(|port| u16::try_from(port).ok())
                     .unwrap_or_default(),
-                optional_u16(description, "proxyPort")?.unwrap_or_default(),
-                description.get("proxyUsername").and_then(Value::as_str),
-                string(description, "proxyPassword").map(SensitiveString::from),
+                text("proxyUsername"),
+                text("proxyPassword").map(SensitiveString::from),
             )?),
             _ => None,
         };
         let defaults = ConnectionDefaults {
-            timeout_ms: optional_u64(description, "timeout")?.unwrap_or(DEFAULT_TIMEOUT_MS),
-            active_mode: bool_value(description, "activeMode"),
+            timeout_ms: description
+                .get("timeout")
+                .and_then(Value::as_u64)
+                .unwrap_or(DEFAULT_TIMEOUT_MS),
+            active_mode: description
+                .get("activeMode")
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
             strict_host_key_check: description
                 .get("strictHostKeyCheck")
                 .and_then(Value::as_bool)
                 .unwrap_or(true),
             proxy,
         };
-        Self::from_json_map(description, &defaults)
+        Self::build(
+            &ServerSettings::from_json(description)?,
+            serde_json::from_value(Value::Object(description.clone()))?,
+            &defaults,
+        )
     }
 
     pub fn protocol(&self) -> Protocol {
@@ -308,40 +329,6 @@ impl ConnectionConfig {
 // values it named: the clones the protocol backends and the transfer
 // pool's factory keep were plain `String`s that outlived it.
 
-fn string(map: &JsonMap, key: &str) -> Option<String> {
-    map.get(key).and_then(Value::as_str).map(str::to_owned)
-}
-
-fn required_string(map: &JsonMap, key: &str) -> Result<String> {
-    string(map, key)
-        .filter(|value| !value.trim().is_empty())
-        .ok_or_else(|| anyhow!("{key} is required"))
-}
-
-fn bool_value(map: &JsonMap, key: &str) -> bool {
-    map.get(key).and_then(Value::as_bool).unwrap_or(false)
-}
-
-fn optional_u64(map: &JsonMap, key: &str) -> Result<Option<u64>> {
-    match map.get(key) {
-        None | Some(Value::Null) => Ok(None),
-        Some(Value::String(value)) => value
-            .parse::<u64>()
-            .map(Some)
-            .with_context(|| format!("{key} must be a non-negative integer")),
-        Some(value) => value
-            .as_u64()
-            .map(Some)
-            .ok_or_else(|| anyhow!("{key} must be a non-negative integer")),
-    }
-}
-
-fn optional_u16(map: &JsonMap, key: &str) -> Result<Option<u16>> {
-    optional_u64(map, key)?
-        .map(|value| u16::try_from(value).with_context(|| format!("{key} is out of range")))
-        .transpose()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -363,7 +350,7 @@ mod tests {
         }
     }
 
-    fn map(value: Value) -> JsonMap {
+    fn map(value: serde_json::Value) -> crate::store::JsonMap {
         value.as_object().unwrap().clone()
     }
 
@@ -450,12 +437,6 @@ mod tests {
         assert!(
             ConnectionConfig::for_test(&map(json!({
                 "protocol": "ftp", "host": "x", "timeout": 86_400_001
-            })))
-            .is_err()
-        );
-        assert!(
-            ConnectionConfig::for_test(&map(json!({
-                "protocol": "ftp", "host": "x", "concurrency": 129
             })))
             .is_err()
         );

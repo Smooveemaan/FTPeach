@@ -3,7 +3,7 @@ import { buildFormFromSite, initialForm, otherPaneId } from './paneModel.ts';
 import { reportRejection } from '../../../shared/asyncFailure.ts';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
-import type { ConnectionConfig } from '../../../platform/api/session.ts';
+import type { ConnectRequest } from '../../../platform/api/session.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
@@ -56,29 +56,31 @@ export function createPaneSessionLifecycle({
     const failure = results.find((result) => result.status === 'rejected');
     if (failure?.status === 'rejected') throw failure.reason;
   };
-  const buildSessionConfig = (
-    f: ConnectionForm,
-    siteId: string | null = null,
-  ): ConnectionConfig => ({
-    siteId,
-    protocol: f.protocol === 'sftp' ? 'sftp' : f.protocol === 'webdav' ? 'webdav' : 'ftp',
-    secure: f.protocol === 'ftps',
-    host: f.host,
-    port: f.port && !Number.isNaN(Number(f.port)) ? Number(f.port) : undefined,
-    webdavUrl: f.webdavUrl,
-    user: f.user,
-    password: f.password,
-    allowInvalidCert: !!f.allowInvalidCert,
-    allowCleartextAuth: !!f.allowCleartextAuth,
-    caCertPath: f.caCertPath,
-    timeout: connectTimeout,
-    useKeyAuth: f.protocol === 'sftp' && !!f.useKeyAuth,
-    keyPath: f.keyPath,
-    keyPassphrase: f.keyPassphrase,
-    // Global setting, not a per-site form field; only protocol/ftp.rs reads
-    // it (suppaftp defaults to passive already), harmless no-op for SFTP/WebDAV.
-    activeMode: !!ftpActiveMode,
-  });
+  // A bookmark is named by its id: the backend reads its server and saved
+  // secrets itself. A typed-in server travels with what the form holds.
+  const connectRequest = (f: ConnectionForm, siteId: string | null = null): ConnectRequest =>
+    siteId
+      ? { kind: 'savedSite', siteId }
+      : {
+          kind: 'direct',
+          server: {
+            protocol: f.protocol,
+            host: f.host,
+            port: f.port && !Number.isNaN(Number(f.port)) ? Number(f.port) : null,
+            webdavUrl: f.webdavUrl,
+            user: f.user,
+            remotePath: '/',
+            allowInvalidCert: !!f.allowInvalidCert,
+            allowCleartextAuth: !!f.allowCleartextAuth,
+            caCertPath: f.caCertPath,
+            useKeyAuth: f.protocol === 'sftp' && !!f.useKeyAuth,
+            keyPath: f.keyPath,
+            // The connection bar has no fields for these.
+            encoding: '',
+            maxConnections: null,
+          },
+          credentials: { password: f.password, keyPassphrase: f.keyPassphrase },
+        };
 
   const startPaneConnect = (id: PaneId, tabId = activeTabId) => {
     const pane = panes[id];
@@ -207,7 +209,10 @@ export function createPaneSessionLifecycle({
         },
         tabId,
       );
-      const res = await client.session.connect(connectionId, buildSessionConfig(f, pane.siteId));
+      const res = await client.session.connect(connectionId, connectRequest(f, pane.siteId), {
+        timeoutMs: connectTimeout,
+        activeMode: !!ftpActiveMode,
+      });
       if (requestId !== requestIds[id]) {
         // This connect was superseded by a newer one; closing the orphan is
         // housekeeping the user never asked for, so a failure has nothing to

@@ -1,8 +1,22 @@
 use super::storage::{decode_versioned_store, encode_versioned_store};
 use super::*;
 use crate::domain::SiteLayoutEntry;
+use crate::domain::{Credentials, ServerSettings, WindowConnectionSettings};
 use crate::security::vault::Vault;
 use serde_json::{Value, json};
+
+/// A saved site as a connect reads it, under system protection.
+async fn read_saved(store: &Store, id: &str) -> (ServerSettings, Credentials) {
+    let vault = Vault::new(store.data_dir().join("no-vault"));
+    store.saved_server(id, &vault).await.unwrap()
+}
+
+fn window(timeout_ms: u64, active_mode: bool) -> WindowConnectionSettings {
+    WindowConnectionSettings {
+        timeout_ms,
+        active_mode,
+    }
+}
 
 #[tokio::test]
 async fn connection_limit_survives_site_storage_and_can_be_cleared() {
@@ -13,14 +27,14 @@ async fn connection_limit_survives_site_storage_and_can_be_cleared() {
     store.save_site(input.clone()).await.unwrap();
     assert_eq!(store.list_sites().await.unwrap()[0]["maxConnections"], 5);
     assert_eq!(
-        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
-        5
+        read_saved(&store, "limited").await.0.max_connections,
+        Some(5)
     );
     input.remove("maxConnections");
     store.save_site(input.clone()).await.unwrap();
     assert_eq!(
-        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
-        5
+        read_saved(&store, "limited").await.0.max_connections,
+        Some(5)
     );
     for invalid in [json!(1), json!(129), json!(-1), json!(2.5), json!("bad")] {
         input.insert("maxConnections".into(), invalid);
@@ -29,8 +43,8 @@ async fn connection_limit_survives_site_storage_and_can_be_cleared() {
     input.insert("maxConnections".into(), json!(0));
     store.save_site(input).await.unwrap();
     assert_eq!(
-        store.connection_config_for_site("limited").await.unwrap()["maxConnections"],
-        0
+        read_saved(&store, "limited").await.0.max_connections,
+        Some(0)
     );
     std::fs::remove_dir_all(root).unwrap();
 }
@@ -46,7 +60,7 @@ async fn file_name_encoding_survives_site_storage() {
         "windows-1251"
     );
     assert_eq!(
-        store.connection_config_for_site("legacy").await.unwrap()["encoding"],
+        read_saved(&store, "legacy").await.0.encoding,
         "windows-1251"
     );
     for invalid in [json!("klingon"), json!("utf-16le"), json!(1251)] {
@@ -199,7 +213,7 @@ fn proxy_patch(extra: Value) -> JsonMap {
 #[cfg(windows)]
 async fn connect_proxy_password(store: &Store, vault: &Vault) -> Option<String> {
     store
-        .connection_defaults(vault, 0, false)
+        .connection_defaults(vault, window(0, false))
         .await
         .unwrap()
         .proxy
@@ -213,7 +227,10 @@ async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
     let store = Store::new_at(root.clone());
     let vault = Vault::new(root.clone());
     // The timeout and FTP mode are the window's, as sent.
-    let defaults = store.connection_defaults(&vault, 1234, true).await.unwrap();
+    let defaults = store
+        .connection_defaults(&vault, window(1234, true))
+        .await
+        .unwrap();
     assert_eq!((defaults.timeout_ms, defaults.active_mode), (1234, true));
     assert!(defaults.strict_host_key_check);
     assert!(defaults.proxy.is_none());
@@ -228,7 +245,10 @@ async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
         )
         .await
         .unwrap();
-    let defaults = store.connection_defaults(&vault, 0, false).await.unwrap();
+    let defaults = store
+        .connection_defaults(&vault, window(0, false))
+        .await
+        .unwrap();
     assert!(!defaults.strict_host_key_check);
     let proxy = defaults.proxy.unwrap();
     assert_eq!(proxy.authority(), "[::1]:1080");
@@ -248,7 +268,7 @@ async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
         .unwrap();
         assert!(
             store
-                .connection_defaults(&vault, 0, false)
+                .connection_defaults(&vault, window(0, false))
                 .await
                 .unwrap()
                 .proxy
@@ -262,7 +282,7 @@ async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
         )
         .unwrap();
         let refused = store
-            .connection_defaults(&vault, 0, false)
+            .connection_defaults(&vault, window(0, false))
             .await
             .unwrap_err();
         assert_eq!(
@@ -317,7 +337,7 @@ async fn proxy_password_moves_with_enhanced_protection() {
     // A locked vault blocks connecting and changing the password, not other settings.
     vault.lock().await;
     let locked = store
-        .connection_defaults(&vault, 0, false)
+        .connection_defaults(&vault, window(0, false))
         .await
         .unwrap_err();
     assert!(format!("{locked:#}").contains("vault is locked"));
@@ -1246,13 +1266,8 @@ async fn a_secret_that_cannot_be_encrypted_is_not_reported_as_saved() {
     let sites = std::fs::read_to_string(root.join("sites.json")).unwrap();
     assert!(!sites.contains("site-second"), "{sites}");
     assert_eq!(
-        store
-            .connection_config_for_site("s")
-            .await
-            .unwrap()
-            .get("password")
-            .and_then(Value::as_str),
-        Some("site-first")
+        read_saved(&store, "s").await.1.password.expose(),
+        "site-first"
     );
     std::fs::remove_dir_all(root).unwrap();
 }
@@ -1463,11 +1478,8 @@ async fn stronghold_migration_and_new_writes_fail_closed() {
     assert!(!raw.contains("new-vault-password"));
     let sites: Vec<JsonMap> = stored_payload(&raw, &dir.join("sites.json"));
     assert_eq!(sites[1].get("hasPassword"), Some(&Value::Bool(true)));
-    let config = store
-        .connection_config_for_site_with_vault("site-2", &vault)
-        .await
-        .unwrap();
-    assert_eq!(config["password"], "new-vault-password");
+    let (_, credentials) = store.saved_server("site-2", &vault).await.unwrap();
+    assert_eq!(credentials.password.expose(), "new-vault-password");
 
     vault.lock().await;
     let _ = tokio::fs::remove_dir_all(dir).await;
@@ -1694,17 +1706,11 @@ mod saved_password_recipient {
     }
 
     async fn recipient(store: &Store, vault: Option<&Vault>) -> (String, String) {
-        let config = match vault {
-            Some(vault) => {
-                store
-                    .connection_config_for_site_with_vault("s", vault)
-                    .await
-            }
-            None => store.connection_config_for_site("s").await,
-        }
-        .unwrap();
-        let text = |key: &str| config[key].as_str().unwrap_or("").to_owned();
-        (text("host"), text("password"))
+        let (server, credentials) = match vault {
+            Some(vault) => store.saved_server("s", vault).await.unwrap(),
+            None => read_saved(store, "s").await,
+        };
+        (server.host, credentials.password.expose().to_owned())
     }
 
     fn unchanged() -> (String, String) {

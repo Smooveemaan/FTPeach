@@ -1,6 +1,6 @@
 mod application;
 mod commands;
-mod domain;
+pub mod domain;
 mod ipc;
 mod local_fs;
 mod native_drag;

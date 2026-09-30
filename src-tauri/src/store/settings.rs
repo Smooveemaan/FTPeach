@@ -4,6 +4,7 @@
 //! keeps only the `hasProxyPassword` flag.
 
 use super::{JsonMap, Store};
+use crate::domain::{WindowConnectionSettings, invalid_connection_settings};
 use crate::ipc::{CommandError, ErrorCode};
 use crate::protocol::SensitiveString;
 use crate::protocol::transport::ProxyConfig;
@@ -267,13 +268,12 @@ impl Store {
     pub async fn connection_defaults(
         &self,
         vault: &Vault,
-        timeout_ms: u64,
-        active_mode: bool,
+        window: WindowConnectionSettings,
     ) -> Result<ConnectionDefaults> {
         let settings = self.get_settings().await;
         Ok(ConnectionDefaults {
-            timeout_ms,
-            active_mode,
+            timeout_ms: window.timeout_ms,
+            active_mode: window.active_mode,
             strict_host_key_check: crate::security::security_policy::strict_host_key(&settings),
             proxy: self.saved_proxy(&settings, vault).await?,
         })
@@ -337,13 +337,7 @@ impl Store {
             ),
         }
         .map(Some)
-        .map_err(|error| {
-            anyhow::anyhow!(CommandError {
-                code: ErrorCode::InvalidInput,
-                message: "Invalid connection configuration".into(),
-                details: Some(format!("{error:#}")),
-            })
-        })
+        .map_err(|error| anyhow::anyhow!(invalid_connection_settings(&error)))
     }
 
     /// Resolves the saved proxy password for the settings dialog's "show

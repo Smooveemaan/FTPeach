@@ -7,8 +7,26 @@ import {
 } from '../ipcContracts.ts';
 import type { CommandResult, HostKeyDecision, InvokeFn } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
+import type { ServerSettings } from '../../shared/siteContracts.ts';
 
-export type ConnectionConfig = Record<string, unknown> & { protocol: string };
+/** What to open: a saved site, which the backend reads itself, or a typed-in server. */
+export type ConnectRequest =
+  | { kind: 'savedSite'; siteId: string }
+  | {
+      kind: 'direct';
+      server: ServerSettings;
+      credentials: { password: string; keyPassphrase: string };
+    };
+
+/**
+ * The two connection settings the window sends with every connect, because
+ * the settings dialog applies them while it previews them, before they are
+ * saved. The backend reads the rest of the connection settings itself.
+ */
+export interface WindowConnectionSettings {
+  timeoutMs: number;
+  activeMode: boolean;
+}
 export interface SessionConnectResult extends CommandResult {
   hostKeyMismatch?: HostKeyDecision;
 }
@@ -49,10 +67,14 @@ function connectResult(outcome: ConnectOutcome): SessionConnectResult {
 
 export function createSessionApi(invoke: InvokeFn) {
   return {
-    connect: (connectionId: string, config: ConnectionConfig): Promise<SessionConnectResult> =>
+    connect: (
+      connectionId: string,
+      request: ConnectRequest,
+      settings: WindowConnectionSettings,
+    ): Promise<SessionConnectResult> =>
       checkedResponse(
         'session_connect',
-        invoke('session_connect', { connectionId, config }),
+        invoke('session_connect', { connectionId, request, settings }),
         isConnectOutcome,
         (raw) => commandFailure('session_connect', raw),
       ).then((result) => ('outcome' in result ? connectResult(result) : result)),

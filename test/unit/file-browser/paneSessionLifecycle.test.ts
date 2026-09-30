@@ -52,7 +52,7 @@ function harness(
   return { ...h, tab, requests, events, refreshes, listingErrors, lifecycle, retry: () => retry };
 }
 
-test('connection maps FTPS configuration and becomes connected only after initial listing', async () => {
+test('a typed-in FTPS server is sent as it is, and becomes connected only after its first listing', async () => {
   const h = harness();
   h.tab.panes.b.form = {
     ...h.tab.panes.b.form,
@@ -61,17 +61,28 @@ test('connection maps FTPS configuration and becomes connected only after initia
     port: '990',
   };
   await h.lifecycle.connectPane('b', undefined, undefined, 'tab', '/saved')();
-  const config = h.calls[0]!.args!.config as Record<string, unknown>;
-  assert.equal(config.protocol, 'ftp');
-  assert.equal(config.secure, true);
-  assert.equal(config.port, 990);
-  assert.equal(config.activeMode, true);
-  assert.equal(
-    config.concurrency,
-    undefined,
-    'global concurrency must not cap individual sessions',
-  );
-  assert.equal(config.timeout, 20);
+  const args = h.calls[0]!.args!;
+  assert.deepEqual(args.request, {
+    kind: 'direct',
+    server: {
+      protocol: 'ftps',
+      host: 'example.org',
+      port: 990,
+      webdavUrl: '',
+      user: '',
+      remotePath: '/',
+      allowInvalidCert: false,
+      allowCleartextAuth: false,
+      caCertPath: '',
+      useKeyAuth: false,
+      keyPath: '',
+      encoding: '',
+      maxConnections: null,
+    },
+    credentials: { password: '', keyPassphrase: '' },
+  });
+  // The window's own timeout and FTP mode, which may be a previewed change.
+  assert.deepEqual(args.settings, { timeoutMs: 20, activeMode: true });
   assert.deepEqual(h.refreshes, ['/saved']);
   assert.equal(h.tab.panes.b.status, 'connected');
 });
@@ -108,10 +119,8 @@ test('WebDAV accepts an absolute URL with a custom port', async () => {
   };
   await h.lifecycle.connectPane('b')();
   assert.equal(h.tab.panes.b.status, 'connected');
-  assert.equal(
-    (h.calls[0]!.args!.config as Record<string, unknown>).webdavUrl,
-    'http://localhost:6065/',
-  );
+  const request = h.calls[0]!.args!.request as { server: { webdavUrl: string } };
+  assert.equal(request.server.webdavUrl, 'http://localhost:6065/');
 });
 
 test('cancellation invalidates a pending connection and closes its late successful result', async () => {
@@ -303,9 +312,12 @@ test('the connect retried after trusting a key keeps the bookmark and its saved 
   await new Promise((resolve) => setImmediate(resolve));
   const sites = h.calls
     .filter((call) => call.command === 'session_connect')
-    .map((call) => (call.args!.config as Record<string, unknown>).siteId);
+    .map((call) => call.args!.request);
   // The backend finds the saved password by the bookmark's id.
-  assert.deepEqual(sites, ['sftp-site', 'sftp-site']);
+  assert.deepEqual(sites, [
+    { kind: 'savedSite', siteId: 'sftp-site' },
+    { kind: 'savedSite', siteId: 'sftp-site' },
+  ]);
   assert.equal(h.tab.panes.b.status, 'connected');
 });
 

@@ -8,9 +8,10 @@
 //! to set a process-wide environment variable, which would otherwise reach
 //! every other test building an HTTP client at the same moment.
 
-use app_lib::protocol::ProtocolBackend;
+use app_lib::domain::{Credentials, ServerSettings};
 use app_lib::protocol::config::ConnectionConfig;
 use app_lib::protocol::webdav::WebDavBackend;
+use app_lib::protocol::{ProtocolBackend, SensitiveString};
 use app_lib::store::ConnectionDefaults;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -67,12 +68,16 @@ async fn a_connection_without_a_proxy_ignores_the_environment_proxy() {
     let dead_address = dead.local_addr().unwrap();
     drop(dead);
 
-    let map = serde_json::json!({ "protocol": "webdav", "webdavUrl": url })
-        .as_object()
-        .unwrap()
-        .clone();
-    let config = ConnectionConfig::from_json_map(
-        &map,
+    let server: ServerSettings =
+        serde_json::from_value(serde_json::json!({ "protocol": "webdav", "webdavUrl": url }))
+            .unwrap();
+    let credentials = Credentials {
+        password: SensitiveString::default(),
+        key_passphrase: None,
+    };
+    let config = ConnectionConfig::build(
+        &server,
+        credentials,
         &ConnectionDefaults {
             timeout_ms: 20_000,
             active_mode: false,

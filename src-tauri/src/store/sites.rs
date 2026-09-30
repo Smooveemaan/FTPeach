@@ -3,9 +3,12 @@
 //! Stronghold vault, since that migration only ever touches sites.json.
 
 use super::{JsonMap, Store};
-use crate::domain::{Protocol, SiteLayoutEntry};
+use crate::domain::{
+    Credentials, Protocol, ServerSettings, SiteLayoutEntry, invalid_connection_settings,
+};
 use crate::ipc::{CommandError, ErrorCode};
 use crate::security::credential_scope::{SecretTransfer, site_transfer};
+use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{SecretUpdate, Vault};
 use anyhow::{Context, Result};
 use base64::Engine;

@@ -205,10 +205,10 @@ test.each(['ftp', 'ftps', 'sftp', 'webdav'] as const)(
     expect(client.session.connect).toHaveBeenCalledWith(
       result.current.panes.b.connectionId,
       expect.objectContaining({
-        protocol: protocol === 'ftps' ? 'ftp' : protocol,
-        secure: protocol === 'ftps',
-        port: 22,
+        kind: 'direct',
+        server: expect.objectContaining({ protocol, port: 22 }),
       }),
+      expect.anything(),
     );
     expect(result.current.canCopyBetween(result.current.panes.a, result.current.panes.b)).toBe(
       true,
@@ -292,7 +292,8 @@ test('a locked vault offers a retry that reconnects the same bookmark and folder
   expect(result.current.recentSiteIds).toEqual(['saved']);
   expect(client.session.connect).toHaveBeenLastCalledWith(
     expect.any(String),
-    expect.objectContaining({ siteId: 'saved' }),
+    { kind: 'savedSite', siteId: 'saved' },
+    expect.anything(),
   );
   act(() => result.current.setPaneForm('b', { ...initialForm, host: 'manual' }));
   expect(result.current.panes.b.siteId).toBeNull();

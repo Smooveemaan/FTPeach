@@ -7,7 +7,12 @@
       "sites": {
         "schemaVersion": 1,
         "data": [
-          { "id": "folder-1", "kind": "folder", "name": "Work", "parentId": null },
+          {
+            "id": "folder-1",
+            "kind": "folder",
+            "name": "Work",
+            "parentId": null
+          },
           {
             "id": "ftp-1",
             "name": "Plain FTP",
@@ -270,11 +275,22 @@
         },
         {
           "note": "Refused: an unknown protocol.",
-          "payload": { "id": "bad-1", "name": "Bad", "protocol": "gopher", "host": "x" }
+          "payload": {
+            "id": "bad-1",
+            "name": "Bad",
+            "protocol": "gopher",
+            "host": "x"
+          }
         },
         {
           "note": "Refused: a port outside 1-65535.",
-          "payload": { "id": "bad-2", "name": "Bad", "protocol": "ftp", "host": "x", "port": 0 }
+          "payload": {
+            "id": "bad-2",
+            "name": "Bad",
+            "protocol": "ftp",
+            "host": "x",
+            "port": 0
+          }
         },
         {
           "note": "Refused: a connection limit of 1.",
@@ -375,7 +391,11 @@
           "encoding": null,
           "maxConnections": null
         },
-        { "id": "no-protocol", "name": "No protocol", "host": "np.example.test" },
+        {
+          "id": "no-protocol",
+          "name": "No protocol",
+          "host": "np.example.test"
+        },
         {
           "id": "extra-keys",
           "name": "Extra",
@@ -428,7 +448,12 @@
           "host": "r.example.test",
           "remotePath": "pub"
         },
-        { "id": "upper-protocol", "name": "Upper", "protocol": "FTPS", "host": "u.example.test" },
+        {
+          "id": "upper-protocol",
+          "name": "Upper",
+          "protocol": "FTPS",
+          "host": "u.example.test"
+        },
         {
           "id": "bad-encoding",
           "name": "Klingon",
@@ -446,14 +471,24 @@
           "secure": "true",
           "remotePath": 7
         },
-        { "id": "empty-host", "name": "No host", "protocol": "sftp", "host": "   " },
+        {
+          "id": "empty-host",
+          "name": "No host",
+          "protocol": "sftp",
+          "host": "   "
+        },
         {
           "id": "webdav-userinfo",
           "name": "DAV",
           "protocol": "webdav",
           "webdavUrl": "https://u:p@dav.example.test/"
         },
-        { "id": "local-in-sites", "kind": "local", "name": "Old local", "localPath": "D:\\data" },
+        {
+          "id": "local-in-sites",
+          "kind": "local",
+          "name": "Old local",
+          "localPath": "D:\\data"
+        },
         {
           "id": "local-scope-folder",
           "kind": "folder",
@@ -604,15 +639,32 @@
       ]
     },
     "secrets": [
-      { "siteId": "vault-ftp", "field": "password", "value": "$secret:1" },
-      { "siteId": "vault-sftp", "field": "password", "value": "$secret:1" },
-      { "siteId": "vault-sftp", "field": "keyPassphrase", "value": "$secret:2" }
+      {
+        "siteId": "vault-ftp",
+        "field": "password",
+        "value": "$secret:1"
+      },
+      {
+        "siteId": "vault-sftp",
+        "field": "password",
+        "value": "$secret:1"
+      },
+      {
+        "siteId": "vault-sftp",
+        "field": "keyPassphrase",
+        "value": "$secret:2"
+      }
     ]
   },
   "settings": {
     "none": {},
-    "strict-off": { "strictHostKeyCheck": false },
-    "active-mode-saved": { "ftpActiveMode": true, "connectTimeout": 5000 },
+    "strict-off": {
+      "strictHostKeyCheck": false
+    },
+    "active-mode-saved": {
+      "ftpActiveMode": true,
+      "connectTimeout": 5000
+    },
     "socks5-proxy": {
       "proxyEnabled": true,
       "proxyType": "socks5",
@@ -628,7 +680,11 @@
       "proxyPort": 3128,
       "proxyUsername": ""
     },
-    "proxy-without-host": { "proxyEnabled": true, "proxyHost": "", "proxyPort": 1080 }
+    "proxy-without-host": {
+      "proxyEnabled": true,
+      "proxyHost": "",
+      "proxyPort": 1080
+    }
   },
   "directRequests": [
     {
@@ -794,18 +850,37 @@
         "activeMode": false
       }
     },
-    { "name": "refused-no-host", "request": { "protocol": "ftp", "host": "", "timeout": 20000 } },
+    {
+      "name": "refused-no-host",
+      "request": {
+        "protocol": "ftp",
+        "host": "",
+        "timeout": 20000
+      }
+    },
     {
       "name": "refused-blank-host",
-      "request": { "protocol": "sftp", "host": "   ", "timeout": 20000 }
+      "request": {
+        "protocol": "sftp",
+        "host": "   ",
+        "timeout": 20000
+      }
     },
     {
       "name": "refused-no-url",
-      "request": { "protocol": "webdav", "webdavUrl": "", "timeout": 20000 }
+      "request": {
+        "protocol": "webdav",
+        "webdavUrl": "",
+        "timeout": 20000
+      }
     },
     {
       "name": "refused-relative-url",
-      "request": { "protocol": "webdav", "webdavUrl": "dav.example.test/x", "timeout": 20000 }
+      "request": {
+        "protocol": "webdav",
+        "webdavUrl": "dav.example.test/x",
+        "timeout": 20000
+      }
     },
     {
       "name": "refused-url-account",
@@ -843,7 +918,11 @@
     },
     {
       "name": "refused-timeout",
-      "request": { "protocol": "ftp", "host": "x.example.test", "timeout": 86400001 }
+      "request": {
+        "protocol": "ftp",
+        "host": "x.example.test",
+        "timeout": 86400001
+      }
     },
     {
       "name": "refused-key-without-path",
@@ -884,7 +963,11 @@
     },
     {
       "name": "unknown-protocol",
-      "request": { "protocol": "gopher", "host": "x.example.test", "timeout": 20000 }
+      "request": {
+        "protocol": "gopher",
+        "host": "x.example.test",
+        "timeout": 20000
+      }
     },
     {
       "name": "extra-fields",
@@ -928,6 +1011,16 @@
       "request": {
         "protocol": "sftp",
         "host": "x.example.test",
+        "user": "u",
+        "password": "$secret:4",
+        "timeout": 20000
+      }
+    },
+    {
+      "name": "webdav-url-alias",
+      "request": {
+        "protocol": "webdav",
+        "url": "https://dav.example.test/dav",
         "user": "u",
         "password": "$secret:4",
         "timeout": 20000

@@ -276,31 +276,49 @@ impl Store {
         self.write_json(&local_path, &local).await
     }
 
-    pub async fn connection_config_for_site(&self, id: &str) -> Result<JsonMap> {
+    /// The server a saved site names and the credentials saved for it, from
+    /// DPAPI or, under enhanced protection, the vault. Reading it first
+    /// protects any plaintext secret left in `sites.json`, which rewrites
+    /// the file. A secret that cannot be opened reads as empty.
+    pub async fn saved_server(
+        &self,
+        id: &str,
+        vault: &Vault,
+    ) -> Result<(ServerSettings, Credentials)> {
         self.migrate_plaintext_secrets().await?;
         let sites: Vec<JsonMap> = self.read_json(&self.sites_file(), Vec::new()).await;
         let site = sites
-            .into_iter()
+            .iter()
             .find(|site| {
                 site.get("kind").and_then(Value::as_str) != Some("folder")
                     && site.get("id").and_then(Value::as_str) == Some(id)
             })
             .context("saved site not found")?;
-
-        let mut config = site.clone();
-        config.remove("enc");
-        config.remove("plain");
-        config.remove("keyEnc");
-        config.remove("keyPlain");
-        config.insert(
-            "password".into(),
-            Value::String(Self::decrypt_secret(&site, "enc", "plain")),
-        );
-        config.insert(
-            "keyPassphrase".into(),
-            Value::String(Self::decrypt_secret(&site, "keyEnc", "keyPlain")),
-        );
-        Ok(config)
+        let server = ServerSettings::from_json(site)
+            .map_err(|error| anyhow::anyhow!(invalid_connection_settings(&error)))?;
+        if !vault.is_configured() {
+            let credentials = Credentials {
+                password: Self::decrypt_secret(site, "enc", "plain").into(),
+                key_passphrase: Some(Self::decrypt_secret(site, "keyEnc", "keyPlain").into()),
+            };
+            return Ok((server, credentials));
+        }
+        let mut secrets = Vec::new();
+        for field in ["password", "keyPassphrase"] {
+            let secret = match vault.get_secret(id, field).await? {
+                Some(bytes) => {
+                    String::from_utf8(bytes.to_vec()).context("vault secret is not UTF-8")?
+                }
+                None => String::new(),
+            };
+            secrets.push(SensitiveString::from(secret));
+        }
+        let key_passphrase = secrets.pop();
+        let credentials = Credentials {
+            password: secrets.pop().unwrap_or_default(),
+            key_passphrase,
+        };
+        Ok((server, credentials))
     }
 
     /// Returns one DPAPI-protected saved secret for the connection editor.
@@ -325,28 +343,6 @@ impl Store {
             anyhow::bail!("saved secret could not be decrypted");
         }
         Ok(Some(secret))
-    }
-
-    pub async fn connection_config_for_site_with_vault(
-        &self,
-        id: &str,
-        vault: &Vault,
-    ) -> Result<JsonMap> {
-        if !vault.is_configured() {
-            return self.connection_config_for_site(id).await;
-        }
-        let mut config = self.connection_config_for_site(id).await?;
-        for (field, output) in [("password", "password"), ("keyPassphrase", "keyPassphrase")] {
-            let secret = vault.get_secret(id, field).await?;
-            let value = match secret {
-                Some(bytes) => {
-                    String::from_utf8(bytes.to_vec()).context("vault secret is not UTF-8")?
-                }
-                None => String::new(),
-            };
-            config.insert(output.into(), Value::String(value));
-        }
-        Ok(config)
     }
 
     /// `confirmed` is the password move the user approved for this save, as

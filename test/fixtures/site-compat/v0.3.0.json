@@ -1383,6 +1383,74 @@
         },
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       }
+    },
+    "webdav-url-alias": {
+      "active-mode-saved": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": null
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      },
+      "http-proxy-no-password": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": null
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      },
+      "none": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": null
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      },
+      "proxy-without-host": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": null
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      },
+      "socks5-proxy": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": "$secret:3"
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      },
+      "strict-off": {
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test/dav\", user: \"u\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "logLabel": "https://dav.example.test",
+        "protocol": "webdav",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "$secret:4",
+          "proxyPassword": null
+        },
+        "server": "[\"webdav\",\"https://dav.example.test/dav\",\"u\"]"
+      }
     }
   },
   "stores": {

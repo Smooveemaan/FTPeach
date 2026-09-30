@@ -1,47 +1,20 @@
 //! Resolves connection settings, opens the browse client and transfer pool,
 //! and tears both down on disconnect or connection failure.
 
-use crate::domain::{ConnectionConfig as IpcConnectionConfig, Protocol};
+use crate::domain::{
+    ConnectRequest, Credentials, Protocol, ServerSettings, WindowConnectionSettings,
+    invalid_connection_settings,
+};
 use crate::ipc::{CommandError, ErrorCode};
-use crate::protocol::config::{ConnectionConfig, DEFAULT_TIMEOUT_MS};
+use crate::protocol::config::ConnectionConfig;
 use crate::protocol::sftp::HostKeyMismatchError;
 use crate::protocol::{ftp::FtpBackend, sftp::SftpBackend, webdav::WebDavBackend};
 use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Session, Sessions, teardown_session};
-use crate::store::{JsonMap, Store};
+use crate::store::Store;
 use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
 use std::sync::Arc;
-use zeroize::Zeroize;
-
-/// A connection map that wipes its secret fields when dropped, so a failed
-/// connect does not leave a password sitting in freed memory.
-#[derive(Clone)]
-struct SensitiveConnectionConfig(JsonMap);
-
-impl SensitiveConnectionConfig {
-    fn zeroize_secrets(&mut self) {
-        for field in ["password", "keyPassphrase", "proxyPassword"] {
-            if let Some(serde_json::Value::String(secret)) = self.0.get_mut(field) {
-                secret.zeroize();
-            }
-        }
-    }
-}
-
-impl std::ops::Deref for SensitiveConnectionConfig {
-    type Target = JsonMap;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl Drop for SensitiveConnectionConfig {
-    fn drop(&mut self) {
-        self.zeroize_secrets();
-    }
-}
 
 /// The host whose key the connection would not accept, when that is why a
 /// connect failed. The command layer turns this into the payload the
@@ -92,142 +65,52 @@ pub(crate) fn create_backend(
     backend
 }
 
-/// Merges the saved site's stored configuration under the runtime one.
-///
-/// A connect that names a `siteId` takes its credentials from the vault, but
-/// keeps the concurrency the request names.
-async fn resolve_config(
-    store: &Store,
-    vault: &Vault,
-    config: JsonMap,
-) -> Result<JsonMap, CommandError> {
-    let Some(site_id) = config
-        .get("siteId")
-        .and_then(|value| value.as_str())
-        .map(str::to_owned)
-    else {
-        return Ok(config);
-    };
-    let runtime_config = config;
-    let mut config = store
-        .connection_config_for_site_with_vault(&site_id, vault)
-        .await
-        .map_err(|error| CommandError::from_anyhow(&error))?;
-    for key in ["concurrency"] {
-        if let Some(value) = runtime_config.get(key) {
-            config.insert(key.into(), value.clone());
-        }
-    }
-    Ok(config)
-}
-
-async fn pool_size_for(_store: &Store, concurrency: Option<u16>) -> PoolSize {
-    match concurrency {
-        Some(0) => PoolSize::Unlimited,
-        Some(n) => PoolSize::Fixed(n as usize),
+/// The transfer pool grows with demand. A site's connection limit caps it,
+/// leaving one connection for browsing.
+fn pool_size(max_connections: Option<u16>) -> PoolSize {
+    match max_connections {
+        Some(limit) if limit >= 2 => PoolSize::Capped(usize::from(limit - 1)),
         _ => PoolSize::Unlimited,
     }
 }
 
-#[cfg(test)]
-mod pool_settings_tests {
-    use super::*;
-    #[test]
-    fn connection_limit_reserves_browse_slot_and_preserves_lower_transfer_limit() {
-        assert!(matches!(
-            cap_pool_connections(PoolSize::Unlimited, Some(5)),
-            PoolSize::Capped(4)
-        ));
-        assert!(matches!(
-            cap_pool_connections(PoolSize::Unlimited, Some(2)),
-            PoolSize::Capped(1)
-        ));
-        assert!(matches!(
-            cap_pool_connections(PoolSize::Fixed(2), Some(5)),
-            PoolSize::Capped(2)
-        ));
-        assert!(matches!(
-            cap_pool_connections(PoolSize::Unlimited, Some(0)),
-            PoolSize::Unlimited
-        ));
-        assert!(matches!(
-            cap_pool_connections(PoolSize::Fixed(3), None),
-            PoolSize::Fixed(3)
-        ));
-    }
-    #[tokio::test]
-    async fn global_zero_uses_unlimited_when_connection_has_no_override() {
-        let root =
-            std::env::temp_dir().join(format!("ftpeach-pool-setting-{}", uuid::Uuid::new_v4()));
-        let store = Store::new_at(root.clone());
-        store
-            .set_settings(
-                serde_json::json!({"concurrency":0,"connectTimeout":0})
-                    .as_object()
-                    .unwrap()
-                    .clone(),
-            )
-            .await
-            .unwrap();
-        assert!(matches!(
-            pool_size_for(&store, None).await,
-            PoolSize::Unlimited
-        ));
-        assert!(matches!(
-            pool_size_for(&store, Some(1)).await,
-            PoolSize::Fixed(1)
-        ));
-        std::fs::remove_dir_all(root).unwrap();
-    }
-}
-
-fn cap_pool_connections(size: PoolSize, max_connections: Option<u16>) -> PoolSize {
-    match max_connections {
-        Some(limit) if limit >= 2 => {
-            // The browse client occupies one of the session's connections.
-            let workers = usize::from(limit - 1);
-            PoolSize::Capped(match size {
-                PoolSize::Fixed(existing) | PoolSize::Capped(existing) => existing.min(workers),
-                PoolSize::Unlimited => workers,
-            })
-        }
-        _ => size,
-    }
-}
-
-/// The protocol configuration a connect request resolves to: the saved site
-/// it names, the proxy and host-key settings, and the request's own fields.
-pub(crate) async fn resolve_connection_config(
+/// The server a request names and the credentials to sign in with: the
+/// request's own, or those of the saved site it names.
+pub(crate) async fn resolve_server(
     store: &Store,
     vault: &Vault,
-    request: IpcConnectionConfig,
-) -> Result<ConnectionConfig, CommandError> {
-    let timeout_ms = request.timeout.unwrap_or(DEFAULT_TIMEOUT_MS);
-    let active_mode = request
-        .compatibility
-        .get("activeMode")
-        .and_then(serde_json::Value::as_bool)
-        .unwrap_or(false);
-    let config = resolve_config(store, vault, request.into_map()).await?;
-    let defaults = store
-        .connection_defaults(vault, timeout_ms, active_mode)
-        .await
-        .map_err(|error| CommandError::from_anyhow(&error))?;
-
-    let config = SensitiveConnectionConfig(config);
-    ConnectionConfig::from_json_map(&config, &defaults).map_err(|error| CommandError {
-        code: ErrorCode::InvalidInput,
-        message: "Invalid connection configuration".into(),
-        details: Some(format!("{error:#}")),
-    })
+    request: ConnectRequest,
+) -> Result<(ServerSettings, Credentials), CommandError> {
+    match request {
+        ConnectRequest::Direct {
+            server,
+            credentials,
+        } => Ok((server, credentials)),
+        ConnectRequest::SavedSite { site_id } => store
+            .saved_server(&site_id, vault)
+            .await
+            .map_err(|error| CommandError::from_anyhow(&error)),
+    }
 }
 
-/// Opens a session for `connection_id`, replacing whatever occupied the slot.
-///
-/// Holds the slot lock for the whole pipeline, so a second connect for the
-/// same id waits rather than racing. Cancellation goes through
-/// `ConnectingClients`, which lets a disconnect abandon a stalled connect
-/// without waiting for the lock.
+/// The configuration the protocol backend connects with: the server and its
+/// credentials, and the connection settings of the application and the
+/// window.
+pub(crate) async fn connection_config(
+    store: &Store,
+    vault: &Vault,
+    server: &ServerSettings,
+    credentials: Credentials,
+    window: WindowConnectionSettings,
+) -> Result<ConnectionConfig, CommandError> {
+    let defaults = store
+        .connection_defaults(vault, window)
+        .await
+        .map_err(|error| CommandError::from_anyhow(&error))?;
+    ConnectionConfig::build(server, credentials, &defaults)
+        .map_err(|error| invalid_connection_settings(&error))
+}
+
 /// How many connections may be open, or waiting to open, at once.
 ///
 /// Two panes per tab and a handful of tabs is the shape of ordinary use; the
@@ -235,6 +118,13 @@ pub(crate) async fn resolve_connection_config(
 /// for a slot per invented connection id.
 const MAX_SESSIONS: usize = 64;
 
+/// Opens a session for `connection_id`, replacing whatever occupied the slot.
+///
+/// Holds the slot lock for the whole pipeline, so a second connect for the
+/// same id waits rather than racing. Cancellation goes through
+/// `ConnectingClients`, which lets a disconnect abandon a stalled connect
+/// without waiting for the lock.
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn connect(
     sessions: &Sessions,
     connecting: &ConnectingClients,
@@ -242,7 +132,9 @@ pub(crate) async fn connect(
     store: &Store,
     vault: &Vault,
     connection_id: &str,
-    config: IpcConnectionConfig,
+    server: &ServerSettings,
+    credentials: Credentials,
+    window: WindowConnectionSettings,
 ) -> Result<(), ConnectFailure> {
     if !sessions.has_slot(connection_id) && sessions.slot_count() >= MAX_SESSIONS {
         return Err(ConnectFailure::from_error(CommandError::new(
@@ -254,11 +146,10 @@ pub(crate) async fn connect(
     let mut guard = slot.lock().await;
     teardown_session(&mut guard, connection_id).await;
 
-    let typed_config = resolve_connection_config(store, vault, config)
+    let typed_config = connection_config(store, vault, server, credentials, window)
         .await
         .map_err(ConnectFailure::from_error)?;
     let protocol = typed_config.protocol();
-    let concurrency = typed_config.common().concurrency;
     let browse_timeout_ms = typed_config.common().timeout_ms;
     let server = typed_config.server();
     let server_label = typed_config.log_label();
@@ -289,10 +180,7 @@ pub(crate) async fn connect(
         });
     }
 
-    let pool_size = cap_pool_connections(
-        pool_size_for(store, concurrency).await,
-        typed_config.common().max_connections,
-    );
+    let pool_size = pool_size(typed_config.common().max_connections);
     let pool_protocol = protocol;
     let pool_connection_id = connection_id.to_string();
     let pool_config = typed_config.clone();
@@ -367,22 +255,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn connection_config_zeroizes_all_secret_fields() {
-        let mut values = JsonMap::new();
-        values.insert("host".into(), serde_json::json!("example.test"));
-        values.insert("password".into(), serde_json::json!("password"));
-        values.insert("keyPassphrase".into(), serde_json::json!("passphrase"));
-        values.insert("proxyPassword".into(), serde_json::json!("proxy-password"));
-        let mut config = SensitiveConnectionConfig(values);
-
-        config.zeroize_secrets();
-
-        assert_eq!(
-            config.get("host").and_then(|value| value.as_str()),
-            Some("example.test")
-        );
-        for field in ["password", "keyPassphrase", "proxyPassword"] {
-            assert_eq!(config.get(field).and_then(|value| value.as_str()), Some(""));
-        }
+    fn a_connection_limit_leaves_one_connection_for_browsing() {
+        assert!(matches!(pool_size(Some(5)), PoolSize::Capped(4)));
+        assert!(matches!(pool_size(Some(2)), PoolSize::Capped(1)));
+        assert!(matches!(pool_size(Some(0)), PoolSize::Unlimited));
+        assert!(matches!(pool_size(None), PoolSize::Unlimited));
     }
 }

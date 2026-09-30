@@ -2,7 +2,7 @@
   "direct": {
     "anonymous-ftp-default-port": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -13,7 +13,7 @@
         "server": "[\"ftp\",\" ftp.example.test \",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -24,7 +24,7 @@
         "server": "[\"ftp\",\" ftp.example.test \",21,\"anonymous\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -35,7 +35,7 @@
         "server": "[\"ftp\",\" ftp.example.test \",21,\"anonymous\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -46,7 +46,7 @@
         "server": "[\"ftp\",\" ftp.example.test \",21,\"anonymous\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -57,7 +57,7 @@
         "server": "[\"ftp\",\" ftp.example.test \",21,\"anonymous\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \" ftp.example.test \", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp:// ftp.example.test :21",
         "protocol": "ftp",
         "secrets": {
@@ -70,7 +70,7 @@
     },
     "encoding-and-limit": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -81,7 +81,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -92,7 +92,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -103,7 +103,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -114,7 +114,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -125,7 +125,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -138,7 +138,7 @@
     },
     "extra-fields": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -149,7 +149,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -160,7 +160,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -171,7 +171,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -182,7 +182,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -193,7 +193,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: Some(2), proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -208,49 +208,49 @@
       "active-mode-saved": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       },
       "http-proxy-no-password": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       },
       "none": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       },
       "proxy-without-host": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       },
       "socks5-proxy": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       },
       "strict-off": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid remote path"
+          "details": "remotePath must be an absolute remote path without traversal",
+          "message": "Invalid connection configuration"
         }
       }
     },
     "ftp": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -261,7 +261,7 @@
         "server": "[\"ftp\",\"ftp.example.test\",21,\"alice\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -272,7 +272,7 @@
         "server": "[\"ftp\",\"ftp.example.test\",21,\"alice\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -283,7 +283,7 @@
         "server": "[\"ftp\",\"ftp.example.test\",21,\"alice\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -294,7 +294,7 @@
         "server": "[\"ftp\",\"ftp.example.test\",21,\"alice\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -305,7 +305,7 @@
         "server": "[\"ftp\",\"ftp.example.test\",21,\"alice\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://ftp.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -318,7 +318,7 @@
     },
     "ftps-canonical-spelling": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -329,7 +329,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -340,7 +340,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -351,7 +351,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -362,7 +362,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -373,7 +373,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -386,7 +386,7 @@
     },
     "ftps-legacy-spelling": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -397,7 +397,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -408,7 +408,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -419,7 +419,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -430,7 +430,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -441,7 +441,7 @@
         "server": "[\"ftp\",\"ftps.example.test\",990,\"bob\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 0, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: false, encoding: None })",
         "logLabel": "ftps://ftps.example.test:990",
         "protocol": "ftps",
         "secrets": {
@@ -542,46 +542,70 @@
     },
     "refused-concurrency": {
       "active-mode-saved": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": null
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": null
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "none": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": null
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "proxy-without-host": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": null
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "socks5-proxy": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": "$secret:3"
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "strict-off": {
-        "refused": {
-          "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
-        }
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: None })",
+        "logLabel": "ftp://x.example.test:21",
+        "protocol": "ftp",
+        "secrets": {
+          "keyPassphrase": null,
+          "password": "<empty>",
+          "proxyPassword": null
+        },
+        "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       }
     },
     "refused-crlf-password": {
@@ -764,43 +788,43 @@
       "active-mode-saved": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       },
       "http-proxy-no-password": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       },
       "none": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       },
       "proxy-without-host": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       },
       "socks5-proxy": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       },
       "strict-off": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Host is required"
+          "details": "host is required",
+          "message": "Invalid connection configuration"
         }
       }
     },
@@ -808,43 +832,43 @@
       "active-mode-saved": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       },
       "http-proxy-no-password": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       },
       "none": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       },
       "proxy-without-host": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       },
       "socks5-proxy": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       },
       "strict-off": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "WebDAV URL is required"
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
         }
       }
     },
@@ -896,43 +920,43 @@
       "active-mode-saved": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       },
       "http-proxy-no-password": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       },
       "none": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       },
       "proxy-without-host": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       },
       "socks5-proxy": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       },
       "strict-off": {
         "refused": {
           "code": "invalidInput",
-          "details": null,
-          "message": "Invalid timeout or concurrency"
+          "details": "timeout must not exceed 86400000 ms",
+          "message": "Invalid connection configuration"
         }
       }
     },
@@ -1026,7 +1050,7 @@
     },
     "sftp-key": {
       "active-mode-saved": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1037,7 +1061,7 @@
         "server": "[\"sftp\",\"2001:db8::1\",22,\"carol\"]"
       },
       "http-proxy-no-password": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1048,7 +1072,7 @@
         "server": "[\"sftp\",\"2001:db8::1\",22,\"carol\"]"
       },
       "none": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1059,7 +1083,7 @@
         "server": "[\"sftp\",\"2001:db8::1\",22,\"carol\"]"
       },
       "proxy-without-host": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1070,7 +1094,7 @@
         "server": "[\"sftp\",\"2001:db8::1\",22,\"carol\"]"
       },
       "socks5-proxy": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1081,7 +1105,7 @@
         "server": "[\"sftp\",\"2001:db8::1\",22,\"carol\"]"
       },
       "strict-off": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, concurrency: None, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: false })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 30000, proxy: None }, host: \"2001:db8::1\", port: 22, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: false })",
         "logLabel": "sftp://[2001:db8::1]:22",
         "protocol": "sftp",
         "secrets": {
@@ -1094,7 +1118,7 @@
     },
     "sftp-password": {
       "active-mode-saved": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1105,7 +1129,7 @@
         "server": "[\"sftp\",\"sftp.example.test\",2222,\"carol\"]"
       },
       "http-proxy-no-password": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1116,7 +1140,7 @@
         "server": "[\"sftp\",\"sftp.example.test\",2222,\"carol\"]"
       },
       "none": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1127,7 +1151,7 @@
         "server": "[\"sftp\",\"sftp.example.test\",2222,\"carol\"]"
       },
       "proxy-without-host": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1138,7 +1162,7 @@
         "server": "[\"sftp\",\"sftp.example.test\",2222,\"carol\"]"
       },
       "socks5-proxy": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1149,7 +1173,7 @@
         "server": "[\"sftp\",\"sftp.example.test\",2222,\"carol\"]"
       },
       "strict-off": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: false })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: Some([REDACTED]), strict_host_key_check: false })",
         "logLabel": "sftp://sftp.example.test:2222",
         "protocol": "sftp",
         "secrets": {
@@ -1162,7 +1186,7 @@
     },
     "sftp-without-passphrase-field": {
       "active-mode-saved": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1173,7 +1197,7 @@
         "server": "[\"sftp\",\"x.example.test\",22,\"u\"]"
       },
       "http-proxy-no-password": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1184,7 +1208,7 @@
         "server": "[\"sftp\",\"x.example.test\",22,\"u\"]"
       },
       "none": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1195,7 +1219,7 @@
         "server": "[\"sftp\",\"x.example.test\",22,\"u\"]"
       },
       "proxy-without-host": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1206,7 +1230,7 @@
         "server": "[\"sftp\",\"x.example.test\",22,\"u\"]"
       },
       "socks5-proxy": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: true })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1217,7 +1241,7 @@
         "server": "[\"sftp\",\"x.example.test\",22,\"u\"]"
       },
       "strict-off": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: false })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 22, user: \"u\", password: [REDACTED], use_key_auth: false, key_path: None, key_passphrase: None, strict_host_key_check: false })",
         "logLabel": "sftp://x.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -1230,27 +1254,27 @@
     },
     "unknown-protocol": {
       "active-mode-saved": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       },
       "http-proxy-no-password": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       },
       "none": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       },
       "proxy-without-host": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       },
       "socks5-proxy": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       },
       "strict-off": {
-        "unreadable": "unknown variant `gopher`, expected one of `ftp`, `ftps`, `sftp`, `webdav`"
+        "unreadable": "unsupported protocol: gopher"
       }
     },
     "webdav-http-cleartext": {
       "active-mode-saved": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1261,7 +1285,7 @@
         "server": "[\"webdav\",\"http://dav.example.test/dav\",\"erin\"]"
       },
       "http-proxy-no-password": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1272,7 +1296,7 @@
         "server": "[\"webdav\",\"http://dav.example.test/dav\",\"erin\"]"
       },
       "none": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1283,7 +1307,7 @@
         "server": "[\"webdav\",\"http://dav.example.test/dav\",\"erin\"]"
       },
       "proxy-without-host": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1294,7 +1318,7 @@
         "server": "[\"webdav\",\"http://dav.example.test/dav\",\"erin\"]"
       },
       "socks5-proxy": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1305,7 +1329,7 @@
         "server": "[\"webdav\",\"http://dav.example.test/dav\",\"erin\"]"
       },
       "strict-off": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"http://dav.example.test/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
         "logLabel": "http://dav.example.test",
         "protocol": "webdav",
         "secrets": {
@@ -1318,7 +1342,7 @@
     },
     "webdav-https": {
       "active-mode-saved": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1329,7 +1353,7 @@
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       },
       "http-proxy-no-password": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1340,7 +1364,7 @@
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       },
       "none": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1351,7 +1375,7 @@
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       },
       "proxy-without-host": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1362,7 +1386,7 @@
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       },
       "socks5-proxy": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1373,7 +1397,7 @@
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       },
       "strict-off": {
-        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, concurrency: None, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+        "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 20000, proxy: None }, url: \"https://dav.example.test:8443/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
         "logLabel": "https://dav.example.test:8443",
         "protocol": "webdav",
         "secrets": {
@@ -1383,6 +1407,50 @@
         },
         "server": "[\"webdav\",\"https://dav.example.test:8443/remote.php/dav\",\"dave\"]"
       }
+    },
+    "webdav-url-alias": {
+      "active-mode-saved": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      },
+      "http-proxy-no-password": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      },
+      "none": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      },
+      "proxy-without-host": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      },
+      "socks5-proxy": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      },
+      "strict-off": {
+        "refused": {
+          "code": "invalidInput",
+          "details": "webdavUrl is required",
+          "message": "Invalid connection configuration"
+        }
+      }
     }
   },
   "stores": {
@@ -1390,7 +1458,7 @@
       "connect": {
         "dav-http": {
           "outcome": {
-            "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, url: \"http://dav.example.test:8080/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
+            "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, url: \"http://dav.example.test:8080/dav\", user: \"erin\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: true, ca_cert_path: None })",
             "logLabel": "http://dav.example.test:8080",
             "protocol": "webdav",
             "secrets": {
@@ -1523,7 +1591,7 @@
         },
         "dav-https": {
           "outcome": {
-            "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: Some(8), timeout_ms: 15000, concurrency: None, proxy: None }, url: \"https://dav.example.test/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
+            "config": "Webdav(WebDavConfig { common: CommonConfig { max_connections: Some(8), timeout_ms: 15000, proxy: None }, url: \"https://dav.example.test/remote.php/dav\", user: \"dave\", password: [REDACTED], allow_invalid_cert: false, allow_cleartext_auth: false, ca_cert_path: None })",
             "logLabel": "https://dav.example.test",
             "protocol": "webdav",
             "secrets": {
@@ -1656,7 +1724,7 @@
         },
         "ftp-1": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(4), timeout_ms: 15000, concurrency: None, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: Some(Encoding { windows-1251 }) })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(4), timeout_ms: 15000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: Some(Encoding { windows-1251 }) })",
             "logLabel": "ftp://ftp.example.test:21",
             "protocol": "ftp",
             "secrets": {
@@ -1789,7 +1857,7 @@
         },
         "ftps-1": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"ftps.example.test\", port: 990, user: \"bob\", password: [REDACTED], secure: true, allow_invalid_cert: true, ca_cert_path: Some(\"C:\\\\certs\\\\ca.pem\"), active_mode: true, encoding: None })",
             "logLabel": "ftps://ftps.example.test:990",
             "protocol": "ftps",
             "secrets": {
@@ -1922,7 +1990,7 @@
         },
         "sftp-key": {
           "outcome": {
-            "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: Some(0), timeout_ms: 15000, concurrency: None, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+            "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: Some(0), timeout_ms: 15000, proxy: None }, host: \"sftp.example.test\", port: 2222, user: \"carol\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_ed25519\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
             "logLabel": "sftp://sftp.example.test:2222",
             "protocol": "sftp",
             "secrets": {
@@ -4666,7 +4734,7 @@
       "connect": {
         "anonymous": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"anon.example.test\", port: 0, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"anon.example.test\", port: 0, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftp://anon.example.test:0",
             "protocol": "ftp",
             "secrets": {
@@ -5480,7 +5548,7 @@
         },
         "extra-keys": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: Some(3), proxy: None }, host: \"e.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"e.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftp://e.example.test:21",
             "protocol": "ftp",
             "secrets": {
@@ -5646,7 +5714,7 @@
         },
         "legacy-ftps": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"old.example.test\", port: 21, user: \"frank\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"old.example.test\", port: 21, user: \"frank\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftps://old.example.test:21",
             "protocol": "ftps",
             "secrets": {
@@ -5812,7 +5880,7 @@
         },
         "no-protocol": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"np.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"np.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftp://np.example.test:21",
             "protocol": "ftp",
             "secrets": {
@@ -5978,7 +6046,7 @@
         },
         "null-metadata": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"n.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"n.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftp://n.example.test:21",
             "protocol": "ftp",
             "secrets": {
@@ -6306,7 +6374,7 @@
         },
         "string-numbers": {
           "outcome": {
-            "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 15000, concurrency: None, proxy: None }, host: \"s.example.test\", port: 2222, user: \"gina\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_rsa\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+            "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 15000, proxy: None }, host: \"s.example.test\", port: 2222, user: \"gina\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\id_rsa\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
             "logLabel": "sftp://s.example.test:2222",
             "protocol": "sftp",
             "secrets": {
@@ -6472,7 +6540,7 @@
         },
         "undecryptable": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"u.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"u.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
             "logLabel": "ftp://u.example.test:21",
             "protocol": "ftp",
             "secrets": {
@@ -9130,7 +9198,7 @@
     ],
     "none": {
       "vault-empty": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"ve.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"ve.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftps://ve.example.test:21",
         "protocol": "ftps",
         "secrets": {
@@ -9141,7 +9209,7 @@
         "server": "[\"ftp\",\"ve.example.test\",21,\"anonymous\"]"
       },
       "vault-ftp": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"v.example.test\", port: 21, user: \"hank\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"v.example.test\", port: 21, user: \"hank\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://v.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -9152,7 +9220,7 @@
         "server": "[\"ftp\",\"v.example.test\",21,\"hank\"]"
       },
       "vault-sftp": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: None }, host: \"vs.example.test\", port: 22, user: \"ivy\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\vault\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"vs.example.test\", port: 22, user: \"ivy\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\vault\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://vs.example.test:22",
         "protocol": "sftp",
         "secrets": {
@@ -9165,7 +9233,7 @@
     },
     "socks5-proxy": {
       "vault-empty": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ve.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"ve.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: true, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftps://ve.example.test:21",
         "protocol": "ftps",
         "secrets": {
@@ -9176,7 +9244,7 @@
         "server": "[\"ftp\",\"ve.example.test\",21,\"anonymous\"]"
       },
       "vault-ftp": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"v.example.test\", port: 21, user: \"hank\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"v.example.test\", port: 21, user: \"hank\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
         "logLabel": "ftp://v.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -9187,7 +9255,7 @@
         "server": "[\"ftp\",\"v.example.test\",21,\"hank\"]"
       },
       "vault-sftp": {
-        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, concurrency: None, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"vs.example.test\", port: 22, user: \"ivy\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\vault\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
+        "config": "Sftp(SftpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"vs.example.test\", port: 22, user: \"ivy\", password: [REDACTED], use_key_auth: true, key_path: Some(\"C:\\\\keys\\\\vault\"), key_passphrase: Some([REDACTED]), strict_host_key_check: true })",
         "logLabel": "sftp://vs.example.test:22",
         "protocol": "sftp",
         "secrets": {

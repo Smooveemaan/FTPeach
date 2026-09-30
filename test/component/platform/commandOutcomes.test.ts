@@ -341,7 +341,12 @@ test.each(cases.filter((target) => target.sensitive))(
 const connectCase: Case = {
   name: 'session.connect',
   command: 'session_connect',
-  call: () => api.session.connect('c', { protocol: 'sftp' }),
+  call: () =>
+    api.session.connect(
+      'c',
+      { kind: 'savedSite', siteId: 's' },
+      { timeoutMs: 20000, activeMode: false },
+    ),
   success: [],
 };
 const changedKey = { host: 'h', port: 22, expected: 'SHA256:old', actual: 'SHA256:new' };

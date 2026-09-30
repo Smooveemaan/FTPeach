@@ -9,6 +9,9 @@ use serde_json::{Map, Value};
 
 pub type JsonMap = Map<String, Value>;
 
-pub use connection::{ConnectionConfig, Protocol};
+pub use connection::{
+    ConnectRequest, Credentials, Protocol, ServerSettings, WindowConnectionSettings,
+    invalid_connection_settings,
+};
 pub use settings::AppSettings;
 pub use site::{SavedSite, SiteLayoutEntry};

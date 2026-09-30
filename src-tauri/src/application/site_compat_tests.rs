@@ -170,15 +170,46 @@ async fn apply_settings(store: &Store, vault: &Vault, patch: &Value) {
 
 /// The protocol configuration a request resolves to, as the protocol layer
 /// receives it, and which secrets it carries.
+///
+/// The cases are written in the form 0.3.0's renderer sent: one object, with
+/// `siteId` for a bookmark. They are passed on the way the renderer sends
+/// the same connect now: the server, its credentials and the window's two
+/// settings apart.
 async fn resolved(store: &Store, vault: &Vault, request: &Value) -> Value {
-    let request: crate::domain::ConnectionConfig = match serde_json::from_value(expand(request)) {
-        Ok(request) => request,
-        Err(error) => return json!({ "unreadable": error.to_string() }),
+    let mut sent = expand(request);
+    let fields = sent.as_object_mut().unwrap();
+    let window = json!({
+        "timeoutMs": fields.remove("timeout").unwrap_or(json!(20_000)),
+        "activeMode": fields.remove("activeMode").unwrap_or(json!(false)),
+    });
+    let request = match fields.get("siteId").and_then(Value::as_str) {
+        Some(id) => json!({ "kind": "savedSite", "siteId": id }),
+        None => {
+            let mut credentials = serde_json::Map::new();
+            for key in ["password", "keyPassphrase"] {
+                if let Some(value) = fields.remove(key) {
+                    credentials.insert(key.into(), value);
+                }
+            }
+            json!({ "kind": "direct", "server": fields, "credentials": credentials })
+        }
     };
-    if let Err(error) = request.validate() {
-        return refused(&error);
-    }
-    match session_service::resolve_connection_config(store, vault, request).await {
+    let (request, window) = match (
+        serde_json::from_value::<crate::domain::ConnectRequest>(request),
+        serde_json::from_value::<crate::domain::WindowConnectionSettings>(window),
+    ) {
+        (Ok(request), Ok(window)) => (request, window),
+        (Err(error), _) | (_, Err(error)) => {
+            return json!({ "unreadable": error.to_string() });
+        }
+    };
+    let config = match session_service::resolve_server(store, vault, request).await {
+        Ok((server, credentials)) => {
+            session_service::connection_config(store, vault, &server, credentials, window).await
+        }
+        Err(error) => Err(error),
+    };
+    match config {
         Ok(config) => describe(&config),
         Err(error) => refused(&error),
     }
@@ -486,6 +517,24 @@ fn differences(a: &Value, b: &Value, at: &str, out: &mut Vec<String>) {
     }
 }
 
+/// 0.3.0's configuration had a `concurrency` field, which nothing set: the
+/// pool was demand-sized unless a request or a saved site named one. The
+/// field is gone, so an unset one is not a difference. One that was set is.
+fn without_unset_concurrency(value: Value) -> Value {
+    match value {
+        Value::String(text) => Value::String(text.replace("concurrency: None, ", "")),
+        Value::Array(items) => {
+            Value::Array(items.into_iter().map(without_unset_concurrency).collect())
+        }
+        Value::Object(map) => Value::Object(
+            map.into_iter()
+                .map(|(key, value)| (key, without_unset_concurrency(value)))
+                .collect(),
+        ),
+        other => other,
+    }
+}
+
 fn read_fixture(name: &str) -> Value {
     serde_json::from_str(&std::fs::read_to_string(fixture(name)).unwrap()).unwrap()
 }
@@ -507,7 +556,23 @@ async fn saved_sites_and_connections_match_their_goldens() {
     );
 
     let mut from_0_3_0 = Vec::new();
-    differences(&read_fixture("v0.3.0.json"), &actual, "", &mut from_0_3_0);
+    differences(
+        &without_unset_concurrency(read_fixture("v0.3.0.json")),
+        &actual,
+        "",
+        &mut from_0_3_0,
+    );
+    // A `*` segment stands for any one segment: most requests run under each
+    // settings case, and a reason usually holds for all of them.
+    let matches = |pattern: &str, pointer: &str| {
+        let (pattern, pointer): (Vec<&str>, Vec<&str>) =
+            (pattern.split('/').collect(), pointer.split('/').collect());
+        pattern.len() == pointer.len()
+            && pattern
+                .iter()
+                .zip(&pointer)
+                .all(|(expected, actual)| *expected == "*" || expected == actual)
+    };
     let explained = read_fixture("differences.json");
     let explained: Vec<&str> = explained
         .as_object()
@@ -517,11 +582,11 @@ async fn saved_sites_and_connections_match_their_goldens() {
         .collect();
     let unexplained: Vec<&String> = from_0_3_0
         .iter()
-        .filter(|pointer| !explained.contains(&pointer.as_str()))
+        .filter(|pointer| !explained.iter().any(|pattern| matches(pattern, pointer)))
         .collect();
     let stale: Vec<&&str> = explained
         .iter()
-        .filter(|pointer| !from_0_3_0.iter().any(|changed| changed == *pointer))
+        .filter(|pattern| !from_0_3_0.iter().any(|pointer| matches(pattern, pointer)))
         .collect();
     assert!(
         unexplained.is_empty() && stale.is_empty(),

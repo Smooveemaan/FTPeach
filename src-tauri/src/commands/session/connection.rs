@@ -1,11 +1,12 @@
 //! Connection lifecycle commands: IPC in, IPC out.
 //!
 //! The pipeline itself lives in `application::session_service`. What is left
-//! here is the translation — validating the incoming config, and shaping the
-//! service's outcome into the response the renderer expects.
+//! here is the translation — refusing key and certificate files the user
+//! never chose, and shaping the service's outcome into the response the
+//! renderer expects.
 
 use crate::application::session_service;
-use crate::domain::ConnectionConfig as IpcConnectionConfig;
+use crate::domain::{ConnectRequest, WindowConnectionSettings};
 use crate::ipc::CommandResult;
 use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
@@ -61,19 +62,15 @@ pub async fn session_connect(
     vault: State<'_, Vault>,
     approved_paths: State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     connection_id: String,
-    config: IpcConnectionConfig,
+    request: ConnectRequest,
+    settings: WindowConnectionSettings,
 ) -> CommandResult<ConnectOutcome> {
-    config.validate()?;
+    let (server, credentials) = session_service::resolve_server(&store, &vault, request).await?;
     // A private key or a CA bundle is read from disk by the protocol backend,
     // which has no way to ask about provenance. An address on a share the
     // user never chose is refused here, before the file is opened.
-    for key in ["keyPath", "caCertPath"] {
-        if let Some(path) = config
-            .compatibility
-            .get(key)
-            .and_then(serde_json::Value::as_str)
-            .filter(|value| !value.is_empty())
-        {
+    for path in [&server.key_path, &server.ca_cert_path] {
+        if !path.is_empty() {
             approved_paths.preflight(std::path::Path::new(path))?;
         }
     }
@@ -84,7 +81,9 @@ pub async fn session_connect(
         &store,
         &vault,
         &connection_id,
-        config,
+        &server,
+        credentials,
+        settings,
     )
     .await;
 

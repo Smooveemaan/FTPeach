@@ -1,4 +1,26 @@
 {
-  "/direct/extra-fields/http-proxy-no-password/config": "A proxyPassword field in a direct connect request no longer becomes the saved proxy's password: the proxy comes from the saved settings only (a bug fix; the renderer never sends one).",
-  "/direct/extra-fields/http-proxy-no-password/secrets/proxyPassword": "The same: the proxy has no password, as saved."
+  "/direct/extra-fields/http-proxy-no-password/secrets/proxyPassword": "A proxyPassword field in a direct connect request no longer becomes the saved proxy's password: the proxy comes from the saved settings only (a bug fix; the renderer never sends one).",
+  "/direct/extra-fields/*/config": "A concurrency field in a direct connect request no longer fixes the size of the transfer pool: the field is gone and the pool is demand-sized, capped by the site's connection limit. With the http proxy, the proxy also has no password, as saved.",
+  "/stores/legacy-array-shapes/connect/extra-keys/outcome/config": "A concurrency key in a stored site no longer fixes the size of the transfer pool, for the same reason. No version of FTPeach wrote one.",
+  "/direct/refused-concurrency/*/refused": "A direct connect request's concurrency is no longer read, so a value above 128 is not refused and the connect goes ahead.",
+  "/direct/refused-concurrency/*/config": "The same.",
+  "/direct/refused-concurrency/*/logLabel": "The same.",
+  "/direct/refused-concurrency/*/protocol": "The same.",
+  "/direct/refused-concurrency/*/secrets": "The same.",
+  "/direct/refused-concurrency/*/server": "The same.",
+  "/direct/refused-no-host/*/refused/message": "A direct connect is checked by the same code as a saved site's: the refusal keeps its code (invalidInput, which is what the renderer shows by) and says what was wrong in details.",
+  "/direct/refused-no-host/*/refused/details": "The same.",
+  "/direct/refused-no-url/*/refused/message": "The same.",
+  "/direct/refused-no-url/*/refused/details": "The same.",
+  "/direct/refused-timeout/*/refused/message": "The same.",
+  "/direct/refused-timeout/*/refused/details": "The same.",
+  "/direct/extra-fields-sftp/*/refused/message": "The same.",
+  "/direct/extra-fields-sftp/*/refused/details": "The same.",
+  "/direct/unknown-protocol/*/unreadable": "A request naming an unknown protocol is still unreadable; the reader that saved sites use says so in its own words.",
+  "/direct/webdav-url-alias/*/config": "A direct connect no longer accepts url as another name for webdavUrl: the renderer never sent it, and a saved site never read it. The connect is refused for want of a WebDAV address.",
+  "/direct/webdav-url-alias/*/logLabel": "The same.",
+  "/direct/webdav-url-alias/*/protocol": "The same.",
+  "/direct/webdav-url-alias/*/secrets": "The same.",
+  "/direct/webdav-url-alias/*/server": "The same.",
+  "/direct/webdav-url-alias/*/refused": "The same."
 }

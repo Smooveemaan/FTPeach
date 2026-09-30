@@ -14,9 +14,10 @@ Viewport constraints use CSS viewport units in `foundation.css`; resizing does n
 write pixel dimensions back into inherited root custom properties from JavaScript.
 
 - `app/` composes dialogs, commands, bootstrap and status UI. `Application` wires feature
-  facades and renders the shell; `useApplicationMenuCommands` owns the global keyboard/menu
-  command surface. `applicationWorkspaceModel` maps pane, transfer, log and layout state to the
-  explicit `Workspace` view contract; `applicationDialogsModel` does the same for dialogs and owns
+  facades and renders the shell; `useApplicationMenuCommands` registers the global shortcuts and
+  builds the menu bar from one command context defined in `menus.ts`. `applicationWorkspaceModel`
+  maps pane, transfer, log and layout state to the explicit `Workspace` view contract;
+  `applicationDialogsModel` does the same for dialogs and owns
   their cross-feature workflows such as diagnostics export, file-mode changes and application
   associations. `app/layout/` owns workspace geometry, section resize state and persistence;
   `TitleBar` and `ViewToolbar` belong to the application shell;

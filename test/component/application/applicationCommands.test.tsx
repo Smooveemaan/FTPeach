@@ -7,7 +7,7 @@ import { expect, test, vi } from 'vitest';
 import { useApplicationMenuCommands } from '../../../src/app/useApplicationMenuCommands.ts';
 import { makePane, makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { PaneId, PaneState } from '../../../src/features/file-browser/panes/paneModel.ts';
-import type { ShortcutOverrides } from '../../../src/shortcuts/resolve.ts';
+import type { FileSearchHandle } from '../../../src/features/file-browser/index.ts';
 import i18n from '../../../src/i18n/index.ts';
 
 interface HarnessOptions {
@@ -15,7 +15,7 @@ interface HarnessOptions {
   modalOpen?: boolean;
   freePane?: PaneId | null;
   b?: PaneState;
-  keyboardShortcuts?: ShortcutOverrides | null;
+  keyboardShortcuts?: Record<string, string> | null;
 }
 
 function harness({
@@ -71,78 +71,60 @@ type Harness = Omit<ReturnType<typeof harness>, 'press' | 'menus'>;
 
 // The only place that knows how Application wires its commands.
 function mount(h: Harness) {
-  const { browser } = h;
   const menuOnly = () => {};
   return useApplicationMenuCommands({
-    commands: {
-      modalOpen: h.modalOpen,
-      keyboardShortcuts: h.keyboardShortcuts,
-      searchLocal: h.search.a,
-      searchRemote: h.search.b,
-      toggleHiddenFiles: h.layout.toggleHiddenFiles,
-      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
-      startPaneConnect: browser.startPaneConnect,
-      refreshBothPanes: browser.refreshBothPanes,
-      panes: browser.panes,
-      handleSaveSite: h.saveSite,
-      setShowSettings: h.dialogs.setShowSettings,
-      openNewTab: browser.openNewTab,
-      tabs: browser.tabs,
-      closeTab: browser.closeTab,
-      reopenClosedTab: browser.reopenClosedTab,
-      activeTabId: browser.activeTabId,
-      setActiveTabId: browser.setActiveTabId,
+    modalOpen: h.modalOpen,
+    settings: {
+      interface: { theme: 'light' },
+      layout: {
+        showHiddenFiles: false,
+        showLocalPane: true,
+        showRemotePane: true,
+        showTransferQueue: true,
+      },
+      logging: { logEnabled: false },
+      shortcuts: { keyboardShortcuts: h.keyboardShortcuts ?? {} },
     },
-    menu: {
-      modalOpen: h.modalOpen,
-      openNewTab: browser.openNewTab,
-      tabs: browser.tabs,
-      closeTab: browser.closeTab,
-      reopenClosedTab: browser.reopenClosedTab,
+    browser: {
+      ...h.browser,
       canReopenClosedTab: false,
-      activeTabId: browser.activeTabId,
-      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
-      startPaneConnect: browser.startPaneConnect,
       soleConnectedRemotePane: null,
-      connectedRemotePanes: [],
-      disconnectPane: menuOnly,
-      handleSaveSite: h.saveSite,
-      setShowExportSettings: menuOnly,
-      setShowImportSettings: menuOnly,
-      requestQuit: menuOnly,
-      theme: 'light',
-      changeTheme: menuOnly,
-      resetLayout: menuOnly,
+      disconnectPane: async () => {},
       syncBrowsing: false,
       syncEligible: false,
       toggleSync: menuOnly,
-      showHiddenFiles: false,
-      toggleHiddenFiles: h.layout.toggleHiddenFiles,
-      showLocalPane: true,
+      canCopyBetween: () => false,
+      refreshPane: async () => {},
+    },
+    clipboard: { copySelectedWithConfirm: async () => {} },
+    workspace: {
       toggleLocalPane: menuOnly,
-      showRemotePane: true,
       toggleRemotePane: menuOnly,
-      showTransferQueue: true,
       toggleTransferQueue: menuOnly,
-      logEnabled: false,
+      toggleHiddenFiles: h.layout.toggleHiddenFiles,
       toggleLog: menuOnly,
+      togglePaneOrientation: menuOnly,
       effectivePaneOrientation: 'horizontal',
       windowNarrow: false,
-      togglePaneOrientation: menuOnly,
-      refreshBothPanes: browser.refreshBothPanes,
-      panes: browser.panes,
-      canCopyBetween: () => false,
-      copySelectedWithConfirm: menuOnly,
-      hasCompletedTransfers: false,
-      clearCompletedTransfers: menuOnly,
-      refreshPane: menuOnly,
-      openSiteManager: menuOnly,
-      openLocalPathManager: menuOnly,
-      openSettings: () => h.dialogs.setShowSettings(true),
-      openAbout: menuOnly,
-      checkForUpdates: menuOnly,
-      keyboardShortcuts: h.keyboardShortcuts,
     },
+    dialogs: {
+      setShowSettings: h.dialogs.setShowSettings,
+      setShowAbout: menuOnly,
+      setShowSiteManagerDialog: menuOnly,
+      setShowLocalPathManagerDialog: menuOnly,
+      setShowExportSettings: menuOnly,
+      setShowImportSettings: menuOnly,
+    },
+    transfers: { hasCompletedTransfers: false, clearCompletedTransfers: menuOnly },
+    applicationSettings: { changeTheme: menuOnly },
+    searchInputRefs: {
+      a: { current: { toggle: h.search.a } as unknown as FileSearchHandle },
+      b: { current: { toggle: h.search.b } as unknown as FileSearchHandle },
+    },
+    saveSite: h.saveSite,
+    quit: { request: menuOnly },
+    resetLayout: menuOnly,
+    checkForUpdates: menuOnly,
   });
 }
 

@@ -57,14 +57,8 @@ export default function Application() {
   // Only the names Application itself reads; the whole object goes to the
   // dialogs model and the panes, so a new dialog does not need a line here.
   const {
-    setShowSettings,
-    setShowAbout,
     showSaveSite,
     setShowSaveSite,
-    setShowSiteManagerDialog,
-    setShowLocalPathManagerDialog,
-    setShowExportSettings,
-    setShowImportSettings,
     newFolderTarget,
     newFileTarget,
     moveToTarget,
@@ -90,6 +84,8 @@ export default function Application() {
   const searchInputBRef = useRef<FileSearchHandle | null>(null);
   const searchInputRefs = useMemo(() => ({ a: searchInputARef, b: searchInputBRef }), []);
 
+  // The toggles go to the menu bar with the object; the rest is read here.
+  const workspace = useWorkspaceLayout({ layout, logging, update: updateSettings });
   const {
     windowNarrow,
     effectivePaneOrientation,
@@ -114,16 +110,15 @@ export default function Application() {
     toggleLocalPane,
     toggleRemotePane,
     toggleTransferQueue,
-    toggleHiddenFiles,
     toggleLog,
     togglePaneOrientation,
-  } = useWorkspaceLayout({ layout, logging, update: updateSettings });
+  } = workspace;
 
   useTooltip();
 
   // Settings and theme
 
-  // The pane columns go to the panes as they are; the rest is read here.
+  // The pane columns and the theme go on with the object; the rest is read here.
   const applicationSettings = useApplicationSettings({
     layout,
     applySettings: applySettingsState,
@@ -132,7 +127,6 @@ export default function Application() {
   });
   const {
     applySettings,
-    changeTheme,
     changeTransferColumnWidths,
     changeTransferColumnOrder,
     changeTransferHiddenColumns,
@@ -180,7 +174,6 @@ export default function Application() {
     resumeAllTransfers,
     retryAllTransfers,
     clearCompletedTransfers,
-    hasCompletedTransfers,
     hasActiveTransfers,
     hasPausableTransfers,
     canResumeAllTransfers,
@@ -329,76 +322,19 @@ export default function Application() {
   });
 
   const menus = useApplicationMenuCommands({
-    commands: {
-      modalOpen,
-      keyboardShortcuts: settings.shortcuts.keyboardShortcuts,
-      searchLocal: () => searchInputRefs.a.current?.toggle(),
-      searchRemote: () => searchInputRefs.b.current?.toggle(),
-      toggleHiddenFiles,
-      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
-      startPaneConnect: browser.startPaneConnect,
-      refreshBothPanes: browser.refreshBothPanes,
-      panes,
-      handleSaveSite,
-      setShowSettings,
-      openNewTab: browser.openNewTab,
-      tabs,
-      closeTab: browser.closeTab,
-      reopenClosedTab: browser.reopenClosedTab,
-      activeTabId,
-      setActiveTabId: browser.setActiveTabId,
-    },
-    menu: {
-      modalOpen,
-      openNewTab: browser.openNewTab,
-      tabs,
-      closeTab: browser.closeTab,
-      reopenClosedTab: browser.reopenClosedTab,
-      canReopenClosedTab: browser.canReopenClosedTab,
-      activeTabId,
-      freeConnectTargetPaneId: browser.freeConnectTargetPaneId,
-      startPaneConnect: browser.startPaneConnect,
-      soleConnectedRemotePane: browser.soleConnectedRemotePane,
-      connectedRemotePanes: browser.connectedRemotePanes,
-      connectionLabels: browser.connectionLabels,
-      disconnectPane: browser.disconnectPane,
-      handleSaveSite,
-      setShowExportSettings,
-      setShowImportSettings,
-      requestQuit: quitWhenIdle.request,
-      theme: settings.interface.theme,
-      changeTheme,
-      resetLayout,
-      syncBrowsing: browser.syncBrowsing,
-      syncEligible: browser.syncEligible,
-      toggleSync: browser.toggleSync,
-      showHiddenFiles: layout.showHiddenFiles,
-      toggleHiddenFiles,
-      showLocalPane: layout.showLocalPane,
-      toggleLocalPane,
-      showRemotePane: layout.showRemotePane,
-      toggleRemotePane,
-      showTransferQueue: layout.showTransferQueue,
-      toggleTransferQueue,
-      logEnabled: logging.logEnabled,
-      toggleLog,
-      effectivePaneOrientation,
-      windowNarrow,
-      togglePaneOrientation,
-      refreshBothPanes: browser.refreshBothPanes,
-      panes,
-      canCopyBetween: browser.canCopyBetween,
-      copySelectedWithConfirm: clipboard.copySelectedWithConfirm,
-      hasCompletedTransfers,
-      clearCompletedTransfers,
-      refreshPane: browser.refreshPane,
-      openSiteManager: () => setShowSiteManagerDialog(true),
-      openLocalPathManager: () => setShowLocalPathManagerDialog(true),
-      openSettings: () => setShowSettings(true),
-      openAbout: () => setShowAbout(true),
-      checkForUpdates,
-      keyboardShortcuts: settings.shortcuts.keyboardShortcuts,
-    },
+    modalOpen,
+    settings,
+    browser,
+    clipboard,
+    workspace,
+    dialogs,
+    transfers,
+    applicationSettings,
+    searchInputRefs,
+    saveSite: handleSaveSite,
+    quit: quitWhenIdle,
+    resetLayout,
+    checkForUpdates,
   });
 
   // What a pane cannot do inside the file browser: the dialogs, transfers and

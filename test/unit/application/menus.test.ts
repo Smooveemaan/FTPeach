@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildMenus } from '../../../src/app/menus.ts';
-import type { MenusContext } from '../../../src/app/menus.ts';
+import type { ApplicationCommandContext } from '../../../src/app/menus.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import i18n from '../../../src/i18n/index.ts';
 
@@ -13,57 +13,70 @@ function harness() {
     (...args: unknown[]) => {
       calls.push([name, ...args]);
     };
-  const ctx: MenusContext = {
+  const ctx: ApplicationCommandContext = {
     modalOpen: false,
-    openNewTab: record('new'),
-    tabs: [tab],
-    closeTab: record('close'),
-    reopenClosedTab: record('reopen'),
-    canReopenClosedTab: false,
-    activeTabId: tab.id,
-    freeConnectTargetPaneId: 'b',
-    startPaneConnect: record('connect'),
-    soleConnectedRemotePane: null,
-    connectedRemotePanes: [],
-    disconnectPane: record('disconnect'),
-    handleSaveSite: (id) => () => record('save')(id),
-    setShowExportSettings: record('export'),
-    setShowImportSettings: record('import'),
-    requestQuit: record('quit'),
-    theme: 'dark',
-    changeTheme: record('theme'),
-    resetLayout: record('reset'),
-    syncBrowsing: false,
-    syncEligible: false,
-    toggleSync: record('sync'),
-    showHiddenFiles: false,
-    toggleHiddenFiles: record('hidden'),
-    showLocalPane: true,
-    toggleLocalPane: record('local'),
-    showRemotePane: true,
-    toggleRemotePane: record('remote'),
-    showTransferQueue: true,
-    toggleTransferQueue: record('queue'),
-    logEnabled: false,
-    toggleLog: record('log'),
-    effectivePaneOrientation: 'horizontal',
-    windowNarrow: false,
-    togglePaneOrientation: record('orientation'),
-    refreshBothPanes: record('refreshBoth'),
-    panes: tab.panes,
-    canCopyBetween: () => true,
-    copySelectedWithConfirm: (source, target, refreshSource, refreshTarget) => {
-      record('copy')(source.id, target.id);
-      refreshSource();
-      refreshTarget();
+    settings: {
+      interface: { theme: 'dark' },
+      layout: {
+        showHiddenFiles: false,
+        showLocalPane: true,
+        showRemotePane: true,
+        showTransferQueue: true,
+      },
+      logging: { logEnabled: false },
+      shortcuts: { keyboardShortcuts: {} },
     },
-    hasCompletedTransfers: false,
-    clearCompletedTransfers: record('clear'),
-    refreshPane: record('refresh'),
-    openSiteManager: record('sites'),
-    openLocalPathManager: record('paths'),
-    openSettings: record('settings'),
-    openAbout: record('about'),
+    browser: {
+      tabs: [tab],
+      activeTabId: tab.id,
+      setActiveTabId: record('activate'),
+      openNewTab: record('new'),
+      closeTab: record('close'),
+      reopenClosedTab: record('reopen'),
+      canReopenClosedTab: false,
+      freeConnectTargetPaneId: 'b',
+      startPaneConnect: record('connect'),
+      soleConnectedRemotePane: null,
+      disconnectPane: async (id) => record('disconnect')(id),
+      syncBrowsing: false,
+      syncEligible: false,
+      toggleSync: record('sync'),
+      refreshBothPanes: record('refreshBoth'),
+      panes: tab.panes,
+      canCopyBetween: () => true,
+      refreshPane: async (...args) => record('refresh')(...args),
+    },
+    clipboard: {
+      copySelectedWithConfirm: async (source, target, refreshSource, refreshTarget) => {
+        record('copy')(source.id, target.id);
+        refreshSource();
+        refreshTarget();
+      },
+    },
+    workspace: {
+      toggleLocalPane: record('local'),
+      toggleRemotePane: record('remote'),
+      toggleTransferQueue: record('queue'),
+      toggleHiddenFiles: record('hidden'),
+      toggleLog: record('log'),
+      togglePaneOrientation: record('orientation'),
+      effectivePaneOrientation: 'horizontal',
+      windowNarrow: false,
+    },
+    dialogs: {
+      setShowSettings: record('settings'),
+      setShowAbout: record('about'),
+      setShowSiteManagerDialog: record('sites'),
+      setShowLocalPathManagerDialog: record('paths'),
+      setShowExportSettings: record('export'),
+      setShowImportSettings: record('import'),
+    },
+    transfers: { hasCompletedTransfers: false, clearCompletedTransfers: record('clear') },
+    applicationSettings: { changeTheme: record('theme') },
+    searchInputRefs: { a: { current: null }, b: { current: null } },
+    saveSite: (id) => () => record('save')(id),
+    quit: { request: record('quit') },
+    resetLayout: record('reset'),
     checkForUpdates: record('updates'),
   };
   const item = (key: string) => {
@@ -124,17 +137,17 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     ['import', true],
     ['quit'],
     ['theme', 'light'],
-    ['settings'],
-    ['about'],
+    ['settings', true],
+    ['about', true],
     ['updates'],
   ]);
   assert.deepEqual(h.calls.slice(11), [
     ['copy', 'a', 'b'],
-    ['refresh', 'a', h.ctx.panes.a.path],
-    ['refresh', 'b', h.ctx.panes.b.path],
+    ['refresh', 'a', h.ctx.browser.panes.a.path],
+    ['refresh', 'b', h.ctx.browser.panes.b.path],
     ['copy', 'b', 'a'],
-    ['refresh', 'b', h.ctx.panes.b.path],
-    ['refresh', 'a', h.ctx.panes.a.path],
+    ['refresh', 'b', h.ctx.browser.panes.b.path],
+    ['refresh', 'a', h.ctx.browser.panes.a.path],
   ]);
 });
 
@@ -143,29 +156,29 @@ test('availability tracks modal, selection, connected panes and the last visible
   assert.equal(h.item('menu.file.closeTab').disabled, true);
   assert.equal(h.item('menu.file.disconnect').disabled, true);
   assert.equal(h.item('menu.transfer.copySelectedRight').disabled, true);
-  h.ctx.panes.a.selected.add('file');
+  h.ctx.browser.panes.a.selected.add('file');
   assert.equal(h.item('menu.transfer.copySelectedRight').disabled, false);
-  h.ctx.tabs.push(makeTab('second'));
+  h.ctx.browser.tabs.push(makeTab('second'));
   assert.equal(h.item('menu.file.closeTab').disabled, false);
   assert.equal(h.item('menu.file.reopenClosedTab').disabled, true);
-  h.ctx.canReopenClosedTab = true;
+  h.ctx.browser.canReopenClosedTab = true;
   assert.equal(h.item('menu.file.reopenClosedTab').disabled, false);
   h.ctx.modalOpen = true;
   assert.equal(h.item('menu.file.newTab').disabled, true);
   assert.equal(h.item('menu.file.closeTab').disabled, true);
   assert.equal(h.item('menu.file.reopenClosedTab').disabled, true);
-  h.ctx.showRemotePane = false;
+  h.ctx.settings.layout.showRemotePane = false;
   assert.equal(h.item('menu.view.leftPane').disabled, true);
-  h.ctx.windowNarrow = true;
+  h.ctx.workspace.windowNarrow = true;
   assert.equal(h.item('menu.view.stackedPanes').disabled, true);
-  h.ctx.soleConnectedRemotePane = h.ctx.panes.b;
+  h.ctx.browser.soleConnectedRemotePane = h.ctx.browser.panes.b;
   h.item('menu.file.disconnect').onClick!();
   assert.deepEqual(h.calls, [['disconnect', 'b']]);
 });
 
 test('shortcut overrides and unbinding propagate into menu labels', () => {
   const h = harness();
-  h.ctx.keyboardShortcuts = { 'new-tab': 'Alt+KeyN', 'close-tab': '' };
+  h.ctx.settings.shortcuts.keyboardShortcuts = { 'new-tab': 'Alt+KeyN', 'close-tab': '' };
   assert.equal(h.item('menu.file.newTab').shortcut, 'Alt+N');
   assert.equal(h.item('menu.file.closeTab').shortcut, '');
   assert.equal(h.item('menu.file.reopenClosedTab').shortcut, 'Ctrl+Shift+T');

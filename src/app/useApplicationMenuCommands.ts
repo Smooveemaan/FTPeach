@@ -1,25 +1,21 @@
 import type { MenuBarEntry } from '../components/MenuBar.tsx';
-import type { MenusContext } from './menus.ts';
-import { buildMenus } from './menus.ts';
-import {
-  useApplicationCommandBindings,
-  type ApplicationCommandBindings,
-} from './useApplicationController.ts';
-
-interface ApplicationMenuCommandsOptions {
-  commands: ApplicationCommandBindings;
-  menu: MenusContext;
-}
+import { api } from '../platform/api/index.ts';
+import type { ApplicationCommandContext } from './menus.ts';
+import { applicationShortcuts, buildMenus } from './menus.ts';
+import { useAppCommands } from './useAppCommands.ts';
 
 /**
- * Owns the application-level command surface. Keeping keyboard commands and
- * menu entries together makes it harder for the two interaction paths to
- * drift while Application remains responsible only for dependency wiring.
+ * Registers the global shortcuts and builds the menu bar from one context, so
+ * the two ways of running an application command cannot drift apart.
  */
-export function useApplicationMenuCommands({
-  commands,
-  menu,
-}: ApplicationMenuCommandsOptions): MenuBarEntry[] {
-  useApplicationCommandBindings(commands);
-  return buildMenus(menu);
+export function useApplicationMenuCommands(context: ApplicationCommandContext): MenuBarEntry[] {
+  useAppCommands(
+    {
+      modalOpen: context.modalOpen,
+      openDevtools: () => api.app.openDevtools(),
+      ...applicationShortcuts(context),
+    },
+    context.settings.shortcuts.keyboardShortcuts,
+  );
+  return buildMenus(context);
 }

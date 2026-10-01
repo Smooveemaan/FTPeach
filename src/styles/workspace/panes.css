@@ -285,8 +285,6 @@
 }
 .pane-path .crumb:hover { color: var(--text-primary); background: var(--bg-raised); }
 .pane-path .sep { color: var(--text-faint); }
-.pane-path .crumb-ellipsis { cursor: text; }
-.pane-path .crumb-ellipsis:hover { color: inherit; background: none; }
 
 
 .crumb-drive {

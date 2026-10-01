@@ -175,7 +175,19 @@ export default function PathBar({
               {index === tailStart && tailStart > 1 && (
                 <>
                   <span className="sep">/</span>
-                  <span className="crumb crumb-ellipsis">…</span>
+                  {/* ponytail: one click opens the nearest hidden folder, where more of the
+                      path fits; a menu of every hidden folder if that proves too slow. */}
+                  <span
+                    className="crumb crumb-ellipsis"
+                    data-tooltip={crumbs[tailStart - 1]?.path}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      const hidden = crumbs[tailStart - 1];
+                      if (hidden) onCrumbClick(hidden.path);
+                    }}
+                  >
+                    …
+                  </span>
                 </>
               )}
               {renderCrumb(crumb, index)}

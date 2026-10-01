@@ -123,7 +123,9 @@ try {
             & npm.cmd run dev:tauri
         }
         'check' {
-            & cargo check --locked --manifest-path 'src-tauri\Cargo.toml'
+            # The features the application ships with. Clippy rather than cargo check:
+            # it can deny warnings without rebuilding every dependency.
+            & cargo clippy --locked --manifest-path 'src-tauri\Cargo.toml' -- -D warnings
         }
         'test' {
             # test-utils opens the modules the integration targets import; every

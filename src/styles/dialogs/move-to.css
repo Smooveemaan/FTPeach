@@ -1,5 +1,10 @@
+/* As wide as its folder names need, between a floor and a cap. */
 .modal-move-to {
-  width: 420px;
+  --move-to-room: calc(var(--app-viewport-w) - 40px);
+
+  width: fit-content;
+  min-width: min(300px, var(--move-to-room));
+  max-width: min(560px, var(--move-to-room));
 }
 .move-to-label {
   margin: 0 0 8px;

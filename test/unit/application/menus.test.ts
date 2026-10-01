@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildMenus } from '../../../src/app/menus.ts';
+import { applicationShortcuts, buildMenus } from '../../../src/app/menus.ts';
 import type { ApplicationCommandContext } from '../../../src/app/menus.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import i18n from '../../../src/i18n/index.ts';
@@ -182,4 +182,32 @@ test('shortcut overrides and unbinding propagate into menu labels', () => {
   assert.equal(h.item('menu.file.newTab').shortcut, 'Alt+N');
   assert.equal(h.item('menu.file.closeTab').shortcut, '');
   assert.equal(h.item('menu.file.reopenClosedTab').shortcut, 'Ctrl+Shift+T');
+});
+
+test('with a server on each side, either side is saved as a bookmark once it is connected', () => {
+  const h = harness();
+  const { a, b } = h.ctx.browser.panes;
+  a.kind = 'remote';
+  b.kind = 'remote';
+  const save = (side: 'left' | 'right') =>
+    buildMenus(h.ctx)
+      .flatMap((menu) => menu.items)
+      .find(
+        (entry) =>
+          entry.label ===
+          i18n.t('menu.file.saveBookmarkSide', { side: i18n.t(`paneSide.${side}`) }),
+      )!;
+  // An empty connection form has nothing to save.
+  assert.equal(save('left').disabled, true);
+  assert.equal(save('right').disabled, true);
+  a.status = 'connected';
+  assert.equal(save('left').disabled, false);
+  assert.equal(save('right').disabled, true);
+  save('left').onClick!();
+  applicationShortcuts(h.ctx)['save-site']();
+  applicationShortcuts(h.ctx)['save-site-secondary']();
+  assert.deepEqual(h.calls, [
+    ['save', 'a'],
+    ['save', 'a'],
+  ]);
 });

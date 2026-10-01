@@ -24,8 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   asked to confirm it.
 - A bookmark saved as FTPS in an older format shows as FTPS instead of FTP, and saving it no
   longer asks to confirm moving its password.
-- Locking the vault from Settings, resetting it or turning enhanced protection off now hides a
-  password shown with the eye button, as locking from the tray already did.
+- Locking the vault from Settings now hides a password shown with the eye button.
 
 ## [0.3.0] - 2026-09-27
 

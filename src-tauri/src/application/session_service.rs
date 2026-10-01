@@ -237,11 +237,13 @@ pub(crate) async fn disconnect(
     let Some(slot) = sessions.remove(connection_id) else {
         return;
     };
+    // One deadline for the wait on the slot and the teardown together: a
+    // browse call that still holds the slot must not make this take longer.
     let closing = async {
         let mut guard = slot.lock().await;
-        teardown_session(&mut guard, connection_id, Some(TEARDOWN_DEADLINE)).await;
+        teardown_session(&mut guard, connection_id, None).await;
     };
-    if tokio::time::timeout(std::time::Duration::from_secs(5), closing)
+    if tokio::time::timeout(TEARDOWN_DEADLINE, closing)
         .await
         .is_err()
     {

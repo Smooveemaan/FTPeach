@@ -25,7 +25,11 @@ fn proxies(kind: Kind) -> Vec<String> {
 }
 
 async fn post(path: &str, body: Value) {
-    let response = reqwest::Client::new()
+    // Not through the system proxy: the API is on this machine.
+    let response = reqwest::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap()
         .post(format!("{API}{path}"))
         .header("content-type", "application/json")
         .body(body.to_string())

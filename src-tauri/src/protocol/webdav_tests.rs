@@ -1,6 +1,13 @@
 use super::*;
 use std::sync::Arc;
 
+/// A client that dials the loopback test server itself. reqwest's default
+/// follows the system proxy, which on Windows ignores the `127.*` bypass, so
+/// with a local proxy running these tests would wait on it and fail.
+fn test_client() -> Client {
+    Client::builder().no_proxy().build().unwrap()
+}
+
 #[tokio::test]
 async fn relay_rejects_unsolicited_partial_and_bodyless_success_before_writing() {
     for status in ["206 Partial Content", "204 No Content", "205 Reset Content"] {
@@ -48,7 +55,7 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
         }
     });
     let mut backend = WebDavBackend {
-        client: Some(Client::new()),
+        client: Some(test_client()),
         base_url: format!("http://{address}"),
         ..Default::default()
     };
@@ -106,7 +113,7 @@ async fn single_response(status: &str, body: &str) -> (WebDavBackend, tokio::tas
     });
     (
         WebDavBackend {
-            client: Some(Client::new()),
+            client: Some(test_client()),
             base_url: format!("http://{address}/encoded%20base"),
             ..Default::default()
         },
@@ -460,7 +467,7 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
             }
         });
         let mut backend = WebDavBackend {
-            client: Some(Client::new()),
+            client: Some(test_client()),
             base_url: format!("http://{address}"),
             ..Default::default()
         };
@@ -533,7 +540,7 @@ async fn rejected_put_does_not_wait_for_a_stalled_source() {
         std::future::pending::<()>().await;
     });
     let backend = WebDavBackend {
-        client: Some(Client::new()),
+        client: Some(test_client()),
         idle_timeout: Duration::from_secs(60),
         base_url: format!("http://{address}"),
         ..Default::default()
@@ -570,7 +577,7 @@ async fn propfind_status_is_preserved_when_error_body_stalls() {
     });
     let result = tokio::time::timeout(
         Duration::from_secs(2),
-        WebDavBackend::propfind(&Client::new(), format!("http://{address}"), 0, "", ""),
+        WebDavBackend::propfind(&test_client(), format!("http://{address}"), 0, "", ""),
     )
     .await
     .unwrap();
@@ -659,8 +666,8 @@ async fn upload_bytes_are_paced_across_http_time_windows() {
         windows
     });
     let backend = WebDavBackend {
-        client: Some(Client::new()),
-        upload_client: Some(Client::new()),
+        client: Some(test_client()),
+        upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(5),
         base_url: format!("http://{address}"),
         ..Default::default()
@@ -733,8 +740,8 @@ async fn concurrent_gigabyte_uploads_admit_only_sixteen_bounded_readers() {
         }
     });
     let backend = Arc::new(WebDavBackend {
-        client: Some(Client::new()),
-        upload_client: Some(Client::new()),
+        client: Some(test_client()),
+        upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(30),
         base_url: format!("http://{address}"),
         ..Default::default()
@@ -802,8 +809,8 @@ async fn streaming_body_is_length_bounded_and_reports_incremental_progress() {
             .unwrap();
     });
     let backend = WebDavBackend {
-        client: Some(Client::new()),
-        upload_client: Some(Client::new()),
+        client: Some(test_client()),
+        upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(5),
         base_url: format!("http://{address}"),
         ..Default::default()
@@ -858,7 +865,7 @@ async fn stalled_get_body_and_put_response_return_typed_timeouts() {
                     .build()
                     .unwrap(),
             ),
-            upload_client: Some(Client::new()),
+            upload_client: Some(test_client()),
             idle_timeout: Duration::from_millis(40),
             base_url: format!("http://{address}"),
             connected: true,
@@ -908,7 +915,7 @@ async fn failed_propfind_never_attempts_empty_put() {
             }
         });
         let mut backend = WebDavBackend {
-            client: Some(Client::new()),
+            client: Some(test_client()),
             base_url: format!("http://{address}"),
             ..Default::default()
         };
@@ -940,7 +947,7 @@ async fn a_file_arriving_before_the_empty_put_is_reported_as_existing() {
         put
     });
     let mut backend = WebDavBackend {
-        client: Some(Client::new()),
+        client: Some(test_client()),
         idle_timeout: Duration::from_secs(60),
         base_url: format!("http://{address}"),
         ..Default::default()

@@ -79,3 +79,30 @@ fn the_toast_icon_is_the_app_icon_the_tray_uses() {
          the icon Windows shows for FTPeach everywhere else"
     );
 }
+
+/// A portable copy takes its registration with it; one that shares the id
+/// with an installed copy leaves it. Throwaway keys stand in for both.
+#[cfg(windows)]
+#[test]
+fn a_portable_exit_removes_the_identity_unless_a_copy_is_installed() {
+    use windows_registry::CURRENT_USER;
+
+    let id = format!("ftpeach-test-{}", uuid::Uuid::new_v4());
+    let identity = super::identity_key(&id);
+    let installed = format!("Software\\FTPeachTest-{}", uuid::Uuid::new_v4());
+    CURRENT_USER
+        .create(&identity)
+        .unwrap()
+        .set_string("DisplayName", "FTPeach test")
+        .unwrap();
+    CURRENT_USER.create(&installed).unwrap();
+
+    super::remove_identity_unless_installed(&id, &installed);
+    assert!(CURRENT_USER.open(&identity).is_ok());
+
+    CURRENT_USER.remove_tree(&installed).unwrap();
+    super::remove_identity_unless_installed(&id, &installed);
+    assert!(CURRENT_USER.open(&identity).is_err());
+    // Removing what is already gone is not an error worth reporting.
+    super::remove_identity_unless_installed(&id, &installed);
+}

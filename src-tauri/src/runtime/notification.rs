@@ -51,8 +51,7 @@ pub fn register_identity(app: &AppHandle) {
     use tauri::Manager;
     use tauri::path::BaseDirectory;
 
-    let path = format!("Software\\Classes\\AppUserModelId\\{APP_USER_MODEL_ID}");
-    let key = match windows_registry::CURRENT_USER.create(&path) {
+    let key = match windows_registry::CURRENT_USER.create(identity_key(APP_USER_MODEL_ID)) {
         Ok(key) => key,
         Err(error) => {
             log::warn!("could not register the notification identity: {error}");
@@ -76,6 +75,36 @@ pub fn register_identity(app: &AppHandle) {
         Err(error) => log::warn!("could not locate the notification icon: {error}"),
     }
 }
+
+#[cfg(windows)]
+fn identity_key(id: &str) -> String {
+    format!("Software\\Classes\\AppUserModelId\\{id}")
+}
+
+/// Where the installer records an installed FTPeach for this Windows user.
+#[cfg(windows)]
+const INSTALLED_COPY_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\FTPeach";
+
+/// Takes the registration back out when a portable copy exits, so it leaves
+/// nothing on the computer. Windows has no file-based way to name an
+/// unpackaged program on its toasts, so the key exists while FTPeach runs. An
+/// installed copy uses the same id; with one present the key stays.
+#[cfg(windows)]
+pub fn unregister_identity() {
+    remove_identity_unless_installed(APP_USER_MODEL_ID, INSTALLED_COPY_KEY);
+}
+
+#[cfg(windows)]
+fn remove_identity_unless_installed(id: &str, installed_copy_key: &str) {
+    use windows_registry::CURRENT_USER;
+    if CURRENT_USER.open(installed_copy_key).is_err() {
+        // Already gone is the state this is after, so the result is not checked.
+        let _ = CURRENT_USER.remove_tree(identity_key(id));
+    }
+}
+
+#[cfg(not(windows))]
+pub fn unregister_identity() {}
 
 /// Tauri resolves resources to a canonicalized path, which on Windows carries
 /// the `\\?\` verbatim prefix. The shell reads `IconUri` with its ordinary

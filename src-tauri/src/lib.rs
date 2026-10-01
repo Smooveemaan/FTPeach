@@ -190,8 +190,13 @@ pub fn run() {
             commands::smoke::smoke_probe_confirmation_acl,
         ])
         .setup(runtime::startup::setup)
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app, event| {
+            if matches!(event, tauri::RunEvent::Exit) && local_fs::portable::root().is_some() {
+                runtime::notification::unregister_identity();
+            }
+        });
 }
 /// Where this copy keeps its data: `data\` beside a portable program,
 /// `%APPDATA%\FTPeach` otherwise. One or the other, never a fallback: data

@@ -56,14 +56,23 @@ test('every kind of user activity reports the user is present', () => {
   h.cleanup();
 });
 
-test('a burst of activity costs one report, not one per event', () => {
+test('a burst of activity costs one report a second, not one per event', () => {
   const h = harness();
   for (let index = 0; index < 50; index += 1) {
     h.advance(100);
     h.act();
   }
+  // Five seconds of clicking: the report at mounting and one for each second.
+  assert.equal(h.reports(), 6);
+  h.cleanup();
+});
+
+test('the backend hears of the last activity less than a second late', () => {
+  const h = harness();
+  h.advance(999);
+  h.act();
   assert.equal(h.reports(), 1);
-  h.advance(30_000);
+  h.advance(1);
   h.act();
   assert.equal(h.reports(), 2);
   h.cleanup();

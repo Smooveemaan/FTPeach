@@ -19,12 +19,13 @@ interface VaultActivityOptions {
 }
 
 /**
- * How long one report covers. The backend measures idleness in whole
- * minutes, so reporting more often than this only adds IPC traffic; at the
- * shortest idle timeout the user can set it still costs the vault less than
- * a second of accuracy.
+ * How long one report covers. Activity inside that time is not reported
+ * again, so the backend's idea of when the user was last seen runs this far
+ * behind at most, and the vault locks that much early. A second is nothing
+ * against a timeout counted in minutes, and one small call a second, only
+ * while the user is clicking or typing, costs nothing either.
  */
-const REPORT_INTERVAL_MS = 30_000;
+const REPORT_INTERVAL_MS = 1_000;
 
 const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 

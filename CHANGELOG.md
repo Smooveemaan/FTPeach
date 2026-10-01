@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bookmark saved as FTPS in an older format shows as FTPS instead of FTP, and saving it no
   longer asks to confirm moving its password.
 - Locking the vault from Settings now hides a password shown with the eye button.
+- The vault no longer locks up to half a minute before the auto-lock time is up.
 
 ## [0.3.0] - 2026-09-27
 

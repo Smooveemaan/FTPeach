@@ -396,6 +396,7 @@
       "title": "密码保护",
       "systemMode": "系统保护",
       "systemModeHint": "密码会绑定您的 Windows 帐户加密，可以在连接设置中查看。",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "增强保护",
       "strongholdModeHint": "需要主密码。查看已保存的密码时需要重新输入主密码。",
       "loading": "正在检查密码库…",

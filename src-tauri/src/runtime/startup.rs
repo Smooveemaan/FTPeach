@@ -31,6 +31,15 @@ fn disable_browser_accelerator_keys(window: &tauri::WebviewWindow) {
 }
 
 pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    // Declared in tauri.conf.json with `create: false` and built here, so a
+    // portable copy can keep the WebView2 profile beside the program. Left to
+    // Tauri, the profile and its folder go under %LOCALAPPDATA%.
+    let mut main_window =
+        tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?;
+    if let Some(root) = local_fs::portable::root() {
+        main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
+    }
+    main_window.build()?;
     let data_dir = local_fs::edit_recovery::data_dir(app.handle())
         .ok_or_else(|| std::io::Error::other("No local application data directory"))?;
     let preview_paths = PreviewPaths::with_edit_root(&data_dir);

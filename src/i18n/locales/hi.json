@@ -396,6 +396,7 @@
       "title": "पासवर्ड सुरक्षा",
       "systemMode": "सिस्टम सुरक्षा",
       "systemModeHint": "पासवर्ड आपके Windows खाते से जोड़कर एन्क्रिप्ट किए जाते हैं और कनेक्शन सेटिंग्स में देखे जा सकते हैं।",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "बढ़ी हुई सुरक्षा",
       "strongholdModeHint": "मास्टर पासवर्ड आवश्यक है। सहेजा गया पासवर्ड देखने के लिए मास्टर पासवर्ड फिर से दर्ज करना होगा।",
       "loading": "वॉल्ट की जाँच की जा रही है...",

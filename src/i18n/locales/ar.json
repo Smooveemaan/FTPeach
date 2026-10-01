@@ -412,6 +412,7 @@
       "title": "الحماية بكلمة مرور",
       "systemMode": "حماية النظام",
       "systemModeHint": "تُشفَّر كلمات المرور لحسابك في Windows، ويمكن عرضها في إعدادات الاتصال.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "حماية معززة",
       "strongholdModeHint": "يتطلب كلمة مرور رئيسية. لعرض كلمة مرور محفوظة يجب إدخال كلمة المرور الرئيسية مرة أخرى.",
       "loading": "جارٍ فحص الخزنة…",

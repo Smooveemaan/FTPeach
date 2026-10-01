@@ -396,6 +396,7 @@
       "title": "Passwortschutz",
       "systemMode": "Systemschutz",
       "systemModeHint": "Passwörter werden für Ihr Windows-Konto verschlüsselt und können in den Verbindungseinstellungen angezeigt werden.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Erweiterter Schutz",
       "strongholdModeHint": "Erfordert ein Master-Passwort. Um ein gespeichertes Passwort anzuzeigen, müssen Sie das Master-Passwort erneut eingeben.",
       "loading": "Tresor wird überprüft…",

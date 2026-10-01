@@ -72,9 +72,12 @@ pub enum UpdaterStatus {
 }
 
 /// Updates need a packaged build: a development build has no installer to
-/// replace, and a smoke-test instance must not install over the real one.
+/// replace, and a smoke-test instance must not install over the real one. A
+/// portable copy must not run the installer either.
 pub fn updates_enabled() -> bool {
-    !cfg!(debug_assertions) && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
+    !cfg!(debug_assertions)
+        && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
+        && crate::local_fs::portable::root().is_none()
 }
 
 fn send(app: &AppHandle, status: UpdaterStatus) {
@@ -103,8 +106,10 @@ impl Drop for Busy<'_> {
     }
 }
 
-fn staging_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
-    Ok(app.path().app_local_data_dir()?.join("updates"))
+fn staging_dir(app: &AppHandle) -> anyhow::Result<PathBuf> {
+    crate::local_fs::edit_recovery::data_dir(app)
+        .map(|dir| dir.join("updates"))
+        .ok_or_else(|| anyhow::anyhow!("No local application data directory"))
 }
 
 fn release_pubkey(app: &AppHandle) -> Option<String> {

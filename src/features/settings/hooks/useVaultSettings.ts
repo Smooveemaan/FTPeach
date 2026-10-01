@@ -25,6 +25,7 @@ export interface VaultSettingsModel {
     locked: boolean;
     systemUnlockAvailable: boolean;
     systemUnlockEnabled: boolean;
+    portable?: boolean;
   } | null;
   vaultMessage: string;
   setVaultMessage: Dispatch<SetStateAction<string>>;

@@ -88,8 +88,12 @@ pub struct RecoveredEdit {
 }
 
 /// Where recovered edits live: beside the application's local data, outside
-/// the temporary directory that Windows may clean on its own.
+/// the temporary directory that Windows may clean on its own. A portable copy
+/// keeps that data beside the program.
 pub fn data_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+    if let Some(root) = super::portable::root() {
+        return Some(super::portable::local_dir(root));
+    }
     // Windows KnownFolder APIs do not necessarily honor the process's
     // LOCALAPPDATA override. Smoke must never use the interactive user's data.
     #[cfg(feature = "smoke-test")]

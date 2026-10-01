@@ -402,6 +402,34 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(option.closest('label')?.hasAttribute('data-tooltip')).toBe(false);
   });
 
+  test('a portable copy says where passwords stay until a master password is set', async () => {
+    const user = userEvent.setup();
+    const status = { configured: false, locked: true, portable: true };
+    vi.mocked(window.api.vault.status).mockImplementation(async () => ({
+      ...status,
+      systemUnlockAvailable: false,
+      systemUnlockEnabled: false,
+    }));
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    expect(await screen.findByText('settings.security.portableSystemModeHint')).toBeTruthy();
+
+    // With a master password the passwords travel, and the line has nothing to say.
+    status.configured = true;
+    act(() => locks.announce('user'));
+    await waitFor(() =>
+      expect(screen.queryByText('settings.security.portableSystemModeHint')).toBeNull(),
+    );
+  });
+
+  test('an installed copy shows no portable line', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    await screen.findByRole('radio', { name: /settings\.security\.systemMode/ });
+    expect(screen.queryByText('settings.security.portableSystemModeHint')).toBeNull();
+  });
+
   test('a vault reset tells the owner that the saved secrets are gone', async () => {
     const user = userEvent.setup();
     Object.assign(window.api.vault, { reset: vi.fn(async () => ({ ok: true })) });

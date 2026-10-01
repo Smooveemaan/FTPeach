@@ -400,6 +400,7 @@
       "title": "Protection par mot de passe",
       "systemMode": "Protection système",
       "systemModeHint": "Les mots de passe sont chiffrés pour votre compte Windows et peuvent être affichés dans les paramètres de connexion.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Protection renforcée",
       "strongholdModeHint": "Nécessite un mot de passe principal. Pour afficher un mot de passe enregistré, il faut ressaisir le mot de passe principal.",
       "loading": "Vérification du coffre-fort…",

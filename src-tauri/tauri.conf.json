@@ -13,6 +13,7 @@
     "windows": [
       {
         "title": "FTPeach",
+        "create": false,
         "width": 1180,
         "height": 740,
         "minWidth": 480,

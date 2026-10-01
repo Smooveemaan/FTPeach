@@ -404,6 +404,7 @@
       "title": "Ochrona hasłem",
       "systemMode": "Ochrona systemowa",
       "systemModeHint": "Hasła są szyfrowane dla Twojego konta Windows i można je wyświetlić w ustawieniach połączenia.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Wzmocniona ochrona",
       "strongholdModeHint": "Wymaga hasła głównego. Aby wyświetlić zapisane hasło, trzeba ponownie podać hasło główne.",
       "loading": "Sprawdzanie sejfu…",

@@ -102,6 +102,9 @@ export default function SecuritySettings({
             </span>
           </label>
         </div>
+        {vaultStatus?.portable && !vaultStatus.configured && (
+          <p className="settings-hint">{t('settings.security.portableSystemModeHint')}</p>
+        )}
         {(!vaultStatus || vaultStatus.configured) && (
           <p className="settings-hint">
             {!vaultStatus

@@ -75,9 +75,21 @@ impl VaultAttempt<'_> {
     }
 }
 
+/// The vault's state, and whether this copy is portable: the Security page
+/// reads both to say where saved passwords can be read.
+#[derive(serde::Serialize)]
+pub struct VaultStatusAnswer {
+    #[serde(flatten)]
+    status: VaultStatus,
+    portable: bool,
+}
+
 #[tauri::command]
-pub async fn vault_status(vault: State<'_, Vault>) -> CommandResult<VaultStatus> {
-    Ok(vault.status().await)
+pub async fn vault_status(vault: State<'_, Vault>) -> CommandResult<VaultStatusAnswer> {
+    Ok(VaultStatusAnswer {
+        status: vault.status().await,
+        portable: crate::local_fs::portable::root().is_some(),
+    })
 }
 
 #[tauri::command]

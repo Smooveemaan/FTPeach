@@ -101,7 +101,7 @@ pub(crate) fn create(
     } else {
         tauri::utils::config::Color(26, 25, 23, 255)
     };
-    let window = WebviewWindowBuilder::new(
+    let mut builder = WebviewWindowBuilder::new(
         app,
         label,
         WebviewUrl::App(
@@ -118,8 +118,13 @@ pub(crate) fn create(
     .shadow(false)
     .always_on_top(true)
     .background_color(background)
-    .visible(false)
-    .build()?;
+    .visible(false);
+    // The same WebView2 profile as the main window, which a portable copy
+    // keeps beside the program.
+    if let Some(root) = crate::local_fs::portable::root() {
+        builder = builder.data_directory(crate::local_fs::portable::webview_dir(root));
+    }
+    let window = builder.build()?;
     enable_native_rounding(&window);
     // Moved over the main window before its page loads, so it has taken that
     // monitor's scale by the time it sizes itself to its content.

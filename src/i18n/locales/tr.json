@@ -396,6 +396,7 @@
       "title": "Şifre koruması",
       "systemMode": "Sistem koruması",
       "systemModeHint": "Şifreler Windows hesabınıza bağlı olarak şifrelenir ve bağlantı ayarlarında görüntülenebilir.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Gelişmiş koruma",
       "strongholdModeHint": "Ana şifre gerekir. Kaydedilmiş bir şifreyi görmek için ana şifreyi yeniden girmeniz gerekir.",
       "loading": "Kasa kontrol ediliyor…",

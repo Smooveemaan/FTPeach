@@ -404,6 +404,7 @@
       "title": "Ochrana heslem",
       "systemMode": "Systémová ochrana",
       "systemModeHint": "Hesla jsou šifrována pro váš účet Windows a lze je zobrazit v nastavení připojení.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Rozšířená ochrana",
       "strongholdModeHint": "Vyžaduje hlavní heslo. Pro zobrazení uloženého hesla je nutné znovu zadat hlavní heslo.",
       "loading": "Kontrola trezoru…",

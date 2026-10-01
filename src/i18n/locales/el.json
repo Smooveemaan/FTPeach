@@ -396,6 +396,7 @@
       "title": "Προστασία με κωδικό πρόσβασης",
       "systemMode": "Προστασία συστήματος",
       "systemModeHint": "Οι κωδικοί πρόσβασης κρυπτογραφούνται για τον λογαριασμό σας στα Windows και μπορείτε να τους δείτε στις ρυθμίσεις σύνδεσης.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Ενισχυμένη προστασία",
       "strongholdModeHint": "Απαιτείται κύριος κωδικός πρόσβασης. Για να δείτε έναν αποθηκευμένο κωδικό, πρέπει να εισαγάγετε ξανά τον κύριο κωδικό.",
       "loading": "Έλεγχος του θησαυροφυλακίου…",

@@ -400,6 +400,7 @@
       "title": "Protecție prin parolă",
       "systemMode": "Protecție de sistem",
       "systemModeHint": "Parolele sunt criptate pentru contul dvs. Windows și pot fi vizualizate în setările de conexiune.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Protecție avansată",
       "strongholdModeHint": "Necesită o parolă principală. Pentru a vedea o parolă salvată trebuie să reintroduceți parola principală.",
       "loading": "Se verifică seiful…",

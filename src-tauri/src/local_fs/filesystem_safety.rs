@@ -252,6 +252,30 @@ fn app_owned_paths_for(
         .collect()
 }
 
+/// The folders of a portable copy's `data\local` that hold the user's own
+/// files: copies opened in an editor and edits recovered from one.
+const PORTABLE_WORKING_FOLDERS: [&str; 2] = ["edit-sessions", "recovered-edits"];
+
+fn is_app_owned(path: &Path) -> bool {
+    app_owned_paths()
+        .iter()
+        .any(|protected| path_is_within(path, protected))
+        && !is_portable_working_copy(path, super::portable::root())
+}
+
+/// A portable copy keeps editor copies inside the program's folder, which is
+/// protected as a whole. They are downloaded, edited and uploaded like any
+/// other file, so they are let through; the staged update beside them is not.
+fn is_portable_working_copy(path: &Path, portable_root: Option<&Path>) -> bool {
+    portable_root.is_some_and(|root| {
+        let local = super::portable::local_dir(root);
+        let local = resolved_path(&local).unwrap_or(local);
+        PORTABLE_WORKING_FOLDERS
+            .iter()
+            .any(|folder| path_is_within(path, &local.join(folder)))
+    })
+}
+
 /// Applies the source-side protections that
 /// [`validate_write_destination`] applies to a copy destination.
 ///
@@ -259,10 +283,7 @@ fn app_owned_paths_for(
 /// location. Missing sources are left to the copy operation to report.
 pub(crate) async fn validate_read_source(path: &Path) -> anyhow::Result<()> {
     let canonical = resolved_path(path)?;
-    if app_owned_paths()
-        .iter()
-        .any(|protected| path_is_within(&canonical, protected))
-    {
+    if is_app_owned(&canonical) {
         anyhow::bail!("Refusing to read from the application or FTPeach data directory");
     }
     Ok(())
@@ -270,10 +291,7 @@ pub(crate) async fn validate_read_source(path: &Path) -> anyhow::Result<()> {
 
 pub(crate) async fn validate_write_destination(path: &Path) -> anyhow::Result<()> {
     let absolute = resolved_path(path)?;
-    if app_owned_paths()
-        .iter()
-        .any(|protected| path_is_within(&absolute, protected))
-    {
+    if is_app_owned(&absolute) {
         anyhow::bail!("Refusing to modify the application or FTPeach data directory");
     }
     Ok(())
@@ -386,11 +404,7 @@ pub(crate) async fn validated_delete_target(
     if is_filesystem_root(&canonical) {
         anyhow::bail!("Refusing to delete a filesystem root");
     }
-    if target_contains_protected_path(&canonical, &protected_paths())
-        || app_owned_paths()
-            .iter()
-            .any(|protected| path_is_within(&canonical, protected))
-    {
+    if target_contains_protected_path(&canonical, &protected_paths()) || is_app_owned(&canonical) {
         anyhow::bail!("Refusing to delete a protected application or user directory");
     }
     if metadata.is_dir() {
@@ -538,6 +552,28 @@ mod tests {
         let recovered = local.join(r"com.smooveemaan.ftpeach\recovered-edits\a\notes.txt");
         assert!(paths.iter().any(|root| path_is_within(&staging, root)));
         assert!(!paths.iter().any(|root| path_is_within(&recovered, root)));
+    }
+
+    #[test]
+    fn a_portable_copy_lets_editor_copies_through_and_nothing_else() {
+        let root = std::env::temp_dir().join(format!("ftpeach-portable-{}", uuid::Uuid::new_v4()));
+        let local = super::super::portable::local_dir(&root);
+        let within = |path: PathBuf| {
+            let path = resolved_path(&path).unwrap();
+            is_portable_working_copy(&path, Some(&root))
+        };
+        assert!(within(local.join(r"edit-sessions\run\file\notes.txt")));
+        assert!(within(local.join(r"recovered-edits\a\file\notes.txt")));
+        assert!(!within(local.join(r"updates\FTPeach-9.9.9-portable.zip")));
+        assert!(!within(
+            local.join(r"edit-sessions\..\updates\pending.json")
+        ));
+        assert!(!within(root.join(r"data\vault.hold")));
+        assert!(!within(root.join("FTPeach.exe")));
+        assert!(!is_portable_working_copy(
+            &local.join(r"edit-sessions\run\notes.txt"),
+            None
+        ));
     }
 
     #[cfg(windows)]

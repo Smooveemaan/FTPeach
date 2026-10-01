@@ -400,6 +400,7 @@
       "title": "Protección con contraseña",
       "systemMode": "Protección del sistema",
       "systemModeHint": "Las contraseñas se cifran para tu cuenta de Windows y se pueden ver en la configuración de conexión.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Protección reforzada",
       "strongholdModeHint": "Requiere una contraseña maestra. Para ver una contraseña guardada hay que volver a introducir la contraseña maestra.",
       "loading": "Comprobando la bóveda…",

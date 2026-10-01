@@ -396,6 +396,7 @@
       "title": "การป้องกันด้วยรหัสผ่าน",
       "systemMode": "การป้องกันระบบ",
       "systemModeHint": "รหัสผ่านจะถูกเข้ารหัสสำหรับบัญชี Windows ของคุณ และดูได้ในการตั้งค่าการเชื่อมต่อ",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "การป้องกันขั้นสูง",
       "strongholdModeHint": "ต้องใช้รหัสผ่านหลัก การดูรหัสผ่านที่บันทึกไว้ต้องป้อนรหัสผ่านหลักอีกครั้ง",
       "loading": "กำลังตรวจสอบคลังนิรภัย…",

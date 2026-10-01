@@ -396,6 +396,7 @@
       "title": "パスワードによる保護",
       "systemMode": "システムによる保護",
       "systemModeHint": "パスワードは Windows アカウントに紐づけて暗号化され、接続設定で表示できます。",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "強化された保護",
       "strongholdModeHint": "マスターパスワードが必要です。保存済みのパスワードを表示するには、マスターパスワードの再入力が必要です。",
       "loading": "保管庫を確認中…",

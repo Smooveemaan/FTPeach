@@ -400,6 +400,7 @@
       "title": "Protezione con password",
       "systemMode": "Protezione di sistema",
       "systemModeHint": "Le password sono crittografate per il tuo account Windows e possono essere visualizzate nelle impostazioni di connessione.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Protezione avanzata",
       "strongholdModeHint": "Richiede una password principale. Per visualizzare una password salvata è necessario reinserire la password principale.",
       "loading": "Verifica della cassaforte…",

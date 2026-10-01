@@ -9,6 +9,8 @@ npm run test:packaged-smoke
 
 The build helper prepares verified libsodium and builds the smoke feature into .tools/smoke-target/debug/app.exe using dist assets. The harness launches that executable with isolated APPDATA/LOCALAPPDATA, waits up to 30 seconds for its result and successful process exit, then removes the temporary data. TAURI_DRIVER_DEBUG=1 exposes process output.
 
+A second run copies the executable into a folder of its own with the `FTPeach.portable` marker. It passes only if `settings.json`, `tabs.json`, `local` and `webview` end up in `data` beside that copy and the isolated profile is still empty. FTPeach's own data and the WebView2 profile are covered by this; folders Windows resolves through its known-folder API ignore the isolated profile and are covered by the manual leftover check in the [verification matrix](../../docs/verification-matrix.md).
+
 The final UI steps add a tab and change pane orientation, then call the test-only
 finish command without reloading the WebView or waiting for persistence debounce.
 The shared shutdown must receive a successful renderer flush acknowledgement; the

@@ -396,6 +396,7 @@
       "title": "Bảo vệ bằng mật khẩu",
       "systemMode": "Bảo vệ hệ thống",
       "systemModeHint": "Mật khẩu được mã hóa gắn với tài khoản Windows của bạn và có thể xem trong cài đặt kết nối.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Bảo vệ nâng cao",
       "strongholdModeHint": "Yêu cầu mật khẩu chính. Để xem mật khẩu đã lưu, bạn phải nhập lại mật khẩu chính.",
       "loading": "Đang kiểm tra kho bảo mật…",

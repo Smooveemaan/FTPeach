@@ -82,6 +82,7 @@ pub async fn log_export_diagnostics(
             "application": "FTPeach", "version": env!("CARGO_PKG_VERSION"),
             "os": std::env::consts::OS, "architecture": std::env::consts::ARCH,
             "supportedProtocols": ["ftp", "ftps", "sftp", "webdav"],
+            "portable": crate::local_fs::portable::root().is_some(),
             "generatedAt": chrono::Utc::now().to_rfc3339(), "telemetrySent": false
         },
         "protocolLog": emitter.diagnostic_records(),

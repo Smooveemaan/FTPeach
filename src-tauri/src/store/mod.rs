@@ -35,16 +35,9 @@ impl Store {
 
     pub fn new() -> Result<Self> {
         let appdata = std::env::var("APPDATA").context("%APPDATA% is not set")?;
-        let dir = PathBuf::from(appdata).join("FTPeach");
-        Ok(Self {
-            dir,
-            vault_updates: Arc::default(),
-            storage_issues: Arc::default(),
-            write_locks: Arc::new(std::sync::Mutex::new(HashMap::new())),
-        })
+        Ok(Self::new_at(PathBuf::from(appdata).join("FTPeach")))
     }
 
-    #[cfg(any(test, feature = "test-utils"))]
     pub fn new_at(dir: PathBuf) -> Self {
         Self {
             dir,

@@ -56,6 +56,8 @@ interface VaultStatus {
   locked: boolean;
   systemUnlockAvailable: boolean;
   systemUnlockEnabled: boolean;
+  /** This copy keeps its data beside the program. */
+  portable?: boolean;
 }
 
 function isVaultStatus(value: unknown): value is VaultStatus {

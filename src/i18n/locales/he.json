@@ -400,6 +400,7 @@
       "title": "הגנה באמצעות סיסמה",
       "systemMode": "הגנת מערכת",
       "systemModeHint": "הסיסמאות מוצפנות עבור חשבון Windows שלך, וניתן לצפות בהן בהגדרות החיבור.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "הגנה משופרת",
       "strongholdModeHint": "נדרשת סיסמת מאסטר. כדי לצפות בסיסמה שמורה יש להזין שוב את סיסמת המאסטר.",
       "loading": "בודקים את הכספת…",

@@ -396,6 +396,7 @@
       "title": "Password protection",
       "systemMode": "System protection",
       "systemModeHint": "Passwords are encrypted for your Windows account and can be viewed in connection settings.",
+      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Enhanced protection",
       "strongholdModeHint": "Requires a master password. Viewing a saved password requires master-password reauthentication.",
       "loading": "Checking the vault…",

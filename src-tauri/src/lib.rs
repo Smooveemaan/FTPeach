@@ -81,7 +81,7 @@ pub fn run() {
             runtime::tray::restore(app);
         }))
     };
-    let store = Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
+    let store = open_store();
     let vault = vault::Vault::new(store.data_dir().to_path_buf());
     builder
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -193,6 +193,46 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+/// Where this copy keeps its data: `data\` beside a portable program,
+/// `%APPDATA%\FTPeach` otherwise. One or the other, never a fallback: data
+/// split between the two would look like lost settings and passwords.
+fn open_store() -> Store {
+    let Some(root) = local_fs::portable::root() else {
+        return Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
+    };
+    let data = local_fs::portable::data_dir(root);
+    if let Err(error) = local_fs::portable::prepare(&data) {
+        fatal(&format!(
+            "This is a portable copy of FTPeach. It keeps its data in\n{}\n\n\
+             That folder cannot be written: {error}\n\n\
+             Move the FTPeach folder to a place you can write to.",
+            data.display()
+        ));
+    }
+    Store::new_at(data)
+}
+
+/// Says why FTPeach cannot start, before there is a window to say it in.
+fn fatal(message: &str) -> ! {
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
+        use windows::core::HSTRING;
+        // SAFETY: both strings outlive the call, which has no owner window.
+        unsafe {
+            MessageBoxW(
+                None,
+                &HSTRING::from(message),
+                &HSTRING::from("FTPeach"),
+                MB_OK | MB_ICONERROR,
+            );
+        }
+    }
+    #[cfg(not(windows))]
+    eprintln!("{message}");
+    std::process::exit(1)
+}
+
 // Application-service unit tests can reach native dialogs. Include Tauri's
 // generated manifest so Windows activates Common Controls v6 for this binary.
 #[cfg(all(test, windows))]

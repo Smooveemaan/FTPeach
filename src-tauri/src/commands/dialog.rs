@@ -1,3 +1,4 @@
+use crate::local_fs::portable;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 
@@ -67,7 +68,7 @@ pub async fn dialog_select_key_file(
         approved.approve_from_dialog(std::path::Path::new(&path));
         SelectedSshKey {
             is_rsa: is_rsa_private_key(std::path::Path::new(&path)),
-            path,
+            path: portable::stored_path(&path, portable::root()),
         }
     }))
 }
@@ -89,7 +90,7 @@ pub async fn dialog_select_ca_cert_file(
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
     }
-    Ok(selected)
+    Ok(selected.map(|path| portable::stored_path(&path, portable::root())))
 }
 
 /// A program picked here is the user's choice, so Open with may use it

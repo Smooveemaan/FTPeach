@@ -196,8 +196,11 @@ What stays on a computer, or does not follow the folder:
   A portable copy writes it at start and removes it on exit, unless an
   installed FTPeach on the same computer uses it too. A crash leaves it until a
   later run exits.
-- Saved local paths, **Open with** programs and the paths of key and
-  certificate files are absolute, so they name one computer's drives.
+- Saved local paths and **Open with** programs are absolute, so they name one
+  computer's drives. So is a key or certificate file kept outside the
+  program's folder. One chosen from inside the folder is saved relative to it
+  (`keys\id_ed25519`) and found again when the folder moves or its drive gets
+  another letter; an installed copy does not read such a path.
 - A portable and an installed copy share the single-instance lock: starting
   one while the other runs brings up the running one.
 - The WebView2 runtime is not in the zip. Windows 11 always has it.

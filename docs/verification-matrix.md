@@ -116,4 +116,5 @@ is printed as NOT VERIFIED until someone records a result in
 | Uninstall keeps data unless asked | manual | uninstall, reinstall, check the data is still there |
 | Portable copy leaves nothing behind | manual | snapshot `%APPDATA%`, `%LOCALAPPDATA%` and the notification registry key, run the zip's copy, connect, show a notification, exit, compare |
 | Portable passwords on another account | manual | save a password without a master password, open the folder as another Windows user; repeat with a master password |
+| Portable key file after the folder moves | manual | choose a key and a CA certificate inside the program's folder, connect, move the folder to another drive letter, connect again |
 | Portable update | manual | unpack the previous release's zip, update to this one, check the program version and that `data\` is unchanged |

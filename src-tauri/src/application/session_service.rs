@@ -75,22 +75,29 @@ fn pool_size(max_connections: Option<u16>) -> PoolSize {
 }
 
 /// The server a request names and the credentials to sign in with: the
-/// request's own, or those of the saved site it names.
+/// request's own, or those of the saved site it names. A key or certificate
+/// file a portable copy keeps relative to its folder is named in full here,
+/// before anything checks or opens it.
 pub(crate) async fn resolve_server(
     store: &Store,
     vault: &Vault,
     request: ConnectRequest,
 ) -> Result<(ServerSettings, Credentials), CommandError> {
-    match request {
+    let (mut server, credentials) = match request {
         ConnectRequest::Direct {
             server,
             credentials,
-        } => Ok((server, credentials)),
+        } => (server, credentials),
         ConnectRequest::SavedSite { site_id } => store
             .saved_server(&site_id, vault)
             .await
-            .map_err(|error| CommandError::from_anyhow(&error)),
+            .map_err(|error| CommandError::from_anyhow(&error))?,
+    };
+    let root = crate::local_fs::portable::root();
+    for path in [&mut server.key_path, &mut server.ca_cert_path] {
+        *path = crate::local_fs::portable::resolved_path(path, root);
     }
+    Ok((server, credentials))
 }
 
 /// The configuration the protocol backend connects with: the server and its

@@ -122,6 +122,12 @@ only on this computer. With a master password they travel with the folder.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
 
+A key or certificate file chosen from inside the program's folder is found
+again after the folder is moved or its drive gets another letter. A file kept
+anywhere else has to be at the same path on every computer.
+
+<!-- verified-by: pr src-tauri/src/local_fs/portable.rs::a_file_in_the_folder_is_found_again_after_the_folder_moves -->
+
 An update replaces the program and leaves the `data` folder as it is.
 
 <!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_replaces_the_program_and_leaves_the_data -->

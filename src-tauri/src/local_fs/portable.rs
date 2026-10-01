@@ -44,9 +44,69 @@ pub fn prepare(data: &Path) -> std::io::Result<()> {
     std::fs::remove_file(probe)
 }
 
+/// How a bookmark keeps a key or certificate file: one inside the portable
+/// copy's folder is kept relative to it, so it is found again when the folder
+/// moves or its drive gets another letter. Any other path is kept as given.
+pub fn stored_path(path: &str, root: Option<&Path>) -> String {
+    let relative = root.and_then(|root| {
+        let mut rest = Path::new(path).components();
+        // ponytail: ASCII case folding only; a folder name that differs in the
+        // case of other letters keeps the absolute path, which still works here.
+        let inside = root.components().all(|expected| {
+            rest.next().is_some_and(|actual| {
+                actual
+                    .as_os_str()
+                    .eq_ignore_ascii_case(expected.as_os_str())
+            })
+        });
+        let rest = rest.as_path();
+        (inside && !rest.as_os_str().is_empty()).then(|| rest.to_string_lossy().into_owned())
+    });
+    relative.unwrap_or_else(|| path.to_owned())
+}
+
+/// The file a path kept by [`stored_path`] names in this copy.
+pub fn resolved_path(path: &str, root: Option<&Path>) -> String {
+    match root {
+        Some(root) if !path.is_empty() && Path::new(path).is_relative() => {
+            root.join(path).to_string_lossy().into_owned()
+        }
+        _ => path.to_owned(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(windows)]
+    #[test]
+    fn a_file_in_the_folder_is_found_again_after_the_folder_moves() {
+        let here = Path::new(r"E:\FTPeach");
+        let stored = stored_path(r"e:\ftpeach\keys\id_ed25519", Some(here));
+        assert_eq!(stored, r"keys\id_ed25519");
+        assert_eq!(
+            resolved_path(&stored, Some(Path::new(r"F:\Tools\FTPeach"))),
+            r"F:\Tools\FTPeach\keys\id_ed25519"
+        );
+        // A file elsewhere, or a folder that only starts with the same name,
+        // names one computer's drives and is kept as it is.
+        for outside in [
+            r"C:\Users\me\.ssh\id_ed25519",
+            r"E:\FTPeach-old\keys\id",
+            r"E:\FTPeach",
+        ] {
+            assert_eq!(stored_path(outside, Some(here)), outside);
+            assert_eq!(resolved_path(outside, Some(here)), outside);
+        }
+        assert_eq!(resolved_path("", Some(here)), "");
+        // An installed copy changes nothing.
+        assert_eq!(
+            stored_path(r"E:\FTPeach\keys\id", None),
+            r"E:\FTPeach\keys\id"
+        );
+        assert_eq!(resolved_path(r"keys\id", None), r"keys\id");
+    }
 
     #[test]
     fn only_the_marker_makes_a_folder_portable() {

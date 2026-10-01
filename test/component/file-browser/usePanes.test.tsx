@@ -7,11 +7,15 @@ import {
   setTransfersStore,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { CommandResult } from '../../../src/platform/ipcContracts.ts';
+import { isolate } from '../../../src/shared/bidi.ts';
 import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-i18next')>()),
-  useTranslation: () => ({ t: (key: string) => key }),
+  // A message that names something shows the name, so a test can see it.
+  useTranslation: () => ({
+    t: (key: string, params?: { name?: string }) => (params?.name ? `${key}: ${params.name}` : key),
+  }),
 }));
 
 function backend() {
@@ -389,7 +393,7 @@ test('a folder is never offered in place of a file of its name, nor a file in pl
   // the taken names are refused and the rest goes ahead.
   expect(options.requestConfirm).not.toHaveBeenCalled();
   expect(options.reportError).toHaveBeenCalledExactlyOnceWith(
-    expect.objectContaining({ code: 'alreadyExists' }),
+    `errors.alreadyExists: ${isolate('one')}, ${isolate('two')}`,
   );
   expect(proceed).toHaveBeenCalledExactlyOnceWith(['new'], false);
 });

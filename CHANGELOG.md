@@ -76,7 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A settings file that cannot be imported says what is wrong with it, not only that a value is
   invalid.
 - Copying a folder to where a file has its name, or a file to where a folder has it, no longer
-  asks to replace it, which never worked: it says the name is taken and copies the rest.
+  asks to replace it, which never worked: it says which name is taken and copies the rest.
 - With the timeout set to a few seconds, a server that stops answering is reported sooner:
   closing the connection no longer adds up to five seconds to it.
 

@@ -355,7 +355,7 @@ export function usePanes({
       return !!source && !!destination && source.isDirectory !== destination.isDirectory;
     });
     if (taken.length > 0) {
-      reportError({ code: 'alreadyExists', message: taken.join(', ') });
+      reportError(t('errors.alreadyExists', { name: taken.map(isolate).join(', ') }));
       names = names.filter((name) => !taken.includes(name));
       if (names.length === 0) return;
     }

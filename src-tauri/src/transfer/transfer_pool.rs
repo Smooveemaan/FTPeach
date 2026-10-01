@@ -25,6 +25,8 @@ pub type BackendFactory =
 
 #[derive(Clone, Copy)]
 pub enum PoolSize {
+    /// A pool of exactly this many workers, which only tests ask for.
+    #[cfg(any(test, feature = "test-utils"))]
     Fixed(usize),
     Capped(usize),
     Unlimited,
@@ -33,6 +35,7 @@ pub enum PoolSize {
 impl PoolSize {
     fn satisfied(&self, current: usize, needed: usize) -> bool {
         match self {
+            #[cfg(any(test, feature = "test-utils"))]
             PoolSize::Fixed(n) => current >= *n,
             PoolSize::Capped(n) => current >= needed.min(*n),
             PoolSize::Unlimited => current >= needed,

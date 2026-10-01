@@ -23,10 +23,6 @@ use zeroize::Zeroize;
 pub struct SensitiveString(String);
 
 impl SensitiveString {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-
     pub fn expose(&self) -> &str {
         &self.0
     }
@@ -68,7 +64,7 @@ mod tests {
 
     #[test]
     fn debug_does_not_print_the_value() {
-        let secret = SensitiveString::new(MARKER);
+        let secret = SensitiveString::from(MARKER);
         assert_eq!(format!("{secret:?}"), "[REDACTED]");
         assert_eq!(secret.expose(), MARKER);
     }

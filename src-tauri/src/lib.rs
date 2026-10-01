@@ -1,5 +1,8 @@
 mod application;
 mod commands;
+#[cfg(not(feature = "test-utils"))]
+mod domain;
+#[cfg(feature = "test-utils")]
 pub mod domain;
 mod ipc;
 mod local_fs;

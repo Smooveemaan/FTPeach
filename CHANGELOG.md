@@ -6,83 +6,68 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The right-click menu has Cut and Copy, and Paste in the menu of a pane's empty space; until now
-  only the keyboard offered them.
-- The right-click menu sends a folder, or everything selected, to the other pane, not only the
-  one file under the pointer.
-- The right-click menu of a file on your computer has Open.
+- The right-click menu has Cut and Copy for files, Paste in a pane's empty space, and Open for
+  files on your computer.
+- The right-click menu sends a folder, or everything selected, to the other pane.
+- The "…" in a path that does not fit the pane can be clicked to open the nearest folder it hides.
 
 ### Changed
 
 - Concurrent transfers in Settings can be set up to 128 instead of 10.
-- The Move to dialog is as wide as its folder names need, instead of always the same width.
-- With a server in both panes, the File menu offers Disconnect for each side, instead of one
-  Disconnect that could not be chosen.
-- The right-click menu of a file or folder follows the order of the Windows Explorer menu: Open
-  first, then where to send it, Delete and Rename, and Permissions last.
+- The right-click menu follows the order of the Windows Explorer menu.
+- With a server in both panes, the File menu offers Disconnect for each side.
+- Save Connection in the Bookmarks menu works before you connect, like the button beside the
+  connection form.
+- The Move to dialog is as wide as its folder names need.
+- "System protection" in Settings says why it cannot be chosen while the vault is locked.
+- A settings file that cannot be imported says what is wrong with it.
+
+### Security
+
+- Downloading a folder refuses a name like `d:name`, which Windows would have saved outside the
+  folder you chose.
+- Dragging a server file to Explorer refuses a name like `a:b`.
+- Moving a saved password from an FTPS bookmark to plain FTP is marked as less secure when you
+  confirm it.
+- Locking the vault from Settings hides a password shown with the eye button.
 
 ### Fixed
 
-- The Bookmarks menu saves a connection before you connect, as the Save Connection button does,
-  and calls it by the same name.
-- A folder download that contains a name Windows cannot use no longer reports an unexpected error.
-- Dragging a server file to Explorer refuses a name like `a:b`, which Windows would not store as
-  a plain file, as downloading it already did.
-- Downloading a folder refuses a file or folder named like a drive (`d:name`), which Windows
-  would have saved outside the folder you chose.
-- Connecting to an address that does not exist says the server was not found, instead of
-  reporting an unexpected error.
-- A file another program has open, a name that is already taken and a full disk each get their
-  own message, instead of "not found" or an unexpected error.
-- When an FTP or SFTP connection cannot reach the configured proxy, the message says so instead of
-  blaming the server.
+- Connecting to an address that does not exist says the server was not found.
+- When the proxy cannot be reached, the message says so instead of blaming the server.
 - Testing a proxy that works no longer reports a failure.
-- Showing a bookmark's password when none is saved no longer reports an error.
-- Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
-- Stopping a folder upload no longer reports "Cleanup is incomplete": the files already uploaded
-  stay on the server, and the unfinished one is removed.
-- Moving a saved password from an FTPS bookmark to plain FTP is marked as less secure when you are
-  asked to confirm it.
-- A bookmark saved as FTPS in an older format shows as FTPS instead of FTP, and saving it no
-  longer asks to confirm moving its password.
-- Locking the vault from Settings now hides a password shown with the eye button.
-- The vault no longer locks up to half a minute before the auto-lock time is up.
-- "System protection" in Settings says why it cannot be chosen while the vault is locked.
-- After a vault reset, the passwords deleted with it are no longer shown as saved.
-- A password entered for a bookmark that was switched from SFTP with a key to another protocol is
-  no longer lost when the bookmark is saved.
-- Deleting a bookmark while the password vault is locked asks for the master password, instead of
-  only reporting that the vault is locked.
-- The log of a WebDAV connection warns about an unchecked certificate once instead of twice, and
-  not at all for an `http://` address.
-- With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
-- A wrong master password says that the password was not accepted, instead of "Command failed".
-- When files are dropped on a folder that cannot be read, the reason is given in your language.
-- Settings shows the vault as unlocked as soon as it is unlocked from a security confirmation or
-  the unlock prompt, and the auto-lock time is counted from that moment.
 - A proxy can be switched off and its fields emptied in one save.
+- With a timeout of a few seconds, a server that stops answering is reported sooner.
+- The log of a WebDAV connection warns about an unchecked certificate once, and not at all for an
+  `http://` address.
+- With several FTP transfers starting at once, one of them no longer fails now and then.
+- Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
+- Stopping a folder upload keeps the files already uploaded and no longer reports "Cleanup is
+  incomplete".
+- A folder download that contains a name Windows cannot use no longer reports an unexpected error.
+- Copying a folder onto a file of the same name, or a file onto a folder, no longer asks to
+  replace it: it says which name is taken and copies the rest.
+- A file another program has open, a name that is already taken and a full disk each get their
+  own message.
+- Renaming a file on your computer to another file's name asks whether to replace it.
+- Creating a file on your computer with the name of an existing folder says that the name is
+  taken.
+- With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
+- A bookmark saved as FTPS in an older format shows as FTPS, and saving it no longer asks to
+  confirm moving its password.
+- A bookmark switched from SFTP with a key to another protocol keeps the password entered for it.
+- A bookmark whose start folder has no leading slash (`pub`) connects and opens that folder.
+- A bookmark with a server name too long to connect to is refused when it is saved.
+- Showing a bookmark's password when none is saved no longer reports an error.
+- When a saved password cannot be read on this computer, connecting says so and asks for it again.
+- A wrong master password says that it was not accepted instead of "Command failed".
+- The vault no longer locks up to half a minute before the auto-lock time is up.
+- Settings shows the vault as unlocked as soon as it is unlocked anywhere, and the auto-lock time
+  counts from that moment.
+- After a vault reset, the passwords deleted with it are no longer shown as saved.
+- Deleting a bookmark while the vault is locked asks for the master password.
 - Keyboard shortcuts no longer act on the panes behind Settings, the bookmark manager and other
   dialogs, and Settings no longer opens underneath the bookmark manager.
-- Creating a file on your computer with the name of an existing folder says that the name is
-  taken, instead of "You don't have permission".
-- Renaming a file on your computer to a name another file has asks whether to replace it, instead
-  of reporting an unexpected error. A name taken by a folder is refused with that reason.
-- A bookmark whose start folder was entered without the leading slash (`pub`) connects and opens
-  that folder, instead of being refused as an invalid configuration.
-- A bookmark with a server name too long to connect to is refused when it is saved, not later
-  when it is opened.
-- When a saved password cannot be read on this computer, connecting says so and asks to enter it
-  again, instead of sending an empty password and reporting a wrong one.
-- The "…" in a path that does not fit the pane can be clicked: it opens the nearest folder it
-  hides.
-- A settings file that cannot be imported says what is wrong with it, not only that a value is
-  invalid.
-- Copying a folder to where a file has its name, or a file to where a folder has it, no longer
-  asks to replace it, which never worked: it says which name is taken and copies the rest.
-- With the timeout set to a few seconds, a server that stops answering is reported sooner:
-  closing the connection no longer adds up to five seconds to it.
-- With several FTP transfers starting at once, one of them no longer fails now and then with the
-  server's reply "425 … Address already in use": FTPeach asks the server again.
 
 ## [0.3.0] - 2026-09-27
 

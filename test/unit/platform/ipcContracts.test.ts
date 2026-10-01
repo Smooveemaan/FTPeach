@@ -253,6 +253,20 @@ test('a declined confirmation is reported as a cancellation and grants nothing',
   assert.deepEqual(calls, ['settings_set_security', 'settings_set']);
 });
 
+test('switching the proxy off travels with its address, so both are judged together', async () => {
+  const calls: Array<{ command: string; args?: InvokeArgs | undefined }> = [];
+  const invoke: InvokeFn = async (command, args) => {
+    calls.push({ command, args });
+    return { ok: true } as const;
+  };
+  const proxy = { proxyEnabled: false, proxyType: 'socks5', proxyHost: '', proxyPort: 1080 };
+  await createSettingsApi(invoke).set({ ...proxy, theme: 'dark' });
+  assert.deepEqual(calls, [
+    { command: 'settings_set_security', args: { patch: proxy } },
+    { command: 'settings_set', args: { patch: { theme: 'dark' } } },
+  ]);
+});
+
 /**
  * Command responses used to be asserted into their declared type, so a backend
  * that answered with the wrong shape produced a value that merely claimed to be

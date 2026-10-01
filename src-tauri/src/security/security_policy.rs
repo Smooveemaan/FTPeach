@@ -92,11 +92,14 @@ pub fn without_weakening(current: &JsonMap, mut patch: JsonMap) -> JsonMap {
 
 /// Everything `settings_set_security` applies: the protective settings,
 /// and the proxy's address together with its password, since changing one
-/// without the other can send the saved password somewhere new.
-pub const PROTECTED_KEYS: [&str; 9] = [
+/// without the other can send the saved password somewhere new. The proxy's
+/// switch travels with them: an address is valid only for the switch it is
+/// saved with.
+pub const PROTECTED_KEYS: [&str; 10] = [
     CONFIRMATIONS,
     AUTO_LOCK,
     STRICT_HOST_KEY,
+    "proxyEnabled",
     "proxyType",
     "proxyHost",
     "proxyPort",

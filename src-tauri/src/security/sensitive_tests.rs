@@ -278,6 +278,10 @@ fn relaxing_security_settings_is_confirmed_even_with_confirmations_off() {
 fn security_requests_accept_only_valid_security_keys() {
     assert!(security_patch_from_request(r#"{"showSecurityConfirmations":false}"#).is_ok());
     assert!(security_patch_from_request(r#"{"vaultAutoLockMinutes":0}"#).is_ok());
+    // The proxy's switch comes with its address: an emptied proxy is valid
+    // only together with being switched off.
+    assert!(security_patch_from_request(r#"{"proxyEnabled":false,"proxyHost":""}"#).is_ok());
+    assert!(security_patch_from_request(r#"{"proxyEnabled":true,"proxyHost":""}"#).is_err());
     for request in [
         r#"{"theme":"dark"}"#,
         r#"{"showSecurityConfirmations":false,"proxyPasswordEnc":"AQID"}"#,

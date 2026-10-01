@@ -117,6 +117,9 @@ impl Store {
         if password.is_none() && !remove_password {
             return self.set_settings(patch).await;
         }
+        // Checked before the vault is asked for: a save the settings would
+        // refuse must not cost an unlock, or a secret deleted and put back.
+        check_merged(&self.get_settings().await, &patch)?;
         if !vault.is_unlocked().await {
             return Err(crate::ipc::vault_locked());
         }
@@ -179,22 +182,10 @@ impl Store {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
+        check_merged(&current, &patch)?;
         for (k, v) in patch {
             current.insert(k, v);
         }
-
-        let mut public_settings = current.clone();
-        for key in [
-            "proxyPasswordEnc",
-            "proxyPasswordPlain",
-            "proxyPasswordSet",
-            "hasProxyPassword",
-        ] {
-            public_settings.remove(key);
-        }
-        super::validate_settings(&public_settings, false).map_err(|message| {
-            anyhow::anyhow!(CommandError::new(ErrorCode::InvalidInput, message))
-        })?;
 
         match proxy_password {
             ProxyPasswordWrite::Vault { saved } => {
@@ -474,6 +465,26 @@ impl Store {
         }
         self.set_settings(patch).await
     }
+}
+
+/// Checks the settings `patch` would leave as a whole, without the fields
+/// that hold or name a secret: a patch can be valid on its own and still not
+/// fit what is saved, such as an empty proxy address while the proxy is on.
+fn check_merged(current: &JsonMap, patch: &JsonMap) -> Result<()> {
+    let mut merged = current.clone();
+    merged.extend(patch.clone());
+    for key in [
+        "proxyPassword",
+        "removeProxyPassword",
+        "proxyPasswordEnc",
+        "proxyPasswordPlain",
+        "proxyPasswordSet",
+        "hasProxyPassword",
+    ] {
+        merged.remove(key);
+    }
+    super::validate_settings(&merged, false)
+        .map_err(|message| anyhow::anyhow!(CommandError::new(ErrorCode::InvalidInput, message)))
 }
 
 async fn restore_proxy_password(vault: &Vault, previous: Option<&Vec<u8>>) -> Result<()> {

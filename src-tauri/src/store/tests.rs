@@ -360,6 +360,20 @@ async fn proxy_password_moves_with_enhanced_protection() {
             .map(|error| error.code),
         Some(crate::ipc::ErrorCode::VaultLocked)
     );
+    // A patch the settings would refuse anyway is refused before the vault is asked for.
+    let invalid = store
+        .set_settings_with_vault(
+            serde_json::from_value(json!({"proxyHost": "", "removeProxyPassword": true})).unwrap(),
+            &vault,
+        )
+        .await
+        .unwrap_err();
+    assert_eq!(
+        invalid
+            .downcast_ref::<crate::ipc::CommandError>()
+            .map(|error| error.code),
+        Some(crate::ipc::ErrorCode::InvalidInput)
+    );
     store
         .set_settings_with_vault(proxy_patch(json!({"proxyPort": 1081})), &vault)
         .await

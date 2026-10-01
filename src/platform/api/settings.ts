@@ -48,11 +48,13 @@ export type ImportSettingsResult = CommandResult & {
 /**
  * Settings that protect the user, and the proxy's address with its password:
  * `settings_set` refuses to relax the first or to move the saved password.
+ * The proxy's switch goes with its address, so the two are checked together.
  */
 const SECURITY_SETTINGS = new Set([
   'showSecurityConfirmations',
   'strictHostKeyCheck',
   'vaultAutoLockMinutes',
+  'proxyEnabled',
   'proxyType',
   'proxyHost',
   'proxyPort',

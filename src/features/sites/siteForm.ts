@@ -95,6 +95,8 @@ export function normalizeSiteForm(
     };
   }
   const defaultPort = DEFAULT_SITE_PORTS[form.protocol] || '21';
+  // The form keeps the flag when the protocol changes; only SFTP signs in with a key.
+  const useKeyAuth = form.protocol === 'sftp' && form.useKeyAuth;
   const server: ServerSettings = {
     protocol: form.protocol,
     host: form.host.trim(),
@@ -106,7 +108,7 @@ export function normalizeSiteForm(
     allowInvalidCert: form.allowInvalidCert,
     allowCleartextAuth: form.allowCleartextAuth,
     caCertPath: form.caCertPath,
-    useKeyAuth: form.useKeyAuth,
+    useKeyAuth,
     keyPath: form.keyPath,
     // Only FTP names files in a server-chosen encoding.
     encoding: form.protocol === 'ftp' || form.protocol === 'ftps' ? form.encoding : '',
@@ -116,7 +118,7 @@ export function normalizeSiteForm(
     ...identity,
     ...server,
     name: form.name.trim(),
-    password: form.useKeyAuth ? '' : secrets.password,
+    password: useKeyAuth ? '' : secrets.password,
     removePassword: form.removePassword,
     keyPassphrase: secrets.keyPassphrase,
     removeKeyPassphrase: form.removeKeyPassphrase,

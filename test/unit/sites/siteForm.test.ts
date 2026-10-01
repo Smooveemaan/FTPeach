@@ -52,6 +52,19 @@ test('site form normalization trims persisted fields and preserves secret intent
   assert.equal(payload.removePassword, false);
 });
 
+test('key authentication left over from SFTP does not drop another protocol’s password', () => {
+  const secrets = { password: 'typed', keyPassphrase: '' };
+  const form = { ...createSiteForm(), name: 'S', host: 'h', useKeyAuth: true, keyPath: 'C:\\key' };
+  for (const protocol of ['ftp', 'ftps', 'webdav'] as const) {
+    const payload = normalizeSiteForm({ ...form, protocol }, null, secrets);
+    assert.equal(payload.password, 'typed');
+    assert.equal(payload.useKeyAuth, false);
+  }
+  const sftp = normalizeSiteForm({ ...form, protocol: 'sftp' }, null, secrets);
+  assert.equal(sftp.password, '');
+  assert.equal(sftp.useKeyAuth, true);
+});
+
 test('a missing, null or empty host and user open the editor the same way', () => {
   const forms = [{}, { host: null, user: null }, { host: '', user: '' }].map((fields) =>
     createSiteForm({ id: 's', name: 'S', ...fields } as ManagedSite),

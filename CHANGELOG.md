@@ -31,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - "System protection" in Settings says why it cannot be chosen while the vault is locked.
 - After a vault reset, the passwords deleted with it are no longer shown as saved.
 - Concurrent transfers in Settings can be set up to 128 instead of 10.
+- A password entered for a bookmark that was switched from SFTP with a key to another protocol is
+  no longer lost when the bookmark is saved.
 
 ## [0.3.0] - 2026-09-27
 

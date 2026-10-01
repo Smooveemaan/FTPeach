@@ -604,6 +604,29 @@ describe('Site Manager workflows', () => {
     },
   );
 
+  test('a password typed after switching from SFTP with a key to WebDAV is saved', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
+    await user.type(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }), 'Dav');
+    await user.click(screen.getByRole('button', { name: 'FTP' }));
+    await user.click(screen.getByRole('option', { name: 'SFTP' }));
+    await user.click(screen.getByRole('checkbox', { name: 'connectionBar.authToggle.label' }));
+    await user.click(screen.getByRole('button', { name: 'SFTP' }));
+    await user.click(screen.getByRole('option', { name: 'WebDAV' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'connectionBar.fields.address' }),
+      'https://dav.example.test/',
+    );
+    await user.type(screen.getByLabelText('connectionBar.fields.password'), 'typed');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ protocol: 'webdav', password: 'typed', useKeyAuth: false }),
+    );
+  });
+
   test('warns when the selected SSH private key uses RSA', async () => {
     const user = userEvent.setup();
     vi.mocked(window.api.fsLocal.selectKeyFile).mockResolvedValue({

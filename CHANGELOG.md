@@ -45,6 +45,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A proxy can be switched off and its fields emptied in one save.
 - Keyboard shortcuts no longer act on the panes behind Settings, the bookmark manager and other
   dialogs, and Settings no longer opens underneath the bookmark manager.
+- Creating a file on your computer with the name of an existing folder says that the name is
+  taken, instead of "You don't have permission".
 
 ## [0.3.0] - 2026-09-27
 

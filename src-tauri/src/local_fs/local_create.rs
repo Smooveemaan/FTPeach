@@ -60,7 +60,9 @@ pub(crate) async fn create_file(path: &Path) -> Result<()> {
         .await
     {
         Ok(file) => file,
-        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+        // Windows answers "access denied" when a folder has the name; the
+        // name is taken all the same.
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists || entry.path.is_dir() => {
             return Err(CommandError::new(ErrorCode::AlreadyExists, "File already exists").into());
         }
         Err(error) => return Err(error.into()),
@@ -96,6 +98,28 @@ mod tests {
             ErrorCode::AlreadyExists
         );
         assert_eq!(std::fs::read(&file).unwrap(), b"keep");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    /// One name per folder: a file cannot take a folder's name, nor a folder
+    /// a file's, and the refusal says the name is taken.
+    #[tokio::test]
+    async fn a_name_taken_by_the_other_kind_of_entry_is_reported_as_taken() {
+        let root = scratch();
+        std::fs::create_dir(root.join("folder")).unwrap();
+        std::fs::write(root.join("file"), b"keep").unwrap();
+        for error in [
+            create_file(&root.join("folder")).await.unwrap_err(),
+            create_dir(&root.join("file")).await.unwrap_err(),
+        ] {
+            assert_eq!(
+                CommandError::from_anyhow(&error).code,
+                ErrorCode::AlreadyExists,
+                "{error:#}"
+            );
+        }
+        assert!(root.join("folder").is_dir());
+        assert_eq!(std::fs::read(root.join("file")).unwrap(), b"keep");
         std::fs::remove_dir_all(root).unwrap();
     }
 

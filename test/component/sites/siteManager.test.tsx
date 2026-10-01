@@ -488,6 +488,32 @@ describe('Site Manager workflows', () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
   });
 
+  test('requests vault unlock and retries deleting a bookmark', async () => {
+    const user = userEvent.setup();
+    const onDelete = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, errorCode: 'vaultLocked', error: 'vault is locked' })
+      .mockResolvedValueOnce({ ok: true });
+    const onVaultUnlockRequired = vi.fn();
+    renderManager({ onDelete, onVaultUnlockRequired });
+
+    const siteRow = document.querySelector('.site-manage-content .site-manage-row.is-site');
+    await user.click(within(requireHtml(siteRow)).getByRole('button', { name: 'paneMenu.delete' }));
+    const confirm = screen.getAllByRole('dialog').at(-1);
+    fireEvent.click(within(requireHtml(confirm)).getByRole('button', { name: 'paneMenu.delete' }));
+
+    await waitFor(() => expect(onVaultUnlockRequired).toHaveBeenCalledOnce());
+    // Until the vault is unlocked the bookmark stays, and the refusal is not shown as an error.
+    expect(screen.getByText('Production')).toBeTruthy();
+    expect(screen.queryByText('vault is locked')).toBeNull();
+    expect(onDelete).toHaveBeenCalledOnce();
+
+    onVaultUnlockRequired.mock.calls[0]?.[0]();
+    await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(2));
+    expect(onDelete).toHaveBeenLastCalledWith('site-1');
+    await waitFor(() => expect(screen.queryByText('Production')).toBeNull());
+  });
+
   test('keeps the bookmark and local-path managers independent', async () => {
     const user = userEvent.setup();
     const bookmarkManager = renderManager();

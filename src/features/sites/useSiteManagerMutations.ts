@@ -124,17 +124,18 @@ export function useSiteManagerMutations({
     ],
   );
 
-  const handleDelete = useCallback(() => {
-    const target = pendingDelete;
-    if (!target) return;
-    setPendingDelete(null);
-    setError('');
-    void (async () => {
+  const deleteEntry = useCallback(
+    async (target: NonNullable<SiteManagerDialogState['pendingDelete']>) => {
       setSaving(true);
       try {
         const result =
           target.kind === 'folder' ? await onDeleteFolder(target.id) : await onDelete(target.id);
         if (result?.ok === false) {
+          // A bookmark's secrets leave the vault with it, which needs the vault open.
+          if (result.errorCode === 'vaultLocked') {
+            onVaultUnlockRequired(() => void deleteEntry(target));
+            return;
+          }
           setError(result.error || saveFailedMessage);
           return;
         }
@@ -153,18 +154,26 @@ export function useSiteManagerMutations({
       } finally {
         setSaving(false);
       }
-    })();
-  }, [
-    onDelete,
-    onDeleteFolder,
-    onFolderDeleted,
-    pendingDelete,
-    saveFailedMessage,
-    setError,
-    setLocalEntries,
-    setPendingDelete,
-    setSaving,
-  ]);
+    },
+    [
+      onDelete,
+      onDeleteFolder,
+      onFolderDeleted,
+      onVaultUnlockRequired,
+      saveFailedMessage,
+      setError,
+      setLocalEntries,
+      setSaving,
+    ],
+  );
+
+  const handleDelete = useCallback(() => {
+    const target = pendingDelete;
+    if (!target) return;
+    setPendingDelete(null);
+    setError('');
+    void deleteEntry(target);
+  }, [deleteEntry, pendingDelete, setError, setPendingDelete]);
 
   const commitAddFolder = useCallback(async () => {
     if (saving) return;

@@ -51,8 +51,9 @@ pub struct ServerSettings {
 impl ServerSettings {
     /// Reads the fields the way every earlier version stored or sent them. A
     /// field that is missing, `null` or of another type is unset, `port` and
-    /// `maxConnections` may be numeric strings, and `protocol: "ftp"` with
-    /// `secure: true` is FTPS. Other fields are ignored.
+    /// `maxConnections` may be numeric strings, `protocol: "ftp"` with
+    /// `secure: true` is FTPS, and a start folder begins at the root. Other
+    /// fields are ignored.
     pub fn from_json(record: &JsonMap) -> Result<Self> {
         let text = |key: &str| {
             record
@@ -76,11 +77,12 @@ impl ServerSettings {
             port: number(record, "port")?,
             webdav_url: text("webdavUrl"),
             user: text("user"),
-            remote_path: record
-                .get("remotePath")
-                .and_then(Value::as_str)
-                .unwrap_or("/")
-                .to_owned(),
+            remote_path: start_folder(
+                record
+                    .get("remotePath")
+                    .and_then(Value::as_str)
+                    .unwrap_or("/"),
+            ),
             allow_invalid_cert: flag("allowInvalidCert"),
             allow_cleartext_auth: flag("allowCleartextAuth"),
             ca_cert_path: text("caCertPath"),
@@ -225,6 +227,16 @@ pub enum ConnectRequest {
         server: ServerSettings,
         credentials: Credentials,
     },
+}
+
+/// A start folder is a path from the server's root: one stored without the
+/// leading slash (`pub`) names the same folder, and an empty one the root.
+fn start_folder(path: &str) -> String {
+    if path.starts_with('/') {
+        path.to_owned()
+    } else {
+        format!("/{path}")
+    }
 }
 
 /// How a server's settings that cannot be connected to are reported.

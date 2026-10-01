@@ -4493,7 +4493,7 @@
                   "parentId": null,
                   "port": null,
                   "protocol": "ftp",
-                  "remotePath": "pub",
+                  "remotePath": "/pub",
                   "secure": false,
                   "useKeyAuth": false,
                   "user": "",
@@ -6212,11 +6212,15 @@
         },
         "relative-path": {
           "outcome": {
-            "refused": {
-              "code": "invalidInput",
-              "details": "remotePath must be an absolute remote path without traversal",
-              "message": "Invalid connection configuration"
-            }
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"r.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
+            "logLabel": "ftp://r.example.test:21",
+            "protocol": "ftp",
+            "secrets": {
+              "keyPassphrase": null,
+              "password": "<empty>",
+              "proxyPassword": null
+            },
+            "server": "[\"ftp\",\"r.example.test\",21,\"anonymous\"]"
           },
           "sitesAfter": {
             "data": [
@@ -7378,7 +7382,7 @@
                 "parentId": null,
                 "port": null,
                 "protocol": "ftp",
-                "remotePath": "pub",
+                "remotePath": "/pub",
                 "secure": false,
                 "useKeyAuth": false,
                 "user": "",
@@ -7847,7 +7851,7 @@
               "parentId": null,
               "port": null,
               "protocol": "ftp",
-              "remotePath": "pub",
+              "remotePath": "/pub",
               "secure": false,
               "useKeyAuth": false,
               "user": "",

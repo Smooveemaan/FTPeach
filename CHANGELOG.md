@@ -49,6 +49,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   taken, instead of "You don't have permission".
 - Renaming a file on your computer to a name another file has asks whether to replace it, instead
   of reporting an unexpected error. A name taken by a folder is refused with that reason.
+- A bookmark whose start folder was entered without the leading slash (`pub`) connects and opens
+  that folder, instead of being refused as an invalid configuration.
 
 ## [0.3.0] - 2026-09-27
 

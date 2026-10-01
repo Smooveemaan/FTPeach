@@ -379,6 +379,32 @@ mod tests {
         }
     }
 
+    /// A start folder is a path from the server's root. One saved without
+    /// the leading slash names the same folder, and must not make the site
+    /// unconnectable: the connection itself never uses it.
+    #[test]
+    fn a_start_folder_saved_without_its_leading_slash_starts_at_the_root() {
+        for (stored, read) in [
+            ("pub", "/pub"),
+            ("pub/in", "/pub/in"),
+            ("", "/"),
+            ("/pub", "/pub"),
+        ] {
+            let site =
+                map(json!({ "protocol": "ftp", "host": "example.test", "remotePath": stored }));
+            assert_eq!(
+                crate::domain::ServerSettings::from_json(&site)
+                    .unwrap()
+                    .remote_path,
+                read
+            );
+            assert!(ConnectionConfig::for_test(&site).is_ok(), "{stored}");
+        }
+        let escaping =
+            map(json!({ "protocol": "ftp", "host": "example.test", "remotePath": "../up" }));
+        assert!(ConnectionConfig::for_test(&escaping).is_err());
+    }
+
     #[test]
     fn rejects_connection_strings_above_their_boundaries() {
         let accepted =

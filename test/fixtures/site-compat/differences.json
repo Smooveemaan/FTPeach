@@ -47,5 +47,8 @@
   "/stores/legacy-array-shapes/saves/1/filesAfter/sites/data/0/*": "The same: the save is written, protecting the plaintext password it kept.",
   "/stores/legacy-array-shapes/import/verdicts/*": "An exported bookmark is the listed one, so a stored value only a connect would refuse (a numeric-string limit or port, an unknown protocol) now exports as a value import accepts.",
   "/stores/legacy-array-shapes/import/outcome/Ok/*": "The same.",
-  "/stores/legacy-array-shapes/import/filesAfter/sites/data": "The same."
+  "/stores/legacy-array-shapes/import/filesAfter/sites/data": "The same.",
+  "/stores/legacy-array-shapes/connect/relative-path/outcome/*": "A site whose start folder was stored without its leading slash (pub) connects: the folder is read from the server's root, which is what it meant. 0.3.0 refused the site as invalid, though connecting never uses the start folder (a bug fix).",
+  "/stores/*/list/sites/Ok/*/remotePath": "For the same reason such a start folder is listed with its leading slash (/pub).",
+  "/stores/*/saves/*/filesAfter/sites/data/*/remotePath": "And a save writes it back that way. Every version reads /pub as the same folder."
 }

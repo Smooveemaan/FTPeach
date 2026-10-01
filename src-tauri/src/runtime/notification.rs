@@ -85,13 +85,25 @@ fn identity_key(id: &str) -> String {
 #[cfg(windows)]
 const INSTALLED_COPY_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\FTPeach";
 
+/// Set once a portable update has started the new version: that process
+/// registers the identity for itself, and this one must not take it away
+/// while exiting.
+static IDENTITY_HANDED_OVER: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+pub fn hand_identity_over() {
+    IDENTITY_HANDED_OVER.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
 /// Takes the registration back out when a portable copy exits, so it leaves
 /// nothing on the computer. Windows has no file-based way to name an
 /// unpackaged program on its toasts, so the key exists while FTPeach runs. An
 /// installed copy uses the same id; with one present the key stays.
 #[cfg(windows)]
 pub fn unregister_identity() {
-    remove_identity_unless_installed(APP_USER_MODEL_ID, INSTALLED_COPY_KEY);
+    if !IDENTITY_HANDED_OVER.load(std::sync::atomic::Ordering::SeqCst) {
+        remove_identity_unless_installed(APP_USER_MODEL_ID, INSTALLED_COPY_KEY);
+    }
 }
 
 #[cfg(windows)]

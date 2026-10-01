@@ -5,10 +5,11 @@
 //! the next launch installs it -- or until the user asks for it sooner.
 
 use super::shutdown::{self, ShutdownCoordinator};
-use super::update_staging::{self, StagedUpdate};
+use super::update_staging::{self, Package, StagedUpdate};
+use crate::local_fs::portable;
 use crate::store::Store;
 use serde::Serialize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Emitter, Manager};
@@ -72,12 +73,9 @@ pub enum UpdaterStatus {
 }
 
 /// Updates need a packaged build: a development build has no installer to
-/// replace, and a smoke-test instance must not install over the real one. A
-/// portable copy must not run the installer either.
+/// replace, and a smoke-test instance must not install over the real one.
 pub fn updates_enabled() -> bool {
-    !cfg!(debug_assertions)
-        && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
-        && crate::local_fs::portable::root().is_none()
+    !cfg!(debug_assertions) && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
 }
 
 fn send(app: &AppHandle, status: UpdaterStatus) {
@@ -112,6 +110,43 @@ fn staging_dir(app: &AppHandle) -> anyhow::Result<PathBuf> {
         .ok_or_else(|| anyhow::anyhow!("No local application data directory"))
 }
 
+/// The entry of the update feed a portable copy reads. The installed copy
+/// keeps the plugin's own target, so neither can take the other's artifact.
+const PORTABLE_TARGET: &str = "windows-x86_64-portable";
+
+fn package() -> Package {
+    if portable::root().is_some() {
+        Package::PortableZip
+    } else {
+        Package::Installer
+    }
+}
+
+/// Starts the staged update: the installer, or for a portable copy the swap
+/// of its own files followed by the new program.
+fn start_staged(
+    app: &AppHandle,
+    dir: &Path,
+    current: &semver::Version,
+    pubkey: &str,
+) -> anyhow::Result<String> {
+    if portable::root().is_none() {
+        return update_staging::install(dir, current, pubkey);
+    }
+    let exe = std::env::current_exe()?;
+    update_staging::install_portable(dir, current, pubkey, &exe, &|program| {
+        // The new program would find this one still holding the
+        // single-instance lock and leave at once. Should the start then fail,
+        // this session goes on without the lock until it is closed.
+        tauri_plugin_single_instance::destroy(app);
+        let started = std::process::Command::new(program).spawn().map(drop);
+        if started.is_ok() {
+            super::notification::hand_identity_over();
+        }
+        started
+    })
+}
+
 fn release_pubkey(app: &AppHandle) -> Option<String> {
     app.config()
         .plugins
@@ -140,14 +175,19 @@ pub fn install_staged_at_startup(app: &AppHandle) {
     if !updates_enabled() {
         return;
     }
+    if portable::root().is_some()
+        && let Ok(exe) = std::env::current_exe()
+    {
+        update_staging::remove_replaced(&exe);
+    }
     let (Ok(dir), Some(pubkey)) = (staging_dir(app), release_pubkey(app)) else {
         return;
     };
     let current = &app.package_info().version;
-    let Some(staged) = update_staging::ready_to_install(&dir, current, &pubkey) else {
+    let Some(staged) = update_staging::ready_to_install(&dir, current, &pubkey, package()) else {
         return;
     };
-    match update_staging::install(&dir, current, &pubkey) {
+    match start_staged(app, &dir, current, &pubkey) {
         // Nothing needs an orderly shutdown yet: there is no tray icon, no
         // visible window and no connection.
         Ok(_) => std::process::exit(0),
@@ -209,7 +249,11 @@ async fn find_update(app: &AppHandle, state: &UpdaterState) -> anyhow::Result<Op
     let mut available = state.available.lock().await;
     if available.is_none() {
         send(app, UpdaterStatus::Checking);
-        *available = app.updater()?.check().await?;
+        let mut updater = app.updater_builder();
+        if portable::root().is_some() {
+            updater = updater.target(PORTABLE_TARGET);
+        }
+        *available = updater.build()?.check().await?;
     }
     Ok(available.as_ref().map(|update| update.version.clone()))
 }
@@ -286,8 +330,10 @@ async fn download_and_stage(app: &AppHandle, update: &Update) -> anyhow::Result<
     }
     let dir = staging_dir(app)?;
     let (version, signature) = (update.version.clone(), update.signature.clone());
-    tokio::task::spawn_blocking(move || update_staging::stage(&dir, &version, &signature, &bytes))
-        .await?
+    tokio::task::spawn_blocking(move || {
+        update_staging::stage(&dir, &version, &signature, &bytes, package())
+    })
+    .await?
 }
 
 /// Installs the downloaded update straight away: the same silent install the
@@ -299,7 +345,7 @@ pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
     let current = app.package_info().version.clone();
     let (lookup, lookup_current, lookup_pubkey) = (dir.clone(), current.clone(), pubkey.clone());
     let staged = tokio::task::spawn_blocking(move || {
-        update_staging::ready_to_install(&lookup, &lookup_current, &lookup_pubkey)
+        update_staging::ready_to_install(&lookup, &lookup_current, &lookup_pubkey, package())
     })
     .await?;
     let Some(staged) = staged else {
@@ -320,7 +366,7 @@ pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
     // start has no session left to return to; the next launch discards it.
     // The installer is checked again here, held open until it has started:
     // the check above came before the wind-down, which can take a while.
-    if let Err(error) = update_staging::install(&dir, &current, &pubkey) {
+    if let Err(error) = start_staged(app, &dir, &current, &pubkey) {
         log::warn!(
             "could not start the installer for {}: {error:#}",
             staged.version

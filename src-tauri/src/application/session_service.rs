@@ -11,7 +11,7 @@ use crate::protocol::sftp::HostKeyMismatchError;
 use crate::protocol::{ftp::FtpBackend, sftp::SftpBackend, webdav::WebDavBackend};
 use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
-use crate::session::{ConnectingClients, Session, Sessions, teardown_session};
+use crate::session::{ConnectingClients, Session, Sessions, TEARDOWN_DEADLINE, teardown_session};
 use crate::store::Store;
 use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
 use std::sync::Arc;
@@ -144,7 +144,7 @@ pub(crate) async fn connect(
     }
     let slot = sessions.get_or_create(connection_id);
     let mut guard = slot.lock().await;
-    teardown_session(&mut guard, connection_id).await;
+    teardown_session(&mut guard, connection_id, Some(TEARDOWN_DEADLINE)).await;
 
     let typed_config = connection_config(store, vault, server, credentials, window)
         .await
@@ -239,7 +239,7 @@ pub(crate) async fn disconnect(
     };
     let closing = async {
         let mut guard = slot.lock().await;
-        teardown_session(&mut guard, connection_id).await;
+        teardown_session(&mut guard, connection_id, Some(TEARDOWN_DEADLINE)).await;
     };
     if tokio::time::timeout(std::time::Duration::from_secs(5), closing)
         .await

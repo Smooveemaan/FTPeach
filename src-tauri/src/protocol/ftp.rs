@@ -1594,14 +1594,6 @@ impl ProtocolBackend for FtpBackend {
             self.remove_file(path).await
         }
     }
-    fn supports_empty_directory_remove(&self) -> bool {
-        true
-    }
-    async fn remove_empty_directory(&mut self, path: &str) -> BackendResult<()> {
-        let path = path.to_string();
-        self.with_stream(move |stream| Box::pin(async move { Ok(stream.rmdir(&path).await?) }))
-            .await
-    }
 
     /// RNTO replaces an existing file on most servers, but some refuse (IIS
     /// answers 550). That refusal is told apart from any other by both paths

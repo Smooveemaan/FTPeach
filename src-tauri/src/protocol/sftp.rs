@@ -967,13 +967,6 @@ impl ProtocolBackend for SftpBackend {
             Ok(())
         }
     }
-    fn supports_empty_directory_remove(&self) -> bool {
-        true
-    }
-    async fn remove_empty_directory(&mut self, path: &str) -> BackendResult<()> {
-        self.sftp()?.rmdir(path.to_string()).await?;
-        Ok(())
-    }
 
     /// Replaces whatever stands at `new_path`. SSH_FXP_RENAME (v3) leaves an
     /// existing target unspecified and OpenSSH refuses it, so a server that

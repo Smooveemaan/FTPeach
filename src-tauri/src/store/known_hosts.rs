@@ -53,6 +53,7 @@ impl Store {
         self.dir.join("known_hosts.json")
     }
 
+    #[cfg(test)]
     pub async fn get_known_host_fingerprint(&self, host: &str, port: u16) -> Option<String> {
         let hosts: JsonMap = self
             .read_json(&self.known_hosts_file(), JsonMap::new())

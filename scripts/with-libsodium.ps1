@@ -126,12 +126,14 @@ try {
             & cargo check --locked --manifest-path 'src-tauri\Cargo.toml'
         }
         'test' {
-            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets -- @TestArgs
+            # test-utils opens the modules the integration targets import; every
+            # test it adds needs a server and is #[ignore].
+            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --all-targets -- @TestArgs
         }
         'coverage' {
             # The same tests as 'test', instrumented; the report is read by scripts/coverage/coverage.ts.
             New-Item -ItemType Directory -Force -Path 'coverage\rust' | Out-Null
-            & cargo llvm-cov --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets --lcov --output-path 'coverage\rust\lcov.info' -- @TestArgs
+            & cargo llvm-cov --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --all-targets --lcov --output-path 'coverage\rust\lcov.info' -- @TestArgs
         }
         'benchmark-listing' {
             New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null

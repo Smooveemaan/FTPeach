@@ -123,6 +123,13 @@ export interface OpenWithChange {
   revision: string;
 }
 
+/**
+ * The most transfers the `concurrency` setting may allow at once: the upper
+ * bound in the backend's settings schema (`store/settings_schema.rs`), which
+ * is the authority. `errorCodeParity.test.ts` fails when the two differ.
+ */
+export const MAX_TRANSFER_CONCURRENCY = 128;
+
 /** Why the vault locked: on its own, or because the user asked (`user`). */
 export const VAULT_LOCK_REASONS = ['idle', 'sessionLocked', 'windowHidden', 'user'] as const;
 export type VaultLockReason = (typeof VAULT_LOCK_REASONS)[number];

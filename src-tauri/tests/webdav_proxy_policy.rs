@@ -7,6 +7,7 @@
 //! proxy the request. The check lives in its own test binary because it has
 //! to set a process-wide environment variable, which would otherwise reach
 //! every other test building an HTTP client at the same moment.
+#![cfg(feature = "test-utils")]
 
 use app_lib::domain::{Credentials, ServerSettings};
 use app_lib::protocol::config::ConnectionConfig;

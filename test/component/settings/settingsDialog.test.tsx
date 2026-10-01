@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import SettingsDialog from '../../../src/features/settings/SettingsDialog.tsx';
 import type { SettingsDialogProps } from '../../../src/features/settings/SettingsDialog.tsx';
-import { CommandFailure } from '../../../src/platform/ipcContracts.ts';
+import { CommandFailure, MAX_TRANSFER_CONCURRENCY } from '../../../src/platform/ipcContracts.ts';
 import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
@@ -425,6 +425,22 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await user.click(screen.getByRole('button', { name: 'common.save' }));
 
     expect(props.onSave).toHaveBeenCalledWith({ notifyOnTransferComplete: true });
+  });
+
+  test('a concurrency above ten is offered and saved as typed', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog({ concurrency: 3 });
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.transfers' }));
+    const input = screen.getByRole<HTMLInputElement>('spinbutton', {
+      name: /settings\.concurrencyLabel/,
+    });
+    expect(input.max).toBe(String(MAX_TRANSFER_CONCURRENCY));
+    await user.clear(input);
+    await user.type(input, '64');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith({ concurrency: 64 });
   });
 
   test('an edit put back is previewed once more and then left out of the save', async () => {

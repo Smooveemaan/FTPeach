@@ -3,7 +3,11 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import type { SupportedLanguage } from '../../../i18n/index.ts';
 import { matchSupportedLanguage } from '../../../i18n/index.ts';
 import { api } from '../../../platform/api/index.ts';
-import { CommandFailure, isCancellation } from '../../../platform/ipcContracts.ts';
+import {
+  CommandFailure,
+  isCancellation,
+  MAX_TRANSFER_CONCURRENCY,
+} from '../../../platform/ipcContracts.ts';
 import { friendlyError } from '../../../shared/errorMessages.ts';
 import type { SettingsPatch, SettingsValues } from '../useSettings.ts';
 
@@ -159,7 +163,10 @@ function draftReducer(state: SettingsDraft, action: DraftAction): SettingsDraft 
 }
 
 function buildPatch(draft: SettingsDraft): SettingsPatch {
-  const concurrency = Math.min(10, Math.max(0, Number(draft.concurrencyValue) || 0));
+  const concurrency = Math.min(
+    MAX_TRANSFER_CONCURRENCY,
+    Math.max(0, Number(draft.concurrencyValue) || 0),
+  );
   const rawTimeoutSec = Number(draft.timeoutValue) || 0;
   const timeoutSec =
     rawTimeoutSec === 0 ? 0 : Math.min(MAX_TIMEOUT_SEC, Math.max(MIN_TIMEOUT_SEC, rawTimeoutSec));

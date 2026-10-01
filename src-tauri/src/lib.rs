@@ -4,14 +4,21 @@ pub mod domain;
 mod ipc;
 mod local_fs;
 mod native_drag;
+#[cfg(not(feature = "test-utils"))]
+mod protocol;
+#[cfg(feature = "test-utils")]
 pub mod protocol;
 mod runtime;
 mod security;
 mod session;
+#[cfg(not(feature = "test-utils"))]
+mod store;
+#[cfg(feature = "test-utils")]
 pub mod store;
 mod transfer;
 
-// Expose the pool and the server-to-server relay only for protocol integration tests.
+// Expose the backends, the store, the pool and the server-to-server relay only
+// for protocol integration tests.
 #[cfg(feature = "test-utils")]
 pub use transfer::{relay, transfer_pool};
 // The server matrix asserts failure categories, not message text.

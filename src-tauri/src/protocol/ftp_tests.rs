@@ -1730,7 +1730,7 @@ mod recursive_stop_tests {
         let mut session = slot.lock().await;
         let session = session.as_mut().unwrap();
         let listing = session.browse_client.list(&remote).await;
-        let _ = session.browse_client.remove_empty_directory(&remote).await;
+        let _ = session.browse_client.remove(&remote, true).await;
         session.transfer_pool.destroy().await;
         session.browse_client.disconnect().await.unwrap();
         std::fs::remove_dir_all(root).unwrap();

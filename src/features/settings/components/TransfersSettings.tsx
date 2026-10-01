@@ -3,6 +3,7 @@ import Icon from '../../../components/Icon.tsx';
 import type { OverwriteAction } from '../useSettings.ts';
 import NumberStepper from './NumberStepper.tsx';
 import SegmentedControl from './SegmentedControl.tsx';
+import { MAX_TRANSFER_CONCURRENCY } from '../../../platform/ipcContracts.ts';
 import { handler } from '../../../shared/asyncFailure.ts';
 
 interface OpenWithAssociationRow {
@@ -53,7 +54,7 @@ export default function TransfersSettings({
           <span>{t('settings.concurrencyLabel')}</span>
           <NumberStepper
             min={0}
-            max={10}
+            max={MAX_TRANSFER_CONCURRENCY}
             placeholder={t('settings.unlimitedPlaceholder')}
             value={concurrencyValue}
             onChange={setConcurrencyValue}

@@ -100,9 +100,10 @@ pub async fn lock_now<R: Runtime>(app: &AppHandle<R>, reason: LockReason) {
     announce(app, reason);
 }
 
-/// Tells every window the vault is no longer open, so each drops what it was
-/// showing and reads the state again. Said by whoever closed it, once: the
-/// lock above, and the commands that remove the vault.
+/// Tells every window that a lock, a reset or a change of protection has
+/// finished, so each drops the values it had revealed and reads the vault
+/// state again. Said once by whoever did it: the lock above, and the commands
+/// that reset the vault or switch its protection.
 pub fn announce<R: Runtime>(app: &AppHandle<R>, reason: LockReason) {
     let _ = app.emit("vault:locked", VaultLocked { reason });
 }

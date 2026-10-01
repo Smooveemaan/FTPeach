@@ -5,8 +5,10 @@ use crate::protocol::fail;
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
 pub const PARTIAL_SUFFIX: &str = ".ftpeach-part";
 
+#[cfg(test)]
 pub fn partial_path(destination: &Path) -> PathBuf {
     let mut name = destination.file_name().unwrap_or_default().to_os_string();
     name.push(PARTIAL_SUFFIX);
@@ -451,23 +453,6 @@ pub fn resumable_len(destination: &Path) -> Option<u64> {
         .map(|metadata| metadata.len())
 }
 
-/// Removes what a download keeps beside `destination` to resume: its sidecar
-/// and the partial the sidecar names. For a stopped folder walk taking back
-/// what it wrote; the destination itself is never touched, and a sidecar that
-/// cannot be read is left alone along with whatever it might point at.
-pub async fn discard_resume_artifacts(destination: &Path) {
-    let metadata = sidecar(destination);
-    let Some(record) = read_record(&metadata) else {
-        return;
-    };
-    let artifact = artifact_path(destination, record.artifact);
-    // The same proof every open demands: an unlinked regular file of ours.
-    if open_artifact(&artifact, false).is_ok() {
-        let _ = tokio::fs::remove_file(&artifact).await;
-    }
-    let _ = tokio::fs::remove_file(&metadata).await;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -769,29 +754,6 @@ mod tests {
             .unwrap();
         assert!(sidecar(&destination).exists());
         assert!(downloading.exists());
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[tokio::test]
-    async fn discarding_resume_artifacts_leaves_the_destination_alone() {
-        let root = std::env::temp_dir().join(format!("ftpeach-discard-{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(&root).unwrap();
-        let destination = root.join("file.bin");
-        std::fs::write(&destination, b"user").unwrap();
-        let source = SourceIdentity {
-            endpoint: "server".into(),
-            remote_path: "/file".into(),
-            size: Some(8),
-            version: Some("v1".into()),
-        };
-        let (partial, _) = prepare(&destination, false, source, test_origin())
-            .await
-            .unwrap();
-        std::fs::write(&partial, b"half").unwrap();
-        discard_resume_artifacts(&destination).await;
-        assert!(!partial.exists());
-        assert!(!sidecar(&destination).exists());
-        assert_eq!(std::fs::read(&destination).unwrap(), b"user");
         std::fs::remove_dir_all(root).unwrap();
     }
 

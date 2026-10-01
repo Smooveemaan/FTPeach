@@ -429,15 +429,6 @@ pub trait ProtocolBackend: Send {
     async fn mkdir(&mut self, path: &str) -> BackendResult<()>;
     async fn create_file(&mut self, path: &str) -> BackendResult<()>;
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()>;
-    fn supports_empty_directory_remove(&self) -> bool {
-        false
-    }
-    async fn remove_empty_directory(&mut self, _path: &str) -> BackendResult<()> {
-        Err(fail(
-            crate::ipc::ErrorCode::InvalidInput,
-            "This protocol cannot atomically remove only an empty directory",
-        ))
-    }
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()>;
     /// Protocols without an atomic no-replace primitive must fail closed.
     async fn rename_no_replace(&mut self, _old_path: &str, _new_path: &str) -> BackendResult<()> {

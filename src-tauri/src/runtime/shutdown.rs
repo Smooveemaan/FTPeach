@@ -194,7 +194,7 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
             for (connection_id, slot) in sessions.all_slots() {
                 tasks.spawn(async move {
                     let mut guard = slot.lock().await;
-                    session::teardown_session_for_shutdown(&mut guard, &connection_id).await;
+                    session::teardown_session(&mut guard, &connection_id, None).await;
                 });
             }
             while tasks.join_next().await.is_some() {}

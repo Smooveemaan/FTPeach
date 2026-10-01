@@ -5,6 +5,7 @@ use crate::ipc::{CommandError, ErrorCode};
 use crate::store::ConnectionDefaults;
 use anyhow::{Context, Result, bail};
 
+#[cfg(any(test, feature = "test-utils"))]
 pub const DEFAULT_TIMEOUT_MS: u64 = 20_000;
 
 #[derive(Clone, Debug)]

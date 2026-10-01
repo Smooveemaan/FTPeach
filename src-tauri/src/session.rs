@@ -283,7 +283,19 @@ impl Drop for StagingRelease<'_> {
     }
 }
 
-pub async fn teardown_session(slot: &mut Option<Session>, connection_id: &str) {
+/// How long closing a session may take while the application keeps running.
+pub const TEARDOWN_DEADLINE: std::time::Duration = std::time::Duration::from_secs(5);
+
+/// Cancels the transfers, waits for their tasks to settle, then closes the
+/// browsing connection. With a `deadline` the wait is cut short at that point
+/// and whatever staging remains is retained. Shutdown passes `None`: its
+/// coordinator owns the hard timeout, so an uncooperative backend still
+/// cannot block exit.
+pub async fn teardown_session(
+    slot: &mut Option<Session>,
+    connection_id: &str,
+    deadline: Option<std::time::Duration>,
+) {
     if let Some(mut session) = slot.take() {
         let _staging = StagingRelease(connection_id);
         let closing = async {
@@ -292,27 +304,16 @@ pub async fn teardown_session(slot: &mut Option<Session>, connection_id: &str) {
             discard_paused_staging(&mut session, connection_id).await;
             let _ = session.browse_client.disconnect().await;
         };
-        if tokio::time::timeout(std::time::Duration::from_secs(5), closing)
-            .await
-            .is_err()
-        {
-            log::warn!(
-                "Session {connection_id} teardown deadline exceeded; remaining staging retained"
-            );
+        match deadline {
+            None => closing.await,
+            Some(deadline) => {
+                if tokio::time::timeout(deadline, closing).await.is_err() {
+                    log::warn!(
+                        "Session {connection_id} teardown deadline exceeded; remaining staging retained"
+                    );
+                }
+            }
         }
-    }
-}
-
-/// Shutdown-specific ordering: cancel transfers first, wait for their tasks
-/// to settle, then close the browsing connection. The outer coordinator owns
-/// the hard timeout, so an uncooperative backend still cannot block exit.
-pub async fn teardown_session_for_shutdown(slot: &mut Option<Session>, connection_id: &str) {
-    if let Some(mut session) = slot.take() {
-        let _staging = StagingRelease(connection_id);
-        session.transfer_pool.destroy().await;
-        session.transfer_pool.wait_until_idle().await;
-        discard_paused_staging(&mut session, connection_id).await;
-        let _ = session.browse_client.disconnect().await;
     }
 }
 

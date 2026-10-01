@@ -237,6 +237,8 @@ mod tests {
         for allow_secrets in [false, true] {
             let zeros = serde_json::json!({"concurrency":0,"connectTimeout":0});
             assert!(validate_settings(zeros.as_object().unwrap(), allow_secrets).is_ok());
+            let largest = serde_json::json!({"concurrency":128});
+            assert!(validate_settings(largest.as_object().unwrap(), allow_secrets).is_ok());
             for invalid in [
                 serde_json::json!({"concurrency":0.5}),
                 serde_json::json!({"connectTimeout":-1}),

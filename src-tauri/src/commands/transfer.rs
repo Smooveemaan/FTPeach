@@ -48,7 +48,6 @@ pub async fn transfer_discard_recursive(
 }
 
 #[tauri::command]
-#[allow(clippy::too_many_arguments)]
 pub fn transfer_validate_remote_copy(
     source_path: String,
     target_path: String,
@@ -116,7 +115,6 @@ pub async fn transfer_download(
 }
 
 #[tauri::command]
-#[allow(clippy::too_many_arguments)]
 pub async fn transfer_cancel(
     sessions: State<'_, Sessions>,
     connection_id: String,
@@ -158,7 +156,6 @@ pub async fn transfer_remote_copy(
 }
 
 #[tauri::command]
-#[allow(clippy::too_many_arguments)]
 pub async fn transfer_cancel_remote_copy(
     sessions: State<'_, Sessions>,
     source_connection_id: String,

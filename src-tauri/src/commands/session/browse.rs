@@ -1,7 +1,7 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::protocol::EntryInfo;
-use crate::session::{ConnectingClients, Sessions, teardown_session};
+use crate::session::{ConnectingClients, Sessions, TEARDOWN_DEADLINE, teardown_session};
 use tauri::State;
 
 const UNSAFE_PATH_MSG: &str = "Path must not contain carriage return or newline characters";
@@ -79,11 +79,11 @@ pub async fn session_list(
         }
         BrowseOutcome::Completed(Err(err)) => Err(CommandError::from_anyhow(&err)),
         BrowseOutcome::TimedOut => {
-            teardown_session(&mut guard, &connection_id).await;
+            teardown_session(&mut guard, &connection_id, Some(TEARDOWN_DEADLINE)).await;
             Err(CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG))
         }
         BrowseOutcome::Cancelled => {
-            teardown_session(&mut guard, &connection_id).await;
+            teardown_session(&mut guard, &connection_id, Some(TEARDOWN_DEADLINE)).await;
             Err(CommandError::new(
                 ErrorCode::Cancelled,
                 "Operation cancelled",
@@ -115,11 +115,11 @@ macro_rules! run_unit_browse_operation {
             BrowseOutcome::Completed(Ok(())) => Ok(()),
             BrowseOutcome::Completed(Err(err)) => Err(CommandError::from_anyhow(&err)),
             BrowseOutcome::TimedOut => {
-                teardown_session(&mut guard, &$connection_id).await;
+                teardown_session(&mut guard, &$connection_id, Some(TEARDOWN_DEADLINE)).await;
                 Err(CommandError::new(ErrorCode::TimedOut, BROWSE_TIMEOUT_MSG))
             }
             BrowseOutcome::Cancelled => {
-                teardown_session(&mut guard, &$connection_id).await;
+                teardown_session(&mut guard, &$connection_id, Some(TEARDOWN_DEADLINE)).await;
                 Err(CommandError::new(ErrorCode::Cancelled, "Operation cancelled"))
             }
         };

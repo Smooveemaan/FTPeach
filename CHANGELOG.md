@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- A portable version: unpack the zip and run it. Settings, bookmarks and passwords stay in its
+  folder, and it updates itself.
 - The right-click menu has Cut and Copy for files, Paste in a pane's empty space, and Open for
   files on your computer.
 - The right-click menu sends a folder, or everything selected, to the other pane.

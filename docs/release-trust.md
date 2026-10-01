@@ -10,7 +10,7 @@ the draft release inside `release-audit.zip`, next to the npm and Cargo SBOMs
 | --- | --- | --- |
 | Updater signature (minisign, `.sig`) | The in-app updater, before installing an update | Every `.sig` verified against `plugins.updater.pubkey`; the release fails otherwise. Published inside `latest.json`, not as a separate file |
 | Windows Authenticode | Explorer, SmartScreen and UAC on the first download | **Not signed.** Accepted risk, see below |
-| Build provenance attestation | Anyone, with `gh attestation verify` | Generated for the NSIS installer by `actions/attest-build-provenance` |
+| Build provenance attestation | Anyone, with `gh attestation verify` | Generated for the NSIS installer and the portable zip by `actions/attest-build-provenance` |
 | RustSec exceptions | cargo-deny, `check:rust-advisories` | Listed with kind and review date; see [rust-advisories.md](rust-advisories.md) |
 
 ## Authenticode

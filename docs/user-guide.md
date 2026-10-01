@@ -108,6 +108,31 @@ change are removed.
 <!-- verified-by: pr src-tauri/src/local_fs/edit_recovery.rs::a_crashed_session_is_collected_at_the_next_start -->
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::recovered edits are offered at start and stay unless deleted -->
 
+## The portable copy
+
+FTPeach from the portable zip keeps its settings, bookmarks and saved passwords
+in the `data` folder beside the program. What makes a copy portable is the
+`FTPeach.portable` file in its folder, so unpack the whole zip before starting
+it.
+
+<!-- verified-by: pr src-tauri/src/local_fs/portable.rs::only_the_marker_makes_a_folder_portable -->
+
+Until you set a master password, Settings says that saved passwords can be read
+only on this computer. With a master password they travel with the folder.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
+
+An update replaces the program and leaves the `data` folder as it is.
+
+<!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_replaces_the_program_and_leaves_the_data -->
+
+An update that does not carry FTPeach's release signature, is not newer than
+your version, or would write outside the program's folder is refused, and
+nothing changes.
+
+<!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_is_held_to_the_release_signature -->
+<!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_that_fails_its_checks_changes_nothing -->
+
 ## Connecting safely
 
 By default, FTPeach does not connect to an SSH server it has not seen before

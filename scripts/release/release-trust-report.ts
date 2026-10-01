@@ -58,7 +58,8 @@ const problems: string[] = [];
 const lines = ['## Release trust report', ''];
 
 lines.push('### Artifacts', '', '| File | SHA-256 |', '| --- | --- |');
-for (const file of executables) {
+const portableZips = bundleFiles.filter((file) => file.endsWith('-portable.zip'));
+for (const file of [...executables, ...portableZips]) {
   const digest = createHash('sha256')
     .update(await readFile(file))
     .digest('hex');

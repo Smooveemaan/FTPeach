@@ -201,6 +201,25 @@ const requiredWorkflowEntries: [string, string, string][] = [
     'run: node --experimental-strip-types scripts/release/release-trust-report.ts',
   ],
   [releaseWorkflow, 'release.yml', 'uses: actions/attest-build-provenance@'],
+  // The portable zip: built from the same release output, signed, attested,
+  // published and named in the feed a portable copy updates from.
+  [releaseWorkflow, 'release.yml', 'scripts/release/portable.ts build'],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'npx tauri signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
+  ],
+  [
+    releaseWorkflow,
+    'release.yml',
+    '            src-tauri/target/release/bundle/portable/*-portable.zip',
+  ],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'gh release upload "$GITHUB_REF_NAME" src-tauri/target/release/bundle/portable/*-portable.zip',
+  ],
+  [releaseWorkflow, 'release.yml', 'scripts/release/portable.ts feed release/latest.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-npm.cdx.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-cargo.cdx.json'],
   [checksWorkflow, 'checks.yml', '  rust-test:'],
@@ -221,6 +240,19 @@ for (const [workflow, workflowName, requiredWorkflowEntry] of requiredWorkflowEn
     `${workflowName} must contain: ${requiredWorkflowEntry.trim()}`,
   );
 }
+
+// Signed before the step that verifies every signature, so the zip cannot
+// reach the feed with a signature nothing checked.
+const releaseOrder = [
+  'npx tauri signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
+  'Verify every generated updater signature',
+  'scripts/release/portable.ts feed release/latest.json',
+].map((step) => releaseWorkflow.indexOf(step));
+assert.deepEqual(
+  releaseOrder,
+  [...releaseOrder].sort((first, second) => first - second),
+  'release.yml must sign the portable zip, then verify signatures, then add the zip to the feed',
+);
 
 assert.match(
   checksWorkflow,

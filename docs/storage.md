@@ -153,12 +153,52 @@ reachable from the uninstaller and stays behind. It is inert without
 
 ## Portable mode
 
-Portable storage beside the executable is not currently supported. A portable
-build would need an explicit distribution marker and a writable application
-directory; silently falling back from `%APPDATA%` is intentionally prohibited
-because it would split state between locations and make secrets or settings
-appear lost. If portable distribution enters the product plan, its storage
-directory and migration policy must be selected before implementation.
+A copy of FTPeach is portable when a file named `FTPeach.portable` sits beside
+its program; the release's `FTPeach_<version>_x64-portable.zip` carries it.
+That file is the whole switch. A `data` folder without it changes nothing, and
+FTPeach never falls back from one location to the other, because state split
+between the two would make secrets or settings appear lost.
+
+A portable copy keeps everything beside the program:
+
+| An installed copy uses | A portable copy uses |
+| --- | --- |
+| `%APPDATA%\FTPeach`: settings, sites, known hosts, tabs, vault, logs | `data\` |
+| `edit-sessions`, `recovered-edits` and `updates` under `%LOCALAPPDATA%\com.smooveemaan.ftpeach` | the same folders under `data\local\` |
+| the WebView2 profile under `%LOCALAPPDATA%\com.smooveemaan.ftpeach` | `data\webview\` |
+
+The rest of this page applies with those folders in place of the profile ones.
+When `data\` cannot be created or written, as on a read-only disk, FTPeach says
+so in a message box and exits. FTPeach's own file operations cannot read or
+change the program's folder; the editor copies under `data\local\edit-sessions`
+and `data\local\recovered-edits` are the exception, as they are the user's own
+files.
+
+What stays on a computer, or does not follow the folder:
+
+- Passwords saved under system protection are encrypted by Windows for the
+  account that saved them. On another computer or account the bookmarks are
+  there and those passwords cannot be read; back on the first one they read
+  again. With a master password the vault is in `data\` and travels as it is.
+- Windows Hello unlock uses a key in the computer's platform provider (see
+  above). On another computer only the master password unlocks the vault.
+- Windows needs a registry entry to put FTPeach's name and icon on its
+  notifications: `HKCU\Software\Classes\AppUserModelId\com.smooveemaan.ftpeach`.
+  A portable copy writes it at start and removes it on exit, unless an
+  installed FTPeach on the same computer uses it too. A crash leaves it until a
+  later run exits.
+- Saved local paths, **Open with** programs and the paths of key and
+  certificate files are absolute, so they name one computer's drives.
+- A portable and an installed copy share the single-instance lock: starting
+  one while the other runs brings up the running one.
+- The WebView2 runtime is not in the zip. Windows 11 always has it.
+
+A portable copy updates itself from the same zip. It waits in
+`data\local\updates` as an installer does in [Updates](#updates). Installing
+it unpacks it there, moves the files into the program's folder with the
+program last and starts the new program; the old one, kept as
+`FTPeach.exe.old`, is removed at the start after that. An update never writes
+to the rest of `data\`.
 
 ## Resource and authentication limits
 

@@ -108,6 +108,17 @@ jobs:
           uploadUpdaterSignatures: false
           args: --bundles nsis
 
+      # The program the installer carries, for people who do not install. It is
+      # signed with the same key, before the step that verifies every signature.
+      - name: Build and sign the portable zip
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          node --experimental-strip-types scripts/release/portable.ts build
+          npx tauri signer sign src-tauri/target/release/bundle/portable/*-portable.zip
+
       - name: Verify every generated updater signature
         shell: powershell
         run: |
@@ -129,10 +140,24 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: node --experimental-strip-types scripts/release/release-trust-report.ts
 
-      - name: Attest build provenance of the installer
+      - name: Attest build provenance of the installer and the portable zip
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          subject-path: |
+            src-tauri/target/release/bundle/nsis/*-setup.exe
+            src-tauri/target/release/bundle/portable/*-portable.zip
+
+      # A portable copy reads its own entry of latest.json, so the zip is
+      # added to the feed the build step uploaded.
+      - name: Publish the portable zip and add it to the update feed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" src-tauri/target/release/bundle/portable/*-portable.zip --clobber
+          gh release download "$GITHUB_REF_NAME" --pattern latest.json --dir release --clobber
+          node --experimental-strip-types scripts/release/portable.ts feed release/latest.json
+          gh release upload "$GITHUB_REF_NAME" release/latest.json --clobber
 
       - name: Attach SBOMs and the trust report to the draft release
         shell: powershell

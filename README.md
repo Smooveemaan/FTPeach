@@ -24,6 +24,8 @@ FTPeach supports **Windows 10 and 11, x64**.
 2. Open FTPeach and enter your server's connection details.
 3. Browse your folders and drag files to the destination pane. Follow their progress in the transfer queue.
 
+To run FTPeach without installing it, download `FTPeach_<version>_x64-portable.zip` from the same page, unpack it and start `FTPeach.exe`. Settings, bookmarks and saved passwords stay in the `data` folder beside the program, so moving the folder moves everything; set a master password in Settings if saved passwords should work on another computer. What a portable copy leaves on a computer is listed under [portable mode](docs/storage.md#portable-mode).
+
 You can save connections for your next session. With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and installs them on the next launch or when you choose to restart. Update signatures are verified before installation.
 
 The project is in pre-release; see the [changelog](CHANGELOG.md) for changes between versions. macOS and Linux are not currently supported.

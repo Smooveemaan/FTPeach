@@ -320,7 +320,8 @@
     "alreadyExists": "\"{{name}}\" มีอยู่แล้ว",
     "replaceUnsupported": "เซิร์ฟเวอร์ไม่อนุญาตให้เขียนทับไฟล์ที่มีอยู่",
     "createUnsupported": "เซิร์ฟเวอร์ FTP นี้ไม่รองรับการสร้างไฟล์ใหม่ ลองใช้ SFTP หรือ WebDAV หากเซิร์ฟเวอร์รองรับ",
-    "moveBetweenEndpoints": "ย้ายไฟล์ได้เฉพาะภายในคอมพิวเตอร์เครื่องนี้หรือภายในการเชื่อมต่อเซิร์ฟเวอร์เดียวกันเท่านั้น โปรดคัดลอกไฟล์แทน"
+    "moveBetweenEndpoints": "ย้ายไฟล์ได้เฉพาะภายในคอมพิวเตอร์เครื่องนี้หรือภายในการเชื่อมต่อเซิร์ฟเวอร์เดียวกันเท่านั้น โปรดคัดลอกไฟล์แทน",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

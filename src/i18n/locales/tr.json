@@ -320,7 +320,8 @@
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
     "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
-    "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın."
+    "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

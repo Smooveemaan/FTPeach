@@ -320,7 +320,8 @@
     "alreadyExists": "「{{name}}」已存在",
     "replaceUnsupported": "伺服器不允許覆寫現有檔案。",
     "createUnsupported": "此 FTP 伺服器不支援建立新檔案。如果伺服器提供 SFTP 或 WebDAV，請改用它們。",
-    "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。"
+    "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

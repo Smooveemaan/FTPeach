@@ -320,7 +320,8 @@
     "alreadyExists": "\"{{name}}\" पहले से मौजूद है",
     "replaceUnsupported": "सर्वर ने मौजूदा फ़ाइल को अधिलेखित करने की अनुमति नहीं दी।",
     "createUnsupported": "यह FTP सर्वर नई फ़ाइलें बनाना समर्थित नहीं करता। अगर सर्वर उपलब्ध कराता है, तो SFTP या WebDAV आज़माएँ।",
-    "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।"
+    "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

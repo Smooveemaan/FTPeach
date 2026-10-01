@@ -320,7 +320,8 @@
     "alreadyExists": "”{{name}}” finns redan",
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
-    "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället."
+    "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

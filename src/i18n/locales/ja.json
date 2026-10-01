@@ -320,7 +320,8 @@
     "alreadyExists": "「{{name}}」はすでに存在します",
     "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
     "createUnsupported": "このFTPサーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTPまたはWebDAVをお試しください。",
-    "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。"
+    "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

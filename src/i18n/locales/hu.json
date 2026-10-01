@@ -320,7 +320,8 @@
     "alreadyExists": "A „{{name}}” már létezik",
     "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
     "createUnsupported": "Ez az FTP-kiszolgáló nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a kiszolgáló kínálja őket.",
-    "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket."
+    "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

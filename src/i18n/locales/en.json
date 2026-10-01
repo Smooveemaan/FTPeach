@@ -320,7 +320,8 @@
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
     "alreadyExists": "\"{{name}}\" already exists",
-    "moveBetweenEndpoints": "Files can be moved only within this computer or within one server connection. Copy them instead."
+    "moveBetweenEndpoints": "Files can be moved only within this computer or within one server connection. Copy them instead.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

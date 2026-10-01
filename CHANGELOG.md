@@ -53,6 +53,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   that folder, instead of being refused as an invalid configuration.
 - A bookmark with a server name too long to connect to is refused when it is saved, not later
   when it is opened.
+- When a saved password cannot be read on this computer, connecting says so and asks to enter it
+  again, instead of sending an empty password and reporting a wrong one.
 
 ## [0.3.0] - 2026-09-27
 

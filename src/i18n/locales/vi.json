@@ -320,7 +320,8 @@
     "alreadyExists": "\"{{name}}\" đã tồn tại rồi",
     "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có.",
     "createUnsupported": "Máy chủ FTP này không hỗ trợ tạo tệp mới. Hãy thử SFTP hoặc WebDAV nếu máy chủ có hỗ trợ.",
-    "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển."
+    "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

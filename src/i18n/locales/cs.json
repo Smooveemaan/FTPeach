@@ -328,7 +328,8 @@
     "alreadyExists": "„{{name}}“ již existuje",
     "replaceUnsupported": "Server nepovolil přepsat existující soubor.",
     "createUnsupported": "Tento FTP server nepodporuje vytváření nových souborů. Zkuste SFTP nebo WebDAV, pokud je server nabízí.",
-    "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte."
+    "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

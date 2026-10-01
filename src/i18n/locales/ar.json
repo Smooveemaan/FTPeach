@@ -336,7 +336,8 @@
     "alreadyExists": "\"{{name}}\" موجود بالفعل",
     "replaceUnsupported": "لم يسمح الخادم بالكتابة فوق الملف الموجود.",
     "createUnsupported": "خادم FTP هذا لا يدعم إنشاء ملفات جديدة. جرّب SFTP أو WebDAV إذا كان الخادم يوفّرهما.",
-    "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلاً من ذلك."
+    "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلاً من ذلك.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

@@ -320,7 +320,8 @@
     "alreadyExists": "\"{{name}}\" sudah ada",
     "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
     "createUnsupported": "Server FTP ini tidak mendukung pembuatan berkas baru. Coba SFTP atau WebDAV jika server menyediakannya.",
-    "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya."
+    "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

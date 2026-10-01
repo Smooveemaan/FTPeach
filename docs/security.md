@@ -69,7 +69,7 @@ A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates` un
 
 Saved secrets are a site's password, an SSH-key passphrase, and the global proxy password. The user chooses one of two modes, and every saved secret follows it:
 
-- **System protection** (the default) encrypts each secret with DPAPI for the signed-in Windows account and keeps the ciphertext in `sites.json` or `settings.json`. No master password is involved, so anyone acting as that Windows user can read the secrets.
+- **System protection** (the default) encrypts each secret with DPAPI for the signed-in Windows account and keeps the ciphertext in `sites.json` or `settings.json`. No master password is involved, so anyone acting as that Windows user can read the secrets. A ciphertext DPAPI can no longer open, for example after the files were copied to another Windows account, is never sent as an empty password: a connect that needs it is refused and asks for the password to be entered again.
 - **Enhanced protection** keeps them in the vault, a Stronghold snapshot encrypted under a master password. They cannot be read until the vault is unlocked.
 
 In both modes the renderer never receives a secret on ordinary IPC: it supplies a `siteId`, and the Rust backend resolves the password and the proxy password itself.

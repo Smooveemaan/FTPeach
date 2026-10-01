@@ -6544,15 +6544,11 @@
         },
         "undecryptable": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: None, timeout_ms: 15000, proxy: None }, host: \"u.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: None })",
-            "logLabel": "ftp://u.example.test:21",
-            "protocol": "ftp",
-            "secrets": {
-              "keyPassphrase": null,
-              "password": "<empty>",
-              "proxyPassword": null
-            },
-            "server": "[\"ftp\",\"u.example.test\",21,\"anonymous\"]"
+            "refused": {
+              "code": "savedSecretUnreadable",
+              "details": null,
+              "message": "The saved password could not be read"
+            }
           },
           "sitesAfter": {
             "data": [

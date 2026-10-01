@@ -183,7 +183,8 @@ impl Store {
     /// The server a saved site names and the credentials saved for it, from
     /// DPAPI or, under enhanced protection, the vault. Reading it first
     /// protects any plaintext secret left in `sites.json`, which rewrites
-    /// the file. A secret that cannot be opened reads as empty.
+    /// the file. A secret the sign-in needs and DPAPI cannot open refuses
+    /// the read: sent as an empty one, the server would call it wrong.
     pub async fn saved_server(
         &self,
         id: &str,
@@ -201,6 +202,13 @@ impl Store {
         let server = ServerSettings::from_json(site)
             .map_err(|error| anyhow::anyhow!(invalid_connection_settings(&error)))?;
         if !vault.is_configured() {
+            let by_key = server.protocol == Protocol::Sftp && server.use_key_auth;
+            if Self::secret_undecryptable(site, if by_key { "keyEnc" } else { "enc" }) {
+                anyhow::bail!(CommandError::new(
+                    ErrorCode::SavedSecretUnreadable,
+                    "The saved password could not be read",
+                ));
+            }
             let credentials = Credentials {
                 password: Self::decrypt_secret(site, "enc", "plain").into(),
                 key_passphrase: Some(Self::decrypt_secret(site, "keyEnc", "keyPlain").into()),

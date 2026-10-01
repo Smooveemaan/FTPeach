@@ -349,7 +349,10 @@ impl Store {
         }
         let secret = Self::decrypt_secret(&settings, "proxyPasswordEnc", "proxyPasswordPlain");
         if secret.is_empty() {
-            anyhow::bail!("saved proxy password could not be decrypted");
+            anyhow::bail!(CommandError::new(
+                ErrorCode::SavedSecretUnreadable,
+                "The saved proxy password could not be read",
+            ));
         }
         Ok(Some(secret))
     }

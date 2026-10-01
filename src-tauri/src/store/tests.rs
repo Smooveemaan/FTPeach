@@ -1970,3 +1970,48 @@ fn a_site_is_saved_only_within_the_limits_a_connect_accepts() {
         assert!(!agree(&refused));
     }
 }
+
+/// A saved secret that cannot be opened is not sent as an empty one, which a
+/// server answers as a wrong password. The secret the sign-in does not use
+/// is no obstacle.
+#[cfg(windows)]
+#[tokio::test]
+async fn a_saved_secret_that_cannot_be_opened_refuses_the_connect_that_needs_it() {
+    let root = std::env::temp_dir().join(format!("ftpeach-unreadable-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.join("no-vault"));
+    // Base64 of bytes DPAPI did not produce.
+    let unreadable = "AAECAwQF";
+    let site = |id: &str, extra: Value| {
+        let mut site = json!({"id": id, "name": id, "protocol": "sftp", "host": "example.test"});
+        site.as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        site
+    };
+    store
+        .write_json(
+            &root.join("sites.json"),
+            &json!([
+                site("password", json!({"enc": unreadable})),
+                site(
+                    "key",
+                    json!({"useKeyAuth": true, "keyPath": "C:/key", "keyEnc": unreadable})
+                ),
+                site("unused-key", json!({"keyEnc": unreadable})),
+            ]),
+        )
+        .await
+        .unwrap();
+    for refused in ["password", "key"] {
+        let error = store.saved_server(refused, &vault).await.err().unwrap();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::SavedSecretUnreadable,
+            "{refused}"
+        );
+    }
+    assert!(store.saved_server("unused-key", &vault).await.is_ok());
+    std::fs::remove_dir_all(root).unwrap();
+}

@@ -320,7 +320,8 @@
     "alreadyExists": "»{{name}}« findes allerede",
     "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
     "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
-    "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopier dem i stedet."
+    "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopier dem i stedet.",
+    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
   },
   "settings": {
     "openWithAssociations": {

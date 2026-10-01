@@ -349,10 +349,15 @@ test('skip-all conflicts and destination listing failures never start a transfer
   await act(async () =>
     result.current.confirmOverwriteIfNeeded(target, undefined, ['exists'], proceed),
   );
-  client.fsLocal.list.mockResolvedValueOnce({ ok: false, path: '', entries: [] });
+  const refused = { error: 'File or folder not found', errorCode: 'notFound' };
+  client.fsLocal.list.mockResolvedValueOnce({ ok: false, path: '', entries: [], ...refused });
   await act(async () => result.current.confirmOverwriteIfNeeded(target, 'sub', ['new'], proceed));
   expect(proceed).not.toHaveBeenCalled();
-  expect(options.reportError).toHaveBeenCalledOnce();
+  // The code goes along, so the failure is reported in the user's language.
+  expect(options.reportError).toHaveBeenCalledExactlyOnceWith({
+    code: 'notFound',
+    message: 'File or folder not found',
+  });
 });
 
 test('remote names are case-sensitive and directory merges do not ask to replace a file', async () => {

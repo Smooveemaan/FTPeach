@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   not at all for an `http://` address.
 - With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
 - A wrong master password says that the password was not accepted, instead of "Command failed".
+- When files are dropped on a folder that cannot be read, the reason is given in your language.
 
 ## [0.3.0] - 2026-09-27
 

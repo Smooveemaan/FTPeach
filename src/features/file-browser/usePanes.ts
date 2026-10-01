@@ -6,6 +6,7 @@ import { api } from '../../platform/api/index.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
 import { isolate } from '../../shared/bidi.ts';
+import { commandResultError } from '../../shared/errorMessages.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
@@ -334,7 +335,7 @@ export function usePanes({
         dropDestinationPath(targetPane.kind, targetPane.path, targetFolder),
       );
       if (!res.ok) {
-        reportError(res.error || 'Cannot list destination');
+        reportError(commandResultError(res) || 'Cannot list destination');
         return;
       }
       destEntries = res.entries;

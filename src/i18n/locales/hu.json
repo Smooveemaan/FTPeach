@@ -250,7 +250,6 @@
       "manageBookmarks": "Könyvjelzők kezelése…",
       "saveConnection": "Kapcsolat mentése",
       "saveConnectionSide": "Kapcsolat mentése ({{side}})",
-      "saveBookmarkSide": "Könyvjelző mentése ({{side}})",
       "savePathSide": "Útvonal mentése ({{side}})",
       "exportSettings": "Beállítások exportálása…",
       "importSettings": "Beállítások importálása…",

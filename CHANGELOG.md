@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The Bookmarks menu saves a connection before you connect, as the Save Connection button does,
+  and calls it by the same name.
 - A folder download that contains a name Windows cannot use no longer reports an unexpected error.
 - Dragging a server file to Explorer refuses a name like `a:b`, which Windows would not store as
   a plain file, as downloading it already did.

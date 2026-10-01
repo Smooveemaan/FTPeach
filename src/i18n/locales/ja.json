@@ -250,7 +250,6 @@
       "manageBookmarks": "ブックマークの管理…",
       "saveConnection": "接続を保存",
       "saveConnectionSide": "接続を保存（{{side}}）",
-      "saveBookmarkSide": "ブックマークを保存（{{side}}）",
       "savePathSide": "パスを保存（{{side}}）",
       "exportSettings": "設定のエクスポート…",
       "importSettings": "設定のインポート…",

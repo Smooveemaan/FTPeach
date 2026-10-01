@@ -250,7 +250,6 @@
       "manageBookmarks": "Lesezeichen verwalten…",
       "saveConnection": "Verbindung speichern",
       "saveConnectionSide": "Verbindung speichern ({{side}})",
-      "saveBookmarkSide": "Lesezeichen speichern ({{side}})",
       "savePathSide": "Pfad speichern ({{side}})",
       "exportSettings": "Einstellungen exportieren…",
       "importSettings": "Einstellungen importieren…",

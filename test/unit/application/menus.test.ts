@@ -184,7 +184,7 @@ test('shortcut overrides and unbinding propagate into menu labels', () => {
   assert.equal(h.item('menu.file.reopenClosedTab').shortcut, 'Ctrl+Shift+T');
 });
 
-test('with a server on each side, either side is saved as a bookmark once it is connected', () => {
+test('a server side takes its button name and is saved once it is connected or has an address', () => {
   const h = harness();
   const { a, b } = h.ctx.browser.panes;
   a.kind = 'remote';
@@ -195,7 +195,7 @@ test('with a server on each side, either side is saved as a bookmark once it is 
       .find(
         (entry) =>
           entry.label ===
-          i18n.t('menu.file.saveBookmarkSide', { side: i18n.t(`paneSide.${side}`) }),
+          i18n.t('menu.file.saveConnectionSide', { side: i18n.t(`paneSide.${side}`) }),
       )!;
   // An empty connection form has nothing to save.
   assert.equal(save('left').disabled, true);
@@ -210,6 +210,14 @@ test('with a server on each side, either side is saved as a bookmark once it is 
     ['save', 'a'],
     ['save', 'a'],
   ]);
+  // The Save Connection button needs only an address, and so does the menu.
+  b.form.host = 'files.example';
+  assert.equal(save('right').disabled, false);
+  b.form.protocol = 'webdav';
+  assert.equal(save('right').disabled, true);
+  b.form.webdavUrl = 'https://files.example/dav';
+  applicationShortcuts(h.ctx)['save-site-secondary']();
+  assert.deepEqual(h.calls.at(-1), ['save', 'b']);
 });
 
 test('with a server on each side, File offers to disconnect either one', () => {

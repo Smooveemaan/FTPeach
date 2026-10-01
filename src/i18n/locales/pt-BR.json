@@ -254,7 +254,6 @@
       "manageBookmarks": "Gerenciar favoritos…",
       "saveConnection": "Salvar conexão",
       "saveConnectionSide": "Salvar conexão ({{side}})",
-      "saveBookmarkSide": "Salvar favorito ({{side}})",
       "savePathSide": "Salvar caminho ({{side}})",
       "exportSettings": "Exportar configurações…",
       "importSettings": "Importar configurações…",

@@ -258,7 +258,6 @@
       "manageBookmarks": "Správa záložek…",
       "saveConnection": "Uložit připojení",
       "saveConnectionSide": "Uložit připojení ({{side}})",
-      "saveBookmarkSide": "Uložit záložku ({{side}})",
       "savePathSide": "Uložit cestu ({{side}})",
       "exportSettings": "Exportovat nastavení…",
       "importSettings": "Importovat nastavení…",

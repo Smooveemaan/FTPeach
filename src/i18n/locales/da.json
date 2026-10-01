@@ -250,7 +250,6 @@
       "manageBookmarks": "Administrer bogmærker…",
       "saveConnection": "Gem forbindelse",
       "saveConnectionSide": "Gem forbindelse ({{side}})",
-      "saveBookmarkSide": "Gem bogmærke ({{side}})",
       "savePathSide": "Gem sti ({{side}})",
       "exportSettings": "Eksportér indstillinger…",
       "importSettings": "Importér indstillinger…",

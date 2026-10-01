@@ -254,7 +254,6 @@
       "manageBookmarks": "Gérer les signets…",
       "saveConnection": "Enregistrer la connexion",
       "saveConnectionSide": "Enregistrer la connexion ({{side}})",
-      "saveBookmarkSide": "Enregistrer le signet ({{side}})",
       "savePathSide": "Enregistrer le chemin ({{side}})",
       "exportSettings": "Exporter les paramètres…",
       "importSettings": "Importer les paramètres…",

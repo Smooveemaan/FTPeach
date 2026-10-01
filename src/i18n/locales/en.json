@@ -250,7 +250,6 @@
       "manageBookmarks": "Manage Bookmarks…",
       "saveConnection": "Save Connection",
       "saveConnectionSide": "Save Connection ({{side}})",
-      "saveBookmarkSide": "Save Bookmark ({{side}})",
       "savePathSide": "Save Path ({{side}})",
       "exportSettings": "Export Settings…",
       "importSettings": "Import Settings…",

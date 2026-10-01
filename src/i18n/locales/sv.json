@@ -250,7 +250,6 @@
       "manageBookmarks": "Hantera bokmärken…",
       "saveConnection": "Spara anslutning",
       "saveConnectionSide": "Spara anslutning ({{side}})",
-      "saveBookmarkSide": "Spara bokmärke ({{side}})",
       "savePathSide": "Spara sökväg ({{side}})",
       "exportSettings": "Exportera inställningar…",
       "importSettings": "Importera inställningar…",

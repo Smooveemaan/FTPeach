@@ -258,7 +258,6 @@
       "manageBookmarks": "Керування закладками…",
       "saveConnection": "Зберегти підключення",
       "saveConnectionSide": "Зберегти підключення ({{side}})",
-      "saveBookmarkSide": "Зберегти закладку ({{side}})",
       "savePathSide": "Зберегти шлях ({{side}})",
       "exportSettings": "Експортувати налаштування…",
       "importSettings": "Імпортувати налаштування…",

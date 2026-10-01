@@ -250,7 +250,6 @@
       "manageBookmarks": "Bladwijzers beheren…",
       "saveConnection": "Verbinding opslaan",
       "saveConnectionSide": "Verbinding opslaan ({{side}})",
-      "saveBookmarkSide": "Bladwijzer opslaan ({{side}})",
       "savePathSide": "Pad opslaan ({{side}})",
       "exportSettings": "Instellingen exporteren…",
       "importSettings": "Instellingen importeren…",

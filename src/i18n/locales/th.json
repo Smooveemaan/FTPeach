@@ -250,7 +250,6 @@
       "manageBookmarks": "จัดการบุ๊กมาร์ก…",
       "saveConnection": "บันทึกการเชื่อมต่อ",
       "saveConnectionSide": "บันทึกการเชื่อมต่อ ({{side}})",
-      "saveBookmarkSide": "บันทึกบุ๊กมาร์ก ({{side}})",
       "savePathSide": "บันทึกเส้นทาง ({{side}})",
       "exportSettings": "ส่งออกการตั้งค่า…",
       "importSettings": "นำเข้าการตั้งค่า…",

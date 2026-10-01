@@ -250,7 +250,6 @@
       "manageBookmarks": "管理书签…",
       "saveConnection": "保存连接",
       "saveConnectionSide": "保存连接（{{side}}）",
-      "saveBookmarkSide": "保存书签（{{side}}）",
       "savePathSide": "保存路径（{{side}}）",
       "exportSettings": "导出设置…",
       "importSettings": "导入设置…",

@@ -250,7 +250,6 @@
       "manageBookmarks": "북마크 관리…",
       "saveConnection": "연결 저장",
       "saveConnectionSide": "연결 저장 ({{side}})",
-      "saveBookmarkSide": "북마크 저장 ({{side}})",
       "savePathSide": "경로 저장 ({{side}})",
       "exportSettings": "설정 내보내기…",
       "importSettings": "설정 가져오기…",

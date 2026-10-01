@@ -91,9 +91,13 @@ export interface ApplicationCommandContext {
 /** The commands a menu entry and a global shortcut both run. */
 function applicationCommands({ browser, dialogs, saveSite }: ApplicationCommandContext) {
   // save-site (pane a) / save-site-secondary (pane b) are side-fixed, not
-  // kind-fixed — each saves whatever that side currently holds.
-  const canSaveSide = (id: PaneId) =>
-    browser.panes[id].kind === 'local' ? true : browser.panes[id].status === 'connected';
+  // kind-fixed — each saves whatever that side currently holds. A server side
+  // needs what its Save Connection button needs: an address, connected or not.
+  const canSaveSide = (id: PaneId) => {
+    const { kind, status, form } = browser.panes[id];
+    if (kind === 'local' || status === 'connected') return true;
+    return Boolean(form.protocol === 'webdav' ? form.webdavUrl : form.host);
+  };
   return {
     canSaveSide,
     saveSide: (id: PaneId) => canSaveSide(id) && saveSite(id)(),
@@ -152,9 +156,12 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         : t('paneSide.right');
 
   const saveSiteItems = (['a', 'b'] as const).map((id) => ({
-    label: t(panes[id].kind === 'local' ? 'menu.file.savePathSide' : 'menu.file.saveBookmarkSide', {
-      side: paneSideWord(id),
-    }),
+    label: t(
+      panes[id].kind === 'local' ? 'menu.file.savePathSide' : 'menu.file.saveConnectionSide',
+      {
+        side: paneSideWord(id),
+      },
+    ),
     shortcut: id === 'a' ? shortcutLabel('save-site') : shortcutLabel('save-site-secondary'),
     disabled: !commands.canSaveSide(id),
     onClick: () => commands.saveSide(id),

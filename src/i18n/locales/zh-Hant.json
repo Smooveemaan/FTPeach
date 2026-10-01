@@ -250,7 +250,6 @@
       "manageBookmarks": "管理書籤…",
       "saveConnection": "儲存連線",
       "saveConnectionSide": "儲存連線（{{side}}）",
-      "saveBookmarkSide": "儲存書籤（{{side}}）",
       "savePathSide": "儲存路徑（{{side}}）",
       "exportSettings": "匯出設定…",
       "importSettings": "匯入設定…",

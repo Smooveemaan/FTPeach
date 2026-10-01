@@ -10,13 +10,28 @@ never as a pass.
 
 | Lane | Runs | Where |
 | --- | --- | --- |
-| default | `npm run check` (Rust: `npm run rust:test`) | every push, CI `rust-test` and `lint-test-build` on Windows |
+| default | `npm run check` (Rust: `npm run rust:check`, `npm run rust:clippy`, `npm run rust:test`) | every push, CI `rust-test` and `lint-test-build` on Windows |
 | compatibility | `src-tauri/tests/docker/docker-compose.yml`, then `scripts/with-libsodium.ps1 -Command compatibility` | CI `protocol-compatibility`: weekly, on Cargo changes and as a release gate |
 | server matrix | `npm run servers:up -- all`, then `npm run servers:test` ([how](test-server-matrix.md)) | CI `server-matrix`: weekly and on demand, by profile, not a gate; by hand before a release; IIS targets need `scripts/test-servers/iis.ps1 install` |
 | packaged smoke | `npm run build:packaged-smoke`, then `npm run test:packaged-smoke` | CI `packaged-smoke`, a release gate |
 | fuzz | `src-tauri/fuzz`, 60 s per target | weekly `security-audit`; saved inputs replay in the default lane |
 | native | one command per test below, on a host that has the prerequisite | by hand |
 | manual | a person, following the release matrix below | before each release |
+
+The three Rust steps of the default lane compile different things:
+
+- `npm run rust:check` compiles the application with its default features, the
+  configuration that ships, so code that only builds with `test-utils` fails
+  here. CI has no separate step for it; there the packaged-smoke and release
+  builds compile the application without `test-utils`.
+- `npm run rust:clippy` lints all targets with all features.
+- `npm run rust:test` runs the tests with the `test-utils` feature, which also
+  compiles the Docker and server-matrix targets. Every test in those targets
+  is `#[ignore]`, so this step reports them as ignored and runs none of them.
+
+TypeScript coverage (`npm run coverage`) is part of `npm run check`. Rust
+coverage (`npm run rust:coverage`) is not: it runs the same tests as
+`rust:test`, instrumented, as CI's `rust-coverage` job.
 
 ## Ignored Rust tests
 
@@ -37,6 +52,10 @@ from the Windows run of 2026-09-23.
 | `artifact_symlink_cannot_write_to_its_target` | Developer Mode or SeCreateSymbolicLinkPrivilege | `npm run rust:test -- artifact_symlink_cannot_write --ignored` | native | NOT RUN: privilege not held (1314) |
 | `connect_without_proxy_supports_ipv6_when_loopback_is_available` | the firewall allowing IPv6 loopback connects | `npm run rust:test -- connect_without_proxy_supports_ipv6 --ignored` | native | NOT RUN: connect to ::1 refused (EACCES) |
 | `endless_reply_under_a_memory_cap` | nothing; its parent test runs it under a 128 MiB cap | runs inside `an_endless_reply_fits_in_a_process_with_a_hard_memory_cap` | default | PASS through the parent |
+
+The `npm run rust:test -- <name> --ignored` commands above match only the
+library tests they name. Without a name, `npm run rust:test -- --ignored` also
+runs the Docker and server-matrix targets, which need their servers.
 
 UNC tests are not ignored; they skip their UNC half when `\\localhost\C$` is
 not reachable. `FTPEACH_REQUIRE_UNC_FIXTURES=1 npm run rust:test` makes a missing

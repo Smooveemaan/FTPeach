@@ -121,7 +121,8 @@ Run these from the repository root:
 | `npm run lint` | Check lint rules, feature boundaries, and TypeScript types. |
 | `npm run format:check` | Check formatting without changing files. |
 | `npm run build` | Build the renderer and check bundle size budgets. |
-| `npm run rust:test` | Run the default Rust test suite. |
+| `npm run rust:check` | Compile the backend as it ships, without running tests. |
+| `npm run rust:test` | Run the Rust tests; ignored ones, such as those that need Docker or live servers, do not run. |
 | `npm run rust:build:release` | Build the native release executable without packaging an installer. |
 | `npm run build:tauri` | Build the production installer and signed update artifacts; requires updater signing credentials. |
 | `npm run check` | Run the local validation suite, including coverage, browser tests, Clippy, licenses, and build checks. |

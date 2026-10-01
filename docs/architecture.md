@@ -209,10 +209,9 @@ connection is a setting in `src/shared/settingsDefaults.json`, read by
 uses for a server: connect, list, mkdir, create, remove, rename, chmod, size,
 ranged read, upload/download to a path, and streaming to or from a
 reader/writer. Methods a protocol cannot perform safely have default
-implementations that refuse (`rename_no_replace`, `read_range`,
-`remove_empty_directory`), so a new protocol fails closed until it proves
-otherwise. Backends are `Box<dyn ProtocolBackend>`, which is why the trait
-uses `async_trait`.
+implementations that refuse (`rename_no_replace`, `read_range`), so a new
+protocol fails closed until it proves otherwise. Backends are
+`Box<dyn ProtocolBackend>`, which is why the trait uses `async_trait`.
 
 Drivers return `anyhow::Result`: most failures are whatever the protocol crate
 reported, and the driver adds context. Failures the driver itself decides on

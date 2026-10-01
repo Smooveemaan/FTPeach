@@ -1,33 +1,36 @@
-# Audit regression coverage
+# Regression coverage
 
 These are permanent suites included by `npm test` or `npm run rust:test`. Recursive execution runs in Rust, so backend tests own traversal and destructive-phase assertions.
 
+| Behavior | Observable assertion | Permanent suite |
+| --- | --- | --- |
+| Protected application folders | Public copy/create/mkdir/delete refuse isolated protected APPDATA; ordinary user files remain manageable | [fs command tests](../src-tauri/src/commands/fs.rs), [Windows path tests](../src-tauri/src/local_fs/filesystem_safety.rs) |
+| Download replacement keeps the old file | User backup names survive; failed replacement and interrupted commit retain old destination | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
+| Recursive failures keep the source | Inaccessible/deep scans and failed copy/mkdir preserve source; empty directories move successfully | [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs), [scan](../src-tauri/src/application/recursive_transfer/scan.rs) |
+| Folder into itself or a descendant | Self/descendant and junction targets are rejected before writes | [filesystem safety](../src-tauri/src/local_fs/filesystem_safety.rs), [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs) |
+| Stop keeps the destination | Queued/active stop and pause-stop never delete destination; failed relay does not commit staging | [frontend lifecycle](../test/component/transfers/useTransfers.test.tsx), [staging tests](../src-tauri/src/application/transfer_service_tests.rs) |
+| Download resume identity | Changed endpoint/path/version cannot adopt partial; unchanged identity resumes | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
+| Partial ownership and target reservations | Hardlinked artifacts cannot write their target; competing paths cannot reserve concurrently | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs), [local filesystem](../src-tauri/src/local_fs/) |
+| Relay admission | Fixed(1) same-pool relay starts neither leg; paired stream exceeds pipe capacity; cancellation releases both workers | [transfer_pool tests](../src-tauri/src/transfer/transfer_pool.rs) |
+| Pool closure and duplicate attempts | Replacement failure resolves all waiters and rejects closed-pool/duplicate admission | [transfer_pool tests](../src-tauri/src/transfer/transfer_pool.rs) |
+| Transfer attempt identity | Immediate retry cannot overlap cancelling attempt; late events cannot settle replacement | [frontend lifecycle](../test/component/transfers/useTransfers.test.tsx) |
+| Nested overwrite policy | Nested Skip preserves existing content and move source; a racing target survives no-replace commit | [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs), [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
+| Damaged host-key store | Damaged, unreadable or unsupported trust state cannot pin a new key | [known_hosts tests](../src-tauri/src/store/known_hosts.rs) |
+| WebDAV stall timeouts | Stalled GET body and PUT response return typed timeout | [WebDAV fixtures](../src-tauri/src/protocol/webdav_tests.rs) |
+| FTP listing budgets and stalls | Stalled LIST and exhausted byte/entry budgets return failure, not partial success | [FTP fixtures](../src-tauri/src/protocol/ftp_tests.rs) |
+| WebDAV existence check before create | PROPFIND 403/500 never issue empty PUT | [WebDAV fixtures](../src-tauri/src/protocol/webdav_tests.rs) |
+| Windows names for downloads | Invalid Windows names are rejected before constructing destinations | [filesystem safety](../src-tauri/src/local_fs/filesystem_safety.rs), [recursive manifest](../src-tauri/src/application/recursive_transfer/manifest.rs) |
+| Settings validation | IPC/import reject invalid settings, preserve supported zero values and inherited unlimited concurrency | [settings commands](../src-tauri/src/commands/app_settings_transfer_tests.rs), [session service](../src-tauri/src/application/session_service.rs) |
+| Settings save failure | Persistence failure retains the settings draft and permits retry | [settings component suite](../test/component/settings/settingsDialog.test.tsx), [store tests](../src-tauri/src/store/tests.rs) |
+
 | Audit | Observable assertion | Permanent suite |
 | --- | --- | --- |
-| A01 | Public copy/create/mkdir/delete refuse isolated protected APPDATA; ordinary user files remain manageable | [fs command tests](../src-tauri/src/commands/fs.rs), [Windows path tests](../src-tauri/src/local_fs/filesystem_safety.rs) |
-| A02 | User backup names survive; failed replacement and interrupted commit retain old destination | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
-| A03 | Inaccessible/deep scans and failed copy/mkdir preserve source; empty directories move successfully | [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs), [scan](../src-tauri/src/application/recursive_transfer/scan.rs) |
-| A04 | Self/descendant and junction targets are rejected before writes | [filesystem safety](../src-tauri/src/local_fs/filesystem_safety.rs), [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs) |
-| A05 | Queued/active stop and pause-stop never delete destination; failed relay does not commit staging | [frontend lifecycle](../test/component/transfers/useTransfers.test.tsx), [staging tests](../src-tauri/src/application/transfer_service_tests.rs) |
-| A06 | Changed endpoint/path/version cannot adopt partial; unchanged identity resumes | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
-| A07 | Hardlinked artifacts cannot write their target; competing paths cannot reserve concurrently | [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs), [local filesystem](../src-tauri/src/local_fs/) |
-| A08 | Fixed(1) same-pool relay starts neither leg; paired stream exceeds pipe capacity; cancellation releases both workers | [transfer_pool tests](../src-tauri/src/transfer/transfer_pool.rs) |
-| A09 | Replacement failure resolves all waiters and rejects closed-pool/duplicate admission | [transfer_pool tests](../src-tauri/src/transfer/transfer_pool.rs) |
-| A10 | Immediate retry cannot overlap cancelling attempt; late events cannot settle replacement | [frontend lifecycle](../test/component/transfers/useTransfers.test.tsx) |
-| A11 | Nested Skip preserves existing content and move source; a racing target survives no-replace commit | [recursive transfer tests](../src-tauri/src/application/recursive_transfer/tests.rs), [transfer_file tests](../src-tauri/src/protocol/transfer_file.rs) |
-| A12 | Damaged, unreadable or unsupported trust state cannot pin a new key | [known_hosts tests](../src-tauri/src/store/known_hosts.rs) |
-| A13 | Stalled GET body and PUT response return typed timeout | [WebDAV fixtures](../src-tauri/src/protocol/webdav_tests.rs) |
-| A14 | Stalled LIST and exhausted byte/entry budgets return failure, not partial success | [FTP fixtures](../src-tauri/src/protocol/ftp_tests.rs) |
-| A15 | PROPFIND 403/500 never issue empty PUT | [WebDAV fixtures](../src-tauri/src/protocol/webdav_tests.rs) |
-| A16 | Invalid Windows names are rejected before constructing destinations | [filesystem safety](../src-tauri/src/local_fs/filesystem_safety.rs), [recursive manifest](../src-tauri/src/application/recursive_transfer/manifest.rs) |
-| A17 | IPC/import reject invalid settings, preserve supported zero values and inherited unlimited concurrency | [settings commands](../src-tauri/src/commands/app_settings_transfer_tests.rs), [session service](../src-tauri/src/application/session_service.rs) |
-| A18 | Persistence failure retains the settings draft and permits retry | [settings component suite](../test/component/settings/settingsDialog.test.tsx), [store tests](../src-tauri/src/store/tests.rs) |
 | HF-02 | Rename/copy with an omitted overwrite flag keep the existing target; F2 never replaces; MoveTo replaces only after approval | [fs command tests](../src-tauri/src/commands/fs.rs), [pane operations](../test/unit/file-browser/paneFileOperations.test.ts) |
 | HF-03 | Faults after copying or syncing, a racing target and a changed source leave the old target intact and no partial file | [staged copy tests](../src-tauri/src/local_fs/staged_copy.rs) |
 | HF-01 | Move between the computer and a server, or two connections, is refused before any copy or delete from drag, paste and routing; a refused paste keeps the cut | [transfer lifecycle](../test/component/transfers/useTransfers.test.tsx), [clipboard](../test/component/file-browser/dragOut.test.tsx) |
 | HF-08 | Edited open-with copies survive exit, a crash and a stopped watch; uploaded revisions and untouched copies are removed; several changes are all asked about; a copy named `edit.json` in any case, an earlier version's copy and one with a damaged description or a legacy payload that parses as metadata stay listed and readable | [open-with registry](../src-tauri/src/local_fs/open_with.rs), [edit recovery](../src-tauri/src/local_fs/edit_recovery.rs), [open-with queue](../test/component/open-with/openWithRecovery.test.tsx) |
 
-A07's file-symlink fixture is ignored by default because it requires Windows Developer Mode or SeCreateSymbolicLinkPrivilege. UNC fixtures must be explicitly required with FTPEACH_REQUIRE_UNC_FIXTURES=1 to prevent an unavailable administrative share from being treated as coverage. These limitations remain separate from passing ordinary unit tests. Native and real-server outcomes are recorded in [native validation](native-validation.md).
+The file-symlink fixture for partial ownership (`artifact_symlink_cannot_write_to_its_target`) is ignored by default because it requires Windows Developer Mode or SeCreateSymbolicLinkPrivilege. UNC fixtures must be explicitly required with FTPEACH_REQUIRE_UNC_FIXTURES=1 to prevent an unavailable administrative share from being treated as coverage. These limitations remain separate from passing ordinary unit tests. Native and real-server outcomes are recorded in [native validation](native-validation.md).
 
 Docker regressions exercise foreign legacy partial preservation and real cancellation/Range resume against third-party servers.
 

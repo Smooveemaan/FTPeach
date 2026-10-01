@@ -9,7 +9,11 @@ import {
 } from '../../../src/app/useAppBootstrap.ts';
 import { dispatchAppCommand } from '../../../src/app/useAppCommands.ts';
 import { normalizeSettings } from '../../../src/features/settings/useSettings.ts';
-import { dialogReducer, INITIAL_DIALOG_STATE } from '../../../src/app/useAppDialogs.ts';
+import {
+  anyDialogOpen,
+  dialogReducer,
+  INITIAL_DIALOG_STATE,
+} from '../../../src/app/useAppDialogs.ts';
 import {
   buildPaneSitePayload,
   orderConnectableSites,
@@ -131,6 +135,26 @@ test('buildPaneSitePayload falls back to the protocol default port for unparsabl
   const payload = buildPaneSitePayload('Test instance', pane, []);
 
   assert.equal(payload.port, 21);
+});
+
+test('every dialog counts as open for global shortcuts; the drive menu does not', () => {
+  assert.equal(anyDialogOpen(INITIAL_DIALOG_STATE), false);
+  const opened: Partial<typeof INITIAL_DIALOG_STATE>[] = [
+    { showSettings: true },
+    { showAbout: true },
+    { showSiteManagerDialog: true },
+    { showSiteManagerDialog: 'a' },
+    { showLocalPathManagerDialog: true },
+    { showExportSettings: true },
+    { showImportSettings: true },
+    { newFolderTarget: 'a' },
+    { vaultUnlockRetries: [() => {}] },
+  ];
+  for (const open of opened) {
+    assert.equal(anyDialogOpen({ ...INITIAL_DIALOG_STATE, ...open }), true, JSON.stringify(open));
+  }
+  const driveMenu = { id: 'a' as const, x: 0, y: 0, items: [] };
+  assert.equal(anyDialogOpen({ ...INITIAL_DIALOG_STATE, driveMenu }), false);
 });
 
 test('dialogReducer supports functional updates for queued dialogs', () => {

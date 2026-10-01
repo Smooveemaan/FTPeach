@@ -68,6 +68,18 @@ export const INITIAL_DIALOG_STATE: DialogState = {
   vaultUnlockRetries: [],
 };
 
+/**
+ * Whether a dialog covers the window. Global shortcuts wait while one does: a
+ * command would act on panes the user cannot reach, or open another dialog
+ * underneath this one. The drive menu is a menu and closes on the next key.
+ */
+export function anyDialogOpen(state: DialogState): boolean {
+  return (Object.keys(INITIAL_DIALOG_STATE) as (keyof DialogState)[]).some((name) => {
+    const value = state[name];
+    return name !== 'driveMenu' && (Array.isArray(value) ? value.length > 0 : !!value);
+  });
+}
+
 export function dialogReducer(state: DialogState, action: DialogAction): DialogState {
   const value =
     typeof action.value === 'function'

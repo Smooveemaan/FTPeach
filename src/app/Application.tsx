@@ -16,7 +16,7 @@ import {
 import type { FileBrowserShell, FileSearchHandle } from '../features/file-browser/index.ts';
 import { useOpenWithLifecycle, useRecoveredEdits } from '../features/open-with/index.ts';
 import { useAppBootstrap } from './useAppBootstrap.ts';
-import { useAppDialogs } from './useAppDialogs.ts';
+import { anyDialogOpen, useAppDialogs } from './useAppDialogs.ts';
 import { useAppEffects } from './useAppEffects.ts';
 import { useStatusNotice } from '../hooks/useStatusNotice.ts';
 import { useWorkspaceLayout } from './useWorkspaceLayout.ts';
@@ -233,7 +233,7 @@ export default function Application() {
 
   // These dialogs resolve against the active tab. Blocking tab commands while
   // one is open keeps that implicit target stable until the action completes.
-  const modalOpen = !!(
+  const tabDialogOpen = !!(
     openWith.target ||
     openWith.changed ||
     newFolderTarget ||
@@ -244,6 +244,9 @@ export default function Application() {
     confirmState ||
     quitWhenIdle.promptOpen
   );
+  // Shortcuts and menu commands wait for any dialog, Settings and the
+  // bookmark manager included: they would act on the panes behind it.
+  const modalOpen = tabDialogOpen || anyDialogOpen(dialogs);
 
   const savedSites = useSites({
     sites,
@@ -493,7 +496,7 @@ export default function Application() {
         onReorder={browser.reorderTab}
         sites={savedSites.connectableSites}
         colored={settings.interface.coloredTabs}
-        disabled={modalOpen}
+        disabled={tabDialogOpen}
         lastActivePaneId={browser.lastActivePaneId}
       />
 

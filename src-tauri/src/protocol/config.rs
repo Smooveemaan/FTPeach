@@ -246,7 +246,7 @@ impl ConnectionConfig {
                 .and_then(Value::as_bool)
                 .unwrap_or(false),
             strict_host_key_check: description
-                .get("strictHostKeyCheck")
+                .get(crate::security::security_policy::STRICT_HOST_KEY)
                 .and_then(Value::as_bool)
                 .unwrap_or(true),
             proxy,

@@ -4,6 +4,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The right-click menu has Cut and Copy, and Paste in the menu of a pane's empty space; until now
+  only the keyboard offered them.
+- The right-click menu sends a folder, or everything selected, to the other pane, not only the
+  one file under the pointer.
+- The right-click menu of a file on your computer has Open.
+
 ### Changed
 
 - Concurrent transfers in Settings can be set up to 128 instead of 10.

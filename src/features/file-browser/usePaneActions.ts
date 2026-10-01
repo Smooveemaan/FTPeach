@@ -15,6 +15,7 @@ import type { TransfersModel } from '../transfers/index.ts';
 import type { DroppedFile } from './components/useFileDragDrop.ts';
 import type { PaneId, PaneState } from './panes/paneModel.ts';
 import { otherPaneId } from './panes/paneModel.ts';
+import type { FileClipboardModel } from './useFileClipboard.ts';
 import type { PanesModel } from './usePanes.ts';
 
 interface MenuItem {
@@ -81,6 +82,11 @@ interface PaneActionsOptions {
   /** Asks for the program "Open with…" uses; null when the user cancels. */
   selectApplication?: () => Promise<string | null>;
   clipboard?: Pick<Clipboard, 'writeText'> | null;
+  /** The files held by Cut and Copy, which the keyboard reaches too. */
+  fileClipboard: Pick<
+    FileClipboardModel,
+    'copyToClipboard' | 'cutToClipboard' | 'canPaste' | 'pasteClipboard'
+  >;
 }
 
 export function moveToFolders(names: readonly string[], folderOrder: readonly string[]): string[] {
@@ -121,6 +127,7 @@ export function usePaneActions({
   shell,
   selectApplication = () => api.fsLocal.selectApplication(),
   clipboard = navigator.clipboard,
+  fileClipboard,
 }: PaneActionsOptions): PaneActionsModel {
   const {
     panes,
@@ -165,6 +172,14 @@ export function usePaneActions({
           ],
           [
             {
+              label: t('settings.shortcuts.actions.paste'),
+              shortcut: shortcutLabel('paste'),
+              disabled: disabledForRemote || !fileClipboard.canPaste(pane),
+              onClick: () => fileClipboard.pasteClipboard(id, pane),
+            },
+          ],
+          [
+            {
               label: t('paneMenu.newFolder'),
               disabled: disabledForRemote,
               onClick: () => setNewFolderTarget(id),
@@ -178,18 +193,18 @@ export function usePaneActions({
         ]);
       }
 
+      // A click inside a selection acts on all of it; anywhere else, on the
+      // entry under the pointer.
       const actsOnSelection = pane.selected.size > 1 && pane.selected.has(entry.name);
+      const names = actsOnSelection ? [...pane.selected] : [entry.name];
+      const acted = actsOnSelection
+        ? pane.entries.filter((candidate) => pane.selected.has(candidate.name))
+        : [entry];
+      const otherId = otherPaneId(id);
+      const otherPane = panes[otherId];
       const open: MenuItem[] = [];
-      const send: MenuItem[] = [];
-      if (entry.isDirectory) {
-        open.push({
-          label: t('paneMenu.open'),
-          onClick: () => navigatePane(id, paneJoin(pane, entry.name)),
-        });
-      } else {
-        const otherId = otherPaneId(id);
-        const otherPane = panes[otherId];
-        send.push({
+      const send: MenuItem[] = [
+        {
           label:
             pane.kind === 'local'
               ? t('paneMenu.uploadToOtherPane')
@@ -201,61 +216,71 @@ export function usePaneActions({
             confirmOverwriteIfNeeded(
               otherPane,
               undefined,
-              [entry.name],
-              (names, overwriteApproved) =>
+              names,
+              (approved, overwriteApproved) =>
                 copyEntries({
                   sourcePane: pane,
                   targetPane: otherPane,
-                  names,
+                  names: approved,
                   move: false,
                   refreshTarget: () => refreshPane(otherId, otherPane.path),
                   overwriteApproved,
                 }),
-              [entry],
+              acted,
             ),
+        },
+      ];
+      if (entry.isDirectory) {
+        open.push({
+          label: t('paneMenu.open'),
+          onClick: () => navigatePane(id, paneJoin(pane, entry.name)),
         });
-        if (pane.kind === 'remote') {
-          // Same as a double click: the associated or the system's program.
-          open.push({
-            label: t('paneMenu.open'),
-            disabled: !pane.connectionId,
-            onClick: () => {
-              const connectionId = pane.connectionId;
-              if (!connectionId) return;
-              shell.openWith.setTarget({
-                path: paneJoin(pane, entry.name),
-                size: entry.size,
-                connectionId,
-                paneId: id,
-                tabId: activeTabId,
-              });
-            },
-          });
-          open.push({
-            label: t('paneMenu.openWith'),
-            disabled: !pane.connectionId,
-            onClick: () => {
-              const connectionId = pane.connectionId;
-              if (!connectionId) return;
-              reportRejection(
-                selectApplication().then((application) => {
-                  if (!application) return;
-                  shell.openWith.setTarget({
-                    path: paneJoin(pane, entry.name),
-                    application,
-                    size: entry.size,
-                    connectionId,
-                    paneId: id,
-                    tabId: activeTabId,
-                  });
-                }),
-              );
-            },
-          });
-        }
+      } else if (pane.kind === 'local') {
+        // Same as a double click.
+        open.push({
+          label: t('paneMenu.open'),
+          onClick: () => void openLocalFile(paneJoin(pane, entry.name)),
+        });
+      } else {
+        // Same as a double click: the associated or the system's program.
+        open.push({
+          label: t('paneMenu.open'),
+          disabled: !pane.connectionId,
+          onClick: () => {
+            const connectionId = pane.connectionId;
+            if (!connectionId) return;
+            shell.openWith.setTarget({
+              path: paneJoin(pane, entry.name),
+              size: entry.size,
+              connectionId,
+              paneId: id,
+              tabId: activeTabId,
+            });
+          },
+        });
+        open.push({
+          label: t('paneMenu.openWith'),
+          disabled: !pane.connectionId,
+          onClick: () => {
+            const connectionId = pane.connectionId;
+            if (!connectionId) return;
+            reportRejection(
+              selectApplication().then((application) => {
+                if (!application) return;
+                shell.openWith.setTarget({
+                  path: paneJoin(pane, entry.name),
+                  application,
+                  size: entry.size,
+                  connectionId,
+                  paneId: id,
+                  tabId: activeTabId,
+                });
+              }),
+            );
+          },
+        });
       }
 
-      const names = actsOnSelection ? [...pane.selected] : [entry.name];
       const folders = moveToFolders(names, folderOrder);
       send.push({
         label: t('paneMenu.moveTo'),
@@ -263,6 +288,8 @@ export function usePaneActions({
         disabled: disabledForRemote || folders.length === 0,
         onClick: () => setMoveToTarget({ id, names, folders }),
       });
+      // What Cut and Copy hold: the pane as it is, with what the menu acts on.
+      const held = { ...pane, selected: new Set(names) };
       const remove: MenuItem = {
         label:
           pane.kind === 'local' && permanent
@@ -281,7 +308,19 @@ export function usePaneActions({
       return grouped([
         open,
         send,
-        [{ label: t('paneMenu.copyPath'), onClick: () => copyPath(paneJoin(pane, entry.name)) }],
+        [
+          {
+            label: t('settings.shortcuts.actions.cut'),
+            shortcut: shortcutLabel('cut'),
+            onClick: () => fileClipboard.cutToClipboard(id, held),
+          },
+          {
+            label: t('settings.shortcuts.actions.copy'),
+            shortcut: shortcutLabel('copy'),
+            onClick: () => fileClipboard.copyToClipboard(id, held),
+          },
+          { label: t('paneMenu.copyPath'), onClick: () => copyPath(paneJoin(pane, entry.name)) },
+        ],
         [
           remove,
           ...(rename

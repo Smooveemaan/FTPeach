@@ -87,6 +87,7 @@ function FileBrowserPane({
     browser,
     sites: sites.connectableSites,
     shell,
+    fileClipboard: clipboard,
   });
   const formatDate = useDateFormatter();
   const { panes, activeTabId } = browser;

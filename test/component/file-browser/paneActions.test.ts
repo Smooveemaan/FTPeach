@@ -35,6 +35,12 @@ function mocks(tab: ReturnType<typeof makeTab>) {
     setOpenWithTarget: vi.fn(),
     selectApplication: vi.fn().mockResolvedValue('C:/Apps/editor.exe'),
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+    fileClipboard: {
+      copyToClipboard: vi.fn(),
+      cutToClipboard: vi.fn(),
+      canPaste: vi.fn(() => true),
+      pasteClipboard: vi.fn(),
+    },
   };
 }
 
@@ -77,6 +83,7 @@ function actions(
     },
     selectApplication: options.selectApplication,
     clipboard,
+    fileClipboard: options.fileClipboard,
   });
 }
 const file: FileEntry = { name: 'file.txt', isDirectory: false, size: 42 };
@@ -95,6 +102,8 @@ test('the menus follow the order of the Explorer menu', () => {
     'paneMenu.downloadToOtherPane',
     'paneMenu.moveTo',
     '-',
+    'settings.shortcuts.actions.cut',
+    'settings.shortcuts.actions.copy',
     'paneMenu.copyPath',
     '-',
     'paneMenu.delete',
@@ -107,8 +116,11 @@ test('the menus follow the order of the Explorer menu', () => {
   expect(shape(menu('a')({ name: 'folder', isDirectory: true }, { rename }))).toEqual([
     'paneMenu.open',
     '-',
+    'paneMenu.uploadToOtherPane',
     'paneMenu.moveTo',
     '-',
+    'settings.shortcuts.actions.cut',
+    'settings.shortcuts.actions.copy',
     'paneMenu.copyPath',
     '-',
     'paneMenu.delete',
@@ -118,9 +130,13 @@ test('the menus follow the order of the Explorer menu', () => {
   ]);
   // A pane that cannot rename gets no Rename.
   expect(shape(menu('a')(file))).toEqual([
+    'paneMenu.open',
+    '-',
     'paneMenu.uploadToOtherPane',
     'paneMenu.moveTo',
     '-',
+    'settings.shortcuts.actions.cut',
+    'settings.shortcuts.actions.copy',
     'paneMenu.copyPath',
     '-',
     'paneMenu.delete',
@@ -130,9 +146,69 @@ test('the menus follow the order of the Explorer menu', () => {
   expect(shape(menu('a')(null))).toEqual([
     'paneMenu.refresh',
     '-',
+    'settings.shortcuts.actions.paste',
+    '-',
     'paneMenu.newFolder',
     'paneMenu.newFile',
   ]);
+});
+
+test('Cut and Copy hold the clicked entry, or the selection it belongs to', () => {
+  const { tab, options, menu } = setup();
+  const { copyToClipboard, cutToClipboard } = options.fileClipboard;
+  const pick = (items: ReturnType<ReturnType<typeof menu>>, action: 'cut' | 'copy') =>
+    items.find((item) => item.label === `settings.shortcuts.actions.${action}`)!;
+  // Another row is selected: the menu acts on the one under the pointer.
+  tab.panes.a.selected = new Set(['another.txt']);
+  const single = menu('a')(file);
+  expect(pick(single, 'copy').shortcut).toBe('Ctrl+C');
+  expect(pick(single, 'cut').shortcut).toBe('Ctrl+X');
+  pick(single, 'copy').onClick!();
+  expect(copyToClipboard).toHaveBeenCalledWith(
+    'a',
+    expect.objectContaining({ path: 'C:\\source', selected: new Set(['file.txt']) }),
+  );
+  tab.panes.a.selected = new Set(['file.txt', 'another.txt']);
+  pick(menu('a')(file), 'cut').onClick!();
+  expect(cutToClipboard).toHaveBeenCalledWith(
+    'a',
+    expect.objectContaining({ selected: new Set(['file.txt', 'another.txt']) }),
+  );
+});
+
+test('Paste in the empty-space menu pastes into the pane, when there is something to paste', () => {
+  const { tab, options, menu } = setup();
+  const paste = () =>
+    menu('b')(null).find((item) => item.label === 'settings.shortcuts.actions.paste')!;
+  expect(paste().shortcut).toBe('Ctrl+V');
+  expect(paste().disabled).toBe(false);
+  paste().onClick!();
+  expect(options.fileClipboard.pasteClipboard).toHaveBeenCalledWith('b', tab.panes.b);
+  options.fileClipboard.canPaste.mockReturnValue(false);
+  expect(paste().disabled).toBe(true);
+});
+
+test('a folder, and a whole selection, can be sent to the other pane from the menu', () => {
+  const { tab, options, menu } = setup();
+  const folder: FileEntry = { name: 'folder', isDirectory: true };
+  tab.panes.a.entries = [file, folder, { name: 'other.txt', isDirectory: false }];
+  const send = (entry: FileEntry) =>
+    menu('a')(entry).find((item) => item.label === 'paneMenu.uploadToOtherPane')!;
+  send(folder).onClick!();
+  expect(options.confirmOverwriteIfNeeded.mock.calls[0]![2]).toEqual(['folder']);
+  expect(options.confirmOverwriteIfNeeded.mock.calls[0]![4]).toEqual([folder]);
+  tab.panes.a.selected = new Set(['file.txt', 'folder']);
+  send(file).onClick!();
+  expect(options.confirmOverwriteIfNeeded.mock.calls[1]![2]).toEqual(['file.txt', 'folder']);
+  expect(options.confirmOverwriteIfNeeded.mock.calls[1]![4]).toEqual([file, folder]);
+});
+
+test('Open on a file of this computer opens it as a double click does', async () => {
+  const { menu } = setup();
+  const openPath = vi.fn(async () => ({ ok: true }));
+  window.api = { fsLocal: { openPath } } as unknown as Window['api'];
+  menu('a')(file).find((item) => item.label === 'paneMenu.open')!.onClick!();
+  await vi.waitFor(() => expect(openPath).toHaveBeenCalledWith('C:\\source\\file.txt'));
 });
 
 test('Rename in the menu starts the rename the pane handed over', () => {

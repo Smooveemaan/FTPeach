@@ -28,6 +28,8 @@ interface MenuItem {
 interface PaneMenuOptions {
   permanent?: boolean;
   folderOrder?: string[];
+  /** Starts renaming the entry in place; absent where the pane cannot rename. */
+  rename?: (() => unknown) | undefined;
 }
 
 /**
@@ -100,9 +102,7 @@ export function permissionStringToOctal(value?: string | null, fallback = '644')
 }
 
 export interface PaneActionsModel {
-  buildPaneMenu: (
-    id: PaneId,
-  ) => (entry: FileEntry | null, { permanent, folderOrder }?: PaneMenuOptions) => MenuItem[];
+  buildPaneMenu: (id: PaneId) => (entry: FileEntry | null, options?: PaneMenuOptions) => MenuItem[];
   /** Reconnects a pane, through its bookmark while the bookmark still exists. */
   connect: (id: PaneId) => () => unknown;
   /** Opens a local file with its program; the backend asks before running one. */
@@ -143,41 +143,53 @@ export function usePaneActions({
     (id: PaneId) =>
     (
       entry: FileEntry | null,
-      { permanent = false, folderOrder = [] }: PaneMenuOptions = {},
+      { permanent = false, folderOrder = [], rename }: PaneMenuOptions = {},
     ): MenuItem[] => {
       const pane = panes[id];
       const disabledForRemote = pane.kind === 'remote' && pane.status !== 'connected';
+      // The groups come in the order of the Windows Explorer menu: what opens
+      // the item, where it can be sent, the clipboard, delete and rename, and
+      // its properties last.
+      const grouped = (groups: MenuItem[][]) =>
+        groups
+          .filter((group) => group.length > 0)
+          .flatMap((group, index) => (index === 0 ? group : [{ separator: true }, ...group]));
       if (!entry) {
-        return [
-          {
-            label: t('paneMenu.newFolder'),
-            disabled: disabledForRemote,
-            onClick: () => setNewFolderTarget(id),
-          },
-          {
-            label: t('paneMenu.newFile'),
-            disabled: disabledForRemote,
-            onClick: () => setNewFileTarget(id),
-          },
-          {
-            label: t('paneMenu.refresh'),
-            disabled: disabledForRemote,
-            onClick: () => refreshPane(id, pane.path),
-          },
-        ];
+        return grouped([
+          [
+            {
+              label: t('paneMenu.refresh'),
+              disabled: disabledForRemote,
+              onClick: () => refreshPane(id, pane.path),
+            },
+          ],
+          [
+            {
+              label: t('paneMenu.newFolder'),
+              disabled: disabledForRemote,
+              onClick: () => setNewFolderTarget(id),
+            },
+            {
+              label: t('paneMenu.newFile'),
+              disabled: disabledForRemote,
+              onClick: () => setNewFileTarget(id),
+            },
+          ],
+        ]);
       }
 
-      const items: MenuItem[] = [];
       const actsOnSelection = pane.selected.size > 1 && pane.selected.has(entry.name);
+      const open: MenuItem[] = [];
+      const send: MenuItem[] = [];
       if (entry.isDirectory) {
-        items.push({
+        open.push({
           label: t('paneMenu.open'),
           onClick: () => navigatePane(id, paneJoin(pane, entry.name)),
         });
       } else {
         const otherId = otherPaneId(id);
         const otherPane = panes[otherId];
-        items.push({
+        send.push({
           label:
             pane.kind === 'local'
               ? t('paneMenu.uploadToOtherPane')
@@ -204,7 +216,7 @@ export function usePaneActions({
         });
         if (pane.kind === 'remote') {
           // Same as a double click: the associated or the system's program.
-          items.push({
+          open.push({
             label: t('paneMenu.open'),
             disabled: !pane.connectionId,
             onClick: () => {
@@ -219,7 +231,7 @@ export function usePaneActions({
               });
             },
           });
-          items.push({
+          open.push({
             label: t('paneMenu.openWith'),
             disabled: !pane.connectionId,
             onClick: () => {
@@ -243,30 +255,15 @@ export function usePaneActions({
         }
       }
 
-      items.push({ separator: true });
-      if (pane.kind === 'remote' && pane.form.protocol === 'sftp') {
-        items.push({
-          label: t('paneMenu.permissions'),
-          onClick: () =>
-            setChmodTarget({ id, entry, mode: permissionStringToOctal(entry.permissions) }),
-        });
-        items.push({ separator: true });
-      }
       const names = actsOnSelection ? [...pane.selected] : [entry.name];
       const folders = moveToFolders(names, folderOrder);
-      items.push({
+      send.push({
         label: t('paneMenu.moveTo'),
         shortcut: shortcutLabel('move-to'),
         disabled: disabledForRemote || folders.length === 0,
         onClick: () => setMoveToTarget({ id, names, folders }),
       });
-      items.push({ separator: true });
-      items.push({
-        label: t('paneMenu.copyPath'),
-        onClick: () => copyPath(paneJoin(pane, entry.name)),
-      });
-      items.push({ separator: true });
-      items.push({
+      const remove: MenuItem = {
         label:
           pane.kind === 'local' && permanent
             ? actsOnSelection
@@ -280,13 +277,28 @@ export function usePaneActions({
           actsOnSelection
             ? deletePaneSelected(id, activeTabId, permanent)
             : deletePaneEntry(id, entry, activeTabId, permanent),
-      });
-      items.push({ separator: true });
-      items.push({
-        label: t('paneMenu.refresh'),
-        onClick: () => refreshPane(id, pane.path),
-      });
-      return items;
+      };
+      return grouped([
+        open,
+        send,
+        [{ label: t('paneMenu.copyPath'), onClick: () => copyPath(paneJoin(pane, entry.name)) }],
+        [
+          remove,
+          ...(rename
+            ? [{ label: t('filePane.rename'), shortcut: shortcutLabel('rename'), onClick: rename }]
+            : []),
+        ],
+        [{ label: t('paneMenu.refresh'), onClick: () => refreshPane(id, pane.path) }],
+        pane.kind === 'remote' && pane.form.protocol === 'sftp'
+          ? [
+              {
+                label: t('paneMenu.permissions'),
+                onClick: () =>
+                  setChmodTarget({ id, entry, mode: permissionStringToOctal(entry.permissions) }),
+              },
+            ]
+          : [],
+      ]);
     };
 
   const bookmarkOf = (pane: PaneState) =>

@@ -80,11 +80,74 @@ function actions(
   });
 }
 const file: FileEntry = { name: 'file.txt', isDirectory: false, size: 42 };
+/** The menu as its labels, with `-` for a separator. */
+const shape = (items: { label?: string; separator?: boolean }[]) =>
+  items.map((item) => (item.separator ? '-' : item.label));
+
+test('the menus follow the order of the Explorer menu', () => {
+  const { tab, menu } = setup();
+  tab.panes.b.form.protocol = 'sftp';
+  const rename = () => {};
+  expect(shape(menu('b')(file, { rename }))).toEqual([
+    'paneMenu.open',
+    'paneMenu.openWith',
+    '-',
+    'paneMenu.downloadToOtherPane',
+    'paneMenu.moveTo',
+    '-',
+    'paneMenu.copyPath',
+    '-',
+    'paneMenu.delete',
+    'filePane.rename',
+    '-',
+    'paneMenu.refresh',
+    '-',
+    'paneMenu.permissions',
+  ]);
+  expect(shape(menu('a')({ name: 'folder', isDirectory: true }, { rename }))).toEqual([
+    'paneMenu.open',
+    '-',
+    'paneMenu.moveTo',
+    '-',
+    'paneMenu.copyPath',
+    '-',
+    'paneMenu.delete',
+    'filePane.rename',
+    '-',
+    'paneMenu.refresh',
+  ]);
+  // A pane that cannot rename gets no Rename.
+  expect(shape(menu('a')(file))).toEqual([
+    'paneMenu.uploadToOtherPane',
+    'paneMenu.moveTo',
+    '-',
+    'paneMenu.copyPath',
+    '-',
+    'paneMenu.delete',
+    '-',
+    'paneMenu.refresh',
+  ]);
+  expect(shape(menu('a')(null))).toEqual([
+    'paneMenu.refresh',
+    '-',
+    'paneMenu.newFolder',
+    'paneMenu.newFile',
+  ]);
+});
+
+test('Rename in the menu starts the rename the pane handed over', () => {
+  const { menu } = setup();
+  const rename = vi.fn();
+  const item = menu('a')(file, { rename }).find((entry) => entry.label === 'filePane.rename')!;
+  expect(item.shortcut).toBe('F2');
+  item.onClick!();
+  expect(rename).toHaveBeenCalledOnce();
+});
 
 test('empty-pane actions are disabled for disconnected servers and route to the correct pane', () => {
   const { tab, options, menu } = setup();
   tab.panes.b.status = 'idle';
-  expect(menu('b')(null).every((item) => item.disabled)).toBe(true);
+  expect(menu('b')(null).every((item) => item.separator || item.disabled)).toBe(true);
   const items = menu('a')(null);
   for (const item of items) item.onClick?.();
   expect(options.setNewFolderTarget).toHaveBeenCalledWith('a');
@@ -96,7 +159,8 @@ test.each(['a', 'b'] as const)(
   'copy from pane %s waits for conflict approval and passes the decision downstream',
   (id) => {
     const { options, menu, tab } = setup();
-    menu(id)(file)[0]!.onClick!();
+    const label = id === 'a' ? 'paneMenu.uploadToOtherPane' : 'paneMenu.downloadToOtherPane';
+    menu(id)(file).find((item) => item.label === label)!.onClick!();
     expect(options.copyEntries).not.toHaveBeenCalled();
     const call = options.confirmOverwriteIfNeeded.mock.calls[0]!;
     expect(call[2]).toEqual(['file.txt']);
@@ -121,8 +185,7 @@ test('remote-to-remote copies are labelled correctly and unavailable transfers a
   const { tab, options, menu } = setup();
   tab.panes.a.kind = 'remote';
   options.canCopyBetween.mockReturnValue(false);
-  const item = menu('b')(file)[0]!;
-  expect(item.label).toBe('paneMenu.copyToOtherPane');
+  const item = menu('b')(file).find((entry) => entry.label === 'paneMenu.copyToOtherPane')!;
   expect(item.disabled).toBe(true);
 });
 

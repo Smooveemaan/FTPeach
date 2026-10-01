@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The Move to dialog is as wide as its folder names need, instead of always the same width.
 - With a server in both panes, the File menu offers Disconnect for each side, instead of one
   Disconnect that could not be chosen.
+- The right-click menu of a file or folder follows the order of the Windows Explorer menu: Open
+  first, then where to send it, Delete and Rename, and Permissions last.
 
 ### Fixed
 

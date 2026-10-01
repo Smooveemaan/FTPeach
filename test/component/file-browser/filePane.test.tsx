@@ -456,6 +456,22 @@ describe('FilePane interactions', () => {
     expect(props.onSelectionChange).not.toHaveBeenCalled();
   });
 
+  test('the context menu of a row is handed a rename that starts renaming it in place', () => {
+    const getContextMenuItems: NonNullable<FilePaneProps['getContextMenuItems']> = vi.fn(() => [
+      { label: 'item', onClick: () => {} },
+    ]);
+    const { container } = renderPane({ getContextMenuItems });
+    const row = within(screen.getByRole('listbox')).getByRole('option', { name: /Zoo\.txt/ });
+
+    fireEvent.contextMenu(row);
+
+    const [entry, options] = vi.mocked(getContextMenuItems).mock.calls[0]!;
+    expect(entry?.name).toBe('Zoo.txt');
+    expect(container.querySelector('.rename-input')).toBeNull();
+    act(() => void options.rename!());
+    expect(container.querySelector('.rename-input')).not.toBeNull();
+  });
+
   describe('row interactions stay correct across a re-render the row itself skips', () => {
     test('Ctrl+click toggles against the current selection, not the one from before the last re-render', () => {
       const { props, rerender } = renderPane({ selectedNames: new Set(['beta.txt']) });

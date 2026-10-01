@@ -81,7 +81,12 @@ export interface FilePaneProps {
   onPathSubmit?: ((path: string) => unknown) | undefined;
   getContextMenuItems?: (
     entry: FileEntry | null,
-    options: { permanent: boolean; folderOrder: string[] },
+    options: {
+      permanent: boolean;
+      folderOrder: string[];
+      /** Starts renaming the entry in place; the menu decides where Rename goes. */
+      rename?: (() => unknown) | undefined;
+    },
   ) => MenuItem[];
   availableColumns: readonly ColumnKey[];
   visibleColumns: readonly ColumnKey[];
@@ -224,7 +229,6 @@ function FilePane({
     columnLabels,
     toggleColumn,
     resetColumnWidths,
-    keyboardShortcuts,
     t,
   });
   const { openFiles } = contextMenu;

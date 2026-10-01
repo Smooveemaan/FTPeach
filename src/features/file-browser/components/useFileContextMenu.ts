@@ -2,9 +2,6 @@ import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import type { MenuItem } from '../../../components/MenuItems.tsx';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
-import { formatBinding } from '../../../shortcuts/bindings.ts';
-import type { ShortcutOverrides } from '../../../shortcuts/resolve.ts';
-import { effectiveBinding } from '../../../shortcuts/resolve.ts';
 import type { ColumnKey, Translate } from './fileListModel.ts';
 
 interface RenameController {
@@ -15,7 +12,12 @@ interface FileContextMenuOptions {
   getContextMenuItems?:
     | ((
         entry: FileEntry | null,
-        options: { permanent: boolean; folderOrder: string[] },
+        options: {
+          permanent: boolean;
+          folderOrder: string[];
+          /** Starts renaming the entry in place; absent where it cannot be renamed. */
+          rename?: (() => unknown) | undefined;
+        },
       ) => MenuItem[])
     | undefined;
   folderOrder: string[];
@@ -26,7 +28,6 @@ interface FileContextMenuOptions {
   columnLabels: Record<ColumnKey, string>;
   toggleColumn: (key: ColumnKey) => void;
   resetColumnWidths: () => void;
-  keyboardShortcuts?: ShortcutOverrides | null | undefined;
   t: Translate;
 }
 
@@ -53,43 +54,26 @@ export default function useFileContextMenu({
   columnLabels,
   toggleColumn,
   resetColumnWidths,
-  keyboardShortcuts,
   t,
 }: FileContextMenuOptions): FileContextMenuModel {
   const [menu, setMenu] = useState<OpenContextMenu | null>(null);
 
-  const optionsRef = useRef({
-    getContextMenuItems,
-    folderOrder,
-    onRename,
-    rename,
-    keyboardShortcuts,
-    t,
-  });
-  optionsRef.current = { getContextMenuItems, folderOrder, onRename, rename, keyboardShortcuts, t };
+  const optionsRef = useRef({ getContextMenuItems, folderOrder, onRename, rename });
+  optionsRef.current = { getContextMenuItems, folderOrder, onRename, rename };
 
   const openFiles = useCallback((event: ReactMouseEvent<HTMLElement>, entry: FileEntry | null) => {
-    const { getContextMenuItems, folderOrder, onRename, rename, keyboardShortcuts, t } =
-      optionsRef.current;
+    const { getContextMenuItems, folderOrder, onRename, rename } = optionsRef.current;
     event.preventDefault();
     event.stopPropagation();
-    const appItems = getContextMenuItems
-      ? getContextMenuItems(entry, { permanent: event.shiftKey, folderOrder })
+    // The application decides where Rename goes among its own items.
+    const items = getContextMenuItems
+      ? getContextMenuItems(entry, {
+          permanent: event.shiftKey,
+          folderOrder,
+          rename: entry && onRename ? () => rename.start(entry) : undefined,
+        })
       : [];
-    const [firstItem, ...restItems] = appItems;
-    if (!firstItem) return;
-    const items =
-      entry && onRename
-        ? [
-            firstItem,
-            {
-              label: t('filePane.rename'),
-              shortcut: formatBinding(effectiveBinding('rename', keyboardShortcuts)),
-              onClick: () => rename.start(entry),
-            },
-            ...restItems,
-          ]
-        : appItems;
+    if (items.length === 0) return;
     setMenu({ x: event.clientX, y: event.clientY, items });
   }, []);
 

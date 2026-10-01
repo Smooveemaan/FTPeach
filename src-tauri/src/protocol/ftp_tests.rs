@@ -197,6 +197,14 @@ mod local_integration_tests {
         let mut lines = BufReader::new(reader).lines();
         let mut passive_listener: Option<TcpListener> = None;
         let mut renaming: Option<String> = None;
+        // How many requests for a passive port this connection still refuses.
+        let mut busy_passive = if server.has("/busy-passive") {
+            usize::MAX
+        } else if server.has("/busy-passive-twice") {
+            2
+        } else {
+            0
+        };
         writer
             .write_all(b"220 FTPeach local test server\r\n")
             .await
@@ -235,6 +243,13 @@ mod local_integration_tests {
                     .await
                     .unwrap(),
                 "TYPE" => writer.write_all(b"200 Type set\r\n").await.unwrap(),
+                "EPSV" | "PASV" if busy_passive > 0 => {
+                    busy_passive -= 1;
+                    writer
+                        .write_all(b"425 Unable to identify the local data socket: Address already in use\r\n")
+                        .await
+                        .unwrap();
+                }
                 "EPSV" => {
                     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
                     let port = listener.local_addr().unwrap().port();
@@ -411,6 +426,30 @@ mod local_integration_tests {
         assert_eq!(backend.known_size("/drop-size").await, None);
         assert!(!backend.is_connected());
         assert!(backend.stream.lock().await.is_none());
+        server.abort();
+    }
+
+    /// Pure-FTPd answers 425 when two of its sessions pick the same passive
+    /// port at the same moment, and picks another port when asked again.
+    #[tokio::test]
+    async fn a_passive_port_the_server_could_not_open_is_asked_for_again() {
+        let files = ["/busy-passive-twice", "/hello.txt"];
+        let (port, server) = spawn_ftp_server(TestServer::holding(&files, true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        let entries = backend.list("/").await.unwrap();
+        assert!(entries.iter().any(|entry| entry.name == "hello.txt"));
+        backend.disconnect().await.unwrap();
+        server.abort();
+
+        // A server with no port to give is not asked for ever.
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/busy-passive"], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        let Err(error) = backend.list("/").await else {
+            panic!("a listing went through without a passive port");
+        };
+        assert!(format!("{error:#}").contains("425"), "{error:#}");
         server.abort();
     }
 

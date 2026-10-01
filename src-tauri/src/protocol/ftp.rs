@@ -161,6 +161,20 @@ fn feat_offers_mlsd(feat: &str) -> bool {
 
 /// Whether the server turned a command away as one it does not implement,
 /// rather than failing it over what it was asked to do.
+/// How many times a passive port is asked for before a 425 is the answer.
+const PASSIVE_PORT_ATTEMPTS: usize = 3;
+
+/// Whether the server said it could not open the data port it picked.
+fn passive_port_busy(error: &anyhow::Error) -> bool {
+    error.chain().any(|cause| {
+        matches!(
+            cause.downcast_ref::<suppaftp::FtpError>(),
+            Some(suppaftp::FtpError::UnexpectedResponse(response))
+                if response.status == Status::CannotOpenDataConnection
+        )
+    })
+}
+
 fn command_refused(error: &anyhow::Error) -> bool {
     error.chain().any(|cause| {
         matches!(
@@ -484,7 +498,22 @@ impl DataChannel {
         Ok(AsyncDataStream::Ssl(Box::new(AsyncRustlsStream::from(tls))))
     }
 
+    /// Asks for a passive port, again when the server could not open the one
+    /// it picked (425). Pure-FTPd answers that when two of its sessions pick
+    /// the same port at the same moment, which parallel transfers make likely
+    /// on a narrow port range; asked again, it picks another.
     async fn passive_port(&self, control: &mut AsyncRustlsFtpStream) -> BackendResult<u16> {
+        let mut attempts_left = PASSIVE_PORT_ATTEMPTS;
+        loop {
+            attempts_left -= 1;
+            match self.ask_passive_port(control).await {
+                Err(error) if attempts_left > 0 && passive_port_busy(&error) => {}
+                answer => return answer,
+            }
+        }
+    }
+
+    async fn ask_passive_port(&self, control: &mut AsyncRustlsFtpStream) -> BackendResult<u16> {
         if !self.extended.load(Ordering::SeqCst) {
             match control.custom_command("PASV", &[Status::PassiveMode]).await {
                 Ok(reply) => {

@@ -230,6 +230,10 @@ jobs:
         run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
 
       - run: cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check
+      # The features the application ships with; the steps below turn on more.
+      - name: Check with default features (verified libsodium CRT)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command check
       - name: Clippy (verified libsodium CRT)
         shell: powershell
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command clippy

@@ -22,8 +22,7 @@ The three Rust steps of the default lane compile different things:
 
 - `npm run rust:check` compiles the application with its default features, the
   configuration that ships, so code that only builds with `test-utils` fails
-  here. CI has no separate step for it; there the packaged-smoke and release
-  builds compile the application without `test-utils`.
+  here. CI's `rust-test` job runs the same step before Clippy.
 - `npm run rust:clippy` lints all targets with all features.
 - `npm run rust:test` runs the tests with the `test-utils` feature, which also
   compiles the Docker and server-matrix targets. Every test in those targets

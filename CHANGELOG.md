@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A folder download that contains a name Windows cannot use no longer reports an unexpected error.
 - Dragging a server file to Explorer refuses a name like `a:b`, which Windows would not store as
   a plain file, as downloading it already did.
+- Downloading a folder refuses a file or folder named like a drive (`d:name`), which Windows
+  would have saved outside the folder you chose.
 - Connecting to an address that does not exist says the server was not found, instead of
   reporting an unexpected error.
 - A file another program has open, a name that is already taken and a full disk each get their

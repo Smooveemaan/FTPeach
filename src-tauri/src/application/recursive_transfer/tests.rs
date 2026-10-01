@@ -1020,19 +1020,9 @@ async fn copy_delete_moves_with_remote_endpoints_are_rejected_before_writes() {
     }
 }
 
-#[tokio::test]
-async fn a_paused_download_carries_on_from_its_partial() {
-    let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
-    let big: Vec<u8> = (0..64 * 1024).map(|index| (index % 251) as u8).collect();
-    let server = Arc::new(Server {
-        dirs: vec!["/src".into(), "/src/sub".into()],
-        files: HashMap::from([
-            ("/src/a".to_owned(), b"small".to_vec()),
-            ("/src/sub/big".to_owned(), big.clone()),
-        ]),
-        ..Server::default()
-    });
-    let (sessions, connection_id) = serve(&server).await;
+/// A copy of the server's `/src` into `root/target`.
+async fn download_of_src(server: &Arc<Server>, root: &Path) -> (Sessions, Intent) {
+    let (sessions, connection_id) = serve(server).await;
     let intent = Intent {
         id: uuid::Uuid::new_v4().to_string(),
         source: Endpoint::Remote {
@@ -1047,6 +1037,22 @@ async fn a_paused_download_carries_on_from_its_partial() {
         skip_existing: false,
         resume_from: None,
     };
+    (sessions, intent)
+}
+
+#[tokio::test]
+async fn a_paused_download_carries_on_from_its_partial() {
+    let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+    let big: Vec<u8> = (0..64 * 1024).map(|index| (index % 251) as u8).collect();
+    let server = Arc::new(Server {
+        dirs: vec!["/src".into(), "/src/sub".into()],
+        files: HashMap::from([
+            ("/src/a".to_owned(), b"small".to_vec()),
+            ("/src/sub/big".to_owned(), big.clone()),
+        ]),
+        ..Server::default()
+    });
+    let (sessions, intent) = download_of_src(&server, &root).await;
     const PAUSE_AT: u64 = 16 * 1024;
     *server.pause_at.lock().unwrap() = Some((intent.id.clone(), PAUSE_AT));
     let quiet = ProgressEmitter::for_tests(|_| {});
@@ -1099,6 +1105,51 @@ async fn a_paused_download_carries_on_from_its_partial() {
     // Neither a resume record nor a partial outlives a finished download.
     assert_eq!(files_under(&root.join("target")), ["a", "sub/big"]);
     std::fs::remove_dir_all(root).unwrap();
+}
+
+/// Joined to the folder being downloaded into, a name that starts with a
+/// drive leaves that folder for the drive's current directory. The drive here
+/// is the test's own, so a download that got through lands where the test
+/// can see it and take it back.
+#[cfg(windows)]
+#[tokio::test]
+async fn a_listed_name_that_reads_as_a_drive_is_refused_before_anything_is_written() {
+    let elsewhere = std::env::current_dir().unwrap();
+    let drive = elsewhere.to_string_lossy()[..2].to_owned();
+    for as_folder in [false, true] {
+        let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+        let stray = format!("ftpeach-stray-{}", uuid::Uuid::new_v4());
+        let listed = format!("/src/{drive}{stray}");
+        let server = Arc::new(if as_folder {
+            Server {
+                dirs: vec!["/src".into(), listed.clone()],
+                files: HashMap::from([(format!("{listed}/inner"), b"x".to_vec())]),
+                ..Server::default()
+            }
+        } else {
+            Server {
+                dirs: vec!["/src".into()],
+                files: HashMap::from([(listed, b"x".to_vec())]),
+                ..Server::default()
+            }
+        });
+        let (sessions, intent) = download_of_src(&server, &root).await;
+        let quiet = ProgressEmitter::for_tests(|_| {});
+        let report = run(&sessions, Some(&quiet), intent).await;
+        let escaped = elsewhere.join(&stray);
+        let landed = escaped.exists();
+        let _ = std::fs::remove_dir_all(&escaped);
+        let _ = std::fs::remove_file(&escaped);
+        assert!(!landed, "written outside the target: {}", escaped.display());
+        assert!(!report.ok);
+        assert_eq!(
+            report.errors[0].code,
+            ErrorCode::InvalidInput,
+            "{:?}",
+            report.errors
+        );
+        assert!(!root.join("target").exists());
+    }
 }
 
 const UPLOAD_PAUSE_AT: u64 = 16 * 1024;

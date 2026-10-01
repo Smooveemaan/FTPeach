@@ -325,7 +325,12 @@ async fn run_inner(
         }
         report.scanned = manifest.entries.len();
         for entry in &manifest.entries {
-            if matches!(intent.target, Endpoint::Local { .. }) { mutations::validate_download_name(Path::new(&intent.target.path(&entry.relative)))?; }
+            if matches!(intent.target, Endpoint::Local { .. }) {
+                // Each listed name on its own first: joined to the target, one
+                // that starts with a drive (`d:name`) would leave the folder.
+                for name in entry.relative.split('/').filter(|name| !name.is_empty()) { crate::local_fs::windows_names::validate_file_name(name)?; }
+                mutations::validate_download_name(Path::new(&intent.target.path(&entry.relative)))?;
+            }
         }
         // Names that stood in the target before this walk, which it must never
         // take back, nor write over when skipping. Only an overwrite or a skip

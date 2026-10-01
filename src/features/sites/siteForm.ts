@@ -1,3 +1,4 @@
+import { MAX_SITE_CONNECTIONS } from '../../platform/ipcContracts.ts';
 import type {
   ConnectionForm,
   ManagedSite,
@@ -133,7 +134,8 @@ export function isValidConnectionLimit(value: string): boolean {
   const limit = value.trim();
   return (
     limit === '' ||
-    (/^\d+$/.test(limit) && (Number(limit) === 0 || (Number(limit) >= 2 && Number(limit) <= 128)))
+    (/^\d+$/.test(limit) &&
+      (Number(limit) === 0 || (Number(limit) >= 2 && Number(limit) <= MAX_SITE_CONNECTIONS)))
   );
 }
 

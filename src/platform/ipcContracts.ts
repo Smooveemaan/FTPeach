@@ -132,6 +132,12 @@ export interface OpenWithChange {
  */
 export const MAX_TRANSFER_CONCURRENCY = 128;
 
+/**
+ * The most connections a bookmark may limit itself to; `MAX_SITE_CONNECTIONS`
+ * in the backend's `protocol/config.rs` is the authority, checked by the same test.
+ */
+export const MAX_SITE_CONNECTIONS = 128;
+
 /** Why the vault locked: on its own, or because the user asked (`user`). */
 export const VAULT_LOCK_REASONS = ['idle', 'sessionLocked', 'windowHidden', 'user'] as const;
 export type VaultLockReason = (typeof VAULT_LOCK_REASONS)[number];

@@ -7,7 +7,9 @@ use crate::domain::{
     Credentials, Protocol, ServerSettings, SiteLayoutEntry, invalid_connection_settings,
 };
 use crate::ipc::{CommandError, ErrorCode};
-use crate::protocol::config::{MAX_HOST_LEN, MAX_URL_OR_FILE_LEN, MAX_USER_LEN};
+use crate::protocol::config::{
+    MAX_HOST_LEN, MAX_SITE_CONNECTIONS, MAX_URL_OR_FILE_LEN, MAX_USER_LEN,
+};
 use crate::security::credential_scope::{SecretTransfer, site_transfer};
 use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{SecretUpdate, Vault};
@@ -134,9 +136,9 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
 
     if let Some(limit) = input.get("maxConnections")
         && !limit.is_null()
-        && !limit
-            .as_u64()
-            .is_some_and(|value| value == 0 || (2..=128).contains(&value))
+        && !limit.as_u64().is_some_and(|value| {
+            value == 0 || (2..=u64::from(MAX_SITE_CONNECTIONS)).contains(&value)
+        })
     {
         anyhow::bail!(CommandError::new(
             ErrorCode::InvalidInput,

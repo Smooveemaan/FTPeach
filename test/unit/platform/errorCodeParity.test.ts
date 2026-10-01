@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
   COMMAND_ERROR_CODES,
+  MAX_SITE_CONNECTIONS,
   MAX_TRANSFER_CONCURRENCY,
   VAULT_LOCK_REASONS,
 } from '../../../src/platform/ipcContracts.ts';
@@ -48,4 +49,10 @@ test('the renderer allows exactly the concurrency the backend settings schema ac
   assert.ok(bound, 'store/settings_schema.rs no longer bounds `concurrency` from 0');
   assert.equal(Number(bound[1]), MAX_TRANSFER_CONCURRENCY);
   assert.equal(MAX_TRANSFER_CONCURRENCY, 128);
+});
+
+test('the bookmark editor allows exactly the connection limit the backend accepts', async () => {
+  const bound = /MAX_SITE_CONNECTIONS: u16 = (\d+);/.exec(await rustSource('protocol/config.rs'));
+  assert.ok(bound, 'protocol/config.rs no longer names MAX_SITE_CONNECTIONS');
+  assert.equal(Number(bound[1]), MAX_SITE_CONNECTIONS);
 });

@@ -65,6 +65,10 @@ pub(crate) const MAX_HOST_LEN: usize = 255;
 pub(crate) const MAX_USER_LEN: usize = 1024;
 pub(crate) const MAX_URL_OR_FILE_LEN: usize = 4096;
 
+/// The most connections a site may limit itself to: one for browsing and the
+/// rest for transfers. The bookmark editor offers the same number.
+pub(crate) const MAX_SITE_CONNECTIONS: u16 = 128;
+
 #[derive(Clone, Debug)]
 pub enum ConnectionConfig {
     Ftp(FtpConfig),
@@ -127,7 +131,7 @@ impl ConnectionConfig {
         }
         if server
             .max_connections
-            .is_some_and(|value| value == 1 || value > 128)
+            .is_some_and(|value| value == 1 || value > MAX_SITE_CONNECTIONS)
         {
             bail!("maxConnections must be 0 (unlimited) or between 2 and 128");
         }

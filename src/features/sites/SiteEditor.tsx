@@ -19,6 +19,7 @@ import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from '.
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
+import { MAX_SITE_CONNECTIONS } from '../../platform/ipcContracts.ts';
 import { isValidConnectionLimit } from './siteForm.ts';
 import type { SiteForm } from './siteForm.ts';
 import type { Translate } from '../../shared/translate.ts';
@@ -581,7 +582,7 @@ export default function SiteEditor({
                   <input
                     type="number"
                     min={2}
-                    max={128}
+                    max={MAX_SITE_CONNECTIONS}
                     step={1}
                     className="site-connection-limit-input"
                     aria-label={t('siteManagerDialog.connectionLimit.count')}

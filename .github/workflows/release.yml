@@ -103,6 +103,9 @@ jobs:
           releaseBody: ${{ steps.release-notes.outputs.body }}
           releaseDraft: true
           prerelease: false
+          # The updater reads the signature from latest.json; the .sig stays in the bundle
+          # directory for the verification below.
+          uploadUpdaterSignatures: false
           args: --bundles nsis
 
       - name: Verify every generated updater signature
@@ -136,8 +139,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Renamed so the (alphabetically sorted) release asset list keeps the installer, its
-          # signature and latest.json ahead of these audit-only files.
-          Copy-Item release/sbom/ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-npm.cdx.json
-          Copy-Item release/sbom/ftpeach-cargo.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json
-          gh release upload "$env:GITHUB_REF_NAME" release/sbom/sbom-ftpeach-npm.cdx.json release/sbom/sbom-ftpeach-cargo.cdx.json release/release-trust-report.md --clobber
+          # One archive, so the release asset list is the installer, latest.json and the audit files.
+          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md -DestinationPath release/release-audit.zip
+          gh release upload "$env:GITHUB_REF_NAME" release/release-audit.zip --clobber

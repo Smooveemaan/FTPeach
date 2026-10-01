@@ -30,9 +30,11 @@ stops before the signing job when approval is not required
 
 The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
 frontend, Rust, packaged smoke and protocol compatibility gates pass. It builds the Windows NSIS
-installer, creates its `.sig` and `latest.json`, verifies every signature with
-the configured production public key, attaches npm and Cargo CycloneDX SBOMs,
-and publishes a draft GitHub Release. Before publishing the draft, verify the
+installer and its `.sig`, verifies every signature with the configured
+production public key, and publishes a draft GitHub Release with three files:
+the installer, `latest.json` (it carries the signature, so the `.sig` is not
+uploaded) and `release-audit.zip` (npm and Cargo CycloneDX SBOMs and the trust
+report). Before publishing the draft, verify the
 version, file list and URLs. Signature verification is already a blocking gate,
 including a separate positive/negative fixture test.
 

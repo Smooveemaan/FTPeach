@@ -188,14 +188,18 @@ test('a lock refreshes status, reports unavailable status and removes its listen
 });
 
 test('protection changes refresh status and cancelled resets preserve the setup form', async () => {
-  const { result } = renderHook(useVaultSettings);
+  const onVaultReset = vi.fn();
+  const { result } = renderHook(() => useVaultSettings(onVaultReset));
   await act(async () => {});
   act(() => result.current.setStrongholdSetupArmed(true));
   vault.reset.mockResolvedValueOnce({ ok: false, errorCode: 'cancelled' });
   await act(async () => result.current.resetVault());
   expect(result.current.strongholdSetupArmed).toBe(true);
+  expect(onVaultReset).not.toHaveBeenCalled();
   await act(async () => result.current.resetVault());
   expect(result.current.strongholdSetupArmed).toBe(false);
+  // The secrets are gone; whoever shows them as saved is told to look again.
+  expect(onVaultReset).toHaveBeenCalledOnce();
   await act(async () => {
     await result.current.lockVault();
     await result.current.selectSystemProtection();

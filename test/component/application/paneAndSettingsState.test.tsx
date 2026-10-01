@@ -37,7 +37,10 @@ describe('pane and settings state', () => {
   });
 
   test('previews settings locally and persists only on explicit save', async () => {
-    const settingsApi = { set: vi.fn(async () => ({ proxyPasswordSet: true })) };
+    const settingsApi = {
+      set: vi.fn(async () => ({ proxyPasswordSet: true })),
+      get: vi.fn(async () => ({ proxyPasswordSet: false, theme: 'light' })),
+    };
     const logApi = { setFileLogging: vi.fn() };
     const { result } = renderHook(() => useSettings({ settingsApi, logApi }));
     act(() =>
@@ -50,13 +53,19 @@ describe('pane and settings state', () => {
     await act(() => result.current.persistSettingsDialogPatch({ theme: 'dark' }));
     expect(settingsApi.set).toHaveBeenCalledWith({ theme: 'dark' });
     expect(result.current.settings.connection.proxyPasswordSet).toBe(true);
+
+    // A vault reset removes the saved password without a settings save, so
+    // the flag is read again; a preview still unsaved stays as it is.
+    await act(() => result.current.refreshProxyPasswordSet());
+    expect(result.current.settings.connection.proxyPasswordSet).toBe(false);
+    expect(result.current.settings.interface.theme).toBe('dark');
   });
 
   // The pane lifecycle reads these two from `settings.connection` for every
   // connect, so a connect started while the dialog is open (from the tray
   // menu, say) uses the previewed values, not the saved ones.
   test('a previewed timeout and FTP mode apply to connections before they are saved', () => {
-    const settingsApi = { set: vi.fn(async () => ({})) };
+    const settingsApi = { set: vi.fn(async () => ({})), get: vi.fn(async () => ({})) };
     const { result } = renderHook(() =>
       useSettings({ settingsApi, logApi: { setFileLogging: vi.fn() } }),
     );

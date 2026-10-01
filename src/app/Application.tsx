@@ -75,6 +75,7 @@ export default function Application() {
     applySettings: applySettingsState,
     applySettingsDialogPatch,
     persistSettingsDialogPatch,
+    refreshProxyPasswordSet,
   } = useSettings();
   const { layout, logging } = settings;
   const { lines: logLines, clear: clearLogLines } = useLogLines(logging.logEnabled);
@@ -435,6 +436,9 @@ export default function Application() {
       values: settingsValues(settings),
       preview: applySettingsDialogPatch,
       save: persistSettingsDialogPatch,
+      // A reset removes the secrets the site list and the proxy settings show
+      // as saved; both flags are the backend's to tell.
+      vaultReset: handler(() => Promise.all([refreshSites(), refreshProxyPasswordSet()])),
       export: handleExportSettings,
       import: handleImportSettings,
       notify: showStatusNotice,

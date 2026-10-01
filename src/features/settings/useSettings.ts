@@ -191,7 +191,10 @@ export function settingsValues(state: SettingsState): SettingsValues {
 }
 
 export type SettingsPatch = Record<string, unknown>;
-type SettingsApi = { set: (patch: SettingsPatch) => Promise<SettingsSetResult> };
+type SettingsApi = {
+  set: (patch: SettingsPatch) => Promise<SettingsSetResult>;
+  get: () => Promise<Record<string, unknown>>;
+};
 type LogApi = {
   setFileLogging: (enabled: boolean | undefined) => unknown;
 };
@@ -404,6 +407,11 @@ export interface SettingsModel {
   applySettings: (settings: AppSettings) => void;
   applySettingsDialogPatch: (patch: SettingsPatch) => void;
   persistSettingsDialogPatch: (patch: SettingsPatch) => Promise<void>;
+  /**
+   * Reads again whether a proxy password is saved. A vault reset removes it
+   * without a settings save, which is the only other thing that tells.
+   */
+  refreshProxyPasswordSet: () => Promise<void>;
 }
 
 export function useSettings({
@@ -461,11 +469,20 @@ export function useSettings({
     [settingsApi],
   );
 
+  const refreshProxyPasswordSet = useCallback(
+    () =>
+      settingsApi.get().then((stored) => {
+        dispatch({ type: 'patch', patch: { proxyPasswordSet: !!stored.proxyPasswordSet } });
+      }),
+    [settingsApi],
+  );
+
   return {
     settings: state,
     update,
     applySettings,
     applySettingsDialogPatch,
     persistSettingsDialogPatch,
+    refreshProxyPasswordSet,
   };
 }

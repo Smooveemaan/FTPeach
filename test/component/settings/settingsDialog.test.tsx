@@ -58,6 +58,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     onSave: vi.fn(),
     onClose: vi.fn(),
     onVaultUnlockRequired: vi.fn(),
+    onVaultReset: vi.fn(),
     ...overrides,
   };
   return { ...render(<SettingsDialog {...props} />), props };
@@ -398,6 +399,21 @@ describe('SettingsDialog unsaved-changes gate', () => {
     act(() => locks.announce('user'));
     await waitFor(() => expect(option.disabled).toBe(false));
     expect(option.closest('label')?.hasAttribute('data-tooltip')).toBe(false);
+  });
+
+  test('a vault reset tells the owner that the saved secrets are gone', async () => {
+    const user = userEvent.setup();
+    Object.assign(window.api.vault, { reset: vi.fn(async () => ({ ok: true })) });
+    vi.mocked(window.api.vault.status).mockResolvedValue({
+      configured: true,
+      locked: false,
+      systemUnlockAvailable: false,
+      systemUnlockEnabled: false,
+    });
+    const { props } = renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    await user.click(await screen.findByRole('button', { name: 'settings.security.reset' }));
+    await waitFor(() => expect(props.onVaultReset).toHaveBeenCalledOnce());
   });
 
   test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {

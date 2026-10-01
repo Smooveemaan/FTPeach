@@ -55,6 +55,7 @@ type SettingsValues = Omit<
   | 'onSave'
   | 'onClose'
   | 'onVaultUnlockRequired'
+  | 'onVaultReset'
 >;
 type SiteManagerProps = ComponentProps<typeof SiteManagerDialog>;
 type DialogHook = ReturnType<typeof useAppDialogs>;
@@ -96,6 +97,7 @@ export interface AppDialogsModel {
     values: SettingsValues;
     preview: SettingsDialogProps['onPreview'];
     save: SettingsDialogProps['onSave'];
+    vaultReset: SettingsDialogProps['onVaultReset'];
     export: SiteManagerProps['onExport'];
     import: SiteManagerProps['onImport'];
     /** The status bar line File → Export/Import reports to; the managers show it themselves. */
@@ -193,6 +195,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onVaultUnlockRequired={(retry) =>
             dialogs.setVaultUnlockRetries((current) => [...current, retry])
           }
+          onVaultReset={settings.vaultReset}
           onClose={() => dialogs.setShowSettings(false)}
         />
       )}

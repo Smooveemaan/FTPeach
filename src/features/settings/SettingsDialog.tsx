@@ -29,6 +29,8 @@ export interface SettingsDialogProps extends SettingsDraftValues {
   onSave: SaveSettings;
   onClose: () => unknown;
   onVaultUnlockRequired: (retry: () => void) => void;
+  /** A vault reset went through, and with it every secret shown here as saved. */
+  onVaultReset: () => unknown;
 }
 
 export default function SettingsDialog({
@@ -42,6 +44,7 @@ export default function SettingsDialog({
   onSave,
   onClose,
   onVaultUnlockRequired,
+  onVaultReset,
   ...draftValues
 }: SettingsDialogProps) {
   const { t } = useTranslation();
@@ -71,7 +74,7 @@ export default function SettingsDialog({
     onClose,
     onVaultUnlockRequired,
   });
-  const vault = useVaultSettings();
+  const vault = useVaultSettings(onVaultReset);
   const proxyPassword = useProxyPasswordTest({
     proxyTypeValue: draft.proxyTypeValue,
     proxyHostValue: draft.proxyHostValue,

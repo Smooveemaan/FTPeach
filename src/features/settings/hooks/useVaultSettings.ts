@@ -49,7 +49,8 @@ export interface VaultSettingsModel {
   toggleSystemUnlock: () => Promise<boolean>;
 }
 
-export function useVaultSettings(): VaultSettingsModel {
+/** `onVaultReset` runs after a reset went through: the saved secrets are gone with the vault. */
+export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsModel {
   const { t } = useTranslation();
   const [vaultStatus, setVaultStatus] = useState<VaultStatus | null>(null);
   const [vaultMessage, setVaultMessage] = useState('');
@@ -180,6 +181,7 @@ export function useVaultSettings(): VaultSettingsModel {
     const succeeded = await runVaultAction(() => api.vault.reset());
     if (succeeded) {
       setStrongholdSetupArmed(false);
+      onVaultReset?.();
     }
   };
 

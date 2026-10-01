@@ -743,42 +743,42 @@
     "refused-long-host": {
       "active-mode-saved": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }
       },
       "http-proxy-no-password": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }
       },
       "none": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }
       },
       "proxy-without-host": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }
       },
       "socks5-proxy": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }
       },
       "strict-off": {
         "refused": {
-          "code": "invalidInput",
+          "code": "resourceLimit",
           "details": "host exceeds the 255-byte limit",
           "message": "Invalid connection configuration"
         }

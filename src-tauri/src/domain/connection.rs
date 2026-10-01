@@ -242,7 +242,11 @@ fn start_folder(path: &str) -> String {
 /// How a server's settings that cannot be connected to are reported.
 pub fn invalid_connection_settings(error: &anyhow::Error) -> CommandError {
     CommandError {
-        code: ErrorCode::InvalidInput,
+        // A refusal with a code of its own keeps it: a field over its size
+        // limit is a resource limit, not a malformed setting.
+        code: error
+            .downcast_ref::<CommandError>()
+            .map_or(ErrorCode::InvalidInput, |typed| typed.code),
         message: "Invalid connection configuration".into(),
         details: Some(format!("{error:#}")),
     }

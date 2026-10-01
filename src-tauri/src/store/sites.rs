@@ -7,6 +7,7 @@ use crate::domain::{
     Credentials, Protocol, ServerSettings, SiteLayoutEntry, invalid_connection_settings,
 };
 use crate::ipc::{CommandError, ErrorCode};
+use crate::protocol::config::{MAX_HOST_LEN, MAX_URL_OR_FILE_LEN, MAX_USER_LEN};
 use crate::security::credential_scope::{SecretTransfer, site_transfer};
 use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{SecretUpdate, Vault};
@@ -105,7 +106,7 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
                 "WebDAV URL is required",
             ));
         }
-        if webdav_url.chars().count() > MAX_SITE_STRING_LEN {
+        if webdav_url.len() > MAX_URL_OR_FILE_LEN {
             anyhow::bail!(CommandError::new(
                 ErrorCode::InvalidInput,
                 "WebDAV URL is too long",
@@ -123,7 +124,7 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
                 "Host is required",
             ));
         }
-        if host.chars().count() > MAX_SITE_STRING_LEN {
+        if host.len() > MAX_HOST_LEN {
             anyhow::bail!(CommandError::new(
                 ErrorCode::InvalidInput,
                 "Host is too long",
@@ -169,14 +170,23 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
         }
     }
 
-    for key in [
-        "user",
-        "remotePath",
-        "keyPath",
-        "caCertPath",
-        "icon",
-        "color",
+    // A server's fields have the limits a connect applies, in bytes.
+    for (key, limit) in [
+        ("user", MAX_USER_LEN),
+        ("remotePath", crate::protocol::MAX_REMOTE_PATH_LEN),
+        ("keyPath", MAX_URL_OR_FILE_LEN),
+        ("caCertPath", MAX_URL_OR_FILE_LEN),
     ] {
+        if let Some(value) = input.get(key).and_then(Value::as_str)
+            && value.len() > limit
+        {
+            anyhow::bail!(CommandError::new(
+                ErrorCode::InvalidInput,
+                format!("{key} is too long"),
+            ));
+        }
+    }
+    for key in ["icon", "color"] {
         if let Some(value) = input.get(key).and_then(Value::as_str)
             && value.chars().count() > MAX_SITE_STRING_LEN
         {

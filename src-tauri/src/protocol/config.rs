@@ -59,6 +59,12 @@ pub struct WebDavConfig {
     pub ca_cert_path: Option<String>,
 }
 
+/// The longest a server's text fields may be, in bytes. Saving a site checks
+/// the same numbers, so nothing is stored that could not be connected to.
+pub(crate) const MAX_HOST_LEN: usize = 255;
+pub(crate) const MAX_USER_LEN: usize = 1024;
+pub(crate) const MAX_URL_OR_FILE_LEN: usize = 4096;
+
 #[derive(Clone, Debug)]
 pub enum ConnectionConfig {
     Ftp(FtpConfig),
@@ -83,16 +89,16 @@ impl ConnectionConfig {
             key_passphrase,
         } = credentials;
         for (key, length, limit) in [
-            ("host", server.host.len(), 255usize),
-            ("user", server.user.len(), 1024),
+            ("host", server.host.len(), MAX_HOST_LEN),
+            ("user", server.user.len(), MAX_USER_LEN),
             (
                 "remotePath",
                 server.remote_path.len(),
                 super::MAX_REMOTE_PATH_LEN,
             ),
-            ("webdavUrl", server.webdav_url.len(), 4096),
-            ("keyPath", server.key_path.len(), 4096),
-            ("caCertPath", server.ca_cert_path.len(), 4096),
+            ("webdavUrl", server.webdav_url.len(), MAX_URL_OR_FILE_LEN),
+            ("keyPath", server.key_path.len(), MAX_URL_OR_FILE_LEN),
+            ("caCertPath", server.ca_cert_path.len(), MAX_URL_OR_FILE_LEN),
             ("password", password.expose().len(), 16 * 1024),
             (
                 "keyPassphrase",
@@ -416,7 +422,17 @@ mod tests {
         ] {
             let error = ConnectionConfig::for_test(&map(value)).unwrap_err();
             assert!(error.downcast_ref::<crate::ipc::CommandError>().is_some());
+            // The size limit keeps its own code on the way to the renderer.
+            assert_eq!(
+                crate::domain::invalid_connection_settings(&error).code,
+                ErrorCode::ResourceLimit
+            );
         }
+        let no_host = ConnectionConfig::for_test(&map(json!({"protocol":"ftp"}))).unwrap_err();
+        assert_eq!(
+            crate::domain::invalid_connection_settings(&no_host).code,
+            ErrorCode::InvalidInput
+        );
     }
 
     #[test]

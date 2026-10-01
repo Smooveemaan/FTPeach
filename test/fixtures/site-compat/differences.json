@@ -50,5 +50,6 @@
   "/stores/legacy-array-shapes/import/filesAfter/sites/data": "The same.",
   "/stores/legacy-array-shapes/connect/relative-path/outcome/*": "A site whose start folder was stored without its leading slash (pub) connects: the folder is read from the server's root, which is what it meant. 0.3.0 refused the site as invalid, though connecting never uses the start folder (a bug fix).",
   "/stores/*/list/sites/Ok/*/remotePath": "For the same reason such a start folder is listed with its leading slash (/pub).",
-  "/stores/*/saves/*/filesAfter/sites/data/*/remotePath": "And a save writes it back that way. Every version reads /pub as the same folder."
+  "/stores/*/saves/*/filesAfter/sites/data/*/remotePath": "And a save writes it back that way. Every version reads /pub as the same folder.",
+  "/direct/refused-long-host/*/refused/code": "A field over its size limit is refused as resourceLimit, the code the check raises, instead of having it replaced by invalidInput. The renderer shows the same message for both."
 }

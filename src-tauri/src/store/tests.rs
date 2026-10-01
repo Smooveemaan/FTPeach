@@ -1946,3 +1946,27 @@ mod saved_password_recipient {
         std::fs::remove_dir_all(root).unwrap();
     }
 }
+
+/// What cannot be connected to is not saved either: one limit for both, in
+/// bytes, so a name in a script that takes two bytes a letter counts as such.
+#[test]
+fn a_site_is_saved_only_within_the_limits_a_connect_accepts() {
+    let site = |host: String, user: String| -> JsonMap {
+        serde_json::from_value(json!({"name": "S", "protocol": "ftp", "host": host, "user": user}))
+            .unwrap()
+    };
+    let agree = |site: &JsonMap| {
+        let saved = super::validate_site_input(site).is_ok();
+        let connected = crate::protocol::config::ConnectionConfig::for_test(site).is_ok();
+        assert_eq!(saved, connected, "{site:?}");
+        saved
+    };
+    assert!(agree(&site("x".repeat(255), "u".repeat(1024))));
+    for refused in [
+        site("x".repeat(256), "u".into()),
+        site("é".repeat(128), "u".into()),
+        site("x".into(), "u".repeat(1025)),
+    ] {
+        assert!(!agree(&refused));
+    }
+}

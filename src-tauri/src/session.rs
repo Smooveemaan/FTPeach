@@ -317,6 +317,18 @@ pub async fn teardown_session(
     }
 }
 
+/// Closes a session that has just left a request unanswered for `timeout_ms`.
+/// It gets no longer to close than it was given to answer, so a short timeout
+/// is not followed by the whole teardown deadline before the user hears of it.
+pub async fn teardown_unresponsive(
+    slot: &mut Option<Session>,
+    connection_id: &str,
+    timeout_ms: u64,
+) {
+    let deadline = TEARDOWN_DEADLINE.min(std::time::Duration::from_millis(timeout_ms));
+    teardown_session(slot, connection_id, Some(deadline)).await;
+}
+
 /// A paused upload leaves a staging file on the server for its next attempt.
 /// Once the session goes, that attempt can never come, so the file has to go
 /// with it — and only while the connection can still reach it.

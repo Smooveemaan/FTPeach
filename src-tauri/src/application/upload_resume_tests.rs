@@ -229,6 +229,22 @@ async fn disconnect_bounds_stalled_backend_disconnect() {
     assert!(sessions.all_slots().is_empty());
 }
 
+/// A short timeout is a request for a quick answer: the session that missed it
+/// must not then hold the answer back for the whole teardown deadline.
+#[tokio::test]
+async fn a_session_that_timed_out_is_closed_within_that_timeout() {
+    let remote = Arc::new(Remote {
+        stall_cleanup: true,
+        ..Remote::default()
+    });
+    let (sessions, connection_id) = session_for(&remote).await;
+    let slot = sessions.slot_for(&connection_id);
+    let started = std::time::Instant::now();
+    crate::session::teardown_unresponsive(&mut *slot.lock().await, &connection_id, 200).await;
+    assert!(started.elapsed() < std::time::Duration::from_secs(2));
+    assert!(slot.lock().await.is_none());
+}
+
 impl Fixture {
     /// A destination with `staged` already on the server and `source` on disk,
     /// remembered as a paused upload ready to be resumed.

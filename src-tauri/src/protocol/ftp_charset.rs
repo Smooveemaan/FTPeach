@@ -318,18 +318,18 @@ fn active_address(command: &str, local: IpAddr) -> Option<String> {
 /// with a code and a space. Bounded like suppaftp's own replies, since the
 /// greeting and the AUTH answer arrive before anyone is authenticated.
 async fn read_reply(reader: &mut BufReader<TcpStream>) -> Result<Vec<u8>> {
-    let limits = suppaftp::ReplyLimits::default();
     let mut reply = Vec::new();
-    for _ in 0..limits.max_lines {
+    loop {
         let start = reply.len();
+        let room = (MAX_REPLY_SIZE - start) as u64 + 1;
         let read = (&mut *reader)
-            .take(limits.max_line as u64 + 1)
+            .take(room)
             .read_until(b'\n', &mut reply)
             .await?;
         if read == 0 {
             return Err(anyhow!("the server closed the connection"));
         }
-        if read > limits.max_line || reply.len() > limits.max_reply {
+        if reply.len() > MAX_REPLY_SIZE {
             return Err(too_large());
         }
         let line = &reply[start..];
@@ -337,8 +337,11 @@ async fn read_reply(reader: &mut BufReader<TcpStream>) -> Result<Vec<u8>> {
             return Ok(reply);
         }
     }
-    Err(too_large())
 }
+
+/// The most one reply may hold, every line included. suppaftp bounds its own
+/// replies at the same size and keeps the number to itself.
+const MAX_REPLY_SIZE: usize = 256 * 1024;
 
 /// The same error suppaftp gives a reply over its limits, so both classify
 /// as `resourceLimit` without the reply's text reaching errors or logs.

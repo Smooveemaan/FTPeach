@@ -1256,13 +1256,23 @@ mod recursive_stop_tests {
         }
     }
 
-    async fn accept(passive: &mut Option<TcpListener>) -> Option<TcpStream> {
-        let listener = passive.take()?;
-        let (socket, _) = tokio::time::timeout(Duration::from_secs(5), listener.accept())
+    /// Where the next data connection comes from: the listener the client
+    /// was told to connect to, or in active mode the client's own.
+    enum DataEnd {
+        Passive(TcpListener),
+        Active(std::net::SocketAddr),
+    }
+
+    async fn accept(data: &mut Option<DataEnd>) -> Option<TcpStream> {
+        let connected = async {
+            match data.take()? {
+                DataEnd::Passive(listener) => Some(listener.accept().await.ok()?.0),
+                DataEnd::Active(client) => TcpStream::connect(client).await.ok(),
+            }
+        };
+        tokio::time::timeout(Duration::from_secs(5), connected)
             .await
             .ok()?
-            .ok()?;
-        Some(socket)
     }
 
     /// Takes a file in over a slow link. Closed, the data connection ends the
@@ -1271,7 +1281,7 @@ mod recursive_stop_tests {
         disk: &Shared,
         path: String,
         append: bool,
-        passive: &mut Option<TcpListener>,
+        passive: &mut Option<DataEnd>,
         writer: &mut OwnedWriteHalf,
     ) -> String {
         {
@@ -1311,7 +1321,7 @@ mod recursive_stop_tests {
 
     async fn send_listing(
         listing: String,
-        passive: &mut Option<TcpListener>,
+        passive: &mut Option<DataEnd>,
         writer: &mut OwnedWriteHalf,
     ) -> String {
         if writer
@@ -1332,7 +1342,7 @@ mod recursive_stop_tests {
     async fn serve(socket: TcpStream, disk: Shared) {
         let (reader, mut writer) = socket.into_split();
         let mut lines = BufReader::new(reader).lines();
-        let mut passive: Option<TcpListener> = None;
+        let mut passive: Option<DataEnd> = None;
         let mut renaming: Option<String> = None;
         let mut cwd = "/".to_string();
         if writer.write_all(b"220 ready\r\n").await.is_err() {
@@ -1356,7 +1366,7 @@ mod recursive_stop_tests {
                 "EPSV" | "PASV" => {
                     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
                     let port = listener.local_addr().unwrap().port();
-                    passive = Some(listener);
+                    passive = Some(DataEnd::Passive(listener));
                     if command == "EPSV" {
                         format!("229 Entering Extended Passive Mode (|||{port}|)")
                     } else {
@@ -1366,6 +1376,17 @@ mod recursive_stop_tests {
                             port % 256
                         )
                     }
+                }
+                "PORT" => {
+                    let numbers: Vec<u16> = argument
+                        .split(',')
+                        .map(|part| part.parse().unwrap())
+                        .collect();
+                    let address = [numbers[0], numbers[1], numbers[2], numbers[3]].map(|n| n as u8);
+                    passive = Some(DataEnd::Active(
+                        (address, numbers[4] << 8 | numbers[5]).into(),
+                    ));
+                    "200 PORT ok".to_string()
                 }
                 "CWD" => {
                     if disk.lock().unwrap().denies_cwd {
@@ -1577,6 +1598,42 @@ mod recursive_stop_tests {
             ErrorCode::CreateUnsupported,
             "a failed transfer is not a missing command"
         );
+    }
+
+    /// In active mode the data connection is suppaftp's: it accepts it from
+    /// the server and reads the server's verdict on the transfer itself.
+    #[tokio::test]
+    async fn active_mode_stores_lists_and_fetches_over_the_servers_connection() {
+        let disk = disk(|_| {});
+        let port = spawn_server(disk.clone()).await;
+        let map = json!({
+            "protocol": "ftp", "host": "127.0.0.1", "port": port,
+            "user": "local", "password": "test", "activeMode": true
+        });
+        let config =
+            crate::protocol::config::ConnectionConfig::for_test(map.as_object().unwrap()).unwrap();
+        let mut backend = FtpBackend::new();
+        backend.connect(&config).await.unwrap();
+        // Twice: the control connection is in step again after each verdict.
+        for name in ["/one.txt", "/two.txt"] {
+            backend
+                .upload_from_reader(&mut std::io::Cursor::new(b"active".to_vec()), name)
+                .await
+                .unwrap();
+            let mut fetched = Vec::new();
+            backend
+                .download_to_writer(name, &mut fetched)
+                .await
+                .unwrap();
+            assert_eq!(fetched, b"active");
+        }
+        let listed = backend.list("/").await.unwrap();
+        let mut names: Vec<_> = listed.iter().map(|entry| entry.name.as_str()).collect();
+        names.sort_unstable();
+        assert_eq!(names, ["one.txt", "two.txt"]);
+        backend.create_file("/empty.txt").await.unwrap();
+        assert_eq!(disk.lock().unwrap().files["/empty.txt"], b"");
+        backend.disconnect().await.unwrap();
     }
 
     /// A live session on a server holding `disk`, reached as a real one is.

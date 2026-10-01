@@ -19,7 +19,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 use suppaftp::Status;
 use suppaftp::tokio::{
-    AsyncDataStream, AsyncRustlsConnector, AsyncRustlsFtpStream, AsyncRustlsStream,
+    AsyncDataStream, AsyncRustlsConnector, AsyncRustlsFtpStream, AsyncRustlsStream, TransferStream,
 };
 use suppaftp::types::FileType as FtpFileType;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
@@ -111,13 +111,14 @@ impl Drop for BusyGuard {
 /// takes as the rest of the file: it keeps writing it after the stop, and
 /// answers nothing on the control connection, QUIT included, until the last
 /// byte is in.
-struct UploadData(Option<AsyncDataStream<AsyncRustlsStream>>);
+struct UploadData(Option<Data>);
 
 impl UploadData {
     fn stream(&mut self) -> &mut AsyncDataStream<AsyncRustlsStream> {
         self.0
             .as_mut()
             .expect("upload data connection already handed over")
+            .stream()
     }
 
     /// Ends the upload the ordinary way, once the whole file is written: the
@@ -130,12 +131,17 @@ impl UploadData {
             .context("upload shutdown timed out")?
             .context("closing the upload data connection")?;
         // The data connection is already shut; this only reads the verdict.
-        tokio::time::timeout(
-            TRANSFER_STALL_TIMEOUT,
-            control.finalize_put_stream(tokio::io::sink()),
-        )
-        .await
-        .context("upload completion timed out")??;
+        // An active one is closed before suppaftp reads it, so a stop from
+        // here on finds that connection closed rather than reset.
+        let verdict = async {
+            match self.0.take_if(|data| matches!(data, Data::Active(_))) {
+                Some(active) => active.settle(control).await,
+                None => control.read_response_in(TRANSFER_SETTLED).await.map(drop),
+            }
+        };
+        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, verdict)
+            .await
+            .context("upload completion timed out")??;
         // The server has the whole file, so closing takes nothing back now.
         self.0 = None;
         Ok(())
@@ -144,9 +150,59 @@ impl UploadData {
 
 impl Drop for UploadData {
     fn drop(&mut self) {
-        if let Some(stream) = &self.0 {
-            let _ = stream.get_ref().set_zero_linger();
+        if let Some(data) = &self.0 {
+            let _ = data.socket().set_zero_linger();
         }
+    }
+}
+
+/// The replies that confirm a transfer once its data connection has closed.
+const TRANSFER_SETTLED: &[Status] = &[Status::ClosingDataConnection, Status::RequestedFileActionOk];
+
+/// A transfer's data connection. A passive one is opened by `DataChannel`.
+/// An active one is suppaftp's: it accepts the connection from the server
+/// and reads the server's verdict on the transfer itself.
+enum Data {
+    Passive(AsyncDataStream<AsyncRustlsStream>),
+    Active(TransferStream<AsyncRustlsStream>),
+}
+
+impl Data {
+    fn stream(&mut self) -> &mut AsyncDataStream<AsyncRustlsStream> {
+        match self {
+            Self::Passive(stream) => stream,
+            Self::Active(transfer) => transfer.get_mut(),
+        }
+    }
+
+    fn socket(&self) -> &tokio::net::TcpStream {
+        match self {
+            Self::Passive(stream) => stream.get_ref(),
+            Self::Active(transfer) => transfer.get_ref().get_ref(),
+        }
+    }
+
+    /// Closes the data connection, which is what makes the server answer,
+    /// and reads its verdict on the transfer.
+    async fn settle(self, control: &mut AsyncRustlsFtpStream) -> suppaftp::FtpResult<()> {
+        match self {
+            Self::Passive(stream) => {
+                drop(stream);
+                control.read_response_in(TRANSFER_SETTLED).await.map(drop)
+            }
+            Self::Active(transfer) => transfer.finish().await,
+        }
+    }
+
+    /// The same once a download has been read to its end: the TLS
+    /// close_notify goes out first. The verdict stands whatever closing a
+    /// connection that was read to its end reports.
+    async fn settle_download(
+        mut self,
+        control: &mut AsyncRustlsFtpStream,
+    ) -> suppaftp::FtpResult<()> {
+        let _ = self.stream().shutdown().await;
+        self.settle(control).await
     }
 }
 
@@ -238,16 +294,20 @@ async fn answers_tls(
 /// closes it, and gives the reason (552) on the control connection.
 async fn upload_refusal(
     control: &mut AsyncRustlsFtpStream,
-    data: UploadData,
+    mut data: UploadData,
     error: anyhow::Error,
 ) -> anyhow::Error {
-    drop(data);
-    match tokio::time::timeout(
-        GRACEFUL_IO_TIMEOUT,
-        control.read_response_in(&[Status::ClosingDataConnection, Status::RequestedFileActionOk]),
-    )
-    .await
-    {
+    // Reset, as dropping the upload would, before the reply is read.
+    let verdict = async {
+        match data.0.take() {
+            Some(stream) => {
+                let _ = stream.socket().set_zero_linger();
+                stream.settle(control).await
+            }
+            None => control.read_response_in(TRANSFER_SETTLED).await.map(drop),
+        }
+    };
+    match tokio::time::timeout(GRACEFUL_IO_TIMEOUT, verdict).await {
         Ok(Err(reply @ suppaftp::FtpError::UnexpectedResponse(_))) => {
             anyhow::Error::from(reply).context(format!("{error:#}"))
         }
@@ -434,9 +494,11 @@ impl DataChannel {
         control: &mut AsyncRustlsFtpStream,
         command: String,
         expected: &[Status],
-    ) -> BackendResult<AsyncDataStream<AsyncRustlsStream>> {
+    ) -> BackendResult<Data> {
         if self.active {
-            return Ok(control.custom_data_command(command, expected).await?.1);
+            return Ok(Data::Active(
+                control.custom_data_command(command, expected).await?.1,
+            ));
         }
         let port = self.passive_port(control).await?;
         let peer = self.peer;
@@ -454,7 +516,7 @@ impl DataChannel {
             .context("opening the FTP data connection")?;
         let Some((connector, name)) = self.tls.clone() else {
             control.custom_command(command, expected).await?;
-            return Ok(AsyncDataStream::Tcp(tcp));
+            return Ok(Data::Passive(AsyncDataStream::Tcp(tcp)));
         };
         let upload = command.starts_with("STOR ") || command.starts_with("APPE ");
         // tokio-rustls builds the TLS connection, spending a session ticket,
@@ -495,7 +557,9 @@ impl DataChannel {
         if upload {
             self.tickets.replenish(&mut tls).await;
         }
-        Ok(AsyncDataStream::Ssl(Box::new(AsyncRustlsStream::from(tls))))
+        Ok(Data::Passive(AsyncDataStream::Ssl(Box::new(
+            AsyncRustlsStream::from(tls),
+        ))))
     }
 
     /// Asks for a passive port, again when the server could not open the one
@@ -754,16 +818,13 @@ impl FtpBackend {
         .with_context(|| format!("FTP {command} command timed out"))?
         .with_context(|| format!("{command} command failed"))?;
 
-        let raw = read_list_data(&mut data_stream, DATA_IDLE_TIMEOUT).await?;
+        let raw = read_list_data(data_stream.stream(), DATA_IDLE_TIMEOUT).await?;
         let encoding = data.encoding;
 
-        tokio::time::timeout(
-            GRACEFUL_IO_TIMEOUT,
-            stream.close_data_connection(data_stream),
-        )
-        .await
-        .with_context(|| format!("FTP {command} completion timed out"))?
-        .with_context(|| format!("closing {command} data connection"))?;
+        tokio::time::timeout(GRACEFUL_IO_TIMEOUT, data_stream.settle(stream))
+            .await
+            .with_context(|| format!("FTP {command} completion timed out"))?
+            .with_context(|| format!("closing {command} data connection"))?;
 
         let text = super::ftp_charset::decode(encoding, &raw);
         Ok(text
@@ -988,7 +1049,7 @@ impl FtpBackend {
                         let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
                         let read_result = tokio::time::timeout(
                             TRANSFER_STALL_TIMEOUT,
-                            data_stream.read(&mut buf[..read_len]),
+                            data_stream.stream().read(&mut buf[..read_len]),
                         )
                         .await
                         .context("stalled while reading from server")?;
@@ -1017,12 +1078,9 @@ impl FtpBackend {
                         }
                     }
                     file.flush().await.context("flushing local file")?;
-                    tokio::time::timeout(
-                        TRANSFER_STALL_TIMEOUT,
-                        s.finalize_retr_stream(data_stream),
-                    )
-                    .await
-                    .context("download completion timed out")??;
+                    tokio::time::timeout(TRANSFER_STALL_TIMEOUT, data_stream.settle_download(s))
+                        .await
+                        .context("download completion timed out")??;
                     Ok(transferred)
                 })
             })
@@ -1406,7 +1464,7 @@ impl ProtocolBackend for FtpBackend {
                 stream.set_mode(suppaftp::types::Mode::Active);
                 // Behind the encoding relay the control peer is the loopback;
                 // data connections are taken only from the server itself.
-                stream.set_active_peer(peer);
+                stream.set_active_peer_check(suppaftp::ActivePeerCheck::Allow(vec![peer]));
             }
             let data = DataChannel {
                 host: host.clone(),
@@ -1700,7 +1758,7 @@ impl ProtocolBackend for FtpBackend {
                         let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
                         let n = tokio::time::timeout(
                             TRANSFER_STALL_TIMEOUT,
-                            data_stream.read(&mut buf[..read_len]),
+                            data_stream.stream().read(&mut buf[..read_len]),
                         )
                         .await
                         .context("stalled while reading from server")?
@@ -1726,7 +1784,7 @@ impl ProtocolBackend for FtpBackend {
                 // nothing safe to drain. Only a read that reached EOF can settle
                 // the transfer and keep the control channel in step.
                 read?;
-                tokio::time::timeout(TRANSFER_STALL_TIMEOUT, s.finalize_retr_stream(data_stream))
+                tokio::time::timeout(TRANSFER_STALL_TIMEOUT, data_stream.settle_download(s))
                     .await
                     .context("download completion timed out")??;
                 Ok(bytes)
@@ -1902,7 +1960,7 @@ impl ProtocolBackend for FtpBackend {
             let read_len = crate::transfer::rate_limiter::paced_chunk_size(buf.len());
             let n = tokio::time::timeout(
                 TRANSFER_STALL_TIMEOUT,
-                data_stream.read(&mut buf[..read_len]),
+                data_stream.stream().read(&mut buf[..read_len]),
             )
             .await
             .context("stalled while reading from server")?
@@ -1918,7 +1976,7 @@ impl ProtocolBackend for FtpBackend {
                 .acquire(n as u64)
                 .await;
         }
-        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, s.finalize_retr_stream(data_stream))
+        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, data_stream.settle_download(s))
             .await
             .context("download completion timed out")??;
         operation.reusable = true;

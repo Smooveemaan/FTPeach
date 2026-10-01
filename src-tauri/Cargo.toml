@@ -64,7 +64,7 @@ tokio = { version = "1.53.1", features = ["fs", "sync", "rt", "rt-multi-thread",
 uuid = { version = "1.26.0", features = ["v4"] }
 chrono = "0.4.45"
 anyhow = "1.0.104"
-suppaftp = { version = "11.0.0", default-features = false, features = ["tokio-rustls-ring"] }
+suppaftp = { version = "12.1.1", default-features = false, features = ["tokio-rustls-ring"] }
 rustls = { version = "0.23.43", default-features = false, features = ["logging", "ring", "std", "tls12"] }
 rustls-pki-types = { version = "1.15.1", features = ["std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring"] }
@@ -149,10 +149,6 @@ opt-level = 3
 opt-level = 3
 
 [patch.crates-io]
-# FTPeach keeps a patched copy of suppaftp: control replies are bounded and
-# active-mode data connections are accepted only from the server. See
-# vendor/suppaftp/FTPEACH-PATCH.md.
-suppaftp = { path = "vendor/suppaftp" }
 # wry reports every allowed drop effect back to the source of an OS drop, so
 # Explorer could treat a copy into FTPeach as a move. See
 # vendor/wry/FTPEACH-PATCH.md.

@@ -10,10 +10,6 @@ cargo-fuzz = true
 # Compile the production parser sources without the desktop/Tauri dependency graph.
 [workspace]
 
-[patch.crates-io]
-# This standalone workspace must exercise the same bounded FTP reader as the app.
-suppaftp = { path = "../vendor/suppaftp" }
-
 [dependencies]
 libfuzzer-sys = "=0.4.10"
 anyhow = "1.0.104"
@@ -23,7 +19,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 reqwest = { version = "0.13.4", default-features = false }
 quick-xml = "0.42.0"
 percent-encoding = "2.3.2"
-suppaftp = { version = "=11.0.0", default-features = false, features = ["tokio"] }
+suppaftp = { version = "=12.1.1", default-features = false, features = ["tokio"] }
 tokio = { version = "1.53.1", features = ["rt", "net", "io-util", "time", "macros"] }
 russh-sftp = "=2.4.0"
 

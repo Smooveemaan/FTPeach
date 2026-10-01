@@ -154,9 +154,11 @@ pub enum ImportResult {
     },
 }
 
-/// An import that stopped. What stopped it goes to the log with the error.
+/// An import that stopped. What stopped it goes to the log here, whatever the
+/// code, and to the window with the error.
 fn import_failed(mut error: CommandError, issues: Vec<String>) -> CommandError {
     let issues = issues.join("\n");
+    log::warn!("Settings import refused ({:?}): {issues}", error.code);
     error.details = Some(match error.details.take() {
         Some(details) => format!("{issues}\n{details}"),
         None => issues,

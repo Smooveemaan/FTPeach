@@ -95,6 +95,22 @@ test('a failed export or import is reported and changes nothing', async () => {
   expect(refreshSites).not.toHaveBeenCalled();
 });
 
+test('a refused import names what was wrong with the file', async () => {
+  const { model, reportError } = transfer({
+    import: {
+      ok: false,
+      error: 'Invalid input',
+      errorCode: 'invalidInput',
+      diagnosticDetails: 'sites[3]: Host is required\nsites[5]: Port must be between 1 and 65535',
+    },
+  });
+  await act(() => model.importSettings(options));
+  // The translated message says the file was refused; the first reason says where.
+  expect(reportError).toHaveBeenCalledExactlyOnceWith(
+    expect.stringMatching(/\S sites\[3\]: Host is required$/),
+  );
+});
+
 test('a successful import applies the settings, reloads the sites and says what it did', async () => {
   const settings = { theme: 'dark' };
   const { model, appApi, applySettings, refreshSites } = transfer({

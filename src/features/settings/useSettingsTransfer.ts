@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../platform/api/index.ts';
 import type { AppSettings, SettingsTransferOptions } from '../../platform/api/settings.ts';
-import { commandResultError } from '../../shared/errorMessages.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import type { NoticeMessage } from '../../hooks/useStatusNotice.ts';
 
 type SettingsTransferApi = Pick<Window['api']['app'], 'exportSettings' | 'importSettings'>;
@@ -59,7 +59,14 @@ export function useSettingsTransfer({
     async (options: SettingsTransferOptions): Promise<NoticeMessage | undefined> => {
       const result = await appApi.importSettings(options);
       if (!result.ok) {
-        if (!result.canceled) reportError(commandResultError(result));
+        if (!result.canceled) {
+          // The code only says the file was refused. The backend's first
+          // reason names the bookmark or the setting, which is what the user
+          // can act on, so it follows the translated message as it came.
+          const reason = result.diagnosticDetails?.split('\n')[0];
+          const failure = commandResultError(result);
+          reportError(reason ? `${friendlyError(failure) ?? ''} ${reason}` : failure);
+        }
         return undefined;
       }
       if (result.settings) applySettings(result.settings);

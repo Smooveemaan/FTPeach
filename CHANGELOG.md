@@ -60,6 +60,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   again, instead of sending an empty password and reporting a wrong one.
 - The "…" in a path that does not fit the pane can be clicked: it opens the nearest folder it
   hides.
+- A settings file that cannot be imported says what is wrong with it, not only that a value is
+  invalid.
 
 ## [0.3.0] - 2026-09-27
 

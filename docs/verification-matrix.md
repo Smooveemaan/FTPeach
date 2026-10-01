@@ -111,6 +111,7 @@ is printed as NOT VERIFIED until someone records a result in
 | Explorer drag-out | manual | drag a remote file and folder to Explorer and to the desktop |
 | Editor recovery | manual | edit a remote file, kill FTPeach, restart, upload the recovered copy |
 | Windows Hello unlock | manual | enable enhanced protection, lock, unlock with Hello |
+| Windows Hello on a second computer or account | manual | carry the vault files over, check the switch is off, enable it there, unlock with Hello on both, disable it on one |
 | Upgrade keeps data | manual | install the previous release, add a site, upgrade, check sites, settings and vault |
 | Uninstall keeps data unless asked | manual | uninstall, reinstall, check the data is still there |
 | Portable copy leaves nothing behind | manual | snapshot `%APPDATA%`, `%LOCALAPPDATA%` and the notification registry key, run the zip's copy, connect, show a notification, exit, compare |

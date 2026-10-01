@@ -35,6 +35,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- After the vault is moved to another computer, Windows Hello unlock can be switched on there; the
+  switch no longer gets stuck.
 - Connecting to an address that does not exist says the server was not found.
 - When the proxy cannot be reached, the message says so instead of blaming the server.
 - Testing a proxy that works no longer reports a failure.

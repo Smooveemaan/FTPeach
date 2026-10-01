@@ -133,6 +133,20 @@ nothing changes.
 <!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_is_held_to_the_release_signature -->
 <!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_that_fails_its_checks_changes_nothing -->
 
+## Unlocking with Windows Hello
+
+Windows Hello unlock is switched on for one computer at a time. When the vault
+is moved or carried to another computer, it opens there with the master
+password, and Windows Hello can be switched on there as well. Switching it off
+on one computer leaves it on for the others.
+
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::windows_hello_is_switched_on_and_off_per_computer -->
+
+If Windows loses the key, as after a reset of the computer's security chip, the
+switch shows off and can be turned on again.
+
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::a_credential_whose_key_is_gone_does_not_jam_the_switch -->
+
 ## Connecting safely
 
 By default, FTPeach does not connect to an SSH server it has not seen before

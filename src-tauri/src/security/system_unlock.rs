@@ -12,10 +12,10 @@ mod platform {
         Win32::Security::Cryptography::{
             BCRYPT_OAEP_PADDING_INFO, CERT_KEY_SPEC, MS_PLATFORM_CRYPTO_PROVIDER, NCRYPT_FLAGS,
             NCRYPT_HANDLE, NCRYPT_KEY_HANDLE, NCRYPT_LENGTH_PROPERTY, NCRYPT_PAD_OAEP_FLAG,
-            NCRYPT_PROV_HANDLE, NCRYPT_RSA_ALGORITHM, NCRYPT_WINDOW_HANDLE_PROPERTY,
-            NCryptCreatePersistedKey, NCryptDecrypt, NCryptDeleteKey, NCryptEncrypt,
-            NCryptFinalizeKey, NCryptFreeObject, NCryptOpenKey, NCryptOpenStorageProvider,
-            NCryptSetProperty,
+            NCRYPT_PROV_HANDLE, NCRYPT_RSA_ALGORITHM, NCRYPT_SILENT_FLAG,
+            NCRYPT_WINDOW_HANDLE_PROPERTY, NCryptCreatePersistedKey, NCryptDecrypt,
+            NCryptDeleteKey, NCryptEncrypt, NCryptFinalizeKey, NCryptFreeObject, NCryptOpenKey,
+            NCryptOpenStorageProvider, NCryptSetProperty,
         },
         Win32::System::WinRT::{
             IUserConsentVerifierInterop, RO_INIT_MULTITHREADED, RoInitialize, RoUninitialize,
@@ -318,6 +318,30 @@ mod platform {
         output.truncate(size as usize);
         Ok(output)
     }
+    /// Whether this computer's platform provider holds the key `name`. A
+    /// provider that cannot be opened holds nothing.
+    pub fn exists(name: &str) -> bool {
+        let Ok(provider) = provider() else {
+            return false;
+        };
+        let mut key = NCRYPT_KEY_HANDLE::default();
+        let name = wide(name);
+        // SAFETY: `provider.0` stays live for the whole function, `key` is a
+        // valid writable out-parameter, and `name` is NUL-terminated UTF-16
+        // outliving the call. `NCRYPT_SILENT_FLAG` keeps Windows from asking
+        // the user anything.
+        let opened = unsafe {
+            NCryptOpenKey(
+                provider.0,
+                &mut key,
+                PCWSTR(name.as_ptr()),
+                CERT_KEY_SPEC(0),
+                NCRYPT_SILENT_FLAG,
+            )
+        };
+        // The handle is owned from here, so it is freed, not leaked.
+        opened.map(|()| Key(key)).is_ok()
+    }
     pub fn revoke(name: &str) -> Result<()> {
         let provider = provider()?;
         let mut key = NCRYPT_KEY_HANDLE::default();
@@ -342,8 +366,41 @@ mod platform {
 #[cfg(windows)]
 pub use platform::*;
 
+/// The computer's key store as the vault uses it. A vault can be carried to
+/// another computer; its keys cannot, so the vault asks which of its
+/// credentials this computer holds. Tests stand in for Windows Hello here.
+pub trait Keys: Send + Sync {
+    /// Whether this computer holds the key named `name`. Asks nothing of the user.
+    fn exists(&self, name: &str) -> bool;
+    fn register(&self, name: &str, plaintext: &[u8], hwnd: isize) -> anyhow::Result<Vec<u8>>;
+    fn unwrap(&self, name: &str, ciphertext: &[u8], hwnd: isize) -> anyhow::Result<Vec<u8>>;
+    fn revoke(&self, name: &str) -> anyhow::Result<()>;
+}
+
+/// Windows Hello and the Microsoft Platform Crypto Provider.
+pub struct PlatformKeys;
+
+impl Keys for PlatformKeys {
+    fn exists(&self, name: &str) -> bool {
+        exists(name)
+    }
+    fn register(&self, name: &str, plaintext: &[u8], hwnd: isize) -> anyhow::Result<Vec<u8>> {
+        register(name, plaintext, hwnd)
+    }
+    fn unwrap(&self, name: &str, ciphertext: &[u8], hwnd: isize) -> anyhow::Result<Vec<u8>> {
+        unwrap(name, ciphertext, hwnd)
+    }
+    fn revoke(&self, name: &str) -> anyhow::Result<()> {
+        revoke(name)
+    }
+}
+
 #[cfg(not(windows))]
 pub fn available() -> bool {
+    false
+}
+#[cfg(not(windows))]
+pub fn exists(_: &str) -> bool {
     false
 }
 #[cfg(not(windows))]
@@ -357,4 +414,15 @@ pub fn unwrap(_: &str, _: &[u8], _: isize) -> Result<Vec<u8>> {
 #[cfg(not(windows))]
 pub fn revoke(_: &str) -> Result<()> {
     bail!("system unlock is unavailable on this platform")
+}
+
+#[cfg(test)]
+mod tests {
+    /// Asked of the real key store: a name nobody registered is not there,
+    /// and asking shows no prompt, with or without a platform provider.
+    #[test]
+    fn a_key_nobody_registered_does_not_exist() {
+        let name = format!("FTPeach-vault-test-{}", uuid::Uuid::new_v4());
+        assert!(!super::exists(&name));
+    }
 }

@@ -30,13 +30,19 @@ Restore a JSON file only from its matching last-good backup. Keep `vault.hold`
 and `vault.json` together; a vault snapshot or forgotten master password cannot
 be reconstructed from `sites.json`.
 
-When Windows Hello system unlock is enabled, `vault.json` also contains the
-wrapped vault data key and an identifier for a persisted key in the Microsoft
-Platform Crypto Provider. It contains no Windows PIN or biometric material.
-The persisted private key remains under the current Windows user's platform
-provider; copying `vault.json` and `vault.hold` to another account or machine
-does not copy that key. Keep the master password as the recovery method if the
-Hello credential, TPM/provider, or Windows account changes.
+When Windows Hello system unlock is enabled, `vault.json` also contains, for
+each computer it was enabled on, the wrapped vault data key and an identifier
+for a persisted key in the Microsoft Platform Crypto Provider. It contains no
+Windows PIN or biometric material. The persisted private key remains under
+that Windows user's platform provider; copying `vault.json` and `vault.hold`
+to another account or machine does not copy that key. System unlock therefore
+counts as enabled only where the key can be opened: elsewhere the master
+password unlocks the vault and Windows Hello can be enabled again for that
+computer, without disturbing the others. Disabling it removes that computer's
+entry and key. The list holds eight computers; a ninth replaces the oldest.
+A single entry written by an earlier version is still read. Keep the master
+password as the recovery method if the Hello credential, TPM/provider, or
+Windows account changes.
 
 `tabs.json` contains UI session data only: pane type, local or remote path,
 saved site id, tab metadata, and synchronized-browsing state. It never stores
@@ -181,7 +187,10 @@ What stays on a computer, or does not follow the folder:
   there and those passwords cannot be read; back on the first one they read
   again. With a master password the vault is in `data\` and travels as it is.
 - Windows Hello unlock uses a key in the computer's platform provider (see
-  above). On another computer only the master password unlocks the vault.
+  above). On another computer the master password unlocks the vault until
+  Windows Hello is enabled there too. The key stays in that computer's
+  provider until Windows Hello unlock is disabled there, so disable it before
+  leaving a computer for good.
 - Windows needs a registry entry to put FTPeach's name and icon on its
   notifications: `HKCU\Software\Classes\AppUserModelId\com.smooveemaan.ftpeach`.
   A portable copy writes it at start and removes it on exit, unless an

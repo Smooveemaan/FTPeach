@@ -102,6 +102,8 @@ On supported Windows 10/11 systems, system unlock is available only when Windows
 
 The credential is tied to the current Windows user and platform provider. A policy change, removed credential, unavailable device, or Windows Hello cancellation makes system unlock fail closed. The master password remains the recovery path. Disabling system unlock deletes the persisted platform key and its wrapped-key metadata.
 
+A vault can be carried to another computer or restored onto a new one, and the platform key cannot. `vault.json` therefore keeps one credential per computer, at most eight, and treats as its own the one whose key the platform provider opens here; that lookup is silent and proves nothing by itself, since unwrapping still requires Windows Hello. Enabling adds a credential for this computer and leaves the others; disabling removes this computer's credential and key only. A credential whose key is gone, after a TPM reset or on another computer, is simply not this computer's: it cannot block enabling or disabling. Dropping the oldest entry past the bound, like any entry whose computer is never seen again, leaves an unused key in that computer's provider, inert without the vault files.
+
 System unlock uses the same process-wide serialization, rolling attempt limit, and generic authentication failure as password unlock. It improves convenience and resistance to copied vault files, but it does not protect against malware already controlling the logged-in Windows session or the FTPeach process.
 
 ### A saved password and its recipient

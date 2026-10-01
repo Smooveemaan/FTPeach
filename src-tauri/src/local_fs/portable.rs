@@ -3,7 +3,7 @@
 //! to the exe is the whole switch, and there is no fallback from one location
 //! to the other: a copy with the marker never reads or writes the profile's
 //! data, and a copy without it never looks beside the exe.
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
 
 pub const MARKER: &str = "FTPeach.portable";
@@ -50,14 +50,14 @@ pub fn prepare(data: &Path) -> std::io::Result<()> {
 pub fn stored_path(path: &str, root: Option<&Path>) -> String {
     let relative = root.and_then(|root| {
         let mut rest = Path::new(path).components();
-        // ponytail: ASCII case folding only; a folder name that differs in the
-        // case of other letters keeps the absolute path, which still works here.
+        // The program's folder is spelled as it was started, which need not be
+        // the case the file dialog reports.
+        // ponytail: Unicode lower case, not the file system's own table, and an
+        // 8.3 short name is not matched; such a folder keeps the absolute path.
+        let name = |part: Component| part.as_os_str().to_string_lossy().to_lowercase();
         let inside = root.components().all(|expected| {
-            rest.next().is_some_and(|actual| {
-                actual
-                    .as_os_str()
-                    .eq_ignore_ascii_case(expected.as_os_str())
-            })
+            rest.next()
+                .is_some_and(|actual| name(actual) == name(expected))
         });
         let rest = rest.as_path();
         (inside && !rest.as_os_str().is_empty()).then(|| rest.to_string_lossy().into_owned())
@@ -88,6 +88,11 @@ mod tests {
         assert_eq!(
             resolved_path(&stored, Some(Path::new(r"F:\Tools\FTPeach"))),
             r"F:\Tools\FTPeach\keys\id_ed25519"
+        );
+        // The folder is the same one however its letters are cased.
+        assert_eq!(
+            stored_path(r"E:\Outils\Été\keys\id", Some(Path::new(r"e:\OUTILS\ÉTÉ"))),
+            r"keys\id"
         );
         // A file elsewhere, or a folder that only starts with the same name,
         // names one computer's drives and is kept as it is.

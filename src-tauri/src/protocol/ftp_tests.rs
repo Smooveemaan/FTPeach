@@ -1131,6 +1131,10 @@ mod recursive_stop_tests {
         fails_appe_completion: bool,
         /// How long the server takes over each 4 KiB it receives.
         pace: Duration,
+        /// Every listing is turned away with a reply that names no reason.
+        refuses_listings: bool,
+        /// How many LIST and MLSD commands arrived.
+        listings: usize,
     }
 
     type Shared = Arc<std::sync::Mutex<Disk>>;
@@ -1398,8 +1402,11 @@ mod recursive_stop_tests {
                         path
                     };
                     let listing = {
-                        let disk = disk.lock().unwrap();
-                        if !disk.dirs.contains(&dir) {
+                        let mut disk = disk.lock().unwrap();
+                        disk.listings += 1;
+                        if disk.refuses_listings {
+                            Err("550 Failed to open")
+                        } else if !disk.dirs.contains(&dir) {
                             Err("550 No such directory")
                         } else if command == "LIST" {
                             Ok(disk.list(&dir))
@@ -1767,6 +1774,23 @@ mod recursive_stop_tests {
         backend.mkdir("/Folder").await.unwrap();
         assert!(disk.lock().unwrap().dirs.contains("/Folder"));
         assert!(backend.is_connected());
+    }
+
+    /// A refusal that names no reason is explained by listing the parent.
+    /// The root has none: asking for the same listing again explains nothing.
+    #[tokio::test]
+    async fn a_refused_listing_of_the_root_is_not_asked_for_twice() {
+        let disk = disk(|disk| {
+            disk.offers_mlst = false;
+            disk.refuses_listings = true;
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+        assert!(backend.list("/").await.is_err());
+        assert_eq!(disk.lock().unwrap().listings, 1);
     }
 
     #[tokio::test]

@@ -857,6 +857,10 @@ impl FtpBackend {
         }
         let trimmed = path.trim_end_matches('/');
         let (parent, name) = trimmed.rsplit_once('/').unwrap_or(("", trimmed));
+        // The root has no parent to ask; listing it again explains nothing.
+        if name.is_empty() {
+            return error;
+        }
         let parent = if parent.is_empty() { "/" } else { parent };
         let (code, message) = match self.read_listing(parent).await {
             Ok((entries, _)) if entries.iter().any(|entry| entry.name == name) => {

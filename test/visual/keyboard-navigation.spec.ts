@@ -72,3 +72,13 @@ test('only Tab starts focus cues, and pointer input ends them across dialogs', a
   await expect(page.locator('html')).not.toHaveAttribute('data-keyboard-navigation');
   await expect(help).toHaveCSS('outline-style', 'none');
 });
+
+test('a global shortcut waits while the recovered-edits prompt is open', async ({ page }) => {
+  await page.goto('/visual.html?recoveredEdits=1');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Control+,');
+  // Give a dialog that should not open the time it would need to.
+  await page.waitForTimeout(300);
+  await expect(page.locator('.modal-settings')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+});

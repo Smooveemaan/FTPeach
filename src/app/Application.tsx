@@ -244,9 +244,10 @@ export default function Application() {
     confirmState ||
     quitWhenIdle.promptOpen
   );
-  // Shortcuts and menu commands wait for any dialog, Settings and the
-  // bookmark manager included: they would act on the panes behind it.
-  const modalOpen = tabDialogOpen || anyDialogOpen(dialogs);
+  // Shortcuts and menu commands wait for any dialog, Settings, the bookmark
+  // manager and the recovered-edits prompt included: they would act on the
+  // panes behind it.
+  const modalOpen = tabDialogOpen || anyDialogOpen(dialogs) || recoveredEdits.edits.length > 0;
 
   const savedSites = useSites({
     sites,

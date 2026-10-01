@@ -435,6 +435,30 @@ test('remote create refuses a visible collision and rename retries only after ov
   expect(client.session.rename).toHaveBeenLastCalledWith(id, '/old', '/exists', true);
 });
 
+test('a local rename onto an existing file asks before replacing it; a folder is never replaced', async () => {
+  const { result, options } = await open();
+  const taken = { ok: false, errorCode: 'alreadyExists', error: 'taken' };
+  act(() =>
+    result.current.updatePane('a', {
+      entries: [file('old'), file('exists'), file('folder', true)],
+    }),
+  );
+  client.fsLocal.rename.mockResolvedValueOnce(taken);
+  // Windows names differ by more than case, so "Exists" is the same entry.
+  await act(async () => result.current.renamePaneEntry('a', file('old'), 'Exists'));
+  expect(options.reportError).not.toHaveBeenCalled();
+  await act(async () => options.requestConfirm.mock.calls[0]![1]());
+  expect(client.fsLocal.rename).toHaveBeenLastCalledWith('C:\\home\\old', 'C:\\home\\Exists', true);
+
+  client.fsLocal.rename.mockResolvedValueOnce(taken);
+  await act(async () => result.current.renamePaneEntry('a', file('old'), 'folder'));
+  expect(options.requestConfirm).toHaveBeenCalledOnce();
+  expect(options.reportError).toHaveBeenCalledExactlyOnceWith({
+    code: 'alreadyExists',
+    message: 'taken',
+  });
+});
+
 // The settings dialog previews these two before they are saved, so a connect
 // takes whatever the caller passes on the render it starts from.
 test('a connect sends the timeout and FTP mode of the latest render, and a bookmark starts in its folder', async () => {

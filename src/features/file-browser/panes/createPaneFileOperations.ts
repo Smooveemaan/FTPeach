@@ -136,7 +136,16 @@ export function createPaneFileOperations({
     const pane = panes[id];
     const backend = backendFor(pane, client);
     const res = await backend.rename(paneJoin(pane, entry.name), paneJoin(pane, newName), false);
-    if (!res.ok && res.errorCode === 'alreadyExists' && pane.kind === 'remote') {
+    // On this computer only a file may replace a file: Windows refuses to
+    // replace a folder, or to put one in a file's place. Names there differ
+    // by more than case.
+    const localTarget = pane.entries.find(
+      (other) => other.name.toLowerCase() === newName.toLowerCase(),
+    );
+    const replaceable =
+      pane.kind === 'remote' ||
+      (!entry.isDirectory && localTarget !== undefined && !localTarget.isDirectory);
+    if (!res.ok && res.errorCode === 'alreadyExists' && replaceable) {
       requestConfirm(
         t('confirm.overwriteSingleExists', { name: isolate(newName) }),
         async () => {

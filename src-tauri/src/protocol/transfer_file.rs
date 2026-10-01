@@ -113,8 +113,12 @@ pub(crate) async fn rename_no_replace(source: &Path, destination: &Path) -> Resu
                 PCWSTR(source.as_ptr()),
                 PCWSTR(destination.as_ptr()),
                 MOVE_FILE_FLAGS(0),
-            )?;
+            )
         }
+        // The HRESULT wraps the system error code in its low word. As an
+        // `io::Error` it keeps its kind, so a taken name or a file in use is
+        // reported as that instead of as an unexpected failure.
+        .map_err(|error| std::io::Error::from_raw_os_error(error.code().0 & 0xFFFF))?;
     }
     #[cfg(not(windows))]
     {

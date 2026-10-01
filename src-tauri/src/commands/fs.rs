@@ -493,7 +493,12 @@ mod tests {
 
         for overwrite in [None, Some(false)] {
             let result = fs_rename_checked(path(&source), path(&target), overwrite).await;
-            assert!(result.is_err(), "{overwrite:?}");
+            // The code the pane answers with its replace prompt.
+            assert_eq!(
+                result.unwrap_err().code,
+                crate::ipc::ErrorCode::AlreadyExists,
+                "{overwrite:?}"
+            );
             let result = fs_copy_file_checked(path(&source), path(&target), overwrite).await;
             assert!(result.is_err(), "{overwrite:?}");
             assert_eq!(std::fs::read(&source).unwrap(), b"source");

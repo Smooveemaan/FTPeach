@@ -107,6 +107,8 @@ webview2-com = "0.38.2"
 
 [dev-dependencies]
 rand = "0.10.2"
+# The mock runtime, for the vault-lock event (runtime/vault_auto_lock.rs).
+tauri = { version = "2.11.5", features = ["test"] }
 
 [target.'cfg(windows)'.dev-dependencies]
 # Caps a child test process's memory (protocol/ftp_tests.rs).

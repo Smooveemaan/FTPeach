@@ -113,7 +113,7 @@ registration, its capability entry, and a wrapper in `platform/api/`.
 | `transfer:dragOutStarted` | A download Explorer began pulling during a drag-out. |
 | `protocol:log` | Batches of protocol log lines. |
 | `preview:progress`, `openWith:changed` | Open-with downloads and edited copies. |
-| `vault:locked` | The vault locked, with the reason. |
+| `vault:locked` | The vault locked or was removed, with the reason. |
 | `updater:status`, `tray:action` | Updater state; tray menu clicks. |
 
 **Sensitive commands** (delete, reveal a secret, trust a host key, execute a

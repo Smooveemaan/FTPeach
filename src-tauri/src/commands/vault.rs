@@ -5,7 +5,7 @@ use crate::security::vault::{Vault, VaultStatus};
 use crate::security::vault_guard::{AttemptOutcome, VaultGuard};
 use crate::store::Store;
 use std::future::Future;
-use tauri::State;
+use tauri::{Manager, State};
 
 #[cfg(windows)]
 fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isize> {
@@ -127,13 +127,12 @@ pub async fn vault_unlock(
     result
 }
 
+/// Locks at once; already locked, it locks and announces again, which every
+/// window takes in its stride.
 #[tauri::command]
-pub async fn vault_lock(
-    vault: State<'_, Vault>,
-    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
-) -> CommandResult<()> {
-    vault.lock().await;
-    authorization.revoke_all();
+pub async fn vault_lock<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> CommandResult<()> {
+    crate::runtime::vault_auto_lock::lock_now(&app, crate::security::auto_lock::LockReason::User)
+        .await;
     Ok(())
 }
 
@@ -226,6 +225,20 @@ pub async fn vault_reset(
         "vault_reset",
         "vault",
     )?;
+    authorized_reset(window.app_handle(), &vault, &guard, &store).await
+}
+
+/// The reset itself, once it is authorized. The windows are told when it is
+/// over, however it ended: the vault is locked before its files go, so a
+/// reset that fails halfway has still closed it. Not between the two steps,
+/// where a window reading the state again would find flags for secrets that
+/// are gone.
+pub(crate) async fn authorized_reset<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    vault: &Vault,
+    guard: &VaultGuard,
+    store: &Store,
+) -> CommandResult<()> {
     let Ok(permit) = guard.acquire().await else {
         return Err(authentication_failed());
     };
@@ -235,6 +248,7 @@ pub async fn vault_reset(
         Ok(())
     }
     .await;
+    crate::runtime::vault_auto_lock::announce(app, crate::security::auto_lock::LockReason::User);
     // A reset is authorized by the confirmation window, not by a password,
     // so it proves nothing about one. Completing it does clear the history,
     // since there is no longer a vault to guess at.
@@ -266,7 +280,20 @@ pub async fn vault_use_system_protection(
         "vault_use_system_protection",
         "vault",
     )?;
-    Ok(store.downgrade_to_system_protection(&vault).await?)
+    authorized_system_protection(window.app_handle(), &vault, &store).await
+}
+
+/// The switch itself, once it is authorized. It removes the vault, and the
+/// saved secrets stay usable under system protection; the windows are told
+/// when it is over, however it ended.
+pub(crate) async fn authorized_system_protection<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    vault: &Vault,
+    store: &Store,
+) -> CommandResult<()> {
+    let result = store.downgrade_to_system_protection(vault).await;
+    crate::runtime::vault_auto_lock::announce(app, crate::security::auto_lock::LockReason::User);
+    Ok(result?)
 }
 
 #[cfg(test)]

@@ -15,7 +15,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-/// Why the vault locked itself, as reported to every open window.
+/// Why the vault locked, as reported to every open window.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum LockReason {
@@ -25,6 +25,9 @@ pub enum LockReason {
     SessionLocked,
     /// The main window was hidden to the tray or minimized.
     WindowHidden,
+    /// The user locked it, from the tray or the settings dialog. Never a
+    /// result of [`lock_reason`].
+    User,
 }
 
 /// What the backend can see about the user at one moment.

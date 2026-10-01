@@ -123,8 +123,8 @@ export interface OpenWithChange {
   revision: string;
 }
 
-/** Why the backend locked the vault without being asked to. */
-export const VAULT_LOCK_REASONS = ['idle', 'sessionLocked', 'windowHidden'] as const;
+/** Why the vault locked: on its own, or because the user asked (`user`). */
+export const VAULT_LOCK_REASONS = ['idle', 'sessionLocked', 'windowHidden', 'user'] as const;
 export type VaultLockReason = (typeof VAULT_LOCK_REASONS)[number];
 export interface VaultLocked {
   reason: VaultLockReason;

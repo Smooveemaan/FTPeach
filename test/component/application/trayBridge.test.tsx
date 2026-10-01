@@ -10,6 +10,7 @@ import {
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 import type { TrayAction, TrayModel } from '../../../src/platform/api/tray.ts';
 import type { Translate } from '../../../src/shared/translate.ts';
+import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
 vi.mock('../../../src/platform/api/index.ts', () => ({ api: {} }));
 
@@ -30,16 +31,20 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     }),
   };
   const status = { ...vaultStatus };
+  const locks = vaultLockEvents();
   const vaultApi = {
     status: vi.fn(async () => ({
       ...status,
       systemUnlockAvailable: false,
       systemUnlockEnabled: false,
     })),
+    // As the backend does: lock, then announce.
     lock: vi.fn(async () => {
       status.locked = true;
+      locks.announce('user');
       return { ok: true };
     }),
+    onLocked: locks.onLocked,
   };
   const pauseAllTransfers = vi.fn();
   const resumeAllTransfers = vi.fn();
@@ -79,6 +84,8 @@ function setup(vaultStatus = { configured: true, locked: false }) {
     baseProps,
     trayApi,
     vaultApi,
+    status,
+    locks,
     pauseAllTransfers,
     resumeAllTransfers,
     quit,
@@ -226,20 +233,31 @@ test('tray actions call the same functions as the window', async () => {
   view.fire({ kind: 'resumeAll' });
   expect(view.resumeAllTransfers).toHaveBeenCalledOnce();
 
-  const locked = vi.fn();
-  window.addEventListener('ftpeach:vault-locked', locked);
-  try {
-    view.fire({ kind: 'lockVault' });
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-    expect(view.vaultApi.lock).toHaveBeenCalledOnce();
-    expect(locked).toHaveBeenCalledOnce();
-    expect(view.lastModel()?.vaultLockable).toBe(false);
-  } finally {
-    window.removeEventListener('ftpeach:vault-locked', locked);
-  }
+  expect(view.lastModel()?.vaultLockable).toBe(true);
+  view.fire({ kind: 'lockVault' });
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(view.vaultApi.lock).toHaveBeenCalledOnce();
+  expect(view.lastModel()?.vaultLockable).toBe(false);
+});
+
+test('the tray follows a lock the backend announces, and stops listening when it goes', async () => {
+  const view = setup();
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(view.lastModel()?.vaultLockable).toBe(true);
+  view.status.locked = true;
+  await act(async () => {
+    view.locks.announce('idle');
+    await Promise.resolve();
+  });
+  expect(view.lastModel()?.vaultLockable).toBe(false);
+  expect(view.vaultApi.lock).not.toHaveBeenCalled();
+  view.unmount();
+  expect(view.locks.listening()).toBe(0);
 });
 
 test('quit requests and cancellations reach the quit model, and its state reaches the tray', async () => {

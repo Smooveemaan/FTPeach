@@ -64,12 +64,12 @@ export function useProxyPasswordTest({
       if (document.hidden) clearRevealed();
     };
     window.addEventListener('blur', clearRevealed);
-    window.addEventListener('ftpeach:vault-locked', clearRevealed);
+    const stopListening = api.vault.onLocked(clearRevealed);
     document.addEventListener('visibilitychange', clearWhenHidden);
     return () => {
       clearRevealed();
       window.removeEventListener('blur', clearRevealed);
-      window.removeEventListener('ftpeach:vault-locked', clearRevealed);
+      stopListening();
       document.removeEventListener('visibilitychange', clearWhenHidden);
     };
   }, []);

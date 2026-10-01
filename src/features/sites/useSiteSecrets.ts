@@ -80,12 +80,12 @@ export function useSiteSecrets({
       if (!revealingRef.current) resetSecrets();
     };
     window.addEventListener('blur', clearOnBlur);
-    window.addEventListener('ftpeach:vault-locked', resetSecrets);
+    const stopListening = api.vault.onLocked(resetSecrets);
     document.addEventListener('visibilitychange', clearWhenHidden);
     return () => {
       resetSecrets();
       window.removeEventListener('blur', clearOnBlur);
-      window.removeEventListener('ftpeach:vault-locked', resetSecrets);
+      stopListening();
       document.removeEventListener('visibilitychange', clearWhenHidden);
     };
   }, [resetSecrets]);

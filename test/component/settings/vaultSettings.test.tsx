@@ -4,6 +4,7 @@ import {
   masterPasswordStrength,
   useVaultSettings,
 } from '../../../src/features/settings/hooks/useVaultSettings.ts';
+import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
@@ -14,8 +15,11 @@ const unlocked = {
   systemUnlockEnabled: false,
 };
 let vault: ReturnType<typeof makeVault>;
+let locks: ReturnType<typeof vaultLockEvents>;
 function makeVault() {
+  locks = vaultLockEvents();
   return {
+    onLocked: locks.onLocked,
     status: vi.fn().mockResolvedValue(unlocked),
     setup: vi.fn().mockResolvedValue({ ok: true }),
     unlock: vi.fn().mockResolvedValue({ ok: true }),
@@ -164,22 +168,22 @@ test('vault actions stay busy until settled and recover from rejected IPC', asyn
   expect(result.current.vaultBusy).toBe(false);
 });
 
-test('auto-lock refreshes status, reports unavailable status and removes its listener', async () => {
+test('a lock refreshes status, reports unavailable status and removes its listener', async () => {
   const { result, unmount } = renderHook(useVaultSettings);
   await act(async () => {});
   expect(result.current.vaultStatus?.locked).toBe(false);
   vault.status.mockResolvedValueOnce({ ...unlocked, locked: true });
   await act(async () => {
-    window.dispatchEvent(new Event('ftpeach:vault-locked'));
+    locks.announce('idle');
   });
   expect(result.current.vaultStatus?.locked).toBe(true);
   vault.status.mockRejectedValueOnce(new Error('unavailable'));
   await act(async () => {
-    window.dispatchEvent(new Event('ftpeach:vault-locked'));
+    locks.announce('idle');
   });
   expect(result.current.vaultMessage).toBe('settings.security.unavailable');
   unmount();
-  window.dispatchEvent(new Event('ftpeach:vault-locked'));
+  expect(locks.listening()).toBe(0);
   expect(vault.status).toHaveBeenCalledTimes(3);
 });
 

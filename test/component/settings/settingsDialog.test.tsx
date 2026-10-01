@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { UserEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import SettingsDialog from '../../../src/features/settings/SettingsDialog.tsx';
 import type { SettingsDialogProps } from '../../../src/features/settings/SettingsDialog.tsx';
 import { CommandFailure } from '../../../src/platform/ipcContracts.ts';
+import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -128,11 +129,14 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(props.onClose).not.toHaveBeenCalled();
   });
+  let locks: ReturnType<typeof vaultLockEvents>;
   beforeEach(() => {
+    locks = vaultLockEvents();
     Object.defineProperty(window, 'api', {
       configurable: true,
       value: {
         vault: {
+          onLocked: locks.onLocked,
           status: vi.fn(async () => ({
             configured: false,
             locked: true,
@@ -355,6 +359,20 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onSave).toHaveBeenCalledWith(
       expect.not.objectContaining({ proxyPassword: expect.anything() }),
     );
+  });
+
+  test('clears a revealed saved proxy password when the vault locks', async () => {
+    const user = userEvent.setup();
+    vi.mocked(window.api.settings.revealProxyPassword).mockResolvedValue('revealed-proxy-secret');
+    renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5', proxyPasswordSet: true });
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
+    const input = screen.getByLabelText<HTMLInputElement>('settings.proxy.passwordLabel');
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    expect(input.value).toBe('revealed-proxy-secret');
+
+    act(() => locks.announce('windowHidden'));
+    await waitFor(() => expect(input.value).toBe(''));
   });
 
   test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {

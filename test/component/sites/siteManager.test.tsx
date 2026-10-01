@@ -1,4 +1,12 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -7,6 +15,8 @@ import type { SiteManagerDialogProps } from '../../../src/features/sites/SiteMan
 import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 import { createPaneSiteForm, createSiteForm } from '../../../src/features/sites/siteForm.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
+import { useVaultSettings } from '../../../src/features/settings/hooks/useVaultSettings.ts';
+import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -80,11 +90,20 @@ function requireHtml(element: Element | null | undefined): HTMLElement {
   return element;
 }
 
+let locks: ReturnType<typeof vaultLockEvents>;
+
 function installSiteManagerApiMocks() {
+  locks = vaultLockEvents();
   window.api = {
     ...tauriApi,
     vault: {
       ...tauriApi.vault,
+      onLocked: locks.onLocked,
+      // As the backend does: lock, then announce.
+      lock: vi.fn(async () => {
+        locks.announce('user');
+        return { ok: true };
+      }),
       status: vi.fn(async () => ({
         configured: false,
         locked: false,
@@ -277,7 +296,31 @@ describe('Site Manager workflows', () => {
 
     await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
     await waitFor(() => expect(input.value).toBe('revealed-bookmark-secret'));
-    window.dispatchEvent(new Event('ftpeach:vault-locked'));
+    act(() => locks.announce('idle'));
+    await waitFor(() => expect(input.value).toBe(''));
+  });
+
+  test('locking from the settings dialog clears a password revealed here', async () => {
+    const user = userEvent.setup();
+    vi.mocked(window.api.sites.revealSecret).mockResolvedValue({
+      ok: true,
+      value: 'revealed-bookmark-secret',
+    });
+    renderManager();
+    const settings = renderHook(useVaultSettings);
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    const input = screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password');
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await waitFor(() => expect(input.value).toBe('revealed-bookmark-secret'));
+
+    await act(async () => {
+      await settings.result.current.lockVault();
+    });
+    expect(window.api.vault.lock).toHaveBeenCalledOnce();
     await waitFor(() => expect(input.value).toBe(''));
   });
 
@@ -388,7 +431,7 @@ describe('Site Manager workflows', () => {
 
     // Asked, then the vault locked before the answer arrived.
     await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
-    window.dispatchEvent(new Event('ftpeach:vault-locked'));
+    act(() => locks.announce('idle'));
     act(() => pending[1]?.({ ok: true, value: 'secret-of-staging' }));
     await waitFor(() => expect(pending.length).toBe(2));
     expect(password().value).toBe('');
@@ -1105,6 +1148,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
 });
 
 test('the footer counts the entries and an import here reports in their place', async () => {
+  installSiteManagerApiMocks();
   const user = userEvent.setup();
   const onImport = vi.fn(async () => ({ text: 'Imported: Bookmarks', short: 'Imported' }));
   const { container } = renderManager({ onImport });

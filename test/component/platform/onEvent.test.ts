@@ -5,7 +5,8 @@ type Handler = (_event: { payload: unknown }) => void;
 const listen = vi.fn<(_name: string, _handler: Handler) => Promise<() => void>>();
 vi.mock('@tauri-apps/api/event', () => ({ listen }));
 
-const { onEvent } = await import('../../../src/platform/tauriApi.ts');
+const { onEvent, tauriApi } = await import('../../../src/platform/tauriApi.ts');
+const { VAULT_LOCK_REASONS } = await import('../../../src/platform/ipcContracts.ts');
 
 afterEach(() => listen.mockReset());
 
@@ -81,4 +82,23 @@ test('each subscription is independent, so resubscribing after a stop works', as
   await expect(second.ready).resolves.toBe(true);
   expect(unlisten).toHaveBeenCalledTimes(1);
   expect(listen).toHaveBeenCalledTimes(2);
+});
+
+test('a vault lock reaches onLocked with each reason the backend gives, and nothing else', async () => {
+  let handler!: Handler;
+  listen.mockImplementation(async (name, next) => {
+    expect(name).toBe('vault:locked');
+    handler = next;
+    return () => {};
+  });
+  const invalid = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const reasons: string[] = [];
+  const stop = tauriApi.vault.onLocked((locked) => reasons.push(locked.reason));
+  await stop.ready;
+  for (const reason of VAULT_LOCK_REASONS) handler({ payload: { reason } });
+  handler({ payload: { reason: 'shutdown' } });
+  expect(reasons).toEqual([...VAULT_LOCK_REASONS]);
+  expect(reasons).toContain('user');
+  expect(invalid).toHaveBeenCalledOnce();
+  invalid.mockRestore();
 });

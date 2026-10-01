@@ -53,15 +53,8 @@ export function useAppEffects({
 
   useEffect(() => {
     // The backend owns the idle timeout and locks on a Windows session lock
-    // or a hidden window, whatever this window is doing; both effects here
-    // only keep the UI in step with it.
-    const stopReporting = installVaultActivityReporting({ vault: api.vault });
-    const stopListening = api.vault.onLocked(() =>
-      window.dispatchEvent(new Event('ftpeach:vault-locked')),
-    );
-    return () => {
-      stopReporting();
-      stopListening();
-    };
+    // or a hidden window, whatever this window is doing; this only tells it
+    // when the user was last seen.
+    return installVaultActivityReporting({ vault: api.vault });
   }, []);
 }

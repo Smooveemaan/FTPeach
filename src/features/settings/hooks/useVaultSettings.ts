@@ -70,11 +70,10 @@ export function useVaultSettings(): VaultSettingsModel {
     refreshVaultStatus().catch(() => setVaultMessage(unavailableMessageRef.current));
     // Wrapped in a block so the listener returns void: the rejection is
     // already handled by the .catch, only its type was leaking out.
-    const refreshAfterAutoLock = () => {
+    const refreshAfterLock = () => {
       void refreshVaultStatus().catch(() => setVaultMessage(unavailableMessageRef.current));
     };
-    window.addEventListener('ftpeach:vault-locked', refreshAfterAutoLock);
-    return () => window.removeEventListener('ftpeach:vault-locked', refreshAfterAutoLock);
+    return api.vault.onLocked(refreshAfterLock);
   }, [refreshVaultStatus]);
 
   useEffect(

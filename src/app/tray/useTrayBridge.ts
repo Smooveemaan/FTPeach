@@ -24,7 +24,7 @@ type TrayApi = Pick<typeof api.tray, 'setModel' | 'onAction'>;
  * point a transfer counts as stalled, lets it read 0.
  */
 const STALL_RECHECK_MS = 2500;
-type VaultApi = Pick<typeof api.vault, 'status' | 'lock'>;
+type VaultApi = Pick<typeof api.vault, 'status' | 'lock' | 'onLocked'>;
 
 export interface TrayBridgeOptions {
   t: Translate;
@@ -174,13 +174,9 @@ export function useTrayBridge({
             return;
           }
           case 'lockVault':
-            reportRejection(
-              vaultApi.lock().then((result) => {
-                // The same announcement as the automatic lock: revealed
-                // secrets are cleared and the tray drops the lock item.
-                if (result.ok !== false) window.dispatchEvent(new Event('ftpeach:vault-locked'));
-              }),
-            );
+            // The backend announces the lock like any other; the tray drops
+            // its lock item when it hears it.
+            reportRejection(vaultApi.lock());
             return;
           case 'quitRequested':
             actions.quit.request(action.unsyncedEdits ?? 0);
@@ -221,11 +217,11 @@ function useVaultState(vaultApi: VaultApi): VaultState {
       );
     };
     refresh();
-    window.addEventListener('ftpeach:vault-locked', refresh);
+    const stopListening = vaultApi.onLocked(refresh);
     document.addEventListener('visibilitychange', refresh);
     return () => {
       cancelled = true;
-      window.removeEventListener('ftpeach:vault-locked', refresh);
+      stopListening();
       document.removeEventListener('visibilitychange', refresh);
     };
   }, [vaultApi]);

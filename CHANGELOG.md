@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   only reporting that the vault is locked.
 - The log of a WebDAV connection warns about an unchecked certificate once instead of twice, and
   not at all for an `http://` address.
+- With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
 
 ## [0.3.0] - 2026-09-27
 

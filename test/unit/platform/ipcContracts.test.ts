@@ -416,3 +416,16 @@ test('opening a local path runs programs and scripts only through the execute co
     'fs_open_document',
   ]);
 });
+
+test('a program is recognized by its extension under a Turkish locale too', async (t) => {
+  // On a Turkish system the default locale lowercases "I" to a dotless "ı",
+  // so "INF" no longer reads as "inf".
+  t.mock.method(String.prototype, 'toLocaleLowerCase', () => 'ınf');
+  const commands: string[] = [];
+  const api = createFilesystemApi(async (command) => {
+    commands.push(command);
+    return { ok: true };
+  });
+  for (const path of ['C:\\a.INF', 'C:\\a.MSI', 'C:\\a.ISO']) await api.openPath(path);
+  assert.deepEqual(commands, ['fs_execute_path', 'fs_execute_path', 'fs_execute_path']);
+});

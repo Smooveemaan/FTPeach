@@ -154,7 +154,7 @@ export function createFilesystemApi(invoke: InvokeFn) {
     openPath: (localPath: string) =>
       voidOutcome(
         invoke,
-        EXECUTABLE_EXTENSIONS.has(localPath.split('.').pop()?.toLocaleLowerCase() ?? '')
+        EXECUTABLE_EXTENSIONS.has(localPath.split('.').pop()?.toLowerCase() ?? '')
           ? 'fs_execute_path'
           : 'fs_open_document',
         { localPath },

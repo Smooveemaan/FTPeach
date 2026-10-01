@@ -340,15 +340,29 @@ export function usePanes({
       }
       destEntries = res.entries;
     }
-    const conflicts = names.filter((name) => {
-      const source = sourceEntries.find((entry) => entry.name === name);
-      const destination = destEntries.find((entry) =>
+    const sourceOf = (name: string) => sourceEntries.find((entry) => entry.name === name);
+    const destinationOf = (name: string) =>
+      destEntries.find((entry) =>
         targetPane.kind === 'local'
           ? entry.name.toLowerCase() === name.toLowerCase()
           : entry.name === name,
       );
-      return isTransferNameConflict(source, destination);
+    // A folder cannot take a file's place, nor a file a folder's, here or on
+    // any server: an approved "replace" would only fail. Such a name is taken,
+    // so it is refused instead of asked about, and the rest goes on.
+    const taken = names.filter((name) => {
+      const source = sourceOf(name);
+      const destination = destinationOf(name);
+      return !!source && !!destination && source.isDirectory !== destination.isDirectory;
     });
+    if (taken.length > 0) {
+      reportError({ code: 'alreadyExists', message: taken.join(', ') });
+      names = names.filter((name) => !taken.includes(name));
+      if (names.length === 0) return;
+    }
+    const conflicts = names.filter((name) =>
+      isTransferNameConflict(sourceOf(name), destinationOf(name)),
+    );
     // Whether the caller may treat the destination as approved: nothing to
     // overwrite, or the user has just said to overwrite it. The operation this
     // hands off to asks per destination path of its own accord, and without

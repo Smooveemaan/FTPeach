@@ -374,6 +374,26 @@ test('remote names are case-sensitive and directory merges do not ask to replace
   expect(options.requestConfirm).not.toHaveBeenCalled();
 });
 
+test('a folder is never offered in place of a file of its name, nor a file in place of a folder', async () => {
+  const { result, options } = await open();
+  const target = { ...makePane('b', 'remote'), entries: [file('one'), file('two', true)] };
+  const proceed = vi.fn();
+  await act(async () =>
+    result.current.confirmOverwriteIfNeeded(target, undefined, ['one', 'two', 'new'], proceed, [
+      file('one', true),
+      file('two'),
+      file('new'),
+    ]),
+  );
+  // No server replaces one kind with the other, so there is nothing to ask:
+  // the taken names are refused and the rest goes ahead.
+  expect(options.requestConfirm).not.toHaveBeenCalled();
+  expect(options.reportError).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ code: 'alreadyExists' }),
+  );
+  expect(proceed).toHaveBeenCalledExactlyOnceWith(['new'], false);
+});
+
 test('delete confirmation filters stale selections, preserves recycle policy and reports failures', async () => {
   const { result, options } = await open();
   act(() =>

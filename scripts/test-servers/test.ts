@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseProfiles, profiles } from './matrix.ts';
+import { hostProfiles, parseProfiles, profiles } from './matrix.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const usage = [
@@ -51,4 +51,15 @@ const result =
         { stdio: 'inherit', env, cwd: root },
       );
 if (result.error) throw result.error;
+// libtest counts a test outside the selection as passed, so its total alone
+// does not say which servers were tested.
+if (!process.env.FTPEACH_MATRIX && !process.env.FTPEACH_MATRIX_TARGETS) {
+  const tested = selected.length > 0 ? selected : parseProfiles(['all'], usage);
+  const left = [...profiles, ...hostProfiles].filter((profile) => !tested.includes(profile));
+  if (left.length > 0) {
+    console.log(
+      `Not selected: ${left.join(', ')}. Their tests are in the total as passed, without having run.`,
+    );
+  }
+}
 process.exit(result.status ?? 1);

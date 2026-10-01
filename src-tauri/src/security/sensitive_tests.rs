@@ -501,3 +501,35 @@ async fn a_bookmark_grant_covers_only_the_save_it_describes() {
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+/// A confirmation that asks for the master password opens a locked vault
+/// with it. The windows hear of that unlock as of any other; a password that
+/// is only checked, or refused, opens nothing and announces nothing.
+#[tokio::test]
+async fn a_confirmation_that_unlocks_the_vault_says_so_once() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tauri::Listener;
+    const PASSWORD: &str = "correct horse battery staple";
+    let root = std::env::temp_dir().join(format!("ftpeach-confirm-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let vault = Vault::new(root.clone());
+    vault.setup(PASSWORD).await.unwrap();
+    let store = Store::new_at(root.clone());
+    let app = tauri::test::mock_app();
+    app.manage(crate::security::auto_lock::AutoLock::default());
+    let heard = std::sync::Arc::new(AtomicUsize::new(0));
+    let sink = heard.clone();
+    app.listen_any("vault:unlocked", move |_| {
+        sink.fetch_add(1, Ordering::SeqCst);
+    });
+
+    assert!(reauthenticate(app.handle(), &vault, &store, PASSWORD).await);
+    vault.lock().await;
+    assert!(!reauthenticate(app.handle(), &vault, &store, "wrong").await);
+    assert_eq!(heard.load(Ordering::SeqCst), 0);
+
+    assert!(reauthenticate(app.handle(), &vault, &store, PASSWORD).await);
+    assert!(vault.is_unlocked().await);
+    assert_eq!(heard.load(Ordering::SeqCst), 1);
+    let _ = std::fs::remove_dir_all(&root);
+}

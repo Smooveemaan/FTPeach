@@ -138,6 +138,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
       value: {
         vault: {
           onLocked: locks.onLocked,
+          onUnlocked: locks.onUnlocked,
           status: vi.fn(async () => ({
             configured: false,
             locked: true,

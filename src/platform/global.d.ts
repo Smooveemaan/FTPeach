@@ -52,6 +52,8 @@ declare global {
         noteActivity: () => void;
         /** The backend locked the vault itself; the payload says why. */
         onLocked: (callback: (locked: VaultLocked) => void) => Unsubscribe;
+        /** The vault was opened, by whichever window or prompt did it. */
+        onUnlocked: (callback: () => void) => Unsubscribe;
         setup: (masterPassword: string) => Promise<CommandResult>;
         enableSystemUnlock: () => Promise<CommandResult>;
         disableSystemUnlock: () => Promise<CommandResult>;

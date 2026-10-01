@@ -313,6 +313,7 @@ export const visualTestApi = {
     lock: () => resolved(ok),
     noteActivity: () => {},
     onLocked: () => () => {},
+    onUnlocked: () => () => {},
     enableSystemUnlock: () => resolved(ok),
     unlockSystem: () => resolved(ok),
     disableSystemUnlock: () => resolved(ok),

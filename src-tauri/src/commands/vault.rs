@@ -82,26 +82,32 @@ pub async fn vault_status(vault: State<'_, Vault>) -> CommandResult<VaultStatus>
 
 #[tauri::command]
 pub async fn vault_setup(
+    app: tauri::AppHandle,
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
     master_password: SensitiveString,
 ) -> CommandResult<()> {
-    VaultAttempt {
+    let result = VaultAttempt {
         vault: &vault,
         guard: &guard,
         store: &store,
     }
     .run(|| async { vault.setup(master_password.expose()).await })
-    .await
+    .await;
+    // A vault that was just set up is open.
+    if result.is_ok() {
+        crate::security::sensitive::announce_unlocked(&app);
+    }
+    result
 }
 
 #[tauri::command]
 pub async fn vault_unlock(
+    app: tauri::AppHandle,
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
-    auto_lock: State<'_, AutoLock>,
     master_password: SensitiveString,
 ) -> CommandResult<()> {
     let started = std::time::Instant::now();
@@ -113,9 +119,7 @@ pub async fn vault_unlock(
     .run(|| async { vault.unlock(master_password.expose()).await })
     .await;
     if result.is_ok() {
-        // Unlocking is the user being present; the idle period starts here
-        // rather than at whenever the renderer last reported activity.
-        auto_lock.note_activity();
+        crate::security::sensitive::announce_unlocked(&app);
     }
     // Debug-only — see vault.rs's identical `if cfg!(...)` for why this
     // isn't a `#[cfg(debug_assertions)]` on the statement instead.
@@ -163,7 +167,6 @@ pub async fn vault_unlock_system(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
-    auto_lock: State<'_, AutoLock>,
     window: tauri::WebviewWindow,
 ) -> CommandResult<()> {
     let result = VaultAttempt {
@@ -177,7 +180,7 @@ pub async fn vault_unlock_system(
     .run(|| async { vault.unlock_system(window_handle(&window)?).await })
     .await;
     if result.is_ok() {
-        auto_lock.note_activity();
+        crate::security::sensitive::announce_unlocked(window.app_handle());
     }
     result
 }

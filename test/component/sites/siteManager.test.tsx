@@ -99,6 +99,7 @@ function installSiteManagerApiMocks() {
     vault: {
       ...tauriApi.vault,
       onLocked: locks.onLocked,
+      onUnlocked: locks.onUnlocked,
       // As the backend does: lock, then announce.
       lock: vi.fn(async () => {
         locks.announce('user');

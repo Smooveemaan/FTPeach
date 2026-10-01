@@ -24,7 +24,7 @@ type TrayApi = Pick<typeof api.tray, 'setModel' | 'onAction'>;
  * point a transfer counts as stalled, lets it read 0.
  */
 const STALL_RECHECK_MS = 2500;
-type VaultApi = Pick<typeof api.vault, 'status' | 'lock' | 'onLocked'>;
+type VaultApi = Pick<typeof api.vault, 'status' | 'lock' | 'onLocked' | 'onUnlocked'>;
 
 export interface TrayBridgeOptions {
   t: Translate;
@@ -193,9 +193,9 @@ export function useTrayBridge({
 type VaultState = { configured: boolean; locked: boolean } | null;
 
 /**
- * The vault's state as far as the tray cares. It is read again whenever the
- * page is hidden, which is when the icon appears: the vault may have been set
- * up or unlocked in the window in the meantime, and nothing announces that.
+ * The vault's state as far as the tray cares. It is read again when the
+ * backend announces a lock or an unlock, and whenever the page is hidden,
+ * which is when the icon appears.
  */
 function useVaultState(vaultApi: VaultApi): VaultState {
   const [vault, setVault] = useState<VaultState>(null);
@@ -217,11 +217,13 @@ function useVaultState(vaultApi: VaultApi): VaultState {
       );
     };
     refresh();
-    const stopListening = vaultApi.onLocked(refresh);
+    const stopLocked = vaultApi.onLocked(refresh);
+    const stopUnlocked = vaultApi.onUnlocked(refresh);
     document.addEventListener('visibilitychange', refresh);
     return () => {
       cancelled = true;
-      stopListening();
+      stopLocked();
+      stopUnlocked();
       document.removeEventListener('visibilitychange', refresh);
     };
   }, [vaultApi]);

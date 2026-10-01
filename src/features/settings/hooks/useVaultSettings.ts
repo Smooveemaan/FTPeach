@@ -72,10 +72,16 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     refreshVaultStatus().catch(() => setVaultMessage(unavailableMessageRef.current));
     // Wrapped in a block so the listener returns void: the rejection is
     // already handled by the .catch, only its type was leaking out.
-    const refreshAfterLock = () => {
+    const refreshAfterChange = () => {
       void refreshVaultStatus().catch(() => setVaultMessage(unavailableMessageRef.current));
     };
-    return api.vault.onLocked(refreshAfterLock);
+    const stopLocked = api.vault.onLocked(refreshAfterChange);
+    // An unlock made elsewhere: the unlock prompt, or a confirmation window.
+    const stopUnlocked = api.vault.onUnlocked(refreshAfterChange);
+    return () => {
+      stopLocked();
+      stopUnlocked();
+    };
   }, [refreshVaultStatus]);
 
   useEffect(

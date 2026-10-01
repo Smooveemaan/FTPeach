@@ -84,6 +84,20 @@ test('each subscription is independent, so resubscribing after a stop works', as
   expect(listen).toHaveBeenCalledTimes(2);
 });
 
+test('an unlock reaches onUnlocked', async () => {
+  let handler!: Handler;
+  listen.mockImplementation(async (name, next) => {
+    expect(name).toBe('vault:unlocked');
+    handler = next;
+    return () => {};
+  });
+  const heard = vi.fn();
+  const stop = tauriApi.vault.onUnlocked(heard);
+  await stop.ready;
+  handler({ payload: null });
+  expect(heard).toHaveBeenCalledOnce();
+});
+
 test('a vault lock reaches onLocked with each reason the backend gives, and nothing else', async () => {
   let handler!: Handler;
   listen.mockImplementation(async (name, next) => {

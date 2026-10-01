@@ -567,6 +567,42 @@ pub async fn sensitive_confirmation_ready(
     crate::runtime::confirmation_window::show(&window).map_err(denied)
 }
 
+/// Checks the master password a confirmation asked for. A locked vault is
+/// opened by it, and that is an unlock like any other: secrets still under
+/// system protection move into the vault, the idle period starts over and
+/// the windows are told.
+pub(crate) async fn reauthenticate<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    vault: &Vault,
+    store: &Store,
+    password: &str,
+) -> bool {
+    if vault.is_unlocked().await {
+        return vault.verify_password(password).await.is_ok();
+    }
+    if vault.unlock(password).await.is_err() {
+        return false;
+    }
+    // The password was accepted; what it was asked for goes ahead even if
+    // a leftover secret could not be moved. The next unlock tries again.
+    if let Err(error) = store.migrate_secrets_to_vault(vault).await {
+        log::warn!("Could not move saved secrets into the vault after unlocking: {error:#}");
+    }
+    announce_unlocked(app);
+    true
+}
+
+/// Tells every window that the vault was opened, so each reads the vault
+/// state again, and starts the idle period here: unlocking is the user being
+/// present, whenever the renderer last reported activity. Said once by
+/// whoever unlocked it: the vault commands, and the confirmation above.
+pub(crate) fn announce_unlocked<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    use tauri::Emitter;
+    app.state::<crate::security::auto_lock::AutoLock>()
+        .note_activity();
+    let _ = app.emit("vault:unlocked", ());
+}
+
 #[tauri::command]
 pub async fn respond_sensitive_confirmation(
     window: tauri::WebviewWindow,
@@ -594,11 +630,13 @@ pub async fn respond_sensitive_confirmation(
             .acquire()
             .await
             .map_err(|_| denied("Authentication failed"))?;
-        let verified = if vault.is_unlocked().await {
-            vault.verify_password(&password).await.is_ok()
-        } else {
-            vault.unlock(&password).await.is_ok()
-        };
+        let verified = reauthenticate(
+            window.app_handle(),
+            &vault,
+            &window.state::<Store>(),
+            &password,
+        )
+        .await;
         password.zeroize();
         permit
             .finish(if verified {

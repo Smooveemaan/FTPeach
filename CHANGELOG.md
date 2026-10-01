@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
 - A wrong master password says that the password was not accepted, instead of "Command failed".
 - When files are dropped on a folder that cannot be read, the reason is given in your language.
+- Settings shows the vault as unlocked as soon as it is unlocked from a security confirmation or
+  the unlock prompt, and the auto-lock time is counted from that moment.
 
 ## [0.3.0] - 2026-09-27
 

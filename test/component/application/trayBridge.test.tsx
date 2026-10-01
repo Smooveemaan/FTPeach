@@ -45,6 +45,7 @@ function setup(vaultStatus = { configured: true, locked: false }) {
       return { ok: true };
     }),
     onLocked: locks.onLocked,
+    onUnlocked: locks.onUnlocked,
   };
   const pauseAllTransfers = vi.fn();
   const resumeAllTransfers = vi.fn();
@@ -258,6 +259,22 @@ test('the tray follows a lock the backend announces, and stops listening when it
   expect(view.vaultApi.lock).not.toHaveBeenCalled();
   view.unmount();
   expect(view.locks.listening()).toBe(0);
+});
+
+test('the tray follows an unlock the backend announces', async () => {
+  const view = setup();
+  view.status.locked = true;
+  await act(async () => {
+    view.locks.announce('idle');
+    await Promise.resolve();
+  });
+  expect(view.lastModel()?.vaultLockable).toBe(false);
+  view.status.locked = false;
+  await act(async () => {
+    view.locks.announceUnlocked();
+    await Promise.resolve();
+  });
+  expect(view.lastModel()?.vaultLockable).toBe(true);
 });
 
 test('quit requests and cancellations reach the quit model, and its state reaches the tray', async () => {

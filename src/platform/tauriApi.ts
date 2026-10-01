@@ -329,6 +329,7 @@ export const tauriApi: Window['api'] = {
       void invoke('vault_note_activity').catch(() => {});
     },
     onLocked: onEvent<VaultLocked>('vault:locked', isVaultLocked),
+    onUnlocked: onEvent('vault:unlocked'),
     enableSystemUnlock: () => voidOutcome(invoke, 'vault_enable_system_unlock'),
     unlockSystem: () => voidOutcome(invoke, 'vault_unlock_system'),
     disableSystemUnlock: () => voidOutcome(invoke, 'vault_disable_system_unlock'),

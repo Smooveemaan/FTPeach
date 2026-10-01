@@ -23,6 +23,7 @@ function makeVault() {
   locks = vaultLockEvents();
   return {
     onLocked: locks.onLocked,
+    onUnlocked: locks.onUnlocked,
     status: vi.fn().mockResolvedValue(unlocked),
     setup: vi.fn().mockResolvedValue({ ok: true }),
     unlock: vi.fn().mockResolvedValue({ ok: true }),
@@ -188,6 +189,18 @@ test('a lock refreshes status, reports unavailable status and removes its listen
   unmount();
   expect(locks.listening()).toBe(0);
   expect(vault.status).toHaveBeenCalledTimes(3);
+});
+
+test('an unlock made elsewhere refreshes status', async () => {
+  vault.status.mockResolvedValueOnce({ ...unlocked, locked: true });
+  const { result } = renderHook(useVaultSettings);
+  await act(async () => {});
+  expect(result.current.vaultStatus?.locked).toBe(true);
+  // The confirmation window or the unlock prompt opened the vault.
+  await act(async () => {
+    locks.announceUnlocked();
+  });
+  expect(result.current.vaultStatus?.locked).toBe(false);
 });
 
 test('protection changes refresh status and cancelled resets preserve the setup form', async () => {

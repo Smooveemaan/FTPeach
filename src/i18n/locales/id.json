@@ -440,7 +440,8 @@
       "showConfirmations": "Tampilkan konfirmasi keamanan",
       "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan, menjalankan berkas yang dapat dieksekusi, atau membuka berkas dengan program yang belum pernah dipakai. Mengatur ulang brankas, memindahkan kata sandi tersimpan ke server lain, dan mematikan opsi ini selalu dikonfirmasi.",
       "unavailable": "Brankas tidak tersedia.",
-      "failed": "Operasi pada brankas gagal."
+      "failed": "Operasi pada brankas gagal.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Tanpa batas",
     "connectTimeoutLabel": "Batas waktu koneksi, dtk",

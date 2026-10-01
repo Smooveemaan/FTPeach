@@ -440,7 +440,8 @@
       "showConfirmations": "Hiển thị xác nhận bảo mật",
       "showConfirmationsHint": "Hỏi xác nhận trước khi hiển thị mật khẩu đã lưu, chạy tệp thực thi hoặc mở tệp bằng chương trình chưa từng dùng. Việc đặt lại kho bảo mật, chuyển mật khẩu đã lưu sang máy chủ khác và tắt tùy chọn này luôn cần xác nhận.",
       "unavailable": "Kho bảo mật không khả dụng.",
-      "failed": "Thao tác với kho bảo mật không thành công."
+      "failed": "Thao tác với kho bảo mật không thành công.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Không giới hạn",
     "connectTimeoutLabel": "Thời gian chờ kết nối, giây",

@@ -440,7 +440,8 @@
       "showConfirmations": "Biztonsági megerősítések megjelenítése",
       "showConfirmationsHint": "Kérjen megerősítést mentett jelszó megjelenítése, végrehajtható fájl futtatása, illetve fájl megnyitása előtt olyan programmal, amelyet még nem használt. A széf visszaállítását, mentett jelszó másik szerverre helyezését és e beállítás kikapcsolását mindig meg kell erősíteni.",
       "unavailable": "A széf nem érhető el.",
-      "failed": "A széfen végzett művelet sikertelen."
+      "failed": "A széfen végzett művelet sikertelen.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Nincs korlát",
     "connectTimeoutLabel": "Csatlakozási időtúllépés, s",

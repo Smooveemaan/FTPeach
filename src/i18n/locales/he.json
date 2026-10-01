@@ -444,7 +444,8 @@
       "showConfirmations": "הצגת אישורי אבטחה",
       "showConfirmationsHint": "לבקש אישור לפני הצגת סיסמה שמורה, הפעלת קובץ הפעלה או פתיחת קובץ בתוכנה שלא שימשה עד כה. איפוס הכספת, העברת סיסמה שמורה לשרת אחר וכיבוי האפשרות הזאת מחייבים אישור תמיד.",
       "unavailable": "הכספת אינה זמינה.",
-      "failed": "הפעולה בכספת נכשלה."
+      "failed": "הפעולה בכספת נכשלה.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "ללא הגבלה",
     "connectTimeoutLabel": "זמן המתנה לחיבור, שניות",

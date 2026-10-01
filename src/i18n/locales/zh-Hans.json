@@ -440,7 +440,8 @@
       "showConfirmations": "显示安全确认",
       "showConfirmationsHint": "在显示已保存的密码、运行可执行文件，或使用尚未用过的程序打开文件之前先行确认。重置密码库、将已保存的密码移至其他服务器以及关闭此选项始终需要确认。",
       "unavailable": "密码库不可用。",
-      "failed": "密码库操作失败。"
+      "failed": "密码库操作失败。",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "无限制",
     "connectTimeoutLabel": "连接超时，秒",

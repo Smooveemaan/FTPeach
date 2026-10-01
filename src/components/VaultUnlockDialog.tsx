@@ -5,6 +5,7 @@ import Modal, { ModalFooterActions } from './Modal.tsx';
 import Icon from './Icon.tsx';
 import PasswordInput from './PasswordInput.tsx';
 import { reportRejection, handler } from '../shared/asyncFailure.ts';
+import { commandResultError, friendlyError } from '../shared/errorMessages.ts';
 
 interface VaultUnlockDialogProps {
   onUnlocked: () => void;
@@ -80,7 +81,9 @@ export default function VaultUnlockDialog({
     try {
       const result = await vaultApi.unlock(password);
       if (!result.ok) {
-        showPasswordError(result.error || t('settings.security.failed'));
+        showPasswordError(
+          friendlyError(commandResultError(result)) || t('settings.security.failed'),
+        );
         return;
       }
       if (passwordRef.current) passwordRef.current.value = '';
@@ -100,7 +103,8 @@ export default function VaultUnlockDialog({
     clearPasswordError();
     try {
       const result = await vaultApi.unlockSystem();
-      if (!result.ok) setError(result.error || t('settings.security.failed'));
+      if (!result.ok)
+        setError(friendlyError(commandResultError(result)) || t('settings.security.failed'));
       else onUnlocked();
     } finally {
       setBusy(false);

@@ -444,7 +444,8 @@
       "showConfirmations": "Afficher les confirmations de sécurité",
       "showConfirmationsHint": "Demander confirmation avant d'afficher un mot de passe enregistré, d'exécuter un fichier exécutable ou d'ouvrir un fichier avec un programme jamais utilisé auparavant. La réinitialisation du coffre-fort, le déplacement d'un mot de passe enregistré vers un autre serveur et la désactivation de cette option demandent toujours une confirmation.",
       "unavailable": "Le coffre-fort n'est pas disponible.",
-      "failed": "L'opération sur le coffre-fort a échoué."
+      "failed": "L'opération sur le coffre-fort a échoué.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Sans limite",
     "connectTimeoutLabel": "Délai de connexion, s",

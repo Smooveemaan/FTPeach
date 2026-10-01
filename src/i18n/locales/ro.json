@@ -444,7 +444,8 @@
       "showConfirmations": "Afișează confirmările de securitate",
       "showConfirmationsHint": "Cere confirmare înainte de afișarea unei parole salvate, rularea unui fișier executabil sau deschiderea unui fișier cu un program nefolosit până acum. Resetarea seifului, mutarea unei parole salvate pe alt server și dezactivarea acestei opțiuni se confirmă întotdeauna.",
       "unavailable": "Seiful nu este disponibil.",
-      "failed": "Operațiunea pe seif a eșuat."
+      "failed": "Operațiunea pe seif a eșuat.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Fără limită",
     "connectTimeoutLabel": "Timp de așteptare la conectare, s",

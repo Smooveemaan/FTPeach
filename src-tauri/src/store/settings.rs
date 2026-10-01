@@ -118,7 +118,7 @@ impl Store {
             return self.set_settings(patch).await;
         }
         if !vault.is_unlocked().await {
-            anyhow::bail!("vault is locked");
+            return Err(crate::ipc::vault_locked());
         }
 
         let previous = vault.get_proxy_password().await?;

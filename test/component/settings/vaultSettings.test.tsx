@@ -6,7 +6,10 @@ import {
 } from '../../../src/features/settings/hooks/useVaultSettings.ts';
 import { vaultLockEvents } from '../helpers/vaultLocks.ts';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', async (importOriginal) => ({
+  ...(await importOriginal()),
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
 
 const unlocked = {
   configured: true,

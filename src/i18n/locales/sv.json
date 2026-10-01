@@ -440,7 +440,8 @@
       "showConfirmations": "Visa säkerhetsbekräftelser",
       "showConfirmationsHint": "Fråga innan ett sparat lösenord visas, en körbar fil körs eller en fil öppnas med ett program som inte har använts tidigare. Återställning av valvet, flytt av ett sparat lösenord till en annan server och avstängning av den här inställningen bekräftas alltid.",
       "unavailable": "Valvet är inte tillgängligt.",
-      "failed": "Åtgärden i valvet misslyckades."
+      "failed": "Åtgärden i valvet misslyckades.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Ingen gräns",
     "connectTimeoutLabel": "Tidsgräns för anslutning, s",

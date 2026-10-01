@@ -340,7 +340,12 @@ async fn proxy_password_moves_with_enhanced_protection() {
         .connection_defaults(&vault, window(0, false))
         .await
         .unwrap_err();
-    assert!(format!("{locked:#}").contains("vault is locked"));
+    assert_eq!(
+        locked
+            .downcast_ref::<crate::ipc::CommandError>()
+            .map(|error| error.code),
+        Some(crate::ipc::ErrorCode::VaultLocked)
+    );
     assert!(store.reveal_proxy_password(&vault).await.is_err());
     let locked = store
         .set_settings_with_vault(
@@ -349,7 +354,12 @@ async fn proxy_password_moves_with_enhanced_protection() {
         )
         .await
         .unwrap_err();
-    assert!(format!("{locked:#}").contains("vault is locked"));
+    assert_eq!(
+        locked
+            .downcast_ref::<crate::ipc::CommandError>()
+            .map(|error| error.code),
+        Some(crate::ipc::ErrorCode::VaultLocked)
+    );
     store
         .set_settings_with_vault(proxy_patch(json!({"proxyPort": 1081})), &vault)
         .await

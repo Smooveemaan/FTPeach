@@ -440,7 +440,8 @@
       "showConfirmations": "Güvenlik onaylarını göster",
       "showConfirmationsHint": "Kaydedilmiş bir şifreyi göstermeden, yürütülebilir bir dosyayı çalıştırmadan veya bir dosyayı daha önce kullanılmamış bir programla açmadan önce onay iste. Kasayı sıfırlamak, kaydedilmiş bir şifreyi başka bir sunucuya taşımak ve bu seçeneği kapatmak her zaman onay gerektirir.",
       "unavailable": "Kasa kullanılamıyor.",
-      "failed": "Kasa işlemi başarısız oldu."
+      "failed": "Kasa işlemi başarısız oldu.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Sınırsız",
     "connectTimeoutLabel": "Bağlantı zaman aşımı, sn",

@@ -456,7 +456,8 @@
       "showConfirmations": "إظهار تأكيدات الأمان",
       "showConfirmationsHint": "اطلب تأكيدًا قبل إظهار كلمة مرور محفوظة أو تشغيل ملف تنفيذي أو فتح ملف ببرنامج لم يُستخدم من قبل. أما إعادة تعيين الخزنة ونقل كلمة مرور محفوظة إلى خادم آخر وإيقاف هذا الخيار فتتطلب التأكيد دائمًا.",
       "unavailable": "الخزنة غير متاحة.",
-      "failed": "فشلت العملية على الخزنة."
+      "failed": "فشلت العملية على الخزنة.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "بلا حدود",
     "connectTimeoutLabel": "مهلة انتظار الاتصال، ثانية",

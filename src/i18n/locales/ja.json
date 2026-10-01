@@ -440,7 +440,8 @@
       "showConfirmations": "セキュリティ確認を表示する",
       "showConfirmationsHint": "保存済みのパスワードを表示する前、実行可能ファイルを起動する前、これまで使用していないプログラムでファイルを開く前に確認します。保管庫のリセット、保存済みパスワードの別のサーバーへの移動、この設定のオフには常に確認が必要です。",
       "unavailable": "保管庫は利用できません。",
-      "failed": "保管庫の操作に失敗しました。"
+      "failed": "保管庫の操作に失敗しました。",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "制限なし",
     "connectTimeoutLabel": "接続タイムアウト（秒）",

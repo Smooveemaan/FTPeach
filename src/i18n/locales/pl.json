@@ -448,7 +448,8 @@
       "showConfirmations": "Pokazuj potwierdzenia bezpieczeństwa",
       "showConfirmationsHint": "Pytaj przed pokazaniem zapisanego hasła, uruchomieniem pliku wykonywalnego lub otwarciem pliku programem, który nie był dotąd używany. Reset sejfu, przeniesienie zapisanego hasła na inny serwer i wyłączenie tej opcji zawsze wymagają potwierdzenia.",
       "unavailable": "Sejf jest niedostępny.",
-      "failed": "Operacja na sejfie nie powiodła się."
+      "failed": "Operacja na sejfie nie powiodła się.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Bez ograniczeń",
     "connectTimeoutLabel": "Limit czasu połączenia, s",

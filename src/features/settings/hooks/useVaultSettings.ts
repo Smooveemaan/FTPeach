@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../platform/api/index.ts';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
+import { commandResultError, friendlyError } from '../../../shared/errorMessages.ts';
 
 export type VaultStatus = Awaited<ReturnType<typeof api.vault.status>>;
 export type PasswordStrength = '' | 'tooShort' | 'strong' | 'acceptable';
@@ -108,7 +109,7 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
       // Declining the backend's confirmation is not a failure to report back:
       // the user cancelled it themselves a moment ago.
       if (!result.ok && result.errorCode !== 'cancelled')
-        setVaultMessage(result.error || t('settings.security.failed'));
+        setVaultMessage(friendlyError(commandResultError(result)) || t('settings.security.failed'));
       else setVaultMessage('');
       for (const ref of [masterPasswordRef, masterPasswordConfirmRef, oldMasterPasswordRef]) {
         if (ref.current) ref.current.value = '';
@@ -149,7 +150,9 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     try {
       const result = await api.vault.unlock(password);
       if (!result.ok) {
-        showVaultUnlockError(result.error || t('settings.security.failed'));
+        showVaultUnlockError(
+          friendlyError(commandResultError(result)) || t('settings.security.failed'),
+        );
         return false;
       }
       if (masterPasswordRef.current) masterPasswordRef.current.value = '';

@@ -36,6 +36,9 @@ pub enum ErrorCode {
     /// Another program has the local file open and will not share it.
     FileInUse,
     VaultLocked,
+    /// The vault refused to open: a wrong master password, too many attempts
+    /// or a cancelled system prompt. One code for all of them on purpose.
+    VaultAuthFailed,
     /// Something already stands where this would go, and replacing it was
     /// not asked for.
     AlreadyExists,
@@ -64,6 +67,12 @@ pub type CommandResult<T> = Result<T, CommandError>;
 /// way, so the message lives with the error type rather than in whichever
 /// command module happened to spell it first.
 pub(crate) const NO_SESSION: &str = "No active connection";
+
+/// The refusal every vault-backed read and write gives while the vault is
+/// locked. The renderer answers this code with the unlock prompt and a retry.
+pub(crate) fn vault_locked() -> anyhow::Error {
+    anyhow::Error::new(CommandError::new(ErrorCode::VaultLocked, "Vault is locked"))
+}
 
 impl From<anyhow::Error> for CommandError {
     fn from(error: anyhow::Error) -> Self {
@@ -316,8 +325,6 @@ impl CommandError {
             ErrorCode::ConnectionLost
         } else if Self::names_full_storage(&lower) {
             ErrorCode::StorageFull
-        } else if lower.contains("vault is locked") {
-            ErrorCode::VaultLocked
         } else {
             ErrorCode::Internal
         }
@@ -351,6 +358,7 @@ impl CommandError {
             ErrorCode::Busy => "Another operation is using this location",
             ErrorCode::FileInUse => "The file is in use by another process",
             ErrorCode::VaultLocked => "Vault is locked",
+            ErrorCode::VaultAuthFailed => "Vault authentication failed or temporarily unavailable",
             ErrorCode::AlreadyExists => "A file or folder with that name already exists",
             ErrorCode::ReplaceUnsupported => {
                 "The server did not allow the existing file to be replaced"
@@ -395,6 +403,7 @@ mod tests {
             (ErrorCode::Busy, "busy"),
             (ErrorCode::FileInUse, "fileInUse"),
             (ErrorCode::VaultLocked, "vaultLocked"),
+            (ErrorCode::VaultAuthFailed, "vaultAuthFailed"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
             (ErrorCode::CreateUnsupported, "createUnsupported"),

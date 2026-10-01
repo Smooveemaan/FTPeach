@@ -440,7 +440,8 @@
       "showConfirmations": "Sicherheitsbestätigungen anzeigen",
       "showConfirmationsHint": "Vor dem Anzeigen eines gespeicherten Passworts, dem Ausführen einer ausführbaren Datei oder dem Öffnen einer Datei mit einem noch nicht verwendeten Programm nachfragen. Das Zurücksetzen des Tresors, das Verschieben eines gespeicherten Passworts auf einen anderen Server und das Deaktivieren dieser Option werden immer bestätigt.",
       "unavailable": "Der Tresor ist nicht verfügbar.",
-      "failed": "Der Vorgang im Tresor ist fehlgeschlagen."
+      "failed": "Der Vorgang im Tresor ist fehlgeschlagen.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Keine Begrenzung",
     "connectTimeoutLabel": "Verbindungs-Timeout, s",

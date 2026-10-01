@@ -440,7 +440,8 @@
       "showConfirmations": "보안 확인 표시",
       "showConfirmationsHint": "저장된 비밀번호를 표시하거나, 실행 파일을 실행하거나, 아직 사용하지 않은 프로그램으로 파일을 열기 전에 확인을 요청합니다. 보관소 초기화, 저장된 비밀번호를 다른 서버로 옮기기, 이 설정 끄기는 항상 확인을 거칩니다.",
       "unavailable": "보관소를 사용할 수 없습니다.",
-      "failed": "보관소 작업이 실패했습니다."
+      "failed": "보관소 작업이 실패했습니다.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "제한 없음",
     "connectTimeoutLabel": "연결 시간 초과, 초",

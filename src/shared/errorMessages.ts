@@ -26,6 +26,7 @@ const ERROR_CODE_KEYS = {
   busy: 'errors.locationBusy',
   fileInUse: 'errors.fileBusy',
   vaultLocked: 'settings.security.unlockRequired',
+  vaultAuthFailed: 'settings.security.unlockRefused',
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',
   createUnsupported: 'errors.createUnsupported',

@@ -448,7 +448,8 @@
       "showConfirmations": "Zobrazovat bezpečnostní potvrzení",
       "showConfirmationsHint": "Vyžadovat potvrzení před zobrazením uloženého hesla, spuštěním spustitelného souboru nebo otevřením souboru programem, který ještě nebyl použit. Resetování trezoru, přesun uloženého hesla na jiný server a vypnutí této volby se potvrzují vždy.",
       "unavailable": "Trezor není k dispozici.",
-      "failed": "Operace s trezorem selhala."
+      "failed": "Operace s trezorem selhala.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Bez omezení",
     "connectTimeoutLabel": "Časový limit připojení, s",

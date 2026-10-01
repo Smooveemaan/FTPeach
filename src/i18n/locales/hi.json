@@ -440,7 +440,8 @@
       "showConfirmations": "सुरक्षा पुष्टिकरण दिखाएँ",
       "showConfirmationsHint": "सहेजा गया पासवर्ड दिखाने, निष्पादन योग्य फ़ाइल चलाने या पहले कभी इस्तेमाल न किए गए प्रोग्राम से फ़ाइल खोलने से पहले पुष्टि माँगें। वॉल्ट रीसेट करने, सहेजे गए पासवर्ड को दूसरे सर्वर पर ले जाने और इस विकल्प को बंद करने की पुष्टि हमेशा ली जाती है।",
       "unavailable": "वॉल्ट उपलब्ध नहीं है।",
-      "failed": "वॉल्ट की कार्रवाई विफल रही।"
+      "failed": "वॉल्ट की कार्रवाई विफल रही।",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "कोई सीमा नहीं",
     "connectTimeoutLabel": "कनेक्शन टाइमआउट, सेकंड",

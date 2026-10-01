@@ -282,7 +282,7 @@ impl Store {
                 .await;
         }
         if !vault.is_unlocked().await {
-            anyhow::bail!("vault is locked");
+            return Err(crate::ipc::vault_locked());
         }
 
         let id = input
@@ -384,7 +384,7 @@ impl Store {
 
     pub async fn migrate_secrets_to_vault(&self, vault: &Vault) -> Result<usize> {
         if !vault.is_configured() || !vault.is_unlocked().await {
-            anyhow::bail!("vault is locked");
+            return Err(crate::ipc::vault_locked());
         }
         self.migrate_proxy_password_to_vault(vault).await?;
         let migration: JsonMap = self
@@ -490,7 +490,7 @@ impl Store {
     /// migration always leaves the original vault intact.
     pub async fn migrate_secrets_from_vault(&self, vault: &Vault) -> Result<usize> {
         if !vault.is_configured() || !vault.is_unlocked().await {
-            anyhow::bail!("vault is locked");
+            return Err(crate::ipc::vault_locked());
         }
         self.migrate_proxy_password_from_vault(vault).await?;
         let path = self.sites_file();
@@ -568,7 +568,7 @@ impl Store {
         tokio::spawn(async move {
             let _transaction = store.vault_updates.lock().await;
             if !vault.is_configured() || !vault.is_unlocked().await {
-                anyhow::bail!("vault is locked");
+                return Err(crate::ipc::vault_locked());
             }
             let settings = store.get_settings().await;
             let sites = store.snapshot_sites_for_import().await?;

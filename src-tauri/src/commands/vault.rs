@@ -1,4 +1,4 @@
-use crate::ipc::{CommandError, CommandResult};
+use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::security::auto_lock::AutoLock;
 use crate::security::sensitive_string::SensitiveString;
 use crate::security::vault::{Vault, VaultStatus};
@@ -25,9 +25,10 @@ fn window_handle(_: &tauri::WebviewWindow) -> anyhow::Result<isize> {
 /// never says whether the password was wrong, whether the limiter turned the
 /// request away, or how long the wait is.
 fn authentication_failed() -> CommandError {
-    CommandError::from_anyhow(&anyhow::anyhow!(
-        "Vault authentication failed or temporarily unavailable"
-    ))
+    CommandError::new(
+        ErrorCode::VaultAuthFailed,
+        "Vault authentication failed or temporarily unavailable",
+    )
 }
 
 /// Everything a vault authentication needs, so the flow can be exercised
@@ -384,7 +385,10 @@ mod attempt_tests {
         let fixture = Fixture::new().await;
         let wrong = fixture.unlock("wrong").await;
         let throttled = fixture.unlock("correct horse battery staple").await;
-        assert_eq!(wrong.unwrap_err(), throttled.unwrap_err());
+        let wrong = wrong.unwrap_err();
+        assert_eq!(wrong, throttled.unwrap_err());
+        // A code of its own, so the renderer can say it in the user's language.
+        assert_eq!(wrong.code, crate::ipc::ErrorCode::VaultAuthFailed);
     }
 
     /// A request the limiter refuses never reaches the password, so it must

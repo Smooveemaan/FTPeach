@@ -444,7 +444,8 @@
       "showConfirmations": "Mostrar confirmações de segurança",
       "showConfirmationsHint": "Pedir confirmação antes de mostrar uma senha salva, executar um arquivo executável ou abrir um arquivo com um programa que ainda não foi usado. Redefinir o cofre, mover uma senha salva para outro servidor e desativar esta opção são sempre confirmados.",
       "unavailable": "O cofre não está disponível.",
-      "failed": "A operação no cofre falhou."
+      "failed": "A operação no cofre falhou.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Sem limite",
     "connectTimeoutLabel": "Tempo limite de conexão, s",

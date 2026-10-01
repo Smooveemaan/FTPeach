@@ -32,6 +32,7 @@ export const COMMAND_ERROR_CODES = [
   'busy',
   'fileInUse',
   'vaultLocked',
+  'vaultAuthFailed',
   'alreadyExists',
   'replaceUnsupported',
   'createUnsupported',

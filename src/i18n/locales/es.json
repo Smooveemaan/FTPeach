@@ -444,7 +444,8 @@
       "showConfirmations": "Mostrar confirmaciones de seguridad",
       "showConfirmationsHint": "Pedir confirmación antes de mostrar una contraseña guardada, ejecutar un archivo ejecutable o abrir un archivo con un programa que no se haya usado antes. Restablecer la bóveda, trasladar una contraseña guardada a otro servidor y desactivar esta opción se confirman siempre.",
       "unavailable": "La bóveda no está disponible.",
-      "failed": "La operación en la bóveda ha fallado."
+      "failed": "La operación en la bóveda ha fallado.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Sin límite",
     "connectTimeoutLabel": "Tiempo de espera de conexión, s",

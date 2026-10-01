@@ -355,7 +355,7 @@ impl Vault {
 
     async fn get_key(&self, key: &[u8]) -> Result<Option<Zeroizing<Vec<u8>>>> {
         let state = self.state.lock().await;
-        let unlocked = state.as_ref().context("vault is locked")?;
+        let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
         let client = unlocked
             .stronghold
             .get_client(CLIENT)
@@ -369,7 +369,7 @@ impl Vault {
 
     pub async fn apply_secret_updates(&self, updates: &[SecretUpdate<'_>]) -> Result<()> {
         let state = self.state.lock().await;
-        let unlocked = state.as_ref().context("vault is locked")?;
+        let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
         let client = unlocked
             .stronghold
             .get_client(CLIENT)
@@ -537,7 +537,7 @@ impl Vault {
 
     pub async fn enable_system_unlock(&self, hwnd: isize) -> Result<()> {
         let state = self.state.lock().await;
-        let unlocked = state.as_ref().context("vault is locked")?;
+        let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
         let mut metadata = self.read_metadata().await?;
         if let Some(existing) = metadata.system_unlock.take() {
             if existing.scheme == "windows-hello-v1" {
@@ -624,7 +624,7 @@ impl Vault {
 
     pub async fn remove_unlocked(&self) -> Result<()> {
         if !self.is_unlocked().await {
-            bail!("vault is locked");
+            return Err(crate::ipc::vault_locked());
         }
         self.lock().await;
         self.remove_files().await

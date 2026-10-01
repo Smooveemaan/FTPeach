@@ -440,7 +440,8 @@
       "showConfirmations": "Beveiligingsbevestigingen tonen",
       "showConfirmationsHint": "Vraag bevestiging voordat een opgeslagen wachtwoord wordt getoond, een uitvoerbaar bestand wordt uitgevoerd of een bestand wordt geopend met een programma dat nog niet is gebruikt. Het resetten van de kluis, het verplaatsen van een opgeslagen wachtwoord naar een andere server en het uitschakelen van deze optie worden altijd bevestigd.",
       "unavailable": "De kluis is niet beschikbaar.",
-      "failed": "De bewerking op de kluis is mislukt."
+      "failed": "De bewerking op de kluis is mislukt.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "Geen limiet",
     "connectTimeoutLabel": "Time-out verbinding, s",

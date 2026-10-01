@@ -440,7 +440,8 @@
       "showConfirmations": "Show security confirmations",
       "showConfirmationsHint": "Ask before revealing a saved password, running an executable file, or opening a file with a program you haven't used before. Resetting the vault, moving a saved password to another server, and turning this off are always confirmed.",
       "unavailable": "The vault is unavailable.",
-      "failed": "The vault operation failed."
+      "failed": "The vault operation failed.",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "No limit",
     "connectTimeoutLabel": "Connection timeout, sec",

@@ -440,7 +440,8 @@
       "showConfirmations": "顯示安全確認",
       "showConfirmationsHint": "在顯示已儲存的密碼、執行可執行檔，或使用尚未用過的程式開啟檔案之前先行確認。重設密碼庫、將已儲存的密碼移至其他伺服器，以及關閉此選項一律需要確認。",
       "unavailable": "無法使用密碼庫。",
-      "failed": "密碼庫操作失敗。"
+      "failed": "密碼庫操作失敗。",
+      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
     },
     "unlimitedPlaceholder": "無限制",
     "connectTimeoutLabel": "連線逾時，秒",

@@ -375,6 +375,31 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await waitFor(() => expect(input.value).toBe(''));
   });
 
+  test('system protection says why it cannot be chosen while the vault is locked', async () => {
+    const user = userEvent.setup();
+    const status = { configured: true, locked: true };
+    vi.mocked(window.api.vault.status).mockImplementation(async () => ({
+      ...status,
+      systemUnlockAvailable: false,
+      systemUnlockEnabled: false,
+    }));
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    const option = await screen.findByRole<HTMLInputElement>('radio', {
+      name: /settings\.security\.systemMode/,
+    });
+    await waitFor(() => expect(option.disabled).toBe(true));
+    expect(option.closest('label')?.getAttribute('data-tooltip')).toBe(
+      'settings.security.unlockRequiredHint',
+    );
+
+    // Unlocked, it can be chosen and has nothing to explain.
+    status.locked = false;
+    act(() => locks.announce('user'));
+    await waitFor(() => expect(option.disabled).toBe(false));
+    expect(option.closest('label')?.hasAttribute('data-tooltip')).toBe(false);
+  });
+
   test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {
     const user = userEvent.setup();
     const { props } = renderDialog({ transferSpeedLimitKBps: 512 });

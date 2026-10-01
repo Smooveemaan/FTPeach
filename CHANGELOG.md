@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   longer asks to confirm moving its password.
 - Locking the vault from Settings now hides a password shown with the eye button.
 - The vault no longer locks up to half a minute before the auto-lock time is up.
+- "System protection" in Settings says why it cannot be chosen while the vault is locked.
 
 ## [0.3.0] - 2026-09-27
 

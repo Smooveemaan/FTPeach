@@ -52,19 +52,23 @@ export default function SecuritySettings({
     selectSystemProtection,
     toggleSystemUnlock,
   } = vault;
+  // Switching to system protection moves the secrets out of the vault, which
+  // has to be open for that.
+  const systemModeLocked = !!vaultStatus?.configured && vaultStatus.locked;
 
   return (
     <section className="settings-security settings-option-list">
       <div className="settings-option-group">
         <div className="security-mode-list">
-          <label className="security-mode-option">
+          <label
+            className="security-mode-option"
+            data-tooltip={systemModeLocked ? t('settings.security.unlockRequiredHint') : undefined}
+          >
             <input
               type="radio"
               name="password-protection-mode"
               checked={vaultStatus?.configured === false && !strongholdSetupArmed}
-              disabled={
-                !vaultStatus || vaultBusy || (!!vaultStatus.configured && vaultStatus.locked)
-              }
+              disabled={!vaultStatus || vaultBusy || systemModeLocked}
               onChange={() => {
                 if (vaultStatus?.configured && !vaultStatus.locked) {
                   reportRejection(selectSystemProtection());

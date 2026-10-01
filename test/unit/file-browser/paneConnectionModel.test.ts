@@ -61,7 +61,7 @@ test('pane connection model disambiguates duplicate labels by tab and pane side'
     model.connectionLabels.get('connection-2'),
     'paneSide.labelWithTab:Shared server|2|paneSide.top',
   );
-  assert.equal(model.soleConnectedRemotePane, first.panes.b);
+  assert.deepEqual(model.connectedRemotePanes, [first.panes.b]);
 });
 
 test('pane connection model ignores disconnected panes with stale connection ids', () => {

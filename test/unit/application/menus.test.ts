@@ -36,7 +36,7 @@ function harness() {
       canReopenClosedTab: false,
       freeConnectTargetPaneId: 'b',
       startPaneConnect: record('connect'),
-      soleConnectedRemotePane: null,
+      connectedRemotePanes: [],
       disconnectPane: async (id) => record('disconnect')(id),
       syncBrowsing: false,
       syncEligible: false,
@@ -171,7 +171,7 @@ test('availability tracks modal, selection, connected panes and the last visible
   assert.equal(h.item('menu.view.leftPane').disabled, true);
   h.ctx.workspace.windowNarrow = true;
   assert.equal(h.item('menu.view.stackedPanes').disabled, true);
-  h.ctx.browser.soleConnectedRemotePane = h.ctx.browser.panes.b;
+  h.ctx.browser.connectedRemotePanes = [h.ctx.browser.panes.b];
   h.item('menu.file.disconnect').onClick!();
   assert.deepEqual(h.calls, [['disconnect', 'b']]);
 });
@@ -209,5 +209,29 @@ test('with a server on each side, either side is saved as a bookmark once it is 
   assert.deepEqual(h.calls, [
     ['save', 'a'],
     ['save', 'a'],
+  ]);
+});
+
+test('with a server on each side, File offers to disconnect either one', () => {
+  const h = harness();
+  const { a, b } = h.ctx.browser.panes;
+  h.ctx.browser.connectedRemotePanes = [a, b];
+  const labels = buildMenus(h.ctx)[0]!.items.map((entry) => entry.label);
+  assert.ok(!labels.includes(i18n.t('menu.file.disconnect')));
+  const disconnect = (side: 'left' | 'right') => {
+    const label = i18n.t('paneSide.labelWithSide', {
+      base: i18n.t('menu.file.disconnect'),
+      side: i18n.t(`paneSide.${side}`),
+    });
+    const found = buildMenus(h.ctx)[0]!.items.find((entry) => entry.label === label);
+    assert.ok(found, label);
+    assert.ok(!found.disabled);
+    return found;
+  };
+  disconnect('right').onClick!();
+  disconnect('left').onClick!();
+  assert.deepEqual(h.calls, [
+    ['disconnect', 'b'],
+    ['disconnect', 'a'],
   ]);
 });

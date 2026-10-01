@@ -135,7 +135,6 @@ export interface PanesModel {
   ) => Promise<void>;
   canCopyBetween: (source: PaneState, target: PaneState) => boolean;
   aggregateStatus: PaneStatus;
-  soleConnectedRemotePane: PaneState | null;
   connectedRemotePanes: PaneState[];
   freeConnectTargetPaneId: PaneId | null;
   openConnectionIds: Set<string>;
@@ -400,7 +399,6 @@ export function usePanes({
   const {
     aggregateStatus,
     connectedRemotePanes,
-    soleConnectedRemotePane,
     freeConnectTargetPaneId,
     openConnectionIds,
     connectionLabels,
@@ -500,7 +498,6 @@ export function usePanes({
     confirmOverwriteIfNeeded,
     canCopyBetween,
     aggregateStatus,
-    soleConnectedRemotePane,
     connectedRemotePanes,
     freeConnectTargetPaneId,
     openConnectionIds,

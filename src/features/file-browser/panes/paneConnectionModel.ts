@@ -17,7 +17,6 @@ interface PaneConnectionModelOptions {
 export interface PaneConnectionModel {
   aggregateStatus: PaneStatus;
   connectedRemotePanes: PaneState[];
-  soleConnectedRemotePane: PaneState | null;
   freeConnectTargetPaneId: PaneId | null;
   openConnectionIds: Set<string>;
   connectionLabels: Map<string, string>;
@@ -44,8 +43,6 @@ export function buildPaneConnectionModel({
         : 'idle';
 
   const connectedRemotePanes = remotePanes.filter((pane) => pane.status === 'connected');
-  const soleConnectedRemotePane =
-    connectedRemotePanes.length > 1 ? null : (connectedRemotePanes[0] ?? null);
   const freeConnectTargetPaneId: PaneId | null = !isPaneBusy(panes.b)
     ? 'b'
     : !isPaneBusy(panes.a)
@@ -94,7 +91,6 @@ export function buildPaneConnectionModel({
   return {
     aggregateStatus,
     connectedRemotePanes,
-    soleConnectedRemotePane,
     freeConnectTargetPaneId,
     openConnectionIds,
     connectionLabels,

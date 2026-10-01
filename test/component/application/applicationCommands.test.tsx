@@ -88,7 +88,7 @@ function mount(h: Harness) {
     browser: {
       ...h.browser,
       canReopenClosedTab: false,
-      soleConnectedRemotePane: null,
+      connectedRemotePanes: [],
       disconnectPane: async () => {},
       syncBrowsing: false,
       syncEligible: false,

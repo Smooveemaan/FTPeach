@@ -46,7 +46,7 @@ export interface ApplicationCommandContext {
     | 'canReopenClosedTab'
     | 'freeConnectTargetPaneId'
     | 'startPaneConnect'
-    | 'soleConnectedRemotePane'
+    | 'connectedRemotePanes'
     | 'disconnectPane'
     | 'syncBrowsing'
     | 'syncEligible'
@@ -160,6 +160,28 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
     onClick: () => commands.saveSide(id),
   }));
 
+  // One server is "the" connection; with one on each side the menu names both.
+  const connected = browser.connectedRemotePanes;
+  const disconnectItems =
+    connected.length > 1
+      ? connected.map((pane) => ({
+          label: t('paneSide.labelWithSide', {
+            base: t('menu.file.disconnect'),
+            side: paneSideWord(pane.id),
+          }),
+          onClick: () => void browser.disconnectPane(pane.id),
+        }))
+      : [
+          {
+            label: t('menu.file.disconnect'),
+            disabled: connected.length === 0,
+            onClick: () => {
+              const pane = connected[0];
+              if (pane) void browser.disconnectPane(pane.id);
+            },
+          },
+        ];
+
   return [
     {
       label: t('menu.file.title'),
@@ -189,14 +211,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
           disabled: !browser.freeConnectTargetPaneId,
           onClick: commands.newConnection,
         },
-        {
-          label: t('menu.file.disconnect'),
-          disabled: !browser.soleConnectedRemotePane,
-          onClick: () => {
-            if (browser.soleConnectedRemotePane)
-              void browser.disconnectPane(browser.soleConnectedRemotePane.id);
-          },
-        },
+        ...disconnectItems,
         { separator: true },
         {
           label: t('menu.file.exportSettings'),

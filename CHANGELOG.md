@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Concurrent transfers in Settings can be set up to 128 instead of 10.
 - The Move to dialog is as wide as its folder names need, instead of always the same width.
+- With a server in both panes, the File menu offers Disconnect for each side, instead of one
+  Disconnect that could not be chosen.
 
 ### Fixed
 

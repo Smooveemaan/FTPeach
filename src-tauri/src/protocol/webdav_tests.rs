@@ -248,6 +248,36 @@ async fn an_unencrypted_server_without_a_login_still_connects() {
     assert!(!carried_authorization(&seen).await);
 }
 
+/// The warning is about a certificate nobody checks, so an address without
+/// TLS gets none, and one connect says it once although it builds two clients.
+#[tokio::test]
+async fn an_unchecked_certificate_is_warned_about_once_and_only_over_tls() {
+    let (url, _seen) = recording_http_server(COLLECTION_REPLY).await;
+    let warnings_for = |url: String| async move {
+        let lines = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let sink = lines.clone();
+        let mut backend = WebDavBackend::new();
+        backend.set_log_sink(Some(Arc::new(move |text, _kind| {
+            if let LogText::Raw(line) = text {
+                sink.lock().unwrap().push(line);
+            }
+        })));
+        let config = webdav_config(&url, serde_json::json!({ "allowInvalidCert": true }));
+        let _ = backend.connect(&config).await;
+        let lines = lines.lock().unwrap();
+        lines
+            .iter()
+            .filter(|line| line.contains("certificate verification is disabled"))
+            .count()
+    };
+    assert_eq!(warnings_for(url.clone()).await, 0);
+    // The handshake with a plain HTTP server fails; the warning comes first.
+    assert_eq!(
+        warnings_for(url.replacen("http://", "https://", 1)).await,
+        1
+    );
+}
+
 /// A password in the address is a second, silent place to keep one: it would
 /// be logged with the address, exported with the bookmark, and sent before
 /// anything decided it was safe to send.

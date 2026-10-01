@@ -654,13 +654,10 @@ impl ProtocolBackend for WebDavBackend {
             }
             if allow_invalid_cert {
                 // Explicit per-connection opt-in, guarded by connection authorization;
-                // the warning below remains visible. Review this exception with that policy.
+                // the connect warns about it once TLS is in use. Review this exception
+                // with that policy.
                 // nosemgrep: rust-disabled-tls-verification
                 builder = builder.danger_accept_invalid_certs(true);
-                self.log_kind(
-                "WARNING: TLS certificate verification is disabled for this connection (allowInvalidCert) — the server's identity is not being checked.".to_string(),
-                LogKind::Error,
-            );
             } else if let Some(path) = &ca_cert_path {
                 let pem_bytes = std::fs::read(path)
                     .with_context(|| format!("failed to read CA certificate \"{path}\""))?;
@@ -677,6 +674,16 @@ impl ProtocolBackend for WebDavBackend {
         };
         let client = build_client(true)?;
         let upload_client = build_client(false)?;
+        // Said once for the connection, and only where a certificate exists to check.
+        let warn_unchecked_certificate = || {
+            self.log_kind(
+                "WARNING: TLS certificate verification is disabled for this connection (allowInvalidCert) — the server's identity is not being checked.".to_string(),
+                LogKind::Error,
+            );
+        };
+        if allow_invalid_cert && !is_cleartext(&webdav_url) {
+            warn_unchecked_certificate();
+        }
 
         self.log_kind("PROPFIND / (Depth: 0)", LogKind::Command);
         let mut webdav_url = webdav_url;
@@ -716,6 +723,9 @@ impl ProtocolBackend for WebDavBackend {
                     self.log_kind(format!("Redirected to {address}"), LogKind::Status);
                     webdav_url = address;
                     upgraded = true;
+                    if allow_invalid_cert {
+                        warn_unchecked_certificate();
+                    }
                     // The address is HTTPS now, so the credentials can go.
                     send_credentials = true;
                     continue;

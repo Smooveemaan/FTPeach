@@ -1,7 +1,7 @@
 //! Enforces the vault's auto-lock from the backend.
 //!
 //! `security::auto_lock` decides; this drives it. A timer in the Tokio
-//! runtime asks the policy every few seconds, so the guarantee no longer
+//! runtime asks the policy every second, so the guarantee no longer
 //! depends on the renderer's event loop, its timers, or its ability to
 //! report anything at all. The renderer only tells the backend when it has
 //! seen the user, which can make the vault stay open longer but never

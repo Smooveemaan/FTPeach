@@ -86,7 +86,7 @@ const cases: Case[] = [
     call: () => api.sites.revealSecret('s1', 'password'),
     success: [
       { wire: resolve('pw'), seen: { ok: true, value: 'pw' } },
-      // B7: nothing stored is a success with nothing in it.
+      // Nothing stored is a success with nothing in it.
       { wire: resolve(null), seen: { ok: true } },
     ],
   },

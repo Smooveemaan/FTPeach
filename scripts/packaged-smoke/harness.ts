@@ -79,8 +79,24 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
     );
   } finally {
     if (child.exitCode === null) child.kill();
-    // WebView2 can hold its profile for a moment after the process is gone.
-    rmSync(isolatedRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+    await removeWhenReleased(isolatedRoot);
+  }
+}
+
+/**
+ * WebView2 holds its profile for a moment after the process is gone. The
+ * waiting is done here because `rmSync` does not retry the EPERM that gives,
+ * whatever `maxRetries` says.
+ */
+async function removeWhenReleased(directory: string) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      rmSync(directory, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (attempt === 50) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
   }
 }
 

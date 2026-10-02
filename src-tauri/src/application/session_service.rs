@@ -29,7 +29,9 @@ pub(crate) struct HostKeyMismatch {
 
 pub(crate) struct ConnectFailure {
     pub error: CommandError,
-    pub host_key_mismatch: Option<HostKeyMismatch>,
+    /// Boxed: it is rare, and inline it makes every connect result as large
+    /// as its largest failure.
+    pub host_key_mismatch: Option<Box<HostKeyMismatch>>,
 }
 
 impl ConnectFailure {
@@ -177,11 +179,13 @@ pub(crate) async fn connect(
             host_key_mismatch: error
                 .chain()
                 .find_map(|cause| cause.downcast_ref::<HostKeyMismatchError>())
-                .map(|mismatch| HostKeyMismatch {
-                    host: mismatch.host.clone(),
-                    port: mismatch.port,
-                    expected: mismatch.expected.clone(),
-                    actual: mismatch.actual.clone(),
+                .map(|mismatch| {
+                    Box::new(HostKeyMismatch {
+                        host: mismatch.host.clone(),
+                        port: mismatch.port,
+                        expected: mismatch.expected.clone(),
+                        actual: mismatch.actual.clone(),
+                    })
                 }),
             error: CommandError::from_anyhow(&error),
         });

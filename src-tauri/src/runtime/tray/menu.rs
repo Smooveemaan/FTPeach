@@ -201,14 +201,12 @@ pub fn command_for(model: &TrayModel, id: &str) -> Option<MenuCommand> {
                 index_after(id, SPEED_PREFIX).and_then(|index| model.speed_presets.get(index))
             {
                 TrayAction::SetSpeedLimit { kbps: preset.kbps }
-            } else if let Some(site) =
-                index_after(id, RECENT_PREFIX).and_then(|index| model.recent_sites.get(index))
-            {
+            } else {
+                let site = index_after(id, RECENT_PREFIX)
+                    .and_then(|index| model.recent_sites.get(index))?;
                 TrayAction::Connect {
                     site_id: site.id.clone(),
                 }
-            } else {
-                return None;
             }
         }
     };

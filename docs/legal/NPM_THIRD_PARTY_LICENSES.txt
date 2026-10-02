@@ -2,7 +2,7 @@ FTPeach npm runtime dependency licenses
 ========================================
 
 Generated from package-lock.json. Do not edit manually.
-package-lock.json SHA-256: 0186def1cef01e0c475f63739c273709663c281e7b6042de43a9b874c191f15a
+package-lock.json SHA-256: 57f5e16837e6623559fe5154f8cae4a85d6aa9994c40170a968f66d1c0626aa1
 
 @babel/runtime 7.29.7
 =====================
@@ -155,12 +155,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-@tauri-apps/api 2.11.1
+@tauri-apps/api 2.12.1
 ======================
 Declared license: Apache-2.0 OR MIT
 Source: git+https://github.com/tauri-apps/tauri.git
 
-LICENSE_APACHE-2.0
+LICENSE-APACHE-2.0
 ------------------
 Apache License
                            Version 2.0, January 2004
@@ -339,7 +339,7 @@ Apache License
 
    END OF TERMS AND CONDITIONS
 
-LICENSE_MIT
+LICENSE-MIT
 -----------
 MIT License
 
@@ -362,6 +362,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+LICENSE.spdx
+------------
+SPDXVersion: SPDX-2.1
+DataLicense: CC0-1.0
+PackageName: tauri
+DataFormat: SPDXRef-1
+PackageSupplier: Organization: The Tauri Programme in the Commons Conservancy
+PackageHomePage: https://tauri.app
+PackageLicenseDeclared: Apache-2.0
+PackageLicenseDeclared: MIT
+PackageCopyrightText: 2019-2025, The Tauri Programme in the Commons Conservancy
+PackageSummary: <text>Tauri is a rust project that enables developers to make secure
+and small desktop applications using a web frontend.
+                </text>
+PackageComment: <text>The package includes the following libraries; see
+Relationship information.
+                </text>
+Created: 2019-05-20T09:00:00Z
+PackageDownloadLocation: git://github.com/tauri-apps/tauri
+PackageDownloadLocation: git+https://github.com/tauri-apps/tauri.git
+PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
+Creator: Person: Daniel Thompson-Yvetot
 
 
 html-parse-stringify 4.0.1
@@ -405,36 +428,6 @@ LICENSE
 The MIT License (MIT)
 
 Copyright (c) 2011-present i18next
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-memoize-one 5.2.1
-=================
-Declared license: MIT
-Source: https://github.com/alexreardon/memoize-one.git
-
-LICENSE
--------
-MIT License
-
-Copyright (c) 2019 Alexander Reardon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -545,8 +538,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-window 1.8.11
-===================
+react-window 2.3.3
+==================
 Declared license: MIT
 Source: https://github.com/bvaughn/react-window.git
 

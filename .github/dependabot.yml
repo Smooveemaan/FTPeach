@@ -11,6 +11,11 @@ updates:
     ignore:
       - dependency-name: '*'
         update-types: [version-update:semver-major]
+      # `tauri build` refuses an npm package whose minor differs from the
+      # `tauri` crate's, and the two arrive in separate pull requests. Raise
+      # them together by hand.
+      - dependency-name: '@tauri-apps/api'
+        update-types: [version-update:semver-minor]
   - package-ecosystem: cargo
     directory: /src-tauri
     schedule:
@@ -22,6 +27,10 @@ updates:
     ignore:
       - dependency-name: '*'
         update-types: [version-update:semver-major]
+      # A new minor goes with the npm package above, and it can bring a wry
+      # that the patched copy in src-tauri/vendor/ no longer replaces.
+      - dependency-name: 'tauri'
+        update-types: [version-update:semver-minor]
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -192,24 +192,33 @@ impl CommandError {
                 _ => None,
             };
         }
-        if let Some(russh_sftp::client::error::Error::Status(status)) =
-            source.downcast_ref::<russh_sftp::client::error::Error>()
-        {
-            use russh_sftp::protocol::StatusCode;
-            return match status.status_code {
-                StatusCode::NoSuchFile => Some(ErrorCode::NotFound),
-                StatusCode::PermissionDenied => Some(ErrorCode::PermissionDenied),
-                StatusCode::ConnectionLost | StatusCode::NoConnection => {
-                    Some(ErrorCode::ConnectionLost)
+        use russh_sftp::client::error::Error as SftpError;
+        match source.downcast_ref::<SftpError>() {
+            Some(SftpError::Status(status)) => {
+                use russh_sftp::protocol::StatusCode;
+                match status.status_code {
+                    StatusCode::NoSuchFile => Some(ErrorCode::NotFound),
+                    StatusCode::PermissionDenied => Some(ErrorCode::PermissionDenied),
+                    StatusCode::ConnectionLost | StatusCode::NoConnection => {
+                        Some(ErrorCode::ConnectionLost)
+                    }
+                    // SFTP v3 has no code for a full disk; the message says so.
+                    _ if Self::names_full_storage(&status.error_message.to_ascii_lowercase()) => {
+                        Some(ErrorCode::StorageFull)
+                    }
+                    _ => None,
                 }
-                // SFTP v3 has no code for a full disk; the message says so.
-                _ if Self::names_full_storage(&status.error_message.to_ascii_lowercase()) => {
-                    Some(ErrorCode::StorageFull)
-                }
-                _ => None,
-            };
+            }
+            // No server reply at all: the connection ended under a request
+            // that was waiting for one, or before the request could be sent.
+            // The library has no variant for either, only these two texts.
+            Some(SftpError::UnexpectedBehavior(text))
+                if matches!(text.as_str(), "sender dropped" | "session closed") =>
+            {
+                Some(ErrorCode::ConnectionLost)
+            }
+            _ => None,
         }
-        None
     }
 
     fn names_full_storage(lower: &str) -> bool {
@@ -496,6 +505,18 @@ mod tests {
             sftp(StatusCode::Failure, "No space left on device"),
             ErrorCode::StorageFull
         );
+
+        // A link that drops under an SFTP request, as a transfer reports it.
+        let unexpected = |text: &str| {
+            let error = anyhow::Error::from(russh_sftp::client::error::Error::UnexpectedBehavior(
+                text.to_owned(),
+            ))
+            .context("reading from server");
+            CommandError::from_anyhow(&error).code
+        };
+        assert_eq!(unexpected("sender dropped"), ErrorCode::ConnectionLost);
+        assert_eq!(unexpected("session closed"), ErrorCode::ConnectionLost);
+        assert_eq!(unexpected("no file"), ErrorCode::Internal);
     }
 
     /// What the user is told about the operating system's own failures. The

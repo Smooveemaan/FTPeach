@@ -1058,9 +1058,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                 .unwrap();
             let mut data: Option<std::net::SocketAddr> = None;
             while let Ok(Some(line)) = lines.next_line().await {
-                let (command, argument) = line
-                    .split_once(' ')
-                    .map_or((line.as_str(), ""), |split| split);
+                let (command, argument) = line.split_once(' ').unwrap_or((line.as_str(), ""));
                 match command.to_ascii_uppercase().as_str() {
                     "PORT" => {
                         let numbers: Vec<u16> = argument

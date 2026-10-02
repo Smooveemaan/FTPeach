@@ -1,24 +1,8 @@
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import type { ListImperativeAPI } from 'react-window';
 
-export interface VirtualListHandle {
-  scrollToItem: (index: number, align?: 'auto' | 'smart' | 'center' | 'start' | 'end') => void;
-}
-interface PaneListExtra {
-  side?: string;
-  filesAriaLabel?: string;
-  onPointerDown?: HTMLAttributes<HTMLDivElement>['onPointerDown'];
-  onDragOver?: HTMLAttributes<HTMLDivElement>['onDragOver'];
-  onDragLeave?: HTMLAttributes<HTMLDivElement>['onDragLeave'];
-  onDrop?: HTMLAttributes<HTMLDivElement>['onDrop'];
-  onContextMenu?: HTMLAttributes<HTMLDivElement>['onContextMenu'];
-}
-interface PaneListOuterProps {
-  className?: string;
-  style?: CSSProperties;
-  onScroll?: HTMLAttributes<HTMLDivElement>['onScroll'];
-  children?: ReactNode;
-}
+export type VirtualListHandle = ListImperativeAPI;
 
 export interface VirtualizedFileListModel {
   viewportRef: React.RefObject<HTMLDivElement | null>;
@@ -26,10 +10,6 @@ export interface VirtualizedFileListModel {
   listRef: React.RefObject<VirtualListHandle | null>;
   viewportSize: { width: number; height: number };
   rowHeight: number;
-  outerElementType: React.ForwardRefExoticComponent<
-    PaneListOuterProps & React.RefAttributes<HTMLDivElement>
-  >;
-  extraRef: React.MutableRefObject<PaneListExtra>;
 }
 
 export default function useVirtualizedFileList(isVirtualized: boolean): VirtualizedFileListModel {
@@ -68,42 +48,5 @@ export default function useVirtualizedFileList(isVirtualized: boolean): Virtuali
     return () => ro.disconnect();
   }, [isVirtualized]);
 
-  const paneListExtraRef = useRef<PaneListExtra>({});
-  const [PaneListOuter] = useState(() =>
-    React.forwardRef<HTMLDivElement, PaneListOuterProps>(function PaneListOuter(
-      { className, style, onScroll, children },
-      ref,
-    ) {
-      const extra = paneListExtraRef.current;
-      return React.createElement(
-        'div',
-        {
-          ref,
-          className,
-          style,
-          onScroll,
-          'data-side': extra.side,
-          role: 'listbox',
-          'aria-multiselectable': 'true',
-          'aria-label': extra.filesAriaLabel,
-          onPointerDown: extra.onPointerDown,
-          onDragOver: extra.onDragOver,
-          onDragLeave: extra.onDragLeave,
-          onDrop: extra.onDrop,
-          onContextMenu: extra.onContextMenu,
-        },
-        children,
-      );
-    }),
-  );
-
-  return {
-    viewportRef,
-    rowProbeRef,
-    listRef,
-    viewportSize,
-    rowHeight,
-    outerElementType: PaneListOuter,
-    extraRef: paneListExtraRef,
-  };
+  return { viewportRef, rowProbeRef, listRef, viewportSize, rowHeight };
 }

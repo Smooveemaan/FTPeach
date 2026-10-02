@@ -234,8 +234,8 @@ function FilePane({
   const { openFiles } = contextMenu;
 
   const isVirtualized = shouldVirtualize(sorted.length);
-  const virtualization = useVirtualizedFileList(isVirtualized);
-  const { viewportRef, rowProbeRef, listRef, viewportSize, rowHeight } = virtualization;
+  const { viewportRef, rowProbeRef, listRef, viewportSize, rowHeight } =
+    useVirtualizedFileList(isVirtualized);
   const {
     activeIndexRef,
     marqueeElRef,
@@ -321,13 +321,6 @@ function FilePane({
     toggleActive,
     handleTypeahead,
   });
-
-  virtualization.extraRef.current = {
-    side,
-    filesAriaLabel: t('filePane.filesAriaLabel'),
-    onPointerDown: startMarquee,
-    onContextMenu: (e) => contextMenu.openFiles(e, null),
-  };
 
   const renderRow = (entry: FileEntry, index: number, style?: CSSProperties) => {
     const renameEditor =
@@ -488,7 +481,6 @@ function FilePane({
         <FileList
           virtualized={isVirtualized}
           listRef={listRef}
-          outerElementType={virtualization.outerElementType}
           viewportRef={viewportRef}
           viewportSize={viewportSize}
           rowHeight={rowHeight}

@@ -6,7 +6,7 @@ authors = ["Smooveemaan"]
 license = "Apache-2.0"
 repository = "https://github.com/Smooveemaan/ftpeach"
 edition = "2024"
-rust-version = "1.89"
+rust-version = "1.99"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -45,19 +45,19 @@ all = { level = "deny", priority = -1 }
 redundant_clone = "deny"
 
 [build-dependencies]
-tauri-build = { version = "2.6.3", features = [] }
+tauri-build = { version = "2.7.1", features = [] }
 
 [dependencies]
 serde_json = "1.0.151"
 serde = { version = "1.0.229", features = ["derive"] }
 log = "0.4.34"
-tauri = { version = "2.11.5", features = ["tray-icon"] }
-tauri-plugin-log = "2.9.1"
-tauri-plugin-updater = "2.11.0"
-tauri-plugin-dialog = "2.7.3"
-tauri-plugin-notification = "2.4.0"
-tauri-plugin-opener = "2.5.5"
-tauri-plugin-single-instance = "2.4.4"
+tauri = { version = "2.12.1", features = ["tray-icon"] }
+tauri-plugin-log = "2.10.0"
+tauri-plugin-updater = "2.13.1"
+tauri-plugin-dialog = "2.8.1"
+tauri-plugin-notification = "2.5.1"
+tauri-plugin-opener = "2.7.0"
+tauri-plugin-single-instance = "2.5.2"
 raw-window-handle = "0.6.2"
 base64 = "0.23.1"
 tokio = { version = "1.53.1", features = ["fs", "sync", "rt", "rt-multi-thread", "macros", "net", "io-util", "time"] }
@@ -73,7 +73,7 @@ async-trait = "0.1"
 tokio-util = "0.7"
 regex = "1"
 russh = { version = "0.63.1", default-features = false, features = ["ring", "rsa", "flate2"] }
-russh-sftp = "2.4.0"
+russh-sftp = "3.0.1"
 sha2 = "0.11"
 reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "http2", "stream", "socks"] }
 quick-xml = "0.42.0"
@@ -101,21 +101,21 @@ zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2
 # runs from target/debug or target/release and leaves Windows attributing the
 # notification to PowerShell (see runtime/notification.rs). The plugin stays
 # for the platforms where its path is the right one.
-tauri-winrt-notification = "0.7.3"
+tauri-winrt-notification = "0.8.1"
 windows-registry = "0.6.1"
-windows = { version = "0.61.3", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Power", "Win32_System_RemoteDesktop", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging", "Win32_System_WinRT", "Security_Credentials_UI"] }
-windows-core = "0.61"
-windows-future = "0.2.1"
-webview2-com = "0.38.2"
+windows = { version = "0.62.2", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Power", "Win32_System_RemoteDesktop", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging", "Win32_System_WinRT", "Security_Credentials_UI"] }
+windows-core = "0.62"
+windows-future = "0.3.2"
+webview2-com = "0.39.1"
 
 [dev-dependencies]
 rand = "0.10.2"
 # The mock runtime, for the vault-lock event (runtime/vault_auto_lock.rs).
-tauri = { version = "2.11.5", features = ["test"] }
+tauri = { version = "2.12.1", features = ["test"] }
 
 [target.'cfg(windows)'.dev-dependencies]
 # Caps a child test process's memory (protocol/ftp_tests.rs).
-windows = { version = "0.61.3", features = ["Win32_System_JobObjects"] }
+windows = { version = "0.62.2", features = ["Win32_System_JobObjects"] }
 
 [profile.dev]
 debug = "line-tables-only"
@@ -154,5 +154,5 @@ opt-level = 3
 [patch.crates-io]
 # wry reports every allowed drop effect back to the source of an OS drop, so
 # Explorer could treat a copy into FTPeach as a move. See
-# vendor/wry/FTPEACH-PATCH.md.
-wry = { path = "vendor/wry" }
+# vendor/wry-0.57.0/FTPEACH-PATCH.md.
+wry = { path = "vendor/wry-0.57.0" }

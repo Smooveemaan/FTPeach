@@ -40,7 +40,7 @@ fn permissions_string(raw9: &str) -> Option<String> {
         return None;
     }
     let mut permissions = String::with_capacity(9);
-    for triplet in raw9.as_bytes().chunks_exact(3) {
+    for triplet in raw9.as_bytes().as_chunks::<3>().0 {
         permissions.push(if triplet[0] == b'r' { 'r' } else { '-' });
         permissions.push(if triplet[1] == b'w' { 'w' } else { '-' });
         permissions.push(if matches!(triplet[2], b'x' | b's' | b't') {

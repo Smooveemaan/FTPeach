@@ -16,18 +16,18 @@ and patched ranges are review signals, not proof of constant-time RSA signing.
 
 | Advisory | Kind | Owner | Added | Review by | Current status | Compensating control |
 | --- | --- | --- | --- | --- | --- | --- |
-| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.1; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
+| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
 | RUSTSEC-2024-0436 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `paste` 1.0.15 through Stronghold; no patched release | The proc macro does not process runtime input. Track replacement through `iota_stronghold` updates. |
-| RUSTSEC-2025-0075 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `unic-char-range` 0.9.0 through Tauri `urlpattern` | No direct runtime API use; renderer CSP and text rendering remain in force. Track removal through Tauri updates. |
-| RUSTSEC-2025-0080 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `unic-common` 0.9.0 through Tauri `urlpattern` | No direct runtime API use; renderer CSP and text rendering remain in force. Track removal through Tauri updates. |
-| RUSTSEC-2025-0081 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `unic-char-property` 0.9.0 through Tauri `urlpattern` | No direct runtime API use; renderer CSP and text rendering remain in force. Track removal through Tauri updates. |
-| RUSTSEC-2025-0098 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `unic-ucd-version` 0.9.0 through Tauri `urlpattern` | No direct runtime API use; renderer CSP and text rendering remain in force. Track removal through Tauri updates. |
-| RUSTSEC-2025-0100 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `unic-ucd-ident` 0.9.0 through Tauri `urlpattern` | No direct runtime API use; renderer CSP and text rendering remain in force. Track removal through Tauri updates. |
 | RUSTSEC-2025-0141 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `bincode` 1.3.3 through Stronghold; upstream considers 1.3.3 complete | Vault snapshots are application-owned, authenticated, excluded from import, and corruption fails closed. Track replacement through `iota_stronghold` updates. |
 
 The dependency review found no compatible direct upgrade that removes these
-transitive packages as of 2026-08-31. Remove an ignore as soon as a compatible
+transitive packages as of 2026-10-02. Remove an ignore as soon as a compatible
 fix is available; extending a deadline requires a fresh security review.
+
+The five `rust-unic` exceptions (RUSTSEC-2025-0075, -0080, -0081, -0098 and
+-0100) were removed on 2026-10-02: Tauri 2.12 uses `urlpattern` 0.6.0, which no
+longer depends on those crates, and `cargo deny` reported each advisory as not
+encountered.
 
 ## Reachability review, 2026-09-07
 

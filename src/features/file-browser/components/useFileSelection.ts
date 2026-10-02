@@ -309,7 +309,8 @@ export default function useFileSelection({
     const entry = sorted[index];
     if (!entry) return;
     if (isVirtualized) {
-      listRef.current?.scrollToItem(index, 'smart');
+      // The least scrolling that shows the row, as scrollIntoView does below.
+      listRef.current?.scrollToRow({ index, align: 'auto' });
       return;
     }
     const listEl = document.querySelector<HTMLElement>(`.pane-list[data-side="${side}"]`);

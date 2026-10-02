@@ -298,12 +298,10 @@ fn active_address(command: &str, local: IpAddr) -> Option<String> {
             [_, _, _, _, high, low] if high < 256 && low < 256 => high << 8 | low,
             _ => return None,
         }
-    } else if let Some(argument) = command.strip_prefix("EPRT ") {
-        let argument = argument.trim_end();
+    } else {
+        let argument = command.strip_prefix("EPRT ")?.trim_end();
         let delimiter = argument.chars().next()?;
         argument.split(delimiter).nth(3)?.parse().ok()?
-    } else {
-        return None;
     };
     Some(match local {
         IpAddr::V4(ip) => {

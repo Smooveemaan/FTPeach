@@ -176,7 +176,7 @@ async fn archive_corrupt(path: &Path, raw: &[u8]) -> Result<()> {
             copies.push((entry.metadata().await?.modified()?, entry.path()));
         }
     }
-    copies.sort_by(|a, b| b.0.cmp(&a.0));
+    copies.sort_by_key(|copy| std::cmp::Reverse(copy.0));
     for (_, stale) in copies.into_iter().skip(CORRUPT_COPIES_KEPT) {
         tokio::fs::remove_file(stale).await?;
     }

@@ -1,13 +1,13 @@
-import { FixedSizeList } from 'react-window';
-import type { ListChildComponentProps, ReactElementType } from 'react-window';
-import type { CSSProperties, HTMLAttributes, MutableRefObject, ReactNode, RefObject } from 'react';
+import { List } from 'react-window';
+import type { RowComponentProps } from 'react-window';
+import type { CSSProperties, HTMLAttributes, ReactNode, RefObject } from 'react';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { Translate } from './fileListModel.ts';
 import type { VirtualListHandle } from './useVirtualizedFileList.ts';
 
 type RenderRow = (entry: FileEntry, index: number, style?: CSSProperties) => ReactNode;
 
-interface VirtualRowData {
+interface VirtualRowProps {
   entries: readonly FileEntry[];
   renderRow: RenderRow;
 }
@@ -18,8 +18,7 @@ interface PaneListProps extends HTMLAttributes<HTMLDivElement> {
 
 interface FileListProps {
   virtualized: boolean;
-  listRef: MutableRefObject<VirtualListHandle | null>;
-  outerElementType: ReactElementType;
+  listRef: RefObject<VirtualListHandle | null>;
   viewportRef: RefObject<HTMLDivElement | null>;
   viewportSize: { width: number; height: number };
   rowHeight: number;
@@ -36,15 +35,17 @@ interface FileListProps {
   t: Translate;
 }
 
-function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowData>) {
-  const entry = data.entries[index];
-  return entry ? data.renderRow(entry, index, style) : null;
+function VirtualRow({ index, style, entries, renderRow }: RowComponentProps<VirtualRowProps>) {
+  const entry = entries[index];
+  return entry ? <>{renderRow(entry, index, style)}</> : null;
 }
+
+/** Module-level: the list calls it during render and must get the same function each time. */
+const rowKey = (index: number, { entries }: VirtualRowProps) => entries[index]?.name ?? index;
 
 export default function FileList({
   virtualized,
   listRef,
-  outerElementType,
   viewportRef,
   viewportSize,
   rowHeight,
@@ -62,21 +63,17 @@ export default function FileList({
   if (virtualized) {
     return (
       <div className="pane-list-viewport" ref={viewportRef}>
-        <FixedSizeList<VirtualRowData>
-          ref={(instance) => {
-            listRef.current = instance;
-          }}
-          outerElementType={outerElementType}
+        <List<VirtualRowProps>
+          {...listProps}
+          listRef={listRef}
           className={className}
-          height={viewportSize.height}
-          width={viewportSize.width}
-          itemCount={entries.length}
-          itemSize={rowHeight}
-          itemData={{ entries, renderRow }}
-          itemKey={(index, data) => data.entries[index]?.name ?? index}
-        >
-          {VirtualRow}
-        </FixedSizeList>
+          style={{ height: viewportSize.height, width: viewportSize.width }}
+          rowComponent={VirtualRow}
+          rowCount={entries.length}
+          rowHeight={rowHeight}
+          rowProps={{ entries, renderRow }}
+          rowKey={rowKey}
+        />
       </div>
     );
   }

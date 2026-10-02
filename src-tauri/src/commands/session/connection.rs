@@ -159,12 +159,12 @@ mod tests {
         session_service::ConnectFailure {
             error: CommandError::new(crate::ipc::ErrorCode::HostKeyMismatch, "changed"),
             host_key_mismatch: host_key.map(|(expected, actual)| {
-                session_service::HostKeyMismatch {
+                Box::new(session_service::HostKeyMismatch {
                     host: "h".into(),
                     port: 22,
                     expected: expected.map(str::to_owned),
                     actual: actual.into(),
-                }
+                })
             }),
         }
     }

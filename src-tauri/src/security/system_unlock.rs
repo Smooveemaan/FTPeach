@@ -144,7 +144,7 @@ mod platform {
         provider().is_ok()
             && winrt_initialized()
             && UserConsentVerifier::CheckAvailabilityAsync()
-                .and_then(|operation| operation.get())
+                .and_then(|operation| operation.join())
                 .is_ok_and(|state| state == UserConsentVerifierAvailability::Available)
     }
 
@@ -167,7 +167,7 @@ mod platform {
         }
         .context("starting Windows Hello verification")?;
         match operation
-            .get()
+            .join()
             .context("waiting for Windows Hello verification")?
         {
             UserConsentVerificationResult::Verified => Ok(()),

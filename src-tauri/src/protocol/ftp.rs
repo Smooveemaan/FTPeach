@@ -438,7 +438,7 @@ impl rustls::client::ClientSessionStore for SessionTickets {
         // The cache keeps at most eight and drops the oldest.
         let _ = self
             .held
-            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
+            .try_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
                 Some((held + 1).min(8))
             });
         self.inserted.notify_waiters();
@@ -451,7 +451,7 @@ impl rustls::client::ClientSessionStore for SessionTickets {
         if ticket.is_some() {
             let _ = self
                 .held
-                .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
+                .try_update(Ordering::SeqCst, Ordering::SeqCst, |held| {
                     held.checked_sub(1)
                 });
         } else {

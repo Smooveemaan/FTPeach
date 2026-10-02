@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - The tray icon is the peach on its own, without the square background behind it.
+- The FTPeach icon is sharper at small sizes, and its background now reaches the edges.
 
 ### Fixed
 

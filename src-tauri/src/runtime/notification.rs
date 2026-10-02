@@ -36,9 +36,6 @@ pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 /// the difference between a crisp icon and a smeared one. Windows draws this
 /// at roughly 16-24 px; handed a single 256 px bitmap it shrinks the image
 /// itself, and that reduction breaks the peach's thin outline into speckles.
-/// The tray reads the very same `.ico` — on Windows it is what Tauri embeds as
-/// the default window icon — and picks the purpose-drawn entry for the size it
-/// needs, which is why the tray stayed sharp while the toast did not.
 pub const ICON_RESOURCE: &str = "icons/app-icon.ico";
 
 /// Teaches Windows who [`APP_USER_MODEL_ID`] is, so the toast carries

@@ -55,7 +55,7 @@ fn the_toast_icon_ships_as_a_bundle_resource() {
 /// `.ico` carries an entry drawn for it — pointed at a single large bitmap
 /// instead, Windows shrinks it and the outline breaks up.
 #[test]
-fn the_toast_icon_is_the_app_icon_the_tray_uses() {
+fn the_toast_icon_is_the_app_icon() {
     let config = config();
     let source = config["bundle"]["resources"]
         .as_object()

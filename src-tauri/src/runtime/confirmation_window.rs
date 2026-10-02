@@ -124,12 +124,17 @@ pub(crate) fn create(
     if let Some(root) = crate::local_fs::portable::root() {
         builder = builder.data_directory(crate::local_fs::portable::webview_dir(root));
     }
+    let main = app.get_webview_window("main");
+    // Owned by the main window, so it gets no taskbar button of its own.
+    if let Some(main) = &main {
+        builder = builder.parent(main)?;
+    }
     let window = builder.build()?;
     enable_native_rounding(&window);
     // Moved over the main window before its page loads, so it has taken that
     // monitor's scale by the time it sizes itself to its content.
-    if let Some(main) = app.get_webview_window("main") {
-        center_over_parent(&main, &window);
+    if let Some(main) = &main {
+        center_over_parent(main, &window);
     }
     Ok(window)
 }

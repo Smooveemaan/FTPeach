@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- A security confirmation no longer adds a second FTPeach button to the taskbar.
+
 ## [0.4.0] - 2026-10-02
 
 ### Added

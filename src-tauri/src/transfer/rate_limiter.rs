@@ -9,6 +9,15 @@ struct Inner {
 
 pub struct RateLimiter(Mutex<Inner>);
 
+tokio::task_local! { static PREPAID: (); }
+
+/// Runs the receiving half of a copy between two servers. The half that reads
+/// the source has already charged the speed limit for every byte it hands
+/// over, so nothing `work` sends is charged a second time.
+pub async fn prepaid<F: std::future::Future>(work: F) -> F::Output {
+    PREPAID.scope((), work).await
+}
+
 impl RateLimiter {
     pub fn new(bytes_per_sec: u64) -> Self {
         let rate = bytes_per_sec as f64;
@@ -49,7 +58,7 @@ impl RateLimiter {
     }
 
     pub async fn acquire(&self, bytes: u64) {
-        if bytes == 0 {
+        if bytes == 0 || PREPAID.try_with(|_| ()).is_ok() {
             return;
         }
         let mut remaining = bytes as f64;

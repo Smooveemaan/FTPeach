@@ -238,7 +238,8 @@ A transfer runs on a worker from the connection's `TransferPool`, never on the
 browse connection. Workers are separate authenticated backends. A pool grows
 with demand, up to the site's connection limit minus the browse connection; a
 process-wide limiter applies the global concurrency setting, and a
-process-wide rate limiter applies the speed limit. Queued tasks can be
+process-wide rate limiter applies the speed limit, charging a byte copied
+between two servers once, as it leaves the source. Queued tasks can be
 cancelled; running ones get a `CancellationToken`, and I/O that cannot be
 interrupted is stopped by dropping its worker, which the pool replaces.
 

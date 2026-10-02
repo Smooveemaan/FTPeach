@@ -76,9 +76,10 @@ pub async fn relay_upload(
     total_rx: oneshot::Receiver<Option<u64>>,
 ) -> BackendResult<()> {
     let mut reader = reader;
-    target_backend
-        .upload_from_reader(&mut reader, target_path)
-        .await?;
+    crate::transfer::rate_limiter::prepaid(
+        target_backend.upload_from_reader(&mut reader, target_path),
+    )
+    .await?;
     drop(reader);
 
     let total = total_rx.await.map_err(|_| {
@@ -194,6 +195,11 @@ mod tests {
         ) -> BackendResult<()> {
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf).await?;
+            // A real backend charges the speed limit for what it sends. At a
+            // byte a second, charging the relayed bytes again never finishes.
+            crate::transfer::rate_limiter::RateLimiter::new(1)
+                .acquire(buf.len() as u64)
+                .await;
             if let Some(limit) = self.truncate_upload_at {
                 buf.truncate(limit);
             }
@@ -220,10 +226,14 @@ mod tests {
         let (total_tx, total_rx) = oneshot::channel();
         let progress: ProgressSink = Arc::new(|_| {});
 
-        let (dl, ul) = tokio::join!(
-            relay_download(&mut source, "/src", writer, total_tx, progress),
-            relay_upload(&mut target, "/dst", reader, total_rx),
-        );
+        let (dl, ul) = tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            tokio::join!(
+                relay_download(&mut source, "/src", writer, total_tx, progress),
+                relay_upload(&mut target, "/dst", reader, total_rx),
+            )
+        })
+        .await
+        .expect("the target half must not be charged the speed limit again");
         dl.expect("download half should succeed");
         ul.expect("upload half should succeed");
         assert_eq!(*target_data.lock().unwrap(), *source_data.lock().unwrap());

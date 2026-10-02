@@ -2,7 +2,7 @@ FTPeach npm runtime dependency licenses
 ========================================
 
 Generated from package-lock.json. Do not edit manually.
-package-lock.json SHA-256: 3756e205a104230f715e2f7e662b61865ae0340409f78ce26752f4f379b86483
+package-lock.json SHA-256: 0186def1cef01e0c475f63739c273709663c281e7b6042de43a9b874c191f15a
 
 @babel/runtime 7.29.7
 =====================
@@ -515,7 +515,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-i18next 17.0.14
+react-i18next 17.0.15
 =====================
 Declared license: MIT
 Source: https://github.com/i18next/react-i18next.git

@@ -520,15 +520,25 @@ fn differences(a: &Value, b: &Value, at: &str, out: &mut Vec<String>) {
 /// 0.3.0's configuration had a `concurrency` field, which nothing set: the
 /// pool was demand-sized unless a request or a saved site named one. The
 /// field is gone, so an unset one is not a difference. One that was set is.
-fn without_unset_concurrency(value: Value) -> Value {
+///
+/// An outcome prints a configuration with `Debug`, and the encoding library
+/// 0.3.0 was built with printed an encoding as `Encoding { Shift_JIS }`. The
+/// one in use names the field, so the recording is read in today's spelling.
+fn in_todays_terms(value: Value) -> Value {
     match value {
-        Value::String(text) => Value::String(text.replace("concurrency: None, ", "")),
-        Value::Array(items) => {
-            Value::Array(items.into_iter().map(without_unset_concurrency).collect())
+        Value::String(text) => {
+            let text = text.replace("concurrency: None, ", "");
+            let encoding = regex::Regex::new(r"Encoding \{ ([^ {}]+) \}").unwrap();
+            Value::String(
+                encoding
+                    .replace_all(&text, r#"Encoding { name: "$1", .. }"#)
+                    .into_owned(),
+            )
         }
+        Value::Array(items) => Value::Array(items.into_iter().map(in_todays_terms).collect()),
         Value::Object(map) => Value::Object(
             map.into_iter()
-                .map(|(key, value)| (key, without_unset_concurrency(value)))
+                .map(|(key, value)| (key, in_todays_terms(value)))
                 .collect(),
         ),
         other => other,
@@ -557,7 +567,7 @@ async fn saved_sites_and_connections_match_their_goldens() {
 
     let mut from_0_3_0 = Vec::new();
     differences(
-        &without_unset_concurrency(read_fixture("v0.3.0.json")),
+        &in_todays_terms(read_fixture("v0.3.0.json")),
         &actual,
         "",
         &mut from_0_3_0,

@@ -70,7 +70,7 @@
     },
     "encoding-and-limit": {
       "active-mode-saved": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -81,7 +81,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "http-proxy-no-password": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Http, host: \"::1\", port: 3128, username: None, password: None }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -92,7 +92,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "none": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -103,7 +103,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "proxy-without-host": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -114,7 +114,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "socks5-proxy": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: Some(ProxyConfig { kind: Socks5, host: \"proxy.example.test\", port: 1080, username: Some(\"pat\"), password: Some([REDACTED]) }) }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -125,7 +125,7 @@
         "server": "[\"ftp\",\"x.example.test\",21,\"anonymous\"]"
       },
       "strict-off": {
-        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { Shift_JIS }) })",
+        "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(3), timeout_ms: 20000, proxy: None }, host: \"x.example.test\", port: 21, user: \"anonymous\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: false, encoding: Some(Encoding { name: \"Shift_JIS\", .. }) })",
         "logLabel": "ftp://x.example.test:21",
         "protocol": "ftp",
         "secrets": {
@@ -1724,7 +1724,7 @@
         },
         "ftp-1": {
           "outcome": {
-            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(4), timeout_ms: 15000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: Some(Encoding { windows-1251 }) })",
+            "config": "Ftp(FtpConfig { common: CommonConfig { max_connections: Some(4), timeout_ms: 15000, proxy: None }, host: \"ftp.example.test\", port: 21, user: \"alice\", password: [REDACTED], secure: false, allow_invalid_cert: false, ca_cert_path: None, active_mode: true, encoding: Some(Encoding { name: \"windows-1251\", .. }) })",
             "logLabel": "ftp://ftp.example.test:21",
             "protocol": "ftp",
             "secrets": {

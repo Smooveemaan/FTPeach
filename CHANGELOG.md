@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Several files copied from one server to another wait their turn instead of failing with
   "Relay requires two available workers".
+- A folder, or a file dragged out to Explorer, reads Queued in Transfers while it waits for
+  its turn, instead of looking as if it were already being transferred.
 - Copying from one server to another runs at the full speed limit instead of half of it.
 - A changed Concurrent transfers limit applies at once again, not only after a restart.
 - A security confirmation no longer adds a second FTPeach button to the taskbar.

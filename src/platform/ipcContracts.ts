@@ -75,7 +75,11 @@ export interface CommandResult {
 export interface TransferProgress {
   id: string;
   connectionId: string;
-  status: 'progress' | 'done' | 'error';
+  /**
+   * 'queued' while the transfer waits for a connection or a free slot,
+   * 'progress' while it is at work; either may come without numbers.
+   */
+  status: 'queued' | 'progress' | 'done' | 'error';
   bytes?: number;
   total?: number;
   error?: string;
@@ -363,7 +367,7 @@ export function isTransferProgress(value: unknown): value is TransferProgress {
     isRecord(value) &&
     typeof value.id === 'string' &&
     typeof value.connectionId === 'string' &&
-    ['progress', 'done', 'error'].includes(String(value.status)) &&
+    ['queued', 'progress', 'done', 'error'].includes(String(value.status)) &&
     (value.bytes == null || (typeof value.bytes === 'number' && Number.isFinite(value.bytes))) &&
     (value.total == null || (typeof value.total === 'number' && Number.isFinite(value.total))) &&
     (value.landed == null || (typeof value.landed === 'number' && Number.isFinite(value.landed)))

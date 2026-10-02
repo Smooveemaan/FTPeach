@@ -1422,3 +1422,87 @@ async fn stop_preserves_in_place_changes_and_reports_cleanup_details() {
     assert_eq!(std::fs::read(root.join("source/b")).unwrap(), b"original");
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[tokio::test]
+async fn a_walk_says_queued_while_its_next_step_waits_for_a_transfer_connection() {
+    // Reports are flushed in batches, so each step the walk reports has to
+    // last: the gate holds the step that follows the wait until it is seen.
+    let gate = Arc::new(ListGate::default());
+    let server = Arc::new(Server {
+        list_gate: Some(gate.clone()),
+        ..Server::default()
+    });
+    let (sessions, connection_id) = serve(&server).await;
+    let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(root.join("source")).unwrap();
+    std::fs::write(root.join("source/a"), b"small").unwrap();
+    let intent = Intent {
+        id: uuid::Uuid::new_v4().to_string(),
+        source: Endpoint::Local {
+            path: root.join("source").to_string_lossy().into_owned(),
+        },
+        target: Endpoint::Remote {
+            path: "/dst/waits".into(),
+            connection_id: connection_id.clone(),
+        },
+        moving: false,
+        overwrite: false,
+        skip_existing: false,
+        resume_from: None,
+    };
+    // Another transfer holds the server's only transfer connection.
+    let pool = sessions.pool_for(&connection_id).await.unwrap();
+    let (holding, release) = (
+        Arc::new(tokio::sync::Notify::new()),
+        Arc::new(tokio::sync::Notify::new()),
+    );
+    let (entered, held) = (holding.clone(), release.clone());
+    let task: crate::transfer::transfer_pool::TaskFn = Box::new(move |_| {
+        Box::pin(async move {
+            entered.notify_one();
+            held.notified().await;
+            Ok(())
+        })
+    });
+    let busy = tokio::spawn(async move { pool.run("busy".into(), task).await });
+    holding.notified().await;
+
+    let (waiting, working) = (
+        Arc::new(tokio::sync::Notify::new()),
+        Arc::new(tokio::sync::Notify::new()),
+    );
+    let (told_waiting, told_working, walk_id) =
+        (waiting.clone(), working.clone(), intent.id.clone());
+    let was_queued = AtomicBool::new(false);
+    let progress = ProgressEmitter::for_tests(move |payload| {
+        if payload.id != walk_id {
+            return;
+        }
+        if payload.status == "queued" {
+            was_queued.store(true, Ordering::SeqCst);
+            told_waiting.notify_one();
+        } else if payload.status == "progress" && was_queued.load(Ordering::SeqCst) {
+            told_working.notify_one();
+        }
+    });
+    let told = async {
+        tokio::time::timeout(Duration::from_secs(5), waiting.notified())
+            .await
+            .expect("a walk whose next step waits says it is queued");
+        release.notify_one();
+        tokio::time::timeout(Duration::from_secs(5), working.notified())
+            .await
+            .expect("the row goes back to work once its turn comes");
+        loop {
+            gate.open.notify_one();
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    };
+    let report = tokio::select! {
+        report = run(&sessions, Some(&progress), intent) => report,
+        () = told => unreachable!(),
+    };
+    busy.await.unwrap().unwrap();
+    assert!(report.ok, "{:?}", report.errors);
+    std::fs::remove_dir_all(root).unwrap();
+}

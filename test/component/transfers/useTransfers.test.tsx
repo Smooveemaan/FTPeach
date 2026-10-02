@@ -566,6 +566,41 @@ test('a running folder walk lists its target again as it puts entries in place',
   });
 });
 
+test('a folder walk row says queued while its next file waits, keeping its numbers', async () => {
+  await withHarness(async ({ getApi, getSnapshot, mockApi, emitProgress }) => {
+    const walk = createDeferred<RecursiveReport>();
+    let attemptId = '';
+    mockApi.transfer.recursive = (intent) => {
+      attemptId = intent.id;
+      return walk.promise;
+    };
+    let running!: Promise<unknown>;
+    await act(async () => {
+      running = getApi().copyEntries(localFolderMove());
+      await Promise.resolve();
+    });
+    const shown = () => {
+      const row = Object.values(getSnapshot()).find((item) => item.attemptId === attemptId)!;
+      return [row.status, row.bytes, row.total];
+    };
+    const report = (payload: Pick<TransferProgress, 'status' | 'bytes' | 'total'>) =>
+      act(() => {
+        emitProgress({ id: attemptId, connectionId: '', ...payload });
+        flushTransferUpdates();
+      });
+    report({ status: 'progress', bytes: 4, total: 10 });
+    assert.deepEqual(shown(), ['progress', 4, 10]);
+    report({ status: 'queued' });
+    assert.deepEqual(shown(), ['queued', 4, 10]);
+    report({ status: 'progress' });
+    assert.deepEqual(shown(), ['progress', 4, 10]);
+    await act(async () => {
+      walk.resolve({ ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] });
+      await running;
+    });
+  });
+});
+
 test('stopping a paused folder walk takes back what it kept, reading cancelling meanwhile', async () => {
   await withHarness(async (context) => {
     const { getApi, getSnapshot, mockApi } = context;

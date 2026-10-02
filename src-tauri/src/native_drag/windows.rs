@@ -234,6 +234,22 @@ impl TransferReporter {
         );
     }
 
+    /// Says what a row is doing, leaving its numbers alone: "queued" while
+    /// its download waits for a connection or a free transfer slot,
+    /// "progress" once it has them.
+    fn status(&self, id: &str, status: &'static str) {
+        self.progress.send(TransferProgressPayload {
+            id: id.to_string(),
+            connection_id: self.connection_id.clone(),
+            status,
+            bytes: None,
+            total: None,
+            error: None,
+            error_code: None,
+            landed: None,
+        });
+    }
+
     fn progress(&self, id: &str, bytes: u64, total: Option<u64>) {
         self.progress.send(TransferProgressPayload {
             id: id.to_string(),
@@ -708,6 +724,13 @@ impl VirtualDataObject {
         if folder.is_none() {
             self.reporter.started(&task_id, file, file.size);
         }
+        // The download waits its turn in the pool like any other; the row
+        // says so until it starts.
+        let row_id = folder
+            .as_ref()
+            .map_or_else(|| task_id.clone(), |folder| folder.id.clone());
+        self.reporter.status(&row_id, "queued");
+        let reporter = self.reporter.clone();
         let run_id = task_id.clone();
         tauri::async_runtime::spawn(async move {
             let mut writer = writer;
@@ -717,7 +740,7 @@ impl VirtualDataObject {
             // `writer` (owned by `task`) is gone by the time this resolves,
             // so the reader's EOF always precedes — never races — this send.
             let result = pool
-                .run(run_id, task)
+                .run_notified(run_id, task, move || reporter.status(&row_id, "progress"))
                 .await
                 .map_err(|err| CommandError::from_anyhow(&err));
             let _ = outcome_tx.send(result);

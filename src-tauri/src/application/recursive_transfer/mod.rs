@@ -202,6 +202,32 @@ async fn wind_down(
     }
 }
 
+/// Tells the walk's row what the walk is doing when called: "queued" while its
+/// next step waits for a transfer connection or a free slot, "progress" once
+/// it is at work. The row's numbers stay as they are.
+fn status_notice(
+    progress: Option<&ProgressEmitter>,
+    intent: &Intent,
+    status: &'static str,
+) -> impl FnOnce() + Send + 'static {
+    let progress = progress.cloned();
+    let (id, connection_id) = (intent.id.clone(), intent.target.connection().to_owned());
+    move || {
+        if let Some(progress) = progress {
+            progress.send(TransferProgressPayload {
+                id,
+                connection_id,
+                status,
+                bytes: None,
+                total: None,
+                error: None,
+                error_code: None,
+                landed: None,
+            });
+        }
+    }
+}
+
 async fn run_inner(
     sessions: &Sessions,
     progress: Option<&ProgressEmitter>,
@@ -297,7 +323,7 @@ async fn run_inner(
                     tokio::time::timeout(Duration::from_secs(60), async {
                         if overwrite { backend.rename(&source, &target).await } else { backend.rename_no_replace(&source, &target).await }
                     }).await?
-                }))).await?;
+                })), status_notice(progress, &intent, "progress")).await?;
                 report.completed = 1;
                 return Ok(());
             }
@@ -309,6 +335,8 @@ async fn run_inner(
         // which takes the source away, needs it to itself.
         let source_access = if intent.moving { Access::Write } else { Access::Read };
         leases.push(reserve(sessions, &intent.source, source_access).await?);
+        // The walk has its turn: the row stops saying it is queued.
+        status_notice(progress, &intent, "progress")();
         let mut manifest = scan(sessions, &intent.source, &token).await?;
         let mut source_directories = HashMap::new();
         if intent.moving {
@@ -341,7 +369,9 @@ async fn run_inner(
         let target_key = |relative: &str| if matches!(intent.target, Endpoint::Local { .. }) { relative.to_lowercase() } else { relative.to_owned() };
         for entry in manifest.entries.iter().filter(|e| e.directory) {
             check_cancel(&token)?;
-            let created = mkdir(sessions, &intent.target, &entry.relative, &token).await.with_context(|| intent.target.path(&entry.relative))?;
+            // A folder made on a server waits its turn like a file sent there.
+            if matches!(intent.target, Endpoint::Remote { .. }) { status_notice(progress, &intent, "queued")(); }
+            let created = mkdir(sessions, &intent.target, &entry.relative, &token, status_notice(progress, &intent, "progress")).await.with_context(|| intent.target.path(&entry.relative))?;
             wrote_target = true;
             if created {
                 journal.created_dirs.insert(entry.relative.clone());
@@ -429,6 +459,10 @@ async fn run_inner(
                     landed(&journal),
                 )
             });
+            // A file to or from a server waits for a connection and a free
+            // transfer slot. The row says so until the file's own notice that
+            // it has started, which the aggregate passes on.
+            if !matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. })) { status_notice(progress, &intent, "queued")(); }
             let copy = copy_file(sessions, progress, &intent, &entry.relative, intent.overwrite, resume, &token);
             tokio::pin!(copy);
             let result = tokio::select! {

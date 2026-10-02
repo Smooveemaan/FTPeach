@@ -11,7 +11,10 @@ const FLUSH_INTERVAL_MS: u64 = 100;
 pub struct TransferProgressPayload {
     pub id: String,
     pub connection_id: String,
-    pub status: &'static str, // "progress" | "done" | "error"
+    /// "queued" while the transfer waits for a connection or a free slot,
+    /// "progress" while it is at work, then "done" or "error". The first two
+    /// may come without numbers, which leaves the row's own as they stand.
+    pub status: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,16 +65,21 @@ impl AggregateIndex {
     /// one. Only in-progress payloads roll up: a child's terminal event says
     /// nothing about whether the parent is finished.
     fn rolled_up(&self, payload: &TransferProgressPayload) -> Option<TransferProgressPayload> {
-        // Nor does a child's notice that it has started, which carries no byte
-        // count: read as nothing done, it would drop the parent back to its base
-        // just as a resumed file is about to carry on from its partial.
-        let bytes = payload.bytes.filter(|_| payload.status == "progress")?;
+        if payload.status != "progress" {
+            return None;
+        }
         let aggregate = self.0.lock().unwrap().get(&payload.id).cloned()?;
         Some(TransferProgressPayload {
             id: aggregate.parent_id,
             connection_id: aggregate.connection_id,
             status: "progress",
-            bytes: Some(aggregate.base.saturating_add(bytes)),
+            // A child's notice that it has started carries no byte count. It
+            // puts the parent to work and leaves its count alone: read as
+            // nothing done, it would drop the parent back to its base just as
+            // a resumed file is about to carry on from its partial.
+            bytes: payload
+                .bytes
+                .map(|bytes| aggregate.base.saturating_add(bytes)),
             total: Some(aggregate.total),
             error: None,
             error_code: None,
@@ -159,7 +167,7 @@ impl ProgressEmitter {
     }
 
     fn enqueue(&self, mut payload: TransferProgressPayload) {
-        if payload.status != "progress" {
+        if !matches!(payload.status, "queued" | "progress") {
             let carried = self.pending.lock().unwrap().remove(&payload.id);
             if let Some(prev) = carried {
                 payload.bytes = payload.bytes.or(prev.bytes);
@@ -171,7 +179,11 @@ impl ProgressEmitter {
 
         let mut pending = self.pending.lock().unwrap();
         if let Some(latest) = pending.get_mut(&payload.id) {
-            // Keep the existing map key and timer; only replace the message.
+            // Keep the existing map key and timer; only replace the message. A
+            // notice without numbers keeps the ones still waiting to be sent.
+            payload.bytes = payload.bytes.or(latest.bytes);
+            payload.total = payload.total.or(latest.total);
+            payload.landed = payload.landed.or(latest.landed);
             *latest = payload;
             return;
         }
@@ -247,13 +259,33 @@ mod tests {
     }
 
     #[test]
-    fn a_childs_notice_that_it_started_leaves_the_parent_where_it_is() {
+    fn a_childs_notice_that_it_started_puts_the_parent_to_work_where_it_is() {
         let index = AggregateIndex::default();
         let _guard = index.track("walk:file".into(), aggregate());
-        assert!(
-            index
-                .rolled_up(&payload("walk:file", "progress", None))
-                .is_none()
+        let rolled_up = index
+            .rolled_up(&payload("walk:file", "progress", None))
+            .expect("the child is tracked");
+        assert_eq!(rolled_up.id, "walk");
+        assert_eq!(rolled_up.status, "progress");
+        assert_eq!(rolled_up.bytes, None);
+    }
+
+    #[tokio::test]
+    async fn a_notice_without_numbers_keeps_the_ones_waiting_to_be_sent() {
+        let sent = Arc::new(Mutex::new(Vec::new()));
+        let seen = sent.clone();
+        let emitter = ProgressEmitter::for_tests(move |payload| seen.lock().unwrap().push(payload));
+        emitter.send(payload("walk", "progress", Some(7)));
+        emitter.send(TransferProgressPayload {
+            total: None,
+            ..payload("walk", "queued", None)
+        });
+        tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS * 3)).await;
+        let sent = sent.lock().unwrap();
+        assert_eq!(sent.len(), 1, "one row, one batched report");
+        assert_eq!(
+            (sent[0].status, sent[0].bytes, sent[0].total),
+            ("queued", Some(7), Some(10))
         );
     }
 

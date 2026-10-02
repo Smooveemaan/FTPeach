@@ -128,18 +128,21 @@ pub(super) async fn reserve(
     }
 }
 
+/// Runs `task` on a transfer connection. It waits there for a connection and a
+/// free transfer slot; `on_dispatch` is called once it has both.
 pub(super) async fn remote_task(
     sessions: &Sessions,
     connection: &str,
     id: String,
     token: &CancellationToken,
     task: crate::transfer::transfer_pool::TaskFn,
+    on_dispatch: impl FnOnce() + Send + 'static,
 ) -> Result<()> {
     let pool = sessions
         .pool_for(connection)
         .await
         .context("Remote session unavailable")?;
-    let work = pool.run(id.clone(), task);
+    let work = pool.run_notified(id.clone(), task, on_dispatch);
     tokio::pin!(work);
     tokio::select! {
         result = &mut work => result,
@@ -148,12 +151,14 @@ pub(super) async fn remote_task(
 }
 
 /// Makes one target directory, answering whether this call created it rather
-/// than finding it already there.
+/// than finding it already there. On a server it waits its turn like a
+/// transfer, and `on_dispatch` is called when that turn comes.
 pub(super) async fn mkdir(
     sessions: &Sessions,
     target: &Endpoint,
     relative: &str,
     token: &CancellationToken,
+    on_dispatch: impl FnOnce() + Send + 'static,
 ) -> Result<bool> {
     let path = target.path(relative);
     match target {
@@ -203,6 +208,7 @@ pub(super) async fn mkdir(
                         Ok(())
                     })
                 }),
+                on_dispatch,
             )
             .await?;
             Ok(created.load(Ordering::SeqCst))

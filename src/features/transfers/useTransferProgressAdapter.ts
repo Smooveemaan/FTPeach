@@ -30,14 +30,16 @@ export function useTransferProgressAdapter(
       api.transfer.onProgress((payload) => {
         const matched = transferForAttempt(payload.id);
         if (!matched) return;
+        // Waiting for a turn and working are both reports from a transfer
+        // still under way; the row follows whichever the backend last said.
+        const live = payload.status === 'progress' || payload.status === 'queued';
         updateTransferRow(
           matched.id,
           (existing) => {
-            if (payload.status === 'progress' && SETTLED_STATUSES.has(existing.status))
-              return existing;
+            if (live && SETTLED_STATUSES.has(existing.status)) return existing;
             if (existing.attemptId && existing.status === 'cancelling') return existing;
             const status =
-              existing.attemptId && payload.status !== 'progress'
+              existing.attemptId && !live
                 ? existing.status
                 : (cancelIntentRef.current[existing.id] ?? payload.status);
             return {
@@ -57,7 +59,7 @@ export function useTransferProgressAdapter(
               errorCode: status === 'error' ? payload.errorCode : existing.errorCode,
             };
           },
-          payload.status === 'progress',
+          live,
         );
       }),
     [cancelIntentRef],

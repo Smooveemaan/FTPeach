@@ -255,6 +255,10 @@ interrupted is stopped by dropping its worker, which the pool replaces.
   deletes the source only after everything landed unchanged. Its public
   surface is `Endpoint`, `Intent`, `Report`, `run` and `cancel`.
 - **Progress** reaches the renderer as batched `transfer:progress` events.
+  Each carries what the transfer is doing: `queued` while it waits for a
+  transfer connection or a free slot, `progress` once it has both. A folder
+  walk and a file dragged out to Explorer report `queued` again whenever
+  their next file waits.
 
 In the renderer, `features/transfers/` keeps one row per transfer in the
 external store, owns retry, pause and cancel, and asks for overwrite

@@ -224,7 +224,9 @@ pub fn restore(app: &AppHandle) {
 
 fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
     let live = LiveMenu::build(app, model)?;
-    let mut builder = TrayIconBuilder::with_id(TRAY_ID)
+    TrayIconBuilder::with_id(TRAY_ID)
+        // The peach on its own; the app icon's square plate stays out of the tray.
+        .icon(tauri::include_image!("./icons/tray.png"))
         .menu(live.menu())
         .tooltip(live.tooltip())
         // Left click brings the window back; the menu opens on right click,
@@ -239,10 +241,7 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
             {
                 restore(tray.app_handle());
             }
-        });
-    if let Some(icon) = app.default_window_icon().cloned() {
-        builder = builder.icon(icon);
-    }
-    builder.build(app)?;
+        })
+        .build(app)?;
     Ok(live)
 }

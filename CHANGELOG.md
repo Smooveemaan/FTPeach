@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The tray icon is the peach on its own, without the square background behind it.
+
 ### Fixed
 
 - Several files copied from one server to another wait their turn instead of failing with

@@ -11,6 +11,9 @@ use tokio_util::sync::CancellationToken;
 
 const CANCELLED_CAP: usize = 256;
 const GROWTH_RETRY_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
+/// How long a waiting relay goes without looking again when no transfer ends:
+/// the delay before it notices Stop, a closed pool or a worker freed quietly.
+const PAIR_RECHECK: std::time::Duration = std::time::Duration::from_millis(100);
 
 pub type TaskId = String;
 pub type BoxBackend = Box<dyn ProtocolBackend + Send>;
@@ -89,6 +92,7 @@ pub struct TransferPool {
     size: PoolSize,
     state: Arc<StdMutex<PoolState>>,
     growing_gate: Arc<AsyncMutex<()>>,
+    pair_turn: Arc<AsyncMutex<()>>,
     growth_cancel: CancellationToken,
     growth_changed: Arc<Notify>,
     generation: Arc<AtomicU64>,
@@ -102,6 +106,7 @@ impl TransferPool {
             size,
             state: Arc::new(StdMutex::new(PoolState::default())),
             growing_gate: Arc::new(AsyncMutex::new(())),
+            pair_turn: Arc::new(AsyncMutex::new(())),
             growth_cancel: CancellationToken::new(),
             growth_changed: Arc::new(Notify::new()),
             generation: Arc::new(AtomicU64::new(0)),
@@ -127,16 +132,18 @@ impl TransferPool {
         self.ensure_workers_for(0).await;
     }
 
-    async fn ensure_workers_for(&self, minimum: usize) {
+    /// Grows the pool for its queued and running work plus `spare` idle
+    /// workers, which a relay needs before it can be admitted.
+    async fn ensure_workers_for(&self, spare: usize) {
         self.growth_changed.notify_one();
         // Login belongs to the pool, not to the transfer that requested it.
         // Dropping that transfer's waiter must not abandon a half-open login:
         // the server can keep counting it until authentication has finished.
         let pool = self.clone();
-        let _ = tokio::spawn(async move { pool.grow_workers(minimum).await }).await;
+        let _ = tokio::spawn(async move { pool.grow_workers(spare).await }).await;
     }
 
-    async fn grow_workers(&self, minimum: usize) {
+    async fn grow_workers(&self, spare: usize) {
         let _gate = self.growing_gate.lock().await;
         let mut connecting = tokio::task::JoinSet::new();
         let mut last_error = None;
@@ -146,7 +153,7 @@ impl TransferPool {
                     let state = self.state.lock().unwrap();
                     // Pending logins reserve capacity before any network work begins.
                     let total = state.workers.len() + state.active.len() + connecting.len();
-                    let needed = (state.queue.len() + state.active.len()).max(minimum);
+                    let needed = state.queue.len() + state.active.len() + spare;
                     let transfer_limit = self.limiter.limit();
                     let cooling_down = total > 0
                         && state
@@ -159,7 +166,7 @@ impl TransferPool {
                         && !cooling_down
                         && last_error.is_none()
                         && !self.size.satisfied(total, needed)
-                        && (transfer_limit == 0 || total < transfer_limit.max(minimum))
+                        && (transfer_limit == 0 || total < transfer_limit.max(spare))
                         && probe_available
                 };
                 if !need_more {
@@ -191,7 +198,7 @@ impl TransferPool {
                     }
                     // A usable connection must not wait for subsequent logins.
                     // Pair admission reserves both legs separately below.
-                    if minimum == 0 {
+                    if spare == 0 {
                         self.drain();
                     }
                 }
@@ -223,8 +230,44 @@ impl TransferPool {
         self.run_notified(task_id, task, || {}).await
     }
 
-    /// Admit both relay legs together, only when both can start immediately.
-    /// Busy or undersized pools return an error without holding either worker.
+    /// Whether a relay leg could take one of `need` idle workers now. A busy
+    /// pool says no; one that will never have them is an error.
+    fn leg_ready(&self, state: &PoolState, id: &str, need: usize) -> BackendResult<bool> {
+        if state.destroyed {
+            return Err(fail(ErrorCode::ConnectionLost, "Transfer pool is closed"));
+        }
+        if state.cancelled_ids.contains(id) {
+            return Err(fail(ErrorCode::Cancelled, "Canceled by user"));
+        }
+        if state.active.contains_key(id) || state.queue.iter().any(|q| q.task_id == id) {
+            return Err(fail(
+                ErrorCode::InvalidInput,
+                "Transfer attempt is already running",
+            ));
+        }
+        if !state.queue.is_empty() {
+            return Ok(false);
+        }
+        if state.workers.len() >= need {
+            return Ok(true);
+        }
+        // Busy workers come back. An idle pool that is at its size, or was
+        // just refused another login, will not get the missing one.
+        let refused = !state.workers.is_empty()
+            && state
+                .retry_growth_after
+                .is_some_and(|until| tokio::time::Instant::now() < until);
+        if state.active.is_empty() && (refused || self.size.satisfied(state.workers.len(), need)) {
+            return Err(fail(
+                ErrorCode::ResourceLimit,
+                "Copying within one server needs two connections to it, and only one is available",
+            ));
+        }
+        Ok(false)
+    }
+
+    /// Admit both relay legs together, as soon as both can start. A relay that
+    /// has to wait holds neither worker, so opposite relays cannot deadlock.
     pub async fn run_pair(
         &self,
         other: &Self,
@@ -232,83 +275,92 @@ impl TransferPool {
         target: (TaskId, TaskFn, Box<dyn FnOnce() + Send>),
     ) -> BackendResult<()> {
         let same = Arc::ptr_eq(&self.state, &other.state);
-        self.ensure_workers_for(if same { 2 } else { 1 }).await;
-        if !same {
-            other.ensure_workers_for(1).await;
-        }
+        let need = if same { 2 } else { 1 };
         let (tx_a, rx_a) = oneshot::channel();
         let (tx_b, rx_b) = oneshot::channel();
-        // A relay is one logical transfer. Both legs share its slot so a
-        // global limit of one cannot deadlock a source against its target.
-        let permit = self.limiter.try_acquire().ok_or_else(|| {
-            fail(
-                ErrorCode::ResourceLimit,
-                "Transfer limit reached; retry when transfers finish",
-            )
-        })?;
-        let a = QueuedTask {
-            permit: Some(permit.clone()),
+        let mut a = QueuedTask {
+            permit: None,
             task_id: source.0,
             task: source.1,
             respond: tx_a,
             on_dispatch: source.2,
         };
-        let b = QueuedTask {
-            permit: Some(permit),
+        let mut b = QueuedTask {
+            permit: None,
             task_id: target.0,
             task: target.1,
             respond: tx_b,
             on_dispatch: target.2,
         };
-        fn check(state: &PoolState, id: &str, workers: usize) -> BackendResult<()> {
-            if state.destroyed {
-                return Err(fail(ErrorCode::ConnectionLost, "Transfer pool is closed"));
+        // Relays out of one pool start in the order they were asked for. One
+        // that is not first yet only watches for Stop and a closed pool.
+        // ponytail: one line per source pool, so a relay waiting for a busy
+        // target holds back later ones to other targets; a line per pair of
+        // pools if that ever matters.
+        let waiting = self.pair_turn.lock();
+        tokio::pin!(waiting);
+        let turn = loop {
+            tokio::select! {
+                biased;
+                turn = &mut waiting => break turn,
+                _ = tokio::time::sleep(PAIR_RECHECK) => {
+                    self.leg_ready(&self.state.lock().unwrap(), &a.task_id, need)?;
+                }
             }
-            if state.cancelled_ids.contains(id) {
-                return Err(fail(ErrorCode::Cancelled, "Canceled by user"));
+        };
+        loop {
+            let changed = self.limiter.changed();
+            tokio::pin!(changed);
+            changed.as_mut().enable();
+            self.ensure_workers_for(need).await;
+            if !same {
+                other.ensure_workers_for(1).await;
             }
-            if state.active.contains_key(id) || state.queue.iter().any(|q| q.task_id == id) {
-                return Err(fail(
-                    ErrorCode::InvalidInput,
-                    "Transfer attempt is already running",
-                ));
-            }
-            if state.workers.len() < workers || !state.queue.is_empty() {
-                return Err(fail(
-                    ErrorCode::ResourceLimit,
-                    "Relay requires two available workers; increase concurrency or retry when transfers finish",
-                ));
-            }
-            Ok(())
-        }
-        {
-            // A stable address order prevents opposite-direction relays from
-            // deadlocking while inspecting the two pool states.
-            if same {
-                let mut state = self.state.lock().unwrap();
-                check(&state, &a.task_id, 2)?;
-                check(&state, &b.task_id, 2)?;
-                state.queue.push_back(a);
-                state.queue.push_back(b);
-            } else {
-                let (first, second) = if Arc::as_ptr(&self.state) < Arc::as_ptr(&other.state) {
-                    (&self.state, &other.state)
+            {
+                // A relay is one logical transfer. Both legs share its slot so a
+                // global limit of one cannot deadlock a source against its target.
+                // A stable address order prevents opposite-direction relays from
+                // deadlocking while inspecting the two pool states.
+                if same {
+                    let mut state = self.state.lock().unwrap();
+                    if self.leg_ready(&state, &a.task_id, 2)?
+                        && self.leg_ready(&state, &b.task_id, 2)?
+                        && let Some(permit) = self.limiter.try_acquire()
+                    {
+                        a.permit = Some(permit.clone());
+                        b.permit = Some(permit);
+                        state.queue.push_back(a);
+                        state.queue.push_back(b);
+                        break;
+                    }
                 } else {
-                    (&other.state, &self.state)
-                };
-                let mut first = first.lock().unwrap();
-                let mut second = second.lock().unwrap();
-                let (source, target) = if Arc::as_ptr(&self.state) < Arc::as_ptr(&other.state) {
-                    (&mut first, &mut second)
-                } else {
-                    (&mut second, &mut first)
-                };
-                check(source, &a.task_id, 1)?;
-                check(target, &b.task_id, 1)?;
-                source.queue.push_back(a);
-                target.queue.push_back(b);
+                    let (first, second) = if Arc::as_ptr(&self.state) < Arc::as_ptr(&other.state) {
+                        (&self.state, &other.state)
+                    } else {
+                        (&other.state, &self.state)
+                    };
+                    let mut first = first.lock().unwrap();
+                    let mut second = second.lock().unwrap();
+                    let (source, target) = if Arc::as_ptr(&self.state) < Arc::as_ptr(&other.state) {
+                        (&mut first, &mut second)
+                    } else {
+                        (&mut second, &mut first)
+                    };
+                    if self.leg_ready(source, &a.task_id, 1)?
+                        && other.leg_ready(target, &b.task_id, 1)?
+                        && let Some(permit) = self.limiter.try_acquire()
+                    {
+                        a.permit = Some(permit.clone());
+                        b.permit = Some(permit);
+                        source.queue.push_back(a);
+                        target.queue.push_back(b);
+                        break;
+                    }
+                }
             }
+            let _ = tokio::time::timeout(PAIR_RECHECK, changed).await;
         }
+        drop(turn);
         self.drain();
         other.drain();
         let (a, b) = tokio::join!(rx_a, rx_b);
@@ -806,15 +858,18 @@ mod tests {
         });
         started_rx.await.unwrap();
         let noop = || -> TaskFn { Box::new(|_| Box::pin(async { Ok(()) })) };
-        assert!(
-            b.run_pair(
-                &a,
-                ("reverse-src".into(), noop(), Box::new(|| {})),
-                ("reverse-dst".into(), noop(), Box::new(|| {}))
-            )
-            .await
-            .is_err()
-        );
+        let (a_reverse, b_reverse) = (a.clone(), b.clone());
+        let reverse = tokio::spawn(async move {
+            b_reverse
+                .run_pair(
+                    &a_reverse,
+                    ("reverse-src".into(), noop(), Box::new(|| {})),
+                    ("reverse-dst".into(), noop(), Box::new(|| {})),
+                )
+                .await
+        });
+        tokio::time::sleep(2 * PAIR_RECHECK).await;
+        assert!(!reverse.is_finished(), "a busy pair must wait, not fail");
         b.cancel("forward-dst");
         assert!(
             tokio::time::timeout(std::time::Duration::from_secs(2), running)
@@ -823,6 +878,11 @@ mod tests {
                 .unwrap()
                 .is_err()
         );
+        tokio::time::timeout(std::time::Duration::from_secs(2), reverse)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
         tokio::time::timeout(
             std::time::Duration::from_secs(2),
             a.run("next".into(), noop()),
@@ -830,6 +890,44 @@ mod tests {
         .await
         .unwrap()
         .unwrap();
+    }
+
+    #[tokio::test]
+    async fn relays_between_busy_pools_wait_their_turn_in_order_and_can_be_stopped() {
+        let a = TransferPool::new(fake_factory(), PoolSize::Fixed(1));
+        let b = TransferPool::new(fake_factory(), PoolSize::Fixed(1));
+        let order = Arc::new(StdMutex::new(Vec::new()));
+        let mut relays = Vec::new();
+        for index in 0..4 {
+            let (a, b, order) = (a.clone(), b.clone(), order.clone());
+            relays.push(tokio::spawn(async move {
+                let source: TaskFn = Box::new(move |_| {
+                    Box::pin(async move {
+                        order.lock().unwrap().push(index);
+                        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                        Ok(())
+                    })
+                });
+                let target: TaskFn = Box::new(|_| Box::pin(async { Ok(()) }));
+                a.run_pair(
+                    &b,
+                    (format!("{index}:src"), source, Box::new(|| {})),
+                    (format!("{index}:dst"), target, Box::new(|| {})),
+                )
+                .await
+            }));
+            // Each relay asks for its turn before the next one exists.
+            tokio::task::yield_now().await;
+        }
+        a.cancel("2:src");
+        for (index, relay) in relays.into_iter().enumerate() {
+            let result = tokio::time::timeout(std::time::Duration::from_secs(2), relay)
+                .await
+                .unwrap()
+                .unwrap();
+            assert_eq!(result.is_ok(), index != 2, "relay {index}");
+        }
+        assert_eq!(*order.lock().unwrap(), vec![0, 1, 3]);
     }
 
     #[tokio::test]

@@ -19,6 +19,11 @@ impl ConcurrencyLimiter {
         self.changed.notify_waiters();
     }
 
+    /// Resolves when a transfer ends or the limit changes.
+    pub(crate) fn changed(&self) -> tokio::sync::futures::Notified<'_> {
+        self.changed.notified()
+    }
+
     pub fn try_acquire(self: &Arc<Self>) -> Option<Arc<Permit>> {
         let mut state = self.state.lock().unwrap();
         if state.0 != 0 && state.1 >= state.0 {

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Several files copied from one server to another wait their turn instead of failing with
+  "Relay requires two available workers".
 - A security confirmation no longer adds a second FTPeach button to the taskbar.
 
 ## [0.4.0] - 2026-10-02

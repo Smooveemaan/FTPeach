@@ -58,6 +58,12 @@ pub async fn settings_reveal_proxy_password(
     Ok(store.reveal_proxy_password(&vault).await?)
 }
 
+/// Whether a patch changes a limit running transfers must pick up. The
+/// window saves only the settings that changed, so either may come alone.
+fn changes_transfer_limits(patch: &JsonMap) -> bool {
+    patch.contains_key("concurrency") || patch.contains_key("transferSpeedLimitKBps")
+}
+
 #[tauri::command]
 pub async fn settings_set(
     store: State<'_, Store>,
@@ -72,11 +78,11 @@ pub async fn settings_set(
             "Relaxing protection or moving the proxy password needs settings_set_security",
         ));
     }
-    let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
+    let had_transfer_limits = changes_transfer_limits(&patch);
     let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
     let had_date_format = patch.contains_key("dateFormat");
     let next = store.set_settings_with_vault(patch, &vault).await?;
-    if had_speed_limit {
+    if had_transfer_limits {
         apply_transfer_limits(&next);
     }
     if had_prevent_sleep {
@@ -128,6 +134,20 @@ pub async fn settings_set_security(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn either_transfer_limit_saved_alone_is_applied() {
+        let patch = |value| serde_json::from_value::<JsonMap>(value).unwrap();
+        assert!(changes_transfer_limits(&patch(
+            serde_json::json!({"concurrency": 1})
+        )));
+        assert!(changes_transfer_limits(&patch(
+            serde_json::json!({"transferSpeedLimitKBps": 100})
+        )));
+        assert!(!changes_transfer_limits(&patch(
+            serde_json::json!({"theme": "dark"})
+        )));
+    }
 
     #[test]
     fn ordinary_settings_ipc_exposes_only_proxy_password_presence() {

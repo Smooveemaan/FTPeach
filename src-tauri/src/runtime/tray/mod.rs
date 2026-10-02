@@ -6,6 +6,8 @@ use model::{TrayAction, TrayModel};
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{
     AppHandle, Emitter, Manager, WebviewWindow,
+    image::Image,
+    include_image,
     menu::MenuEvent,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
@@ -224,9 +226,13 @@ pub fn restore(app: &AppHandle) {
 
 fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
     let live = LiveMenu::build(app, model)?;
+    let scale = app
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map_or(1.0, |monitor| monitor.scale_factor());
     TrayIconBuilder::with_id(TRAY_ID)
-        // The peach on its own; the app icon's square plate stays out of the tray.
-        .icon(tauri::include_image!("./icons/tray.png"))
+        .icon(icon_for_scale(scale))
         .menu(live.menu())
         .tooltip(live.tooltip())
         // Left click brings the window back; the menu opens on right click,
@@ -244,4 +250,53 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
         })
         .build(app)?;
     Ok(live)
+}
+
+/// The peach on its own; the app icon's square plate stays out of the tray.
+/// A tray icon is 16 px at 100% display scale, and each file is the vector
+/// logo drawn at exactly the size its scale asks for, because an icon of
+/// another size is resized by Windows into a blur. The notification area sits
+/// on the primary monitor, so that monitor's scale decides.
+fn icon_for_scale(scale: f64) -> Image<'static> {
+    if scale <= 1.0 {
+        include_image!("./icons/tray/16.png")
+    } else if scale <= 1.25 {
+        include_image!("./icons/tray/20.png")
+    } else if scale <= 1.5 {
+        include_image!("./icons/tray/24.png")
+    } else if scale <= 1.75 {
+        include_image!("./icons/tray/28.png")
+    } else if scale <= 2.0 {
+        include_image!("./icons/tray/32.png")
+    } else if scale <= 2.5 {
+        include_image!("./icons/tray/40.png")
+    } else {
+        include_image!("./icons/tray/48.png")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::icon_for_scale;
+
+    #[test]
+    fn the_tray_icon_matches_the_display_scale() {
+        for (scale, size) in [
+            (1.0, 16),
+            (1.25, 20),
+            (1.5, 24),
+            (1.75, 28),
+            (2.0, 32),
+            (2.5, 40),
+            (3.0, 48),
+            (4.0, 48),
+        ] {
+            let icon = icon_for_scale(scale);
+            assert_eq!(
+                (icon.width(), icon.height()),
+                (size, size),
+                "at scale {scale}"
+            );
+        }
+    }
 }

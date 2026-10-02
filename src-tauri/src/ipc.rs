@@ -500,7 +500,9 @@ mod tests {
 
     /// What the user is told about the operating system's own failures. The
     /// raw codes are Windows': std names some with an `io::ErrorKind`, and
-    /// leaves the rest `Uncategorized`.
+    /// leaves the rest `Uncategorized`. Elsewhere the same numbers mean other
+    /// things, and the parser regressions replay this module on Linux.
+    #[cfg(windows)]
     #[test]
     fn os_errors_classify_by_kind_or_windows_code() {
         let code = |raw: i32| {
@@ -541,7 +543,8 @@ mod tests {
         assert_eq!(CommandError::from_anyhow(&text).code, ErrorCode::Internal);
     }
 
-    /// A name that does not resolve, as the resolver really reports it.
+    /// A name that does not resolve, as the Windows resolver really reports it.
+    #[cfg(windows)]
     #[tokio::test]
     async fn an_unresolvable_host_name_is_reported_as_such() {
         let Err(error) = tokio::net::lookup_host("nonexistent.invalid:21").await else {

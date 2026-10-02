@@ -45,7 +45,7 @@ from the Windows run of 2026-09-23.
 | `src-tauri/tests/docker_integration.rs` (14 tests) | the Docker stack | `scripts/with-libsodium.ps1 -Command compatibility` | compatibility | PASS 14/14 |
 | `docker_simultaneous_ftp_webdav_files_and_empty_folder`, `docker_empty_folder_uses_the_recursive_transfer_path` | the Docker stack | the same command, second step | compatibility | PASS 2/2 |
 | `docker_folder_manifest_preserves_nested_and_empty_directories` | Docker WebDAV on port 6065 | `npm run rust:test -- docker_folder_manifest --ignored` | native | PASS |
-| `src-tauri/tests/server_matrix/` (643 tests) | matrix containers and IIS | `npm run servers:test -- all chaos heavy iis` | server matrix | PASS 643/643 on 2026-10-01, in two runs: `all chaos`, then `heavy iis` |
+| `src-tauri/tests/server_matrix/` (643 tests) | matrix containers and IIS | `npm run servers:test -- all chaos heavy iis` | server matrix | PASS 643/643 on 2026-10-02, in two runs: `all chaos`, then `heavy iis` |
 | `connects_lists_and_downloads_from_rebex_ftps`, `connects_lists_and_downloads_from_rebex_sftp` | internet access to test.rebex.net | `npm run rust:test -- connects_lists_and_downloads_from_rebex --ignored` | native | PASS 2/2 |
 | `connects_and_round_trips_a_file` | a WebDAV server in `WEBDAV_URL`, `WEBDAV_USER`, `WEBDAV_PASS` | `npm run rust:test -- connects_and_round_trips_a_file --ignored` | native | NOT RUN: no external server |
 | `cross_volume_disk_move` | a second writable volume in `FTPEACH_MOVE_TEST_VOLUME` | `npm run rust:test -- cross_volume_disk_move --ignored` | native | PASS, C: to D: |

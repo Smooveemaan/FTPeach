@@ -148,7 +148,7 @@
   },
   "update": {
     "readyToInstall": "A atualização v{{version}} está disponível — clique em “Reiniciar e instalar” para aplicá-la.",
-    "downloadingWithPercent": "Baixando a atualização v{{version}}: {{percent}} %",
+    "downloadingWithPercent": "Baixando a atualização v{{version}}: {{percent}}%",
     "downloadingFound": "Atualização v{{version}} encontrada, baixando…",
     "restartAndInstall": "Reiniciar e instalar",
     "availableAction": "disponível!",
@@ -219,9 +219,9 @@
     "resetLayout": "Redefinir os tamanhos da janela e dos painéis, restaurar as colunas padrão e limpar o cache da interface?",
     "closeTabWithActiveTransfers": "Esta aba contém transferências ativas. Fechar a aba e interromper essas transferências?",
     "closeTabLabel": "Fechar aba",
-    "overwriteSingleExists": "“{{name}}” já existe na pasta de destino. Deseja sobrescrevê-lo?",
-    "overwriteConflicts_one": "Já existe {{count}} item na pasta de destino. Deseja sobrescrevê-lo?",
-    "overwriteConflicts_other": "Já existem {{count}} itens na pasta de destino. Deseja sobrescrevê-los?",
+    "overwriteSingleExists": "“{{name}}” já existe na pasta de destino. Deseja substituí-lo?",
+    "overwriteConflicts_one": "Já existe {{count}} item na pasta de destino. Deseja substituí-lo?",
+    "overwriteConflicts_other": "Já existem {{count}} itens na pasta de destino. Deseja substituí-los?",
     "overwriteLabel": "Substituir",
     "replaceConnection": "Este painel já está conectado a “{{current}}”. Deseja substituir a conexão por “{{next}}”?",
     "replaceConnectionLabel": "Substituir",
@@ -233,7 +233,7 @@
     "deletePermanentEntry": "Excluir definitivamente “{{name}}”? Essa ação não pode ser desfeita.",
     "deleteRemoteSelected": "Deseja excluir definitivamente os itens selecionados no servidor ({{count}})? Essa ação não pode ser desfeita.",
     "deleteRemoteEntry": "Deseja excluir definitivamente “{{name}}” no servidor? Essa ação não pode ser desfeita.",
-    "overwriteConflicts_many": "Já existem {{count}} itens na pasta de destino. Deseja sobrescrevê-los?"
+    "overwriteConflicts_many": "Já existem {{count}} itens na pasta de destino. Deseja substituí-los?"
   },
   "paneSide": {
     "top": "em cima",
@@ -309,7 +309,7 @@
     "proxyFailed": "A conexão com o proxy falhou. Verifique o tipo de proxy, o endereço, as credenciais e se o proxy consegue acessar o servidor de destino.",
     "keyReadFailed": "Não foi possível ler a chave — o arquivo está corrompido ou a frase secreta está incorreta.",
     "accessDenied": "Você não tem permissão para realizar esta operação.",
-    "notFound": "Arquivo ou pasta não encontrado(a).",
+    "notFound": "Arquivo ou pasta não encontrados.",
     "fileOrFolderExists": "Já existe um arquivo ou pasta com esse nome.",
     "fileBusy": "O arquivo está sendo usado por outro processo.",
     "locationBusy": "Outra operação já está usando este arquivo ou pasta. Tente novamente quando ela terminar.",
@@ -324,7 +324,7 @@
     "replaceUnsupported": "O servidor não permitiu substituir o arquivo existente.",
     "createUnsupported": "Este servidor FTP não permite criar arquivos novos. Tente SFTP ou WebDAV, se o servidor oferecer.",
     "moveBetweenEndpoints": "Só é possível mover arquivos dentro deste computador ou dentro da mesma conexão com o servidor. Copie-os em vez disso.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Não é possível ler uma senha salva neste computador. Digite-a novamente no favorito ou nas configurações de proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -358,7 +358,7 @@
     "shortcuts": {
       "title": "Atalhos de teclado",
       "hint": "Clique em um atalho e, em seguida, pressione uma nova combinação de teclas para reatribuí-lo.",
-      "globalTitle": "Global",
+      "globalTitle": "Globais",
       "paneTitle": "Painel de arquivos",
       "recording": "Pressione as teclas…",
       "unbound": "Não atribuído",
@@ -400,7 +400,7 @@
       "title": "Proteção por senha",
       "systemMode": "Proteção do sistema",
       "systemModeHint": "As senhas são criptografadas para a sua conta do Windows e podem ser vistas nas configurações de conexão.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Cópia portátil: as senhas salvas desta forma só podem ser lidas neste computador. Com uma senha mestra, elas acompanham a pasta.",
       "strongholdMode": "Proteção aprimorada",
       "strongholdModeHint": "Exige uma senha mestra. Para ver uma senha salva, é preciso digitar a senha mestra novamente.",
       "loading": "Verificando o cofre…",
@@ -446,7 +446,7 @@
       "showConfirmationsHint": "Pedir confirmação antes de mostrar uma senha salva, executar um arquivo executável ou abrir um arquivo com um programa que ainda não foi usado. Redefinir o cofre, mover uma senha salva para outro servidor e desativar esta opção são sempre confirmados.",
       "unavailable": "O cofre não está disponível.",
       "failed": "A operação no cofre falhou.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "A senha mestra não foi aceita. Aguarde um momento antes de tentar novamente."
     },
     "unlimitedPlaceholder": "Sem limite",
     "connectTimeoutLabel": "Tempo limite de conexão, s",
@@ -478,7 +478,7 @@
     "speedLimitLabel": "Limite de velocidade, KB/s",
     "speedLimitHint": "Aplica-se ao total combinado de todas as transferências simultâneas (0 ou em branco — sem limite). Entra em vigor imediatamente, sem necessidade de aguardar a próxima conexão.",
     "notifyOnComplete": "Notificar quando as transferências forem concluídas",
-    "notifyOnCompleteHint": "Uma notificação do sistema quando a fila de transferência ficar vazia — somente enquanto a janela não estiver em foco.",
+    "notifyOnCompleteHint": "Uma notificação do sistema quando a fila de transferências ficar vazia — somente enquanto a janela não estiver em foco.",
     "overwriteActionLabel": "Em caso de conflito de nomes",
     "overwriteAsk": "Perguntar",
     "overwriteOverwrite": "Substituir",
@@ -551,7 +551,7 @@
   "openWithDialog": {
     "title": "Abrir no aplicativo",
     "downloading": "Baixando “{{fileName}}”…",
-    "progress": "{{loaded}} de {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} de {{total}} ({{percent}}%)",
     "connecting": "Conectando…"
   },
   "transfers": {
@@ -593,7 +593,7 @@
       "cancelling": "Cancelando…"
     },
     "direction": {
-      "up": "Upload",
+      "up": "Envio",
       "down": "Download",
       "copy": "Cópia"
     },
@@ -624,7 +624,7 @@
     "listFailed": "Falha ao obter a listagem: {{error}}",
     "tlsInit": "Inicializando o TLS...",
     "tlsEstablished": "Conexão TLS estabelecida.",
-    "davResumeUnsupportedLocal": "O WebDAV não oferece suporte à retomada de upload — o arquivo será enviado novamente desde o início.",
+    "davResumeUnsupportedLocal": "O WebDAV não oferece suporte à retomada do envio — o arquivo será enviado novamente desde o início.",
     "davResumeUnsupportedServer": "O servidor não suporta retomada (status esperado: {{expected}}, recebido: {{status}}) — o arquivo será baixado novamente.",
     "uploadResumed": "Retomando o envio de {{path}} em {{offset}} bytes.",
     "uploadRestartedSourceChanged": "O arquivo local não corresponde mais ao envio pausado de {{path}} — ele será enviado novamente desde o início.",
@@ -684,7 +684,7 @@
       "remotePath": "Pasta padrão",
       "localPath": "Pasta local",
       "folder": "Pasta",
-      "maxConnections": "Máximo de conexões por painel",
+      "maxConnections": "Conexões",
       "encoding": "Codificação"
     },
     "icons": {
@@ -816,9 +816,9 @@
   "tray": {
     "show": "Mostrar FTPeach",
     "transferring": "Transferências em andamento: {{count}}",
-    "transferringProgress": "Transferências em andamento: {{count}} · {{percent}} %",
+    "transferringProgress": "Transferências em andamento: {{count}} · {{percent}}%",
     "quitWaiting": "Saindo após a conclusão das transferências · {{count}}",
-    "quitWaitingProgress": "Saindo após a conclusão das transferências · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Saindo após a conclusão das transferências · {{count}} · {{percent}}%",
     "pauseAll": "Pausar todas as transferências",
     "resumeAll": "Retomar todas as transferências",
     "speedLimit": "Limite de velocidade",
@@ -866,7 +866,7 @@
     "importNothingNewShort": "Nada novo",
     "importSkippedShort": "Ignorados: {{count}}",
     "quitPendingShort": "Saindo…",
-    "upToDate": "Up to date",
+    "upToDate": "Atualizado",
     "cancelQuitLong": "Cancelar saída",
     "listSeparator": ", "
   },
@@ -881,8 +881,8 @@
     "pauseUnsupportedWebdav": "O WebDAV não permite pausar",
     "pauseActive": "Pausar as transferências ativas",
     "resumeAllPaused": "Retomar todas as transferências pausadas",
-    "stopActive": "Interromper as transferências ativas",
-    "retryAllStopped": "Tentar novamente todas as transferências interrompidas",
+    "stopActive": "Parar as transferências ativas",
+    "retryAllStopped": "Tentar novamente todas as transferências paradas",
     "refreshPanesTooltip": "Atualizar os dois painéis (F5)"
   },
   "paneToolbar": {
@@ -907,7 +907,7 @@
     "quicklistLabel": "Conexões recentes"
   },
   "errorBoundary": {
-    "consoleLogPrefix": "Erro não tratado na interface FTPeach:",
+    "consoleLogPrefix": "Erro não tratado na interface do FTPeach:",
     "title": "Algo deu errado",
     "message": "Ocorreu um erro inesperado na interface. Sua conexão ativa e os arquivos no disco não foram afetados — você pode tentar recarregar a interface.",
     "reload": "Recarregar a interface"

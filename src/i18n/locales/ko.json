@@ -36,7 +36,7 @@
         "message": "저장된 프록시 비밀번호를 표시할까요?"
       },
       "vaultReset": {
-        "message": "저장된 모든 비밀번호와 SSH 키 암호가 영구적으로 삭제됩니다.",
+        "message": "저장된 모든 비밀번호와 SSH 키 암호 문구가 영구적으로 삭제됩니다.",
         "approve": "보관소 삭제"
       },
       "executeLocalFile": {
@@ -132,7 +132,7 @@
     "filesAriaLabel": "파일",
     "rename": "이름 변경",
     "resetColumnWidths": "열 너비 복원",
-    "updatedAtTooltip": "업데이트: {{date}}",
+    "updatedAtTooltip": "새로 고침: {{date}}",
     "searchTooltip": "검색 ({{shortcut}})",
     "searchPlaceholder": "검색… ({{shortcut}})",
     "editPathAriaLabel": "경로 편집",
@@ -213,7 +213,7 @@
     "labelMultiple": "선택한 항목({{count}})을 이동할 폴더:"
   },
   "confirm": {
-    "resetLayout": "창 및 패널 크기를 초기화하고, 기본 열을 복원하며, 인터페이스 캐시를 지울까요?",
+    "resetLayout": "프로그램 창과 파일 창의 크기를 초기화하고, 기본 열을 복원하며, 인터페이스 캐시를 지울까요?",
     "closeTabWithActiveTransfers": "이 탭에는 진행 중인 전송이 있습니다. 탭을 닫고 전송을 중지하시겠습니까?",
     "closeTabLabel": "탭 닫기",
     "overwriteSingleExists": "“{{name}}”이(가) 대상 폴더에 이미 있습니다. 덮어쓰시겠습니까?",
@@ -223,7 +223,7 @@
     "replaceConnection": "이 창은 이미 “{{current}}”에 연결되어 있습니다. 이 연결을 “{{next}}”로 변경하시겠습니까?",
     "replaceConnectionLabel": "교체",
     "deleteSelected": "선택한 항목({{count}})을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "deleteEntry": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "deleteEntry": "“{{name}}”을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "recycleSelected": "선택한 항목({{count}})을 휴지통으로 이동하시겠습니까?",
     "recycleEntry": "“{{name}}”을(를) 휴지통으로 이동하시겠습니까?",
     "deletePermanentSelected": "선택한 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
@@ -295,11 +295,11 @@
   "errors": {
     "connectionRefused": "서버에서 연결을 거부했습니다. 주소와 포트를 확인해 주세요.",
     "serverNotFound": "서버를 찾을 수 없습니다. 주소가 올바른지 확인해 주세요.",
-    "timeout": "서버가 응답하지 않습니다(연결 시간 초과). 주소, 포트 및 네트워크 연결을 확인해 주십시오.",
+    "timeout": "서버가 응답하지 않습니다(연결 시간 초과). 주소, 포트 및 네트워크 연결을 확인해 주세요.",
     "connectionReset": "서버와의 연결이 예기치 않게 끊어졌습니다.",
     "networkUnreachable": "서버에 연결할 수 없습니다. 네트워크 연결을 확인해 주세요.",
     "loginIncorrect": "사용자 이름이나 비밀번호가 잘못되었습니다.",
-    "invalidCertificate": "서버에서 유효하지 않은 인증서를 제시했습니다. 이 서버를 신뢰하는 경우, 연결 설정에서 인증서 확인 기능을 비활성화하십시오.",
+    "invalidCertificate": "서버에서 유효하지 않은 인증서를 제시했습니다. 이 서버를 신뢰하는 경우, 연결 설정에서 인증서 확인 기능을 비활성화하세요.",
     "tlsNegotiationFailed": "TLS 협상에 실패했습니다. 서버가 명시적 FTPS 또는 HTTPS와 호환되는 TLS 버전을 지원하는지 확인하세요.",
     "sshNegotiationFailed": "SSH 협상에 실패했습니다. 서버와 FTPeach가 호환되는 SSH 알고리즘이나 프로토콜 버전에 합의하지 못했습니다.",
     "proxyFailed": "프록시 연결에 실패했습니다. 프록시 유형, 주소, 인증 정보와 프록시가 대상 서버에 연결할 수 있는지 확인하세요.",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "서버에서 기존 파일 덮어쓰기를 허용하지 않았습니다.",
     "createUnsupported": "이 FTP 서버는 새 파일 만들기를 지원하지 않습니다. 서버에서 제공하는 경우 SFTP 또는 WebDAV를 사용해 보세요.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요."
   },
   "settings": {
     "openWithAssociations": {
@@ -396,7 +396,7 @@
       "title": "비밀번호 보호",
       "systemMode": "시스템 보호",
       "systemModeHint": "비밀번호는 Windows 계정에 연결되어 암호화되며, 연결 설정에서 볼 수 있습니다.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "포터블 버전: 이 방식으로 저장한 비밀번호는 이 컴퓨터에서만 읽을 수 있습니다. 마스터 비밀번호를 사용하면 폴더와 함께 옮겨집니다.",
       "strongholdMode": "강화된 보호",
       "strongholdModeHint": "마스터 비밀번호가 필요합니다. 저장된 비밀번호를 보려면 마스터 비밀번호를 다시 입력해야 합니다.",
       "loading": "보관소 확인 중…",
@@ -428,7 +428,7 @@
       "systemUnavailable": "이 플랫폼에서는 시스템 인증으로 잠금을 해제할 수 없습니다.",
       "noRecovery": "마스터 비밀번호를 잊으면 복구할 수 없습니다. 보관소를 초기화하면 저장된 모든 비밀번호와 암호 문구가 삭제됩니다.",
       "passwordMismatch": "비밀번호가 일치하지 않습니다.",
-      "passwordTooShort": "마스터 비밀번호는 12자 이상으로 설정하십시오.",
+      "passwordTooShort": "마스터 비밀번호는 12자 이상으로 설정하세요.",
       "strength": {
         "tooShort": "너무 짧습니다. 최소 12자 이상 입력해 주세요.",
         "acceptable": "사용할 수 있습니다. 암호 문구가 길수록 더 안전합니다.",
@@ -436,16 +436,16 @@
       },
       "reset": "보관소 초기화",
       "resetHint": "보관소와 그 안에 저장된 모든 비밀번호 및 SSH 키 암호 문구를 삭제합니다. 강화된 보호 기능을 다시 설정해야 합니다.",
-      "resetWarning": "이렇게 하면 저장된 모든 비밀번호와 키 암호 문구가 영구적으로 삭제됩니다. 계속하려면 현재 마스터 비밀번호를 입력하십시오.",
+      "resetWarning": "이렇게 하면 저장된 모든 비밀번호와 키 암호 문구가 영구적으로 삭제됩니다. 계속하려면 현재 마스터 비밀번호를 입력하세요.",
       "confirmReset": "저장된 비밀번호 삭제",
       "showConfirmations": "보안 확인 표시",
       "showConfirmationsHint": "저장된 비밀번호를 표시하거나, 실행 파일을 실행하거나, 아직 사용하지 않은 프로그램으로 파일을 열기 전에 확인을 요청합니다. 보관소 초기화, 저장된 비밀번호를 다른 서버로 옮기기, 이 설정 끄기는 항상 확인을 거칩니다.",
       "unavailable": "보관소를 사용할 수 없습니다.",
       "failed": "보관소 작업이 실패했습니다.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "마스터 비밀번호가 승인되지 않았습니다. 잠시 기다린 후 다시 시도하세요."
     },
     "unlimitedPlaceholder": "제한 없음",
-    "connectTimeoutLabel": "연결 시간 초과, 초",
+    "connectTimeoutLabel": "연결 시간 초과(초)",
     "connectTimeoutHint": "연결할 때 서버를 응답 없음으로 판단하기 전까지 기다리는 시간(0 또는 빈칸 — 제한 없음). 다음 연결부터 적용됩니다.",
     "ftpActiveMode": "액티브 FTP 모드(패시브 대신)",
     "ftpActiveModeHint": "FTP/FTPS 전용 — SFTP/WebDAV에는 영향을 미치지 않습니다. 패시브 모드가 NAT를 통과하지 못하는 네트워크나 서버에서만 드물게 필요합니다. 다음 연결부터 적용됩니다.",
@@ -471,8 +471,8 @@
     },
     "concurrencyLabel": "동시 전송",
     "concurrencyHint": "모든 탭을 합쳐 동시에 업로드·다운로드할 파일 수(0 또는 빈칸 — 제한 없음). 즉시 적용되며 진행 중인 전송은 정상적으로 끝납니다.",
-    "speedLimitLabel": "속도 제한, KB/s",
-    "speedLimitHint": "동시에 이루어지는 모든 전송의 합계에 적용됩니다(0 또는 공란 — 제한 없음). 다음 연결을 기다리지 않고 즉시 적용됩니다.",
+    "speedLimitLabel": "속도 제한(KB/초)",
+    "speedLimitHint": "동시에 이루어지는 모든 전송의 합계에 적용됩니다(0 또는 빈칸 — 제한 없음). 다음 연결을 기다리지 않고 즉시 적용됩니다.",
     "notifyOnComplete": "전송이 완료되면 알림 보내기",
     "notifyOnCompleteHint": "전송 대기열이 비면 시스템 알림을 표시합니다(창이 활성 상태가 아닐 때만).",
     "overwriteActionLabel": "이름이 겹칠 때",
@@ -496,8 +496,8 @@
     "timeFormat12Hour": "12시간",
     "dateFormatLocale": "지역 설정",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "‘컴퓨터’ 창의 기본 폴더",
-    "defaultLocalPathHint": "시작할 때와 서버에서 전환할 때 ‘컴퓨터’ 창이 여는 폴더입니다. 비워 두면 홈 폴더를 사용합니다.",
+    "defaultLocalPathLabel": "“컴퓨터” 창의 기본 폴더",
+    "defaultLocalPathHint": "시작할 때와 서버에서 전환할 때 “컴퓨터” 창이 여는 폴더입니다. 비워 두면 홈 폴더를 사용합니다.",
     "chooseDefaultLocalPath": "기본 폴더 선택",
     "showHiddenFiles": "숨겨진 파일 및 폴더 표시",
     "showHiddenFilesHint": "로컬 창과 서버 창 모두에 적용됩니다.",
@@ -618,7 +618,7 @@
     "tlsInit": "TLS 초기화 중...",
     "tlsEstablished": "TLS 연결이 설정되었습니다.",
     "davResumeUnsupportedLocal": "WebDAV는 업로드 재개 기능을 지원하지 않으므로, 파일이 처음부터 다시 전송됩니다.",
-    "davResumeUnsupportedServer": "서버가 재개 기능을 지원하지 않습니다(예상 상태: {{expected}}, 실제 상태: {{status}}). — 파일이 다시 다운로드됩니다.",
+    "davResumeUnsupportedServer": "서버가 재개 기능을 지원하지 않습니다(예상 상태: {{expected}}, 실제 상태: {{status}}). 파일이 다시 다운로드됩니다.",
     "uploadResumed": "{{path}} 업로드를 {{offset}}바이트부터 다시 시작합니다.",
     "uploadRestartedSourceChanged": "로컬 파일이 일시 중지된 {{path}} 업로드와 더 이상 일치하지 않습니다. 처음부터 다시 전송합니다.",
     "uploadRestartedMismatch": "서버에 있는 데이터가 로컬 파일과 일치하지 않습니다. {{path}}을(를) 처음부터 다시 전송합니다.",
@@ -647,7 +647,7 @@
   },
   "aboutDialog": {
     "title": "FTPeach 정보",
-    "tagline": "가벼운 FTP/FTPS/SFTP/WebDAV 클라이언트",
+    "tagline": "가벼운 FTP/FTPS/SFTP/WebDAV 클라이언트입니다.",
     "legalInformation": "법적 정보",
     "sourceCode": "소스 코드",
     "reportIssue": "문제 신고",
@@ -676,7 +676,7 @@
       "remotePath": "기본 폴더",
       "localPath": "로컬 폴더",
       "folder": "폴더",
-      "maxConnections": "창당 최대 연결 수",
+      "maxConnections": "연결 수",
       "encoding": "인코딩"
     },
     "icons": {
@@ -723,7 +723,7 @@
     "unsavedChangesMessage": "북마크 변경 사항을 저장하시겠습니까?",
     "newFolder": "새 폴더",
     "folderNamePlaceholder": "폴더 이름",
-    "confirmDeleteFolder": "\"{{name}}\" 폴더를 삭제하시겠습니까? 이 폴더에 있는 북마크는 한 단계 위로 이동됩니다.",
+    "confirmDeleteFolder": "“{{name}}” 폴더를 삭제하시겠습니까? 이 폴더에 있는 북마크는 한 단계 위로 이동됩니다.",
     "searchPlaceholder": "검색…",
     "clearSearch": "검색 지우기",
     "noSearchResults": "검색과 일치하는 북마크가 없습니다",
@@ -798,7 +798,7 @@
     }
   },
   "protocolSelect": {
-    "insecureWarning": "일반 FTP는 사용자 이름, 비밀번호 및 파일을 암호화하지 않은 상태로 전송합니다. 가능하면 FTPS나 SFTP를 사용하십시오."
+    "insecureWarning": "일반 FTP는 사용자 이름, 비밀번호 및 파일을 암호화하지 않은 상태로 전송합니다. 가능하면 FTPS나 SFTP를 사용하세요."
   },
   "titleBar": {
     "minimize": "최소화",
@@ -858,7 +858,7 @@
     "importNothingNewShort": "새 항목 없음",
     "importSkippedShort": "건너뜀: {{count}}",
     "quitPendingShort": "종료 중…",
-    "upToDate": "Up to date",
+    "upToDate": "최신 상태",
     "cancelQuitLong": "종료 취소",
     "listSeparator": ", "
   },
@@ -888,7 +888,7 @@
   "paneSourceSwitcher": {
     "local": "컴퓨터",
     "remote": "서버",
-    "updatedAtTooltip": "업데이트: {{date}}",
+    "updatedAtTooltip": "새로 고침: {{date}}",
     "connectToServer": "서버"
   },
   "paneConnectEmptyState": {
@@ -900,7 +900,7 @@
   },
   "errorBoundary": {
     "consoleLogPrefix": "처리되지 않은 FTPeach 인터페이스 오류:",
-    "title": "문제가 발생했습니다.",
+    "title": "문제가 발생했습니다",
     "message": "예기치 않은 인터페이스 오류가 발생했습니다. 현재 연결과 디스크의 파일에는 영향이 없습니다. 인터페이스를 다시 불러와 보세요.",
     "reload": "인터페이스 다시 불러오기"
   },

@@ -36,7 +36,7 @@
         "message": "显示保存的代理密码？"
       },
       "vaultReset": {
-        "message": "所有已保存的密码和 SSH 密钥口令都将被永久删除。",
+        "message": "所有已保存的密码和 SSH 密钥密码短语都将被永久删除。",
         "approve": "删除密码库"
       },
       "executeLocalFile": {
@@ -133,7 +133,7 @@
     "rename": "重命名",
     "resetColumnWidths": "恢复列宽",
     "updatedAtTooltip": "更新时间：{{date}}",
-    "searchTooltip": "搜索 ({{shortcut}})",
+    "searchTooltip": "搜索（{{shortcut}}）",
     "searchPlaceholder": "搜索…（{{shortcut}}）",
     "editPathAriaLabel": "编辑路径",
     "changeDriveTooltip": "切换驱动器",
@@ -182,7 +182,7 @@
   },
   "recoveredEdits": {
     "title": "未上传的修改",
-    "message": "你在外部应用程序中修改的文件在 FTPeach 关闭前未上传到服务器。这些文件已保留，你可以自行上传。",
+    "message": "您在外部应用程序中修改的文件在 FTPeach 关闭前未上传到服务器。这些文件已保留，您可以自行上传。",
     "unknownPath": "服务器路径未知",
     "show": "显示文件",
     "later": "稍后",
@@ -218,13 +218,13 @@
     "closeTabLabel": "关闭标签页",
     "overwriteSingleExists": "目标文件夹中已存在“{{name}}”。是否覆盖？",
     "overwriteConflicts_one": "目标文件夹中已存在 {{count}} 个项目。是否覆盖？",
-    "overwriteConflicts_other": "目标文件夹中已存在 {{count}} 个项目。是否全部覆盖？",
+    "overwriteConflicts_other": "目标文件夹中已存在 {{count}} 个项目。是否覆盖？",
     "overwriteLabel": "覆盖",
     "replaceConnection": "此窗格已连接到“{{current}}”。是否要将该连接替换为“{{next}}”？",
     "replaceConnectionLabel": "替换",
     "deleteSelected": "删除所选项目（{{count}}）？此操作无法撤销。",
     "deleteEntry": "删除“{{name}}”？此操作无法撤销。",
-    "recycleSelected": "是否将选中的项目（{{count}}）移至“回收站”？",
+    "recycleSelected": "是否将选中的项目（{{count}}）移至回收站？",
     "recycleEntry": "将“{{name}}”移至回收站吗？",
     "deletePermanentSelected": "是否要永久删除所选项目（{{count}}）？此操作无法撤销。",
     "deletePermanentEntry": "是否要永久删除“{{name}}”？此操作无法撤销。",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。"
   },
   "settings": {
     "openWithAssociations": {
@@ -395,8 +395,8 @@
     "security": {
       "title": "密码保护",
       "systemMode": "系统保护",
-      "systemModeHint": "密码会绑定您的 Windows 帐户加密，可以在连接设置中查看。",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "systemModeHint": "密码会绑定您的 Windows 账户加密，可以在连接设置中查看。",
+      "portableSystemModeHint": "便携版：以这种方式保存的密码只能在此计算机上读取。使用主密码时，密码会随文件夹一起迁移。",
       "strongholdMode": "增强保护",
       "strongholdModeHint": "需要主密码。查看已保存的密码时需要重新输入主密码。",
       "loading": "正在检查密码库…",
@@ -442,17 +442,17 @@
       "showConfirmationsHint": "在显示已保存的密码、运行可执行文件，或使用尚未用过的程序打开文件之前先行确认。重置密码库、将已保存的密码移至其他服务器以及关闭此选项始终需要确认。",
       "unavailable": "密码库不可用。",
       "failed": "密码库操作失败。",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "主密码未被接受。请稍候再试。"
     },
     "unlimitedPlaceholder": "无限制",
-    "connectTimeoutLabel": "连接超时，秒",
+    "connectTimeoutLabel": "连接超时（秒）",
     "connectTimeoutHint": "连接时等待服务器响应的时间，超时后视为无法访问（0 或留空表示无限制）。从下一次连接开始生效。",
-    "ftpActiveMode": "主动FTP模式（而非被动模式）",
-    "ftpActiveModeHint": "仅限 FTP/FTPS —— 对 SFTP/WebDAV 无效。极少需要使用，仅适用于被动模式无法穿过 NAT 的网络/服务器。此设置适用于下一次连接。",
-    "ftpActiveModeDisabledByProxy": "启用代理时不可用——代理隧道仅支持出站连接，因此FTP必须保持被动模式。",
+    "ftpActiveMode": "主动 FTP 模式（而非被动模式）",
+    "ftpActiveModeHint": "仅限 FTP/FTPS——对 SFTP/WebDAV 无效。极少需要使用，仅适用于被动模式无法穿过 NAT 的网络/服务器。此设置适用于下一次连接。",
+    "ftpActiveModeDisabledByProxy": "启用代理时不可用——代理隧道仅支持出站连接，因此 FTP 必须保持被动模式。",
     "proxy": {
       "enable": "连接时使用代理",
-      "enableHint": "SOCKS4、SOCKS5 或 HTTP CONNECT —— 适用于 FTP、FTPS、SFTP 和 WebDAV。适用于下一次连接。",
+      "enableHint": "SOCKS4、SOCKS5 或 HTTP CONNECT——适用于 FTP、FTPS、SFTP 和 WebDAV。适用于下一次连接。",
       "typeLabel": "代理类型",
       "hostLabel": "代理地址",
       "hostPlaceholder": "proxy.example.com",
@@ -471,8 +471,8 @@
     },
     "concurrencyLabel": "并发传输",
     "concurrencyHint": "所有标签页合计同时上传和下载的文件数（0 或留空表示无限制）。立即生效，正在进行的传输会正常完成。",
-    "speedLimitLabel": "速度限制，KB/s",
-    "speedLimitHint": "适用于所有同时进行的传输的总和（0 或留空 — 无限制）。立即生效，无需等待下次连接。",
+    "speedLimitLabel": "速度限制（KB/秒）",
+    "speedLimitHint": "适用于所有同时进行的传输的总和（0 或留空表示无限制）。立即生效，无需等待下次连接。",
     "notifyOnComplete": "传输完成后通知",
     "notifyOnCompleteHint": "当传输队列清空时触发系统通知——但仅在窗口未获得焦点时生效。",
     "overwriteActionLabel": "名称冲突时",
@@ -534,7 +534,7 @@
     "includeSettings": "应用设置",
     "includeBookmarks": "书签",
     "includeLocalPaths": "本地路径",
-    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台电脑上导入后需要重新输入。"
+    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台计算机上导入后需要重新输入。"
   },
   "importSettingsDialog": {
     "title": "导入设置",
@@ -592,7 +592,7 @@
       "copy": "复制"
     },
     "directionTitleCopy": "在服务器之间复制",
-    "directionTitleLocal": "在此电脑上复制",
+    "directionTitleLocal": "在此计算机上复制",
     "directionTitleServer": "在服务器上复制",
     "route": "{{from}} → {{to}}",
     "cancelledByUser": "已被用户取消",
@@ -608,7 +608,7 @@
   },
   "log": {
     "connecting": "正在连接到 {{addr}}...",
-    "activeModeViaProxy": "通过代理无法使用主动FTP模式——将使用被动模式。",
+    "activeModeViaProxy": "通过代理无法使用主动 FTP 模式——将使用被动模式。",
     "connectFailed": "连接失败：{{error}}",
     "connected": "已登录。",
     "receivedEntries_one": "已接收 {{count}} 条记录",
@@ -628,7 +628,7 @@
   "logPanel": {
     "showAllConnections": "显示所有连接",
     "showOnlyThisConnection": "仅显示此连接",
-    "connectionClosedShowOnly": "连接已关闭 — 仅显示此连接",
+    "connectionClosedShowOnly": "连接已关闭——仅显示此连接",
     "filterKinds": "筛选",
     "kindStatus": "状态消息",
     "kindCommand": "命令",
@@ -676,7 +676,7 @@
       "remotePath": "默认文件夹",
       "localPath": "本地文件夹",
       "folder": "文件夹",
-      "maxConnections": "每个窗格的最大连接数",
+      "maxConnections": "连接数",
       "encoding": "编码"
     },
     "icons": {
@@ -815,7 +815,7 @@
     "resumeAll": "继续所有传输",
     "speedLimit": "速度限制",
     "unlimited": "无限制",
-    "preventSleep": "保持电脑唤醒",
+    "preventSleep": "保持计算机唤醒",
     "notify": "传输完成后通知",
     "recentConnections": "最近的连接",
     "lockVault": "锁定已保存的密码",
@@ -825,7 +825,7 @@
   "tabStrip": {
     "localComputer": "计算机",
     "untitledTab": "新标签页",
-    "newTabTooltip": "新标签页 (Ctrl+T)",
+    "newTabTooltip": "新标签页（Ctrl+T）",
     "rename": "标签页名称"
   },
   "toolbarOverflowMenu": {
@@ -858,7 +858,7 @@
     "importNothingNewShort": "无新内容",
     "importSkippedShort": "已跳过：{{count}}",
     "quitPendingShort": "正在退出…",
-    "upToDate": "Up to date",
+    "upToDate": "已是最新版本",
     "cancelQuitLong": "取消退出",
     "listSeparator": "、"
   },
@@ -905,7 +905,7 @@
     "reload": "重新加载界面"
   },
   "quitDialog": {
-    "unsyncedEdits": "有更改尚未上传到服务器的文件：{{count}} 个。退出时将保留副本以便恢复，并在下次启动 FTPeach 时提供给你。",
+    "unsyncedEdits": "有更改尚未上传到服务器的文件：{{count}} 个。退出时将保留副本以便恢复，并在下次启动 FTPeach 时提供给您。",
     "preserveAndQuit": "保留以便恢复并退出",
     "return": "返回",
     "message_one": "仍有 {{count}} 个传输正在进行。要退出并停止传输吗？",

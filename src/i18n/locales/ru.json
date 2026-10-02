@@ -7,7 +7,7 @@
       "gb": "ГБ",
       "tb": "ТБ"
     },
-    "perSecond": "{{value}}/s",
+    "perSecond": "{{value}}/с",
     "noLoginUser": "без логина",
     "anonymousUser": "аноним",
     "rootFolder": "Корневая папка",
@@ -236,7 +236,7 @@
     "deleteRemoteEntry": "Окончательно удалить «{{name}}» на сервере? Это действие нельзя отменить.",
     "overwriteConflicts_one": "{{count}} элемент уже существует в папке назначения. Заменить его?",
     "overwriteConflicts_few": "{{count}} элемента уже существуют в папке назначения. Заменить их?",
-    "overwriteConflicts_many": "{{count}} элементов уже существуют в папке назначения. Заменить их?",
+    "overwriteConflicts_many": "{{count}} элементов уже существует в папке назначения. Заменить их?",
     "overwriteConflicts_other": "{{count}} элемента уже существуют в папке назначения. Заменить их?"
   },
   "paneSide": {
@@ -474,7 +474,7 @@
       "testTargetPortPlaceholder": "Порт",
       "test": "Проверить прокси",
       "testing": "Проверка…",
-      "testOk": "Прокси успешно достучался до сервера.",
+      "testOk": "Прокси успешно подключился к серверу.",
       "testFailed": "Проверка прокси не удалась."
     },
     "concurrencyLabel": "Параллельные передачи",
@@ -823,8 +823,8 @@
   },
   "tray": {
     "show": "Показать FTPeach",
-    "transferring": "Передаётся {{count}}",
-    "transferringProgress": "Передаётся {{count}} · {{percent}}%",
+    "transferring": "Передаётся: {{count}}",
+    "transferringProgress": "Передаётся: {{count}} · {{percent}}%",
     "quitWaiting": "Выход после завершения передач · {{count}}",
     "quitWaitingProgress": "Выход после завершения передач · {{count}} · {{percent}}%",
     "pauseAll": "Приостановить все передачи",
@@ -926,7 +926,7 @@
     "return": "Вернуться",
     "message_one": "Идёт {{count}} передача. Выйти и прервать её?",
     "message_few": "Идут {{count}} передачи. Выйти и прервать их?",
-    "message_many": "Идут {{count}} передач. Выйти и прервать их?",
+    "message_many": "Идёт {{count}} передач. Выйти и прервать их?",
     "message_other": "Идут {{count}} передачи. Выйти и прервать их?",
     "quitNow": "Выйти сейчас",
     "quitWhenDone": "Выйти после завершения"

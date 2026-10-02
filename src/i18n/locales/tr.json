@@ -132,7 +132,7 @@
     "filesAriaLabel": "Dosyalar",
     "rename": "Yeniden adlandır",
     "resetColumnWidths": "Sütun genişliklerini geri yükle",
-    "updatedAtTooltip": "Güncelleme: {{date}}",
+    "updatedAtTooltip": "Güncellendi: {{date}}",
     "searchTooltip": "Arama ({{shortcut}})",
     "searchPlaceholder": "Ara… ({{shortcut}})",
     "editPathAriaLabel": "Yolu düzenle",
@@ -145,7 +145,7 @@
     "nothingFound": "Hiçbir şey bulunamadı"
   },
   "update": {
-    "readyToInstall": "v{{version}} güncellemesi hazır — uygulamak için “Yeniden Başlat ve Yükle”ye tıklayın.",
+    "readyToInstall": "v{{version}} güncellemesi hazır — uygulamak için \"Yeniden Başlat ve Yükle\"ye tıklayın.",
     "downloadingWithPercent": "v{{version}} güncellemesi indiriliyor: %{{percent}}",
     "downloadingFound": "v{{version}} güncellemesi bulundu, indiriliyor…",
     "restartAndInstall": "Yeniden Başlat ve Yükle",
@@ -222,11 +222,11 @@
     "overwriteLabel": "Üzerine yaz",
     "replaceConnection": "Bu bölme halihazırda \"{{current}}\" adresine bağlı. Bağlantıyı \"{{next}}\" ile değiştirmek ister misiniz?",
     "replaceConnectionLabel": "Değiştir",
-    "deleteSelected": "Seçili öğeleri silmek istiyor musunuz ({{count}})? Bu işlem geri alınamaz.",
+    "deleteSelected": "Seçili öğeleri ({{count}}) silmek istiyor musunuz? Bu işlem geri alınamaz.",
     "deleteEntry": "\"{{name}}\" silinsin mi? Bu işlem geri alınamaz.",
-    "recycleSelected": "Seçili öğeleri ({{count}}) Geri Dönüşüm Kutusu’na taşımak istiyor musunuz?",
-    "recycleEntry": "“{{name}}” Geri Dönüşüm Kutusu’na taşınsın mı?",
-    "deletePermanentSelected": "Seçilen öğeleri kalıcı olarak silmek istiyor musunuz ({{count}})? Bu işlem geri alınamaz.",
+    "recycleSelected": "Seçili öğeleri ({{count}}) Geri Dönüşüm Kutusu'na taşımak istiyor musunuz?",
+    "recycleEntry": "\"{{name}}\" Geri Dönüşüm Kutusu'na taşınsın mı?",
+    "deletePermanentSelected": "Seçili öğeleri ({{count}}) kalıcı olarak silmek istiyor musunuz? Bu işlem geri alınamaz.",
     "deletePermanentEntry": "\"{{name}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
     "deleteRemoteSelected": "Sunucudaki seçili öğeler ({{count}}) kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
     "deleteRemoteEntry": "Sunucudaki \"{{name}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz."
@@ -246,8 +246,8 @@
       "closeTab": "Sekmeyi Kapat",
       "reopenClosedTab": "Kapatılan Sekmeyi Yeniden Aç",
       "newConnection": "Yeni Bağlantı",
-      "disconnect": "Bağlantıyı kes",
-      "manageBookmarks": "Yer imlerini yönet…",
+      "disconnect": "Bağlantıyı Kes",
+      "manageBookmarks": "Yer İmlerini Yönet…",
       "saveConnection": "Bağlantıyı Kaydet",
       "saveConnectionSide": "Bağlantıyı Kaydet ({{side}})",
       "savePathSide": "Yolu Kaydet ({{side}})",
@@ -281,7 +281,7 @@
       "clearCompleted": "Tamamlananları Temizle"
     },
     "bookmarks": {
-      "title": "Yer imleri"
+      "title": "Yer İmleri"
     },
     "help": {
       "supportProject": "FTPeach'i Destekle",
@@ -293,14 +293,14 @@
     }
   },
   "errors": {
-    "connectionRefused": "Sunucu bağlantıyı reddetti. Adresi ve bağlantı noktasını kontrol edin.",
+    "connectionRefused": "Sunucu bağlantıyı reddetti. Adresi ve portu kontrol edin.",
     "serverNotFound": "Sunucu bulunamadı. Adresin doğru olup olmadığını kontrol edin.",
-    "timeout": "Sunucu yanıt vermiyor (bağlantı zaman aşımına uğradı). Adresi, bağlantı noktasını ve ağ bağlantısını kontrol edin.",
+    "timeout": "Sunucu yanıt vermiyor (bağlantı zaman aşımına uğradı). Adresi, portu ve ağ bağlantısını kontrol edin.",
     "connectionReset": "Sunucuya olan bağlantı beklenmedik bir şekilde kesildi.",
     "networkUnreachable": "Sunucuya ulaşılamıyor — ağ bağlantınızı kontrol edin.",
     "loginIncorrect": "Kullanıcı adı veya şifre yanlış.",
     "invalidCertificate": "Sunucu geçersiz bir sertifika sundu. Bu sunucuya güveniyorsanız, bağlantı ayarlarından sertifika doğrulamasını devre dışı bırakın.",
-    "tlsNegotiationFailed": "TLS anlaşması başarısız oldu. Sunucunun açık FTPS veya HTTPS’yi ve uyumlu bir TLS sürümünü destekleyip desteklemediğini kontrol edin.",
+    "tlsNegotiationFailed": "TLS anlaşması başarısız oldu. Sunucunun açık FTPS veya HTTPS'yi ve uyumlu bir TLS sürümünü destekleyip desteklemediğini kontrol edin.",
     "sshNegotiationFailed": "SSH anlaşması başarısız oldu. Sunucu ile FTPeach, uyumlu bir SSH algoritması veya protokol sürümü konusunda anlaşamadı.",
     "proxyFailed": "Proxy bağlantısı başarısız oldu. Proxy türünü, adresini ve kimlik bilgilerini, ayrıca proxy'nin hedef sunucuya ulaşıp ulaşamadığını kontrol edin.",
     "keyReadFailed": "Anahtar okunamadı — dosya bozuk ya da anahtar parolası yanlış.",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
     "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Kaydedilmiş bir şifre bu bilgisayarda okunamıyor. Şifreyi yer iminde veya proxy ayarlarında yeniden girin."
   },
   "settings": {
     "openWithAssociations": {
@@ -396,7 +396,7 @@
       "title": "Şifre koruması",
       "systemMode": "Sistem koruması",
       "systemModeHint": "Şifreler Windows hesabınıza bağlı olarak şifrelenir ve bağlantı ayarlarında görüntülenebilir.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Taşınabilir kopya: bu şekilde kaydedilen şifreler yalnızca bu bilgisayarda okunabilir. Ana şifre kullanıldığında klasörle birlikte taşınırlar.",
       "strongholdMode": "Gelişmiş koruma",
       "strongholdModeHint": "Ana şifre gerekir. Kaydedilmiş bir şifreyi görmek için ana şifreyi yeniden girmeniz gerekir.",
       "loading": "Kasa kontrol ediliyor…",
@@ -423,7 +423,7 @@
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",
-      "systemUnlockHint": "Windows Hello’yu kullanır (Windows tarafından yapılandırıldığı şekilde PIN, yüz tanıma veya parmak izi). Ana şifreniz, kurtarma yöntemi olarak kalmaya devam eder.",
+      "systemUnlockHint": "Windows Hello'yu kullanır (Windows tarafından yapılandırıldığı şekilde PIN, yüz tanıma veya parmak izi). Ana şifreniz, kurtarma yöntemi olarak kalmaya devam eder.",
       "unlockWithSystem": "Sistem kimlik doğrulamasıyla kilidi aç",
       "systemUnavailable": "Sistem üzerinden kilit açma bu platformda kullanılamıyor.",
       "noRecovery": "Unutulan ana şifre kurtarılamaz. Kasayı sıfırlamak kaydedilmiş tüm şifreleri ve anahtar parolalarını siler.",
@@ -442,14 +442,14 @@
       "showConfirmationsHint": "Kaydedilmiş bir şifreyi göstermeden, yürütülebilir bir dosyayı çalıştırmadan veya bir dosyayı daha önce kullanılmamış bir programla açmadan önce onay iste. Kasayı sıfırlamak, kaydedilmiş bir şifreyi başka bir sunucuya taşımak ve bu seçeneği kapatmak her zaman onay gerektirir.",
       "unavailable": "Kasa kullanılamıyor.",
       "failed": "Kasa işlemi başarısız oldu.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Ana şifre kabul edilmedi. Yeniden denemeden önce biraz bekleyin."
     },
     "unlimitedPlaceholder": "Sınırsız",
     "connectTimeoutLabel": "Bağlantı zaman aşımı, sn",
     "connectTimeoutHint": "Bağlanırken sunucu erişilemez sayılmadan önce yanıt için ne kadar bekleneceği (0 veya boş — sınır yok). Bir sonraki bağlantıda geçerli olur.",
     "ftpActiveMode": "Aktif FTP modu (pasif yerine)",
-    "ftpActiveModeHint": "Yalnızca FTP/FTPS için geçerlidir — SFTP/WebDAV üzerinde herhangi bir etkisi yoktur. Nadiren gereklidir; yalnızca pasif modun NAT’tan geçemediği ağlarda/sunucularda kullanılır. Bir sonraki bağlantıya uygulanır.",
-    "ftpActiveModeDisabledByProxy": "Proxy etkinken kullanılamaz — bir proxy tüneli yalnızca dışa doğru bağlantıları desteklediğinden, FTP’nin pasif modda kalması gerekir.",
+    "ftpActiveModeHint": "Yalnızca FTP/FTPS için geçerlidir — SFTP/WebDAV üzerinde herhangi bir etkisi yoktur. Nadiren gereklidir; yalnızca pasif modun NAT'tan geçemediği ağlarda/sunucularda kullanılır. Bir sonraki bağlantıya uygulanır.",
+    "ftpActiveModeDisabledByProxy": "Proxy etkinken kullanılamaz — bir proxy tüneli yalnızca dışa doğru bağlantıları desteklediğinden, FTP'nin pasif modda kalması gerekir.",
     "proxy": {
       "enable": "Bağlantılar için proxy kullan",
       "enableHint": "SOCKS4, SOCKS5 veya HTTP CONNECT — FTP, FTPS, SFTP ve WebDAV için geçerlidir. Bir sonraki bağlantı için geçerlidir.",
@@ -471,7 +471,7 @@
     },
     "concurrencyLabel": "Eşzamanlı aktarımlar",
     "concurrencyHint": "Tüm sekmelerde aynı anda kaç dosyanın yükleneceği ve indirileceği (0 veya boş — sınır yok). Hemen geçerli olur; süren aktarımlar normal şekilde tamamlanır.",
-    "speedLimitLabel": "Hız sınırı, KB/s",
+    "speedLimitLabel": "Hız sınırı, KB/sn",
     "speedLimitHint": "Eşzamanlı tüm aktarımların toplamına uygulanır (0 veya boş — sınır yok). Bir sonraki bağlantıyı beklemeden hemen geçerli olur.",
     "notifyOnComplete": "Aktarımlar bittiğinde bildirim gönder",
     "notifyOnCompleteHint": "Aktarım kuyruğu boşaldığında bir sistem bildirimi — yalnızca pencere odaklanmamışken.",
@@ -496,8 +496,8 @@
     "timeFormat12Hour": "12 sa",
     "dateFormatLocale": "Bölgesel",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "“Bilgisayar” için varsayılan klasör",
-    "defaultLocalPathHint": "“Bilgisayar” bölmesinin başlangıçta ve bir sunucudan geçiş yapıldığında açtığı klasör. Kendi ana klasörünüzü kullanmak için boş bırakın.",
+    "defaultLocalPathLabel": "\"Bilgisayar\" için varsayılan klasör",
+    "defaultLocalPathHint": "\"Bilgisayar\" bölmesinin başlangıçta ve bir sunucudan geçiş yapıldığında açtığı klasör. Kendi ana klasörünüzü kullanmak için boş bırakın.",
     "chooseDefaultLocalPath": "Varsayılan klasörü seç",
     "showHiddenFiles": "Gizli dosya ve klasörleri göster",
     "showHiddenFilesHint": "Hem yerel hem de sunucu bölmeleri için geçerlidir.",
@@ -522,7 +522,7 @@
     "logToFileHint": "Günlük paneli kapalıyken bile günlüğü %APPDATA%\\FTPeach\\logs klasöründe her gün için ayrı bir dosyaya ekler. Dosyalar 14 gün boyunca, toplamda en fazla 50 MB olarak saklanır. Paneldeki \"Kaydet\" düğmesi farklıdır: tıklandığında panelde gösterilen satırları bir kez kaydeder.",
     "exportDiagnostics": "Tanılama paketini dışa aktar",
     "exportDiagnosticsBusy": "Dışa aktarılıyor…",
-    "exportDiagnosticsHint": "Uygulama sürümünü, işletim sistemini, son günlüğü ve uygulamanın kendi günlük dosyasını dışa aktarır. Parolalar, belirteçler ve diğer gizli bilgiler maskelenir.",
+    "exportDiagnosticsHint": "Uygulama sürümünü, işletim sistemini, son günlüğü ve uygulamanın kendi günlük dosyasını dışa aktarır. Şifreler, belirteçler ve diğer gizli bilgiler maskelenir.",
     "exportDiagnosticsFailed": "Tanılama paketi dışa aktarılamadı."
   },
   "promptDialog": {
@@ -676,7 +676,7 @@
       "remotePath": "Varsayılan klasör",
       "localPath": "Yerel klasör",
       "folder": "Klasör",
-      "maxConnections": "Bölme başına en fazla bağlantı",
+      "maxConnections": "Bağlantılar",
       "encoding": "Karakter kodlaması"
     },
     "icons": {
@@ -802,7 +802,7 @@
   },
   "titleBar": {
     "minimize": "Küçült",
-    "restore": "Geri Yükle",
+    "restore": "Önceki boyut",
     "maximize": "Ekranı kapla"
   },
   "tray": {
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Yeni bir şey yok",
     "importSkippedShort": "Atlandı: {{count}}",
     "quitPendingShort": "Çıkılıyor…",
-    "upToDate": "Up to date",
+    "upToDate": "Güncel",
     "cancelQuitLong": "Çıkışı iptal et",
     "listSeparator": ", "
   },
@@ -888,7 +888,7 @@
   "paneSourceSwitcher": {
     "local": "Bilgisayar",
     "remote": "Sunucu",
-    "updatedAtTooltip": "Güncelleme: {{date}}",
+    "updatedAtTooltip": "Güncellendi: {{date}}",
     "connectToServer": "Sunucu"
   },
   "paneConnectEmptyState": {

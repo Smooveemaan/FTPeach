@@ -50,7 +50,7 @@
         "approve": "פתיחה"
       },
       "weakenSecuritySettings": {
-        "message": "להחליש את ההגנה ש‑FTPeach מספק?",
+        "message": "להחליש את ההגנה ש-FTPeach מספק?",
         "approve": "החלה"
       },
       "useSystemProtection": {
@@ -80,7 +80,7 @@
     },
     "transferFrom": "נשמרה עבור: {{recipient}}",
     "transferTo": "שרת חדש: {{recipient}}",
-    "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את אישור השרת.",
+    "transferLessSecure": "החיבור החדש אינו מוצפן או שאינו בודק את תעודת השרת.",
     "hostKey": {
       "server": "שרת: {{target}}",
       "expected": "המפתח שהיה מהימן עד עכשיו: {{fingerprint}}",
@@ -100,13 +100,13 @@
     "moveTo": "העבר אל…",
     "copyPath": "העתק את הנתיב",
     "delete": "מחק",
-    "deleteSelected_one": "מחיקה ({{count}} קובץ)",
-    "deleteSelected_other": "מחיקה ({{count}} קבצים)",
-    "deletePermanently": "מחיקה לצמיתות",
-    "deleteSelectedPermanently_one": "מחיקה לצמיתות ({{count}} קובץ)",
-    "deleteSelectedPermanently_other": "מחיקה לצמיתות ({{count}} קבצים)",
-    "deleteSelected_two": "מחיקה ({{count}} קבצים)",
-    "deleteSelectedPermanently_two": "מחיקה לצמיתות ({{count}} קבצים)"
+    "deleteSelected_one": "מחק ({{count}} קובץ)",
+    "deleteSelected_other": "מחק ({{count}} קבצים)",
+    "deletePermanently": "מחק לצמיתות",
+    "deleteSelectedPermanently_one": "מחק לצמיתות ({{count}} קובץ)",
+    "deleteSelectedPermanently_other": "מחק לצמיתות ({{count}} קבצים)",
+    "deleteSelected_two": "מחק ({{count}} קבצים)",
+    "deleteSelectedPermanently_two": "מחק לצמיתות ({{count}} קבצים)"
   },
   "chmodDialog": {
     "title": "הרשאות SFTP",
@@ -147,15 +147,15 @@
     "nothingFound": "לא נמצא דבר"
   },
   "update": {
-    "readyToInstall": "העדכון v{{version}} זמין — לחצו על \"הפעלה מחדש והתקנה\" כדי להחיל אותו.",
+    "readyToInstall": "העדכון v{{version}} זמין — לחץ על \"הפעלה מחדש והתקנה\" כדי להחיל אותו.",
     "downloadingWithPercent": "מוריד את העדכון v{{version}}: {{percent}}%",
     "downloadingFound": "נמצא העדכון v{{version}}, מוריד…",
     "restartAndInstall": "הפעלה מחדש והתקנה",
     "availableAction": "זמין!",
     "installAction": "התקנת העדכון",
-    "downloadTooltip": "לחצו להורדה",
+    "downloadTooltip": "לחץ להורדה",
     "downloadingTooltip": "מוריד",
-    "installTooltip": "הפעילו מחדש עכשיו כדי להתקין. אחרת העדכון יותקן בהפעלה הבאה של FTPeach."
+    "installTooltip": "הפעל מחדש עכשיו כדי להתקין. אחרת העדכון יותקן בהפעלה הבאה של FTPeach."
   },
   "legacyPasswordNotice": {
     "message": "לא ניתן היה לקרוא את הסיסמאות של חלק מהשרתים השמורים לאחר העדכון — יש להזין אותן מחדש בניהול הסימניות."
@@ -297,9 +297,9 @@
     }
   },
   "errors": {
-    "connectionRefused": "השרת דחה את החיבור. בדוק את הכתובת והיציאה.",
+    "connectionRefused": "השרת דחה את החיבור. בדוק את הכתובת והפורט.",
     "serverNotFound": "לא נמצא שרת. ודא שהכתובת נכונה.",
-    "timeout": "השרת אינו מגיב (החיבור פקע). בדוק את הכתובת, היציאה וחיבור הרשת.",
+    "timeout": "השרת אינו מגיב (החיבור פקע). בדוק את הכתובת, הפורט וחיבור הרשת.",
     "connectionReset": "החיבור לשרת נסגר באופן בלתי צפוי.",
     "networkUnreachable": "לא ניתן להתחבר לשרת — בדוק את חיבור הרשת שלך.",
     "loginIncorrect": "שם משתמש או סיסמה שגויים.",
@@ -322,9 +322,9 @@
     "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
     "alreadyExists": "\"{{name}}\" כבר קיים",
     "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים.",
-    "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסו SFTP או WebDAV אם השרת מציע אותם.",
+    "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסה SFTP או WebDAV אם השרת מציע אותם.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "לא ניתן לקרוא סיסמה שמורה במחשב הזה. הזן אותה שוב בסימנייה או בהגדרות הפרוקסי."
   },
   "settings": {
     "openWithAssociations": {
@@ -380,7 +380,7 @@
         "refresh": "רענן",
         "selectAll": "בחר הכל",
         "delete": "מחק",
-        "deletePermanent": "מחיקה לצמיתות",
+        "deletePermanent": "מחק לצמיתות",
         "navigateUp": "רמה אחת למעלה",
         "navigateBack": "אחורה",
         "navigateForward": "קדימה",
@@ -400,10 +400,10 @@
       "title": "הגנה באמצעות סיסמה",
       "systemMode": "הגנת מערכת",
       "systemModeHint": "הסיסמאות מוצפנות עבור חשבון Windows שלך, וניתן לצפות בהן בהגדרות החיבור.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "עותק נייד: סיסמאות שנשמרו כך ניתנות לקריאה רק במחשב הזה. עם סיסמת מאסטר הן עוברות יחד עם התיקייה.",
       "strongholdMode": "הגנה משופרת",
       "strongholdModeHint": "נדרשת סיסמת מאסטר. כדי לצפות בסיסמה שמורה יש להזין שוב את סיסמת המאסטר.",
-      "loading": "בודקים את הכספת…",
+      "loading": "בודק את הכספת…",
       "configuredLocked": "הכספת מאובטחת באמצעות סיסמת מאסטר ונעולה.",
       "configuredUnlocked": "הכספת מאובטחת באמצעות סיסמת מאסטר ופתוחה.",
       "masterPassword": "סיסמת מאסטר",
@@ -413,7 +413,7 @@
       "setup": "הגנה על סיסמאות שמורות",
       "settingUp": "מפעיל הגנה…",
       "unlock": "ביטול נעילה",
-      "unlocking": "פתיחת נעילה…",
+      "unlocking": "מבטל נעילה…",
       "unlockRequired": "ביטול נעילת הכספת",
       "unlockRequiredHint": "הסיסמאות השמורות נעולות. בטל את נעילת הכספת כדי להמשיך.",
       "lockNow": "נעל עכשיו",
@@ -428,7 +428,7 @@
       "change": "שינוי סיסמה",
       "systemUnlock": "אפשר ביטול נעילה באמצעות המערכת",
       "systemUnlockHint": "משתמש ב-Windows Hello (קוד PIN, זיהוי פנים או טביעת אצבע, בהתאם להגדרות של Windows). סיסמת המאסטר שלך נשארת שיטת השחזור.",
-      "unlockWithSystem": "פתיחה באמצעות אימות מערכת",
+      "unlockWithSystem": "ביטול נעילה באמצעות אימות מערכת",
       "systemUnavailable": "ביטול נעילה באמצעות המערכת אינו זמין בפלטפורמה זו.",
       "noRecovery": "לא ניתן לשחזר סיסמת מאסטר שנשכחה. איפוס הכספת מוחק את כל הסיסמאות וביטויי הסיסמה השמורים.",
       "passwordMismatch": "הסיסמאות אינן תואמות.",
@@ -446,7 +446,7 @@
       "showConfirmationsHint": "לבקש אישור לפני הצגת סיסמה שמורה, הפעלת קובץ הפעלה או פתיחת קובץ בתוכנה שלא שימשה עד כה. איפוס הכספת, העברת סיסמה שמורה לשרת אחר וכיבוי האפשרות הזאת מחייבים אישור תמיד.",
       "unavailable": "הכספת אינה זמינה.",
       "failed": "הפעולה בכספת נכשלה.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "סיסמת המאסטר לא התקבלה. המתן רגע לפני ניסיון נוסף."
     },
     "unlimitedPlaceholder": "ללא הגבלה",
     "connectTimeoutLabel": "זמן המתנה לחיבור, שניות",
@@ -475,10 +475,10 @@
     },
     "concurrencyLabel": "העברות במקביל",
     "concurrencyHint": "כמה קבצים להעלות ולהוריד בו-זמנית בכל הכרטיסיות (0 או ריק — ללא הגבלה). חל מיד; העברות שכבר רצות מסתיימות כרגיל.",
-    "speedLimitLabel": "מגבלת מהירות, KB/s",
+    "speedLimitLabel": "מגבלת מהירות, KB/ש׳",
     "speedLimitHint": "חל על הסכום הכולל של כל ההעברות המתבצעות במקביל (0 או ריק — אין הגבלה). נכנס לתוקף באופן מיידי, ללא צורך להמתין לחיבור הבא.",
     "notifyOnComplete": "הודעה עם סיום ההעברות",
-    "notifyOnCompleteHint": "התראה מערכתית כאשר תור ההעברה מתרוקן — אך ורק כאשר החלון אינו נמצא בפוקוס.",
+    "notifyOnCompleteHint": "התראה מערכתית כאשר תור ההעברות מתרוקן — אך ורק כאשר החלון אינו נמצא בפוקוס.",
     "overwriteActionLabel": "בהתנגשות שמות",
     "overwriteAsk": "שאל",
     "overwriteOverwrite": "החלפה",
@@ -493,7 +493,7 @@
     "languageLabel": "שפת הממשק",
     "interfaceScaleLabel": "גודל הממשק",
     "interfaceScaleHint": "משנה את גודל הטקסט ורכיבי הבקרה בכל היישום.",
-    "dateFormatLabel": "פורמט תאריך ושעה",
+    "dateFormatLabel": "תבנית תאריך ושעה",
     "dateFormatOnlyLabel": "תבנית תאריך",
     "timeFormatLabel": "תבנית שעה",
     "timeFormat24Hour": "24 שעות",
@@ -511,8 +511,8 @@
     "autoCheckUpdatesHint": "בודק אם יש עדכונים בעת ההפעלה ופעם ביום, ומוריד אותם ברקע. עדכון שהורד מותקן בשקט בהפעלה הבאה של FTPeach, או מיד משורת המצב.",
     "autoReconnectTabs": "חיבור מחדש של הכרטיסיות ששוחזרו בעת ההפעלה",
     "autoReconnectTabsHint": "כבוי כברירת מחדל. כשהאפשרות פעילה, כרטיסיות משוחזרות של שרתים שמורים מתחברות אוטומטית.",
-    "saveSessionOnExit": "שמור את ההפעלה בעת היציאה",
-    "saveSessionOnExitHint": "משחזר את הכרטיסיות הפתוחות, סוגי החלוניות והנתיבים בהפעלה הבאה. כיבוי אפשרות זו מוחק את ההפעלה השמורה.",
+    "saveSessionOnExit": "שמור את הסשן בעת היציאה",
+    "saveSessionOnExitHint": "משחזר את הכרטיסיות הפתוחות, סוגי החלוניות והנתיבים בהפעלה הבאה. כיבוי אפשרות זו מוחק את הסשן השמור.",
     "checkNow": "בדוק עכשיו",
     "updateStatus": {
       "checking": "בודק אם יש עדכונים…",
@@ -680,11 +680,11 @@
       "color": "צבע",
       "protocol": "פרוטוקול",
       "keyFile": "קובץ מפתח",
-      "caCertFile": "אישור CA",
+      "caCertFile": "תעודת CA",
       "remotePath": "תיקיית ברירת מחדל",
       "localPath": "תיקייה מקומית",
       "folder": "תיקייה",
-      "maxConnections": "מספר חיבורים מרבי לחלונית",
+      "maxConnections": "חיבורים",
       "encoding": "קידוד"
     },
     "icons": {
@@ -742,7 +742,7 @@
     "collapseFolder": "קפל את \"{{name}}\"",
     "noFolder": "ללא תיקייה",
     "maxConnectionsHint": "לפחות 2: חיבור אחד לעיון בתיקיות, והשאר להעברת קבצים. לכל חלונית מגבלה משלה.",
-    "encodingHint": "שנו אותו רק אם שמות הקבצים בשרת הזה מוצגים משובשים.",
+    "encodingHint": "שנה אותו רק אם שמות הקבצים בשרת הזה מוצגים משובשים.",
     "encodings": {
       "utf8": "UTF-8 (ברירת מחדל)",
       "cyrillic": "קירילי",
@@ -783,12 +783,12 @@
       "passphrase": "ביטוי סיסמה",
       "keyFilePlaceholder": "קובץ מפתח…",
       "chooseKeyFile": "בחר קובץ מפתח…",
-      "caCertFilePlaceholder": "אישור CA…",
-      "chooseCaCertFile": "בחר אישור CA…"
+      "caCertFilePlaceholder": "תעודת CA…",
+      "chooseCaCertFile": "בחר תעודת CA…"
     },
     "secureToggle": {
-      "tooltip": "בטל את הסימון כדי לקבל אישורי שרת בחתימה עצמית ואישורים לא תקפים",
-      "label": "אמת אישור"
+      "tooltip": "בטל את הסימון כדי לקבל תעודות שרת בחתימה עצמית ותעודות לא תקפות",
+      "label": "אמת תעודה"
     },
     "cleartextToggle": {
       "tooltip": "כתובת http:// שולחת את הסיסמה ללא הצפנה. FTPeach מנסה קודם https:// ולא מתחבר בלי האפשרות הזו.",
@@ -798,7 +798,7 @@
       "tooltip": "התחבר באמצעות קובץ מפתח SSH פרטי במקום סיסמה",
       "label": "התחבר באמצעות מפתח SSH"
     },
-    "rsaKeyWarning": "למפתחות RSA פרטיים יש סיכון מוכר להתקפות ערוץ צד המבוססות על מדידת זמן. מומלץ להשתמש ב־Ed25519 עבור מפתחות SSH חדשים.",
+    "rsaKeyWarning": "למפתחות RSA פרטיים יש סיכון מוכר להתקפות ערוץ צד המבוססות על מדידת זמן. מומלץ להשתמש ב-Ed25519 עבור מפתחות SSH חדשים.",
     "connectTooltip": {
       "cancel": "ביטול",
       "connect": "התחבר",
@@ -866,7 +866,7 @@
     "importNothingNewShort": "אין חדש",
     "importSkippedShort": "דולגו: {{count}}",
     "quitPendingShort": "יציאה…",
-    "upToDate": "Up to date",
+    "upToDate": "מעודכן",
     "cancelQuitLong": "בטל את היציאה",
     "listSeparator": ", "
   },

@@ -136,7 +136,7 @@
     "filesAriaLabel": "Pliki",
     "rename": "Zmień nazwę",
     "resetColumnWidths": "Przywróć szerokości kolumn",
-    "updatedAtTooltip": "Aktualizacja: {{date}}",
+    "updatedAtTooltip": "Zaktualizowano: {{date}}",
     "searchTooltip": "Wyszukiwanie ({{shortcut}})",
     "searchPlaceholder": "Wyszukaj… ({{shortcut}})",
     "editPathAriaLabel": "Edytuj ścieżkę",
@@ -150,7 +150,7 @@
   },
   "update": {
     "readyToInstall": "Dostępna jest aktualizacja w wersji {{version}} — kliknij „Uruchom ponownie i zainstaluj”, aby ją zastosować.",
-    "downloadingWithPercent": "Pobieranie aktualizacji w wersji {{version}}: {{percent}} %",
+    "downloadingWithPercent": "Pobieranie aktualizacji w wersji {{version}}: {{percent}}%",
     "downloadingFound": "Znaleziono aktualizację w wersji {{version}}, trwa pobieranie…",
     "restartAndInstall": "Uruchom ponownie i zainstaluj",
     "availableAction": "dostępna!",
@@ -229,7 +229,7 @@
     "replaceConnection": "Ten panel jest już połączony z „{{current}}”. Zastąpić to połączenie połączeniem z „{{next}}”?",
     "replaceConnectionLabel": "Zastąp",
     "deleteSelected": "Czy chcesz usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
-    "deleteEntry": "Usunąć „{{name}}”? Tego działania nie da się cofnąć.",
+    "deleteEntry": "Usunąć „{{name}}”? Tego działania nie można cofnąć.",
     "recycleSelected": "Czy chcesz przenieść zaznaczone elementy ({{count}}) do Kosza?",
     "recycleEntry": "Przenieść „{{name}}” do Kosza?",
     "deletePermanentSelected": "Czy chcesz trwale usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
@@ -328,7 +328,7 @@
     "replaceUnsupported": "Serwer nie zezwolił na nadpisanie istniejącego pliku.",
     "createUnsupported": "Ten serwer FTP nie obsługuje tworzenia nowych plików. Spróbuj SFTP lub WebDAV, jeśli serwer je udostępnia.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Nie można odczytać zapisanego hasła na tym komputerze. Wprowadź je ponownie w zakładce lub w ustawieniach serwera proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -404,7 +404,7 @@
       "title": "Ochrona hasłem",
       "systemMode": "Ochrona systemowa",
       "systemModeHint": "Hasła są szyfrowane dla Twojego konta Windows i można je wyświetlić w ustawieniach połączenia.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Kopia przenośna: zapisane w ten sposób hasła można odczytać tylko na tym komputerze. Z hasłem głównym przenoszą się razem z folderem.",
       "strongholdMode": "Wzmocniona ochrona",
       "strongholdModeHint": "Wymaga hasła głównego. Aby wyświetlić zapisane hasło, trzeba ponownie podać hasło główne.",
       "loading": "Sprawdzanie sejfu…",
@@ -450,7 +450,7 @@
       "showConfirmationsHint": "Pytaj przed pokazaniem zapisanego hasła, uruchomieniem pliku wykonywalnego lub otwarciem pliku programem, który nie był dotąd używany. Reset sejfu, przeniesienie zapisanego hasła na inny serwer i wyłączenie tej opcji zawsze wymagają potwierdzenia.",
       "unavailable": "Sejf jest niedostępny.",
       "failed": "Operacja na sejfie nie powiodła się.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Hasło główne nie zostało przyjęte. Odczekaj chwilę przed ponowną próbą."
     },
     "unlimitedPlaceholder": "Bez ograniczeń",
     "connectTimeoutLabel": "Limit czasu połączenia, s",
@@ -474,7 +474,7 @@
       "testTargetPortPlaceholder": "Port",
       "test": "Testuj proxy",
       "testing": "Testowanie…",
-      "testOk": "Proxy pomyślnie połączył się z serwerem docelowym.",
+      "testOk": "Serwer proxy pomyślnie połączył się z serwerem docelowym.",
       "testFailed": "Test proxy zakończył się niepowodzeniem."
     },
     "concurrencyLabel": "Równoczesne transfery",
@@ -589,7 +589,7 @@
     },
     "empty": "W tym miejscu będą wyświetlane przesyłane i pobierane pliki",
     "newTransfers_one": "{{count}} nowy transfer",
-    "newTransfers_other": "{{count}} nowych transferów",
+    "newTransfers_other": "{{count}} nowego transferu",
     "status": {
       "queued": "W kolejce",
       "done": "Gotowe",
@@ -692,7 +692,7 @@
       "remotePath": "Folder domyślny",
       "localPath": "Folder lokalny",
       "folder": "Folder",
-      "maxConnections": "Maksymalna liczba połączeń na panel",
+      "maxConnections": "Połączenia",
       "encoding": "Kodowanie"
     },
     "icons": {
@@ -859,7 +859,7 @@
     "status": {
       "transferring": "Przesyłanie pliku",
       "paused": "Wstrzymane",
-      "connected": "Połączone",
+      "connected": "Połączono",
       "connecting": "Łączenie",
       "connectFailed": "Nie udało się nawiązać połączenia",
       "disconnected": "Brak połączenia"
@@ -874,7 +874,7 @@
     "importNothingNewShort": "Nic nowego",
     "importSkippedShort": "Pominięto: {{count}}",
     "quitPendingShort": "Zamykanie…",
-    "upToDate": "Up to date",
+    "upToDate": "Aktualna wersja",
     "cancelQuitLong": "Anuluj wyjście",
     "listSeparator": ", "
   },
@@ -904,7 +904,7 @@
   "paneSourceSwitcher": {
     "local": "Komputer",
     "remote": "Serwer",
-    "updatedAtTooltip": "Aktualizacja: {{date}}",
+    "updatedAtTooltip": "Zaktualizowano: {{date}}",
     "connectToServer": "Serwer"
   },
   "paneConnectEmptyState": {
@@ -922,7 +922,7 @@
   },
   "quitDialog": {
     "unsyncedEdits": "Pliki ze zmianami, które nie zostały jeszcze przesłane na serwer: {{count}}. Przy zamykaniu ich kopie zostaną zachowane do odzyskania i zaproponowane przy następnym uruchomieniu FTPeach.",
-    "preserveAndQuit": "Zachowaj do odzyskania i zakończ",
+    "preserveAndQuit": "Zachowaj do odzyskania i wyjdź",
     "return": "Wróć",
     "message_one": "Trwa jeszcze {{count}} transfer. Wyjść i go przerwać?",
     "message_other": "Trwa jeszcze {{count}} transferu. Wyjść i je przerwać?",

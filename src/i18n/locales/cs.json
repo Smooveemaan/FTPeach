@@ -98,17 +98,17 @@
     "openWith": "Otevřít pomocí…",
     "permissions": "Oprávnění…",
     "moveTo": "Přesunout do…",
-    "copyPath": "Zkopírovat cestu",
+    "copyPath": "Kopírovat cestu",
     "delete": "Odstranit",
     "deleteSelected_one": "Odstranit ({{count}} soubor)",
     "deleteSelected_other": "Odstranit ({{count}} souborů)",
-    "deletePermanently": "Trvale smazat",
-    "deleteSelectedPermanently_one": "Trvale smazat ({{count}} soubor)",
-    "deleteSelectedPermanently_other": "Trvale smazat ({{count}} souborů)",
+    "deletePermanently": "Trvale odstranit",
+    "deleteSelectedPermanently_one": "Trvale odstranit ({{count}} soubor)",
+    "deleteSelectedPermanently_other": "Trvale odstranit ({{count}} souborů)",
     "deleteSelected_few": "Odstranit ({{count}} soubory)",
     "deleteSelected_many": "Odstranit ({{count}} souboru)",
-    "deleteSelectedPermanently_few": "Trvale smazat ({{count}} soubory)",
-    "deleteSelectedPermanently_many": "Trvale smazat ({{count}} souboru)"
+    "deleteSelectedPermanently_few": "Trvale odstranit ({{count}} soubory)",
+    "deleteSelectedPermanently_many": "Trvale odstranit ({{count}} souboru)"
   },
   "chmodDialog": {
     "title": "Oprávnění SFTP",
@@ -118,10 +118,10 @@
     "emptyFolder": "Složka je prázdná",
     "connectFirst": "Nejprve se připojte",
     "homeFolder": "Domovská složka",
-    "copyToPaneBelow": "Zkopírovat do dolního panelu",
-    "copyToPaneAbove": "Zkopírovat do horního panelu",
-    "copyToPaneRight": "Zkopírovat do pravého panelu",
-    "copyToPaneLeft": "Zkopírovat do levého panelu",
+    "copyToPaneBelow": "Kopírovat do dolního panelu",
+    "copyToPaneAbove": "Kopírovat do horního panelu",
+    "copyToPaneRight": "Kopírovat do pravého panelu",
+    "copyToPaneLeft": "Kopírovat do levého panelu",
     "fileTypeFolder": "Složka se soubory",
     "fileTypeGeneric": "Soubor",
     "fileTypeWithExt": "Soubor {{ext}}",
@@ -149,8 +149,8 @@
     "nothingFound": "Nic nenalezeno"
   },
   "update": {
-    "readyToInstall": "Je k dispozici aktualizace v{{version}} — kliknutím na „Restartovat a nainstalovat“ ji nainstalujete.",
-    "downloadingWithPercent": "Stahování aktualizace v{{version}}: {{percent}} %",
+    "readyToInstall": "Je k dispozici aktualizace v{{version}} – kliknutím na „Restartovat a nainstalovat“ ji nainstalujete.",
+    "downloadingWithPercent": "Stahování aktualizace v{{version}}: {{percent}} %",
     "downloadingFound": "Aktualizace v{{version}} nalezena, stahování probíhá…",
     "restartAndInstall": "Restartovat a nainstalovat",
     "availableAction": "dostupná!",
@@ -228,11 +228,11 @@
     "overwriteLabel": "Přepsat",
     "replaceConnection": "Tento panel je již připojen k „{{current}}“. Nahradit připojení za „{{next}}“?",
     "replaceConnectionLabel": "Nahradit",
-    "deleteSelected": "Chcete smazat vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
+    "deleteSelected": "Chcete odstranit vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteEntry": "Odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
     "recycleSelected": "Chcete přesunout vybrané položky ({{count}}) do koše?",
     "recycleEntry": "Přesunout „{{name}}“ do koše?",
-    "deletePermanentSelected": "Chcete trvale smazat vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
+    "deletePermanentSelected": "Chcete trvale odstranit vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
     "deletePermanentEntry": "Trvale odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
     "deleteRemoteSelected": "Chcete trvale odstranit vybrané položky na serveru ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteRemoteEntry": "Chcete trvale odstranit „{{name}}“ na serveru? Tuto akci nelze vrátit zpět.",
@@ -254,7 +254,7 @@
       "closeTab": "Zavřít kartu",
       "reopenClosedTab": "Znovu otevřít zavřenou kartu",
       "newConnection": "Nové připojení",
-      "disconnect": "Odpojit",
+      "disconnect": "Odpojit se",
       "manageBookmarks": "Správa záložek…",
       "saveConnection": "Uložit připojení",
       "saveConnectionSide": "Uložit připojení ({{side}})",
@@ -328,7 +328,7 @@
     "replaceUnsupported": "Server nepovolil přepsat existující soubor.",
     "createUnsupported": "Tento FTP server nepodporuje vytváření nových souborů. Zkuste SFTP nebo WebDAV, pokud je server nabízí.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -384,7 +384,7 @@
         "refresh": "Obnovit",
         "selectAll": "Vybrat vše",
         "delete": "Odstranit",
-        "deletePermanent": "Trvale smazat",
+        "deletePermanent": "Trvale odstranit",
         "navigateUp": "O úroveň výš",
         "navigateBack": "Zpět",
         "navigateForward": "Vpřed",
@@ -404,7 +404,7 @@
       "title": "Ochrana heslem",
       "systemMode": "Systémová ochrana",
       "systemModeHint": "Hesla jsou šifrována pro váš účet Windows a lze je zobrazit v nastavení připojení.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Přenosná kopie: takto uložená hesla lze přečíst jen na tomto počítači. S hlavním heslem se přenášejí spolu se složkou.",
       "strongholdMode": "Rozšířená ochrana",
       "strongholdModeHint": "Vyžaduje hlavní heslo. Pro zobrazení uloženého hesla je nutné znovu zadat hlavní heslo.",
       "loading": "Kontrola trezoru…",
@@ -438,26 +438,26 @@
       "passwordMismatch": "Hesla se neshodují.",
       "passwordTooShort": "Hlavní heslo musí mít alespoň 12 znaků.",
       "strength": {
-        "tooShort": "Příliš krátké — použijte alespoň 12 znaků.",
+        "tooShort": "Příliš krátké – použijte alespoň 12 znaků.",
         "acceptable": "Přijatelné. Delší přístupová fráze je bezpečnější.",
         "strong": "Silné hlavní heslo."
       },
       "reset": "Resetovat trezor",
       "resetHint": "Vymaže trezor a všechna hesla a přístupové fráze k SSH klíčům, které jsou v něm uloženy. Bude nutné znovu nastavit rozšířenou ochranu.",
-      "resetWarning": "Tím se trvale smažou všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
+      "resetWarning": "Tím se trvale odstraní všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
       "confirmReset": "Odstranit uložená hesla",
       "showConfirmations": "Zobrazovat bezpečnostní potvrzení",
       "showConfirmationsHint": "Vyžadovat potvrzení před zobrazením uloženého hesla, spuštěním spustitelného souboru nebo otevřením souboru programem, který ještě nebyl použit. Resetování trezoru, přesun uloženého hesla na jiný server a vypnutí této volby se potvrzují vždy.",
       "unavailable": "Trezor není k dispozici.",
       "failed": "Operace s trezorem selhala.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Hlavní heslo nebylo přijato. Chvíli počkejte a zkuste to znovu."
     },
     "unlimitedPlaceholder": "Bez omezení",
     "connectTimeoutLabel": "Časový limit připojení, s",
     "connectTimeoutHint": "Jak dlouho čekat při připojování na odpověď serveru, než bude považován za nedostupný (0 nebo prázdné pole – bez omezení). Platí pro další připojení.",
     "ftpActiveMode": "Aktivní režim FTP (namísto pasivního)",
     "ftpActiveModeHint": "Pouze FTP/FTPS – na SFTP/WebDAV nemá vliv. Potřeba jen zřídka, v sítích nebo na serverech, kde pasivní režim neprojde přes NAT. Platí pro další připojení.",
-    "ftpActiveModeDisabledByProxy": "Není k dispozici, pokud je zapnutý proxy server — proxy tunel podporuje pouze odchozí připojení, proto musí FTP zůstat v pasivním režimu.",
+    "ftpActiveModeDisabledByProxy": "Není k dispozici, pokud je zapnutý proxy server – proxy tunel podporuje pouze odchozí připojení, proto musí FTP zůstat v pasivním režimu.",
     "proxy": {
       "enable": "Připojovat přes proxy server",
       "enableHint": "SOCKS4, SOCKS5 nebo HTTP CONNECT – platí pro protokoly FTP, FTPS, SFTP a WebDAV. Platí pro další připojení.",
@@ -555,7 +555,7 @@
   "openWithDialog": {
     "title": "Otevřít v aplikaci",
     "downloading": "Stahování souboru „{{fileName}}“…",
-    "progress": "{{loaded}} z {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} z {{total}} ({{percent}} %)",
     "connecting": "Připojování…"
   },
   "transfers": {
@@ -622,7 +622,7 @@
   },
   "log": {
     "connecting": "Připojování k {{addr}}...",
-    "activeModeViaProxy": "Aktivní režim FTP není přes proxy server k dispozici — používá se pasivní režim.",
+    "activeModeViaProxy": "Aktivní režim FTP není přes proxy server k dispozici – používá se pasivní režim.",
     "connectFailed": "Připojení se nezdařilo: {{error}}",
     "connected": "Přihlášeno.",
     "receivedEntries_one": "Přijat {{count}} záznam",
@@ -631,8 +631,8 @@
     "listFailed": "Výpis složky se nezdařil: {{error}}",
     "tlsInit": "Inicializace TLS...",
     "tlsEstablished": "Bylo navázáno TLS připojení.",
-    "davResumeUnsupportedLocal": "WebDAV nepodporuje obnovení nahrávání — soubor bude odeslán znovu od začátku.",
-    "davResumeUnsupportedServer": "Server nepodporuje obnovení stahování (očekávaný stav {{expected}}, obdržen {{status}}) — soubor se stáhne znovu.",
+    "davResumeUnsupportedLocal": "WebDAV nepodporuje obnovení nahrávání – soubor bude odeslán znovu od začátku.",
+    "davResumeUnsupportedServer": "Server nepodporuje obnovení stahování (očekávaný stav {{expected}}, obdržen {{status}}) – soubor se stáhne znovu.",
     "uploadResumed": "Pokračování v odesílání {{path}} od {{offset}} bajtů.",
     "uploadRestartedSourceChanged": "Místní soubor už neodpovídá pozastavenému odesílání {{path}} – bude odeslán znovu od začátku.",
     "uploadRestartedMismatch": "Data, která už jsou na serveru, neodpovídají místnímu souboru – {{path}} bude odeslán znovu od začátku.",
@@ -644,14 +644,14 @@
   "logPanel": {
     "showAllConnections": "Zobrazit všechna připojení",
     "showOnlyThisConnection": "Zobrazit pouze toto připojení",
-    "connectionClosedShowOnly": "Připojení ukončeno — zobrazit pouze toto připojení",
+    "connectionClosedShowOnly": "Připojení ukončeno – zobrazit pouze toto připojení",
     "filterKinds": "Filtr",
     "kindStatus": "Stavové zprávy",
     "kindCommand": "Příkazy",
     "kindResponse": "Odpovědi serveru",
     "kindError": "Chyby",
     "searchPlaceholder": "Hledat v protokolu",
-    "copyToClipboard": "Zkopírovat protokol do schránky",
+    "copyToClipboard": "Kopírovat protokol do schránky",
     "saveToFile": "Uložit zobrazené řádky do souboru .txt",
     "clearLog": "Vymazat protokol",
     "copiedTooltip": "Zkopírováno",
@@ -672,7 +672,7 @@
   },
   "siteManager": {
     "emptyList": "Zatím nejsou uloženy žádné servery",
-    "confirmDeleteSite": "Smazat server „{{name}}“?"
+    "confirmDeleteSite": "Odstranit server „{{name}}“?"
   },
   "siteManagerDialog": {
     "titleNew": "Nová záložka",
@@ -692,7 +692,7 @@
       "remotePath": "Výchozí složka",
       "localPath": "Místní složka",
       "folder": "Složka",
-      "maxConnections": "Maximum připojení na panel",
+      "maxConnections": "Připojení",
       "encoding": "Kódování"
     },
     "icons": {
@@ -739,7 +739,7 @@
     "unsavedChangesMessage": "Chcete změny v záložce uložit?",
     "newFolder": "Nová složka",
     "folderNamePlaceholder": "Název složky",
-    "confirmDeleteFolder": "Smazat složku „{{name}}“? Její záložky se přesunou o úroveň výš.",
+    "confirmDeleteFolder": "Odstranit složku „{{name}}“? Její záložky se přesunou o úroveň výš.",
     "searchPlaceholder": "Hledat…",
     "clearSearch": "Vymazat hledání",
     "noSearchResults": "Žádné záložky neodpovídají vašemu vyhledávání",
@@ -824,11 +824,11 @@
   "tray": {
     "show": "Zobrazit FTPeach",
     "transferring": "Probíhající přenosy: {{count}}",
-    "transferringProgress": "Probíhající přenosy: {{count}} · {{percent}} %",
+    "transferringProgress": "Probíhající přenosy: {{count}} · {{percent}} %",
     "quitWaiting": "Aplikace se ukončí po dokončení přenosů · {{count}}",
-    "quitWaitingProgress": "Aplikace se ukončí po dokončení přenosů · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Aplikace se ukončí po dokončení přenosů · {{count}} · {{percent}} %",
     "pauseAll": "Pozastavit všechny přenosy",
-    "resumeAll": "Obnovit všechny přenosy",
+    "resumeAll": "Pokračovat ve všech přenosech",
     "speedLimit": "Omezení rychlosti",
     "unlimited": "Bez omezení",
     "preventSleep": "Nenechat počítač usnout",
@@ -874,7 +874,7 @@
     "importNothingNewShort": "Nic nového",
     "importSkippedShort": "Přeskočeno: {{count}}",
     "quitPendingShort": "Ukončování…",
-    "upToDate": "Up to date",
+    "upToDate": "Aktuální verze",
     "cancelQuitLong": "Zrušit ukončení",
     "listSeparator": ", "
   },
@@ -888,7 +888,7 @@
     "orientationToStacked": "Uspořádat panely nad sebe",
     "pauseUnsupportedWebdav": "WebDAV nepodporuje pozastavení",
     "pauseActive": "Pozastavit aktivní přenosy",
-    "resumeAllPaused": "Obnovit všechny pozastavené přenosy",
+    "resumeAllPaused": "Pokračovat ve všech pozastavených přenosech",
     "stopActive": "Zastavit aktivní přenosy",
     "retryAllStopped": "Zopakovat všechny zastavené přenosy",
     "refreshPanesTooltip": "Obnovit oba panely (F5)"

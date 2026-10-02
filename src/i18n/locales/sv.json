@@ -43,7 +43,7 @@
         "message": "Köra den här körbara filen eller det här skriptet?"
       },
       "executeRemoteFile": {
-        "message": "Hämta och köra den här körbara filen eller det här skriptet?"
+        "message": "Ladda ner och köra den här körbara filen eller det här skriptet?"
       },
       "openWithApplication": {
         "message": "Öppna den här filen med ett program som inte har använts med FTPeach tidigare?",
@@ -118,12 +118,12 @@
     "copyToPaneAbove": "Kopiera till övre panelen",
     "copyToPaneRight": "Kopiera till högra panelen",
     "copyToPaneLeft": "Kopiera till vänstra panelen",
-    "fileTypeFolder": "Mapp",
+    "fileTypeFolder": "Filmapp",
     "fileTypeGeneric": "Fil",
     "fileTypeWithExt": "{{ext}}-fil",
     "columnSize": "Storlek",
     "columnModifiedAt": "Ändringsdatum",
-    "columnCreatedAt": "Skapad den",
+    "columnCreatedAt": "Skapad",
     "columnType": "Typ",
     "columnPermissions": "Behörigheter",
     "columnOwner": "Ägare",
@@ -146,8 +146,8 @@
   },
   "update": {
     "readyToInstall": "Uppdatering v{{version}} finns nu tillgänglig – klicka på ”Starta om och installera” för att installera den.",
-    "downloadingWithPercent": "Hämtar uppdatering v{{version}}: {{percent}} %",
-    "downloadingFound": "Uppdatering v{{version}} hittad, hämtar…",
+    "downloadingWithPercent": "Laddar ner uppdatering v{{version}}: {{percent}} %",
+    "downloadingFound": "Uppdatering v{{version}} hittad, laddar ner…",
     "restartAndInstall": "Starta om och installera",
     "availableAction": "tillgänglig!",
     "installAction": "Installera uppdatering",
@@ -165,7 +165,7 @@
     "message": "Lösenordet eller lösenfrasen kunde inte krypteras och sparades inte. En befintlig anslutning kan fortsätta tills den bryts; i annat fall måste du ange lösenordet igen nästa gång."
   },
   "resize": {
-    "paneSize": "Dra för att ändra storlek på rutorna (dubbelklicka för att återställa)",
+    "paneSize": "Dra för att ändra storlek på panelerna (dubbelklicka för att återställa)",
     "height": "Dra för att ändra höjden (dubbelklicka för att återställa)",
     "ratio": "Dra för att ändra fördelningen (dubbelklicka för att återställa)"
   },
@@ -213,7 +213,7 @@
     "labelMultiple": "Flytta de markerade objekten ({{count}}) till mappen:"
   },
   "confirm": {
-    "resetLayout": "Återställa storlekarna på fönster och rutor, återställa standardkolumnerna och rensa gränssnittets cache?",
+    "resetLayout": "Återställa storlekarna på fönster och paneler, återställa standardkolumnerna och rensa gränssnittets cache?",
     "closeTabWithActiveTransfers": "Det pågår överföringar på den här fliken. Stänga fliken och avbryta dem?",
     "closeTabLabel": "Stäng fliken",
     "overwriteSingleExists": "”{{name}}” finns redan i målmappen. Vill du skriva över den?",
@@ -222,13 +222,13 @@
     "overwriteLabel": "Skriv över",
     "replaceConnection": "Den här panelen är redan ansluten till ”{{current}}”. Vill du ersätta anslutningen med ”{{next}}”?",
     "replaceConnectionLabel": "Ersätt",
-    "deleteSelected": "Vill du ta bort de markerade objekten ({{count}})? Denna åtgärd går inte att ångra.",
-    "deleteEntry": "Ta bort ”{{name}}”? Denna åtgärd kan inte ångras.",
+    "deleteSelected": "Vill du ta bort de markerade objekten ({{count}})? Den här åtgärden går inte att ångra.",
+    "deleteEntry": "Ta bort ”{{name}}”? Den här åtgärden går inte att ångra.",
     "recycleSelected": "Vill du flytta de markerade objekten ({{count}}) till papperskorgen?",
     "recycleEntry": "Ska ”{{name}}” flyttas till papperskorgen?",
-    "deletePermanentSelected": "Vill du radera de markerade objekten permanent ({{count}})? Denna åtgärd går inte att ångra.",
-    "deletePermanentEntry": "Vill du radera ”{{name}}” permanent? Denna åtgärd kan inte ångras.",
-    "deleteRemoteSelected": "Vill du ta bort de markerade objekten på servern ({{count}}) permanent? Denna åtgärd går inte att ångra.",
+    "deletePermanentSelected": "Vill du ta bort de markerade objekten ({{count}}) permanent? Den här åtgärden går inte att ångra.",
+    "deletePermanentEntry": "Vill du ta bort ”{{name}}” permanent? Den här åtgärden går inte att ångra.",
+    "deleteRemoteSelected": "Vill du ta bort de markerade objekten på servern ({{count}}) permanent? Den här åtgärden går inte att ångra.",
     "deleteRemoteEntry": "Vill du ta bort ”{{name}}” på servern permanent? Den här åtgärden går inte att ångra."
   },
   "paneSide": {
@@ -236,7 +236,7 @@
     "bottom": "nederst",
     "left": "vänster",
     "right": "höger",
-    "labelWithTab": "{{base}} (fliken {{tabNumber}}, {{side}})",
+    "labelWithTab": "{{base}} (flik {{tabNumber}}, {{side}})",
     "labelWithSide": "{{base}} ({{side}})"
   },
   "menu": {
@@ -320,7 +320,7 @@
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Ett sparat lösenord kan inte läsas på den här datorn. Ange det igen i bokmärket eller i proxyinställningarna."
   },
   "settings": {
     "openWithAssociations": {
@@ -335,7 +335,7 @@
       "add": "Lägg till koppling"
     },
     "minimizeToTray": "Minimera till systemfältet",
-    "minimizeToTrayHint": "Minimeringsknappen döljer fönstret i systemfältet istället för i aktivitetsfältet.",
+    "minimizeToTrayHint": "Minimeringsknappen döljer fönstret i systemfältet i stället för i aktivitetsfältet.",
     "closeToTray": "Minimera till systemfältet vid stängning",
     "closeToTrayHint": "Stängningsknappen döljer fönstret i systemfältet i stället för att avsluta programmet. Avsluta via menyn på ikonen i systemfältet.",
     "title": "Inställningar",
@@ -396,7 +396,7 @@
       "title": "Lösenordsskydd",
       "systemMode": "Systemskydd",
       "systemModeHint": "Lösenorden krypteras för ditt Windows-konto och kan visas i anslutningsinställningarna.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Portabel kopia: lösenord som sparas så här kan bara läsas på den här datorn. Med ett huvudlösenord följer de med mappen.",
       "strongholdMode": "Förstärkt skydd",
       "strongholdModeHint": "Kräver ett huvudlösenord. För att visa ett sparat lösenord måste du ange huvudlösenordet igen.",
       "loading": "Kontrollerar valvet…",
@@ -430,7 +430,7 @@
       "passwordMismatch": "Lösenorden stämmer inte överens.",
       "passwordTooShort": "Huvudlösenordet måste bestå av minst 12 tecken.",
       "strength": {
-        "tooShort": "För kort — använd minst 12 tecken.",
+        "tooShort": "För kort – använd minst 12 tecken.",
         "acceptable": "Godtagbart. En längre lösenfras är säkrare.",
         "strong": "Starkt huvudlösenord."
       },
@@ -442,19 +442,19 @@
       "showConfirmationsHint": "Fråga innan ett sparat lösenord visas, en körbar fil körs eller en fil öppnas med ett program som inte har använts tidigare. Återställning av valvet, flytt av ett sparat lösenord till en annan server och avstängning av den här inställningen bekräftas alltid.",
       "unavailable": "Valvet är inte tillgängligt.",
       "failed": "Åtgärden i valvet misslyckades.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Huvudlösenordet godtogs inte. Vänta en stund innan du försöker igen."
     },
     "unlimitedPlaceholder": "Ingen gräns",
     "connectTimeoutLabel": "Tidsgräns för anslutning, s",
-    "connectTimeoutHint": "Hur länge FTPeach väntar på svar från servern vid anslutning innan den räknas som onåbar (0 eller tomt fält — ingen gräns). Gäller nästa anslutning.",
+    "connectTimeoutHint": "Hur länge FTPeach väntar på svar från servern vid anslutning innan den räknas som onåbar (0 eller tomt fält – ingen gräns). Gäller nästa anslutning.",
     "ftpActiveMode": "Aktivt FTP-läge (i stället för passivt)",
-    "ftpActiveModeHint": "Endast FTP/FTPS — påverkar inte SFTP/WebDAV. Behövs sällan, endast i nätverk/på servrar där passivt läge inte fungerar genom NAT. Gäller för nästa anslutning.",
-    "ftpActiveModeDisabledByProxy": "Inte tillgängligt när en proxy är aktiverad — en proxytunnel stöder bara utgående anslutningar, så FTP måste stanna i passivt läge.",
+    "ftpActiveModeHint": "Endast FTP/FTPS – påverkar inte SFTP/WebDAV. Behövs sällan, endast i nätverk/på servrar där passivt läge inte fungerar genom NAT. Gäller för nästa anslutning.",
+    "ftpActiveModeDisabledByProxy": "Inte tillgängligt när en proxy är aktiverad – en proxytunnel stöder bara utgående anslutningar, så FTP måste stanna i passivt läge.",
     "proxy": {
       "enable": "Använd proxy för anslutningar",
       "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT – gäller för FTP, FTPS, SFTP och WebDAV. Gäller för nästa anslutning.",
       "typeLabel": "Proxytyp",
-      "hostLabel": "Proxy-värd",
+      "hostLabel": "Proxyvärd",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
       "usernameLabel": "Användarnamn",
@@ -474,7 +474,7 @@
     "speedLimitLabel": "Hastighetsbegränsning, KB/s",
     "speedLimitHint": "Gäller summan av alla samtidiga överföringar (0 eller tomt fält – ingen gräns). Gäller direkt, utan att vänta på nästa anslutning.",
     "notifyOnComplete": "Meddela när överföringarna är klara",
-    "notifyOnCompleteHint": "Ett systemmeddelande när överföringskön töms — endast när fönstret inte har fokus.",
+    "notifyOnCompleteHint": "Ett systemmeddelande när överföringskön töms – endast när fönstret inte har fokus.",
     "overwriteActionLabel": "Vid namnkonflikt",
     "overwriteAsk": "Fråga",
     "overwriteOverwrite": "Skriv över",
@@ -504,7 +504,7 @@
     "coloredTabs": "Färgade flikar",
     "coloredTabsHint": "Färglägger flikens namn och ikon med den sparade bokmärkesfärgen.",
     "autoCheckUpdates": "Uppdatera automatiskt",
-    "autoCheckUpdatesHint": "Söker efter uppdateringar vid uppstart och en gång om dagen och laddar ned dem i bakgrunden. En nedladdad uppdatering installeras tyst nästa gång FTPeach startar, eller direkt från statusfältet.",
+    "autoCheckUpdatesHint": "Söker efter uppdateringar vid uppstart och en gång om dagen och laddar ner dem i bakgrunden. En nedladdad uppdatering installeras tyst nästa gång FTPeach startar, eller direkt från statusfältet.",
     "autoReconnectTabs": "Återanslut återställda flikar vid uppstart",
     "autoReconnectTabsHint": "Avstängt som standard. När det är aktiverat ansluts återställda flikar med sparade servrar automatiskt.",
     "saveSessionOnExit": "Spara sessionen vid avslut",
@@ -546,8 +546,8 @@
   },
   "openWithDialog": {
     "title": "Öppna i program",
-    "downloading": "Hämtar ”{{fileName}}”…",
-    "progress": "{{loaded}} av {{total}} ({{percent}} %)",
+    "downloading": "Laddar ner ”{{fileName}}”…",
+    "progress": "{{loaded}} av {{total}} ({{percent}} %)",
     "connecting": "Ansluter…"
   },
   "transfers": {
@@ -608,7 +608,7 @@
   },
   "log": {
     "connecting": "Ansluter till {{addr}}...",
-    "activeModeViaProxy": "Aktivt FTP-läge är inte tillgängligt via en proxy — passivt läge används.",
+    "activeModeViaProxy": "Aktivt FTP-läge är inte tillgängligt via en proxy – passivt läge används.",
     "connectFailed": "Anslutningen misslyckades: {{error}}",
     "connected": "Inloggad.",
     "receivedEntries_one": "{{count}} post togs emot",
@@ -618,7 +618,7 @@
     "tlsInit": "Initierar TLS...",
     "tlsEstablished": "TLS-anslutningen har upprättats.",
     "davResumeUnsupportedLocal": "WebDAV stöder inte återupptagning av uppladdning – filen skickas om från början.",
-    "davResumeUnsupportedServer": "Servern stöder inte återupptagning (förväntad status: {{expected}}, fick {{status}}) — filen kommer att laddas ner på nytt.",
+    "davResumeUnsupportedServer": "Servern stöder inte återupptagning (förväntad status: {{expected}}, fick {{status}}) – filen kommer att laddas ner på nytt.",
     "uploadResumed": "Återupptar uppladdningen av {{path}} vid {{offset}} byte.",
     "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
     "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
@@ -628,7 +628,7 @@
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",
     "showOnlyThisConnection": "Visa endast denna anslutning",
-    "connectionClosedShowOnly": "Anslutningen har stängts — visa endast denna anslutning",
+    "connectionClosedShowOnly": "Anslutningen har stängts – visa endast denna anslutning",
     "filterKinds": "Filter",
     "kindStatus": "Statusmeddelanden",
     "kindCommand": "Kommandon",
@@ -676,7 +676,7 @@
       "remotePath": "Standardmapp",
       "localPath": "Lokal mapp",
       "folder": "Mapp",
-      "maxConnections": "Maximalt antal anslutningar per panel",
+      "maxConnections": "Anslutningar",
       "encoding": "Teckenkodning"
     },
     "icons": {
@@ -808,9 +808,9 @@
   "tray": {
     "show": "Visa FTPeach",
     "transferring": "Pågående överföringar: {{count}}",
-    "transferringProgress": "Pågående överföringar: {{count}} · {{percent}} %",
+    "transferringProgress": "Pågående överföringar: {{count}} · {{percent}} %",
     "quitWaiting": "Avslutar när överföringarna är klara · {{count}}",
-    "quitWaitingProgress": "Avslutar när överföringarna är klara · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Avslutar när överföringarna är klara · {{count}} · {{percent}} %",
     "pauseAll": "Pausa alla överföringar",
     "resumeAll": "Återuppta alla överföringar",
     "speedLimit": "Hastighetsbegränsning",
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Inget nytt",
     "importSkippedShort": "Överhoppade: {{count}}",
     "quitPendingShort": "Avslutar…",
-    "upToDate": "Up to date",
+    "upToDate": "Uppdaterad",
     "cancelQuitLong": "Avbryt avslutning",
     "listSeparator": ", "
   },
@@ -867,7 +867,7 @@
     "toggleRightPane": "Visa/dölj höger panel",
     "toggleTransferQueue": "Visa/dölj överföringskön",
     "toggleLog": "Visa/dölj loggen",
-    "orientationNarrow": "Panelerna staplade — fönstret är för smalt för att visa dem sida vid sida",
+    "orientationNarrow": "Panelerna staplade – fönstret är för smalt för att visa dem sida vid sida",
     "orientationToRow": "Placera panelerna bredvid varandra",
     "orientationToStacked": "Stapla panelerna ovanpå varandra",
     "pauseUnsupportedWebdav": "Paus stöds inte av WebDAV",

@@ -36,7 +36,7 @@
         "message": "¿Mostrar la contraseña de proxy guardada?"
       },
       "vaultReset": {
-        "message": "Todas las contraseñas guardadas y frases de contraseña de claves SSH se eliminarán permanentemente.",
+        "message": "Todas las contraseñas guardadas y las frases de acceso de las claves SSH se eliminarán permanentemente.",
         "approve": "Eliminar bóveda"
       },
       "executeLocalFile": {
@@ -54,7 +54,7 @@
         "approve": "Aplicar"
       },
       "useSystemProtection": {
-        "message": "¿Desactivar la protección reforzada? Las contraseñas guardadas quedarán protegidas por su cuenta de Windows en lugar de la contraseña maestra.",
+        "message": "¿Desactivar la protección reforzada? Las contraseñas guardadas quedarán protegidas por tu cuenta de Windows en lugar de la contraseña maestra.",
         "approve": "Desactivar"
       },
       "transferSecret": {
@@ -148,7 +148,7 @@
   },
   "update": {
     "readyToInstall": "Ya está disponible la actualización v{{version}}: haz clic en «Reiniciar e instalar» para aplicarla.",
-    "downloadingWithPercent": "Descargando la actualización v{{version}}: {{percent}} %",
+    "downloadingWithPercent": "Descargando la actualización v{{version}}: {{percent}} %",
     "downloadingFound": "Se ha encontrado la actualización v{{version}}, descargando…",
     "restartAndInstall": "Reiniciar e instalar",
     "availableAction": "¡disponible!",
@@ -207,7 +207,7 @@
     "labelRemote": "Nombre de la nueva carpeta en el servidor:"
   },
   "newFile": {
-    "title": "Archivo nuevo",
+    "title": "Nuevo archivo",
     "label": "Nombre del archivo (con extensión):"
   },
   "moveToDialog": {
@@ -221,7 +221,7 @@
     "closeTabLabel": "Cerrar pestaña",
     "overwriteSingleExists": "«{{name}}» ya existe en la carpeta de destino. ¿Deseas sobrescribirlo?",
     "overwriteConflicts_one": "Ya existe {{count}} elemento en la carpeta de destino. ¿Deseas sobrescribirlo?",
-    "overwriteConflicts_other": "Ya existen {{count}} elementos en la carpeta de destino. ¿Quieres sobrescribirlos?",
+    "overwriteConflicts_other": "Ya existen {{count}} elementos en la carpeta de destino. ¿Deseas sobrescribirlos?",
     "overwriteLabel": "Sobrescribir",
     "replaceConnection": "Este panel ya está conectado a «{{current}}». ¿Deseas sustituir la conexión por «{{next}}»?",
     "replaceConnectionLabel": "Sustituir",
@@ -233,7 +233,7 @@
     "deletePermanentEntry": "¿Deseas eliminar definitivamente «{{name}}»? Esta acción no se puede deshacer.",
     "deleteRemoteSelected": "¿Deseas eliminar definitivamente los elementos seleccionados del servidor ({{count}})? Esta acción no se puede deshacer.",
     "deleteRemoteEntry": "¿Deseas eliminar definitivamente «{{name}}» del servidor? Esta acción no se puede deshacer.",
-    "overwriteConflicts_many": "Ya existen {{count}} elementos en la carpeta de destino. ¿Quieres sobrescribirlos?"
+    "overwriteConflicts_many": "Ya existen {{count}} elementos en la carpeta de destino. ¿Deseas sobrescribirlos?"
   },
   "paneSide": {
     "top": "arriba",
@@ -316,15 +316,15 @@
     "diskFull": "No hay suficiente espacio en disco.",
     "hostKeyMismatch": "La clave de host del servidor ha cambiado.",
     "integrityMismatch": "El archivo transferido no superó la comprobación de integridad.",
-    "cleanupIncomplete": "La limpieza está incompleta. Se conservaron los archivos cuya pertenencia no pudo verificarse. Revise el destino antes de eliminarlos manualmente.",
+    "cleanupIncomplete": "La limpieza está incompleta. Se conservaron los archivos cuya pertenencia no pudo verificarse. Revisa el destino antes de eliminarlos manualmente.",
     "invalidInput": "El valor proporcionado no es válido.",
     "internal": "Se produjo un error inesperado.",
     "connectFailedPrefix": "No se ha podido conectar al servidor. {{raw}}",
     "alreadyExists": "«{{name}}» ya existe",
     "replaceUnsupported": "El servidor no ha permitido sobrescribir el archivo existente.",
-    "createUnsupported": "Este servidor FTP no admite la creación de archivos nuevos. Pruebe SFTP o WebDAV si el servidor los ofrece.",
+    "createUnsupported": "Este servidor FTP no admite la creación de archivos nuevos. Prueba SFTP o WebDAV si el servidor los ofrece.",
     "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "No se puede leer una contraseña guardada en este equipo. Vuelve a introducirla en el marcador o en la configuración del proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -358,7 +358,7 @@
     "shortcuts": {
       "title": "Atajos de teclado",
       "hint": "Haz clic en un atajo y, a continuación, pulsa una nueva combinación de teclas para reasignarlo.",
-      "globalTitle": "Global",
+      "globalTitle": "Globales",
       "paneTitle": "Panel de archivos",
       "recording": "Pulsa las teclas…",
       "unbound": "Sin asignar",
@@ -368,7 +368,7 @@
       "conflict": "También se usa para: {{action}}",
       "actions": {
         "search": "Buscar ({{side}})",
-        "toggleHiddenFiles": "Mostrar o ocultar archivos ocultos",
+        "toggleHiddenFiles": "Mostrar u ocultar archivos ocultos",
         "newConnection": "Nueva conexión",
         "save": "Guardar ({{side}})",
         "openSettings": "Abrir configuración",
@@ -400,7 +400,7 @@
       "title": "Protección con contraseña",
       "systemMode": "Protección del sistema",
       "systemModeHint": "Las contraseñas se cifran para tu cuenta de Windows y se pueden ver en la configuración de conexión.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Copia portátil: las contraseñas guardadas así solo se pueden leer en este equipo. Con una contraseña maestra, viajan con la carpeta.",
       "strongholdMode": "Protección reforzada",
       "strongholdModeHint": "Requiere una contraseña maestra. Para ver una contraseña guardada hay que volver a introducir la contraseña maestra.",
       "loading": "Comprobando la bóveda…",
@@ -446,7 +446,7 @@
       "showConfirmationsHint": "Pedir confirmación antes de mostrar una contraseña guardada, ejecutar un archivo ejecutable o abrir un archivo con un programa que no se haya usado antes. Restablecer la bóveda, trasladar una contraseña guardada a otro servidor y desactivar esta opción se confirman siempre.",
       "unavailable": "La bóveda no está disponible.",
       "failed": "La operación en la bóveda ha fallado.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "No se ha aceptado la contraseña maestra. Espera un momento antes de volver a intentarlo."
     },
     "unlimitedPlaceholder": "Sin límite",
     "connectTimeoutLabel": "Tiempo de espera de conexión, s",
@@ -478,7 +478,7 @@
     "speedLimitLabel": "Límite de velocidad, KB/s",
     "speedLimitHint": "Se aplica al total combinado de todas las transferencias simultáneas (0 o en blanco: sin límite). Entra en vigor de inmediato, sin necesidad de esperar a la siguiente conexión.",
     "notifyOnComplete": "Notificar cuando finalicen las transferencias",
-    "notifyOnCompleteHint": "Una notificación del sistema cuando se vacía la cola de transferencia, pero solo mientras la ventana no tenga el foco.",
+    "notifyOnCompleteHint": "Una notificación del sistema cuando se vacía la cola de transferencias, pero solo mientras la ventana no tenga el foco.",
     "overwriteActionLabel": "Si hay conflicto de nombres",
     "overwriteAsk": "Preguntar",
     "overwriteOverwrite": "Sobrescribir",
@@ -551,7 +551,7 @@
   "openWithDialog": {
     "title": "Abrir en la aplicación",
     "downloading": "Descargando «{{fileName}}»…",
-    "progress": "{{loaded}} de {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} de {{total}} ({{percent}} %)",
     "connecting": "Conectando…"
   },
   "transfers": {
@@ -569,7 +569,7 @@
     "sourcesKept": "Los originales siguen en su sitio."
   },
   "transferQueue": {
-    "capacity": "La cola está llena (hasta {{limit}} tareas activas o en espera). Espere a que terminen.",
+    "capacity": "La cola está llena (hasta {{limit}} tareas activas o en espera). Espera a que terminen.",
     "title": "Transferencias",
     "columns": {
       "file": "Archivo",
@@ -636,7 +636,7 @@
   "logPanel": {
     "showAllConnections": "Mostrar todas las conexiones",
     "showOnlyThisConnection": "Mostrar solo esta conexión",
-    "connectionClosedShowOnly": "Conexión cerrada — mostrar solo esta conexión",
+    "connectionClosedShowOnly": "Conexión cerrada: mostrar solo esta conexión",
     "filterKinds": "Filtro",
     "kindStatus": "Mensajes de estado",
     "kindCommand": "Comandos",
@@ -684,7 +684,7 @@
       "remotePath": "Carpeta predeterminada",
       "localPath": "Carpeta local",
       "folder": "Carpeta",
-      "maxConnections": "Máximo de conexiones por panel",
+      "maxConnections": "Conexiones",
       "encoding": "Codificación"
     },
     "icons": {
@@ -742,7 +742,7 @@
     "collapseFolder": "Contraer «{{name}}»",
     "noFolder": "Sin carpeta",
     "maxConnectionsHint": "Al menos 2: una conexión explora las carpetas y el resto transfiere archivos. Cada panel tiene su propio límite.",
-    "encodingHint": "Cámbiela solo si los nombres de archivo de este servidor se ven ilegibles.",
+    "encodingHint": "Cámbiala solo si los nombres de archivo de este servidor se ven ilegibles.",
     "encodings": {
       "utf8": "UTF-8 (predeterminada)",
       "cyrillic": "Cirílico",
@@ -816,9 +816,9 @@
   "tray": {
     "show": "Mostrar FTPeach",
     "transferring": "Transferencias en curso: {{count}}",
-    "transferringProgress": "Transferencias en curso: {{count}} · {{percent}} %",
+    "transferringProgress": "Transferencias en curso: {{count}} · {{percent}} %",
     "quitWaiting": "Se cerrará al terminar las transferencias · {{count}}",
-    "quitWaitingProgress": "Se cerrará al terminar las transferencias · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Se cerrará al terminar las transferencias · {{count}} · {{percent}} %",
     "pauseAll": "Pausar todas las transferencias",
     "resumeAll": "Reanudar todas las transferencias",
     "speedLimit": "Límite de velocidad",
@@ -866,7 +866,7 @@
     "importNothingNewShort": "Nada nuevo",
     "importSkippedShort": "Omitidos: {{count}}",
     "quitPendingShort": "Cerrando…",
-    "upToDate": "Up to date",
+    "upToDate": "Actualizado",
     "cancelQuitLong": "Cancelar la salida",
     "listSeparator": ", "
   },

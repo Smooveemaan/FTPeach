@@ -33,7 +33,7 @@
         "message": "Tampilkan kata sandi yang tersimpan untuk bookmark ini?"
       },
       "revealProxyPassword": {
-        "message": "Tampilkan kata sandi proksi yang tersimpan?"
+        "message": "Tampilkan kata sandi proxy yang tersimpan?"
       },
       "vaultReset": {
         "message": "Semua kata sandi tersimpan dan frasa sandi kunci SSH akan dihapus secara permanen.",
@@ -46,7 +46,7 @@
         "message": "Unduh dan jalankan file yang dapat dieksekusi atau skrip ini?"
       },
       "openWithApplication": {
-        "message": "Buka berkas ini dengan program yang belum pernah dipakai dengan FTPeach?",
+        "message": "Buka file ini dengan program yang belum pernah dipakai dengan FTPeach?",
         "approve": "Buka"
       },
       "weakenSecuritySettings": {
@@ -127,7 +127,7 @@
     "columnType": "Jenis",
     "columnPermissions": "Izin",
     "columnOwner": "Pemilik",
-    "columnGroup": "Kelompok",
+    "columnGroup": "Grup",
     "columnName": "Nama",
     "filesAriaLabel": "File",
     "rename": "Ganti Nama",
@@ -139,7 +139,7 @@
     "changeDriveTooltip": "Ganti drive",
     "chooseColumnsTooltip": "Klik kanan untuk memilih kolom",
     "sortByNameTooltip": "Urutkan berdasarkan nama",
-    "sortByColumnTooltip": "Urutkan berdasarkan kolom “{{column}}”",
+    "sortByColumnTooltip": "Urutkan berdasarkan kolom \"{{column}}\"",
     "rowProbeSample": "Contoh",
     "loading": "Sedang dimuat…",
     "nothingFound": "Tidak ada hasil"
@@ -218,14 +218,14 @@
     "closeTabLabel": "Tutup tab",
     "overwriteSingleExists": "\"{{name}}\" sudah ada di folder tujuan. Apakah ingin menimpanya?",
     "overwriteConflicts_one": "{{count}} item sudah ada di folder tujuan. Timpa?",
-    "overwriteConflicts_other": "{{count}} item sudah ada di folder tujuan. Timpa semuanya?",
+    "overwriteConflicts_other": "{{count}} item sudah ada di folder tujuan. Timpa?",
     "overwriteLabel": "Timpa",
     "replaceConnection": "Panel ini sudah terhubung ke \"{{current}}\". Ganti koneksinya dengan \"{{next}}\"?",
     "replaceConnectionLabel": "Ganti",
     "deleteSelected": "Hapus item yang dipilih ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deleteEntry": "Hapus \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
     "recycleSelected": "Apakah Anda ingin memindahkan item yang dipilih ({{count}}) ke Keranjang Sampah?",
-    "recycleEntry": "Apakah ingin memindahkan “{{name}}” ke Keranjang Sampah?",
+    "recycleEntry": "Apakah ingin memindahkan \"{{name}}\" ke Keranjang Sampah?",
     "deletePermanentSelected": "Apakah Anda ingin menghapus item yang dipilih secara permanen ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deletePermanentEntry": "Apakah Anda ingin menghapus \"{{name}}\" secara permanen? Tindakan ini tidak dapat dibatalkan.",
     "deleteRemoteSelected": "Hapus permanen item yang dipilih di server ({{count}})? Tindakan ini tidak dapat dibatalkan.",
@@ -299,7 +299,7 @@
     "connectionReset": "Koneksi ke server terputus secara tiba-tiba.",
     "networkUnreachable": "Server tidak dapat diakses — periksa koneksi jaringan Anda.",
     "loginIncorrect": "Nama pengguna atau kata sandi salah.",
-    "invalidCertificate": "Server tersebut menampilkan sertifikat yang tidak valid. Jika Anda mempercayai server ini, nonaktifkan verifikasi sertifikat di pengaturan koneksi.",
+    "invalidCertificate": "Server tersebut menampilkan sertifikat yang tidak valid. Jika Anda memercayai server ini, nonaktifkan verifikasi sertifikat di pengaturan koneksi.",
     "tlsNegotiationFailed": "Negosiasi TLS gagal. Pastikan server mendukung FTPS atau HTTPS eksplisit serta versi TLS yang kompatibel.",
     "sshNegotiationFailed": "Negosiasi SSH gagal. Server dan FTPeach tidak dapat mencapai kesepakatan mengenai algoritma SSH atau versi protokol yang kompatibel.",
     "proxyFailed": "Koneksi proxy gagal. Periksa jenis proxy, alamat, kredensial, dan apakah proxy tersebut dapat terhubung ke server tujuan.",
@@ -318,9 +318,9 @@
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
     "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
-    "createUnsupported": "Server FTP ini tidak mendukung pembuatan berkas baru. Coba SFTP atau WebDAV jika server menyediakannya.",
+    "createUnsupported": "Server FTP ini tidak mendukung pembuatan file baru. Coba SFTP atau WebDAV jika server menyediakannya.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -396,7 +396,7 @@
       "title": "Perlindungan dengan kata sandi",
       "systemMode": "Perlindungan sistem",
       "systemModeHint": "Kata sandi dienkripsi untuk akun Windows Anda dan dapat dilihat di pengaturan koneksi.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Salinan portabel: kata sandi yang disimpan dengan cara ini hanya dapat dibaca di komputer ini. Dengan kata sandi utama, kata sandi ikut berpindah bersama foldernya.",
       "strongholdMode": "Perlindungan yang ditingkatkan",
       "strongholdModeHint": "Memerlukan kata sandi utama. Untuk melihat kata sandi tersimpan, Anda harus memasukkan kata sandi utama lagi.",
       "loading": "Memeriksa brankas…",
@@ -424,7 +424,7 @@
       "change": "Ubah kata sandi",
       "systemUnlock": "Izinkan buka kunci melalui sistem",
       "systemUnlockHint": "Menggunakan Windows Hello (PIN, pengenalan wajah, atau sidik jari sesuai pengaturan Windows). Kata sandi utama Anda tetap menjadi metode pemulihan.",
-      "unlockWithSystem": "Buka kunci dengan otentikasi sistem",
+      "unlockWithSystem": "Buka kunci dengan autentikasi sistem",
       "systemUnavailable": "Buka kunci melalui sistem tidak tersedia di platform ini.",
       "noRecovery": "Kata sandi utama yang terlupa tidak dapat dipulihkan. Mengatur ulang brankas menghapus semua kata sandi dan frasa sandi yang tersimpan.",
       "passwordMismatch": "Kata sandi tersebut tidak cocok.",
@@ -439,10 +439,10 @@
       "resetWarning": "Tindakan ini menghapus permanen semua kata sandi dan frasa sandi kunci yang tersimpan. Masukkan kata sandi utama saat ini untuk melanjutkan.",
       "confirmReset": "Hapus kata sandi tersimpan",
       "showConfirmations": "Tampilkan konfirmasi keamanan",
-      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan, menjalankan berkas yang dapat dieksekusi, atau membuka berkas dengan program yang belum pernah dipakai. Mengatur ulang brankas, memindahkan kata sandi tersimpan ke server lain, dan mematikan opsi ini selalu dikonfirmasi.",
+      "showConfirmationsHint": "Minta konfirmasi sebelum menampilkan kata sandi tersimpan, menjalankan file yang dapat dieksekusi, atau membuka file dengan program yang belum pernah dipakai. Mengatur ulang brankas, memindahkan kata sandi tersimpan ke server lain, dan mematikan opsi ini selalu dikonfirmasi.",
       "unavailable": "Brankas tidak tersedia.",
       "failed": "Operasi pada brankas gagal.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Kata sandi utama tidak diterima. Tunggu sebentar sebelum mencoba lagi."
     },
     "unlimitedPlaceholder": "Tanpa batas",
     "connectTimeoutLabel": "Batas waktu koneksi, dtk",
@@ -457,7 +457,7 @@
       "hostLabel": "Host proxy",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
-      "usernameLabel": "Nama Pengguna",
+      "usernameLabel": "Nama pengguna",
       "passwordLabel": "Kata sandi",
       "removeSavedPassword": "Hapus kata sandi yang tersimpan",
       "revealFailed": "Tidak dapat mendekripsi kata sandi yang tersimpan.",
@@ -471,7 +471,7 @@
     },
     "concurrencyLabel": "Transfer bersamaan",
     "concurrencyHint": "Berapa banyak file yang diunggah dan diunduh bersamaan di semua tab (0 atau kosong — tanpa batas). Langsung berlaku; transfer yang sedang berjalan selesai seperti biasa.",
-    "speedLimitLabel": "Batas kecepatan, KB/s",
+    "speedLimitLabel": "Batas kecepatan, KB/dtk",
     "speedLimitHint": "Berlaku untuk total semua transfer yang berjalan bersamaan (0 atau kosong — tanpa batas). Langsung berlaku tanpa menunggu koneksi berikutnya.",
     "notifyOnComplete": "Beri tahu saat transfer selesai",
     "notifyOnCompleteHint": "Notifikasi sistem saat antrean transfer kosong — hanya saat jendela tidak sedang aktif.",
@@ -522,7 +522,7 @@
     "logToFileHint": "Menambahkan log ke file harian di %APPDATA%\\FTPeach\\logs, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB. Tombol \"Simpan\" di panel berbeda: tombol itu menyimpan baris yang ditampilkan di panel satu kali, saat diklik.",
     "exportDiagnostics": "Ekspor paket diagnostik",
     "exportDiagnosticsBusy": "Mengekspor…",
-    "exportDiagnosticsHint": "Mengekspor versi aplikasi, sistem operasi, log terbaru, dan berkas log milik aplikasi itu sendiri. Kata sandi, token, dan rahasia lainnya disamarkan.",
+    "exportDiagnosticsHint": "Mengekspor versi aplikasi, sistem operasi, log terbaru, dan file log milik aplikasi itu sendiri. Kata sandi, token, dan rahasia lainnya disamarkan.",
     "exportDiagnosticsFailed": "Paket diagnostik tidak dapat diekspor."
   },
   "promptDialog": {
@@ -546,7 +546,7 @@
   },
   "openWithDialog": {
     "title": "Buka di Aplikasi",
-    "downloading": "Sedang mengunduh “{{fileName}}”…",
+    "downloading": "Sedang mengunduh \"{{fileName}}\"…",
     "progress": "{{loaded}} dari {{total}} ({{percent}}%)",
     "connecting": "Sedang terhubung…"
   },
@@ -560,7 +560,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file.",
     "batchFailed": "{{failed}} dari {{total}} item tidak dipindahkan.",
-    "sourcesKept": "Berkas aslinya masih ada di tempatnya."
+    "sourcesKept": "File aslinya masih ada di tempatnya."
   },
   "transferQueue": {
     "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",
@@ -676,12 +676,12 @@
       "remotePath": "Folder default",
       "localPath": "Folder lokal",
       "folder": "Folder",
-      "maxConnections": "Koneksi maksimum per panel",
+      "maxConnections": "Koneksi",
       "encoding": "Pengodean"
     },
     "icons": {
       "bookmark": "Bookmark",
-      "globe": "Situs Web",
+      "globe": "Situs web",
       "briefcase": "Pekerjaan",
       "house": "Server rumah",
       "cloud": "Awan",
@@ -698,7 +698,7 @@
       "green": "Hijau",
       "blue": "Biru",
       "purple": "Ungu",
-      "pink": "Merah Muda",
+      "pink": "Merah muda",
       "teal": "Biru kehijauan"
     },
     "saveFailed": "Tidak dapat disimpan",
@@ -723,7 +723,7 @@
     "unsavedChangesMessage": "Apakah ingin menyimpan perubahan pada bookmark?",
     "newFolder": "Folder Baru",
     "folderNamePlaceholder": "Nama folder",
-    "confirmDeleteFolder": "Hapus folder “{{name}}”? Bookmark di dalamnya akan dipindahkan ke tingkat di atasnya.",
+    "confirmDeleteFolder": "Hapus folder \"{{name}}\"? Bookmark di dalamnya akan dipindahkan ke tingkat di atasnya.",
     "searchPlaceholder": "Cari…",
     "clearSearch": "Hapus pencarian",
     "noSearchResults": "Tidak ada bookmark yang sesuai dengan pencarian Anda",
@@ -770,7 +770,7 @@
     "fields": {
       "address": "Alamat",
       "port": "Port",
-      "user": "Nama Pengguna",
+      "user": "Nama pengguna",
       "password": "Kata sandi",
       "passphrase": "Frasa sandi",
       "keyFilePlaceholder": "File kunci…",
@@ -793,7 +793,7 @@
     "rsaKeyWarning": "Kunci privat RSA memiliki risiko serangan kanal samping berbasis waktu yang telah diketahui. Utamakan Ed25519 untuk kunci SSH baru.",
     "connectTooltip": {
       "cancel": "Batal",
-      "connect": "Terhubung",
+      "connect": "Hubungkan",
       "disconnect": "Putuskan sambungan"
     }
   },
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Tidak ada yang baru",
     "importSkippedShort": "Dilewati: {{count}}",
     "quitPendingShort": "Keluar…",
-    "upToDate": "Up to date",
+    "upToDate": "Versi terbaru",
     "cancelQuitLong": "Batalkan keluar",
     "listSeparator": ", "
   },
@@ -909,7 +909,7 @@
     "preserveAndQuit": "Simpan untuk pemulihan dan keluar",
     "return": "Kembali",
     "message_one": "{{count}} transfer masih berjalan. Keluar dan hentikan?",
-    "message_other": "{{count}} transfer masih berjalan. Keluar dan hentikan semuanya?",
+    "message_other": "{{count}} transfer masih berjalan. Keluar dan hentikan?",
     "quitNow": "Keluar sekarang",
     "quitWhenDone": "Keluar setelah transfer selesai"
   }

@@ -12,7 +12,7 @@
     "anonymousUser": "匿名",
     "rootFolder": "根資料夾",
     "close": "關閉",
-    "reset": "重置",
+    "reset": "重設",
     "open": "開啟",
     "upload": "上傳",
     "save": "儲存",
@@ -133,19 +133,19 @@
     "rename": "重新命名",
     "resetColumnWidths": "還原欄寬",
     "updatedAtTooltip": "更新時間：{{date}}",
-    "searchTooltip": "搜尋 ({{shortcut}})",
+    "searchTooltip": "搜尋（{{shortcut}}）",
     "searchPlaceholder": "搜尋…（{{shortcut}}）",
     "editPathAriaLabel": "編輯路徑",
     "changeDriveTooltip": "變更磁碟機",
     "chooseColumnsTooltip": "按一下右鍵以選擇欄位",
-    "sortByNameTooltip": "按名稱排序",
+    "sortByNameTooltip": "依名稱排序",
     "sortByColumnTooltip": "依「{{column}}」欄位排序",
     "rowProbeSample": "範例",
     "loading": "正在載入…",
     "nothingFound": "找不到結果"
   },
   "update": {
-    "readyToInstall": "有可用的更新 v{{version}} — 按一下「重新啟動並安裝」即可套用。",
+    "readyToInstall": "有可用的更新 v{{version}}——按一下「重新啟動並安裝」即可套用。",
     "downloadingWithPercent": "正在下載更新 v{{version}}：{{percent}}%",
     "downloadingFound": "找到更新 v{{version}}，正在下載…",
     "restartAndInstall": "重新啟動並安裝",
@@ -156,7 +156,7 @@
     "installTooltip": "立即重新啟動以安裝。否則，更新將在下次啟動 FTPeach 時安裝。"
   },
   "legacyPasswordNotice": {
-    "message": "更新後無法讀取部分已儲存伺服器的密碼 — 請在「管理書籤」中重新輸入。"
+    "message": "更新後無法讀取部分已儲存伺服器的密碼——請在「管理書籤」中重新輸入。"
   },
   "plaintextSecretNotice": {
     "message": "由於無法使用 Windows 資料保護，已儲存伺服器的密碼或密語無法加密，因此以純文字儲存。"
@@ -218,7 +218,7 @@
     "closeTabLabel": "關閉分頁",
     "overwriteSingleExists": "目的地資料夾中已有「{{name}}」。要覆寫嗎？",
     "overwriteConflicts_one": "目的地資料夾中已有 {{count}} 個項目。要覆寫嗎？",
-    "overwriteConflicts_other": "目的地資料夾中已有 {{count}} 個項目。要全部覆寫嗎？",
+    "overwriteConflicts_other": "目的地資料夾中已有 {{count}} 個項目。要覆寫嗎？",
     "overwriteLabel": "覆寫",
     "replaceConnection": "此窗格已連線到「{{current}}」。要將連線替換為「{{next}}」嗎？",
     "replaceConnectionLabel": "替換",
@@ -297,13 +297,13 @@
     "serverNotFound": "找不到伺服器。請檢查位址是否正確。",
     "timeout": "伺服器沒有回應（連線逾時）。請檢查位址、連接埠和網路連線。",
     "connectionReset": "與伺服器的連線意外關閉。",
-    "networkUnreachable": "無法連上伺服器 — 請檢查您的網路連線。",
+    "networkUnreachable": "無法連上伺服器——請檢查您的網路連線。",
     "loginIncorrect": "使用者名稱或密碼不正確。",
     "invalidCertificate": "伺服器提供了無效的憑證。如果您信任此伺服器，請在連線設定中停用憑證驗證。",
     "tlsNegotiationFailed": "TLS 交涉失敗。請確認伺服器是否支援明確 FTPS 或 HTTPS 以及相容的 TLS 版本。",
     "sshNegotiationFailed": "SSH 交涉失敗。伺服器與 FTPeach 無法協調出相容的 SSH 演算法或通訊協定版本。",
     "proxyFailed": "Proxy 連線失敗。請檢查 Proxy 類型、位址、認證資訊，以及 Proxy 是否能連到目標伺服器。",
-    "keyReadFailed": "無法讀取金鑰 — 檔案已損毀或密語不正確。",
+    "keyReadFailed": "無法讀取金鑰——檔案已損毀或密語不正確。",
     "accessDenied": "您無權執行此操作。",
     "notFound": "未找到檔案或資料夾。",
     "fileOrFolderExists": "具有該名稱的檔案或資料夾已存在。",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "伺服器不允許覆寫現有檔案。",
     "createUnsupported": "此 FTP 伺服器不支援建立新檔案。如果伺服器提供 SFTP 或 WebDAV，請改用它們。",
     "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "無法在這台電腦上讀取已儲存的密碼。請在書籤或 Proxy 設定中重新輸入。"
   },
   "settings": {
     "openWithAssociations": {
@@ -339,7 +339,7 @@
     "closeToTray": "關閉時最小化到系統匣",
     "closeToTrayHint": "關閉按鈕會將視窗隱藏到系統匣，而不會結束應用程式。請從系統匣圖示的選單結束。",
     "title": "設定",
-    "unsavedChangesTitle": "未儲存的更改",
+    "unsavedChangesTitle": "未儲存的變更",
     "unsavedChangesMessage": "要儲存設定的變更嗎？",
     "discardChanges": "不要儲存",
     "categories": {
@@ -363,7 +363,7 @@
       "unassign": "移除快速鍵",
       "conflict": "也用於：{{action}}",
       "actions": {
-        "search": "搜尋 ({{side}})",
+        "search": "搜尋（{{side}}）",
         "toggleHiddenFiles": "顯示/隱藏隱藏檔案",
         "newConnection": "新增連線",
         "save": "儲存（{{side}}）",
@@ -378,8 +378,8 @@
         "delete": "刪除",
         "deletePermanent": "永久刪除",
         "navigateUp": "上一層資料夾",
-        "navigateBack": "上一頁",
-        "navigateForward": "下一頁",
+        "navigateBack": "返回",
+        "navigateForward": "往前",
         "navigateHome": "前往主資料夾",
         "moveTo": "移至…",
         "newFolder": "新增資料夾…",
@@ -396,7 +396,7 @@
       "title": "密碼保護",
       "systemMode": "系統保護",
       "systemModeHint": "密碼會與您的 Windows 帳戶綁定加密，可在連線設定中查看。",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "可攜版：以此方式儲存的密碼只能在這台電腦上讀取。使用主密碼時，密碼會隨資料夾一起移動。",
       "strongholdMode": "增強保護",
       "strongholdModeHint": "需要主密碼。查看已儲存的密碼時需要重新輸入主密碼。",
       "loading": "正在檢查密碼庫…",
@@ -430,7 +430,7 @@
       "passwordMismatch": "密碼不符。",
       "passwordTooShort": "主密碼至少需要 12 個字元。",
       "strength": {
-        "tooShort": "太短 — 請至少使用 12 個字元。",
+        "tooShort": "太短——請至少使用 12 個字元。",
         "acceptable": "可接受。密語越長越安全。",
         "strong": "主密碼強度高。"
       },
@@ -442,17 +442,17 @@
       "showConfirmationsHint": "在顯示已儲存的密碼、執行可執行檔，或使用尚未用過的程式開啟檔案之前先行確認。重設密碼庫、將已儲存的密碼移至其他伺服器，以及關閉此選項一律需要確認。",
       "unavailable": "無法使用密碼庫。",
       "failed": "密碼庫操作失敗。",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "主密碼未被接受。請稍候再試。"
     },
     "unlimitedPlaceholder": "無限制",
-    "connectTimeoutLabel": "連線逾時，秒",
+    "connectTimeoutLabel": "連線逾時（秒）",
     "connectTimeoutHint": "連線時等待伺服器回應的時間，逾時即視為無法連上（0 或留空表示無限制）。從下次連線開始套用。",
     "ftpActiveMode": "主動 FTP 模式（而非被動）",
-    "ftpActiveModeHint": "僅限 FTP/FTPS — 對 SFTP/WebDAV 沒有影響。很少需要，僅在被動模式無法穿越 NAT 的網路或伺服器上使用。從下次連線開始套用。",
-    "ftpActiveModeDisabledByProxy": "啟用 Proxy 時無法使用 — Proxy 通道只支援對外連線，因此 FTP 必須維持被動模式。",
+    "ftpActiveModeHint": "僅限 FTP/FTPS——對 SFTP/WebDAV 沒有影響。很少需要，僅在被動模式無法穿越 NAT 的網路或伺服器上使用。從下次連線開始套用。",
+    "ftpActiveModeDisabledByProxy": "啟用 Proxy 時無法使用——Proxy 通道只支援對外連線，因此 FTP 必須維持被動模式。",
     "proxy": {
       "enable": "透過 Proxy 連線",
-      "enableHint": "SOCKS4、SOCKS5 或 HTTP CONNECT — 適用於 FTP、FTPS、SFTP 和 WebDAV。從下次連線開始套用。",
+      "enableHint": "SOCKS4、SOCKS5 或 HTTP CONNECT——適用於 FTP、FTPS、SFTP 和 WebDAV。從下次連線開始套用。",
       "typeLabel": "Proxy 類型",
       "hostLabel": "Proxy 位址",
       "hostPlaceholder": "proxy.example.com",
@@ -471,17 +471,17 @@
     },
     "concurrencyLabel": "同時傳輸數",
     "concurrencyHint": "所有分頁合計同時上傳和下載的檔案數（0 或留空表示無限制）。立即生效，進行中的傳輸會正常完成。",
-    "speedLimitLabel": "速度限制，KB/s",
+    "speedLimitLabel": "速度限制（KB/秒）",
     "speedLimitHint": "套用於所有同時傳輸的總和（0 或留空表示無限制）。立即生效，不必等到下次連線。",
     "notifyOnComplete": "傳輸完成時通知",
-    "notifyOnCompleteHint": "傳輸佇列清空時顯示系統通知 — 僅在視窗未處於作用中時。",
+    "notifyOnCompleteHint": "傳輸佇列清空時顯示系統通知——僅在視窗未處於作用中時。",
     "overwriteActionLabel": "名稱衝突時",
     "overwriteAsk": "詢問",
     "overwriteOverwrite": "覆寫",
     "overwriteSkip": "跳過",
     "overwriteHint": "要複製的檔案已存在於目的地資料夾時的處理方式。",
     "preventSleep": "傳輸期間防止系統進入睡眠",
-    "preventSleepHint": "立即生效，不必等到下次連線。只要有傳輸在進行就會保持作用 — 否則不會阻止睡眠。",
+    "preventSleepHint": "立即生效，不必等到下次連線。只要有傳輸在進行就會保持作用——否則不會阻止睡眠。",
     "themeLabel": "主題",
     "themeDark": "深色",
     "themeLight": "淺色",
@@ -519,7 +519,7 @@
     "logEnable": "顯示日誌面板",
     "logShowTimestamps": "顯示時間戳記",
     "logToFile": "將日誌寫入檔案",
-    "logToFileHint": "即使日誌面板已關閉，也會將日誌附加到 %APPDATA%\\FTPeach\\logs 中按日分開的檔案。檔案保留 14 天，總計最多 50 MB。面板中的「儲存」按鈕與此不同：它會在點擊時將面板中顯示的行儲存一次。",
+    "logToFileHint": "即使日誌面板已關閉，也會將日誌附加到 %APPDATA%\\FTPeach\\logs 中按日分開的檔案。檔案保留 14 天，總計最多 50 MB。面板中的「儲存」按鈕與此不同：它會在按一下時將面板中顯示的行儲存一次。",
     "exportDiagnostics": "匯出診斷包",
     "exportDiagnosticsBusy": "正在匯出…",
     "exportDiagnosticsHint": "匯出應用程式版本、作業系統、最近的日誌以及應用程式本身的日誌檔。密碼、權杖和其他機密資訊都會被隱藏。",
@@ -534,7 +534,7 @@
     "includeSettings": "應用程式設定",
     "includeBookmarks": "書籤",
     "includeLocalPaths": "本機路徑",
-    "passwordHint": "密碼和 SSH 金鑰密語不會包含在匯出內容中 — 在另一台電腦上匯入後需要重新輸入。"
+    "passwordHint": "密碼和 SSH 金鑰密語不會包含在匯出內容中——在另一台電腦上匯入後需要重新輸入。"
   },
   "importSettingsDialog": {
     "title": "匯入設定",
@@ -542,7 +542,7 @@
     "includeSettings": "應用程式設定",
     "includeBookmarks": "書籤",
     "includeLocalPaths": "本機路徑",
-    "passwordHint": "密碼和 SSH 金鑰密語不會被匯入 — 需要為每個匯入的伺服器重新輸入。"
+    "passwordHint": "密碼和 SSH 金鑰密語不會被匯入——需要為每個匯入的伺服器重新輸入。"
   },
   "openWithDialog": {
     "title": "在應用程式中開啟",
@@ -608,7 +608,7 @@
   },
   "log": {
     "connecting": "正在連線到 {{addr}}…",
-    "activeModeViaProxy": "透過 Proxy 無法使用主動 FTP 模式 — 將使用被動模式。",
+    "activeModeViaProxy": "透過 Proxy 無法使用主動 FTP 模式——將使用被動模式。",
     "connectFailed": "連線失敗：{{error}}",
     "connected": "已登入。",
     "receivedEntries_one": "已收到 {{count}} 個項目",
@@ -617,8 +617,8 @@
     "listFailed": "目錄列出失敗：{{error}}",
     "tlsInit": "正在初始化 TLS…",
     "tlsEstablished": "TLS 連線已建立。",
-    "davResumeUnsupportedLocal": "WebDAV 不支援續傳上傳 — 檔案將從頭重新傳送。",
-    "davResumeUnsupportedServer": "伺服器不支援續傳（預期狀態 {{expected}}，實際為 {{status}}）— 將重新下載檔案。",
+    "davResumeUnsupportedLocal": "WebDAV 不支援續傳上傳——檔案將從頭重新傳送。",
+    "davResumeUnsupportedServer": "伺服器不支援續傳（預期狀態 {{expected}}，實際為 {{status}}）——將重新下載檔案。",
     "uploadResumed": "正在從第 {{offset}} 位元組繼續上傳 {{path}}。",
     "uploadRestartedSourceChanged": "本機檔案與已暫停的 {{path}} 上傳不再相符，將從頭重新傳送。",
     "uploadRestartedMismatch": "伺服器上已有的資料與本機檔案不相符，將從頭重新傳送 {{path}}。",
@@ -628,7 +628,7 @@
   "logPanel": {
     "showAllConnections": "顯示所有連線",
     "showOnlyThisConnection": "僅顯示此連線",
-    "connectionClosedShowOnly": "連線已關閉 — 僅顯示此連線",
+    "connectionClosedShowOnly": "連線已關閉——僅顯示此連線",
     "filterKinds": "篩選",
     "kindStatus": "狀態訊息",
     "kindCommand": "命令",
@@ -652,7 +652,7 @@
     "sourceCode": "原始碼",
     "reportIssue": "報告問題",
     "checkForUpdates": "檢查更新",
-    "updateDownloaded": "已下載更新 v{{version}} — 現在即可安裝。"
+    "updateDownloaded": "已下載更新 v{{version}}——現在即可安裝。"
   },
   "siteManager": {
     "emptyList": "尚未儲存任何伺服器",
@@ -676,7 +676,7 @@
       "remotePath": "預設資料夾",
       "localPath": "本機資料夾",
       "folder": "資料夾",
-      "maxConnections": "每個窗格的最大連線數",
+      "maxConnections": "連線數",
       "encoding": "編碼"
     },
     "icons": {
@@ -701,7 +701,7 @@
       "pink": "粉紅色",
       "teal": "青色"
     },
-    "saveFailed": "無法保存",
+    "saveFailed": "無法儲存",
     "revealFailed": "無法顯示已儲存的密碼",
     "savedSecretPlaceholder": "已儲存",
     "savedSecretHint": "留空以保留目前的密碼",
@@ -716,8 +716,8 @@
     "exportBookmarks": "匯出",
     "sortMode": "書籤排序",
     "sortManual": "手動",
-    "sortName": "按名稱",
-    "sortProtocol": "按通訊協定",
+    "sortName": "依名稱",
+    "sortProtocol": "依通訊協定",
     "duplicateWarning": "已有指向相同目的地的書籤：「{{name}}」。要再儲存一個嗎？",
     "saveAnyway": "仍要儲存",
     "unsavedChangesMessage": "要儲存書籤的變更嗎？",
@@ -728,7 +728,7 @@
     "clearSearch": "清除搜尋",
     "noSearchResults": "沒有與您的搜尋相符的書籤",
     "duplicate": "建立複本",
-    "duplicateNameSuffix": "（副本）",
+    "duplicateNameSuffix": "（複本）",
     "newBookmarkInFolder": "在此新增書籤",
     "expandFolder": "展開「{{name}}」",
     "collapseFolder": "摺疊「{{name}}」",
@@ -825,7 +825,7 @@
   "tabStrip": {
     "localComputer": "電腦",
     "untitledTab": "新分頁",
-    "newTabTooltip": "新增分頁 (Ctrl+T)",
+    "newTabTooltip": "新增分頁（Ctrl+T）",
     "rename": "分頁名稱"
   },
   "toolbarOverflowMenu": {
@@ -835,8 +835,8 @@
     "transfers": "傳輸：{{count}}",
     "quitPending": "傳輸完成後將結束",
     "cancelQuit": "取消",
-    "leftCount": "左：{{count}}",
-    "rightCount": "右：{{count}}",
+    "leftCount": "左側：{{count}}",
+    "rightCount": "右側：{{count}}",
     "topCount": "上方：{{count}}",
     "bottomCount": "下方：{{count}}",
     "selectedSuffix": "（已選取 {{count}} 個）",
@@ -858,7 +858,7 @@
     "importNothingNewShort": "沒有新項目",
     "importSkippedShort": "已略過：{{count}}",
     "quitPendingShort": "正在結束…",
-    "upToDate": "Up to date",
+    "upToDate": "已是最新版本",
     "cancelQuitLong": "取消結束",
     "listSeparator": "、"
   },
@@ -867,7 +867,7 @@
     "toggleRightPane": "顯示/隱藏右窗格",
     "toggleTransferQueue": "顯示/隱藏傳輸佇列",
     "toggleLog": "顯示/隱藏日誌",
-    "orientationNarrow": "窗格已上下排列 — 視窗太窄，無法並排顯示",
+    "orientationNarrow": "窗格已上下排列——視窗太窄，無法並排顯示",
     "orientationToRow": "並排排列窗格",
     "orientationToStacked": "上下排列窗格",
     "pauseUnsupportedWebdav": "WebDAV 不支援暫停",
@@ -875,11 +875,11 @@
     "resumeAllPaused": "恢復所有暫停的傳輸",
     "stopActive": "停止進行中的傳輸",
     "retryAllStopped": "重試所有已停止的傳輸",
-    "refreshPanesTooltip": "重新整理兩個窗格 (F5)"
+    "refreshPanesTooltip": "重新整理兩個窗格（F5）"
   },
   "paneToolbar": {
-    "back": "上一頁",
-    "forward": "下一頁",
+    "back": "返回",
+    "forward": "往前",
     "up": "上一層",
     "chooseFolder": "選擇資料夾…",
     "newFolder": "新增資料夾…",
@@ -901,11 +901,11 @@
   "errorBoundary": {
     "consoleLogPrefix": "未處理的 FTPeach 介面錯誤：",
     "title": "出了點問題",
-    "message": "介面發生意外錯誤。目前的連線和磁碟上的檔案都不受影響 — 您可以嘗試重新載入介面。",
+    "message": "介面發生意外錯誤。目前的連線和磁碟上的檔案都不受影響——您可以嘗試重新載入介面。",
     "reload": "重新載入介面"
   },
   "quitDialog": {
-    "unsyncedEdits": "有變更尚未上傳到伺服器的檔案：{{count}} 個。結束時將保留副本以供復原，並在下次啟動 FTPeach 時提供給您。",
+    "unsyncedEdits": "有變更尚未上傳到伺服器的檔案：{{count}} 個。結束時將保留複本以供復原，並在下次啟動 FTPeach 時提供給您。",
     "preserveAndQuit": "保留以供復原並結束",
     "return": "返回",
     "message_one": "仍有 {{count}} 個傳輸正在進行。要結束並停止傳輸嗎？",

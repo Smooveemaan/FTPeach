@@ -12,16 +12,16 @@
     "anonymousUser": "anonim",
     "rootFolder": "Folderul rădăcină",
     "close": "Închide",
-    "reset": "Resetare",
+    "reset": "Resetează",
     "open": "Deschide",
-    "upload": "Încărcare",
-    "save": "Salvare",
+    "upload": "Încarcă",
+    "save": "Salvează",
     "create": "Creează",
     "cancel": "Anulează",
     "increase": "Crește",
     "decrease": "Scade",
     "showPassword": "Afișează parola",
-    "savedSecretProtected": "Parola salvată este protejată – autentificați-vă pentru a o vedea",
+    "savedSecretProtected": "Parola salvată este protejată — autentificați-vă pentru a o vedea",
     "hidePassword": "Ascunde parola"
   },
   "securityConfirmation": {
@@ -147,10 +147,10 @@
     "nothingFound": "Nu s-a găsit nimic"
   },
   "update": {
-    "readyToInstall": "Este disponibilă actualizarea v{{version}} — faceți clic pe „Repornire și instalare” pentru a o aplica.",
-    "downloadingWithPercent": "Se descarcă actualizarea v{{version}}: {{percent}} %",
+    "readyToInstall": "Este disponibilă actualizarea v{{version}} — faceți clic pe „Repornește și instalează” pentru a o aplica.",
+    "downloadingWithPercent": "Se descarcă actualizarea v{{version}}: {{percent}}%",
     "downloadingFound": "Actualizare v{{version}} găsită, se descarcă…",
-    "restartAndInstall": "Repornire și instalare",
+    "restartAndInstall": "Repornește și instalează",
     "availableAction": "disponibilă!",
     "installAction": "Instalează actualizarea",
     "downloadTooltip": "Clic pentru descărcare",
@@ -250,11 +250,11 @@
       "closeTab": "Închide fila",
       "reopenClosedTab": "Redeschide fila închisă",
       "newConnection": "Conexiune nouă",
-      "disconnect": "Deconectare",
-      "manageBookmarks": "Gestionare marcaje…",
-      "saveConnection": "Salvare conexiune",
-      "saveConnectionSide": "Salvare conexiune ({{side}})",
-      "savePathSide": "Salvare cale ({{side}})",
+      "disconnect": "Deconectează",
+      "manageBookmarks": "Gestionează marcajele…",
+      "saveConnection": "Salvează conexiunea",
+      "saveConnectionSide": "Salvează conexiunea ({{side}})",
+      "savePathSide": "Salvează calea ({{side}})",
       "exportSettings": "Exportă setările…",
       "importSettings": "Importă setările…",
       "quit": "Ieși"
@@ -324,17 +324,17 @@
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
     "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "O parolă salvată nu poate fi citită pe acest computer. Introduceți-o din nou în marcaj sau în setările proxy."
   },
   "settings": {
     "openWithAssociations": {
-      "title": "Asociații",
+      "title": "Asocieri",
       "hint": "Alegeți o aplicație pentru o extensie. Fișierele fără regulă se deschid cu aplicația implicită a sistemului.",
       "extension": "Extensie",
       "extensionPlaceholder": "txt",
       "application": "Aplicație",
       "applicationPlaceholder": "Calea aplicației",
-      "browse": "Alegeți aplicația",
+      "browse": "Alege aplicația",
       "remove": "Elimină asocierea",
       "add": "Adaugă asociere"
     },
@@ -345,7 +345,7 @@
     "title": "Setări",
     "unsavedChangesTitle": "Modificări nesalvate",
     "unsavedChangesMessage": "Doriți să salvați modificările aduse setărilor?",
-    "discardChanges": "Nu salvați",
+    "discardChanges": "Nu salva",
     "categories": {
       "connection": "Conexiune",
       "transfers": "Transferuri",
@@ -400,7 +400,7 @@
       "title": "Protecție prin parolă",
       "systemMode": "Protecție de sistem",
       "systemModeHint": "Parolele sunt criptate pentru contul dvs. Windows și pot fi vizualizate în setările de conexiune.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Copie portabilă: parolele salvate astfel pot fi citite doar pe acest computer. Cu o parolă principală, ele se mută odată cu folderul.",
       "strongholdMode": "Protecție avansată",
       "strongholdModeHint": "Necesită o parolă principală. Pentru a vedea o parolă salvată trebuie să reintroduceți parola principală.",
       "loading": "Se verifică seiful…",
@@ -428,7 +428,7 @@
       "change": "Schimbă parola",
       "systemUnlock": "Permite deblocarea prin sistem",
       "systemUnlockHint": "Utilizează Windows Hello (cod PIN, recunoaștere facială sau amprentă digitală, conform configurării din Windows). Parola principală rămâne metoda de recuperare.",
-      "unlockWithSystem": "Deblocare prin autentificare de sistem",
+      "unlockWithSystem": "Deblochează prin autentificarea de sistem",
       "systemUnavailable": "Deblocarea prin sistem nu este disponibilă pe această platformă.",
       "noRecovery": "O parolă principală uitată nu poate fi recuperată. Resetarea seifului șterge toate parolele și frazele de acces salvate.",
       "passwordMismatch": "Parolele nu se potrivesc.",
@@ -446,7 +446,7 @@
       "showConfirmationsHint": "Cere confirmare înainte de afișarea unei parole salvate, rularea unui fișier executabil sau deschiderea unui fișier cu un program nefolosit până acum. Resetarea seifului, mutarea unei parole salvate pe alt server și dezactivarea acestei opțiuni se confirmă întotdeauna.",
       "unavailable": "Seiful nu este disponibil.",
       "failed": "Operațiunea pe seif a eșuat.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Parola principală nu a fost acceptată. Așteptați puțin înainte de a încerca din nou."
     },
     "unlimitedPlaceholder": "Fără limită",
     "connectTimeoutLabel": "Timp de așteptare la conectare, s",
@@ -478,7 +478,7 @@
     "speedLimitLabel": "Limita de viteză, KB/s",
     "speedLimitHint": "Se aplică sumei tuturor transferurilor simultane (0 sau gol — fără limită). Intră în vigoare imediat, fără a aștepta următoarea conexiune.",
     "notifyOnComplete": "Notifică la finalizarea transferurilor",
-    "notifyOnCompleteHint": "O notificare de sistem atunci când coada de transfer se golește — numai atunci când fereastra nu are focalizarea.",
+    "notifyOnCompleteHint": "O notificare de sistem atunci când coada de transferuri se golește — numai atunci când fereastra nu are focalizarea.",
     "overwriteActionLabel": "La conflict de nume",
     "overwriteAsk": "Întreabă",
     "overwriteOverwrite": "Suprascrie",
@@ -502,7 +502,7 @@
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "Folder implicit pentru „Calculator”",
     "defaultLocalPathHint": "Folderul pe care panoul „Calculator” îl deschide la pornire și la comutarea de pe un server. Lăsați gol pentru a folosi folderul personal.",
-    "chooseDefaultLocalPath": "Alegeți folderul implicit",
+    "chooseDefaultLocalPath": "Alege folderul implicit",
     "showHiddenFiles": "Afișează fișierele și folderele ascunse",
     "showHiddenFilesHint": "Se aplică atât panourilor locale, cât și celor de server.",
     "coloredTabs": "File colorate",
@@ -516,14 +516,14 @@
     "checkNow": "Verifică acum",
     "updateStatus": {
       "checking": "Se verifică dacă există actualizări…",
-      "notAvailable": "Folosești cea mai recentă versiune.",
+      "notAvailable": "Folosiți cea mai recentă versiune.",
       "error": "Nu s-au putut verifica actualizările.",
       "notPackaged": "Nu este disponibil în această versiune (npm run dev/start)."
     },
     "logEnable": "Afișează panoul de jurnal",
     "logShowTimestamps": "Afișează ora",
     "logToFile": "Scrie jurnalul într-un fișier",
-    "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din %APPDATA%\\FTPeach\\logs, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total. Butonul „Salvare” din panou este altceva: salvează o singură dată, la apăsare, rândurile afișate acolo.",
+    "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din %APPDATA%\\FTPeach\\logs, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total. Butonul „Salvează” din panou este altceva: salvează o singură dată, la apăsare, rândurile afișate acolo.",
     "exportDiagnostics": "Exportă pachetul de diagnosticare",
     "exportDiagnosticsBusy": "Se exportă…",
     "exportDiagnosticsHint": "Exportă versiunea aplicației, sistemul de operare, jurnalul recent și fișierul de jurnal propriu al aplicației. Parolele, tokenurile și alte date secrete sunt ascunse.",
@@ -551,7 +551,7 @@
   "openWithDialog": {
     "title": "Deschide în aplicație",
     "downloading": "Se descarcă „{{fileName}}”…",
-    "progress": "{{loaded}} din {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} din {{total}} ({{percent}}%)",
     "connecting": "Se conectează…"
   },
   "transfers": {
@@ -604,7 +604,7 @@
     "cancelledByUser": "Anulat de utilizator",
     "stoppedDash": "oprit",
     "resume": "Reia",
-    "pause": "Pauză",
+    "pause": "Pune pe pauză",
     "retry": "Reîncearcă",
     "stop": "Oprește",
     "pauseUnsupportedCopy": "Pauza nu este disponibilă la copierea între servere",
@@ -627,9 +627,9 @@
     "davResumeUnsupportedLocal": "WebDAV nu acceptă reluarea încărcării — fișierul va fi trimis din nou de la început.",
     "davResumeUnsupportedServer": "Serverul nu acceptă reluarea descărcării (starea așteptată: {{expected}}, s-a primit {{status}}) — fișierul va fi descărcat din nou.",
     "uploadResumed": "Se reia încărcarea {{path}} de la {{offset}} octeți.",
-    "uploadRestartedSourceChanged": "Fișierul local nu mai corespunde încărcării întrerupte a {{path}} — va fi trimis din nou de la început.",
+    "uploadRestartedSourceChanged": "Fișierul local nu mai corespunde încărcării puse pe pauză a {{path}} — va fi trimis din nou de la început.",
     "uploadRestartedMismatch": "Ceea ce se află deja pe server nu corespunde fișierului local — {{path}} va fi trimis din nou de la început.",
-    "uploadRestartedUnverified": "Încărcarea întreruptă a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
+    "uploadRestartedUnverified": "Încărcarea pusă pe pauză a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
     "receivedEntries_few": "S-au primit {{count}} înregistrări",
     "droppedRecords": "Unele linii din jurnalul de protocol au fost pierdute, deoarece scrierea nu a putut ține pasul: {{dropped}}"
   },
@@ -669,9 +669,9 @@
   "siteManagerDialog": {
     "titleNew": "Marcaj nou",
     "titleEdit": "Editează marcajul",
-    "titleList": "Gestionare marcaje",
-    "titleLocalPathList": "Gestionare căi locale",
-    "manageLocalPaths": "Gestionare căi locale…",
+    "titleList": "Gestionează marcajele",
+    "titleLocalPathList": "Gestionează căile locale",
+    "manageLocalPaths": "Gestionează căile locale…",
     "titleNewLocalPath": "Cale locală nouă",
     "titleEditLocalPath": "Editează calea locală",
     "fields": {
@@ -684,7 +684,7 @@
       "remotePath": "Folder implicit",
       "localPath": "Folder local",
       "folder": "Folder",
-      "maxConnections": "Număr maxim de conexiuni pe panou",
+      "maxConnections": "Conexiuni",
       "encoding": "Codificare"
     },
     "icons": {
@@ -719,7 +719,7 @@
     "secretWillBeRemoved": "Va fi eliminată la salvare",
     "addBookmark": "Marcaj nou",
     "addLocalBookmark": "Adaugă marcaj pentru un folder local",
-    "chooseLocalPath": "Alegeți un folder local",
+    "chooseLocalPath": "Alege un folder local",
     "importBookmarks": "Importă",
     "exportBookmarks": "Exportă",
     "sortMode": "Sortarea marcajelor",
@@ -782,9 +782,9 @@
       "password": "Parolă",
       "passphrase": "Frază de acces",
       "keyFilePlaceholder": "Fișier cheie…",
-      "chooseKeyFile": "Alegeți fișierul cheie…",
+      "chooseKeyFile": "Alege fișierul cheie…",
       "caCertFilePlaceholder": "Certificat CA…",
-      "chooseCaCertFile": "Alegeți certificatul CA…"
+      "chooseCaCertFile": "Alege certificatul CA…"
     },
     "secureToggle": {
       "tooltip": "Debifați această opțiune pentru a accepta certificatele de server autosemnate și nevalide",
@@ -801,8 +801,8 @@
     "rsaKeyWarning": "Cheile private RSA au un risc cunoscut de atacuri pe canal lateral bazate pe timp. Pentru cheile SSH noi, preferați Ed25519.",
     "connectTooltip": {
       "cancel": "Anulează",
-      "connect": "Conectare",
-      "disconnect": "Deconectare"
+      "connect": "Conectează",
+      "disconnect": "Deconectează"
     }
   },
   "protocolSelect": {
@@ -810,16 +810,16 @@
   },
   "titleBar": {
     "minimize": "Minimizează",
-    "restore": "Restaurare",
+    "restore": "Restaurează",
     "maximize": "Maximizează"
   },
   "tray": {
     "show": "Afișează FTPeach",
     "transferring": "Transferuri active: {{count}}",
-    "transferringProgress": "Transferuri active: {{count}} · {{percent}} %",
+    "transferringProgress": "Transferuri active: {{count}} · {{percent}}%",
     "quitWaiting": "Ieșire după finalizarea transferurilor · {{count}}",
-    "quitWaitingProgress": "Ieșire după finalizarea transferurilor · {{count}} · {{percent}} %",
-    "pauseAll": "Întrerupe toate transferurile",
+    "quitWaitingProgress": "Ieșire după finalizarea transferurilor · {{count}} · {{percent}}%",
+    "pauseAll": "Pune pe pauză toate transferurile",
     "resumeAll": "Reia toate transferurile",
     "speedLimit": "Limita de viteză",
     "unlimited": "Fără limită",
@@ -827,7 +827,7 @@
     "notify": "Notifică la finalizarea transferurilor",
     "recentConnections": "Conexiuni recente",
     "lockVault": "Blochează parolele salvate",
-    "quit": "Ieșire",
+    "quit": "Ieși",
     "cancelQuit": "Anulează ieșirea"
   },
   "tabStrip": {
@@ -866,7 +866,7 @@
     "importNothingNewShort": "Nimic nou",
     "importSkippedShort": "Omise: {{count}}",
     "quitPendingShort": "Se închide…",
-    "upToDate": "Up to date",
+    "upToDate": "La zi",
     "cancelQuitLong": "Anulează ieșirea",
     "listSeparator": ", "
   },
@@ -889,7 +889,7 @@
     "back": "Înapoi",
     "forward": "Înainte",
     "up": "Sus",
-    "chooseFolder": "Alegeți un folder…",
+    "chooseFolder": "Alege un folder…",
     "newFolder": "Folder nou…",
     "newFile": "Fișier nou…"
   },
@@ -903,14 +903,14 @@
     "noSavedConnectionsTitle": "Nu există conexiuni recente",
     "noSavedConnectionsBody": "Introduceți mai sus adresa serverului sau adăugați un marcaj pentru conectare cu un singur clic.",
     "manageBookmarksCta": "{{label}}",
-    "manageBookmarksLink": "Gestionare marcaje",
+    "manageBookmarksLink": "Gestionează marcajele",
     "quicklistLabel": "Conexiuni recente"
   },
   "errorBoundary": {
     "consoleLogPrefix": "Eroare neprelucrată a interfeței FTPeach:",
     "title": "A apărut o problemă",
     "message": "A apărut o eroare neașteptată în interfață. Conexiunea activă și fișierele de pe disc nu sunt afectate — puteți încerca să reîncărcați interfața.",
-    "reload": "Reîncărcare interfață"
+    "reload": "Reîncarcă interfața"
   },
   "quitDialog": {
     "unsyncedEdits": "Fișiere cu modificări care nu au fost încă încărcate pe server: {{count}}. La ieșire, copiile vor fi păstrate pentru recuperare și vă vor fi oferite la următoarea pornire a FTPeach.",

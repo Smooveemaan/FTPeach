@@ -93,12 +93,12 @@
     "refresh": "Opdater",
     "open": "Åbn",
     "uploadToOtherPane": "Upload til den anden rude",
-    "copyToOtherPane": "Kopier til den anden rude",
+    "copyToOtherPane": "Kopiér til den anden rude",
     "downloadToOtherPane": "Download til den anden rude",
     "openWith": "Åbn med…",
     "permissions": "Tilladelser…",
     "moveTo": "Flyt til…",
-    "copyPath": "Kopier sti",
+    "copyPath": "Kopiér sti",
     "delete": "Slet",
     "deleteSelected_one": "Slet ({{count}} fil)",
     "deleteSelected_other": "Slet ({{count}} filer)",
@@ -114,10 +114,10 @@
     "emptyFolder": "Mappen er tom",
     "connectFirst": "Opret forbindelse først",
     "homeFolder": "Hjemmemappe",
-    "copyToPaneBelow": "Kopier til nederste rude",
-    "copyToPaneAbove": "Kopier til øverste rude",
-    "copyToPaneRight": "Kopier til højre rude",
-    "copyToPaneLeft": "Kopier til venstre rude",
+    "copyToPaneBelow": "Kopiér til nederste rude",
+    "copyToPaneAbove": "Kopiér til øverste rude",
+    "copyToPaneRight": "Kopiér til højre rude",
+    "copyToPaneLeft": "Kopiér til venstre rude",
     "fileTypeFolder": "Filmappe",
     "fileTypeGeneric": "Fil",
     "fileTypeWithExt": "{{ext}}-fil",
@@ -145,8 +145,8 @@
     "nothingFound": "Intet fundet"
   },
   "update": {
-    "readyToInstall": "Opdatering v{{version}} er nu tilgængelig — klik på »Genstart og installer« for at installere den.",
-    "downloadingWithPercent": "Henter opdatering v{{version}}: {{percent}} %",
+    "readyToInstall": "Opdatering v{{version}} er nu tilgængelig – klik på »Genstart og installer« for at installere den.",
+    "downloadingWithPercent": "Henter opdatering v{{version}}: {{percent}} %",
     "downloadingFound": "Opdatering v{{version}} fundet, henter…",
     "restartAndInstall": "Genstart og installer",
     "availableAction": "tilgængelig!",
@@ -156,7 +156,7 @@
     "installTooltip": "Genstart nu for at installere. Ellers installeres opdateringen, næste gang FTPeach starter."
   },
   "legacyPasswordNotice": {
-    "message": "Adgangskoder til visse gemte servere kunne ikke læses efter opdateringen — indtast dem igen under Administrer bogmærker."
+    "message": "Adgangskoder til visse gemte servere kunne ikke læses efter opdateringen – indtast dem igen under Administrer bogmærker."
   },
   "plaintextSecretNotice": {
     "message": "Adgangskoden eller adgangssætningen til en gemt server kunne ikke krypteres, da Windows' databeskyttelse ikke er tilgængelig, og blev derfor gemt som almindelig tekst."
@@ -210,7 +210,7 @@
   "moveToDialog": {
     "title": "Flyt til…",
     "labelSingle": "Flyt »{{name}}« til mappen:",
-    "labelMultiple": "Flyt de valgte emner ({{count}}) til mappen:"
+    "labelMultiple": "Flyt de valgte elementer ({{count}}) til mappen:"
   },
   "confirm": {
     "resetLayout": "Nulstil vindues- og rudestørrelser, gendan standardkolonnerne og ryd brugergrænsefladens cache?",
@@ -222,12 +222,12 @@
     "overwriteLabel": "Overskriv",
     "replaceConnection": "Denne rude er allerede forbundet til »{{current}}«. Skal forbindelsen erstattes med »{{next}}«?",
     "replaceConnectionLabel": "Erstat",
-    "deleteSelected": "Vil du slette de valgte emner ({{count}})? Denne handling kan ikke fortrydes.",
+    "deleteSelected": "Vil du slette de valgte elementer ({{count}})? Denne handling kan ikke fortrydes.",
     "deleteEntry": "Skal »{{name}}« slettes? Denne handling kan ikke fortrydes.",
     "recycleSelected": "Skal de valgte elementer ({{count}}) flyttes til papirkurven?",
     "recycleEntry": "Skal »{{name}}« flyttes til papirkurven?",
-    "deletePermanentSelected": "Vil du slette de valgte elementer permanent ({{count}})? Denne handling kan ikke fortrydes.",
-    "deletePermanentEntry": "Vil du slette \"{{name}}\" permanent? Denne handling kan ikke fortrydes.",
+    "deletePermanentSelected": "Vil du slette de valgte elementer ({{count}}) permanent? Denne handling kan ikke fortrydes.",
+    "deletePermanentEntry": "Vil du slette »{{name}}« permanent? Denne handling kan ikke fortrydes.",
     "deleteRemoteSelected": "Vil du slette de valgte elementer på serveren ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deleteRemoteEntry": "Vil du slette »{{name}}« på serveren permanent? Denne handling kan ikke fortrydes."
   },
@@ -276,8 +276,8 @@
     },
     "transfer": {
       "title": "Overførsel",
-      "copySelectedRight": "Kopier markering →",
-      "copySelectedLeft": "← Kopier markering",
+      "copySelectedRight": "Kopiér markering →",
+      "copySelectedLeft": "← Kopiér markering",
       "clearCompleted": "Ryd fuldførte"
     },
     "bookmarks": {
@@ -293,17 +293,17 @@
     }
   },
   "errors": {
-    "connectionRefused": "Serveren afviste forbindelsen. Kontroller adressen og porten.",
-    "serverNotFound": "Serveren blev ikke fundet. Kontroller, om adressen er korrekt.",
-    "timeout": "Serveren svarer ikke (tidsgrænsen for forbindelsen er overskredet). Kontroller adressen, porten og netværksforbindelsen.",
+    "connectionRefused": "Serveren afviste forbindelsen. Kontrollér adressen og porten.",
+    "serverNotFound": "Serveren blev ikke fundet. Kontrollér, om adressen er korrekt.",
+    "timeout": "Serveren svarer ikke (tidsgrænsen for forbindelsen er overskredet). Kontrollér adressen, porten og netværksforbindelsen.",
     "connectionReset": "Forbindelsen til serveren blev uventet afbrudt.",
-    "networkUnreachable": "Der kan ikke oprettes forbindelse til serveren — tjek din netværksforbindelse.",
+    "networkUnreachable": "Der kan ikke oprettes forbindelse til serveren – tjek din netværksforbindelse.",
     "loginIncorrect": "Forkert brugernavn eller adgangskode.",
     "invalidCertificate": "Serveren fremviste et ugyldigt certifikat. Hvis du stoler på denne server, skal du deaktivere certifikatverifikation i forbindelsesindstillingerne.",
-    "tlsNegotiationFailed": "TLS-forhandlingen mislykkedes. Kontroller, at serveren understøtter eksplicit FTPS eller HTTPS samt en kompatibel TLS-version.",
+    "tlsNegotiationFailed": "TLS-forhandlingen mislykkedes. Kontrollér, at serveren understøtter eksplicit FTPS eller HTTPS samt en kompatibel TLS-version.",
     "sshNegotiationFailed": "SSH-forhandlingen mislykkedes. Serveren og FTPeach kunne ikke nå til enighed om en kompatibel SSH-algoritme eller protokolversion.",
-    "proxyFailed": "Proxyforbindelsen mislykkedes. Kontroller proxytypen, adressen og loginoplysningerne, og om proxyen kan nå målserveren.",
-    "keyReadFailed": "Det var ikke muligt at læse nøglen — filen er beskadiget, eller adgangssætningen er forkert.",
+    "proxyFailed": "Proxyforbindelsen mislykkedes. Kontrollér proxytypen, adressen og loginoplysningerne, og om proxyen kan nå målserveren.",
+    "keyReadFailed": "Det var ikke muligt at læse nøglen – filen er beskadiget, eller adgangssætningen er forkert.",
     "accessDenied": "Du har ikke tilladelse til denne handling.",
     "notFound": "Filen eller mappen blev ikke fundet.",
     "fileOrFolderExists": "Der findes allerede en fil eller mappe med det navn.",
@@ -319,8 +319,8 @@
     "alreadyExists": "»{{name}}« findes allerede",
     "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
     "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
-    "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopier dem i stedet.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
+    "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne."
   },
   "settings": {
     "openWithAssociations": {
@@ -384,8 +384,8 @@
         "moveTo": "Flyt til…",
         "newFolder": "Ny mappe…",
         "newFile": "Ny fil…",
-        "copyToOtherPane": "Kopier til den anden rude",
-        "copy": "Kopier",
+        "copyToOtherPane": "Kopiér til den anden rude",
+        "copy": "Kopiér",
         "cut": "Klip",
         "paste": "Indsæt",
         "clearSelection": "Fjern markering",
@@ -396,7 +396,7 @@
       "title": "Adgangskodebeskyttelse",
       "systemMode": "Systembeskyttelse",
       "systemModeHint": "Adgangskoderne krypteres til din Windows-konto og kan ses under forbindelsesindstillingerne.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Bærbar kopi: adgangskoder, der gemmes på denne måde, kan kun læses på denne computer. Med en hovedadgangskode følger de med mappen.",
       "strongholdMode": "Udvidet beskyttelse",
       "strongholdModeHint": "Kræver en hovedadgangskode. For at se en gemt adgangskode skal du indtaste hovedadgangskoden igen.",
       "loading": "Kontrollerer boksen…",
@@ -430,7 +430,7 @@
       "passwordMismatch": "Adgangskoderne stemmer ikke overens.",
       "passwordTooShort": "Hovedadgangskoden skal bestå af mindst 12 tegn.",
       "strength": {
-        "tooShort": "For kort — brug mindst 12 tegn.",
+        "tooShort": "For kort – brug mindst 12 tegn.",
         "acceptable": "Acceptabel. En længere adgangssætning er mere sikker.",
         "strong": "Stærk hovedadgangskode."
       },
@@ -442,19 +442,19 @@
       "showConfirmationsHint": "Bed om bekræftelse, før en gemt adgangskode vises, en eksekverbar fil køres, eller en fil åbnes med et program, der ikke er brugt før. Nulstilling af boksen, flytning af en gemt adgangskode til en anden server og deaktivering af denne indstilling bekræftes altid.",
       "unavailable": "Boksen er ikke tilgængelig.",
       "failed": "Handlingen på boksen mislykkedes.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Hovedadgangskoden blev ikke accepteret. Vent et øjeblik, før du prøver igen."
     },
     "unlimitedPlaceholder": "Ingen begrænsning",
     "connectTimeoutLabel": "Tidsgrænse for forbindelse, s",
-    "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt — ingen begrænsning). Gælder for den næste forbindelse.",
+    "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt – ingen begrænsning). Gælder for den næste forbindelse.",
     "ftpActiveMode": "Aktiv FTP-tilstand (i stedet for passiv)",
-    "ftpActiveModeHint": "Gælder kun FTP/FTPS — har ingen indflydelse på SFTP/WebDAV. Er sjældent nødvendigt, kun på netværk/servere, hvor passiv tilstand ikke kommer igennem NAT. Gælder for den næste forbindelse.",
-    "ftpActiveModeDisabledByProxy": "Kan ikke bruges, når en proxy er aktiveret — en proxytunnel understøtter kun udgående forbindelser, så FTP skal forblive i passiv tilstand.",
+    "ftpActiveModeHint": "Gælder kun FTP/FTPS – har ingen indflydelse på SFTP/WebDAV. Er sjældent nødvendigt, kun på netværk/servere, hvor passiv tilstand ikke kommer igennem NAT. Gælder for den næste forbindelse.",
+    "ftpActiveModeDisabledByProxy": "Kan ikke bruges, når en proxy er aktiveret – en proxytunnel understøtter kun udgående forbindelser, så FTP skal forblive i passiv tilstand.",
     "proxy": {
       "enable": "Brug en proxy til forbindelser",
-      "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT — gælder for FTP, FTPS, SFTP og WebDAV. Gælder for den næste forbindelse.",
+      "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT – gælder for FTP, FTPS, SFTP og WebDAV. Gælder for den næste forbindelse.",
       "typeLabel": "Proxytype",
-      "hostLabel": "Proxy-host",
+      "hostLabel": "Proxyhost",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
       "usernameLabel": "Brugernavn",
@@ -467,21 +467,21 @@
       "test": "Test proxy",
       "testing": "Tester…",
       "testOk": "Proxyen nåede målserveren.",
-      "testFailed": "Proxy-testen mislykkedes."
+      "testFailed": "Proxytesten mislykkedes."
     },
     "concurrencyLabel": "Samtidige overførsler",
-    "concurrencyHint": "Hvor mange filer der uploades og downloades samtidigt på tværs af alle faner (0 eller tomt felt — ingen begrænsning). Gælder med det samme; igangværende overførsler afsluttes normalt.",
+    "concurrencyHint": "Hvor mange filer der uploades og downloades samtidigt på tværs af alle faner (0 eller tomt felt – ingen begrænsning). Gælder med det samme; igangværende overførsler afsluttes normalt.",
     "speedLimitLabel": "Hastighedsbegrænsning, KB/s",
-    "speedLimitHint": "Gælder for summen af alle samtidige overførsler (0 eller tomt felt — ingen begrænsning). Træder i kraft med det samme, uden at vente på den næste forbindelse.",
+    "speedLimitHint": "Gælder for summen af alle samtidige overførsler (0 eller tomt felt – ingen begrænsning). Træder i kraft med det samme, uden at vente på den næste forbindelse.",
     "notifyOnComplete": "Giv besked, når overførslerne er afsluttet",
-    "notifyOnCompleteHint": "En systemmeddelelse, når overførselskøen er tom — kun når vinduet ikke har fokus.",
+    "notifyOnCompleteHint": "En systemmeddelelse, når overførselskøen er tom – kun når vinduet ikke har fokus.",
     "overwriteActionLabel": "Ved navnekonflikt",
     "overwriteAsk": "Spørg",
     "overwriteOverwrite": "Overskriv",
     "overwriteSkip": "Spring over",
     "overwriteHint": "Hvad der skal ske, hvis filen, der kopieres, allerede findes i målmappen.",
     "preventSleep": "Forhindr, at systemet går i dvale under overførsler",
-    "preventSleepHint": "Træder i kraft med det samme, uden at vente på den næste forbindelse. Er aktiv, så længe der er mindst én igangværende overførsel — ellers blokerer den ikke dvaletilstanden.",
+    "preventSleepHint": "Træder i kraft med det samme, uden at vente på den næste forbindelse. Er aktiv, så længe der er mindst én igangværende overførsel – ellers blokerer den ikke dvaletilstanden.",
     "themeLabel": "Tema",
     "themeDark": "Mørkt",
     "themeLight": "Lyst",
@@ -519,7 +519,7 @@
     "logEnable": "Vis logpanelet",
     "logShowTimestamps": "Vis tidsstempler",
     "logToFile": "Skriv log til fil",
-    "logToFileHint": "Føjer loggen til en daglig fil i %APPDATA%\\FTPeach\\logs, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt. Knappen \"Gem\" i panelet er noget andet: Den gemmer de linjer, der vises i panelet, én gang, når du klikker på den.",
+    "logToFileHint": "Føjer loggen til en daglig fil i %APPDATA%\\FTPeach\\logs, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt. Knappen »Gem« i panelet er noget andet: Den gemmer de linjer, der vises i panelet, én gang, når du klikker på den.",
     "exportDiagnostics": "Eksportér diagnosticeringspakke",
     "exportDiagnosticsBusy": "Eksporterer…",
     "exportDiagnosticsHint": "Eksporterer appens version, operativsystemet, den seneste log og appens egen logfil. Adgangskoder, tokens og andre hemmeligheder skjules.",
@@ -534,7 +534,7 @@
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten — du skal indtaste dem igen efter import på en anden computer."
+    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten – du skal indtaste dem igen efter import på en anden computer."
   },
   "importSettingsDialog": {
     "title": "Importér indstillinger",
@@ -542,12 +542,12 @@
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i importen — du skal indtaste dem igen for hver importeret server."
+    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i importen – du skal indtaste dem igen for hver importeret server."
   },
   "openWithDialog": {
     "title": "Åbn i program",
     "downloading": "Henter »{{fileName}}«…",
-    "progress": "{{loaded}} af {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} af {{total}} ({{percent}} %)",
     "connecting": "Opretter forbindelse…"
   },
   "transfers": {
@@ -559,7 +559,7 @@
     "notifyFailed_other": "{{count}} filer mislykkedes",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-uploads er begrænset til {{limit}} MiB pr. fil.",
-    "batchFailed": "{{failed}} af {{total}} objekter blev ikke overført.",
+    "batchFailed": "{{failed}} af {{total}} elementer blev ikke overført.",
     "sourcesKept": "Originalerne ligger der stadig."
   },
   "transferQueue": {
@@ -608,7 +608,7 @@
   },
   "log": {
     "connecting": "Opretter forbindelse til {{addr}}...",
-    "activeModeViaProxy": "Aktiv FTP-tilstand kan ikke bruges via en proxy — passiv tilstand bruges i stedet.",
+    "activeModeViaProxy": "Aktiv FTP-tilstand kan ikke bruges via en proxy – passiv tilstand bruges i stedet.",
     "connectFailed": "Forbindelsen mislykkedes: {{error}}",
     "connected": "Logget ind.",
     "receivedEntries_one": "Modtog {{count}} post",
@@ -617,8 +617,8 @@
     "listFailed": "Hentning af mappeindhold mislykkedes: {{error}}",
     "tlsInit": "Initialiserer TLS...",
     "tlsEstablished": "TLS-forbindelsen er oprettet.",
-    "davResumeUnsupportedLocal": "WebDAV understøtter ikke genoptagelse af upload — filen vil blive sendt igen fra starten.",
-    "davResumeUnsupportedServer": "Serveren understøtter ikke genoptagelse (forventet status: {{expected}}, modtaget: {{status}}) — filen vil blive downloadet igen.",
+    "davResumeUnsupportedLocal": "WebDAV understøtter ikke genoptagelse af upload – filen vil blive sendt igen fra starten.",
+    "davResumeUnsupportedServer": "Serveren understøtter ikke genoptagelse (forventet status: {{expected}}, modtaget: {{status}}) – filen vil blive downloadet igen.",
     "uploadResumed": "Genoptager upload af {{path}} ved {{offset}} byte.",
     "uploadRestartedSourceChanged": "Den lokale fil svarer ikke længere til den pausede upload af {{path}} – den sendes igen fra begyndelsen.",
     "uploadRestartedMismatch": "Det, der allerede ligger på serveren, svarer ikke til den lokale fil – {{path}} sendes igen fra begyndelsen.",
@@ -628,14 +628,14 @@
   "logPanel": {
     "showAllConnections": "Vis alle forbindelser",
     "showOnlyThisConnection": "Vis kun denne forbindelse",
-    "connectionClosedShowOnly": "Forbindelsen er afbrudt — vis kun denne forbindelse",
+    "connectionClosedShowOnly": "Forbindelsen er afbrudt – vis kun denne forbindelse",
     "filterKinds": "Filter",
     "kindStatus": "Statusmeddelelser",
     "kindCommand": "Kommandoer",
     "kindResponse": "Svar fra serveren",
     "kindError": "Fejl",
     "searchPlaceholder": "Søg i loggen",
-    "copyToClipboard": "Kopier loggen til udklipsholderen",
+    "copyToClipboard": "Kopiér loggen til udklipsholderen",
     "saveToFile": "Gem de viste linjer i en .txt-fil",
     "clearLog": "Ryd loggen",
     "copiedTooltip": "Kopieret",
@@ -652,7 +652,7 @@
     "sourceCode": "Kildekode",
     "reportIssue": "Rapportér et problem",
     "checkForUpdates": "Se efter opdateringer",
-    "updateDownloaded": "Opdatering v{{version}} er blevet downloadet — du kan installere den nu."
+    "updateDownloaded": "Opdatering v{{version}} er blevet downloadet – du kan installere den nu."
   },
   "siteManager": {
     "emptyList": "Der er endnu ingen gemte servere",
@@ -676,7 +676,7 @@
       "remotePath": "Standardmappe",
       "localPath": "Lokal mappe",
       "folder": "Mappe",
-      "maxConnections": "Maks. forbindelser pr. rude",
+      "maxConnections": "Forbindelser",
       "encoding": "Tegnkodning"
     },
     "icons": {
@@ -808,9 +808,9 @@
   "tray": {
     "show": "Vis FTPeach",
     "transferring": "Aktive overførsler: {{count}}",
-    "transferringProgress": "Aktive overførsler: {{count}} · {{percent}} %",
+    "transferringProgress": "Aktive overførsler: {{count}} · {{percent}} %",
     "quitWaiting": "Afslutter, når overførslerne er færdige · {{count}}",
-    "quitWaitingProgress": "Afslutter, når overførslerne er færdige · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Afslutter, når overførslerne er færdige · {{count}} · {{percent}} %",
     "pauseAll": "Sæt alle overførsler på pause",
     "resumeAll": "Genoptag alle overførsler",
     "speedLimit": "Hastighedsbegrænsning",
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Intet nyt",
     "importSkippedShort": "Sprunget over: {{count}}",
     "quitPendingShort": "Afslutter…",
-    "upToDate": "Up to date",
+    "upToDate": "Opdateret",
     "cancelQuitLong": "Annuller afslutning",
     "listSeparator": ", "
   },
@@ -867,7 +867,7 @@
     "toggleRightPane": "Vis/skjul højre rude",
     "toggleTransferQueue": "Vis/skjul overførselskøen",
     "toggleLog": "Vis/skjul log",
-    "orientationNarrow": "Ruderne er stablet oven på hinanden — vinduet er for smalt til at vise dem side om side",
+    "orientationNarrow": "Ruderne er stablet oven på hinanden – vinduet er for smalt til at vise dem side om side",
     "orientationToRow": "Placer ruder side om side",
     "orientationToStacked": "Stak ruder oven på hinanden",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
@@ -901,7 +901,7 @@
   "errorBoundary": {
     "consoleLogPrefix": "Ubehandlet FTPeach-grænsefladefejl:",
     "title": "Noget gik galt",
-    "message": "Der opstod en uventet fejl i brugergrænsefladen. Din aktive forbindelse og filerne på disken er ikke berørt — du kan prøve at genindlæse brugergrænsefladen.",
+    "message": "Der opstod en uventet fejl i brugergrænsefladen. Din aktive forbindelse og filerne på disken er ikke berørt – du kan prøve at genindlæse brugergrænsefladen.",
     "reload": "Genindlæs grænseflade"
   },
   "quitDialog": {

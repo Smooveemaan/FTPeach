@@ -72,6 +72,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Deleting a bookmark while the vault is locked asks for the master password.
 - Keyboard shortcuts no longer act on the panes behind Settings, the bookmark manager and other
   dialogs, and Settings no longer opens underneath the bookmark manager.
+- The translations were corrected in every language: wording, grammar and punctuation.
 
 ## [0.3.0] - 2026-09-27
 

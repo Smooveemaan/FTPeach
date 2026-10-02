@@ -36,7 +36,7 @@
         "message": "保存されたプロキシパスワードを表示しますか？"
       },
       "vaultReset": {
-        "message": "保存されているすべてのパスワードと SSH キーのパスフレーズが完全に削除されます。",
+        "message": "保存されているすべてのパスワードと SSH 鍵のパスフレーズが完全に削除されます。",
         "approve": "保管庫を削除"
       },
       "executeLocalFile": {
@@ -66,8 +66,8 @@
         "approve": "このサーバーを信頼"
       },
       "trustHostKeyChanged": {
-        "message": "このサーバーが自身を証明するためのキーが変更されました。再インストール後に起こることですが、なりすましの場合も同じように見えます。",
-        "approve": "新しいキーを信頼"
+        "message": "このサーバーが自身を証明するための鍵が変更されました。再インストール後に起こることですが、なりすましの場合も同じように見えます。",
+        "approve": "新しい鍵を信頼"
       }
     },
     "savedAs": "このコンピューターに次の名前で保存されます: {{name}}",
@@ -76,15 +76,15 @@
       "confirmationsOff": "セキュリティ確認が無効になります。",
       "autoLockNever": "保管庫は操作がなくてもロックされなくなります。",
       "autoLockMinutes": "保管庫は操作がないまま {{minutes}} 分でロックされます。",
-      "strictHostKeyOff": "初回接続時に、未知の SSH サーバーキーが確認なしで信頼されます。"
+      "strictHostKeyOff": "初回接続時に、未知の SSH サーバー鍵が確認なしで信頼されます。"
     },
     "transferFrom": "保存先: {{recipient}}",
     "transferTo": "新しいサーバー: {{recipient}}",
     "transferLessSecure": "新しい接続は暗号化されていない、またはサーバー証明書を検証しません。",
     "hostKey": {
       "server": "サーバー: {{target}}",
-      "expected": "これまで信頼していたキー: {{fingerprint}}",
-      "actual": "今回提示されたキー: {{fingerprint}}"
+      "expected": "これまで信頼していた鍵: {{fingerprint}}",
+      "actual": "今回提示された鍵: {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -132,9 +132,9 @@
     "filesAriaLabel": "ファイル",
     "rename": "名前を変更",
     "resetColumnWidths": "列の幅を元に戻す",
-    "updatedAtTooltip": "更新日：{{date}}",
-    "searchTooltip": "検索 ({{shortcut}})",
-    "searchPlaceholder": "検索… ({{shortcut}})",
+    "updatedAtTooltip": "更新日: {{date}}",
+    "searchTooltip": "検索（{{shortcut}}）",
+    "searchPlaceholder": "検索…（{{shortcut}}）",
     "editPathAriaLabel": "パスの編集",
     "changeDriveTooltip": "ドライブを変更",
     "chooseColumnsTooltip": "右クリックで表示する列を選択",
@@ -149,8 +149,8 @@
     "downloadingWithPercent": "アップデート v{{version}} をダウンロード中: {{percent}}%",
     "downloadingFound": "アップデート v{{version}} が見つかりました。ダウンロード中…",
     "restartAndInstall": "再起動してインストール",
-    "availableAction": "更新あり!",
-    "installAction": "更新をインストール",
+    "availableAction": "利用可能！",
+    "installAction": "アップデートをインストール",
     "downloadTooltip": "クリックしてダウンロード",
     "downloadingTooltip": "ダウンロード中",
     "installTooltip": "今すぐ再起動してインストールします。再起動しない場合は、次回 FTPeach の起動時にインストールされます。"
@@ -200,12 +200,12 @@
   },
   "newFolder": {
     "title": "新しいフォルダー",
-    "labelLocal": "新しいフォルダー名：",
-    "labelRemote": "サーバー上の新しいフォルダー名："
+    "labelLocal": "新しいフォルダー名:",
+    "labelRemote": "サーバー上の新しいフォルダー名:"
   },
   "newFile": {
     "title": "新しいファイル",
-    "label": "ファイル名（拡張子を含む）："
+    "label": "ファイル名（拡張子を含む）:"
   },
   "moveToDialog": {
     "title": "移動先…",
@@ -222,14 +222,14 @@
     "overwriteLabel": "上書き",
     "replaceConnection": "このペインはすでに「{{current}}」に接続されています。接続先を「{{next}}」に変更しますか？",
     "replaceConnectionLabel": "置き換え",
-    "deleteSelected": "選択した項目（{{count}}）を削除しますか？ この操作は元に戻せません。",
+    "deleteSelected": "選択した項目（{{count}}）を削除しますか？この操作は元に戻せません。",
     "deleteEntry": "「{{name}}」を削除しますか？この操作は元に戻せません。",
     "recycleSelected": "選択した項目（{{count}}）をごみ箱に移動しますか？",
     "recycleEntry": "「{{name}}」をごみ箱に移動しますか？",
-    "deletePermanentSelected": "選択した項目（{{count}}）を完全に削除しますか？ この操作は元に戻せません。",
+    "deletePermanentSelected": "選択した項目（{{count}}）を完全に削除しますか？この操作は元に戻せません。",
     "deletePermanentEntry": "「{{name}}」を完全に削除しますか？この操作は元に戻せません。",
-    "deleteRemoteSelected": "サーバー上の選択した項目（{{count}}）を完全に削除しますか？ この操作は元に戻せません。",
-    "deleteRemoteEntry": "サーバー上の「{{name}}」を完全に削除しますか？ この操作は元に戻せません。"
+    "deleteRemoteSelected": "サーバー上の選択した項目（{{count}}）を完全に削除しますか？この操作は元に戻せません。",
+    "deleteRemoteEntry": "サーバー上の「{{name}}」を完全に削除しますか？この操作は元に戻せません。"
   },
   "paneSide": {
     "top": "上",
@@ -300,17 +300,17 @@
     "networkUnreachable": "サーバーに接続できません。ネットワーク接続を確認してください。",
     "loginIncorrect": "ユーザー名またはパスワードが間違っています。",
     "invalidCertificate": "サーバーから無効な証明書が提示されました。このサーバーを信頼する場合は、接続設定で証明書の検証を無効にしてください。",
-    "tlsNegotiationFailed": "TLSネゴシエーションに失敗しました。サーバーが明示的なFTPSまたはHTTPS、および互換性のあるTLSバージョンをサポートしているか確認してください。",
-    "sshNegotiationFailed": "SSHのネゴシエーションに失敗しました。サーバーとFTPeachの間で、互換性のあるSSHアルゴリズムまたはプロトコルバージョンについて合意に至りませんでした。",
+    "tlsNegotiationFailed": "TLS ネゴシエーションに失敗しました。サーバーが明示的な FTPS または HTTPS、および互換性のある TLS バージョンをサポートしているか確認してください。",
+    "sshNegotiationFailed": "SSH のネゴシエーションに失敗しました。サーバーと FTPeach の間で、互換性のある SSH アルゴリズムまたはプロトコルバージョンについて合意に至りませんでした。",
     "proxyFailed": "プロキシ経由の接続に失敗しました。プロキシの種類、アドレス、認証情報と、プロキシから接続先サーバーに到達できるかを確認してください。",
-    "keyReadFailed": "キーを読み取れませんでした。ファイルが破損しているか、パスフレーズが間違っています。",
+    "keyReadFailed": "鍵を読み取れませんでした。ファイルが破損しているか、パスフレーズが間違っています。",
     "accessDenied": "この操作を行う権限がありません。",
     "notFound": "ファイルまたはフォルダーが見つかりません。",
     "fileOrFolderExists": "その名前のファイルまたはフォルダーはすでに存在します。",
     "fileBusy": "このファイルは別のプロセスによって使用中です。",
     "locationBusy": "別の操作がこのファイルまたはフォルダーを使用中です。完了してからもう一度お試しください。",
     "diskFull": "ディスク容量が不足しています。",
-    "hostKeyMismatch": "サーバーのホストキーが変更されました。",
+    "hostKeyMismatch": "サーバーのホスト鍵が変更されました。",
     "integrityMismatch": "転送されたファイルは整合性チェックに失敗しました。",
     "cleanupIncomplete": "クリーンアップは未完了です。所有を確認できないファイルは保持されました。手動で削除する前に転送先を確認してください。",
     "invalidInput": "指定された値は無効です。",
@@ -318,9 +318,9 @@
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
     "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
-    "createUnsupported": "このFTPサーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTPまたはWebDAVをお試しください。",
+    "createUnsupported": "この FTP サーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTP または WebDAV をお試しください。",
     "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "保存済みのパスワードをこのコンピューターで読み取れません。ブックマークまたはプロキシ設定でもう一度入力してください。"
   },
   "settings": {
     "openWithAssociations": {
@@ -363,7 +363,7 @@
       "unassign": "割り当てを解除",
       "conflict": "次の操作でも使用中: {{action}}",
       "actions": {
-        "search": "検索 ({{side}})",
+        "search": "検索（{{side}}）",
         "toggleHiddenFiles": "隠しファイルの表示を切り替え",
         "newConnection": "新しい接続",
         "save": "保存（{{side}}）",
@@ -396,7 +396,7 @@
       "title": "パスワードによる保護",
       "systemMode": "システムによる保護",
       "systemModeHint": "パスワードは Windows アカウントに紐づけて暗号化され、接続設定で表示できます。",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "ポータブル版: この方法で保存したパスワードは、このコンピューターでしか読み取れません。マスターパスワードを使うと、フォルダーと一緒に持ち運べます。",
       "strongholdMode": "強化された保護",
       "strongholdModeHint": "マスターパスワードが必要です。保存済みのパスワードを表示するには、マスターパスワードの再入力が必要です。",
       "loading": "保管庫を確認中…",
@@ -418,41 +418,41 @@
       "autoLockHint": "一定時間操作がないと保管庫をロックします。既存のサーバー接続は維持されます。0 で自動ロックを無効にします。",
       "autoLockAlways": "このタイマーの設定にかかわらず、Windows がロックされたときや FTPeach のウィンドウが非表示になったときにも保管庫はロックされます。",
       "lockScope": "ロックしても開いている接続は切断されず、その接続で開始される新しい転送も続行されます。パスワードを保存または表示するには、再度ロックを解除する必要があります。",
-      "strictHostKey": "新しい SSH サーバーキーを確認する",
-      "strictHostKeyHint": "SSH サーバーのキーを初めて信頼する前に確認を求め、そのフィンガープリントを表示します。オフにすると、サーバーが最初に提示したキーが確認なしで信頼されます。",
+      "strictHostKey": "新しい SSH サーバー鍵を確認する",
+      "strictHostKeyHint": "SSH サーバーの鍵を初めて信頼する前に確認を求め、そのフィンガープリントを表示します。オフにすると、サーバーが最初に提示した鍵が確認なしで信頼されます。",
       "changePassword": "マスターパスワードの変更",
       "change": "パスワードの変更",
       "systemUnlock": "システムによるロック解除を許可",
-      "systemUnlockHint": "Windows Hello（Windowsの設定に応じて、PIN、顔認証、または指紋認証）を使用します。マスターパスワードは引き続き復旧手段として機能します。",
+      "systemUnlockHint": "Windows Hello（Windows の設定に応じて、PIN、顔認証、または指紋認証）を使用します。マスターパスワードは引き続き復旧手段として機能します。",
       "unlockWithSystem": "システム認証によるロック解除",
       "systemUnavailable": "このプラットフォームではシステムによるロック解除を利用できません。",
       "noRecovery": "マスターパスワードを忘れると復元できません。保管庫をリセットすると、保存済みのパスワードとパスフレーズがすべて削除されます。",
       "passwordMismatch": "パスワードが一致しません。",
-      "passwordTooShort": "マスターパスワードには、12文字以上を使用してください。",
+      "passwordTooShort": "マスターパスワードには、12 文字以上を使用してください。",
       "strength": {
-        "tooShort": "文字数が少なすぎます。12文字以上入力してください。",
+        "tooShort": "文字数が少なすぎます。12 文字以上入力してください。",
         "acceptable": "許容範囲です。パスフレーズは長いほど安全です。",
         "strong": "強力なマスターパスワードです。"
       },
       "reset": "保管庫をリセット",
       "resetHint": "保管庫と、そこに保存されたすべてのパスワードと SSH 鍵のパスフレーズを削除します。強化された保護は再設定が必要です。",
-      "resetWarning": "これにより、保存されているすべてのパスワードおよびキーのパスフレーズが完全に削除されます。続行するには、現在のマスターパスワードを入力してください。",
+      "resetWarning": "これにより、保存されているすべてのパスワードおよび鍵のパスフレーズが完全に削除されます。続行するには、現在のマスターパスワードを入力してください。",
       "confirmReset": "保存済みのパスワードを削除",
       "showConfirmations": "セキュリティ確認を表示する",
       "showConfirmationsHint": "保存済みのパスワードを表示する前、実行可能ファイルを起動する前、これまで使用していないプログラムでファイルを開く前に確認します。保管庫のリセット、保存済みパスワードの別のサーバーへの移動、この設定のオフには常に確認が必要です。",
       "unavailable": "保管庫は利用できません。",
       "failed": "保管庫の操作に失敗しました。",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "マスターパスワードが受け付けられませんでした。しばらく待ってからもう一度お試しください。"
     },
     "unlimitedPlaceholder": "制限なし",
     "connectTimeoutLabel": "接続タイムアウト（秒）",
     "connectTimeoutHint": "接続時にサーバーの応答を待つ時間。これを過ぎると到達不能と見なします（0 または空欄で無制限）。次回の接続から適用されます。",
-    "ftpActiveMode": "アクティブFTPモード（パッシブモードではなく）",
-    "ftpActiveModeHint": "FTP/FTPSのみ — SFTP/WebDAVには影響しません。パッシブモードがNATを通過できないネットワークやサーバーでのみ、ごくまれに必要となります。次の接続から適用されます。",
-    "ftpActiveModeDisabledByProxy": "プロキシが有効になっている間は利用できません。プロキシトンネルは送信接続のみをサポートしているため、FTPはパッシブモードのままにする必要があります。",
+    "ftpActiveMode": "アクティブ FTP モード（パッシブモードではなく）",
+    "ftpActiveModeHint": "FTP/FTPS のみ。SFTP/WebDAV には影響しません。パッシブモードが NAT を通過できないネットワークやサーバーでのみ、ごくまれに必要となります。次の接続から適用されます。",
+    "ftpActiveModeDisabledByProxy": "プロキシが有効になっている間は利用できません。プロキシトンネルは送信接続のみをサポートしているため、FTP はパッシブモードのままにする必要があります。",
     "proxy": {
       "enable": "接続にプロキシを使用する",
-      "enableHint": "SOCKS4、SOCKS5、またはHTTP CONNECT — FTP、FTPS、SFTP、およびWebDAVに適用されます。次の接続に適用されます。",
+      "enableHint": "SOCKS4、SOCKS5、または HTTP CONNECT。FTP、FTPS、SFTP、WebDAV に適用されます。次の接続から適用されます。",
       "typeLabel": "プロキシの種類",
       "hostLabel": "プロキシのアドレス",
       "hostPlaceholder": "proxy.example.com",
@@ -471,7 +471,7 @@
     },
     "concurrencyLabel": "同時転送数",
     "concurrencyHint": "すべてのタブを合わせて同時にアップロード・ダウンロードするファイルの数（0 または空欄で無制限）。すぐに適用され、実行中の転送はそのまま完了します。",
-    "speedLimitLabel": "速度制限、KB/s",
+    "speedLimitLabel": "速度制限（KB/秒）",
     "speedLimitHint": "同時に行うすべての転送の合計速度に適用されます（0 または空欄で無制限）。次回の接続を待たずにすぐ適用されます。",
     "notifyOnComplete": "転送が完了したら通知する",
     "notifyOnCompleteHint": "転送キューが空になったときにシステム通知を表示します（ウィンドウが非アクティブのときのみ）。",
@@ -481,7 +481,7 @@
     "overwriteSkip": "スキップ",
     "overwriteHint": "コピーするファイルが移動先フォルダーに既に存在する場合の動作です。",
     "preventSleep": "転送中にシステムがスリープ状態になるのを防ぐ",
-    "preventSleepHint": "次の接続を待たずに、即座に有効になります。少なくとも1つの転送が進行している間は有効ですが、それ以外の場合はスリープを妨げません。",
+    "preventSleepHint": "次の接続を待たずに、即座に有効になります。少なくとも 1 つの転送が進行している間は有効ですが、それ以外の場合はスリープを妨げません。",
     "themeLabel": "テーマ",
     "themeDark": "ダーク",
     "themeLight": "ライト",
@@ -492,8 +492,8 @@
     "dateFormatLabel": "日付・時刻の形式",
     "dateFormatOnlyLabel": "日付形式",
     "timeFormatLabel": "時刻形式",
-    "timeFormat24Hour": "24時間",
-    "timeFormat12Hour": "12時間",
+    "timeFormat24Hour": "24 時間",
+    "timeFormat12Hour": "12 時間",
     "dateFormatLocale": "地域の設定",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "「コンピューター」の既定フォルダー",
@@ -503,15 +503,15 @@
     "showHiddenFilesHint": "ローカルとサーバーの両方のペインに適用されます。",
     "coloredTabs": "色付きタブ",
     "coloredTabsHint": "保存したブックマークの色でタブ名とアイコンを色分けします。",
-    "autoCheckUpdates": "自動的に更新する",
-    "autoCheckUpdatesHint": "起動時と 1 日 1 回更新を確認し、バックグラウンドでダウンロードします。ダウンロードした更新は、次回 FTPeach の起動時に自動でインストールされます。ステータスバーからすぐにインストールすることもできます。",
+    "autoCheckUpdates": "自動的にアップデートする",
+    "autoCheckUpdatesHint": "起動時と 1 日 1 回アップデートを確認し、バックグラウンドでダウンロードします。ダウンロードしたアップデートは、次回 FTPeach の起動時に自動でインストールされます。ステータスバーからすぐにインストールすることもできます。",
     "autoReconnectTabs": "起動時に復元されたタブを再接続する",
     "autoReconnectTabsHint": "既定ではオフです。オンにすると、保存済みサーバーのタブが復元時に自動で接続されます。",
     "saveSessionOnExit": "終了時にセッションを保存する",
     "saveSessionOnExitHint": "次回起動時に、開いていたタブ、ペインの種類、パスを復元します。オフにすると保存済みのセッションは消去されます。",
     "checkNow": "今すぐ確認",
     "updateStatus": {
-      "checking": "更新の確認中…",
+      "checking": "アップデートを確認中…",
       "notAvailable": "最新バージョンを使用しています。",
       "error": "アップデートを確認できませんでした。",
       "notPackaged": "このビルドでは利用できません（npm run dev/start）。"
@@ -519,7 +519,7 @@
     "logEnable": "ログパネルを表示する",
     "logShowTimestamps": "タイムスタンプを表示する",
     "logToFile": "ログをファイルに書き込む",
-    "logToFileHint": "ログパネルが閉じているときも、ログを %APPDATA%\\FTPeach\\logs 内の日ごとのファイルに追記します。ファイルは14日間、合計50 MBまで保存されます。パネルの「保存」ボタンはこれとは別の機能で、クリックしたときにパネルに表示されている行を1回だけ保存します。",
+    "logToFileHint": "ログパネルが閉じているときも、ログを %APPDATA%\\FTPeach\\logs 内の日ごとのファイルに追記します。ファイルは 14 日間、合計 50 MB まで保存されます。パネルの「保存」ボタンはこれとは別の機能で、クリックしたときにパネルに表示されている行を 1 回だけ保存します。",
     "exportDiagnostics": "診断パッケージをエクスポート",
     "exportDiagnosticsBusy": "エクスポート中…",
     "exportDiagnosticsHint": "アプリのバージョン、OS、最近のログ、アプリ自体のログファイルをエクスポートします。パスワード、トークン、その他の機密情報は伏せられます。",
@@ -558,12 +558,12 @@
     "notifyFailed_one": "{{count}} 個のファイルが失敗しました",
     "notifyFailed_other": "{{count}} 個のファイルが失敗しました",
     "notifyBoth": "{{succeeded}}、{{failed}}",
-    "webdavUploadTooLarge": "WebDAVによるアップロードは、1ファイルあたり{{limit}}MiBまでとなっています。",
+    "webdavUploadTooLarge": "WebDAV によるアップロードは、1 ファイルあたり {{limit}} MiB までとなっています。",
     "batchFailed": "{{total}} 件のうち {{failed}} 件が転送されませんでした。",
     "sourcesKept": "元のファイルはそのまま残っています。"
   },
   "transferQueue": {
-    "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大{{limit}}件）。完了するまでお待ちください。",
+    "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大 {{limit}} 件）。完了するまでお待ちください。",
     "title": "転送",
     "columns": {
       "file": "ファイル",
@@ -608,17 +608,17 @@
   },
   "log": {
     "connecting": "{{addr}} に接続中...",
-    "activeModeViaProxy": "プロキシ経由ではアクティブFTPモードを使用できません。パッシブモードを使用します。",
-    "connectFailed": "接続に失敗しました：{{error}}",
+    "activeModeViaProxy": "プロキシ経由ではアクティブ FTP モードを使用できません。パッシブモードを使用します。",
+    "connectFailed": "接続に失敗しました: {{error}}",
     "connected": "ログインしました。",
     "receivedEntries_one": "{{count}} 件のエントリを受信しました",
     "receivedEntries_other": "{{count}} 件のエントリを受信しました",
     "skippedUnsafeEntry": "安全でない名前を持つリストエントリをスキップしました: {{name}}",
     "listFailed": "フォルダー一覧の取得に失敗しました: {{error}}",
-    "tlsInit": "TLSの初期化中...",
-    "tlsEstablished": "TLS接続が確立されました。",
-    "davResumeUnsupportedLocal": "WebDAVではアップロードの再開はサポートされていません。ファイルは最初から再度送信されます。",
-    "davResumeUnsupportedServer": "サーバーは再開に対応していません（期待されるステータス：{{expected}}、実際のステータス：{{status}}）— ファイルは再度ダウンロードされます。",
+    "tlsInit": "TLS の初期化中...",
+    "tlsEstablished": "TLS 接続が確立されました。",
+    "davResumeUnsupportedLocal": "WebDAV ではアップロードの再開はサポートされていません。ファイルは最初から再度送信されます。",
+    "davResumeUnsupportedServer": "サーバーは再開に対応していません（期待されるステータス: {{expected}}、実際のステータス: {{status}}）。ファイルは再度ダウンロードされます。",
     "uploadResumed": "{{path}} のアップロードを {{offset}} バイト目から再開します。",
     "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
     "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
@@ -628,7 +628,7 @@
   "logPanel": {
     "showAllConnections": "すべての接続を表示",
     "showOnlyThisConnection": "この接続のみ表示",
-    "connectionClosedShowOnly": "接続は切断されました — この接続のみ表示",
+    "connectionClosedShowOnly": "接続は切断されました。この接続のみ表示します",
     "filterKinds": "フィルター",
     "kindStatus": "ステータスメッセージ",
     "kindCommand": "コマンド",
@@ -647,7 +647,7 @@
   },
   "aboutDialog": {
     "title": "バージョン情報",
-    "tagline": "軽量な FTP/FTPS/SFTP/WebDAV クライアント",
+    "tagline": "軽量な FTP/FTPS/SFTP/WebDAV クライアントです。",
     "legalInformation": "法的情報",
     "sourceCode": "ソースコード",
     "reportIssue": "問題を報告",
@@ -671,12 +671,12 @@
       "icon": "アイコン",
       "color": "色",
       "protocol": "プロトコル",
-      "keyFile": "キーファイル",
-      "caCertFile": "CA証明書",
-      "remotePath": "デフォルトフォルダー",
+      "keyFile": "鍵ファイル",
+      "caCertFile": "CA 証明書",
+      "remotePath": "既定のフォルダー",
       "localPath": "ローカルフォルダー",
       "folder": "フォルダー",
-      "maxConnections": "ペインごとの最大接続数",
+      "maxConnections": "接続数",
       "encoding": "文字コード"
     },
     "icons": {
@@ -723,7 +723,7 @@
     "unsavedChangesMessage": "ブックマークの変更を保存しますか？",
     "newFolder": "新しいフォルダー",
     "folderNamePlaceholder": "フォルダー名",
-    "confirmDeleteFolder": "「{{name}}」フォルダーを削除しますか？そのフォルダー内のブックマークは、1つ上の階層に移動します。",
+    "confirmDeleteFolder": "「{{name}}」フォルダーを削除しますか？そのフォルダー内のブックマークは、1 つ上の階層に移動します。",
     "searchPlaceholder": "検索…",
     "clearSearch": "検索をクリア",
     "noSearchResults": "検索条件に一致するブックマークはありません",
@@ -736,7 +736,7 @@
     "maxConnectionsHint": "最低 2: 1 つの接続でフォルダーを参照し、残りでファイルを転送します。上限はペインごとに設定されます。",
     "encodingHint": "このサーバーのファイル名が文字化けする場合にのみ変更してください。",
     "encodings": {
-      "utf8": "UTF-8 (デフォルト)",
+      "utf8": "UTF-8（既定）",
       "cyrillic": "キリル文字",
       "westernEuropean": "西ヨーロッパ",
       "centralEuropean": "中央ヨーロッパ",
@@ -753,7 +753,7 @@
       "korean": "韓国語"
     },
     "advancedSettings": "詳細設定",
-    "remotePathPlaceholder": "サーバーのルート (/)",
+    "remotePathPlaceholder": "サーバーのルート（/）",
     "changeSavedPassword": "保存済みのパスワードを変更",
     "changeSavedPassphrase": "保存済みのパスフレーズを変更",
     "connectionLimit": {
@@ -773,10 +773,10 @@
       "user": "ユーザー名",
       "password": "パスワード",
       "passphrase": "パスフレーズ",
-      "keyFilePlaceholder": "キーファイル…",
-      "chooseKeyFile": "キーファイルを選択…",
-      "caCertFilePlaceholder": "CA証明書…",
-      "chooseCaCertFile": "CA証明書を選択…"
+      "keyFilePlaceholder": "鍵ファイル…",
+      "chooseKeyFile": "鍵ファイルを選択…",
+      "caCertFilePlaceholder": "CA 証明書…",
+      "chooseCaCertFile": "CA 証明書を選択…"
     },
     "secureToggle": {
       "tooltip": "オフにすると、自己署名証明書や無効なサーバー証明書を受け入れます",
@@ -790,7 +790,7 @@
       "tooltip": "パスワードの代わりに SSH 秘密鍵ファイルでログイン",
       "label": "SSH 鍵でログイン"
     },
-    "rsaKeyWarning": "RSA秘密鍵には、処理時間を利用するサイドチャネル攻撃の既知のリスクがあります。新しいSSH鍵にはEd25519を推奨します。",
+    "rsaKeyWarning": "RSA 秘密鍵には、処理時間を利用するサイドチャネル攻撃の既知のリスクがあります。新しい SSH 鍵には Ed25519 を推奨します。",
     "connectTooltip": {
       "cancel": "キャンセル",
       "connect": "接続",
@@ -798,7 +798,7 @@
     }
   },
   "protocolSelect": {
-    "insecureWarning": "通常のFTPでは、ユーザー名、パスワード、およびファイルが暗号化されずに送信されます。可能な場合は、FTPSまたはSFTPを使用してください。"
+    "insecureWarning": "通常の FTP では、ユーザー名、パスワード、およびファイルが暗号化されずに送信されます。可能な場合は、FTPS または SFTP を使用してください。"
   },
   "titleBar": {
     "minimize": "最小化",
@@ -806,7 +806,7 @@
     "maximize": "最大化"
   },
   "tray": {
-    "show": "FTPeachを表示",
+    "show": "FTPeach を表示",
     "transferring": "転送中: {{count}} 件",
     "transferringProgress": "転送中: {{count}} 件 · {{percent}}%",
     "quitWaiting": "転送の完了後に終了します · {{count}}",
@@ -825,7 +825,7 @@
   "tabStrip": {
     "localComputer": "コンピューター",
     "untitledTab": "新しいタブ",
-    "newTabTooltip": "新しいタブ (Ctrl+T)",
+    "newTabTooltip": "新しいタブ（Ctrl+T）",
     "rename": "タブ名"
   },
   "toolbarOverflowMenu": {
@@ -858,7 +858,7 @@
     "importNothingNewShort": "新しい項目なし",
     "importSkippedShort": "スキップ: {{count}}",
     "quitPendingShort": "終了しています…",
-    "upToDate": "Up to date",
+    "upToDate": "最新の状態",
     "cancelQuitLong": "終了をキャンセル",
     "listSeparator": "、"
   },
@@ -867,7 +867,7 @@
     "toggleRightPane": "右ペインの表示／非表示",
     "toggleTransferQueue": "転送キューの表示／非表示",
     "toggleLog": "ログの表示／非表示",
-    "orientationNarrow": "ペインは上下に並んでいます — ウィンドウの幅が狭いため左右に並べられません",
+    "orientationNarrow": "ペインは上下に並んでいます。ウィンドウの幅が狭いため左右に並べられません",
     "orientationToRow": "ペインを左右に並べる",
     "orientationToStacked": "ペインを上下に並べる",
     "pauseUnsupportedWebdav": "WebDAV は一時停止に対応していません",
@@ -888,7 +888,7 @@
   "paneSourceSwitcher": {
     "local": "コンピューター",
     "remote": "サーバー",
-    "updatedAtTooltip": "更新日：{{date}}",
+    "updatedAtTooltip": "更新日: {{date}}",
     "connectToServer": "サーバー"
   },
   "paneConnectEmptyState": {

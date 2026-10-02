@@ -54,7 +54,7 @@
         "approve": "Toepassen"
       },
       "useSystemProtection": {
-        "message": "Uitgebreide beveiliging uitschakelen? Opgeslagen wachtwoorden worden dan beschermd door uw Windows-account in plaats van het hoofdwachtwoord.",
+        "message": "Uitgebreide beveiliging uitschakelen? Opgeslagen wachtwoorden worden dan beschermd door je Windows-account in plaats van het hoofdwachtwoord.",
         "approve": "Uitschakelen"
       },
       "transferSecret": {
@@ -107,13 +107,13 @@
     "deleteSelectedPermanently_other": "Definitief verwijderen ({{count}} bestanden)"
   },
   "chmodDialog": {
-    "title": "SFTP-machtigingen",
-    "label": "Octale weergave voor ‘{{name}}’ (bijvoorbeeld 644 of 0755)"
+    "title": "SFTP-rechten",
+    "label": "Octale modus voor \"{{name}}\" (bijvoorbeeld 644 of 0755)"
   },
   "filePane": {
     "emptyFolder": "De map is leeg",
     "connectFirst": "Maak eerst verbinding",
-    "homeFolder": "Startmap",
+    "homeFolder": "Thuismap",
     "copyToPaneBelow": "Kopiëren naar het onderste paneel",
     "copyToPaneAbove": "Kopiëren naar het bovenste paneel",
     "copyToPaneRight": "Kopiëren naar het rechterpaneel",
@@ -139,14 +139,14 @@
     "changeDriveTooltip": "Schijf wijzigen",
     "chooseColumnsTooltip": "Klik met de rechtermuisknop om kolommen te selecteren",
     "sortByNameTooltip": "Sorteren op naam",
-    "sortByColumnTooltip": "Sorteren op kolom ‘{{column}}’",
+    "sortByColumnTooltip": "Sorteren op kolom \"{{column}}\"",
     "rowProbeSample": "Voorbeeld",
     "loading": "Bezig met laden…",
     "nothingFound": "Niets gevonden"
   },
   "update": {
-    "readyToInstall": "Update v{{version}} is beschikbaar — klik op ‘Opnieuw starten en installeren’ om deze toe te passen.",
-    "downloadingWithPercent": "Update v{{version}} wordt gedownload: {{percent}} %",
+    "readyToInstall": "Update v{{version}} is beschikbaar — klik op \"Opnieuw starten en installeren\" om deze toe te passen.",
+    "downloadingWithPercent": "Update v{{version}} wordt gedownload: {{percent}}%",
     "downloadingFound": "Update v{{version}} gevonden, wordt gedownload…",
     "restartAndInstall": "Opnieuw starten en installeren",
     "availableAction": "beschikbaar!",
@@ -166,8 +166,8 @@
   },
   "resize": {
     "paneSize": "Sleep om de grootte van de panelen aan te passen (dubbelklik om terug te zetten)",
-    "height": "Sleep om de hoogte aan te passen (dubbelklikken om terug te zetten)",
-    "ratio": "Sleep om de verhouding aan te passen (dubbelklikken om terug te zetten)"
+    "height": "Sleep om de hoogte aan te passen (dubbelklik om terug te zetten)",
+    "ratio": "Sleep om de verhouding aan te passen (dubbelklik om terug te zetten)"
   },
   "dragMove": {
     "itemCount_one": "{{count}} item",
@@ -182,7 +182,7 @@
   },
   "recoveredEdits": {
     "title": "Wijzigingen die niet zijn geüpload",
-    "message": "Bestanden die u in een externe toepassing hebt gewijzigd, zijn niet naar de server geüpload voordat FTPeach werd gesloten. Ze zijn bewaard zodat u ze zelf kunt uploaden.",
+    "message": "Bestanden die je in een externe toepassing hebt gewijzigd, zijn niet naar de server geüpload voordat FTPeach werd gesloten. Ze zijn bewaard zodat je ze zelf kunt uploaden.",
     "unknownPath": "Serverpad onbekend",
     "show": "Bestanden weergeven",
     "later": "Later",
@@ -222,11 +222,11 @@
     "overwriteLabel": "Overschrijven",
     "replaceConnection": "Dit paneel is al verbonden met \"{{current}}\". Verbinding vervangen door \"{{next}}\"?",
     "replaceConnectionLabel": "Vervangen",
-    "deleteSelected": "De geselecteerde items verwijderen ({{count}})? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deleteSelected": "De geselecteerde items ({{count}}) verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deleteEntry": "\"{{name}}\" verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "recycleSelected": "De geselecteerde items ({{count}}) naar de Prullenbak verplaatsen?",
     "recycleEntry": "\"{{name}}\" naar de Prullenbak verplaatsen?",
-    "deletePermanentSelected": "De geselecteerde items definitief verwijderen ({{count}})? Deze handeling kan niet ongedaan worden gemaakt.",
+    "deletePermanentSelected": "De geselecteerde items ({{count}}) definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deletePermanentEntry": "\"{{name}}\" definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deleteRemoteSelected": "De geselecteerde items op de server ({{count}}) definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deleteRemoteEntry": "\"{{name}}\" op de server definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt."
@@ -287,7 +287,7 @@
       "supportProject": "FTPeach steunen",
       "title": "Help",
       "documentation": "Documentatie",
-      "reportIssue": "Een probleem melden",
+      "reportIssue": "Probleem melden",
       "checkUpdates": "Controleren op updates",
       "about": "Over FTPeach"
     }
@@ -312,7 +312,7 @@
     "diskFull": "Onvoldoende schijfruimte.",
     "hostKeyMismatch": "De hostsleutel van de server is gewijzigd.",
     "integrityMismatch": "Het overgedragen bestand heeft de integriteitscontrole niet doorstaan.",
-    "cleanupIncomplete": "Het opruimen is onvolledig. Bestanden waarvan het eigendom niet kon worden geverifieerd, zijn behouden. Controleer de bestemming voordat u ze handmatig verwijdert.",
+    "cleanupIncomplete": "Het opruimen is onvolledig. Bestanden waarvan het eigendom niet kon worden geverifieerd, zijn behouden. Controleer de bestemming voordat je ze handmatig verwijdert.",
     "invalidInput": "De opgegeven waarde is ongeldig.",
     "internal": "Er is een onverwachte fout opgetreden.",
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
     "createUnsupported": "Deze FTP-server ondersteunt het maken van nieuwe bestanden niet. Probeer SFTP of WebDAV als de server die aanbiedt.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Een opgeslagen wachtwoord kan op deze computer niet worden gelezen. Voer het opnieuw in bij de bladwijzer of in de proxy-instellingen."
   },
   "settings": {
     "openWithAssociations": {
@@ -335,9 +335,9 @@
       "add": "Koppeling toevoegen"
     },
     "minimizeToTray": "Naar systeemvak minimaliseren",
-    "minimizeToTrayHint": "Met de knop 'Minimaliseren' wordt het venster naar het systeemvak verplaatst in plaats van naar de taakbalk.",
+    "minimizeToTrayHint": "Met de knop \"Minimaliseren\" wordt het venster naar het systeemvak verplaatst in plaats van naar de taakbalk.",
     "closeToTray": "Bij sluiten naar systeemvak minimaliseren",
-    "closeToTrayHint": "Met de knop ‘Sluiten’ gaat het venster naar het systeemvak in plaats van dat de app wordt afgesloten. Afsluiten kan via het menu van het pictogram in het systeemvak.",
+    "closeToTrayHint": "Met de knop \"Sluiten\" gaat het venster naar het systeemvak in plaats van dat de app wordt afgesloten. Afsluiten kan via het menu van het pictogram in het systeemvak.",
     "title": "Instellingen",
     "unsavedChangesTitle": "Niet-opgeslagen wijzigingen",
     "unsavedChangesMessage": "Wil je de wijzigingen in de instellingen opslaan?",
@@ -396,7 +396,7 @@
       "title": "Wachtwoordbeveiliging",
       "systemMode": "Systeembeveiliging",
       "systemModeHint": "Wachtwoorden worden versleuteld voor je Windows-account en kunnen in de verbindingsinstellingen worden bekeken.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Draagbare kopie: zo opgeslagen wachtwoorden kunnen alleen op deze computer worden gelezen. Met een hoofdwachtwoord verhuizen ze mee met de map.",
       "strongholdMode": "Uitgebreide beveiliging",
       "strongholdModeHint": "Vereist een hoofdwachtwoord. Om een opgeslagen wachtwoord te bekijken, moet je het hoofdwachtwoord opnieuw invoeren.",
       "loading": "Kluis wordt gecontroleerd…",
@@ -442,7 +442,7 @@
       "showConfirmationsHint": "Vraag bevestiging voordat een opgeslagen wachtwoord wordt getoond, een uitvoerbaar bestand wordt uitgevoerd of een bestand wordt geopend met een programma dat nog niet is gebruikt. Het resetten van de kluis, het verplaatsen van een opgeslagen wachtwoord naar een andere server en het uitschakelen van deze optie worden altijd bevestigd.",
       "unavailable": "De kluis is niet beschikbaar.",
       "failed": "De bewerking op de kluis is mislukt.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Het hoofdwachtwoord is niet geaccepteerd. Wacht even voordat je het opnieuw probeert."
     },
     "unlimitedPlaceholder": "Geen limiet",
     "connectTimeoutLabel": "Time-out verbinding, s",
@@ -454,20 +454,20 @@
       "enable": "Proxy gebruiken voor verbindingen",
       "enableHint": "SOCKS4, SOCKS5 of HTTP CONNECT — geldt voor FTP, FTPS, SFTP en WebDAV. Geldt voor de volgende verbinding.",
       "typeLabel": "Proxytype",
-      "hostLabel": "Proxy-host",
+      "hostLabel": "Proxyhost",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Poort",
       "usernameLabel": "Gebruikersnaam",
       "passwordLabel": "Wachtwoord",
       "removeSavedPassword": "Opgeslagen wachtwoord verwijderen",
-      "revealFailed": "Het opgeslagen wachtwoord kon niet worden gedecodeerd.",
+      "revealFailed": "Het opgeslagen wachtwoord kon niet worden ontsleuteld.",
       "testTargetLabel": "Testen met",
       "testTargetHostPlaceholder": "Serveradres",
       "testTargetPortPlaceholder": "Poort",
       "test": "Proxy testen",
       "testing": "Testen…",
       "testOk": "De proxy heeft de doelserver bereikt.",
-      "testFailed": "De proxy-test is mislukt."
+      "testFailed": "De proxytest is mislukt."
     },
     "concurrencyLabel": "Gelijktijdige overdrachten",
     "concurrencyHint": "Hoeveel bestanden er in alle tabbladen tegelijk worden geüpload en gedownload (0 of leeg — geen limiet). Geldt direct; lopende overdrachten worden normaal afgerond.",
@@ -496,8 +496,8 @@
     "timeFormat12Hour": "12 u",
     "dateFormatLocale": "Regionaal",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "Standaardmap voor ‘Computer’",
-    "defaultLocalPathHint": "De map die het paneel ‘Computer’ opent bij het opstarten en bij het overschakelen vanaf een server. Laat leeg om je thuismap te gebruiken.",
+    "defaultLocalPathLabel": "Standaardmap voor \"Computer\"",
+    "defaultLocalPathHint": "De map die het paneel \"Computer\" opent bij het opstarten en bij het overschakelen vanaf een server. Laat leeg om je thuismap te gebruiken.",
     "chooseDefaultLocalPath": "Standaardmap kiezen",
     "showHiddenFiles": "Verborgen bestanden en mappen weergeven",
     "showHiddenFilesHint": "Geldt voor lokale panelen en serverpanelen.",
@@ -519,7 +519,7 @@
     "logEnable": "Logboekpaneel weergeven",
     "logShowTimestamps": "Tijdstempels weergeven",
     "logToFile": "Logboek naar bestand schrijven",
-    "logToFileHint": "Voegt het logboek toe aan een bestand per dag in %APPDATA%\\FTPeach\\logs, ook als het logboekvenster gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal. De knop ‘Opslaan’ in het venster is iets anders: die slaat de daar getoonde regels één keer op, wanneer erop wordt geklikt.",
+    "logToFileHint": "Voegt het logboek toe aan een bestand per dag in %APPDATA%\\FTPeach\\logs, ook als het logboekpaneel gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal. De knop \"Opslaan\" in het paneel is iets anders: die slaat de daar getoonde regels één keer op, wanneer erop wordt geklikt.",
     "exportDiagnostics": "Diagnosepakket exporteren",
     "exportDiagnosticsBusy": "Bezig met exporteren…",
     "exportDiagnosticsHint": "Exporteert de versie van de toepassing, het besturingssysteem, het recente logboek en het eigen logbestand van de toepassing. Wachtwoorden, tokens en andere geheime gegevens worden onleesbaar gemaakt.",
@@ -547,7 +547,7 @@
   "openWithDialog": {
     "title": "Openen in toepassing",
     "downloading": "\"{{fileName}}\" wordt gedownload…",
-    "progress": "{{loaded}} van {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} van {{total}} ({{percent}}%)",
     "connecting": "Wordt verbonden…"
   },
   "transfers": {
@@ -676,7 +676,7 @@
       "remotePath": "Standaardmap",
       "localPath": "Lokale map",
       "folder": "Map",
-      "maxConnections": "Maximale verbindingen per paneel",
+      "maxConnections": "Verbindingen",
       "encoding": "Tekencodering"
     },
     "icons": {
@@ -808,9 +808,9 @@
   "tray": {
     "show": "FTPeach weergeven",
     "transferring": "Actieve overdrachten: {{count}}",
-    "transferringProgress": "Actieve overdrachten: {{count}} · {{percent}} %",
+    "transferringProgress": "Actieve overdrachten: {{count}} · {{percent}}%",
     "quitWaiting": "Wordt afgesloten zodra de overdrachten klaar zijn · {{count}}",
-    "quitWaitingProgress": "Wordt afgesloten zodra de overdrachten klaar zijn · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Wordt afgesloten zodra de overdrachten klaar zijn · {{count}} · {{percent}}%",
     "pauseAll": "Alle overdrachten pauzeren",
     "resumeAll": "Alle overdrachten hervatten",
     "speedLimit": "Snelheidslimiet",
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Niets nieuws",
     "importSkippedShort": "Overgeslagen: {{count}}",
     "quitPendingShort": "Afsluiten…",
-    "upToDate": "Up to date",
+    "upToDate": "Up-to-date",
     "cancelQuitLong": "Afsluiten annuleren",
     "listSeparator": ", "
   },
@@ -905,7 +905,7 @@
     "reload": "Interface opnieuw laden"
   },
   "quitDialog": {
-    "unsyncedEdits": "Bestanden met wijzigingen die nog niet naar de server zijn geüpload: {{count}}. Bij het afsluiten worden kopieën bewaard voor herstel en aangeboden wanneer u FTPeach de volgende keer start.",
+    "unsyncedEdits": "Bestanden met wijzigingen die nog niet naar de server zijn geüpload: {{count}}. Bij het afsluiten worden kopieën bewaard voor herstel en aangeboden wanneer je FTPeach de volgende keer start.",
     "preserveAndQuit": "Bewaren voor herstel en afsluiten",
     "return": "Teruggaan",
     "message_one": "Er loopt nog {{count}} overdracht. Afsluiten en deze stoppen?",

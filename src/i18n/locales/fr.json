@@ -21,7 +21,7 @@
     "increase": "Augmenter",
     "decrease": "Diminuer",
     "showPassword": "Afficher le mot de passe",
-    "savedSecretProtected": "Le mot de passe enregistré est protégé ; authentifiez-vous pour l'afficher",
+    "savedSecretProtected": "Le mot de passe enregistré est protégé ; authentifiez-vous pour l'afficher",
     "hidePassword": "Masquer le mot de passe"
   },
   "securityConfirmation": {
@@ -30,7 +30,7 @@
     "typeToConfirm": "Saisissez {{phrase}} pour confirmer",
     "operations": {
       "revealSiteSecret": {
-        "message": "Afficher le mot de passe enregistré pour ce favori ?"
+        "message": "Afficher le mot de passe enregistré pour ce signet ?"
       },
       "revealProxyPassword": {
         "message": "Afficher le mot de passe proxy enregistré ?"
@@ -46,19 +46,19 @@
         "message": "Télécharger et exécuter ce fichier exécutable ou ce script ?"
       },
       "openWithApplication": {
-        "message": "Ouvrir ce fichier avec un programme qui n'a jamais été utilisé avec FTPeach ?",
+        "message": "Ouvrir ce fichier avec un programme qui n'a jamais été utilisé avec FTPeach ?",
         "approve": "Ouvrir"
       },
       "weakenSecuritySettings": {
-        "message": "Réduire la protection assurée par FTPeach ?",
+        "message": "Réduire la protection assurée par FTPeach ?",
         "approve": "Appliquer"
       },
       "useSystemProtection": {
-        "message": "Désactiver la protection renforcée ? Les mots de passe enregistrés seront protégés par votre compte Windows au lieu du mot de passe principal.",
+        "message": "Désactiver la protection renforcée ? Les mots de passe enregistrés seront protégés par votre compte Windows au lieu du mot de passe principal.",
         "approve": "Désactiver"
       },
       "transferSecret": {
-        "message": "Conserver le mot de passe enregistré et l'envoyer au nouveau serveur ?",
+        "message": "Conserver le mot de passe enregistré et l'envoyer au nouveau serveur ?",
         "approve": "Conserver le mot de passe"
       },
       "trustHostKeyFirst": {
@@ -70,21 +70,21 @@
         "approve": "Faire confiance à la nouvelle clé"
       }
     },
-    "savedAs": "Enregistré sur cet ordinateur sous le nom : {{name}}",
-    "program": "Programme : {{path}}",
+    "savedAs": "Enregistré sur cet ordinateur sous le nom : {{name}}",
+    "program": "Programme : {{path}}",
     "changes": {
       "confirmationsOff": "Les confirmations de sécurité seront désactivées.",
       "autoLockNever": "Le coffre-fort ne se verrouillera plus après une période d'inactivité.",
       "autoLockMinutes": "Le coffre-fort se verrouillera après {{minutes}} min d'inactivité.",
       "strictHostKeyOff": "Une clé de serveur SSH inconnue sera acceptée sans confirmation lors de la première connexion."
     },
-    "transferFrom": "Enregistré pour : {{recipient}}",
-    "transferTo": "Nouveau serveur : {{recipient}}",
+    "transferFrom": "Enregistré pour : {{recipient}}",
+    "transferTo": "Nouveau serveur : {{recipient}}",
     "transferLessSecure": "La nouvelle connexion n'est pas chiffrée ou ne vérifie pas le certificat du serveur.",
     "hostKey": {
-      "server": "Serveur : {{target}}",
-      "expected": "Clé approuvée jusqu'ici : {{fingerprint}}",
-      "actual": "Clé présentée maintenant : {{fingerprint}}"
+      "server": "Serveur : {{target}}",
+      "expected": "Clé approuvée jusqu'ici : {{fingerprint}}",
+      "actual": "Clé présentée maintenant : {{fingerprint}}"
     }
   },
   "paneMenu": {
@@ -110,7 +110,7 @@
   },
   "chmodDialog": {
     "title": "Autorisations SFTP",
-    "label": "Mode octal pour « {{name}} » (par exemple, 644 ou 0755)"
+    "label": "Mode octal pour « {{name}} » (par exemple, 644 ou 0755)"
   },
   "filePane": {
     "emptyFolder": "Le dossier est vide",
@@ -134,37 +134,37 @@
     "filesAriaLabel": "Fichiers",
     "rename": "Renommer",
     "resetColumnWidths": "Rétablir la largeur des colonnes",
-    "updatedAtTooltip": "Mise à jour : {{date}}",
+    "updatedAtTooltip": "Mise à jour : {{date}}",
     "searchTooltip": "Recherche ({{shortcut}})",
     "searchPlaceholder": "Rechercher… ({{shortcut}})",
     "editPathAriaLabel": "Modifier le chemin d'accès",
     "changeDriveTooltip": "Changer de lecteur",
     "chooseColumnsTooltip": "Clic droit pour choisir les colonnes",
     "sortByNameTooltip": "Trier par nom",
-    "sortByColumnTooltip": "Trier par la colonne « {{column}} »",
+    "sortByColumnTooltip": "Trier par la colonne « {{column}} »",
     "rowProbeSample": "Exemple",
     "loading": "Chargement en cours…",
     "nothingFound": "Aucun résultat trouvé"
   },
   "update": {
-    "readyToInstall": "La mise à jour v{{version}} est disponible — cliquez sur « Redémarrer et installer » pour l'appliquer.",
-    "downloadingWithPercent": "Téléchargement de la mise à jour v{{version}} : {{percent}} %",
+    "readyToInstall": "La mise à jour v{{version}} est disponible — cliquez sur « Redémarrer et installer » pour l'appliquer.",
+    "downloadingWithPercent": "Téléchargement de la mise à jour v{{version}} : {{percent}} %",
     "downloadingFound": "Mise à jour v{{version}} trouvée, téléchargement en cours…",
     "restartAndInstall": "Redémarrer et installer",
-    "availableAction": "disponible !",
+    "availableAction": "disponible !",
     "installAction": "Installer la mise à jour",
     "downloadTooltip": "Cliquer pour télécharger",
     "downloadingTooltip": "Téléchargement",
     "installTooltip": "Redémarrer maintenant pour installer. Sinon, la mise à jour s'installera au prochain démarrage de FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Les mots de passe de certains sites enregistrés n'ont pas pu être lus après la mise à jour ; saisissez-les à nouveau dans le gestionnaire de signets."
+    "message": "Les mots de passe de certains sites enregistrés n'ont pas pu être lus après la mise à jour ; saisissez-les à nouveau dans le gestionnaire de signets."
   },
   "plaintextSecretNotice": {
-    "message": "Le mot de passe ou la phrase secrète d'un site enregistré n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
+    "message": "Le mot de passe ou la phrase secrète d'un site enregistré n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
   },
   "secretNotPersistedNotice": {
-    "message": "Le mot de passe ou la phrase secrète de la clé n'a pas pu être chiffré et n'a pas été enregistré. Une connexion existante peut continuer jusqu'à la déconnexion ; sinon, saisissez-le à nouveau la prochaine fois."
+    "message": "Le mot de passe ou la phrase secrète de la clé n'a pas pu être chiffré et n'a pas été enregistré. Une connexion existante peut continuer jusqu'à la déconnexion ; sinon, saisissez-le à nouveau la prochaine fois."
   },
   "resize": {
     "paneSize": "Faites glisser pour redimensionner les volets (double-cliquez pour réinitialiser)",
@@ -181,7 +181,7 @@
   },
   "openWithChanged": {
     "title": "Fichier modifié",
-    "message": "« {{name}} » a été modifié dans l'application externe. Téléverser le fichier mis à jour sur le serveur ?"
+    "message": "« {{name}} » a été modifié dans l'application externe. Téléverser le fichier mis à jour sur le serveur ?"
   },
   "recoveredEdits": {
     "title": "Modifications non téléversées",
@@ -190,11 +190,11 @@
     "show": "Afficher les fichiers",
     "later": "Plus tard",
     "discard": "Supprimer",
-    "confirmDiscard": "Supprimer ces fichiers ? Les modifications qu'ils contiennent seront perdues."
+    "confirmDiscard": "Supprimer ces fichiers ? Les modifications qu'ils contiennent seront perdues."
   },
   "saveSite": {
     "title": "Enregistrer le profil de connexion",
-    "label": "Nom du profil de connexion :"
+    "label": "Nom du profil de connexion :"
   },
   "saveLocalPath": {
     "title": "Enregistrer le chemin local",
@@ -203,37 +203,37 @@
   },
   "newFolder": {
     "title": "Nouveau dossier",
-    "labelLocal": "Nom du nouveau dossier :",
-    "labelRemote": "Nom du nouveau dossier sur le serveur :"
+    "labelLocal": "Nom du nouveau dossier :",
+    "labelRemote": "Nom du nouveau dossier sur le serveur :"
   },
   "newFile": {
     "title": "Nouveau fichier",
-    "label": "Nom du fichier (avec extension) :"
+    "label": "Nom du fichier (avec extension) :"
   },
   "moveToDialog": {
     "title": "Déplacer vers…",
-    "labelSingle": "Déplacer « {{name}} » vers le dossier :",
-    "labelMultiple": "Déplacer les éléments sélectionnés ({{count}}) vers le dossier :"
+    "labelSingle": "Déplacer « {{name}} » vers le dossier :",
+    "labelMultiple": "Déplacer les éléments sélectionnés ({{count}}) vers le dossier :"
   },
   "confirm": {
-    "resetLayout": "Réinitialiser la taille de la fenêtre et des volets, rétablir les colonnes par défaut et vider le cache de l'interface ?",
-    "closeTabWithActiveTransfers": "Cet onglet a des transferts en cours. Fermer l'onglet et les arrêter ?",
+    "resetLayout": "Réinitialiser la taille de la fenêtre et des volets, rétablir les colonnes par défaut et vider le cache de l'interface ?",
+    "closeTabWithActiveTransfers": "Cet onglet a des transferts en cours. Fermer l'onglet et les arrêter ?",
     "closeTabLabel": "Fermer l'onglet",
-    "overwriteSingleExists": "« {{name}} » existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
-    "overwriteConflicts_one": "{{count}} élément existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
-    "overwriteConflicts_other": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?",
+    "overwriteSingleExists": "« {{name}} » existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
+    "overwriteConflicts_one": "{{count}} élément existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
+    "overwriteConflicts_other": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?",
     "overwriteLabel": "Remplacer",
-    "replaceConnection": "Ce volet est déjà connecté à « {{current}} ». Souhaitez-vous remplacer cette connexion par « {{next}} » ?",
+    "replaceConnection": "Ce volet est déjà connecté à « {{current}} ». Souhaitez-vous remplacer cette connexion par « {{next}} » ?",
     "replaceConnectionLabel": "Remplacer",
-    "deleteSelected": "Souhaitez-vous supprimer les éléments sélectionnés ({{count}}) ? Cette action ne peut pas être annulée.",
-    "deleteEntry": "Supprimer « {{name}} » ? Cette action ne peut pas être annulée.",
-    "recycleSelected": "Souhaitez-vous déplacer les éléments sélectionnés ({{count}}) vers la corbeille ?",
-    "recycleEntry": "Déplacer « {{name}} » vers la corbeille ?",
-    "deletePermanentSelected": "Souhaitez-vous supprimer définitivement les éléments sélectionnés ({{count}}) ? Cette action ne peut pas être annulée.",
-    "deletePermanentEntry": "Supprimer définitivement « {{name}} » ? Cette action ne peut pas être annulée.",
-    "deleteRemoteSelected": "Supprimer définitivement les éléments sélectionnés sur le serveur ({{count}}) ? Cette action ne peut pas être annulée.",
-    "deleteRemoteEntry": "Supprimer définitivement « {{name}} » sur le serveur ? Cette action ne peut pas être annulée.",
-    "overwriteConflicts_many": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?"
+    "deleteSelected": "Souhaitez-vous supprimer les éléments sélectionnés ({{count}}) ? Cette action ne peut pas être annulée.",
+    "deleteEntry": "Supprimer « {{name}} » ? Cette action ne peut pas être annulée.",
+    "recycleSelected": "Souhaitez-vous déplacer les éléments sélectionnés ({{count}}) vers la corbeille ?",
+    "recycleEntry": "Déplacer « {{name}} » vers la corbeille ?",
+    "deletePermanentSelected": "Souhaitez-vous supprimer définitivement les éléments sélectionnés ({{count}}) ? Cette action ne peut pas être annulée.",
+    "deletePermanentEntry": "Supprimer définitivement « {{name}} » ? Cette action ne peut pas être annulée.",
+    "deleteRemoteSelected": "Supprimer définitivement les éléments sélectionnés sur le serveur ({{count}}) ? Cette action ne peut pas être annulée.",
+    "deleteRemoteEntry": "Supprimer définitivement « {{name}} » sur le serveur ? Cette action ne peut pas être annulée.",
+    "overwriteConflicts_many": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?"
   },
   "paneSide": {
     "top": "haut",
@@ -307,24 +307,24 @@
     "tlsNegotiationFailed": "Échec de la négociation TLS. Vérifiez que le serveur prend en charge le FTPS explicite ou HTTPS, ainsi qu'une version de TLS compatible.",
     "sshNegotiationFailed": "Échec de la négociation SSH. Le serveur et FTPeach n'ont pas pu s'accorder sur un algorithme SSH ou une version de protocole compatibles.",
     "proxyFailed": "La connexion au proxy a échoué. Vérifiez le type de proxy, son adresse, ses identifiants et assurez-vous qu'il peut accéder au serveur cible.",
-    "keyReadFailed": "Impossible de lire la clé : le fichier est corrompu ou la phrase secrète est incorrecte.",
+    "keyReadFailed": "Impossible de lire la clé : le fichier est corrompu ou la phrase secrète est incorrecte.",
     "accessDenied": "Vous ne disposez pas des autorisations nécessaires pour effectuer cette opération.",
     "notFound": "Fichier ou dossier introuvable.",
     "fileOrFolderExists": "Un fichier ou un dossier portant ce nom existe déjà.",
     "fileBusy": "Le fichier est utilisé par un autre processus.",
     "locationBusy": "Une autre opération utilise déjà ce fichier ou ce dossier. Réessayez une fois qu'elle sera terminée.",
     "diskFull": "Espace disque insuffisant.",
-    "hostKeyMismatch": "La clé d’hôte du serveur a changé.",
-    "integrityMismatch": "Le fichier transféré a échoué au contrôle d’intégrité.",
-    "cleanupIncomplete": "Le nettoyage est incomplet. Les fichiers dont l’appartenance n’a pas pu être vérifiée ont été conservés. Vérifiez la destination avant de les supprimer manuellement.",
-    "invalidInput": "La valeur fournie n’est pas valide.",
-    "internal": "Une erreur inattendue s’est produite.",
+    "hostKeyMismatch": "La clé d'hôte du serveur a changé.",
+    "integrityMismatch": "Le fichier transféré a échoué au contrôle d'intégrité.",
+    "cleanupIncomplete": "Le nettoyage est incomplet. Les fichiers dont l'appartenance n'a pas pu être vérifiée ont été conservés. Vérifiez la destination avant de les supprimer manuellement.",
+    "invalidInput": "La valeur fournie n'est pas valide.",
+    "internal": "Une erreur inattendue s'est produite.",
     "connectFailedPrefix": "Impossible de se connecter au serveur. {{raw}}",
-    "alreadyExists": "« {{name}} » existe déjà",
+    "alreadyExists": "« {{name}} » existe déjà",
     "replaceUnsupported": "Le serveur n'a pas autorisé le remplacement du fichier existant.",
     "createUnsupported": "Ce serveur FTP ne permet pas de créer de nouveaux fichiers. Essayez SFTP ou WebDAV si le serveur les propose.",
     "moveBetweenEndpoints": "Les fichiers ne peuvent être déplacés que sur cet ordinateur ou au sein d'une même connexion au serveur. Copiez-les plutôt.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Un mot de passe enregistré ne peut pas être lu sur cet ordinateur. Saisissez-le à nouveau dans le signet ou dans les paramètres du proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -339,12 +339,12 @@
       "add": "Ajouter une association"
     },
     "minimizeToTray": "Réduire dans la zone de notification",
-    "minimizeToTrayHint": "Le bouton « Réduire » masque la fenêtre dans la zone de notification plutôt que dans la barre des tâches.",
+    "minimizeToTrayHint": "Le bouton « Réduire » masque la fenêtre dans la zone de notification plutôt que dans la barre des tâches.",
     "closeToTray": "Réduire dans la zone de notification à la fermeture",
-    "closeToTrayHint": "Le bouton « Fermer » masque la fenêtre dans la zone de notification au lieu de quitter l'application. Pour quitter, utilisez le menu de l'icône dans la zone de notification.",
+    "closeToTrayHint": "Le bouton « Fermer » masque la fenêtre dans la zone de notification au lieu de quitter l'application. Pour quitter, utilisez le menu de l'icône dans la zone de notification.",
     "title": "Paramètres",
     "unsavedChangesTitle": "Modifications non enregistrées",
-    "unsavedChangesMessage": "Enregistrer les modifications apportées aux paramètres ?",
+    "unsavedChangesMessage": "Enregistrer les modifications apportées aux paramètres ?",
     "discardChanges": "Ne pas enregistrer",
     "categories": {
       "connection": "Connexion",
@@ -365,7 +365,7 @@
       "reset": "Rétablir le raccourci par défaut",
       "resetAll": "Rétablir tous les raccourcis par défaut",
       "unassign": "Retirer le raccourci",
-      "conflict": "Également utilisé pour : {{action}}",
+      "conflict": "Également utilisé pour : {{action}}",
       "actions": {
         "search": "Recherche ({{side}})",
         "toggleHiddenFiles": "Afficher/masquer les fichiers cachés",
@@ -400,7 +400,7 @@
       "title": "Protection par mot de passe",
       "systemMode": "Protection système",
       "systemModeHint": "Les mots de passe sont chiffrés pour votre compte Windows et peuvent être affichés dans les paramètres de connexion.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Copie portable : les mots de passe enregistrés ainsi ne peuvent être lus que sur cet ordinateur. Avec un mot de passe principal, ils suivent le dossier.",
       "strongholdMode": "Protection renforcée",
       "strongholdModeHint": "Nécessite un mot de passe principal. Pour afficher un mot de passe enregistré, il faut ressaisir le mot de passe principal.",
       "loading": "Vérification du coffre-fort…",
@@ -419,7 +419,7 @@
       "lockNow": "Verrouiller maintenant",
       "autoLock": "Verrouillage automatique après, min",
       "autoLockDisabled": "Désactivé",
-      "autoLockHint": "Verrouille le coffre-fort après une période d'inactivité. Les connexions aux serveurs restent actives ; 0 désactive le verrouillage automatique.",
+      "autoLockHint": "Verrouille le coffre-fort après une période d'inactivité. Les connexions aux serveurs restent actives ; 0 désactive le verrouillage automatique.",
       "autoLockAlways": "Le coffre-fort se verrouille aussi quand Windows est verrouillé ou que la fenêtre de FTPeach est masquée, quelle que soit la valeur de ce minuteur.",
       "lockScope": "Le verrouillage laisse les connexions ouvertes actives, y compris les nouveaux transferts qu'elles lancent. Enregistrer ou afficher un mot de passe demande de déverrouiller à nouveau.",
       "strictHostKey": "Confirmer une nouvelle clé de serveur SSH",
@@ -446,14 +446,14 @@
       "showConfirmationsHint": "Demander confirmation avant d'afficher un mot de passe enregistré, d'exécuter un fichier exécutable ou d'ouvrir un fichier avec un programme jamais utilisé auparavant. La réinitialisation du coffre-fort, le déplacement d'un mot de passe enregistré vers un autre serveur et la désactivation de cette option demandent toujours une confirmation.",
       "unavailable": "Le coffre-fort n'est pas disponible.",
       "failed": "L'opération sur le coffre-fort a échoué.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Le mot de passe principal n'a pas été accepté. Patientez un instant avant de réessayer."
     },
     "unlimitedPlaceholder": "Sans limite",
     "connectTimeoutLabel": "Délai de connexion, s",
-    "connectTimeoutHint": "Durée d'attente de la réponse du serveur lors de la connexion avant de le considérer comme injoignable (0 ou vide : aucune limite). S'applique à la prochaine connexion.",
+    "connectTimeoutHint": "Durée d'attente de la réponse du serveur lors de la connexion avant de le considérer comme injoignable (0 ou vide : aucune limite). S'applique à la prochaine connexion.",
     "ftpActiveMode": "Mode FTP actif (au lieu du mode passif)",
     "ftpActiveModeHint": "FTP/FTPS uniquement — n'a aucun effet sur SFTP/WebDAV. Rarement nécessaire, uniquement sur les réseaux/serveurs où le mode passif ne passe pas à travers le NAT. S'applique à la prochaine connexion.",
-    "ftpActiveModeDisabledByProxy": "Indisponible lorsqu'un proxy est activé : un tunnel proxy ne prend en charge que les connexions sortantes ; le protocole FTP doit donc rester en mode passif.",
+    "ftpActiveModeDisabledByProxy": "Indisponible lorsqu'un proxy est activé : un tunnel proxy ne prend en charge que les connexions sortantes ; le protocole FTP doit donc rester en mode passif.",
     "proxy": {
       "enable": "Utiliser un proxy pour les connexions",
       "enableHint": "SOCKS4, SOCKS5 ou HTTP CONNECT — s'applique aux protocoles FTP, FTPS, SFTP et WebDAV. S'applique à la prochaine connexion.",
@@ -474,9 +474,9 @@
       "testFailed": "Le test de proxy a échoué."
     },
     "concurrencyLabel": "Transferts simultanés",
-    "concurrencyHint": "Nombre de fichiers téléversés et téléchargés en même temps, tous onglets confondus (0 ou vide : aucune limite). S'applique immédiatement ; les transferts en cours se terminent normalement.",
+    "concurrencyHint": "Nombre de fichiers téléversés et téléchargés en même temps, tous onglets confondus (0 ou vide : aucune limite). S'applique immédiatement ; les transferts en cours se terminent normalement.",
     "speedLimitLabel": "Limite de vitesse, Ko/s",
-    "speedLimitHint": "S'applique au total de tous les transferts simultanés (0 ou vide : aucune limite). Prend effet immédiatement, sans attendre la prochaine connexion.",
+    "speedLimitHint": "S'applique au total de tous les transferts simultanés (0 ou vide : aucune limite). Prend effet immédiatement, sans attendre la prochaine connexion.",
     "notifyOnComplete": "M'avertir lorsque les transferts sont terminés",
     "notifyOnCompleteHint": "Une notification système lorsque la file des transferts se vide — uniquement quand la fenêtre n'est pas au premier plan.",
     "overwriteActionLabel": "En cas de conflit de noms",
@@ -485,7 +485,7 @@
     "overwriteSkip": "Ignorer",
     "overwriteHint": "Que faire lorsque le fichier copié existe déjà dans le dossier de destination.",
     "preventSleep": "Empêcher le système de se mettre en veille pendant les transferts",
-    "preventSleepHint": "Prend effet immédiatement, sans attendre la prochaine connexion. Reste actif tant qu'il y a au moins un transfert en cours ; sinon, il ne bloque pas le mode veille.",
+    "preventSleepHint": "Prend effet immédiatement, sans attendre la prochaine connexion. Reste actif tant qu'il y a au moins un transfert en cours ; sinon, il ne bloque pas le mode veille.",
     "themeLabel": "Thème",
     "themeDark": "Sombre",
     "themeLight": "Clair",
@@ -495,13 +495,13 @@
     "interfaceScaleHint": "Modifie la taille du texte et des commandes dans toute l'application.",
     "dateFormatLabel": "Format de la date et de l'heure",
     "dateFormatOnlyLabel": "Format de date",
-    "timeFormatLabel": "Format d’heure",
+    "timeFormatLabel": "Format d'heure",
     "timeFormat24Hour": "24 h",
     "timeFormat12Hour": "12 h",
     "dateFormatLocale": "Régional",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "Dossier par défaut pour « Ordinateur »",
-    "defaultLocalPathHint": "Le dossier que le volet « Ordinateur » ouvre au démarrage et quand on quitte un serveur. Laissez vide pour utiliser votre dossier personnel.",
+    "defaultLocalPathLabel": "Dossier par défaut pour « Ordinateur »",
+    "defaultLocalPathHint": "Le dossier que le volet « Ordinateur » ouvre au démarrage et quand on quitte un serveur. Laissez vide pour utiliser votre dossier personnel.",
     "chooseDefaultLocalPath": "Choisir le dossier par défaut",
     "showHiddenFiles": "Afficher les fichiers et dossiers cachés",
     "showHiddenFilesHint": "S'applique aux volets locaux comme aux volets du serveur.",
@@ -523,11 +523,11 @@
     "logEnable": "Afficher le panneau du journal",
     "logShowTimestamps": "Afficher les horodatages",
     "logToFile": "Enregistrer le journal dans un fichier",
-    "logToFileHint": "Ajoute le journal à un fichier quotidien dans %APPDATA%\\FTPeach\\logs, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total. Le bouton « Enregistrer » du panneau est différent : il enregistre une seule fois, au clic, les lignes qui y sont affichées.",
+    "logToFileHint": "Ajoute le journal à un fichier quotidien dans %APPDATA%\\FTPeach\\logs, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total. Le bouton « Enregistrer » du panneau est différent : il enregistre une seule fois, au clic, les lignes qui y sont affichées.",
     "exportDiagnostics": "Exporter le paquet de diagnostic",
     "exportDiagnosticsBusy": "Exportation…",
-    "exportDiagnosticsHint": "Exporte la version de l’application, le système d’exploitation, le journal récent et le fichier journal propre à l’application. Les mots de passe, jetons et autres secrets sont masqués.",
-    "exportDiagnosticsFailed": "Impossible d’exporter le paquet de diagnostic."
+    "exportDiagnosticsHint": "Exporte la version de l'application, le système d'exploitation, le journal récent et le fichier journal propre à l'application. Les mots de passe, jetons et autres secrets sont masqués.",
+    "exportDiagnosticsFailed": "Impossible d'exporter le paquet de diagnostic."
   },
   "promptDialog": {
     "confirmLabel": "OK"
@@ -538,7 +538,7 @@
     "includeSettings": "Paramètres de l'application",
     "includeBookmarks": "Signets",
     "includeLocalPaths": "Chemins locaux",
-    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'exportation ; vous devrez les saisir à nouveau après l'importation sur un autre ordinateur."
+    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'exportation ; vous devrez les saisir à nouveau après l'importation sur un autre ordinateur."
   },
   "importSettingsDialog": {
     "title": "Importer les paramètres",
@@ -546,12 +546,12 @@
     "includeSettings": "Paramètres de l'application",
     "includeBookmarks": "Signets",
     "includeLocalPaths": "Chemins locaux",
-    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'importation ; vous devrez les saisir à nouveau pour chaque site importé."
+    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'importation ; vous devrez les saisir à nouveau pour chaque site importé."
   },
   "openWithDialog": {
     "title": "Ouvrir dans l'application",
-    "downloading": "Téléchargement de « {{fileName}} »…",
-    "progress": "{{loaded}} de {{total}} ({{percent}} %)",
+    "downloading": "Téléchargement de « {{fileName}} »…",
+    "progress": "{{loaded}} sur {{total}} ({{percent}} %)",
     "connecting": "Connexion en cours…"
   },
   "transfers": {
@@ -569,7 +569,7 @@
     "sourcesKept": "Les originaux sont toujours en place."
   },
   "transferQueue": {
-    "capacity": "La file est pleine (jusqu’à {{limit}} tâches actives ou en attente). Attendez leur fin.",
+    "capacity": "La file est pleine (jusqu'à {{limit}} tâches actives ou en attente). Attendez leur fin.",
     "title": "Transferts",
     "columns": {
       "file": "Fichier",
@@ -610,35 +610,35 @@
     "pauseUnsupportedCopy": "La pause n'est pas prise en charge lors d'une copie entre serveurs",
     "pauseUnsupportedServerCopy": "La pause n'est pas prise en charge lors d'une copie sur le serveur",
     "pauseUnsupportedWebdav": "WebDAV ne prend pas en charge la pause",
-    "retryUnsupportedConnection": "Impossible de réessayer : la connexion a été fermée",
+    "retryUnsupportedConnection": "Impossible de réessayer : la connexion a été fermée",
     "newTransfers_many": "{{count}} nouveaux transferts"
   },
   "log": {
     "connecting": "Connexion à {{addr}}...",
-    "activeModeViaProxy": "Le mode FTP actif n'est pas disponible via un proxy : le mode passif est utilisé.",
-    "connectFailed": "Échec de la connexion : {{error}}",
+    "activeModeViaProxy": "Le mode FTP actif n'est pas disponible via un proxy : le mode passif est utilisé.",
+    "connectFailed": "Échec de la connexion : {{error}}",
     "connected": "Connecté.",
     "receivedEntries_one": "{{count}} entrée reçue",
     "receivedEntries_other": "{{count}} entrées reçues",
-    "skippedUnsafeEntry": "Une entrée de liste portant un nom non sécurisé a été ignorée : {{name}}",
-    "listFailed": "Échec du listage du dossier : {{error}}",
+    "skippedUnsafeEntry": "Une entrée de liste portant un nom non sécurisé a été ignorée : {{name}}",
+    "listFailed": "Échec du listage du dossier : {{error}}",
     "tlsInit": "Initialisation de TLS...",
     "tlsEstablished": "Connexion TLS établie.",
-    "davResumeUnsupportedLocal": "WebDAV ne prend pas en charge la reprise des téléversements : le fichier sera renvoyé depuis le début.",
-    "davResumeUnsupportedServer": "Le serveur ne prend pas en charge la reprise du téléchargement (statut attendu : {{expected}}, statut reçu : {{status}}) — le fichier sera téléchargé à nouveau.",
+    "davResumeUnsupportedLocal": "WebDAV ne prend pas en charge la reprise des téléversements : le fichier sera renvoyé depuis le début.",
+    "davResumeUnsupportedServer": "Le serveur ne prend pas en charge la reprise du téléchargement (statut attendu : {{expected}}, statut reçu : {{status}}) — le fichier sera téléchargé à nouveau.",
     "uploadResumed": "Reprise de l'envoi de {{path}} à {{offset}} octets.",
     "uploadRestartedSourceChanged": "Le fichier local ne correspond plus à l'envoi en pause de {{path}} — il sera envoyé à nouveau depuis le début.",
     "uploadRestartedMismatch": "Les données déjà présentes sur le serveur ne correspondent pas au fichier local — {{path}} sera envoyé à nouveau depuis le début.",
     "uploadRestartedUnverified": "Impossible de vérifier l'envoi en pause de {{path}} ({{error}}) — le fichier sera envoyé à nouveau depuis le début.",
     "receivedEntries_many": "{{count}} entrées reçues",
-    "droppedRecords": "Certaines lignes du journal de protocole ont été perdues car l'écriture ne suivait pas : {{dropped}}"
+    "droppedRecords": "Certaines lignes du journal de protocole ont été perdues car l'écriture ne suivait pas : {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Afficher toutes les connexions",
     "showOnlyThisConnection": "Afficher uniquement cette connexion",
     "connectionClosedShowOnly": "Connexion fermée — afficher uniquement cette connexion",
     "filterKinds": "Filtrer",
-    "kindStatus": "Messages d’état",
+    "kindStatus": "Messages d'état",
     "kindCommand": "Commandes",
     "kindResponse": "Réponses du serveur",
     "kindError": "Erreurs",
@@ -664,7 +664,7 @@
   },
   "siteManager": {
     "emptyList": "Aucun site enregistré pour l'instant",
-    "confirmDeleteSite": "Supprimer le site « {{name}} » ?"
+    "confirmDeleteSite": "Supprimer le site « {{name}} » ?"
   },
   "siteManagerDialog": {
     "titleNew": "Nouveau signet",
@@ -680,11 +680,11 @@
       "color": "Couleur",
       "protocol": "Protocole",
       "keyFile": "Fichier de clé",
-      "caCertFile": "Certificat d’AC",
+      "caCertFile": "Certificat d'AC",
       "remotePath": "Dossier par défaut",
       "localPath": "Dossier local",
       "folder": "Dossier",
-      "maxConnections": "Connexions maximales par volet",
+      "maxConnections": "Connexions",
       "encoding": "Encodage"
     },
     "icons": {
@@ -726,23 +726,23 @@
     "sortManual": "Manuel",
     "sortName": "Par nom",
     "sortProtocol": "Par protocole",
-    "duplicateWarning": "Un signet vers cette même destination existe déjà : « {{name}} ». Voulez-vous en enregistrer un autre ?",
+    "duplicateWarning": "Un signet vers cette même destination existe déjà : « {{name}} ». Voulez-vous en enregistrer un autre ?",
     "saveAnyway": "Enregistrer quand même",
-    "unsavedChangesMessage": "Enregistrer les modifications apportées au signet ?",
+    "unsavedChangesMessage": "Enregistrer les modifications apportées au signet ?",
     "newFolder": "Nouveau dossier",
     "folderNamePlaceholder": "Nom du dossier",
-    "confirmDeleteFolder": "Supprimer le dossier « {{name}} » ? Ses signets seront déplacés au niveau supérieur.",
+    "confirmDeleteFolder": "Supprimer le dossier « {{name}} » ? Ses signets seront déplacés au niveau supérieur.",
     "searchPlaceholder": "Rechercher…",
     "clearSearch": "Effacer la recherche",
     "noSearchResults": "Aucun signet ne correspond à votre recherche",
     "duplicate": "Dupliquer",
     "duplicateNameSuffix": " (copie)",
     "newBookmarkInFolder": "Nouveau signet ici",
-    "expandFolder": "Développer « {{name}} »",
-    "collapseFolder": "Réduire « {{name}} »",
+    "expandFolder": "Développer « {{name}} »",
+    "collapseFolder": "Réduire « {{name}} »",
     "noFolder": "Aucun dossier",
-    "maxConnectionsHint": "Au moins 2 : une connexion parcourt les dossiers, les autres transfèrent les fichiers. Chaque volet a sa propre limite.",
-    "encodingHint": "Ne le changez que si les noms de fichiers de ce serveur s’affichent mal.",
+    "maxConnectionsHint": "Au moins 2 : une connexion parcourt les dossiers, les autres transfèrent les fichiers. Chaque volet a sa propre limite.",
+    "encodingHint": "Ne le changez que si les noms de fichiers de ce serveur s'affichent mal.",
     "encodings": {
       "utf8": "UTF-8 (par défaut)",
       "cyrillic": "Cyrillique",
@@ -770,9 +770,9 @@
       "count": "Limite de connexions"
     },
     "maxConnectionsChanged": "S'applique après la reconnexion.",
-    "footerFolders": "Dossiers : {{count}}",
-    "footerSites": "Signets : {{count}}",
-    "footerPaths": "Chemins : {{count}}"
+    "footerFolders": "Dossiers : {{count}}",
+    "footerSites": "Signets : {{count}}",
+    "footerPaths": "Chemins : {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -783,8 +783,8 @@
       "passphrase": "Phrase secrète",
       "keyFilePlaceholder": "Fichier de clé…",
       "chooseKeyFile": "Choisir un fichier de clé…",
-      "caCertFilePlaceholder": "Certificat d’AC…",
-      "chooseCaCertFile": "Choisir un certificat d’AC…"
+      "caCertFilePlaceholder": "Certificat d'AC…",
+      "chooseCaCertFile": "Choisir un certificat d'AC…"
     },
     "secureToggle": {
       "tooltip": "Décochez cette case pour accepter les certificats de serveur auto-signés et non valides",
@@ -798,7 +798,7 @@
       "tooltip": "Se connecter à l'aide d'un fichier de clé SSH privée plutôt qu'avec un mot de passe",
       "label": "Se connecter avec une clé SSH"
     },
-    "rsaKeyWarning": "Les clés privées RSA présentent un risque connu d’attaque par canal auxiliaire fondée sur le temps de calcul. Privilégiez Ed25519 pour les nouvelles clés SSH.",
+    "rsaKeyWarning": "Les clés privées RSA présentent un risque connu d'attaque par canal auxiliaire fondée sur le temps de calcul. Privilégiez Ed25519 pour les nouvelles clés SSH.",
     "connectTooltip": {
       "cancel": "Annuler",
       "connect": "Se connecter",
@@ -815,11 +815,11 @@
   },
   "tray": {
     "show": "Afficher FTPeach",
-    "transferring": "Transferts en cours : {{count}}",
-    "transferringProgress": "Transferts en cours : {{count}} · {{percent}} %",
+    "transferring": "Transferts en cours : {{count}}",
+    "transferringProgress": "Transferts en cours : {{count}} · {{percent}} %",
     "quitWaiting": "Fermeture à la fin des transferts · {{count}}",
-    "quitWaitingProgress": "Fermeture à la fin des transferts · {{count}} · {{percent}} %",
-    "pauseAll": "Suspendre tous les transferts",
+    "quitWaitingProgress": "Fermeture à la fin des transferts · {{count}} · {{percent}} %",
+    "pauseAll": "Mettre en pause tous les transferts",
     "resumeAll": "Reprendre tous les transferts",
     "speedLimit": "Limite de vitesse",
     "unlimited": "Sans limite",
@@ -840,13 +840,13 @@
     "more": "Plus"
   },
   "statusBar": {
-    "transfers": "Transferts : {{count}}",
+    "transfers": "Transferts : {{count}}",
     "quitPending": "Fermeture à la fin des transferts",
     "cancelQuit": "Annuler",
-    "leftCount": "À gauche : {{count}}",
-    "rightCount": "À droite : {{count}}",
-    "topCount": "En haut : {{count}}",
-    "bottomCount": "En bas : {{count}}",
+    "leftCount": "À gauche : {{count}}",
+    "rightCount": "À droite : {{count}}",
+    "topCount": "En haut : {{count}}",
+    "bottomCount": "En bas : {{count}}",
     "selectedSuffix": " ({{count}} sélectionné(s))",
     "status": {
       "transferring": "Transfert de fichier",
@@ -856,17 +856,17 @@
       "connectFailed": "Impossible de se connecter",
       "disconnected": "Non connecté"
     },
-    "exported": "Exporté : {{parts}}",
-    "imported": "Importé : {{parts}}",
-    "importAdded": "Ajoutés : {{count}}",
-    "importSkipped": "Doublons ignorés : {{count}}",
+    "exported": "Exporté : {{parts}}",
+    "imported": "Importé : {{parts}}",
+    "importAdded": "Ajoutés : {{count}}",
+    "importSkipped": "Doublons ignorés : {{count}}",
     "importNothingNew": "Rien de nouveau à importer",
     "exportedShort": "Exporté",
     "importedShort": "Importé",
     "importNothingNewShort": "Rien de nouveau",
-    "importSkippedShort": "Ignorés : {{count}}",
+    "importSkippedShort": "Ignorés : {{count}}",
     "quitPendingShort": "Fermeture…",
-    "upToDate": "Up to date",
+    "upToDate": "À jour",
     "cancelQuitLong": "Annuler la fermeture",
     "listSeparator": ", "
   },
@@ -896,7 +896,7 @@
   "paneSourceSwitcher": {
     "local": "Ordinateur",
     "remote": "Serveur",
-    "updatedAtTooltip": "Mise à jour : {{date}}",
+    "updatedAtTooltip": "Mise à jour : {{date}}",
     "connectToServer": "Serveur"
   },
   "paneConnectEmptyState": {
@@ -907,19 +907,19 @@
     "quicklistLabel": "Connexions récentes"
   },
   "errorBoundary": {
-    "consoleLogPrefix": "Erreur non gérée de l'interface FTPeach :",
+    "consoleLogPrefix": "Erreur non gérée de l'interface FTPeach :",
     "title": "Une erreur s'est produite",
-    "message": "Une erreur inattendue s'est produite au niveau de l'interface. Votre connexion active et les fichiers stockés sur le disque ne sont pas affectés ; vous pouvez essayer de recharger l'interface.",
+    "message": "Une erreur inattendue s'est produite au niveau de l'interface. Votre connexion active et les fichiers stockés sur le disque ne sont pas affectés ; vous pouvez essayer de recharger l'interface.",
     "reload": "Recharger l'interface"
   },
   "quitDialog": {
-    "unsyncedEdits": "Fichiers dont les modifications n'ont pas encore été téléversées sur le serveur : {{count}}. À la fermeture, des copies seront conservées pour être récupérées et vous seront proposées au prochain démarrage de FTPeach.",
+    "unsyncedEdits": "Fichiers dont les modifications n'ont pas encore été téléversées sur le serveur : {{count}}. À la fermeture, des copies seront conservées pour être récupérées et vous seront proposées au prochain démarrage de FTPeach.",
     "preserveAndQuit": "Conserver pour récupération et quitter",
     "return": "Revenir",
-    "message_one": "{{count}} transfert est toujours en cours. Quitter et l'interrompre ?",
-    "message_other": "{{count}} transferts sont toujours en cours. Quitter et les interrompre ?",
+    "message_one": "{{count}} transfert est toujours en cours. Quitter et l'interrompre ?",
+    "message_other": "{{count}} transferts sont toujours en cours. Quitter et les interrompre ?",
     "quitNow": "Quitter maintenant",
     "quitWhenDone": "Quitter à la fin des transferts",
-    "message_many": "{{count}} transferts sont toujours en cours. Quitter et les interrompre ?"
+    "message_many": "{{count}} transferts sont toujours en cours. Quitter et les interrompre ?"
   }
 }

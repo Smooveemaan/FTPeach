@@ -16,13 +16,13 @@
     "open": "खोलें",
     "upload": "अपलोड करें",
     "save": "सहेजें",
-    "create": "बनाएं",
+    "create": "बनाएँ",
     "cancel": "रद्द करें",
     "increase": "बढ़ाएँ",
     "decrease": "घटाएँ",
     "showPassword": "पासवर्ड दिखाएँ",
     "savedSecretProtected": "सहेजा गया पासवर्ड सुरक्षित है — देखने के लिए अपनी पहचान सत्यापित करें",
-    "hidePassword": "पासवर्ड छुपाएं"
+    "hidePassword": "पासवर्ड छुपाएँ"
   },
   "securityConfirmation": {
     "title": "FTPeach सुरक्षा पुष्टि",
@@ -99,12 +99,12 @@
     "permissions": "अनुमतियाँ…",
     "moveTo": "यहाँ ले जाएँ…",
     "copyPath": "पथ कॉपी करें",
-    "delete": "हटाएं",
-    "deleteSelected_one": "हटाएं ({{count}} फ़ाइल)",
-    "deleteSelected_other": "हटाएं ({{count}} फ़ाइलें)",
-    "deletePermanently": "स्थायी रूप से हटाएं",
-    "deleteSelectedPermanently_one": "स्थायी रूप से हटाएं ({{count}} फ़ाइल)",
-    "deleteSelectedPermanently_other": "स्थायी रूप से हटाएं ({{count}} फ़ाइलें)"
+    "delete": "हटाएँ",
+    "deleteSelected_one": "हटाएँ ({{count}} फ़ाइल)",
+    "deleteSelected_other": "हटाएँ ({{count}} फ़ाइलें)",
+    "deletePermanently": "स्थायी रूप से हटाएँ",
+    "deleteSelectedPermanently_one": "स्थायी रूप से हटाएँ ({{count}} फ़ाइल)",
+    "deleteSelectedPermanently_other": "स्थायी रूप से हटाएँ ({{count}} फ़ाइलें)"
   },
   "chmodDialog": {
     "title": "SFTP अनुमतियाँ",
@@ -122,7 +122,7 @@
     "fileTypeGeneric": "फ़ाइल",
     "fileTypeWithExt": "{{ext}} फ़ाइल",
     "columnSize": "आकार",
-    "columnModifiedAt": "दिनांक संशोधित",
+    "columnModifiedAt": "संशोधन तिथि",
     "columnCreatedAt": "निर्माण तिथि",
     "columnType": "प्रकार",
     "columnPermissions": "अनुमतियाँ",
@@ -134,14 +134,14 @@
     "resetColumnWidths": "कॉलम की चौड़ाई पुनर्स्थापित करें",
     "updatedAtTooltip": "अपडेट किया गया: {{date}}",
     "searchTooltip": "खोजें ({{shortcut}})",
-    "searchPlaceholder": "खोजें... ({{shortcut}})",
+    "searchPlaceholder": "खोजें… ({{shortcut}})",
     "editPathAriaLabel": "पथ संपादित करें",
     "changeDriveTooltip": "ड्राइव बदलें",
     "chooseColumnsTooltip": "कॉलम चुनने के लिए राइट-क्लिक करें",
     "sortByNameTooltip": "नाम के अनुसार क्रमबद्ध करें",
     "sortByColumnTooltip": "\"{{column}}\" कॉलम के अनुसार क्रमबद्ध करें",
     "rowProbeSample": "नमूना",
-    "loading": "लोड हो रहा है...",
+    "loading": "लोड हो रहा है…",
     "nothingFound": "कुछ नहीं मिला"
   },
   "update": {
@@ -153,7 +153,7 @@
     "installAction": "अपडेट इंस्टॉल करें",
     "downloadTooltip": "डाउनलोड करने के लिए क्लिक करें",
     "downloadingTooltip": "डाउनलोड हो रहा है",
-    "installTooltip": "इंस्टॉल करने के लिए अभी रीस्टार्ट करें। अन्यथा अपडेट अगली बार FTPeach शुरू होने पर इंस्टॉल होगा।"
+    "installTooltip": "इंस्टॉल करने के लिए अभी पुनरारंभ करें। अन्यथा अपडेट अगली बार FTPeach शुरू होने पर इंस्टॉल होगा।"
   },
   "legacyPasswordNotice": {
     "message": "अपडेट के बाद कुछ सहेजे गए सर्वरों के पासवर्ड पढ़े नहीं जा सके — कृपया उन्हें बुकमार्क प्रबंधन में फिर से दर्ज करें।"
@@ -186,7 +186,7 @@
     "unknownPath": "सर्वर पर पथ अज्ञात है",
     "show": "फ़ाइलें दिखाएँ",
     "later": "बाद में",
-    "discard": "हटाएं",
+    "discard": "हटाएँ",
     "confirmDiscard": "इन फ़ाइलों को हटाएँ? इनमें किए गए बदलाव खो जाएँगे।"
   },
   "saveSite": {
@@ -209,8 +209,8 @@
   },
   "moveToDialog": {
     "title": "यहाँ ले जाएँ…",
-    "labelSingle": "\"{{name}}\" को फ़ोल्डर में ले जाएं:",
-    "labelMultiple": "चयनित आइटम ({{count}}) को फ़ोल्डर में ले जाएं:"
+    "labelSingle": "\"{{name}}\" को फ़ोल्डर में ले जाएँ:",
+    "labelMultiple": "चयनित आइटम ({{count}}) को फ़ोल्डर में ले जाएँ:"
   },
   "confirm": {
     "resetLayout": "विंडो और फलक आकार रीसेट करें, डिफ़ॉल्ट कॉलम पुनर्स्थापित करें, और इंटरफ़ेस कैश साफ़ करें?",
@@ -224,8 +224,8 @@
     "replaceConnectionLabel": "बदलें",
     "deleteSelected": "चयनित आइटम ({{count}}) हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteEntry": "\"{{name}}\" हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
-    "recycleSelected": "चयनित आइटम ({{count}}) को रीसायकल बिन में ले जाएं?",
-    "recycleEntry": "\"{{name}}\" को रीसायकल बिन में ले जाएं?",
+    "recycleSelected": "चयनित आइटम ({{count}}) को रीसायकल बिन में ले जाएँ?",
+    "recycleEntry": "\"{{name}}\" को रीसायकल बिन में ले जाएँ?",
     "deletePermanentSelected": "चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deletePermanentEntry": "\"{{name}}\" को स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteRemoteSelected": "सर्वर पर चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
@@ -247,7 +247,7 @@
       "reopenClosedTab": "बंद किया गया टैब फिर से खोलें",
       "newConnection": "नया कनेक्शन",
       "disconnect": "डिस्कनेक्ट करें",
-      "manageBookmarks": "बुकमार्क प्रबंधित करें...",
+      "manageBookmarks": "बुकमार्क प्रबंधित करें…",
       "saveConnection": "कनेक्शन सहेजें",
       "saveConnectionSide": "कनेक्शन सहेजें ({{side}})",
       "savePathSide": "पथ सहेजें ({{side}})",
@@ -258,7 +258,7 @@
     "edit": {
       "title": "संपादित करें",
       "settings": "सेटिंग्स…",
-      "resetLayout": "लेआउट और कैश रीसेट करें..."
+      "resetLayout": "लेआउट और कैश रीसेट करें…"
     },
     "view": {
       "title": "देखें",
@@ -266,9 +266,9 @@
       "lightTheme": "लाइट थीम",
       "systemTheme": "सिस्टम थीम",
       "syncBrowsing": "फलकों में सिंक ब्राउज़िंग",
-      "showHiddenFiles": "छुपी हुई फ़ाइलें और फ़ोल्डर दिखाएं",
-      "leftPane": "बायां फलक",
-      "rightPane": "दायां फलक",
+      "showHiddenFiles": "छिपी हुई फ़ाइलें और फ़ोल्डर दिखाएँ",
+      "leftPane": "बायाँ फलक",
+      "rightPane": "दायाँ फलक",
       "transferQueue": "स्थानांतरण कतार",
       "log": "लॉग",
       "stackedPanes": "फलक ऊपर-नीचे",
@@ -288,16 +288,16 @@
       "title": "सहायता",
       "documentation": "दस्तावेज़ीकरण",
       "reportIssue": "किसी समस्या की रिपोर्ट करें",
-      "checkUpdates": "अपडेट की जांच करें",
+      "checkUpdates": "अपडेट की जाँच करें",
       "about": "FTPeach के बारे में"
     }
   },
   "errors": {
-    "connectionRefused": "सर्वर ने कनेक्शन से इनकार कर दिया। पता और पोर्ट की जाँच करें.",
-    "serverNotFound": "सर्वर नहीं मिला. जांचें कि पता सही है.",
+    "connectionRefused": "सर्वर ने कनेक्शन से इनकार कर दिया। पता और पोर्ट की जाँच करें।",
+    "serverNotFound": "सर्वर नहीं मिला। जाँचें कि पता सही है।",
     "timeout": "सर्वर प्रतिसाद नहीं दे रहा है (कनेक्शन का समय समाप्त हो गया है)। पता, पोर्ट और नेटवर्क कनेक्शन की जाँच करें।",
     "connectionReset": "सर्वर से कनेक्शन अप्रत्याशित रूप से बंद हो गया था।",
-    "networkUnreachable": "सर्वर पहुंच योग्य नहीं है - अपना नेटवर्क कनेक्शन जांचें।",
+    "networkUnreachable": "सर्वर पहुँच योग्य नहीं है — अपना नेटवर्क कनेक्शन जाँचें।",
     "loginIncorrect": "गलत उपयोगकर्ता नाम या पासवर्ड।",
     "invalidCertificate": "सर्वर ने एक अमान्य प्रमाणपत्र प्रस्तुत किया। यदि आप इस सर्वर पर भरोसा करते हैं, तो कनेक्शन सेटिंग्स में प्रमाणपत्र सत्यापन अक्षम करें।",
     "tlsNegotiationFailed": "TLS वार्ता विफल रही। जाँचें कि सर्वर explicit FTPS या HTTPS और संगत TLS संस्करण का समर्थन करता है।",
@@ -305,7 +305,7 @@
     "proxyFailed": "प्रॉक्सी कनेक्शन विफल रहा। प्रॉक्सी का प्रकार, पता, क्रेडेंशियल्स जाँचें और यह भी कि प्रॉक्सी लक्ष्य सर्वर तक पहुँच सकता है या नहीं।",
     "keyReadFailed": "कुंजी पढ़ी नहीं जा सकी — फ़ाइल दूषित है या पासफ़्रेज़ गलत है।",
     "accessDenied": "आपके पास इस ऑपरेशन की अनुमति नहीं है।",
-    "notFound": "फ़ाइल या फ़ोल्डर नहीं मिला.",
+    "notFound": "फ़ाइल या फ़ोल्डर नहीं मिला।",
     "fileOrFolderExists": "उस नाम की एक फ़ाइल या फ़ोल्डर पहले से मौजूद है।",
     "fileBusy": "फ़ाइल किसी अन्य प्रक्रिया द्वारा उपयोग में है।",
     "locationBusy": "कोई अन्य कार्रवाई पहले से ही इस फ़ाइल या फ़ोल्डर का उपयोग कर रही है। उसके पूरा होने के बाद फिर से प्रयास करें।",
@@ -320,18 +320,18 @@
     "replaceUnsupported": "सर्वर ने मौजूदा फ़ाइल को अधिलेखित करने की अनुमति नहीं दी।",
     "createUnsupported": "यह FTP सर्वर नई फ़ाइलें बनाना समर्थित नहीं करता। अगर सर्वर उपलब्ध कराता है, तो SFTP या WebDAV आज़माएँ।",
     "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "सहेजा गया पासवर्ड इस कंप्यूटर पर पढ़ा नहीं जा सकता। इसे बुकमार्क में या प्रॉक्सी सेटिंग्स में फिर से दर्ज करें।"
   },
   "settings": {
     "openWithAssociations": {
-      "title": "एसोसिएशन",
+      "title": "संबद्धताएँ",
       "hint": "किसी एक्सटेंशन के लिए एप्लिकेशन चुनें। बिना नियम वाली फ़ाइलें सिस्टम के डिफ़ॉल्ट एप्लिकेशन से खुलती हैं।",
       "extension": "एक्सटेंशन",
       "extensionPlaceholder": "txt",
-      "application": "अनुप्रयोग",
-      "applicationPlaceholder": "अनुप्रयोग पथ",
+      "application": "एप्लिकेशन",
+      "applicationPlaceholder": "एप्लिकेशन पथ",
       "browse": "एप्लिकेशन चुनें",
-      "remove": "संबद्धता हटाएं",
+      "remove": "संबद्धता हटाएँ",
       "add": "संबद्धता जोड़ें"
     },
     "minimizeToTray": "ट्रे में छोटा करें",
@@ -344,7 +344,7 @@
     "discardChanges": "न सहेजें",
     "categories": {
       "connection": "कनेक्शन",
-      "transfers": "स्थानान्तरण",
+      "transfers": "स्थानांतरण",
       "interface": "इंटरफ़ेस",
       "shortcuts": "शॉर्टकट",
       "updates": "अपडेट",
@@ -364,7 +364,7 @@
       "conflict": "इसके लिए भी इस्तेमाल होता है: {{action}}",
       "actions": {
         "search": "खोजें ({{side}})",
-        "toggleHiddenFiles": "छिपी फ़ाइलें दिखाएँ/छिपाएँ",
+        "toggleHiddenFiles": "छिपी हुई फ़ाइलें दिखाएँ/छिपाएँ",
         "newConnection": "नया कनेक्शन",
         "save": "सहेजें ({{side}})",
         "openSettings": "सेटिंग्स खोलें",
@@ -375,15 +375,15 @@
         "prevTab": "पिछला टैब",
         "refresh": "ताज़ा करें",
         "selectAll": "सभी का चयन करें",
-        "delete": "हटाएं",
-        "deletePermanent": "स्थायी रूप से हटाएं",
+        "delete": "हटाएँ",
+        "deletePermanent": "स्थायी रूप से हटाएँ",
         "navigateUp": "एक स्तर ऊपर जाएँ",
         "navigateBack": "पीछे",
         "navigateForward": "आगे",
-        "navigateHome": "होम फोल्डर पर जाएं",
+        "navigateHome": "होम फ़ोल्डर पर जाएँ",
         "moveTo": "यहाँ ले जाएँ…",
-        "newFolder": "नया फ़ोल्डर...",
-        "newFile": "नई फ़ाइल...",
+        "newFolder": "नया फ़ोल्डर…",
+        "newFile": "नई फ़ाइल…",
         "copyToOtherPane": "अन्य फलक पर कॉपी करें",
         "copy": "कॉपी करें",
         "cut": "कट करें",
@@ -396,10 +396,10 @@
       "title": "पासवर्ड सुरक्षा",
       "systemMode": "सिस्टम सुरक्षा",
       "systemModeHint": "पासवर्ड आपके Windows खाते से जोड़कर एन्क्रिप्ट किए जाते हैं और कनेक्शन सेटिंग्स में देखे जा सकते हैं।",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "पोर्टेबल कॉपी: इस तरह सहेजे गए पासवर्ड केवल इसी कंप्यूटर पर पढ़े जा सकते हैं। मास्टर पासवर्ड के साथ वे फ़ोल्डर के साथ चले जाते हैं।",
       "strongholdMode": "बढ़ी हुई सुरक्षा",
       "strongholdModeHint": "मास्टर पासवर्ड आवश्यक है। सहेजा गया पासवर्ड देखने के लिए मास्टर पासवर्ड फिर से दर्ज करना होगा।",
-      "loading": "वॉल्ट की जाँच की जा रही है...",
+      "loading": "वॉल्ट की जाँच की जा रही है…",
       "configuredLocked": "वॉल्ट मास्टर पासवर्ड से सुरक्षित है और लॉक है।",
       "configuredUnlocked": "वॉल्ट मास्टर पासवर्ड से सुरक्षित है और अनलॉक है।",
       "masterPassword": "मास्टर पासवर्ड",
@@ -409,7 +409,7 @@
       "setup": "सहेजे गए पासवर्ड को सुरक्षित रखें",
       "settingUp": "सुरक्षा चालू की जा रही है…",
       "unlock": "अनलॉक करें",
-      "unlocking": "अनलॉक हो रहा है...",
+      "unlocking": "अनलॉक हो रहा है…",
       "unlockRequired": "वॉल्ट अनलॉक करें",
       "unlockRequiredHint": "सहेजे गए पासवर्ड लॉक हैं। जारी रखने के लिए वॉल्ट अनलॉक करें।",
       "lockNow": "अभी लॉक करें",
@@ -417,7 +417,7 @@
       "autoLockDisabled": "अक्षम",
       "autoLockHint": "निष्क्रियता के बाद वॉल्ट को लॉक कर देता है। मौजूदा सर्वर कनेक्शन सक्रिय रहते हैं; 0 ऑटो-लॉक अक्षम करता है।",
       "autoLockAlways": "Windows लॉक होने पर या FTPeach विंडो छिपने पर भी वॉल्ट लॉक हो जाता है, चाहे यह टाइमर कुछ भी हो।",
-      "lockScope": "लॉक करने से खुले कनेक्शन नहीं टूटते, उनसे शुरू होने वाले नए स्थानान्तरण भी चलते रहते हैं। पासवर्ड सहेजने या दिखाने के लिए फिर से अनलॉक करना होगा।",
+      "lockScope": "लॉक करने से खुले कनेक्शन नहीं टूटते, उनसे शुरू होने वाले नए स्थानांतरण भी चलते रहते हैं। पासवर्ड सहेजने या दिखाने के लिए फिर से अनलॉक करना होगा।",
       "strictHostKey": "नई SSH सर्वर कुंजी की पुष्टि करें",
       "strictHostKeyHint": "किसी SSH सर्वर की कुंजी पर पहली बार भरोसा करने से पहले पूछता है और उसका फ़िंगरप्रिंट दिखाता है। इसके बिना, किसी भी सर्वर की पहली कुंजी पर चुपचाप भरोसा कर लिया जाता है।",
       "changePassword": "मास्टर पासवर्ड बदलें",
@@ -428,9 +428,9 @@
       "systemUnavailable": "इस प्लेटफ़ॉर्म पर सिस्टम प्रमाणीकरण से अनलॉक उपलब्ध नहीं है।",
       "noRecovery": "भूला हुआ मास्टर पासवर्ड पुनर्प्राप्त नहीं किया जा सकता। वॉल्ट रीसेट करने से सहेजे गए सभी पासवर्ड और पासफ़्रेज़ हट जाते हैं।",
       "passwordMismatch": "पासवर्ड मेल नहीं खाते।",
-      "passwordTooShort": "मास्टर पासवर्ड के लिए कम से कम 12 अक्षरों का उपयोग करें।",
+      "passwordTooShort": "मास्टर पासवर्ड के लिए कम से कम 12 वर्णों का उपयोग करें।",
       "strength": {
-        "tooShort": "बहुत छोटा - कम से कम 12 वर्णों का उपयोग करें।",
+        "tooShort": "बहुत छोटा — कम से कम 12 वर्णों का उपयोग करें।",
         "acceptable": "स्वीकार्य। लंबा पासफ़्रेज़ अधिक सुरक्षित है।",
         "strong": "मजबूत मास्टर पासवर्ड।"
       },
@@ -442,7 +442,7 @@
       "showConfirmationsHint": "सहेजा गया पासवर्ड दिखाने, निष्पादन योग्य फ़ाइल चलाने या पहले कभी इस्तेमाल न किए गए प्रोग्राम से फ़ाइल खोलने से पहले पुष्टि माँगें। वॉल्ट रीसेट करने, सहेजे गए पासवर्ड को दूसरे सर्वर पर ले जाने और इस विकल्प को बंद करने की पुष्टि हमेशा ली जाती है।",
       "unavailable": "वॉल्ट उपलब्ध नहीं है।",
       "failed": "वॉल्ट की कार्रवाई विफल रही।",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "मास्टर पासवर्ड स्वीकार नहीं हुआ। फिर से कोशिश करने से पहले थोड़ा रुकें।"
     },
     "unlimitedPlaceholder": "कोई सीमा नहीं",
     "connectTimeoutLabel": "कनेक्शन टाइमआउट, सेकंड",
@@ -452,14 +452,14 @@
     "ftpActiveModeDisabledByProxy": "प्रॉक्सी चालू होने पर उपलब्ध नहीं — प्रॉक्सी टनल केवल बाहर जाने वाले कनेक्शन का समर्थन करती है, इसलिए FTP को पैसिव मोड में रहना होगा।",
     "proxy": {
       "enable": "कनेक्शन के लिए प्रॉक्सी का उपयोग करें",
-      "enableHint": "SOCKS4, SOCKS5, या HTTP CONNECT - FTP, FTPS, SFTP और WebDAV पर लागू होता है। अगले कनेक्शन पर लागू होता है.",
+      "enableHint": "SOCKS4, SOCKS5, या HTTP CONNECT — FTP, FTPS, SFTP और WebDAV पर लागू होता है। अगले कनेक्शन पर लागू होता है।",
       "typeLabel": "प्रॉक्सी प्रकार",
       "hostLabel": "प्रॉक्सी होस्ट",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "पोर्ट",
-      "usernameLabel": "उपयोक्तानाम",
+      "usernameLabel": "उपयोगकर्ता नाम",
       "passwordLabel": "पासवर्ड",
-      "removeSavedPassword": "सहेजा गया पासवर्ड हटाएं",
+      "removeSavedPassword": "सहेजा गया पासवर्ड हटाएँ",
       "revealFailed": "सहेजे गए पासवर्ड को डिक्रिप्ट नहीं किया जा सका।",
       "testTargetLabel": "इससे परीक्षण करें",
       "testTargetHostPlaceholder": "सर्वर पता",
@@ -472,9 +472,9 @@
     "concurrencyLabel": "समवर्ती स्थानांतरण",
     "concurrencyHint": "सभी टैब में एक साथ कितनी फ़ाइलें अपलोड और डाउनलोड हों (0 या खाली — कोई सीमा नहीं)। तुरंत लागू होता है; चल रहे स्थानांतरण सामान्य रूप से पूरे होते हैं।",
     "speedLimitLabel": "गति सीमा, KB/s",
-    "speedLimitHint": "सभी एक साथ स्थानांतरणों के संयुक्त योग पर लागू होता है (0 या रिक्त - कोई सीमा नहीं)। अगले कनेक्शन की प्रतीक्षा किए बिना, तुरंत प्रभाव से लागू होता है।",
+    "speedLimitHint": "सभी एक साथ स्थानांतरणों के संयुक्त योग पर लागू होता है (0 या खाली — कोई सीमा नहीं)। अगले कनेक्शन की प्रतीक्षा किए बिना, तुरंत प्रभाव से लागू होता है।",
     "notifyOnComplete": "स्थानांतरण समाप्त होने पर सूचित करें",
-    "notifyOnCompleteHint": "एक सिस्टम अधिसूचना जब स्थानांतरण कतार खाली हो जाती है - केवल तब जब विंडो केंद्रित न हो।",
+    "notifyOnCompleteHint": "एक सिस्टम अधिसूचना जब स्थानांतरण कतार खाली हो जाती है — केवल तब जब विंडो केंद्रित न हो।",
     "overwriteActionLabel": "नाम टकराने पर",
     "overwriteAsk": "पूछें",
     "overwriteOverwrite": "अधिलेखित करें",
@@ -490,38 +490,38 @@
     "interfaceScaleLabel": "इंटरफ़ेस स्केल",
     "interfaceScaleHint": "पूरे एप्लिकेशन में टेक्स्ट और नियंत्रणों का आकार बदलता है।",
     "dateFormatLabel": "दिनांक/समय प्रारूप",
-    "dateFormatOnlyLabel": "दिनांक स्वरूप",
+    "dateFormatOnlyLabel": "दिनांक प्रारूप",
     "timeFormatLabel": "समय प्रारूप",
     "timeFormat24Hour": "24 घंटे",
     "timeFormat12Hour": "12 घंटे",
     "dateFormatLocale": "क्षेत्रीय",
     "dateFormatIso": "ISO 8601",
-    "defaultLocalPathLabel": "“कंप्यूटर” फलक का डिफ़ॉल्ट फ़ोल्डर",
-    "defaultLocalPathHint": "वह फ़ोल्डर जिसे “कंप्यूटर” फलक स्टार्टअप पर और सर्वर से स्विच करने पर खोलता है। अपना होम फ़ोल्डर इस्तेमाल करने के लिए खाली छोड़ें।",
+    "defaultLocalPathLabel": "\"कंप्यूटर\" फलक का डिफ़ॉल्ट फ़ोल्डर",
+    "defaultLocalPathHint": "वह फ़ोल्डर जिसे \"कंप्यूटर\" फलक स्टार्टअप पर और सर्वर से स्विच करने पर खोलता है। अपना होम फ़ोल्डर इस्तेमाल करने के लिए खाली छोड़ें।",
     "chooseDefaultLocalPath": "डिफ़ॉल्ट फ़ोल्डर चुनें",
-    "showHiddenFiles": "छुपी हुई फ़ाइलें और फ़ोल्डर्स दिखाएं",
+    "showHiddenFiles": "छिपी हुई फ़ाइलें और फ़ोल्डर दिखाएँ",
     "showHiddenFilesHint": "स्थानीय और सर्वर, दोनों फलकों पर लागू होता है।",
     "coloredTabs": "रंगीन टैब",
     "coloredTabsHint": "सहेजे गए बुकमार्क के रंग से टैब का नाम और आइकन रंगता है।",
     "autoCheckUpdates": "अपने आप अपडेट करें",
-    "autoCheckUpdatesHint": "स्टार्टअप पर और दिन में एक बार अपडेट की जांच करता है और उन्हें बैकग्राउंड में डाउनलोड करता है। डाउनलोड किया गया अपडेट अगली बार FTPeach शुरू होने पर चुपचाप इंस्टॉल हो जाता है, या स्टेटस बार से तुरंत।",
+    "autoCheckUpdatesHint": "स्टार्टअप पर और दिन में एक बार अपडेट की जाँच करता है और उन्हें बैकग्राउंड में डाउनलोड करता है। डाउनलोड किया गया अपडेट अगली बार FTPeach शुरू होने पर चुपचाप इंस्टॉल हो जाता है, या स्टेटस बार से तुरंत।",
     "autoReconnectTabs": "स्टार्टअप पर पुनर्स्थापित टैब को पुनः कनेक्ट करें",
     "autoReconnectTabsHint": "डिफ़ॉल्ट रूप से बंद। चालू करने पर, सहेजे गए सर्वरों वाले पुनर्स्थापित टैब अपने आप कनेक्ट हो जाते हैं।",
     "saveSessionOnExit": "बाहर निकलने पर सत्र सहेजें",
     "saveSessionOnExitHint": "अगले लॉन्च पर खुले टैब, फलक प्रकार और पथ पुनर्स्थापित करता है। इसे बंद करने से सहेजा गया सत्र साफ़ हो जाता है।",
-    "checkNow": "अभी जांचें",
+    "checkNow": "अभी जाँचें",
     "updateStatus": {
-      "checking": "अपडेट की जांच की जा रही है...",
+      "checking": "अपडेट की जाँच की जा रही है…",
       "notAvailable": "आप नवीनतम संस्करण पर हैं।",
-      "error": "अपडेट की जांच नहीं की जा सकी.",
+      "error": "अपडेट की जाँच नहीं की जा सकी।",
       "notPackaged": "इस बिल्ड में उपलब्ध नहीं है (npm run dev/start)।"
     },
-    "logEnable": "लॉग पैनल दिखाएं",
+    "logEnable": "लॉग पैनल दिखाएँ",
     "logShowTimestamps": "टाइमस्टैम्प दिखाएँ",
     "logToFile": "फ़ाइल में लॉग लिखें",
     "logToFileHint": "लॉग को %APPDATA%\\FTPeach\\logs में हर दिन की एक फ़ाइल में जोड़ता है, तब भी जब लॉग पैनल बंद हो। फ़ाइलें 14 दिनों तक रखी जाती हैं, कुल मिलाकर 50 MB तक। पैनल का \"सहेजें\" बटन इससे अलग है: वह क्लिक करने पर पैनल में दिखाई गई पंक्तियों को एक बार सहेजता है।",
     "exportDiagnostics": "डायग्नोस्टिक बंडल निर्यात करें",
-    "exportDiagnosticsBusy": "निर्यात हो रहा है...",
+    "exportDiagnosticsBusy": "निर्यात हो रहा है…",
     "exportDiagnosticsHint": "ऐप का संस्करण, OS, हाल का लॉग और ऐप की अपनी लॉग फ़ाइल निर्यात करता है। पासवर्ड, टोकन और अन्य गोपनीय जानकारी छिपा दी जाती है।",
     "exportDiagnosticsFailed": "डायग्नोस्टिक बंडल निर्यात नहीं किया जा सका।"
   },
@@ -534,7 +534,7 @@
     "includeSettings": "ऐप सेटिंग्स",
     "includeBookmarks": "बुकमार्क",
     "includeLocalPaths": "स्थानीय पथ",
-    "passwordHint": "पासवर्ड और SSH कुंजी पासफ़्रेज़ निर्यात में शामिल नहीं हैं - आपको किसी अन्य मशीन पर आयात करने के बाद उन्हें फिर से दर्ज करना होगा।"
+    "passwordHint": "पासवर्ड और SSH कुंजी पासफ़्रेज़ निर्यात में शामिल नहीं हैं — आपको किसी अन्य मशीन पर आयात करने के बाद उन्हें फिर से दर्ज करना होगा।"
   },
   "importSettingsDialog": {
     "title": "सेटिंग्स आयात करें",
@@ -564,7 +564,7 @@
   },
   "transferQueue": {
     "capacity": "कतार भरी हुई है (अधिकतम {{limit}} सक्रिय या प्रतीक्षारत कार्य)। कार्य पूरे होने तक प्रतीक्षा करें।",
-    "title": "स्थानान्तरण",
+    "title": "स्थानांतरण",
     "columns": {
       "file": "फ़ाइल",
       "route": "दिशा",
@@ -575,9 +575,9 @@
       "remaining": "शेष",
       "status": "स्थिति"
     },
-    "empty": "अपलोड और डाउनलोड यहां दिखाई देंगे",
+    "empty": "अपलोड और डाउनलोड यहाँ दिखाई देंगे",
     "newTransfers_one": "{{count}} नया स्थानांतरण",
-    "newTransfers_other": "{{count}} नए स्थानान्तरण",
+    "newTransfers_other": "{{count}} नए स्थानांतरण",
     "status": {
       "queued": "कतार में",
       "done": "हो गया",
@@ -626,9 +626,9 @@
     "droppedRecords": "लेखन गति पीछे रह जाने के कारण प्रोटोकॉल लॉग के कुछ रिकॉर्ड छोड़ दिए गए: {{dropped}}"
   },
   "logPanel": {
-    "showAllConnections": "सभी कनेक्शन दिखाएं",
-    "showOnlyThisConnection": "केवल यह कनेक्शन दिखाएं",
-    "connectionClosedShowOnly": "कनेक्शन बंद - केवल यह कनेक्शन दिखाएं",
+    "showAllConnections": "सभी कनेक्शन दिखाएँ",
+    "showOnlyThisConnection": "केवल यह कनेक्शन दिखाएँ",
+    "connectionClosedShowOnly": "कनेक्शन बंद — केवल यह कनेक्शन दिखाएँ",
     "filterKinds": "फ़िल्टर",
     "kindStatus": "स्थिति संदेश",
     "kindCommand": "कमांड",
@@ -643,7 +643,7 @@
     "saveFailedTooltip": "फ़ाइल सहेजी नहीं जा सकी",
     "emptyFiltered": "इस कनेक्शन के लिए कोई पंक्ति नहीं",
     "emptyNoMatches": "कोई मिलती-जुलती पंक्ति नहीं",
-    "emptyDefault": "प्रोटोकॉल संदेश यहां दिखाई देंगे"
+    "emptyDefault": "प्रोटोकॉल संदेश यहाँ दिखाई देंगे"
   },
   "aboutDialog": {
     "title": "FTPeach के बारे में",
@@ -651,7 +651,7 @@
     "legalInformation": "कानूनी जानकारी",
     "sourceCode": "स्रोत कोड",
     "reportIssue": "समस्या की रिपोर्ट करें",
-    "checkForUpdates": "अपडेट की जांच करें",
+    "checkForUpdates": "अपडेट की जाँच करें",
     "updateDownloaded": "अपडेट v{{version}} डाउनलोड हो गया है — अब आप इसे इंस्टॉल कर सकते हैं।"
   },
   "siteManager": {
@@ -663,7 +663,7 @@
     "titleEdit": "बुकमार्क संपादित करें",
     "titleList": "बुकमार्क प्रबंधित करें",
     "titleLocalPathList": "स्थानीय पथ प्रबंधित करें",
-    "manageLocalPaths": "स्थानीय पथ प्रबंधित करें...",
+    "manageLocalPaths": "स्थानीय पथ प्रबंधित करें…",
     "titleNewLocalPath": "नया स्थानीय पथ",
     "titleEditLocalPath": "स्थानीय पथ संपादित करें",
     "fields": {
@@ -676,7 +676,7 @@
       "remotePath": "डिफ़ॉल्ट फ़ोल्डर",
       "localPath": "स्थानीय फ़ोल्डर",
       "folder": "फ़ोल्डर",
-      "maxConnections": "प्रति फलक अधिकतम कनेक्शन",
+      "maxConnections": "कनेक्शन",
       "encoding": "एन्कोडिंग"
     },
     "icons": {
@@ -684,7 +684,7 @@
       "globe": "वेबसाइट",
       "briefcase": "कार्य",
       "house": "होम सर्वर",
-      "cloud": "बादल",
+      "cloud": "क्लाउड",
       "flask": "परीक्षण/स्टेजिंग",
       "gamepad": "गेम सर्वर",
       "clapperboard": "मीडिया सर्वर",
@@ -706,7 +706,7 @@
     "savedSecretPlaceholder": "सहेजा गया",
     "savedSecretHint": "मौजूदा पासवर्ड रखने के लिए खाली छोड़ें",
     "savedSecretReplaceHint": "नया पासवर्ड बुकमार्क के साथ सहेजा जाएगा",
-    "removeSavedPassword": "सहेजा गया पासवर्ड हटाएं",
+    "removeSavedPassword": "सहेजा गया पासवर्ड हटाएँ",
     "removeSavedPassphrase": "सहेजे गए पासफ़्रेज़ को हटाएँ",
     "secretWillBeRemoved": "सहेजे जाने पर हटा दिया जाएगा",
     "addBookmark": "नया बुकमार्क",
@@ -716,20 +716,20 @@
     "exportBookmarks": "निर्यात करें",
     "sortMode": "बुकमार्क सॉर्टिंग",
     "sortManual": "मैनुअल",
-    "sortName": "नाम से",
+    "sortName": "नाम के अनुसार",
     "sortProtocol": "प्रोटोकॉल के अनुसार",
     "duplicateWarning": "उसी गंतव्य के लिए एक बुकमार्क पहले से मौजूद है: \"{{name}}\"। एक और सहेजें?",
     "saveAnyway": "फिर भी सहेजें",
     "unsavedChangesMessage": "बुकमार्क में परिवर्तन सहेजें?",
     "newFolder": "नया फ़ोल्डर",
     "folderNamePlaceholder": "फ़ोल्डर का नाम",
-    "confirmDeleteFolder": "फ़ोल्डर \"{{name}}\" हटाएं? इसके बुकमार्क एक स्तर ऊपर चले जायेंगे.",
-    "searchPlaceholder": "खोजें...",
+    "confirmDeleteFolder": "फ़ोल्डर \"{{name}}\" हटाएँ? इसके बुकमार्क एक स्तर ऊपर चले जाएँगे।",
+    "searchPlaceholder": "खोजें…",
     "clearSearch": "खोज साफ़ करें",
     "noSearchResults": "कोई बुकमार्क आपकी खोज से मेल नहीं खाता",
     "duplicate": "डुप्लिकेट बनाएँ",
     "duplicateNameSuffix": " (प्रतिलिपि)",
-    "newBookmarkInFolder": "यहां नया बुकमार्क",
+    "newBookmarkInFolder": "यहाँ नया बुकमार्क",
     "expandFolder": "\"{{name}}\" का विस्तार करें",
     "collapseFolder": "\"{{name}}\" को समेटें",
     "noFolder": "कोई फ़ोल्डर नहीं",
@@ -770,7 +770,7 @@
     "fields": {
       "address": "पता",
       "port": "पोर्ट",
-      "user": "उपयोक्तानाम",
+      "user": "उपयोगकर्ता नाम",
       "password": "पासवर्ड",
       "passphrase": "पासफ़्रेज़",
       "keyFilePlaceholder": "कुंजी फ़ाइल…",
@@ -832,10 +832,10 @@
     "more": "और"
   },
   "statusBar": {
-    "transfers": "स्थानान्तरण: {{count}}",
+    "transfers": "स्थानांतरण: {{count}}",
     "quitPending": "स्थानांतरण समाप्त होने के बाद बाहर निकलेगा",
     "cancelQuit": "रद्द करें",
-    "leftCount": "बायां: {{count}}",
+    "leftCount": "बायाँ: {{count}}",
     "rightCount": "दायाँ: {{count}}",
     "topCount": "ऊपर: {{count}}",
     "bottomCount": "नीचे: {{count}}",
@@ -858,12 +858,12 @@
     "importNothingNewShort": "कुछ नया नहीं",
     "importSkippedShort": "छोड़े गए: {{count}}",
     "quitPendingShort": "बाहर निकल रहा है…",
-    "upToDate": "Up to date",
+    "upToDate": "अप टू डेट",
     "cancelQuitLong": "बाहर निकलना रद्द करें",
     "listSeparator": ", "
   },
   "viewToolbar": {
-    "toggleLeftPane": "बायां फलक दिखाएँ/छिपाएँ",
+    "toggleLeftPane": "बायाँ फलक दिखाएँ/छिपाएँ",
     "toggleRightPane": "दायाँ फलक दिखाएँ/छिपाएँ",
     "toggleTransferQueue": "स्थानांतरण कतार दिखाएँ/छिपाएँ",
     "toggleLog": "लॉग दिखाएँ/छिपाएँ",
@@ -899,7 +899,7 @@
     "quicklistLabel": "हाल के कनेक्शन"
   },
   "errorBoundary": {
-    "consoleLogPrefix": "हैंडल न किया गया FTPeach इंटरफ़ेस त्रुटि:",
+    "consoleLogPrefix": "हैंडल न की गई FTPeach इंटरफ़ेस त्रुटि:",
     "title": "कुछ गलत हो गया",
     "message": "इंटरफ़ेस में एक अप्रत्याशित त्रुटि हुई। आपका सक्रिय कनेक्शन और डिस्क पर मौजूद फ़ाइलें प्रभावित नहीं हुई हैं — आप इंटरफ़ेस को फिर से लोड करके देख सकते हैं।",
     "reload": "इंटरफ़ेस पुनः लोड करें"

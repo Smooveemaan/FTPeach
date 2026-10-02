@@ -146,7 +146,7 @@
   },
   "update": {
     "readyToInstall": "Update v{{version}} ist verfügbar – klicken Sie auf „Neu starten und installieren“, um es zu installieren.",
-    "downloadingWithPercent": "Update v{{version}} wird heruntergeladen: {{percent}} %",
+    "downloadingWithPercent": "Update v{{version}} wird heruntergeladen: {{percent}} %",
     "downloadingFound": "Update v{{version}} gefunden, wird heruntergeladen…",
     "restartAndInstall": "Neu starten und installieren",
     "availableAction": "verfügbar!",
@@ -222,9 +222,9 @@
     "overwriteLabel": "Überschreiben",
     "replaceConnection": "Dieser Bereich ist bereits mit „{{current}}“ verbunden. Möchten Sie die Verbindung durch „{{next}}“ ersetzen?",
     "replaceConnectionLabel": "Ersetzen",
-    "deleteSelected": "Die ausgewählten Elemente löschen ({{count}})? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteSelected": "Die ausgewählten Elemente ({{count}}) löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteEntry": "„{{name}}“ löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "recycleSelected": "Sollen die ausgewählten Elemente ({{count}}) in den Papierkorb verschoben werden?",
+    "recycleSelected": "Die ausgewählten Elemente ({{count}}) in den Papierkorb verschieben?",
     "recycleEntry": "„{{name}}“ in den Papierkorb verschieben?",
     "deletePermanentSelected": "Die ausgewählten Elemente ({{count}}) endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deletePermanentEntry": "„{{name}}“ endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -287,7 +287,7 @@
       "supportProject": "FTPeach unterstützen",
       "title": "Hilfe",
       "documentation": "Dokumentation",
-      "reportIssue": "Ein Problem melden",
+      "reportIssue": "Problem melden",
       "checkUpdates": "Nach Updates suchen",
       "about": "Über FTPeach"
     }
@@ -301,7 +301,7 @@
     "loginIncorrect": "Falscher Benutzername oder falsches Passwort.",
     "invalidCertificate": "Der Server hat ein ungültiges Zertifikat vorgelegt. Wenn Sie diesem Server vertrauen, deaktivieren Sie die Zertifikatsprüfung in den Verbindungseinstellungen.",
     "tlsNegotiationFailed": "Die TLS-Aushandlung ist fehlgeschlagen. Überprüfen Sie, ob der Server explizites FTPS oder HTTPS sowie eine kompatible TLS-Version unterstützt.",
-    "sshNegotiationFailed": "Die SSH-Verhandlung ist fehlgeschlagen. Der Server und FTPeach konnten sich nicht auf einen kompatiblen SSH-Algorithmus oder eine kompatible Protokollversion einigen.",
+    "sshNegotiationFailed": "Die SSH-Aushandlung ist fehlgeschlagen. Der Server und FTPeach konnten sich nicht auf einen kompatiblen SSH-Algorithmus oder eine kompatible Protokollversion einigen.",
     "proxyFailed": "Die Proxy-Verbindung ist fehlgeschlagen. Prüfen Sie Proxy-Typ, Adresse und Anmeldedaten und ob der Proxy den Zielserver erreichen kann.",
     "keyReadFailed": "Der Schlüssel konnte nicht gelesen werden – entweder ist die Datei beschädigt oder die Passphrase ist falsch.",
     "accessDenied": "Sie haben keine Berechtigung für diesen Vorgang.",
@@ -320,7 +320,7 @@
     "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen.",
     "createUnsupported": "Dieser FTP-Server unterstützt das Erstellen neuer Dateien nicht. Versuchen Sie SFTP oder WebDAV, falls der Server sie anbietet.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Ein gespeichertes Passwort kann auf diesem Computer nicht gelesen werden. Geben Sie es im Lesezeichen oder in den Proxy-Einstellungen erneut ein."
   },
   "settings": {
     "openWithAssociations": {
@@ -352,14 +352,14 @@
       "security": "Sicherheit"
     },
     "shortcuts": {
-      "title": "Tastaturkürzel",
-      "hint": "Klicken Sie auf ein Tastenkürzel und drücken Sie dann die neue Tastenkombination, um es neu zuzuweisen.",
+      "title": "Tastenkombinationen",
+      "hint": "Klicken Sie auf eine Tastenkombination und drücken Sie dann die neue, um sie neu zuzuweisen.",
       "globalTitle": "Global",
       "paneTitle": "Dateibereich",
       "recording": "Tasten drücken…",
       "unbound": "Nicht zugewiesen",
       "reset": "Auf Standard zurücksetzen",
-      "resetAll": "Alle Tastenkürzel auf Standard zurücksetzen",
+      "resetAll": "Alle Tastenkombinationen auf Standard zurücksetzen",
       "unassign": "Zuweisung aufheben",
       "conflict": "Wird auch verwendet für: {{action}}",
       "actions": {
@@ -396,7 +396,7 @@
       "title": "Passwortschutz",
       "systemMode": "Systemschutz",
       "systemModeHint": "Passwörter werden für Ihr Windows-Konto verschlüsselt und können in den Verbindungseinstellungen angezeigt werden.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Portable Kopie: So gespeicherte Passwörter können nur auf diesem Computer gelesen werden. Mit einem Master-Passwort ziehen sie mit dem Ordner um.",
       "strongholdMode": "Erweiterter Schutz",
       "strongholdModeHint": "Erfordert ein Master-Passwort. Um ein gespeichertes Passwort anzuzeigen, müssen Sie das Master-Passwort erneut eingeben.",
       "loading": "Tresor wird überprüft…",
@@ -442,7 +442,7 @@
       "showConfirmationsHint": "Vor dem Anzeigen eines gespeicherten Passworts, dem Ausführen einer ausführbaren Datei oder dem Öffnen einer Datei mit einem noch nicht verwendeten Programm nachfragen. Das Zurücksetzen des Tresors, das Verschieben eines gespeicherten Passworts auf einen anderen Server und das Deaktivieren dieser Option werden immer bestätigt.",
       "unavailable": "Der Tresor ist nicht verfügbar.",
       "failed": "Der Vorgang im Tresor ist fehlgeschlagen.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "Das Master-Passwort wurde nicht akzeptiert. Warten Sie einen Moment, bevor Sie es erneut versuchen."
     },
     "unlimitedPlaceholder": "Keine Begrenzung",
     "connectTimeoutLabel": "Verbindungs-Timeout, s",
@@ -547,7 +547,7 @@
   "openWithDialog": {
     "title": "In Anwendung öffnen",
     "downloading": "„{{fileName}}“ wird heruntergeladen…",
-    "progress": "{{loaded}} von {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} von {{total}} ({{percent}} %)",
     "connecting": "Wird verbunden…"
   },
   "transfers": {
@@ -559,7 +559,7 @@
     "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt.",
-    "batchFailed": "{{failed}} von {{total}} Objekten wurden nicht übertragen.",
+    "batchFailed": "{{failed}} von {{total}} Elementen wurden nicht übertragen.",
     "sourcesKept": "Die Originale sind unverändert vorhanden."
   },
   "transferQueue": {
@@ -582,7 +582,7 @@
       "queued": "In Warteschlange",
       "done": "Fertig",
       "error": "Fehler",
-      "paused": "Angehalten",
+      "paused": "Pausiert",
       "stopped": "Abgebrochen",
       "cancelling": "Wird abgebrochen…"
     },
@@ -676,7 +676,7 @@
       "remotePath": "Standardordner",
       "localPath": "Lokaler Ordner",
       "folder": "Ordner",
-      "maxConnections": "Maximale Verbindungen pro Bereich",
+      "maxConnections": "Verbindungen",
       "encoding": "Zeichenkodierung"
     },
     "icons": {
@@ -808,9 +808,9 @@
   "tray": {
     "show": "FTPeach anzeigen",
     "transferring": "Aktive Übertragungen: {{count}}",
-    "transferringProgress": "Aktive Übertragungen: {{count}} · {{percent}} %",
+    "transferringProgress": "Aktive Übertragungen: {{count}} · {{percent}} %",
     "quitWaiting": "Wird nach Abschluss der Übertragungen beendet · {{count}}",
-    "quitWaitingProgress": "Wird nach Abschluss der Übertragungen beendet · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Wird nach Abschluss der Übertragungen beendet · {{count}} · {{percent}} %",
     "pauseAll": "Alle Übertragungen pausieren",
     "resumeAll": "Alle Übertragungen fortsetzen",
     "speedLimit": "Geschwindigkeitsbegrenzung",
@@ -842,7 +842,7 @@
     "selectedSuffix": " ({{count}} ausgewählt)",
     "status": {
       "transferring": "Datei wird übertragen",
-      "paused": "Angehalten",
+      "paused": "Pausiert",
       "connected": "Verbunden",
       "connecting": "Wird verbunden",
       "connectFailed": "Verbindung konnte nicht hergestellt werden",
@@ -858,21 +858,21 @@
     "importNothingNewShort": "Nichts Neues",
     "importSkippedShort": "Übersprungen: {{count}}",
     "quitPendingShort": "Wird beendet…",
-    "upToDate": "Up to date",
+    "upToDate": "Aktuell",
     "cancelQuitLong": "Beenden abbrechen",
     "listSeparator": ", "
   },
   "viewToolbar": {
     "toggleLeftPane": "Linken Bereich ein-/ausblenden",
     "toggleRightPane": "Rechten Bereich ein-/ausblenden",
-    "toggleTransferQueue": "Übertragungswarteschlange anzeigen/ausblenden",
-    "toggleLog": "Protokoll anzeigen/ausblenden",
+    "toggleTransferQueue": "Übertragungswarteschlange ein-/ausblenden",
+    "toggleLog": "Protokoll ein-/ausblenden",
     "orientationNarrow": "Bereiche übereinander – das Fenster ist zu schmal für die Ansicht nebeneinander",
     "orientationToRow": "Bereiche nebeneinander anordnen",
     "orientationToStacked": "Bereiche übereinander anordnen",
     "pauseUnsupportedWebdav": "WebDAV unterstützt kein Pausieren",
-    "pauseActive": "Aktive Übertragungen anhalten",
-    "resumeAllPaused": "Alle angehaltenen Übertragungen fortsetzen",
+    "pauseActive": "Aktive Übertragungen pausieren",
+    "resumeAllPaused": "Alle pausierten Übertragungen fortsetzen",
     "stopActive": "Aktive Übertragungen stoppen",
     "retryAllStopped": "Alle gestoppten Übertragungen wiederholen",
     "refreshPanesTooltip": "Beide Bereiche aktualisieren (F5)"

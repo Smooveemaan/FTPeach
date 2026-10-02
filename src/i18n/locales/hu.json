@@ -145,8 +145,8 @@
     "nothingFound": "Nincs találat"
   },
   "update": {
-    "readyToInstall": "Elérhető a v{{version}} frissítés — a telepítéshez kattintson az „Újraindítás és telepítés” gombra.",
-    "downloadingWithPercent": "A v{{version}} frissítés letöltése: {{percent}} %",
+    "readyToInstall": "Elérhető a v{{version}} frissítés – a telepítéshez kattintson az „Újraindítás és telepítés” gombra.",
+    "downloadingWithPercent": "A v{{version}} frissítés letöltése: {{percent}}%",
     "downloadingFound": "Megtalálta a v{{version}} frissítést, letöltés folyamatban…",
     "restartAndInstall": "Újraindítás és telepítés",
     "availableAction": "elérhető!",
@@ -287,8 +287,8 @@
       "supportProject": "Az FTPeach támogatása",
       "title": "Súgó",
       "documentation": "Dokumentáció",
-      "reportIssue": "Hiba jelentése",
-      "checkUpdates": "Frissítések ellenőrzése",
+      "reportIssue": "Hiba bejelentése",
+      "checkUpdates": "Frissítések keresése",
       "about": "Névjegy"
     }
   },
@@ -297,13 +297,13 @@
     "serverNotFound": "A szerver nem található. Ellenőrizze, hogy a cím helyes-e.",
     "timeout": "A szerver nem válaszol (a kapcsolódás időtúllépés miatt megszakadt). Ellenőrizze a címet, a portot és a hálózati kapcsolatot.",
     "connectionReset": "A szerverrel való kapcsolat váratlanul megszakadt.",
-    "networkUnreachable": "A szerver nem érhető el — ellenőrizze a hálózati kapcsolatát.",
+    "networkUnreachable": "A szerver nem érhető el – ellenőrizze a hálózati kapcsolatát.",
     "loginIncorrect": "Helytelen felhasználónév vagy jelszó.",
     "invalidCertificate": "A szerver érvénytelen tanúsítványt mutatott be. Ha megbízik ebben a szerverben, tiltsa le a tanúsítvány-ellenőrzést a kapcsolat beállításaiban.",
     "tlsNegotiationFailed": "A TLS-tárgyalás sikertelen volt. Ellenőrizze, hogy a szerver támogatja-e az explicit FTPS-t vagy HTTPS-t, valamint egy kompatibilis TLS-verziót.",
     "sshNegotiationFailed": "Az SSH-tárgyalás sikertelen volt. A szerver és az FTPeach nem tudott megegyezni egy kompatibilis SSH-algoritmusban vagy protokollverzióban.",
     "proxyFailed": "A proxykapcsolat sikertelen. Ellenőrizze a proxy típusát, címét, hitelesítő adatait, és azt, hogy a proxy eléri-e a célszervert.",
-    "keyReadFailed": "Nem sikerült beolvasni a kulcsot — a fájl sérült, vagy a jelmondat helytelen.",
+    "keyReadFailed": "Nem sikerült beolvasni a kulcsot – a fájl sérült, vagy a jelmondat helytelen.",
     "accessDenied": "Nincs jogosultsága erre a műveletre.",
     "notFound": "A fájl vagy mappa nem található.",
     "fileOrFolderExists": "Már létezik ilyen nevű fájl vagy mappa.",
@@ -316,11 +316,11 @@
     "invalidInput": "A megadott érték érvénytelen.",
     "internal": "Váratlan hiba történt.",
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
-    "alreadyExists": "A „{{name}}” már létezik",
+    "alreadyExists": "A(z) „{{name}}” már létezik",
     "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
-    "createUnsupported": "Ez az FTP-kiszolgáló nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a kiszolgáló kínálja őket.",
+    "createUnsupported": "Ez az FTP-szerver nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a szerver kínálja őket.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Egy mentett jelszó nem olvasható ezen a számítógépen. Adja meg újra a könyvjelzőben vagy a proxybeállításokban."
   },
   "settings": {
     "openWithAssociations": {
@@ -329,7 +329,7 @@
       "extension": "Kiterjesztés",
       "extensionPlaceholder": "txt",
       "application": "Alkalmazás",
-      "applicationPlaceholder": "Az alkalmazás elérési útvonala",
+      "applicationPlaceholder": "Az alkalmazás útvonala",
       "browse": "Alkalmazás kiválasztása",
       "remove": "Társítás eltávolítása",
       "add": "Társítás hozzáadása"
@@ -346,7 +346,7 @@
       "connection": "Kapcsolat",
       "transfers": "Átvitelek",
       "interface": "Felület",
-      "shortcuts": "Gyorsbillentyűk",
+      "shortcuts": "Billentyűparancsok",
       "updates": "Frissítések",
       "logging": "Naplózás",
       "security": "Biztonság"
@@ -396,7 +396,7 @@
       "title": "Jelszóvédelem",
       "systemMode": "Rendszervédelem",
       "systemModeHint": "A jelszavakat a Windows-fiókjához kötve titkosítja, és a kapcsolatbeállításokban megtekinthetők.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Hordozható példány: az így mentett jelszavak csak ezen a számítógépen olvashatók. Fő jelszóval a mappával együtt költöznek.",
       "strongholdMode": "Fokozott védelem",
       "strongholdModeHint": "Fő jelszó szükséges. Mentett jelszó megtekintéséhez újra meg kell adni a fő jelszót.",
       "loading": "A széf ellenőrzése…",
@@ -430,7 +430,7 @@
       "passwordMismatch": "A jelszavak nem egyeznek.",
       "passwordTooShort": "A fő jelszó hossza legalább 12 karakter legyen.",
       "strength": {
-        "tooShort": "Túl rövid — legalább 12 karaktert használjon.",
+        "tooShort": "Túl rövid – legalább 12 karaktert használjon.",
         "acceptable": "Elfogadható. A hosszabb jelmondat biztonságosabb.",
         "strong": "Erős fő jelszó."
       },
@@ -442,18 +442,18 @@
       "showConfirmationsHint": "Kérjen megerősítést mentett jelszó megjelenítése, végrehajtható fájl futtatása, illetve fájl megnyitása előtt olyan programmal, amelyet még nem használt. A széf visszaállítását, mentett jelszó másik szerverre helyezését és e beállítás kikapcsolását mindig meg kell erősíteni.",
       "unavailable": "A széf nem érhető el.",
       "failed": "A széfen végzett művelet sikertelen.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "A program nem fogadta el a fő jelszót. Várjon egy kicsit, mielőtt újra próbálkozik."
     },
     "unlimitedPlaceholder": "Nincs korlát",
     "connectTimeoutLabel": "Csatlakozási időtúllépés, s",
-    "connectTimeoutHint": "Mennyi ideig várjon a szerver válaszára csatlakozáskor, mielőtt elérhetetlennek tekinti (0 vagy üres — nincs korlát). A következő csatlakozástól érvényes.",
+    "connectTimeoutHint": "Mennyi ideig várjon a szerver válaszára csatlakozáskor, mielőtt elérhetetlennek tekinti (0 vagy üres – nincs korlát). A következő csatlakozástól érvényes.",
     "ftpActiveMode": "Aktív FTP-mód (a passzív helyett)",
-    "ftpActiveModeHint": "Csak FTP/FTPS — nincs hatása az SFTP-re és a WebDAV-ra. Ritkán van rá szükség, kizárólag olyan hálózatokon/szervereken, ahol a passzív mód nem jut át a NAT-on. A következő csatlakozásra vonatkozik.",
-    "ftpActiveModeDisabledByProxy": "Proxy használata esetén nem érhető el — a proxy-alagút csak a kimenő kapcsolatokat támogatja, ezért az FTP-nek passzív módban kell maradnia.",
+    "ftpActiveModeHint": "Csak FTP/FTPS – nincs hatása az SFTP-re és a WebDAV-ra. Ritkán van rá szükség, kizárólag olyan hálózatokon/szervereken, ahol a passzív mód nem jut át a NAT-on. A következő csatlakozásra vonatkozik.",
+    "ftpActiveModeDisabledByProxy": "Proxy használata esetén nem érhető el – a proxyalagút csak a kimenő kapcsolatokat támogatja, ezért az FTP-nek passzív módban kell maradnia.",
     "proxy": {
       "enable": "Proxy használata a kapcsolatokhoz",
-      "enableHint": "SOCKS4, SOCKS5 vagy HTTP CONNECT — FTP, FTPS, SFTP és WebDAV esetén. A következő csatlakozástól érvényes.",
-      "typeLabel": "Proxy-típus",
+      "enableHint": "SOCKS4, SOCKS5 vagy HTTP CONNECT – FTP, FTPS, SFTP és WebDAV esetén. A következő csatlakozástól érvényes.",
+      "typeLabel": "Proxytípus",
       "hostLabel": "Proxy címe",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
@@ -467,14 +467,14 @@
       "test": "Proxy tesztelése",
       "testing": "Tesztelés…",
       "testOk": "A proxy sikeresen elérte a célszervert.",
-      "testFailed": "A proxy-teszt sikertelen volt."
+      "testFailed": "A proxyteszt sikertelen volt."
     },
     "concurrencyLabel": "Egyidejű átvitelek",
-    "concurrencyHint": "Hány fájl töltődjön fel és le egyszerre az összes lapon (0 vagy üres — nincs korlát). Azonnal érvényes; a folyamatban lévő átvitelek rendesen befejeződnek.",
+    "concurrencyHint": "Hány fájl töltődjön fel és le egyszerre az összes lapon (0 vagy üres – nincs korlát). Azonnal érvényes; a folyamatban lévő átvitelek rendesen befejeződnek.",
     "speedLimitLabel": "Sebességkorlátozás, KB/s",
-    "speedLimitHint": "Az összes egyidejű átvitel együttes sebességére vonatkozik (0 vagy üres — nincs korlát). Azonnal érvényes, nem kell a következő csatlakozásra várni.",
+    "speedLimitHint": "Az összes egyidejű átvitel együttes sebességére vonatkozik (0 vagy üres – nincs korlát). Azonnal érvényes, nem kell a következő csatlakozásra várni.",
     "notifyOnComplete": "Értesítés az átvitelek befejezéséről",
-    "notifyOnCompleteHint": "Rendszerértesítés, amikor az átviteli sor kiürül — kizárólag akkor, ha az ablak nincs fókuszban.",
+    "notifyOnCompleteHint": "Rendszerértesítés, amikor az átviteli sor kiürül – kizárólag akkor, ha az ablak nincs fókuszban.",
     "overwriteActionLabel": "Névütközés esetén",
     "overwriteAsk": "Rákérdezés",
     "overwriteOverwrite": "Felülírás",
@@ -501,7 +501,7 @@
     "chooseDefaultLocalPath": "Alapértelmezett mappa kiválasztása",
     "showHiddenFiles": "Rejtett fájlok és mappák megjelenítése",
     "showHiddenFilesHint": "A helyi és a szerverpanelekre egyaránt vonatkozik.",
-    "coloredTabs": "Színes fülek",
+    "coloredTabs": "Színes lapok",
     "coloredTabsHint": "A lap nevét és ikonját a mentett könyvjelző színére színezi.",
     "autoCheckUpdates": "Automatikus frissítés",
     "autoCheckUpdatesHint": "Indításkor és naponta egyszer frissítéseket keres, és a háttérben letölti őket. A letöltött frissítés csendben települ az FTPeach következő indításakor, vagy azonnal az állapotsorról.",
@@ -533,21 +533,21 @@
     "confirmLabel": "Exportálás…",
     "includeSettings": "Alkalmazásbeállítások",
     "includeBookmarks": "Könyvjelzők",
-    "includeLocalPaths": "Helyi elérési utak",
-    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek az exportba — egy másik gépen importálás után újra meg kell adnia őket."
+    "includeLocalPaths": "Helyi útvonalak",
+    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek az exportba – egy másik gépen importálás után újra meg kell adnia őket."
   },
   "importSettingsDialog": {
     "title": "Beállítások importálása",
     "confirmLabel": "Importálás…",
     "includeSettings": "Alkalmazásbeállítások",
     "includeBookmarks": "Könyvjelzők",
-    "includeLocalPaths": "Helyi elérési utak",
-    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek importálásra — minden importált szerverhez újra meg kell adnia őket."
+    "includeLocalPaths": "Helyi útvonalak",
+    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek importálásra – minden importált szerverhez újra meg kell adnia őket."
   },
   "openWithDialog": {
     "title": "Megnyitás alkalmazásban",
     "downloading": "„{{fileName}}” letöltése…",
-    "progress": "{{loaded}} / {{total}} ({{percent}} %)",
+    "progress": "{{loaded}} / {{total}} ({{percent}}%)",
     "connecting": "Csatlakozás…"
   },
   "transfers": {
@@ -559,7 +559,7 @@
     "notifyFailed_other": "{{count}} fájl sikertelen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet.",
-    "batchFailed": "{{total}} elem közül {{failed}} nem lett átvíve.",
+    "batchFailed": "{{total}} elem közül {{failed}} nem lett átvive.",
     "sourcesKept": "Az eredeti fájlok a helyükön maradtak."
   },
   "transferQueue": {
@@ -608,7 +608,7 @@
   },
   "log": {
     "connecting": "Csatlakozás ide: {{addr}}...",
-    "activeModeViaProxy": "Az aktív FTP-mód proxyn keresztül nem érhető el — a kapcsolat passzív módot használ.",
+    "activeModeViaProxy": "Az aktív FTP-mód proxyn keresztül nem érhető el – a kapcsolat passzív módot használ.",
     "connectFailed": "A kapcsolat létrehozása nem sikerült: {{error}}",
     "connected": "Bejelentkezve.",
     "receivedEntries_one": "{{count}} bejegyzés érkezett",
@@ -618,17 +618,17 @@
     "tlsInit": "A TLS inicializálása...",
     "tlsEstablished": "A TLS-kapcsolat létrejött.",
     "davResumeUnsupportedLocal": "A WebDAV nem támogatja a feltöltés folytatását – a fájl az elejétől kezdve újra elküldésre kerül.",
-    "davResumeUnsupportedServer": "A szerver nem támogatja a folytatást (várt állapot: {{expected}}, kapott: {{status}}) — a fájl újra letöltődik.",
+    "davResumeUnsupportedServer": "A szerver nem támogatja a folytatást (várt állapot: {{expected}}, kapott: {{status}}) – a fájl újra letöltődik.",
     "uploadResumed": "A(z) {{path}} feltöltésének folytatása a(z) {{offset}}. bájttól.",
     "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
-    "uploadRestartedMismatch": "A kiszolgálón lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
+    "uploadRestartedMismatch": "A szerveren lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
     "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől.",
     "droppedRecords": "A protokollnapló néhány bejegyzése elveszett, mert az írás nem tudott lépést tartani: {{dropped}}"
   },
   "logPanel": {
     "showAllConnections": "Az összes kapcsolat megjelenítése",
     "showOnlyThisConnection": "Csak ez a kapcsolat",
-    "connectionClosedShowOnly": "A kapcsolat lezárult — csak ez a kapcsolat",
+    "connectionClosedShowOnly": "A kapcsolat lezárult – csak ez a kapcsolat",
     "filterKinds": "Szűrő",
     "kindStatus": "Állapotüzenetek",
     "kindCommand": "Parancsok",
@@ -662,8 +662,8 @@
     "titleNew": "Új könyvjelző",
     "titleEdit": "Könyvjelző szerkesztése",
     "titleList": "Könyvjelzők kezelése",
-    "titleLocalPathList": "Helyi elérési utak kezelése",
-    "manageLocalPaths": "Helyi elérési utak kezelése…",
+    "titleLocalPathList": "Helyi útvonalak kezelése",
+    "manageLocalPaths": "Helyi útvonalak kezelése…",
     "titleNewLocalPath": "Új helyi útvonal",
     "titleEditLocalPath": "Helyi útvonal szerkesztése",
     "fields": {
@@ -676,7 +676,7 @@
       "remotePath": "Alapértelmezett mappa",
       "localPath": "Helyi mappa",
       "folder": "Mappa",
-      "maxConnections": "Kapcsolatok maximális száma panelenként",
+      "maxConnections": "Kapcsolatok",
       "encoding": "Karakterkódolás"
     },
     "icons": {
@@ -723,7 +723,7 @@
     "unsavedChangesMessage": "El akarja menteni a könyvjelző módosításait?",
     "newFolder": "Új mappa",
     "folderNamePlaceholder": "Mappa neve",
-    "confirmDeleteFolder": "Törölje a „{{name}}” mappát? A benne található könyvjelzők egy szinttel feljebb kerülnek.",
+    "confirmDeleteFolder": "Törli a(z) „{{name}}” mappát? A benne található könyvjelzők egy szinttel feljebb kerülnek.",
     "searchPlaceholder": "Keresés…",
     "clearSearch": "Keresés törlése",
     "noSearchResults": "Nincs a keresésnek megfelelő könyvjelző",
@@ -734,7 +734,7 @@
     "collapseFolder": "„{{name}}” összecsukása",
     "noFolder": "Nincs mappa",
     "maxConnectionsHint": "Legalább 2: egy kapcsolat a mappák böngészésére, a többi a fájlok átvitelére szolgál. Minden panelnek saját korlátja van.",
-    "encodingHint": "Csak akkor változtassa meg, ha a kiszolgálón lévő fájlnevek olvashatatlanok.",
+    "encodingHint": "Csak akkor változtassa meg, ha a szerveren lévő fájlnevek olvashatatlanok.",
     "encodings": {
       "utf8": "UTF-8 (alapértelmezett)",
       "cyrillic": "Cirill",
@@ -764,7 +764,7 @@
     "maxConnectionsChanged": "Újracsatlakozás után lép érvénybe.",
     "footerFolders": "Mappák: {{count}}",
     "footerSites": "Könyvjelzők: {{count}}",
-    "footerPaths": "Elérési utak: {{count}}"
+    "footerPaths": "Útvonalak: {{count}}"
   },
   "connectionBar": {
     "fields": {
@@ -808,9 +808,9 @@
   "tray": {
     "show": "FTPeach megjelenítése",
     "transferring": "Folyamatban lévő átvitelek: {{count}}",
-    "transferringProgress": "Folyamatban lévő átvitelek: {{count}} · {{percent}} %",
+    "transferringProgress": "Folyamatban lévő átvitelek: {{count}} · {{percent}}%",
     "quitWaiting": "Kilépés az átvitelek befejezése után · {{count}}",
-    "quitWaitingProgress": "Kilépés az átvitelek befejezése után · {{count}} · {{percent}} %",
+    "quitWaitingProgress": "Kilépés az átvitelek befejezése után · {{count}} · {{percent}}%",
     "pauseAll": "Minden átvitel szüneteltetése",
     "resumeAll": "Minden átvitel folytatása",
     "speedLimit": "Sebességkorlátozás",
@@ -844,7 +844,7 @@
       "transferring": "Fájl átvitele folyamatban",
       "paused": "Szüneteltetve",
       "connected": "Csatlakozva",
-      "connecting": "Csatlakozás…",
+      "connecting": "Csatlakozás",
       "connectFailed": "Nem sikerült csatlakozni",
       "disconnected": "Nincs csatlakozva"
     },
@@ -858,7 +858,7 @@
     "importNothingNewShort": "Nincs új elem",
     "importSkippedShort": "Kihagyva: {{count}}",
     "quitPendingShort": "Kilépés…",
-    "upToDate": "Up to date",
+    "upToDate": "Naprakész",
     "cancelQuitLong": "Kilépés megszakítása",
     "listSeparator": ", "
   },
@@ -867,7 +867,7 @@
     "toggleRightPane": "Jobb oldali panel megjelenítése/elrejtése",
     "toggleTransferQueue": "Átviteli sor megjelenítése/elrejtése",
     "toggleLog": "Napló megjelenítése/elrejtése",
-    "orientationNarrow": "Panelek egymás alatt — az ablak túl keskeny ahhoz, hogy egymás mellett férjenek el",
+    "orientationNarrow": "Panelek egymás alatt – az ablak túl keskeny ahhoz, hogy egymás mellett férjenek el",
     "orientationToRow": "Panelek egymás mellé",
     "orientationToStacked": "Panelek egymás alá",
     "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést",
@@ -901,7 +901,7 @@
   "errorBoundary": {
     "consoleLogPrefix": "Kezeletlen FTPeach-felülethiba:",
     "title": "Valami hiba történt",
-    "message": "Váratlan hiba történt a felületen. Az aktív kapcsolatát és a lemezen lévő fájlokat ez nem érinti — megpróbálhatja újratölteni a felületet.",
+    "message": "Váratlan hiba történt a felületen. Az aktív kapcsolatát és a lemezen lévő fájlokat ez nem érinti – megpróbálhatja újratölteni a felületet.",
     "reload": "Felület újratöltése"
   },
   "quitDialog": {

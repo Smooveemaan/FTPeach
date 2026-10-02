@@ -92,8 +92,8 @@
     "newFile": "Nuovo file…",
     "refresh": "Aggiorna",
     "open": "Apri",
-    "uploadToOtherPane": "Carica nell’altro riquadro",
-    "copyToOtherPane": "Copia nell’altro riquadro",
+    "uploadToOtherPane": "Carica nell'altro riquadro",
+    "copyToOtherPane": "Copia nell'altro riquadro",
     "downloadToOtherPane": "Scarica nell'altro riquadro",
     "openWith": "Apri con…",
     "permissions": "Autorizzazioni…",
@@ -141,7 +141,7 @@
     "changeDriveTooltip": "Cambia unità",
     "chooseColumnsTooltip": "Fai clic con il tasto destro per scegliere le colonne",
     "sortByNameTooltip": "Ordina per nome",
-    "sortByColumnTooltip": "Ordina in base alla colonna “{{column}}”",
+    "sortByColumnTooltip": "Ordina in base alla colonna \"{{column}}\"",
     "rowProbeSample": "Esempio",
     "loading": "Caricamento in corso…",
     "nothingFound": "Nessun risultato trovato"
@@ -226,11 +226,11 @@
     "replaceConnection": "Questo riquadro è già connesso a \"{{current}}\". Sostituire la connessione con \"{{next}}\"?",
     "replaceConnectionLabel": "Sostituisci",
     "deleteSelected": "Eliminare gli elementi selezionati ({{count}})? Questa operazione non può essere annullata.",
-    "deleteEntry": "Eliminare “{{name}}”? Questa azione non può essere annullata.",
-    "recycleSelected": "Vuoi spostare gli elementi selezionati ({{count}}) nel Cestino?",
-    "recycleEntry": "Spostare “{{name}}” nel Cestino?",
+    "deleteEntry": "Eliminare \"{{name}}\"? Questa operazione non può essere annullata.",
+    "recycleSelected": "Spostare gli elementi selezionati ({{count}}) nel Cestino?",
+    "recycleEntry": "Spostare \"{{name}}\" nel Cestino?",
     "deletePermanentSelected": "Eliminare definitivamente gli elementi selezionati ({{count}})? Questa operazione non può essere annullata.",
-    "deletePermanentEntry": "Eliminare definitivamente “{{name}}”? Questa operazione non può essere annullata.",
+    "deletePermanentEntry": "Eliminare definitivamente \"{{name}}\"? Questa operazione non può essere annullata.",
     "deleteRemoteSelected": "Eliminare definitivamente gli elementi selezionati sul server ({{count}})? Questa operazione non può essere annullata.",
     "deleteRemoteEntry": "Eliminare definitivamente \"{{name}}\" sul server? Questa operazione non può essere annullata.",
     "overwriteConflicts_many": "Esistono già {{count}} elementi nella cartella di destinazione. Vuoi sovrascriverli?"
@@ -316,7 +316,7 @@
     "diskFull": "Spazio su disco insufficiente.",
     "hostKeyMismatch": "La chiave host del server è cambiata.",
     "integrityMismatch": "Il file trasferito non ha superato il controllo di integrità.",
-    "cleanupIncomplete": "La pulizia è incompleta. I file di cui non è stato possibile verificare l’appartenenza sono stati conservati. Controllare la destinazione prima di eliminarli manualmente.",
+    "cleanupIncomplete": "La pulizia è incompleta. I file di cui non è stato possibile verificare l'appartenenza sono stati conservati. Controlla la destinazione prima di eliminarli manualmente.",
     "invalidInput": "Il valore fornito non è valido.",
     "internal": "Si è verificato un errore imprevisto.",
     "connectFailedPrefix": "Impossibile connettersi al server. {{raw}}",
@@ -324,7 +324,7 @@
     "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente.",
     "createUnsupported": "Questo server FTP non supporta la creazione di nuovi file. Prova SFTP o WebDAV se il server li offre.",
     "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli.",
-    "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings."
+    "savedSecretUnreadable": "Impossibile leggere una password salvata su questo computer. Inseriscila di nuovo nel segnalibro o nelle impostazioni del proxy."
   },
   "settings": {
     "openWithAssociations": {
@@ -400,7 +400,7 @@
       "title": "Protezione con password",
       "systemMode": "Protezione di sistema",
       "systemModeHint": "Le password sono crittografate per il tuo account Windows e possono essere visualizzate nelle impostazioni di connessione.",
-      "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
+      "portableSystemModeHint": "Copia portatile: le password salvate in questo modo possono essere lette solo su questo computer. Con una password principale viaggiano insieme alla cartella.",
       "strongholdMode": "Protezione avanzata",
       "strongholdModeHint": "Richiede una password principale. Per visualizzare una password salvata è necessario reinserire la password principale.",
       "loading": "Verifica della cassaforte…",
@@ -446,7 +446,7 @@
       "showConfirmationsHint": "Chiedere conferma prima di mostrare una password salvata, eseguire un file eseguibile o aprire un file con un programma non ancora usato. La reimpostazione della cassaforte, lo spostamento di una password salvata su un altro server e la disattivazione di questa opzione vengono sempre confermati.",
       "unavailable": "La cassaforte non è disponibile.",
       "failed": "L'operazione sulla cassaforte non è riuscita.",
-      "unlockRefused": "The master password was not accepted. Wait a moment before trying again."
+      "unlockRefused": "La password principale non è stata accettata. Attendi un momento prima di riprovare."
     },
     "unlimitedPlaceholder": "Senza limiti",
     "connectTimeoutLabel": "Timeout della connessione, s",
@@ -464,7 +464,7 @@
       "usernameLabel": "Nome utente",
       "passwordLabel": "Password",
       "removeSavedPassword": "Rimuovi la password salvata",
-      "revealFailed": "Impossibile decriptare la password salvata.",
+      "revealFailed": "Impossibile decifrare la password salvata.",
       "testTargetLabel": "Prova con",
       "testTargetHostPlaceholder": "Indirizzo del server",
       "testTargetPortPlaceholder": "Porta",
@@ -476,9 +476,9 @@
     "concurrencyLabel": "Trasferimenti simultanei",
     "concurrencyHint": "Quanti file caricare e scaricare contemporaneamente in tutte le schede (0 o vuoto — nessun limite). Ha effetto subito; i trasferimenti in corso terminano normalmente.",
     "speedLimitLabel": "Limite di velocità, KB/s",
-    "speedLimitHint": "Si applica al totale complessivo di tutti i trasferimenti simultanei (0 o spazio vuoto: nessun limite). Ha effetto immediato, senza attendere la connessione successiva.",
+    "speedLimitHint": "Si applica al totale complessivo di tutti i trasferimenti simultanei (0 o vuoto — nessun limite). Ha effetto immediato, senza attendere la connessione successiva.",
     "notifyOnComplete": "Avvisa al termine dei trasferimenti",
-    "notifyOnCompleteHint": "Una notifica di sistema quando la coda di trasferimento si svuota — solo quando la finestra non è attiva.",
+    "notifyOnCompleteHint": "Una notifica di sistema quando la coda dei trasferimenti si svuota — solo quando la finestra non è attiva.",
     "overwriteActionLabel": "In caso di conflitto di nomi",
     "overwriteAsk": "Chiedi",
     "overwriteOverwrite": "Sovrascrivi",
@@ -550,8 +550,8 @@
   },
   "openWithDialog": {
     "title": "Apri nell'applicazione",
-    "downloading": "Scaricamento di “{{fileName}}”…",
-    "progress": "{{loaded}} di {{total}} ({{percent}} %)",
+    "downloading": "Scaricamento di \"{{fileName}}\"…",
+    "progress": "{{loaded}} di {{total}} ({{percent}}%)",
     "connecting": "Connessione in corso…"
   },
   "transfers": {
@@ -620,7 +620,7 @@
     "connected": "Accesso effettuato.",
     "receivedEntries_one": "Ricevuta {{count}} voce",
     "receivedEntries_other": "Ricevute {{count}} voci",
-    "skippedUnsafeEntry": "È stata saltata una voce dell’elenco con un nome non sicuro: {{name}}",
+    "skippedUnsafeEntry": "È stata saltata una voce dell'elenco con un nome non sicuro: {{name}}",
     "listFailed": "Impossibile ottenere l'elenco della cartella: {{error}}",
     "tlsInit": "Inizializzazione di TLS...",
     "tlsEstablished": "Connessione TLS stabilita.",
@@ -628,7 +628,7 @@
     "davResumeUnsupportedServer": "Il server non supporta la ripresa del download (stato previsto: {{expected}}, stato ricevuto: {{status}}) — il file verrà scaricato nuovamente.",
     "uploadResumed": "Ripresa dell'invio di {{path}} da {{offset}} byte.",
     "uploadRestartedSourceChanged": "Il file locale non corrisponde più all'invio in pausa di {{path}}: verrà inviato di nuovo dall'inizio.",
-    "uploadRestartedMismatch": "I dati già presenti sul server non corrispondono al file locale: {{path}} verrà inviato di nuovo dall’inizio.",
+    "uploadRestartedMismatch": "I dati già presenti sul server non corrispondono al file locale: {{path}} verrà inviato di nuovo dall'inizio.",
     "uploadRestartedUnverified": "Non è stato possibile verificare l'invio in pausa di {{path}} ({{error}}): il file verrà inviato di nuovo dall'inizio.",
     "receivedEntries_many": "Ricevute {{count}} voci",
     "droppedRecords": "Alcune righe del registro di protocollo sono state scartate perché la scrittura non teneva il passo: {{dropped}}"
@@ -659,7 +659,7 @@
     "legalInformation": "Informazioni legali",
     "sourceCode": "Codice sorgente",
     "reportIssue": "Segnala un problema",
-    "checkForUpdates": "Verifica la presenza di aggiornamenti",
+    "checkForUpdates": "Verifica la disponibilità di aggiornamenti",
     "updateDownloaded": "L'aggiornamento v{{version}} è stato scaricato: ora puoi installarlo."
   },
   "siteManager": {
@@ -684,7 +684,7 @@
       "remotePath": "Cartella predefinita",
       "localPath": "Cartella locale",
       "folder": "Cartella",
-      "maxConnections": "Connessioni massime per riquadro",
+      "maxConnections": "Connessioni",
       "encoding": "Codifica"
     },
     "icons": {
@@ -731,15 +731,15 @@
     "unsavedChangesMessage": "Salvare le modifiche al segnalibro?",
     "newFolder": "Nuova cartella",
     "folderNamePlaceholder": "Nome della cartella",
-    "confirmDeleteFolder": "Eliminare la cartella “{{name}}”? I suoi segnalibri verranno spostati al livello superiore.",
+    "confirmDeleteFolder": "Eliminare la cartella \"{{name}}\"? I suoi segnalibri verranno spostati al livello superiore.",
     "searchPlaceholder": "Cerca…",
     "clearSearch": "Cancella ricerca",
     "noSearchResults": "Non ci sono segnalibri corrispondenti alla tua ricerca",
     "duplicate": "Duplica",
     "duplicateNameSuffix": " (copia)",
     "newBookmarkInFolder": "Nuovo segnalibro qui",
-    "expandFolder": "Espandi “{{name}}”",
-    "collapseFolder": "Comprimi “{{name}}”",
+    "expandFolder": "Espandi \"{{name}}\"",
+    "collapseFolder": "Comprimi \"{{name}}\"",
     "noFolder": "Nessuna cartella",
     "maxConnectionsHint": "Almeno 2: una connessione per sfogliare le cartelle, le altre per trasferire i file. Ogni riquadro ha il proprio limite.",
     "encodingHint": "Cambiala solo se i nomi dei file su questo server appaiono illeggibili.",
@@ -798,7 +798,7 @@
       "tooltip": "Accedi utilizzando un file di chiave SSH privata anziché una password",
       "label": "Accedi con la chiave SSH"
     },
-    "rsaKeyWarning": "Le chiavi private RSA presentano un rischio noto di attacchi a canale laterale basati sul tempo. Preferire Ed25519 per le nuove chiavi SSH.",
+    "rsaKeyWarning": "Le chiavi private RSA presentano un rischio noto di attacchi a canale laterale basati sul tempo. Preferisci Ed25519 per le nuove chiavi SSH.",
     "connectTooltip": {
       "cancel": "Annulla",
       "connect": "Connettiti",
@@ -816,10 +816,10 @@
   "tray": {
     "show": "Mostra FTPeach",
     "transferring": "Trasferimenti in corso: {{count}}",
-    "transferringProgress": "Trasferimenti in corso: {{count}} · {{percent}} %",
+    "transferringProgress": "Trasferimenti in corso: {{count}} · {{percent}}%",
     "quitWaiting": "Uscita al termine dei trasferimenti · {{count}}",
-    "quitWaitingProgress": "Uscita al termine dei trasferimenti · {{count}} · {{percent}} %",
-    "pauseAll": "Sospendi tutti i trasferimenti",
+    "quitWaitingProgress": "Uscita al termine dei trasferimenti · {{count}} · {{percent}}%",
+    "pauseAll": "Metti in pausa tutti i trasferimenti",
     "resumeAll": "Riprendi tutti i trasferimenti",
     "speedLimit": "Limite di velocità",
     "unlimited": "Senza limiti",
@@ -866,7 +866,7 @@
     "importNothingNewShort": "Niente di nuovo",
     "importSkippedShort": "Saltati: {{count}}",
     "quitPendingShort": "Uscita…",
-    "upToDate": "Up to date",
+    "upToDate": "Aggiornato",
     "cancelQuitLong": "Annulla l'uscita",
     "listSeparator": ", "
   },
@@ -909,7 +909,7 @@
   "errorBoundary": {
     "consoleLogPrefix": "Errore non gestito dell'interfaccia FTPeach:",
     "title": "Si è verificato un errore",
-    "message": "Si è verificato un errore imprevisto nell'interfaccia. La connessione attiva e i file presenti sul disco non sono stati interessati; è possibile provare a ricaricare l'interfaccia.",
+    "message": "Si è verificato un errore imprevisto nell'interfaccia. La connessione attiva e i file presenti sul disco non sono stati interessati: puoi provare a ricaricare l'interfaccia.",
     "reload": "Ricarica interfaccia"
   },
   "quitDialog": {

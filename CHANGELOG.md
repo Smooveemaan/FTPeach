@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Copying from one server to another runs at the full speed limit instead of half of it.
 - A changed Concurrent transfers limit applies at once again, not only after a restart.
 - A security confirmation no longer adds a second FTPeach button to the taskbar.
+- A file opened with an external application whose download was cut short no longer shows up
+  in "Edits that were not uploaded" as `.part` and `.ftpeach-resume.json` files.
 
 ## [0.4.0] - 2026-10-02
 

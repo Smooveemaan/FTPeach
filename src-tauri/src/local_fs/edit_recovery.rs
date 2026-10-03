@@ -115,8 +115,24 @@ fn is_session_name(path: &Path) -> bool {
         .is_some_and(|name| uuid::Uuid::parse_str(name).is_ok())
 }
 
+/// What an interrupted download leaves beside its destination: the partial
+/// `.ftpeach-<uuid>.part`, its `<name>.ftpeach-resume.json` and that record's
+/// `.ftpeach-<uuid>.json` while it is written. No editor was ever given them.
+fn is_download_artifact(path: &Path) -> bool {
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    let staged = |suffix| {
+        name.strip_prefix(".ftpeach-")
+            .and_then(|rest| rest.strip_suffix(suffix))
+            .is_some_and(|id| uuid::Uuid::parse_str(id).is_ok())
+    };
+    staged(".part") || staged(".json") || name.ends_with(".ftpeach-resume.json")
+}
+
 /// Files a session left without a manifest: every regular file in its
 /// per-download folders. Without a record nothing proves them unedited.
+/// Download artifacts are deleted instead: they never held an edit.
 fn unrecorded_files(session: &Path) -> std::io::Result<Vec<PathBuf>> {
     let mut found = Vec::new();
     for folder in std::fs::read_dir(session)? {
@@ -125,7 +141,12 @@ fn unrecorded_files(session: &Path) -> std::io::Result<Vec<PathBuf>> {
         if kind.is_dir() && !kind.is_symlink() {
             for file in std::fs::read_dir(folder.path())? {
                 let file = file?;
-                if file.file_type()?.is_file() {
+                if !file.file_type()?.is_file() {
+                    continue;
+                }
+                if is_download_artifact(&file.path()) {
+                    std::fs::remove_file(file.path())?;
+                } else {
                     found.push(file.path());
                 }
             }
@@ -659,6 +680,27 @@ mod tests {
         let edits = list(&fixture.root);
         assert_eq!(edits.len(), 1);
         assert_eq!(edits[0].remote_path, None);
+    }
+
+    #[test]
+    fn an_interrupted_download_is_not_recovered_as_an_edit() {
+        let fixture = Fixture::new();
+        let file = fixture.download(&format!(".ftpeach-{}.part", uuid::Uuid::new_v4()), b"half");
+        let folder = file.parent().unwrap();
+        std::fs::write(folder.join("song.flac.ftpeach-resume.json"), b"{}").unwrap();
+        std::fs::write(
+            folder.join(format!(".ftpeach-{}.json", uuid::Uuid::new_v4())),
+            b"{}",
+        )
+        .unwrap();
+        std::fs::write(folder.join(".ftpeach-notes.part"), b"a server file").unwrap();
+
+        collect(&fixture.session, &fixture.root).unwrap();
+
+        let edits = list(&fixture.root);
+        assert_eq!(edits.len(), 1);
+        assert_eq!(edits[0].name, ".ftpeach-notes.part");
+        assert!(!fixture.session.exists());
     }
 
     #[test]

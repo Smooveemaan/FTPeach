@@ -62,7 +62,9 @@ export default function SecuritySettings({
         <div className="security-mode-list">
           <label
             className="security-mode-option"
-            data-tooltip={systemModeLocked ? t('settings.security.unlockRequiredHint') : undefined}
+            data-tooltip={
+              systemModeLocked ? t('settings.security.systemModeUnlockHint') : undefined
+            }
           >
             <input
               type="radio"
@@ -315,8 +317,6 @@ export default function SecuritySettings({
             />
           </label>
           <p className="settings-hint">{t('settings.security.autoLockHint')}</p>
-          <p className="settings-hint">{t('settings.security.autoLockAlways')}</p>
-          <p className="settings-hint">{t('settings.security.lockScope')}</p>
         </div>
       )}
       {vaultStatus?.configured && (

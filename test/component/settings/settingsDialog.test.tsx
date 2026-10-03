@@ -392,7 +392,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     });
     await waitFor(() => expect(option.disabled).toBe(true));
     expect(option.closest('label')?.getAttribute('data-tooltip')).toBe(
-      'settings.security.unlockRequiredHint',
+      'settings.security.systemModeUnlockHint',
     );
 
     // Unlocked, it can be chosen and has nothing to explain.

@@ -34,7 +34,7 @@ The project is in pre-release; see the [changelog](CHANGELOG.md) for changes bet
 
 ## Made for everyday file transfers
 
-- **Work side by side.** Two independent file panes with tabs, search, sorting, and file previews help you find and organize files.
+- **Work side by side.** Two independent file panes with tabs, search, and sorting help you find and organize files.
 - **Move files where you need them.** Upload, download, or copy between servers through FTPeach, with drag and drop for everyday operations.
 - **Stay in control.** Run concurrent transfers, pause or cancel jobs, and set speed limits from the transfer queue.
 - **Use your own editor.** Open remote files in an external application and upload your changes back to the server.

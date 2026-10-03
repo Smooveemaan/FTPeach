@@ -9,6 +9,10 @@
 // touched. The Docker baseline stack must be up (`npm run servers:up -- baseline`).
 // Confirming the SSH key of the local SFTP server is left to the person running
 // this: that window exists so that a person decides.
+//
+// With --light the app is switched to the light theme and the picture is saved
+// as assets/images/ftpeach-light.png, which the landing page shows in its light
+// theme.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import {
   existsSync,
@@ -26,7 +30,8 @@ import path from 'node:path';
 import { chromium, type Page } from 'playwright';
 
 const root = path.resolve(import.meta.dirname, '../..');
-const output = path.join(root, 'assets/images/ftpeach.png');
+const light = process.argv.includes('--light');
+const output = path.join(root, `assets/images/ftpeach${light ? '-light' : ''}.png`);
 const app = path.join(root, 'src-tauri/target/debug/app.exe');
 const cdpPort = 9333;
 const ftpContainer = 'ftpeach-test-ftp';
@@ -34,7 +39,8 @@ const ftpHome = '/home/testuser';
 
 // The folder the left pane shows, which is also the source of the uploads and
 // of the files already on the server. The path is part of the picture.
-const localFolder = process.argv[2] ?? 'D:\\Your\\Local\\Path';
+const localFolder =
+  process.argv.slice(2).find((arg) => !arg.startsWith('--')) ?? 'D:\\Your\\Local\\Path';
 const MiB = 1024 * 1024;
 const localFiles: Record<string, number> = {
   'archive.zip': 18 * MiB,
@@ -63,8 +69,16 @@ const bookmarks = [
 ];
 
 // The frame measured from the original capture: margins around the window, its
-// 1 px border, corner radius, and the shadow's alpha 1..62 px from the edge.
-const frame = { left: 111, top: 86, right: 112, bottom: 87, radius: 11, border: 'rgb(41,38,34)' };
+// 1 px border (the theme's --window-border), corner radius, and the shadow's
+// alpha 1..62 px from the edge.
+const frame = {
+  left: 111,
+  top: 86,
+  right: 112,
+  bottom: 87,
+  radius: 11,
+  border: light ? 'rgb(201,195,188)' : 'rgb(41,38,34)',
+};
 const shadow = [
   31, 30, 30, 30, 29, 28, 28, 27, 27, 26, 25, 25, 24, 24, 23, 22, 22, 21, 20, 19, 19, 18, 17, 16,
   16, 15, 14, 14, 13, 13, 12, 11, 11, 10, 10, 9, 8, 8, 8, 7, 7, 6, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2,
@@ -220,6 +234,16 @@ async function stage(page: Page, profile: string) {
   const settings = page.locator('.modal').last();
   await settings.getByText('Transfers', { exact: true }).click();
   await settings.getByLabel('Speed limit, KB/s').fill('2000');
+  if (light) {
+    await settings.getByText('Interface', { exact: true }).click();
+    // The <label> around the theme switch names its first radio after the
+    // whole label, so the option is found by its text.
+    await settings
+      .locator('.settings-segmented')
+      .first()
+      .getByText('Light', { exact: true })
+      .click();
+  }
   await settings.getByRole('button', { name: 'Save' }).click();
   await settings.waitFor({ state: 'hidden' });
 

@@ -10,8 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- The tray icon is the peach on its own, without the square background behind it.
-- The FTPeach icon is sharper at small sizes, and its background now reaches the edges.
+- The FTPeach icon and the tray icon are the peach on its own, without the square background, so
+  they stand out on a light taskbar too.
 - A bookmark's icon and color menus open scrolled to the one that is chosen.
 - The hint under "Auto-lock after, min" is one short paragraph, and "System protection" says why
   it cannot be chosen while the vault is locked.

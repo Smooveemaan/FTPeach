@@ -6,6 +6,7 @@
 | `checks.yml` | Reusable workflow | Supply-chain checks, SAST, lint, tests and builds. Rust, visual and packaged smoke jobs use changed paths; releases force every job. |
 | `protocol-compatibility.yml` | Wednesday at 03:43 UTC, manual run, release, pull request touching Cargo manifests | Tests disposable FTP/FTPS/SFTP/WebDAV servers. Scheduled failures open or update a regression issue. |
 | `release.yml` | Push of a `v*` tag | Runs all checks and protocol tests, checks that the `release` environment requires approval, then builds signed Windows artifacts, SBOMs, a provenance attestation and a trust report in a draft release ([release-trust.md](../docs/release-trust.md)). |
+| `pages.yml` | Push to `master` touching `site/`, the images or the site build, a published release, manual run | Builds the website from `site/index.html` with the latest release's download links and deploys it to GitHub Pages. |
 | `server-matrix.yml` | Saturday at 04:17 UTC, manual run | Runs the [test server matrix](../docs/test-server-matrix.md) by profile against many real servers, proxies and faulty links. Informational, never a gate; scheduled failures open or update a regression issue. |
 | `security-audit.yml` | Monday at 04:17 UTC, manual run | Reviews Rust advisories and fuzzes protocol parsers. |
 

@@ -23,9 +23,9 @@ export const CROSS_LANGUAGE_SOURCES: readonly string[] = [
   'src/i18n/locales/en.json',
 ];
 
-/** Paths that drive neither build. */
+/** Paths that drive neither build. The website in `site/` has its own workflow. */
 const DOCUMENTATION =
-  /(?:^|\/)[^/]+\.md$|^LICENSE$|^\.gitattributes$|^\.gitignore$|^\.editorconfig$/;
+  /(?:^|\/)[^/]+\.md$|^LICENSE$|^\.gitattributes$|^\.gitignore$|^\.editorconfig$|^site\//;
 
 const FRONTEND_ONLY =
   /^src\/|^index\.html$|^vite\.config\.ts$|^tsconfig[^/]*\.json$|^playwright\.config\.ts$|^test\/visual\//;

@@ -63,7 +63,8 @@
     "servers:status": "node --experimental-strip-types scripts/test-servers/status.ts",
     "servers:test": "node --experimental-strip-types scripts/test-servers/test.ts",
     "servers:ci": "node --experimental-strip-types scripts/test-servers/ci.ts",
-    "screenshot:readme": "node --experimental-strip-types scripts/screenshot/readme.ts"
+    "screenshot:readme": "node --experimental-strip-types scripts/screenshot/readme.ts",
+    "site:build": "node --experimental-strip-types scripts/site/build.ts"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

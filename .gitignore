@@ -45,3 +45,4 @@ src-tauri/tests/docker/matrix/generated/
 
 # Downloaded native build tools and libraries.
 .tools/
+/dist-site/

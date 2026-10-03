@@ -39,6 +39,9 @@ files do not establish that they are enabled.
   is available. Enable secret scanning and push protection where available.
 - Configure the protected `release` environment and its signing secrets as
   described in [updater signing](updater-signing.md).
+- Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**
+  so `pages.yml` can publish the website, and set the repository's website to
+  <https://smooveemaan.github.io/FTPeach/>.
 - Verify the repository description, default branch and issue labels.
 
 ## CI on forks

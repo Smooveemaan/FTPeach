@@ -319,7 +319,7 @@
     "locationBusy": "Inna operacja już korzysta z tego pliku lub folderu. Spróbuj ponownie, gdy się zakończy.",
     "diskFull": "Za mało miejsca na dysku.",
     "hostKeyMismatch": "Klucz hosta serwera uległ zmianie.",
-    "integrityMismatch": "Przesłany plik nie przeszedł kontroli integralności.",
+    "integrityMismatch": "Pliki zmieniły się podczas przesyłania lub nie udało się ich zweryfikować.",
     "cleanupIncomplete": "Czyszczenie jest niekompletne. Zachowano pliki, których przynależności nie udało się potwierdzić. Sprawdź miejsce docelowe przed ich ręcznym usunięciem.",
     "invalidInput": "Podana wartość jest nieprawidłowa.",
     "internal": "Wystąpił nieoczekiwany błąd.",

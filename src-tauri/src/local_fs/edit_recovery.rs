@@ -115,19 +115,12 @@ fn is_session_name(path: &Path) -> bool {
         .is_some_and(|name| uuid::Uuid::parse_str(name).is_ok())
 }
 
-/// What an interrupted download leaves beside its destination: the partial
-/// `.ftpeach-<uuid>.part`, its `<name>.ftpeach-resume.json` and that record's
-/// `.ftpeach-<uuid>.json` while it is written. No editor was ever given them.
+/// What an interrupted download leaves beside its destination. No editor was
+/// ever given them.
 fn is_download_artifact(path: &Path) -> bool {
-    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    let staged = |suffix| {
-        name.strip_prefix(".ftpeach-")
-            .and_then(|rest| rest.strip_suffix(suffix))
-            .is_some_and(|id| uuid::Uuid::parse_str(id).is_ok())
-    };
-    staged(".part") || staged(".json") || name.ends_with(".ftpeach-resume.json")
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(crate::protocol::transfer_file::is_artifact_name)
 }
 
 /// Files a session left without a manifest: every regular file in its

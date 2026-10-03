@@ -83,6 +83,7 @@ export interface PanesModel {
     paneOverride?: PaneState,
     tabId?: string,
   ) => Promise<CommandResult | void>;
+  refreshPaneIfAt: (id: PaneId, path: string) => Promise<CommandResult | void>;
   navigatePane: (
     id: PaneId,
     path: string,
@@ -177,14 +178,15 @@ export function usePanes({
   const syncAnchorsRef = useRef<Record<string, Record<PaneId, string>>>({});
   const pendingDescendRef = useRef<Record<string, string[]>>({});
 
-  const { refreshPane, ensureRequestIds, requestIdsRef, inFlightRefreshesRef } = usePaneRefresh({
-    panes,
-    activeTabId,
-    updatePane,
-    reportError,
-    setErrorMessage,
-    defaultLocalPath,
-  });
+  const { refreshPane, refreshPaneIfAt, ensureRequestIds, requestIdsRef, inFlightRefreshesRef } =
+    usePaneRefresh({
+      panes,
+      activeTabId,
+      updatePane,
+      reportError,
+      setErrorMessage,
+      defaultLocalPath,
+    });
 
   const {
     crumbsFor,
@@ -469,6 +471,7 @@ export function usePanes({
     crumbsFor,
     paneParent,
     refreshPane,
+    refreshPaneIfAt,
     navigatePane,
     openDirectory,
     goPaneBack,

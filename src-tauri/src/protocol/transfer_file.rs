@@ -88,6 +88,19 @@ impl Drop for DownloadReservation {
     }
 }
 
+/// Whether `name` is a working file a transfer keeps beside its destination:
+/// a partial `.ftpeach-<uuid>.part` (a download's, a copy's, or an upload's
+/// staging on a server), a download's `<name>.ftpeach-resume.json`, and that
+/// record's `.ftpeach-<uuid>.json` while it is written.
+pub(crate) fn is_artifact_name(name: &str) -> bool {
+    let staged = |suffix| {
+        name.strip_prefix(".ftpeach-")
+            .and_then(|rest| rest.strip_suffix(suffix))
+            .is_some_and(|id| uuid::Uuid::parse_str(id).is_ok())
+    };
+    staged(".part") || staged(".json") || name.ends_with(".ftpeach-resume.json")
+}
+
 fn artifact_path(destination: &Path, id: uuid::Uuid) -> PathBuf {
     destination.with_file_name(format!(".ftpeach-{id}.part"))
 }
@@ -95,13 +108,18 @@ fn artifact_path(destination: &Path, id: uuid::Uuid) -> PathBuf {
 pub(crate) async fn rename_no_replace(source: &Path, destination: &Path) -> Result<()> {
     #[cfg(windows)]
     {
+        use crate::local_fs::long_path;
         use std::os::windows::ffi::OsStrExt;
         use windows::{
             Win32::Storage::FileSystem::{MOVE_FILE_FLAGS, MoveFileExW},
             core::PCWSTR,
         };
-        let source: Vec<u16> = source.as_os_str().encode_wide().chain(Some(0)).collect();
-        let destination: Vec<u16> = destination
+        let source: Vec<u16> = long_path(source)?
+            .as_os_str()
+            .encode_wide()
+            .chain(Some(0))
+            .collect();
+        let destination: Vec<u16> = long_path(destination)?
             .as_os_str()
             .encode_wide()
             .chain(Some(0))
@@ -240,9 +258,13 @@ pub async fn prepare(
 
 /// A download's hold on its local destination, from before the server is
 /// asked anything until the file is committed: the destination and resume
-/// record stay reserved and local mutations (moves, deletes of the folder)
-/// stay out for as long as this lives. Every backend's `download` goes
-/// through it, so their local side cannot drift apart:
+/// record stay reserved for as long as this lives, which keeps local moves
+/// and deletes of them or their folders out. Local mutations elsewhere are
+/// kept out only while a step works by path (preparing, reopening and
+/// committing the artifact); the bytes go through a handle. Held for the
+/// whole transfer, a slow download stopped every move, delete and new folder
+/// on the computer until it ended. Every backend's `download` goes through
+/// it, so their local side cannot drift apart:
 ///
 /// 1. [`DownloadTarget::reserve`] before reading remote metadata;
 /// 2. [`DownloadTarget::prepare`] with the backend's own [`SourceIdentity`]
@@ -253,19 +275,17 @@ pub async fn prepare(
 /// 5. [`report_outcome`] sends the one terminal progress event.
 pub struct DownloadTarget {
     destination: PathBuf,
-    _mutation: tokio::sync::RwLockReadGuard<'static, ()>,
     _lease: DownloadReservation,
 }
 
 impl DownloadTarget {
     pub async fn reserve(destination: &Path) -> Result<Self> {
         let lease = reserve(destination)?;
-        let mutation = crate::local_fs::mutations::guard().read().await;
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         crate::local_fs::mutations::validate_download_name(destination)?;
         crate::local_fs::filesystem_safety::validate_write_destination(destination).await?;
         Ok(Self {
             destination: destination.to_path_buf(),
-            _mutation: mutation,
             _lease: lease,
         })
     }
@@ -280,6 +300,7 @@ impl DownloadTarget {
         origin: crate::local_fs::provenance::Origin,
     ) -> Result<Option<LocalDownload>> {
         let expected = source.size;
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         let (partial, start) = prepare(&self.destination, resume, source, origin).await?;
         validate_resume_offset(start, expected)?;
         if commit_if_complete(&partial, &self.destination, start, expected).await? {
@@ -310,7 +331,11 @@ impl LocalDownload {
     /// when the server sends the whole file again, which drops what was there.
     pub async fn open_at(&self, offset: u64) -> Result<tokio::fs::File> {
         use tokio::io::AsyncSeekExt;
-        let mut file = tokio::fs::File::from_std(open_artifact(&self.partial, false)?);
+        let file = {
+            let _mutation = crate::local_fs::mutations::guard().read().await;
+            open_artifact(&self.partial, false)?
+        };
+        let mut file = tokio::fs::File::from_std(file);
         if offset == 0 {
             file.set_len(0).await?;
         } else {
@@ -327,6 +352,7 @@ impl LocalDownload {
     /// any failure, commit included, a partial this attempt created empty is
     /// removed and a resumable one is kept.
     pub async fn finish(self, written: Result<u64>, expected: Option<u64>) -> Result<()> {
+        let _mutation = crate::local_fs::mutations::guard().read().await;
         let result = match written {
             Ok(length) => match validate_length(length, expected) {
                 Ok(()) => commit(&self.partial, &self.target.destination).await,
@@ -447,6 +473,21 @@ async fn forget_resume_record(partial: &Path, destination: &Path) {
     }
 }
 
+/// Removes what a stopped download kept beside `destination`: the partial its
+/// resume record names, then the record. Left alone if another download is
+/// using the destination now.
+pub async fn discard(destination: &Path) {
+    let Ok(_lease) = reserve(destination) else {
+        return;
+    };
+    let _mutation = crate::local_fs::mutations::guard().read().await;
+    for path in retained_paths(destination) {
+        if crate::local_fs::filesystem_safety::ensure_path_no_reparse_points_now(&path).is_ok() {
+            let _ = tokio::fs::remove_file(&path).await;
+        }
+    }
+}
+
 /// How far into `destination` a download could carry on from: the length of
 /// the partial its resume record names, when both are there.
 pub fn resumable_len(destination: &Path) -> Option<u64> {
@@ -519,6 +560,13 @@ mod tests {
         assert!(result.is_err());
     }
 
+    /// Leaves half of an 8-byte "v1" download behind, as a cancel does.
+    async fn leave_half(destination: &Path) {
+        let download = begin(destination, true, identity(Some(8), Some("v1"))).await;
+        write(&download, 0, b"half").await.unwrap();
+        cancel(download).await;
+    }
+
     /// Finishes without consent to replace an existing destination.
     async fn finish(
         download: LocalDownload,
@@ -554,6 +602,15 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_discarded_download_leaves_nothing_behind() {
+        let (root, destination) = scratch();
+        leave_half(&destination).await;
+        discard(&destination).await;
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
     async fn a_complete_partial_commits_without_a_transfer() {
         let (root, destination) = scratch();
         let source = identity(Some(8), Some("v1"));
@@ -573,9 +630,7 @@ mod tests {
     #[tokio::test]
     async fn an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero() {
         let (root, destination) = scratch();
-        let download = begin(&destination, true, identity(Some(8), Some("v1"))).await;
-        write(&download, 0, b"half").await.unwrap();
-        cancel(download).await;
+        leave_half(&destination).await;
         for changed in [identity(None, Some("v1")), identity(Some(8), Some("v2"))] {
             let download = begin(&destination, true, changed).await;
             assert_eq!(download.start(), 0);
@@ -603,13 +658,25 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn the_destination_stays_reserved_and_mutations_wait_until_the_commit() {
+    async fn the_destination_stays_reserved_until_the_commit() {
         let (root, destination) = scratch();
         let download = begin(&destination, false, identity(Some(4), None)).await;
-        // A second download of the same target is refused as busy.
+        // A second download of the same target is refused as busy, and so is
+        // a local move or delete of it or its folder.
         assert!(DownloadTarget::reserve(&destination).await.is_err());
-        // A local move or delete cannot run while the artifact is open.
-        assert!(crate::local_fs::mutations::guard().try_write().is_err());
+        assert!(
+            crate::local_fs::target_reservation::Reservation::acquire(&root.to_string_lossy())
+                .is_err()
+        );
+        // Moves and deletes elsewhere do not wait for the bytes to arrive.
+        drop(
+            tokio::time::timeout(
+                std::time::Duration::from_secs(5),
+                crate::local_fs::mutations::guard().write(),
+            )
+            .await
+            .expect("a download between its path steps holds no lock"),
+        );
         let written = write(&download, 0, b"data").await;
         finish(download, written, Some(4)).await.unwrap();
         assert!(DownloadTarget::reserve(&destination).await.is_ok());

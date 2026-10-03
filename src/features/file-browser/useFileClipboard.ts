@@ -22,7 +22,7 @@ interface ClipboardState {
 interface FileClipboardOptions {
   browser: Pick<
     PanesModel,
-    'panes' | 'confirmOverwriteIfNeeded' | 'canCopyBetween' | 'refreshPane'
+    'panes' | 'confirmOverwriteIfNeeded' | 'canCopyBetween' | 'refreshPaneIfAt'
   >;
   transfers: Pick<TransfersModel, 'copyEntries'>;
 }
@@ -51,7 +51,7 @@ export interface FileClipboardModel {
 }
 
 export function useFileClipboard({ browser, transfers }: FileClipboardOptions): FileClipboardModel {
-  const { panes, confirmOverwriteIfNeeded, canCopyBetween, refreshPane } = browser;
+  const { panes, confirmOverwriteIfNeeded, canCopyBetween, refreshPaneIfAt } = browser;
   const { copyEntries } = transfers;
   const { t } = useTranslation();
   const copySelectedWithConfirm = (
@@ -109,8 +109,8 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
             targetPane,
             names: namesToUse,
             move: mode === 'cut',
-            refreshSource: () => refreshPane(sourceId, sourcePane.path),
-            refreshTarget: () => refreshPane(targetId, targetPane.path),
+            refreshSource: () => refreshPaneIfAt(sourceId, sourcePane.path),
+            refreshTarget: () => refreshPaneIfAt(targetId, targetPane.path),
             overwriteApproved,
           })
             .then((result) => {
@@ -191,8 +191,8 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
           names: namesToUse,
           targetFolder,
           move: isMove,
-          refreshSource: () => refreshPane(sourceSide, sourcePane.path),
-          refreshTarget: () => refreshPane(targetSide, targetPane.path),
+          refreshSource: () => refreshPaneIfAt(sourceSide, sourcePane.path),
+          refreshTarget: () => refreshPaneIfAt(targetSide, targetPane.path),
           overwriteApproved,
         });
       reportRejection(

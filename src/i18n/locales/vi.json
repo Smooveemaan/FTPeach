@@ -311,7 +311,7 @@
     "locationBusy": "Một thao tác khác đang sử dụng tệp hoặc thư mục này. Vui lòng thử lại sau khi thao tác đó hoàn tất.",
     "diskFull": "Không đủ dung lượng đĩa.",
     "hostKeyMismatch": "Khóa máy chủ (host key) đã thay đổi.",
-    "integrityMismatch": "Tệp đã truyền không vượt qua kiểm tra tính toàn vẹn.",
+    "integrityMismatch": "Các tệp đã thay đổi trong khi truyền hoặc không thể xác minh.",
     "cleanupIncomplete": "Chưa dọn dẹp xong. Các tệp không xác minh được quyền sở hữu đã được giữ lại. Hãy kiểm tra đích trước khi xóa thủ công.",
     "invalidInput": "Giá trị được cung cấp không hợp lệ.",
     "internal": "Đã xảy ra lỗi không mong muốn.",

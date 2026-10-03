@@ -116,8 +116,8 @@ function FileBrowserPane({
     clipboard.copySelectedWithConfirm(
       pane,
       otherPane,
-      () => browser.refreshPane(id, pane.path),
-      () => browser.refreshPane(otherId, otherPane.path),
+      () => browser.refreshPaneIfAt(id, pane.path),
+      () => browser.refreshPaneIfAt(otherId, otherPane.path),
     );
 
   return (

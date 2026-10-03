@@ -1729,7 +1729,11 @@ test('disconnecting settles every transfer on that connection, paused ones inclu
     assert.equal(getSnapshot()[running]?.status, 'stopped');
     assert.deepEqual(
       calls.cancel,
-      [{ connectionId: 'c1', id: getSnapshot()[running]?.attemptId, intent: 'stop' }],
+      [
+        { connectionId: 'c1', id: getSnapshot()[running]?.attemptId, intent: 'stop' },
+        // The paused download's partial goes with the stop.
+        { connectionId: 'c1', id: 'pausedDownload', intent: 'stop' },
+      ],
       'a teardown never asks the backend to keep staging it is about to delete',
     );
     assert.equal(

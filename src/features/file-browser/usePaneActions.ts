@@ -68,6 +68,7 @@ interface PaneActionsOptions {
     | 'paneJoin'
     | 'navigatePane'
     | 'refreshPane'
+    | 'refreshPaneIfAt'
     | 'canCopyBetween'
     | 'confirmOverwriteIfNeeded'
     | 'deletePaneSelected'
@@ -135,6 +136,7 @@ export function usePaneActions({
     paneJoin,
     navigatePane,
     refreshPane,
+    refreshPaneIfAt,
     canCopyBetween,
     confirmOverwriteIfNeeded,
     deletePaneSelected,
@@ -223,7 +225,7 @@ export function usePaneActions({
                   targetPane: otherPane,
                   names: approved,
                   move: false,
-                  refreshTarget: () => refreshPane(otherId, otherPane.path),
+                  refreshTarget: () => refreshPaneIfAt(otherId, otherPane.path),
                   overwriteApproved,
                 }),
               acted,

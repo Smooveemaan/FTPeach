@@ -253,6 +253,48 @@ test('switching a pane away from local aborts its listing and clears the spinner
   unmount();
 });
 
+test('a transfer refresh leaves a pane the user browsed away from, and keeps the selection', async () => {
+  const tab = makeTab('follow');
+  tab.panes.b.kind = 'remote';
+  tab.panes.b.connectionId = 'session';
+  tab.panes.b.status = 'connected';
+  tab.panes.b.path = '/upload';
+  tab.panes.b.selected = new Set(['kept', 'gone']);
+  const list = vi
+    .fn()
+    .mockResolvedValue({ ok: true, entries: [{ name: 'kept' }, { name: 'new' }] });
+  window.api = { session: { list } } as unknown as Window['api'];
+  const updatePane = vi.fn();
+  const { result, rerender } = renderHook(
+    ({ panes }) =>
+      usePaneRefresh({
+        panes,
+        activeTabId: tab.id,
+        updatePane,
+        reportError: vi.fn(),
+        setErrorMessage: vi.fn(),
+        defaultLocalPath: '',
+      }),
+    { initialProps: { panes: tab.panes } },
+  );
+  const refresh = result.current.refreshPaneIfAt;
+  await act(async () => {
+    await refresh('b', '/upload');
+  });
+  expect(updatePane).toHaveBeenLastCalledWith(
+    'b',
+    expect.objectContaining({ path: '/upload', selected: new Set(['kept']) }),
+    tab.id,
+  );
+  // The user went into another folder while the transfer kept reporting.
+  rerender({ panes: { ...tab.panes, b: { ...tab.panes.b, path: '/upload/many' } } });
+  list.mockClear();
+  await act(async () => {
+    await refresh('b', '/upload');
+  });
+  expect(list).not.toHaveBeenCalled();
+});
+
 test('a listing that works clears only the error a failed listing put up', async () => {
   const tab = makeTab('tab');
   tab.panes.b.kind = 'remote';

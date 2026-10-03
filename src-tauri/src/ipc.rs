@@ -255,6 +255,8 @@ impl CommandError {
             ErrorKind::AlreadyExists => ErrorCode::AlreadyExists,
             ErrorKind::StorageFull => ErrorCode::StorageFull,
             ErrorKind::ResourceBusy => ErrorCode::FileInUse,
+            // A typed path the system cannot read as one, such as a quoted one.
+            ErrorKind::InvalidFilename => ErrorCode::InvalidInput,
             ErrorKind::NetworkDown | ErrorKind::NetworkUnreachable | ErrorKind::HostUnreachable => {
                 ErrorCode::NetworkUnreachable
             }
@@ -545,6 +547,8 @@ mod tests {
             // ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS
             (80, ErrorCode::AlreadyExists),
             (183, ErrorCode::AlreadyExists),
+            // ERROR_INVALID_NAME
+            (123, ErrorCode::InvalidInput),
             // WSAENETDOWN, WSAENETUNREACH, WSAEHOSTUNREACH
             (10050, ErrorCode::NetworkUnreachable),
             (10051, ErrorCode::NetworkUnreachable),

@@ -311,7 +311,7 @@
     "locationBusy": "Egy másik művelet már használja ezt a fájlt vagy mappát. Próbálja újra, ha befejeződött.",
     "diskFull": "Nincs elegendő lemezterület.",
     "hostKeyMismatch": "A szerver gazdagépkulcsa megváltozott.",
-    "integrityMismatch": "Az átvitt fájl nem felelt meg az integritás-ellenőrzésen.",
+    "integrityMismatch": "A fájlok megváltoztak az átvitel közben, vagy nem sikerült ellenőrizni őket.",
     "cleanupIncomplete": "A tisztítás nem teljes. A nem igazolható eredetű fájlok megmaradtak. Kézi törlés előtt ellenőrizze a célhelyet.",
     "invalidInput": "A megadott érték érvénytelen.",
     "internal": "Váratlan hiba történt.",

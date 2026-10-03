@@ -112,6 +112,11 @@ pub async fn resolve(
         Restart::SourceChanged
     } else {
         match verify_overlap(sessions, key, &entry, local_path, now.size()).await {
+            Ok(Some(0)) => {
+                // Starting over is all there is to do; an empty staging file goes.
+                remove_staging(sessions, &key.connection_id, &entry.staging_path).await;
+                return None;
+            }
             Ok(Some(offset)) => {
                 log_event(
                     sessions,
@@ -198,12 +203,18 @@ async fn verify_overlap_inner(
     let session = guard
         .as_mut()
         .ok_or_else(|| anyhow::anyhow!("the connection is gone"))?;
-    let Some(offset) = session.browse_client.known_size(&entry.staging_path).await else {
-        return Ok(None);
-    };
-    // Nothing worth resuming, and a staging file longer than its own source
-    // cannot be a prefix of it.
-    if offset == 0 || offset > local_size {
+    // Nothing reached the server before the pause: nothing to resume, and
+    // nothing that disagrees with the source either.
+    let offset = session
+        .browse_client
+        .known_size(&entry.staging_path)
+        .await
+        .unwrap_or(0);
+    if offset == 0 {
+        return Ok(Some(0));
+    }
+    // A staging file longer than its own source cannot be a prefix of it.
+    if offset > local_size {
         return Ok(None);
     }
     // `at + window == offset`, which is the staging file's length, so the range

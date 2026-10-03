@@ -34,7 +34,10 @@ pub(crate) fn disposition(file: &File) -> Result<()> {
 }
 
 fn publish(file: &File, destination: &Path, overwrite: bool) -> Result<()> {
-    let name: Vec<u16> = destination.as_os_str().encode_wide().collect();
+    let name: Vec<u16> = super::long_path(destination)?
+        .as_os_str()
+        .encode_wide()
+        .collect();
     let length = std::mem::offset_of!(FILE_RENAME_INFO, FileName) + (name.len() + 1) * 2;
     let mut storage = vec![0u64; length.div_ceil(8)];
     let info = storage.as_mut_ptr().cast::<FILE_RENAME_INFO>();

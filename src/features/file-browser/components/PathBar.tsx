@@ -98,7 +98,11 @@ export default function PathBar({
     setEditing(true);
   };
   const commit = () => {
-    const nextValue = value.trim();
+    // Explorer's "Copy as path" wraps the path in quotes.
+    const nextValue = value
+      .trim()
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
     setEditing(false);
     if (nextValue) onPathSubmit?.(nextValue);
   };

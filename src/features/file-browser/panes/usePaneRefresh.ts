@@ -32,6 +32,12 @@ export interface PaneRefreshModel {
     paneOverride?: PaneState,
     tabId?: string,
   ) => Promise<CommandResult | void>;
+  /**
+   * Lists a pane again if it still shows `path` on the tab that was active
+   * when this was made. A transfer that reports or ends after the user browsed
+   * elsewhere leaves the pane where it is.
+   */
+  refreshPaneIfAt: (id: PaneId, path: string) => Promise<CommandResult | void>;
   ensureRequestIds: (tabId: string) => Record<PaneId, number>;
   requestIdsRef: MutableRefObject<PaneRequestIds>;
   inFlightRefreshesRef: MutableRefObject<PaneRefreshes>;
@@ -139,7 +145,15 @@ export function usePaneRefresh({
               loading: false,
               ...(nextPath === undefined ? {} : { path: nextPath }),
               entries: result.entries,
-              selected: new Set(),
+              // Listing the same folder again keeps what is still there selected.
+              selected:
+                (nextPath ?? pane.path) === pane.path
+                  ? new Set(
+                      result.entries
+                        .map((entry) => entry.name)
+                        .filter((name) => pane.selected.has(name)),
+                    )
+                  : new Set(),
               refreshedAt: Date.now(),
             },
             tabId,
@@ -190,5 +204,17 @@ export function usePaneRefresh({
     ],
   );
 
-  return { refreshPane, ensureRequestIds, requestIdsRef, inFlightRefreshesRef };
+  const latestRef = useRef({ tabId: activeTabId, panes });
+  latestRef.current = { tabId: activeTabId, panes };
+  const refreshPaneIfAt = useCallback(
+    (id: PaneId, path: string) => {
+      const latest = latestRef.current;
+      const pane = latest.panes[id];
+      if (latest.tabId !== activeTabId || pane.path !== path) return Promise.resolve();
+      return refreshPane(id, path, pane, activeTabId);
+    },
+    [activeTabId, refreshPane],
+  );
+
+  return { refreshPane, refreshPaneIfAt, ensureRequestIds, requestIdsRef, inFlightRefreshesRef };
 }

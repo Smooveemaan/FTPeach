@@ -319,7 +319,7 @@
     "locationBusy": "S tímto souborem nebo složkou už pracuje jiná operace. Zkuste to znovu, až skončí.",
     "diskFull": "Nedostatek místa na disku.",
     "hostKeyMismatch": "Klíč hostitele serveru se změnil.",
-    "integrityMismatch": "Přenesený soubor neprošel kontrolou integrity.",
+    "integrityMismatch": "Soubory se během přenosu změnily nebo je nebylo možné ověřit.",
     "cleanupIncomplete": "Úklid není dokončen. Soubory, jejichž příslušnost nebylo možné ověřit, byly zachovány. Před ručním odstraněním zkontrolujte cíl.",
     "invalidInput": "Zadaná hodnota není platná.",
     "internal": "Došlo k neočekávané chybě.",

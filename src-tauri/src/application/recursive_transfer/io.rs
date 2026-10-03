@@ -9,6 +9,7 @@ use crate::session::Sessions;
 use crate::transfer::progress::ProgressEmitter;
 use anyhow::{Context, Result};
 use std::{
+    collections::HashMap,
     path::Path,
     sync::{
         Arc,
@@ -88,13 +89,16 @@ pub(super) async fn listing(
                         let settled = tokio::time::timeout(STOPPED_LISTING_GRACE, &mut listing).await;
                         (
                             Err(CommandError::new(ErrorCode::Cancelled, "Recursive scan cancelled").into()),
-                            matches!(settled, Ok(Ok(Ok(_)))),
+                            matches!(settled, Ok(Ok(_))),
                         )
                     }
-                    result = &mut listing => {
-                        let result = result.map_err(anyhow::Error::from).and_then(|r| r);
-                        let reusable = result.is_ok();
-                        (result, reusable)
+                    // Only a listing cut off mid-reply spoils the connection. A
+                    // complete refusal, such as a folder that is gone, leaves it
+                    // as the backend left it; dropped, the pane lost its
+                    // connection over a folder someone deleted.
+                    result = &mut listing => match result {
+                        Ok(result) => (result, true),
+                        Err(elapsed) => (Err(elapsed.into()), false),
                     }
                 }
             };
@@ -152,18 +156,22 @@ pub(super) async fn remote_task(
 
 /// Makes one target directory, answering whether this call created it rather
 /// than finding it already there. On a server it waits its turn like a
-/// transfer, and `on_dispatch` is called when that turn comes.
+/// transfer, and `on_dispatch` is called when that turn comes. A parent the
+/// caller has just made itself is not listed first: nothing can be in it yet.
 pub(super) async fn mkdir(
     sessions: &Sessions,
     target: &Endpoint,
     relative: &str,
+    fresh_parent: bool,
     token: &CancellationToken,
     on_dispatch: impl FnOnce() + Send + 'static,
 ) -> Result<bool> {
     let path = target.path(relative);
     match target {
         Endpoint::Local { .. } => {
-            let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
+            // Shared, as a download holds it: making a folder moves and removes
+            // nothing, so only moves and removals need keeping out.
+            let _guard = tokio::select! { guard = mutations::guard().read() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
             safety::validate_write_destination(Path::new(&path)).await?;
             safety::ensure_path_no_reparse_points_now(Path::new(&path))?;
             let existed = tokio::fs::symlink_metadata(&path).await.is_ok();
@@ -188,17 +196,20 @@ pub(super) async fn mkdir(
                                 return Ok(());
                             }
                             let (parent, name) = trimmed.rsplit_once('/').unwrap_or(("/", trimmed));
-                            let entries = backend
-                                .list(if parent.is_empty() { "/" } else { parent })
-                                .await?;
-                            crate::protocol::validate_listing(&entries)?;
-                            if let Some(existing) = entries.iter().find(|entry| entry.name == name)
-                            {
-                                anyhow::ensure!(
-                                    existing.is_directory,
-                                    "Destination directory is occupied by a file: {path}"
-                                );
-                                return Ok(());
+                            if !fresh_parent {
+                                let entries = backend
+                                    .list(if parent.is_empty() { "/" } else { parent })
+                                    .await?;
+                                crate::protocol::validate_listing(&entries)?;
+                                if let Some(existing) =
+                                    entries.iter().find(|entry| entry.name == name)
+                                {
+                                    anyhow::ensure!(
+                                        existing.is_directory,
+                                        "Destination directory is occupied by a file: {path}"
+                                    );
+                                    return Ok(());
+                                }
                             }
                             let made = backend.mkdir(&path).await;
                             created_by_task.store(made.is_ok(), Ordering::SeqCst);
@@ -222,7 +233,8 @@ async fn copy_local(
     overwrite: bool,
     token: &CancellationToken,
 ) -> Result<()> {
-    let _guard = tokio::select! { guard = mutations::guard().write() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
+    // Shared, as a download holds it: the copy only writes its own new file.
+    let _guard = tokio::select! { guard = mutations::guard().read() => guard, _ = token.cancelled() => { check_cancel(token)?; unreachable!() } };
     let source = Path::new(source);
     let target = Path::new(target);
     safety::validate_copy_relationship(source, target)?;
@@ -312,45 +324,72 @@ pub(super) enum Stamp {
     Remote { size: u64, modified: String },
 }
 
-pub(super) async fn stamp(
+pub(super) fn stamp_local(endpoint: &Endpoint, relative: &str) -> Result<Stamp> {
+    let receipt = super::identity::capture(Path::new(&endpoint.path(relative)))?;
+    anyhow::ensure!(!receipt.directory, "Destination is no longer a file");
+    Ok(Stamp::Local(receipt))
+}
+
+/// What each of `relatives` holds on `endpoint` now. A name that is gone, is
+/// no longer a file or cannot be read is left out. A server's folder is listed
+/// once for all of its names: a listing per file made a walk through a folder
+/// of thousands of files quadratic.
+pub(super) async fn stamps<'a>(
     sessions: &Sessions,
     endpoint: &Endpoint,
-    relative: &str,
+    relatives: impl IntoIterator<Item = &'a String>,
     token: &CancellationToken,
-) -> Result<Stamp> {
+) -> Result<HashMap<String, Stamp>> {
     check_cancel(token)?;
-    match endpoint {
-        Endpoint::Local { .. } => {
-            let receipt = super::identity::capture(Path::new(&endpoint.path(relative)))?;
-            anyhow::ensure!(!receipt.directory, "Destination is no longer a file");
-            Ok(Stamp::Local(receipt))
+    let mut found = HashMap::new();
+    let Endpoint::Remote { connection_id, .. } = endpoint else {
+        for relative in relatives {
+            if let Ok(stamp) = stamp_local(endpoint, relative) {
+                found.insert(relative.clone(), stamp);
+            }
         }
-        Endpoint::Remote { connection_id, .. } => {
-            let path = endpoint.path(relative);
-            let (parent, name) = path.rsplit_once('/').context("Invalid remote file path")?;
-            let parent = Endpoint::Remote {
-                connection_id: connection_id.clone(),
-                path: if parent.is_empty() {
-                    "/".into()
-                } else {
-                    parent.into()
-                },
-            };
-            let entries = listing(sessions, &parent, "", token).await?;
-            let entry = entries
-                .iter()
-                .find(|entry| entry.name == name)
-                .context("Destination disappeared")?;
-            anyhow::ensure!(!entry.is_directory, "Destination is no longer a file");
-            Ok(Stamp::Remote {
-                size: entry.size,
-                modified: entry
-                    .modified_at
-                    .clone()
-                    .context("Destination has no verifiable modification metadata")?,
-            })
+        return Ok(found);
+    };
+    let mut folders: HashMap<String, Vec<(&String, String)>> = HashMap::new();
+    for relative in relatives {
+        let path = endpoint.path(relative);
+        if let Some((parent, name)) = path.rsplit_once('/') {
+            let parent = if parent.is_empty() { "/" } else { parent };
+            folders
+                .entry(parent.to_owned())
+                .or_default()
+                .push((relative, name.to_owned()));
         }
     }
+    for (parent, names) in folders {
+        let parent = Endpoint::Remote {
+            connection_id: connection_id.clone(),
+            path: parent,
+        };
+        let Ok(entries) = listing(sessions, &parent, "", token).await else {
+            check_cancel(token)?;
+            continue;
+        };
+        let entries: HashMap<&str, &EntryInfo> = entries
+            .iter()
+            .map(|entry| (entry.name.as_str(), entry))
+            .collect();
+        for (relative, name) in names {
+            if let Some(entry) = entries.get(name.as_str())
+                && !entry.is_directory
+                && let Some(modified) = &entry.modified_at
+            {
+                found.insert(
+                    relative.clone(),
+                    Stamp::Remote {
+                        size: entry.size,
+                        modified: modified.clone(),
+                    },
+                );
+            }
+        }
+    }
+    Ok(found)
 }
 
 pub(super) async fn remove_created(

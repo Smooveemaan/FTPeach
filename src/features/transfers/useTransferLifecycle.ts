@@ -678,7 +678,11 @@ export function useTransferLifecycle(
         // what it wrote instead of keeping it.
         await api.transfer.cancelRecursive(attemptId, 'stop');
       }
-    } else if (wasRunning) {
+    } else if (
+      wasRunning ||
+      // Nothing runs, but the pause kept a partial file that a stop takes back.
+      (intent === 'stopped' && current.status === 'paused' && current.direction === 'down')
+    ) {
       if (current.direction === 'copy') {
         await api.transfer.cancelRemoteCopy(
           current.sourceConnectionId,

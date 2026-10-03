@@ -410,11 +410,17 @@ pub async fn transfer_download(
             error.to_string(),
         ));
     }
-    run_pool_task(
+    // An attempt carrying on from a pause now owns what that pause kept.
+    PAUSED_DOWNLOADS
+        .lock()
+        .unwrap()
+        .retain(|_, kept| *kept != local);
+    let destination = local.clone();
+    let result = run_pool_task(
         sessions,
         progress,
         connection_id,
-        transfer_id,
+        transfer_id.clone(),
         &remote_path.clone(),
         move |sink| {
             Box::new(move |backend| {
@@ -434,8 +440,32 @@ pub async fn transfer_download(
             })
         },
     )
-    .await
+    .await;
+    // A pause keeps the partial for the next attempt; a stop leaves nothing.
+    // Any other failure keeps it too: a retry carries on from it.
+    let paused = upload_resume::take_pause_mark(&transfer_id);
+    if result
+        .as_ref()
+        .is_err_and(|error| error.code == ErrorCode::Cancelled)
+    {
+        if paused {
+            let mut paused = PAUSED_DOWNLOADS.lock().unwrap();
+            if paused.len() >= crate::transfer::upload_staging::MARK_CAP {
+                paused.clear();
+            }
+            paused.insert(transfer_id, destination);
+        } else {
+            crate::protocol::transfer_file::discard(&destination).await;
+        }
+    }
+    result
 }
+
+/// Paused downloads by attempt, so a stop that comes later can still take
+/// back what the pause kept.
+static PAUSED_DOWNLOADS: std::sync::LazyLock<
+    std::sync::Mutex<std::collections::HashMap<String, PathBuf>>,
+> = std::sync::LazyLock::new(Default::default);
 
 /// Why a transfer is being cancelled. The pool cancels a task the same way
 /// either way; the difference is what the aborted transfer is allowed to leave
@@ -457,6 +487,13 @@ pub async fn transfer_cancel(
     // guaranteed to observe the mark when it unwinds.
     if intent == CancelIntent::Pause {
         upload_resume::mark_paused(&transfer_id);
+    }
+    // A stop after a pause: nothing runs, but the pause kept a partial.
+    let kept = (intent == CancelIntent::Stop)
+        .then(|| PAUSED_DOWNLOADS.lock().unwrap().remove(&transfer_id))
+        .flatten();
+    if let Some(destination) = kept {
+        crate::protocol::transfer_file::discard(&destination).await;
     }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
         return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));

@@ -311,7 +311,7 @@
     "locationBusy": "Een andere bewerking werkt al met dit bestand of deze map. Probeer het opnieuw zodra die klaar is.",
     "diskFull": "Onvoldoende schijfruimte.",
     "hostKeyMismatch": "De hostsleutel van de server is gewijzigd.",
-    "integrityMismatch": "Het overgedragen bestand heeft de integriteitscontrole niet doorstaan.",
+    "integrityMismatch": "De bestanden zijn tijdens de overdracht gewijzigd of konden niet worden gecontroleerd.",
     "cleanupIncomplete": "Het opruimen is onvolledig. Bestanden waarvan het eigendom niet kon worden geverifieerd, zijn behouden. Controleer de bestemming voordat je ze handmatig verwijdert.",
     "invalidInput": "De opgegeven waarde is ongeldig.",
     "internal": "Er is een onverwachte fout opgetreden.",

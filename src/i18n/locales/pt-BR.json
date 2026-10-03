@@ -315,7 +315,7 @@
     "locationBusy": "Outra operação já está usando este arquivo ou pasta. Tente novamente quando ela terminar.",
     "diskFull": "Espaço em disco insuficiente.",
     "hostKeyMismatch": "A chave de host do servidor foi alterada.",
-    "integrityMismatch": "O arquivo transferido falhou na verificação de integridade.",
+    "integrityMismatch": "Os arquivos foram alterados durante a transferência ou não puderam ser verificados.",
     "cleanupIncomplete": "A limpeza está incompleta. Os arquivos cuja origem não pôde ser verificada foram mantidos. Verifique o destino antes de removê-los manualmente.",
     "invalidInput": "O valor fornecido é inválido.",
     "internal": "Ocorreu um erro inesperado.",

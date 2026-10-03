@@ -311,7 +311,7 @@
     "locationBusy": "Operasi lain sedang menggunakan file atau folder ini. Coba lagi setelah operasi itu selesai.",
     "diskFull": "Ruang disk tidak cukup.",
     "hostKeyMismatch": "Kunci host server telah berubah.",
-    "integrityMismatch": "File yang ditransfer gagal dalam pemeriksaan integritas.",
+    "integrityMismatch": "File berubah selama transfer atau tidak dapat diverifikasi.",
     "cleanupIncomplete": "Pembersihan belum selesai. File yang kepemilikannya tidak dapat diverifikasi tetap disimpan. Periksa tujuan sebelum menghapusnya secara manual.",
     "invalidInput": "Nilai yang diberikan tidak valid.",
     "internal": "Terjadi kesalahan yang tidak terduga.",

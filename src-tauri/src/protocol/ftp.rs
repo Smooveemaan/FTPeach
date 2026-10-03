@@ -1313,11 +1313,24 @@ impl FtpBackend {
     /// Removes a tree depth-first from an explicit stack, so a deep folder
     /// costs memory for its path list rather than nested futures.
     async fn remove_tree(&mut self, root: &str) -> BackendResult<()> {
-        let mut stack = vec![(root.to_string(), 0, false)];
-        while let Some((path, depth, emptied)) = stack.pop() {
-            if emptied {
-                self.with_stream(move |s| Box::pin(async move { Ok(s.rmdir(&path).await?) }))
-                    .await?;
+        // How many entries the folder's last listing held, once it was listed.
+        let mut stack = vec![(root.to_string(), 0, None)];
+        while let Some((path, depth, listed)) = stack.pop() {
+            if let Some(listed) = listed {
+                let folder = path.clone();
+                match self
+                    .with_stream(move |s| Box::pin(async move { Ok(s.rmdir(&folder).await?) }))
+                    .await
+                {
+                    Ok(()) => {}
+                    // A server that caps its listings (pure-ftpd stops at 10 000
+                    // lines) showed only part of a big folder. While a pass still
+                    // finds something to delete, list what is left and go on.
+                    Err(error) if listed > 0 && refused_by_server(&error) => {
+                        stack.push((path, depth, None));
+                    }
+                    Err(error) => return Err(error),
+                }
                 continue;
             }
             if !remote_remove_depth_allowed(depth) {
@@ -1326,11 +1339,11 @@ impl FtpBackend {
                 ));
             }
             let entries = self.list_for_recursive(&path).await?;
-            stack.push((path.clone(), depth, true));
+            stack.push((path.clone(), depth, Some(entries.len())));
             for entry in entries {
                 let child = format!("{}/{}", path.trim_end_matches('/'), entry.name);
                 if entry.is_directory {
-                    stack.push((child, depth + 1, false));
+                    stack.push((child, depth + 1, None));
                 } else {
                     self.remove_file(&child).await?;
                 }

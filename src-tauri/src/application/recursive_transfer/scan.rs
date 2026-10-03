@@ -9,6 +9,7 @@ use tokio_util::sync::CancellationToken;
 pub(super) async fn scan(
     sessions: &Sessions,
     source: &Endpoint,
+    skip_artifacts: bool,
     token: &CancellationToken,
 ) -> Result<Manifest> {
     let mut manifest = Manifest::default();
@@ -34,6 +35,15 @@ pub(super) async fn scan(
                 .with_context(|| source.path(&parent))?
             {
                 check_cancel(token)?;
+                // Another transfer's working files, such as a paused upload's
+                // staging, are not part of the folder and are not copied with
+                // it. A move takes them along: the folder must end up empty.
+                if skip_artifacts
+                    && !child.is_directory
+                    && crate::protocol::transfer_file::is_artifact_name(&child.name)
+                {
+                    continue;
+                }
                 anyhow::ensure!(
                     crate::security::connection_guard::is_safe_path_segment(&child.name),
                     "Unsafe recursive entry name"

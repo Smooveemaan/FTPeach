@@ -9,6 +9,11 @@
 use anyhow::Context;
 use std::path::{Component, Path, PathBuf};
 
+/// A refusal the user is told about as one, rather than as an unexpected error.
+fn refused(message: &str) -> anyhow::Error {
+    crate::ipc::CommandError::new(crate::ipc::ErrorCode::PermissionDenied, message).into()
+}
+
 const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
 
 pub(crate) fn is_filesystem_root(path: &Path) -> bool {
@@ -211,14 +216,19 @@ fn protected_paths() -> Vec<PathBuf> {
         .collect()
 }
 
-fn app_owned_paths() -> Vec<PathBuf> {
-    app_owned_paths_for(
-        std::env::var_os("APPDATA").map(PathBuf::from),
-        std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
-        std::env::current_exe()
-            .ok()
-            .and_then(|exe| exe.parent().map(Path::to_path_buf)),
-    )
+/// Resolved once: they stay put while the program runs, and resolving them
+/// for every check cost a folder of small files milliseconds per file.
+fn app_owned_paths() -> &'static [PathBuf] {
+    static PATHS: std::sync::OnceLock<Vec<PathBuf>> = std::sync::OnceLock::new();
+    PATHS.get_or_init(|| {
+        app_owned_paths_for(
+            std::env::var_os("APPDATA").map(PathBuf::from),
+            std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
+            std::env::current_exe()
+                .ok()
+                .and_then(|exe| exe.parent().map(Path::to_path_buf)),
+        )
+    })
 }
 
 /// The downloaded update waits under the local app data; file operations
@@ -284,7 +294,9 @@ fn is_portable_working_copy(path: &Path, portable_root: Option<&Path>) -> bool {
 pub(crate) async fn validate_read_source(path: &Path) -> anyhow::Result<()> {
     let canonical = resolved_path(path)?;
     if is_app_owned(&canonical) {
-        anyhow::bail!("Refusing to read from the application or FTPeach data directory");
+        return Err(refused(
+            "Refusing to read from the application or FTPeach data directory",
+        ));
     }
     Ok(())
 }
@@ -292,7 +304,9 @@ pub(crate) async fn validate_read_source(path: &Path) -> anyhow::Result<()> {
 pub(crate) async fn validate_write_destination(path: &Path) -> anyhow::Result<()> {
     let absolute = resolved_path(path)?;
     if is_app_owned(&absolute) {
-        anyhow::bail!("Refusing to modify the application or FTPeach data directory");
+        return Err(refused(
+            "Refusing to modify the application or FTPeach data directory",
+        ));
     }
     Ok(())
 }
@@ -325,7 +339,9 @@ pub(crate) fn ensure_path_no_reparse_points_now(path: &Path) -> anyhow::Result<(
         }
         match component_metadata_no_follow(&current) {
             Ok(metadata) if is_reparse_point(&metadata) => {
-                anyhow::bail!("Refusing to traverse a symbolic link, junction, or reparse point")
+                return Err(refused(
+                    "Refusing to traverse a symbolic link, junction, or reparse point",
+                ));
             }
             Ok(_) => {}
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
@@ -374,7 +390,9 @@ pub(crate) async fn ensure_tree_has_no_reparse_points(root: &Path) -> anyhow::Re
     while let Some(path) = pending.pop() {
         let metadata = tokio::fs::symlink_metadata(&path).await?;
         if is_reparse_point(&metadata) {
-            anyhow::bail!("Refusing to delete a symbolic link, junction, or reparse point");
+            return Err(refused(
+                "Refusing to delete a symbolic link, junction, or reparse point",
+            ));
         }
         if !metadata.is_dir() {
             continue;
@@ -397,15 +415,19 @@ pub(crate) async fn validated_delete_target(
         Err(error) => return Err(error.into()),
     };
     if is_reparse_point(&metadata) {
-        anyhow::bail!("Refusing to delete a symbolic link, junction, or reparse point");
+        return Err(refused(
+            "Refusing to delete a symbolic link, junction, or reparse point",
+        ));
     }
 
     let canonical = tokio::fs::canonicalize(path).await?;
     if is_filesystem_root(&canonical) {
-        anyhow::bail!("Refusing to delete a filesystem root");
+        return Err(refused("Refusing to delete a filesystem root"));
     }
     if target_contains_protected_path(&canonical, &protected_paths()) || is_app_owned(&canonical) {
-        anyhow::bail!("Refusing to delete a protected application or user directory");
+        return Err(refused(
+            "Refusing to delete a protected application or user directory",
+        ));
     }
     if metadata.is_dir() {
         ensure_tree_has_no_reparse_points(&canonical).await?;

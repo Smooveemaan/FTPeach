@@ -92,7 +92,7 @@ test('friendlyError localizes every structured command error code', () => {
     notFound: 'File or folder not found.',
     permissionDenied: "You don't have permission for this operation.",
     cancelled: 'Cancelled by user',
-    integrityMismatch: 'The transferred file failed the integrity check.',
+    integrityMismatch: 'Files changed during the transfer or could not be verified.',
     cleanupIncomplete:
       'Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.',
     networkUnreachable: 'The server is unreachable — check your network connection.',

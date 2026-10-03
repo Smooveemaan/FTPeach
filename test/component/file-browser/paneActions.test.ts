@@ -23,6 +23,7 @@ function mocks(tab: ReturnType<typeof makeTab>) {
     paneJoin,
     navigatePane: vi.fn(),
     refreshPane: vi.fn(),
+    refreshPaneIfAt: vi.fn(),
     canCopyBetween: vi.fn(() => true),
     confirmOverwriteIfNeeded: vi.fn(),
     copyEntries: vi.fn(),
@@ -57,6 +58,7 @@ function actions(
       paneJoin: options.paneJoin,
       navigatePane: options.navigatePane,
       refreshPane: options.refreshPane,
+      refreshPaneIfAt: options.refreshPaneIfAt,
       canCopyBetween: options.canCopyBetween,
       confirmOverwriteIfNeeded: options.confirmOverwriteIfNeeded,
       deletePaneSelected: options.deletePaneSelected,
@@ -253,7 +255,7 @@ test.each(['a', 'b'] as const)(
       }),
     );
     options.copyEntries.mock.calls[0]![0].refreshTarget();
-    expect(options.refreshPane).toHaveBeenCalledWith(other, tab.panes[other].path);
+    expect(options.refreshPaneIfAt).toHaveBeenCalledWith(other, tab.panes[other].path);
   },
 );
 

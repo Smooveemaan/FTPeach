@@ -1155,6 +1155,8 @@ mod recursive_stop_tests {
         offers_mlst: bool,
         /// ...and MLSD is turned away all the same.
         refuses_mlsd: bool,
+        /// Lists no more than this many entries, as pure-ftpd stops at 10 000.
+        listing_cap: Option<usize>,
         denies_cwd: bool,
         refuses_size: bool,
         /// DELEs to refuse before honouring them again.
@@ -1238,7 +1240,8 @@ mod recursive_stop_tests {
 
         fn mlsd(&self, dir: &str) -> String {
             let mut listing = "type=cdir;modify=20181105000000; .\r\n".to_string();
-            for (name, size) in self.children(dir) {
+            let cap = self.listing_cap.unwrap_or(usize::MAX);
+            for (name, size) in self.children(dir).into_iter().take(cap) {
                 listing.push_str(&match size {
                     None => format!("type=dir;modify=20181105000000; {name}\r\n"),
                     Some(size) => {
@@ -2084,6 +2087,28 @@ mod recursive_stop_tests {
             .map(|entry| entry.name)
             .collect();
         assert_eq!(names, [".hidden"]);
+        backend.remove("/1", true).await.unwrap();
+        backend.disconnect().await.unwrap();
+        assert_nothing_left(&disk);
+    }
+
+    /// A folder bigger than the server will list goes all the same, a listing
+    /// at a time.
+    #[tokio::test]
+    async fn a_folder_bigger_than_one_listing_is_removed_whole() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let disk = disk(|disk| {
+            disk.listing_cap = Some(2);
+            disk.dirs.insert("/1".to_string());
+            for index in 0..5 {
+                disk.files.insert(format!("/1/f{index}"), b"x".to_vec());
+            }
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
         backend.remove("/1", true).await.unwrap();
         backend.disconnect().await.unwrap();
         assert_nothing_left(&disk);

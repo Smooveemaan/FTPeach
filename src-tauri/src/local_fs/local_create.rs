@@ -17,14 +17,16 @@ use std::path::{Path, PathBuf};
 pub(crate) struct NewEntry {
     path: PathBuf,
     _lease: Reservation,
-    _mutation: tokio::sync::RwLockWriteGuard<'static, ()>,
+    _mutation: tokio::sync::RwLockReadGuard<'static, ()>,
 }
 
 impl NewEntry {
     pub(crate) async fn reserve(path: &Path) -> Result<Self> {
         // Busy is reported before waiting for other mutations to finish.
         let lease = Reservation::acquire(&path.to_string_lossy())?;
-        let mutation = crate::local_fs::mutations::guard().write().await;
+        // Shared, as a download holds it: making an entry moves and removes
+        // nothing, so it need not wait for downloads, only keep moves out.
+        let mutation = crate::local_fs::mutations::guard().read().await;
         let entry = Self {
             path: path.to_path_buf(),
             _lease: lease,
@@ -135,10 +137,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn the_mutation_lock_is_held_until_the_entry_exists() {
+    async fn moves_are_kept_out_until_the_entry_exists() {
         let root = scratch();
         let entry = NewEntry::reserve(&root.join("x")).await.unwrap();
-        assert!(crate::local_fs::mutations::guard().try_read().is_err());
+        assert!(crate::local_fs::mutations::guard().try_write().is_err());
         drop(entry);
         std::fs::remove_dir_all(root).unwrap();
     }

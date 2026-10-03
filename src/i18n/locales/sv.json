@@ -311,7 +311,7 @@
     "locationBusy": "En annan åtgärd arbetar redan med den här filen eller mappen. Försök igen när den är klar.",
     "diskFull": "Det finns inte tillräckligt med diskutrymme.",
     "hostKeyMismatch": "Serverns värdnyckel har ändrats.",
-    "integrityMismatch": "Den överförda filen klarade inte integritetskontrollen.",
+    "integrityMismatch": "Filerna ändrades under överföringen eller kunde inte kontrolleras.",
     "cleanupIncomplete": "Rensningen är ofullständig. Filer vars tillhörighet inte kunde verifieras behölls. Kontrollera målet innan du tar bort dem manuellt.",
     "invalidInput": "Det angivna värdet är ogiltigt.",
     "internal": "Ett oväntat fel inträffade.",

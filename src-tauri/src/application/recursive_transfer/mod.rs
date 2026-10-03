@@ -6,7 +6,7 @@ mod manifest;
 mod model;
 mod scan;
 
-use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp};
+use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp_local, stamps};
 use self::journal::{Journal, Paused};
 use self::manifest::Entry;
 use self::model::check_cancel;
@@ -148,6 +148,7 @@ async fn wind_down(
 ) {
     journal.operation_id = intent.id.clone();
     journal.staging.clear();
+    journal.staged.clear();
     if let Some(relative) = &journal.in_flight {
         match &intent.target {
             Endpoint::Remote { connection_id, .. } => {
@@ -159,16 +160,41 @@ async fn wind_down(
                     .staging
                     .extend(crate::transfer::upload_staging::staged_path(&key));
             }
-            Endpoint::Local { .. } => journal.staging.extend(
-                crate::protocol::transfer_file::retained_paths(Path::new(
+            Endpoint::Local { .. } => {
+                // The stopped download has just let go of these, so this is
+                // still what it wrote, as a delivered file's receipt is.
+                for path in crate::protocol::transfer_file::retained_paths(Path::new(
                     &intent.target.path(relative),
-                ))
-                .iter()
-                .map(|path| path.to_string_lossy().into_owned()),
-            ),
+                )) {
+                    let text = path.to_string_lossy().into_owned();
+                    if let Ok(receipt) = identity::capture(&path) {
+                        journal.staged.insert(text.clone(), receipt);
+                    }
+                    journal.staging.push(text);
+                }
+            }
         }
     }
     if pause {
+        // What the walk delivered to a server is stamped here, one listing per
+        // folder; a listing after every file made big folders crawl. A file
+        // left unstamped fails the resume's check rather than being trusted.
+        let unstamped: Vec<String> = journal
+            .done
+            .keys()
+            .filter(|relative| !journal.targets.contains_key(*relative))
+            .cloned()
+            .collect();
+        if let Ok(found) = stamps(
+            sessions,
+            &intent.target,
+            &unstamped,
+            &CancellationToken::new(),
+        )
+        .await
+        {
+            journal.targets.extend(found);
+        }
         match journal::keep(
             intent.id.clone(),
             Paused {
@@ -337,7 +363,7 @@ async fn run_inner(
         leases.push(reserve(sessions, &intent.source, source_access).await?);
         // The walk has its turn: the row stops saying it is queued.
         status_notice(progress, &intent, "progress")();
-        let mut manifest = scan(sessions, &intent.source, &token).await?;
+        let mut manifest = scan(sessions, &intent.source, !intent.moving, &token).await?;
         let mut source_directories = HashMap::new();
         if intent.moving {
             for entry in manifest.entries.iter().filter(|entry| entry.directory) {
@@ -346,9 +372,9 @@ async fn run_inner(
         }
         // Validate every old destination before allowing skips or overwrites,
         // including when the source changed and needs to be copied again.
+        let current = stamps(sessions, &intent.target, journal.done.keys(), &token).await?;
         for relative in journal.done.keys() {
-            let current = stamp(sessions, &intent.target, relative, &token).await;
-            anyhow::ensure!(current.as_ref().is_ok_and(|current| journal.targets.get(relative) == Some(current) && match current { Stamp::Local(receipt) => receipt.verified(), Stamp::Remote { .. } => true }),
+            anyhow::ensure!(current.get(relative).is_some_and(|current| journal.targets.get(relative) == Some(current)),
                 CommandError::new(ErrorCode::IntegrityMismatch, format!("Destination changed or cannot be verified; resolve the conflict before restarting: {}", intent.target.path(relative))));
         }
         report.scanned = manifest.entries.len();
@@ -367,13 +393,18 @@ async fn run_inner(
         let mut existing_targets = HashSet::new();
         let mut conflict_bytes = 0usize;
         let target_key = |relative: &str| if matches!(intent.target, Endpoint::Local { .. }) { relative.to_lowercase() } else { relative.to_owned() };
+        // Folders this attempt made: one an earlier attempt made may already hold more.
+        let mut made_now = HashSet::new();
         for entry in manifest.entries.iter().filter(|e| e.directory) {
             check_cancel(&token)?;
             // A folder made on a server waits its turn like a file sent there.
             if matches!(intent.target, Endpoint::Remote { .. }) { status_notice(progress, &intent, "queued")(); }
-            let created = mkdir(sessions, &intent.target, &entry.relative, &token, status_notice(progress, &intent, "progress")).await.with_context(|| intent.target.path(&entry.relative))?;
+            let parent = entry.relative.rsplit_once('/').map_or("", |(parent, _)| parent);
+            let fresh_parent = !entry.relative.is_empty() && made_now.contains(parent);
+            let created = mkdir(sessions, &intent.target, &entry.relative, fresh_parent, &token, status_notice(progress, &intent, "progress")).await.with_context(|| intent.target.path(&entry.relative))?;
             wrote_target = true;
             if created {
+                made_now.insert(entry.relative.as_str());
                 journal.created_dirs.insert(entry.relative.clone());
                 if matches!(intent.target, Endpoint::Local { .. }) {
                     journal.directories.insert(entry.relative.clone(), identity::capture(Path::new(&intent.target.path(&entry.relative)))?);
@@ -425,7 +456,7 @@ async fn run_inner(
             check_cancel(&token)?;
             if delivered(&journal, entry) {
                 if let Some(expected) = journal.sources.get(&entry.relative) {
-                    anyhow::ensure!(expected.verified() && identity::capture(Path::new(&intent.source.path(&entry.relative)))? == *expected,
+                    anyhow::ensure!(identity::capture(Path::new(&intent.source.path(&entry.relative)))? == *expected,
                         CommandError::new(ErrorCode::IntegrityMismatch, "Source identity changed while paused; restart the operation"));
                 }
                 report.completed += 1;
@@ -463,6 +494,12 @@ async fn run_inner(
             // transfer slot. The row says so until the file's own notice that
             // it has started, which the aggregate passes on.
             if !matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. })) { status_notice(progress, &intent, "queued")(); }
+            // Whether a file found at the name after a cancel can only be this one.
+            let ours_if_found = match intent.target {
+                Endpoint::Local { .. } => std::fs::symlink_metadata(intent.target.path(&entry.relative)).is_err(),
+                // Without overwrite, a name already taken would have failed the copy.
+                Endpoint::Remote { .. } => !intent.overwrite,
+            };
             let copy = copy_file(sessions, progress, &intent, &entry.relative, intent.overwrite, resume, &token);
             tokio::pin!(copy);
             let result = tokio::select! {
@@ -471,7 +508,9 @@ async fn run_inner(
                     // Keep recursive staging for either cancellation intent:
                     // Pause can resume it; Stop reports it as unverified and
                     // forgets its registry entry without deleting by path.
-                    if matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Remote { .. })) {
+                    // A download's partial likewise: the walk itself takes it
+                    // back on a stop, by the receipt it records.
+                    if !matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. }) | (Endpoint::Remote { .. }, Endpoint::Remote { .. })) {
                         upload_resume::mark_paused(&format!("{}:file", intent.id));
                     }
                     for endpoint in [&intent.source, &intent.target] {
@@ -483,6 +522,16 @@ async fn run_inner(
                     copy.await.or_else(|_| check_cancel(&token))
                 }
             };
+            // A cancel cuts a file off wherever it is, even just after it was
+            // put in place. One that landed whole counts as delivered: a resume
+            // would find its name taken, and a stop would leave it behind.
+            let result = match result {
+                Err(_) if token.is_cancelled() && ours_if_found && matches!(
+                    stamps(sessions, &intent.target, [&entry.relative], &CancellationToken::new()).await.ok().and_then(|mut found| found.remove(&entry.relative)),
+                    Some(Stamp::Local(identity::Receipt { size, .. }) | Stamp::Remote { size, .. }) if size == entry.size
+                ) => Ok(()),
+                result => result,
+            };
             match result {
                 Ok(()) => {
                     if let Some(expected) = source_receipt {
@@ -492,8 +541,10 @@ async fn run_inner(
                     }
                     // Cancellation can race a successful commit. Capture the
                     // receipt even then, so Stop can verify the landed file.
-                    let target_stamp = stamp(sessions, &intent.target, &entry.relative, &CancellationToken::new()).await?;
-                    journal.targets.insert(entry.relative.clone(), target_stamp);
+                    // A server's files are stamped only if the walk pauses.
+                    if matches!(intent.target, Endpoint::Local { .. }) {
+                        journal.targets.insert(entry.relative.clone(), stamp_local(&intent.target, &entry.relative)?);
+                    }
                     report.completed += 1;
                     completed_bytes = completed_bytes.saturating_add(entry.size);
                     journal.done.insert(entry.relative.clone(), (entry.size, entry.modified.clone()));
@@ -513,7 +564,7 @@ async fn run_inner(
         check_cancel(&token)?;
         if intent.moving {
             anyhow::ensure!(report.skipped == 0, "Existing files were skipped; source retained");
-            let mut verified = scan(sessions, &intent.source, &token).await?;
+            let mut verified = scan(sessions, &intent.source, false, &token).await?;
             manifest.entries.sort_by(|a, b| a.relative.cmp(&b.relative));
             verified.entries.sort_by(|a, b| a.relative.cmp(&b.relative));
             anyhow::ensure!(manifest.entries == verified.entries, "Source changed; copied files retained and source not deleted");

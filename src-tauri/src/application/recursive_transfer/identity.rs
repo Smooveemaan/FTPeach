@@ -19,14 +19,10 @@ enum Revision {
     Digest([u8; 32]),
 }
 
-impl Receipt {
-    pub(super) fn verified(&self) -> bool {
-        self.directory || self.revision.is_some()
-    }
-}
-
-// Hash only small files when the filesystem has no change journal. Large
-// unversioned files remain copyable, but never authorize Resume skips/deletes.
+// Hash only small files when the filesystem has no change journal (a disk
+// with it turned off, exFAT). A large one there is known by its identity,
+// times and size: whatever writes to it moves them on, and hashing it twice
+// per move would make moving big files to such a disk crawl.
 const HASH_LIMIT: u64 = 1024 * 1024;
 fn revision(file: &File, size: u64) -> Result<Option<Revision>> {
     #[cfg(windows)]
@@ -181,11 +177,6 @@ pub(super) fn capture(path: &Path) -> Result<Receipt> {
 }
 
 pub(super) fn protect(path: &Path, expected: &Receipt, deleting: bool) -> Result<File> {
-    anyhow::ensure!(
-        expected.verified(),
-        "Strong file version unavailable; object retained: {}",
-        path.display()
-    );
     let file = open(path, deleting, true)?;
     let actual = receipt(&file)?;
     // Child creation/removal changes directory timestamps, but never permits

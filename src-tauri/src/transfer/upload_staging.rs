@@ -154,6 +154,13 @@ pub(crate) async fn remove_staging_on(
     .await
     {
         Ok(Ok(())) => log::debug!("Removed staging file {staging_path}"),
+        // One the pause came before is not there to remove.
+        Ok(Err(error))
+            if crate::ipc::CommandError::from_anyhow(&error).code
+                == crate::ipc::ErrorCode::NotFound =>
+        {
+            log::debug!("No staging file to remove at {staging_path}");
+        }
         Ok(Err(error)) => log::warn!("Could not remove staging file {staging_path}: {error}"),
         Err(_) => log::warn!("Staging cleanup timed out; retained {staging_path}"),
     }

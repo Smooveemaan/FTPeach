@@ -350,7 +350,7 @@ async fn cancellation_interrupts_directory_scan() {
     let token = CancellationToken::new();
     let cancel = token.clone();
     let sessions = Sessions::default();
-    let scanning = scan(&sessions, &intent.source, &token);
+    let scanning = scan(&sessions, &intent.source, true, &token);
     let cancelling = async {
         tokio::task::yield_now().await;
         cancel.cancel();
@@ -372,6 +372,7 @@ async fn cancelled_scan_never_reads_the_source() {
         &Endpoint::Local {
             path: "missing".into(),
         },
+        true,
         &token,
     )
     .await
@@ -544,6 +545,12 @@ struct Server {
     written: Mutex<HashMap<String, Vec<u8>>>,
     /// The walk to pause once a transfer has moved this many bytes.
     pause_at: Mutex<Option<(String, u64)>>,
+    /// Folders the server refuses to list, as one that is gone.
+    refused: Vec<String>,
+    /// Stops the walk at `pause_at` instead of pausing it.
+    stop_instead: AtomicBool,
+    /// Cuts the walk off at `pause_at` just after a file is put in place.
+    cut_after_landing: AtomicBool,
     /// Holds an upload at its pause point until the test lets it through.
     pause_gate: Option<Arc<tokio::sync::Notify>>,
     /// Every transfer attempt: the file, and the offset it started from.
@@ -551,6 +558,7 @@ struct Server {
     /// Holds every listing until the test lets it through.
     list_gate: Option<Arc<ListGate>>,
     disconnects: std::sync::atomic::AtomicUsize,
+    lists: std::sync::atomic::AtomicUsize,
 }
 
 #[derive(Default)]
@@ -580,7 +588,21 @@ impl Server {
             .unwrap()
             .take_if(|(_, at)| offset >= *at);
         if let Some((walk, _)) = pause {
-            cancel(&walk, CancelIntent::Pause);
+            let how = if self.stop_instead.load(Ordering::SeqCst) {
+                CancelIntent::Stop
+            } else {
+                CancelIntent::Pause
+            };
+            cancel(&walk, how);
+        }
+    }
+
+    /// Where a real backend has a step left after putting the file in place,
+    /// and a cancel can still cut it off.
+    async fn landed(&self) {
+        if self.cut_after_landing.load(Ordering::SeqCst) {
+            self.reached(u64::MAX);
+            std::future::pending::<()>().await;
         }
     }
 
@@ -632,6 +654,11 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         &mut self,
         path: &str,
     ) -> crate::protocol::BackendResult<Vec<crate::protocol::EntryInfo>> {
+        self.0.lists.fetch_add(1, Ordering::SeqCst);
+        anyhow::ensure!(
+            !self.0.refused.iter().any(|gone| gone == path),
+            "550 {path}: no such folder"
+        );
         if let Some(gate) = &self.0.list_gate {
             let mut unfinished = Unfinished(Some(&gate.abandoned));
             gate.entered.notify_one();
@@ -679,7 +706,9 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         Ok(())
     }
     async fn rename(&mut self, from: &str, to: &str) -> crate::protocol::BackendResult<()> {
-        self.0.move_file(from, to)
+        self.0.move_file(from, to)?;
+        self.0.landed().await;
+        Ok(())
     }
     async fn rename_no_replace(
         &mut self,
@@ -690,7 +719,9 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
             !self.0.written.lock().unwrap().contains_key(to),
             "{to} exists"
         );
-        self.0.move_file(from, to)
+        self.0.move_file(from, to)?;
+        self.0.landed().await;
+        Ok(())
     }
     async fn size(&mut self, path: &str) -> u64 {
         let written = self.0.written.lock().unwrap();
@@ -827,6 +858,7 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         }
         drop(file);
         transfer_file::commit(&partial, local).await?;
+        self.0.landed().await;
         Ok(())
     }
     async fn download_to_writer(
@@ -860,6 +892,14 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
 
 /// A live session over `server`, reached through `Sessions` as a real one is.
 async fn serve(server: &Arc<Server>) -> (Sessions, String) {
+    serve_limited(server, Arc::default()).await
+}
+
+/// As [`serve`], with transfers counted against `limiter`.
+async fn serve_limited(
+    server: &Arc<Server>,
+    limiter: Arc<crate::transfer::concurrency_limiter::ConcurrencyLimiter>,
+) -> (Sessions, String) {
     use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
     let sessions = Sessions::default();
     let connection_id = uuid::Uuid::new_v4().to_string();
@@ -870,7 +910,8 @@ async fn serve(server: &Arc<Server>) -> (Sessions, String) {
             Box::pin(async move { Ok(Box::new(FakeBackend(server)) as BoxBackend) })
         }),
         PoolSize::Fixed(1),
-    );
+    )
+    .with_limiter(limiter);
     *sessions.slot_for(&connection_id).lock().await = Some(crate::session::Session {
         browse_client: Box::new(FakeBackend(server.clone())),
         server: connection_id.clone(),
@@ -921,6 +962,28 @@ async fn stopping_a_remote_scan_keeps_the_browse_connection() {
             usize::from(!finishes)
         );
     }
+}
+
+/// A folder the server refuses to list costs the listing, not the pane's
+/// connection.
+#[tokio::test]
+async fn a_refused_listing_keeps_the_browse_connection() {
+    let server = Arc::new(Server {
+        refused: vec!["/gone".into()],
+        ..Server::default()
+    });
+    let (sessions, connection_id) = serve(&server).await;
+    let endpoint = Endpoint::Remote {
+        path: "/gone".into(),
+        connection_id,
+    };
+    let token = tokio_util::sync::CancellationToken::new();
+    assert!(
+        super::io::listing(&sessions, &endpoint, "", &token)
+            .await
+            .is_err()
+    );
+    assert_eq!(server.disconnects.load(Ordering::SeqCst), 0);
 }
 
 #[tokio::test]
@@ -1038,6 +1101,160 @@ async fn download_of_src(server: &Arc<Server>, root: &Path) -> (Sessions, Intent
         resume_from: None,
     };
     (sessions, intent)
+}
+
+/// A walk whose next file waits for a transfer slot reads Queued, not as if
+/// it were already at work.
+#[tokio::test]
+async fn a_walk_waiting_for_a_slot_reads_queued() {
+    let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+    let server = Arc::new(Server {
+        dirs: vec!["/src".into()],
+        files: HashMap::from([("/src/a".to_owned(), b"small".to_vec())]),
+        ..Server::default()
+    });
+    let limiter = Arc::new(crate::transfer::concurrency_limiter::ConcurrencyLimiter::default());
+    limiter.set_limit(1);
+    let busy = limiter.try_acquire().unwrap();
+    let (sessions, connection_id) = serve_limited(&server, limiter).await;
+    let (_, mut intent) = download_of_src(&server, &root).await;
+    intent.source = Endpoint::Remote {
+        path: "/src".into(),
+        connection_id,
+    };
+    let statuses = Arc::new(Mutex::new(Vec::new()));
+    let (seen, walk_id) = (statuses.clone(), intent.id.clone());
+    let progress = ProgressEmitter::for_tests(move |payload| {
+        if payload.id == walk_id {
+            seen.lock().unwrap().push(payload.status);
+        }
+    });
+    let walk = tokio::spawn({
+        let progress = progress.clone();
+        async move { run(&sessions, Some(&progress), intent).await }
+    });
+    // A wait that follows the walk's start is shown once it has lasted a while.
+    let queued = async {
+        while statuses.lock().unwrap().last() != Some(&"queued") {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(5), queued)
+        .await
+        .expect("the waiting walk reads Queued");
+    drop(busy);
+    assert!(walk.await.unwrap().ok);
+    assert_eq!(statuses.lock().unwrap().last(), Some(&"done"));
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+/// Folders deeper than Windows' classic 260-character path limit download
+/// like any other.
+#[tokio::test]
+async fn a_download_past_the_classic_path_limit_lands() {
+    let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+    let mut dirs = vec!["/src".to_owned()];
+    for level in 1..=40 {
+        dirs.push(format!("{}/level-{level:02}", dirs.last().unwrap()));
+    }
+    let deepest = format!("{}/file.txt", dirs.last().unwrap());
+    let server = Arc::new(Server {
+        dirs,
+        files: HashMap::from([(deepest.clone(), b"deep".to_vec())]),
+        ..Server::default()
+    });
+    let (sessions, intent) = download_of_src(&server, &root).await;
+    let landed = Path::new(&intent.target.path(deepest.trim_start_matches("/src/"))).to_owned();
+    assert!(landed.as_os_str().len() > 260);
+    let progress = ProgressEmitter::for_tests(|_| {});
+    let report = run(&sessions, Some(&progress), intent).await;
+    assert!(report.ok, "{:?}", report.errors);
+    assert_eq!(std::fs::read(&landed).unwrap(), b"deep");
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+/// A single file stopped partway leaves nothing behind; paused, it keeps its
+/// partial until a stop comes after all.
+#[tokio::test]
+async fn a_stopped_single_download_leaves_nothing_behind() {
+    use crate::application::transfer_service::{transfer_cancel, transfer_download};
+    for pause_first in [false, true] {
+        let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let server = Arc::new(Server {
+            files: HashMap::from([("/big".to_owned(), vec![7; 256 * 1024])]),
+            ..Server::default()
+        });
+        let (sessions, connection_id) = serve(&server).await;
+        let progress = ProgressEmitter::for_tests(|_| {});
+        let id = uuid::Uuid::new_v4().to_string();
+        let download = transfer_download(
+            &sessions,
+            &progress,
+            connection_id.clone(),
+            id.clone(),
+            "/big".into(),
+            root.join("big").to_string_lossy().into_owned(),
+            true,
+            None,
+        );
+        let cancelling = async {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            let how = if pause_first {
+                CancelIntent::Pause
+            } else {
+                CancelIntent::Stop
+            };
+            transfer_cancel(&sessions, connection_id.clone(), id.clone(), how)
+                .await
+                .unwrap();
+        };
+        let (result, ()) = tokio::join!(download, cancelling);
+        assert!(result.is_err());
+        let left = || std::fs::read_dir(&root).unwrap().count();
+        if pause_first {
+            assert_eq!(left(), 2, "the pause keeps the partial and its record");
+            transfer_cancel(&sessions, connection_id, id, CancelIntent::Stop)
+                .await
+                .unwrap();
+        }
+        assert_eq!(left(), 0, "pause first: {pause_first}");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+/// Stopped partway into a file, straight away or once paused, a download
+/// takes back the partial it was writing along with the folders it made.
+#[tokio::test]
+async fn a_stopped_download_takes_back_its_partial() {
+    for stop_while_running in [true, false] {
+        let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+        let server = Arc::new(Server {
+            dirs: vec!["/src".into(), "/src/sub".into()],
+            files: HashMap::from([("/src/sub/big".to_owned(), vec![7; 64 * 1024])]),
+            stop_instead: AtomicBool::new(stop_while_running),
+            ..Server::default()
+        });
+        let (sessions, intent) = download_of_src(&server, &root).await;
+        *server.pause_at.lock().unwrap() = Some((intent.id.clone(), 16 * 1024));
+        let progress = ProgressEmitter::for_tests(|_| {});
+        let report = run(&sessions, Some(&progress), intent.clone()).await;
+        if stop_while_running {
+            assert!(
+                report
+                    .errors
+                    .iter()
+                    .all(|error| error.code != ErrorCode::CleanupIncomplete),
+                "{:?}",
+                report.errors
+            );
+        } else {
+            assert!(report.paused, "{:?}", report.errors);
+            discard(&sessions, &intent.id).await.unwrap();
+        }
+        assert!(!root.join("target").exists(), "{stop_while_running}");
+        let _ = std::fs::remove_dir_all(root);
+    }
 }
 
 #[tokio::test]
@@ -1186,6 +1403,121 @@ async fn paused_upload(
     let report = run(&sessions, Some(progress), intent.clone()).await;
     assert!(report.paused, "{:?}", report.errors);
     (root, sessions, intent, big)
+}
+
+/// Another transfer's working files stay where they are; the folder goes
+/// without them.
+#[tokio::test]
+async fn a_folder_goes_without_other_transfers_working_files() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    std::fs::write(root.join("source/a"), b"keep").unwrap();
+    std::fs::write(root.join("source/a.ftpeach-resume.json"), b"{}").unwrap();
+    for suffix in ["part", "json"] {
+        let name = format!(".ftpeach-{}.{suffix}", uuid::Uuid::new_v4());
+        std::fs::write(root.join("source").join(name), b"half").unwrap();
+    }
+    let report = run(&Sessions::default(), None, intent.clone()).await;
+    assert!(report.ok, "{:?}", report.errors);
+    assert_eq!(files_under(&root.join("target")), ["a"]);
+    // A move empties the folder, so it takes them along.
+    std::fs::remove_dir_all(root.join("target")).unwrap();
+    let report = run(
+        &Sessions::default(),
+        None,
+        Intent {
+            id: uuid::Uuid::new_v4().to_string(),
+            moving: true,
+            ..intent
+        },
+    )
+    .await;
+    assert!(report.ok, "{:?}", report.errors);
+    assert!(!root.join("source").exists());
+    assert_eq!(files_under(&root.join("target")).len(), 4);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+/// A folder of many files goes up without listing the server once per file,
+/// which made a walk through thousands of small files quadratic, nor once per
+/// folder it has just made itself.
+#[tokio::test]
+async fn an_upload_lists_the_server_a_bounded_number_of_times() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    std::fs::create_dir_all(root.join("source/a/b/c")).unwrap();
+    for index in 0..47 {
+        std::fs::write(root.join(format!("source/f{index}")), b"small").unwrap();
+    }
+    for folder in ["a", "a/b", "a/b/c"] {
+        std::fs::write(root.join("source").join(folder).join("f"), b"small").unwrap();
+    }
+    let server = Arc::new(Server::default());
+    let (sessions, connection_id) = serve(&server).await;
+    intent.target = Endpoint::Remote {
+        path: "/many".into(),
+        connection_id,
+    };
+    let progress = ProgressEmitter::for_tests(|_| {});
+    let report = run(&sessions, Some(&progress), intent).await;
+    assert!(report.ok, "{:?}", report.errors);
+    assert_eq!(report.completed, 50);
+    // Only the target's parent, to see whether the target already exists.
+    assert_eq!(server.lists.load(Ordering::SeqCst), 1);
+    assert_eq!(server.made.lock().unwrap().len(), 4);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+/// A cancel can cut a file off just after it was put in place. Stopped, the
+/// walk still takes it back; paused, the resume does not find its name taken.
+#[tokio::test]
+async fn a_file_cut_off_after_landing_counts_as_delivered() {
+    for (upload, stop) in [(false, true), (false, false), (true, false)] {
+        let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
+        let server = Arc::new(Server {
+            dirs: vec!["/src".into(), "/src/sub".into()],
+            files: HashMap::from([("/src/sub/a".to_owned(), b"small".to_vec())]),
+            stop_instead: AtomicBool::new(stop),
+            cut_after_landing: AtomicBool::new(true),
+            ..Server::default()
+        });
+        let (sessions, mut intent) = download_of_src(&server, &root).await;
+        if upload {
+            std::fs::create_dir_all(root.join("up/sub")).unwrap();
+            std::fs::write(root.join("up/sub/a"), b"small").unwrap();
+            let remote = std::mem::replace(
+                &mut intent.source,
+                Endpoint::Local {
+                    path: root.join("up").to_string_lossy().into_owned(),
+                },
+            );
+            intent.target = Endpoint::Remote {
+                path: "/dst".into(),
+                connection_id: remote.connection().to_owned(),
+            };
+        }
+        *server.pause_at.lock().unwrap() = Some((intent.id.clone(), u64::MAX));
+        let progress = ProgressEmitter::for_tests(|_| {});
+        let report = run(&sessions, Some(&progress), intent.clone()).await;
+        if stop {
+            assert!(
+                report
+                    .errors
+                    .iter()
+                    .all(|error| error.code == ErrorCode::Cancelled),
+                "{:?}",
+                report.errors
+            );
+            assert!(!root.join("target").exists());
+        } else {
+            assert!(report.paused, "{:?}", report.errors);
+            server.cut_after_landing.store(false, Ordering::SeqCst);
+            let report = run(&sessions, Some(&progress), resumed(&intent)).await;
+            assert!(report.ok, "upload {upload}: {:?}", report.errors);
+            assert_eq!(report.completed, 1);
+        }
+        let _ = std::fs::remove_dir_all(root);
+    }
 }
 
 #[tokio::test]

@@ -18,6 +18,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A folder of thousands of small files goes to a server much faster and no longer loads the
+  computer and the server more with every file.
+- Files in very deeply nested folders, whose full path is longer than 260 characters, download
+  instead of failing with "File or folder not found".
+- While a file downloads, other downloads, copies, moves, deletes and new local folders or
+  files no longer wait for it to finish, and stopping a folder no longer hangs on "Cancelling".
+- Stopping a folder download, also once paused, removes the file it was in the middle of
+  instead of keeping it and reporting "Cleanup is incomplete".
+- Pausing or stopping a folder transfer just as a file finishes no longer makes the resume
+  fail with "A file or folder with that name already exists", or the stop leave the folder
+  behind with "Cleanup is incomplete".
+- Moving a folder with files over 1 MB to a disk without the NTFS change journal, such as a
+  USB stick, removes the original instead of failing with "Command failed"; resuming or
+  stopping transfers there works with big files too.
+- A folder transfer resumed after its files changed on the server says that files changed,
+  instead of that the transferred file failed the integrity check.
+- A folder copy leaves out the working files other transfers keep beside their files
+  (`.ftpeach-….part` and resume records) instead of copying them along.
+- Stopping a file download, also once paused, removes the partly downloaded file instead of
+  leaving it and its resume record behind.
+- A folder that is gone from the server no longer drops the connection when a paused folder
+  transfer is resumed.
+- Folders of more than 10 000 files on a server can be opened, filled and deleted.
+- Deleting a big folder on an FTP server that lists only part of it at a time removes it whole
+  instead of failing with "Directory not empty".
+- A folder's row in Transfers no longer flickers between Queued and Upload, Download or Copy,
+  and keeps showing its speed and time remaining, while it transfers many small files.
+- The pane a transfer goes to no longer jumps back to the folder it started in, or loses its
+  selection, while the transfer runs.
+- A refreshed folder keeps the selection of the files that are still there.
+- A file that finishes quickly shows its real size in Transfers, also after it changed on the
+  server.
+- A path pasted with quotes, as Explorer's "Copy as path" gives it, opens in the path bar.
+- Opening FTPeach's own data folder is refused with a clear message instead of "An unexpected
+  error occurred".
 - Several files copied from one server to another wait their turn instead of failing with
   "Relay requires two available workers".
 - A folder, or a file dragged out to Explorer, reads Queued in Transfers while it waits for

@@ -5,6 +5,8 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 
 const FLUSH_INTERVAL_MS: u64 = 100;
+/// How long a row that was at work must wait before it reads Queued.
+const QUEUED_AFTER_WORK: Duration = Duration::from_secs(1);
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -106,6 +108,9 @@ impl Drop for AggregateGuard {
 pub struct ProgressEmitter {
     emit: Arc<dyn Fn(TransferProgressPayload) + Send + Sync>,
     pending: Arc<Mutex<HashMap<String, TransferProgressPayload>>>,
+    /// Rows whose wait came after work in the window being batched, to be
+    /// sent as queued in the next window unless work supersedes it.
+    queued_after: Arc<Mutex<HashMap<String, std::time::Instant>>>,
     aggregates: AggregateIndex,
 }
 
@@ -129,6 +134,7 @@ impl ProgressEmitter {
         Self {
             emit: Arc::new(emit),
             pending: Arc::new(Mutex::new(HashMap::new())),
+            queued_after: Arc::default(),
             aggregates: AggregateIndex::default(),
         }
     }
@@ -168,9 +174,11 @@ impl ProgressEmitter {
 
     fn enqueue(&self, mut payload: TransferProgressPayload) {
         if !matches!(payload.status, "queued" | "progress") {
+            self.queued_after.lock().unwrap().remove(&payload.id);
             let carried = self.pending.lock().unwrap().remove(&payload.id);
             if let Some(prev) = carried {
                 payload.bytes = payload.bytes.or(prev.bytes);
+                payload.total = payload.total.or(prev.total);
                 payload.landed = payload.landed.or(prev.landed);
             }
             (self.emit)(payload);
@@ -178,12 +186,27 @@ impl ProgressEmitter {
         }
 
         let mut pending = self.pending.lock().unwrap();
+        if payload.status == "progress" {
+            self.queued_after.lock().unwrap().remove(&payload.id);
+        }
         if let Some(latest) = pending.get_mut(&payload.id) {
             // Keep the existing map key and timer; only replace the message. A
             // notice without numbers keeps the ones still waiting to be sent.
             payload.bytes = payload.bytes.or(latest.bytes);
             payload.total = payload.total.or(latest.total);
             payload.landed = payload.landed.or(latest.landed);
+            // A folder walk says it is queued before each file, and the file
+            // that it has started a moment later; setting up the next file can
+            // take longer than a window. Whichever came last would win, and the
+            // row flickered between the two. A wait that comes after work is
+            // shown only once it outlasts QUEUED_AFTER_WORK.
+            if latest.status == "progress" && payload.status == "queued" {
+                payload.status = "progress";
+                self.queued_after
+                    .lock()
+                    .unwrap()
+                    .insert(payload.id.clone(), std::time::Instant::now());
+            }
             *latest = payload;
             return;
         }
@@ -200,7 +223,28 @@ impl ProgressEmitter {
             tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS)).await;
             let latest = this.pending.lock().unwrap().remove(&id);
             if let Some(latest) = latest {
+                let connection_id = latest.connection_id.clone();
                 (this.emit)(latest);
+                let Some(since) = this.queued_after.lock().unwrap().get(&id).copied() else {
+                    return;
+                };
+                tokio::time::sleep(QUEUED_AFTER_WORK).await;
+                // Still the same wait: no work, ending or newer wait since.
+                let mut queued_after = this.queued_after.lock().unwrap();
+                if queued_after.get(&id) == Some(&since) {
+                    queued_after.remove(&id);
+                    drop(queued_after);
+                    this.enqueue(TransferProgressPayload {
+                        id,
+                        connection_id,
+                        status: "queued",
+                        bytes: None,
+                        total: None,
+                        error: None,
+                        error_code: None,
+                        landed: None,
+                    });
+                }
             }
         });
     }
@@ -280,13 +324,54 @@ mod tests {
             total: None,
             ..payload("walk", "queued", None)
         });
+        tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS * 3) + QUEUED_AFTER_WORK).await;
+        let sent = sent.lock().unwrap();
+        // The work in the window is reported first, and the wait that came
+        // after it once it has gone on for a while.
+        let sent: Vec<_> = sent.iter().map(|p| (p.status, p.bytes, p.total)).collect();
+        assert_eq!(
+            sent,
+            [("progress", Some(7), Some(10)), ("queued", None, None)]
+        );
+    }
+
+    /// A file that ends inside the batching window still reports the size the
+    /// server gave it, not only how much arrived.
+    #[test]
+    fn an_ending_carries_the_numbers_still_waiting_to_be_sent() {
+        let sent = Arc::new(Mutex::new(Vec::new()));
+        let seen = sent.clone();
+        let emitter = ProgressEmitter::for_tests(move |payload| seen.lock().unwrap().push(payload));
+        tauri::async_runtime::block_on(async {
+            emitter.send(payload("file", "progress", Some(10)));
+            emitter.send(TransferProgressPayload {
+                total: None,
+                ..payload("file", "done", None)
+            });
+        });
+        let sent = sent.lock().unwrap();
+        assert_eq!((sent[0].bytes, sent[0].total), (Some(10), Some(10)));
+    }
+
+    #[tokio::test]
+    async fn a_wait_between_files_does_not_flicker_the_row() {
+        let sent = Arc::new(Mutex::new(Vec::new()));
+        let seen = sent.clone();
+        let emitter = ProgressEmitter::for_tests(move |payload| seen.lock().unwrap().push(payload));
+        // A walk of small files: a short wait before each, then work.
+        for bytes in 1..=5 {
+            emitter.send(payload("walk", "queued", None));
+            emitter.send(payload("walk", "progress", Some(bytes)));
+        }
+        // The window closes on the wait before the next file, which starts in
+        // the window after.
+        emitter.send(payload("walk", "queued", None));
+        tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS * 3 / 2)).await;
+        emitter.send(payload("walk", "progress", Some(6)));
         tokio::time::sleep(Duration::from_millis(FLUSH_INTERVAL_MS * 3)).await;
         let sent = sent.lock().unwrap();
-        assert_eq!(sent.len(), 1, "one row, one batched report");
-        assert_eq!(
-            (sent[0].status, sent[0].bytes, sent[0].total),
-            ("queued", Some(7), Some(10))
-        );
+        let sent: Vec<_> = sent.iter().map(|p| (p.status, p.bytes)).collect();
+        assert_eq!(sent, [("progress", Some(5)), ("progress", Some(6))]);
     }
 
     #[test]

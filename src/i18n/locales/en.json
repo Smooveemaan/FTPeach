@@ -311,7 +311,7 @@
     "locationBusy": "Another operation is already working with this file or folder. Try again once it finishes.",
     "diskFull": "Not enough disk space.",
     "hostKeyMismatch": "The server host key has changed.",
-    "integrityMismatch": "The transferred file failed the integrity check.",
+    "integrityMismatch": "Files changed during the transfer or could not be verified.",
     "cleanupIncomplete": "Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.",
     "invalidInput": "The provided value is invalid.",
     "replaceUnsupported": "The server didn't allow the existing file to be replaced.",

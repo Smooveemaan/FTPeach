@@ -311,7 +311,7 @@
     "locationBusy": "Başka bir işlem zaten bu dosya veya klasörle çalışıyor. Bittiğinde tekrar deneyin.",
     "diskFull": "Yeterli disk alanı yok.",
     "hostKeyMismatch": "Sunucunun ana bilgisayar anahtarı değişti.",
-    "integrityMismatch": "Aktarılan dosya bütünlük kontrolünden geçemedi.",
+    "integrityMismatch": "Dosyalar aktarım sırasında değişti veya doğrulanamadı.",
     "cleanupIncomplete": "Temizleme tamamlanamadı. Aidiyeti doğrulanamayan dosyalar korundu. Elle silmeden önce hedefi kontrol edin.",
     "invalidInput": "Sağlanan değer geçersiz.",
     "internal": "Beklenmeyen bir hata oluştu.",

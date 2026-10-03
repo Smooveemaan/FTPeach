@@ -2,7 +2,7 @@
 //! can carry on where this one stopped; a stop uses it to take back exactly
 //! what the walk made, and nothing that was there before it.
 use super::identity;
-use super::io::remove_created;
+use super::io::{remove_created, remove_local};
 use super::model::Endpoint;
 use crate::ipc::{CommandError, ErrorCode};
 use crate::session::Sessions;
@@ -14,6 +14,9 @@ pub(super) struct Journal {
     pub operation_id: String,
     /// Exact paths, retained for diagnostics; never deleted by name pattern.
     pub staging: Vec<String>,
+    /// What a stopped download left on this computer, as it stood the moment
+    /// the walk was interrupted: removed later only if it is still exactly that.
+    pub staged: HashMap<String, identity::Receipt>,
     /// Directories that did not exist until this walk made them.
     pub created_dirs: HashSet<String>,
     /// Files this walk wrote where nothing stood before. Files it overwrote
@@ -56,6 +59,7 @@ impl Paused {
             .chain(j.targets.keys())
             .chain(j.sources.keys())
             .chain(j.directories.keys())
+            .chain(j.staged.keys())
             .map(|s| s.capacity())
             .sum::<usize>();
         let slots = j.created_dirs.capacity()
@@ -63,7 +67,8 @@ impl Paused {
             + j.done.capacity()
             + j.targets.capacity()
             + j.sources.capacity()
-            + j.directories.capacity();
+            + j.directories.capacity()
+            + j.staged.capacity();
         std::mem::size_of::<Self>()
             + strings
             + slots * 256
@@ -200,18 +205,41 @@ pub(super) async fn take_back(
         }
         return errors;
     }
+    // A path (including an exact staging path) alone cannot prove that its
+    // current contents still belong to this operation; the receipt taken when
+    // the walk stopped can. Whatever it does not vouch for stays.
     if let Some(relative) = &journal.in_flight {
-        // A path (including an exact staging path) alone cannot prove that
-        // its current contents still belong to this operation.
-        errors.push(CommandError::new(
-            ErrorCode::CleanupIncomplete,
-            format!(
-                "Cleanup incomplete: operation {} retained unverified partials for {}: {}",
-                journal.operation_id,
-                target.path(relative),
-                journal.staging.join(", ")
-            ),
-        ));
+        let folder = relative.rsplit_once('/').map_or("", |(folder, _)| folder);
+        let mut retained = Vec::new();
+        for path in &journal.staging {
+            let name = std::path::Path::new(path)
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            let staged = if folder.is_empty() {
+                name
+            } else {
+                format!("{folder}/{name}")
+            };
+            let removed = match journal.staged.get(path) {
+                Some(receipt) => remove_local(target, &staged, receipt, true).await.is_ok(),
+                None => false,
+            };
+            if !removed {
+                retained.push(path.as_str());
+            }
+        }
+        if !retained.is_empty() {
+            errors.push(CommandError::new(
+                ErrorCode::CleanupIncomplete,
+                format!(
+                    "Cleanup incomplete: operation {} retained unverified partials for {}: {}",
+                    journal.operation_id,
+                    target.path(relative),
+                    retained.join(", ")
+                ),
+            ));
+        }
     }
     for relative in &journal.created_files {
         let expected = journal.targets.get(relative).and_then(|stamp| match stamp {

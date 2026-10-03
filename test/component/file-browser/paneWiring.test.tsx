@@ -93,6 +93,7 @@ function harness({ a, b, sites = [bookmark], driveMenu = null }: HarnessOptions 
     openDirectory: vi.fn(),
     updatePane: vi.fn(),
     refreshPane: vi.fn(async () => {}),
+    refreshPaneIfAt: vi.fn(async () => {}),
     renamePaneEntry: vi.fn(async () => {}),
     deletePaneSelected: vi.fn(),
     deletePaneEntry: vi.fn(),
@@ -393,7 +394,7 @@ describe('moving and copying the selection', () => {
       call[2]();
       call[3]();
     }
-    expect(h.browser.refreshPane.mock.calls).toEqual([
+    expect(h.browser.refreshPaneIfAt.mock.calls).toEqual([
       ['a', 'C:\\work'],
       ['b', '/deep/inside'],
       ['a', 'C:\\work'],

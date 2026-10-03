@@ -30,6 +30,8 @@ You can save connections for your next session. With automatic updates enabled, 
 
 The project is in pre-release; see the [changelog](CHANGELOG.md) for changes between versions. macOS and Linux are not currently supported.
 
+> **Made with AI, use at your own risk!** FTPeach was written with a lot of help from AI. I've tested it a lot, but software is software. Back up what matters.
+
 ## Made for everyday file transfers
 
 - **Work side by side.** Two independent file panes with tabs, search, sorting, and file previews help you find and organize files.

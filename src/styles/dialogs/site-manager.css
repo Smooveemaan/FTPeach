@@ -615,15 +615,18 @@
   grid-template-columns: repeat(3, 30px);
   gap: 4px;
 }
-.menu-dropdown.site-icon-dropdown {
+.menu-dropdown:is(.site-icon-dropdown, .site-color-dropdown) {
   width: 118px;
   overflow: hidden;
 }
-.site-icon-dropdown .menu-items {
+:is(.site-icon-dropdown, .site-color-dropdown) .menu-items {
   height: 98px;
   overflow-y: auto;
   overflow-anchor: none;
   scrollbar-gutter: stable;
+  /* At a fractional display scale the scroll end rounds to a whole physical
+     pixel and can clip the last row's border; this slack keeps it in view. */
+  padding-block-end: 2px;
 }
 .site-appearance-dropdown .menu-item {
   justify-content: center;

@@ -707,7 +707,16 @@
       "blue": "Albastru",
       "purple": "Violet",
       "pink": "Roz",
-      "teal": "Albastru-verde"
+      "teal": "Albastru-verde",
+      "yellow": "Galben",
+      "lime": "Lime",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Zmeură",
+      "wine": "Vișiniu",
+      "brown": "Maro",
+      "olive": "Oliv",
+      "emerald": "Smarald"
     },
     "saveFailed": "Nu s-a putut salva",
     "revealFailed": "Nu s-a putut afișa parola salvată",

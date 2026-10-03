@@ -699,7 +699,16 @@
       "blue": "蓝色",
       "purple": "紫色",
       "pink": "粉色",
-      "teal": "青绿色"
+      "teal": "青绿色",
+      "yellow": "黄色",
+      "lime": "青柠色",
+      "cyan": "青色",
+      "indigo": "靛蓝色",
+      "rose": "玫红色",
+      "wine": "酒红色",
+      "brown": "棕色",
+      "olive": "橄榄色",
+      "emerald": "翠绿色"
     },
     "saveFailed": "无法保存",
     "revealFailed": "无法显示已保存的密码",

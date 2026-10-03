@@ -54,6 +54,15 @@ export const SITE_COLORS: [SiteColorOption, ...SiteColorOption[]] = [
   { key: 'purple', value: 'var(--file-code)' },
   { key: 'pink', value: 'var(--file-video)' },
   { key: 'teal', value: 'var(--file-spreadsheet)' },
+  { key: 'yellow', value: 'var(--site-yellow)' },
+  { key: 'lime', value: 'var(--site-lime)' },
+  { key: 'cyan', value: 'var(--site-cyan)' },
+  { key: 'indigo', value: 'var(--site-indigo)' },
+  { key: 'rose', value: 'var(--site-rose)' },
+  { key: 'wine', value: 'var(--site-wine)' },
+  { key: 'brown', value: 'var(--site-brown)' },
+  { key: 'olive', value: 'var(--site-olive)' },
+  { key: 'emerald', value: 'var(--site-emerald)' },
 ];
 
 export type SiteEncodingScript =

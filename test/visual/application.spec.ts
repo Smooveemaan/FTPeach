@@ -219,42 +219,61 @@ test('Save path opens the prefilled local-path form and keeps save errors visibl
   });
 });
 
-test('icon picker shows a scrollable 3 by 3 grid', async ({ page }) => {
-  await openHarness(page);
-  await page.getByRole('menuitem', { name: 'Bookmarks' }).click();
-  await page.getByRole('menuitem', { name: 'Manage Bookmarks…' }).click();
-  await page.getByRole('button', { name: 'New Bookmark' }).click();
-  await page.getByRole('button', { name: 'Icon' }).click();
+for (const { name, picker: selector } of [
+  { name: 'Icon', picker: '.site-icon-dropdown' },
+  { name: 'Color', picker: '.site-color-dropdown' },
+]) {
+  test(`${name.toLowerCase()} picker shows a scrollable 3 by 3 grid`, async ({ page }) => {
+    await openHarness(page);
+    await page.getByRole('menuitem', { name: 'Bookmarks' }).click();
+    await page.getByRole('menuitem', { name: 'Manage Bookmarks…' }).click();
+    await page.getByRole('button', { name: 'New Bookmark' }).click();
+    await page.getByRole('button', { name }).click();
 
-  const picker = page.locator('.site-icon-dropdown');
-  await expect(picker).toBeVisible();
-  await expect(picker.getByRole('menuitemradio')).toHaveCount(18);
-  const geometry = await picker.evaluate((menu) => {
-    const grid = menu.querySelector('.menu-items')!;
-    return {
-      menuHeight: menu.clientHeight,
-      clientHeight: grid.clientHeight,
-      scrollHeight: grid.scrollHeight,
-      columns: getComputedStyle(grid).gridTemplateColumns,
-    };
-  });
-  expect(geometry.columns.split(' ')).toHaveLength(3);
-  expect(geometry.clientHeight).toBe(98);
-  expect(geometry.menuHeight).toBe(108);
-  expect(geometry.scrollHeight).toBeGreaterThan(geometry.clientHeight);
+    const picker = page.locator(selector);
+    await expect(picker).toBeVisible();
+    await expect(picker.getByRole('menuitemradio')).toHaveCount(18);
+    const geometry = await picker.evaluate((menu) => {
+      const grid = menu.querySelector('.menu-items')!;
+      return {
+        menuHeight: menu.clientHeight,
+        clientHeight: grid.clientHeight,
+        scrollHeight: grid.scrollHeight,
+        columns: getComputedStyle(grid).gridTemplateColumns,
+      };
+    });
+    expect(geometry.columns.split(' ')).toHaveLength(3);
+    expect(geometry.clientHeight).toBe(98);
+    expect(geometry.menuHeight).toBe(108);
+    expect(geometry.scrollHeight).toBeGreaterThan(geometry.clientHeight);
 
-  const grid = picker.locator('.menu-items');
-  const bottom = await grid.evaluate((element) => {
-    element.scrollTop = element.scrollHeight;
-    return element.scrollTop;
+    const grid = picker.locator('.menu-items');
+    const bottom = await grid.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      return element.scrollTop;
+    });
+    const lastIcon = picker.getByRole('menuitemradio').last();
+    const box = await lastIcon.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.waitForTimeout(200);
+    expect(await grid.evaluate((element) => element.scrollTop)).toBe(bottom);
+
+    // Reopened, the grid scrolls to the item chosen from its last row, with
+    // room below it so pixel rounding at a fractional scale cannot clip its border.
+    await lastIcon.click();
+    await expect(picker).toHaveCount(0);
+    await page.getByRole('button', { name }).click();
+    await expect(picker.getByRole('menuitemradio').last()).toHaveAttribute('aria-checked', 'true');
+    expect(
+      await grid.evaluate((element) => {
+        const item = element.querySelector('[aria-checked="true"]')!.getBoundingClientRect();
+        const view = element.getBoundingClientRect();
+        return item.top >= view.top && item.bottom <= view.top + element.clientHeight - 1;
+      }),
+    ).toBe(true);
   });
-  const lastIcon = picker.getByRole('menuitemradio').last();
-  const box = await lastIcon.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
-  await page.waitForTimeout(200);
-  expect(await grid.evaluate((element) => element.scrollTop)).toBe(bottom);
-});
+}
 
 test('sort field fits the longest translated option', async ({ page }) => {
   const widths: number[] = [];

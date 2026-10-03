@@ -699,7 +699,16 @@
       "blue": "Biru",
       "purple": "Ungu",
       "pink": "Merah muda",
-      "teal": "Biru kehijauan"
+      "teal": "Biru kehijauan",
+      "yellow": "Kuning",
+      "lime": "Hijau limau",
+      "cyan": "Sian",
+      "indigo": "Nila",
+      "rose": "Frambos",
+      "wine": "Merah anggur",
+      "brown": "Cokelat",
+      "olive": "Zaitun",
+      "emerald": "Zamrud"
     },
     "saveFailed": "Tidak dapat disimpan",
     "revealFailed": "Tidak dapat menampilkan kata sandi yang tersimpan",

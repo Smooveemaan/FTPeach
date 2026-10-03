@@ -699,7 +699,16 @@
       "blue": "파랑",
       "purple": "보라색",
       "pink": "핑크",
-      "teal": "청록색"
+      "teal": "청록색",
+      "yellow": "노랑",
+      "lime": "라임",
+      "cyan": "하늘색",
+      "indigo": "남색",
+      "rose": "로즈",
+      "wine": "와인색",
+      "brown": "갈색",
+      "olive": "올리브색",
+      "emerald": "에메랄드"
     },
     "saveFailed": "저장할 수 없습니다",
     "revealFailed": "저장된 비밀번호를 표시할 수 없습니다",

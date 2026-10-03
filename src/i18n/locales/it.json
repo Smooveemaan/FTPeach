@@ -707,7 +707,16 @@
       "blue": "Blu",
       "purple": "Viola",
       "pink": "Rosa",
-      "teal": "Verde acqua"
+      "teal": "Verde acqua",
+      "yellow": "Giallo",
+      "lime": "Lime",
+      "cyan": "Ciano",
+      "indigo": "Indaco",
+      "rose": "Lampone",
+      "wine": "Bordeaux",
+      "brown": "Marrone",
+      "olive": "Oliva",
+      "emerald": "Smeraldo"
     },
     "saveFailed": "Impossibile salvare",
     "revealFailed": "Impossibile visualizzare la password salvata",

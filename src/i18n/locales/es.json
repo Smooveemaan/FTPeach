@@ -707,7 +707,16 @@
       "blue": "Azul",
       "purple": "Morado",
       "pink": "Rosa",
-      "teal": "Verde azulado"
+      "teal": "Verde azulado",
+      "yellow": "Amarillo",
+      "lime": "Lima",
+      "cyan": "Cian",
+      "indigo": "Índigo",
+      "rose": "Frambuesa",
+      "wine": "Burdeos",
+      "brown": "Marrón",
+      "olive": "Oliva",
+      "emerald": "Esmeralda"
     },
     "saveFailed": "No se ha podido guardar",
     "revealFailed": "No se ha podido mostrar la contraseña guardada",

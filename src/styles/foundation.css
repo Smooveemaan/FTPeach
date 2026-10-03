@@ -43,6 +43,17 @@
   --file-video: #ce8dcb;
   --file-image: #ce8dad;
 
+  /* Site colours that no accent or file token already provides. */
+  --site-yellow: #e8d87f;
+  --site-lime: #b5cf7c;
+  --site-cyan: #7fc8da;
+  --site-indigo: #8f95e0;
+  --site-rose: #e08aa6;
+  --site-wine: #c27484;
+  --site-brown: #c29f84;
+  --site-olive: #a7a86a;
+  --site-emerald: #6cc995;
+
   --font-ui: 'Segoe UI', Inter, -apple-system, system-ui, sans-serif;
   --font-mono: 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
 
@@ -128,6 +139,16 @@
   --file-code: #9364a5;
   --file-video: #a96099;
   --file-image: #a9607d;
+
+  --site-yellow: #b8a000;
+  --site-lime: #6a8a28;
+  --site-cyan: #2f8aa0;
+  --site-indigo: #5a5fb0;
+  --site-rose: #b5526f;
+  --site-wine: #8e3a50;
+  --site-brown: #8a6247;
+  --site-olive: #6f7228;
+  --site-emerald: #1f9a5c;
 
   color-scheme: light;
 }

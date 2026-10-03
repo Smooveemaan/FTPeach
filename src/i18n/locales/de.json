@@ -699,7 +699,16 @@
       "blue": "Blau",
       "purple": "Lila",
       "pink": "Rosa",
-      "teal": "Blaugrün"
+      "teal": "Blaugrün",
+      "yellow": "Gelb",
+      "lime": "Limette",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Himbeere",
+      "wine": "Weinrot",
+      "brown": "Braun",
+      "olive": "Oliv",
+      "emerald": "Smaragd"
     },
     "saveFailed": "Speichern fehlgeschlagen",
     "revealFailed": "Das gespeicherte Passwort konnte nicht angezeigt werden",

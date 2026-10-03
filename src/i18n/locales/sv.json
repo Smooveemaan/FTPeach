@@ -699,7 +699,16 @@
       "blue": "Blå",
       "purple": "Lila",
       "pink": "Rosa",
-      "teal": "Blågrön"
+      "teal": "Blågrön",
+      "yellow": "Gul",
+      "lime": "Lime",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Hallon",
+      "wine": "Vinröd",
+      "brown": "Brun",
+      "olive": "Oliv",
+      "emerald": "Smaragd"
     },
     "saveFailed": "Det gick inte att spara",
     "revealFailed": "Det gick inte att visa det sparade lösenordet",

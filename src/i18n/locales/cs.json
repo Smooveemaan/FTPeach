@@ -715,7 +715,16 @@
       "blue": "Modrá",
       "purple": "Fialová",
       "pink": "Růžová",
-      "teal": "Tyrkysová"
+      "teal": "Tyrkysová",
+      "yellow": "Žlutá",
+      "lime": "Limetková",
+      "cyan": "Azurová",
+      "indigo": "Indigová",
+      "rose": "Malinová",
+      "wine": "Vínová",
+      "brown": "Hnědá",
+      "olive": "Olivová",
+      "emerald": "Smaragdová"
     },
     "saveFailed": "Nepodařilo se uložit",
     "revealFailed": "Nelze zobrazit uložené heslo",

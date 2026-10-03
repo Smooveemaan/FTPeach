@@ -707,7 +707,16 @@
       "blue": "Bleu",
       "purple": "Violet",
       "pink": "Rose",
-      "teal": "Bleu sarcelle"
+      "teal": "Bleu sarcelle",
+      "yellow": "Jaune",
+      "lime": "Citron vert",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Framboise",
+      "wine": "Bordeaux",
+      "brown": "Marron",
+      "olive": "Olive",
+      "emerald": "Émeraude"
     },
     "saveFailed": "Impossible d'enregistrer",
     "revealFailed": "Impossible d'afficher le mot de passe enregistré",

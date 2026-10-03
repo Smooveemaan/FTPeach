@@ -715,7 +715,16 @@
       "blue": "Niebieski",
       "purple": "Fioletowy",
       "pink": "Różowy",
-      "teal": "Turkusowy"
+      "teal": "Turkusowy",
+      "yellow": "Żółty",
+      "lime": "Limonkowy",
+      "cyan": "Błękitny",
+      "indigo": "Indygo",
+      "rose": "Malinowy",
+      "wine": "Bordowy",
+      "brown": "Brązowy",
+      "olive": "Oliwkowy",
+      "emerald": "Szmaragdowy"
     },
     "saveFailed": "Nie udało się zapisać",
     "revealFailed": "Nie udało się wyświetlić zapisanego hasła",

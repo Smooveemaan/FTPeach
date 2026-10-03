@@ -699,7 +699,16 @@
       "blue": "Xanh dương",
       "purple": "Tím",
       "pink": "Hồng",
-      "teal": "Xanh mòng két"
+      "teal": "Xanh mòng két",
+      "yellow": "Vàng",
+      "lime": "Xanh chanh",
+      "cyan": "Xanh lơ",
+      "indigo": "Chàm",
+      "rose": "Mâm xôi",
+      "wine": "Đỏ rượu vang",
+      "brown": "Nâu",
+      "olive": "Ô liu",
+      "emerald": "Ngọc lục bảo"
     },
     "saveFailed": "Không thể lưu",
     "revealFailed": "Không thể hiển thị mật khẩu đã lưu",

@@ -699,7 +699,16 @@
       "blue": "Kék",
       "purple": "Lila",
       "pink": "Rózsaszín",
-      "teal": "Türkiz"
+      "teal": "Türkiz",
+      "yellow": "Sárga",
+      "lime": "Lime",
+      "cyan": "Cián",
+      "indigo": "Indigó",
+      "rose": "Málna",
+      "wine": "Bordó",
+      "brown": "Barna",
+      "olive": "Olíva",
+      "emerald": "Smaragd"
     },
     "saveFailed": "Nem sikerült menteni",
     "revealFailed": "A mentett jelszót nem sikerült megjeleníteni",

@@ -707,7 +707,16 @@
       "blue": "Azul",
       "purple": "Roxo",
       "pink": "Rosa",
-      "teal": "Azul-petróleo"
+      "teal": "Azul-petróleo",
+      "yellow": "Amarelo",
+      "lime": "Lima",
+      "cyan": "Ciano",
+      "indigo": "Índigo",
+      "rose": "Framboesa",
+      "wine": "Vinho",
+      "brown": "Marrom",
+      "olive": "Oliva",
+      "emerald": "Esmeralda"
     },
     "saveFailed": "Não foi possível salvar",
     "revealFailed": "Não foi possível exibir a senha salva",

@@ -34,6 +34,18 @@ type SecretField = 'password' | 'keyPassphrase';
 type SecretPresenceField = 'hasPassword' | 'hasKeyPassphrase';
 type SecretRemovalField = 'removePassword' | 'removeKeyPassphrase';
 
+/** Opens an appearance grid scrolled just far enough to show the chosen item,
+ * plus the grid's end padding so rounding cannot clip the item's border.
+ * Module-level so the ref stays stable and re-renders keep the user's scroll. */
+function revealCheckedItem(grid: HTMLDivElement | null) {
+  const item = grid?.querySelector<HTMLElement>('[aria-checked="true"]');
+  if (!grid || !item) return;
+  const slack = parseFloat(getComputedStyle(grid).paddingBlockEnd) || 0;
+  const bottom =
+    item.getBoundingClientRect().bottom - grid.getBoundingClientRect().top + grid.scrollTop;
+  grid.scrollTop = Math.max(0, bottom + slack - grid.clientHeight);
+}
+
 interface SiteEditorProps {
   form: SiteForm;
   folders: readonly ManagedSite[];
@@ -112,7 +124,7 @@ export default function SiteEditor({
       gap: 4,
       padding: 5,
       maxRows: 3,
-      scrollbarWidth: appearanceMenu === 'icon' ? 10 : 0,
+      scrollbarWidth: 10,
     },
   );
   const toggleAppearanceMenu = (type: AppearanceMenu) => {
@@ -273,7 +285,7 @@ export default function SiteEditor({
                 className="menu-dropdown site-appearance-dropdown site-icon-dropdown"
                 style={{ top: menuPos.top, left: menuPos.left }}
               >
-                <div className="menu-items" role="menu">
+                <div className="menu-items" role="menu" ref={revealCheckedItem}>
                   {SITE_ICONS.map((name) => (
                     <button
                       type="button"
@@ -324,10 +336,10 @@ export default function SiteEditor({
             </button>
             {appearanceMenu === 'color' && menuPos && (
               <div
-                className="menu-dropdown site-appearance-dropdown"
+                className="menu-dropdown site-appearance-dropdown site-color-dropdown"
                 style={{ top: menuPos.top, left: menuPos.left }}
               >
-                <div className="menu-items" role="menu">
+                <div className="menu-items" role="menu" ref={revealCheckedItem}>
                   {SITE_COLORS.map(({ key, value }) => (
                     <button
                       type="button"

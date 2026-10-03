@@ -699,7 +699,16 @@
       "blue": "Mavi",
       "purple": "Mor",
       "pink": "Pembe",
-      "teal": "Turkuaz"
+      "teal": "Turkuaz",
+      "yellow": "Sarı",
+      "lime": "Limon yeşili",
+      "cyan": "Camgöbeği",
+      "indigo": "Çivit",
+      "rose": "Ahududu",
+      "wine": "Bordo",
+      "brown": "Kahverengi",
+      "olive": "Zeytin yeşili",
+      "emerald": "Zümrüt"
     },
     "saveFailed": "Kaydedilemedi",
     "revealFailed": "Kaydedilen şifre gösterilemedi",

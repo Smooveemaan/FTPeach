@@ -699,7 +699,16 @@
       "blue": "Blauw",
       "purple": "Paars",
       "pink": "Roze",
-      "teal": "Blauwgroen"
+      "teal": "Blauwgroen",
+      "yellow": "Geel",
+      "lime": "Limoen",
+      "cyan": "Cyaan",
+      "indigo": "Indigo",
+      "rose": "Framboos",
+      "wine": "Wijnrood",
+      "brown": "Bruin",
+      "olive": "Olijf",
+      "emerald": "Smaragd"
     },
     "saveFailed": "Opslaan mislukt",
     "revealFailed": "Het opgeslagen wachtwoord kon niet worden weergegeven",

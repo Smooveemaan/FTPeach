@@ -699,7 +699,16 @@
       "blue": "Blue",
       "purple": "Purple",
       "pink": "Pink",
-      "teal": "Teal"
+      "teal": "Teal",
+      "yellow": "Yellow",
+      "lime": "Lime",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Rose",
+      "wine": "Wine",
+      "brown": "Brown",
+      "olive": "Olive",
+      "emerald": "Emerald"
     },
     "saveFailed": "Couldn't save",
     "revealFailed": "Could not show the saved secret",

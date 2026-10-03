@@ -699,7 +699,16 @@
       "blue": "Blå",
       "purple": "Lilla",
       "pink": "Lyserød",
-      "teal": "Blågrøn"
+      "teal": "Blågrøn",
+      "yellow": "Gul",
+      "lime": "Lime",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "rose": "Hindbær",
+      "wine": "Vinrød",
+      "brown": "Brun",
+      "olive": "Oliven",
+      "emerald": "Smaragd"
     },
     "saveFailed": "Det lykkedes ikke at gemme",
     "revealFailed": "Den gemte adgangskode kunne ikke vises",

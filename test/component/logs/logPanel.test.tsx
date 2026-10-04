@@ -187,3 +187,14 @@ test('lines render in blocks that keep their place across new lines', () => {
   expect(container.querySelector('.log-chunk')).toBe(firstBlock);
   expect(shownLines(container).at(-1)).toBe('line 251');
 });
+
+test('Ctrl+A in the log selects its lines, for copying', () => {
+  const { container } = renderPanel([line(1, 'first'), line(2, 'second')]);
+  const body = container.querySelector<HTMLElement>('.log-panel-body')!;
+  body.focus();
+  expect(fireEvent.keyDown(body, { code: 'KeyA', ctrlKey: true })).toBe(false);
+  const selected = document.getSelection()!.toString();
+  expect(selected).toContain('first');
+  expect(selected).toContain('second');
+  expect(selected).not.toContain('Probe');
+});

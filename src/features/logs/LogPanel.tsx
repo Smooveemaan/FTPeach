@@ -501,7 +501,27 @@ export default function LogPanel({
           </span>
         )}
       </div>
-      <div className="log-panel-body" ref={bodyRef} onScroll={handleScroll}>
+      <div
+        className="log-panel-body"
+        ref={bodyRef}
+        onScroll={handleScroll}
+        // Focusable, so a click into the log makes Ctrl+A select the lines,
+        // for copying, instead of nothing.
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.code !== 'KeyA' || !(event.ctrlKey || event.metaKey) || event.altKey) return;
+          const lines = event.currentTarget.querySelectorAll('.log-chunk');
+          const first = lines[0];
+          const last = lines[lines.length - 1];
+          if (!first || !last) return;
+          event.preventDefault();
+          const range = document.createRange();
+          range.setStartBefore(first);
+          range.setEndAfter(last);
+          document.getSelection()?.removeAllRanges();
+          document.getSelection()?.addRange(range);
+        }}
+      >
         {/* Hidden always-mounted probe for the line-height snapping above —
             pinned to the CSS-authored 1.3 ratio regardless of what the
             measurement effect sets on .log-panel-body itself. */}

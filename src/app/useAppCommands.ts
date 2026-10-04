@@ -50,6 +50,15 @@ export function useAppCommands(
         // This listener captures, so it runs before a recorder can claim the keys.
         if (event.target instanceof Element && event.target.closest('.shortcut-recorder.recording'))
           return;
+        // The window's own select-all would take the log and every label;
+        // only the file panes (and text fields, above) select with Ctrl+A.
+        if (
+          event.code === 'KeyA' &&
+          (event.ctrlKey || event.metaKey) &&
+          !event.altKey &&
+          !(event.target instanceof Element && event.target.closest('.pane'))
+        )
+          event.preventDefault();
         const action = resolveGlobalAction(event, keyboardShortcutsRef.current);
         if (!action) return;
         const handled = dispatchAppCommand(action, commandsRef.current);

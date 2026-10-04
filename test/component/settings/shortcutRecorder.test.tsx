@@ -35,3 +35,15 @@ test('a key combination being recorded does not also run the app command bound t
   fireEvent.keyDown(recorder, { code: 'KeyS', key: 's', ctrlKey: true });
   expect(onSaveSite).toHaveBeenCalledOnce();
 });
+
+test('Ctrl+A selects nothing outside the file panes and text fields', () => {
+  render(<Harness onSaveSite={() => {}} onChange={() => {}} />);
+  const pane = document.createElement('div');
+  pane.className = 'pane';
+  const input = document.createElement('input');
+  document.body.append(pane, input);
+  const keys = { code: 'KeyA', key: 'a', ctrlKey: true };
+  expect(fireEvent.keyDown(screen.getByRole('button'), keys)).toBe(false);
+  expect(fireEvent.keyDown(pane, keys)).toBe(true);
+  expect(fireEvent.keyDown(input, keys)).toBe(true);
+});

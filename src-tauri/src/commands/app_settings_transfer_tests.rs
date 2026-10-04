@@ -274,3 +274,13 @@ fn exported_site_round_trips_through_import_validation() {
     unknown.insert("encoding".into(), serde_json::json!("klingon"));
     assert!(validate_import_site(&unknown, 0).is_err());
 }
+
+#[test]
+fn an_empty_or_foreign_file_is_named_as_not_a_settings_file() {
+    let empty = serde_json::from_str::<ImportDocument>("").err().unwrap();
+    assert!(parse_failure_reason(&empty).contains("not a settings file exported by FTPeach"));
+    let foreign = serde_json::from_str::<ImportDocument>(r#"{"name":"x"}"#)
+        .err()
+        .unwrap();
+    assert!(parse_failure_reason(&foreign).contains("unknown field `name`"));
+}

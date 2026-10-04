@@ -22,6 +22,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Renaming a file on an FTP or SFTP server to the same name in other letter case works instead
+  of failing with "An unexpected error occurred".
+- A server that turns you away because it already has its maximum number of users says so,
+  instead of reporting that the connection was unexpectedly closed.
+- Importing a file that is not FTPeach settings says so, instead of "EOF while parsing a
+  value".
+- A missing key or certificate file is named by its path when connecting, instead of "File or
+  folder not found".
+- A network folder that was not chosen with Choose folder… is refused with a message that says
+  how to open it, instead of "You don't have permission".
+- A WebDAV address with a user name, a password, ? or # in it says what to change, instead of
+  "The provided value is invalid".
+- An invalid mode in SFTP permissions is shown in the dialog, which stays open with what you
+  typed.
+- The log names the reason a WebDAV connection failed, and says when FTP uses active mode.
 - Errors about the master password and the proxy test stay on screen until you try again or
   change the field, instead of fading out after two seconds.
 - The proxy test result goes away when a proxy field changes, and the settings no longer jump

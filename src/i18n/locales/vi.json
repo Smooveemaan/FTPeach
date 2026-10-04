@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "Quyền truy cập SFTP",
-    "label": "Chế độ bát phân cho “{{name}}” (ví dụ: 644 hoặc 0755)"
+    "label": "Chế độ bát phân cho “{{name}}” (ví dụ: 644 hoặc 0755)",
+    "invalid": "Nhập ba hoặc bốn chữ số từ 0 đến 7, ví dụ 644 hoặc 0755."
   },
   "filePane": {
     "emptyFolder": "Thư mục trống",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "Quá trình thương lượng SSH đã thất bại. Máy chủ và FTPeach không thể thống nhất về một thuật toán SSH hoặc phiên bản giao thức tương thích.",
     "proxyFailed": "Kết nối proxy không thành công. Vui lòng kiểm tra loại proxy, địa chỉ, thông tin đăng nhập và xem proxy có kết nối được tới máy chủ đích hay không.",
     "keyReadFailed": "Không thể đọc được khóa — tệp bị hỏng hoặc cụm mật khẩu không chính xác.",
+    "credentialFileMissing": "Không tìm thấy tệp khóa hoặc chứng chỉ: {{path}}",
+    "webdavUrlNotAbsolute": "Nhập địa chỉ WebDAV đầy đủ, bắt đầu bằng http:// hoặc https://.",
+    "webdavUrlCredentials": "Xóa tên người dùng và mật khẩu khỏi địa chỉ rồi nhập chúng vào các trường “Tên người dùng” và “Mật khẩu”.",
+    "webdavUrlQuery": "Địa chỉ WebDAV không được chứa ? hoặc #: chỉ nhập máy chủ và đường dẫn thư mục.",
+    "networkPathNotChosen": "FTPeach chỉ mở đường dẫn mạng sau khi bạn chọn nó trong hộp thoại, chẳng hạn “Chọn thư mục…”.",
     "accessDenied": "Bạn không có quyền thực hiện thao tác này.",
     "notFound": "Không tìm thấy tệp hoặc thư mục.",
     "fileOrFolderExists": "Đã có một tệp hoặc thư mục có tên đó rồi.",

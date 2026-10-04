@@ -10,6 +10,8 @@ interface PromptDialogProps {
   confirmLabel?: ReactNode;
   onSubmit: (value: string) => unknown;
   onClose: () => void;
+  /** An error to show under the field instead of submitting, or null. */
+  validate?: (value: string) => string | null;
 }
 
 // Electron's renderer does not implement window.prompt() (it throws), so
@@ -21,13 +23,18 @@ export default function PromptDialog({
   confirmLabel,
   onSubmit,
   onClose,
+  validate,
 }: PromptDialogProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState(defaultValue);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = () => {
     const trimmed = value.trim();
     if (!trimmed) return;
+    const invalid = validate?.(trimmed) ?? null;
+    setError(invalid);
+    if (invalid) return;
     onSubmit(trimmed);
     onClose();
   };
@@ -51,12 +58,21 @@ export default function PromptDialog({
           type="text"
           autoFocus
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError(null);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleSubmit();
           }}
         />
       </label>
+      {error && (
+        <p className="settings-hint settings-warning" role="alert">
+          {error}
+        </p>
+      )}
     </Modal>
   );
 }

@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP 权限",
-    "label": "“{{name}}”的八进制权限（例如 644 或 0755）"
+    "label": "“{{name}}”的八进制权限（例如 644 或 0755）",
+    "invalid": "请输入三位或四位 0 到 7 之间的数字，例如 644 或 0755。"
   },
   "filePane": {
     "emptyFolder": "文件夹为空",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "SSH 协商失败。服务器和 FTPeach 无法就兼容的 SSH 算法或协议版本达成一致。",
     "proxyFailed": "代理连接失败。请检查代理类型、地址、凭据，以及代理能否连接到目标服务器。",
     "keyReadFailed": "无法读取密钥——文件已损坏或密码短语不正确。",
+    "credentialFileMissing": "找不到密钥或证书文件：{{path}}",
+    "webdavUrlNotAbsolute": "请输入完整的 WebDAV 地址，以 http:// 或 https:// 开头。",
+    "webdavUrlCredentials": "请从地址中删除用户名和密码，并将它们填入“用户名”和“密码”字段。",
+    "webdavUrlQuery": "WebDAV 地址不能包含 ? 或 #：只需输入服务器和文件夹路径。",
+    "networkPathNotChosen": "只有在对话框中（例如通过“选择文件夹…”）选择过的网络路径，FTPeach 才会打开。",
     "accessDenied": "您无权执行此操作。",
     "notFound": "找不到该文件或文件夹。",
     "fileOrFolderExists": "已经存在一个同名的文件或文件夹。",

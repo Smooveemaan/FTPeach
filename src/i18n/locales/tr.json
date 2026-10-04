@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP izinleri",
-    "label": "{{name}} için sekizlik mod (örneğin, 644 veya 0755)"
+    "label": "{{name}} için sekizlik mod (örneğin, 644 veya 0755)",
+    "invalid": "0 ile 7 arasında üç veya dört rakam girin, örneğin 644 veya 0755."
   },
   "filePane": {
     "emptyFolder": "Klasör boş",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "SSH anlaşması başarısız oldu. Sunucu ile FTPeach, uyumlu bir SSH algoritması veya protokol sürümü konusunda anlaşamadı.",
     "proxyFailed": "Proxy bağlantısı başarısız oldu. Proxy türünü, adresini ve kimlik bilgilerini, ayrıca proxy'nin hedef sunucuya ulaşıp ulaşamadığını kontrol edin.",
     "keyReadFailed": "Anahtar okunamadı — dosya bozuk ya da anahtar parolası yanlış.",
+    "credentialFileMissing": "Anahtar veya sertifika dosyası bulunamadı: {{path}}",
+    "webdavUrlNotAbsolute": "http:// veya https:// ile başlayan tam WebDAV adresini girin.",
+    "webdavUrlCredentials": "Kullanıcı adını ve şifreyi adresten çıkarın ve \"Kullanıcı adı\" ile \"Şifre\" alanlarına girin.",
+    "webdavUrlQuery": "WebDAV adresi ? veya # içeremez: yalnızca sunucuyu ve klasör yolunu girin.",
+    "networkPathNotChosen": "FTPeach bir ağ yolunu ancak onu \"Klasör seç…\" gibi bir iletişim kutusunda seçtikten sonra açar.",
     "accessDenied": "Bu işlem için izniniz yok.",
     "notFound": "Dosya veya klasör bulunamadı.",
     "fileOrFolderExists": "Bu isimde bir dosya veya klasör zaten mevcut.",

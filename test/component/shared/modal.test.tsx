@@ -88,6 +88,29 @@ describe('critical dialog accessibility', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  test('a prompt that fails validation keeps the dialog and the input', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <PromptDialog
+        title="Permissions"
+        label="Mode"
+        defaultValue="644"
+        validate={(value) => (value === '999' ? 'Bad mode' : null)}
+        onSubmit={onSubmit}
+        onClose={onClose}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Mode' });
+    await user.clear(input);
+    await user.type(input, '999{Enter}');
+    expect(screen.getByRole('alert').textContent).toBe('Bad mode');
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    expect((input as HTMLInputElement).value).toBe('999');
+  });
+
   test('Tab belongs to the dialog on top, and skips hidden fields', async () => {
     const user = userEvent.setup();
     const tree = (showUpper: boolean) => (

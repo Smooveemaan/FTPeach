@@ -775,7 +775,7 @@ impl ProtocolBackend for WebDavBackend {
         if let Err(err) = outcome {
             self.log_key(
                 "connectFailed",
-                serde_json::json!({ "error": format!("{err}") }),
+                serde_json::json!({ "error": format!("{err:#}") }),
                 LogKind::Error,
             );
             return Err(err);

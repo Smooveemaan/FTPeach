@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP 權限",
-    "label": "「{{name}}」的八進位權限（例如 644 或 0755）"
+    "label": "「{{name}}」的八進位權限（例如 644 或 0755）",
+    "invalid": "請輸入三位或四位 0 到 7 之間的數字，例如 644 或 0755。"
   },
   "filePane": {
     "emptyFolder": "資料夾為空",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "SSH 交涉失敗。伺服器與 FTPeach 無法協調出相容的 SSH 演算法或通訊協定版本。",
     "proxyFailed": "Proxy 連線失敗。請檢查 Proxy 類型、位址、認證資訊，以及 Proxy 是否能連到目標伺服器。",
     "keyReadFailed": "無法讀取金鑰——檔案已損毀或密語不正確。",
+    "credentialFileMissing": "找不到金鑰或憑證檔案：{{path}}",
+    "webdavUrlNotAbsolute": "請輸入完整的 WebDAV 位址，以 http:// 或 https:// 開頭。",
+    "webdavUrlCredentials": "請從位址中移除使用者名稱和密碼，並將它們填入「使用者名稱」和「密碼」欄位。",
+    "webdavUrlQuery": "WebDAV 位址不能包含 ? 或 #：只需輸入伺服器和資料夾路徑。",
+    "networkPathNotChosen": "只有在對話方塊中（例如透過「選擇資料夾…」）選擇過的網路路徑，FTPeach 才會開啟。",
     "accessDenied": "您無權執行此操作。",
     "notFound": "未找到檔案或資料夾。",
     "fileOrFolderExists": "具有該名稱的檔案或資料夾已存在。",

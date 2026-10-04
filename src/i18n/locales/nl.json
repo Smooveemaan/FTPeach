@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP-rechten",
-    "label": "Octale modus voor \"{{name}}\" (bijvoorbeeld 644 of 0755)"
+    "label": "Octale modus voor \"{{name}}\" (bijvoorbeeld 644 of 0755)",
+    "invalid": "Voer drie of vier cijfers van 0 tot en met 7 in, bijvoorbeeld 644 of 0755."
   },
   "filePane": {
     "emptyFolder": "De map is leeg",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "De SSH-onderhandeling is mislukt. De server en FTPeach konden geen overeenstemming bereiken over een compatibel SSH-algoritme of een compatibele protocolversie.",
     "proxyFailed": "De proxyverbinding is mislukt. Controleer het proxytype, het adres en de inloggegevens, en kijk of de proxyserver de doelserver kan bereiken.",
     "keyReadFailed": "De sleutel kon niet worden gelezen — het bestand is beschadigd of de wachtwoordzin is onjuist.",
+    "credentialFileMissing": "Het sleutel- of certificaatbestand is niet gevonden: {{path}}",
+    "webdavUrlNotAbsolute": "Voer het volledige WebDAV-adres in, beginnend met http:// of https://.",
+    "webdavUrlCredentials": "Haal de gebruikersnaam en het wachtwoord uit het adres en vul ze in bij de velden \"Gebruikersnaam\" en \"Wachtwoord\".",
+    "webdavUrlQuery": "Een WebDAV-adres mag geen ? of # bevatten: voer alleen de server en het pad naar de map in.",
+    "networkPathNotChosen": "FTPeach opent een netwerkpad pas nadat je het in een dialoogvenster hebt gekozen, zoals \"Map kiezen…\".",
     "accessDenied": "Je hebt geen toestemming voor deze bewerking.",
     "notFound": "Bestand of map niet gevonden.",
     "fileOrFolderExists": "Er bestaat al een bestand of map met die naam.",

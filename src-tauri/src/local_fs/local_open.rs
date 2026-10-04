@@ -26,6 +26,14 @@ static EXECUTABLE_EXTENSIONS: std::sync::LazyLock<Vec<String>> = std::sync::Lazy
     .expect("shared executable extensions must be a JSON array of strings")
 });
 
+/// A share is opened only once the user picked it in a native dialog.
+fn network_path_not_chosen() -> CommandError {
+    CommandError::new(
+        ErrorCode::NetworkPathNotChosen,
+        "Network paths require native-dialog confirmation",
+    )
+}
+
 fn denied(message: &str) -> CommandError {
     CommandError::new(ErrorCode::PermissionDenied, message)
 }
@@ -123,7 +131,7 @@ impl ApprovedLocalPaths {
         if confirmed {
             Ok(())
         } else {
-            Err(denied("Network paths require native-dialog confirmation"))
+            Err(network_path_not_chosen())
         }
     }
 
@@ -195,7 +203,7 @@ impl ApprovedLocalPaths {
                 .iter()
                 .any(|root| canonical_key_is_within(&canonical_key, root));
             if !confirmed {
-                return Err(denied("Network paths require native-dialog confirmation"));
+                return Err(network_path_not_chosen());
             }
         }
         Ok(canonical)
@@ -227,7 +235,7 @@ impl ApprovedLocalPaths {
                 .iter()
                 .any(|root| canonical_key_is_within(&canonical_key, root))
         {
-            return Err(denied("Network paths require native-dialog confirmation"));
+            return Err(network_path_not_chosen());
         }
         let executable = is_executable(&canonical);
         match (kind, executable) {
@@ -314,11 +322,7 @@ mod tests {
         let error = state
             .validate_canonical(path.clone(), OpenKind::Document)
             .unwrap_err();
-        assert_eq!(error.code, ErrorCode::PermissionDenied);
-        assert_eq!(
-            error.message,
-            "Network paths require native-dialog confirmation"
-        );
+        assert_eq!(error.code, ErrorCode::NetworkPathNotChosen);
 
         state
             .network_paths
@@ -492,11 +496,7 @@ mod preflight_tests {
         let state = ApprovedLocalPaths::default();
         let started = std::time::Instant::now();
         let error = state.preflight(Path::new(UNREACHABLE)).unwrap_err();
-        assert_eq!(error.code, ErrorCode::PermissionDenied);
-        assert_eq!(
-            error.message,
-            "Network paths require native-dialog confirmation"
-        );
+        assert_eq!(error.code, ErrorCode::NetworkPathNotChosen);
         assert!(
             started.elapsed() < std::time::Duration::from_millis(200),
             "the preflight waited on the network: {:?}",

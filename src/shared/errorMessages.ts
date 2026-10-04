@@ -23,6 +23,8 @@ const ERROR_CODE_KEYS = {
   resourceLimit: 'errors.invalidInput',
   storageFull: 'errors.diskFull',
   keyUnreadable: 'errors.keyReadFailed',
+  credentialFileMissing: 'errors.credentialFileMissing',
+  networkPathNotChosen: 'errors.networkPathNotChosen',
   busy: 'errors.locationBusy',
   fileInUse: 'errors.fileBusy',
   vaultLocked: 'settings.security.unlockRequired',
@@ -53,9 +55,28 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
   if (!raw) return raw;
   if (typeof raw === 'object') {
     const key = lookupByUnknownKey(ERROR_CODE_KEYS, raw.code);
+    // The one code whose message is data: the path of the missing file.
+    if (raw.code === 'credentialFileMissing')
+      return i18n.t('errors.credentialFileMissing', { path: raw.message });
     return key ? i18n.t(key) : raw.message || raw.code;
   }
   return raw;
+}
+
+/** What is wrong with a WebDAV address, as the backend would refuse it, or null. */
+export function webdavUrlError(address: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(address);
+  } catch {
+    return i18n.t('errors.webdavUrlNotAbsolute');
+  }
+  if (!['http:', 'https:'].includes(url.protocol) || !url.hostname)
+    return i18n.t('errors.webdavUrlNotAbsolute');
+  if (url.username || url.password) return i18n.t('errors.webdavUrlCredentials');
+  if (url.search || url.hash || address.includes('?') || address.includes('#'))
+    return i18n.t('errors.webdavUrlQuery');
+  return null;
 }
 
 export function friendlyConnectError(raw: FriendlyErrorInput): string | null | undefined {

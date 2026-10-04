@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP permissions",
-    "label": "Octal mode for {{name}} (for example, 644 or 0755)"
+    "label": "Octal mode for {{name}} (for example, 644 or 0755)",
+    "invalid": "Enter three or four digits from 0 to 7, for example 644 or 0755."
   },
   "filePane": {
     "emptyFolder": "Folder is empty",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "SSH negotiation failed. The server and FTPeach could not agree on a compatible SSH algorithm or protocol version.",
     "proxyFailed": "The proxy connection failed. Check the proxy type, address, credentials, and whether it can reach the target server.",
     "keyReadFailed": "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
+    "credentialFileMissing": "The key or certificate file was not found: {{path}}",
+    "webdavUrlNotAbsolute": "Enter the full WebDAV address, starting with http:// or https://.",
+    "webdavUrlCredentials": "Remove the user name and password from the address and enter them in the Username and Password fields.",
+    "webdavUrlQuery": "A WebDAV address can't contain ? or #: enter only the server and the folder path.",
+    "networkPathNotChosen": "FTPeach opens a network path only after you choose it in a dialog, such as Choose folder…",
     "accessDenied": "You don't have permission for this operation.",
     "notFound": "File or folder not found.",
     "fileOrFolderExists": "A file or folder with that name already exists.",

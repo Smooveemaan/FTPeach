@@ -7,7 +7,7 @@
 
 use crate::application::session_service;
 use crate::domain::{ConnectRequest, WindowConnectionSettings};
-use crate::ipc::CommandResult;
+use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Sessions};
@@ -72,6 +72,14 @@ pub async fn session_connect(
     for path in [&server.key_path, &server.ca_cert_path] {
         if !path.is_empty() {
             approved_paths.preflight(std::path::Path::new(path))?;
+            if std::fs::metadata(path)
+                .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+            {
+                return Err(CommandError::new(
+                    ErrorCode::CredentialFileMissing,
+                    path.as_str(),
+                ));
+            }
         }
     }
     let outcome = session_service::connect(

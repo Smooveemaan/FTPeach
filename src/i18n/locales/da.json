@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP-rettigheder",
-    "label": "Oktalformat til »{{name}}« (f.eks. 644 eller 0755)"
+    "label": "Oktalformat til »{{name}}« (f.eks. 644 eller 0755)",
+    "invalid": "Indtast tre eller fire cifre fra 0 til 7, f.eks. 644 eller 0755."
   },
   "filePane": {
     "emptyFolder": "Mappen er tom",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "SSH-forhandlingen mislykkedes. Serveren og FTPeach kunne ikke nå til enighed om en kompatibel SSH-algoritme eller protokolversion.",
     "proxyFailed": "Proxyforbindelsen mislykkedes. Kontrollér proxytypen, adressen og loginoplysningerne, og om proxyen kan nå målserveren.",
     "keyReadFailed": "Det var ikke muligt at læse nøglen – filen er beskadiget, eller adgangssætningen er forkert.",
+    "credentialFileMissing": "Nøgle- eller certifikatfilen blev ikke fundet: {{path}}",
+    "webdavUrlNotAbsolute": "Indtast hele WebDAV-adressen, der begynder med http:// eller https://.",
+    "webdavUrlCredentials": "Fjern brugernavn og adgangskode fra adressen, og indtast dem i felterne »Brugernavn« og »Adgangskode«.",
+    "webdavUrlQuery": "En WebDAV-adresse må ikke indeholde ? eller #: indtast kun serveren og stien til mappen.",
+    "networkPathNotChosen": "FTPeach åbner kun en netværkssti, når du har valgt den i en dialogboks, f.eks. »Vælg mappe…«.",
     "accessDenied": "Du har ikke tilladelse til denne handling.",
     "notFound": "Filen eller mappen blev ikke fundet.",
     "fileOrFolderExists": "Der findes allerede en fil eller mappe med det navn.",

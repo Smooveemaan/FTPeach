@@ -110,7 +110,8 @@
   },
   "chmodDialog": {
     "title": "Autorisations SFTP",
-    "label": "Mode octal pour « {{name}} » (par exemple, 644 ou 0755)"
+    "label": "Mode octal pour « {{name}} » (par exemple, 644 ou 0755)",
+    "invalid": "Saisissez trois ou quatre chiffres de 0 à 7, par exemple 644 ou 0755."
   },
   "filePane": {
     "emptyFolder": "Le dossier est vide",
@@ -308,6 +309,11 @@
     "sshNegotiationFailed": "Échec de la négociation SSH. Le serveur et FTPeach n'ont pas pu s'accorder sur un algorithme SSH ou une version de protocole compatibles.",
     "proxyFailed": "La connexion au proxy a échoué. Vérifiez le type de proxy, son adresse, ses identifiants et assurez-vous qu'il peut accéder au serveur cible.",
     "keyReadFailed": "Impossible de lire la clé : le fichier est corrompu ou la phrase secrète est incorrecte.",
+    "credentialFileMissing": "Le fichier de clé ou de certificat est introuvable : {{path}}",
+    "webdavUrlNotAbsolute": "Saisissez l'adresse WebDAV complète, commençant par http:// ou https://.",
+    "webdavUrlCredentials": "Retirez le nom d'utilisateur et le mot de passe de l'adresse et saisissez-les dans les champs « Nom d'utilisateur » et « Mot de passe ».",
+    "webdavUrlQuery": "Une adresse WebDAV ne peut pas contenir ? ni # : saisissez seulement le serveur et le chemin du dossier.",
+    "networkPathNotChosen": "FTPeach n'ouvre un chemin réseau qu'après que vous l'avez choisi dans une boîte de dialogue, par exemple « Choisir un dossier… ».",
     "accessDenied": "Vous ne disposez pas des autorisations nécessaires pour effectuer cette opération.",
     "notFound": "Fichier ou dossier introuvable.",
     "fileOrFolderExists": "Un fichier ou un dossier portant ce nom existe déjà.",

@@ -1474,6 +1474,11 @@ impl ProtocolBackend for FtpBackend {
                 this.log_response_body(welcome.as_bytes());
             }
             if active_mode {
+                // suppaftp sends PORT/EPRT itself, out of sight of this log.
+                this.log_kind(
+                    "Active mode: the server connects back to this computer for each transfer (PORT/EPRT)",
+                    LogKind::Status,
+                );
                 stream.set_mode(suppaftp::types::Mode::Active);
                 // Behind the encoding relay the control peer is the loopback;
                 // data connections are taken only from the server itself.

@@ -168,8 +168,9 @@ pub fn validate_remote_path(path: &str) -> BackendResult<()> {
 
 /// A conservative lexical guard; native directory rename remains responsible
 /// for server aliases and mount semantics. Never emulate it with copy/delete.
+/// Renaming an entry to its own name in another case is not a move into itself.
 pub fn validate_remote_relationship(source: &str, destination: &str) -> BackendResult<()> {
-    fn components(path: &str) -> Vec<String> {
+    fn components(path: &str) -> Vec<&str> {
         let mut parts = Vec::new();
         for part in path.split(['/', '\\']) {
             match part {
@@ -177,17 +178,30 @@ pub fn validate_remote_relationship(source: &str, destination: &str) -> BackendR
                 ".." => {
                     parts.pop();
                 }
-                _ => parts.push(part.to_lowercase()),
+                _ => parts.push(part),
             }
         }
         parts
     }
-    let source = components(source);
-    let target = components(destination);
-    anyhow::ensure!(
-        !target.starts_with(&source),
-        "{destination}: Destination is the source or is inside the source folder"
-    );
+    let folded = |parts: &[&str]| {
+        parts
+            .iter()
+            .map(|part| part.to_lowercase())
+            .collect::<Vec<_>>()
+    };
+    let (source, target) = (components(source), components(destination));
+    let (source_folded, target_folded) = (folded(&source), folded(&target));
+    let same_parent = source.split_last().map(|(_, parent)| parent)
+        == target.split_last().map(|(_, parent)| parent);
+    if target_folded == source_folded && target != source && same_parent {
+        return Ok(());
+    }
+    if target_folded.starts_with(&source_folded) {
+        anyhow::bail!(crate::ipc::CommandError::new(
+            crate::ipc::ErrorCode::InvalidInput,
+            format!("{destination}: Destination is the source or is inside the source folder"),
+        ));
+    }
     Ok(())
 }
 
@@ -330,6 +344,17 @@ mod log_safety_tests {
             );
         }
         assert!(validate_remote_relationship("/data/folder", "/data/folder-other").is_ok());
+    }
+
+    #[test]
+    fn a_case_only_rename_is_not_a_move_into_itself() {
+        assert!(validate_remote_relationship("/data/a.txt", "/data/A.txt").is_ok());
+        assert!(validate_remote_relationship("/data/folder", "/DATA/FOLDER").is_err());
+        let error = validate_remote_relationship("/data/folder", "/data/folder/child").unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::InvalidInput
+        );
     }
 
     #[test]

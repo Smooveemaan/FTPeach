@@ -110,7 +110,8 @@
   },
   "chmodDialog": {
     "title": "Permissões SFTP",
-    "label": "Modo octal para “{{name}}” (por exemplo, 644 ou 0755)"
+    "label": "Modo octal para “{{name}}” (por exemplo, 644 ou 0755)",
+    "invalid": "Digite três ou quatro algarismos de 0 a 7, por exemplo 644 ou 0755."
   },
   "filePane": {
     "emptyFolder": "A pasta está vazia",
@@ -308,6 +309,11 @@
     "sshNegotiationFailed": "Falha na negociação SSH. O servidor e o FTPeach não conseguiram chegar a um acordo sobre um algoritmo SSH ou uma versão de protocolo compatível.",
     "proxyFailed": "A conexão com o proxy falhou. Verifique o tipo de proxy, o endereço, as credenciais e se o proxy consegue acessar o servidor de destino.",
     "keyReadFailed": "Não foi possível ler a chave — o arquivo está corrompido ou a frase secreta está incorreta.",
+    "credentialFileMissing": "O arquivo da chave ou do certificado não foi encontrado: {{path}}",
+    "webdavUrlNotAbsolute": "Digite o endereço WebDAV completo, começando com http:// ou https://.",
+    "webdavUrlCredentials": "Tire o nome de usuário e a senha do endereço e digite-os nos campos “Nome de usuário” e “Senha”.",
+    "webdavUrlQuery": "Um endereço WebDAV não pode conter ? nem #: digite só o servidor e o caminho da pasta.",
+    "networkPathNotChosen": "O FTPeach só abre um caminho de rede depois que você o escolhe em uma caixa de diálogo, como “Escolher pasta…”.",
     "accessDenied": "Você não tem permissão para realizar esta operação.",
     "notFound": "Arquivo ou pasta não encontrados.",
     "fileOrFolderExists": "Já existe um arquivo ou pasta com esse nome.",

@@ -5,6 +5,7 @@ import {
   commandResultError,
   friendlyError,
   friendlyConnectError,
+  webdavUrlError,
 } from '../../../src/shared/errorMessages.ts';
 import type { CommandErrorCode } from '../../../src/platform/ipcContracts.ts';
 
@@ -101,6 +102,10 @@ test('friendlyError localizes every structured command error code', () => {
     resourceLimit: 'The provided value is invalid.',
     storageFull: 'Not enough disk space.',
     keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
+    credentialFileMissing:
+      'The key or certificate file was not found: unlocalized backend fallback',
+    networkPathNotChosen:
+      'FTPeach opens a network path only after you choose it in a dialog, such as Choose folder…',
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
     fileInUse: 'The file is in use by another process.',
     vaultLocked: 'Unlock vault',
@@ -143,5 +148,19 @@ test('friendlyError supports a secondary Unicode locale', async () => {
   assert.equal(
     friendlyError({ code: 'authFailed', message: 'Authentication failed' }),
     '\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u043b\u043e\u0433\u0438\u043d \u0438\u043b\u0438 \u043f\u0430\u0440\u043e\u043b\u044c.',
+  );
+});
+
+test('a WebDAV address says what is wrong with it', () => {
+  assert.match(webdavUrlError('dav.example.com') ?? '', /http:\/\//);
+  assert.match(webdavUrlError('https://user:pw@dav.example.com') ?? '', /user name and password/);
+  assert.match(webdavUrlError('https://dav.example.com/?a=1') ?? '', /\? or #/);
+  assert.equal(webdavUrlError('https://dav.example.com/files'), null);
+});
+
+test('a missing key or certificate is named by its path', () => {
+  assert.equal(
+    friendlyError({ code: 'credentialFileMissing', message: 'C:/keys/id_ed25519' }),
+    'The key or certificate file was not found: C:/keys/id_ed25519',
   );
 });

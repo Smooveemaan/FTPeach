@@ -110,7 +110,8 @@
   },
   "chmodDialog": {
     "title": "Permisiuni SFTP",
-    "label": "Mod octal pentru „{{name}}” (de exemplu, 644 sau 0755)"
+    "label": "Mod octal pentru „{{name}}” (de exemplu, 644 sau 0755)",
+    "invalid": "Introduceți trei sau patru cifre de la 0 la 7, de exemplu 644 sau 0755."
   },
   "filePane": {
     "emptyFolder": "Folderul este gol",
@@ -308,6 +309,11 @@
     "sshNegotiationFailed": "Negocierea SSH a eșuat. Serverul și FTPeach nu au reușit să ajungă la un acord cu privire la un algoritm SSH compatibil sau la o versiune compatibilă a protocolului.",
     "proxyFailed": "Conexiunea prin proxy a eșuat. Verificați tipul de proxy, adresa, datele de autentificare și dacă proxy-ul poate ajunge la serverul țintă.",
     "keyReadFailed": "Nu s-a putut citi cheia — fișierul este corupt sau fraza de acces este incorectă.",
+    "credentialFileMissing": "Fișierul cheii sau al certificatului nu a fost găsit: {{path}}",
+    "webdavUrlNotAbsolute": "Introduceți adresa WebDAV completă, care începe cu http:// sau https://.",
+    "webdavUrlCredentials": "Scoateți numele de utilizator și parola din adresă și introduceți-le în câmpurile „Nume de utilizator” și „Parolă”.",
+    "webdavUrlQuery": "O adresă WebDAV nu poate conține ? sau #: introduceți doar serverul și calea folderului.",
+    "networkPathNotChosen": "FTPeach deschide o cale din rețea doar după ce o alegeți într-o casetă de dialog, cum ar fi „Alege un folder…”.",
     "accessDenied": "Nu aveți permisiunea necesară pentru această operațiune.",
     "notFound": "Fișierul sau folderul nu a fost găsit.",
     "fileOrFolderExists": "Există deja un fișier sau un folder cu acest nume.",

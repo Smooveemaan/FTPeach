@@ -29,6 +29,8 @@ export const COMMAND_ERROR_CODES = [
   'resourceLimit',
   'storageFull',
   'keyUnreadable',
+  'credentialFileMissing',
+  'networkPathNotChosen',
   'busy',
   'fileInUse',
   'vaultLocked',

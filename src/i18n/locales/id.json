@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "Izin SFTP",
-    "label": "Mode oktal untuk \"{{name}}\" (misalnya, 644 atau 0755)"
+    "label": "Mode oktal untuk \"{{name}}\" (misalnya, 644 atau 0755)",
+    "invalid": "Masukkan tiga atau empat digit dari 0 sampai 7, misalnya 644 atau 0755."
   },
   "filePane": {
     "emptyFolder": "Folder ini kosong",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "Negosiasi SSH gagal. Server dan FTPeach tidak dapat mencapai kesepakatan mengenai algoritma SSH atau versi protokol yang kompatibel.",
     "proxyFailed": "Koneksi proxy gagal. Periksa jenis proxy, alamat, kredensial, dan apakah proxy tersebut dapat terhubung ke server tujuan.",
     "keyReadFailed": "Tidak dapat membaca kunci — file rusak atau frasa sandi salah.",
+    "credentialFileMissing": "File kunci atau sertifikat tidak ditemukan: {{path}}",
+    "webdavUrlNotAbsolute": "Masukkan alamat WebDAV lengkap, diawali dengan http:// atau https://.",
+    "webdavUrlCredentials": "Hapus nama pengguna dan kata sandi dari alamat, lalu masukkan di kolom \"Nama pengguna\" dan \"Kata sandi\".",
+    "webdavUrlQuery": "Alamat WebDAV tidak boleh berisi ? atau #: masukkan server dan jalur folder saja.",
+    "networkPathNotChosen": "FTPeach hanya membuka jalur jaringan setelah Anda memilihnya di dialog, seperti \"Pilih folder…\".",
     "accessDenied": "Anda tidak memiliki izin untuk melakukan operasi ini.",
     "notFound": "File atau folder tidak ditemukan.",
     "fileOrFolderExists": "File atau folder dengan nama tersebut sudah ada.",

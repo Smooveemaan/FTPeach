@@ -1,4 +1,8 @@
-import { friendlyError, friendlyConnectError } from '../../../shared/errorMessages.ts';
+import {
+  friendlyConnectError,
+  friendlyError,
+  webdavUrlError,
+} from '../../../shared/errorMessages.ts';
 import { buildFormFromSite, initialForm, otherPaneId } from './paneModel.ts';
 import { reportRejection } from '../../../shared/asyncFailure.ts';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
@@ -159,25 +163,10 @@ export function createPaneSessionLifecycle({
     async () => {
       const pane = paneOverride || panes[id];
       const f = overrideForm || pane.form;
-      if (f.protocol === 'webdav') {
-        let validUrl = false;
-        try {
-          const url = new URL(f.webdavUrl);
-          validUrl = ['http:', 'https:'].includes(url.protocol) && !!url.hostname;
-        } catch {
-          // An address without a scheme is not an absolute WebDAV URL.
-        }
-        if (!validUrl) {
-          updatePane(
-            id,
-            {
-              status: 'error',
-              errorMessage: friendlyConnectError({ code: 'invalidInput' }) || '',
-            },
-            tabId,
-          );
-          return;
-        }
+      const urlError = f.protocol === 'webdav' ? webdavUrlError(f.webdavUrl) : null;
+      if (urlError) {
+        updatePane(id, { status: 'error', errorMessage: urlError }, tabId);
+        return;
       }
       if (pane.siteId) pushRecentSite(pane.siteId);
       const previousConnectionId = pane.connectionId;

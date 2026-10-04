@@ -108,7 +108,8 @@
   },
   "chmodDialog": {
     "title": "SFTP-jogosultságok",
-    "label": "Oktális mód a(z) „{{name}}” elemhez (például 644 vagy 0755)"
+    "label": "Oktális mód a(z) „{{name}}” elemhez (például 644 vagy 0755)",
+    "invalid": "Adjon meg három vagy négy számjegyet 0 és 7 között, például 644 vagy 0755."
   },
   "filePane": {
     "emptyFolder": "A mappa üres",
@@ -304,6 +305,11 @@
     "sshNegotiationFailed": "Az SSH-tárgyalás sikertelen volt. A szerver és az FTPeach nem tudott megegyezni egy kompatibilis SSH-algoritmusban vagy protokollverzióban.",
     "proxyFailed": "A proxykapcsolat sikertelen. Ellenőrizze a proxy típusát, címét, hitelesítő adatait, és azt, hogy a proxy eléri-e a célszervert.",
     "keyReadFailed": "Nem sikerült beolvasni a kulcsot – a fájl sérült, vagy a jelmondat helytelen.",
+    "credentialFileMissing": "A kulcs- vagy tanúsítványfájl nem található: {{path}}",
+    "webdavUrlNotAbsolute": "Adja meg a teljes WebDAV-címet http:// vagy https:// előtaggal.",
+    "webdavUrlCredentials": "Törölje a felhasználónevet és a jelszót a címből, és írja be őket a „Felhasználónév” és a „Jelszó” mezőbe.",
+    "webdavUrlQuery": "A WebDAV-cím nem tartalmazhat ? vagy # jelet: csak a kiszolgálót és a mappa elérési útját adja meg.",
+    "networkPathNotChosen": "Az FTPeach csak akkor nyit meg egy hálózati elérési utat, ha azt egy párbeszédablakban kiválasztotta, például a „Mappa kiválasztása…” paranccsal.",
     "accessDenied": "Nincs jogosultsága erre a műveletre.",
     "notFound": "A fájl vagy mappa nem található.",
     "fileOrFolderExists": "Már létezik ilyen nevű fájl vagy mappa.",

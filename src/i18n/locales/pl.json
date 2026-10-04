@@ -112,7 +112,8 @@
   },
   "chmodDialog": {
     "title": "Uprawnienia SFTP",
-    "label": "Tryb ósemkowy dla „{{name}}” (na przykład 644 lub 0755)"
+    "label": "Tryb ósemkowy dla „{{name}}” (na przykład 644 lub 0755)",
+    "invalid": "Wpisz trzy lub cztery cyfry od 0 do 7, na przykład 644 lub 0755."
   },
   "filePane": {
     "emptyFolder": "Folder jest pusty",
@@ -312,6 +313,11 @@
     "sshNegotiationFailed": "Negocjacja SSH nie powiodła się. Serwer i FTPeach nie uzgodniły zgodnego algorytmu SSH ani wersji protokołu.",
     "proxyFailed": "Połączenie z serwerem proxy nie powiodło się. Sprawdź typ serwera proxy, jego adres, dane uwierzytelniające oraz czy serwer proxy ma dostęp do serwera docelowego.",
     "keyReadFailed": "Nie udało się odczytać klucza — plik jest uszkodzony lub fraza hasła jest nieprawidłowa.",
+    "credentialFileMissing": "Nie znaleziono pliku klucza ani certyfikatu: {{path}}",
+    "webdavUrlNotAbsolute": "Wpisz pełny adres WebDAV zaczynający się od http:// lub https://.",
+    "webdavUrlCredentials": "Usuń nazwę użytkownika i hasło z adresu i wpisz je w polach „Nazwa użytkownika” i „Hasło”.",
+    "webdavUrlQuery": "Adres WebDAV nie może zawierać znaków ? ani #: wpisz tylko serwer i ścieżkę do folderu.",
+    "networkPathNotChosen": "FTPeach otwiera ścieżkę sieciową dopiero wtedy, gdy wybierzesz ją w oknie dialogowym, na przykład „Wybierz folder…”.",
     "accessDenied": "Nie masz uprawnień do wykonania tej operacji.",
     "notFound": "Nie znaleziono pliku lub folderu.",
     "fileOrFolderExists": "Plik lub folder o tej nazwie już istnieje.",

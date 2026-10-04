@@ -112,7 +112,8 @@
   },
   "chmodDialog": {
     "title": "Oprávnění SFTP",
-    "label": "Oktalový režim pro „{{name}}“ (například 644 nebo 0755)"
+    "label": "Oktalový režim pro „{{name}}“ (například 644 nebo 0755)",
+    "invalid": "Zadejte tři nebo čtyři číslice od 0 do 7, například 644 nebo 0755."
   },
   "filePane": {
     "emptyFolder": "Složka je prázdná",
@@ -312,6 +313,11 @@
     "sshNegotiationFailed": "Vyjednávání SSH selhalo. Server a FTPeach se nedokázaly dohodnout na kompatibilním algoritmu SSH ani verzi protokolu.",
     "proxyFailed": "Připojení přes proxy selhalo. Zkontrolujte typ proxy, adresu, přihlašovací údaje a zda se proxy dokáže spojit s cílovým serverem.",
     "keyReadFailed": "Nepodařilo se přečíst klíč – soubor je poškozený nebo je přístupová fráze nesprávná.",
+    "credentialFileMissing": "Soubor klíče nebo certifikátu nebyl nalezen: {{path}}",
+    "webdavUrlNotAbsolute": "Zadejte úplnou adresu WebDAV začínající http:// nebo https://.",
+    "webdavUrlCredentials": "Odstraňte z adresy uživatelské jméno a heslo a zadejte je do polí „Uživatelské jméno“ a „Heslo“.",
+    "webdavUrlQuery": "Adresa WebDAV nemůže obsahovat ? ani #: zadejte jen server a cestu ke složce.",
+    "networkPathNotChosen": "FTPeach otevře síťovou cestu, až když ji vyberete v dialogu, například „Vybrat složku…“.",
     "accessDenied": "K této operaci nemáte oprávnění.",
     "notFound": "Soubor nebo složka nebyla nalezena.",
     "fileOrFolderExists": "Soubor nebo složka s tímto názvem již existuje.",

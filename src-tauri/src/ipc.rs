@@ -31,6 +31,11 @@ pub enum ErrorCode {
     /// A private key file could not be decrypted or parsed: most often a
     /// wrong passphrase.
     KeyUnreadable,
+    /// The key or CA certificate file a connection names is not on disk; the
+    /// message is that file's path.
+    CredentialFileMissing,
+    /// A network path the user has not chosen in a folder or file dialog.
+    NetworkPathNotChosen,
     /// Another operation is already reading or writing the same place.
     Busy,
     /// Another program has the local file open and will not share it.
@@ -164,7 +169,8 @@ impl CommandError {
             source.downcast_ref::<suppaftp::FtpError>()
         {
             let text = String::from_utf8_lossy(&response.body).to_ascii_lowercase();
-            let too_many = text.contains("too many");
+            // pure-ftpd: "421 5 users (the maximum) are already logged in".
+            let too_many = text.contains("too many") || text.contains("(the maximum)");
             return match response.status.code() {
                 421 | 530 if too_many => Some(ErrorCode::ResourceLimit),
                 530 => Some(ErrorCode::AuthFailed),
@@ -369,6 +375,8 @@ impl CommandError {
             ErrorCode::ResourceLimit => "Resource limit exceeded",
             ErrorCode::StorageFull => "Not enough storage space on the server",
             ErrorCode::KeyUnreadable => "The private key could not be read",
+            ErrorCode::CredentialFileMissing => "The key or certificate file was not found",
+            ErrorCode::NetworkPathNotChosen => "Network paths require native-dialog confirmation",
             ErrorCode::Busy => "Another operation is using this location",
             ErrorCode::FileInUse => "The file is in use by another process",
             ErrorCode::VaultLocked => "Vault is locked",
@@ -415,6 +423,8 @@ mod tests {
             (ErrorCode::ResourceLimit, "resourceLimit"),
             (ErrorCode::StorageFull, "storageFull"),
             (ErrorCode::KeyUnreadable, "keyUnreadable"),
+            (ErrorCode::CredentialFileMissing, "credentialFileMissing"),
+            (ErrorCode::NetworkPathNotChosen, "networkPathNotChosen"),
             (ErrorCode::Busy, "busy"),
             (ErrorCode::FileInUse, "fileInUse"),
             (ErrorCode::VaultLocked, "vaultLocked"),
@@ -461,6 +471,10 @@ mod tests {
                 421,
                 "There are too many connections from your internet address."
             ),
+            ErrorCode::ResourceLimit
+        );
+        assert_eq!(
+            ftp(421, "5 users (the maximum) are already logged in, sorry"),
             ErrorCode::ResourceLimit
         );
         assert_eq!(ftp(421, "Timeout."), ErrorCode::ConnectionLost);

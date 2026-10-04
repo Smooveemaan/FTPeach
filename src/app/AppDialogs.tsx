@@ -443,6 +443,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           label={t('chmodDialog.label', { name: dialogs.chmodTarget.entry.name })}
           defaultValue={dialogs.chmodTarget.mode}
           confirmLabel={t('common.save')}
+          validate={(mode) => (/^[0-7]{3,4}$/.test(mode) ? null : t('chmodDialog.invalid'))}
           onSubmit={(mode) => {
             const target = dialogs.chmodTarget;
             if (target) paneActions.chmod(target, mode);

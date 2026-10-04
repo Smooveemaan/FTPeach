@@ -166,6 +166,20 @@ fn import_failed(mut error: CommandError, issues: Vec<String>) -> CommandError {
     error
 }
 
+/// Says what was wrong with the file in words a user can act on; serde's own
+/// text ("EOF while parsing a value") is only the detail.
+fn parse_failure_reason(error: &serde_json::Error) -> String {
+    if error.is_data() {
+        format!("The file is not a settings file exported by FTPeach: {error}")
+    } else {
+        format!(
+            "The file is not a settings file exported by FTPeach, or it is damaged (line {}, column {}).",
+            error.line(),
+            error.column()
+        )
+    }
+}
+
 const MAX_IMPORT_BYTES: u64 = 4 * 1024 * 1024;
 const MAX_IMPORTED_SITES: usize = 2_000;
 
@@ -519,7 +533,7 @@ pub async fn app_import_settings(
                     ErrorCode::InvalidInput,
                     "Import file does not match the supported schema",
                 ),
-                vec![e.to_string()],
+                vec![parse_failure_reason(&e)],
             ));
         }
     };

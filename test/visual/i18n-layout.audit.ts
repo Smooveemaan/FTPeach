@@ -256,7 +256,7 @@ const SCREENS: Record<
   },
   'connect-bar': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 4);
+      await menuItem(page, MENU.file, 5);
       const pane = page.locator('.pane').nth(1);
       await expect(page.locator('.pane-quicklist-row').first()).toBeVisible();
       await snap('connect/empty-state');
@@ -303,18 +303,18 @@ const SCREENS: Record<
   },
   'settings-transfer': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 5);
+      await menuItem(page, MENU.file, 6);
       await expect(dialog(page)).toBeVisible();
       await snap('export-settings');
       await page.keyboard.press('Escape');
-      await menuItem(page, MENU.file, 6);
+      await menuItem(page, MENU.file, 7);
       await expect(dialog(page)).toBeVisible();
       await snap('import-settings');
     },
   },
   quit: {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 7);
+      await menuItem(page, MENU.file, 8);
       await expect(dialog(page)).toBeVisible();
       await snap('quit');
     },

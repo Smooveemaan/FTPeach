@@ -274,6 +274,13 @@
 .log-line-response { color: var(--accent-green); }
 .log-line-error { color: var(--accent-red); }
 
+/* Isolated, so in a right-to-left line the time and the connection keep
+   their own order and the gap between them. */
+.log-line-time,
+.log-line-conn-tag {
+  unicode-bidi: isolate;
+}
+
 .log-line-time {
   margin-inline-end: 6px;
   color: var(--text-secondary);

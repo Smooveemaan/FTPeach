@@ -893,6 +893,13 @@ body.column-reorder-active .col-resize-handle:hover::after {
   mask-image: var(--truncate-fade);
   -webkit-mask-image: var(--truncate-fade);
 }
+/* The protocol and address read left to right in every language: in an RTL
+   window they stay right-aligned but are cut, and faded, at their own end. */
+[dir='rtl'] .pane-quicklist-meta {
+  direction: ltr;
+  text-align: right;
+  --truncate-fade: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
+}
 .pane-quicklist-connect {
   width: 24px;
   height: 24px;

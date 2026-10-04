@@ -163,7 +163,7 @@ function TransferItemRow({
         return (
           <div key={key} data-column-cell={key} className="t-size">
             <span ref={sizeRef} className={sizeTruncated ? 'truncated' : ''}>
-              {formatBytes(hasTotal ? total : item.bytes)}
+              <bdi>{formatBytes(hasTotal ? total : item.bytes)}</bdi>
             </span>
           </div>
         );
@@ -171,7 +171,7 @@ function TransferItemRow({
         return (
           <div key={key} data-column-cell={key} className="t-transferred">
             <span ref={transferredRef} className={transferredTruncated ? 'truncated' : ''}>
-              {formatBytes(item.bytes)}
+              <bdi>{formatBytes(item.bytes)}</bdi>
             </span>
           </div>
         );
@@ -208,7 +208,11 @@ function TransferItemRow({
             ref={speedRef}
             className={`t-speed${speedTruncated ? ' truncated' : ''}`}
           >
-            {item.status === 'progress' ? formatSpeed(speed) : <span className="dash">—</span>}
+            {item.status === 'progress' ? (
+              <bdi>{formatSpeed(speed)}</bdi>
+            ) : (
+              <span className="dash">—</span>
+            )}
           </div>
         );
       case 'remaining':
@@ -220,7 +224,7 @@ function TransferItemRow({
             className={`t-remain${remainTruncated ? ' truncated' : ''}`}
           >
             {item.status === 'progress' ? (
-              formatDuration(remaining)
+              <bdi>{formatDuration(remaining)}</bdi>
             ) : (
               <span className="dash">—</span>
             )}

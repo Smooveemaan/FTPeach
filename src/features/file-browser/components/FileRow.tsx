@@ -25,7 +25,7 @@ function FileColumnCell({ columnKey, entry, t }: FileColumnCellProps) {
       data-column-cell={columnKey}
       className={`col-${columnKey}${truncated ? ' truncated' : ''}`}
     >
-      {content}
+      <bdi>{content}</bdi>
     </span>
   );
 }

@@ -1,3 +1,12 @@
+/* A monospaced font stretches Arabic letters to one width each, so labels,
+   the log and Arabic file names in mono text take their Arabic from the UI
+   font; Latin text and digits stay monospaced. */
+@font-face {
+  font-family: 'Mono Arabic';
+  src: local('Segoe UI');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
 :root {
   --app-viewport-w: 100vw;
   --app-viewport-h: 100vh;
@@ -55,7 +64,7 @@
   --site-emerald: #6cc995;
 
   --font-ui: 'Segoe UI', Inter, -apple-system, system-ui, sans-serif;
-  --font-mono: 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  --font-mono: 'Mono Arabic', 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
 
   --radius-sm: 4px;
   --radius-md: 7px;

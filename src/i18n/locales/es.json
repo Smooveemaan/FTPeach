@@ -751,7 +751,6 @@
     "clearSearch": "Borrar búsqueda",
     "noSearchResults": "No hay marcadores que coincidan con tu búsqueda",
     "duplicate": "Duplicar",
-    "duplicateNameSuffix": " (copia)",
     "newBookmarkInFolder": "Nuevo marcador aquí",
     "expandFolder": "Desplegar «{{name}}»",
     "collapseFolder": "Contraer «{{name}}»",

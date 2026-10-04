@@ -759,7 +759,6 @@
     "clearSearch": "Wyczyść wyszukiwanie",
     "noSearchResults": "Brak zakładek pasujących do wyszukiwania",
     "duplicate": "Duplikuj",
-    "duplicateNameSuffix": " (kopia)",
     "newBookmarkInFolder": "Nowa zakładka tutaj",
     "expandFolder": "Rozwiń „{{name}}”",
     "collapseFolder": "Zwiń „{{name}}”",

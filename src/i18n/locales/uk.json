@@ -759,7 +759,6 @@
     "clearSearch": "Очистити пошук",
     "noSearchResults": "Немає закладок за цим запитом",
     "duplicate": "Дублювати",
-    "duplicateNameSuffix": " (копія)",
     "newBookmarkInFolder": "Нова закладка тут",
     "expandFolder": "Розгорнути «{{name}}»",
     "collapseFolder": "Згорнути «{{name}}»",

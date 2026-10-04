@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", "Name (3)" and so on,
+  instead of opening an editor with "(copy)" added to the name.
 - The FTPeach icon and the tray icon are the peach on its own, without the square background, so
   they stand out on a light taskbar too.
 - A bookmark's icon and color menus open scrolled to the one that is chosen.
@@ -24,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Saving a bookmark that moves its password while the vault is locked asks for the master
+  password first and whether to move the password only once.
+- A bookmark with no port and one with the default port are recognised as the same server.
 - Pausing or resuming a transfer leaves its row where it is in Transfers.
 - The notification at the end of a big transfer counts every file, not at most 1000.
 - Files dragged out to Explorer one after another give one notification, not one each.

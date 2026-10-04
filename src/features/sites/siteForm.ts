@@ -70,6 +70,16 @@ export interface SiteFormSecrets {
   keyPassphrase: string;
 }
 
+/** The first free "Name (2)", "Name (3)"… for a copy; a copy of a copy counts on. */
+export function duplicateName(name: string, taken: Iterable<string>): string {
+  const base = name.replace(/ \(\d+\)$/, '');
+  const names = new Set(taken);
+  for (let n = 2; ; n += 1) {
+    const candidate = `${base} (${n})`;
+    if (!names.has(candidate)) return candidate;
+  }
+}
+
 export function normalizeSiteForm(
   form: SiteForm,
   editingId?: string | null,

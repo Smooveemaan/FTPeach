@@ -743,7 +743,6 @@
     "clearSearch": "Rensa sökningen",
     "noSearchResults": "Inga bokmärken stämmer överens med din sökning",
     "duplicate": "Duplicera",
-    "duplicateNameSuffix": " (kopia)",
     "newBookmarkInFolder": "Nytt bokmärke här",
     "expandFolder": "Expandera ”{{name}}”",
     "collapseFolder": "Komprimera ”{{name}}”",

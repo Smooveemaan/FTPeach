@@ -775,7 +775,6 @@
     "clearSearch": "مسح البحث",
     "noSearchResults": "لا توجد إشارات مرجعية مطابقة لبحثك",
     "duplicate": "إنشاء نسخة",
-    "duplicateNameSuffix": " (نسخة)",
     "newBookmarkInFolder": "إشارة مرجعية جديدة هنا",
     "expandFolder": "توسيع «{{name}}»",
     "collapseFolder": "طي «{{name}}»",

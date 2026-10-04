@@ -960,10 +960,15 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     const user = userEvent.setup();
     const { props } = renderManager();
 
-    const row = screen.getByText('Production').closest('.site-manage-row');
-    await user.click(
-      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.duplicate' }),
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
+    await user.type(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }), 'Copy');
+    await user.click(screen.getByRole('button', { name: 'FTP' }));
+    await user.click(screen.getByRole('option', { name: 'SFTP' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'connectionBar.fields.address' }),
+      'prod.example.test',
     );
+    await user.type(screen.getByRole('textbox', { name: 'connectionBar.fields.user' }), 'deploy');
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(screen.getByRole('button', { name: 'siteManagerDialog.saveAnyway' })).toBeTruthy();
 
@@ -1020,7 +1025,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     expect(folder.parentElement?.getAttribute('role')).toBe('tree');
   });
 
-  test('duplicating a site opens a prefilled add form under a new name', async () => {
+  test('duplicating a site saves a copy at once under the next free name', async () => {
     const user = userEvent.setup();
     const { props } = renderManager();
 
@@ -1029,15 +1034,14 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
       within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.duplicate' }),
     );
 
-    expect(
-      screen.getByRole<HTMLInputElement>('textbox', { name: 'siteManagerDialog.fields.name' })
-        .value,
-    ).toBe('ProductionsiteManagerDialog.duplicateNameSuffix');
-    await user.click(screen.getByRole('button', { name: 'common.save' }));
-    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.saveAnyway' }));
     expect(props.onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ host: 'prod.example.test', parentId: 'folder-1' }),
+      expect.objectContaining({
+        name: 'Production (2)',
+        host: 'prod.example.test',
+        parentId: 'folder-1',
+      }),
     );
+    expect(screen.queryByRole('textbox', { name: 'siteManagerDialog.fields.name' })).toBeNull();
     // A duplicate is a new bookmark: no `id` key, so the backend creates it.
     expect(vi.mocked(props.onSave).mock.calls[0]?.[0]).not.toHaveProperty('id');
   });
@@ -1081,10 +1085,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
 
     fireEvent.contextMenu(requireHtml(row), { clientX: 20, clientY: 20 });
     await user.click(screen.getByText('siteManagerDialog.duplicate'));
-    expect(
-      screen.getByRole<HTMLInputElement>('textbox', { name: 'siteManagerDialog.fields.name' })
-        .value,
-    ).toBe('ProductionsiteManagerDialog.duplicateNameSuffix');
+    expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ name: 'Production (2)' }));
   });
 
   test('the "..." overflow trigger is gone from bookmark and folder rows', () => {

@@ -743,7 +743,6 @@
     "clearSearch": "Keresés törlése",
     "noSearchResults": "Nincs a keresésnek megfelelő könyvjelző",
     "duplicate": "Duplikálás",
-    "duplicateNameSuffix": " (másolat)",
     "newBookmarkInFolder": "Új könyvjelző itt",
     "expandFolder": "„{{name}}” kibontása",
     "collapseFolder": "„{{name}}” összecsukása",

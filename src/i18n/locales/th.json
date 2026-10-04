@@ -743,7 +743,6 @@
     "clearSearch": "ล้างการค้นหา",
     "noSearchResults": "ไม่มีบุ๊กมาร์กที่ตรงกับคำค้นหาของคุณ",
     "duplicate": "ทำสำเนา",
-    "duplicateNameSuffix": " (สำเนา)",
     "newBookmarkInFolder": "เพิ่มบุ๊กมาร์กใหม่ที่นี่",
     "expandFolder": "ขยาย \"{{name}}\"",
     "collapseFolder": "ยุบ \"{{name}}\"",

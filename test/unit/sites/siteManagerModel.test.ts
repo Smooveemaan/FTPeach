@@ -6,6 +6,7 @@ import {
   findProbableDuplicate,
   sortManagedEntries,
 } from '../../../src/features/sites/siteManagerModel.ts';
+import { duplicateName } from '../../../src/features/sites/siteForm.ts';
 import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 const entries: ManagedSite[] = [
@@ -47,6 +48,18 @@ test('duplicate detection normalizes connection identity but excludes the edited
   const second = entries[1];
   assert.ok(second);
   assert.equal(findProbableDuplicate(entries, second, 'z'), null);
+  // No port is the protocol's default: the same server as port 22.
+  assert.equal(
+    findProbableDuplicate(entries, { name: 'New', protocol: 'sftp', host: 'same.test', user: 'me' })
+      ?.id,
+    'z',
+  );
+});
+
+test('a copy takes the first free number, also when copied again', () => {
+  assert.equal(duplicateName('Prod', ['Prod']), 'Prod (2)');
+  assert.equal(duplicateName('Prod (2)', ['Prod', 'Prod (2)']), 'Prod (3)');
+  assert.equal(duplicateName('Prod', ['Prod', 'Prod (2)', 'Prod (4)']), 'Prod (3)');
 });
 
 test('name/protocol sorting preserves folders and their child grouping', () => {

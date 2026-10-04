@@ -751,7 +751,6 @@
     "clearSearch": "Effacer la recherche",
     "noSearchResults": "Aucun signet ne correspond à votre recherche",
     "duplicate": "Dupliquer",
-    "duplicateNameSuffix": " (copie)",
     "newBookmarkInFolder": "Nouveau signet ici",
     "expandFolder": "Développer « {{name}} »",
     "collapseFolder": "Réduire « {{name}} »",

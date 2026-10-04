@@ -759,7 +759,6 @@
     "clearSearch": "Vymazat hledání",
     "noSearchResults": "Žádné záložky neodpovídají vašemu vyhledávání",
     "duplicate": "Duplikovat",
-    "duplicateNameSuffix": " (kopie)",
     "newBookmarkInFolder": "Nová záložka sem",
     "expandFolder": "Rozbalit „{{name}}“",
     "collapseFolder": "Sbalit „{{name}}“",

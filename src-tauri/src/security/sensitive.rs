@@ -477,6 +477,15 @@ fn plan_host_key(target: &str, locale: String) -> CommandResult<Plan> {
     })
 }
 
+/// Moving a password reads it from the vault. Refused before the prompt while
+/// the vault is locked, so the unlock comes first and the question only once.
+fn unlock_before_moving_password(moves_password: bool, vault_locked: bool) -> CommandResult<()> {
+    if moves_password && vault_locked {
+        return Err(CommandError::new(ErrorCode::VaultLocked, "Vault is locked"));
+    }
+    Ok(())
+}
+
 async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandResult<Plan> {
     let input: JsonMap =
         serde_json::from_str(target).map_err(|_| denied("Invalid bookmark request"))?;
@@ -706,7 +715,14 @@ pub async fn authorize_sensitive(
         "settings_set_security" => {
             plan_protected_settings(&settings, vault.is_configured(), &target, locale)?
         }
-        "sites_save" => plan_site_save(&store, &target, locale).await?,
+        "sites_save" => {
+            let plan = plan_site_save(&store, &target, locale).await?;
+            unlock_before_moving_password(
+                plan.required,
+                vault.is_configured() && !vault.is_unlocked().await,
+            )?;
+            plan
+        }
         "session_trust_host_key" => plan_host_key(&target, locale)?,
         _ => plan_operation(&operation, &target, vault.is_configured(), locale)?,
     };

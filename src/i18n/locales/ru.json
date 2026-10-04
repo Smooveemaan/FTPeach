@@ -759,7 +759,6 @@
     "clearSearch": "Очистить поиск",
     "noSearchResults": "Нет закладок по этому запросу",
     "duplicate": "Дублировать",
-    "duplicateNameSuffix": " (копия)",
     "newBookmarkInFolder": "Добавить закладку здесь",
     "expandFolder": "Развернуть «{{name}}»",
     "collapseFolder": "Свернуть «{{name}}»",

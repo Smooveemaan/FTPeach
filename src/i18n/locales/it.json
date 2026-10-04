@@ -751,7 +751,6 @@
     "clearSearch": "Cancella ricerca",
     "noSearchResults": "Non ci sono segnalibri corrispondenti alla tua ricerca",
     "duplicate": "Duplica",
-    "duplicateNameSuffix": " (copia)",
     "newBookmarkInFolder": "Nuovo segnalibro qui",
     "expandFolder": "Espandi \"{{name}}\"",
     "collapseFolder": "Comprimi \"{{name}}\"",

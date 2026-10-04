@@ -743,7 +743,6 @@
     "clearSearch": "검색 지우기",
     "noSearchResults": "검색과 일치하는 북마크가 없습니다",
     "duplicate": "복제",
-    "duplicateNameSuffix": " (사본)",
     "newBookmarkInFolder": "여기에 새 북마크",
     "expandFolder": "“{{name}}” 펼치기",
     "collapseFolder": "“{{name}}” 접기",

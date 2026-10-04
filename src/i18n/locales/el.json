@@ -743,7 +743,6 @@
     "clearSearch": "Εκκαθάριση αναζήτησης",
     "noSearchResults": "Δεν υπάρχουν σελιδοδείκτες που να ταιριάζουν με την αναζήτησή σας",
     "duplicate": "Δημιουργία αντιγράφου",
-    "duplicateNameSuffix": " (αντίγραφο)",
     "newBookmarkInFolder": "Νέος σελιδοδείκτης εδώ",
     "expandFolder": "Ανάπτυξη «{{name}}»",
     "collapseFolder": "Σύμπτυξη «{{name}}»",

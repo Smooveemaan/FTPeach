@@ -751,7 +751,6 @@
     "clearSearch": "Șterge căutarea",
     "noSearchResults": "Niciun marcaj nu corespunde căutării",
     "duplicate": "Duplică",
-    "duplicateNameSuffix": " (copie)",
     "newBookmarkInFolder": "Marcaj nou aici",
     "expandFolder": "Extinde „{{name}}”",
     "collapseFolder": "Restrânge „{{name}}”",

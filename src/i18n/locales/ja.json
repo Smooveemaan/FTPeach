@@ -743,7 +743,6 @@
     "clearSearch": "検索をクリア",
     "noSearchResults": "検索条件に一致するブックマークはありません",
     "duplicate": "複製",
-    "duplicateNameSuffix": "（コピー）",
     "newBookmarkInFolder": "ここに新しいブックマークを追加",
     "expandFolder": "「{{name}}」を展開",
     "collapseFolder": "「{{name}}」を折りたたむ",

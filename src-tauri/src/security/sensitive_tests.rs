@@ -537,3 +537,11 @@ async fn a_confirmation_that_unlocks_the_vault_says_so_once() {
     assert_eq!(heard.load(Ordering::SeqCst), 1);
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn a_password_move_asks_for_the_vault_before_the_confirmation() {
+    let locked = unlock_before_moving_password(true, true).unwrap_err();
+    assert_eq!(locked.code, ErrorCode::VaultLocked);
+    assert!(unlock_before_moving_password(true, false).is_ok());
+    assert!(unlock_before_moving_password(false, true).is_ok());
+}

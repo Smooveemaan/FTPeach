@@ -1,3 +1,4 @@
+import { DEFAULT_PORTS } from '../../shared/siteContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 
 export type SiteSortMode = 'manual' | 'name' | 'protocol';
@@ -35,7 +36,13 @@ export function connectionIdentity(entry: SiteIdentityCandidate): string {
       .trim()
       .toLowerCase()}`;
   const address = entry.protocol === 'webdav' ? entry.webdavUrl : entry.host;
-  return [entry.protocol, address, entry.port || '', entry.user || '']
+  // An empty port is the protocol's default, so 22 and none are the same SFTP server.
+  return [
+    entry.protocol,
+    address,
+    entry.port || (entry.protocol && DEFAULT_PORTS[entry.protocol]),
+    entry.user || '',
+  ]
     .map((value) =>
       String(value || '')
         .trim()

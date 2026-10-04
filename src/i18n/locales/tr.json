@@ -743,7 +743,6 @@
     "clearSearch": "Aramayı temizle",
     "noSearchResults": "Aramanızla eşleşen yer imi bulunamadı",
     "duplicate": "Çoğalt",
-    "duplicateNameSuffix": " (kopya)",
     "newBookmarkInFolder": "Buraya Yeni Yer İmi",
     "expandFolder": "\"{{name}}\" klasörünü genişlet",
     "collapseFolder": "\"{{name}}\" klasörünü daralt",

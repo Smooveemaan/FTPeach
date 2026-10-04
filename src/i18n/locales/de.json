@@ -743,7 +743,6 @@
     "clearSearch": "Suche leeren",
     "noSearchResults": "Keine Lesezeichen entsprechen Ihrer Suche",
     "duplicate": "Duplizieren",
-    "duplicateNameSuffix": " (Kopie)",
     "newBookmarkInFolder": "Neues Lesezeichen hier",
     "expandFolder": "„{{name}}“ aufklappen",
     "collapseFolder": "„{{name}}“ zuklappen",

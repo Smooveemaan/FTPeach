@@ -751,7 +751,6 @@
     "clearSearch": "נקה חיפוש",
     "noSearchResults": "אין סימניות התואמות לחיפוש שלך",
     "duplicate": "שכפול",
-    "duplicateNameSuffix": " (העתק)",
     "newBookmarkInFolder": "סימנייה חדשה כאן",
     "expandFolder": "הרחב את \"{{name}}\"",
     "collapseFolder": "קפל את \"{{name}}\"",

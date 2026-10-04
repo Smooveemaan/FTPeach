@@ -743,7 +743,6 @@
     "clearSearch": "Clear search",
     "noSearchResults": "No bookmarks match your search",
     "duplicate": "Duplicate",
-    "duplicateNameSuffix": " (copy)",
     "newBookmarkInFolder": "New Bookmark Here",
     "expandFolder": "Expand \"{{name}}\"",
     "collapseFolder": "Collapse \"{{name}}\"",

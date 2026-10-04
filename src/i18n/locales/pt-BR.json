@@ -751,7 +751,6 @@
     "clearSearch": "Limpar pesquisa",
     "noSearchResults": "Nenhum favorito corresponde à sua pesquisa",
     "duplicate": "Duplicar",
-    "duplicateNameSuffix": " (cópia)",
     "newBookmarkInFolder": "Novo favorito aqui",
     "expandFolder": "Expandir “{{name}}”",
     "collapseFolder": "Recolher “{{name}}”",

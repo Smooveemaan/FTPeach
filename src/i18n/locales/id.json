@@ -743,7 +743,6 @@
     "clearSearch": "Hapus pencarian",
     "noSearchResults": "Tidak ada bookmark yang sesuai dengan pencarian Anda",
     "duplicate": "Duplikasi",
-    "duplicateNameSuffix": " (salinan)",
     "newBookmarkInFolder": "Bookmark Baru di Sini",
     "expandFolder": "Perluas \"{{name}}\"",
     "collapseFolder": "Ciutkan \"{{name}}\"",

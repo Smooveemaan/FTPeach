@@ -743,7 +743,6 @@
     "clearSearch": "清除搜尋",
     "noSearchResults": "沒有與您的搜尋相符的書籤",
     "duplicate": "建立複本",
-    "duplicateNameSuffix": "（複本）",
     "newBookmarkInFolder": "在此新增書籤",
     "expandFolder": "展開「{{name}}」",
     "collapseFolder": "摺疊「{{name}}」",

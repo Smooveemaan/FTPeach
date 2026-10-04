@@ -8,7 +8,13 @@ import { isolate } from '../../shared/bidi.ts';
 import { SettingsTransferDialog } from '../settings/ui.ts';
 import type { SettingsTransferOptions } from '../../platform/api/settings.ts';
 import Icon from '../../components/Icon.tsx';
-import { canSubmitSiteForm, createSiteForm, siteFormsEqual } from './siteForm.ts';
+import {
+  canSubmitSiteForm,
+  createSiteForm,
+  duplicateName,
+  normalizeSiteForm,
+  siteFormsEqual,
+} from './siteForm.ts';
 import SiteEditor from './SiteEditor.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
 import type { SiteTextField } from './SiteEditor.tsx';
@@ -31,7 +37,7 @@ import { portAfterProtocolChange } from '../../shared/siteContracts.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
 import type { SiteForm } from './siteForm.ts';
 import type { SavedSite, SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
-import { handler } from '../../shared/asyncFailure.ts';
+import { handler, reportRejection } from '../../shared/asyncFailure.ts';
 import { api } from '../../platform/api/index.ts';
 
 export interface SiteManagerDialogProps {
@@ -230,13 +236,26 @@ export default function SiteManagerDialog({
   const startAddLocal = (parentId: string | null = null) =>
     openEditor('__new__', { ...createSiteForm(), kind: 'local', parentId });
 
-  const duplicateSite = (site: ManagedSite) =>
-    openEditor('__new__', {
+  // A copy is made at once, beside the original; its saved password stays
+  // behind, since copying it would need the vault.
+  const duplicateSite = async (site: ManagedSite) => {
+    const copy = {
       ...createSiteForm(site),
-      name: `${site.name}${t('siteManagerDialog.duplicateNameSuffix')}`,
+      name: duplicateName(
+        site.name,
+        localEntries.map((entry) => entry.name),
+      ),
       hasPassword: false,
       hasKeyPassphrase: false,
-    });
+    };
+    try {
+      const result = await onSave(normalizeSiteForm(copy, '__new__'));
+      if (!result?.ok && result?.errorCode !== 'cancelled')
+        setError(result?.error || t('siteManagerDialog.saveFailed'));
+    } catch (cause) {
+      setError(errorMessage(cause) || t('siteManagerDialog.saveFailed'));
+    }
+  };
 
   const cancelEdit = () => {
     if (saving) return;
@@ -576,7 +595,7 @@ export default function SiteManagerDialog({
                 entriesById={entriesById}
                 onConnect={onConnect}
                 onEdit={startEdit}
-                onDuplicate={duplicateSite}
+                onDuplicate={(site) => reportRejection(duplicateSite(site))}
                 onRequestDelete={setPendingDelete}
                 renamingSiteId={renamingSiteId}
                 renameSiteName={renameSiteName}
@@ -626,7 +645,7 @@ export default function SiteManagerDialog({
                 onRequestDelete={setPendingDelete}
                 onConnect={onConnect}
                 onEdit={startEdit}
-                onDuplicate={duplicateSite}
+                onDuplicate={(site) => reportRejection(duplicateSite(site))}
                 onCreateInFolder={isLocalPathManager ? startAddLocal : startAdd}
                 onMoveEntry={sortMode === 'manual' ? moveEntryBy : undefined}
                 reorderEnabled={sortMode === 'manual'}

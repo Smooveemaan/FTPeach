@@ -743,7 +743,6 @@
     "clearSearch": "Ryd søgning",
     "noSearchResults": "Der er ingen bogmærker, der matcher din søgning",
     "duplicate": "Dupliker",
-    "duplicateNameSuffix": " (kopi)",
     "newBookmarkInFolder": "Nyt bogmærke her",
     "expandFolder": "Udvid »{{name}}«",
     "collapseFolder": "Fold »{{name}}« sammen",

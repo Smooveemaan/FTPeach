@@ -743,7 +743,6 @@
     "clearSearch": "Xóa tìm kiếm",
     "noSearchResults": "Không có dấu trang nào phù hợp với tìm kiếm của bạn",
     "duplicate": "Nhân bản",
-    "duplicateNameSuffix": " (bản sao)",
     "newBookmarkInFolder": "Dấu trang mới tại đây",
     "expandFolder": "Mở rộng “{{name}}”",
     "collapseFolder": "Thu gọn “{{name}}”",

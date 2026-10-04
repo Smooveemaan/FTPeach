@@ -743,7 +743,6 @@
     "clearSearch": "清除搜索",
     "noSearchResults": "没有与搜索匹配的书签",
     "duplicate": "创建副本",
-    "duplicateNameSuffix": "（副本）",
     "newBookmarkInFolder": "在此新建书签",
     "expandFolder": "展开“{{name}}”",
     "collapseFolder": "折叠“{{name}}”",

@@ -19,9 +19,14 @@
 // the right and their uploads finishing, with a drawn cursor, since a screencast
 // has none. Each theme is a run of its own, and the light one is then retimed
 // to the dark one at the moments both runs mark, so the landing page can switch
-// between them while they play. There is no SFTP key to confirm. The window is moved to a monitor at
-// 200% when there is one: a screencast gets the window's own pixels and
-// ignores an emulated scale factor. Needs ffmpeg on PATH.
+// between them while they play. There is no SFTP key to confirm. Needs ffmpeg
+// on PATH.
+//
+// Both move the window to a monitor at 200% when there is one: a screencast
+// gets the window's own pixels and ignores an emulated scale factor, and the
+// screenshot taken there is laid out exactly as the video, pixel for pixel.
+// Without one the screenshot emulates the scale, which rounds some sizes a
+// pixel differently.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import {
   existsSync,
@@ -83,8 +88,9 @@ const bookmarks = [
   },
 ];
 
-// The window is captured at twice its CSS size whatever the monitor's scaling,
-// so the picture stays sharp on high-density screens and halves cleanly on others.
+// The window is captured at twice its CSS size, on a monitor at 200% or with an
+// emulated scale, so the picture stays sharp on high-density screens and halves
+// cleanly on others.
 const pixelRatio = 2;
 // The frame measured from a capture at 125%: margins around the window, its
 // 1 px border (the theme's --window-border), corner radius, and the shadow's
@@ -568,9 +574,34 @@ function sizeWindow(pid: number, width: number, height: number) {
 }
 
 /**
- * Moves the window to a monitor at 200%, where its CSS size maps to twice as
- * many pixels. Leaves it where it is when no monitor is at 200%.
+ * Moves the window to a monitor at 200% and gives it back the CSS size it
+ * opened with, so its pixels are twice its CSS size without an emulated scale
+ * factor. Leaves it where it is when no monitor is at 200%. Returns the scale
+ * the window ends up at.
  */
+async function toDoubleScale(page: Page, pid: number): Promise<number> {
+  const size = () => page.evaluate(() => [window.innerWidth, window.innerHeight]);
+  const ratio = () => page.evaluate(() => window.devicePixelRatio);
+  const [width, height] = await size();
+  if (moveToDoubleScaleMonitor(pid)) {
+    await waitFor(
+      'the window to take the monitor scale',
+      async () => (await ratio()) === pixelRatio || undefined,
+      10,
+    );
+    sizeWindow(pid, width! * pixelRatio, height! * pixelRatio);
+    await waitFor(
+      `the window to be ${width} x ${height}`,
+      async () => {
+        const [w, h] = await size();
+        return (w === width && h === height) || undefined;
+      },
+      10,
+    );
+  }
+  return ratio();
+}
+
 function moveToDoubleScaleMonitor(pid: number): boolean {
   const script = `
 foreach ($s in [System.Windows.Forms.Screen]::AllScreens) {
@@ -912,27 +943,8 @@ try {
     for (const look of ['dark', 'light'] as const) {
       theme = look;
       runs[look] = await session(async (page, pid) => {
-        // The window keeps the CSS size it opens with, as in the screenshot.
-        const size = () => page.evaluate(() => [window.innerWidth, window.innerHeight]);
-        const [width, height] = await size();
-        if (moveToDoubleScaleMonitor(pid)) {
-          await waitFor(
-            'the window to take the monitor scale',
-            async () => (await page.evaluate(() => window.devicePixelRatio)) === 2 || undefined,
-            10,
-          );
-          sizeWindow(pid, width! * 2, height! * 2);
-          await waitFor(
-            `the window to be ${width} x ${height}`,
-            async () => {
-              const [w, h] = await size();
-              return (w === width && h === height) || undefined;
-            },
-            10,
-          );
-        }
-        const ratio = await page.evaluate(() => window.devicePixelRatio);
-        if (ratio !== 2) console.warn(`No monitor at 200%; recording at ${ratio * 100}%.`);
+        const ratio = await toDoubleScale(page, pid);
+        if (ratio !== pixelRatio) console.warn(`No monitor at 200%; recording at ${ratio * 100}%.`);
         await stageVideo(page);
         return record(page, path.join(frames, look), (mark) => playVideo(page, mark));
       });
@@ -950,7 +962,13 @@ try {
     }
     console.log('Watch both before committing.');
   } else {
-    await session(async (page) => {
+    await session(async (page, pid) => {
+      const ratio = await toDoubleScale(page, pid);
+      if (ratio !== pixelRatio) {
+        console.warn(
+          `No monitor at 200%; emulating it, so the layout can be a pixel off the video's.`,
+        );
+      }
       await stage(page);
       await screenshot(page);
     });
@@ -963,21 +981,26 @@ try {
 async function screenshot(page: Page) {
   // WebView2 applies monitor DPI through page zoom. Playwright's explicit
   // screenshot clip mixes CSS and device pixels there, cropping the window.
-  // Let Chromium capture the complete native viewport without a clip. The
-  // zoom stays on top of an emulated scale factor, so the override divides it
-  // out to keep the layout at the window's CSS size.
+  // Let Chromium capture the complete native viewport without a clip. On a
+  // monitor at 200% that is already twice the CSS size, laid out as the video
+  // is. Elsewhere a scale factor is emulated: the zoom stays on top of it, so
+  // the override divides it out to keep the layout at the window's CSS size,
+  // but rounds sizes differently from a real 200%.
   const cdp = await page.context().newCDPSession(page);
   const [cssWidth, cssHeight, zoom] = await page.evaluate(() => [
     window.innerWidth,
     window.innerHeight,
     window.devicePixelRatio,
   ]);
-  await cdp.send('Emulation.setDeviceMetricsOverride', {
-    width: Math.round(cssWidth * zoom),
-    height: Math.round(cssHeight * zoom),
-    deviceScaleFactor: pixelRatio / zoom,
-    mobile: false,
-  });
+  const emulate = zoom !== pixelRatio;
+  if (emulate) {
+    await cdp.send('Emulation.setDeviceMetricsOverride', {
+      width: Math.round(cssWidth * zoom),
+      height: Math.round(cssHeight * zoom),
+      deviceScaleFactor: pixelRatio / zoom,
+      mobile: false,
+    });
+  }
   // A paused page runs no transitions, so a colour that eases to the other
   // theme would be captured at its start.
   await page.addStyleTag({ content: '*, ::before, ::after { transition: none !important; }' });
@@ -1004,7 +1027,7 @@ async function screenshot(page: Page) {
   await cdp.send('DOM.setAttributeValue', { nodeId: html, name: 'data-theme', value: 'dark' });
   await cdp.send('Debugger.resume');
   await cdp.send('Debugger.disable');
-  await cdp.send('Emulation.clearDeviceMetricsOverride');
+  if (emulate) await cdp.send('Emulation.clearDeviceMetricsOverride');
   await cdp.detach();
   for (const theme of ['dark', 'light'] as const) {
     const png = await compose(captures[theme]!, frame.borderColor[theme]);

@@ -645,8 +645,11 @@ a:hover {
 }
 /* The demo fades in over the screenshot when its button is pressed (it opens on its poster, the
    video's first frame) and is downloaded only then; stopping it brings the screenshot back. There
-   is a video for each theme, timed alike; both play, and the light one covers the dark one in the
-   light theme, so switching the theme switches the video at the same moment. */
+   is a video for each theme, timed alike; both play and only the current theme's one is opaque, so
+   switching the theme switches the video at the same moment.
+   H.264 keeps colour at half resolution, which turns the video's window border (2 of its pixels,
+   blurred into a third when scaled) into a jagged ring at the rounded corners. The video is cut
+   just inside it, so the screenshot's own border, scaled the same way underneath, shows instead. */
 .demo {
   display: block;
   position: absolute;
@@ -654,12 +657,12 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: inherit;
+  clip-path: inset(calc(300% / var(--h)) calc(300% / var(--w)) round 8px);
   opacity: 0;
   transition: opacity 0.4s;
 }
 .frame[data-demo] .demo {
-  opacity: 1;
+  opacity: calc(1 - var(--demo-light));
 }
 .frame[data-demo] .demo-light {
   opacity: var(--demo-light);

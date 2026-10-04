@@ -6,12 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Settings → Password protection can unlock the vault with Windows Hello.
+- Showing a saved password, and other actions that ask for the master password, can be confirmed
+  with Windows Hello where it is enabled; the master password still works.
 - Page Up and Page Down move through the file list a screen at a time; with Shift they select.
 - The … in the path bar opens a list of the folders it hides.
 - Nine more colors for bookmarks.
 
 ### Changed
 
+- "Allow system unlock" says why it cannot be turned on while the vault is locked, and says that
+  Windows is creating the Windows Hello key while it is being turned on.
 - Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", "Name (3)" and so on,
   instead of opening an editor with "(copy)" added to the name.
 - The FTPeach icon and the tray icon are the peach on its own, without the square background, so

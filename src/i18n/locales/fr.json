@@ -25,6 +25,7 @@
     "hidePassword": "Masquer le mot de passe"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Laissez-le vide pour confirmer avec Windows Hello.",
     "title": "Confirmation de sécurité FTPeach",
     "allow": "Autoriser",
     "typeToConfirm": "Saisissez {{phrase}} pour confirmer",
@@ -433,6 +434,8 @@
       "changePassword": "Modifier le mot de passe principal",
       "change": "Modifier le mot de passe",
       "systemUnlock": "Autoriser le déverrouillage via le système",
+      "systemUnlockLockedHint": "Déverrouillez le coffre-fort pour activer le déverrouillage via le système.",
+      "systemUnlockEnabling": "Windows crée une clé Windows Hello pour FTPeach. Cela peut prendre jusqu'à une minute.",
       "systemUnlockHint": "Utilise Windows Hello (code PIN, visage ou empreinte digitale, selon la configuration de Windows). Votre mot de passe principal reste le moyen de récupération.",
       "unlockWithSystem": "Déverrouiller via l'authentification système",
       "systemUnavailable": "Le déverrouillage via le système n'est pas disponible sur cette plateforme.",

@@ -25,6 +25,7 @@
     "hidePassword": "पासवर्ड छुपाएँ"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Windows Hello से पुष्टि करने के लिए इसे खाली छोड़ें।",
     "title": "FTPeach सुरक्षा पुष्टि",
     "allow": "अनुमति दें",
     "typeToConfirm": "पुष्टि करने के लिए {{phrase}} लिखें",
@@ -429,6 +430,8 @@
       "changePassword": "मास्टर पासवर्ड बदलें",
       "change": "पासवर्ड बदलें",
       "systemUnlock": "सिस्टम प्रमाणीकरण से अनलॉक करने दें",
+      "systemUnlockLockedHint": "सिस्टम प्रमाणीकरण से अनलॉक चालू करने के लिए वॉल्ट अनलॉक करें।",
+      "systemUnlockEnabling": "Windows, FTPeach के लिए Windows Hello कुंजी बना रहा है। इसमें एक मिनट तक लग सकता है।",
       "systemUnlockHint": "Windows Hello (Windows में सेट किया गया PIN, चेहरा या फ़िंगरप्रिंट) का उपयोग करता है। आपका मास्टर पासवर्ड पुनर्प्राप्ति का तरीका बना रहता है।",
       "unlockWithSystem": "सिस्टम प्रमाणीकरण के साथ अनलॉक करें",
       "systemUnavailable": "इस प्लेटफ़ॉर्म पर सिस्टम प्रमाणीकरण से अनलॉक उपलब्ध नहीं है।",

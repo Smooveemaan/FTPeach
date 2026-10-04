@@ -25,6 +25,7 @@
     "hidePassword": "Wachtwoord verbergen"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Laat dit leeg om te bevestigen met Windows Hello.",
     "title": "FTPeach-beveiligingsbevestiging",
     "allow": "Toestaan",
     "typeToConfirm": "Typ {{phrase}} om te bevestigen",
@@ -429,6 +430,8 @@
       "changePassword": "Hoofdwachtwoord wijzigen",
       "change": "Wachtwoord wijzigen",
       "systemUnlock": "Ontgrendelen via het systeem toestaan",
+      "systemUnlockLockedHint": "Ontgrendel de kluis om ontgrendelen via het systeem aan te zetten.",
+      "systemUnlockEnabling": "Windows maakt een Windows Hello-sleutel voor FTPeach. Dit kan tot een minuut duren.",
       "systemUnlockHint": "Gebruikt Windows Hello (pincode, gezicht of vingerafdruk, zoals ingesteld in Windows). Je hoofdwachtwoord blijft de herstelmethode.",
       "unlockWithSystem": "Ontgrendelen met systeemauthenticatie",
       "systemUnavailable": "Ontgrendelen via het systeem is niet beschikbaar op dit platform.",

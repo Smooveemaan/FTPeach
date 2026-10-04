@@ -25,6 +25,7 @@
     "hidePassword": "הסתר סיסמה"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "השאר ריק כדי לאשר באמצעות Windows Hello.",
     "title": "אישור אבטחה של FTPeach",
     "allow": "אפשר",
     "typeToConfirm": "יש להקליד {{phrase}} לאישור",
@@ -433,6 +434,8 @@
       "changePassword": "שינוי סיסמת המאסטר",
       "change": "שינוי סיסמה",
       "systemUnlock": "אפשר ביטול נעילה באמצעות המערכת",
+      "systemUnlockLockedHint": "בטל את נעילת הכספת כדי להפעיל ביטול נעילה באמצעות המערכת.",
+      "systemUnlockEnabling": "Windows יוצר מפתח Windows Hello עבור FTPeach. הפעולה עשויה להימשך עד דקה.",
       "systemUnlockHint": "משתמש ב-Windows Hello (קוד PIN, זיהוי פנים או טביעת אצבע, בהתאם להגדרות של Windows). סיסמת המאסטר שלך נשארת שיטת השחזור.",
       "unlockWithSystem": "ביטול נעילה באמצעות אימות מערכת",
       "systemUnavailable": "ביטול נעילה באמצעות המערכת אינו זמין בפלטפורמה זו.",

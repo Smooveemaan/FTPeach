@@ -137,6 +137,8 @@ pub struct ConfirmationPrompt {
     host_key: Option<HostKeyFingerprints>,
     confirmation_phrase: Option<String>,
     requires_reauthentication: bool,
+    /// Windows Hello can stand in for the master password the prompt asks for.
+    system_unlock: bool,
 }
 
 fn denied(message: &str) -> CommandError {
@@ -281,6 +283,7 @@ fn confirmation_prompt(
         host_key: None,
         confirmation_phrase: (kind == ConfirmationKind::VaultReset).then(|| "RESET".into()),
         requires_reauthentication,
+        system_unlock: false,
     })
 }
 
@@ -303,6 +306,7 @@ fn open_with_prompt(intent: &OpenWithIntent, locale: String) -> ConfirmationProm
         host_key: None,
         confirmation_phrase: None,
         requires_reauthentication: false,
+        system_unlock: false,
     }
 }
 
@@ -440,6 +444,7 @@ fn plan_protected_settings(
         local_name: None,
         application: None,
         requires_reauthentication: vault_configured && !weakening.is_empty(),
+        system_unlock: false,
         security_changes: (!weakening.is_empty()).then_some(weakening),
         secret_transfer: transfer,
         host_key: None,
@@ -470,6 +475,7 @@ fn plan_host_key(target: &str, locale: String) -> CommandResult<Plan> {
             }),
             confirmation_phrase: None,
             requires_reauthentication: false,
+            system_unlock: false,
         }),
         target: target.to_owned(),
         required: true,
@@ -513,6 +519,7 @@ async fn plan_site_save(store: &Store, target: &str, locale: String) -> CommandR
             host_key: None,
             confirmation_phrase: None,
             requires_reauthentication: false,
+            system_unlock: false,
         }),
         trusts_application: None,
     })
@@ -601,6 +608,29 @@ pub(crate) async fn reauthenticate<R: tauri::Runtime>(
     true
 }
 
+/// Windows Hello in place of the master password, over the confirmation
+/// window. Opening a locked vault this way is an unlock like any other.
+async fn reauthenticate_with_system(
+    window: &tauri::WebviewWindow,
+    vault: &Vault,
+    store: &Store,
+) -> bool {
+    let was_locked = !vault.is_unlocked().await;
+    let Ok(hwnd) = crate::runtime::confirmation_window::window_handle(window) else {
+        return false;
+    };
+    if vault.verify_system(hwnd).await.is_err() {
+        return false;
+    }
+    if was_locked {
+        if let Err(error) = store.migrate_secrets_to_vault(vault).await {
+            log::warn!("Could not move saved secrets into the vault after unlocking: {error:#}");
+        }
+        announce_unlocked(window.app_handle());
+    }
+    true
+}
+
 /// Tells every window that the vault was opened, so each reads the vault
 /// state again, and starts the idle period here: unlocking is the user being
 /// present, whenever the renderer last reported activity. Said once by
@@ -613,6 +643,8 @@ pub(crate) fn announce_unlocked<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
 }
 
 #[tauri::command]
+// Four of these are managed state Tauri injects; the window sends four.
+#[allow(clippy::too_many_arguments)]
 pub async fn respond_sensitive_confirmation(
     window: tauri::WebviewWindow,
     state: State<'_, AuthorizationState>,
@@ -621,6 +653,7 @@ pub async fn respond_sensitive_confirmation(
     request_id: String,
     approved: bool,
     master_password: Option<String>,
+    use_system_unlock: Option<bool>,
 ) -> CommandResult<()> {
     let requires_reauthentication = {
         let pending = state
@@ -639,13 +672,17 @@ pub async fn respond_sensitive_confirmation(
             .acquire()
             .await
             .map_err(|_| denied("Authentication failed"))?;
-        let verified = reauthenticate(
-            window.app_handle(),
-            &vault,
-            &window.state::<Store>(),
-            &password,
-        )
-        .await;
+        let verified = if use_system_unlock == Some(true) {
+            reauthenticate_with_system(&window, &vault, &window.state::<Store>()).await
+        } else {
+            reauthenticate(
+                window.app_handle(),
+                &vault,
+                &window.state::<Store>(),
+                &password,
+            )
+            .await
+        };
         password.zeroize();
         permit
             .finish(if verified {
@@ -744,7 +781,11 @@ pub async fn authorize_sensitive(
         trusts_application,
         ..
     } = plan;
-    let prompt = prompt.ok_or_else(|| denied("Unsupported confirmation operation"))?;
+    let mut prompt = prompt.ok_or_else(|| denied("Unsupported confirmation operation"))?;
+    if prompt.requires_reauthentication {
+        let status = vault.status().await;
+        prompt.system_unlock = status.system_unlock_available && status.system_unlock_enabled;
+    }
     let app = window.app_handle().clone();
     let request_id = uuid::Uuid::new_v4().to_string();
     let confirmation_label = format!("security-confirmation-{request_id}");

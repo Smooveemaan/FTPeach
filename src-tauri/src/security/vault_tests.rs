@@ -270,13 +270,19 @@ async fn windows_hello_is_switched_on_and_off_per_computer() {
 }
 
 #[tokio::test]
-async fn a_credential_whose_key_is_gone_does_not_jam_the_switch() {
+async fn hello_stands_in_for_the_password_and_a_lost_key_does_not_jam_the_switch() {
     let dir = std::env::temp_dir().join(format!("ftpeach-vault-hello-{}", uuid::Uuid::new_v4()));
     let (vault, keys) = computer(&dir);
     vault.setup(PASSWORD).await.unwrap();
     vault.enable_system_unlock(0).await.unwrap();
+    // Windows Hello in place of the master password: open, and locked.
+    vault.verify_system(0).await.unwrap();
+    vault.lock().await;
+    vault.verify_system(0).await.unwrap();
+    assert!(vault.is_unlocked().await, "a locked vault is opened by it");
     keys.lose_everything();
 
+    assert!(vault.verify_system(0).await.is_err());
     assert!(!hello_enabled(&vault).await);
     vault.disable_system_unlock().await.unwrap();
     vault.enable_system_unlock(0).await.unwrap();

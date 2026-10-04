@@ -25,6 +25,7 @@
     "hidePassword": "Passwort ausblenden"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Leer lassen, um mit Windows Hello zu bestätigen.",
     "title": "FTPeach-Sicherheitsbestätigung",
     "allow": "Zulassen",
     "typeToConfirm": "Geben Sie zur Bestätigung {{phrase}} ein",
@@ -429,6 +430,8 @@
       "changePassword": "Master-Passwort ändern",
       "change": "Passwort ändern",
       "systemUnlock": "Systementsperrung zulassen",
+      "systemUnlockLockedHint": "Entsperren Sie den Tresor, um die Systementsperrung einzuschalten.",
+      "systemUnlockEnabling": "Windows erstellt einen Windows Hello-Schlüssel für FTPeach. Das kann bis zu einer Minute dauern.",
       "systemUnlockHint": "Verwendet Windows Hello (PIN, Gesicht oder Fingerabdruck, je nach Windows-Einrichtung). Ihr Master-Passwort bleibt die Wiederherstellungsmethode.",
       "unlockWithSystem": "Mit Systemauthentifizierung entsperren",
       "systemUnavailable": "Die Systementsperrung ist auf dieser Plattform nicht verfügbar.",

@@ -25,6 +25,7 @@
     "hidePassword": "Sembunyikan kata sandi"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Biarkan kosong untuk mengonfirmasi dengan Windows Hello.",
     "title": "Konfirmasi keamanan FTPeach",
     "allow": "Izinkan",
     "typeToConfirm": "Ketik {{phrase}} untuk mengonfirmasi",
@@ -429,6 +430,8 @@
       "changePassword": "Ubah kata sandi utama",
       "change": "Ubah kata sandi",
       "systemUnlock": "Izinkan buka kunci melalui sistem",
+      "systemUnlockLockedHint": "Buka kunci brankas untuk menyalakan buka kunci melalui sistem.",
+      "systemUnlockEnabling": "Windows sedang membuat kunci Windows Hello untuk FTPeach. Proses ini bisa memakan waktu hingga satu menit.",
       "systemUnlockHint": "Menggunakan Windows Hello (PIN, pengenalan wajah, atau sidik jari sesuai pengaturan Windows). Kata sandi utama Anda tetap menjadi metode pemulihan.",
       "unlockWithSystem": "Buka kunci dengan autentikasi sistem",
       "systemUnavailable": "Buka kunci melalui sistem tidak tersedia di platform ini.",

@@ -29,7 +29,7 @@ The production CSP is defined only in `tauri.conf.json`. Scripts are restricted 
 
 `sites_list` does not return saved passwords. The renderer sees only `hasPassword` and `hasKeyPassphrase` and supplies a `siteId` when connecting. The backend loads the associated configuration, preventing the renderer from redirecting one site's password to an arbitrary host.
 
-Normal listing and editing IPC returns only presence flags. An explicit reveal uses a short-lived one-use token; Stronghold additionally requires master-password reauthentication before that token is issued. The renderer clears a revealed value on blur, hide, vault lock, dialog close, and unmount.
+Normal listing and editing IPC returns only presence flags. An explicit reveal uses a short-lived one-use token; Stronghold additionally requires reauthentication before that token is issued: the master password, or Windows Hello where it is enabled on this computer, whose returned key must match the open vault's. The renderer clears a revealed value on blur, hide, vault lock, dialog close, and unmount.
 
 ### Rust and the local filesystem
 

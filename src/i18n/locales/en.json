@@ -25,6 +25,7 @@
     "hidePassword": "Hide password"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Leave it empty to confirm with Windows Hello.",
     "title": "FTPeach security confirmation",
     "allow": "Allow",
     "typeToConfirm": "Type {{phrase}} to confirm",
@@ -429,6 +430,8 @@
       "changePassword": "Change master password",
       "change": "Change password",
       "systemUnlock": "Allow system unlock",
+      "systemUnlockLockedHint": "Unlock the vault to turn on system unlock.",
+      "systemUnlockEnabling": "Windows is creating a Windows Hello key for FTPeach. This can take up to a minute.",
       "systemUnlockHint": "Uses Windows Hello (PIN, face, or fingerprint as configured by Windows). Your master password remains the recovery method.",
       "unlockWithSystem": "Unlock with system authentication",
       "systemUnavailable": "System unlock is unavailable on this platform.",

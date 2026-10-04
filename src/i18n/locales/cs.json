@@ -25,6 +25,7 @@
     "hidePassword": "Skrýt heslo"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Nechte prázdné a potvrďte pomocí Windows Hello.",
     "title": "Bezpečnostní potvrzení FTPeach",
     "allow": "Povolit",
     "typeToConfirm": "Potvrďte zadáním {{phrase}}",
@@ -437,6 +438,8 @@
       "changePassword": "Změnit hlavní heslo",
       "change": "Změnit heslo",
       "systemUnlock": "Povolit odemknutí přes systém",
+      "systemUnlockLockedHint": "Chcete-li zapnout odemknutí přes systém, odemkněte trezor.",
+      "systemUnlockEnabling": "Windows vytváří pro FTPeach klíč Windows Hello. Může to trvat až minutu.",
       "systemUnlockHint": "Využívá funkci Windows Hello (PIN, rozpoznání obličeje nebo otisk prstu podle nastavení systému Windows). Jako způsob obnovení zůstává vaše hlavní heslo.",
       "unlockWithSystem": "Odemknout pomocí systémového ověření",
       "systemUnavailable": "Odemknutí přes systém není na této platformě k dispozici.",

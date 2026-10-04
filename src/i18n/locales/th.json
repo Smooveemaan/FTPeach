@@ -25,6 +25,7 @@
     "hidePassword": "ซ่อนรหัสผ่าน"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "เว้นว่างไว้เพื่อยืนยันด้วย Windows Hello",
     "title": "การยืนยันความปลอดภัยของ FTPeach",
     "allow": "อนุญาต",
     "typeToConfirm": "พิมพ์ {{phrase}} เพื่อยืนยัน",
@@ -429,6 +430,8 @@
       "changePassword": "เปลี่ยนรหัสผ่านหลัก",
       "change": "เปลี่ยนรหัสผ่าน",
       "systemUnlock": "อนุญาตให้ปลดล็อกผ่านระบบ",
+      "systemUnlockLockedHint": "โปรดปลดล็อกคลังนิรภัยเพื่อเปิดการปลดล็อกผ่านระบบ",
+      "systemUnlockEnabling": "Windows กำลังสร้างคีย์ Windows Hello สำหรับ FTPeach ซึ่งอาจใช้เวลาถึงหนึ่งนาที",
       "systemUnlockHint": "ใช้ Windows Hello (รหัส PIN, ใบหน้า หรือลายนิ้วมือ ตามที่ Windows ได้กำหนดไว้) รหัสผ่านหลักของคุณยังคงเป็นวิธีการกู้คืน",
       "unlockWithSystem": "ปลดล็อกด้วยการยืนยันตัวตนของระบบ",
       "systemUnavailable": "การปลดล็อกผ่านระบบใช้งานไม่ได้บนแพลตฟอร์มนี้",

@@ -25,6 +25,7 @@
     "hidePassword": "Dölj lösenordet"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Lämna tomt för att bekräfta med Windows Hello.",
     "title": "FTPeach-säkerhetsbekräftelse",
     "allow": "Tillåt",
     "typeToConfirm": "Skriv {{phrase}} för att bekräfta",
@@ -429,6 +430,8 @@
       "changePassword": "Ändra huvudlösenord",
       "change": "Ändra lösenord",
       "systemUnlock": "Tillåt upplåsning via systemet",
+      "systemUnlockLockedHint": "Lås upp valvet för att slå på upplåsning via systemet.",
+      "systemUnlockEnabling": "Windows skapar en Windows Hello-nyckel för FTPeach. Det kan ta upp till en minut.",
       "systemUnlockHint": "Använder Windows Hello (PIN-kod, ansiktsigenkänning eller fingeravtryck enligt inställningarna i Windows). Ditt huvudlösenord förblir återställningsmetoden.",
       "unlockWithSystem": "Lås upp med systemautentisering",
       "systemUnavailable": "Upplåsning via systemet är inte tillgänglig på den här plattformen.",

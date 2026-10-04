@@ -25,6 +25,7 @@
     "hidePassword": "Jelszó elrejtése"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Hagyja üresen a Windows Hellóval való megerősítéshez.",
     "title": "FTPeach biztonsági megerősítés",
     "allow": "Engedélyezés",
     "typeToConfirm": "A megerősítéshez írja be: {{phrase}}",
@@ -429,6 +430,8 @@
       "changePassword": "A fő jelszó módosítása",
       "change": "Jelszó módosítása",
       "systemUnlock": "Feloldás engedélyezése a rendszeren keresztül",
+      "systemUnlockLockedHint": "A rendszeren keresztüli feloldás bekapcsolásához oldja fel a széfet.",
+      "systemUnlockEnabling": "A Windows Windows Hello-kulcsot hoz létre az FTPeach számára. Ez akár egy percig is tarthat.",
       "systemUnlockHint": "A Windows Hellót használja (PIN-kód, arc vagy ujjlenyomat, a Windows beállításai szerint). A fő jelszava továbbra is helyreállítási lehetőség marad.",
       "unlockWithSystem": "Feloldás rendszerhitelesítéssel",
       "systemUnavailable": "A rendszeren keresztüli feloldás ezen a platformon nem érhető el.",

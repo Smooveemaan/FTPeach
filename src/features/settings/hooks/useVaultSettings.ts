@@ -30,6 +30,9 @@ export interface VaultSettingsModel {
   vaultMessage: string;
   setVaultMessage: Dispatch<SetStateAction<string>>;
   vaultBusy: boolean;
+  /** Windows is making the Windows Hello key, which can take a while. */
+  enablingSystemUnlock: boolean;
+  unlockVaultWithSystem: () => Promise<boolean>;
   vaultUnlockInvalid: boolean;
   setVaultUnlockInvalid: Dispatch<SetStateAction<boolean>>;
   passwordStrength: PasswordStrength;
@@ -58,6 +61,7 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
   const [vaultMessage, setVaultMessage] = useState('');
   const [vaultBusy, setVaultBusy] = useState(false);
   const [vaultUnlockInvalid, setVaultUnlockInvalid] = useState(false);
+  const [enablingSystemUnlock, setEnablingSystemUnlock] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('');
   const [changePasswordArmed, setChangePasswordArmed] = useState(false);
   const [strongholdSetupArmed, setStrongholdSetupArmed] = useState(false);
@@ -159,6 +163,8 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     }
   };
 
+  const unlockVaultWithSystem = () => runVaultAction(() => api.vault.unlockSystem());
+
   const changeVaultPassword = async () => {
     const next = masterPasswordRef.current?.value || '';
     const confirmation = masterPasswordConfirmRef.current?.value || '';
@@ -188,14 +194,21 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     return succeeded;
   };
 
-  const toggleSystemUnlock = () =>
-    runVaultAction(() =>
-      vaultStatus?.systemUnlockEnabled
-        ? api.vault.disableSystemUnlock()
-        : api.vault.enableSystemUnlock(),
-    );
+  const toggleSystemUnlock = async () => {
+    if (vaultStatus?.systemUnlockEnabled)
+      return runVaultAction(() => api.vault.disableSystemUnlock());
+    // Windows makes a new Windows Hello key here, which can take a while.
+    setEnablingSystemUnlock(true);
+    try {
+      return await runVaultAction(() => api.vault.enableSystemUnlock());
+    } finally {
+      setEnablingSystemUnlock(false);
+    }
+  };
 
   return {
+    enablingSystemUnlock,
+    unlockVaultWithSystem,
     vaultStatus,
     vaultMessage,
     setVaultMessage,

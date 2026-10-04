@@ -33,6 +33,8 @@ export default function SecuritySettings({
     vaultMessage,
     setVaultMessage,
     vaultBusy,
+    enablingSystemUnlock,
+    unlockVaultWithSystem,
     vaultUnlockInvalid,
     setVaultUnlockInvalid,
     passwordStrength,
@@ -175,6 +177,18 @@ export default function SecuritySettings({
             >
               <Icon name="lock" size={16} />
             </button>
+            {vaultStatus.systemUnlockAvailable && vaultStatus.systemUnlockEnabled && (
+              <button
+                type="button"
+                className="btn btn-icon vault-system-unlock"
+                disabled={vaultBusy}
+                onClick={handler(unlockVaultWithSystem)}
+                aria-label={t('settings.security.unlockWithSystem')}
+                data-tooltip={t('settings.security.unlockWithSystem')}
+              >
+                <Icon name="fingerprintPattern" size={16} />
+              </button>
+            )}
             <label className="settings-field">
               <span>{t('settings.security.masterPassword')}</span>
               <PasswordInput
@@ -280,7 +294,16 @@ export default function SecuritySettings({
       )}
       {vaultStatus?.configured && (
         <div className="settings-option-group">
-          <label className="secure-toggle settings-toggle">
+          <label
+            className="secure-toggle settings-toggle"
+            data-tooltip={
+              !vaultStatus.systemUnlockEnabled &&
+              vaultStatus.locked &&
+              vaultStatus.systemUnlockAvailable
+                ? t('settings.security.systemUnlockLockedHint')
+                : undefined
+            }
+          >
             <input
               type="checkbox"
               checked={!!vaultStatus.systemUnlockEnabled}
@@ -293,10 +316,12 @@ export default function SecuritySettings({
             />
             {t('settings.security.systemUnlock')}
           </label>
-          <p className="settings-hint">
-            {vaultStatus.systemUnlockAvailable
-              ? t('settings.security.systemUnlockHint')
-              : t('settings.security.systemUnavailable')}
+          <p className="settings-hint" role="status">
+            {enablingSystemUnlock
+              ? t('settings.security.systemUnlockEnabling')
+              : vaultStatus.systemUnlockAvailable
+                ? t('settings.security.systemUnlockHint')
+                : t('settings.security.systemUnavailable')}
           </p>
         </div>
       )}

@@ -25,6 +25,7 @@
     "hidePassword": "隱藏密碼"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "留空即可使用 Windows Hello 確認。",
     "title": "FTPeach 安全確認",
     "allow": "允許",
     "typeToConfirm": "輸入 {{phrase}} 以確認",
@@ -429,6 +430,8 @@
       "changePassword": "變更主密碼",
       "change": "變更密碼",
       "systemUnlock": "允許透過系統驗證解鎖",
+      "systemUnlockLockedHint": "請解鎖密碼庫以開啟透過系統驗證解鎖。",
+      "systemUnlockEnabling": "Windows 正在為 FTPeach 建立 Windows Hello 金鑰，最長可能需要一分鐘。",
       "systemUnlockHint": "使用 Windows Hello（依 Windows 設定使用 PIN、臉部或指紋）。主密碼仍可作為復原方式。",
       "unlockWithSystem": "透過系統驗證解鎖",
       "systemUnavailable": "此平台不支援透過系統驗證解鎖。",

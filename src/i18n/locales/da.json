@@ -25,6 +25,7 @@
     "hidePassword": "Skjul adgangskode"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Lad feltet være tomt for at bekræfte med Windows Hello.",
     "title": "FTPeach-sikkerhedsbekræftelse",
     "allow": "Tillad",
     "typeToConfirm": "Skriv {{phrase}} for at bekræfte",
@@ -429,6 +430,8 @@
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
       "systemUnlock": "Tillad oplåsning via systemet",
+      "systemUnlockLockedHint": "Lås boksen op for at slå oplåsning via systemet til.",
+      "systemUnlockEnabling": "Windows opretter en Windows Hello-nøgle til FTPeach. Det kan tage op til et minut.",
       "systemUnlockHint": "Bruger Windows Hello (PIN-kode, ansigtsgenkendelse eller fingeraftryk, alt efter hvordan det er konfigureret i Windows). Din hovedadgangskode forbliver din gendannelsesmetode.",
       "unlockWithSystem": "Lås op med systemgodkendelse",
       "systemUnavailable": "Oplåsning via systemet er ikke tilgængelig på denne platform.",

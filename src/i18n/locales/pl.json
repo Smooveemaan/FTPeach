@@ -25,6 +25,7 @@
     "hidePassword": "Ukryj hasło"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Zostaw puste, aby potwierdzić przez Windows Hello.",
     "title": "Potwierdzenie zabezpieczeń FTPeach",
     "allow": "Zezwól",
     "typeToConfirm": "Wpisz {{phrase}}, aby potwierdzić",
@@ -437,6 +438,8 @@
       "changePassword": "Zmień hasło główne",
       "change": "Zmień hasło",
       "systemUnlock": "Zezwalaj na odblokowanie przez system",
+      "systemUnlockLockedHint": "Odblokuj sejf, aby włączyć odblokowanie przez system.",
+      "systemUnlockEnabling": "Windows tworzy klucz Windows Hello dla FTPeach. Może to potrwać do minuty.",
       "systemUnlockHint": "Wykorzystuje funkcję Windows Hello (kod PIN, rozpoznawanie twarzy lub odcisk palca zgodnie z ustawieniami systemu Windows). Hasło główne pozostaje metodą odzyskiwania dostępu.",
       "unlockWithSystem": "Odblokuj za pomocą uwierzytelniania systemowego",
       "systemUnavailable": "Odblokowanie przez system jest niedostępne na tej platformie.",

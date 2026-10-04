@@ -63,6 +63,8 @@ interface ConfirmationPrompt {
   hostKey?: HostKeyFingerprints | null;
   confirmationPhrase?: string | null;
   requiresReauthentication: boolean;
+  /** Windows Hello can stand in for the master password. */
+  systemUnlock?: boolean;
 }
 
 interface SecurityConfirmationProps {
@@ -147,7 +149,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
   const approvalBlocked =
     !prompt ||
     (!!prompt.confirmationPhrase && confirmation !== prompt.confirmationPhrase) ||
-    (prompt.requiresReauthentication && !masterPassword);
+    (prompt.requiresReauthentication && !masterPassword && !prompt.systemUnlock);
 
   const respond = async (approved: boolean) => {
     if (busy || (approved && approvalBlocked)) return;
@@ -157,6 +159,12 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
         requestId,
         approved,
         masterPassword: approved && prompt?.requiresReauthentication ? masterPassword : null,
+        // With no password typed, Windows Hello is asked instead.
+        useSystemUnlock:
+          approved &&
+          !!prompt?.requiresReauthentication &&
+          !!prompt.systemUnlock &&
+          !masterPassword,
       });
       setMasterPassword('');
     } catch {
@@ -316,6 +324,9 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
               }}
             />
             {authenticationError && <span>{t('siteManagerDialog.revealFailed')}</span>}
+            {prompt.systemUnlock && !authenticationError && (
+              <span>{t('securityConfirmation.systemUnlockHint')}</span>
+            )}
           </label>
         )}
       </section>

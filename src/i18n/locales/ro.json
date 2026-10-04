@@ -25,6 +25,7 @@
     "hidePassword": "Ascunde parola"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Lăsați gol pentru a confirma cu Windows Hello.",
     "title": "Confirmare de securitate FTPeach",
     "allow": "Permite",
     "typeToConfirm": "Tastați {{phrase}} pentru confirmare",
@@ -433,6 +434,8 @@
       "changePassword": "Schimbă parola principală",
       "change": "Schimbă parola",
       "systemUnlock": "Permite deblocarea prin sistem",
+      "systemUnlockLockedHint": "Deblocați seiful pentru a activa deblocarea prin sistem.",
+      "systemUnlockEnabling": "Windows creează o cheie Windows Hello pentru FTPeach. Poate dura până la un minut.",
       "systemUnlockHint": "Utilizează Windows Hello (cod PIN, recunoaștere facială sau amprentă digitală, conform configurării din Windows). Parola principală rămâne metoda de recuperare.",
       "unlockWithSystem": "Deblochează prin autentificarea de sistem",
       "systemUnavailable": "Deblocarea prin sistem nu este disponibilă pe această platformă.",

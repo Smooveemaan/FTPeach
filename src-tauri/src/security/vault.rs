@@ -605,7 +605,8 @@ impl Vault {
         Ok(())
     }
 
-    pub async fn unlock_system(&self, hwnd: isize) -> Result<()> {
+    /// The vault key as Windows Hello hands it back; this shows the prompt.
+    async fn system_key(&self, hwnd: isize) -> Result<Zeroizing<Vec<u8>>> {
         let metadata = self.read_metadata().await?;
         let system = metadata
             .system_unlock_here(&*self.keys)
@@ -613,8 +614,32 @@ impl Vault {
         let wrapped = BASE64
             .decode(&system.wrapped_key)
             .context("invalid system credential")?;
-        let key = Zeroizing::new(self.keys.unwrap(&system.credential, &wrapped, hwnd)?);
+        Ok(Zeroizing::new(self.keys.unwrap(
+            &system.credential,
+            &wrapped,
+            hwnd,
+        )?))
+    }
+
+    pub async fn unlock_system(&self, hwnd: isize) -> Result<()> {
+        let key = self.system_key(hwnd).await?;
         self.unlock_with_data_key(key).await
+    }
+
+    /// Windows Hello in place of the master password: an open vault checks the
+    /// key Hello returns against its own, a locked one is opened by it.
+    pub async fn verify_system(&self, hwnd: isize) -> Result<()> {
+        if !self.is_unlocked().await {
+            return self.unlock_system(hwnd).await;
+        }
+        let key = self.system_key(hwnd).await?;
+        let state = self.state.lock().await;
+        let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
+        anyhow::ensure!(
+            key.as_slice() == unlocked.data_key.as_slice(),
+            "the Windows Hello credential does not open this vault"
+        );
+        Ok(())
     }
 
     /// Removes this computer's credentials and their keys. What other

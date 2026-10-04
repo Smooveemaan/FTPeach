@@ -252,6 +252,10 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* The whole row, not just the box, says it cannot be switched. */
+.secure-toggle:has(input:disabled) {
+  cursor: not-allowed;
+}
 
 
 /* One button size app-wide: the same --control-height every other control

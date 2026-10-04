@@ -25,6 +25,7 @@
     "hidePassword": "Nascondi password"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Lascialo vuoto per confermare con Windows Hello.",
     "title": "Conferma di sicurezza FTPeach",
     "allow": "Consenti",
     "typeToConfirm": "Digita {{phrase}} per confermare",
@@ -433,6 +434,8 @@
       "changePassword": "Cambia la password principale",
       "change": "Cambia password",
       "systemUnlock": "Consenti lo sblocco tramite il sistema",
+      "systemUnlockLockedHint": "Sblocca la cassaforte per attivare lo sblocco tramite il sistema.",
+      "systemUnlockEnabling": "Windows sta creando una chiave Windows Hello per FTPeach. Può richiedere fino a un minuto.",
       "systemUnlockHint": "Utilizza Windows Hello (PIN, riconoscimento facciale o impronta digitale, a seconda delle impostazioni di Windows). La password principale rimane il metodo di ripristino.",
       "unlockWithSystem": "Sblocca tramite autenticazione di sistema",
       "systemUnavailable": "Lo sblocco tramite il sistema non è disponibile su questa piattaforma.",

@@ -25,6 +25,7 @@
     "hidePassword": "Ocultar senha"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Deixe em branco para confirmar com o Windows Hello.",
     "title": "Confirmação de segurança do FTPeach",
     "allow": "Permitir",
     "typeToConfirm": "Digite {{phrase}} para confirmar",
@@ -433,6 +434,8 @@
       "changePassword": "Alterar a senha mestra",
       "change": "Alterar senha",
       "systemUnlock": "Permitir o desbloqueio pelo sistema",
+      "systemUnlockLockedHint": "Desbloqueie o cofre para ativar o desbloqueio pelo sistema.",
+      "systemUnlockEnabling": "O Windows está criando uma chave do Windows Hello para o FTPeach. Isso pode levar até um minuto.",
       "systemUnlockHint": "Utiliza o Windows Hello (PIN, reconhecimento facial ou impressão digital, conforme configurado pelo Windows). Sua senha mestra continua sendo o método de recuperação.",
       "unlockWithSystem": "Desbloquear com autenticação do sistema",
       "systemUnavailable": "O desbloqueio pelo sistema não está disponível nesta plataforma.",

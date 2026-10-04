@@ -25,6 +25,7 @@
     "hidePassword": "Скрыть пароль"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Оставьте пустым, чтобы подтвердить через Windows Hello.",
     "title": "Подтверждение безопасности FTPeach",
     "allow": "Разрешить",
     "typeToConfirm": "Введите {{phrase}} для подтверждения",
@@ -437,6 +438,8 @@
       "changePassword": "Изменить мастер-пароль",
       "change": "Изменить пароль",
       "systemUnlock": "Разрешить системную разблокировку",
+      "systemUnlockLockedHint": "Разблокируйте хранилище, чтобы включить системную разблокировку.",
+      "systemUnlockEnabling": "Windows создаёт ключ Windows Hello для FTPeach. Это может занять до минуты.",
       "systemUnlockHint": "Через Windows Hello (PIN-код, лицо или отпечаток пальца — как настроено в Windows). Мастер-пароль остаётся способом восстановить доступ.",
       "unlockWithSystem": "Разблокировать средствами системы",
       "systemUnavailable": "Системная разблокировка недоступна на этой платформе.",

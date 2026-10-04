@@ -25,6 +25,7 @@
     "hidePassword": "비밀번호 숨기기"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "비워 두면 Windows Hello로 확인합니다.",
     "title": "FTPeach 보안 확인",
     "allow": "허용",
     "typeToConfirm": "확인하려면 {{phrase}}을(를) 입력하세요",
@@ -429,6 +430,8 @@
       "changePassword": "마스터 비밀번호 변경",
       "change": "비밀번호 변경",
       "systemUnlock": "시스템 인증으로 잠금 해제 허용",
+      "systemUnlockLockedHint": "시스템 인증으로 잠금 해제를 켜려면 보관소의 잠금을 해제하세요.",
+      "systemUnlockEnabling": "Windows가 FTPeach용 Windows Hello 키를 만들고 있습니다. 최대 1분 정도 걸릴 수 있습니다.",
       "systemUnlockHint": "Windows Hello(Windows에서 설정한 PIN, 얼굴 또는 지문)를 사용합니다. 마스터 비밀번호는 여전히 복구 수단으로 유지됩니다.",
       "unlockWithSystem": "시스템 인증을 통해 잠금 해제",
       "systemUnavailable": "이 플랫폼에서는 시스템 인증으로 잠금을 해제할 수 없습니다.",

@@ -97,6 +97,7 @@ test('confirmation phrase must match exactly before a click or Enter can approve
       requestId: 'request-1',
       approved: true,
       masterPassword: null,
+      useSystemUnlock: false,
     }),
   );
   fireEvent.click(approve());
@@ -123,10 +124,26 @@ test.each(['password', 'phrase'])(
         requestId: 'request-1',
         approved: true,
         masterPassword: 'secret',
+        useSystemUnlock: false,
       }),
     );
   },
 );
+
+test('with Windows Hello on, an empty password confirms through Hello', async () => {
+  await open({ requiresReauthentication: true, systemUnlock: true });
+  expect(screen.getByText('securityConfirmation.systemUnlockHint')).toBeTruthy();
+  expect(approve().disabled).toBe(false);
+  fireEvent.click(approve());
+  await waitFor(() =>
+    expect(mocks.respond).toHaveBeenCalledWith({
+      requestId: 'request-1',
+      approved: true,
+      masterPassword: '',
+      useSystemUnlock: true,
+    }),
+  );
+});
 
 test('failed reauthentication clears the password and allows a corrected retry', async () => {
   mocks.respond.mockRejectedValueOnce(new Error('wrong password'));
@@ -159,6 +176,7 @@ test.each([0, 1])(
         requestId: 'request-1',
         approved: false,
         masterPassword: null,
+        useSystemUnlock: false,
       }),
     );
   },

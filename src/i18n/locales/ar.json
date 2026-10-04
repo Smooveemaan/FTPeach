@@ -25,6 +25,7 @@
     "hidePassword": "إخفاء كلمة المرور"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "اتركه فارغًا للتأكيد باستخدام Windows Hello.",
     "title": "تأكيد أمان FTPeach",
     "allow": "سماح",
     "typeToConfirm": "اكتب {{phrase}} للتأكيد",
@@ -445,6 +446,8 @@
       "changePassword": "تغيير كلمة المرور الرئيسية",
       "change": "تغيير كلمة المرور",
       "systemUnlock": "السماح بإلغاء القفل عبر النظام",
+      "systemUnlockLockedHint": "ألغِ قفل الخزنة لتشغيل إلغاء القفل عبر النظام.",
+      "systemUnlockEnabling": "ينشئ Windows مفتاح Windows Hello لـ FTPeach. قد يستغرق ذلك حتى دقيقة.",
       "systemUnlockHint": "يستخدم ميزة «Windows Hello» (رقم التعريف الشخصي أو التعرف على الوجه أو بصمة الإصبع وفقًا لإعدادات Windows). وتظل كلمة المرور الرئيسية هي طريقة الاستعادة.",
       "unlockWithSystem": "إلغاء القفل باستخدام مصادقة النظام",
       "systemUnavailable": "إلغاء القفل عبر النظام غير متاح على هذه المنصة.",

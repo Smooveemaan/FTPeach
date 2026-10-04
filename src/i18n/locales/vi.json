@@ -25,6 +25,7 @@
     "hidePassword": "Ẩn mật khẩu"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Để trống để xác nhận bằng Windows Hello.",
     "title": "Xác nhận bảo mật FTPeach",
     "allow": "Cho phép",
     "typeToConfirm": "Nhập {{phrase}} để xác nhận",
@@ -429,6 +430,8 @@
       "changePassword": "Thay đổi mật khẩu chính",
       "change": "Thay đổi mật khẩu",
       "systemUnlock": "Cho phép mở khóa bằng hệ thống",
+      "systemUnlockLockedHint": "Hãy mở khóa kho bảo mật để bật mở khóa bằng hệ thống.",
+      "systemUnlockEnabling": "Windows đang tạo khóa Windows Hello cho FTPeach. Việc này có thể mất đến một phút.",
       "systemUnlockHint": "Sử dụng Windows Hello (mã PIN, nhận diện khuôn mặt hoặc vân tay tùy theo cài đặt của Windows). Mật khẩu chính của bạn vẫn là phương thức khôi phục.",
       "unlockWithSystem": "Mở khóa bằng xác thực hệ thống",
       "systemUnavailable": "Mở khóa bằng hệ thống không khả dụng trên nền tảng này.",

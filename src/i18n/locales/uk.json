@@ -25,6 +25,7 @@
     "hidePassword": "Приховати пароль"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Залиште порожнім, щоб підтвердити через Windows Hello.",
     "title": "Підтвердження безпеки FTPeach",
     "allow": "Дозволити",
     "typeToConfirm": "Введіть {{phrase}} для підтвердження",
@@ -437,6 +438,8 @@
       "changePassword": "Змінити головний пароль",
       "change": "Змінити пароль",
       "systemUnlock": "Дозволити системне розблокування",
+      "systemUnlockLockedHint": "Розблокуйте сховище, щоб увімкнути системне розблокування.",
+      "systemUnlockEnabling": "Windows створює ключ Windows Hello для FTPeach. Це може тривати до хвилини.",
       "systemUnlockHint": "Використовує Windows Hello (PIN-код, розпізнавання обличчя або відбиток пальця відповідно до налаштувань Windows). Ваш головний пароль залишається способом відновлення доступу.",
       "unlockWithSystem": "Розблокувати засобами системи",
       "systemUnavailable": "Системне розблокування недоступне на цій платформі.",

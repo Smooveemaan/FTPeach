@@ -2,6 +2,21 @@
 use tauri::Manager;
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 
+/// The native handle a Windows Hello prompt is shown over.
+#[cfg(windows)]
+pub(crate) fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isize> {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    match window.window_handle()?.as_raw() {
+        RawWindowHandle::Win32(handle) => Ok(handle.hwnd.get()),
+        _ => anyhow::bail!("system unlock requires a Windows application window"),
+    }
+}
+
+#[cfg(not(windows))]
+pub(crate) fn window_handle(_: &tauri::WebviewWindow) -> anyhow::Result<isize> {
+    Ok(0)
+}
+
 pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
     let parent = window
         .app_handle()

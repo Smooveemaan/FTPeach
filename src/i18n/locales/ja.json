@@ -25,6 +25,7 @@
     "hidePassword": "パスワードを非表示にする"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "空欄のままにすると Windows Hello で確認します。",
     "title": "FTPeach セキュリティ確認",
     "allow": "許可",
     "typeToConfirm": "確認するには {{phrase}} と入力してください",
@@ -429,6 +430,8 @@
       "changePassword": "マスターパスワードの変更",
       "change": "パスワードの変更",
       "systemUnlock": "システムによるロック解除を許可",
+      "systemUnlockLockedHint": "システムによるロック解除をオンにするには、保管庫のロックを解除してください。",
+      "systemUnlockEnabling": "Windows が FTPeach 用の Windows Hello キーを作成しています。最大で 1 分ほどかかることがあります。",
       "systemUnlockHint": "Windows Hello（Windows の設定に応じて、PIN、顔認証、または指紋認証）を使用します。マスターパスワードは引き続き復旧手段として機能します。",
       "unlockWithSystem": "システム認証によるロック解除",
       "systemUnavailable": "このプラットフォームではシステムによるロック解除を利用できません。",

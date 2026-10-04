@@ -7,19 +7,7 @@ use crate::store::Store;
 use std::future::Future;
 use tauri::{Manager, State};
 
-#[cfg(windows)]
-fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isize> {
-    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-    match window.window_handle()?.as_raw() {
-        RawWindowHandle::Win32(handle) => Ok(handle.hwnd.get()),
-        _ => anyhow::bail!("system unlock requires a Windows application window"),
-    }
-}
-
-#[cfg(not(windows))]
-fn window_handle(_: &tauri::WebviewWindow) -> anyhow::Result<isize> {
-    Ok(0)
-}
+use crate::runtime::confirmation_window::window_handle;
 
 /// One neutral answer for every way authentication can fail, so the reply
 /// never says whether the password was wrong, whether the limiter turned the

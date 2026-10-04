@@ -110,7 +110,8 @@ protection when the user makes the change and applies it only on Save.
 Secret reveal, vault reset, and executable content use an isolated backend-owned
 confirmation window when required. Vault reset and relaxing security settings are
 always confirmed; secret reveal and relaxing security settings also reauthenticate a
-configured Stronghold vault. An Open with token names the connection, remote path, local
+configured Stronghold vault, with the master password or, where Windows Hello is enabled
+on this computer, with Hello: the key Hello returns must be the vault's own. An Open with token names the connection, remote path, local
 name and program, and a program not chosen before is confirmed on first use. Unused
 tokens are withdrawn when the security policy changes, and tokens issued before the
 vault was last locked are refused. Delete,

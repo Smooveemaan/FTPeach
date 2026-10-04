@@ -25,6 +25,7 @@
     "hidePassword": "Şifreyi gizle"
   },
   "securityConfirmation": {
+    "systemUnlockHint": "Windows Hello ile onaylamak için boş bırakın.",
     "title": "FTPeach güvenlik onayı",
     "allow": "İzin ver",
     "typeToConfirm": "Onaylamak için {{phrase}} yazın",
@@ -429,6 +430,8 @@
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",
+      "systemUnlockLockedHint": "Sistem üzerinden kilit açmayı açmak için kasanın kilidini açın.",
+      "systemUnlockEnabling": "Windows, FTPeach için bir Windows Hello anahtarı oluşturuyor. Bu işlem bir dakika kadar sürebilir.",
       "systemUnlockHint": "Windows Hello'yu kullanır (Windows tarafından yapılandırıldığı şekilde PIN, yüz tanıma veya parmak izi). Ana şifreniz, kurtarma yöntemi olarak kalmaya devam eder.",
       "unlockWithSystem": "Sistem kimlik doğrulamasıyla kilidi aç",
       "systemUnavailable": "Sistem üzerinden kilit açma bu platformda kullanılamıyor.",

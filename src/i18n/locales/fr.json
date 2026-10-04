@@ -158,7 +158,7 @@
     "installTooltip": "Redémarrer maintenant pour installer. Sinon, la mise à jour s'installera au prochain démarrage de FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Les mots de passe de certains sites enregistrés n'ont pas pu être lus après la mise à jour ; saisissez-les à nouveau dans le gestionnaire de signets."
+    "message": "Les mots de passe de certains serveurs enregistrés n'ont pas pu être lus ; saisissez-les à nouveau dans le gestionnaire de signets."
   },
   "plaintextSecretNotice": {
     "message": "Le mot de passe ou la phrase secrète d'un site enregistré n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."

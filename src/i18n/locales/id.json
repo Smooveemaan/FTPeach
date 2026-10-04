@@ -156,7 +156,7 @@
     "installTooltip": "Mulai ulang sekarang untuk menginstal. Jika tidak, pembaruan akan diinstal saat FTPeach dijalankan berikutnya."
   },
   "legacyPasswordNotice": {
-    "message": "Kata sandi beberapa server yang tersimpan tidak dapat dibaca setelah pembaruan — masukkan kembali di pengelola bookmark."
+    "message": "Kata sandi beberapa server yang tersimpan tidak dapat dibaca — masukkan kembali di pengelola bookmark."
   },
   "plaintextSecretNotice": {
     "message": "Kata sandi atau frasa sandi server yang tersimpan tidak dapat dienkripsi karena perlindungan data Windows tidak tersedia, sehingga disimpan sebagai teks biasa."

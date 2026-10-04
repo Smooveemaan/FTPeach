@@ -158,7 +158,7 @@
     "installTooltip": "Reporniți acum pentru a instala. Altfel, actualizarea se instalează la următoarea pornire a FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Parolele unor servere salvate nu au putut fi citite după actualizare — introduceți-le din nou în gestionarul de marcaje."
+    "message": "Parolele unor servere salvate nu au putut fi citite — introduceți-le din nou în gestionarul de marcaje."
   },
   "plaintextSecretNotice": {
     "message": "Parola sau fraza de acces a unui server salvat nu a putut fi criptată deoarece protecția datelor din Windows nu este disponibilă, așa că a fost stocată ca text simplu."

@@ -156,7 +156,7 @@
     "installTooltip": "Indítsa újra most a telepítéshez. Ellenkező esetben a frissítés az FTPeach következő indításakor települ."
   },
   "legacyPasswordNotice": {
-    "message": "A frissítés után néhány mentett szerver jelszavát nem sikerült beolvasni – írja be őket újra a könyvjelzőkezelőben."
+    "message": "Néhány mentett szerver jelszavát nem sikerült beolvasni – írja be őket újra a könyvjelzőkezelőben."
   },
   "plaintextSecretNotice": {
     "message": "Egy mentett szerver jelszavát vagy jelmondatát nem sikerült titkosítani, mert a Windows adatvédelme nem érhető el, ezért egyszerű szövegként lett tárolva."

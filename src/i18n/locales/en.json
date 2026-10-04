@@ -156,7 +156,7 @@
     "installTooltip": "Restart now to install. Otherwise the update installs the next time FTPeach starts."
   },
   "legacyPasswordNotice": {
-    "message": "Passwords for some saved sites couldn't be read after the update — please re-enter them in the site manager."
+    "message": "Passwords for some saved servers couldn't be read — please re-enter them in Manage Bookmarks."
   },
   "plaintextSecretNotice": {
     "message": "A saved site's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."

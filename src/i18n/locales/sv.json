@@ -156,7 +156,7 @@
     "installTooltip": "Starta om nu för att installera. Annars installeras uppdateringen nästa gång FTPeach startar."
   },
   "legacyPasswordNotice": {
-    "message": "Lösenorden för vissa sparade servrar gick inte att läsa efter uppdateringen – ange dem på nytt i bokmärkeshanteraren."
+    "message": "Lösenorden för vissa sparade servrar gick inte att läsa – ange dem på nytt i bokmärkeshanteraren."
   },
   "plaintextSecretNotice": {
     "message": "Lösenordet eller lösenfrasen för en sparad server kunde inte krypteras eftersom Windows dataskydd inte är tillgängligt, och lagrades därför i klartext."

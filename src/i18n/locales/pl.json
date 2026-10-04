@@ -160,7 +160,7 @@
     "installTooltip": "Uruchom ponownie teraz, aby zainstalować. W przeciwnym razie aktualizacja zostanie zainstalowana przy następnym uruchomieniu FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Po aktualizacji nie udało się odczytać haseł niektórych zapisanych serwerów — wprowadź je ponownie w menedżerze zakładek."
+    "message": "Nie udało się odczytać haseł niektórych zapisanych serwerów — wprowadź je ponownie w menedżerze zakładek."
   },
   "plaintextSecretNotice": {
     "message": "Nie udało się zaszyfrować hasła lub frazy hasła zapisanego serwera, ponieważ ochrona danych systemu Windows jest niedostępna, dlatego zapisano je jako zwykły tekst."

@@ -156,7 +156,7 @@
     "installTooltip": "立即重新啟動以安裝。否則，更新將在下次啟動 FTPeach 時安裝。"
   },
   "legacyPasswordNotice": {
-    "message": "更新後無法讀取部分已儲存伺服器的密碼——請在「管理書籤」中重新輸入。"
+    "message": "無法讀取部分已儲存伺服器的密碼——請在「管理書籤」中重新輸入。"
   },
   "plaintextSecretNotice": {
     "message": "由於無法使用 Windows 資料保護，已儲存伺服器的密碼或密語無法加密，因此以純文字儲存。"

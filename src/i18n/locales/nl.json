@@ -156,7 +156,7 @@
     "installTooltip": "Start nu opnieuw om te installeren. Anders wordt de update geïnstalleerd wanneer FTPeach de volgende keer start."
   },
   "legacyPasswordNotice": {
-    "message": "De wachtwoorden van sommige opgeslagen servers konden na de update niet worden gelezen — voer ze opnieuw in via Bladwijzers beheren."
+    "message": "De wachtwoorden van sommige opgeslagen servers konden niet worden gelezen — voer ze opnieuw in via Bladwijzers beheren."
   },
   "plaintextSecretNotice": {
     "message": "Het wachtwoord of de wachtwoordzin van een opgeslagen server kon niet worden versleuteld omdat de gegevensbeveiliging van Windows niet beschikbaar is, en is daarom als leesbare tekst opgeslagen."

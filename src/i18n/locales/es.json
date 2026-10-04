@@ -158,7 +158,7 @@
     "installTooltip": "Reinicia ahora para instalarla. Si no, la actualización se instalará la próxima vez que se inicie FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Las contraseñas de algunos sitios guardados no se pudieron leer tras la actualización; vuelve a introducirlas en el gestor de marcadores."
+    "message": "Las contraseñas de algunos servidores guardados no se pudieron leer; vuelve a introducirlas en el gestor de marcadores."
   },
   "plaintextSecretNotice": {
     "message": "No se ha podido cifrar la contraseña o frase de acceso de un sitio guardado porque la protección de datos de Windows no está disponible, por lo que se ha almacenado en texto sin cifrar."

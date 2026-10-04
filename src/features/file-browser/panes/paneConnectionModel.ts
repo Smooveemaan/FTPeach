@@ -24,7 +24,8 @@ export interface PaneConnectionModel {
 
 const isPaneBusy = (pane: PaneState) => pane.status === 'connected' || pane.status === 'connecting';
 
-const baseConnectionLabel = (pane: PaneState) =>
+/** What names a pane's connection to the user: the bookmark, else the address. */
+export const baseConnectionLabel = (pane: PaneState) =>
   pane.siteLabel || (pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host) || '?';
 
 export function buildPaneConnectionModel({

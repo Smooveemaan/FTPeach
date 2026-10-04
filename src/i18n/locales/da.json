@@ -156,7 +156,7 @@
     "installTooltip": "Genstart nu for at installere. Ellers installeres opdateringen, næste gang FTPeach starter."
   },
   "legacyPasswordNotice": {
-    "message": "Adgangskoder til visse gemte servere kunne ikke læses efter opdateringen – indtast dem igen under Administrer bogmærker."
+    "message": "Adgangskoder til visse gemte servere kunne ikke læses – indtast dem igen under Administrer bogmærker."
   },
   "plaintextSecretNotice": {
     "message": "Adgangskoden eller adgangssætningen til en gemt server kunne ikke krypteres, da Windows' databeskyttelse ikke er tilgængelig, og blev derfor gemt som almindelig tekst."

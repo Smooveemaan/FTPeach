@@ -374,7 +374,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         {
           label: t('menu.help.reportIssue'),
           onClick: handler(() =>
-            api.app.openExternal('https://github.com/Smooveemaan/ftpeach/issues/new'),
+            api.app.openExternal('https://github.com/Smooveemaan/ftpeach/issues/new/choose'),
           ),
         },
         {

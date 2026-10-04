@@ -156,7 +156,7 @@
     "installTooltip": "Jetzt neu starten und installieren. Andernfalls wird das Update beim nächsten Start von FTPeach installiert."
   },
   "legacyPasswordNotice": {
-    "message": "Die Passwörter einiger gespeicherter Server konnten nach dem Update nicht gelesen werden – bitte geben Sie sie in der Lesezeichenverwaltung erneut ein."
+    "message": "Die Passwörter einiger gespeicherter Server konnten nicht gelesen werden – bitte geben Sie sie in der Lesezeichenverwaltung erneut ein."
   },
   "plaintextSecretNotice": {
     "message": "Das Passwort oder die Passphrase eines gespeicherten Servers konnte nicht verschlüsselt werden, weil der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."

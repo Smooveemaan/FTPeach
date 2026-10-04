@@ -156,7 +156,7 @@
     "installTooltip": "Khởi động lại ngay để cài đặt. Nếu không, bản cập nhật sẽ được cài vào lần khởi động FTPeach tiếp theo."
   },
   "legacyPasswordNotice": {
-    "message": "Không đọc được mật khẩu của một số máy chủ đã lưu sau khi cập nhật — vui lòng nhập lại trong trình quản lý dấu trang."
+    "message": "Không đọc được mật khẩu của một số máy chủ đã lưu — vui lòng nhập lại trong trình quản lý dấu trang."
   },
   "plaintextSecretNotice": {
     "message": "Không thể mã hóa mật khẩu hoặc cụm mật khẩu của một máy chủ đã lưu vì tính năng bảo vệ dữ liệu của Windows không khả dụng, nên nó đã được lưu dưới dạng văn bản thuần."

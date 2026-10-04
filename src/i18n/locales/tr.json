@@ -156,7 +156,7 @@
     "installTooltip": "Yüklemek için şimdi yeniden başlatın. Aksi takdirde güncelleme FTPeach bir sonraki açılışında yüklenir."
   },
   "legacyPasswordNotice": {
-    "message": "Güncellemeden sonra kaydedilmiş bazı sunucuların şifreleri okunamadı — lütfen bunları yer imi yöneticisinde yeniden girin."
+    "message": "Kaydedilmiş bazı sunucuların şifreleri okunamadı — lütfen bunları yer imi yöneticisinde yeniden girin."
   },
   "plaintextSecretNotice": {
     "message": "Kaydedilmiş bir sunucunun şifresi veya anahtar parolası, Windows veri koruması kullanılamadığı için şifrelenemedi ve düz metin olarak kaydedildi."

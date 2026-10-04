@@ -160,7 +160,7 @@
     "installTooltip": "Restartovat nyní a nainstalovat. Jinak se aktualizace nainstaluje při příštím spuštění FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Hesla k některým uloženým serverům se po aktualizaci nepodařilo načíst – zadejte je prosím znovu ve správci záložek."
+    "message": "Hesla k některým uloženým serverům se nepodařilo načíst – zadejte je prosím znovu ve správci záložek."
   },
   "plaintextSecretNotice": {
     "message": "Heslo nebo přístupovou frázi uloženého serveru nebylo možné zašifrovat, protože ochrana dat systému Windows není k dispozici, a byly proto uloženy jako prostý text."

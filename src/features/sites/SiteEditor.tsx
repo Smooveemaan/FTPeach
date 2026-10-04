@@ -462,11 +462,6 @@ export default function SiteEditor({
                 'siteManagerDialog.removeSavedPassphrase',
                 'siteManagerDialog.changeSavedPassphrase',
               )}
-              {rsaKeySelected && (
-                <span className="saved-secret-hint" role="status">
-                  {t('connectionBar.rsaKeyWarning')}
-                </span>
-              )}
             </div>
           ) : (
             <div className="settings-field">
@@ -530,6 +525,11 @@ export default function SiteEditor({
             </button>
           ),
         )}
+      {form.kind !== 'local' && isKeyAuth && rsaKeySelected && (
+        <p className="settings-hint site-field-hint" role="status">
+          {t('connectionBar.rsaKeyWarning')}
+        </p>
+      )}
       {form.kind !== 'local' && (
         <details className="site-advanced" open={advancedOpen}>
           <summary>

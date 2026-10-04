@@ -15,9 +15,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bookmark's icon and color menus open scrolled to the one that is chosen.
 - The hint under "Auto-lock after, min" is one short paragraph, and "System protection" says why
   it cannot be chosen while the vault is locked.
+- Help → Report an Issue lets you choose between a bug report, a feature request and a
+  translation fix.
+- The message about saved passwords that could not be read no longer says it happened after an
+  update: it also appears after moving the portable copy to another computer.
 
 ### Fixed
 
+- The warning about RSA keys in Manage Bookmarks spans the whole dialog instead of a narrow
+  column under the passphrase.
+- Opening a bookmark in a pane connected to a WebDAV server names that server in the question
+  instead of showing empty quotes.
 - A folder of thousands of small files goes to a server much faster and no longer loads the
   computer and the server more with every file.
 - Files in very deeply nested folders, whose full path is longer than 260 characters, download

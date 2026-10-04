@@ -158,7 +158,7 @@
     "installTooltip": "Reinicie agora para instalar. Caso contrário, a atualização será instalada na próxima vez que o FTPeach for iniciado."
   },
   "legacyPasswordNotice": {
-    "message": "As senhas de alguns sites salvos não puderam ser lidas após a atualização — digite-as novamente no gerenciador de favoritos."
+    "message": "As senhas de alguns servidores salvos não puderam ser lidas — digite-as novamente no gerenciador de favoritos."
   },
   "plaintextSecretNotice": {
     "message": "Não foi possível criptografar a senha ou a frase secreta de um site salvo porque a proteção de dados do Windows não está disponível; por isso, ela foi armazenada em texto simples."

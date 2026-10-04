@@ -5,7 +5,7 @@ import Modal from './Modal.tsx';
 
 const PROJECT_URL = 'https://github.com/Smooveemaan/ftpeach';
 const LICENSE_URL = `${PROJECT_URL}/blob/master/LICENSE`;
-const ISSUES_URL = `${PROJECT_URL}/issues`;
+const ISSUES_URL = `${PROJECT_URL}/issues/new/choose`;
 
 interface AboutDialogProps {
   onClose: () => void;

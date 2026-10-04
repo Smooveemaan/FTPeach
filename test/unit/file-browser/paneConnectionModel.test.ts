@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildPaneConnectionModel } from '../../../src/features/file-browser/panes/paneConnectionModel.ts';
+import {
+  baseConnectionLabel,
+  buildPaneConnectionModel,
+} from '../../../src/features/file-browser/panes/paneConnectionModel.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 
 const translate = (key: string, values?: Record<string, string | number>) =>
@@ -83,4 +86,13 @@ test('pane connection model ignores disconnected panes with stale connection ids
   assert.equal(model.openConnectionIds.size, 0);
   assert.equal(model.connectionLabels.size, 0);
   assert.equal(model.freeConnectTargetPaneId, 'b');
+});
+
+test('a quick WebDAV connection is named by its URL', () => {
+  const pane = makeTab('first').panes.b;
+  const webdav = {
+    ...pane,
+    form: { ...pane.form, protocol: 'webdav', webdavUrl: 'https://dav.test' },
+  };
+  assert.equal(baseConnectionLabel(webdav as typeof pane), 'https://dav.test');
 });

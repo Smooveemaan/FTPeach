@@ -158,7 +158,7 @@
     "installTooltip": "Riavvia ora per installare. Altrimenti l'aggiornamento verrà installato al prossimo avvio di FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Dopo l'aggiornamento non è stato possibile leggere le password di alcuni siti salvati: inseriscile di nuovo nel gestore dei segnalibri."
+    "message": "Non è stato possibile leggere le password di alcuni server salvati: inseriscile di nuovo nel gestore dei segnalibri."
   },
   "plaintextSecretNotice": {
     "message": "Non è stato possibile crittografare la password o la passphrase di un sito salvato poiché la protezione dei dati di Windows non è disponibile; pertanto, è stata memorizzata in chiaro."

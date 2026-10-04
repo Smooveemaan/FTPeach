@@ -28,7 +28,7 @@ import type { NavigateOptions } from './panes/createPaneNavigation.ts';
 import { createPaneNavigation } from './panes/createPaneNavigation.ts';
 import { createPaneSessionLifecycle } from './panes/createPaneSessionLifecycle.ts';
 import { backendFor, paneJoin } from './panes/paneBackend.ts';
-import { buildPaneConnectionModel } from './panes/paneConnectionModel.ts';
+import { baseConnectionLabel, buildPaneConnectionModel } from './panes/paneConnectionModel.ts';
 import type { ConnectionForm, PaneId, PaneState, PaneStatus, TabState } from './panes/paneModel.ts';
 import { PANE_IDS, makeTab } from './panes/paneModel.ts';
 import { usePaneRefresh } from './panes/usePaneRefresh.ts';
@@ -427,7 +427,7 @@ export function usePanes({
     if (targetPane.status === 'connected') {
       requestConfirm(
         t('confirm.replaceConnection', {
-          current: targetPane.siteLabel || targetPane.form.host,
+          current: baseConnectionLabel(targetPane),
           next: site.name,
         }),
         () => siteConnectPane(targetId, site),

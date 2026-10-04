@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Page Up and Page Down move through the file list a screen at a time; with Shift they select.
+- The … in the path bar opens a list of the folders it hides.
 - Nine more colors for bookmarks.
 
 ### Changed
@@ -22,6 +24,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Dragging a column header in a list scrolled sideways moves the column to where you drop it,
+  instead of several columns further.
+- Renaming a file with F2 selects its name without the extension, as Explorer does.
+- Sweeping a selection rectangle past the end of a long list scrolls faster the further you go.
+- The Date modified and Date created columns are wide enough for a date with a 12-hour time.
+- After closing a dialog opened from the menu, Ctrl+A selects files instead of the text of the
+  window.
+- Settings → Shortcuts warns when a global shortcut and a file pane shortcut use the same keys.
 - Renaming a file on an FTP or SFTP server to the same name in other letter case works instead
   of failing with "An unexpected error occurred".
 - A server that turns you away because it already has its maximum number of users says so,

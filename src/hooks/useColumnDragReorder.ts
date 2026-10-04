@@ -93,18 +93,21 @@ function measureOrderRects(
     .split(/\s+/)
     .map((v) => parseFloat(v) || 0);
 
+  // A header scrolled sideways with its list shows every track moved by
+  // -scrollLeft on screen (scrollLeft is negative in RTL, so that holds there too).
+  const scrolled = container.scrollLeft;
   let leadingSpan = 0;
   for (let i = 0; i < firstIdx; i++) leadingSpan += (trackWidths[i] ?? 0) + gapPx;
 
   if (!rtl) {
-    let cursor = containerRect.left + paddingStart + leadingSpan;
+    let cursor = containerRect.left + paddingStart + leadingSpan - scrolled;
     visibleOrder.forEach((key, i) => {
       const width = trackWidths[firstIdx + i] ?? 0;
       rects.set(key, { left: cursor, width });
       cursor += width + gapPx;
     });
   } else {
-    let cursor = containerRect.right - paddingStart - leadingSpan;
+    let cursor = containerRect.right - paddingStart - leadingSpan - scrolled;
     visibleOrder.forEach((key, i) => {
       const width = trackWidths[firstIdx + i] ?? 0;
       rects.set(key, { left: cursor - width, width });

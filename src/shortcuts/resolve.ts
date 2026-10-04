@@ -44,15 +44,20 @@ export function resolveAction(
   return null;
 }
 
-/** Every other action in the scope bound to the same keys. */
+/**
+ * Every other action bound to the same keys. Global shortcuts are caught
+ * before a pane sees the key, so they collide with pane ones too.
+ */
 export function findConflicts(
   actionId: string,
   binding: string | null,
-  scope: ShortcutScope,
   overrides?: ShortcutOverrides | null,
 ): string[] {
   if (!binding) return [];
-  return [...effectiveBindingsByScope(scope, overrides)]
+  return [
+    ...effectiveBindingsByScope('global', overrides),
+    ...effectiveBindingsByScope('pane', overrides),
+  ]
     .filter(([otherId, otherBinding]) => otherId !== actionId && otherBinding === binding)
     .map(([otherId]) => otherId);
 }

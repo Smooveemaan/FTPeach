@@ -14,7 +14,7 @@ const crumbs = ['/', '/a', '/a/b', '/a/b/c', '/a/b/c/d'].map((path) => ({
   label: path.split('/').at(-1) || '/',
 }));
 
-test('the ellipsis of a path that does not fit opens the nearest folder it hides', () => {
+test('the ellipsis of a path that does not fit lists the folders it hides, nearest first', () => {
   // jsdom lays nothing out: every crumb and separator is 100 wide in a bar of 350,
   // which leaves room for the root, the ellipsis and the last folder.
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
@@ -35,7 +35,10 @@ test('the ellipsis of a path that does not fit opens the nearest folder it hides
   const shown = [...document.querySelectorAll('.pane-path:not(.pane-path-measure) > .crumb')];
   expect(shown.map((crumb) => crumb.textContent)).toEqual(['/', '…', 'd']);
   fireEvent.click(shown[1]!);
-  expect(onCrumbClick).toHaveBeenCalledExactlyOnceWith('/a/b/c');
+  const items = screen.getAllByRole('menuitem');
+  expect(items.map((item) => item.textContent)).toEqual(['c', 'b', 'a']);
+  fireEvent.click(items[1]!);
+  expect(onCrumbClick).toHaveBeenCalledExactlyOnceWith('/a/b');
   // The click belongs to the crumb: the bar does not turn into the path field.
   expect(screen.queryByRole('textbox')).toBeNull();
 });

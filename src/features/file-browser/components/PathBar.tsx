@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import ContextMenu from '../../../components/ContextMenu.tsx';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import type { PaneKind } from '../panes/paneModel.ts';
@@ -32,6 +33,9 @@ export default function PathBar({
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState('');
   const [tailStart, setTailStart] = useState(1);
+  const [hiddenMenu, setHiddenMenu] = useState<{ x: number; y: number; aboveY: number } | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const fullPath = crumbs.at(-1)?.path ?? '';
@@ -143,66 +147,78 @@ export default function PathBar({
   };
 
   return (
-    <div
-      className="pane-path"
-      ref={containerRef}
-      onClick={startEditing}
-      role={editing ? undefined : 'button'}
-      tabIndex={editing ? undefined : 0}
-      aria-label={editing ? undefined : t('filePane.editPathAriaLabel')}
-      onKeyDown={(event) => {
-        if (editing || (event.key !== 'Enter' && event.key !== ' ')) return;
-        event.preventDefault();
-        startEditing();
-      }}
-    >
-      {editing ? (
-        <input
-          className="path-input"
-          autoFocus
-          value={value}
-          onClick={(event) => event.stopPropagation()}
-          onFocus={(event) => event.target.select()}
-          onChange={(event) => setValue(event.target.value)}
-          onKeyDown={(event) => {
-            event.stopPropagation();
-            if (event.key === 'Enter') commit();
-            if (event.key === 'Escape') setEditing(false);
-          }}
-          onBlur={() => setEditing(false)}
-        />
-      ) : (
-        crumbs.map((crumb, index) => {
-          if (index > 0 && index < tailStart) return null;
-          return (
-            <React.Fragment key={crumb.path}>
-              {index === tailStart && tailStart > 1 && (
-                <>
-                  <span className="sep">/</span>
-                  {/* ponytail: one click opens the nearest hidden folder, where more of the
-                      path fits; a menu of every hidden folder if that proves too slow. */}
-                  <span
-                    className="crumb crumb-ellipsis"
-                    data-tooltip={crumbs[tailStart - 1]?.path}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      const hidden = crumbs[tailStart - 1];
-                      if (hidden) onCrumbClick(hidden.path);
-                    }}
-                  >
-                    …
-                  </span>
-                </>
-              )}
-              {renderCrumb(crumb, index)}
-            </React.Fragment>
-          );
-        })
-      )}
-      <div className="pane-path pane-path-measure" ref={measureRef} aria-hidden="true">
-        {crumbs.map((crumb, index) => renderCrumb(crumb, index, true))}
-        <span className="crumb crumb-ellipsis">…</span>
+    <>
+      <div
+        className="pane-path"
+        ref={containerRef}
+        onClick={startEditing}
+        role={editing ? undefined : 'button'}
+        tabIndex={editing ? undefined : 0}
+        aria-label={editing ? undefined : t('filePane.editPathAriaLabel')}
+        onKeyDown={(event) => {
+          if (editing || (event.key !== 'Enter' && event.key !== ' ')) return;
+          event.preventDefault();
+          startEditing();
+        }}
+      >
+        {editing ? (
+          <input
+            className="path-input"
+            autoFocus
+            value={value}
+            onClick={(event) => event.stopPropagation()}
+            onFocus={(event) => event.target.select()}
+            onChange={(event) => setValue(event.target.value)}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Enter') commit();
+              if (event.key === 'Escape') setEditing(false);
+            }}
+            onBlur={() => setEditing(false)}
+          />
+        ) : (
+          crumbs.map((crumb, index) => {
+            if (index > 0 && index < tailStart) return null;
+            return (
+              <React.Fragment key={crumb.path}>
+                {index === tailStart && tailStart > 1 && (
+                  <>
+                    <span className="sep">/</span>
+                    <span
+                      className="crumb crumb-ellipsis"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setHiddenMenu({ x: rect.left, y: rect.bottom, aboveY: rect.top });
+                      }}
+                    >
+                      …
+                    </span>
+                  </>
+                )}
+                {renderCrumb(crumb, index)}
+              </React.Fragment>
+            );
+          })
+        )}
+        <div className="pane-path pane-path-measure" ref={measureRef} aria-hidden="true">
+          {crumbs.map((crumb, index) => renderCrumb(crumb, index, true))}
+          <span className="crumb crumb-ellipsis">…</span>
+        </div>
       </div>
-    </div>
+      {/* Outside the bar, whose click and Enter would turn it into the path field. */}
+      {hiddenMenu && (
+        <ContextMenu
+          {...hiddenMenu}
+          className="path-hidden-menu"
+          // The folders the bar has no room for, nearest first, as in Explorer.
+          items={crumbs
+            .slice(1, tailStart)
+            .reverse()
+            .map((crumb) => ({ label: crumb.label, onClick: () => onCrumbClick(crumb.path) }))}
+          onClose={() => setHiddenMenu(null)}
+        />
+      )}
+    </>
   );
 }

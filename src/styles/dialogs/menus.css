@@ -166,3 +166,9 @@
   background: var(--border-soft);
   margin: 4px 2px;
 }
+
+/* A deep path can hide more folders than fit on screen. */
+.path-hidden-menu {
+  max-height: 60vh;
+  overflow-y: auto;
+}

@@ -180,7 +180,8 @@ describe('FilePane interactions', () => {
     fireEvent.keyDown(pane, { key: 'Delete', code: 'Delete', shiftKey: true });
     expect(props.onDeleteSelected).toHaveBeenCalledWith({ permanent: true });
     fireEvent.keyDown(pane, { key: 'F2', code: 'F2' });
-    const rename = requireHtml(container.querySelector('.rename-input'));
+    const rename = requireHtml(container.querySelector('.rename-input')) as HTMLInputElement;
+    expect([rename.selectionStart, rename.selectionEnd]).toEqual([0, 'beta'.length]);
     await user.clear(rename);
     await user.type(rename, 'renamed.txt{Enter}');
     expect(props.onRename).toHaveBeenCalledWith(
@@ -353,6 +354,19 @@ describe('FilePane interactions', () => {
 
     fireEvent.keyDown(pane, { key: 'r', code: 'KeyR', ctrlKey: true });
     expect(container.querySelector('.rename-input')).not.toBeNull();
+  });
+
+  test('PageDown and PageUp move the cursor a page at a time', () => {
+    const { container, props } = renderPane({ selectedNames: new Set() });
+    const pane = requireHtml(container.querySelector('.pane'));
+    pane.focus();
+
+    fireEvent.keyDown(pane, { key: 'PageDown' });
+    expect(props.onSelectionChange).toHaveBeenLastCalledWith(new Set(['Zoo.txt']));
+    fireEvent.keyDown(pane, { key: 'PageUp', shiftKey: true });
+    expect(props.onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(['Alpha', 'beta.txt', 'Zoo.txt']),
+    );
   });
 
   test('Space toggles the active row in/out of the selection without moving the cursor', () => {

@@ -62,12 +62,9 @@ export default function ShortcutsSettings({
             <div className="settings-shortcuts-scope-header">{t(titleKey)}</div>
             {shortcutActionsByScope(scope).map((entry) => {
               const binding = effectiveBinding(entry.id, shortcutOverridesValue);
-              const conflicts = findConflicts(
-                entry.id,
-                binding,
-                entry.scope,
-                shortcutOverridesValue,
-              ).flatMap((id) => SHORTCUT_ACTIONS.filter((action) => action.id === id));
+              const conflicts = findConflicts(entry.id, binding, shortcutOverridesValue).flatMap(
+                (id) => SHORTCUT_ACTIONS.filter((action) => action.id === id),
+              );
               const conflictText =
                 conflicts.length > 0
                   ? t('settings.shortcuts.conflict', {

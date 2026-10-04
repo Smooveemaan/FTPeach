@@ -124,6 +124,15 @@ export default function useFilePaneKeyboard({
         moveActive(1, event.shiftKey);
       } else if (event.key === 'ArrowUp') {
         moveActive(-1, event.shiftKey);
+      } else if (event.key === 'PageDown' || event.key === 'PageUp') {
+        // One screen less a row, so the last row of the old page stays in sight.
+        const list = event.currentTarget.querySelector<HTMLElement>('.pane-list');
+        const row = list?.querySelector<HTMLElement>('.row:not(.pane-list-width)');
+        const page =
+          list && row?.offsetHeight
+            ? Math.max(1, Math.floor(list.clientHeight / row.offsetHeight) - 1)
+            : 10;
+        moveActive(event.key === 'PageDown' ? page : -page, event.shiftKey);
       } else if (event.key === 'Home') {
         jumpActive(0, event.shiftKey);
       } else if (event.key === 'End') {

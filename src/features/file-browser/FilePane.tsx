@@ -329,6 +329,11 @@ function FilePane({
           className="rename-input"
           autoFocus
           value={rename.value}
+          // Like Explorer: the name is selected without its extension.
+          onFocus={(e) => {
+            const dot = entry.isDirectory ? -1 : e.target.value.lastIndexOf('.');
+            e.target.setSelectionRange(0, dot > 0 ? dot : e.target.value.length);
+          }}
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => rename.setValue(e.target.value)}
           onKeyDown={(e) => {
@@ -380,6 +385,13 @@ function FilePane({
       data-column-reorder-scope
       style={paneStyle}
       tabIndex={0}
+      // The pane a dialog hands focus back to when what opened it is gone.
+      onFocusCapture={(event) => {
+        if (event.currentTarget.hasAttribute('data-focus-home')) return;
+        for (const other of document.querySelectorAll('[data-focus-home]'))
+          other.removeAttribute('data-focus-home');
+        event.currentTarget.setAttribute('data-focus-home', '');
+      }}
       onKeyDown={handlePaneKeyDown}
       onMouseDownCapture={onActivate}
       aria-activedescendant={activeRowId}

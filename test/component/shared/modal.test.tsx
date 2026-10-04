@@ -88,6 +88,23 @@ describe('critical dialog accessibility', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  test('focus goes back to the last used pane when the opener is gone', () => {
+    const pane = document.createElement('div');
+    pane.tabIndex = 0;
+    pane.setAttribute('data-focus-home', '');
+    const menuItem = document.createElement('button');
+    document.body.append(pane, menuItem);
+    menuItem.focus();
+    const view = render(
+      <Modal title="Settings" onClose={() => {}}>
+        <button>Close</button>
+      </Modal>,
+    );
+    menuItem.remove();
+    view.unmount();
+    expect(document.activeElement).toBe(pane);
+  });
+
   test('a prompt that fails validation keeps the dialog and the input', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

@@ -95,16 +95,16 @@ test('resolveAction only matches actions in the requested scope', () => {
   assert.equal(resolveAction(fakeEvent({ code: 'F2' }), 'pane', {}), 'rename');
 });
 
-test('findConflicts lists every same-scope action sharing a binding, ignores cross-scope overlap', () => {
+test('findConflicts lists every action sharing a binding, across global and pane scopes', () => {
   const overrides = { paste: 'F5' }; // pane-scope 'paste' now collides with global-scope 'refresh'
-  assert.deepEqual(findConflicts('refresh', 'F5', 'global', overrides), []);
-  assert.deepEqual(findConflicts('paste', 'F5', 'pane', overrides), []);
+  assert.deepEqual(findConflicts('refresh', 'F5', overrides), ['paste']);
+  assert.deepEqual(findConflicts('paste', 'F5', overrides), ['refresh']);
 
   const sameScope = { paste: 'Ctrl+KeyC' }; // collides with pane-scope 'copy'
-  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', 'pane', sameScope), ['copy']);
+  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', sameScope), ['copy']);
 
   const twice = { paste: 'Ctrl+KeyC', rename: 'Ctrl+KeyC' };
-  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', 'pane', twice).sort(), ['copy', 'rename']);
+  assert.deepEqual(findConflicts('paste', 'Ctrl+KeyC', twice).sort(), ['copy', 'rename']);
 });
 
 test('normalizeKeyboardShortcuts drops unknown ids and malformed bindings, keeps valid overrides and explicit unbinds', () => {

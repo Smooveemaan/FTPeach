@@ -82,12 +82,12 @@ export const COLUMN_DEFS = {
     sortValue: (e) => (e.isDirectory ? -1 : (e.size ?? 0)),
   },
   modifiedAt: {
-    defaultWidth: 121,
+    defaultWidth: 140,
     render: (e, _t, formatDate) => formatDate(e.modifiedAt),
     sortValue: (e) => (e.modifiedAt ? new Date(e.modifiedAt).getTime() : 0),
   },
   createdAt: {
-    defaultWidth: 122,
+    defaultWidth: 140,
     render: (e, _t, formatDate) => formatDate(e.createdAt),
     sortValue: (e) => (e.createdAt ? new Date(e.createdAt).getTime() : 0),
   },

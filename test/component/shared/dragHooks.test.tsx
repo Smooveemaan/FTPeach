@@ -197,6 +197,29 @@ test.each(['ltr', 'rtl'])(
 );
 
 test.each([
+  ['ltr', 100, -50, 70],
+  ['rtl', -100, 350, 230],
+] as const)(
+  'column reorder follows a header scrolled sideways in %s',
+  (direction, scrollLeft, from, to) => {
+    vi.useFakeTimers();
+    const { container, name, size: header } = columnHeaders(direction);
+    Object.defineProperty(container, 'scrollLeft', { value: scrollLeft });
+    header.dataset.columnKey = 'size';
+    const reorder = vi.fn();
+    const { result } = renderHook(() =>
+      useColumnDragReorder({ order: ['name', 'size'], onReorder: reorder }),
+    );
+    result.current.registerHeaderRef('size')(header);
+    result.current.registerHeaderRef('name')(name);
+    act(() => result.current.getDragHandleProps('name').onMouseDown(down(header, from)));
+    fireEvent.mouseMove(header, { clientX: to, buttons: 1 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(reorder).toHaveBeenLastCalledWith(['size', 'name']);
+  },
+);
+
+test.each([
   ['ltr', -100],
   ['ltr', 600],
   ['rtl', -100],

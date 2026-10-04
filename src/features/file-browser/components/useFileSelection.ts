@@ -11,6 +11,7 @@ import { DRAG_THRESHOLD_PX } from './fileListModel.ts';
 import type { VirtualListHandle } from './useVirtualizedFileList.ts';
 
 const AUTO_SCROLL_EDGE = 48;
+/** Pixels a frame at the list edge; up to ten times that far outside it. */
 const AUTO_SCROLL_MAX_SPEED = 16;
 
 interface FileSelectionOptions {
@@ -233,7 +234,9 @@ export default function useFileSelection({
 
     const speedFor = (dist: number) => {
       if (dist >= AUTO_SCROLL_EDGE) return 0;
-      return AUTO_SCROLL_MAX_SPEED * Math.min(1, (AUTO_SCROLL_EDGE - dist) / AUTO_SCROLL_EDGE);
+      // Past the edge it keeps speeding up with the distance, as in Explorer,
+      // so a long list can be swept without waiting on it.
+      return AUTO_SCROLL_MAX_SPEED * Math.min(10, (AUTO_SCROLL_EDGE - dist) / AUTO_SCROLL_EDGE);
     };
 
     const scrollTick = () => {

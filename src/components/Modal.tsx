@@ -190,13 +190,21 @@ export default function Modal({
       document.removeEventListener('keydown', onKeyDown);
       overlays.delete(stackToken);
       syncInertBackground();
-      if (previouslyFocused instanceof HTMLElement && document.contains(previouslyFocused)) {
+      if (
+        previouslyFocused instanceof HTMLElement &&
+        previouslyFocused !== document.body &&
+        document.contains(previouslyFocused)
+      ) {
         // Restoring focus to a bare icon button (e.g. a row's delete/rename
         // action) strands the user outside their list's own keyboard
         // navigation and leaves an isolated focus ring behind. Prefer the
         // row itself, which already participates in roving-tabindex nav.
         const row = previouslyFocused.closest<HTMLElement>('[role="treeitem"]');
         (row || previouslyFocused).focus();
+      } else if (!overlays.size) {
+        // Opened from a menu that is gone now: focus left on <body> would let
+        // Ctrl+A select the page's text, so it goes back to where work was.
+        document.querySelector<HTMLElement>('[data-focus-home]')?.focus();
       }
     };
     // Mount-only by design: this is the dialog's focus trap, set up when the dialog

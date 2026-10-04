@@ -227,7 +227,7 @@ const queueProps = {
 const names = (container: HTMLElement) =>
   [...container.querySelectorAll('.t-name')].map((el) => el.textContent);
 
-test('queue order puts running rows first, newest within each status, and completed rows last', () => {
+test('queue order puts running and paused rows first, newest within each status, and completed rows last', () => {
   resetTransfersStoreForTests();
   const old = queueRow('old', 1, 'progress'),
     newer = queueRow('new', 2),
@@ -261,17 +261,25 @@ test('queue order puts running rows first, newest within each status, and comple
       }),
     );
     expect(names(container)).toEqual([
+      'cancelling',
+      'paused',
       'running',
       'latest',
-      'cancelling',
       'queued',
-      'paused',
       'error',
       'stopped',
       'done',
       'old',
     ]);
     expect(container.querySelector('.transfer-new-items')).toBeNull();
+    // Pausing a running row leaves it where it was.
+    act(() =>
+      setTransfersStore({
+        old: queueRow('old', 1, 'progress'),
+        newer: queueRow('new', 2, 'paused'),
+      }),
+    );
+    expect(names(container)).toEqual(['new', 'old']);
   } finally {
     unmount();
     resetTransfersStoreForTests();

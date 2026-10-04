@@ -13,6 +13,7 @@ import {
 } from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import { useOverwriteApproval } from '../../../src/features/transfers/useOverwriteApproval.ts';
+import { NOTIFY_SETTLE_MS } from '../../../src/features/transfers/useTransferNotifications.ts';
 import type {
   CommandResult,
   DragOutTransferStarted,
@@ -1922,53 +1923,104 @@ test('a native drag-out download announced by the backend gets a queue row that 
   });
 });
 
-test('OS notification fires once per queue drain, tallying succeeded/failed, not once per file', async () => {
-  await withHarness(async ({ setSnapshot, calls }) => {
-    setSnapshot(() => ({
-      a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
-      b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
-    }));
-    assert.equal(calls.notifyTransfersComplete.length, 0);
+/** The queue announces its end only after it has stayed idle a moment. */
+async function withSettlingTimers(body: (_settle: () => void) => Promise<void>) {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  try {
+    await body(() => act(() => void vi.advanceTimersByTime(NOTIFY_SETTLE_MS)));
+  } finally {
+    vi.useRealTimers();
+  }
+}
 
-    setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
-    assert.equal(calls.notifyTransfersComplete.length, 0, 'queue still has an active transfer');
+test('OS notification fires once per queue drain, tallying succeeded/failed, not once per file', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+      }));
+      assert.equal(calls.notifyTransfersComplete.length, 0);
 
-    // Second (and last) file lands — queue just drained, single notify
-    // tallying both outcomes.
-    setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'error') }));
-    assert.equal(calls.notifyTransfersComplete.length, 1);
-    // title/body are pre-translated by i18next before reaching window.api —
-    // this test only cares about the tally, not the wording.
-    assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 1);
-    assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      assert.equal(calls.notifyTransfersComplete.length, 0, 'queue still has an active transfer');
 
-    // A later, independent transfer draining on its own must not re-tally
-    // rows already reported in the previous drain.
-    setSnapshot((prev) => ({
-      ...prev,
-      c: makeTransferRow({ id: 'c', status: 'progress', direction: 'up', name: 'c' }),
-    }));
-    setSnapshot((prev) => ({ ...prev, c: withStatus(prev.c, 'done') }));
-    assert.equal(calls.notifyTransfersComplete.length, 2);
-    assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
-    assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
-  });
-});
+      // Second (and last) file lands — queue just drained, single notify
+      // tallying both outcomes.
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'error') }));
+      assert.equal(calls.notifyTransfersComplete.length, 0, 'the queue has not stayed idle yet');
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      // title/body are pre-translated by i18next before reaching window.api —
+      // this test only cares about the tally, not the wording.
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
 
-test('a pause is not the end of the queue, so it sends no notification', async () => {
-  await withHarness(async ({ setSnapshot, calls }) => {
-    setSnapshot(() => ({
-      a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
-      b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
-    }));
-    setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
-    setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'paused') }));
-    assert.equal(calls.notifyTransfersComplete.length, 0);
-    setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
-    assert.equal(calls.notifyTransfersComplete.length, 1);
-    assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
-  });
-});
+      // A later, independent transfer draining on its own must not re-tally
+      // rows already reported in the previous drain.
+      setSnapshot((prev) => ({
+        ...prev,
+        c: makeTransferRow({ id: 'c', status: 'progress', direction: 'up', name: 'c' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, c: withStatus(prev.c, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 2);
+      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+    }),
+  ));
+
+test('files that start one after another in quick succession make one notification', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'down', name: 'a' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      setSnapshot((prev) => ({
+        ...prev,
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'down', name: 'b' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+    }),
+  ));
+
+test('a finished row the queue no longer keeps still counts in the notification', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      // The store drops its oldest finished rows past a limit.
+      setSnapshot((prev) => ({ b: prev.b! }));
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+    }),
+  ));
+
+test('a pause is not the end of the queue, so it sends no notification', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'paused') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 0);
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+    }),
+  ));
 
 const dropFiles = (count: number) =>
   Array.from({ length: count }, (_, i) => ({
@@ -1985,17 +2037,19 @@ const remoteDropTarget = {
   entries: [],
 };
 
-test('a selection larger than one admission round notifies once, when all of it is done', async () => {
-  await withHarness(async ({ getApi, mockApi, calls }) => {
-    mockApi._nextUpload.resolve({ ok: true });
-    await act(async () => {
-      await getApi().handleOsDropFiles(remoteDropTarget, dropFiles(150));
-    });
-    assert.equal(calls.upload.length, 150);
-    assert.equal(calls.notifyTransfersComplete.length, 1);
-    assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 150);
-  });
-});
+test('a selection larger than one admission round notifies once, when all of it is done', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ getApi, mockApi, calls }) => {
+      mockApi._nextUpload.resolve({ ok: true });
+      await act(async () => {
+        await getApi().handleOsDropFiles(remoteDropTarget, dropFiles(150));
+      });
+      assert.equal(calls.upload.length, 150);
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 150);
+    }),
+  ));
 
 test('stopping everything also stops the part of a selection not yet admitted', async () => {
   await withHarness(async ({ getApi, mockApi, calls }) => {

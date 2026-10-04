@@ -264,8 +264,12 @@ export default function TransferQueue({
             ? Math.max(0, item.total - item.bytes) / speed
             : null;
         case 'status':
-        case 'queue':
           return statusPriority[item.status];
+        case 'queue':
+          // Pausing, resuming or stopping a running row must not move it.
+          return item.status === 'paused' || item.status === 'cancelling'
+            ? statusPriority.progress
+            : statusPriority[item.status];
       }
     };
     const sortValues = new Map(rows.map((item) => [item.id, value(item)]));

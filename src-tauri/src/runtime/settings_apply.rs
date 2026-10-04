@@ -31,20 +31,26 @@ pub async fn apply_at_startup(store: &Store, log_emitter: &LogEmitter) {
 /// Where "Write log to file" writes: the chosen folder, or FTPeach's own
 /// logs folder when none is chosen.
 pub fn apply_log_folder(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
-    let chosen = chosen_log_folder(settings, crate::local_fs::portable::root());
-    log_emitter.set_log_dir(chosen.unwrap_or_else(|| store.logs_dir()));
+    let folder = settings
+        .get("logFolder")
+        .and_then(|value| value.as_str())
+        .unwrap_or_default();
+    log_emitter.set_log_dir(log_folder(folder, store));
+}
+
+/// The folder a "Log folder" value stands for: the one typed, or FTPeach's
+/// own logs folder when it is empty or not a usable path.
+pub fn log_folder(folder: &str, store: &Store) -> std::path::PathBuf {
+    chosen_log_folder(folder, crate::local_fs::portable::root()).unwrap_or_else(|| store.logs_dir())
 }
 
 /// The folder the user chose, if any. A portable copy keeps one inside it
 /// relative, so it moves with the copy; anything else must be absolute.
 fn chosen_log_folder(
-    settings: &JsonMap,
+    folder: &str,
     portable_root: Option<&std::path::Path>,
 ) -> Option<std::path::PathBuf> {
-    settings
-        .get("logFolder")
-        .and_then(|value| value.as_str())
-        .map(str::trim)
+    Some(folder.trim())
         .filter(|folder| !folder.is_empty())
         .map(|folder| {
             std::path::PathBuf::from(crate::local_fs::portable::resolved_path(
@@ -90,21 +96,16 @@ mod tests {
 
     #[test]
     fn the_log_folder_is_the_chosen_one_or_none() {
-        let with = |folder: &str| {
-            let mut settings = JsonMap::new();
-            settings.insert("logFolder".into(), folder.into());
-            settings
-        };
-        assert_eq!(chosen_log_folder(&JsonMap::new(), None), None);
-        assert_eq!(chosen_log_folder(&with("  "), None), None);
-        assert_eq!(chosen_log_folder(&with("logs"), None), None);
+        assert_eq!(chosen_log_folder("", None), None);
+        assert_eq!(chosen_log_folder("  ", None), None);
+        assert_eq!(chosen_log_folder("logs", None), None);
         assert_eq!(
-            chosen_log_folder(&with(r"D:\logs"), None),
+            chosen_log_folder(r"D:\logs", None),
             Some(std::path::PathBuf::from(r"D:\logs"))
         );
         let root = std::path::Path::new(r"E:\FTPeach");
         assert_eq!(
-            chosen_log_folder(&with("logs"), Some(root)),
+            chosen_log_folder("logs", Some(root)),
             Some(root.join("logs"))
         );
     }

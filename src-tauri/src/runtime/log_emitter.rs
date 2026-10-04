@@ -204,10 +204,6 @@ impl LogEmitter {
         *self.log_dir.lock().unwrap() = dir;
     }
 
-    pub fn log_dir(&self) -> PathBuf {
-        self.log_dir.lock().unwrap().clone()
-    }
-
     pub fn set_date_format(&self, date_format: &str) {
         *self.date_format.lock().unwrap() = date_format.to_string();
     }

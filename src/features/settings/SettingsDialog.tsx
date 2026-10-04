@@ -230,7 +230,7 @@ export default function SettingsDialog({
                 logFolderValue={draft.logFolderValue}
                 setLogFolderValue={draft.setLogFolderValue}
                 selectDirectory={() => api.fsLocal.selectDir()}
-                onOpenLogFolder={() => api.log.openFolder()}
+                onOpenLogFolder={() => api.log.openFolder(draft.logFolderValue)}
                 onExportDiagnostics={onExportDiagnostics}
               />
             )}

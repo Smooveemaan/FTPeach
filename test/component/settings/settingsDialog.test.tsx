@@ -334,13 +334,26 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(
       screen.getByRole<HTMLInputElement>('textbox', { name: 'settings.logFolderLabel' }).value,
     ).toBe('D:/logs');
+    // Open shows the folder in the field, saved or not.
     await user.click(screen.getByRole('button', { name: 'settings.openLogFolder' }));
-    expect(openFolder).toHaveBeenCalledOnce();
+    expect(openFolder).toHaveBeenLastCalledWith('D:/logs');
 
     await user.click(screen.getByRole('button', { name: 'common.close' }));
     const confirmDialog = screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' });
     await user.click(within(confirmDialog).getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ logFolder: 'D:/logs' }));
+  });
+
+  test('a reset log folder opens the default one before it is saved', async () => {
+    const user = userEvent.setup();
+    const openFolder = vi.fn(async () => ({ ok: true }));
+    Object.assign(window.api, { log: { openFolder } });
+    renderDialog({ logFolder: 'D:/logs' });
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.logging' }));
+    await user.click(screen.getByRole('button', { name: 'settings.resetLogFolder' }));
+    await user.click(screen.getByRole('button', { name: 'settings.openLogFolder' }));
+    expect(openFolder).toHaveBeenLastCalledWith('');
   });
 
   test('a proxy test error stays until a tested field changes', async () => {

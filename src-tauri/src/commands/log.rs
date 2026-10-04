@@ -24,11 +24,17 @@ pub async fn log_set_file_logging(
     Ok(OkFlag { ok: true })
 }
 
-/// Opens the folder "Write log to file" writes to; the renderer never names it.
+/// Opens the folder the Logging settings show, `folder` as typed there and
+/// maybe not saved yet; empty is FTPeach's own logs folder. Saving the
+/// setting would point the log at it anyway, so this opens nothing new.
 #[tauri::command]
-pub async fn log_open_folder(app: AppHandle, emitter: State<'_, LogEmitter>) -> CommandResult<()> {
+pub async fn log_open_folder(
+    app: AppHandle,
+    store: State<'_, Store>,
+    folder: String,
+) -> CommandResult<()> {
     use tauri_plugin_opener::OpenerExt;
-    let dir = emitter.log_dir();
+    let dir = crate::runtime::settings_apply::log_folder(&folder, &store);
     tokio::fs::create_dir_all(&dir)
         .await
         .map_err(|error| CommandError::from_anyhow(&error.into()))?;

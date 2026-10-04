@@ -29,7 +29,7 @@ any. Application commands are grouped as follows:
   `vault_status`, `app_version`, `app_system_hour_cycle`, `session_list`, `log_recent`,
   `updater_status`, `updater_check`.
 - Window and shell: `app_set_interface_scale`, `app_set_window_border`, `app_reset_layout`, `app_open_external`, which
-  opens only an `https://` URL, `log_open_folder`, which opens the folder the backend writes the log to and takes no path, and `debug_open_devtools`, which does nothing in a release build.
+  opens only an `https://` URL, `log_open_folder`, which opens the log folder typed in Settings (FTPeach's own when it is empty), a folder that saving the setting could point the log at anyway, and `debug_open_devtools`, which does nothing in a release build.
 - Native pickers: `dialog_select_local_dir`, `dialog_select_key_file`,
   `dialog_select_ca_cert_file` and `dialog_select_application`. A network share or a program picked
   there is approved for later commands.

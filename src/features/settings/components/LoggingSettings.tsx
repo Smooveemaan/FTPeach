@@ -81,6 +81,8 @@ export default function LoggingSettings({
           {t('settings.logToFile')}
         </label>
         <p className="settings-hint">{t('settings.logToFileHint')}</p>
+      </div>
+      <div className="settings-option-group">
         <label className="settings-field">
           <span>{t('settings.logFolderLabel')}</span>
           <div className="saved-secret-control">
@@ -103,6 +105,15 @@ export default function LoggingSettings({
             >
               <Icon name="folder" size={14} />
             </button>
+            <button
+              type="button"
+              className="btn btn-icon field-icon-btn"
+              aria-label={t('settings.openLogFolder')}
+              data-tooltip={t('settings.openLogFolder')}
+              onClick={() => reportRejection(onOpenLogFolder())}
+            >
+              <Icon name="externalLink" size={14} />
+            </button>
             {logFolderValue && (
               <button
                 type="button"
@@ -116,9 +127,6 @@ export default function LoggingSettings({
             )}
           </div>
         </label>
-        <button type="button" className="btn" onClick={() => reportRejection(onOpenLogFolder())}>
-          {t('settings.openLogFolder')}
-        </button>
       </div>
       <div className="settings-option-group">
         <button

@@ -68,6 +68,13 @@ services:
       # outlasted CI's 90 s port wait; DSA-style parameters are near-instant
       # and serve a throwaway test server just as well.
       TLS_USE_DSAPRAM: 'true'
+    # testuser with a SHA-512 crypt hash of testpass. The image's own
+    # `pure-pw useradd` writes an argon2id hash tuned to cost seconds of CPU,
+    # so every FTP sign-in (each transfer opens its own) took 4-9 s. run.sh
+    # loads this file before it adds the user; its useradd then finds testuser
+    # already there and fails harmlessly, and the home folder is still made.
+    volumes:
+      - ./pureftpd.passwd:/etc/pure-ftpd/passwd/pureftpd.passwd:ro
 
   sftp:
     image: atmoz/sftp@sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475

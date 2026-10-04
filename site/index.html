@@ -591,8 +591,10 @@ a:hover {
   margin-top: clamp(48px, 7vw, 80px);
   perspective: 1800px;
 }
+/* 1182 px is the window at its own CSS size (two device pixels per CSS pixel in the picture),
+   plus the frame's padding and border. */
 .frame {
-  max-width: 1152px;
+  max-width: 1196px;
   margin-inline: auto;
   border-radius: 14px;
   padding: 6px;
@@ -601,18 +603,20 @@ a:hover {
   box-shadow: var(--shadow-3);
   transform-origin: 50% 0;
 }
-/* The screenshots are 1700x1100 with the window at x 111-1587, y 86-1012; the crop shows just
-   the window. Only the picture for the current theme is downloaded. */
+/* The screenshots are --iw x --ih with the window at --x, --y, --w x --h (scripts/screenshot/readme.ts
+   prints them); the crop shows just the window. Only the picture for the current theme is downloaded. */
 .crop {
-  --x: 111;
-  --y: 86;
-  --w: 1477;
-  --h: 927;
+  --iw: 2721;
+  --ih: 1761;
+  --x: 178;
+  --y: 138;
+  --w: 2364;
+  --h: 1484;
   aspect-ratio: var(--w) / var(--h);
   border-radius: 9px;
   background: var(--shot) no-repeat;
-  background-size: calc(1700 / var(--w) * 100%) auto;
-  background-position: calc(var(--x) / (1700 - var(--w)) * 100%) calc(var(--y) / (1100 - var(--h)) * 100%);
+  background-size: calc(var(--iw) / var(--w) * 100%) auto;
+  background-position: calc(var(--x) / (var(--iw) - var(--w)) * 100%) calc(var(--y) / (var(--ih) - var(--h)) * 100%);
 }
 @supports (animation-timeline: view()) {
   .frame {

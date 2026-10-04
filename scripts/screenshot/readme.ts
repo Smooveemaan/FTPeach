@@ -1,4 +1,4 @@
-/* global document, HTMLElement, Image */
+/* global document, HTMLElement, Image, window */
 // Retakes assets/images/ftpeach.png from the real application: three live
 // connections to the Docker test servers, one upload running under a speed
 // limit and one paused, framed on a transparent canvas with the window's
@@ -68,16 +68,23 @@ const bookmarks = [
   },
 ];
 
-// The frame measured from the original capture: margins around the window, its
+// The window is captured at twice its CSS size whatever the monitor's scaling,
+// so the picture stays sharp on high-density screens and halves cleanly on others.
+const pixelRatio = 2;
+// The frame measured from a capture at 125%: margins around the window, its
 // 1 px border (the theme's --window-border), corner radius, and the shadow's
-// alpha 1..62 px from the edge.
+// alpha 1..62 px from the edge. Scaled from there to pixelRatio.
+const measuredAt = 1.25;
+const k = pixelRatio / measuredAt;
 const frame = {
-  left: 111,
-  top: 86,
-  right: 112,
-  bottom: 87,
-  radius: 11,
-  border: light ? 'rgb(201,195,188)' : 'rgb(41,38,34)',
+  left: Math.round(111 * k),
+  top: Math.round(86 * k),
+  right: Math.round(112 * k),
+  bottom: Math.round(87 * k),
+  radius: Math.round(11 * k),
+  border: Math.round(k),
+  borderColor: light ? 'rgb(201,195,188)' : 'rgb(41,38,34)',
+  shadowScale: k,
 };
 const shadow = [
   31, 30, 30, 30, 29, 28, 28, 27, 27, 26, 25, 25, 24, 24, 23, 22, 22, 21, 20, 19, 19, 18, 17, 16,
@@ -296,8 +303,9 @@ async function compose(capture: Buffer): Promise<Buffer> {
         const image = new Image();
         image.src = src;
         await image.decode();
-        const w = image.width + 2;
-        const h = image.height + 2;
+        const b = frame.border;
+        const w = image.width + 2 * b;
+        const h = image.height + 2 * b;
         const width = frame.left + w + frame.right;
         const height = frame.top + h + frame.bottom;
         const canvas = Object.assign(document.createElement('canvas'), { width, height });
@@ -308,9 +316,9 @@ async function compose(capture: Buffer): Promise<Buffer> {
           for (let x = 0; x < width; x++) {
             const qx = Math.max(frame.left + r - x - 0.5, x + 0.5 - (frame.left + w - r), 0);
             const qy = Math.max(frame.top + r - y - 0.5, y + 0.5 - (frame.top + h - r), 0);
+            if (Math.hypot(qx, qy) <= r) continue;
             // The table counts whole pixels from the edge, starting at 1.
-            const d = Math.hypot(qx, qy) - r + 0.5;
-            if (d <= 0.5) continue;
+            const d = (Math.hypot(qx, qy) - r) / frame.shadowScale + 0.5;
             const i = Math.floor(d);
             const near = shadow[Math.max(i - 1, 0)] ?? 0;
             const far = shadow[i] ?? 0;
@@ -318,14 +326,14 @@ async function compose(capture: Buffer): Promise<Buffer> {
           }
         }
         ctx.putImageData(pixels, 0, 0);
-        ctx.fillStyle = frame.border;
+        ctx.fillStyle = frame.borderColor;
         ctx.beginPath();
         ctx.roundRect(frame.left, frame.top, w, h, r);
         ctx.fill();
         ctx.beginPath();
-        ctx.roundRect(frame.left + 1, frame.top + 1, w - 2, h - 2, r - 1);
+        ctx.roundRect(frame.left + b, frame.top + b, w - 2 * b, h - 2 * b, r - b);
         ctx.clip();
-        ctx.drawImage(image, frame.left + 1, frame.top + 1);
+        ctx.drawImage(image, frame.left + b, frame.top + b);
         return canvas.toDataURL('image/png');
       },
       { src: `data:image/png;base64,${capture.toString('base64')}`, frame, shadow },
@@ -388,15 +396,39 @@ try {
   await stage(page, profile);
   // WebView2 applies monitor DPI through page zoom. Playwright's explicit
   // screenshot clip mixes CSS and device pixels there, cropping the window.
-  // Let Chromium capture the complete native viewport without a clip.
+  // Let Chromium capture the complete native viewport without a clip. The
+  // zoom stays on top of an emulated scale factor, so the override divides it
+  // out to keep the layout at the window's CSS size.
   const cdp = await page.context().newCDPSession(page);
+  const [cssWidth, cssHeight, zoom] = await page.evaluate(() => [
+    window.innerWidth,
+    window.innerHeight,
+    window.devicePixelRatio,
+  ]);
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: Math.round(cssWidth * zoom),
+    height: Math.round(cssHeight * zoom),
+    deviceScaleFactor: pixelRatio / zoom,
+    mobile: false,
+  });
+  await page.waitForTimeout(500);
   const capture = await cdp.send('Page.captureScreenshot', {
     format: 'png',
     captureBeyondViewport: false,
   });
+  await cdp.send('Emulation.clearDeviceMetricsOverride');
   await cdp.detach();
-  writeFileSync(output, await compose(Buffer.from(capture.data, 'base64')));
+  const png = await compose(Buffer.from(capture.data, 'base64'));
+  writeFileSync(output, png);
   console.log(`Saved ${path.relative(root, output)}. Look at it before committing.`);
+  // The landing page crops the picture to the window with these (.crop in site/index.html).
+  const shown = {
+    w: cssWidth * pixelRatio + 2 * frame.border,
+    h: cssHeight * pixelRatio + 2 * frame.border,
+  };
+  console.log(
+    `--iw: ${png.readUInt32BE(16)}; --ih: ${png.readUInt32BE(20)}; --x: ${frame.left}; --y: ${frame.top}; --w: ${shown.w}; --h: ${shown.h};`,
+  );
   await page.getByRole('button', { name: 'Stop active transfers' }).click();
   await browser.close();
 } finally {

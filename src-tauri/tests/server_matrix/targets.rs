@@ -111,12 +111,17 @@ fn sftp_key(port: u16, key: &str) -> Map<String, Value> {
 
 // The http:// servers are loopback fixtures; the https ones ignore the flag.
 fn webdav(url: &str) -> Map<String, Value> {
-    object(json!({
+    let mut config = object(json!({
         "protocol": "webdav", "webdavUrl": url,
         "allowCleartextAuth": true,
         "user": "testuser", "password": "testpass",
-        "caCertPath": generated("tls/ca.pem"),
-    }))
+    }));
+    // The client reads caCertPath even for http://, and the baseline profile
+    // runs without the matrix CA.
+    if url.starts_with("https://") {
+        config.insert("caCertPath".into(), generated("tls/ca.pem").into());
+    }
+    config
 }
 
 /// IIS on the Windows host (scripts/test-servers/iis.ps1): its own account,

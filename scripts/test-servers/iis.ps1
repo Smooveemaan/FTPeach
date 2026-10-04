@@ -316,6 +316,11 @@ function Install-Servers {
     if ($site.Kind -eq 'ftp') {
       New-WebFtpSite -Name $site.Name -IPAddress '127.0.0.1' -Port $site.Port -PhysicalPath $path | Out-Null
       $item = "IIS:\Sites\$($site.Name)"
+      # iis_ftps connects to localhost (the certificate's name), which can
+      # resolve to ::1 first. The FTP service listens on [::] and closes,
+      # without a greeting, a connection to an address no site is bound to.
+      New-ItemProperty $item -Name bindings `
+        -Value @{ protocol = 'ftp'; bindingInformation = "[::1]:$($site.Port):" } | Out-Null
       Set-ItemProperty $item -Name 'ftpServer.security.authentication.basicAuthentication.enabled' -Value $true
       Set-ItemProperty $item -Name 'ftpServer.security.authentication.anonymousAuthentication.enabled' -Value $false
       Set-ItemProperty $item -Name 'ftpServer.security.ssl.serverCertHash' -Value $cert.Thumbprint

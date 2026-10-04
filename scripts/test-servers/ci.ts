@@ -111,14 +111,17 @@ const outcomes = new Map<string, Outcome>();
 for (const [group, members] of groups) {
   // --exact with every member keeps a prefix like `s01` from matching `s010`.
   const run = await matrix(['--exact', '--nocapture', ...members], minutes * 60_000);
-  // support::not_run names the test it skipped.
+  // support::not_run names the test it skipped. With --nocapture, the tests'
+  // own lines land between libtest's `test <name> ... ` and its result, or
+  // right after the result: `test a ... okNOT RUN [b]: ...`.
   const notRun = new Set(
-    [...run.output.matchAll(/^NOT RUN \[(\S+)\]/gm)].map((match) => match[1] ?? ''),
+    [...run.output.matchAll(/NOT RUN \[(\S+)\]/g)].map((match) => match[1] ?? ''),
   );
   for (const name of members) {
-    const line = new RegExp(`^test ${name.replaceAll(':', '\\:')} \\.\\.\\. (\\w+)`, 'm').exec(
-      run.output,
-    );
+    const line = new RegExp(
+      `^test ${name.replaceAll(':', '\\:')} \\.\\.\\. (?:(?!test )[^\\n]*\\n)*?(ok|FAILED|ignored)`,
+      'm',
+    ).exec(run.output);
     if (line?.[1] === 'ok') {
       outcomes.set(name, notRun.has(name) ? 'not run' : 'passed');
     } else if (line) {

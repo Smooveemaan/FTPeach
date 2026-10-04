@@ -120,7 +120,9 @@ try {
             $LASTEXITCODE = 0
         }
         'dev' {
-            & npm.cmd run dev:tauri
+            # node rather than npm.cmd: a batch file outlives Ctrl+C with its
+            # "Terminate batch job (Y/N)?" prompt and keeps reading the terminal.
+            & node node_modules/@tauri-apps/cli/tauri.js dev --config src-tauri/tauri.dev.conf.json
         }
         'check' {
             # The features the application ships with. Clippy rather than cargo check:

@@ -632,6 +632,10 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
 
   border-top: 1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
+  /* At least the 28px the other pane's sign-in form (connection.css) ends
+     level with: the text's line height alone differs between WebView2 and
+     Chromium and with the scale. Taller scripts, such as Arabic, grow it. */
+  min-height: 28px;
   overflow: hidden;
   align-items: stretch;
 }

@@ -144,6 +144,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A security confirmation no longer adds a second FTPeach button to the taskbar.
 - A file opened with an external application whose download was cut short no longer shows up
   in "Edits that were not uploaded" as `.part` and `.ftpeach-resume.json` files.
+- In a pane that is not connected, the sign-in form now ends level with the column headers of
+  the other pane instead of a pixel above them.
 
 ## [0.4.0] - 2026-10-02
 

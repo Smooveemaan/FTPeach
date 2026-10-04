@@ -12,7 +12,9 @@
   line-height: 1;
 
   row-gap: 6px;
-  padding: 6px 14px 26.4px;
+  /* The bottom padding ends the form level with the other pane's column
+     header: 6 + 26 + 6 + 28 + 28 + 1 = 39 titlebar + 28 path + 28 header. */
+  padding: 6px 14px 28px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-soft);
 }

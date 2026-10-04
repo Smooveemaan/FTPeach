@@ -1034,6 +1034,30 @@ test('declining an existing recursive destination never submits a destructive op
   }
 });
 
+test('a skipped folder walk leaves a row only when something landed', async () => {
+  for (const landed of [0, 1]) {
+    await withHarness(
+      async ({ getApi, mockApi, getSnapshot }) => {
+        mockApi.transfer.recursive = async () => ({
+          ok: true,
+          outcome: 'complete',
+          scanned: 1,
+          completed: 0,
+          landed,
+          errors: [],
+        });
+        await act(async () => {
+          await getApi().copyEntries({ ...localFolderMove(), move: false });
+        });
+        const rows = Object.values(getSnapshot());
+        assert.equal(rows.length, landed);
+        assert.ok(rows.every((row) => row.status === 'done'));
+      },
+      { overwriteAction: 'skip' },
+    );
+  }
+});
+
 const localDropTarget: Parameters<TransfersApi['handleOsDropFiles']>[0] = {
   kind: 'local',
   status: 'connected',

@@ -65,6 +65,8 @@ pub struct Report {
     pub completed: usize,
     pub skipped: usize,
     pub scanned: usize,
+    /// Folders made and files delivered on the target, earlier attempts included.
+    pub landed: usize,
     pub errors: Vec<CommandError>,
     /// The walk was paused and kept its journal for the next attempt.
     pub paused: bool,

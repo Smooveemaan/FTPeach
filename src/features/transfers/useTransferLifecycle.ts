@@ -508,6 +508,21 @@ export function useTransferLifecycle(
       attemptId,
       { kind: intent.target.kind, path: intent.target.path },
     );
+    // A skip that found everything already there sent nothing: like a skipped
+    // file, it leaves no row behind. A retried row stays where the user put it.
+    if (
+      !existingId &&
+      intent.skipExisting &&
+      report.ok &&
+      report.completed === 0 &&
+      report.landed === 0
+    ) {
+      setTransfersStore((previous) => {
+        if (previous[id]?.attemptId !== attemptId) return previous;
+        const { [id]: _skipped, ...rest } = previous;
+        return rest;
+      });
+    }
     // No backend journal exists when a pause happened before dispatch.
     if (!dispatch.started) {
       setTransfersStore((previous) => {

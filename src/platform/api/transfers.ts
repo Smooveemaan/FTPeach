@@ -26,6 +26,8 @@ export interface RecursiveReport {
   scanned: number;
   completed: number;
   skipped?: number;
+  /** Folders made and files delivered on the target, earlier attempts included. */
+  landed?: number;
   errors: { message: string; code?: string }[];
   /** The walk was paused and kept its journal for the next attempt. */
   paused?: boolean;

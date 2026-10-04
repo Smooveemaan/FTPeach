@@ -259,6 +259,23 @@ async fn skip_merges_missing_files_and_retains_move_source() {
 }
 
 #[tokio::test]
+async fn skip_says_whether_anything_landed() {
+    // An empty folder: made where it was missing, nothing done where it stood.
+    for exists in [false, true] {
+        let (root, mut intent) = fixture();
+        intent.moving = false;
+        intent.skip_existing = true;
+        if exists {
+            std::fs::create_dir_all(root.join("target")).unwrap();
+        }
+        let report = run(&Sessions::default(), None, intent).await;
+        assert!(report.ok);
+        assert_eq!(report.landed, usize::from(!exists));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[tokio::test]
 async fn walks_share_a_source_that_only_a_move_needs_to_itself() {
     for moving in [false, true] {
         let (root, mut intent) = fixture();

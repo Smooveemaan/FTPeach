@@ -589,6 +589,10 @@ async fn run_inner(
     {
         report.errors.push(CommandError::from_anyhow(error));
     }
+    report.landed = journal
+        .created_dirs
+        .len()
+        .saturating_add(journal.done.len());
     // Cut short by the user: keep what was written for a resume, or take it back.
     if result.is_err() && token.is_cancelled() {
         let pause = control.pause.load(Ordering::SeqCst);

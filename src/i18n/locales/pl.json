@@ -186,7 +186,7 @@
   },
   "openWithChanged": {
     "title": "Plik został zmieniony",
-    "message": "Plik „{{name}}” został zmieniony w zewnętrznej aplikacji. Przesłać zaktualizowany plik na serwer?"
+    "message": "Plik „{{name}}” został zmieniony w zewnętrznej aplikacji. Przesłać zaktualizowany plik na serwer? Jeśli wybierzesz „Później”, zapytamy ponownie przy następnym zapisaniu pliku."
   },
   "recoveredEdits": {
     "title": "Nieprzesłane zmiany",
@@ -536,7 +536,12 @@
     "logEnable": "Pokaż panel dziennika",
     "logShowTimestamps": "Pokazuj znaczniki czasu",
     "logToFile": "Zapisuj dziennik do pliku",
-    "logToFileHint": "Dopisuje dziennik do osobnego pliku na każdy dzień w folderze %APPDATA%\\FTPeach\\logs, nawet gdy panel dziennika jest zamknięty. Pliki są przechowywane przez 14 dni, łącznie do 50 MB. Przycisk „Zapisz” w panelu działa inaczej: po kliknięciu jednorazowo zapisuje wiersze wyświetlane w panelu.",
+    "logToFileHint": "Dopisuje dziennik do osobnego pliku na każdy dzień w folderze dzienników, nawet gdy panel dziennika jest zamknięty. Pliki są przechowywane przez 14 dni, łącznie do 50 MB. Przycisk „Zapisz” w panelu działa inaczej: po kliknięciu jednorazowo zapisuje wiersze wyświetlane w panelu.",
+    "logFolderLabel": "Folder dzienników",
+    "logFolderDefault": "Własny folder dzienników FTPeach",
+    "chooseLogFolder": "Wybierz folder dzienników…",
+    "resetLogFolder": "Użyj własnego folderu dzienników FTPeach",
+    "openLogFolder": "Otwórz folder dzienników",
     "exportDiagnostics": "Eksportuj pakiet diagnostyczny",
     "exportDiagnosticsBusy": "Eksportowanie…",
     "exportDiagnosticsHint": "Eksportuje wersję aplikacji, system operacyjny, najnowszy dziennik i własny plik dziennika aplikacji. Hasła, tokeny i inne poufne dane zostaną ukryte.",

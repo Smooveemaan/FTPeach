@@ -227,6 +227,10 @@ export default function SettingsDialog({
                 setLogShowTimestampsValue={draft.setLogShowTimestampsValue}
                 logToFileValue={draft.logToFileValue}
                 setLogToFileValue={draft.setLogToFileValue}
+                logFolderValue={draft.logFolderValue}
+                setLogFolderValue={draft.setLogFolderValue}
+                selectDirectory={() => api.fsLocal.selectDir()}
+                onOpenLogFolder={() => api.log.openFolder()}
                 onExportDiagnostics={onExportDiagnostics}
               />
             )}

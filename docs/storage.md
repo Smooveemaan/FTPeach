@@ -88,6 +88,10 @@ unsent change (HF-12).
 
 ## Protocol log budgets
 
+"Write log to file" writes daily files to the `logs` folder of the data folder, or to the
+folder chosen under Settings → Logging (`logFolder`; a folder inside a portable copy is kept
+relative, so it moves with the copy). Cleanup there removes only FTPeach's own daily files.
+
 The writer admits at most 512 records without waiting on the disk. Text and event
 parameters are capped at 8 KiB, connection/server labels at 512 bytes each, and
 batches at 128 records (therefore below 1.3 MiB of payload). The recent ring retains

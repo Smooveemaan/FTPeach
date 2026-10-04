@@ -183,7 +183,7 @@
   },
   "openWithChanged": {
     "title": "Arquivo alterado",
-    "message": "O arquivo “{{name}}” foi alterado no aplicativo externo. Deseja enviar o arquivo atualizado para o servidor?"
+    "message": "O arquivo “{{name}}” foi alterado no aplicativo externo. Deseja enviar o arquivo atualizado para o servidor? Se escolher “Mais tarde”, a pergunta será feita de novo na próxima vez que você salvar."
   },
   "recoveredEdits": {
     "title": "Alterações que não foram enviadas",
@@ -532,7 +532,12 @@
     "logEnable": "Mostrar o painel de log",
     "logShowTimestamps": "Mostrar carimbos de data/hora",
     "logToFile": "Gravar o log em um arquivo",
-    "logToFileHint": "Acrescenta o log a um arquivo diário em %APPDATA%\\FTPeach\\logs, mesmo com o painel de log fechado. Os arquivos são mantidos por 14 dias, até 50 MB no total. O botão “Salvar” no painel é diferente: ele salva uma única vez, ao ser clicado, as linhas mostradas no painel.",
+    "logToFileHint": "Acrescenta o log a um arquivo diário na pasta de logs, mesmo com o painel de log fechado. Os arquivos são mantidos por 14 dias, até 50 MB no total. O botão “Salvar” no painel é diferente: ele salva uma única vez, ao ser clicado, as linhas mostradas no painel.",
+    "logFolderLabel": "Pasta de logs",
+    "logFolderDefault": "Pasta de logs do próprio FTPeach",
+    "chooseLogFolder": "Escolher pasta de logs…",
+    "resetLogFolder": "Usar a pasta de logs do próprio FTPeach",
+    "openLogFolder": "Abrir pasta de logs",
     "exportDiagnostics": "Exportar pacote de diagnóstico",
     "exportDiagnosticsBusy": "Exportando…",
     "exportDiagnosticsHint": "Exporta a versão do aplicativo, o sistema operacional, o log recente e o arquivo de log do próprio aplicativo. Senhas, tokens e outros dados secretos são ocultados.",

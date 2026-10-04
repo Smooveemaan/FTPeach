@@ -41,6 +41,7 @@ export type SettingsDraftValues = Pick<
   | 'logEnabled'
   | 'logShowTimestamps'
   | 'logToFile'
+  | 'logFolder'
   | 'vaultAutoLockMinutes'
   | 'showSecurityConfirmations'
   | 'strictHostKeyCheck'
@@ -99,6 +100,7 @@ interface SettingsDraft {
   logEnabledValue: boolean;
   logShowTimestampsValue: boolean;
   logToFileValue: boolean;
+  logFolderValue: string;
   vaultAutoLockValue: string;
   showSecurityConfirmationsValue: boolean;
   strictHostKeyCheckValue: boolean;
@@ -147,6 +149,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     logEnabledValue: !!settings.logEnabled,
     logShowTimestampsValue: settings.logShowTimestamps !== false,
     logToFileValue: !!settings.logToFile,
+    logFolderValue: settings.logFolder || '',
     vaultAutoLockValue: settings.vaultAutoLockMinutes ? String(settings.vaultAutoLockMinutes) : '',
     showSecurityConfirmationsValue: settings.showSecurityConfirmations !== false,
     strictHostKeyCheckValue: settings.strictHostKeyCheck !== false,
@@ -214,6 +217,7 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
     logEnabled: draft.logEnabledValue,
     logShowTimestamps: draft.logShowTimestampsValue,
     logToFile: draft.logToFileValue,
+    logFolder: draft.logFolderValue.trim(),
     vaultAutoLockMinutes: vaultAutoLock,
     showSecurityConfirmations: draft.showSecurityConfirmationsValue,
     strictHostKeyCheck: draft.strictHostKeyCheckValue,
@@ -422,6 +426,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setLogEnabledValue: setter('logEnabledValue'),
     setLogShowTimestampsValue: setter('logShowTimestampsValue'),
     setLogToFileValue: setter('logToFileValue'),
+    setLogFolderValue: setter('logFolderValue'),
     setVaultAutoLockValue: setter('vaultAutoLockValue'),
     setShowSecurityConfirmationsValue: setter('showSecurityConfirmationsValue'),
     setStrictHostKeyCheckValue: setter('strictHostKeyCheckValue'),

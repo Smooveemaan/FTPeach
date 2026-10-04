@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "Filen er ændret",
-    "message": "»{{name}}« er blevet ændret i det eksterne program. Skal den opdaterede fil uploades til serveren?"
+    "message": "»{{name}}« er blevet ændret i det eksterne program. Skal den opdaterede fil uploades til serveren? Vælger du »Senere«, bliver du spurgt igen, næste gang du gemmer filen."
   },
   "recoveredEdits": {
     "title": "Ændringer, der ikke blev uploadet",
@@ -528,7 +528,12 @@
     "logEnable": "Vis logpanelet",
     "logShowTimestamps": "Vis tidsstempler",
     "logToFile": "Skriv log til fil",
-    "logToFileHint": "Føjer loggen til en daglig fil i %APPDATA%\\FTPeach\\logs, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt. Knappen »Gem« i panelet er noget andet: Den gemmer de linjer, der vises i panelet, én gang, når du klikker på den.",
+    "logToFileHint": "Føjer loggen til en daglig fil i logmappen, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt. Knappen »Gem« i panelet er noget andet: Den gemmer de linjer, der vises i panelet, én gang, når du klikker på den.",
+    "logFolderLabel": "Logmappe",
+    "logFolderDefault": "FTPeachs egen logmappe",
+    "chooseLogFolder": "Vælg logmappe…",
+    "resetLogFolder": "Brug FTPeachs egen logmappe",
+    "openLogFolder": "Åbn logmappe",
     "exportDiagnostics": "Eksportér diagnosticeringspakke",
     "exportDiagnosticsBusy": "Eksporterer…",
     "exportDiagnosticsHint": "Eksporterer appens version, operativsystemet, den seneste log og appens egen logfil. Adgangskoder, tokens og andre hemmeligheder skjules.",

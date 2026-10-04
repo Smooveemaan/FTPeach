@@ -163,6 +163,7 @@ pub struct LogEmitter {
     recent: Arc<Mutex<Recent>>,
     file_logging: Arc<AtomicBool>,
     date_format: Arc<Mutex<String>>,
+    log_dir: Arc<Mutex<PathBuf>>,
 }
 
 impl LogEmitter {
@@ -180,12 +181,14 @@ impl LogEmitter {
             })),
             file_logging: Arc::new(AtomicBool::new(false)),
             date_format: Arc::new(Mutex::new("locale".to_string())),
+            log_dir: Arc::new(Mutex::new(log_dir.clone())),
         };
         tauri::async_runtime::spawn(run_writer(
             receiver,
             LogFiles::new(log_dir),
             emitter.file_logging.clone(),
             emitter.date_format.clone(),
+            emitter.log_dir.clone(),
             emitter.recent.clone(),
             publish,
         ));
@@ -194,6 +197,15 @@ impl LogEmitter {
 
     pub fn set_file_logging_enabled(&self, enabled: bool) {
         self.file_logging.store(enabled, Ordering::Relaxed);
+    }
+
+    /// The folder the daily files go to; the next batch is written there.
+    pub fn set_log_dir(&self, dir: PathBuf) {
+        *self.log_dir.lock().unwrap() = dir;
+    }
+
+    pub fn log_dir(&self) -> PathBuf {
+        self.log_dir.lock().unwrap().clone()
     }
 
     pub fn set_date_format(&self, date_format: &str) {
@@ -291,6 +303,7 @@ async fn run_writer(
     mut files: LogFiles,
     file_logging: Arc<AtomicBool>,
     date_format: Arc<Mutex<String>>,
+    log_dir: Arc<Mutex<PathBuf>>,
     recent: Arc<Mutex<Recent>>,
     publish: impl Fn(&[LogRecord]),
 ) {
@@ -325,6 +338,11 @@ async fn run_writer(
         }
         publish(&batch);
         if file_logging.load(Ordering::Relaxed) {
+            let dir = log_dir.lock().unwrap().clone();
+            if dir != files.dir {
+                files.close();
+                files.dir = dir;
+            }
             let preference = date_format.lock().unwrap().clone();
             files.append(&batch, &preference).await;
         } else {
@@ -734,6 +752,7 @@ mod tests {
             })),
             file_logging: Arc::default(),
             date_format: Arc::default(),
+            log_dir: Arc::default(),
         };
         let records = emitter.diagnostic_records();
         assert_eq!(records[0]["text"], "Received 2 entries");
@@ -755,6 +774,7 @@ mod tests {
             })),
             file_logging: Arc::default(),
             date_format: Arc::default(),
+            log_dir: Arc::default(),
         };
         // No receiver is polling: this is the same admission pressure as a disk
         // write that has stopped making progress. Producers never await it.
@@ -785,6 +805,7 @@ mod tests {
             LogFiles::new(temp_dir()),
             emitter.file_logging.clone(),
             emitter.date_format.clone(),
+            emitter.log_dir.clone(),
             emitter.recent.clone(),
             move |batch| {
                 assert!(batch.len() <= BATCH_CAPACITY);

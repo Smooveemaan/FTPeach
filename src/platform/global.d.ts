@@ -75,6 +75,8 @@ declare global {
       };
       log: {
         setFileLogging: (enabled: boolean | undefined) => unknown;
+        /** Opens the folder the log files are written to. */
+        openFolder: () => Promise<CommandResult>;
         /** The protocol log the backend still holds, oldest first; empty on failure. */
         recent: () => Promise<LogEntry[]>;
         save: (content: string) => Promise<CommandResult & { canceled?: boolean; path?: string }>;

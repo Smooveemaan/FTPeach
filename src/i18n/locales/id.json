@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "File diubah",
-    "message": "\"{{name}}\" telah diubah di aplikasi eksternal. Unggah file yang diperbarui ke server?"
+    "message": "\"{{name}}\" telah diubah di aplikasi eksternal. Unggah file yang diperbarui ke server? Jika Anda memilih \"Nanti\", Anda akan ditanya lagi saat menyimpannya berikutnya."
   },
   "recoveredEdits": {
     "title": "Perubahan yang belum diunggah",
@@ -528,7 +528,12 @@
     "logEnable": "Tampilkan panel log",
     "logShowTimestamps": "Tampilkan cap waktu",
     "logToFile": "Tulis log ke file",
-    "logToFileHint": "Menambahkan log ke file harian di %APPDATA%\\FTPeach\\logs, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB. Tombol \"Simpan\" di panel berbeda: tombol itu menyimpan baris yang ditampilkan di panel satu kali, saat diklik.",
+    "logToFileHint": "Menambahkan log ke file harian di folder log, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB. Tombol \"Simpan\" di panel berbeda: tombol itu menyimpan baris yang ditampilkan di panel satu kali, saat diklik.",
+    "logFolderLabel": "Folder log",
+    "logFolderDefault": "Folder log milik FTPeach",
+    "chooseLogFolder": "Pilih folder log…",
+    "resetLogFolder": "Gunakan folder log milik FTPeach",
+    "openLogFolder": "Buka folder log",
     "exportDiagnostics": "Ekspor paket diagnostik",
     "exportDiagnosticsBusy": "Mengekspor…",
     "exportDiagnosticsHint": "Mengekspor versi aplikasi, sistem operasi, log terbaru, dan file log milik aplikasi itu sendiri. Kata sandi, token, dan rahasia lainnya disamarkan.",

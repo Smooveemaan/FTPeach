@@ -24,6 +24,19 @@ pub async fn log_set_file_logging(
     Ok(OkFlag { ok: true })
 }
 
+/// Opens the folder "Write log to file" writes to; the renderer never names it.
+#[tauri::command]
+pub async fn log_open_folder(app: AppHandle, emitter: State<'_, LogEmitter>) -> CommandResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = emitter.log_dir();
+    tokio::fs::create_dir_all(&dir)
+        .await
+        .map_err(|error| CommandError::from_anyhow(&error.into()))?;
+    app.opener()
+        .open_path(dir.to_string_lossy().into_owned(), None::<String>)
+        .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))
+}
+
 /// The protocol log still in memory, oldest first. The panel reads it when it
 /// opens and then follows `protocol:log`.
 #[tauri::command]

@@ -79,6 +79,7 @@
     "allow-log-save",
     "allow-log-export-diagnostics",
     "allow-log-set-file-logging",
+    "allow-log-open-folder",
     "allow-notifications-transfers-complete",
     "allow-session-connect",
     "allow-session-cancel-connect",

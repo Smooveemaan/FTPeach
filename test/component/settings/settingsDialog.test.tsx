@@ -48,6 +48,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     logEnabled: false,
     logShowTimestamps: false,
     logToFile: false,
+    logFolder: '',
     vaultAutoLockMinutes: 0,
     showSecurityConfirmations: true,
     strictHostKeyCheck: true,
@@ -319,6 +320,27 @@ describe('SettingsDialog unsaved-changes gate', () => {
       expect.objectContaining({ proxyPassword: 'hunter2' }),
     );
     expect(props.onClose).toHaveBeenCalledOnce();
+  });
+
+  test('a chosen log folder is saved, reset to the default, and opened', async () => {
+    const user = userEvent.setup();
+    const openFolder = vi.fn(async () => ({ ok: true }));
+    const selectDir = vi.fn(async () => 'D:/logs');
+    Object.assign(window.api, { log: { openFolder }, fsLocal: { selectDir } });
+    const { props } = renderDialog();
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.logging' }));
+    await user.click(screen.getByRole('button', { name: 'settings.chooseLogFolder' }));
+    expect(
+      screen.getByRole<HTMLInputElement>('textbox', { name: 'settings.logFolderLabel' }).value,
+    ).toBe('D:/logs');
+    await user.click(screen.getByRole('button', { name: 'settings.openLogFolder' }));
+    expect(openFolder).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'common.close' }));
+    const confirmDialog = screen.getByRole('dialog', { name: 'settings.unsavedChangesTitle' });
+    await user.click(within(confirmDialog).getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ logFolder: 'D:/logs' }));
   });
 
   test('a proxy test error stays until a tested field changes', async () => {

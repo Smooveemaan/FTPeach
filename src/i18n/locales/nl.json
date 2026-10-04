@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "Bestand gewijzigd",
-    "message": "\"{{name}}\" is gewijzigd in de externe toepassing. Het bijgewerkte bestand naar de server uploaden?"
+    "message": "\"{{name}}\" is gewijzigd in de externe toepassing. Het bijgewerkte bestand naar de server uploaden? Kies je \"Later\", dan wordt het je de volgende keer dat je opslaat opnieuw gevraagd."
   },
   "recoveredEdits": {
     "title": "Wijzigingen die niet zijn geüpload",
@@ -528,7 +528,12 @@
     "logEnable": "Logboekpaneel weergeven",
     "logShowTimestamps": "Tijdstempels weergeven",
     "logToFile": "Logboek naar bestand schrijven",
-    "logToFileHint": "Voegt het logboek toe aan een bestand per dag in %APPDATA%\\FTPeach\\logs, ook als het logboekpaneel gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal. De knop \"Opslaan\" in het paneel is iets anders: die slaat de daar getoonde regels één keer op, wanneer erop wordt geklikt.",
+    "logToFileHint": "Voegt het logboek toe aan een bestand per dag in de logboekmap, ook als het logboekpaneel gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal. De knop \"Opslaan\" in het paneel is iets anders: die slaat de daar getoonde regels één keer op, wanneer erop wordt geklikt.",
+    "logFolderLabel": "Logboekmap",
+    "logFolderDefault": "Eigen logboekmap van FTPeach",
+    "chooseLogFolder": "Logboekmap kiezen…",
+    "resetLogFolder": "Eigen logboekmap van FTPeach gebruiken",
+    "openLogFolder": "Logboekmap openen",
     "exportDiagnostics": "Diagnosepakket exporteren",
     "exportDiagnosticsBusy": "Bezig met exporteren…",
     "exportDiagnosticsHint": "Exporteert de versie van de toepassing, het besturingssysteem, het recente logboek en het eigen logbestand van de toepassing. Wachtwoorden, tokens en andere geheime gegevens worden onleesbaar gemaakt.",

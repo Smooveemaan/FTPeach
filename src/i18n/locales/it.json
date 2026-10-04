@@ -183,7 +183,7 @@
   },
   "openWithChanged": {
     "title": "File modificato",
-    "message": "\"{{name}}\" è stato modificato nell'applicazione esterna. Caricare il file aggiornato sul server?"
+    "message": "\"{{name}}\" è stato modificato nell'applicazione esterna. Caricare il file aggiornato sul server? Se scegli \"Più tardi\", te lo chiederemo di nuovo al prossimo salvataggio."
   },
   "recoveredEdits": {
     "title": "Modifiche non caricate",
@@ -532,7 +532,12 @@
     "logEnable": "Mostra il pannello del registro",
     "logShowTimestamps": "Mostra i timestamp",
     "logToFile": "Scrivi il registro su file",
-    "logToFileHint": "Aggiunge il registro a un file giornaliero in %APPDATA%\\FTPeach\\logs, anche quando il pannello del registro è chiuso. I file vengono conservati per 14 giorni, fino a 50 MB in totale. Il pulsante \"Salva\" nel pannello è un'altra cosa: salva una sola volta, al clic, le righe mostrate nel pannello.",
+    "logToFileHint": "Aggiunge il registro a un file giornaliero nella cartella dei registri, anche quando il pannello del registro è chiuso. I file vengono conservati per 14 giorni, fino a 50 MB in totale. Il pulsante \"Salva\" nel pannello è un'altra cosa: salva una sola volta, al clic, le righe mostrate nel pannello.",
+    "logFolderLabel": "Cartella dei registri",
+    "logFolderDefault": "Cartella dei registri di FTPeach",
+    "chooseLogFolder": "Scegli la cartella dei registri…",
+    "resetLogFolder": "Usa la cartella dei registri di FTPeach",
+    "openLogFolder": "Apri la cartella dei registri",
     "exportDiagnostics": "Esporta pacchetto diagnostico",
     "exportDiagnosticsBusy": "Esportazione…",
     "exportDiagnosticsHint": "Esporta la versione dell'applicazione, il sistema operativo, il registro recente e il file di registro dell'applicazione stessa. Password, token e altri dati segreti vengono oscurati.",

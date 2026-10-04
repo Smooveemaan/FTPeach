@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "A fájl megváltozott",
-    "message": "A(z) „{{name}}” fájl módosult a külső alkalmazásban. Feltölti a frissített fájlt a szerverre?"
+    "message": "A(z) „{{name}}” fájl módosult a külső alkalmazásban. Feltölti a frissített fájlt a szerverre? Ha a „Később” lehetőséget választja, a következő mentéskor újra rákérdezünk."
   },
   "recoveredEdits": {
     "title": "Fel nem töltött módosítások",
@@ -528,7 +528,12 @@
     "logEnable": "Naplópanel megjelenítése",
     "logShowTimestamps": "Időbélyegek megjelenítése",
     "logToFile": "Napló írása fájlba",
-    "logToFileHint": "A naplót napi fájlokba írja a %APPDATA%\\FTPeach\\logs mappában, akkor is, ha a naplópanel zárva van. A fájlokat 14 napig őrzi meg, összesen legfeljebb 50 MB-ig. A panel „Mentés” gombja más: kattintásra egyszer menti el a panelen látható sorokat.",
+    "logToFileHint": "A naplót napi fájlokba írja a naplómappában, akkor is, ha a naplópanel zárva van. A fájlokat 14 napig őrzi meg, összesen legfeljebb 50 MB-ig. A panel „Mentés” gombja más: kattintásra egyszer menti el a panelen látható sorokat.",
+    "logFolderLabel": "Naplómappa",
+    "logFolderDefault": "Az FTPeach saját naplómappája",
+    "chooseLogFolder": "Naplómappa kiválasztása…",
+    "resetLogFolder": "Az FTPeach saját naplómappájának használata",
+    "openLogFolder": "Naplómappa megnyitása",
     "exportDiagnostics": "Diagnosztikai csomag exportálása",
     "exportDiagnosticsBusy": "Exportálás…",
     "exportDiagnosticsHint": "Exportálja az alkalmazás verzióját, az operációs rendszert, a legutóbbi naplót és az alkalmazás saját naplófájlját. A jelszavak, tokenek és egyéb bizalmas adatok maszkolva vannak.",

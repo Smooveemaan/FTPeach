@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "文件已更改",
-    "message": "“{{name}}”已在外部应用程序中修改。是否将更新后的文件上传到服务器？"
+    "message": "“{{name}}”已在外部应用程序中修改。是否将更新后的文件上传到服务器？如果选择“稍后”，下次保存时会再次询问。"
   },
   "recoveredEdits": {
     "title": "未上传的修改",
@@ -528,7 +528,12 @@
     "logEnable": "显示日志面板",
     "logShowTimestamps": "显示时间戳",
     "logToFile": "将日志写入文件",
-    "logToFileHint": "即使日志面板已关闭，也会将日志追加到 %APPDATA%\\FTPeach\\logs 中按天划分的文件里。文件保留 14 天，总大小不超过 50 MB。面板中的“保存”按钮与此不同：它在点击时一次性保存面板中显示的行。",
+    "logToFileHint": "即使日志面板已关闭，也会将日志追加到日志文件夹中按天划分的文件里。文件保留 14 天，总大小不超过 50 MB。面板中的“保存”按钮与此不同：它在点击时一次性保存面板中显示的行。",
+    "logFolderLabel": "日志文件夹",
+    "logFolderDefault": "FTPeach 自己的日志文件夹",
+    "chooseLogFolder": "选择日志文件夹…",
+    "resetLogFolder": "使用 FTPeach 自己的日志文件夹",
+    "openLogFolder": "打开日志文件夹",
     "exportDiagnostics": "导出诊断包",
     "exportDiagnosticsBusy": "正在导出…",
     "exportDiagnosticsHint": "导出应用版本、操作系统、最近的日志以及应用自身的日志文件。密码、令牌和其他机密信息将被隐去。",

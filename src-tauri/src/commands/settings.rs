@@ -2,7 +2,7 @@ use crate::domain::AppSettings;
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::runtime::log_emitter::LogEmitter;
 use crate::runtime::settings_apply::{
-    apply_log_date_format, apply_prevent_sleep, apply_transfer_limits,
+    apply_log_date_format, apply_log_folder, apply_prevent_sleep, apply_transfer_limits,
 };
 use crate::runtime::vault_auto_lock::apply_idle_timeout;
 use crate::security::auto_lock::AutoLock;
@@ -81,6 +81,7 @@ pub async fn settings_set(
     let had_transfer_limits = changes_transfer_limits(&patch);
     let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
     let had_date_format = patch.contains_key("dateFormat");
+    let had_log_folder = patch.contains_key("logFolder");
     let next = store.set_settings_with_vault(patch, &vault).await?;
     if had_transfer_limits {
         apply_transfer_limits(&next);
@@ -90,6 +91,9 @@ pub async fn settings_set(
     }
     if had_date_format {
         apply_log_date_format(&next, &log_emitter);
+    }
+    if had_log_folder {
+        apply_log_folder(&next, &store, &log_emitter);
     }
     Ok(AppSettings(strip_proxy_secret(next)))
 }

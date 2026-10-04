@@ -160,7 +160,7 @@
     "installTooltip": "Redémarrer maintenant pour installer. Sinon, la mise à jour s'installera au prochain démarrage de FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Les mots de passe de certains serveurs enregistrés n'ont pas pu être lus ; saisissez-les à nouveau dans le gestionnaire de signets."
+    "message": "Les mots de passe de certains serveurs enregistrés n'ont pas pu être lus ; saisissez-les à nouveau dans le gestionnaire de signets."
   },
   "plaintextSecretNotice": {
     "message": "Le mot de passe ou la phrase secrète d'un site enregistré n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
@@ -183,7 +183,7 @@
   },
   "openWithChanged": {
     "title": "Fichier modifié",
-    "message": "« {{name}} » a été modifié dans l'application externe. Téléverser le fichier mis à jour sur le serveur ?"
+    "message": "« {{name}} » a été modifié dans l'application externe. Téléverser le fichier mis à jour sur le serveur ? Si vous choisissez « Plus tard », la question vous sera reposée au prochain enregistrement."
   },
   "recoveredEdits": {
     "title": "Modifications non téléversées",
@@ -310,11 +310,11 @@
     "sshNegotiationFailed": "Échec de la négociation SSH. Le serveur et FTPeach n'ont pas pu s'accorder sur un algorithme SSH ou une version de protocole compatibles.",
     "proxyFailed": "La connexion au proxy a échoué. Vérifiez le type de proxy, son adresse, ses identifiants et assurez-vous qu'il peut accéder au serveur cible.",
     "keyReadFailed": "Impossible de lire la clé : le fichier est corrompu ou la phrase secrète est incorrecte.",
-    "credentialFileMissing": "Le fichier de clé ou de certificat est introuvable : {{path}}",
+    "credentialFileMissing": "Le fichier de clé ou de certificat est introuvable : {{path}}",
     "webdavUrlNotAbsolute": "Saisissez l'adresse WebDAV complète, commençant par http:// ou https://.",
-    "webdavUrlCredentials": "Retirez le nom d'utilisateur et le mot de passe de l'adresse et saisissez-les dans les champs « Nom d'utilisateur » et « Mot de passe ».",
-    "webdavUrlQuery": "Une adresse WebDAV ne peut pas contenir ? ni # : saisissez seulement le serveur et le chemin du dossier.",
-    "networkPathNotChosen": "FTPeach n'ouvre un chemin réseau qu'après que vous l'avez choisi dans une boîte de dialogue, par exemple « Choisir un dossier… ».",
+    "webdavUrlCredentials": "Retirez le nom d'utilisateur et le mot de passe de l'adresse et saisissez-les dans les champs « Nom d'utilisateur » et « Mot de passe ».",
+    "webdavUrlQuery": "Une adresse WebDAV ne peut pas contenir ? ni # : saisissez seulement le serveur et le chemin du dossier.",
+    "networkPathNotChosen": "FTPeach n'ouvre un chemin réseau qu'après que vous l'avez choisi dans une boîte de dialogue, par exemple « Choisir un dossier… ».",
     "accessDenied": "Vous ne disposez pas des autorisations nécessaires pour effectuer cette opération.",
     "notFound": "Fichier ou dossier introuvable.",
     "fileOrFolderExists": "Un fichier ou un dossier portant ce nom existe déjà.",
@@ -532,7 +532,12 @@
     "logEnable": "Afficher le panneau du journal",
     "logShowTimestamps": "Afficher les horodatages",
     "logToFile": "Enregistrer le journal dans un fichier",
-    "logToFileHint": "Ajoute le journal à un fichier quotidien dans %APPDATA%\\FTPeach\\logs, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total. Le bouton « Enregistrer » du panneau est différent : il enregistre une seule fois, au clic, les lignes qui y sont affichées.",
+    "logToFileHint": "Ajoute le journal à un fichier quotidien dans le dossier des journaux, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total. Le bouton « Enregistrer » du panneau est différent : il enregistre une seule fois, au clic, les lignes qui y sont affichées.",
+    "logFolderLabel": "Dossier des journaux",
+    "logFolderDefault": "Dossier des journaux de FTPeach",
+    "chooseLogFolder": "Choisir le dossier des journaux…",
+    "resetLogFolder": "Utiliser le dossier des journaux de FTPeach",
+    "openLogFolder": "Ouvrir le dossier des journaux",
     "exportDiagnostics": "Exporter le paquet de diagnostic",
     "exportDiagnosticsBusy": "Exportation…",
     "exportDiagnosticsHint": "Exporte la version de l'application, le système d'exploitation, le journal récent et le fichier journal propre à l'application. Les mots de passe, jetons et autres secrets sont masqués.",

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { handler } from '../../../shared/asyncFailure.ts';
+import { handler, reportRejection } from '../../../shared/asyncFailure.ts';
+import Icon from '../../../components/Icon.tsx';
 
 interface LoggingSettingsProps {
   logEnabledValue: boolean;
@@ -9,6 +10,11 @@ interface LoggingSettingsProps {
   setLogShowTimestampsValue: (value: boolean) => void;
   logToFileValue: boolean;
   setLogToFileValue: (value: boolean) => void;
+  /** Empty is FTPeach's own logs folder. */
+  logFolderValue: string;
+  setLogFolderValue: (value: string) => void;
+  selectDirectory: () => Promise<string | null | undefined>;
+  onOpenLogFolder: () => Promise<unknown>;
   onExportDiagnostics: () => Promise<{ ok?: boolean; canceled?: boolean }>;
 }
 
@@ -19,6 +25,10 @@ export default function LoggingSettings({
   setLogShowTimestampsValue,
   logToFileValue,
   setLogToFileValue,
+  logFolderValue,
+  setLogFolderValue,
+  selectDirectory,
+  onOpenLogFolder,
   onExportDiagnostics,
 }: LoggingSettingsProps) {
   const { t } = useTranslation();
@@ -71,6 +81,44 @@ export default function LoggingSettings({
           {t('settings.logToFile')}
         </label>
         <p className="settings-hint">{t('settings.logToFileHint')}</p>
+        <label className="settings-field">
+          <span>{t('settings.logFolderLabel')}</span>
+          <div className="saved-secret-control">
+            <input
+              type="text"
+              aria-label={t('settings.logFolderLabel')}
+              placeholder={t('settings.logFolderDefault')}
+              value={logFolderValue}
+              onChange={(e) => setLogFolderValue(e.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-icon field-icon-btn"
+              aria-label={t('settings.chooseLogFolder')}
+              data-tooltip={t('settings.chooseLogFolder')}
+              onClick={handler(async () => {
+                const selected = await selectDirectory();
+                if (selected) setLogFolderValue(selected);
+              })}
+            >
+              <Icon name="folder" size={14} />
+            </button>
+            {logFolderValue && (
+              <button
+                type="button"
+                className="btn btn-icon field-icon-btn"
+                aria-label={t('settings.resetLogFolder')}
+                data-tooltip={t('settings.resetLogFolder')}
+                onClick={() => setLogFolderValue('')}
+              >
+                <Icon name="windowClose" size={14} />
+              </button>
+            )}
+          </div>
+        </label>
+        <button type="button" className="btn" onClick={() => reportRejection(onOpenLogFolder())}>
+          {t('settings.openLogFolder')}
+        </button>
       </div>
       <div className="settings-option-group">
         <button

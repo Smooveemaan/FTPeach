@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "Tệp đã thay đổi",
-    "message": "“{{name}}” đã được chỉnh sửa trong ứng dụng bên ngoài. Tải tệp đã cập nhật lên máy chủ?"
+    "message": "“{{name}}” đã được chỉnh sửa trong ứng dụng bên ngoài. Tải tệp đã cập nhật lên máy chủ? Nếu chọn “Để sau”, bạn sẽ được hỏi lại vào lần lưu tiếp theo."
   },
   "recoveredEdits": {
     "title": "Thay đổi chưa được tải lên",
@@ -528,7 +528,12 @@
     "logEnable": "Hiển thị bảng nhật ký",
     "logShowTimestamps": "Hiển thị dấu thời gian",
     "logToFile": "Ghi nhật ký vào tệp",
-    "logToFileHint": "Ghi thêm nhật ký vào một tệp theo ngày trong %APPDATA%\\FTPeach\\logs, kể cả khi bảng nhật ký đang đóng. Các tệp được giữ trong 14 ngày, tổng cộng tối đa 50 MB. Nút “Lưu” trong bảng thì khác: nút này lưu một lần, khi nhấp vào, các dòng đang hiển thị trong bảng.",
+    "logToFileHint": "Ghi thêm nhật ký vào một tệp theo ngày trong thư mục nhật ký, kể cả khi bảng nhật ký đang đóng. Các tệp được giữ trong 14 ngày, tổng cộng tối đa 50 MB. Nút “Lưu” trong bảng thì khác: nút này lưu một lần, khi nhấp vào, các dòng đang hiển thị trong bảng.",
+    "logFolderLabel": "Thư mục nhật ký",
+    "logFolderDefault": "Thư mục nhật ký riêng của FTPeach",
+    "chooseLogFolder": "Chọn thư mục nhật ký…",
+    "resetLogFolder": "Dùng thư mục nhật ký riêng của FTPeach",
+    "openLogFolder": "Mở thư mục nhật ký",
     "exportDiagnostics": "Xuất gói chẩn đoán",
     "exportDiagnosticsBusy": "Đang xuất…",
     "exportDiagnosticsHint": "Xuất phiên bản ứng dụng, hệ điều hành, nhật ký gần đây và tệp nhật ký riêng của ứng dụng. Mật khẩu, mã thông báo và các thông tin bí mật khác sẽ được che đi.",

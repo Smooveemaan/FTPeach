@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "Datei geändert",
-    "message": "„{{name}}“ wurde in der externen Anwendung geändert. Soll die aktualisierte Datei auf den Server hochgeladen werden?"
+    "message": "„{{name}}“ wurde in der externen Anwendung geändert. Soll die aktualisierte Datei auf den Server hochgeladen werden? Wenn Sie „Später“ wählen, werden Sie beim nächsten Speichern erneut gefragt."
   },
   "recoveredEdits": {
     "title": "Nicht hochgeladene Änderungen",
@@ -528,7 +528,12 @@
     "logEnable": "Protokollfenster anzeigen",
     "logShowTimestamps": "Zeitstempel anzeigen",
     "logToFile": "Protokoll in Datei schreiben",
-    "logToFileHint": "Hängt das Protokoll an eine Datei pro Tag in %APPDATA%\\FTPeach\\logs an, auch wenn das Protokollfenster geschlossen ist. Die Dateien werden 14 Tage lang aufbewahrt, insgesamt bis zu 50 MB. Die Schaltfläche „Speichern“ im Fenster ist etwas anderes: Sie speichert die dort angezeigten Zeilen einmalig beim Klicken.",
+    "logToFileHint": "Hängt das Protokoll an eine Datei pro Tag im Protokollordner an, auch wenn das Protokollfenster geschlossen ist. Die Dateien werden 14 Tage lang aufbewahrt, insgesamt bis zu 50 MB. Die Schaltfläche „Speichern“ im Fenster ist etwas anderes: Sie speichert die dort angezeigten Zeilen einmalig beim Klicken.",
+    "logFolderLabel": "Protokollordner",
+    "logFolderDefault": "Eigener Protokollordner von FTPeach",
+    "chooseLogFolder": "Protokollordner auswählen…",
+    "resetLogFolder": "Eigenen Protokollordner von FTPeach verwenden",
+    "openLogFolder": "Protokollordner öffnen",
     "exportDiagnostics": "Diagnosepaket exportieren",
     "exportDiagnosticsBusy": "Wird exportiert…",
     "exportDiagnosticsHint": "Exportiert die Anwendungsversion, das Betriebssystem, die letzten Protokolleinträge und die eigene Protokolldatei der Anwendung. Passwörter, Token und andere vertrauliche Daten werden unkenntlich gemacht.",

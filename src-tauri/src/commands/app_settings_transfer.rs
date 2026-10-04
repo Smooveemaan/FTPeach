@@ -593,6 +593,7 @@ pub async fn app_import_settings(
         );
         let had_speed_limit = patch.contains_key("transferSpeedLimitKBps");
         let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
+        let had_log_folder = patch.contains_key("logFolder");
         match store.set_settings(patch).await {
             Ok(next) => {
                 if had_speed_limit {
@@ -600,6 +601,13 @@ pub async fn app_import_settings(
                 }
                 if had_prevent_sleep {
                     crate::runtime::settings_apply::apply_prevent_sleep(&next);
+                }
+                if had_log_folder {
+                    crate::runtime::settings_apply::apply_log_folder(
+                        &next,
+                        &store,
+                        &tauri::Manager::state::<crate::runtime::log_emitter::LogEmitter>(&app),
+                    );
                 }
                 crate::runtime::vault_auto_lock::apply_idle_timeout(&next, &auto_lock);
                 settings_out = Some(next);
@@ -628,6 +636,11 @@ pub async fn app_import_settings(
                     Ok(()) => {
                         crate::runtime::settings_apply::apply_transfer_limits(&previous_settings);
                         crate::runtime::settings_apply::apply_prevent_sleep(&previous_settings);
+                        crate::runtime::settings_apply::apply_log_folder(
+                            &previous_settings,
+                            &store,
+                            &tauri::Manager::state::<crate::runtime::log_emitter::LogEmitter>(&app),
+                        );
                         crate::runtime::vault_auto_lock::apply_idle_timeout(
                             &previous_settings,
                             &auto_lock,

@@ -183,7 +183,7 @@
   },
   "openWithChanged": {
     "title": "Fișierul a fost modificat",
-    "message": "„{{name}}” a fost modificat în aplicația externă. Încărcați fișierul actualizat pe server?"
+    "message": "„{{name}}” a fost modificat în aplicația externă. Încărcați fișierul actualizat pe server? Dacă alegeți „Mai târziu”, veți fi întrebat din nou data viitoare când îl salvați."
   },
   "recoveredEdits": {
     "title": "Modificări neîncărcate",
@@ -532,7 +532,12 @@
     "logEnable": "Afișează panoul de jurnal",
     "logShowTimestamps": "Afișează ora",
     "logToFile": "Scrie jurnalul într-un fișier",
-    "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din %APPDATA%\\FTPeach\\logs, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total. Butonul „Salvează” din panou este altceva: salvează o singură dată, la apăsare, rândurile afișate acolo.",
+    "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din folderul de jurnale, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total. Butonul „Salvează” din panou este altceva: salvează o singură dată, la apăsare, rândurile afișate acolo.",
+    "logFolderLabel": "Folder de jurnale",
+    "logFolderDefault": "Folderul de jurnale al FTPeach",
+    "chooseLogFolder": "Alege folderul de jurnale…",
+    "resetLogFolder": "Folosește folderul de jurnale al FTPeach",
+    "openLogFolder": "Deschide folderul de jurnale",
     "exportDiagnostics": "Exportă pachetul de diagnosticare",
     "exportDiagnosticsBusy": "Se exportă…",
     "exportDiagnosticsHint": "Exportă versiunea aplicației, sistemul de operare, jurnalul recent și fișierul de jurnal propriu al aplicației. Parolele, tokenurile și alte date secrete sunt ascunse.",

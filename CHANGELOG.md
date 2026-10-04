@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Settings → Logging can write the log files to a folder of your choice, and opens the log folder.
 - Settings → Password protection can unlock the vault with Windows Hello.
 - Showing a saved password, and other actions that ask for the master password, can be confirmed
   with Windows Hello where it is enabled; the master password still works.
@@ -31,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The hint for "Write log to file" no longer names the installed copy's folder in a portable copy.
+- The "File changed" question says that Later asks again the next time the file is saved.
 - When the connection to a server is lost or stops answering, the pane says so and offers to
   connect again, instead of still looking connected and failing every action.
 - A folder with a junction or symbolic link inside can be moved or renamed on the same disk.

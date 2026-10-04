@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "File changed",
-    "message": "\"{{name}}\" was changed in the external application. Upload the updated file to the server?"
+    "message": "\"{{name}}\" was changed in the external application. Upload the updated file to the server? If you choose Later, you will be asked again the next time you save it."
   },
   "recoveredEdits": {
     "title": "Edits that were not uploaded",
@@ -528,7 +528,12 @@
     "logEnable": "Show the log panel",
     "logShowTimestamps": "Show timestamps",
     "logToFile": "Write log to file",
-    "logToFileHint": "Appends the log to a daily file in %APPDATA%\\FTPeach\\logs, even while the log panel is closed. Files are kept for 14 days, up to 50 MB in total. The Save button in the panel is different: it saves the lines shown there once, on click.",
+    "logToFileHint": "Appends the log to a daily file in the log folder, even while the log panel is closed. Files are kept for 14 days, up to 50 MB in total. The Save button in the panel is different: it saves the lines shown there once, on click.",
+    "logFolderLabel": "Log folder",
+    "logFolderDefault": "FTPeach's own logs folder",
+    "chooseLogFolder": "Choose log folder…",
+    "resetLogFolder": "Use FTPeach's own logs folder",
+    "openLogFolder": "Open log folder",
     "exportDiagnostics": "Export diagnostic bundle",
     "exportDiagnosticsBusy": "Exporting…",
     "exportDiagnosticsHint": "Exports the app version, OS, the recent log and the app's own log file. Passwords, tokens and other secrets are redacted.",

@@ -42,6 +42,7 @@
   "logEnabled": false,
   "logShowTimestamps": true,
   "logToFile": false,
+  "logFolder": "",
   "notifyOnTransferComplete": true,
   "overwriteAction": "ask",
   "ftpActiveMode": false,

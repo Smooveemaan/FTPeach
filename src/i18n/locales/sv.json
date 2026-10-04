@@ -180,7 +180,7 @@
   },
   "openWithChanged": {
     "title": "Filen har ändrats",
-    "message": "”{{name}}” har ändrats i det externa programmet. Ska den uppdaterade filen laddas upp till servern?"
+    "message": "”{{name}}” har ändrats i det externa programmet. Ska den uppdaterade filen laddas upp till servern? Väljer du ”Senare” får du frågan igen nästa gång du sparar filen."
   },
   "recoveredEdits": {
     "title": "Ändringar som inte laddades upp",
@@ -528,7 +528,12 @@
     "logEnable": "Visa loggpanelen",
     "logShowTimestamps": "Visa tidsstämplar",
     "logToFile": "Skriv logg till fil",
-    "logToFileHint": "Lägger till loggen i en fil per dag i %APPDATA%\\FTPeach\\logs, även när loggpanelen är stängd. Filerna sparas i 14 dagar, högst 50 MB totalt. Knappen ”Spara” i panelen är något annat: den sparar raderna som visas där en gång, när du klickar på den.",
+    "logToFileHint": "Lägger till loggen i en fil per dag i loggmappen, även när loggpanelen är stängd. Filerna sparas i 14 dagar, högst 50 MB totalt. Knappen ”Spara” i panelen är något annat: den sparar raderna som visas där en gång, när du klickar på den.",
+    "logFolderLabel": "Loggmapp",
+    "logFolderDefault": "FTPeachs egen loggmapp",
+    "chooseLogFolder": "Välj loggmapp…",
+    "resetLogFolder": "Använd FTPeachs egen loggmapp",
+    "openLogFolder": "Öppna loggmappen",
     "exportDiagnostics": "Exportera diagnostikpaket",
     "exportDiagnosticsBusy": "Exporterar…",
     "exportDiagnosticsHint": "Exporterar appens version, operativsystemet, den senaste loggen och appens egen loggfil. Lösenord, token och andra hemligheter maskeras.",

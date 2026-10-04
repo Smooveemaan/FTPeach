@@ -119,7 +119,7 @@ test('unlock requires a password, retains rejected input, and clears it after su
   expect(screen.getByTestId('busy').textContent).toBe('false');
 });
 
-test('unlock IPC errors expire and pending error timers are removed on unmount', async () => {
+test('an unlock error stays until the next attempt', async () => {
   vi.useFakeTimers();
   vault.unlock.mockRejectedValue(new Error('offline'));
   const { unmount } = render(<Form />);
@@ -127,10 +127,9 @@ test('unlock IPC errors expire and pending error timers are removed on unmount',
   input('password', 'secret');
   await act(async () => fireEvent.click(screen.getByText('unlock', { selector: 'button' })));
   expect(screen.getByText('offline')).toBeTruthy();
-  await act(async () => vi.advanceTimersByTime(2000));
-  expect(screen.queryByText('offline')).toBeNull();
-  expect(screen.getByTestId('invalid').textContent).toBe('false');
-  await act(async () => fireEvent.click(screen.getByText('unlock', { selector: 'button' })));
+  await act(async () => vi.advanceTimersByTime(60_000));
+  expect(screen.getByText('offline')).toBeTruthy();
+  expect(screen.getByTestId('invalid').textContent).toBe('true');
   unmount();
   expect(vi.getTimerCount()).toBe(0);
 });

@@ -64,7 +64,6 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
   const masterPasswordRef = useRef<HTMLInputElement>(null);
   const masterPasswordConfirmRef = useRef<HTMLInputElement>(null);
   const oldMasterPasswordRef = useRef<HTMLInputElement>(null);
-  const vaultUnlockErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unavailableMessageRef = useRef(t('settings.security.unavailable'));
   unavailableMessageRef.current = t('settings.security.unavailable');
 
@@ -85,23 +84,8 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     };
   }, [refreshVaultStatus]);
 
-  useEffect(
-    () => () => {
-      if (vaultUnlockErrorTimerRef.current) clearTimeout(vaultUnlockErrorTimerRef.current);
-    },
-    [],
-  );
-
-  /** Shows an error that fades out and then goes, so a repeat shows it afresh. */
-  const showVaultError = (message: string) => {
-    if (vaultUnlockErrorTimerRef.current) clearTimeout(vaultUnlockErrorTimerRef.current);
-    setVaultMessage(message);
-    vaultUnlockErrorTimerRef.current = setTimeout(() => {
-      setVaultMessage('');
-      setVaultUnlockInvalid(false);
-      vaultUnlockErrorTimerRef.current = null;
-    }, 2000);
-  };
+  /** The error stays until the next attempt or an edit of the field clears it. */
+  const showVaultError = (message: string) => setVaultMessage(message);
 
   const showVaultUnlockError = (message = '') => {
     showVaultError(message);

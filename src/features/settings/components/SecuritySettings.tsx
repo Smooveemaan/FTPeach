@@ -153,7 +153,7 @@ export default function SecuritySettings({
             </button>
           </div>
           {vaultMessage && (
-            <p className="settings-hint settings-warning settings-error-fade" role="alert">
+            <p className="settings-hint settings-warning" role="alert">
               {vaultMessage}
             </p>
           )}
@@ -195,11 +195,7 @@ export default function SecuritySettings({
             </label>
           </div>
           {vaultMessage && (
-            <p
-              className="settings-hint settings-warning settings-error-fade"
-              role="alert"
-              aria-live="assertive"
-            >
+            <p className="settings-hint settings-warning" role="alert" aria-live="assertive">
               {vaultMessage}
             </p>
           )}
@@ -276,7 +272,7 @@ export default function SecuritySettings({
             </>
           )}
           {vaultMessage && (
-            <p className="settings-hint settings-warning settings-error-fade" role="alert">
+            <p className="settings-hint settings-warning" role="alert">
               {vaultMessage}
             </p>
           )}

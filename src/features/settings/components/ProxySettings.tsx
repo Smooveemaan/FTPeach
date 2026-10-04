@@ -168,11 +168,7 @@ export default function ProxySettings({
           <p className="settings-hint settings-success">{t('settings.proxy.testOk')}</p>
         )}
         {password.proxyTestResult === 'error' && (
-          <p
-            className="settings-hint settings-warning settings-error-fade"
-            role="alert"
-            aria-live="assertive"
-          >
+          <p className="settings-hint settings-warning" role="alert" aria-live="assertive">
             {password.proxyTestMessage}
           </p>
         )}

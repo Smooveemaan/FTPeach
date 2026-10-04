@@ -24,7 +24,6 @@ export default function VaultUnlockDialog({
 }: VaultUnlockDialogProps) {
   const { t } = useTranslation();
   const passwordRef = useRef<HTMLInputElement | null>(null);
-  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState('');
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,29 +42,14 @@ export default function VaultUnlockDialog({
     };
   }, [vaultApi]);
 
-  useEffect(
-    () => () => {
-      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-    },
-    [],
-  );
-
   const clearPasswordError = () => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-    errorTimerRef.current = null;
     setError('');
     setPasswordInvalid(false);
   };
 
   const showPasswordError = (message = '') => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setError(message);
     setPasswordInvalid(true);
-    errorTimerRef.current = setTimeout(() => {
-      setError('');
-      setPasswordInvalid(false);
-      errorTimerRef.current = null;
-    }, 2000);
   };
 
   const unlock = async () => {
@@ -160,7 +144,7 @@ export default function VaultUnlockDialog({
       </div>
       {error && (
         <p
-          className={`settings-hint settings-warning${passwordInvalid ? ' settings-error-fade' : ''}`}
+          className="settings-hint settings-warning"
           role={passwordInvalid ? 'alert' : 'status'}
           aria-live={passwordInvalid ? 'assertive' : 'polite'}
         >

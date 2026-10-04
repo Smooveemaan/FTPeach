@@ -22,6 +22,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Errors about the master password and the proxy test stay on screen until you try again or
+  change the field, instead of fading out after two seconds.
+- The proxy test result goes away when a proxy field changes, and the settings no longer jump
+  when a test starts.
 - The warning about RSA keys in Manage Bookmarks spans the whole dialog instead of a narrow
   column under the passphrase.
 - Opening a bookmark in a pane connected to a WebDAV server names that server in the question

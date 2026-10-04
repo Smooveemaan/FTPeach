@@ -47,8 +47,22 @@ export function useProxyPasswordTest({
   const [proxyTestHost, setProxyTestHost] = useState('');
   const [proxyTestPort, setProxyTestPort] = useState('');
   const [proxyTestBusy, setProxyTestBusy] = useState(false);
-  const [proxyTestResult, setProxyTestResult] = useState<ProxyTestResult>(null);
-  const [proxyTestMessage, setProxyTestMessage] = useState('');
+  const [proxyTest, setProxyTest] = useState<{
+    inputs: string;
+    result: ProxyTestResult;
+    message: string;
+  } | null>(null);
+  // A result speaks only for the fields it was tested with; editing one hides it.
+  const proxyTestInputs = JSON.stringify([
+    proxyTypeValue,
+    proxyHostValue,
+    proxyPortValue,
+    proxyUsernameValue,
+    proxyPasswordRemoved ? null : proxyPasswordValue,
+    proxyTestHost,
+    proxyTestPort,
+  ]);
+  const shownProxyTest = proxyTest?.inputs === proxyTestInputs ? proxyTest : null;
 
   useEffect(() => {
     if (proxyPasswordDirty || proxyPasswordRemoved) markUnsavedChanges();
@@ -98,8 +112,7 @@ export function useProxyPasswordTest({
 
   const testProxy = async () => {
     setProxyTestBusy(true);
-    setProxyTestResult(null);
-    setProxyTestMessage('');
+    const inputs = proxyTestInputs;
     try {
       const result = await api.proxy.test({
         proxyType: proxyTypeValue,
@@ -110,12 +123,11 @@ export function useProxyPasswordTest({
         targetHost: proxyTestHost.trim(),
         targetPort: Number(proxyTestPort) || 0,
       });
-      if (result.ok === false) {
-        setProxyTestResult('error');
-        setProxyTestMessage(result.error || t('settings.proxy.testFailed'));
-      } else {
-        setProxyTestResult('ok');
-      }
+      setProxyTest(
+        result.ok === false
+          ? { inputs, result: 'error', message: result.error || t('settings.proxy.testFailed') }
+          : { inputs, result: 'ok', message: '' },
+      );
     } finally {
       setProxyTestBusy(false);
     }
@@ -139,8 +151,8 @@ export function useProxyPasswordTest({
     proxyTestPort,
     setProxyTestPort,
     proxyTestBusy,
-    proxyTestResult,
-    proxyTestMessage,
+    proxyTestResult: shownProxyTest?.result ?? null,
+    proxyTestMessage: shownProxyTest?.message ?? '',
     testProxy,
     buildPasswordPatch,
   };

@@ -125,12 +125,6 @@
   transition-duration: 0.12s;
 }
 
-/* Shown for 1.5s, faded over 0.5s: 2s in all, the timer in
-   VaultUnlockDialog.tsx and useVaultSettings.ts that then removes the error. */
-.settings-error-fade {
-  animation: fade-out 0.5s ease 1.5s forwards;
-}
-
 @keyframes fade-out {
   to {
     opacity: 0;

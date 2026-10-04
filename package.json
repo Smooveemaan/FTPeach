@@ -64,6 +64,7 @@
     "servers:test": "node --experimental-strip-types scripts/test-servers/test.ts",
     "servers:ci": "node --experimental-strip-types scripts/test-servers/ci.ts",
     "screenshot:readme": "node --experimental-strip-types scripts/screenshot/readme.ts",
+    "screenshot:video": "node --experimental-strip-types scripts/screenshot/readme.ts --video",
     "site:build": "node --experimental-strip-types scripts/site/build.ts"
   },
   "author": "Smooveemaan",

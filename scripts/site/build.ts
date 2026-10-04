@@ -54,7 +54,13 @@ async function main() {
   await rm(out, { recursive: true, force: true });
   await mkdir(out);
   await writeFile(path.join(out, 'index.html'), fillRelease(html, release));
-  for (const image of ['ftpeach.png', 'ftpeach-light.png', 'icon.png']) {
+  for (const image of [
+    'ftpeach.png',
+    'ftpeach-light.png',
+    'ftpeach.mp4',
+    'ftpeach-poster.webp',
+    'icon.png',
+  ]) {
     await copyFile(path.join(root, 'assets/images', image), path.join(out, image));
   }
   await copyFile(path.join(root, 'public/favicon.ico'), path.join(out, 'favicon.ico'));

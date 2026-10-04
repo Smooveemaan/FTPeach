@@ -618,6 +618,24 @@ a:hover {
   background-size: calc(var(--iw) / var(--w) * 100%) auto;
   background-position: calc(var(--x) / (var(--iw) - var(--w)) * 100%) calc(var(--y) / (var(--ih) - var(--h)) * 100%);
 }
+/* The dark theme plays the demo over the screenshot once the script gives it a source (it opens on
+   its poster, the video's first frame). Without the script, and in the light theme, the screenshot
+   stays and the video is never downloaded. */
+.demo {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .demo[src] {
+    display: block;
+  }
+}
+:root[data-theme='dark'] .demo[src] {
+  display: block;
+}
 @supports (animation-timeline: view()) {
   .frame {
     animation: flatten linear both;
@@ -1262,7 +1280,7 @@ a:hover {
         </div>
         <div class="wrap shot rise" style="--i: 4">
           <div class="frame">
-            <div class="crop" role="img" aria-label="FTPeach with a local folder on the left, an FTP server on the right, two uploads in the transfer queue and the connection log below."></div>
+            <div class="crop" role="img" aria-label="FTPeach with a local folder on the left, an FTP server on the right, two uploads in the transfer queue and the connection log below."><video class="demo" muted loop playsinline preload="none" poster="ftpeach-poster.webp" aria-hidden="true"></video></div>
           </div>
         </div>
       </section>
@@ -1518,10 +1536,15 @@ a:hover {
       const toggle = document.getElementById('theme-toggle');
       const systemDark = matchMedia('(prefers-color-scheme: dark)');
       const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches);
+      // The demo video exists in the dark theme only; it is fetched the first time that theme shows.
+      const demo = document.querySelector('.demo');
       function sync() {
         const dark = isDark();
         toggle.dataset.mode = dark ? 'dark' : 'light';
         toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        if (dark && !demo.hasAttribute('src')) demo.src = 'ftpeach.mp4';
+        if (dark) demo.play().catch(() => {});
+        else demo.pause();
       }
       function instantly(change) {
         root.classList.add('no-transitions');

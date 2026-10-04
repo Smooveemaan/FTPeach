@@ -93,21 +93,21 @@ function measureOrderRects(
     .split(/\s+/)
     .map((v) => parseFloat(v) || 0);
 
-  // A header scrolled sideways with its list shows every track moved by
-  // -scrollLeft on screen (scrollLeft is negative in RTL, so that holds there too).
-  const scrolled = container.scrollLeft;
+  // Positions leave out the header's sideways scroll, so a FLIP baseline
+  // taken at one scroll still matches after another; hit-testing adds the
+  // scroll to the pointer instead.
   let leadingSpan = 0;
   for (let i = 0; i < firstIdx; i++) leadingSpan += (trackWidths[i] ?? 0) + gapPx;
 
   if (!rtl) {
-    let cursor = containerRect.left + paddingStart + leadingSpan - scrolled;
+    let cursor = containerRect.left + paddingStart + leadingSpan;
     visibleOrder.forEach((key, i) => {
       const width = trackWidths[firstIdx + i] ?? 0;
       rects.set(key, { left: cursor, width });
       cursor += width + gapPx;
     });
   } else {
-    let cursor = containerRect.right - paddingStart - leadingSpan - scrolled;
+    let cursor = containerRect.right - paddingStart - leadingSpan;
     visibleOrder.forEach((key, i) => {
       const width = trackWidths[firstIdx + i] ?? 0;
       rects.set(key, { left: cursor - width, width });
@@ -173,7 +173,10 @@ export function useColumnDragReorder({
         document.body.classList.remove('column-reorder-active');
         suppressClickRef.current = true;
         setDraggedColumn(null);
-        if (restoreOriginal) onReorderRef.current?.(drag.originalOrder);
+        if (restoreOriginal) {
+          rectsRef.current = measureOrderRects(orderRef.current, headerRefs.current);
+          onReorderRef.current?.(drag.originalOrder);
+        }
       }
     };
 
@@ -208,6 +211,8 @@ export function useColumnDragReorder({
       const rects = measureOrderRects(cols, headerRefs.current);
       const container = headerRefs.current.get(drag.key)?.parentElement;
       const rtl = container ? getComputedStyle(container).direction === 'rtl' : false;
+      // The header follows its list sideways by scrollLeft (negative in RTL).
+      const pointerX = e.clientX + (container?.scrollLeft ?? 0);
       let toIdx = fromIdx;
       cols.forEach((key, index) => {
         const rect = rects.get(key);
@@ -216,8 +221,8 @@ export function useColumnDragReorder({
         const hysteresis = Math.min(SWAP_HYSTERESIS_PX, rect.width / 4);
         const movingRight = index > fromIdx !== rtl;
         const crossed = movingRight
-          ? e.clientX > midpoint + hysteresis
-          : e.clientX < midpoint - hysteresis;
+          ? pointerX > midpoint + hysteresis
+          : pointerX < midpoint - hysteresis;
         if (crossed && Math.abs(index - fromIdx) > Math.abs(toIdx - fromIdx)) toIdx = index;
       });
       if (toIdx === fromIdx) return;
@@ -225,6 +230,9 @@ export function useColumnDragReorder({
       const next = [...cols];
       next.splice(fromIdx, 1);
       next.splice(toIdx, 0, drag.key);
+      // The FLIP baseline is taken here, not kept from the last reorder: the
+      // layout may have changed since (a language switch to RTL among them).
+      rectsRef.current = rects;
       reorder(next);
     };
 
@@ -275,6 +283,10 @@ export function useColumnDragReorder({
 
     const prevRects = rectsRef.current;
     const nextRects = measureOrderRects(order, headerRefs.current);
+    rectsRef.current = nextRects;
+    // Only a reorder slides; showing or hiding a column just reflows.
+    if (prevRects.size !== nextRects.size || [...nextRects.keys()].some((k) => !prevRects.has(k)))
+      return;
     const scope = [...headerRefs.current.values()][0]?.closest('[data-column-reorder-scope]');
     const cellsByKey = new Map<string, HTMLElement[]>();
     scope?.querySelectorAll<HTMLElement>('[data-column-cell]').forEach((cell) => {
@@ -312,7 +324,6 @@ export function useColumnDragReorder({
       });
       flipAnimRef.current.set(key, { raf, timeout: 0, elements });
     });
-    rectsRef.current = nextRects;
     // `orderKey` is `order.join(',')` — the same information, but stable across
     // renders that rebuild the array without changing it. Depending on `order`
     // itself would restart this FLIP animation mid-flight on every such render.

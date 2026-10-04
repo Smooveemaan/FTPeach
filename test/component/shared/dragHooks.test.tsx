@@ -342,6 +342,29 @@ test.each(['ltr', 'rtl'])(
   },
 );
 
+test('a column slides one slot after a sideways scroll, and hiding one does not slide', () => {
+  vi.useFakeTimers();
+  const { container, name, size } = columnHeaders('ltr');
+  let scrollLeft = 0;
+  Object.defineProperty(container, 'scrollLeft', { get: () => scrollLeft });
+  const { result, rerender } = renderHook(({ order }) => useColumnDragReorder({ order }), {
+    initialProps: { order: ['name', 'size'] },
+  });
+  result.current.registerHeaderRef('name')(name);
+  result.current.registerHeaderRef('size')(size);
+  act(() => result.current.refreshRects());
+  scrollLeft = 80;
+  container.append(size, name);
+  rerender({ order: ['size', 'name'] });
+  expect(size.style.transform).toBe('translateX(100px)');
+  act(() => vi.advanceTimersByTime(200));
+  size.remove();
+  result.current.registerHeaderRef('size')(null);
+  container.style.gridTemplateColumns = '100px';
+  rerender({ order: ['name'] });
+  expect(name.style.transform).toBe('');
+});
+
 test.each(['ltr', 'rtl'])(
   'file drag hits the logical name cell and offsets the ghost in %s',
   (direction) => {

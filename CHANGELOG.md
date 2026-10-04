@@ -67,7 +67,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The address field of a bookmark takes at most 255 characters, the longest a server name can be,
   instead of refusing the bookmark when you save it.
 - Dragging a column header in a list scrolled sideways moves the column to where you drop it,
-  instead of several columns further.
+  instead of several columns further, and columns no longer jump after the list is scrolled
+  sideways, a column is hidden or the language is switched to a right-to-left one.
 - Renaming a file with F2 selects its name without the extension, as Explorer does.
 - Sweeping a selection rectangle past the end of a long list scrolls faster the further you go.
 - The Date modified and Date created columns are wide enough for a date with a 12-hour time.

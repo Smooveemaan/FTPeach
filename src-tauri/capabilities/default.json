@@ -73,6 +73,7 @@
     "allow-app-system-hour-cycle",
     "allow-app-open-external",
     "allow-app-set-window-border",
+    "allow-app-set-drop-allowed",
     "allow-debug-open-devtools",
     "allow-app-reset-layout",
     "allow-log-recent",

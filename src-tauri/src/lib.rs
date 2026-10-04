@@ -143,6 +143,7 @@ pub fn run() {
             commands::app::app_system_hour_cycle,
             commands::app::app_open_external,
             commands::app::app_set_window_border,
+            commands::app::app_set_drop_allowed,
             commands::app::app_set_interface_scale,
             commands::app::debug_open_devtools,
             commands::app::app_reset_layout,

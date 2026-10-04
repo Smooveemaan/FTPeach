@@ -56,6 +56,16 @@ function onOsDragDrop(callback: (payload: OsDragDropPayload) => void) {
   };
 }
 
+let dropAllowed = true;
+
+/** Whether the spot under a drag from Explorer takes the drop: the cursor
+ * Windows shows there. Sent only when it changes. */
+function setDropAllowed(invoke: InvokeFn, allowed: boolean) {
+  if (allowed === dropAllowed) return;
+  dropAllowed = allowed;
+  invoke('app_set_drop_allowed', { allowed }).catch(reportAsyncFailure);
+}
+
 /** What `fs_list` answers when it worked. */
 interface FilesystemList {
   path: string;
@@ -178,5 +188,6 @@ export function createFilesystemApi(invoke: InvokeFn) {
         () => false,
       ),
     onOsDragDrop,
+    setDropAllowed: (allowed: boolean) => setDropAllowed(invoke, allowed),
   };
 }

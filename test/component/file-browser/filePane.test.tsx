@@ -74,6 +74,7 @@ describe('FilePane interactions', () => {
       fsLocal: {
         ...tauriApi.fsLocal,
         onOsDragDrop: vi.fn(() => vi.fn()),
+        setDropAllowed: vi.fn(),
         pathForFile: vi.fn((file: File) => `C:\\drop\\${file.name}`),
         isDir: vi.fn(async () => false),
       },

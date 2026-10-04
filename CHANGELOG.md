@@ -69,6 +69,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   headers or while a key is held, and the list lights up only where the files can be dropped.
 - Pressing Alt, or Alt+Space, while dragging files in from Explorer no longer leaves the window
   unable to take a click or be switched to until FTPeach is closed.
+- Files dragged in from Explorer show a "no" cursor where they cannot be dropped, such as over
+  Transfers, the log or the column headers, instead of a copy cursor over the whole window.
 - Changing the protocol of a connection or a bookmark changes a default port to the new
   protocol's, and an empty port field shows which port will be used; a port of your own stays.
 - The address field of a bookmark takes at most 255 characters, the longest a server name can be,

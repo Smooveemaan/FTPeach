@@ -97,6 +97,16 @@ impl DragDropTarget {
     }
   }
 
+  /// FTPeach patch: the hovering effect, unless the app said the spot under
+  /// the pointer takes no drop.
+  fn effect(&self) -> DROPEFFECT {
+    if super::DROP_ALLOWED.load(std::sync::atomic::Ordering::Relaxed) {
+      unsafe { *self.cursor_effect.get() }
+    } else {
+      DROPEFFECT_NONE
+    }
+  }
+
   unsafe fn iterate_filenames<F>(
     data_obj: windows_core::Ref<'_, IDataObject>,
     mut callback: F,
@@ -222,7 +232,7 @@ impl IDropTarget_Impl for DragDropTarget_Impl {
       });
     }
 
-    unsafe { *pdwEffect = *self.cursor_effect.get() };
+    unsafe { *pdwEffect = self.effect() };
     Ok(())
   }
 
@@ -244,7 +254,7 @@ impl IDropTarget_Impl for DragDropTarget_Impl {
     // while hovering. Left alone, pdwEffect still held every effect the
     // source allowed, and a source such as Explorer may take DROPEFFECT_MOVE
     // among them as a move and delete its original.
-    unsafe { *pdwEffect = *self.cursor_effect.get() };
+    unsafe { *pdwEffect = self.effect() };
     if unsafe { *self.enter_is_valid.get() } {
       let mut pt = POINT { x: pt.x, y: pt.y };
       let _ = unsafe { ScreenToClient(self.hwnd, &mut pt) };

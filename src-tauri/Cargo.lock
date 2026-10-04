@@ -197,6 +197,7 @@ dependencies = [
  "windows-core",
  "windows-future",
  "windows-registry",
+ "wry",
  "zeroize",
  "zip 4.6.1",
 ]

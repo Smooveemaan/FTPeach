@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 mod drag_drop;
+
+/// FTPeach patch: see `crate::set_drop_allowed`.
+pub(crate) static DROP_ALLOWED: std::sync::atomic::AtomicBool =
+  std::sync::atomic::AtomicBool::new(true);
 mod util;
 
 use std::{

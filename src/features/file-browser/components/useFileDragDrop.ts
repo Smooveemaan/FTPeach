@@ -243,6 +243,10 @@ export default function useFileDragDrop({
         // document twice an event until the events piled up.
         const paneSide =
           el?.closest<HTMLElement>('[data-side]')?.dataset.side ?? paneSideAt(evt.point);
+        // Outside every pane nothing takes the drop, and the cursor says so;
+        // once the drag leaves, the next one starts from "takes it".
+        if (evt.type === 'leave' || evt.type === 'drop') api.fsLocal.setDropAllowed(true);
+        else if (paneSide === undefined) api.fsLocal.setDropAllowed(false);
         if (evt.type === 'leave' || paneSide !== dragStateRef.current.side) {
           // The body classes belong to the pane under the cursor; a pane the
           // cursor is not over must not take them away from it.
@@ -260,6 +264,7 @@ export default function useFileDragDrop({
           setDragOver(!overFolder && (accepts || !dragStateRef.current.onDropFiles));
           setDragRejected(!dragStateRef.current.onDropFiles);
           document.body.classList.toggle('drag-drop-forbidden', !accepts);
+          api.fsLocal.setDropAllowed(accepts);
           setDragOverRowName(path ? null : overFolder);
           document.body.classList.add('drag-move-active');
           return;

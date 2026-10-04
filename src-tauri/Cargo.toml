@@ -107,6 +107,9 @@ windows = { version = "0.62.2", features = ["Foundation", "Win32_Security_Crypto
 windows-core = "0.62"
 windows-future = "0.3.2"
 webview2-com = "0.39.1"
+# The vendored copy under [patch.crates-io] below, already in the tree through
+# Tauri; named here only for wry::set_drop_allowed (vendor/wry-0.57.0/FTPEACH-PATCH.md).
+wry = { version = "0.57.0", default-features = false }
 
 [dev-dependencies]
 rand = "0.10.2"

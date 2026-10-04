@@ -18,5 +18,11 @@ with a `FTPeach patch:` comment.
    the same point. Each call became a `DragDropEvent::Over` and an event for
    the page, faster than the page handled them, and the window stopped
    responding until the backlog ran out.
+3. **The cursor says where a drop is taken** (`src/lib.rs`,
+   `src/webview2/mod.rs`, `src/webview2/drag_drop.rs`). `DragOver` answered
+   copy everywhere in the window, so Explorer showed a copy cursor over spots
+   that take nothing. The new `wry::set_drop_allowed` sets a flag the app
+   updates as the pointer moves; `DragOver` and `Drop` answer
+   `DROPEFFECT_NONE` while it is off.
 
-Drop this copy once a released wry does both itself.
+Drop this copy once a released wry does all three itself.

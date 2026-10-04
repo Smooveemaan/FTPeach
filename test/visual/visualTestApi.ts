@@ -214,6 +214,7 @@ export const visualTestApi = {
     pathForFile: () => null,
     isDir: () => resolved(false),
     onOsDragDrop: () => unsubscribe,
+    setDropAllowed: () => {},
   },
   session: {
     connect: () => resolved(ok),

@@ -322,6 +322,7 @@
     "integrityMismatch": "Filerna ändrades under överföringen eller kunde inte kontrolleras.",
     "cleanupIncomplete": "Rensningen är ofullständig. Filer vars tillhörighet inte kunde verifieras behölls. Kontrollera målet innan du tar bort dem manuellt.",
     "invalidInput": "Det angivna värdet är ogiltigt.",
+    "resourceLimit": "En gräns nåddes: för många anslutningar eller förfrågningar på en gång, eller något är för stort. Försök igen senare eller med mindre.",
     "internal": "Ett oväntat fel inträffade.",
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
     "alreadyExists": "”{{name}}” finns redan",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} fil misslyckades",
     "notifyFailed_other": "{{count}} filer misslyckades",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-uppladdningar är begränsade till {{limit}} MiB per fil.",
     "batchFailed": "{{failed}} av {{total}} objekt överfördes inte.",
     "sourcesKept": "Originalen finns kvar."
   },

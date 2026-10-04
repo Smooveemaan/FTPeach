@@ -322,6 +322,7 @@
     "integrityMismatch": "Filerne blev ændret under overførslen eller kunne ikke kontrolleres.",
     "cleanupIncomplete": "Oprydningen er ufuldstændig. Filer, hvis tilhørsforhold ikke kunne bekræftes, blev bevaret. Kontrollér destinationen, før du sletter dem manuelt.",
     "invalidInput": "Den angivne værdi er ugyldig.",
+    "resourceLimit": "En grænse blev nået: for mange forbindelser eller forespørgsler på én gang, eller noget er for stort. Prøv igen senere eller med mindre.",
     "internal": "Der opstod en uventet fejl.",
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",
     "alreadyExists": "»{{name}}« findes allerede",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} fil mislykkedes",
     "notifyFailed_other": "{{count}} filer mislykkedes",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-uploads er begrænset til {{limit}} MiB pr. fil.",
     "batchFailed": "{{failed}} af {{total}} elementer blev ikke overført.",
     "sourcesKept": "Originalerne ligger der stadig."
   },

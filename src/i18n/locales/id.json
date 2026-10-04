@@ -322,6 +322,7 @@
     "integrityMismatch": "File berubah selama transfer atau tidak dapat diverifikasi.",
     "cleanupIncomplete": "Pembersihan belum selesai. File yang kepemilikannya tidak dapat diverifikasi tetap disimpan. Periksa tujuan sebelum menghapusnya secara manual.",
     "invalidInput": "Nilai yang diberikan tidak valid.",
+    "resourceLimit": "Batas tercapai: terlalu banyak koneksi atau permintaan sekaligus, atau sesuatu terlalu besar. Coba lagi nanti, atau dengan lebih sedikit.",
     "internal": "Terjadi kesalahan yang tidak terduga.",
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} file gagal",
     "notifyFailed_other": "{{count}} file gagal",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Ukuran unggahan WebDAV dibatasi hingga {{limit}} MiB per file.",
     "batchFailed": "{{failed}} dari {{total}} item tidak dipindahkan.",
     "sourcesKept": "File aslinya masih ada di tempatnya."
   },

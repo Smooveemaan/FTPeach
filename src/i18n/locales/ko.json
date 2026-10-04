@@ -322,6 +322,7 @@
     "integrityMismatch": "전송 중에 파일이 변경되었거나 파일을 확인할 수 없습니다.",
     "cleanupIncomplete": "정리가 완료되지 않았습니다. 소유 여부를 확인할 수 없는 파일은 보존되었습니다. 수동으로 삭제하기 전에 대상을 확인하세요.",
     "invalidInput": "제공된 값이 올바르지 않습니다.",
+    "resourceLimit": "한도에 도달했습니다. 동시에 연결이나 요청이 너무 많거나, 너무 큰 항목이 있습니다. 나중에 다시 시도하거나 양을 줄여 보세요.",
     "internal": "예기치 않은 오류가 발생했습니다.",
     "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",
     "alreadyExists": "“{{name}}”이(가) 이미 있습니다",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "파일 {{count}}개 실패",
     "notifyFailed_other": "파일 {{count}}개 실패",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV 업로드는 파일당 {{limit}} MiB로 제한됩니다.",
     "batchFailed": "{{total}}개 중 {{failed}}개가 전송되지 않았습니다.",
     "sourcesKept": "원본은 그대로 남아 있습니다."
   },

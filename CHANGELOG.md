@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A file too large for a WebDAV server, a server with no free connections and other limits say
+  that a limit was reached, instead of "The provided value is invalid".
 - Check Now in a portable copy says there is no update, instead of "Couldn't check for updates",
   while the latest release has no portable package.
 - The hint for "Write log to file" no longer names the installed copy's folder in a portable copy.

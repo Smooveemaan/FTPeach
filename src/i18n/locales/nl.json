@@ -322,6 +322,7 @@
     "integrityMismatch": "De bestanden zijn tijdens de overdracht gewijzigd of konden niet worden gecontroleerd.",
     "cleanupIncomplete": "Het opruimen is onvolledig. Bestanden waarvan het eigendom niet kon worden geverifieerd, zijn behouden. Controleer de bestemming voordat je ze handmatig verwijdert.",
     "invalidInput": "De opgegeven waarde is ongeldig.",
+    "resourceLimit": "Er is een limiet bereikt: te veel verbindingen of verzoeken tegelijk, of iets is te groot. Probeer het later opnieuw, of met minder.",
     "internal": "Er is een onverwachte fout opgetreden.",
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
     "alreadyExists": "\"{{name}}\" bestaat al",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} bestand mislukt",
     "notifyFailed_other": "{{count}} bestanden mislukt",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-uploads zijn beperkt tot {{limit}} MiB per bestand.",
     "batchFailed": "{{failed}} van {{total}} items zijn niet overgedragen.",
     "sourcesKept": "De originelen staan er nog."
   },

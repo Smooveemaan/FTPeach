@@ -322,6 +322,7 @@
     "integrityMismatch": "Các tệp đã thay đổi trong khi truyền hoặc không thể xác minh.",
     "cleanupIncomplete": "Chưa dọn dẹp xong. Các tệp không xác minh được quyền sở hữu đã được giữ lại. Hãy kiểm tra đích trước khi xóa thủ công.",
     "invalidInput": "Giá trị được cung cấp không hợp lệ.",
+    "resourceLimit": "Đã chạm giới hạn: quá nhiều kết nối hoặc yêu cầu cùng lúc, hoặc có thứ quá lớn. Hãy thử lại sau, hoặc với ít hơn.",
     "internal": "Đã xảy ra lỗi không mong muốn.",
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
     "alreadyExists": "“{{name}}” đã tồn tại",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} tệp thất bại",
     "notifyFailed_other": "{{count}} tệp thất bại",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "Dung lượng tải lên qua WebDAV bị giới hạn ở mức {{limit}} MiB cho mỗi tệp.",
     "batchFailed": "{{failed}} trong {{total}} mục chưa được truyền.",
     "sourcesKept": "Các tệp gốc vẫn còn nguyên."
   },

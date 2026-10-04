@@ -322,6 +322,7 @@
     "integrityMismatch": "A fájlok megváltoztak az átvitel közben, vagy nem sikerült ellenőrizni őket.",
     "cleanupIncomplete": "A tisztítás nem teljes. A nem igazolható eredetű fájlok megmaradtak. Kézi törlés előtt ellenőrizze a célhelyet.",
     "invalidInput": "A megadott érték érvénytelen.",
+    "resourceLimit": "Elért egy korlátot: egyszerre túl sok kapcsolat vagy kérés, vagy valami túl nagy. Próbálja újra később vagy kevesebbel.",
     "internal": "Váratlan hiba történt.",
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
     "alreadyExists": "A(z) „{{name}}” már létezik",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} fájl sikertelen",
     "notifyFailed_other": "{{count}} fájl sikertelen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "A WebDAV-feltöltések mérete fájlonként legfeljebb {{limit}} MiB lehet.",
     "batchFailed": "{{total}} elem közül {{failed}} nem lett átvive.",
     "sourcesKept": "Az eredeti fájlok a helyükön maradtak."
   },

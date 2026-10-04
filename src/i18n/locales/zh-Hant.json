@@ -322,6 +322,7 @@
     "integrityMismatch": "檔案在傳輸過程中已變更，或無法驗證。",
     "cleanupIncomplete": "清理未完成。無法確認歸屬的檔案已保留。手動刪除前請檢查目標位置。",
     "invalidInput": "提供的值無效。",
+    "resourceLimit": "已達到上限：同時有過多連線或要求，或者內容過大。請稍後再試，或減少數量。",
     "internal": "發生未預期的錯誤。",
     "connectFailedPrefix": "無法連線到伺服器。{{raw}}",
     "alreadyExists": "「{{name}}」已存在",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} 個檔案失敗",
     "notifyFailed_other": "{{count}} 個檔案失敗",
     "notifyBoth": "{{succeeded}}、{{failed}}",
-    "webdavUploadTooLarge": "WebDAV 上傳限制為每個檔案 {{limit}} MiB。",
     "batchFailed": "{{total}} 個項目中有 {{failed}} 個未傳輸。",
     "sourcesKept": "原始檔案仍在原處。"
   },

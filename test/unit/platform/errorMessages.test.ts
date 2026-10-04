@@ -99,7 +99,8 @@ test('friendlyError localizes every structured command error code', () => {
     networkUnreachable: 'The server is unreachable — check your network connection.',
     connectionLost: 'The connection to the server was unexpectedly closed.',
     invalidInput: 'The provided value is invalid.',
-    resourceLimit: 'The provided value is invalid.',
+    resourceLimit:
+      'A limit was reached: too many connections or requests at once, or something too large. Try again later, or with less.',
     storageFull: 'Not enough disk space.',
     keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
     credentialFileMissing:

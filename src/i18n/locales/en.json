@@ -322,6 +322,7 @@
     "integrityMismatch": "Files changed during the transfer or could not be verified.",
     "cleanupIncomplete": "Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.",
     "invalidInput": "The provided value is invalid.",
+    "resourceLimit": "A limit was reached: too many connections or requests at once, or something too large. Try again later, or with less.",
     "replaceUnsupported": "The server didn't allow the existing file to be replaced.",
     "createUnsupported": "This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.",
     "internal": "An unexpected error occurred.",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} file failed",
     "notifyFailed_other": "{{count}} files failed",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV uploads are limited to {{limit}} MiB per file.",
     "batchFailed": "{{failed}} of {{total}} items were not transferred.",
     "sourcesKept": "The originals are still in place."
   },

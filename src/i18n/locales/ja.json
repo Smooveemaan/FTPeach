@@ -322,6 +322,7 @@
     "integrityMismatch": "転送中にファイルが変更されたか、ファイルを検証できませんでした。",
     "cleanupIncomplete": "クリーンアップは未完了です。所有を確認できないファイルは保持されました。手動で削除する前に転送先を確認してください。",
     "invalidInput": "指定された値は無効です。",
+    "resourceLimit": "上限に達しました。同時の接続や要求が多すぎるか、大きすぎるものがあります。しばらくしてから、または量を減らしてもう一度お試しください。",
     "internal": "予期しないエラーが発生しました。",
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} 個のファイルが失敗しました",
     "notifyFailed_other": "{{count}} 個のファイルが失敗しました",
     "notifyBoth": "{{succeeded}}、{{failed}}",
-    "webdavUploadTooLarge": "WebDAV によるアップロードは、1 ファイルあたり {{limit}} MiB までとなっています。",
     "batchFailed": "{{total}} 件のうち {{failed}} 件が転送されませんでした。",
     "sourcesKept": "元のファイルはそのまま残っています。"
   },

@@ -322,6 +322,7 @@
     "integrityMismatch": "Dosyalar aktarım sırasında değişti veya doğrulanamadı.",
     "cleanupIncomplete": "Temizleme tamamlanamadı. Aidiyeti doğrulanamayan dosyalar korundu. Elle silmeden önce hedefi kontrol edin.",
     "invalidInput": "Sağlanan değer geçersiz.",
+    "resourceLimit": "Bir sınıra ulaşıldı: aynı anda çok fazla bağlantı veya istek var ya da bir şey çok büyük. Daha sonra veya daha azıyla yeniden deneyin.",
     "internal": "Beklenmeyen bir hata oluştu.",
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} dosya başarısız oldu",
     "notifyFailed_other": "{{count}} dosya başarısız oldu",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV ile yapılan yüklemeler, dosya başına {{limit}} MiB ile sınırlıdır.",
     "batchFailed": "{{total}} öğeden {{failed}} tanesi aktarılmadı.",
     "sourcesKept": "Özgün dosyalar yerinde kaldı."
   },

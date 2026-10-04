@@ -322,6 +322,7 @@
     "integrityMismatch": "Die Dateien wurden während der Übertragung geändert oder konnten nicht überprüft werden.",
     "cleanupIncomplete": "Die Bereinigung ist unvollständig. Dateien mit nicht bestätigter Zugehörigkeit wurden beibehalten. Prüfen Sie das Ziel vor dem manuellen Löschen.",
     "invalidInput": "Der angegebene Wert ist ungültig.",
+    "resourceLimit": "Ein Limit wurde erreicht: zu viele Verbindungen oder Anfragen auf einmal, oder etwas ist zu groß. Versuchen Sie es später oder mit weniger erneut.",
     "internal": "Ein unerwarteter Fehler ist aufgetreten.",
     "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
     "alreadyExists": "„{{name}}“ existiert bereits",
@@ -573,7 +574,6 @@
     "notifyFailed_one": "{{count}} Datei fehlgeschlagen",
     "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
-    "webdavUploadTooLarge": "WebDAV-Uploads sind auf {{limit}} MiB pro Datei begrenzt.",
     "batchFailed": "{{failed}} von {{total}} Elementen wurden nicht übertragen.",
     "sourcesKept": "Die Originale sind unverändert vorhanden."
   },

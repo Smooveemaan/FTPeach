@@ -20,7 +20,7 @@ const ERROR_CODE_KEYS = {
   networkUnreachable: 'errors.networkUnreachable',
   connectionLost: 'errors.connectionReset',
   invalidInput: 'errors.invalidInput',
-  resourceLimit: 'errors.invalidInput',
+  resourceLimit: 'errors.resourceLimit',
   storageFull: 'errors.diskFull',
   keyUnreadable: 'errors.keyReadFailed',
   credentialFileMissing: 'errors.credentialFileMissing',

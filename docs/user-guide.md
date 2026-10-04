@@ -151,7 +151,7 @@ on one computer leaves it on for the others.
 If Windows loses the key, as after a reset of the computer's security chip, the
 switch shows off and can be turned on again.
 
-<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::a_credential_whose_key_is_gone_does_not_jam_the_switch -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::hello_stands_in_for_the_password_and_a_lost_key_does_not_jam_the_switch -->
 
 ## Connecting safely
 

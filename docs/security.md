@@ -35,7 +35,7 @@ Normal listing and editing IPC returns only presence flags. An explicit reveal u
 
 FTPeach is intentionally a full local file manager, so it does not impose a selected-folder allowlist. Destructive commands canonicalize paths in the backend and reject drive roots, the user profile, the application directory, `%APPDATA%\FTPeach`, and their parents.
 
-Recursive deletion does not use `remove_dir_all`. It walks bottom-up and rejects symlinks, junctions, and all Windows reparse points. Checks are repeated before every deletion and retry. A narrow TOCTOU risk remains against a local process that can replace filesystem entries concurrently.
+Recursive deletion does not use `remove_dir_all`. It walks bottom-up and rejects symlinks, junctions, and all Windows reparse points. Checks are repeated before every deletion and retry. A narrow TOCTOU risk remains against a local process that can replace filesystem entries concurrently. Renaming or moving a folder within a volume checks only the folder and the path to it: a junction inside moves along with the folder, and what it points to is not touched.
 
 ### Rust and remote servers
 

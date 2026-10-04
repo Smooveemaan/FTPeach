@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A folder with a junction or symbolic link inside can be moved or renamed on the same disk.
 - Saving a bookmark that moves its password while the vault is locked asks for the master
   password first and whether to move the password only once.
 - A bookmark with no port and one with the default port are recognised as the same server.

@@ -408,6 +408,22 @@ pub(crate) async fn ensure_tree_has_no_reparse_points(root: &Path) -> anyhow::Re
 pub(crate) async fn validated_delete_target(
     path: &Path,
 ) -> anyhow::Result<Option<(PathBuf, bool)>> {
+    validated_target(path, true).await
+}
+
+/// A rename within a volume moves the folder's own entry and leaves a
+/// junction inside it, and what the junction points to, untouched; only a
+/// delete has to refuse one anywhere in the tree.
+pub(crate) async fn validated_rename_source(
+    path: &Path,
+) -> anyhow::Result<Option<(PathBuf, bool)>> {
+    validated_target(path, false).await
+}
+
+async fn validated_target(
+    path: &Path,
+    whole_tree: bool,
+) -> anyhow::Result<Option<(PathBuf, bool)>> {
     ensure_existing_components_no_reparse(path).await?;
     let metadata = match tokio::fs::symlink_metadata(path).await {
         Ok(metadata) => metadata,
@@ -429,7 +445,7 @@ pub(crate) async fn validated_delete_target(
             "Refusing to delete a protected application or user directory",
         ));
     }
-    if metadata.is_dir() {
+    if whole_tree && metadata.is_dir() {
         ensure_tree_has_no_reparse_points(&canonical).await?;
     }
     Ok(Some((canonical, metadata.is_dir())))
@@ -630,6 +646,26 @@ mod tests {
         assert!(ensure_path_no_reparse_points_now(&junction.join("../file.txt")).is_err());
 
         std::fs::remove_dir(&junction).unwrap();
+        let _ = std::fs::remove_dir_all(base);
+    }
+
+    #[cfg(windows)]
+    #[tokio::test]
+    async fn a_folder_with_a_junction_inside_can_be_renamed_but_not_deleted() {
+        let base = std::env::temp_dir().join(format!("ftpeach-fs-test-{}", uuid::Uuid::new_v4()));
+        let folder = base.join("folder");
+        let external = base.join("external");
+        std::fs::create_dir_all(&folder).unwrap();
+        std::fs::create_dir_all(&external).unwrap();
+        if !create_test_junction(&external, &folder.join("link")) {
+            let _ = std::fs::remove_dir_all(base);
+            return;
+        }
+
+        assert!(validated_rename_source(&folder).await.unwrap().is_some());
+        assert!(validated_delete_target(&folder).await.is_err());
+
+        std::fs::remove_dir(folder.join("link")).unwrap();
         let _ = std::fs::remove_dir_all(base);
     }
 

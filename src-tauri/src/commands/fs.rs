@@ -1,7 +1,7 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::local_fs::filesystem_safety::{
     ensure_path_no_reparse_points_now, validate_copy_relationship, validate_read_source,
-    validate_write_destination, validated_delete_target,
+    validate_write_destination, validated_rename_source,
 };
 use crate::local_fs::fs_listing::{self, FsEntry};
 use crate::local_fs::mutations::guard as mutation_guard;
@@ -190,7 +190,7 @@ async fn fs_rename_checked(
     {
         return Err(error.into());
     }
-    let old_path = match validated_delete_target(Path::new(&old_path)).await {
+    let old_path = match validated_rename_source(Path::new(&old_path)).await {
         Ok(Some((path, _))) => path,
         Ok(None) => return Err(anyhow::anyhow!("Source does not exist").into()),
         Err(error) => return Err(error.into()),
@@ -200,7 +200,7 @@ async fn fs_rename_checked(
     }
     // Repeat both checks immediately before the path-based operation. This
     // catches a component replaced after the initial canonical validation.
-    let old_path = match validated_delete_target(&old_path).await {
+    let old_path = match validated_rename_source(&old_path).await {
         Ok(Some((path, _))) => path,
         Ok(None) => return Err(anyhow::anyhow!("Source does not exist").into()),
         Err(error) => return Err(error.into()),

@@ -14,11 +14,12 @@
 // Both pictures are of one moment: the page's JavaScript is paused in the
 // debugger, so no progress moves, while the theme is switched between them.
 //
-// With --video it records assets/images/ftpeach.mp4 instead (with --light, the
-// app in its light theme and ftpeach-light.mp4): a
-// click on the FTP bookmark, two files dragged from the left pane to the right
-// and their uploads finishing, with a drawn cursor, since a screencast has
-// none. There is no SFTP key to confirm. The window is moved to a monitor at
+// With --video it records assets/images/ftpeach.mp4 and ftpeach-light.mp4
+// instead: a click on the FTP bookmark, two files dragged from the left pane to
+// the right and their uploads finishing, with a drawn cursor, since a screencast
+// has none. Each theme is a run of its own, and the light one is then retimed
+// to the dark one at the moments both runs mark, so the landing page can switch
+// between them while they play. There is no SFTP key to confirm. The window is moved to a monitor at
 // 200% when there is one: a screencast gets the window's own pixels and
 // ignores an emulated scale factor. Needs ffmpeg on PATH.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
@@ -26,6 +27,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   truncateSync,
   utimesSync,
@@ -38,10 +40,12 @@ import path from 'node:path';
 import { chromium, type Page } from 'playwright';
 
 const root = path.resolve(import.meta.dirname, '../..');
-const light = process.argv.includes('--light');
+type Theme = 'dark' | 'light';
+// The app's theme; the video sets it for each of its runs.
+let theme: Theme = process.argv.includes('--light') ? 'light' : 'dark';
 const video = process.argv.includes('--video');
-const output = (theme: 'dark' | 'light', type: 'png' | 'mp4') =>
-  path.join(root, `assets/images/ftpeach${theme === 'light' ? '-light' : ''}.${type}`);
+const output = (look: Theme, type: 'png' | 'mp4') =>
+  path.join(root, `assets/images/ftpeach${look === 'light' ? '-light' : ''}.${type}`);
 const app = path.join(root, 'src-tauri/target/debug/app.exe');
 const cdpPort = 9333;
 const ftpContainer = 'ftpeach-test-ftp';
@@ -172,7 +176,7 @@ function seedServer() {
  * read from the test server's own container, in the trust store's format: the
  * SHA-256 of the key's SSH encoding, in hex.
  */
-function trustSftpServer() {
+function trustSftpServer(profile: string) {
   const key = run('docker', ['exec', sftpContainer, 'cat', '/etc/ssh/ssh_host_ed25519_key.pub'], {
     capture: true,
   });
@@ -328,13 +332,13 @@ async function stage(page: Page) {
   await page.waitForTimeout(200);
 }
 
-/** Sets the speed limit (KB/s) and, with --light, the light theme. */
+/** Sets the speed limit (KB/s) and, for the light theme, the theme. */
 async function applySettings(page: Page, speedLimit: string) {
   await page.keyboard.press('Control+,');
   const settings = page.locator('.modal').last();
   await settings.getByText('Transfers', { exact: true }).click();
   await settings.getByLabel('Speed limit, KB/s').fill(speedLimit);
-  if (light) {
+  if (theme === 'light') {
     await settings.getByText('Interface', { exact: true }).click();
     // The <label> around the theme switch names its first radio after the
     // whole label, so the option is found by its text.
@@ -418,6 +422,8 @@ async function drawCursor(page: Page) {
 }
 
 async function stageVideo(page: Page) {
+  // The log is shown, as in the screenshot, so the panes are as tall.
+  await page.getByRole('button', { name: 'Show/hide log' }).click();
   await createBookmarks(page);
   await page.keyboard.press('Escape');
   await page.getByRole('dialog', { name: 'Manage Bookmarks' }).waitFor({ state: 'hidden' });
@@ -458,9 +464,10 @@ async function stageVideo(page: Page) {
 /**
  * The video, about 16 s, in the first of three tabs: a still start, a click on the FTP bookmark, two
  * files selected with a rectangle and dragged across, their uploads finishing, the cursor
- * moving off, and the last second fading back into the first frame.
+ * moving off, and the last second fading back into the first frame. `mark` notes when each
+ * step happens; the runs of the two themes are lined up at these moments.
  */
-async function playVideo(page: Page) {
+async function playVideo(page: Page, mark: (_moment: string) => void) {
   const left = page.locator('.pane[data-side=a] .pane-list');
   const right = page.locator('.pane[data-side=b]');
   const rest = cursor;
@@ -473,7 +480,9 @@ async function playVideo(page: Page) {
   await glide(page, at.x, at.y, 900);
   await page.waitForTimeout(250);
   await click(page);
+  mark('click');
   await connected(page, 'text.txt', 20);
+  mark('connected');
   await page.waitForTimeout(700);
 
   // A selection rectangle from the empty space right of audio.mp3 up over
@@ -486,10 +495,12 @@ async function playVideo(page: Page) {
   await glide(page, start.x, start.y, 700);
   await page.waitForTimeout(200);
   await page.mouse.down();
+  mark('marquee');
   await glide(page, archive.x + archive.width * 0.3, archive.y + archive.height * 0.3, 800);
   await page.waitForTimeout(150);
   await page.mouse.up();
   await page.getByText('(2 selected)').waitFor({ timeout: 2000 });
+  mark('selected');
   await page.waitForTimeout(350);
 
   const grab = await center(left.getByText('audio.mp3', { exact: true }));
@@ -497,19 +508,63 @@ async function playVideo(page: Page) {
   await page.waitForTimeout(150);
   const list = (await right.locator('.pane-list').boundingBox())!;
   await page.mouse.down();
+  mark('grab');
   await glide(page, list.x + list.width * 0.45, list.y + list.height * 0.72, 1300);
   await page.waitForTimeout(450);
   await page.mouse.up();
+  mark('drop');
 
+  // Each file is marked when it shows on the server, whichever comes first.
   const uploaded = right.locator('.pane-list');
-  for (const name of ['archive.zip', 'audio.mp3']) {
-    await uploaded.getByText(name, { exact: true }).waitFor({ timeout: 60_000 });
-  }
+  await Promise.all(
+    ['archive.zip', 'audio.mp3'].map(async (name) => {
+      await uploaded.getByText(name, { exact: true }).waitFor({ timeout: 60_000 });
+      mark(name);
+    }),
+  );
   await page.getByText('Transfers: 0').waitFor({ timeout: 60_000 });
+  mark('done');
   await page.waitForTimeout(800);
   await glide(page, rest.x, rest.y, 900);
+  mark('rest');
   // A second still, then the second the fade back takes.
   await page.waitForTimeout(2000);
+}
+
+/** Runs PowerShell on the app's window `$h`, in physical pixels. */
+function onWindow(pid: number, body: string): string {
+  const script = `
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public static class W {
+  [StructLayout(LayoutKind.Sequential)] public struct P { public int X, Y; }
+  [StructLayout(LayoutKind.Sequential)] public struct R { public int L, T, Ri, B; }
+  [DllImport("user32.dll")] public static extern IntPtr MonitorFromPoint(P p, uint f);
+  [DllImport("shcore.dll")] public static extern int GetDpiForMonitor(IntPtr m, int t, out uint x, out uint y);
+  [DllImport("user32.dll")] public static extern bool SetProcessDpiAwarenessContext(IntPtr v);
+  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int cx, int cy, uint f);
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out R r);
+  [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr h, out R r);
+}
+'@
+[W]::SetProcessDpiAwarenessContext([IntPtr]-4) | Out-Null
+$h = (Get-Process -Id ${pid}).MainWindowHandle
+${body}`;
+  return run('powershell', ['-NoProfile', '-Command', script], { capture: true });
+}
+
+/**
+ * Sizes the window's client area to `width` x `height` physical pixels: the
+ * move to another scale can leave it a pixel or two off.
+ */
+function sizeWindow(pid: number, width: number, height: number) {
+  onWindow(
+    pid,
+    `$w = New-Object W+R; $c = New-Object W+R
+[W]::GetWindowRect($h, [ref]$w) | Out-Null; [W]::GetClientRect($h, [ref]$c) | Out-Null
+[W]::SetWindowPos($h, [IntPtr]::Zero, 0, 0, ${width} + $w.Ri - $w.L - $c.Ri, ${height} + $w.B - $w.T - $c.B, 0x16) | Out-Null`,
+  );
 }
 
 /**
@@ -518,19 +573,6 @@ async function playVideo(page: Page) {
  */
 function moveToDoubleScaleMonitor(pid: number): boolean {
   const script = `
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type @'
-using System; using System.Runtime.InteropServices;
-public static class W {
-  [StructLayout(LayoutKind.Sequential)] public struct P { public int X, Y; }
-  [DllImport("user32.dll")] public static extern IntPtr MonitorFromPoint(P p, uint f);
-  [DllImport("shcore.dll")] public static extern int GetDpiForMonitor(IntPtr m, int t, out uint x, out uint y);
-  [DllImport("user32.dll")] public static extern bool SetProcessDpiAwarenessContext(IntPtr v);
-  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int cx, int cy, uint f);
-}
-'@
-[W]::SetProcessDpiAwarenessContext([IntPtr]-4) | Out-Null
-$h = (Get-Process -Id ${pid}).MainWindowHandle
 foreach ($s in [System.Windows.Forms.Screen]::AllScreens) {
   $p = New-Object W+P; $p.X = $s.Bounds.X + 10; $p.Y = $s.Bounds.Y + 10
   $x = 0; $y = 0; [W]::GetDpiForMonitor([W]::MonitorFromPoint($p, 2), 0, [ref]$x, [ref]$y) | Out-Null
@@ -540,15 +582,26 @@ foreach ($s in [System.Windows.Forms.Screen]::AllScreens) {
     'moved'; exit
   }
 }`;
-  return run('powershell', ['-NoProfile', '-Command', script], { capture: true }).includes('moved');
+  return onWindow(pid, script).includes('moved');
 }
 
-/** Records the page while `act` runs; returns frame files and their durations in seconds. */
-async function record(page: Page, dir: string, act: () => Promise<void>) {
+type Recording = { files: string[]; times: number[]; marks: Record<string, number> };
+
+/**
+ * Records the page while `act` runs. Returns the frame files, when each was
+ * shown and, last, when the recording stopped, and the moments `act` marked, in
+ * seconds on the same clock.
+ */
+async function record(
+  page: Page,
+  dir: string,
+  act: (_mark: (_moment: string) => void) => Promise<void>,
+): Promise<Recording> {
   mkdirSync(dir, { recursive: true });
   const cdp = await page.context().newCDPSession(page);
   const files: string[] = [];
   const times: number[] = [];
+  const marks: Record<string, number> = {};
   cdp.on('Page.screencastFrame', (frame) => {
     const file = path.join(dir, `${String(files.length).padStart(5, '0')}.png`);
     writeFileSync(file, Buffer.from(frame.data, 'base64'));
@@ -557,22 +610,63 @@ async function record(page: Page, dir: string, act: () => Promise<void>) {
     void cdp.send('Page.screencastFrameAck', { sessionId: frame.sessionId }).catch(() => {});
   });
   await cdp.send('Page.startScreencast', { format: 'png' });
-  await act();
+  await act((moment) => (marks[moment] = Date.now() / 1000));
   await cdp.send('Page.stopScreencast');
   await cdp.detach();
-  // A frame lasts until the next one; the last one until the recording stopped.
   times.push(Date.now() / 1000);
-  const durations = files.map((_, i) => Math.max(0.001, times[i + 1]! - times[i]!));
-  return { files, durations };
+  // A long gap means the screencast stalled and a change shows up late.
+  const gaps = times.slice(1).map((t, i) => [t - times[i]!, times[i]! - times[0]!] as const);
+  const [gap, at] = gaps.reduce((a, b) => (b[0] > a[0] ? b : a));
+  console.log(
+    `${files.length} frames; longest gap ${(gap * 1000).toFixed(0)} ms at ${at.toFixed(2)} s`,
+  );
+  return { files, times, marks };
 }
 
 /**
- * Joins the frames into an H.264 loop whose last second fades back into the
- * first frame, and saves that frame beside it as the poster a page shows
- * until the video plays.
+ * Moves the light run's frame times onto the dark run's timeline: the first
+ * frame, every marked moment and the end land where they are in the dark run,
+ * and the frames between two of them are spread evenly in between. Moments
+ * the runs reached in a different order, such as two files listed by the same
+ * refresh, are left out.
  */
-function encode(files: string[], durations: number[], dir: string) {
-  const list = path.join(dir, 'frames.txt');
+function retime(light: Recording, dark: Recording): number[] {
+  const moments: string[] = [];
+  for (const moment of Object.keys(dark.marks).sort((a, b) => dark.marks[a]! - dark.marks[b]!)) {
+    const before = moments.at(-1);
+    if (before === undefined || light.marks[moment]! > light.marks[before]!) moments.push(moment);
+    else console.warn(`${moment} came before ${before} in the light run; not lined up`);
+  }
+  const anchors = (run: Recording) => [
+    run.times[0]!,
+    ...moments.map((m) => run.marks[m]!),
+    run.times.at(-1)!,
+  ];
+  const from = anchors(light);
+  const to = anchors(dark);
+  for (const [i, moment] of [...moments, 'end'].entries()) {
+    const gap = to[i + 1]! - to[i]! - (from[i + 1]! - from[i]!);
+    console.log(
+      `${moment.padEnd(12)} at ${(to[i + 1]! - to[0]!).toFixed(2)} s dark, ${(from[i + 1]! - from[0]!).toFixed(2)} s light; light run ${gap >= 0 ? 'stretched' : 'shortened'} by ${Math.abs(gap * 1000).toFixed(0)} ms`,
+    );
+  }
+  return light.times.map((t) => {
+    const i = Math.max(
+      1,
+      from.findIndex((anchor) => anchor >= t),
+    );
+    return to[i - 1]! + ((t - from[i - 1]!) * (to[i]! - to[i - 1]!)) / (from[i]! - from[i - 1]!);
+  });
+}
+
+/**
+ * Joins the frames, each shown until the next one's time, into an H.264 loop
+ * whose last second fades back into the first frame, and saves that frame
+ * beside it as the poster a page shows until the video plays.
+ */
+async function encode(files: string[], times: number[], dir: string, look: Theme) {
+  const durations = files.map((_, i) => Math.max(0.001, times[i + 1]! - times[i]!));
+  const list = path.join(dir, `${look}.txt`);
   const entry = (file: string) => `file '${file.replaceAll('\\', '/')}'`;
   writeFileSync(
     list,
@@ -583,16 +677,36 @@ function encode(files: string[], durations: number[], dir: string) {
   const total = durations.reduce((sum, d) => sum + d, 0);
   // H.264 in 4:2:0 needs even sides; the window can be a pixel over.
   const even = 'crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0';
-  const prepare = `fps=30,${even},format=yuv420p,settb=AVTB`;
-  const mp4 = output(light ? 'light' : 'dark', 'mp4');
+  // The window's border, drawn as in the screenshot: an overlay that covers a
+  // ring of frame.border pixels around the frame, rounded at the corners.
+  const first = readFileSync(files[0]!);
+  const [width, height] = [16, 20].map((at) => (first.readUInt32BE(at) >> 1) << 1);
+  const b = frame.border;
+  const border = path.join(dir, `${look}-border.png`);
+  writeFileSync(
+    border,
+    await borderOverlay(width! + 2 * b, height! + 2 * b, frame.borderColor[look]),
+  );
+  const framed = `${even},pad=iw+${2 * b}:ih+${2 * b}:${b}:${b}`;
+  // The app's dark warm greys sit between the steps of 8-bit YUV: BT.709 in
+  // TV range turns its background (26,25,23) green or red by a level. BT.601
+  // in full range holds it exactly, converted by zscale (swscale rounds the
+  // colour off by one) and tagged, so browsers decode it the same way.
+  const prepare = `zscale=m=170m:r=full,format=yuv420p,settb=AVTB`;
+  // xfade hands on 4:4:4, which hardware decoders cannot play.
+  const tag =
+    'format=yuv420p,setparams=range=pc:color_primaries=bt709:color_trc=bt709:colorspace=smpte170m';
+  const mp4 = output(look, 'mp4');
   run('ffmpeg', [
     '-y',
     '-loglevel',
     'error',
     '-i',
     files[0]!,
-    '-vf',
-    even,
+    '-i',
+    border,
+    '-filter_complex',
+    `[0:v]${framed}[f];[f][1:v]overlay=format=gbrp`,
     '-c:v',
     'libwebp',
     '-lossless',
@@ -617,8 +731,13 @@ function encode(files: string[], durations: number[], dir: string) {
     String(fade),
     '-i',
     files[0]!,
+    '-i',
+    border,
     '-filter_complex',
-    `[0:v]${prepare}[a];[1:v]${prepare}[b];[a][b]xfade=transition=fade:duration=${fade}:offset=${(total - fade).toFixed(3)}[v]`,
+    `[2:v]split[m0][m1];` +
+      `[0:v]fps=30,${framed}[f0];[f0][m0]overlay=format=gbrp,${prepare}[a];` +
+      `[1:v]fps=30,${framed}[f1];[f1][m1]overlay=format=gbrp,${prepare}[b];` +
+      `[a][b]xfade=transition=fade:duration=${fade}:offset=${(total - fade).toFixed(3)},${tag}[v]`,
     '-map',
     '[v]',
     '-c:v',
@@ -627,11 +746,42 @@ function encode(files: string[], durations: number[], dir: string) {
     'slow',
     '-crf',
     '18',
+    // A finer step for the colour keeps flat areas at the exact shade.
+    '-x264-params',
+    'chroma-qp-offset=-12:psy=0:aq-mode=0',
     '-movflags',
     '+faststart',
     mp4,
   ]);
   return total;
+}
+
+/**
+ * The window's border for a video frame of `width` x `height`: opaque in the
+ * ring and the corners outside it, transparent where the window shows.
+ */
+async function borderOverlay(width: number, height: number, color: string): Promise<Buffer> {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage();
+    const png = await page.evaluate(
+      ({ width, height, color, b, r }) => {
+        const canvas = Object.assign(document.createElement('canvas'), { width, height });
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, width, height);
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.roundRect(b, b, width - 2 * b, height - 2 * b, r - b);
+        ctx.fill();
+        return canvas.toDataURL('image/png');
+      },
+      { width, height, color, b: frame.border, r: frame.radius },
+    );
+    return Buffer.from(png.split(',')[1]!, 'base64');
+  } finally {
+    await browser.close();
+  }
 }
 
 /** Draws the window capture onto the transparent canvas with border and shadow. */
@@ -712,57 +862,102 @@ run('powershell', [
   'cargo-build',
 ]);
 ensureLocalFolder();
-seedServer();
 
-const profile = mkdtempSync(path.join(tmpdir(), 'ftpeach-screenshot-'));
-if (video) trustSftpServer();
-let vite: ChildProcess | undefined;
-let ftpeach: ChildProcess | undefined;
+/**
+ * Runs `work` in a fresh app with a throwaway profile against freshly seeded
+ * servers, and cleans both up afterwards.
+ */
+async function session<T>(work: (_page: Page, _pid: number) => Promise<T>): Promise<T> {
+  seedServer();
+  const profile = mkdtempSync(path.join(tmpdir(), 'ftpeach-screenshot-'));
+  if (video) trustSftpServer(profile);
+  let ftpeach: ChildProcess | undefined;
+  try {
+    ftpeach = spawn(app, [], {
+      cwd: root,
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        APPDATA: path.join(profile, 'Roaming'),
+        LOCALAPPDATA: path.join(profile, 'Local'),
+        WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${cdpPort}`,
+      },
+    });
+    await waitFor('the app', async () => (await portOpen(cdpPort)) || undefined, 60);
+    const browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+    const page = await waitFor(
+      'the main window',
+      async () => browser.contexts()[0]?.pages()[0],
+      30,
+    );
+    await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
+    const result = await work(page, ftpeach.pid!);
+    await browser.close();
+    return result;
+  } finally {
+    stop(ftpeach);
+    // The debugging port closes with the app; the next run waits for it to open again.
+    await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
+    cleanServer();
+    rmSync(profile, { recursive: true, force: true });
+  }
+}
+
+const vite = spawn('npm run dev:renderer', { cwd: root, shell: true, stdio: 'ignore' });
+const frames = mkdtempSync(path.join(tmpdir(), 'ftpeach-video-'));
 try {
-  vite = spawn('npm run dev:renderer', { cwd: root, shell: true, stdio: 'ignore' });
   await waitFor('Vite', async () => (await portOpen(5173)) || undefined, 60);
-  ftpeach = spawn(app, [], {
-    cwd: root,
-    stdio: 'ignore',
-    env: {
-      ...process.env,
-      APPDATA: path.join(profile, 'Roaming'),
-      LOCALAPPDATA: path.join(profile, 'Local'),
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${cdpPort}`,
-    },
-  });
-  await waitFor('the app', async () => (await portOpen(cdpPort)) || undefined, 60);
-  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  const page = await waitFor('the main window', async () => browser.contexts()[0]?.pages()[0], 30);
-  await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
   if (video) {
-    if (moveToDoubleScaleMonitor(ftpeach.pid!)) {
-      await waitFor(
-        'the window to take the monitor scale',
-        async () => (await page.evaluate(() => window.devicePixelRatio)) === 2 || undefined,
-        10,
+    const runs: Partial<Record<Theme, Recording>> = {};
+    for (const look of ['dark', 'light'] as const) {
+      theme = look;
+      runs[look] = await session(async (page, pid) => {
+        // The window keeps the CSS size it opens with, as in the screenshot.
+        const size = () => page.evaluate(() => [window.innerWidth, window.innerHeight]);
+        const [width, height] = await size();
+        if (moveToDoubleScaleMonitor(pid)) {
+          await waitFor(
+            'the window to take the monitor scale',
+            async () => (await page.evaluate(() => window.devicePixelRatio)) === 2 || undefined,
+            10,
+          );
+          sizeWindow(pid, width! * 2, height! * 2);
+          await waitFor(
+            `the window to be ${width} x ${height}`,
+            async () => {
+              const [w, h] = await size();
+              return (w === width && h === height) || undefined;
+            },
+            10,
+          );
+        }
+        const ratio = await page.evaluate(() => window.devicePixelRatio);
+        if (ratio !== 2) console.warn(`No monitor at 200%; recording at ${ratio * 100}%.`);
+        await stageVideo(page);
+        return record(page, path.join(frames, look), (mark) => playVideo(page, mark));
+      });
+    }
+    const dark = runs.dark!;
+    const light = runs.light!;
+    for (const [look, run, times] of [
+      ['dark', dark, dark.times],
+      ['light', light, retime(light, dark)],
+    ] as const) {
+      const seconds = await encode(run.files, times, frames, look);
+      console.log(
+        `Saved ${path.relative(root, output(look, 'mp4'))}: ${run.files.length} frames, ${seconds.toFixed(1)} s.`,
       );
     }
-    const ratio = await page.evaluate(() => window.devicePixelRatio);
-    if (ratio !== 2) console.warn(`No monitor at 200%; recording at ${ratio * 100}%.`);
-    await stageVideo(page);
-    const frames = path.join(profile, 'frames');
-    const { files, durations } = await record(page, frames, () => playVideo(page));
-    const seconds = encode(files, durations, frames);
-    console.log(
-      `Saved ${path.relative(root, output(light ? 'light' : 'dark', 'mp4'))}: ${files.length} frames, ${seconds.toFixed(1)} s. Watch it before committing.`,
-    );
-    await browser.close();
+    console.log('Watch both before committing.');
   } else {
-    await stage(page);
-    await screenshot(page);
-    await browser.close();
+    await session(async (page) => {
+      await stage(page);
+      await screenshot(page);
+    });
   }
 } finally {
-  stop(ftpeach);
   stop(vite);
-  cleanServer();
-  rmSync(profile, { recursive: true, force: true });
+  rmSync(frames, { recursive: true, force: true });
 }
 
 async function screenshot(page: Page) {

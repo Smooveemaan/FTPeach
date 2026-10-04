@@ -13,6 +13,9 @@ on:
   # download links follow every release.
   release:
     types: [published]
+  # Refreshes the star and download counts the page shows.
+  schedule:
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions: {}

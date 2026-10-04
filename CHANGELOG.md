@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A folder dragged out to a place that already has a file of that name no longer shows up in
+  Transfers as done when Windows could not copy it.
 - In Arabic and Hebrew, sizes, dates, speeds and times read left to right ("39 B", not "B 39"),
   the log keeps a space between the time and the connection, and the protocol in Recent
   connections is no longer cut off at its start.

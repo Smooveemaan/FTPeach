@@ -62,7 +62,8 @@ use windows::{
         System::DataExchange::RegisterClipboardFormatW,
         System::Memory::{GMEM_FIXED, GlobalAlloc, GlobalLock, GlobalUnlock},
         System::Ole::{
-            DROPEFFECT, DROPEFFECT_COPY, DoDragDrop, IDropSource, IDropSource_Impl, OleInitialize,
+            DROPEFFECT, DROPEFFECT_COPY, DROPEFFECT_NONE, DoDragDrop, IDropSource,
+            IDropSource_Impl, OleInitialize,
         },
         System::SystemServices::{MK_LBUTTON, MODIFIERKEYS_FLAGS},
         UI::Shell::{
@@ -931,12 +932,24 @@ impl IDataObjectAsyncCapability_Impl for VirtualDataObject_Impl {
         &self,
         hresult: HRESULT,
         _pbcreserved: windows::core::Ref<'_, IBindCtx>,
-        _dweffects: u32,
+        dweffects: u32,
     ) -> windows::core::Result<()> {
-        self.finish_folders(Some(hresult));
+        self.finish_folders(Some(copy_result(hresult, dweffects)));
         self.in_operation.store(false, Ordering::SeqCst);
         log::debug!("drag-out: drop target finished its async copy with {hresult}");
         Ok(())
+    }
+}
+
+/// What the drop target's copy came to. Explorer gives up on a folder dropped
+/// where a file of that name already exists with S_FALSE and no effect,
+/// after Cancel and after Try Again alike, having created nothing; only a
+/// copy that did something reports an effect.
+fn copy_result(hresult: HRESULT, effects: u32) -> HRESULT {
+    if hresult.is_ok() && effects == DROPEFFECT_NONE.0 {
+        HRESULT_CANCELLED
+    } else {
+        hresult
     }
 }
 
@@ -1198,6 +1211,22 @@ mod folder_row_tests {
         assert!(!row.holds(&entry("loose.txt", Some(5), false)));
         assert_eq!(row.add(42), 42);
         assert_eq!(row.add(8), 50);
+    }
+
+    #[test]
+    fn a_copy_that_did_nothing_is_not_a_success() {
+        // Seen from Explorer: a folder dropped onto a file of the same name.
+        let gave_up = copy_result(S_FALSE, DROPEFFECT_NONE.0);
+        assert_eq!(
+            folder_row().outcome(Some(gave_up)).unwrap_err().code,
+            ErrorCode::Cancelled
+        );
+        assert!(
+            folder_row()
+                .outcome(Some(copy_result(S_OK, DROPEFFECT_COPY.0)))
+                .is_ok()
+        );
+        assert_eq!(copy_result(E_FAIL, DROPEFFECT_NONE.0), E_FAIL);
     }
 
     #[test]

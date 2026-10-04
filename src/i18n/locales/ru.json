@@ -228,6 +228,7 @@
     "overwriteLabel": "Перезаписать",
     "replaceConnection": "Эта панель уже подключена к «{{current}}». Заменить подключение на «{{next}}»?",
     "replaceConnectionLabel": "Заменить",
+    "newConnectionReplaces": "Эта панель подключена к «{{current}}». Отключить её и начать новое подключение?",
     "deleteSelected": "Удалить выбранные элементы ({{count}})? Это действие нельзя отменить.",
     "deleteEntry": "Удалить «{{name}}»? Это действие нельзя отменить.",
     "recycleSelected": "Переместить выбранные элементы ({{count}}) в корзину?",

@@ -224,6 +224,7 @@
     "overwriteLabel": "Timpa",
     "replaceConnection": "Panel ini sudah terhubung ke \"{{current}}\". Ganti koneksinya dengan \"{{next}}\"?",
     "replaceConnectionLabel": "Ganti",
+    "newConnectionReplaces": "Panel ini terhubung ke \"{{current}}\". Putuskan dan mulai koneksi baru?",
     "deleteSelected": "Hapus item yang dipilih ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deleteEntry": "Hapus \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
     "recycleSelected": "Apakah Anda ingin memindahkan item yang dipilih ({{count}}) ke Keranjang Sampah?",

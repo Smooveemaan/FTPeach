@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  baseConnectionLabel,
-  buildPaneConnectionModel,
-} from '../../../src/features/file-browser/panes/paneConnectionModel.ts';
+import { buildPaneConnectionModel } from '../../../src/features/file-browser/panes/paneConnectionModel.ts';
+import { connectionLabel } from '../../../src/shared/siteContracts.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 
 const translate = (key: string, values?: Record<string, string | number>) =>
@@ -94,5 +92,5 @@ test('a quick WebDAV connection is named by its URL', () => {
     ...pane,
     form: { ...pane.form, protocol: 'webdav', webdavUrl: 'https://dav.test' },
   };
-  assert.equal(baseConnectionLabel(webdav as typeof pane), 'https://dav.test');
+  assert.equal(connectionLabel(webdav as typeof pane), 'https://dav.test');
 });

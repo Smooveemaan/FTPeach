@@ -1,4 +1,5 @@
 import { PANE_IDS } from './paneModel.ts';
+import { connectionLabel as baseConnectionLabel } from '../../../shared/siteContracts.ts';
 import type { PaneId, PaneState, PaneStatus, TabState } from './paneModel.ts';
 
 type PaneOrientation = 'horizontal' | 'vertical';
@@ -23,10 +24,6 @@ export interface PaneConnectionModel {
 }
 
 const isPaneBusy = (pane: PaneState) => pane.status === 'connected' || pane.status === 'connecting';
-
-/** What names a pane's connection to the user: the bookmark, else the address. */
-export const baseConnectionLabel = (pane: PaneState) =>
-  pane.siteLabel || (pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host) || '?';
 
 export function buildPaneConnectionModel({
   tabs,

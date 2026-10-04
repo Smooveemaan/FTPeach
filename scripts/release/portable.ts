@@ -63,6 +63,8 @@ function build(releaseDir: string): string {
   // Cargo names the binary after the `app` package.
   cpSync(path.join(releaseDir, 'app.exe'), path.join(folder, 'FTPeach.exe'));
   writeFileSync(path.join(folder, 'FTPeach.portable'), '');
+  // Where the key and certificate pickers open: files there move with the copy.
+  for (const empty of ['keys', 'certificates']) mkdirSync(path.join(folder, empty));
   cpSync('LICENSE', path.join(folder, 'LICENSE'));
   for (const resource of ['NOTICE', 'licenses', 'icons']) {
     cpSync(path.join(releaseDir, resource), path.join(folder, resource), { recursive: true });

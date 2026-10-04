@@ -35,6 +35,14 @@ export const SHORTCUT_ACTIONS: readonly ShortcutAction[] = [
     scope: 'global',
     default: 'Ctrl+KeyN',
     labelKey: 'settings.shortcuts.actions.newConnection',
+    pane: 'a',
+  },
+  {
+    id: 'new-connection-secondary',
+    scope: 'global',
+    default: 'Ctrl+Shift+KeyN',
+    labelKey: 'settings.shortcuts.actions.newConnection',
+    pane: 'b',
   },
   {
     id: 'save-site',

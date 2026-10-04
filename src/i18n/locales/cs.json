@@ -230,6 +230,7 @@
     "overwriteLabel": "Přepsat",
     "replaceConnection": "Tento panel je již připojen k „{{current}}“. Nahradit připojení za „{{next}}“?",
     "replaceConnectionLabel": "Nahradit",
+    "newConnectionReplaces": "Tento panel je připojen k „{{current}}“. Odpojit ho a začít nové připojení?",
     "deleteSelected": "Chcete odstranit vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteEntry": "Odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
     "recycleSelected": "Chcete přesunout vybrané položky ({{count}}) do koše?",

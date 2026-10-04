@@ -224,6 +224,7 @@
     "overwriteLabel": "Ghi đè",
     "replaceConnection": "Khung này đã được kết nối với “{{current}}”. Thay kết nối bằng “{{next}}”?",
     "replaceConnectionLabel": "Thay thế",
+    "newConnectionReplaces": "Khung này đang kết nối với “{{current}}”. Ngắt kết nối và bắt đầu kết nối mới?",
     "deleteSelected": "Xóa các mục đã chọn ({{count}})? Thao tác này không thể hoàn tác.",
     "deleteEntry": "Xóa “{{name}}”? Thao tác này không thể hoàn tác.",
     "recycleSelected": "Di chuyển các mục đã chọn ({{count}}) vào Thùng rác?",

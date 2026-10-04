@@ -224,6 +224,7 @@
     "overwriteLabel": "Felülírás",
     "replaceConnection": "Ez a panel már csatlakozik ehhez: „{{current}}”. Lecseréli a kapcsolatot erre: „{{next}}”?",
     "replaceConnectionLabel": "Csere",
+    "newConnectionReplaces": "Ez a panel ehhez csatlakozik: „{{current}}”. Bontja a kapcsolatot, és újat kezd?",
     "deleteSelected": "Törli a kijelölt elemeket ({{count}})? Ez a művelet nem vonható vissza.",
     "deleteEntry": "Törli a(z) „{{name}}” elemet? Ez a művelet nem vonható vissza.",
     "recycleSelected": "Áthelyezi a kijelölt elemeket ({{count}}) a Lomtárba?",

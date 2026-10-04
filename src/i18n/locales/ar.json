@@ -236,6 +236,7 @@
     "overwriteLabel": "الكتابة فوق",
     "replaceConnection": "هذا الجزء متصل بالفعل بـ «{{current}}». هل تريد استبدال الاتصال بـ «{{next}}»؟",
     "replaceConnectionLabel": "استبدال",
+    "newConnectionReplaces": "هذا الجزء متصل بـ «{{current}}». هل تريد قطع الاتصال وبدء اتصال جديد؟",
     "deleteSelected": "هل تريد حذف العناصر المحددة ({{count}})؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteEntry": "هل تريد حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.",
     "recycleSelected": "هل تريد نقل العناصر المحددة ({{count}}) إلى سلة المحذوفات؟",

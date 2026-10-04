@@ -224,6 +224,7 @@
     "overwriteLabel": "覆盖",
     "replaceConnection": "此窗格已连接到“{{current}}”。是否要将该连接替换为“{{next}}”？",
     "replaceConnectionLabel": "替换",
+    "newConnectionReplaces": "此窗格已连接到“{{current}}”。要断开连接并开始新的连接吗？",
     "deleteSelected": "删除所选项目（{{count}}）？此操作无法撤销。",
     "deleteEntry": "删除“{{name}}”？此操作无法撤销。",
     "recycleSelected": "是否将选中的项目（{{count}}）移至回收站？",

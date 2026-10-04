@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- The portable zip has `keys` and `certificates` folders, and the key and certificate pickers open
+  there.
 - Settings → Logging can write the log files to a folder of your choice, and opens the log folder.
 - Settings → Password protection can unlock the vault with Windows Hello.
 - Showing a saved password, and other actions that ask for the master password, can be confirmed
@@ -16,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Ctrl+N starts a new connection in the left pane and Ctrl+Shift+N in the right one; File has an
+  item for each. A pane that is in use asks before it is disconnected.
 - "Allow system unlock" says why it cannot be turned on while the vault is locked, and says that
   Windows is creating the Windows Hello key while it is being turned on.
 - Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", "Name (3)" and so on,
@@ -32,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Check Now in a portable copy says there is no update, instead of "Couldn't check for updates",
+  while the latest release has no portable package.
 - The hint for "Write log to file" no longer names the installed copy's folder in a portable copy.
 - The "File changed" question says that Later asks again the next time the file is saved.
 - When the connection to a server is lost or stops answering, the pane says so and offers to

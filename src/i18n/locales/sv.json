@@ -224,6 +224,7 @@
     "overwriteLabel": "Skriv över",
     "replaceConnection": "Den här panelen är redan ansluten till ”{{current}}”. Vill du ersätta anslutningen med ”{{next}}”?",
     "replaceConnectionLabel": "Ersätt",
+    "newConnectionReplaces": "Den här panelen är ansluten till ”{{current}}”. Vill du koppla från den och starta en ny anslutning?",
     "deleteSelected": "Vill du ta bort de markerade objekten ({{count}})? Den här åtgärden går inte att ångra.",
     "deleteEntry": "Ta bort ”{{name}}”? Den här åtgärden går inte att ångra.",
     "recycleSelected": "Vill du flytta de markerade objekten ({{count}}) till papperskorgen?",

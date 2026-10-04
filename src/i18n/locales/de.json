@@ -224,6 +224,7 @@
     "overwriteLabel": "Überschreiben",
     "replaceConnection": "Dieser Bereich ist bereits mit „{{current}}“ verbunden. Möchten Sie die Verbindung durch „{{next}}“ ersetzen?",
     "replaceConnectionLabel": "Ersetzen",
+    "newConnectionReplaces": "Dieser Bereich ist mit „{{current}}“ verbunden. Trennen und eine neue Verbindung beginnen?",
     "deleteSelected": "Die ausgewählten Elemente ({{count}}) löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteEntry": "„{{name}}“ löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "recycleSelected": "Die ausgewählten Elemente ({{count}}) in den Papierkorb verschieben?",

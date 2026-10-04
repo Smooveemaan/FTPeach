@@ -224,6 +224,7 @@
     "overwriteLabel": "Overskriv",
     "replaceConnection": "Denne rude er allerede forbundet til »{{current}}«. Skal forbindelsen erstattes med »{{next}}«?",
     "replaceConnectionLabel": "Erstat",
+    "newConnectionReplaces": "Denne rude er forbundet til »{{current}}«. Skal den afbrydes, så du kan oprette en ny forbindelse?",
     "deleteSelected": "Vil du slette de valgte elementer ({{count}})? Denne handling kan ikke fortrydes.",
     "deleteEntry": "Skal »{{name}}« slettes? Denne handling kan ikke fortrydes.",
     "recycleSelected": "Skal de valgte elementer ({{count}}) flyttes til papirkurven?",

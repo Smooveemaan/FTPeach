@@ -224,6 +224,7 @@
     "overwriteLabel": "覆寫",
     "replaceConnection": "此窗格已連線到「{{current}}」。要將連線替換為「{{next}}」嗎？",
     "replaceConnectionLabel": "替換",
+    "newConnectionReplaces": "此窗格已連線到「{{current}}」。要中斷連線並開始新的連線嗎？",
     "deleteSelected": "要刪除所選項目（{{count}}）嗎？此操作無法復原。",
     "deleteEntry": "要刪除「{{name}}」嗎？此操作無法復原。",
     "recycleSelected": "要將所選項目（{{count}}）移至資源回收筒嗎？",

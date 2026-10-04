@@ -224,6 +224,7 @@
     "overwriteLabel": "Üzerine yaz",
     "replaceConnection": "Bu bölme halihazırda \"{{current}}\" adresine bağlı. Bağlantıyı \"{{next}}\" ile değiştirmek ister misiniz?",
     "replaceConnectionLabel": "Değiştir",
+    "newConnectionReplaces": "Bu bölme \"{{current}}\" adresine bağlı. Bağlantıyı kesip yeni bir bağlantı başlatmak ister misiniz?",
     "deleteSelected": "Seçili öğeleri ({{count}}) silmek istiyor musunuz? Bu işlem geri alınamaz.",
     "deleteEntry": "\"{{name}}\" silinsin mi? Bu işlem geri alınamaz.",
     "recycleSelected": "Seçili öğeleri ({{count}}) Geri Dönüşüm Kutusu'na taşımak istiyor musunuz?",

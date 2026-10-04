@@ -227,6 +227,7 @@
     "overwriteLabel": "Substituir",
     "replaceConnection": "Este painel já está conectado a “{{current}}”. Deseja substituir a conexão por “{{next}}”?",
     "replaceConnectionLabel": "Substituir",
+    "newConnectionReplaces": "Este painel está conectado a “{{current}}”. Deseja desconectá-lo e começar uma nova conexão?",
     "deleteSelected": "Excluir os itens selecionados ({{count}})? Essa ação não pode ser desfeita.",
     "deleteEntry": "Excluir “{{name}}”? Essa ação não pode ser desfeita.",
     "recycleSelected": "Deseja mover os itens selecionados ({{count}}) para a Lixeira?",

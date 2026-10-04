@@ -224,6 +224,7 @@
     "overwriteLabel": "덮어쓰기",
     "replaceConnection": "이 창은 이미 “{{current}}”에 연결되어 있습니다. 이 연결을 “{{next}}”로 변경하시겠습니까?",
     "replaceConnectionLabel": "교체",
+    "newConnectionReplaces": "이 창은 “{{current}}”에 연결되어 있습니다. 연결을 끊고 새 연결을 시작하시겠습니까?",
     "deleteSelected": "선택한 항목({{count}})을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deleteEntry": "“{{name}}”을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "recycleSelected": "선택한 항목({{count}})을 휴지통으로 이동하시겠습니까?",

@@ -42,7 +42,7 @@ function harness({
       refreshBothPanes: vi.fn(),
       panes: { a: makePane('a', 'local'), b },
     },
-    dialogs: { setShowSettings: vi.fn() },
+    dialogs: { setShowSettings: vi.fn(), requestConfirm: vi.fn() },
     layout: { toggleHiddenFiles: vi.fn() },
     search: { a: vi.fn(), b: vi.fn() },
     saveSite: vi.fn((_id: PaneId) => saveNow),
@@ -113,6 +113,7 @@ function mount(h: Harness) {
       setShowSiteManagerDialog: menuOnly,
       setShowLocalPathManagerDialog: menuOnly,
       setShowExportSettings: menuOnly,
+      requestConfirm: h.dialogs.requestConfirm,
       setShowImportSettings: menuOnly,
     },
     transfers: { hasCompletedTransfers: false, clearCompletedTransfers: menuOnly },
@@ -153,13 +154,18 @@ test('the last tab is not closed and a single tab does not cycle', () => {
   expect(h.browser.setActiveTabId).not.toHaveBeenCalled();
 });
 
-test('new connection starts in the free pane, and does nothing without one', () => {
+test('Ctrl+N starts a connection on the left, Ctrl+Shift+N on the right, asking before replacing one', () => {
   const h = harness();
   h.press('KeyN', ctrl);
-  expect(h.browser.startPaneConnect).toHaveBeenCalledExactlyOnceWith('b');
-  const full = harness({ freePane: null });
-  full.press('KeyN', ctrl);
-  expect(full.browser.startPaneConnect).not.toHaveBeenCalled();
+  h.press('KeyN', ctrlShift);
+  expect(h.browser.startPaneConnect.mock.calls).toEqual([['a'], ['b']]);
+  expect(h.dialogs.requestConfirm).not.toHaveBeenCalled();
+
+  const connected = harness({ b: { ...makePane('b', 'remote'), status: 'connected' } });
+  connected.press('KeyN', ctrlShift);
+  expect(connected.browser.startPaneConnect).not.toHaveBeenCalled();
+  vi.mocked(connected.dialogs.requestConfirm).mock.calls[0]![1]();
+  expect(connected.browser.startPaneConnect).toHaveBeenCalledExactlyOnceWith('b');
 });
 
 test('saving a pane as a bookmark needs a local pane or a connected server', () => {

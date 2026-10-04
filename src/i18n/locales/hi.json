@@ -224,6 +224,7 @@
     "overwriteLabel": "अधिलेखित करें",
     "replaceConnection": "यह फलक पहले से ही \"{{current}}\" से जुड़ा हुआ है। कनेक्शन को \"{{next}}\" से बदलें?",
     "replaceConnectionLabel": "बदलें",
+    "newConnectionReplaces": "यह फलक \"{{current}}\" से जुड़ा है। इसे डिस्कनेक्ट करके नया कनेक्शन शुरू करें?",
     "deleteSelected": "चयनित आइटम ({{count}}) हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteEntry": "\"{{name}}\" हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "recycleSelected": "चयनित आइटम ({{count}}) को रीसायकल बिन में ले जाएँ?",

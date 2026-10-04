@@ -230,6 +230,7 @@
     "overwriteLabel": "Nadpisz",
     "replaceConnection": "Ten panel jest już połączony z „{{current}}”. Zastąpić to połączenie połączeniem z „{{next}}”?",
     "replaceConnectionLabel": "Zastąp",
+    "newConnectionReplaces": "Ten panel jest połączony z „{{current}}”. Rozłączyć go i rozpocząć nowe połączenie?",
     "deleteSelected": "Czy chcesz usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
     "deleteEntry": "Usunąć „{{name}}”? Tego działania nie można cofnąć.",
     "recycleSelected": "Czy chcesz przenieść zaznaczone elementy ({{count}}) do Kosza?",

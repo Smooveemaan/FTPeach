@@ -70,6 +70,7 @@ function harness() {
       setShowLocalPathManagerDialog: record('paths'),
       setShowExportSettings: record('export'),
       setShowImportSettings: record('import'),
+      requestConfirm: record('confirm'),
     },
     transfers: { hasCompletedTransfers: false, clearCompletedTransfers: record('clear') },
     applicationSettings: { changeTheme: record('theme') },
@@ -82,7 +83,7 @@ function harness() {
   const item = (key: string) => {
     const found = buildMenus(ctx)
       .flatMap((menu) => menu.items)
-      .find((entry) => entry.label === i18n.t(key));
+      .find((entry) => entry.label === i18n.t(key) || entry.label === key);
     assert.ok(found, key);
     return found;
   };
@@ -116,7 +117,10 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
     'menu.file.newTab',
     'menu.file.closeTab',
     'menu.file.reopenClosedTab',
-    'menu.file.newConnection',
+    i18n.t('paneSide.labelWithSide', {
+      base: i18n.t('menu.file.newConnection'),
+      side: i18n.t('paneSide.right'),
+    }),
     'menu.file.exportSettings',
     'menu.file.importSettings',
     'menu.file.quit',

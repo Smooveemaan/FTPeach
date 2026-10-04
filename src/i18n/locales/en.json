@@ -224,6 +224,7 @@
     "overwriteLabel": "Overwrite",
     "replaceConnection": "This pane is already connected to \"{{current}}\". Replace the connection with \"{{next}}\"?",
     "replaceConnectionLabel": "Replace",
+    "newConnectionReplaces": "This pane is connected to \"{{current}}\". Disconnect it and start a new connection?",
     "deleteSelected": "Delete the selected items ({{count}})? This action cannot be undone.",
     "deleteEntry": "Delete \"{{name}}\"? This action cannot be undone.",
     "recycleSelected": "Move the selected items ({{count}}) to the Recycle Bin?",

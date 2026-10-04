@@ -224,6 +224,7 @@
     "overwriteLabel": "上書き",
     "replaceConnection": "このペインはすでに「{{current}}」に接続されています。接続先を「{{next}}」に変更しますか？",
     "replaceConnectionLabel": "置き換え",
+    "newConnectionReplaces": "このペインは「{{current}}」に接続されています。切断して新しい接続を始めますか？",
     "deleteSelected": "選択した項目（{{count}}）を削除しますか？この操作は元に戻せません。",
     "deleteEntry": "「{{name}}」を削除しますか？この操作は元に戻せません。",
     "recycleSelected": "選択した項目（{{count}}）をごみ箱に移動しますか？",

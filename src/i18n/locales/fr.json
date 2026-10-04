@@ -227,6 +227,7 @@
     "overwriteLabel": "Remplacer",
     "replaceConnection": "Ce volet est déjà connecté à « {{current}} ». Souhaitez-vous remplacer cette connexion par « {{next}} » ?",
     "replaceConnectionLabel": "Remplacer",
+    "newConnectionReplaces": "Ce volet est connecté à « {{current}} ». Le déconnecter et commencer une nouvelle connexion ?",
     "deleteSelected": "Souhaitez-vous supprimer les éléments sélectionnés ({{count}}) ? Cette action ne peut pas être annulée.",
     "deleteEntry": "Supprimer « {{name}} » ? Cette action ne peut pas être annulée.",
     "recycleSelected": "Souhaitez-vous déplacer les éléments sélectionnés ({{count}}) vers la corbeille ?",

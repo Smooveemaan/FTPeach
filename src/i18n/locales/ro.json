@@ -227,6 +227,7 @@
     "overwriteLabel": "Suprascrie",
     "replaceConnection": "Acest panou este deja conectat la „{{current}}”. Doriți să înlocuiți conexiunea cu „{{next}}”?",
     "replaceConnectionLabel": "Înlocuiește",
+    "newConnectionReplaces": "Acest panou este conectat la „{{current}}”. Îl deconectați și începeți o conexiune nouă?",
     "deleteSelected": "Doriți să ștergeți elementele selectate ({{count}})? Această acțiune nu poate fi anulată.",
     "deleteEntry": "Ștergeți „{{name}}”? Această acțiune nu poate fi anulată.",
     "recycleSelected": "Doriți să mutați elementele selectate ({{count}}) în Coșul de reciclare?",

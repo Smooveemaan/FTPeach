@@ -8,6 +8,7 @@ import type {
   FileSearchHandle,
   PanesModel,
 } from '../features/file-browser/index.ts';
+import { connectionLabel } from '../shared/siteContracts.ts';
 import type { SettingsState } from '../features/settings/index.ts';
 import type { TransfersModel } from '../features/transfers/index.ts';
 import type { PaneId } from '../shared/paneContracts.ts';
@@ -76,6 +77,7 @@ export interface ApplicationCommandContext {
     | 'setShowLocalPathManagerDialog'
     | 'setShowExportSettings'
     | 'setShowImportSettings'
+    | 'requestConfirm'
   >;
   transfers: Pick<TransfersModel, 'hasCompletedTransfers' | 'clearCompletedTransfers'>;
   applicationSettings: Pick<ApplicationSettingsResult, 'changeTheme'>;
@@ -101,8 +103,19 @@ function applicationCommands({ browser, dialogs, saveSite }: ApplicationCommandC
   return {
     canSaveSide,
     saveSide: (id: PaneId) => canSaveSide(id) && saveSite(id)(),
-    newConnection: () =>
-      browser.freeConnectTargetPaneId && browser.startPaneConnect(browser.freeConnectTargetPaneId),
+    // A pane in use is not dropped by a keystroke: the user is asked first.
+    newConnection: (id: PaneId) => {
+      const pane = browser.panes[id];
+      if (pane.kind !== 'remote' || (pane.status !== 'connected' && pane.status !== 'connecting')) {
+        browser.startPaneConnect(id);
+        return;
+      }
+      dialogs.requestConfirm(
+        i18n.t('confirm.newConnectionReplaces', { current: connectionLabel(pane) }),
+        () => browser.startPaneConnect(id),
+        { confirmLabel: i18n.t('confirm.replaceConnectionLabel'), danger: true },
+      );
+    },
     openSettings: () => dialogs.setShowSettings(true),
   };
 }
@@ -122,7 +135,8 @@ export function applicationShortcuts(ctx: ApplicationCommandContext) {
     'search-local': () => searchInputRefs.a.current?.toggle(),
     'search-remote': () => searchInputRefs.b.current?.toggle(),
     'toggle-hidden-files': workspace.toggleHiddenFiles,
-    'new-connection': commands.newConnection,
+    'new-connection': () => commands.newConnection('a'),
+    'new-connection-secondary': () => commands.newConnection('b'),
     refresh: browser.refreshBothPanes,
     'save-site': () => commands.saveSide('a'),
     'save-site-secondary': () => commands.saveSide('b'),
@@ -212,12 +226,14 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
           onClick: browser.reopenClosedTab,
         },
         { separator: true },
-        {
-          label: t('menu.file.newConnection'),
-          shortcut: shortcutLabel('new-connection'),
-          disabled: !browser.freeConnectTargetPaneId,
-          onClick: commands.newConnection,
-        },
+        ...(['a', 'b'] as const).map((id) => ({
+          label: t('paneSide.labelWithSide', {
+            base: t('menu.file.newConnection'),
+            side: paneSideWord(id),
+          }),
+          shortcut: shortcutLabel(id === 'a' ? 'new-connection' : 'new-connection-secondary'),
+          onClick: () => commands.newConnection(id),
+        })),
         ...disconnectItems,
         { separator: true },
         {

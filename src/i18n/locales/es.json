@@ -227,6 +227,7 @@
     "overwriteLabel": "Sobrescribir",
     "replaceConnection": "Este panel ya está conectado a «{{current}}». ¿Deseas sustituir la conexión por «{{next}}»?",
     "replaceConnectionLabel": "Sustituir",
+    "newConnectionReplaces": "Este panel está conectado a «{{current}}». ¿Quieres desconectarlo y empezar una conexión nueva?",
     "deleteSelected": "¿Deseas eliminar los elementos seleccionados ({{count}})? Esta acción no se puede deshacer.",
     "deleteEntry": "¿Deseas eliminar «{{name}}»? Esta acción no se puede deshacer.",
     "recycleSelected": "¿Quieres mover los elementos seleccionados ({{count}}) a la Papelera de reciclaje?",

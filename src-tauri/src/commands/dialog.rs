@@ -56,8 +56,7 @@ pub async fn dialog_select_key_file(
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<SelectedSshKey>, crate::ipc::CommandError> {
     let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
+    in_portable_folder(app.dialog().file(), PORTABLE_KEYS)
         .add_filter("All files", &["*"])
         .add_filter("SSH keys", &["pem", "ppk", "key"])
         .pick_file(move |path| {
@@ -73,14 +72,29 @@ pub async fn dialog_select_key_file(
     }))
 }
 
+/// Folders a portable copy ships for keys and certificates, so they travel
+/// with it and are stored as paths relative to it.
+const PORTABLE_KEYS: &str = "keys";
+const PORTABLE_CERTIFICATES: &str = "certificates";
+
+/// Opens the picker in that folder of a portable copy, when it is there.
+fn in_portable_folder<R: tauri::Runtime>(
+    dialog: tauri_plugin_dialog::FileDialogBuilder<R>,
+    folder: &str,
+) -> tauri_plugin_dialog::FileDialogBuilder<R> {
+    match portable::root().map(|root| root.join(folder)) {
+        Some(dir) if dir.is_dir() => dialog.set_directory(dir),
+        _ => dialog,
+    }
+}
+
 #[tauri::command]
 pub async fn dialog_select_ca_cert_file(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
     let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
+    in_portable_folder(app.dialog().file(), PORTABLE_CERTIFICATES)
         .add_filter("Certificates", &["pem", "crt", "cer"])
         .add_filter("All files", &["*"])
         .pick_file(move |path| {

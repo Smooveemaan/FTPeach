@@ -245,15 +245,32 @@ pub async fn check(app: &AppHandle) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn missing_target(error: &tauri_plugin_updater::Error) -> bool {
+    matches!(
+        error,
+        tauri_plugin_updater::Error::TargetNotFound(_)
+            | tauri_plugin_updater::Error::TargetsNotFound(_)
+    )
+}
+
 async fn find_update(app: &AppHandle, state: &UpdaterState) -> anyhow::Result<Option<String>> {
     let mut available = state.available.lock().await;
     if available.is_none() {
         send(app, UpdaterStatus::Checking);
+        let portable = portable::root().is_some();
         let mut updater = app.updater_builder();
-        if portable::root().is_some() {
+        if portable {
             updater = updater.target(PORTABLE_TARGET);
         }
-        *available = updater.build()?.check().await?;
+        *available = match updater.build()?.check().await {
+            Err(error) if portable && missing_target(&error) => {
+                // Releases before 0.4.0 publish no portable package: there is
+                // nothing a portable copy could update to.
+                log::info!("The update feed has no portable package: {error}");
+                None
+            }
+            result => result?,
+        };
     }
     Ok(available.as_ref().map(|update| update.version.clone()))
 }
@@ -389,6 +406,16 @@ fn state_after_lost_download(app: &AppHandle) {
 #[cfg(test)]
 mod serde_field_casing {
     use super::*;
+
+    #[test]
+    fn only_a_missing_target_reads_as_no_update() {
+        use tauri_plugin_updater::Error;
+        assert!(missing_target(&Error::TargetNotFound(
+            PORTABLE_TARGET.into()
+        )));
+        assert!(missing_target(&Error::TargetsNotFound(vec![])));
+        assert!(!missing_target(&Error::EmptyEndpoints));
+    }
 
     #[test]
     fn downloading_percent_is_camel_case_and_present() {

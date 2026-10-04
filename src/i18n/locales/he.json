@@ -227,6 +227,7 @@
     "overwriteLabel": "החלפה",
     "replaceConnection": "חלונית זו כבר מחוברת ל-\"{{current}}\". האם להחליף את החיבור ל-\"{{next}}\"?",
     "replaceConnectionLabel": "החלפה",
+    "newConnectionReplaces": "חלונית זו מחוברת ל-\"{{current}}\". לנתק אותה ולהתחיל חיבור חדש?",
     "deleteSelected": "האם ברצונך למחוק את הפריטים שנבחרו ({{count}})? לא ניתן לבטל פעולה זו.",
     "deleteEntry": "למחוק את \"{{name}}\"? לא ניתן לבטל פעולה זו.",
     "recycleSelected": "האם להעביר את הפריטים שנבחרו ({{count}}) לסל המיחזור?",

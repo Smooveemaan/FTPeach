@@ -224,6 +224,7 @@
     "overwriteLabel": "Overschrijven",
     "replaceConnection": "Dit paneel is al verbonden met \"{{current}}\". Verbinding vervangen door \"{{next}}\"?",
     "replaceConnectionLabel": "Vervangen",
+    "newConnectionReplaces": "Dit paneel is verbonden met \"{{current}}\". Verbinding verbreken en een nieuwe verbinding beginnen?",
     "deleteSelected": "De geselecteerde items ({{count}}) verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deleteEntry": "\"{{name}}\" verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "recycleSelected": "De geselecteerde items ({{count}}) naar de Prullenbak verplaatsen?",

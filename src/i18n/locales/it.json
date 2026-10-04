@@ -227,6 +227,7 @@
     "overwriteLabel": "Sovrascrivi",
     "replaceConnection": "Questo riquadro è già connesso a \"{{current}}\". Sostituire la connessione con \"{{next}}\"?",
     "replaceConnectionLabel": "Sostituisci",
+    "newConnectionReplaces": "Questo riquadro è connesso a \"{{current}}\". Disconnetterlo e iniziare una nuova connessione?",
     "deleteSelected": "Eliminare gli elementi selezionati ({{count}})? Questa operazione non può essere annullata.",
     "deleteEntry": "Eliminare \"{{name}}\"? Questa operazione non può essere annullata.",
     "recycleSelected": "Spostare gli elementi selezionati ({{count}}) nel Cestino?",

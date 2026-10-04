@@ -1,6 +1,13 @@
 /** Site and connection data shared by the connection bar, the panes, the site manager and IPC. */
 export type SiteProtocol = 'ftp' | 'ftps' | 'sftp' | 'webdav';
 
+/** What names a connection to the user: its bookmark, else its address. */
+export const connectionLabel = (pane: {
+  siteLabel?: string | null;
+  form: Pick<ConnectionForm, 'protocol' | 'host' | 'webdavUrl'>;
+}): string =>
+  pane.siteLabel || (pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host) || '?';
+
 /** The port each protocol connects to when the field is empty; WebDAV takes it from the URL. */
 export const DEFAULT_PORTS: Record<SiteProtocol, string> = {
   ftp: '21',

@@ -168,7 +168,7 @@
 }
 
 /* A deep path can hide more folders than fit on screen. */
-.path-hidden-menu {
-  max-height: 60vh;
-  overflow-y: auto;
+/* The Move to (F6) list without its dialog: as wide, and scrolling as tall. */
+.path-hidden-menu .move-to-list {
+  max-width: min(552px, calc(var(--app-viewport-w) - 48px));
 }

@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import ContextMenu from '../../../components/ContextMenu.tsx';
+import FolderList from '../../../components/FolderList.tsx';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import type { PaneKind } from '../panes/paneModel.ts';
@@ -211,13 +212,20 @@ export default function PathBar({
         <ContextMenu
           {...hiddenMenu}
           className="path-hidden-menu"
-          // The folders the bar has no room for, nearest first, as in Explorer.
-          items={crumbs
-            .slice(1, tailStart)
-            .reverse()
-            .map((crumb) => ({ label: crumb.label, onClick: () => onCrumbClick(crumb.path) }))}
           onClose={() => setHiddenMenu(null)}
-        />
+        >
+          {/* The folders the bar has no room for, nearest first, as in Explorer. */}
+          <FolderList
+            folders={crumbs
+              .slice(1, tailStart)
+              .reverse()
+              .map((crumb) => ({ key: crumb.path, label: crumb.label }))}
+            onChoose={(path) => {
+              setHiddenMenu(null);
+              onCrumbClick(path);
+            }}
+          />
+        </ContextMenu>
       )}
     </>
   );

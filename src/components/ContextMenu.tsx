@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
 import { getInterfaceScale } from '../platform/interfaceScale.ts';
@@ -14,7 +14,9 @@ interface ContextMenuProps {
    * over the button, where it would block pressing the button again.
    */
   aboveY?: number | undefined;
-  items: readonly MenuItem[];
+  items?: readonly MenuItem[];
+  /** Content in place of `items`, such as a folder list. */
+  children?: ReactNode;
   onClose: () => void;
   className?: string;
   /**
@@ -29,7 +31,8 @@ export default function ContextMenu({
   x,
   y,
   aboveY,
-  items,
+  items = [],
+  children,
   onClose,
   className = '',
   minWidth = 220,
@@ -46,8 +49,14 @@ export default function ContextMenu({
    * `minWidth`; this measurement corrects it before the paint, so a menu
    * that grew still stops at the viewport edge instead of running off it.
    */
-  const [renderedWidth, setRenderedWidth] = useState(0);
-  useLayoutEffect(() => setRenderedWidth(ref.current?.offsetWidth ?? 0), [items]);
+  const [rendered, setRendered] = useState({ width: 0, height: 0 });
+  useLayoutEffect(() => {
+    const width = ref.current?.offsetWidth ?? 0;
+    const height = ref.current?.offsetHeight ?? 0;
+    setRendered((prev) =>
+      prev.width === width && prev.height === height ? prev : { width, height },
+    );
+  }, [items, children]);
 
   const dismiss = useCallback(() => onCloseRef.current(), []);
   useDismissableOverlay({
@@ -63,10 +72,10 @@ export default function ContextMenu({
   const localY = y / scale;
   const localWidth = window.innerWidth / scale;
   const localHeight = window.innerHeight / scale;
-  const menuWidth = Math.min(Math.max(minWidth, renderedWidth), localWidth);
+  const menuWidth = Math.min(Math.max(minWidth, rendered.width), localWidth);
   const preferredLeft = rtl ? localX - menuWidth : localX;
   const left = Math.max(0, Math.min(preferredLeft, localWidth - menuWidth));
-  const estimatedHeight = items.length * 28 + 40;
+  const estimatedHeight = rendered.height || items.length * 28 + 40;
   const openAbove = aboveY != null && localY + estimatedHeight > localHeight;
   const style: CSSProperties = {
     [rtl ? 'right' : 'left']: rtl ? localWidth - left - menuWidth : left,
@@ -80,7 +89,7 @@ export default function ContextMenu({
 
   return (
     <div className={`context-menu ${className}`.trim()} style={style} ref={ref}>
-      <MenuItems items={items} onAction={onClose} />
+      {children ?? <MenuItems items={items} onAction={onClose} />}
     </div>
   );
 }

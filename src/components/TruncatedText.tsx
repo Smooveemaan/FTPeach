@@ -9,24 +9,32 @@ interface TruncatedTextProps {
    * actually fill its container's width — an inline `span` would just
    * shrink to fit its content and never register as overflowing). */
   as?: 'span' | 'div';
+  /** Shown on hover only while the text is cut. */
+  tooltip?: string | undefined;
 }
 
 /** An element that fades its own text out only once it actually overflows —
  * see the `.truncated` CSS variants this pairs with. Lets list rows (menu
  * items, select options, site names, ...) opt into that behavior without
  * each hand-rolling the ResizeObserver/scrollWidth check. */
-export default function TruncatedText({ className, children, as = 'span' }: TruncatedTextProps) {
+export default function TruncatedText({
+  className,
+  children,
+  as = 'span',
+  tooltip,
+}: TruncatedTextProps) {
   const [ref, truncated] = useTruncated<HTMLElement>([children]);
   const fullClassName = `${className}${truncated ? ' truncated' : ''}`;
+  const dataTooltip = truncated ? tooltip : undefined;
   if (as === 'div') {
     return (
-      <div ref={ref as never} className={fullClassName}>
+      <div ref={ref as never} className={fullClassName} data-tooltip={dataTooltip}>
         {children}
       </div>
     );
   }
   return (
-    <span ref={ref} className={fullClassName}>
+    <span ref={ref} className={fullClassName} data-tooltip={dataTooltip}>
       {children}
     </span>
   );

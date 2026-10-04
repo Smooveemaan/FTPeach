@@ -18,7 +18,7 @@ test('Move to is sized to its folder names, within the window', async ({ page })
   await expect(modal).toBeVisible();
   const width = async () => (await modal.boundingBox())!.width;
   // Two short names take less than the 420 pixels the dialog used to be.
-  expect(await width()).toBeGreaterThanOrEqual(300);
+  expect(await width()).toBeGreaterThanOrEqual(220);
   expect(await width()).toBeLessThan(420);
   await modal
     .locator('.move-to-name')

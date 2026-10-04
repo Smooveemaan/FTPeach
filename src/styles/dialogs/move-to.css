@@ -3,7 +3,7 @@
   --move-to-room: calc(var(--app-viewport-w) - 40px);
 
   width: fit-content;
-  min-width: min(300px, var(--move-to-room));
+  min-width: min(220px, var(--move-to-room));
   max-width: min(560px, var(--move-to-room));
 }
 .move-to-label {
@@ -30,11 +30,9 @@
   padding: 5px 8px;
   cursor: pointer;
 }
-.move-to-row:hover:not(:focus-visible:where(html[data-keyboard-navigation] *)) {
-  background: var(--bg-panel-alt);
-}
-
-.move-to-row:focus-visible:where(html[data-keyboard-navigation] *) {
+/* The list focuses its first row when it opens, from the mouse too, and the
+   arrow keys move on from there: the focused row is lit however it got there. */
+.move-to-row:focus {
   background: var(--accent-primary-dim);
   outline: none;
 }

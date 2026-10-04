@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Showing a saved password, and other actions that ask for the master password, can be confirmed
   with Windows Hello where it is enabled; the master password still works.
 - Page Up and Page Down move through the file list a screen at a time; with Shift they select.
-- The … in the path bar opens a list of the folders it hides.
+- The … in the path bar opens a list of the folders it hides, like the one in Move to.
 - Nine more colors for bookmarks.
 
 ### Changed
@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The FTPeach icon and the tray icon are the peach on its own, without the square background, so
   they stand out on a light taskbar too.
 - A bookmark's icon and color menus open scrolled to the one that is chosen.
+- Move to shows which folder has the focus as soon as it opens, shows the whole name of a folder
+  cut short when you point at it, and is narrower when the names are short.
 - The hint under "Auto-lock after, min" is one short paragraph, and "System protection" says why
   it cannot be chosen while the vault is locked.
 - Help → Report an Issue lets you choose between a bug report, a feature request and a

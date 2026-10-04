@@ -37,8 +37,13 @@ test('the ellipsis of a path that does not fit lists the folders it hides, neare
   fireEvent.click(shown[1]!);
   const items = screen.getAllByRole('menuitem');
   expect(items.map((item) => item.textContent)).toEqual(['c', 'b', 'a']);
+  // The Move to list: the nearest folder takes focus, arrows move on.
+  expect(document.activeElement).toBe(items[0]);
+  fireEvent.keyDown(items[0]!, { key: 'ArrowDown' });
+  expect(document.activeElement).toBe(items[1]);
   fireEvent.click(items[1]!);
   expect(onCrumbClick).toHaveBeenCalledExactlyOnceWith('/a/b');
+  expect(screen.queryByRole('menu')).toBeNull();
   // The click belongs to the crumb: the bar does not turn into the path field.
   expect(screen.queryByRole('textbox')).toBeNull();
 });

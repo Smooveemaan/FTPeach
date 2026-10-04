@@ -37,7 +37,7 @@ test.each(['connecting', 'connected'] as const)(
   },
 );
 
-test('a listing that lands after the user closed the session is not reported', async () => {
+test('a lost connection puts the pane in error, unless the user closed it', async () => {
   resetTransfersStoreForTests();
   const tab = makeTab('tab');
   tab.panes.b.kind = 'remote';
@@ -54,11 +54,12 @@ test('a listing that lands after the user closed the session is not reported', a
     session: { list: vi.fn().mockResolvedValue(failure) },
   } as unknown as Window['api'];
   const reportError = vi.fn();
+  const updatePane = vi.fn();
   const { result } = renderHook(() =>
     usePaneRefresh({
       panes: tab.panes,
       activeTabId: tab.id,
-      updatePane: vi.fn(),
+      updatePane,
       reportError,
       setErrorMessage: vi.fn(),
       defaultLocalPath: '',
@@ -68,13 +69,27 @@ test('a listing that lands after the user closed the session is not reported', a
   await act(async () => {
     await result.current.refreshPane('b', '/');
   });
-  expect(reportError).toHaveBeenCalledTimes(1);
+  // The pane offers to connect again instead of staying green.
+  expect(updatePane).toHaveBeenLastCalledWith(
+    'b',
+    expect.objectContaining({
+      status: 'error',
+      errorMessage: friendlyError({ code: 'connectionLost' }),
+    }),
+    tab.id,
+  );
 
+  updatePane.mockClear();
   markConnectionDead('session');
   await act(async () => {
     await result.current.refreshPane('b', '/sub');
   });
-  expect(reportError, 'the user hung up; the server did not').toHaveBeenCalledTimes(1);
+  expect(updatePane, 'the user hung up; the server did not').not.toHaveBeenCalledWith(
+    'b',
+    expect.objectContaining({ status: 'error' }),
+    tab.id,
+  );
+  expect(reportError).not.toHaveBeenCalled();
   resetTransfersStoreForTests();
 });
 

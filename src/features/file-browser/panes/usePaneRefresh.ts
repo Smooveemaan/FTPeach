@@ -5,6 +5,7 @@ import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
 import { commandResultError, friendlyError } from '../../../shared/errorMessages.ts';
 import { isConnectionDead, retainConnectionRequest } from '../../transfers/index.ts';
 import { backendFor } from './paneBackend.ts';
+import { isConnectionLoss } from './paneModel.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 
 type UpdatePane = (
@@ -161,6 +162,24 @@ export function usePaneRefresh({
           const listingError = listingErrorRef.current;
           listingErrorRef.current = '';
           if (listingError) setErrorMessage((current) => (current === listingError ? '' : current));
+        } else if (
+          pane.kind === 'remote' &&
+          pane.status === 'connected' &&
+          (result.errorCode === 'connectionLost' ||
+            result.errorCode === 'timedOut' ||
+            (!result.errorCode && isConnectionLoss(result.error)))
+        ) {
+          // The connection is gone: the pane says so and offers to connect
+          // again, instead of staying green and failing the same way each time.
+          updatePane(
+            id,
+            {
+              loading: false,
+              status: 'error',
+              errorMessage: friendlyError(commandResultError(result)) ?? '',
+            },
+            tabId,
+          );
         } else {
           updatePane(id, { loading: false }, tabId);
           // A listing that lands after the user closed this session failed for

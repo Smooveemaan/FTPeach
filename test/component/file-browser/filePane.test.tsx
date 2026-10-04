@@ -122,6 +122,34 @@ describe('FilePane interactions', () => {
     }
   });
 
+  test('an Explorer drag over a column header keeps the drag classes on <body>, without the wash', async () => {
+    const { container } = renderPane();
+    const pane = requireHtml(container.querySelector('.pane'));
+    vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 400, 400));
+    const hit = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+    // With `drag-move-active` on, a header does not answer the hit test.
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: vi.fn(() => document.body),
+    });
+    const listener = vi.mocked(window.api.fsLocal.onOsDragDrop).mock.calls.at(-1)![0];
+    const toggles = vi.spyOn(document.body.classList, 'remove');
+    try {
+      for (let i = 0; i < 3; i++)
+        await act(async () => {
+          await listener({ type: 'over', paths: null, point: { x: 40, y: 10 } });
+        });
+      expect(document.body.classList.contains('drag-move-active')).toBe(true);
+      expect(toggles).not.toHaveBeenCalled();
+      // Nothing drops there, so the list does not light up as if it would.
+      expect(container.querySelector('.pane-list.drag-wash')).toBeNull();
+    } finally {
+      if (hit) Object.defineProperty(document, 'elementFromPoint', hit);
+      else Reflect.deleteProperty(document, 'elementFromPoint');
+      document.body.className = '';
+    }
+  });
+
   test('leaves both panes unfocused until user interaction', async () => {
     const user = userEvent.setup();
     const left = renderPane({ side: 'a', onActivate: vi.fn() });

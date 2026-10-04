@@ -161,7 +161,10 @@ export default function useFileDragDrop({
       if (dragOver) setDragOver(false);
       if (dragOverRowName !== overFolder) setDragOverRowName(overFolder);
     } else {
-      if (!dragOver) setDragOver(true);
+      // The wash means "drops here" (or, on a pane that takes nothing, "not
+      // here"): not over a spot in a pane that takes drops but not there.
+      const wash = accepts || !dragStateRef.current.onDropFiles;
+      if (dragOver !== wash) setDragOver(wash);
       if (dragOverRowName) setDragOverRowName(null);
     }
     armDragClear();
@@ -201,6 +204,15 @@ export default function useFileDragDrop({
   useEffect(() => {
     const elementAtPoint = (point: OsDragDropPayload['point']) =>
       point && document.elementFromPoint(point.x, point.y);
+    const paneSideAt = (point: OsDragDropPayload['point']) => {
+      if (!point) return undefined;
+      for (const pane of document.querySelectorAll<HTMLElement>('.pane[data-side]')) {
+        const r = pane.getBoundingClientRect();
+        if (point.x >= r.left && point.x < r.right && point.y >= r.top && point.y < r.bottom)
+          return pane.dataset.side;
+      }
+      return undefined;
+    };
     const folderNameAt = (el: Element | null) => {
       const crumb = crumbPath(el);
       if (crumb) return crumb;
@@ -224,7 +236,13 @@ export default function useFileDragDrop({
         // every event, and hit tests after a class change on <body> restyle
         // the whole document.
         const el = elementAtPoint(evt.point);
-        const paneSide = el?.closest<HTMLElement>('[data-side]')?.dataset.side;
+        // While `drag-move-active` is on, only drop areas answer a hit test,
+        // so over a column header the test lands on <body>. The pane is still
+        // the one under the cursor: losing it there would take the classes
+        // off <body> and the next event put them back, restyling the whole
+        // document twice an event until the events piled up.
+        const paneSide =
+          el?.closest<HTMLElement>('[data-side]')?.dataset.side ?? paneSideAt(evt.point);
         if (evt.type === 'leave' || paneSide !== dragStateRef.current.side) {
           // The body classes belong to the pane under the cursor; a pane the
           // cursor is not over must not take them away from it.
@@ -239,7 +257,7 @@ export default function useFileDragDrop({
           const path = accepts ? crumbPath(el) : null;
           moveGhost(accepts ? evt.point : null);
           setDragOverPath(path);
-          setDragOver(!overFolder);
+          setDragOver(!overFolder && (accepts || !dragStateRef.current.onDropFiles));
           setDragRejected(!dragStateRef.current.onDropFiles);
           document.body.classList.toggle('drag-drop-forbidden', !accepts);
           setDragOverRowName(path ? null : overFolder);

@@ -65,6 +65,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pausing or resuming a transfer leaves its row where it is in Transfers.
 - The notification at the end of a big transfer counts every file, not at most 1000.
 - Files dragged out to Explorer one after another give one notification, not one each.
+- Dragging files from Explorer no longer makes the window stop responding over the column
+  headers or while a key is held, and the list lights up only where the files can be dropped.
 - Changing the protocol of a connection or a bookmark changes a default port to the new
   protocol's, and an empty port field shows which port will be used; a port of your own stays.
 - The address field of a bookmark takes at most 255 characters, the longest a server name can be,

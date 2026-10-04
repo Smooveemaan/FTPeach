@@ -12,5 +12,11 @@ with a `FTPeach patch:` comment.
    the source, and a source such as Explorer may take a move from it and delete
    its original, even when FTPeach's copy failed. `Drop` now reports the
    hovering effect: copy for files, none otherwise.
+2. **A hover is reported only when the pointer moved**
+   (`src/webview2/drag_drop.rs`, `DragOver`). While a modifier key is held
+   during a drag from Explorer, Windows calls `DragOver` again and again at
+   the same point. Each call became a `DragDropEvent::Over` and an event for
+   the page, faster than the page handled them, and the window stopped
+   responding until the backlog ran out.
 
-Drop this copy once a released wry reports the effect itself.
+Drop this copy once a released wry does both itself.

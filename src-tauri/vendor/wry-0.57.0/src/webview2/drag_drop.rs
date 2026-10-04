@@ -82,6 +82,8 @@ pub struct DragDropTarget {
   listener: Rc<dyn Fn(DragDropEvent) -> bool>,
   cursor_effect: UnsafeCell<DROPEFFECT>,
   enter_is_valid: UnsafeCell<bool>, /* If the currently hovered item is not valid there must not be any `HoveredFileCancelled` emitted */
+  // FTPeach patch: the screen point last reported, see `DragOver`.
+  last_point: UnsafeCell<(i32, i32)>,
 }
 
 impl DragDropTarget {
@@ -91,6 +93,7 @@ impl DragDropTarget {
       listener,
       cursor_effect: DROPEFFECT_NONE.into(),
       enter_is_valid: false.into(),
+      last_point: (i32::MIN, i32::MIN).into(),
     }
   }
 
@@ -163,6 +166,7 @@ impl IDropTarget_Impl for DragDropTarget_Impl {
     pt: &POINTL,
     pdwEffect: *mut DROPEFFECT,
   ) -> windows::core::Result<()> {
+    unsafe { *self.last_point.get() = (pt.x, pt.y) };
     let mut pt = POINT { x: pt.x, y: pt.y };
     let _ = unsafe { ScreenToClient(self.hwnd, &mut pt) };
 
@@ -204,7 +208,13 @@ impl IDropTarget_Impl for DragDropTarget_Impl {
     pt: &POINTL,
     pdwEffect: *mut DROPEFFECT,
   ) -> windows::core::Result<()> {
-    if unsafe { *self.enter_is_valid.get() } {
+    // FTPeach patch: report a hover only when the pointer moved. While a
+    // modifier key is held, Windows calls DragOver over and over at the same
+    // point; each call became an event for the page, faster than the page
+    // took them, and the window stopped responding until they ran out.
+    let moved = unsafe { *self.last_point.get() } != (pt.x, pt.y);
+    if moved && unsafe { *self.enter_is_valid.get() } {
+      unsafe { *self.last_point.get() = (pt.x, pt.y) };
       let mut pt = POINT { x: pt.x, y: pt.y };
       let _ = unsafe { ScreenToClient(self.hwnd, &mut pt) };
       (self.listener)(DragDropEvent::Over {

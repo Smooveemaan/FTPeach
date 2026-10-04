@@ -198,3 +198,16 @@ test('Ctrl+A in the log selects its lines, for copying', () => {
   expect(selected).toContain('second');
   expect(selected).not.toContain('Probe');
 });
+
+test('a copied line keeps the space after its time', () => {
+  const { container } = render(
+    <LogPanel
+      lines={[line(1, 'hello')]}
+      onClear={vi.fn()}
+      showTimestamps
+      formatTime={formatTime}
+    />,
+  );
+  const time = container.querySelector('.log-chunk .log-line-time')!.textContent;
+  expect(shownLines(container)).toEqual([`${time} hello`]);
+});

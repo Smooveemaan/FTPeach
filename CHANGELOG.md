@@ -76,6 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The Date modified and Date created columns are wide enough for a date with a 12-hour time.
 - Ctrl+A outside the file lists and text fields no longer selects the text of the window, such
   as the log after closing Settings; after a click into the log it selects the log's lines.
+- Lines copied from the log keep the space between the time and the server.
 - Settings → Shortcuts warns when a global shortcut and a file pane shortcut use the same keys.
 - Renaming a file on an FTP or SFTP server to the same name in other letter case works instead
   of failing with "An unexpected error occurred".

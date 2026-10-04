@@ -350,7 +350,12 @@ export default function LogPanel({
     const isFiltered = entry.connectionId === filterConnectionId;
     return (
       <div key={entry.seq} className={`log-line log-line-${entry.kind || 'status'}`}>
-        {showTimestamps && <span className="log-line-time">{formatTime.time(entry.ts)}</span>}
+        {/* A real space, not a margin, so copied lines keep it. */}
+        {showTimestamps && (
+          <>
+            <span className="log-line-time">{formatTime.time(entry.ts)}</span>{' '}
+          </>
+        )}
         {showConnectionTags && entry.connectionId && (
           <>
             {/* A closed connection strikes through only its name, not the

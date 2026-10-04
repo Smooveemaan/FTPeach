@@ -282,7 +282,6 @@
 }
 
 .log-line-time {
-  margin-inline-end: 6px;
   color: var(--text-secondary);
   opacity: 0.7;
   font-variant-numeric: tabular-nums;

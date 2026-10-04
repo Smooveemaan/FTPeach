@@ -1,5 +1,23 @@
 /** Site and connection data shared by the connection bar, the panes, the site manager and IPC. */
 export type SiteProtocol = 'ftp' | 'ftps' | 'sftp' | 'webdav';
+
+/** The port each protocol connects to when the field is empty; WebDAV takes it from the URL. */
+export const DEFAULT_PORTS: Record<SiteProtocol, string> = {
+  ftp: '21',
+  ftps: '21',
+  sftp: '22',
+  webdav: '',
+};
+
+/**
+ * The port field after the protocol changes: empty or any protocol's default
+ * becomes empty, so the new default applies (the field shows it as its
+ * placeholder); a port the user chose stays, as in FileZilla.
+ */
+export function portAfterProtocolChange(port: string): string {
+  const trimmed = port.trim();
+  return Object.values(DEFAULT_PORTS).includes(trimmed) ? '' : port;
+}
 export type SiteKind = 'site' | 'local' | 'folder';
 
 /**

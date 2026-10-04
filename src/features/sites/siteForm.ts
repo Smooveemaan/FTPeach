@@ -1,4 +1,5 @@
 import { MAX_SITE_CONNECTIONS } from '../../platform/ipcContracts.ts';
+import { DEFAULT_PORTS } from '../../shared/siteContracts.ts';
 import type {
   ConnectionForm,
   ManagedSite,
@@ -7,12 +8,6 @@ import type {
 } from '../../shared/siteContracts.ts';
 
 export type NormalizedSitePayload = Record<string, unknown> & { id?: string; name: string };
-
-export const DEFAULT_SITE_PORTS: Partial<Record<SiteProtocol, string>> = {
-  ftp: '21',
-  ftps: '21',
-  sftp: '22',
-};
 
 export function createSiteForm(site?: ManagedSite | null): SiteForm {
   return {
@@ -95,7 +90,7 @@ export function normalizeSiteForm(
       color: form.color,
     };
   }
-  const defaultPort = DEFAULT_SITE_PORTS[form.protocol] || '21';
+  const defaultPort = DEFAULT_PORTS[form.protocol] || '21';
   // The form keeps the flag when the protocol changes; only SFTP signs in with a key.
   const useKeyAuth = form.protocol === 'sftp' && form.useKeyAuth;
   const server: ServerSettings = {

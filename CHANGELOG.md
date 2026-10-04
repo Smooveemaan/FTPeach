@@ -24,6 +24,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Changing the protocol of a connection or a bookmark changes a default port to the new
+  protocol's, and an empty port field shows which port will be used; a port of your own stays.
+- The address field of a bookmark takes at most 255 characters, the longest a server name can be,
+  instead of refusing the bookmark when you save it.
 - Dragging a column header in a list scrolled sideways moves the column to where you drop it,
   instead of several columns further.
 - Renaming a file with F2 selects its name without the extension, as Explorer does.

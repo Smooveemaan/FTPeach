@@ -5,17 +5,11 @@ import ProtocolSelect from './ProtocolSelect.tsx';
 import Icon from '../../components/Icon.tsx';
 import PasswordInput from '../../components/PasswordInput.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
+import { DEFAULT_PORTS, portAfterProtocolChange } from '../../shared/siteContracts.ts';
 import type { ConnectionForm, SiteProtocol } from '../../shared/siteContracts.ts';
 import type { PaneStatus } from '../../shared/paneContracts.ts';
 import { handler } from '../../shared/asyncFailure.ts';
 import { api } from '../../platform/api/index.ts';
-
-const DEFAULT_PORTS: Record<SiteProtocol, string> = {
-  ftp: '21',
-  ftps: '21',
-  sftp: '22',
-  webdav: '',
-};
 
 type ConnectionVisualState = 'idle' | 'connecting' | 'connected' | 'paused';
 type TextFieldKey = 'host' | 'port' | 'webdavUrl' | 'user' | 'password' | 'keyPassphrase';
@@ -62,9 +56,7 @@ export default function ConnectionBar({
     onChange({ ...form, [key]: e.target.value });
 
   const handleProtocolChange = (protocol: SiteProtocol) => {
-    const prevDefault = DEFAULT_PORTS[form.protocol];
-    const nextPort = form.port === prevDefault ? DEFAULT_PORTS[protocol] : form.port;
-    onChange({ ...form, protocol, port: nextPort });
+    onChange({ ...form, protocol, port: portAfterProtocolChange(form.port) });
   };
 
   const chooseKeyFile = async () => {
@@ -123,6 +115,7 @@ export default function ConnectionBar({
       key="host"
       className="field-host"
       placeholder={t('connectionBar.fields.address')}
+      maxLength={255}
       aria-label={t('connectionBar.fields.address')}
       value={form.host}
       onChange={handleField('host')}
@@ -134,7 +127,8 @@ export default function ConnectionBar({
     <input
       key="port"
       className="field-port"
-      placeholder={t('connectionBar.fields.port')}
+      // An empty port is the protocol's default, so that is what the field shows.
+      placeholder={DEFAULT_PORTS[form.protocol] || t('connectionBar.fields.port')}
       aria-label={t('connectionBar.fields.port')}
       value={form.port}
       onChange={handleField('port')}

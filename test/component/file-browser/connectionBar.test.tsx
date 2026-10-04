@@ -42,16 +42,23 @@ function open(initial: Partial<ConnectionForm> = {}, status: PaneStatus = 'idle'
   };
 }
 
-test.each(['21', '2121'])(
-  'switching protocol updates default ports but preserves custom ports (%s)',
-  (port) => {
-    const h = open({ port });
-    fireEvent.click(screen.getByRole('button', { name: 'FTP' }));
-    fireEvent.click(screen.getByRole('option', { name: 'SFTP' }));
-    expect(h.form().protocol).toBe('sftp');
-    expect(h.form().port).toBe(port === '21' ? '22' : '2121');
-  },
-);
+test.each([
+  ['21', ''],
+  ['', ''],
+  ['22', ''],
+  ['2121', '2121'],
+])('switching protocol empties a default port and keeps a custom one (%s)', (port, expected) => {
+  const h = open({ port });
+  fireEvent.click(screen.getByRole('button', { name: 'FTP' }));
+  fireEvent.click(screen.getByRole('option', { name: 'SFTP' }));
+  expect(h.form().protocol).toBe('sftp');
+  expect(h.form().port).toBe(expected);
+  // An empty port is the default, and the field says which.
+  expect(
+    screen.getByRole<HTMLInputElement>('textbox', { name: 'connectionBar.fields.port' })
+      .placeholder,
+  ).toBe('22');
+});
 
 test.each(['idle', 'connecting', 'connected'] as const)(
   'connection state %s routes actions without duplicate connects',

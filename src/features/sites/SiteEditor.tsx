@@ -18,6 +18,7 @@ import type { IconName } from '../../components/Icon.tsx';
 import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
 import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
+import { DEFAULT_PORTS } from '../../shared/siteContracts.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
 import { MAX_SITE_CONNECTIONS } from '../../platform/ipcContracts.ts';
 import { isValidConnectionLimit } from './siteForm.ts';
@@ -433,6 +434,8 @@ export default function SiteEditor({
                 <input
                   type="text"
                   aria-label={t('connectionBar.fields.address')}
+                  // The longest host name DNS allows; the backend refuses more.
+                  maxLength={255}
                   value={form.host}
                   onChange={onField('host')}
                 />
@@ -441,6 +444,7 @@ export default function SiteEditor({
                   type="text"
                   inputMode="numeric"
                   aria-label={t('connectionBar.fields.port')}
+                  placeholder={DEFAULT_PORTS[form.protocol]}
                   value={form.port}
                   onChange={onField('port')}
                 />

@@ -8,12 +8,7 @@ import { isolate } from '../../shared/bidi.ts';
 import { SettingsTransferDialog } from '../settings/ui.ts';
 import type { SettingsTransferOptions } from '../../platform/api/settings.ts';
 import Icon from '../../components/Icon.tsx';
-import {
-  canSubmitSiteForm,
-  createSiteForm,
-  DEFAULT_SITE_PORTS,
-  siteFormsEqual,
-} from './siteForm.ts';
+import { canSubmitSiteForm, createSiteForm, siteFormsEqual } from './siteForm.ts';
 import SiteEditor from './SiteEditor.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
 import type { SiteTextField } from './SiteEditor.tsx';
@@ -32,6 +27,7 @@ import { useNoticeSwap, useStatusNotice } from '../../hooks/useStatusNotice.ts';
 import type { NoticeMessage } from '../../hooks/useStatusNotice.ts';
 import { entriesForManager, sortManagedEntries } from './siteManagerModel.ts';
 import type { SiteManagerKind, SiteSortMode } from './siteManagerModel.ts';
+import { portAfterProtocolChange } from '../../shared/siteContracts.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
 import type { SiteForm } from './siteForm.ts';
 import type { SavedSite, SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
@@ -264,9 +260,7 @@ export default function SiteManagerDialog({
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleProtocolChange = (protocol: SiteProtocol) => {
-    const prevDefault = DEFAULT_SITE_PORTS[form.protocol];
-    const nextPort = form.port === prevDefault ? DEFAULT_SITE_PORTS[protocol] || '' : form.port;
-    setForm((f) => ({ ...f, protocol, port: nextPort }));
+    setForm((f) => ({ ...f, protocol, port: portAfterProtocolChange(f.port) }));
   };
 
   const chooseKeyFile = async () => {

@@ -1,10 +1,12 @@
-//! Keep the main WebView's native container aligned before WRY updates WebView2.
+//! Keep the main WebView's native container aligned before WRY updates WebView2,
+//! and keep a lone Alt from putting the main window into menu mode.
 
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, RECT, WPARAM};
+use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_RBUTTON};
 use windows::Win32::UI::Shell::{DefSubclassProc, RemoveWindowSubclass, SetWindowSubclass};
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetClientRect, GetParent, IsIconic, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER,
-    SetWindowPos, WINDOWPOS, WM_NCDESTROY, WM_WINDOWPOSCHANGED,
+    GetClientRect, GetParent, IsIconic, SC_KEYMENU, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
+    SWP_NOZORDER, SetWindowPos, WINDOWPOS, WM_NCDESTROY, WM_SYSCOMMAND, WM_WINDOWPOSCHANGED,
 };
 
 const SUBCLASS_ID: usize = 0x4654_5052;
@@ -66,11 +68,33 @@ unsafe extern "system" fn resize_proc(
                     );
                 }
             }
+        } else if message == WM_SYSCOMMAND
+            && (wparam.0 & 0xFFF0) as u32 == SC_KEYMENU
+            && keeps_key_menu_closed(lparam.0, mouse_button_held())
+        {
+            return LRESULT(0);
         } else if message == WM_NCDESTROY {
             let _ = RemoveWindowSubclass(parent, Some(resize_proc), subclass_id);
         }
         DefSubclassProc(parent, message, wparam, lparam)
     }
+}
+
+/// The system menu's modal loop, entered from the keyboard, holds the mouse:
+/// no clicks and no Alt+Tab until the app is killed. A lone Alt (lparam 0)
+/// would enter it with nothing to show, since the window draws its own title
+/// bar; during a drag from Explorer, a mouse button held, even Alt+Space
+/// would, as the menu's loop and the drag's lock each other. Alt+Space
+/// otherwise still opens the system menu.
+fn keeps_key_menu_closed(lparam: isize, mouse_button_held: bool) -> bool {
+    lparam == 0 || mouse_button_held
+}
+
+fn mouse_button_held() -> bool {
+    // Physical buttons, so a swapped mouse is covered by asking for both.
+    [VK_LBUTTON, VK_RBUTTON]
+        .iter()
+        .any(|key| unsafe { GetAsyncKeyState(i32::from(key.0)) } < 0)
 }
 
 #[cfg(test)]
@@ -116,6 +140,84 @@ mod tests {
             }
             DefSubclassProc(parent, message, wparam, lparam)
         }
+    }
+
+    unsafe extern "system" fn observe_syscommand(
+        parent: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+        _: usize,
+        data: usize,
+    ) -> LRESULT {
+        unsafe {
+            if message == WM_SYSCOMMAND {
+                (*(data as *const Cell<u32>)).set((wparam.0 & 0xFFF0) as u32);
+            }
+            DefSubclassProc(parent, message, wparam, lparam)
+        }
+    }
+
+    #[test]
+    fn a_lone_alt_does_not_reach_the_system_menu() {
+        use windows::Win32::UI::WindowsAndMessaging::{SC_RESTORE, SendMessageW};
+        let seen = Box::new(Cell::new(0u32));
+        unsafe {
+            let parent = TestWindow(
+                CreateWindowExW(
+                    WINDOW_EX_STYLE::default(),
+                    w!("STATIC"),
+                    w!("alt-test"),
+                    WS_OVERLAPPEDWINDOW,
+                    0,
+                    0,
+                    640,
+                    480,
+                    None,
+                    None,
+                    None,
+                    None,
+                )
+                .expect("create hidden parent"),
+            );
+            // Installed first, so it runs after the hook under test.
+            SetWindowSubclass(
+                parent.0,
+                Some(observe_syscommand),
+                1,
+                (&*seen as *const Cell<u32>) as usize,
+            )
+            .ok()
+            .expect("attach observer");
+            attach(parent.0, HWND::default()).expect("attach hook");
+
+            SendMessageW(
+                parent.0,
+                WM_SYSCOMMAND,
+                Some(WPARAM(SC_KEYMENU as usize)),
+                Some(LPARAM(0)),
+            );
+            assert_eq!(seen.get(), 0, "a lone Alt went on to the system menu");
+            SendMessageW(
+                parent.0,
+                WM_SYSCOMMAND,
+                Some(WPARAM(SC_RESTORE as usize)),
+                Some(LPARAM(0)),
+            );
+            assert_eq!(
+                seen.get(),
+                SC_RESTORE,
+                "other system commands still go through"
+            );
+        }
+        assert!(
+            !keeps_key_menu_closed(' ' as isize, false),
+            "Alt+Space opens the menu"
+        );
+        assert!(
+            keeps_key_menu_closed(' ' as isize, true),
+            "not while a drag holds a button"
+        );
     }
 
     #[test]

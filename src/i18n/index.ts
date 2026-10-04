@@ -4,35 +4,39 @@ import SETTINGS_DEFAULTS from '../shared/settingsDefaults.ts';
 import en from './locales/en.json' with { type: 'json' };
 
 // Native names shown in SettingsDialog's LanguageSelect dropdown —
-// SUPPORTED_LANGUAGES order there drives the dropdown's option order.
+// SUPPORTED_LANGUAGES order there drives the dropdown's option order:
+// alphabetical by native name, Latin script first, then the other scripts in
+// CLDR order (Greek, Cyrillic, Hebrew, Arabic, Devanagari, Thai, Hangul, Han).
+// zh-Hans stays before zh-Hant: matchSupportedLanguage maps a bare "zh" to the
+// first Chinese entry.
 export const SUPPORTED_LANGUAGES = [
-  { value: 'ru', label: 'Русский' },
+  { value: 'id', label: 'Bahasa Indonesia' },
+  { value: 'cs', label: 'Čeština' },
+  { value: 'da', label: 'Dansk' },
+  { value: 'de', label: 'Deutsch' },
   { value: 'en', label: 'English' },
   { value: 'es', label: 'Español' },
   { value: 'fr', label: 'Français' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'pt-BR', label: 'Português (BR)' },
   { value: 'it', label: 'Italiano' },
+  { value: 'hu', label: 'Magyar' },
+  { value: 'nl', label: 'Nederlands' },
+  { value: 'pl', label: 'Polski' },
+  { value: 'pt-BR', label: 'Português (BR)' },
+  { value: 'ro', label: 'Română' },
+  { value: 'sv', label: 'Svenska' },
+  { value: 'vi', label: 'Tiếng Việt' },
+  { value: 'tr', label: 'Türkçe' },
+  { value: 'el', label: 'Ελληνικά' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'uk', label: 'Українська' },
+  { value: 'he', label: 'עברית' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'hi', label: 'हिन्दी' },
+  { value: 'th', label: 'ไทย' },
+  { value: 'ko', label: '한국어' },
+  { value: 'ja', label: '日本語' },
   { value: 'zh-Hans', label: '简体中文' },
   { value: 'zh-Hant', label: '繁體中文' },
-  { value: 'hi', label: 'हिन्दी' },
-  { value: 'ja', label: '日本語' },
-  { value: 'ko', label: '한국어' },
-  { value: 'tr', label: 'Türkçe' },
-  { value: 'pl', label: 'Polski' },
-  { value: 'uk', label: 'Українська' },
-  { value: 'ar', label: 'العربية' },
-  { value: 'vi', label: 'Tiếng Việt' },
-  { value: 'id', label: 'Bahasa Indonesia' },
-  { value: 'nl', label: 'Nederlands' },
-  { value: 'cs', label: 'Čeština' },
-  { value: 'hu', label: 'Magyar' },
-  { value: 'el', label: 'Ελληνικά' },
-  { value: 'sv', label: 'Svenska' },
-  { value: 'ro', label: 'Română' },
-  { value: 'da', label: 'Dansk' },
-  { value: 'th', label: 'ไทย' },
-  { value: 'he', label: 'עברית' },
 ] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]['value'];
 

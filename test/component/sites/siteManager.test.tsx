@@ -85,6 +85,18 @@ function renderManager(overrides: Partial<SiteManagerDialogProps> = {}) {
   return { ...render(<SiteManagerDialog {...props} />), props };
 }
 
+/** The footer's message once the counts it replaces have faded out. */
+async function footerNotice() {
+  const footer = requireHtml(document.querySelector('.site-manager-footer'));
+  await waitFor(() => expect(footer.className).toContain('is-leaving'));
+  // jsdom has no AnimationEvent, so React listens for the prefixed name there.
+  fireEvent(
+    within(footer).getByText('siteManagerDialog.footerFolders'),
+    new Event('webkitAnimationEnd', { bubbles: true }),
+  );
+  return within(footer).getByRole('status').textContent;
+}
+
 function requireHtml(element: Element | null | undefined): HTMLElement {
   if (!(element instanceof HTMLElement)) throw new Error('Expected an HTML element');
   return element;
@@ -467,7 +479,7 @@ describe('Site Manager workflows', () => {
     );
   });
 
-  test('requests vault unlock and retries saving a bookmark', async () => {
+  test('requests vault unlock and retries saving a bookmark with the password typed', async () => {
     const user = userEvent.setup();
     const onSave = vi
       .fn()
@@ -482,11 +494,15 @@ describe('Site Manager workflows', () => {
       screen.getByRole('textbox', { name: 'connectionBar.fields.address' }),
       'test.example',
     );
+    await user.type(screen.getByLabelText('connectionBar.fields.password'), 'secret');
     await user.click(screen.getByRole('button', { name: 'common.save' }));
 
     await waitFor(() => expect(onVaultUnlockRequired).toHaveBeenCalledOnce());
+    // Windows Hello takes the focus, and the password field clears with it.
+    act(() => window.dispatchEvent(new Event('blur')));
     onVaultUnlockRequired.mock.calls[0]?.[0]();
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave).toHaveBeenLastCalledWith(expect.objectContaining({ password: 'secret' }));
   });
 
   test('requests vault unlock and retries deleting a bookmark', async () => {
@@ -1046,6 +1062,20 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     expect(vi.mocked(props.onSave).mock.calls[0]?.[0]).not.toHaveProperty('id');
   });
 
+  test('a failure in the list reads in the footer, not above the list', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+    vi.mocked(props.onSave).mockResolvedValueOnce({ ok: false, error: 'disk is full' });
+
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.duplicate' }),
+    );
+
+    expect(await footerNotice()).toBe('disk is fulldisk is full');
+    expect(document.querySelector('.form-error')).toBeNull();
+  });
+
   test('"New Bookmark Here" from a folder saves the new bookmark into that folder', async () => {
     const user = userEvent.setup();
     const { props } = renderManager();
@@ -1189,7 +1219,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     const alpha = screen.getByRole('treeitem', { name: 'Alpha' });
     fireEvent.keyDown(alpha, { key: 'ArrowDown', altKey: true });
 
-    expect((await screen.findByRole('alert')).textContent).toContain('Layout failed');
+    expect(await footerNotice()).toContain('Layout failed');
     expect(props.onApplyLayout).toHaveBeenCalledOnce();
     expect(screen.getAllByRole('treeitem').map((row) => row.dataset.rowId)).toEqual([
       'site-a',

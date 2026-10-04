@@ -79,9 +79,9 @@ export function useSiteManagerMutations({
   } = dialog;
 
   const handleSubmit = useCallback(
-    async (allowDuplicate = false) => {
+    async (allowDuplicate = false, secrets = readSecrets()) => {
       if (!canSubmit || saving) return;
-      const payload = normalizeSiteForm(form, editingId, readSecrets());
+      const payload = normalizeSiteForm(form, editingId, secrets);
       const duplicate = findProbableDuplicate(entries, payload, payload.id);
       if (duplicate && allowDuplicate !== true) {
         setPendingDuplicate(duplicate);
@@ -93,7 +93,9 @@ export function useSiteManagerMutations({
         const result = await onSave(payload);
         if (!result?.ok) {
           if (result?.errorCode === 'vaultLocked') {
-            onVaultUnlockRequired(() => void handleSubmit(allowDuplicate));
+            // The retry keeps the password read now: unlocking with Windows Hello
+            // takes the focus away, and the fields clear when the window loses it.
+            onVaultUnlockRequired(() => void handleSubmit(allowDuplicate, secrets));
             return;
           }
           // Declining the backend's confirmation is not a failure to report:

@@ -102,7 +102,11 @@ function FileRow({
       <span className="icon">
         <Icon name={fileIconName(entry)} size={13} />
       </span>
-      <span ref={nameRef} className={`name${nameTruncated ? ' truncated' : ''}`}>
+      <span
+        ref={nameRef}
+        className={`name${nameTruncated ? ' truncated' : ''}`}
+        dir={rename ? undefined : 'auto'}
+      >
         {rename || <bdi>{entry.name}</bdi>}
       </span>
       {activeColumns.map((key) => (

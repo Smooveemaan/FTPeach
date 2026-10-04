@@ -127,6 +127,7 @@ function TransferItemRow({
               <span
                 ref={nameRef}
                 className={`t-name${nameTruncated ? ' truncated' : ''}`}
+                dir="auto"
                 data-tooltip={fullPath}
               >
                 <bdi>{displayName}</bdi>

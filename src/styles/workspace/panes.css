@@ -570,6 +570,16 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
   display: flex;
   align-items: center;
 }
+/* The name keeps to the window's side; an auto margin is dropped when the
+   name overflows, so a long one still starts at its own start and is cut at
+   its end. */
+.row .name > bdi {
+  margin-right: auto;
+}
+[dir='rtl'] .row .name > bdi {
+  margin-right: 0;
+  margin-left: auto;
+}
 .row .name.truncated {
   mask-image: var(--truncate-fade);
   -webkit-mask-image: var(--truncate-fade);

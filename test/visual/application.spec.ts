@@ -102,6 +102,29 @@ test('rtl narrow workspace', async ({ page }) => {
   await expect(page).toHaveScreenshot('workspace-rtl-narrow.png');
 });
 
+/* A file name runs left to right inside an RTL window. Too long for its cell,
+   it has to lose its end, not its start; short, it keeps to the right. */
+test('rtl cuts a long file name at its end', async ({ page }) => {
+  await openRtlHarness(page);
+  const edges = await page.evaluate(() =>
+    ['.row .name > bdi', '.t-name > bdi'].map((selector) => {
+      const name = document.querySelector(selector)!;
+      const cell = name.parentElement!;
+      const fits = cell.getBoundingClientRect().right - name.getBoundingClientRect().right;
+      cell.style.flex = 'none';
+      cell.style.width = '40px';
+      const box = cell.getBoundingClientRect();
+      const text = name.getBoundingClientRect();
+      return { fits, start: text.left - box.left, end: text.right - box.right };
+    }),
+  );
+  for (const { fits, start, end } of edges) {
+    expect(Math.abs(fits)).toBeLessThan(1);
+    expect(Math.abs(start)).toBeLessThan(1);
+    expect(end).toBeGreaterThan(0);
+  }
+});
+
 /* The pane toolbar clips to fold its buttons into the overflow menu, and a
    pressed button shifts 1px down — which must stay inside that clip, or the
    button loses its bottom border while held. */

@@ -168,6 +168,15 @@
   --truncate-fade: linear-gradient(to left, #000 calc(100% - 16px), transparent 100%);
 }
 
+/* A file name runs in its own direction whatever the window's, so it is cut,
+   and faded, at its own end: "report-2026.txt" loses its end in Arabic too. */
+[dir='auto']:dir(ltr) {
+  --truncate-fade: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
+}
+[dir='auto']:dir(rtl) {
+  --truncate-fade: linear-gradient(to left, #000 calc(100% - 16px), transparent 100%);
+}
+
 * {
   box-sizing: border-box;
 }

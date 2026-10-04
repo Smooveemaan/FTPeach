@@ -118,6 +118,12 @@ body.column-resize-active .transfer-item:hover {
   color: var(--text-primary);
   overflow: hidden;
   white-space: nowrap;
+  /* The name keeps to the window's side; a name too long for the cell still
+     starts at its own start and is cut at its end. */
+  text-align: left;
+}
+[dir='rtl'] .t-name {
+  text-align: right;
 }
 .t-name.truncated {
   mask-image: var(--truncate-fade);

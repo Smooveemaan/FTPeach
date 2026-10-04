@@ -43,6 +43,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   connections is no longer cut off at its start.
 - Arabic text in column headers, the log, the status bar and file names is no longer stretched
   letter by letter.
+- In Arabic and Hebrew, a long file name in the file list and in Transfers is cut at its end,
+  not at its start.
 - A file too large for a WebDAV server, a server with no free connections and other limits say
   that a limit was reached, instead of "The provided value is invalid".
 - Check Now in a portable copy says there is no update, instead of "Couldn't check for updates",

@@ -23,7 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - "Allow system unlock" says why it cannot be turned on while the vault is locked, and says that
   Windows is creating the Windows Hello key while it is being turned on.
 - Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", "Name (3)" and so on,
-  instead of opening an editor with "(copy)" added to the name.
+  instead of opening an editor with "(copy)" added to the name. It works while the vault is
+  locked, and a failure shows in the status line at the bottom.
 - The FTPeach icon and the tray icon are the peach on its own, without the square background, so
   they stand out on a light taskbar too.
 - A bookmark's icon and color menus open scrolled to the one that is chosen.

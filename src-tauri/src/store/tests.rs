@@ -137,6 +137,40 @@ async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[tokio::test]
+async fn a_new_bookmark_without_a_secret_is_saved_while_the_vault_is_locked() {
+    let root = std::env::temp_dir().join(format!("ftpeach-locked-copy-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(root.clone());
+    let vault = Vault::new(root.clone());
+    vault.setup("correct horse battery staple").await.unwrap();
+    vault.lock().await;
+    let site = |extra: Value| -> JsonMap {
+        let mut site = json!({"name":"Copy", "protocol":"ftp", "host":"example.test"});
+        site.as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        serde_json::from_value(site).unwrap()
+    };
+    let saved = store
+        .save_site_with_vault(site(json!({})), None, &vault)
+        .await
+        .unwrap();
+    let id = saved.id;
+    for refused in [json!({"password":"secret"}), json!({"id": id})] {
+        let Err(error) = store
+            .save_site_with_vault(site(refused), None, &vault)
+            .await
+        else {
+            panic!("a locked vault let the save through");
+        };
+        assert_eq!(
+            crate::ipc::CommandError::from(error).code,
+            crate::ipc::ErrorCode::VaultLocked
+        );
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[cfg(windows)]
 #[tokio::test]
 async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {

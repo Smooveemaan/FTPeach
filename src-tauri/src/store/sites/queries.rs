@@ -289,7 +289,20 @@ impl Store {
                 .save_site_with_protector(input, confirmed, Self::protect_secret)
                 .await;
         }
-        if !vault.is_unlocked().await {
+        // A new bookmark with no secret, such as a duplicate, leaves the vault
+        // alone; anything else may read or change what the vault holds.
+        let is_new = input
+            .get("id")
+            .and_then(Value::as_str)
+            .is_none_or(str::is_empty);
+        let has_secret = ["password", "keyPassphrase"].iter().any(|field| {
+            input
+                .get(*field)
+                .and_then(Value::as_str)
+                .is_some_and(|v| !v.is_empty())
+        });
+        let vault_untouched = is_new && !has_secret;
+        if !vault_untouched && !vault.is_unlocked().await {
             return Err(crate::ipc::vault_locked());
         }
 
@@ -367,9 +380,14 @@ impl Store {
             });
             has_key_passphrase = true;
         }
-        let old_password = vault.get_secret(&id, "password").await?;
-        let old_key = vault.get_secret(&id, "keyPassphrase").await?;
-        vault.apply_secret_updates(&updates).await?;
+        let (old_password, old_key) = if vault_untouched {
+            (None, None)
+        } else {
+            let old_password = vault.get_secret(&id, "password").await?;
+            let old_key = vault.get_secret(&id, "keyPassphrase").await?;
+            vault.apply_secret_updates(&updates).await?;
+            (old_password, old_key)
+        };
 
         input.insert("password".into(), Value::String(String::new()));
         input.insert("keyPassphrase".into(), Value::String(String::new()));
@@ -379,6 +397,7 @@ impl Store {
         input.insert("hasKeyPassphrase".into(), Value::Bool(has_key_passphrase));
         match self.save_site(input).await {
             Ok(saved) => Ok(saved),
+            Err(error) if vault_untouched => Err(error),
             Err(error) => {
                 restore_secrets(vault, &id, old_password.as_deref(), old_key.as_deref())
                     .await

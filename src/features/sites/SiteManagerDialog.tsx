@@ -16,7 +16,6 @@ import {
   siteFormsEqual,
 } from './siteForm.ts';
 import SiteEditor from './SiteEditor.tsx';
-import DismissibleError from '../../components/DismissibleError.tsx';
 import type { SiteTextField } from './SiteEditor.tsx';
 import SiteSearchResults from './SiteSearchResults.tsx';
 import SortModeSelect from './SortModeSelect.tsx';
@@ -402,6 +401,14 @@ export default function SiteManagerDialog({
 
   const editing = editingId != null;
 
+  // A failure in the list reads in the footer, the way an import's result
+  // does; the editor shows its own.
+  useEffect(() => {
+    if (editing || !error) return;
+    showNotice({ text: error, short: error });
+    setError('');
+  }, [editing, error, setError, showNotice]);
+
   return (
     <>
       <Modal
@@ -581,14 +588,6 @@ export default function SiteManagerDialog({
           />
         ) : (
           <>
-            {error && (
-              <DismissibleError
-                className="form-error site-manager-error"
-                message={error}
-                closeLabel={t('common.close')}
-                onDismiss={() => setError('')}
-              />
-            )}
             {isSearching ? (
               <SiteSearchResults
                 sites={filteredSites}

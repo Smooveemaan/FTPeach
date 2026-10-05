@@ -66,6 +66,37 @@
   color: var(--accent-green);
 }
 
+/* Work that takes a while, such as Windows making a Windows Hello key:
+   the hint turns to the accent colour and ends in a spinner the size of its
+   letters. */
+.settings-hint.settings-busy {
+  color: var(--accent-primary);
+}
+
+.settings-spinner {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-inline-start: 0.4em;
+  vertical-align: -0.05em;
+  animation: settings-spinner-turn 0.8s linear infinite;
+}
+
+.settings-spinner circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  /* Three quarters of the ring. */
+  stroke-dasharray: 28 10;
+}
+
+@keyframes settings-spinner-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 
 .settings-option-group.settings-proxy-fields {
   grid-template-columns: auto 1fr;

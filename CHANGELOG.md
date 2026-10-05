@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   update: it also appears after moving the portable copy to another computer.
 - The tray icon's menu no longer locks saved passwords: the lock is on the toolbar.
 - Everything in Transfers, column names and statuses included, is in one monospaced typeface.
+- While Windows Hello is being turned on, its note in Settings turns orange and shows a spinner.
 
 ### Fixed
 

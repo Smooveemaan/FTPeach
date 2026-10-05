@@ -320,12 +320,22 @@ export default function SecuritySettings({
             />
             {t('settings.security.systemUnlock')}
           </label>
-          <p className="settings-hint" role="status">
-            {enablingSystemUnlock
-              ? t('settings.security.systemUnlockEnabling')
-              : vaultStatus.systemUnlockAvailable
-                ? t('settings.security.systemUnlockHint')
-                : t('settings.security.systemUnavailable')}
+          <p
+            className={`settings-hint${enablingSystemUnlock ? ' settings-busy' : ''}`}
+            role="status"
+          >
+            {enablingSystemUnlock ? (
+              <>
+                {t('settings.security.systemUnlockEnabling')}
+                <svg className="settings-spinner" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6" />
+                </svg>
+              </>
+            ) : vaultStatus.systemUnlockAvailable ? (
+              t('settings.security.systemUnlockHint')
+            ) : (
+              t('settings.security.systemUnavailable')
+            )}
           </p>
         </div>
       )}

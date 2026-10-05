@@ -11,6 +11,7 @@ never as a pass.
 | Lane | Runs | Where |
 | --- | --- | --- |
 | default | `npm run check` (Rust: `npm run rust:check`, `npm run rust:clippy`, `npm run rust:test`) | every push, CI `rust-test` and `lint-test-build` on Windows |
+| linux build | `npm run rust:check-linux` (`cargo check --all-targets` in Docker) | CI `rust-linux` on Rust changes; the server matrix builds the crate on Linux too |
 | compatibility | `src-tauri/tests/docker/docker-compose.yml`, then `scripts/with-libsodium.ps1 -Command compatibility` | CI `protocol-compatibility`: weekly, on Cargo changes and as a release gate |
 | server matrix | `npm run servers:up -- all`, then `npm run servers:test` ([how](test-server-matrix.md)) | CI `server-matrix`: weekly and on demand, by profile, not a gate; by hand before a release; IIS targets need `scripts/test-servers/iis.ps1 install` |
 | packaged smoke | `npm run build:packaged-smoke`, then `npm run test:packaged-smoke` | CI `packaged-smoke`, a release gate |

@@ -65,7 +65,8 @@
     "servers:ci": "node --experimental-strip-types scripts/test-servers/ci.ts",
     "screenshot:readme": "node --experimental-strip-types scripts/screenshot/readme.ts",
     "screenshot:video": "node --experimental-strip-types scripts/screenshot/readme.ts --video",
-    "site:build": "node --experimental-strip-types scripts/site/build.ts"
+    "site:build": "node --experimental-strip-types scripts/site/build.ts",
+    "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

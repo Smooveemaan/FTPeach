@@ -161,8 +161,16 @@
     const siteButton = await waitFor('.pane-connect-cta');
     if (!(siteButton instanceof HTMLElement))
       throw new Error('site manager button is not clickable');
-    siteButton.click();
-    await waitFor('.modal-site-manager');
+    // A click while Settings is still closing can be lost; click again.
+    for (let attempt = 1; ; attempt++) {
+      siteButton.click();
+      try {
+        await waitFor('.modal-site-manager', true, 3000);
+        break;
+      } catch (error) {
+        if (attempt === 3) throw error;
+      }
+    }
     key('Escape', 'Escape');
     await waitFor('.modal-site-manager', false);
     const orientation = await waitFor('.orientation-toggle');

@@ -158,24 +158,18 @@
       discard.click();
     }
     await waitFor('.modal-settings', false);
-    // Closing Settings reverts the language and can re-render the pane, which
-    // detaches a button found earlier: look it up again for every click.
-    for (let attempt = 1; ; attempt++) {
-      const siteButton = await waitFor('.pane-connect-cta');
-      if (!(siteButton instanceof HTMLElement))
-        throw new Error('site manager button is not clickable');
-      siteButton.click();
-      try {
-        await waitFor('.modal-site-manager', true, 3000);
-        break;
-      } catch (error) {
-        if (attempt < 3) continue;
-        const open = [...document.querySelectorAll('[class*="modal"]')].map((el) => el.className);
-        throw new Error(`${error.message}; open: ${JSON.stringify(open)}`);
-      }
-    }
-    key('Escape', 'Escape');
-    await waitFor('.modal-site-manager', false);
+    const siteButton = await waitFor('.pane-connect-cta');
+    if (!(siteButton instanceof HTMLElement))
+      throw new Error('site manager button is not clickable');
+    siteButton.click();
+    await waitFor('.modal-site-manager');
+    // Modal listens for Escape from an effect that runs after the dialog is
+    // in the DOM; on a slow runner an Escape sent at once comes too early.
+    await waitUntil(() => {
+      if (!document.querySelector('.modal-site-manager')) return true;
+      key('Escape', 'Escape');
+      return false;
+    }, 'the bookmark manager to close on Escape');
     const orientation = await waitFor('.orientation-toggle');
     if (!(orientation instanceof HTMLButtonElement) || orientation.disabled)
       throw new Error('orientation toggle is unavailable');

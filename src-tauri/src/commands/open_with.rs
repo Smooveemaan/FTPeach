@@ -162,10 +162,16 @@ async fn open_in(
         .map_err(|err| CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())))
 }
 
+#[cfg(not(windows))]
+async fn open_with_chooser(_window: &tauri::WebviewWindow, _path: &Path) -> anyhow::Result<()> {
+    anyhow::bail!("the Open with chooser exists only on Windows")
+}
+
 /// Opens `path` in a program the user picks in Windows' own Open with
 /// chooser, the one Explorer shows for "Choose another app". Its "Always use
 /// this app" box is hidden: a pick here must not change the program Windows
 /// opens this type of file with. Closing the chooser opens nothing.
+#[cfg(windows)]
 async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
     use windows::Win32::Foundation::{ERROR_CANCELLED, HWND};
     use windows::Win32::UI::Shell::{

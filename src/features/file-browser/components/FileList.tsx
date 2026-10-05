@@ -98,9 +98,10 @@ export default function FileList({
           {filterText ? t('filePane.nothingFound') : emptyMessage || t('filePane.emptyFolder')}
         </div>
       )}
-      {entries.length === 0 && gridTemplateColumns && (
+      {entries.length === 0 && !disconnected && gridTemplateColumns && (
         // No rows to be as wide as the columns, so the header, which scrolls
-        // in step with the list, would have nothing to scroll to.
+        // in step with the list, would have nothing to scroll to. A pane with
+        // no session has no header, and its start screen must not scroll.
         <div className="row pane-list-width" aria-hidden="true" style={{ gridTemplateColumns }} />
       )}
       {entries.length > 0 && entries.map((entry, index) => renderRow(entry, index))}

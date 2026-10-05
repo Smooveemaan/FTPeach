@@ -299,6 +299,11 @@ describe('FilePane interactions', () => {
     expect(spacer.style.gridTemplateColumns).not.toBe('');
   });
 
+  test('a pane with no session does not span the columns, so it does not scroll sideways', () => {
+    const { container } = renderPane({ entries: [], disconnected: true });
+    expect(container.querySelector('.pane-list-width')).toBeNull();
+  });
+
   test('Alt+Left still goes back with focus on a path bar button', () => {
     const { container, props } = renderPane({ onNavigateBack: vi.fn() });
     const crumb = requireHtml(container.querySelector('.pane button'));

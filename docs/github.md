@@ -41,7 +41,7 @@ files do not establish that they are enabled.
   described in [updater signing](updater-signing.md).
 - Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**
   so `pages.yml` can publish the website, and set the repository's website to
-  <https://smooveemaan.github.io/FTPeach/>.
+  <https://ftpeach.com/>.
 - Verify the repository description, default branch and issue labels.
 
 ## CI on forks

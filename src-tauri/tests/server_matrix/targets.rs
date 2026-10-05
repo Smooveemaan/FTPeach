@@ -116,10 +116,12 @@ fn webdav(url: &str) -> Map<String, Value> {
         "allowCleartextAuth": true,
         "user": "testuser", "password": "testpass",
     }));
-    // The client reads caCertPath even for http://, and the baseline profile
-    // runs without the matrix CA.
-    if url.starts_with("https://") {
-        config.insert("caCertPath".into(), generated("tls/ca.pem").into());
+    // The client reads caCertPath even for http://, which can redirect to
+    // https (webdav_subpath), and the baseline profile runs without the
+    // matrix CA, so the CA goes in whenever it exists.
+    let ca = generated("tls/ca.pem");
+    if std::path::Path::new(&ca).exists() {
+        config.insert("caCertPath".into(), ca.into());
     }
     config
 }

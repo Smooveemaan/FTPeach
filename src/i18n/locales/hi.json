@@ -25,7 +25,7 @@
     "hidePassword": "पासवर्ड छुपाएँ"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Windows Hello से पुष्टि करने के लिए इसे खाली छोड़ें।",
+    "systemUnlockFailed": "Windows Hello ने पुष्टि नहीं की। मास्टर पासवर्ड दर्ज करें।",
     "title": "FTPeach सुरक्षा पुष्टि",
     "allow": "अनुमति दें",
     "typeToConfirm": "पुष्टि करने के लिए {{phrase}} लिखें",
@@ -841,7 +841,6 @@
     "preventSleep": "कंप्यूटर को स्लीप में जाने से रोकें",
     "notify": "स्थानांतरण समाप्त होने पर सूचित करें",
     "recentConnections": "हाल के कनेक्शन",
-    "lockVault": "सहेजे गए पासवर्ड लॉक करें",
     "quit": "बाहर निकलें",
     "cancelQuit": "बाहर निकलना रद्द करें"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "सभी रुके हुए स्थानांतरण फिर से शुरू करें",
     "stopActive": "सक्रिय स्थानांतरण बंद करें",
     "retryAllStopped": "सभी बंद किए गए स्थानांतरण फिर से आज़माएँ",
-    "refreshPanesTooltip": "दोनों फलकों को ताज़ा करें (F5)"
+    "refreshPanesTooltip": "दोनों फलकों को ताज़ा करें (F5)",
+    "lockVault": "वॉल्ट लॉक करें",
+    "unlockVault": "वॉल्ट अनलॉक करें"
   },
   "paneToolbar": {
     "back": "वापस",

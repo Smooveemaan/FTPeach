@@ -608,7 +608,7 @@ pub(crate) async fn reauthenticate<R: tauri::Runtime>(
     true
 }
 
-/// Windows Hello in place of the master password, over the confirmation
+/// Windows Hello in place of the master password, alone over the main
 /// window. Opening a locked vault this way is an unlock like any other.
 async fn reauthenticate_with_system(
     window: &tauri::WebviewWindow,
@@ -616,12 +616,16 @@ async fn reauthenticate_with_system(
     store: &Store,
 ) -> bool {
     let was_locked = !vault.is_unlocked().await;
-    let Ok(hwnd) = crate::runtime::confirmation_window::window_handle(window) else {
+    let Ok((hwnd, shown)) = crate::runtime::confirmation_window::hello_owner(window) else {
         return false;
     };
     if vault.verify_system(hwnd).await.is_err() {
+        if shown {
+            let _ = crate::runtime::confirmation_window::show(window);
+        }
         return false;
     }
+    crate::runtime::confirmation_window::refocus_main(window.app_handle());
     if was_locked {
         if let Err(error) = store.migrate_secrets_to_vault(vault).await {
             log::warn!("Could not move saved secrets into the vault after unlocking: {error:#}");

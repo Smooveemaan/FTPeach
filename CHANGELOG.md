@@ -10,8 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   there.
 - Settings → Logging can write the log files to a folder of your choice, and opens the log folder.
 - Settings → Password protection can unlock the vault with Windows Hello.
-- Showing a saved password, and other actions that ask for the master password, can be confirmed
-  with Windows Hello where it is enabled; the master password still works.
+- Showing a saved password, and other actions that ask for the master password, ask Windows
+  Hello first where it is enabled; the master password is asked if Windows Hello does not confirm.
+- A lock button on the toolbar locks the vault and unlocks it.
 - Page Up and Page Down move through the file list a screen at a time; with Shift they select.
 - The … in the path bar opens a list of the folders it hides, like the one in Move to.
 - Nine more colors for bookmarks.
@@ -37,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   translation fix.
 - The message about saved passwords that could not be read no longer says it happened after an
   update: it also appears after moving the portable copy to another computer.
+- The tray icon's menu no longer locks saved passwords: the lock is on the toolbar.
 
 ### Fixed
 

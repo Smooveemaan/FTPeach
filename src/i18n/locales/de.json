@@ -25,7 +25,7 @@
     "hidePassword": "Passwort ausblenden"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Leer lassen, um mit Windows Hello zu bestätigen.",
+    "systemUnlockFailed": "Windows Hello hat nicht bestätigt. Geben Sie das Master-Passwort ein.",
     "title": "FTPeach-Sicherheitsbestätigung",
     "allow": "Zulassen",
     "typeToConfirm": "Geben Sie zur Bestätigung {{phrase}} ein",
@@ -841,7 +841,6 @@
     "preventSleep": "Computer wach halten",
     "notify": "Benachrichtigen, wenn Übertragungen abgeschlossen sind",
     "recentConnections": "Letzte Verbindungen",
-    "lockVault": "Gespeicherte Passwörter sperren",
     "quit": "Beenden",
     "cancelQuit": "Beenden abbrechen"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Alle pausierten Übertragungen fortsetzen",
     "stopActive": "Aktive Übertragungen stoppen",
     "retryAllStopped": "Alle gestoppten Übertragungen wiederholen",
-    "refreshPanesTooltip": "Beide Bereiche aktualisieren (F5)"
+    "refreshPanesTooltip": "Beide Bereiche aktualisieren (F5)",
+    "lockVault": "Tresor sperren",
+    "unlockVault": "Tresor entsperren"
   },
   "paneToolbar": {
     "back": "Zurück",

@@ -130,11 +130,9 @@ test.each(['password', 'phrase'])(
   },
 );
 
-test('with Windows Hello on, an empty password confirms through Hello', async () => {
+test('with Windows Hello on, Hello is asked alone and the password is the fallback', async () => {
+  mocks.respond.mockRejectedValueOnce(new Error('cancelled'));
   await open({ requiresReauthentication: true, systemUnlock: true });
-  expect(screen.getByText('securityConfirmation.systemUnlockHint')).toBeTruthy();
-  expect(approve().disabled).toBe(false);
-  fireEvent.click(approve());
   await waitFor(() =>
     expect(mocks.respond).toHaveBeenCalledWith({
       requestId: 'request-1',
@@ -142,6 +140,53 @@ test('with Windows Hello on, an empty password confirms through Hello', async ()
       masterPassword: '',
       useSystemUnlock: true,
     }),
+  );
+  await screen.findByText('securityConfirmation.systemUnlockFailed');
+  // The window showed only once Hello did not confirm.
+  const commands = mocks.invoke.mock.calls.map(([command]) => command as string);
+  expect(commands.indexOf(`${prefix}respond_sensitive_confirmation`)).toBeLessThan(
+    commands.indexOf(`${prefix}sensitive_confirmation_ready`),
+  );
+
+  // Windows Hello can be asked again from beside the password.
+  mocks.respond.mockRejectedValueOnce(new Error('cancelled'));
+  fireEvent.click(screen.getByRole('button', { name: 'settings.security.unlockWithSystem' }));
+  await waitFor(() =>
+    expect(mocks.respond).toHaveBeenLastCalledWith({
+      requestId: 'request-1',
+      approved: true,
+      masterPassword: null,
+      useSystemUnlock: true,
+    }),
+  );
+
+  const password = screen.getByLabelText('settings.security.masterPassword');
+  await waitFor(() => expect(approve().disabled).toBe(true));
+  fireEvent.change(password, { target: { value: 'secret' } });
+  fireEvent.click(approve());
+  await waitFor(() =>
+    expect(mocks.respond).toHaveBeenLastCalledWith({
+      requestId: 'request-1',
+      approved: true,
+      masterPassword: 'secret',
+      useSystemUnlock: false,
+    }),
+  );
+  expect(mocks.respond).toHaveBeenCalledTimes(3);
+});
+
+test.each([
+  ['a phrase to type', { confirmationPhrase: 'RESET' }],
+  ['weakened protections to read', { securityChanges: { strictHostKeyCheck: false } }],
+])('with %s, Hello waits for Allow', async (_, prompt) => {
+  await open({ requiresReauthentication: true, systemUnlock: true, ...prompt });
+  expect(screen.queryByLabelText('settings.security.masterPassword')).toBeNull();
+  expect(mocks.respond).not.toHaveBeenCalled();
+  if ('confirmationPhrase' in prompt)
+    fireEvent.change(screen.getByPlaceholderText('RESET'), { target: { value: 'RESET' } });
+  fireEvent.click(approve());
+  await waitFor(() =>
+    expect(mocks.respond).toHaveBeenCalledWith(expect.objectContaining({ useSystemUnlock: true })),
   );
 });
 

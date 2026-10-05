@@ -25,7 +25,7 @@
     "hidePassword": "Ascunde parola"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Lăsați gol pentru a confirma cu Windows Hello.",
+    "systemUnlockFailed": "Windows Hello nu a confirmat. Introdu parola principală.",
     "title": "Confirmare de securitate FTPeach",
     "allow": "Permite",
     "typeToConfirm": "Tastați {{phrase}} pentru confirmare",
@@ -849,7 +849,6 @@
     "preventSleep": "Menține computerul activ",
     "notify": "Notifică la finalizarea transferurilor",
     "recentConnections": "Conexiuni recente",
-    "lockVault": "Blochează parolele salvate",
     "quit": "Ieși",
     "cancelQuit": "Anulează ieșirea"
   },
@@ -906,7 +905,9 @@
     "resumeAllPaused": "Reia toate transferurile puse pe pauză",
     "stopActive": "Oprește transferurile active",
     "retryAllStopped": "Reîncearcă toate transferurile oprite",
-    "refreshPanesTooltip": "Reîmprospătează ambele panouri (F5)"
+    "refreshPanesTooltip": "Reîmprospătează ambele panouri (F5)",
+    "lockVault": "Blochează seiful",
+    "unlockVault": "Deblochează seiful"
   },
   "paneToolbar": {
     "back": "Înapoi",

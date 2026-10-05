@@ -16,7 +16,6 @@ export interface TrayModel {
     preventSleep: string;
     notify: string;
     recentConnections: string;
-    lockVault: string;
   };
   /** The finished status line, empty while nothing is transferring. */
   status: string;
@@ -29,8 +28,6 @@ export interface TrayModel {
   notifyOnComplete: boolean;
   /** Most recent first, at most three. */
   recentSites: { id: string; label: string }[];
-  /** The vault is set up and unlocked. */
-  vaultLockable: boolean;
   /** Quitting waits for the running transfers to finish. */
   quitPending: boolean;
   /**
@@ -48,16 +45,10 @@ export type TrayAction =
   | { kind: 'setPreventSleep'; enabled: boolean }
   | { kind: 'setNotifyOnComplete'; enabled: boolean }
   | { kind: 'connect'; siteId: string }
-  | { kind: 'lockVault' }
   | { kind: 'quitRequested'; unsyncedEdits?: number }
   | { kind: 'cancelQuit' };
 
-const BARE_ACTIONS: ReadonlySet<string> = new Set([
-  'pauseAll',
-  'resumeAll',
-  'lockVault',
-  'cancelQuit',
-]);
+const BARE_ACTIONS: ReadonlySet<string> = new Set(['pauseAll', 'resumeAll', 'cancelQuit']);
 
 export function isTrayAction(value: unknown): value is TrayAction {
   if (!isRecord(value) || typeof value.kind !== 'string') return false;

@@ -25,7 +25,7 @@
     "hidePassword": "Wachtwoord verbergen"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Laat dit leeg om te bevestigen met Windows Hello.",
+    "systemUnlockFailed": "Windows Hello heeft niet bevestigd. Voer het hoofdwachtwoord in.",
     "title": "FTPeach-beveiligingsbevestiging",
     "allow": "Toestaan",
     "typeToConfirm": "Typ {{phrase}} om te bevestigen",
@@ -841,7 +841,6 @@
     "preventSleep": "Computer wakker houden",
     "notify": "Melden wanneer overdrachten klaar zijn",
     "recentConnections": "Recente verbindingen",
-    "lockVault": "Opgeslagen wachtwoorden vergrendelen",
     "quit": "Afsluiten",
     "cancelQuit": "Afsluiten annuleren"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Alle gepauzeerde overdrachten hervatten",
     "stopActive": "Actieve overdrachten stoppen",
     "retryAllStopped": "Alle gestopte overdrachten opnieuw proberen",
-    "refreshPanesTooltip": "Beide panelen vernieuwen (F5)"
+    "refreshPanesTooltip": "Beide panelen vernieuwen (F5)",
+    "lockVault": "Kluis vergrendelen",
+    "unlockVault": "Kluis ontgrendelen"
   },
   "paneToolbar": {
     "back": "Terug",

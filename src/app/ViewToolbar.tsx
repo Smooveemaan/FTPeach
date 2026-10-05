@@ -36,6 +36,9 @@ interface ViewToolbarProps {
   retryAllTransfers: (refreshTargets?: RefreshAction) => unknown;
   refreshBothPanes: RefreshAction;
   keyboardShortcuts?: ShortcutOverrides | null;
+  /** `null` until read; the lock shows only once a master password is set. */
+  vault?: { configured: boolean; locked: boolean } | null;
+  toggleVault?: Action;
 }
 
 export default function ViewToolbar({
@@ -62,11 +65,17 @@ export default function ViewToolbar({
   retryAllTransfers,
   refreshBothPanes,
   keyboardShortcuts,
+  vault = null,
+  toggleVault = () => undefined,
 }: ViewToolbarProps) {
   const { t } = useTranslation();
   const containerRef = useRef(null);
 
+  const vaultShown = !!vault?.configured;
+  const vaultLabel = vault?.locked ? t('viewToolbar.unlockVault') : t('viewToolbar.lockVault');
   const foldOrder = [
+    // The lock folds first, with the divider before it.
+    ...(vaultShown ? [{ key: 'vault', width: ITEM_WIDTH + DIVIDER_WIDTH }] : []),
     { key: 'refresh', width: ITEM_WIDTH },
     { key: 'orientation', width: ITEM_WIDTH },
     { key: 'log', width: ITEM_WIDTH },
@@ -137,6 +146,7 @@ export default function ViewToolbar({
           },
         ]
       : []),
+    ...(vaultShown && foldedKeys.has('vault') ? [{ label: vaultLabel, onClick: toggleVault }] : []),
   ];
 
   return (
@@ -274,6 +284,21 @@ export default function ViewToolbar({
         >
           <Icon name="refresh" />
         </button>
+      )}
+      {vaultShown && !foldedKeys.has('vault') && (
+        <>
+          <span className="toolbar-divider" />
+          {/* Coloured as in Settings → Security: red locked, green open. */}
+          <button
+            type="button"
+            className={`btn btn-icon vault-lock-toggle ${vault.locked ? 'is-locked' : 'is-unlocked'}`}
+            data-tooltip={vaultLabel}
+            aria-label={vaultLabel}
+            onClick={toggleVault}
+          >
+            <Icon name={vault.locked ? 'lock' : 'lockOpen'} />
+          </button>
+        </>
       )}
       <span className="toolbar-spacer" />
       {hasOverflow && <ToolbarOverflowMenu items={overflowItems} />}

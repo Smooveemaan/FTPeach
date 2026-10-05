@@ -17,6 +17,63 @@ pub(crate) fn window_handle(_: &tauri::WebviewWindow) -> anyhow::Result<isize> {
     Ok(0)
 }
 
+/// Windows Hello stands alone, over the main window: a confirmation already
+/// on screen steps aside while it asks. Gives the handle to show Hello over,
+/// and whether the confirmation was showing, so it comes back when Hello
+/// does not confirm.
+pub(crate) fn hello_owner(window: &tauri::WebviewWindow) -> anyhow::Result<(isize, bool)> {
+    let main = window.app_handle().get_webview_window("main");
+    let hwnd = window_handle(main.as_ref().unwrap_or(window))?;
+    let shown = window.is_visible().unwrap_or(false);
+    if shown {
+        let _ = window.hide();
+    }
+    Ok((hwnd, shown))
+}
+
+/// Back from Windows Hello, the main window is active but its keyboard
+/// focus sits on the window frame, not in the page: typing goes nowhere, and
+/// Alt+Tab leaves without a blur, so a revealed password stays on screen
+/// until the second one. The page takes the focus back. Polled, since Hello's
+/// window closes a moment after its answer; nothing is taken from another
+/// application the user has switched to meanwhile.
+#[cfg(windows)]
+pub(crate) fn refocus_main(app: &tauri::AppHandle) {
+    use windows::Win32::UI::{
+        Input::KeyboardAndMouse::GetFocus, WindowsAndMessaging::GetForegroundWindow,
+    };
+    let Some(main) = app.get_webview_window("main") else {
+        return;
+    };
+    let Ok(hwnd) = window_handle(&main) else {
+        return;
+    };
+    let app = app.clone();
+    std::thread::spawn(move || {
+        // ponytail: polls for 2 s; a hook on the main window's activation if
+        // Hello ever lingers longer.
+        for _ in 0..40 {
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            // SAFETY: a plain query of the window manager.
+            if unsafe { GetForegroundWindow() }.0 as isize != hwnd {
+                continue;
+            }
+            let main = main.clone();
+            // The focus is read on the thread that owns the window.
+            let _ = app.run_on_main_thread(move || {
+                // SAFETY: a plain query of this thread's keyboard focus.
+                let focus = unsafe { GetFocus() };
+                if focus.is_invalid() || focus.0 as isize == hwnd {
+                    let _ = main.as_ref().set_focus();
+                }
+            });
+        }
+    });
+}
+
+#[cfg(not(windows))]
+pub(crate) fn refocus_main(_: &tauri::AppHandle) {}
+
 pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
     let parent = window
         .app_handle()
@@ -89,17 +146,15 @@ fn enable_native_rounding(_: &tauri::WebviewWindow) {}
 const WIDTH: f64 = 460.0;
 const HEIGHT: f64 = 170.0;
 
-/// The theme the main window shows: the saved choice, or Windows' own for
-/// "system", read from the main window.
+/// The theme the main window shows now, an unsaved preview in Settings
+/// included: a protective switch is confirmed the moment it moves, before
+/// Save. The saved choice is the fallback.
 fn light_theme(app: &tauri::AppHandle, preference: Option<&str>) -> bool {
-    match preference {
-        Some("light") => true,
-        Some("dark") => false,
-        _ => app
-            .get_webview_window("main")
-            .and_then(|main| main.theme().ok())
-            .is_some_and(|theme| theme == tauri::Theme::Light),
-    }
+    app.get_webview_window("main")
+        .and_then(|main| main.theme().ok())
+        .map_or(preference == Some("light"), |theme| {
+            theme == tauri::Theme::Light
+        })
 }
 
 pub(crate) fn create(

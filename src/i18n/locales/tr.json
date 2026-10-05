@@ -25,7 +25,7 @@
     "hidePassword": "Şifreyi gizle"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Windows Hello ile onaylamak için boş bırakın.",
+    "systemUnlockFailed": "Windows Hello onaylamadı. Ana şifreyi girin.",
     "title": "FTPeach güvenlik onayı",
     "allow": "İzin ver",
     "typeToConfirm": "Onaylamak için {{phrase}} yazın",
@@ -841,7 +841,6 @@
     "preventSleep": "Bilgisayarı uyanık tut",
     "notify": "Aktarımlar bittiğinde bildirim gönder",
     "recentConnections": "Son bağlantılar",
-    "lockVault": "Kaydedilmiş şifreleri kilitle",
     "quit": "Çık",
     "cancelQuit": "Çıkışı iptal et"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Duraklatılmış tüm aktarımları sürdür",
     "stopActive": "Etkin aktarımları durdur",
     "retryAllStopped": "Durdurulmuş tüm aktarımları yeniden dene",
-    "refreshPanesTooltip": "Her iki bölmeyi de yenile (F5)"
+    "refreshPanesTooltip": "Her iki bölmeyi de yenile (F5)",
+    "lockVault": "Kasayı kilitle",
+    "unlockVault": "Kasanın kilidini aç"
   },
   "paneToolbar": {
     "back": "Geri",

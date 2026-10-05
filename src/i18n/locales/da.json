@@ -25,7 +25,7 @@
     "hidePassword": "Skjul adgangskode"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Lad feltet være tomt for at bekræfte med Windows Hello.",
+    "systemUnlockFailed": "Windows Hello bekræftede ikke. Indtast hovedadgangskoden.",
     "title": "FTPeach-sikkerhedsbekræftelse",
     "allow": "Tillad",
     "typeToConfirm": "Skriv {{phrase}} for at bekræfte",
@@ -841,7 +841,6 @@
     "preventSleep": "Hold computeren vågen",
     "notify": "Giv besked, når overførslerne er afsluttet",
     "recentConnections": "Seneste forbindelser",
-    "lockVault": "Lås gemte adgangskoder",
     "quit": "Afslut",
     "cancelQuit": "Annuller afslutning"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Genoptag alle overførsler på pause",
     "stopActive": "Stop aktive overførsler",
     "retryAllStopped": "Prøv igen med alle stoppede overførsler",
-    "refreshPanesTooltip": "Opdater begge ruder (F5)"
+    "refreshPanesTooltip": "Opdater begge ruder (F5)",
+    "lockVault": "Lås boksen",
+    "unlockVault": "Lås boksen op"
   },
   "paneToolbar": {
     "back": "Tilbage",

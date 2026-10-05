@@ -25,7 +25,7 @@
     "hidePassword": "Ẩn mật khẩu"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Để trống để xác nhận bằng Windows Hello.",
+    "systemUnlockFailed": "Windows Hello không xác nhận. Nhập mật khẩu chính.",
     "title": "Xác nhận bảo mật FTPeach",
     "allow": "Cho phép",
     "typeToConfirm": "Nhập {{phrase}} để xác nhận",
@@ -841,7 +841,6 @@
     "preventSleep": "Giữ máy tính không ngủ",
     "notify": "Thông báo khi quá trình truyền tải hoàn tất",
     "recentConnections": "Các kết nối gần đây",
-    "lockVault": "Khóa mật khẩu đã lưu",
     "quit": "Thoát",
     "cancelQuit": "Hủy thoát"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Tiếp tục tất cả các lượt truyền đang tạm dừng",
     "stopActive": "Dừng các lượt truyền đang thực hiện",
     "retryAllStopped": "Thử lại tất cả các lượt truyền đã dừng",
-    "refreshPanesTooltip": "Làm mới cả hai khung (F5)"
+    "refreshPanesTooltip": "Làm mới cả hai khung (F5)",
+    "lockVault": "Khóa kho bảo mật",
+    "unlockVault": "Mở khóa kho bảo mật"
   },
   "paneToolbar": {
     "back": "Quay lại",

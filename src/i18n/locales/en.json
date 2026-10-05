@@ -25,7 +25,7 @@
     "hidePassword": "Hide password"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Leave it empty to confirm with Windows Hello.",
+    "systemUnlockFailed": "Windows Hello did not confirm. Enter the master password.",
     "title": "FTPeach security confirmation",
     "allow": "Allow",
     "typeToConfirm": "Type {{phrase}} to confirm",
@@ -841,7 +841,6 @@
     "preventSleep": "Keep the computer awake",
     "notify": "Notify when transfers finish",
     "recentConnections": "Recent connections",
-    "lockVault": "Lock saved passwords",
     "quit": "Quit",
     "cancelQuit": "Cancel quit"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Resume all paused transfers",
     "stopActive": "Stop active transfers",
     "retryAllStopped": "Retry all stopped transfers",
-    "refreshPanesTooltip": "Refresh both panes (F5)"
+    "refreshPanesTooltip": "Refresh both panes (F5)",
+    "lockVault": "Lock vault",
+    "unlockVault": "Unlock vault"
   },
   "paneToolbar": {
     "back": "Back",

@@ -25,7 +25,7 @@
     "hidePassword": "إخفاء كلمة المرور"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "اتركه فارغًا للتأكيد باستخدام Windows Hello.",
+    "systemUnlockFailed": "لم يؤكد Windows Hello العملية. أدخل كلمة المرور الرئيسية.",
     "title": "تأكيد أمان FTPeach",
     "allow": "سماح",
     "typeToConfirm": "اكتب {{phrase}} للتأكيد",
@@ -873,7 +873,6 @@
     "preventSleep": "إبقاء الكمبيوتر في وضع التشغيل",
     "notify": "إشعار عند انتهاء عمليات النقل",
     "recentConnections": "الاتصالات الأخيرة",
-    "lockVault": "قفل كلمات المرور المحفوظة",
     "quit": "خروج",
     "cancelQuit": "إلغاء الخروج"
   },
@@ -930,7 +929,9 @@
     "resumeAllPaused": "استئناف جميع عمليات النقل الموقفة مؤقتًا",
     "stopActive": "إيقاف عمليات النقل الجارية",
     "retryAllStopped": "إعادة محاولة جميع عمليات النقل المتوقفة",
-    "refreshPanesTooltip": "تحديث كلا الجزأين (F5)"
+    "refreshPanesTooltip": "تحديث كلا الجزأين (F5)",
+    "lockVault": "قفل الخزنة",
+    "unlockVault": "إلغاء قفل الخزنة"
   },
   "paneToolbar": {
     "back": "رجوع",

@@ -25,7 +25,7 @@
     "hidePassword": "Jelszó elrejtése"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Hagyja üresen a Windows Hellóval való megerősítéshez.",
+    "systemUnlockFailed": "A Windows Hello nem erősítette meg. Adja meg a fő jelszót.",
     "title": "FTPeach biztonsági megerősítés",
     "allow": "Engedélyezés",
     "typeToConfirm": "A megerősítéshez írja be: {{phrase}}",
@@ -841,7 +841,6 @@
     "preventSleep": "A számítógép ébren tartása",
     "notify": "Értesítés az átvitelek befejezéséről",
     "recentConnections": "Legutóbbi kapcsolatok",
-    "lockVault": "Mentett jelszavak zárolása",
     "quit": "Kilépés",
     "cancelQuit": "Kilépés megszakítása"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Az összes szüneteltetett átvitel folytatása",
     "stopActive": "Az aktív átvitelek leállítása",
     "retryAllStopped": "Az összes leállított átvitel újrapróbálása",
-    "refreshPanesTooltip": "Mindkét panel frissítése (F5)"
+    "refreshPanesTooltip": "Mindkét panel frissítése (F5)",
+    "lockVault": "A széf zárolása",
+    "unlockVault": "A széf feloldása"
   },
   "paneToolbar": {
     "back": "Vissza",

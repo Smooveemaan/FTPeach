@@ -25,7 +25,7 @@
     "hidePassword": "הסתר סיסמה"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "השאר ריק כדי לאשר באמצעות Windows Hello.",
+    "systemUnlockFailed": "Windows Hello לא אישר את הפעולה. הזן את סיסמת המאסטר.",
     "title": "אישור אבטחה של FTPeach",
     "allow": "אפשר",
     "typeToConfirm": "יש להקליד {{phrase}} לאישור",
@@ -849,7 +849,6 @@
     "preventSleep": "מנע מהמחשב להיכנס למצב שינה",
     "notify": "הודעה עם סיום ההעברות",
     "recentConnections": "חיבורים אחרונים",
-    "lockVault": "נעל את הסיסמאות השמורות",
     "quit": "יציאה",
     "cancelQuit": "בטל את היציאה"
   },
@@ -906,7 +905,9 @@
     "resumeAllPaused": "המשך את כל ההעברות המושהות",
     "stopActive": "הפסק את ההעברות הפעילות",
     "retryAllStopped": "נסה שוב את כל ההעברות שנעצרו",
-    "refreshPanesTooltip": "רענן את שתי החלוניות (F5)"
+    "refreshPanesTooltip": "רענן את שתי החלוניות (F5)",
+    "lockVault": "נעל את הכספת",
+    "unlockVault": "ביטול נעילת הכספת"
   },
   "paneToolbar": {
     "back": "אחורה",

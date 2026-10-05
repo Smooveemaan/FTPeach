@@ -25,7 +25,7 @@
     "hidePassword": "パスワードを非表示にする"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "空欄のままにすると Windows Hello で確認します。",
+    "systemUnlockFailed": "Windows Hello で確認できませんでした。マスターパスワードを入力してください。",
     "title": "FTPeach セキュリティ確認",
     "allow": "許可",
     "typeToConfirm": "確認するには {{phrase}} と入力してください",
@@ -841,7 +841,6 @@
     "preventSleep": "コンピューターをスリープさせない",
     "notify": "転送が完了したら通知する",
     "recentConnections": "最近の接続",
-    "lockVault": "保存済みのパスワードをロック",
     "quit": "終了",
     "cancelQuit": "終了をキャンセル"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "一時停止中の転送をすべて再開",
     "stopActive": "実行中の転送を停止",
     "retryAllStopped": "停止した転送をすべて再試行",
-    "refreshPanesTooltip": "両方のペインを更新（F5）"
+    "refreshPanesTooltip": "両方のペインを更新（F5）",
+    "lockVault": "保管庫をロック",
+    "unlockVault": "保管庫のロックを解除"
   },
   "paneToolbar": {
     "back": "戻る",

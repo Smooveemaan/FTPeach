@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { SettingsUpdaters } from '../../features/settings/index.ts';
 import { getTransfersSnapshot, subscribeTransfers } from '../../features/transfers/index.ts';
 import { api } from '../../platform/api/index.ts';
@@ -24,7 +24,6 @@ type TrayApi = Pick<typeof api.tray, 'setModel' | 'onAction'>;
  * point a transfer counts as stalled, lets it read 0.
  */
 const STALL_RECHECK_MS = 2500;
-type VaultApi = Pick<typeof api.vault, 'status' | 'lock' | 'onLocked' | 'onUnlocked'>;
 
 export interface TrayBridgeOptions {
   t: Translate;
@@ -40,7 +39,6 @@ export interface TrayBridgeOptions {
   connectSavedSite: (site: ManagedSite, paneId?: PaneId) => void;
   freeConnectTargetPaneId: PaneId | null;
   trayApi?: TrayApi;
-  vaultApi?: VaultApi;
   persist?: (patch: Record<string, unknown>) => void;
 }
 
@@ -63,11 +61,8 @@ export function useTrayBridge({
   connectSavedSite,
   freeConnectTargetPaneId,
   trayApi = api.tray,
-  vaultApi = api.vault,
   persist = persistSetting,
 }: TrayBridgeOptions): void {
-  const vault = useVaultState(vaultApi);
-
   const { pending: quitPending, promptOpen: quitPromptOpen } = quit;
   const { transferSpeedLimitKBps, preventSleepDuringTransfers, notifyOnTransferComplete } =
     settings;
@@ -76,7 +71,6 @@ export function useTrayBridge({
     transfers,
     settings: { transferSpeedLimitKBps, preventSleepDuringTransfers, notifyOnTransferComplete },
     recentSites,
-    vault,
     quit: { pending: quitPending, promptOpen: quitPromptOpen },
   };
   const inputRef = useRef(input);
@@ -124,7 +118,6 @@ export function useTrayBridge({
     preventSleepDuringTransfers,
     notifyOnTransferComplete,
     recentSites,
-    vault,
     quitPending,
     quitPromptOpen,
   ]);
@@ -173,11 +166,6 @@ export function useTrayBridge({
             if (site) actions.connectSavedSite(site, actions.freeConnectTargetPaneId ?? undefined);
             return;
           }
-          case 'lockVault':
-            // The backend announces the lock like any other; the tray drops
-            // its lock item when it hears it.
-            reportRejection(vaultApi.lock());
-            return;
           case 'quitRequested':
             actions.quit.request(action.unsyncedEdits ?? 0);
             return;
@@ -186,46 +174,6 @@ export function useTrayBridge({
             return;
         }
       }),
-    [trayApi, vaultApi],
+    [trayApi],
   );
-}
-
-type VaultState = { configured: boolean; locked: boolean } | null;
-
-/**
- * The vault's state as far as the tray cares. It is read again when the
- * backend announces a lock or an unlock, and whenever the page is hidden,
- * which is when the icon appears.
- */
-function useVaultState(vaultApi: VaultApi): VaultState {
-  const [vault, setVault] = useState<VaultState>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const refresh = () => {
-      vaultApi.status().then(
-        ({ configured, locked }) => {
-          if (cancelled) return;
-          setVault((previous) =>
-            previous?.configured === configured && previous.locked === locked
-              ? previous
-              : { configured, locked },
-          );
-        },
-        // An unreadable status keeps the last one; the tray is no place to
-        // report it.
-        () => undefined,
-      );
-    };
-    refresh();
-    const stopLocked = vaultApi.onLocked(refresh);
-    const stopUnlocked = vaultApi.onUnlocked(refresh);
-    document.addEventListener('visibilitychange', refresh);
-    return () => {
-      cancelled = true;
-      stopLocked();
-      stopUnlocked();
-      document.removeEventListener('visibilitychange', refresh);
-    };
-  }, [vaultApi]);
-  return vault;
 }

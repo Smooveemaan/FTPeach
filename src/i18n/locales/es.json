@@ -25,7 +25,7 @@
     "hidePassword": "Ocultar contraseña"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Déjalo vacío para confirmar con Windows Hello.",
+    "systemUnlockFailed": "Windows Hello no lo ha confirmado. Escribe la contraseña maestra.",
     "title": "Confirmación de seguridad de FTPeach",
     "allow": "Permitir",
     "typeToConfirm": "Escribe {{phrase}} para confirmar",
@@ -849,7 +849,6 @@
     "preventSleep": "Mantener el equipo activo",
     "notify": "Notificar cuando finalicen las transferencias",
     "recentConnections": "Conexiones recientes",
-    "lockVault": "Bloquear las contraseñas guardadas",
     "quit": "Salir",
     "cancelQuit": "Cancelar la salida"
   },
@@ -906,7 +905,9 @@
     "resumeAllPaused": "Reanudar todas las transferencias en pausa",
     "stopActive": "Detener las transferencias activas",
     "retryAllStopped": "Reintentar todas las transferencias detenidas",
-    "refreshPanesTooltip": "Actualizar ambos paneles (F5)"
+    "refreshPanesTooltip": "Actualizar ambos paneles (F5)",
+    "lockVault": "Bloquear la bóveda",
+    "unlockVault": "Desbloquear la bóveda"
   },
   "paneToolbar": {
     "back": "Atrás",

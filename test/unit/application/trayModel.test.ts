@@ -30,7 +30,6 @@ function input(overrides: Partial<TrayModelInput> = {}): TrayModelInput {
     },
     progressPercent: null,
     speedBytesPerSecond: null,
-    vault: null,
     quit: { pending: false, promptOpen: false },
     settings: {
       transferSpeedLimitKBps: 0,
@@ -58,7 +57,6 @@ test('an idle queue has no status line and nothing to pause or resume', () => {
   assert.equal(model.status, '');
   assert.deepEqual(model.transfers, { active: 0, canPauseAll: false, canResumeAll: false });
   assert.equal(model.labels.show, 'tray.show');
-  assert.equal(model.labels.lockVault, 'tray.lockVault');
 });
 
 test('running transfers show their count, with progress when it is known', () => {
@@ -105,22 +103,6 @@ test('a queue that is only paused offers resume-all without a status line', () =
   );
   assert.equal(model.status, '');
   assert.equal(model.transfers.canResumeAll, true);
-});
-
-test('the vault can be locked only once it is set up and unlocked', () => {
-  assert.equal(buildTrayModel(input()).vaultLockable, false);
-  assert.equal(
-    buildTrayModel(input({ vault: { configured: false, locked: true } })).vaultLockable,
-    false,
-  );
-  assert.equal(
-    buildTrayModel(input({ vault: { configured: true, locked: true } })).vaultLockable,
-    false,
-  );
-  assert.equal(
-    buildTrayModel(input({ vault: { configured: true, locked: false } })).vaultLockable,
-    true,
-  );
 });
 
 test('a pending quit says so in the status line and marks the model', () => {
@@ -176,10 +158,7 @@ test('the menu structure ignores the status numbers but not the status line itse
     trayMenuStructure(running),
     trayMenuStructure({ ...running, status: 'Transferring 2 · 50%' }),
   );
-  assert.notEqual(
-    trayMenuStructure(running),
-    trayMenuStructure({ ...running, vaultLockable: true }),
-  );
+  assert.notEqual(trayMenuStructure(running), trayMenuStructure({ ...running, quitPending: true }));
 });
 
 function senderHarness(initial: TrayModel) {
@@ -227,7 +206,7 @@ test('the sender sends a new menu at once and never repeats an identical model',
   assert.equal(harness.sent.length, 1);
 
   harness.advance(10);
-  harness.set({ ...idle, vaultLockable: true });
+  harness.set({ ...idle, quitPending: true });
   harness.sender.update();
   assert.equal(harness.sent.length, 2);
   assert.equal(harness.pending(), 0);

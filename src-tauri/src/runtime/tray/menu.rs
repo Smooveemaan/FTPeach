@@ -17,7 +17,6 @@ pub const ID_SPEED: &str = "tray-speed";
 pub const ID_PREVENT_SLEEP: &str = "tray-prevent-sleep";
 pub const ID_NOTIFY: &str = "tray-notify";
 pub const ID_RECENT: &str = "tray-recent";
-pub const ID_LOCK_VAULT: &str = "tray-lock-vault";
 pub const ID_QUIT: &str = "tray-quit";
 pub const ID_CANCEL_QUIT: &str = "tray-cancel-quit";
 /// Followed by the preset's index in the model.
@@ -153,9 +152,6 @@ pub fn menu_spec(model: &TrayModel) -> Vec<ItemSpec> {
             sites,
         ));
     }
-    if model.vault_lockable {
-        connections.push(ItemSpec::normal(ID_LOCK_VAULT, &labels.lock_vault));
-    }
     groups.push(connections);
 
     // Quit stays last; while quitting waits for transfers it takes the
@@ -188,7 +184,6 @@ pub fn command_for(model: &TrayModel, id: &str) -> Option<MenuCommand> {
         ID_QUIT => return Some(MenuCommand::Quit),
         ID_PAUSE_ALL => TrayAction::PauseAll,
         ID_RESUME_ALL => TrayAction::ResumeAll,
-        ID_LOCK_VAULT => TrayAction::LockVault,
         ID_CANCEL_QUIT => TrayAction::CancelQuit,
         ID_PREVENT_SLEEP => TrayAction::SetPreventSleep {
             enabled: !model.prevent_sleep,
@@ -659,17 +654,10 @@ mod tests {
         let mut model = configured();
         assert!(!contains_id(&menu_spec(&model), ID_RECENT));
         model.recent_sites = vec![site("a", "Tom & Jerry"), site("b", "Staging")];
-        model.vault_lockable = true;
         let spec = menu_spec(&model);
         assert_eq!(
             ids(&spec)[5..],
-            [
-                "tray-separator-5",
-                ID_RECENT,
-                ID_LOCK_VAULT,
-                "tray-separator-8",
-                ID_QUIT
-            ]
+            ["tray-separator-5", ID_RECENT, "tray-separator-7", ID_QUIT]
         );
         let sites = children(&spec, ID_RECENT);
         assert_eq!(ids(sites), ["tray-recent-0", "tray-recent-1"]);
@@ -685,43 +673,19 @@ mod tests {
     }
 
     #[test]
-    fn lock_vault_shows_only_while_lockable() {
-        let mut model = TrayModel::default();
-        assert!(!contains_id(&menu_spec(&model), ID_LOCK_VAULT));
-        model.vault_lockable = true;
-        let spec = menu_spec(&model);
-        assert_eq!(
-            ids(&spec),
-            [
-                ID_SHOW,
-                "tray-separator-1",
-                ID_LOCK_VAULT,
-                "tray-separator-3",
-                ID_QUIT
-            ]
-        );
-    }
-
-    #[test]
     fn clicks_map_to_commands_only_while_the_model_offers_them() {
         let mut model = TrayModel::default();
         assert_eq!(command_for(&model, ID_SHOW), Some(MenuCommand::Show));
         assert_eq!(command_for(&model, ID_QUIT), Some(MenuCommand::Quit));
         assert_eq!(command_for(&model, ID_PAUSE_ALL), None);
-        assert_eq!(command_for(&model, ID_LOCK_VAULT), None);
         assert_eq!(command_for(&model, ID_STATUS), None);
         assert_eq!(command_for(&model, "tray-separator-1"), None);
         assert_eq!(command_for(&model, "tray-unknown"), None);
 
         model.transfers.can_pause_all = true;
-        model.vault_lockable = true;
         assert_eq!(
             command_for(&model, ID_PAUSE_ALL),
             Some(MenuCommand::Action(TrayAction::PauseAll))
-        );
-        assert_eq!(
-            command_for(&model, ID_LOCK_VAULT),
-            Some(MenuCommand::Action(TrayAction::LockVault))
         );
         assert_eq!(command_for(&model, ID_RESUME_ALL), None);
     }
@@ -780,7 +744,7 @@ mod tests {
         model.prevent_sleep = false;
         assert!(same_shape(&before, &menu_spec(&model)));
 
-        model.vault_lockable = true;
+        model.quit_pending = true;
         assert!(!same_shape(&before, &menu_spec(&model)));
 
         let mut sites = configured();

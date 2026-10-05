@@ -25,7 +25,7 @@
     "hidePassword": "隱藏密碼"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "留空即可使用 Windows Hello 確認。",
+    "systemUnlockFailed": "Windows Hello 未確認。請輸入主密碼。",
     "title": "FTPeach 安全確認",
     "allow": "允許",
     "typeToConfirm": "輸入 {{phrase}} 以確認",
@@ -841,7 +841,6 @@
     "preventSleep": "讓電腦保持喚醒",
     "notify": "傳輸完成時通知",
     "recentConnections": "最近的連線",
-    "lockVault": "鎖定已儲存的密碼",
     "quit": "結束",
     "cancelQuit": "取消結束"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "恢復所有暫停的傳輸",
     "stopActive": "停止進行中的傳輸",
     "retryAllStopped": "重試所有已停止的傳輸",
-    "refreshPanesTooltip": "重新整理兩個窗格（F5）"
+    "refreshPanesTooltip": "重新整理兩個窗格（F5）",
+    "lockVault": "鎖定密碼庫",
+    "unlockVault": "解鎖密碼庫"
   },
   "paneToolbar": {
     "back": "返回",

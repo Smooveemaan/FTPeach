@@ -25,7 +25,7 @@
     "hidePassword": "Skrýt heslo"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Nechte prázdné a potvrďte pomocí Windows Hello.",
+    "systemUnlockFailed": "Windows Hello akci nepotvrdil. Zadejte hlavní heslo.",
     "title": "Bezpečnostní potvrzení FTPeach",
     "allow": "Povolit",
     "typeToConfirm": "Potvrďte zadáním {{phrase}}",
@@ -857,7 +857,6 @@
     "preventSleep": "Nenechat počítač usnout",
     "notify": "Upozornit na dokončení přenosů",
     "recentConnections": "Nedávná připojení",
-    "lockVault": "Zamknout uložená hesla",
     "quit": "Ukončit",
     "cancelQuit": "Zrušit ukončení"
   },
@@ -914,7 +913,9 @@
     "resumeAllPaused": "Pokračovat ve všech pozastavených přenosech",
     "stopActive": "Zastavit aktivní přenosy",
     "retryAllStopped": "Zopakovat všechny zastavené přenosy",
-    "refreshPanesTooltip": "Obnovit oba panely (F5)"
+    "refreshPanesTooltip": "Obnovit oba panely (F5)",
+    "lockVault": "Zamknout trezor",
+    "unlockVault": "Odemknout trezor"
   },
   "paneToolbar": {
     "back": "Zpět",

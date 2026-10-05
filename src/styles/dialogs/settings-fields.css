@@ -52,6 +52,16 @@
   width: 100%;
 }
 
+/* A master password field shows its focus the way the confirmation
+   window's does, wherever it is asked. */
+:is(.settings-security, .modal-vault-unlock) .password-input > input {
+  transition: var(--control-transition);
+}
+
+:is(.settings-security, .modal-vault-unlock) .password-input:not(.is-invalid) > input:focus {
+  border-color: var(--accent-primary);
+}
+
 .settings-security .settings-field > span {
   flex: 0 0 auto;
 }
@@ -127,6 +137,74 @@
 .vault-unlock-row .password-input {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Why the master password is asked, or why it was refused: below the row
+   wherever the vault is unlocked. It fades in, and out after a while; in a
+   dialog it keeps its room, so the dialog does not jump. */
+.settings-hint.vault-unlock-error {
+  margin: 10px 0 0;
+  animation:
+    vault-unlock-error-in 0.3s ease,
+    vault-unlock-error-out 0.6s ease 5s forwards;
+}
+
+@keyframes vault-unlock-error-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vault-unlock-error-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* In Settings the controls below it move: room opens and then the message
+   fades in; it fades out where it stands and then its room closes, so the
+   controls slide down and back up and the text is never cut. A column of
+   flex items, unlike the group's grid, lets the closed room take back the
+   4px gap before it. */
+.settings-option-group.vault-unlock-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.vault-unlock-group .settings-hint.vault-unlock-error {
+  margin-top: 6px;
+  overflow: hidden;
+  interpolate-size: allow-keywords;
+  animation:
+    vault-unlock-error-unfold 0.5s ease,
+    vault-unlock-error-fold 0.8s ease 5s forwards;
+}
+
+@keyframes vault-unlock-error-unfold {
+  from {
+    height: 0;
+    margin-top: -4px;
+    opacity: 0;
+  }
+  50% {
+    height: auto;
+    margin-top: 6px;
+    opacity: 0;
+  }
+}
+
+@keyframes vault-unlock-error-fold {
+  50% {
+    height: auto;
+    margin-top: 6px;
+    opacity: 0;
+  }
+  to {
+    height: 0;
+    margin-top: -4px;
+    opacity: 0;
+  }
 }
 
 /* The standalone unlock prompt mirrors the lock control from Security

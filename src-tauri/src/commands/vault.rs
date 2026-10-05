@@ -7,7 +7,7 @@ use crate::store::Store;
 use std::future::Future;
 use tauri::{Manager, State};
 
-use crate::runtime::confirmation_window::window_handle;
+use crate::runtime::confirmation_window::{refocus_main, window_handle};
 
 /// One neutral answer for every way authentication can fail, so the reply
 /// never says whether the password was wrong, whether the limiter turned the
@@ -159,6 +159,7 @@ pub async fn vault_enable_system_unlock(
         Ok(hwnd) => vault.enable_system_unlock(hwnd).await,
         Err(error) => Err(error),
     };
+    refocus_main(window.app_handle());
     Ok(result?)
 }
 
@@ -179,6 +180,8 @@ pub async fn vault_unlock_system(
     // their mind. It counts like any other refused credential.
     .run(|| async { vault.unlock_system(window_handle(&window)?).await })
     .await;
+    // Unlocked, or refused and the password asked for in the main window.
+    refocus_main(window.app_handle());
     if result.is_ok() {
         crate::security::sensitive::announce_unlocked(window.app_handle());
     }

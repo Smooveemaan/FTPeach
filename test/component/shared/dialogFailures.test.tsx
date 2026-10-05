@@ -69,7 +69,7 @@ describe('dialog async failures', () => {
       />,
     );
     await waitFor(() => expect(sink).toHaveBeenCalledWith(failure));
-    expect(screen.getByLabelText('settings.security.masterPassword')).toBeTruthy();
+    expect(await screen.findByLabelText('settings.security.masterPassword')).toBeTruthy();
   });
 
   test('a refused master password is said in the user’s language, not the backend’s', async () => {
@@ -87,12 +87,61 @@ describe('dialog async failures', () => {
         }}
       />,
     );
-    fireEvent.input(screen.getByLabelText('settings.security.masterPassword'), {
+    fireEvent.input(await screen.findByLabelText('settings.security.masterPassword'), {
       target: { value: 'wrong' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'settings.security.unlock' }));
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe(i18n.t('settings.security.unlockRefused'));
     expect(alert.textContent).not.toBe(backendText);
+  });
+
+  test('Windows Hello comes first, with no dialog behind it', async () => {
+    const onUnlocked = vi.fn();
+    render(
+      <VaultUnlockDialog
+        onClose={vi.fn()}
+        onUnlocked={onUnlocked}
+        vaultApi={{
+          status: vi
+            .fn()
+            .mockResolvedValue({ systemUnlockAvailable: true, systemUnlockEnabled: true }),
+          unlock: vi.fn(),
+          unlockSystem: vi.fn().mockResolvedValue({ ok: true }),
+        }}
+      />,
+    );
+    await waitFor(() => expect(onUnlocked).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  test('the unlock dialog shows when Windows Hello does not confirm, and can ask it again', async () => {
+    let refuse: (_result: { ok: false }) => void = () => undefined;
+    const unlockSystem = vi.fn(() => new Promise<{ ok: boolean }>((resolve) => (refuse = resolve)));
+    const onUnlocked = vi.fn();
+    render(
+      <VaultUnlockDialog
+        onClose={vi.fn()}
+        onUnlocked={onUnlocked}
+        vaultApi={{
+          status: vi
+            .fn()
+            .mockResolvedValue({ systemUnlockAvailable: true, systemUnlockEnabled: true }),
+          unlock: vi.fn().mockResolvedValue({ ok: true }),
+          unlockSystem,
+        }}
+      />,
+    );
+    await waitFor(() => expect(unlockSystem).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('dialog')).toBeNull();
+    refuse({ ok: false });
+    expect(await screen.findByText('securityConfirmation.systemUnlockFailed')).toBeTruthy();
+    expect(onUnlocked).not.toHaveBeenCalled();
+
+    // Asked again from its button, it confirms.
+    unlockSystem.mockResolvedValueOnce({ ok: true });
+    fireEvent.click(screen.getByRole('button', { name: 'settings.security.unlockWithSystem' }));
+    await waitFor(() => expect(onUnlocked).toHaveBeenCalledOnce());
+    expect(unlockSystem).toHaveBeenCalledTimes(2);
   });
 });

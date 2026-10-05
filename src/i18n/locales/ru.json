@@ -25,7 +25,7 @@
     "hidePassword": "Скрыть пароль"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Оставьте пустым, чтобы подтвердить через Windows Hello.",
+    "systemUnlockFailed": "Windows Hello не подтвердил. Введите мастер-пароль.",
     "title": "Подтверждение безопасности FTPeach",
     "allow": "Разрешить",
     "typeToConfirm": "Введите {{phrase}} для подтверждения",
@@ -857,7 +857,6 @@
     "preventSleep": "Не давать компьютеру уснуть",
     "notify": "Уведомлять о завершении передач",
     "recentConnections": "Недавние подключения",
-    "lockVault": "Заблокировать сохранённые пароли",
     "quit": "Выйти",
     "cancelQuit": "Отменить выход"
   },
@@ -914,7 +913,9 @@
     "resumeAllPaused": "Возобновить все приостановленные передачи",
     "stopActive": "Остановить активные передачи",
     "retryAllStopped": "Повторить все остановленные передачи",
-    "refreshPanesTooltip": "Обновить обе панели (F5)"
+    "refreshPanesTooltip": "Обновить обе панели (F5)",
+    "lockVault": "Заблокировать хранилище",
+    "unlockVault": "Разблокировать хранилище"
   },
   "paneToolbar": {
     "back": "Назад",

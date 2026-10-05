@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../platform/api/index.ts';
 import { describeUnknown } from '../platform/ipcContracts.ts';
 import { setAsyncFailureSink } from '../shared/asyncFailure.ts';
 import { friendlyError } from '../shared/errorMessages.ts';
@@ -31,30 +30,6 @@ export function useApplicationError(): ApplicationErrorModel {
   useEffect(() => setAsyncFailureSink(reportError), [reportError]);
 
   return { errorMessage, setErrorMessage, reportError, dismissError };
-}
-
-export function useVaultUnlockRecovery(
-  setRetries: Dispatch<SetStateAction<Array<() => unknown>>>,
-): (retry: () => unknown) => Promise<void> {
-  return useCallback(
-    async (retry: () => unknown) => {
-      try {
-        const status = await api.vault.status();
-        if (status.systemUnlockAvailable && status.systemUnlockEnabled) {
-          const result = await api.vault.unlockSystem();
-          if (result.ok) {
-            retry();
-            return;
-          }
-        }
-      } catch {
-        // Platform credentials are an optional fast path. The queued retry
-        // still allows recovery through the independent master password.
-      }
-      setRetries((previous) => [...previous, retry]);
-    },
-    [setRetries],
-  );
 }
 
 export function connectionVisualState(

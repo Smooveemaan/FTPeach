@@ -25,7 +25,7 @@
     "hidePassword": "Masquer le mot de passe"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Laissez-le vide pour confirmer avec Windows Hello.",
+    "systemUnlockFailed": "Windows Hello n'a pas confirmé. Saisissez le mot de passe principal.",
     "title": "Confirmation de sécurité FTPeach",
     "allow": "Autoriser",
     "typeToConfirm": "Saisissez {{phrase}} pour confirmer",
@@ -849,7 +849,6 @@
     "preventSleep": "Empêcher la mise en veille de l'ordinateur",
     "notify": "M'avertir lorsque les transferts sont terminés",
     "recentConnections": "Connexions récentes",
-    "lockVault": "Verrouiller les mots de passe enregistrés",
     "quit": "Quitter",
     "cancelQuit": "Annuler la fermeture"
   },
@@ -906,7 +905,9 @@
     "resumeAllPaused": "Reprendre tous les transferts mis en pause",
     "stopActive": "Arrêter les transferts en cours",
     "retryAllStopped": "Réessayer tous les transferts arrêtés",
-    "refreshPanesTooltip": "Actualiser les deux volets (F5)"
+    "refreshPanesTooltip": "Actualiser les deux volets (F5)",
+    "lockVault": "Verrouiller le coffre-fort",
+    "unlockVault": "Déverrouiller le coffre-fort"
   },
   "paneToolbar": {
     "back": "Précédent",

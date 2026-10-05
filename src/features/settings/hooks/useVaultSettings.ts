@@ -163,7 +163,16 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
     }
   };
 
-  const unlockVaultWithSystem = () => runVaultAction(() => api.vault.unlockSystem());
+  // Cancelled or refused alike, in the words the unlock dialog uses, and the
+  // password is typed straight away.
+  const unlockVaultWithSystem = async () => {
+    const unlocked = await runVaultAction(() => api.vault.unlockSystem());
+    if (!unlocked) {
+      setVaultMessage(t('securityConfirmation.systemUnlockFailed'));
+      masterPasswordRef.current?.focus();
+    }
+    return unlocked;
+  };
 
   const changeVaultPassword = async () => {
     const next = masterPasswordRef.current?.value || '';

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import TitleBar from './TitleBar.tsx';
 import MenuBar from '../components/MenuBar.tsx';
@@ -35,17 +35,14 @@ import UpdateStatus from './UpdateStatus.tsx';
 import { useUpdateBanner } from './useUpdateBanner.ts';
 import { useResetLayout } from './useResetLayout.ts';
 import { useTrayBridge } from './tray/useTrayBridge.ts';
+import { useVaultState } from './useVaultState.ts';
 import QuitDialog from './quit/QuitDialog.tsx';
 import { useQuitWhenIdle } from './quit/useQuitWhenIdle.ts';
-import {
-  connectionVisualState,
-  useApplicationError,
-  useVaultUnlockRecovery,
-} from './useApplicationController.ts';
+import { connectionVisualState, useApplicationError } from './useApplicationController.ts';
 import { useApplicationMenuCommands } from './useApplicationMenuCommands.ts';
 import { buildApplicationWorkspaceModel } from './applicationWorkspaceModel.ts';
 import { buildApplicationDialogsModel } from './applicationDialogsModel.ts';
-import { handler } from '../shared/asyncFailure.ts';
+import { handler, reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 import type { PaneId } from '../shared/paneContracts.ts';
 
@@ -150,7 +147,17 @@ export default function Application() {
 
   // Panes and tabs
 
-  const handleVaultUnlockRequired = useVaultUnlockRecovery(setVaultUnlockRetries);
+  const handleVaultUnlockRequired = useCallback(
+    (retry: () => unknown) => setVaultUnlockRetries((previous) => [...previous, retry]),
+    [setVaultUnlockRetries],
+  );
+  const vault = useVaultState();
+  // Locked, the unlock dialog opens with nothing to retry; it asks Windows
+  // Hello itself. Open, it locks at once.
+  const toggleVault = () => {
+    if (vault?.locked) handleVaultUnlockRequired(() => undefined);
+    else reportRejection(api.vault.lock());
+  };
 
   const transfers = useTransfers({
     setErrorMessage: reportError,
@@ -525,6 +532,8 @@ export default function Application() {
         retryAllTransfers={retryAllTransfers}
         refreshBothPanes={browser.refreshBothPanes}
         keyboardShortcuts={settings.shortcuts.keyboardShortcuts}
+        vault={vault}
+        toggleVault={toggleVault}
       />
 
       <AppBanners

@@ -25,7 +25,7 @@
     "hidePassword": "Приховати пароль"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Залиште порожнім, щоб підтвердити через Windows Hello.",
+    "systemUnlockFailed": "Windows Hello не підтвердив. Введіть головний пароль.",
     "title": "Підтвердження безпеки FTPeach",
     "allow": "Дозволити",
     "typeToConfirm": "Введіть {{phrase}} для підтвердження",
@@ -857,7 +857,6 @@
     "preventSleep": "Не давати комп'ютеру засинати",
     "notify": "Сповіщати про завершення передавань",
     "recentConnections": "Нещодавні підключення",
-    "lockVault": "Заблокувати збережені паролі",
     "quit": "Вийти",
     "cancelQuit": "Скасувати вихід"
   },
@@ -914,7 +913,9 @@
     "resumeAllPaused": "Відновити всі призупинені передавання",
     "stopActive": "Зупинити активні передавання",
     "retryAllStopped": "Повторити всі зупинені передавання",
-    "refreshPanesTooltip": "Оновити обидві панелі (F5)"
+    "refreshPanesTooltip": "Оновити обидві панелі (F5)",
+    "lockVault": "Заблокувати сховище",
+    "unlockVault": "Розблокувати сховище"
   },
   "paneToolbar": {
     "back": "Назад",

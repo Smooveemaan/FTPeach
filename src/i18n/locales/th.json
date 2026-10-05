@@ -25,7 +25,7 @@
     "hidePassword": "ซ่อนรหัสผ่าน"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "เว้นว่างไว้เพื่อยืนยันด้วย Windows Hello",
+    "systemUnlockFailed": "Windows Hello ไม่ได้ยืนยัน ป้อนรหัสผ่านหลัก",
     "title": "การยืนยันความปลอดภัยของ FTPeach",
     "allow": "อนุญาต",
     "typeToConfirm": "พิมพ์ {{phrase}} เพื่อยืนยัน",
@@ -841,7 +841,6 @@
     "preventSleep": "ไม่ให้คอมพิวเตอร์เข้าสู่โหมดพัก",
     "notify": "แจ้งเตือนเมื่อการโอนเสร็จสิ้น",
     "recentConnections": "การเชื่อมต่อล่าสุด",
-    "lockVault": "ล็อกรหัสผ่านที่บันทึกไว้",
     "quit": "ออกจากโปรแกรม",
     "cancelQuit": "ยกเลิกการออก"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "ดำเนินการต่อทุกการโอนที่ถูกหยุดชั่วคราว",
     "stopActive": "หยุดการโอนที่กำลังดำเนินการ",
     "retryAllStopped": "ลองโอนใหม่ทั้งหมดที่ถูกหยุด",
-    "refreshPanesTooltip": "รีเฟรชทั้งสองแผง (F5)"
+    "refreshPanesTooltip": "รีเฟรชทั้งสองแผง (F5)",
+    "lockVault": "ล็อกคลังนิรภัย",
+    "unlockVault": "ปลดล็อกคลังนิรภัย"
   },
   "paneToolbar": {
     "back": "กลับ",

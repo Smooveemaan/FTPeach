@@ -8,18 +8,18 @@ body,
   background: var(--bg-panel);
 }
 
-.security-confirmation {
+/* The dialog's own .modal parts fill the window, which draws its frame. */
+.modal.security-confirmation {
   position: relative;
   box-sizing: border-box;
-  display: grid;
-  grid-template-rows: 38px 1fr 54px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  max-width: none;
   height: 100%;
   color: var(--text-primary);
-  background: var(--bg-panel);
   border: 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  box-shadow: none;
 }
 
 .security-confirmation::after {
@@ -32,47 +32,8 @@ body,
   border-radius: inherit;
 }
 
-.security-confirmation__titlebar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 8px 0 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  background: var(--bg-panel-alt);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.security-confirmation__title {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.security-confirmation__title.truncated {
-  mask-image: var(--truncate-fade);
-  -webkit-mask-image: var(--truncate-fade);
-}
-
-.security-confirmation__close {
-  padding: 2px 6px;
-  color: var(--text-faint);
-  background: transparent;
-  border: 0;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.security-confirmation__close:hover {
-  color: var(--text-primary);
-  background: var(--bg-raised);
-}
-
-.security-confirmation__close:disabled { opacity: 0.45; cursor: default; }
-
-.security-confirmation__content {
-  padding: 18px 14px;
-  color: var(--text-secondary);
-  font-size: 12.5px;
+.security-confirmation .modal-body {
+  flex: 1 1 auto;
 }
 
 .security-confirmation__content p {
@@ -95,7 +56,23 @@ body,
   font-weight: 500;
 }
 
-.security-confirmation__confirmation input {
+/* Under the message as the unlock dialog's field is under its hints. */
+.security-confirmation__password {
+  margin-top: 8px;
+}
+
+/* The password row of the unlock dialog, with the field taking what is left. */
+.security-confirmation__password .settings-field {
+  flex-wrap: nowrap;
+}
+
+.security-confirmation__password .settings-field input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+:is(.security-confirmation__confirmation, .security-confirmation__password) input {
   width: 100%;
   height: var(--control-height);
   box-sizing: border-box;
@@ -111,27 +88,15 @@ body,
 
 /* WebView2's native password-reveal icon is transient and does not match the
    application's controls. Reauthentication intentionally has no reveal UI. */
-.security-confirmation__confirmation input[type='password']::-ms-reveal,
-.security-confirmation__confirmation input[type='password']::-ms-clear {
+.security-confirmation__password input::-ms-reveal,
+.security-confirmation__password input::-ms-clear {
   display: none;
 }
 
-.security-confirmation__confirmation input:focus {
+:is(.security-confirmation__confirmation, .security-confirmation__password) input:focus {
   border-color: var(--accent-primary);
 }
 
 .security-confirmation__confirmation input::placeholder {
   color: var(--text-faint);
-}
-
-/* Same trailing alignment and 8px gap as .modal-footer — this prompt is a
-   dialog footer too, it just lives outside the shared Modal. */
-.security-confirmation__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border-soft);
 }

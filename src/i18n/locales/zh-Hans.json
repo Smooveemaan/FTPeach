@@ -25,7 +25,7 @@
     "hidePassword": "隐藏密码"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "留空即可使用 Windows Hello 确认。",
+    "systemUnlockFailed": "Windows Hello 未确认。请输入主密码。",
     "title": "FTPeach 安全确认",
     "allow": "允许",
     "typeToConfirm": "输入 {{phrase}} 以确认",
@@ -841,7 +841,6 @@
     "preventSleep": "保持计算机唤醒",
     "notify": "传输完成后通知",
     "recentConnections": "最近的连接",
-    "lockVault": "锁定已保存的密码",
     "quit": "退出",
     "cancelQuit": "取消退出"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "恢复所有已暂停的传输",
     "stopActive": "停止正在进行的传输",
     "retryAllStopped": "重试所有已停止的传输",
-    "refreshPanesTooltip": "刷新两个窗格（F5）"
+    "refreshPanesTooltip": "刷新两个窗格（F5）",
+    "lockVault": "锁定密码库",
+    "unlockVault": "解锁密码库"
   },
   "paneToolbar": {
     "back": "返回",

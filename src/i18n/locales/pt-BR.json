@@ -25,7 +25,7 @@
     "hidePassword": "Ocultar senha"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Deixe em branco para confirmar com o Windows Hello.",
+    "systemUnlockFailed": "O Windows Hello não confirmou. Digite a senha mestra.",
     "title": "Confirmação de segurança do FTPeach",
     "allow": "Permitir",
     "typeToConfirm": "Digite {{phrase}} para confirmar",
@@ -849,7 +849,6 @@
     "preventSleep": "Manter o computador ativo",
     "notify": "Notificar quando as transferências forem concluídas",
     "recentConnections": "Conexões recentes",
-    "lockVault": "Bloquear senhas salvas",
     "quit": "Sair",
     "cancelQuit": "Cancelar saída"
   },
@@ -906,7 +905,9 @@
     "resumeAllPaused": "Retomar todas as transferências pausadas",
     "stopActive": "Parar as transferências ativas",
     "retryAllStopped": "Tentar novamente todas as transferências paradas",
-    "refreshPanesTooltip": "Atualizar os dois painéis (F5)"
+    "refreshPanesTooltip": "Atualizar os dois painéis (F5)",
+    "lockVault": "Bloquear o cofre",
+    "unlockVault": "Desbloquear o cofre"
   },
   "paneToolbar": {
     "back": "Voltar",

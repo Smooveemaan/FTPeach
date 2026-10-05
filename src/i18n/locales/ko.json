@@ -25,7 +25,7 @@
     "hidePassword": "비밀번호 숨기기"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "비워 두면 Windows Hello로 확인합니다.",
+    "systemUnlockFailed": "Windows Hello에서 확인되지 않았습니다. 마스터 비밀번호를 입력하세요.",
     "title": "FTPeach 보안 확인",
     "allow": "허용",
     "typeToConfirm": "확인하려면 {{phrase}}을(를) 입력하세요",
@@ -841,7 +841,6 @@
     "preventSleep": "컴퓨터 절전 모드 방지",
     "notify": "전송이 완료되면 알림 보내기",
     "recentConnections": "최근 연결",
-    "lockVault": "저장된 비밀번호 잠그기",
     "quit": "종료",
     "cancelQuit": "종료 취소"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "일시 중지된 모든 전송 재개",
     "stopActive": "활성 전송 중지",
     "retryAllStopped": "중지된 모든 전송 다시 시도",
-    "refreshPanesTooltip": "두 창 모두 새로 고침 (F5)"
+    "refreshPanesTooltip": "두 창 모두 새로 고침 (F5)",
+    "lockVault": "보관소 잠그기",
+    "unlockVault": "보관소 잠금 해제"
   },
   "paneToolbar": {
     "back": "뒤로",

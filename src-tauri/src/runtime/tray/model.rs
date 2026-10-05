@@ -1,6 +1,5 @@
 //! What the renderer tells the tray icon to show, and what the icon reports
-//! back. The renderer owns the transfer queue, the settings and the vault
-//! state, so it hands over finished, localized strings; the backend only
+//! back. The renderer owns the transfer queue and the settings, so it hands over finished, localized strings; the backend only
 //! draws them and says which item was clicked.
 
 use serde::{Deserialize, Serialize};
@@ -25,7 +24,6 @@ pub struct TrayLabels {
     pub prevent_sleep: String,
     pub notify: String,
     pub recent_connections: String,
-    pub lock_vault: String,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
@@ -68,8 +66,6 @@ pub struct TrayModel {
     pub notify_on_complete: bool,
     /// Most recent first, at most [`MAX_RECENT_SITES`].
     pub recent_sites: Vec<RecentSite>,
-    /// The vault is set up and unlocked, so there is something to lock.
-    pub vault_lockable: bool,
     /// Quitting waits for the running transfers to finish.
     pub quit_pending: bool,
     /// The window is asking whether to quit while transfers run.
@@ -91,7 +87,6 @@ impl Default for TrayModel {
                 prevent_sleep: "Keep the computer awake".into(),
                 notify: "Notify when transfers finish".into(),
                 recent_connections: "Recent connections".into(),
-                lock_vault: "Lock saved passwords".into(),
             },
             status: String::new(),
             transfers: TrayTransfers::default(),
@@ -100,7 +95,6 @@ impl Default for TrayModel {
             prevent_sleep: false,
             notify_on_complete: false,
             recent_sites: Vec::new(),
-            vault_lockable: false,
             quit_pending: false,
             quit_prompt_open: false,
         }
@@ -120,7 +114,6 @@ impl TrayModel {
             ("labels.preventSleep", &labels.prevent_sleep),
             ("labels.notify", &labels.notify),
             ("labels.recentConnections", &labels.recent_connections),
-            ("labels.lockVault", &labels.lock_vault),
             ("status", &self.status),
         ]
         .into_iter()
@@ -184,7 +177,6 @@ pub enum TrayAction {
     Connect {
         site_id: String,
     },
-    LockVault,
     /// A quit was asked for while transfers run; the window decides.
     QuitRequested {
         unsynced_edits: usize,
@@ -209,7 +201,6 @@ mod tests {
                 "preventSleep": "Keep the computer awake",
                 "notify": "Notify when transfers finish",
                 "recentConnections": "Recent connections",
-                "lockVault": "Lock saved passwords",
             },
             "status": "Transferring 3 · 42%",
             "transfers": { "active": 3, "canPauseAll": true, "canResumeAll": false },
@@ -221,7 +212,6 @@ mod tests {
             "preventSleep": true,
             "notifyOnComplete": false,
             "recentSites": [{ "id": "site-1", "label": "Production" }],
-            "vaultLockable": true,
             "quitPending": false,
             "quitPromptOpen": false,
         })
@@ -235,7 +225,6 @@ mod tests {
         assert_eq!(model.speed_limit_kbps, 512);
         assert_eq!(model.speed_presets[1].label, "512 KB/s");
         assert_eq!(model.recent_sites[0].id, "site-1");
-        assert!(model.vault_lockable);
         assert_eq!(model.validate(), Ok(()));
     }
 

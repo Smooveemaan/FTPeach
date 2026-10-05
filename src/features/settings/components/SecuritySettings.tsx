@@ -161,7 +161,7 @@ export default function SecuritySettings({
           )}
         </div>
       ) : vaultStatus.locked ? (
-        <div className="settings-option-group">
+        <div className="settings-option-group vault-unlock-group">
           <div className="vault-unlock-row">
             <button
               type="button"
@@ -209,7 +209,11 @@ export default function SecuritySettings({
             </label>
           </div>
           {vaultMessage && (
-            <p className="settings-hint settings-warning" role="alert" aria-live="assertive">
+            <p
+              className="settings-hint settings-warning vault-unlock-error"
+              role="alert"
+              aria-live="assertive"
+            >
               {vaultMessage}
             </p>
           )}

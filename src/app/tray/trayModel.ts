@@ -25,7 +25,6 @@ export interface TrayModelInput {
   >;
   /** Connectable sites, most recent first: the empty pane's order. */
   recentSites: readonly Pick<ManagedSite, 'id' | 'name'>[];
-  vault: { configured: boolean; locked: boolean } | null;
   quit: { pending: boolean; promptOpen: boolean };
 }
 
@@ -71,7 +70,6 @@ export function buildTrayModel({
   speedBytesPerSecond,
   settings,
   recentSites,
-  vault,
   quit,
 }: TrayModelInput): TrayModel {
   // The backend takes a whole, non-negative number; a limit typed in Settings
@@ -106,7 +104,6 @@ export function buildTrayModel({
       preventSleep: t('tray.preventSleep'),
       notify: t('tray.notify'),
       recentConnections: t('tray.recentConnections'),
-      lockVault: t('tray.lockVault'),
     },
     status: active === 0 ? '' : status,
     transfers: {
@@ -121,7 +118,6 @@ export function buildTrayModel({
     recentSites: recentSites
       .slice(0, QUICKLIST_LIMIT)
       .map((site) => ({ id: site.id, label: site.name })),
-    vaultLockable: !!vault && vault.configured && !vault.locked,
     quitPending: quit.pending,
     quitPromptOpen: quit.promptOpen,
   };

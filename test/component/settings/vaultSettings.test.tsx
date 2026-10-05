@@ -27,6 +27,7 @@ function makeVault() {
     status: vi.fn().mockResolvedValue(unlocked),
     setup: vi.fn().mockResolvedValue({ ok: true }),
     unlock: vi.fn().mockResolvedValue({ ok: true }),
+    unlockSystem: vi.fn().mockResolvedValue({ ok: false, errorCode: 'cancelled' }),
     lock: vi.fn().mockResolvedValue({ ok: true }),
     changePassword: vi.fn().mockResolvedValue({ ok: true }),
     reset: vi.fn().mockResolvedValue({ ok: true }),
@@ -50,6 +51,7 @@ function Form() {
       <input aria-label="old password" ref={model.oldMasterPasswordRef} />
       <button onClick={() => void model.setupVault()}>setup</button>
       <button onClick={() => void model.unlockVault()}>unlock</button>
+      <button onClick={() => void model.unlockVaultWithSystem()}>hello</button>
       <button onClick={() => void model.changeVaultPassword()}>change</button>
       <output>{model.vaultMessage}</output>
       <span data-testid="invalid">{String(model.vaultUnlockInvalid)}</span>
@@ -117,6 +119,14 @@ test('unlock requires a password, retains rejected input, and clears it after su
   expect((screen.getByLabelText('password') as HTMLInputElement).value).toBe('');
   expect(screen.getByTestId('invalid').textContent).toBe('false');
   expect(screen.getByTestId('busy').textContent).toBe('false');
+});
+
+test('a refused Windows Hello asks for the password, ready to type', async () => {
+  render(<Form />);
+  await waitFor(() => expect(vault.status).toHaveBeenCalledOnce());
+  fireEvent.click(screen.getByText('hello', { selector: 'button' }));
+  await screen.findByText('securityConfirmation.systemUnlockFailed');
+  expect(document.activeElement).toBe(screen.getByLabelText('password'));
 });
 
 test('an unlock error stays until the next attempt', async () => {

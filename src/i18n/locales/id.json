@@ -25,7 +25,7 @@
     "hidePassword": "Sembunyikan kata sandi"
   },
   "securityConfirmation": {
-    "systemUnlockHint": "Biarkan kosong untuk mengonfirmasi dengan Windows Hello.",
+    "systemUnlockFailed": "Windows Hello tidak mengonfirmasi. Masukkan kata sandi utama.",
     "title": "Konfirmasi keamanan FTPeach",
     "allow": "Izinkan",
     "typeToConfirm": "Ketik {{phrase}} untuk mengonfirmasi",
@@ -841,7 +841,6 @@
     "preventSleep": "Jaga komputer tetap aktif",
     "notify": "Beri tahu saat transfer selesai",
     "recentConnections": "Koneksi terbaru",
-    "lockVault": "Kunci kata sandi tersimpan",
     "quit": "Keluar",
     "cancelQuit": "Batalkan keluar"
   },
@@ -898,7 +897,9 @@
     "resumeAllPaused": "Lanjutkan semua transfer yang dijeda",
     "stopActive": "Hentikan transfer aktif",
     "retryAllStopped": "Coba ulang semua transfer yang terhenti",
-    "refreshPanesTooltip": "Segarkan kedua panel (F5)"
+    "refreshPanesTooltip": "Segarkan kedua panel (F5)",
+    "lockVault": "Kunci brankas",
+    "unlockVault": "Buka kunci brankas"
   },
   "paneToolbar": {
     "back": "Kembali",

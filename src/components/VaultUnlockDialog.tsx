@@ -28,18 +28,25 @@ export default function VaultUnlockDialog({
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
   const [systemUnlock, setSystemUnlock] = useState(false);
+  // Windows Hello stands alone: the dialog shows only when Hello is off or
+  // did not confirm, for the master password, and steps aside when Hello is
+  // asked again.
+  const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    let active = true;
     vaultApi
       .status()
       .then((status) => {
-        if (active) setSystemUnlock(status.systemUnlockAvailable && status.systemUnlockEnabled);
+        const hello = status.systemUnlockAvailable && status.systemUnlockEnabled;
+        setSystemUnlock(hello);
+        return hello ? unlockWithSystem() : setShown(true);
       })
-      .catch(reportAsyncFailure);
-    return () => {
-      active = false;
-    };
+      .catch((failure: unknown) => {
+        reportAsyncFailure(failure);
+        setShown(true);
+      });
+    // Once, as the dialog is asked for.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vaultApi]);
 
   const clearPasswordError = () => {
@@ -83,17 +90,22 @@ export default function VaultUnlockDialog({
   };
 
   const unlockWithSystem = async () => {
-    setBusy(true);
+    setShown(false);
     clearPasswordError();
+    let unlocked = false;
     try {
-      const result = await vaultApi.unlockSystem();
-      if (!result.ok)
-        setError(friendlyError(commandResultError(result)) || t('settings.security.failed'));
-      else onUnlocked();
+      unlocked = (await vaultApi.unlockSystem()).ok;
     } finally {
-      setBusy(false);
+      // Cancelled or refused alike: the master password is the way on.
+      if (!unlocked) {
+        setError(t('securityConfirmation.systemUnlockFailed'));
+        setShown(true);
+      }
     }
+    if (unlocked) onUnlocked();
   };
+
+  if (!shown) return null;
 
   return (
     <Modal
@@ -144,7 +156,7 @@ export default function VaultUnlockDialog({
       </div>
       {error && (
         <p
-          className="settings-hint settings-warning"
+          className="settings-hint settings-warning vault-unlock-error"
           role={passwordInvalid ? 'alert' : 'status'}
           aria-live={passwordInvalid ? 'assertive' : 'polite'}
         >

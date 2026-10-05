@@ -158,17 +158,20 @@
       discard.click();
     }
     await waitFor('.modal-settings', false);
-    const siteButton = await waitFor('.pane-connect-cta');
-    if (!(siteButton instanceof HTMLElement))
-      throw new Error('site manager button is not clickable');
-    // A click while Settings is still closing can be lost; click again.
+    // Closing Settings reverts the language and can re-render the pane, which
+    // detaches a button found earlier: look it up again for every click.
     for (let attempt = 1; ; attempt++) {
+      const siteButton = await waitFor('.pane-connect-cta');
+      if (!(siteButton instanceof HTMLElement))
+        throw new Error('site manager button is not clickable');
       siteButton.click();
       try {
         await waitFor('.modal-site-manager', true, 3000);
         break;
       } catch (error) {
-        if (attempt === 3) throw error;
+        if (attempt < 3) continue;
+        const open = [...document.querySelectorAll('[class*="modal"]')].map((el) => el.className);
+        throw new Error(`${error.message}; open: ${JSON.stringify(open)}`);
       }
     }
     key('Escape', 'Escape');

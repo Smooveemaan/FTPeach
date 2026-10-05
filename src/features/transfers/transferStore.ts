@@ -15,6 +15,9 @@ interface TransferBase {
   landed?: number | undefined;
   /** The file a folder walk last said it is on. */
   currentFile?: FolderFile | undefined;
+  /** The files a folder walk delivered, which the end-of-queue notification
+   * counts in place of the row. */
+  files?: number | undefined;
   startedAt: number;
   /** The overwrite answer the transfer ran under, reused when a pause resumes. */
   overwrite?: boolean | undefined;
@@ -126,6 +129,11 @@ function makeSummary(): TransferSummary {
     hasRetryableTransfers: counts.retryable > 0,
   };
 }
+const isFinished = (row: TransferRow | undefined): boolean =>
+  !!row && ['done', 'error', 'stopped'].includes(row.status);
+/** When each finished row finished, by a running count. */
+const finishOrder = new Map<string, number>();
+let finishCount = 0;
 function isActive(row: TransferRow): boolean {
   return ['queued', 'progress', 'cancelling'].includes(row.status);
 }
@@ -201,6 +209,10 @@ let stopGeneration = 0;
 export function beginTransferBatch(): { stopped: () => boolean; end: () => void } {
   const generation = stopGeneration;
   openBatches++;
+  // Published like its end, so a listener sees the queue busy from the start.
+  structureRevision++;
+  structurePending = true;
+  publish();
   let ended = false;
   return {
     stopped: () => stopGeneration !== generation,
@@ -416,12 +428,16 @@ export function subscribeTransfers(listener: () => void): () => void {
 /**
  * Keeps the newest COMPLETED_RETENTION rows among `statuses`. Successes and
  * failures are capped apart, so a burst of finished uploads never pushes out
- * an error nobody has looked at yet.
+ * an error nobody has looked at yet. Newest by when they finished: a long
+ * transfer that has just ended stays, however early it began.
  */
 function retainNewest(next: TransferState, statuses: readonly TransferStatus[]): TransferState {
   const finished = Object.values(next).filter((row) => statuses.includes(row.status));
   if (finished.length <= COMPLETED_RETENTION) return next;
-  finished.sort((a, b) => b.startedAt - a.startedAt);
+  // A row finishing in this very update has no number yet, and is the newest;
+  // rows that finished together keep the newest started.
+  const order = (row: TransferRow) => finishOrder.get(row.id) ?? Infinity;
+  finished.sort((a, b) => order(b) - order(a) || b.startedAt - a.startedAt);
   const retained = { ...next };
   for (const row of finished.slice(COMPLETED_RETENTION)) delete retained[row.id];
   return retained;
@@ -490,6 +506,8 @@ function replaceRow(id: string, row: TransferRow | undefined): boolean {
     structurePending = true;
     refreshSummary();
   }
+  if (!isFinished(row)) finishOrder.delete(id);
+  else if (!isFinished(previous)) finishOrder.set(id, ++finishCount);
   if (row) state[id] = row;
   else delete state[id];
   pendingRows.add(id);
@@ -531,6 +549,7 @@ export function resetTransfersStoreForTests(): void {
   summary = makeSummary();
   state = {};
   attempts.clear();
+  finishOrder.clear();
   targets.clear();
   deadConnectionIds.clear();
   connectionLabelMemory.clear();

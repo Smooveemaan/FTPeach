@@ -6,6 +6,7 @@ import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
 import { act, renderHook } from '@testing-library/react';
 import { getTransfersSnapshot, useTransfers } from '../../../src/features/transfers/index.ts';
 import {
+  COMPLETED_RETENTION,
   flushTransferUpdates,
   PENDING_TRANSFER_LIMIT,
   resetTransfersStoreForTests,
@@ -1994,6 +1995,29 @@ test('OS notification fires once per queue drain, tallying succeeded/failed, not
     }),
   ));
 
+test('a folder counts every file it delivered in the notification', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ getApi, mockApi, calls }) => {
+      mockApi.transfer.recursive = async () => ({
+        ok: true,
+        outcome: 'complete',
+        scanned: 10000,
+        completed: 10000,
+        errors: [],
+      });
+      await act(async () => {
+        await getApi().copyEntries({
+          ...localFolderMove(),
+          move: false,
+          overwriteApproved: true,
+        });
+      });
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 10000);
+    }),
+  ));
+
 test('files that start one after another in quick succession make one notification', () =>
   withSettlingTimers((settle) =>
     withHarness(async ({ setSnapshot, calls }) => {
@@ -2043,6 +2067,83 @@ test('a pause is not the end of the queue, so it sends no notification', () =>
       settle();
       assert.equal(calls.notifyTransfersComplete.length, 1);
       assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+    }),
+  ));
+
+test('an error is not held back by a paused row', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'paused', direction: 'up', name: 'b' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
+    }),
+  ));
+
+test('a folder that failed part way counts what it delivered and one failure', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        empty: makeTransferRow({ id: 'empty', status: 'progress', direction: 'up', name: 'e' }),
+      }));
+      setSnapshot((prev) => ({
+        a: { ...withStatus(prev.a, 'error'), files: 99 },
+        empty: { ...withStatus(prev.empty, 'done'), files: 0 },
+      }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 99);
+      assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.title, 'Transfer Error');
+    }),
+  ));
+
+test('a failure that a retry fixed counts only as the success', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'queued') }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
+      assert.equal(calls.notifyTransfersComplete[0]?.failed, 0);
+    }),
+  ));
+
+test('a long transfer that ends after a thousand short ones is kept and counted', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, getSnapshot, calls }) => {
+      const short = Array.from({ length: COMPLETED_RETENTION }, (_, i) => `s${i}`);
+      setSnapshot(() =>
+        Object.fromEntries([
+          ['long', makeTransferRow({ id: 'long', status: 'progress', direction: 'up', name: 'l' })],
+          ...short.map((id) => [
+            id,
+            makeTransferRow({ id, status: 'progress', direction: 'up', name: id, startedAt: 2 }),
+          ]),
+        ]),
+      );
+      setSnapshot((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).map(([id, row]) => [
+            id,
+            id === 'long' ? row : withStatus(row, 'done'),
+          ]),
+        ),
+      );
+      setSnapshot((prev) => ({ ...prev, long: withStatus(prev.long, 'done') }));
+      assert.equal(getSnapshot().long?.status, 'done');
+      settle();
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, COMPLETED_RETENTION + 1);
     }),
   ));
 

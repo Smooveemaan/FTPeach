@@ -74,6 +74,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Raising Concurrent transfers while files wait in the queue starts the next ones at once.
 - The notification at the end of a big transfer counts every file, not at most 1000.
 - Files dragged out to Explorer one after another give one notification, not one each.
+- The notification at the end of a transfer counts the files in a folder, not the folder as one
+  file, and a file that failed and then went through on a retry only once. Any failure makes it
+  a "Transfer Error" notification, and a paused transfer no longer holds one back.
 - Dragging files from Explorer no longer makes the window stop responding over the column
   headers or while a key is held, and the list lights up only where the files can be dropped.
 - Pressing Alt, or Alt+Space, while dragging files in from Explorer no longer leaves the window

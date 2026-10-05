@@ -498,6 +498,12 @@ export function useTransferLifecycle(
     if (dispatch.started && !report.paused && cancelIntentRef.current[id] === 'paused') {
       delete cancelIntentRef.current[id];
     }
+    // Zero too: an empty folder or one skipped whole delivered no file.
+    setTransfersStore((previous) => {
+      const row = previous[id];
+      if (row?.attemptId !== attemptId) return previous;
+      return { ...previous, [id]: { ...row, files: report.completed } };
+    });
     const cancelled = settleTransferResult(
       id,
       {

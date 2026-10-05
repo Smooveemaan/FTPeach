@@ -10,6 +10,9 @@ Browse local and remote folders side by side, copy files between servers, and ke
 
 **[Download for Windows](https://github.com/Smooveemaan/ftpeach/releases/latest)** · [Website](https://ftpeach.com/) · [Release notes](CHANGELOG.md) · [Documentation](docs/README.md) · [Report a bug](https://github.com/Smooveemaan/ftpeach/issues)
 
+> **Made with AI, use at your own risk!**  
+> I made FTPeach with a lot of help from AI. I’ve tested it carefully, but please back up files that matter to you.
+
 ![FTPeach showing local and remote file panes, connection tabs, and the transfer queue.](assets/images/ftpeach.png)
 
 If FTPeach is useful to you, you can also support its development:
@@ -29,8 +32,6 @@ To run FTPeach without installing it, download `FTPeach_<version>_x64-portable.z
 You can save connections for your next session. With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and installs them on the next launch or when you choose to restart. Update signatures are verified before installation.
 
 The project is in pre-release; see the [changelog](CHANGELOG.md) for changes between versions. macOS and Linux are not currently supported.
-
-> **Made with AI, use at your own risk!** FTPeach was written with a lot of help from AI. I've tested it a lot, but software is software. Back up what matters.
 
 ## Made for everyday file transfers
 

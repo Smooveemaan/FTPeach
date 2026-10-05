@@ -59,8 +59,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   while the latest release has no portable package.
 - The hint for "Write log to file" no longer names the installed copy's folder in a portable copy.
 - The "File changed" question says that Later asks again the next time the file is saved.
-- When the connection to a server is lost or stops answering, the pane says so and offers to
-  connect again, instead of still looking connected and failing every action.
+- When the connection to a server is lost, stops answering or is refused, the pane says so,
+  no longer shows the server's files and offers to connect again, instead of still looking
+  connected and failing every action. Connecting again clears the error.
 - A folder with a junction or symbolic link inside can be moved or renamed on the same disk.
 - Saving a bookmark that moves its password while the vault is locked asks for the master
   password first and whether to move the password only once.

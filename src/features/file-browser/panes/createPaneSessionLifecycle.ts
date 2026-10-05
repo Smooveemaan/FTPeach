@@ -35,6 +35,8 @@ interface PaneSessionLifecycleOptions {
   onVaultUnlockRequired: (retry: () => unknown) => void;
   inFlightRefreshesRef: MutableRefObject<InFlightRefreshes>;
   stopTransfersForConnection: (connectionId: string) => Promise<unknown>;
+  /** The window's error line, which a working connection leaves nothing to say. */
+  clearErrorMessage?: () => void;
 }
 
 export function createPaneSessionLifecycle({
@@ -51,6 +53,7 @@ export function createPaneSessionLifecycle({
   onVaultUnlockRequired,
   inFlightRefreshesRef,
   stopTransfersForConnection,
+  clearErrorMessage,
 }: PaneSessionLifecycleOptions) {
   const closeConnection = async (connectionId: string) => {
     // Cancellation is signalled synchronously; backend teardown can now cancel
@@ -229,6 +232,7 @@ export function createPaneSessionLifecycle({
         if (listRes === undefined) return; // cancelled, or superseded, while listing
         if (listRes.ok) {
           updatePane(id, { status: 'connected', errorMessage: '' }, tabId);
+          clearErrorMessage?.();
         } else {
           // The listing failure below is the message worth showing; a
           // failure to close the half-open session would only overwrite it.

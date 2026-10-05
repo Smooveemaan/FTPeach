@@ -43,11 +43,12 @@ test('a lost connection puts the pane in error, unless the user closed it', asyn
   tab.panes.b.kind = 'remote';
   tab.panes.b.connectionId = 'session';
   tab.panes.b.status = 'connected';
-  // What the backend answers once the session is gone: nothing is left to list.
+  // What WebDAV answers once its server is gone: a new connection is refused,
+  // which the pane tells as the lost connection it is.
   const failure = {
     ok: false,
-    errorCode: 'connectionLost',
-    error: 'No active connection',
+    errorCode: 'connectionRefused',
+    error: 'The server refused the connection',
     entries: [],
   };
   window.api = {
@@ -69,12 +70,14 @@ test('a lost connection puts the pane in error, unless the user closed it', asyn
   await act(async () => {
     await result.current.refreshPane('b', '/');
   });
-  // The pane offers to connect again instead of staying green.
+  // The pane offers to connect again instead of staying green, and no longer
+  // shows the files of a server it cannot reach.
   expect(updatePane).toHaveBeenLastCalledWith(
     'b',
     expect.objectContaining({
       status: 'error',
       errorMessage: friendlyError({ code: 'connectionLost' }),
+      entries: [],
     }),
     tab.id,
   );

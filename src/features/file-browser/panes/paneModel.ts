@@ -71,6 +71,27 @@ export const isConnectionLoss = (error = ''): boolean =>
     error,
   );
 
+/**
+ * Whether a command on a connected pane failed because the connection is
+ * gone, so the pane shows the error and offers to connect again. WebDAV holds
+ * no connection open: a server that refuses a new one has gone too.
+ */
+export const isLostConnection = (errorCode: string | undefined, error = ''): boolean =>
+  errorCode === 'connectionLost' ||
+  errorCode === 'timedOut' ||
+  errorCode === 'connectionRefused' ||
+  (errorCode !== 'cancelled' && isConnectionLoss(error));
+
+/** A pane whose connection is gone, offering to connect again: the files it listed are no longer there to see. */
+export const lostConnectionPane = (errorMessage: string): Partial<PaneState> => ({
+  status: 'error',
+  loading: false,
+  errorMessage,
+  entries: [],
+  selected: new Set(),
+  refreshedAt: null,
+});
+
 export function makePane(id: PaneId, kind: PaneKind): PaneState {
   return {
     id,

@@ -234,6 +234,7 @@ export function usePanes({
     onVaultUnlockRequired,
     inFlightRefreshesRef,
     stopTransfersForConnection,
+    clearErrorMessage: () => setErrorMessage(''),
   });
 
   usePaneSessionPersistence({

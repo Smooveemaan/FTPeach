@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { api } from '../../../platform/api/index.ts';
 import { transferForAttempt } from '../../transfers/index.ts';
 import type { TabState } from './paneModel.ts';
-import { isConnectionLoss } from './paneModel.ts';
+import { isLostConnection, lostConnectionPane } from './paneModel.ts';
 
 type SetTabs = Dispatch<SetStateAction<TabState[]>>;
 
@@ -17,10 +17,7 @@ export function useTransferConnectionLoss(setTabs: SetTabs, connectionResetMessa
   useEffect(
     () =>
       api.transfer.onProgress((payload) => {
-        if (
-          payload.status !== 'error' ||
-          (payload.errorCode !== 'connectionLost' && !isConnectionLoss(payload.error))
-        )
+        if (payload.status !== 'error' || !isLostConnection(payload.errorCode, payload.error))
           return;
         const transfer = transferForAttempt(payload.id);
         if (transfer && ENDED_BY_USER.has(transfer.status)) return;
@@ -30,21 +27,11 @@ export function useTransferConnectionLoss(setTabs: SetTabs, connectionResetMessa
             panes: {
               a:
                 tab.panes.a.connectionId === payload.connectionId && tab.panes.a.status !== 'idle'
-                  ? {
-                      ...tab.panes.a,
-                      status: 'error' as const,
-                      loading: false,
-                      errorMessage: connectionResetMessage,
-                    }
+                  ? { ...tab.panes.a, ...lostConnectionPane(connectionResetMessage) }
                   : tab.panes.a,
               b:
                 tab.panes.b.connectionId === payload.connectionId && tab.panes.b.status !== 'idle'
-                  ? {
-                      ...tab.panes.b,
-                      status: 'error' as const,
-                      loading: false,
-                      errorMessage: connectionResetMessage,
-                    }
+                  ? { ...tab.panes.b, ...lostConnectionPane(connectionResetMessage) }
                   : tab.panes.b,
             },
           })),

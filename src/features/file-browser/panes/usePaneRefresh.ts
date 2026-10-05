@@ -5,7 +5,7 @@ import type { FriendlyErrorInput } from '../../../shared/errorMessages.ts';
 import { commandResultError, friendlyError } from '../../../shared/errorMessages.ts';
 import { isConnectionDead, retainConnectionRequest } from '../../transfers/index.ts';
 import { backendFor } from './paneBackend.ts';
-import { isConnectionLoss } from './paneModel.ts';
+import { isLostConnection, lostConnectionPane } from './paneModel.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 
 type UpdatePane = (
@@ -165,19 +165,23 @@ export function usePaneRefresh({
         } else if (
           pane.kind === 'remote' &&
           pane.status === 'connected' &&
-          (result.errorCode === 'connectionLost' ||
-            result.errorCode === 'timedOut' ||
-            (!result.errorCode && isConnectionLoss(result.error)))
+          isLostConnection(result.errorCode, result.error)
         ) {
           // The connection is gone: the pane says so and offers to connect
           // again, instead of staying green and failing the same way each time.
           updatePane(
             id,
-            {
-              loading: false,
-              status: 'error',
-              errorMessage: friendlyError(commandResultError(result)) ?? '',
-            },
+            // A refusal of a server that was just answering means it went away,
+            // not that its address is wrong: WebDAV opens a connection per request.
+            lostConnectionPane(
+              friendlyError(
+                commandResultError(
+                  result.errorCode === 'connectionRefused'
+                    ? { ...result, errorCode: 'connectionLost' }
+                    : result,
+                ),
+              ) ?? '',
+            ),
             tabId,
           );
         } else {

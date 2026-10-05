@@ -80,3 +80,14 @@ test('a server reply about the data channel does not read as a lost connection',
   ).toBe(false);
   expect(isConnectionLoss('Connection reset by peer (os error 10054)')).toBe(true);
 });
+
+test('a listing and a transfer read a lost connection the same way', async () => {
+  const { isLostConnection } =
+    await import('../../../src/features/file-browser/panes/paneModel.ts');
+  // A paused FTP server times out; WebDAV, with nothing held open, is refused.
+  expect(isLostConnection('timedOut', 'FTP MLSD command timed out')).toBe(true);
+  expect(isLostConnection('connectionRefused', 'The server refused the connection')).toBe(true);
+  expect(isLostConnection('internal', 'Connection reset by peer (os error 10054)')).toBe(true);
+  expect(isLostConnection('cancelled', 'operation timed out')).toBe(false);
+  expect(isLostConnection('permissionDenied', 'Permission denied')).toBe(false);
+});

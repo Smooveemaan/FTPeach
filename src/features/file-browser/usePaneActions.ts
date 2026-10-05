@@ -80,8 +80,6 @@ interface PaneActionsOptions {
   /** The bookmarks a pane reconnects through and goes home to. */
   sites: readonly ManagedSite[];
   shell: Pick<FileBrowserShell, 'dialogs' | 'transfers' | 'openWith' | 'reportError'>;
-  /** Asks for the program "Open with…" uses; null when the user cancels. */
-  selectApplication?: () => Promise<string | null>;
   clipboard?: Pick<Clipboard, 'writeText'> | null;
   /** The files held by Cut and Copy, which the keyboard reaches too. */
   fileClipboard: Pick<
@@ -126,7 +124,6 @@ export function usePaneActions({
   browser,
   sites,
   shell,
-  selectApplication = () => api.fsLocal.selectApplication(),
   clipboard = navigator.clipboard,
   fileClipboard,
 }: PaneActionsOptions): PaneActionsModel {
@@ -266,19 +263,14 @@ export function usePaneActions({
           onClick: () => {
             const connectionId = pane.connectionId;
             if (!connectionId) return;
-            reportRejection(
-              selectApplication().then((application) => {
-                if (!application) return;
-                shell.openWith.setTarget({
-                  path: paneJoin(pane, entry.name),
-                  application,
-                  size: entry.size,
-                  connectionId,
-                  paneId: id,
-                  tabId: activeTabId,
-                });
-              }),
-            );
+            shell.openWith.setTarget({
+              path: paneJoin(pane, entry.name),
+              choose: true,
+              size: entry.size,
+              connectionId,
+              paneId: id,
+              tabId: activeTabId,
+            });
           },
         });
       }

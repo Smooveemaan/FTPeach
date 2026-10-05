@@ -34,7 +34,6 @@ function mocks(tab: ReturnType<typeof makeTab>) {
     setMoveToTarget: vi.fn(),
     setChmodTarget: vi.fn(),
     setOpenWithTarget: vi.fn(),
-    selectApplication: vi.fn().mockResolvedValue('C:/Apps/editor.exe'),
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     fileClipboard: {
       copyToClipboard: vi.fn(),
@@ -83,7 +82,6 @@ function actions(
       openWith: { setTarget: options.setOpenWithTarget },
       reportError: vi.fn(),
     },
-    selectApplication: options.selectApplication,
     clipboard,
     fileClipboard: options.fileClipboard,
   });
@@ -300,7 +298,7 @@ test('move destinations preserve display order and exclude selected folders', ()
   );
 });
 
-test('SFTP permissions and open-with retain the entry and its original session', async () => {
+test('SFTP permissions and open-with retain the entry and its original session', () => {
   const { tab, options, menu } = setup();
   tab.panes.b.form.protocol = 'sftp';
   const entry = { ...file, permissions: 'rwxr-x---' };
@@ -308,10 +306,9 @@ test('SFTP permissions and open-with retain the entry and its original session',
   items.find((item) => item.label === 'paneMenu.permissions')!.onClick!();
   expect(options.setChmodTarget).toHaveBeenCalledWith({ id: 'b', entry, mode: '750' });
   items.find((item) => item.label === 'paneMenu.openWith')!.onClick!();
-  await vi.waitFor(() => expect(options.setOpenWithTarget).toHaveBeenCalled());
   expect(options.setOpenWithTarget).toHaveBeenCalledWith({
     path: '/target/file.txt',
-    application: 'C:/Apps/editor.exe',
+    choose: true,
     size: 42,
     connectionId: 'session',
     paneId: 'b',
@@ -330,7 +327,6 @@ test('Open on a remote file opens it with the default program, without asking', 
   const labels = items.map((item) => item.label);
   expect(labels.indexOf('paneMenu.open')).toBe(labels.indexOf('paneMenu.openWith') - 1);
   items.find((item) => item.label === 'paneMenu.open')!.onClick!();
-  expect(options.selectApplication).not.toHaveBeenCalled();
   expect(options.setOpenWithTarget).toHaveBeenCalledWith({
     path: '/target/file.txt',
     size: 42,
@@ -338,15 +334,6 @@ test('Open on a remote file opens it with the default program, without asking', 
     paneId: 'b',
     tabId: 'tab',
   });
-});
-
-test('open-with opens nothing when choosing the program is cancelled', async () => {
-  const { options, menu } = setup();
-  options.selectApplication.mockResolvedValue(null);
-  menu('b')(file).find((item) => item.label === 'paneMenu.openWith')!.onClick!();
-  await vi.waitFor(() => expect(options.selectApplication).toHaveBeenCalled());
-  await Promise.resolve();
-  expect(options.setOpenWithTarget).not.toHaveBeenCalled();
 });
 
 test('clipboard failures are reported and a missing clipboard leaves the menu usable', async () => {

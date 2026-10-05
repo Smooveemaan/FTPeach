@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Open with… shows the Windows list of programs to choose from, instead of asking you to find
+  the program's file.
 - Ctrl+N starts a new connection in the left pane and Ctrl+Shift+N in the right one; File has an
   item for each. A pane that is in use asks before it is disconnected.
 - "Allow system unlock" says why it cannot be turned on while the vault is locked, and says that

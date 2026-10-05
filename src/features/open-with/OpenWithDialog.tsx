@@ -12,6 +12,7 @@ interface OpenWithDialogProps {
   connectionId: string;
   size?: number | undefined;
   application: string | null;
+  choose?: boolean | undefined;
   onOpened: (opened: OpenWithOpened) => unknown;
   onClose: () => unknown;
 }
@@ -26,6 +27,7 @@ export default function OpenWithDialog({
   connectionId,
   size,
   application,
+  choose = false,
   onOpened,
   onClose,
 }: OpenWithDialogProps) {
@@ -43,7 +45,7 @@ export default function OpenWithDialog({
     });
     reportRejection(
       (async () => {
-        const res = await api.openWith.start(connectionId, remotePath, id, application);
+        const res = await api.openWith.start(connectionId, remotePath, id, application, choose);
         settled = true;
         // Set by this effect's cleanup, which the compiler does not model.
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

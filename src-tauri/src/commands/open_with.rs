@@ -40,6 +40,8 @@ pub async fn open_with_start(
     remote_path: String,
     id: String,
     application: Option<String>,
+    // Windows' own chooser picks the program, for a file with none given.
+    choose: bool,
 ) -> CommandResult<OpenWithStarted> {
     if let Some(program) = application.as_deref() {
         approved_paths.preflight(std::path::Path::new(program))?;
@@ -63,7 +65,7 @@ pub async fn open_with_start(
     let server = sessions.server_for(&connection_id).await;
     if let Some((watched, local_path)) = watchers.watched_copy(&server, &remote_path) {
         let (local_path, application) = reauthorized_launch(&approved_paths, &intent, &local_path)?;
-        open_in(&app, &local_path, application)?;
+        open_in(&app, &window, &local_path, application, choose).await?;
         return Ok(OpenWithStarted {
             id: watched,
             local_path: local_path.to_string_lossy().into_owned(),
@@ -128,7 +130,7 @@ pub async fn open_with_start(
     // Recorded before the editor can touch the copy, so a save made straight
     // after opening already differs from the recorded signature.
     watchers.register(&id, local_path.clone(), remote_path.clone());
-    if let Err(error) = open_in(&app, &local_path, application) {
+    if let Err(error) = open_in(&app, &window, &local_path, application, choose).await {
         watchers.forget(&id);
         let _ = tokio::fs::remove_file(&local_path).await;
         let _ = tokio::fs::remove_dir(&dir).await;
@@ -142,11 +144,55 @@ pub async fn open_with_start(
     })
 }
 
-fn open_in(app: &AppHandle, local_path: &Path, application: Option<PathBuf>) -> CommandResult<()> {
+async fn open_in(
+    app: &AppHandle,
+    window: &tauri::WebviewWindow,
+    local_path: &Path,
+    application: Option<PathBuf>,
+    choose: bool,
+) -> CommandResult<()> {
+    if choose && application.is_none() {
+        return open_with_chooser(window, local_path)
+            .await
+            .map_err(|err| CommandError::from_anyhow(&err));
+    }
     let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
     app.opener()
         .open_path(local_path.to_string_lossy().into_owned(), application)
         .map_err(|err| CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())))
+}
+
+/// Opens `path` in a program the user picks in Windows' own Open with
+/// chooser, the one Explorer shows for "Choose another app". Its "Always use
+/// this app" box is hidden: a pick here must not change the program Windows
+/// opens this type of file with. Closing the chooser opens nothing.
+async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
+    use windows::Win32::Foundation::{ERROR_CANCELLED, HWND};
+    use windows::Win32::UI::Shell::{
+        OAIF_EXEC, OAIF_HIDE_REGISTRATION, OPENASINFO, SHOpenWithDialog,
+    };
+    use windows::core::{HRESULT, PCWSTR};
+
+    // HWND is not Send, so its value crosses to the main thread instead.
+    let owner = crate::runtime::confirmation_window::window_handle(window)?;
+    let file: Vec<u16> = crate::local_fs::local_open::shell_path(path)
+        .encode_utf16()
+        .chain([0])
+        .collect();
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    window.run_on_main_thread(move || {
+        let info = OPENASINFO {
+            pcszFile: PCWSTR(file.as_ptr()),
+            pcszClass: PCWSTR::null(),
+            oaifInFlags: OAIF_EXEC | OAIF_HIDE_REGISTRATION,
+        };
+        let shown = unsafe { SHOpenWithDialog(Some(HWND(owner as *mut _)), &info) };
+        let _ = tx.send(match shown {
+            Err(error) if error.code() == HRESULT::from_win32(ERROR_CANCELLED.0) => Ok(()),
+            other => other,
+        });
+    })?;
+    Ok(rx.await??)
 }
 
 /// The grant covered this class of file and this program. The final path is

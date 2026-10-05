@@ -263,10 +263,11 @@ export const tauriApi: Window['api'] = {
       remotePath: string,
       id: string,
       application: string | null,
+      choose = false,
     ): Promise<OpenWithStartResult> =>
       checkedResponse(
         'open_with_start',
-        invoke('open_with_start', { connectionId, remotePath, id, application }),
+        invoke('open_with_start', { connectionId, remotePath, id, application, choose }),
         isOpenWithStarted,
         (raw): OpenWithStartResult => commandFailure('open_with_start', raw),
       ).then((result) => ('ok' in result ? result : { ok: true, ...result })),

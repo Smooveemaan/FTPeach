@@ -18,6 +18,8 @@ export interface OpenWithTarget {
   path: string;
   /** The program the user just chose; otherwise the extension's association. */
   application?: string | undefined;
+  /** Windows' own chooser picks the program, the association is not used. */
+  choose?: boolean | undefined;
   size?: number | undefined;
   connectionId: string;
   paneId: PaneId;

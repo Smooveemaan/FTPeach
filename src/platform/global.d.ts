@@ -108,6 +108,7 @@ declare global {
           remotePath: string,
           id: string,
           application: string | null,
+          choose?: boolean,
         ) => Promise<CommandResult & { id?: string; localPath?: string }>;
         stop: (id: string) => Promise<unknown>;
         markSynced: (id: string, revision: string) => Promise<CommandResult>;

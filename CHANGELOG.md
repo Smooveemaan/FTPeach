@@ -102,7 +102,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   of failing, and on a server that ignores letter case, such as IIS, no longer asks to replace
   the file with itself.
 - A server that turns you away because it already has its maximum number of users says so,
-  instead of reporting that the connection was unexpectedly closed.
+  instead of reporting that the connection was unexpectedly closed, also for a transfer, and
+  Retry tries again instead of failing with "Transfer pool is closed".
+- Tabs that have finished their transfers log out of the server after ten seconds instead of
+  keeping their connections open, and give them up at once when another tab is turned away, so
+  its transfer starts as soon as the others end.
+- The error bar about a transfer goes away when a retry of that transfer succeeds.
 - Importing a file that is not FTPeach settings says so, instead of "EOF while parsing a
   value".
 - A missing key or certificate file is named by its path when connecting, instead of "File or

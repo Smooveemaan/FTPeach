@@ -165,8 +165,11 @@ type Settled = { cancelled?: boolean };
 export function useTransferLifecycle(
   setErrorMessage: (message?: string) => unknown,
   approveTarget: (target: TransferTarget) => Promise<boolean | null> = () => Promise.resolve(false),
+  withdrawErrorMessage: (message: string) => void = () => undefined,
 ): TransferLifecycleModel {
   const { t } = useTranslation();
+  // What each row put in the error banner, taken back if a retry succeeds.
+  const shownErrors = useRef(new Map<string, string>());
   const cancelIntentRef = useRef<Record<string, TransferStatus>>({});
   const waitingRecursive = useRef(new Map<string, AbortController>());
   useEffect(
@@ -250,7 +253,14 @@ export function useTransferLifecycle(
     if (getTransferRow(id)?.attemptId !== attemptId) return false;
     const intent = cancelIntentRef.current[id];
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
-      setErrorMessage(friendlyError(commandResultError(result)) || undefined);
+      const message = friendlyError(commandResultError(result)) || undefined;
+      setErrorMessage(message);
+      if (message) shownErrors.current.set(id, message);
+    }
+    const shown = shownErrors.current.get(id);
+    if (result.ok && shown !== undefined) {
+      shownErrors.current.delete(id);
+      withdrawErrorMessage(shown);
     }
     setTransfersStore((previous) =>
       previous[id]?.attemptId === attemptId

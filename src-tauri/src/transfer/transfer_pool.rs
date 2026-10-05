@@ -11,6 +11,21 @@ use tokio_util::sync::CancellationToken;
 
 const CANCELLED_CAP: usize = 256;
 const GROWTH_RETRY_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
+/// How long a pool with nothing to do keeps its logins: long enough for files
+/// sent one after another to reuse them.
+#[cfg(not(test))]
+const IDLE_RELEASE: std::time::Duration = std::time::Duration::from_secs(10);
+#[cfg(test)]
+const IDLE_RELEASE: std::time::Duration = std::time::Duration::from_millis(200);
+/// How long a login refused for the server's user limit waits for idle pools
+/// to log out before it tries again.
+#[cfg(not(test))]
+const IDLE_LOGOUT_WAIT: std::time::Duration = std::time::Duration::from_secs(1);
+#[cfg(test)]
+const IDLE_LOGOUT_WAIT: std::time::Duration = std::time::Duration::from_millis(50);
+/// Woken when a server turns a login away for its user limit: every pool with
+/// nothing to do logs out at once instead of after IDLE_RELEASE.
+static IDLE_WANTED: std::sync::LazyLock<Notify> = std::sync::LazyLock::new(Notify::new);
 /// How long a waiting relay goes without looking again when no transfer ends:
 /// the delay before it notices Stop, a closed pool or a worker freed quietly.
 const PAIR_RECHECK: std::time::Duration = std::time::Duration::from_millis(100);
@@ -147,6 +162,7 @@ impl TransferPool {
         let _gate = self.growing_gate.lock().await;
         let mut connecting = tokio::task::JoinSet::new();
         let mut last_error = None;
+        let mut asked_idle_out = false;
         loop {
             loop {
                 let need_more = {
@@ -205,21 +221,34 @@ impl TransferPool {
                 // Server may be refusing extra connections — degrade to
                 // fewer workers rather than failing outright.
                 Err(error) => {
+                    // Kept with its code: a server at its user limit says so
+                    // to every transfer that waited for this connection.
+                    let failure = crate::ipc::CommandError::from_anyhow(&error);
+                    // The server may be full of this app's own idle logins:
+                    // ask them out and try once more before giving up.
+                    if failure.code == ErrorCode::ResourceLimit && !asked_idle_out {
+                        asked_idle_out = true;
+                        IDLE_WANTED.notify_waiters();
+                        tokio::time::sleep(IDLE_LOGOUT_WAIT).await;
+                        continue;
+                    }
                     let mut state = self.state.lock().unwrap();
                     state.retry_growth_after =
                         Some(tokio::time::Instant::now() + GROWTH_RETRY_DELAY);
-                    last_error = Some(error.to_string());
+                    last_error = Some(failure);
                 }
             }
         }
         if let Some(error) = last_error {
             let mut state = self.state.lock().unwrap();
+            // Nothing left to run the queue: each waiting transfer gets the
+            // reason. The pool stays open, so a retry logs in afresh once
+            // the server has room again.
             if !state.destroyed && state.workers.is_empty() && state.active.is_empty() {
-                state.destroyed = true;
                 for item in state.queue.drain(..) {
                     let _ = item.respond.send(Err(fail(
-                        ErrorCode::ConnectionLost,
-                        format!("Transfer worker replacement failed: {error}"),
+                        error.code,
+                        format!("Transfer worker replacement failed: {}", error.message),
                     )));
                 }
             }
@@ -418,10 +447,14 @@ impl TransferPool {
 
         {
             let mut state = self.state.lock().unwrap();
-            if state.workers.is_empty() && state.active.is_empty() {
-                if let Some(pos) = state.queue.iter().position(|item| item.task_id == task_id) {
-                    state.queue.remove(pos);
-                }
+            // A task taken off the queue already has its answer, the
+            // server's own reason among them; only one still queued is
+            // left with nobody to run it.
+            if state.workers.is_empty()
+                && state.active.is_empty()
+                && let Some(pos) = state.queue.iter().position(|item| item.task_id == task_id)
+            {
+                state.queue.remove(pos);
                 return Err(fail(
                     ErrorCode::ConnectionLost,
                     "Failed to establish a connection for the file transfer",
@@ -546,6 +579,7 @@ impl TransferPool {
             }
             if still_connected {
                 pool.drain();
+                pool.release_when_idle();
             } else {
                 let pool2 = pool.clone();
                 tokio::spawn(async move {
@@ -557,6 +591,37 @@ impl TransferPool {
 
         // Pick up more idle workers immediately if several became free at once.
         self.drain();
+    }
+
+    /// Logs out of a server this pool has had no work for since
+    /// IDLE_RELEASE. Servers cap logins per address, and a tab done with its
+    /// transfers must not keep another tab, or another program, out.
+    fn release_when_idle(&self) {
+        let generation = self.generation.load(Ordering::SeqCst);
+        let pool = self.clone();
+        tokio::spawn(async move {
+            tokio::select! {
+                _ = tokio::time::sleep(IDLE_RELEASE) => {}
+                _ = IDLE_WANTED.notified() => {}
+            }
+            let idle = {
+                let mut state = pool.state.lock().unwrap();
+                // A transfer dispatched meanwhile moved the generation on.
+                if state.destroyed
+                    || !state.active.is_empty()
+                    || !state.queue.is_empty()
+                    || pool.generation.load(Ordering::SeqCst) != generation
+                {
+                    return;
+                }
+                std::mem::take(&mut state.workers)
+            };
+            for mut backend in idle {
+                let _ =
+                    tokio::time::timeout(std::time::Duration::from_secs(5), backend.disconnect())
+                        .await;
+            }
+        });
     }
 
     /// Allows browse-side preparation to observe shutdown without the slot lock.
@@ -627,8 +692,11 @@ mod tests {
     use std::sync::atomic::AtomicUsize;
     use tokio::io::{AsyncRead, AsyncWrite};
 
+    #[derive(Default)]
     struct FakeBackend {
         connected: bool,
+        /// Logins the fake server counts; logging out gives one back.
+        logins: Option<Arc<AtomicUsize>>,
     }
 
     #[async_trait::async_trait]
@@ -638,6 +706,11 @@ mod tests {
             Ok(())
         }
         async fn disconnect(&mut self) -> BackendResult<()> {
+            if self.connected
+                && let Some(logins) = &self.logins
+            {
+                logins.fetch_sub(1, Ordering::SeqCst);
+            }
             self.connected = false;
             Ok(())
         }
@@ -704,7 +777,14 @@ mod tests {
     }
 
     fn fake_factory() -> BackendFactory {
-        Arc::new(|| Box::pin(async { Ok(Box::new(FakeBackend { connected: true }) as BoxBackend) }))
+        Arc::new(|| {
+            Box::pin(async {
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    ..Default::default()
+                }) as BoxBackend)
+            })
+        })
     }
 
     #[tokio::test]
@@ -714,7 +794,10 @@ mod tests {
             let count = count.clone();
             Box::pin(async move {
                 if count.fetch_add(1, Ordering::SeqCst) == 0 {
-                    Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                    Ok(Box::new(FakeBackend {
+                        connected: true,
+                        ..Default::default()
+                    }) as BoxBackend)
                 } else {
                     Err(fail(ErrorCode::ConnectionRefused, "replacement refused"))
                 }
@@ -774,6 +857,64 @@ mod tests {
             pool.run("after".into(), Box::new(|_| Box::pin(async { Ok(()) })))
                 .await
                 .is_err()
+        );
+    }
+
+    #[tokio::test]
+    async fn an_idle_pool_logs_out_but_one_in_use_keeps_its_login() {
+        let pool = TransferPool::new(fake_factory(), PoolSize::Fixed(1));
+        let idle = || pool.state.lock().unwrap().workers.len();
+        let noop = || -> TaskFn { Box::new(|_| Box::pin(async { Ok(()) })) };
+        pool.run("first".into(), noop()).await.unwrap();
+        tokio::time::sleep(IDLE_RELEASE / 2).await;
+        pool.run("second".into(), noop()).await.unwrap();
+        // The first transfer's wait ends here, but the second one used the login.
+        tokio::time::sleep(IDLE_RELEASE * 3 / 4).await;
+        assert_eq!(idle(), 1);
+        tokio::time::sleep(IDLE_RELEASE).await;
+        assert_eq!(idle(), 0, "nothing ran for IDLE_RELEASE");
+        pool.run("later".into(), noop()).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_login_refused_for_the_user_limit_asks_idle_pools_out_and_gets_in() {
+        // A server that lets in one login at a time.
+        let logins = Arc::new(AtomicUsize::new(0));
+        let factory: BackendFactory = Arc::new(move || {
+            let logins = logins.clone();
+            Box::pin(async move {
+                if logins.fetch_add(1, Ordering::SeqCst) >= 1 {
+                    logins.fetch_sub(1, Ordering::SeqCst);
+                    return Err(fail(ErrorCode::ResourceLimit, "1 user (the maximum)"));
+                }
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    logins: Some(logins),
+                }) as BoxBackend)
+            })
+        });
+        let noop = || -> TaskFn { Box::new(|_| Box::pin(async { Ok(()) })) };
+        let done = TransferPool::new(factory.clone(), PoolSize::Fixed(1));
+        let next = TransferPool::new(factory, PoolSize::Fixed(1));
+        // The first pool keeps its login idle; the second gets it all the same.
+        done.run("done".into(), noop()).await.unwrap();
+        next.run("next".into(), noop()).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_server_at_its_user_limit_gives_its_reason_to_the_transfer() {
+        let factory: BackendFactory = Arc::new(|| {
+            Box::pin(async { Err(fail(ErrorCode::ResourceLimit, "5 users (the maximum)")) })
+        });
+        let pool = TransferPool::new(factory, PoolSize::Fixed(1));
+        let error = pool
+            .run("refused".into(), Box::new(|_| Box::pin(async { Ok(()) })))
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::ResourceLimit,
+            "{error:#}"
         );
     }
 
@@ -1092,7 +1233,10 @@ mod tests {
             let created = created.clone();
             Box::pin(async move {
                 created.fetch_add(1, Ordering::SeqCst);
-                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    ..Default::default()
+                }) as BoxBackend)
             })
         })
     }
@@ -1176,7 +1320,10 @@ mod tests {
                             login_started.notify_one();
                             release_login.acquire().await.unwrap().forget();
                         }
-                        Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                        Ok(Box::new(FakeBackend {
+                            connected: true,
+                            ..Default::default()
+                        }) as BoxBackend)
                     })
                 })
             };
@@ -1254,7 +1401,10 @@ mod tests {
                 if index > 0 {
                     std::future::pending::<()>().await;
                 }
-                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    ..Default::default()
+                }) as BoxBackend)
             })
         });
         let pool = TransferPool::new(factory, PoolSize::Fixed(4));
@@ -1290,7 +1440,10 @@ mod tests {
                         std::future::pending::<()>().await;
                     }
                     release.acquire().await.unwrap().forget();
-                    Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                    Ok(Box::new(FakeBackend {
+                        connected: true,
+                        ..Default::default()
+                    }) as BoxBackend)
                 })
             })
         };
@@ -1352,7 +1505,10 @@ mod tests {
                         return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
                     }
                     release.acquire().await.unwrap().forget();
-                    Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                    Ok(Box::new(FakeBackend {
+                        connected: true,
+                        ..Default::default()
+                    }) as BoxBackend)
                 })
             })
         };
@@ -1395,7 +1551,10 @@ mod tests {
                 if index == 1 {
                     return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
                 }
-                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    ..Default::default()
+                }) as BoxBackend)
             })
         });
         let pool = TransferPool::new(factory, PoolSize::Fixed(2));
@@ -1433,7 +1592,10 @@ mod tests {
                 if index > 0 {
                     return Err(fail(ErrorCode::ConnectionLost, "421 connection limit"));
                 }
-                Ok(Box::new(FakeBackend { connected: true }) as BoxBackend)
+                Ok(Box::new(FakeBackend {
+                    connected: true,
+                    ..Default::default()
+                }) as BoxBackend)
             })
         });
         let pool = TransferPool::new(factory, PoolSize::Fixed(4));

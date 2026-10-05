@@ -49,7 +49,8 @@ import type { PaneId } from '../shared/paneContracts.ts';
 export default function Application() {
   const { t } = useTranslation();
 
-  const { errorMessage, setErrorMessage, reportError, dismissError } = useApplicationError();
+  const { errorMessage, setErrorMessage, reportError, withdrawError, dismissError } =
+    useApplicationError();
   const dialogs = useAppDialogs();
   // Only the names Application itself reads; the whole object goes to the
   // dialogs model and the panes, so a new dialog does not need a line here.
@@ -161,6 +162,7 @@ export default function Application() {
 
   const transfers = useTransfers({
     setErrorMessage: reportError,
+    withdrawErrorMessage: withdrawError,
     overwriteAction: settings.transfers.overwriteAction,
     confirmOverwrite: (path) =>
       new Promise<boolean>((resolve) =>

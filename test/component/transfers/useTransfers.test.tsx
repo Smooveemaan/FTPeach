@@ -295,6 +295,38 @@ test('recursive failures preserve backend diagnostics without renderer deletion'
   }
 });
 
+test('a failure a retry got through takes its message out of the banner', async () => {
+  const withdrawn: string[] = [];
+  await withHarness(
+    async ({ getApi, mockApi, errors, getSnapshot }) => {
+      let ok = false;
+      mockApi.transfer.recursive = async () =>
+        ok
+          ? { ok: true, outcome: 'complete', scanned: 1, completed: 1, errors: [] }
+          : {
+              ok: false,
+              outcome: 'failed',
+              scanned: 0,
+              completed: 0,
+              errors: [{ message: 'full' }],
+            };
+      await act(async () => {
+        await getApi().copyEntries({ ...localFolderMove(), move: false, overwriteApproved: true });
+      });
+      assert.equal(errors.length, 1);
+      assert.deepEqual(withdrawn, []);
+      ok = true;
+      const row = Object.values(getSnapshot())[0]!;
+      await act(async () => {
+        await getApi().retryTransfer(row.id);
+      });
+      assert.equal(getSnapshot()[row.id]?.status, 'done');
+      assert.deepEqual(withdrawn, errors);
+    },
+    { withdrawErrorMessage: (message) => withdrawn.push(message) },
+  );
+});
+
 test('a successful empty-folder move is completed entirely by the backend', async () => {
   await withHarness(async ({ getApi, mockApi, calls, errors, getSnapshot }) => {
     mockApi.transfer.recursive = async () => ({

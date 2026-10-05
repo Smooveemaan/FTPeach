@@ -9,19 +9,27 @@ export interface ApplicationErrorModel {
   errorMessage: string;
   setErrorMessage: Dispatch<SetStateAction<string>>;
   reportError: (raw: unknown) => void;
+  /** Clears the banner if it still shows what `raw` reported. */
+  withdrawError: (raw: unknown) => void;
   dismissError: () => void;
+}
+
+function bannerText(raw: unknown): string {
+  const supported =
+    typeof raw === 'string' || raw == null
+      ? raw
+      : typeof raw === 'object'
+        ? (raw as { code?: string; message?: string })
+        : describeUnknown(raw);
+  return friendlyError(supported) ?? '';
 }
 
 export function useApplicationError(): ApplicationErrorModel {
   const [errorMessage, setErrorMessage] = useState('');
-  const reportError = useCallback((raw: unknown) => {
-    const supported =
-      typeof raw === 'string' || raw == null
-        ? raw
-        : typeof raw === 'object'
-          ? (raw as { code?: string; message?: string })
-          : describeUnknown(raw);
-    setErrorMessage(friendlyError(supported) ?? '');
+  const reportError = useCallback((raw: unknown) => setErrorMessage(bannerText(raw)), []);
+  const withdrawError = useCallback((raw: unknown) => {
+    const text = bannerText(raw);
+    setErrorMessage((shown) => (shown === text ? '' : shown));
   }, []);
   const dismissError = useCallback(() => setErrorMessage(''), []);
 
@@ -29,7 +37,7 @@ export function useApplicationError(): ApplicationErrorModel {
   // rejected IPC call deep in a hook still surfaces in this banner.
   useEffect(() => setAsyncFailureSink(reportError), [reportError]);
 
-  return { errorMessage, setErrorMessage, reportError, dismissError };
+  return { errorMessage, setErrorMessage, reportError, withdrawError, dismissError };
 }
 
 export function connectionVisualState(

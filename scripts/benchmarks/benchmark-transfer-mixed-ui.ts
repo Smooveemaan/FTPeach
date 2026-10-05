@@ -21,7 +21,7 @@ try {
       const cdp = await page.context().newCDPSession(page);
       await cdp.send('Performance.enable');
       page.on('pageerror', (error) => errors.push(String(error)));
-      await page.goto('http://127.0.0.1:4187/visual.html');
+      await page.goto('http://127.0.0.1:4187/test/visual/visual.html');
       await page.locator('.pane-list').first().waitFor();
       let scenarioTimer: ReturnType<typeof setTimeout> | undefined;
       const scenario = page.evaluate(

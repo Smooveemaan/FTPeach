@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for taking the time to report a problem.
 
-        **Found a security vulnerability?** Do not open a public issue; report it privately as described in [SECURITY.md](https://github.com/Smooveemaan/ftpeach/blob/master/SECURITY.md).
+        **Found a security vulnerability?** Do not open a public issue; report it privately as described in [SECURITY.md](https://github.com/Smooveemaan/ftpeach/blob/master/.github/SECURITY.md).
 
         Before posting, please remove passwords, private keys, server addresses, user names and private paths from everything you paste or attach.
   - type: checkboxes

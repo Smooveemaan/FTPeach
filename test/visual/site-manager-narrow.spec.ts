@@ -12,7 +12,7 @@ const languages = readdirSync(localesUrl)
 for (const language of languages) {
   test(`bookmark toolbar fits the narrowest scaled window (${language})`, async ({ page }) => {
     const locale = JSON.parse(readFileSync(new URL(`${language}.json`, localesUrl), 'utf8'));
-    await page.goto(`/visual.html?lang=${language}`);
+    await page.goto(`/test/visual/visual.html?lang=${language}`);
     await expect(page.locator('html')).toHaveAttribute('lang', language);
     await page.getByRole('menuitem', { name: locale.menu.bookmarks.title }).click();
     await page.getByRole('menuitem', { name: locale.menu.file.manageBookmarks }).click();

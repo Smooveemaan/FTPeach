@@ -14,7 +14,7 @@ for (const language of languages) {
     const strings = JSON.parse(readFileSync(new URL(`${language}.json`, localesDir), 'utf8')) as {
       menu: { edit: { title: string } };
     };
-    await page.goto(`/visual.html?lang=${language}`);
+    await page.goto(`/test/visual/visual.html?lang=${language}`);
     await expect(page.locator('.pane-list').first()).toBeVisible();
     // The language switch re-renders the menu bar; opening a menu before it
     // lands can lose the click.

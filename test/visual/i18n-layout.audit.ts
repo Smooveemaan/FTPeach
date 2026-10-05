@@ -99,7 +99,7 @@ function translator(language: string) {
 async function open(page: Page, language: string, search = '') {
   const params = new URLSearchParams(search);
   params.set('lang', language);
-  await page.goto(`/visual.html?${params}`);
+  await page.goto(`/test/visual/visual.html?${params}`);
   await expect(page.locator('.pane-list').first()).toBeVisible();
   const first = page.locator('.menu-bar-trigger').first();
   if (language === 'pseudo') await expect(first).toContainText(PSEUDO_OPEN);
@@ -117,7 +117,9 @@ async function openSecurity(page: Page, language: string, prompt: string) {
     await page.setViewportSize({ width: Math.round(size.width), height: Math.round(size.height) });
     resizes += 1;
   });
-  await page.goto(`/visual.html?${new URLSearchParams({ lang: language, security: prompt })}`);
+  await page.goto(
+    `/test/visual/visual.html?${new URLSearchParams({ lang: language, security: prompt })}`,
+  );
   await expect.poll(() => resizes).toBeGreaterThanOrEqual(2);
   await page.evaluate(() => document.fonts.ready);
 }

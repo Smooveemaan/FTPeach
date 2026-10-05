@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 test('real pointer reaches address segments during a file drag', async ({ page }) => {
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   const pane = page.locator('.pane').first();
   const row = pane.locator('.row[data-name="release-notes.md"] .name');
   await expect(row).toBeVisible();

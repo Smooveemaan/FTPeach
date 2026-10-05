@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 test('keyboard navigation in a long list scrolls just far enough to show the row', async ({
   page,
 }) => {
-  await page.goto('/visual.html?manyFiles=500');
+  await page.goto('/test/visual/visual.html?manyFiles=500');
   const list = page.locator('.pane-list[data-side="a"]');
   const row = (name: string) => list.locator(`.row[data-name="${name}"]`);
   const scrollTop = () => list.evaluate((el) => el.scrollTop);

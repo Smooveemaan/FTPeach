@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 for (const theme of ['dark', 'light']) {
   test(`primary button has contrasting keyboard focus in ${theme} theme`, async ({ page }) => {
-    await page.goto('/visual.html');
+    await page.goto('/test/visual/visual.html');
     await page
       .locator('html')
       .evaluate((element, value) => element.setAttribute('data-theme', value), theme);

@@ -6,7 +6,7 @@ test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } });
 
 for (const language of ['en', 'he']) {
   test(`settings language menu scrollbar can be dragged (${language})`, async ({ page }) => {
-    await page.goto(`/visual.html?lang=${language}`);
+    await page.goto(`/test/visual/visual.html?lang=${language}`);
     await page.locator('.menu-bar-trigger').nth(1).click();
     await page.locator('.menu-dropdown .menu-item').first().click();
     await page.locator('.settings-nav-item').nth(2).click();

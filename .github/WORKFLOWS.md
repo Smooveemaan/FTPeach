@@ -23,4 +23,4 @@
 
 ## Contributions
 
-`ISSUE_TEMPLATE/` holds the issue forms for bug reports, feature requests and translation problems; blank issues are off, and `config.yml` links the security policy and the documentation instead. Follow the [security policy](../SECURITY.md) for vulnerabilities. `PULL_REQUEST_TEMPLATE.md` records the reason for a change and its verification; see [CONTRIBUTING.md](../CONTRIBUTING.md) for development instructions.
+`ISSUE_TEMPLATE/` holds the issue forms for bug reports, feature requests and translation problems; blank issues are off, and `config.yml` links the security policy and the documentation instead. Follow the [security policy](SECURITY.md) for vulnerabilities. `PULL_REQUEST_TEMPLATE.md` records the reason for a change and its verification; see [CONTRIBUTING.md](CONTRIBUTING.md) for development instructions.

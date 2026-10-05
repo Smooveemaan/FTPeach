@@ -4,7 +4,7 @@ import { appendFile, readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { ignoredAdvisories, parseAdvisoryRegister, rustsecKind } from './release-trust.ts';
 
-const policy = await readFile('deny.toml', 'utf8');
+const policy = await readFile('src-tauri/deny.toml', 'utf8');
 const ids = ignoredAdvisories(policy);
 const register = parseAdvisoryRegister(await readFile('docs/rust-advisories.md', 'utf8'));
 const lines = ['## Rust advisory review evidence', '', `Checked: ${new Date().toISOString()}`, ''];

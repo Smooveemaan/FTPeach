@@ -70,7 +70,7 @@ Keep the master password safe: it cannot be recovered, and it remains the recove
 
 For SFTP, the default settings require you to confirm the server's key before the first connection can authenticate. Verify the displayed fingerprint with your server administrator before trusting it. FTPeach remembers the approved key and blocks subsequent connections if it changes, pending a new confirmation.
 
-For implementation details, see the [security design](docs/security.md). To report a vulnerability privately, follow the [security policy](SECURITY.md).
+For implementation details, see the [security design](docs/security.md). To report a vulnerability privately, follow the [security policy](.github/SECURITY.md).
 
 ## Development
 
@@ -154,7 +154,7 @@ npm run check
 
 `npm run check` does not run packaged application smoke tests or the live-server compatibility matrix. Those have separate setup and commands in the [verification matrix](docs/verification-matrix.md).
 
-See the [test guide](test/README.md) for individual suites and the [contribution guide](CONTRIBUTING.md) for review expectations.
+See the [test guide](test/README.md) for individual suites and the [contribution guide](.github/CONTRIBUTING.md) for review expectations.
 
 ### Clean up build output
 
@@ -181,7 +181,7 @@ The [documentation index](docs/README.md) includes validation reports, IPC permi
 
 Found a bug or have an idea? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, Windows version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
 
-Code improvements, documentation fixes, and bug reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before starting, and open an issue to discuss larger changes.
+Code improvements, documentation fixes, and bug reports are welcome. Read [CONTRIBUTING.md](.github/CONTRIBUTING.md) before starting, and open an issue to discuss larger changes.
 
 ## License
 

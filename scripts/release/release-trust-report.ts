@@ -105,7 +105,7 @@ lines.push(
 lines.push('', '### RustSec exceptions carried by this build', '');
 const register = parseAdvisoryRegister(await readFile('docs/rust-advisories.md', 'utf8'));
 lines.push('| Advisory | Kind | Review by |', '| --- | --- | --- |');
-for (const id of ignoredAdvisories(await readFile('deny.toml', 'utf8'))) {
+for (const id of ignoredAdvisories(await readFile('src-tauri/deny.toml', 'utf8'))) {
   const row = register.get(id);
   lines.push(`| ${id} | ${row?.kind ?? 'unregistered'} | ${row?.reviewBy ?? '-'} |`);
 }

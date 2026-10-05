@@ -4,7 +4,9 @@ import en from '../../src/i18n/locales/en.json' with { type: 'json' };
 import ru from '../../src/i18n/locales/ru.json' with { type: 'json' };
 
 async function openHarness(page: Page, language?: string) {
-  await page.goto(language ? `/visual.html?lang=${language}` : '/visual.html');
+  await page.goto(
+    language ? `/test/visual/visual.html?lang=${language}` : '/test/visual/visual.html',
+  );
   await expect(page.locator('.pane-list').first()).toBeVisible();
   await expect(page.getByText('Production', { exact: true }).first()).toBeVisible();
   await page.evaluate(() => document.fonts.ready);

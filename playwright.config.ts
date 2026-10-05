@@ -27,7 +27,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'npm run dev:renderer -- --port 4173 --strictPort',
-    url: `${baseURL}/visual.html`,
+    url: `${baseURL}/test/visual/visual.html`,
     reuseExistingServer: !isCI,
     timeout: 120_000,
   },

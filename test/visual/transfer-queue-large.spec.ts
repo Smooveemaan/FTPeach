@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('large queue fits offscreen names and supports keyboard navigation at RTL zoom', async ({
   page,
 }) => {
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   await expect(page.locator('.pane-list').first()).toBeVisible();
   await page.evaluate(async () => {
     const path = '/src/features/transfers/transferStore.ts';

@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 // 500 rows is well past the virtualization threshold, so only the rows on
 // screen are in the DOM while the rectangle covers far more of them.
 async function openLongList(page: Page) {
-  await page.goto('/visual.html?manyFiles=500');
+  await page.goto('/test/visual/visual.html?manyFiles=500');
   const list = page.locator('.pane-list[data-side="a"]');
   const first = list.locator('.row[data-name="file-0000.txt"]');
   await expect(first).toBeVisible();

@@ -19,7 +19,7 @@ If private reporting is unavailable, open an issue without technical details and
 
 ## Not a vulnerability
 
-The threat model in [`docs/security.md`](docs/security.md) documents the risks FTPeach accepts on purpose. A report that only demonstrates one of them will be closed, though we still welcome reports that bypass a mitigation described there. See [Explicitly accepted risks](docs/security.md#explicitly-accepted-risks) for the reasoning.
+The threat model in [`docs/security.md`](../docs/security.md) documents the risks FTPeach accepts on purpose. A report that only demonstrates one of them will be closed, though we still welcome reports that bypass a mitigation described there. See [Explicitly accepted risks](../docs/security.md#explicitly-accepted-risks) for the reasoning.
 
 - Plain FTP sends passwords and files unencrypted.
 - A connection with **Allow invalid certificates** enabled can be intercepted.

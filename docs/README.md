@@ -12,6 +12,7 @@
 - [Duplication](duplication.md): the per-area gate, its baseline and the decisions on each clone.
 - [Transfer store baseline](optimization-baseline.md): reproducible queue and listing benchmarks.
 - [Decision records](adr/): choices that are easy to question later, with their reasons.
+- [Glossary](CONTEXT.md): the words the product, its security documents and its code use.
 - [Scripts](../scripts/README.md) and [tests](../test/README.md): commands and directory layout.
 
 ## Runtime behavior

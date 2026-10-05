@@ -4,7 +4,7 @@ for (const width of [1440, 900, 480]) {
   for (const state of ['available', 'downloading', 'downloaded']) {
     test('update ' + state + ' at ' + width + 'px', async ({ page }) => {
       await page.setViewportSize({ width, height: 720 });
-      await page.goto('/visual.html?update=' + state + '&percent=45');
+      await page.goto('/test/visual/visual.html?update=' + state + '&percent=45');
       const update = page.locator('.status-update');
       await expect(update).toBeVisible();
       await expect(update.locator('bdi')).toHaveText('v0.3.2:');
@@ -44,7 +44,7 @@ test('available update waits for a click, downloads, then offers installation', 
   page,
 }) => {
   await page.clock.install();
-  await page.goto('/visual.html?update=available');
+  await page.goto('/test/visual/visual.html?update=available');
   const update = page.locator('.status-update');
   await expect(update.getByRole('button')).toHaveText('available!');
   await page.clock.fastForward(10000);

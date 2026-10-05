@@ -1,13 +1,13 @@
 # Rust advisory exceptions
 
-Every entry in `deny.toml` must have a matching row below, with its RustSec
+Every entry in `src-tauri/deny.toml` must have a matching row below, with its RustSec
 kind: `vulnerability`, `unmaintained`, `unsound` or `notice`. CI rejects
 missing, expired, or longer-than-120-day reviews and unknown kinds; the weekly
 audit also fails when a kind disagrees with RustSec's own classification.
 CODEOWNERS requires the security owner to review changes. Weekly CI runs
 `cargo deny check advisories licenses`.
 
-Each `deny.toml` reason repeats the review deadline; the policy check rejects
+Each `src-tauri/deny.toml` reason repeats the review deadline; the policy check rejects
 drift from this register. Weekly CI also prints the locked `cargo tree -i rsa`
 chain, the latest upstream russh version, and live RustSec `[versions]` metadata
 for every ignored advisory in the job summary. Fetch failures fail that step;

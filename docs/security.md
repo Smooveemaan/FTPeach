@@ -226,7 +226,7 @@ replacement, directory move and remote staging policies, with regression test re
 
 ## Vulnerability reporting
 
-Use the repository's private vulnerability reporting as described in [`../SECURITY.md`](../SECURITY.md). Do not publish exploits, credentials, or technical vulnerability details in an ordinary issue.
+Use the repository's private vulnerability reporting as described in [`../.github/SECURITY.md`](../.github/SECURITY.md). Do not publish exploits, credentials, or technical vulnerability details in an ordinary issue.
 
 ## Verification limits
 

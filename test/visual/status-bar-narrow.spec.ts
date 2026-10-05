@@ -7,7 +7,7 @@ const languages = readdirSync(new URL('../../src/i18n/locales/', import.meta.url
   .map((file) => file.slice(0, -'.json'.length));
 
 async function open(page: Page, language: string, search: string) {
-  await page.goto(`/visual.html?lang=${language}&${search}`);
+  await page.goto(`/test/visual/visual.html?lang=${language}&${search}`);
   await expect(page.locator('html')).toHaveAttribute('lang', language);
   await expect(page.locator('.status-transfers')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);

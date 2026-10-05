@@ -27,7 +27,9 @@ function strings(language: string) {
 /** Everything the status bar can show at once: an update, the wait to quit and sync browsing. */
 async function crowd(page: Page, language: string) {
   const text = strings(language);
-  await page.goto(`/visual.html?lang=${language}&update=available&tray=quitRequested&import=sites`);
+  await page.goto(
+    `/test/visual/visual.html?lang=${language}&update=available&tray=quitRequested&import=sites`,
+  );
   await expect(page.locator('html')).toHaveAttribute('lang', language);
   await page.evaluate(() => document.fonts.ready);
   const dialog = page.locator('.modal-confirm');
@@ -95,7 +97,7 @@ for (const language of languages) {
     const text = strings(language);
     for (const width of [480, 1400]) {
       await page.setViewportSize({ width, height: 700 });
-      await page.goto(`/visual.html?lang=${language}&import=sites`);
+      await page.goto(`/test/visual/visual.html?lang=${language}&import=sites`);
       await expect(page.locator('html')).toHaveAttribute('lang', language);
       await page.evaluate(() => document.fonts.ready);
       await expect(page.locator('.status-transfers')).toBeVisible();

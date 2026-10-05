@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 for (const language of ['en', 'ru', 'ar']) {
   test(`settings carousel keeps edge items aligned (${language})`, async ({ page }) => {
     await page.setViewportSize({ width: 420, height: 800 });
-    await page.goto(`/visual.html?lang=${language}`);
+    await page.goto(`/test/visual/visual.html?lang=${language}`);
     if (language === 'ar') await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await page.locator('.menu-bar-trigger').nth(1).click();
     await page.locator('.menu-dropdown .menu-item').first().click();

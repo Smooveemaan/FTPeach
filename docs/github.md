@@ -35,7 +35,7 @@ files do not establish that they are enabled.
     trigger a signed release.
   - Repository administrators bypass both rulesets, so the maintainer can still
     push to `master` and tag releases directly.
-- Enable private vulnerability reporting so the route in [SECURITY.md](../SECURITY.md)
+- Enable private vulnerability reporting so the route in [SECURITY.md](../.github/SECURITY.md)
   is available. Enable secret scanning and push protection where available.
 - Configure the protected `release` environment and its signing secrets as
   described in [updater signing](updater-signing.md).

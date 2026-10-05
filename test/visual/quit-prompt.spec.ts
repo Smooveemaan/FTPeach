@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('quitting with transfers running asks, then waits in the status bar', async ({ page }) => {
-  await page.goto('/visual.html?tray=quitRequested');
+  await page.goto('/test/visual/visual.html?tray=quitRequested');
   const dialog = page.locator('.modal-confirm');
   await expect(dialog).toBeVisible();
   await page.evaluate(() => document.fonts.ready);

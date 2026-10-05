@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test("a disconnected pane's sign-in form ends level with the other pane's column header", async ({
   page,
 }) => {
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   await page.evaluate(() => document.fonts.ready);
   const right = page.locator('.pane[data-side=b]');
   await right.getByRole('button', { name: 'Disconnect' }).click();

@@ -1,9 +1,9 @@
 # GitHub automation and security policy share the repository security owner.
 /.github/ @Smooveemaan
-/SECURITY.md @Smooveemaan
+/.github/SECURITY.md @Smooveemaan
 
 # Security exceptions and updater signing require the same review.
-/deny.toml @Smooveemaan
+/src-tauri/deny.toml @Smooveemaan
 /.semgrep/ @Smooveemaan
 /scripts/release/report-rust-advisories.ts @Smooveemaan
 /docs/rust-advisories.md @Smooveemaan

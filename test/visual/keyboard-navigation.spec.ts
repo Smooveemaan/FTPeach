@@ -5,7 +5,7 @@ test('search input keeps native select, copy, paste and cut shortcuts', async ({
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   const pane = page.locator('.pane').first();
   await pane.locator('.pane-search-toggle').click();
   const input = pane.locator('.pane-filter input');
@@ -32,7 +32,7 @@ test('search input keeps native select, copy, paste and cut shortcuts', async ({
 });
 
 test('Escape restores Help focus without enabling keyboard outlines', async ({ page }) => {
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   const help = page.getByRole('menuitem', { name: 'Help', exact: true });
   await help.click();
   await page.getByRole('menuitem', { name: /About/ }).click();
@@ -45,7 +45,7 @@ test('Escape restores Help focus without enabling keyboard outlines', async ({ p
 });
 
 test('only Tab starts focus cues, and pointer input ends them across dialogs', async ({ page }) => {
-  await page.goto('/visual.html');
+  await page.goto('/test/visual/visual.html');
   await page.getByRole('menuitem', { name: 'Help', exact: true }).click();
   await page.getByRole('menuitem', { name: /About/ }).click();
   const dialog = page.getByRole('dialog');
@@ -74,7 +74,7 @@ test('only Tab starts focus cues, and pointer input ends them across dialogs', a
 });
 
 test('a global shortcut waits while the recovered-edits prompt is open', async ({ page }) => {
-  await page.goto('/visual.html?recoveredEdits=1');
+  await page.goto('/test/visual/visual.html?recoveredEdits=1');
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Control+,');
   // Give a dialog that should not open the time it would need to.

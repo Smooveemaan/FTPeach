@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
    first layout started from the wrong side. */
 for (const lang of ['en', 'ar'])
   test(`column swap slides the neighbour from its old place (${lang})`, async ({ page }) => {
-    await page.goto(`/visual.html?lang=${lang}`);
+    await page.goto(`/test/visual/visual.html?lang=${lang}`);
     await expect(page.locator('html')).toHaveAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     await expect(page.locator('.pane-list').first()).toBeVisible();
     const headers = page.locator('.pane').first().locator('.row-header [data-column-key]');

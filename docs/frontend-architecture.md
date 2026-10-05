@@ -186,6 +186,6 @@ features. Theme-specific values belong in tokens rather than duplicated componen
 
 The facade import order is a compatibility contract. Do not reorder imports as part of a file move:
 first update or add a visual baseline, then make the smallest ownership change and run
-`npm run test:visual`. The deterministic browser harness at `visual.html` renders the real
+`npm run test:visual`. The deterministic browser harness at `test/visual/visual.html` renders the real
 `Application` against `test/visual/visualTestApi.ts`; `npm run test:visual:update` is reserved for
 intentional, reviewed UI changes.

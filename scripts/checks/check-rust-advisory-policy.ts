@@ -5,7 +5,7 @@ import {
   parseAdvisoryRegister,
 } from '../release/release-trust.ts';
 
-const deny = await readFile('deny.toml', 'utf8');
+const deny = await readFile('src-tauri/deny.toml', 'utf8');
 const register = await readFile('docs/rust-advisories.md', 'utf8');
 const ignored = new Set(ignoredAdvisories(deny));
 const rows = parseAdvisoryRegister(register);

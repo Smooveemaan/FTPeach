@@ -38,7 +38,7 @@
     "check:duplicates": "node --experimental-strip-types scripts/checks/check-duplicates.ts",
     "check:docs-impact": "node --experimental-strip-types scripts/checks/check-doc-impact.ts",
     "check:verified-by": "node --experimental-strip-types scripts/checks/check-verified-by.ts",
-    "i18n:audit": "playwright test --config playwright.i18n-audit.config.ts",
+    "i18n:audit": "playwright test --config test/visual/playwright.i18n-audit.config.ts",
     "i18n:check": "node --experimental-strip-types scripts/checks/check-locales.ts",
     "check:ci-parity": "node --experimental-strip-types scripts/checks/check-ci-parity.ts",
     "check": "npm run check:ci-parity && npm run check:release-config && npm run licenses:check && npm run check:tracked-secrets && npm run check:rust-advisories && npm run check:no-cyrillic && npm run check:rust-boundaries && npm run check:command-acl && npm run check:ignored-tests && npm run check:docs-impact && npm run check:verified-by && npm run check:duplicates && npm run i18n:check && npm run coverage && npm run lint && npm run format:check && npm run build && npm run test:visual && cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check && npm run rust:check && npm run rust:clippy && npm run rust:test && npm run test:updater-fixtures && npm run test:parser-regressions",

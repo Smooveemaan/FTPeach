@@ -114,10 +114,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - An invalid mode in SFTP permissions is shown in the dialog, which stays open with what you
   typed.
 - The log names the reason a WebDAV connection failed, and says when FTP uses active mode.
-- Errors about the master password and the proxy test stay on screen until you try again or
-  change the field, instead of fading out after two seconds.
-- The proxy test result goes away when a proxy field changes, and the settings no longer jump
-  when a test starts.
+- Errors about the master password stay on screen until you try again or change the field,
+  instead of fading out after two seconds.
+- The proxy test result fades in on a line kept for it, and fades out after a few seconds or as
+  soon as a proxy field changes, so the settings below never move.
+- Switching the proxy on or off in Settings unfolds or folds its fields, and the page follows
+  them.
+- At 125% display scale, Settings no longer shift by a pixel when the pointer passes over a field.
 - The warning about RSA keys in Manage Bookmarks spans the whole dialog instead of a narrow
   column under the passphrase.
 - Opening a bookmark in a pane connected to a WebDAV server names that server in the question

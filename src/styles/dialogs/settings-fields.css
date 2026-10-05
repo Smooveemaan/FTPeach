@@ -161,6 +161,26 @@
   }
 }
 
+/* The proxy test's result keeps its line while the proxy is on. Like the
+   vault's message, it fades in and out after a while; it also fades as soon
+   as a field it was tested with changes. */
+.settings-hint.settings-proxy-test-result {
+  min-height: 1lh;
+  animation:
+    vault-unlock-error-in 0.3s ease,
+    vault-unlock-error-out 0.6s ease 5s forwards;
+}
+
+.settings-hint.settings-proxy-test-result:empty {
+  animation: none;
+}
+
+.settings-hint.settings-proxy-test-result.is-stale {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
 /* In Settings the controls below it move: room opens and then the message
    fades in; it fades out where it stands and then its room closes, so the
    controls slide down and back up and the text is never cut. A column of

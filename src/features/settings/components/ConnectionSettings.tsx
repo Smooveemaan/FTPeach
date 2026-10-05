@@ -1,10 +1,10 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAX_TIMEOUT_SEC } from '../hooks/useSettingsDraft.ts';
-import type { useProxyPasswordTest } from '../hooks/useProxyPasswordTest.ts';
 import NumberStepper from './NumberStepper.tsx';
-import ProxySettings from './ProxySettings.tsx';
+import ProxySettings, { type ProxyMotion, type ProxySettingsProps } from './ProxySettings.tsx';
 
-interface ConnectionSettingsProps {
+interface ConnectionSettingsProps extends Omit<ProxySettingsProps, 'motion' | 'onFolded'> {
   timeoutValue: string;
   setTimeoutValue: (value: string) => void;
   saveSessionOnExitValue: boolean;
@@ -15,16 +15,6 @@ interface ConnectionSettingsProps {
   setFtpActiveModeValue: (value: boolean) => void;
   proxyEnabledValue: boolean;
   setProxyEnabledValue: (value: boolean) => void;
-  proxyTypeValue: string;
-  setProxyTypeValue: (value: string) => void;
-  proxyHostValue: string;
-  setProxyHostValue: (value: string) => void;
-  proxyPortValue: string;
-  setProxyPortValue: (value: string) => void;
-  proxyUsernameValue: string;
-  setProxyUsernameValue: (value: string) => void;
-  proxyPasswordSet: boolean;
-  password: ReturnType<typeof useProxyPasswordTest>;
 }
 
 export default function ConnectionSettings({
@@ -38,18 +28,12 @@ export default function ConnectionSettings({
   setFtpActiveModeValue,
   proxyEnabledValue,
   setProxyEnabledValue,
-  proxyTypeValue,
-  setProxyTypeValue,
-  proxyHostValue,
-  setProxyHostValue,
-  proxyPortValue,
-  setProxyPortValue,
-  proxyUsernameValue,
-  setProxyUsernameValue,
-  proxyPasswordSet,
-  password,
+  ...proxy
 }: ConnectionSettingsProps) {
   const { t } = useTranslation();
+  // Switched on or off here, the proxy fields unfold or fold; opened with it
+  // on, they are just there.
+  const [proxyMotion, setProxyMotion] = useState<ProxyMotion>('none');
 
   return (
     <div className="settings-option-list">
@@ -111,26 +95,18 @@ export default function ConnectionSettings({
           <input
             type="checkbox"
             checked={proxyEnabledValue}
-            onChange={(e) => setProxyEnabledValue(e.target.checked)}
+            onChange={(e) => {
+              setProxyEnabledValue(e.target.checked);
+              setProxyMotion(e.target.checked ? 'unfold' : 'fold');
+            }}
           />
           {t('settings.proxy.enable')}
         </label>
         <p className="settings-hint">{t('settings.proxy.enableHint')}</p>
       </div>
 
-      {proxyEnabledValue && (
-        <ProxySettings
-          proxyTypeValue={proxyTypeValue}
-          setProxyTypeValue={setProxyTypeValue}
-          proxyHostValue={proxyHostValue}
-          setProxyHostValue={setProxyHostValue}
-          proxyPortValue={proxyPortValue}
-          setProxyPortValue={setProxyPortValue}
-          proxyUsernameValue={proxyUsernameValue}
-          setProxyUsernameValue={setProxyUsernameValue}
-          proxyPasswordSet={proxyPasswordSet}
-          password={password}
-        />
+      {(proxyEnabledValue || proxyMotion === 'fold') && (
+        <ProxySettings motion={proxyMotion} onFolded={() => setProxyMotion('none')} {...proxy} />
       )}
     </div>
   );

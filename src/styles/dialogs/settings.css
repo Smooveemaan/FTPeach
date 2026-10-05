@@ -98,6 +98,50 @@
 }
 
 
+/* Switching the proxy on unfolds its fields from the toggle down, and off
+   folds them back. They are clipped only while they move, so focus rings
+   show afterwards; the negative margin takes back the list's gap while the
+   height is 0. */
+.settings-proxy-options:is(.is-unfold, .is-fold) {
+  interpolate-size: allow-keywords;
+  animation: settings-proxy-unfold 0.35s ease;
+}
+/* Its own name, so it starts afresh instead of reversing an unfold that has
+   already ended. */
+.settings-proxy-options.is-fold {
+  animation: settings-proxy-fold 0.35s ease forwards;
+}
+
+@keyframes settings-proxy-fold {
+  from {
+    height: auto;
+    margin-top: 0;
+    opacity: 1;
+    overflow: hidden;
+  }
+  to {
+    height: 0;
+    margin-top: -14px;
+    opacity: 0;
+    overflow: hidden;
+  }
+}
+
+@keyframes settings-proxy-unfold {
+  from {
+    height: 0;
+    margin-top: -14px;
+    opacity: 0;
+    overflow: hidden;
+  }
+  to {
+    height: auto;
+    margin-top: 0;
+    opacity: 1;
+    overflow: hidden;
+  }
+}
+
 .settings-option-group.settings-proxy-fields {
   grid-template-columns: auto 1fr;
   justify-items: stretch;
@@ -618,6 +662,13 @@
   padding: 14px 16px;
   background: var(--bg-panel);
   overflow-y: auto;
+  /* The scrollbar's room is kept, so the proxy fields unfolding past the
+     bottom do not narrow the page under them. */
+  scrollbar-gutter: stable;
+  /* Its own layer: centred in the window, the dialog often sits on a
+     fraction of a physical pixel at 125%, and a field repainted on hover
+     rounded the scrolled content a pixel the other way. */
+  will-change: transform;
 }
 
 /* Theme/language pill switch (SettingsDialog's SegmentedControl) — same

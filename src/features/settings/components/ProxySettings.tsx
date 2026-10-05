@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../../../components/Icon.tsx';
 import PasswordInput from '../../../components/PasswordInput.tsx';
@@ -6,7 +6,13 @@ import type { useProxyPasswordTest } from '../hooks/useProxyPasswordTest.ts';
 import SegmentedControl from './SegmentedControl.tsx';
 import { handler } from '../../../shared/asyncFailure.ts';
 
-interface ProxySettingsProps {
+export type ProxyMotion = 'none' | 'unfold' | 'fold';
+
+export interface ProxySettingsProps {
+  /** The proxy was just switched on (unfold) or off (fold); none when opened with it on. */
+  motion: ProxyMotion;
+  /** The fields have folded away and can go. */
+  onFolded: () => void;
   proxyTypeValue: string;
   setProxyTypeValue: (value: string) => void;
   proxyHostValue: string;
@@ -20,6 +26,8 @@ interface ProxySettingsProps {
 }
 
 export default function ProxySettings({
+  motion,
+  onFolded,
   proxyTypeValue,
   setProxyTypeValue,
   proxyHostValue,
@@ -35,9 +43,44 @@ export default function ProxySettings({
   const hostId = useId();
   const portId = useId();
   const testHostId = useId();
+  const resultRef = useRef<HTMLParagraphElement>(null);
+  // Only a test run since the proxy was switched on speaks here; an older
+  // result would replay each time the fields appear.
+  const [firstRun] = useState(password.proxyTestRun);
+  const tested = password.proxyTestRun !== firstRun;
+  // The result lands below the fold of a short window; bring it into view.
+  useEffect(() => {
+    if (tested) resultRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [tested, password.proxyTestRun]);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const folded = useEffectEvent(onFolded);
+  // Unfolding, the page scrolls to its very end frame by frame;
+  // folding, it follows the shrinking page by itself.
+  useEffect(() => {
+    const fields = revealRef.current;
+    if (motion === 'none' || !fields) return;
+    let frame = 0;
+    if (motion === 'unfold')
+      frame = requestAnimationFrame(function follow() {
+        const panel = fields.closest('.settings-panel');
+        if (panel) panel.scrollTop = panel.scrollHeight;
+        frame = requestAnimationFrame(follow);
+      });
+    // Only the fields' own animation: one inside them would end it early.
+    const end = (event: AnimationEvent) => {
+      if (event.target !== fields) return;
+      cancelAnimationFrame(frame);
+      if (motion === 'fold') folded();
+    };
+    fields.addEventListener('animationend', end);
+    return () => {
+      cancelAnimationFrame(frame);
+      fields.removeEventListener('animationend', end);
+    };
+  }, [motion]);
 
   return (
-    <>
+    <div ref={revealRef} className={`settings-option-list settings-proxy-options is-${motion}`}>
       <div className="settings-option-group">
         <label className="settings-field">
           <span>{t('settings.proxy.typeLabel')}</span>
@@ -149,6 +192,7 @@ export default function ProxySettings({
               disabled={
                 password.proxyTestBusy ||
                 !proxyHostValue.trim() ||
+                !proxyPortValue ||
                 !password.proxyTestHost.trim() ||
                 !password.proxyTestPort
               }
@@ -164,15 +208,21 @@ export default function ProxySettings({
             </button>
           </div>
         </div>
-        {password.proxyTestResult === 'ok' && (
-          <p className="settings-hint settings-success">{t('settings.proxy.testOk')}</p>
-        )}
-        {password.proxyTestResult === 'error' && (
-          <p className="settings-hint settings-warning" role="alert" aria-live="assertive">
-            {password.proxyTestMessage}
-          </p>
-        )}
+        {/* Its line is kept while the proxy is on, so a result neither pushes
+            the page down nor leaves a gap that closes when it fades. */}
+        <p
+          key={password.proxyTestRun}
+          ref={resultRef}
+          className={[
+            'settings-hint settings-proxy-test-result',
+            password.proxyTestResult === 'ok' ? 'settings-success' : 'settings-warning',
+            password.proxyTestStale ? 'is-stale' : '',
+          ].join(' ')}
+          role={password.proxyTestResult === 'error' ? 'alert' : 'status'}
+        >
+          {tested && password.proxyTestMessage}
+        </p>
       </div>
-    </>
+    </div>
   );
 }

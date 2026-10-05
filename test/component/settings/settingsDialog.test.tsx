@@ -356,7 +356,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(openFolder).toHaveBeenLastCalledWith('');
   });
 
-  test('a proxy test error stays until a tested field changes', async () => {
+  test('a proxy test error fades once a tested field changes', async () => {
     const user = userEvent.setup();
     const test = vi.fn(async () => ({ ok: false, error: 'Proxy refused the password' }));
     Object.assign(window.api, { proxy: { test } });
@@ -366,10 +366,13 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await user.type(screen.getByLabelText('settings.proxy.testTargetLabel'), 'example.com');
     await user.type(screen.getAllByLabelText('settings.proxy.portLabel').at(-1)!, '80');
     await user.click(screen.getByRole('button', { name: 'settings.proxy.test' }));
-    expect((await screen.findByRole('alert')).textContent).toBe('Proxy refused the password');
+    const error = await screen.findByRole('alert');
+    expect(error.textContent).toBe('Proxy refused the password');
+    expect(error.classList.contains('is-stale')).toBe(false);
 
+    // The text stays for its fade-out; the class is what hides it.
     await user.type(screen.getByLabelText('settings.proxy.passwordLabel'), 'x');
-    expect(screen.queryByText('Proxy refused the password')).toBeNull();
+    expect(error.classList.contains('is-stale')).toBe(true);
   });
 
   test('removing a saved proxy password flags unsaved changes and requests removal on save', async () => {

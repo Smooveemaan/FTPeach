@@ -28,6 +28,10 @@ export interface ProxyPasswordTestModel {
   proxyTestBusy: boolean;
   proxyTestResult: ProxyTestResult;
   proxyTestMessage: string;
+  /** Counts the tests run, so each result is shown afresh. */
+  proxyTestRun: number;
+  /** A field changed since the test: the result no longer speaks for them. */
+  proxyTestStale: boolean;
   testProxy: () => Promise<void>;
   buildPasswordPatch: () => ProxyPasswordPatch;
 }
@@ -51,8 +55,11 @@ export function useProxyPasswordTest({
     inputs: string;
     result: ProxyTestResult;
     message: string;
+    run: number;
+    stale: boolean;
   } | null>(null);
-  // A result speaks only for the fields it was tested with; editing one hides it.
+  // A result speaks only for the fields it was tested with; editing one hides
+  // it for good, even if the field is then put back.
   const proxyTestInputs = JSON.stringify([
     proxyTypeValue,
     proxyHostValue,
@@ -62,7 +69,8 @@ export function useProxyPasswordTest({
     proxyTestHost,
     proxyTestPort,
   ]);
-  const shownProxyTest = proxyTest?.inputs === proxyTestInputs ? proxyTest : null;
+  if (proxyTest && !proxyTest.stale && proxyTest.inputs !== proxyTestInputs)
+    setProxyTest({ ...proxyTest, stale: true });
 
   useEffect(() => {
     if (proxyPasswordDirty || proxyPasswordRemoved) markUnsavedChanges();
@@ -123,11 +131,14 @@ export function useProxyPasswordTest({
         targetHost: proxyTestHost.trim(),
         targetPort: Number(proxyTestPort) || 0,
       });
-      setProxyTest(
-        result.ok === false
-          ? { inputs, result: 'error', message: result.error || t('settings.proxy.testFailed') }
-          : { inputs, result: 'ok', message: '' },
-      );
+      setProxyTest((previous) => ({
+        inputs,
+        run: (previous?.run ?? 0) + 1,
+        stale: false,
+        ...(result.ok === false
+          ? { result: 'error', message: result.error || t('settings.proxy.testFailed') }
+          : { result: 'ok', message: t('settings.proxy.testOk') }),
+      }));
     } finally {
       setProxyTestBusy(false);
     }
@@ -151,8 +162,10 @@ export function useProxyPasswordTest({
     proxyTestPort,
     setProxyTestPort,
     proxyTestBusy,
-    proxyTestResult: shownProxyTest?.result ?? null,
-    proxyTestMessage: shownProxyTest?.message ?? '',
+    proxyTestResult: proxyTest?.result ?? null,
+    proxyTestMessage: proxyTest?.message ?? '',
+    proxyTestRun: proxyTest?.run ?? 0,
+    proxyTestStale: proxyTest?.stale ?? false,
     testProxy,
     buildPasswordPatch,
   };

@@ -67,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   password first and whether to move the password only once.
 - A bookmark with no port and one with the default port are recognised as the same server.
 - Pausing or resuming a transfer leaves its row where it is in Transfers.
+- Raising Concurrent transfers while files wait in the queue starts the next ones at once.
 - The notification at the end of a big transfer counts every file, not at most 1000.
 - Files dragged out to Explorer one after another give one notification, not one each.
 - Dragging files from Explorer no longer makes the window stop responding over the column

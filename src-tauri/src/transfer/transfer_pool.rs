@@ -429,8 +429,27 @@ impl TransferPool {
             }
         }
         self.drain();
-        rx.await
-            .unwrap_or_else(|_| Err(fail(ErrorCode::ConnectionLost, "Connection closed")))
+        // The pool grew only as far as the limit allowed; a raised limit lets
+        // it open the connection this task is still waiting for.
+        loop {
+            let changed = self.limiter.changed();
+            tokio::pin!(changed);
+            changed.as_mut().enable();
+            let limit = self.limiter.limit();
+            tokio::select! {
+                result = &mut rx => return result.unwrap_or_else(|_| Err(fail(ErrorCode::ConnectionLost, "Connection closed"))),
+                _ = changed => {}
+            }
+            // Every transfer that ends wakes this too; only a new limit can grow the pool.
+            if self.limiter.limit() == limit {
+                continue;
+            }
+            tokio::select! {
+                result = &mut rx => return result.unwrap_or_else(|_| Err(fail(ErrorCode::ConnectionLost, "Connection closed"))),
+                _ = self.ensure_workers() => {}
+            }
+            self.drain();
+        }
     }
 
     /// Cancels a queued, active, or not-yet-queued task ("Stop"/"Pause").
@@ -1019,6 +1038,45 @@ mod tests {
         first_pool.cancel("first");
         assert!(first.await.unwrap().is_err());
         assert!(limiter.try_acquire().is_some());
+    }
+
+    #[tokio::test]
+    async fn raising_the_limit_opens_a_connection_for_a_queued_transfer() {
+        let limiter = Arc::new(ConcurrencyLimiter::default());
+        limiter.set_limit(1);
+        let pool =
+            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+        let (started_tx, started_rx) = oneshot::channel();
+        let first_pool = pool.clone();
+        let first = tokio::spawn(async move {
+            first_pool
+                .run_notified(
+                    "first".into(),
+                    Box::new(|_| Box::pin(std::future::pending())),
+                    move || {
+                        let _ = started_tx.send(());
+                    },
+                )
+                .await
+        });
+        started_rx.await.unwrap();
+        // The one connection is busy, so the second file waits for a new one.
+        let second_pool = pool.clone();
+        let second = tokio::spawn(async move {
+            second_pool
+                .run("second".into(), Box::new(|_| Box::pin(async { Ok(()) })))
+                .await
+        });
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        assert!(!second.is_finished());
+        limiter.set_limit(2);
+        tokio::time::timeout(std::time::Duration::from_secs(2), second)
+            .await
+            .expect("a raised limit starts the queued transfer")
+            .unwrap()
+            .unwrap();
+        pool.cancel("first");
+        assert!(first.await.unwrap().is_err());
     }
 
     #[tokio::test]

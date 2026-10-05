@@ -328,6 +328,7 @@
     "alreadyExists": "“{{name}}”已经存在",
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
+    "activeModeFailed": "在主动 FTP 模式下，服务器无法连接到本计算机。请尝试被动模式。",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
     "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。"
   },

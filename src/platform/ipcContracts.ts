@@ -39,6 +39,7 @@ export const COMMAND_ERROR_CODES = [
   'alreadyExists',
   'replaceUnsupported',
   'createUnsupported',
+  'activeModeFailed',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

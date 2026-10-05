@@ -328,6 +328,7 @@
     "alreadyExists": "»{{name}}« findes allerede",
     "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
     "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
+    "activeModeFailed": "Serveren kunne ikke oprette forbindelse til denne computer i aktiv FTP-tilstand. Prøv passiv tilstand.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
     "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne."
   },

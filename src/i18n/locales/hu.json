@@ -328,6 +328,7 @@
     "alreadyExists": "A(z) „{{name}}” már létezik",
     "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
     "createUnsupported": "Ez az FTP-szerver nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a szerver kínálja őket.",
+    "activeModeFailed": "A szerver aktív FTP-módban nem tudott csatlakozni ehhez a számítógéphez. Próbálja ki a passzív módot.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
     "savedSecretUnreadable": "Egy mentett jelszó nem olvasható ezen a számítógépen. Adja meg újra a könyvjelzőben vagy a proxybeállításokban."
   },

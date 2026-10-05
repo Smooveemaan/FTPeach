@@ -332,6 +332,7 @@
     "alreadyExists": "«{{name}}» ya existe",
     "replaceUnsupported": "El servidor no ha permitido sobrescribir el archivo existente.",
     "createUnsupported": "Este servidor FTP no admite la creación de archivos nuevos. Prueba SFTP o WebDAV si el servidor los ofrece.",
+    "activeModeFailed": "El servidor no ha podido conectarse a este equipo en modo FTP activo. Prueba el modo pasivo.",
     "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar.",
     "savedSecretUnreadable": "No se puede leer una contraseña guardada en este equipo. Vuelve a introducirla en el marcador o en la configuración del proxy."
   },

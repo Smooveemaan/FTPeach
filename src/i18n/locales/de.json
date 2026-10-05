@@ -328,6 +328,7 @@
     "alreadyExists": "„{{name}}“ existiert bereits",
     "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen.",
     "createUnsupported": "Dieser FTP-Server unterstützt das Erstellen neuer Dateien nicht. Versuchen Sie SFTP oder WebDAV, falls der Server sie anbietet.",
+    "activeModeFailed": "Der Server konnte im aktiven FTP-Modus keine Verbindung zu diesem Computer herstellen. Versuchen Sie es mit dem passiven Modus.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen.",
     "savedSecretUnreadable": "Ein gespeichertes Passwort kann auf diesem Computer nicht gelesen werden. Geben Sie es im Lesezeichen oder in den Proxy-Einstellungen erneut ein."
   },

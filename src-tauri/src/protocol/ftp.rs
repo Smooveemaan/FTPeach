@@ -231,6 +231,18 @@ fn passive_port_busy(error: &anyhow::Error) -> bool {
     })
 }
 
+/// The server turned PORT or EPRT away, or could not connect back: pure-ftpd
+/// "500 I won't open a connection to", vsftpd "500 Illegal PORT command", or a
+/// 425. An unknown listing command, "500 Unknown command", is not one.
+fn active_mode_refused(response: &suppaftp::types::Response) -> bool {
+    let text = String::from_utf8_lossy(&response.body).to_ascii_lowercase();
+    match response.status.code() {
+        425 => true,
+        500 | 501 => text.contains("port") || text.contains("connection"),
+        _ => false,
+    }
+}
+
 fn command_refused(error: &anyhow::Error) -> bool {
     error.chain().any(|cause| {
         matches!(
@@ -496,9 +508,21 @@ impl DataChannel {
         expected: &[Status],
     ) -> BackendResult<Data> {
         if self.active {
-            return Ok(Data::Active(
-                control.custom_data_command(command, expected).await?.1,
-            ));
+            return match control.custom_data_command(command, expected).await {
+                Ok((_, stream)) => Ok(Data::Active(stream)),
+                Err(suppaftp::FtpError::UnexpectedResponse(response))
+                    if active_mode_refused(&response) =>
+                {
+                    Err(super::fail(
+                        ErrorCode::ActiveModeFailed,
+                        format!(
+                            "Active mode failed: {}",
+                            String::from_utf8_lossy(&response.body).trim()
+                        ),
+                    ))
+                }
+                Err(error) => Err(error.into()),
+            };
         }
         let port = self.passive_port(control).await?;
         let peer = self.peer;

@@ -328,6 +328,7 @@
     "alreadyExists": "“{{name}}”이(가) 이미 있습니다",
     "replaceUnsupported": "서버에서 기존 파일 덮어쓰기를 허용하지 않았습니다.",
     "createUnsupported": "이 FTP 서버는 새 파일 만들기를 지원하지 않습니다. 서버에서 제공하는 경우 SFTP 또는 WebDAV를 사용해 보세요.",
+    "activeModeFailed": "액티브 FTP 모드에서 서버가 이 컴퓨터에 연결하지 못했습니다. 패시브 모드를 사용해 보세요.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
     "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요."
   },

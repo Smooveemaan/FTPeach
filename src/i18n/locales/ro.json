@@ -332,6 +332,7 @@
     "alreadyExists": "„{{name}}” există deja",
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
     "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
+    "activeModeFailed": "Serverul nu s-a putut conecta la acest computer în modul FTP activ. Încercați modul pasiv.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb.",
     "savedSecretUnreadable": "O parolă salvată nu poate fi citită pe acest computer. Introduceți-o din nou în marcaj sau în setările proxy."
   },

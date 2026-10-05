@@ -77,7 +77,7 @@ export default function ConnectionSettings({
         <label className="secure-toggle settings-toggle">
           <input
             type="checkbox"
-            checked={ftpActiveModeValue && !proxyEnabledValue}
+            checked={ftpActiveModeValue}
             disabled={proxyEnabledValue}
             onChange={(e) => setFtpActiveModeValue(e.target.checked)}
           />

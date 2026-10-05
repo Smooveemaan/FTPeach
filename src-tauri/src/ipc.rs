@@ -55,6 +55,8 @@ pub enum ErrorCode {
     ReplaceUnsupported,
     /// The protocol cannot exclusively create a file at the requested name.
     CreateUnsupported,
+    /// In FTP active mode the server would not, or could not, connect back.
+    ActiveModeFailed,
     Internal,
 }
 
@@ -388,6 +390,7 @@ impl CommandError {
             }
             ErrorCode::Internal => "Command failed",
             ErrorCode::CreateUnsupported => "The FTP server does not support creating new files",
+            ErrorCode::ActiveModeFailed => "The server could not connect back in FTP active mode",
         };
         Self {
             code,
@@ -433,6 +436,7 @@ mod tests {
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
             (ErrorCode::CreateUnsupported, "createUnsupported"),
+            (ErrorCode::ActiveModeFailed, "activeModeFailed"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

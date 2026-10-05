@@ -108,6 +108,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   keeping their connections open, and give them up at once when another tab is turned away, so
   its transfer starts as soon as the others end.
 - The error bar about a transfer goes away when a retry of that transfer succeeds.
+- When the server cannot connect back in FTP active mode, the message says so and suggests passive
+  mode, instead of "An unexpected error occurred".
+- With a proxy on, the Active FTP mode setting stays ticked but greyed out, instead of looking
+  switched off.
 - Importing a file that is not FTPeach settings says so, instead of "EOF while parsing a
   value".
 - A missing key or certificate file is named by its path when connecting, instead of "File or

@@ -336,6 +336,7 @@
     "alreadyExists": "„{{name}}” już istnieje",
     "replaceUnsupported": "Serwer nie zezwolił na nadpisanie istniejącego pliku.",
     "createUnsupported": "Ten serwer FTP nie obsługuje tworzenia nowych plików. Spróbuj SFTP lub WebDAV, jeśli serwer je udostępnia.",
+    "activeModeFailed": "Serwer nie mógł połączyć się z tym komputerem w trybie aktywnego FTP. Spróbuj trybu pasywnego.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj.",
     "savedSecretUnreadable": "Nie można odczytać zapisanego hasła na tym komputerze. Wprowadź je ponownie w zakładce lub w ustawieniach serwera proxy."
   },

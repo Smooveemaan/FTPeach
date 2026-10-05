@@ -33,6 +33,7 @@ const ERROR_CODE_KEYS = {
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',
   createUnsupported: 'errors.createUnsupported',
+  activeModeFailed: 'errors.activeModeFailed',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 

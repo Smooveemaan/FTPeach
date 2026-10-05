@@ -1,5 +1,23 @@
 use super::*;
 
+#[test]
+fn a_refused_port_is_told_apart_from_an_unknown_listing_command() {
+    let refused = |code: u32, text: &str| {
+        active_mode_refused(&suppaftp::types::Response::new(
+            Status::from(code),
+            format!("{code} {text}").into_bytes(),
+        ))
+    };
+    assert!(refused(
+        500,
+        "I won't open a connection to 127.0.0.1 (only to 172.19.0.1)"
+    ));
+    assert!(refused(500, "Illegal PORT command."));
+    assert!(refused(425, "Failed to establish connection."));
+    assert!(!refused(500, "Unknown command"));
+    assert!(!refused(550, "No such file or directory"));
+}
+
 #[tokio::test]
 async fn list_reader_rejects_stalls_and_enforces_budgets_before_eof() {
     let (mut writer, mut reader) = tokio::io::duplex(32);

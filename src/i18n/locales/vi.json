@@ -328,6 +328,7 @@
     "alreadyExists": "“{{name}}” đã tồn tại",
     "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có.",
     "createUnsupported": "Máy chủ FTP này không hỗ trợ tạo tệp mới. Hãy thử SFTP hoặc WebDAV nếu máy chủ có hỗ trợ.",
+    "activeModeFailed": "Máy chủ không thể kết nối đến máy tính này ở chế độ FTP chủ động. Hãy thử chế độ thụ động.",
     "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển.",
     "savedSecretUnreadable": "Không đọc được mật khẩu đã lưu trên máy tính này. Hãy nhập lại trong dấu trang hoặc trong cài đặt proxy."
   },

@@ -325,6 +325,7 @@
     "resourceLimit": "A limit was reached: too many connections or requests at once, or something too large. Try again later, or with less.",
     "replaceUnsupported": "The server didn't allow the existing file to be replaced.",
     "createUnsupported": "This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.",
+    "activeModeFailed": "The server couldn't connect back in active FTP mode. Try passive mode.",
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
     "alreadyExists": "\"{{name}}\" already exists",

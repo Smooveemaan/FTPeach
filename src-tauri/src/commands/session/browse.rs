@@ -215,12 +215,15 @@ pub async fn session_rename(
     if let Err(error) = crate::protocol::validate_remote_relationship(&old_path, &new_path) {
         return Err(CommandError::from_anyhow(&error));
     }
-    let _source = Reservation::acquire_remote(&sessions, &connection_id, &old_path, Access::Write)
-        .await
-        .map_err(CommandError::from)?;
-    let _target = Reservation::acquire_remote(&sessions, &connection_id, &new_path, Access::Write)
-        .await
-        .map_err(CommandError::from)?;
+    let _leases = Reservation::acquire_remote_pair(
+        &sessions,
+        &connection_id,
+        &old_path,
+        &new_path,
+        Access::Write,
+    )
+    .await
+    .map_err(CommandError::from)?;
     // Only an explicit `true` may replace: a caller that omits the flag has
     // not resolved a conflict, so an existing target must survive.
     if overwrite == Some(true) {

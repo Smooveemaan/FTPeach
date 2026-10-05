@@ -99,7 +99,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Lines copied from the log keep the space between the time and the server.
 - Settings → Shortcuts warns when a global shortcut and a file pane shortcut use the same keys.
 - Renaming a file on an FTP or SFTP server to the same name in other letter case works instead
-  of failing with "An unexpected error occurred".
+  of failing, and on a server that ignores letter case, such as IIS, no longer asks to replace
+  the file with itself.
 - A server that turns you away because it already has its maximum number of users says so,
   instead of reporting that the connection was unexpectedly closed.
 - Importing a file that is not FTPeach settings says so, instead of "EOF while parsing a

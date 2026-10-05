@@ -299,7 +299,11 @@ mod local_integration_tests {
                     }
                     let reply: &[u8] = if !server.size_supported {
                         b"502 Command not implemented\r\n"
-                    } else if server.has(argument) {
+                    } else if server.has(argument)
+                        // Like IIS, which finds a file whatever the case.
+                        || server.has("/ignore-case")
+                            && server.paths().iter().any(|path| path.eq_ignore_ascii_case(argument))
+                    {
                         b"213 5\r\n"
                     } else {
                         b"550 No such file\r\n"
@@ -553,6 +557,28 @@ mod local_integration_tests {
             backend.disconnect().await.unwrap();
             server.abort();
         }
+    }
+
+    #[tokio::test]
+    async fn a_server_that_ignores_case_lets_a_name_change_only_its_case() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let files = TestServer::holding(&["/ignore-case", "/a.txt", "/b.txt", "/B.txt"], true);
+        let (port, server) = spawn_ftp_server(files.clone()).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        backend.rename_no_replace("/a.txt", "/A.txt").await.unwrap();
+        // A file listed under exactly the new spelling is still in the way.
+        let error = backend
+            .rename_no_replace("/b.txt", "/B.txt")
+            .await
+            .unwrap_err();
+        assert!(format!("{error:#}").contains("already exists"), "{error:#}");
+        assert_eq!(
+            files.paths(),
+            ["/A.txt", "/B.txt", "/b.txt", "/ignore-case"]
+        );
+        backend.disconnect().await.unwrap();
+        server.abort();
     }
 
     #[tokio::test]

@@ -926,6 +926,11 @@ impl FtpBackend {
             }
             Err(_) => {}
         }
+        self.listed(path).await
+    }
+
+    /// Whether the parent lists a name spelled exactly like `path`'s.
+    async fn listed(&mut self, path: &str) -> BackendResult<bool> {
         let (parent, name) = path.rsplit_once('/').unwrap_or(("", path));
         let parent = if parent.is_empty() { "/" } else { parent };
         Ok(self
@@ -1743,7 +1748,10 @@ impl ProtocolBackend for FtpBackend {
     /// moment between the two for a racing file to be replaced in, instead of
     /// the whole upload that staged it.
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        if self.exists(new_path).await? {
+        // A server that ignores case (IIS) finds the file itself under its new
+        // spelling; only a file listed under exactly that name is in the way.
+        let case_only = old_path.to_lowercase() == new_path.to_lowercase();
+        if self.exists(new_path).await? && (!case_only || self.listed(new_path).await?) {
             return Err(super::fail(
                 ErrorCode::AlreadyExists,
                 format!("{new_path} already exists on the server; it was not replaced"),

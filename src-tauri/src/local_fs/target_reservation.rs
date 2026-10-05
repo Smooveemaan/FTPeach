@@ -89,6 +89,23 @@ impl Reservation {
         Self::lease(Some(server), path, access)
     }
 
+    /// Leases two paths on one server for one operation, such as a rename.
+    /// Both leases share an owner, so names that differ only in case, which
+    /// map to the same key, do not keep each other out.
+    pub async fn acquire_remote_pair(
+        sessions: &Sessions,
+        connection_id: &str,
+        first: &str,
+        second: &str,
+        access: Access,
+    ) -> anyhow::Result<(Self, Self)> {
+        let server = sessions.server_for(connection_id).await;
+        OWNER.sync_scope(uuid::Uuid::new_v4().to_string(), || {
+            let first = Self::lease(Some(server.clone()), first, access)?;
+            Ok((first, Self::lease(Some(server), second, access)?))
+        })
+    }
+
     fn lease(server: Option<String>, path: &str, access: Access) -> anyhow::Result<Self> {
         let key = key(server.as_deref(), path);
         let owner = OWNER
@@ -180,6 +197,28 @@ mod tests {
         assert!(Reservation::acquire_local(&folder, Access::Read).is_err());
         drop(root);
         assert!(Reservation::acquire_local(&folder, Access::Read).is_ok());
+    }
+
+    #[tokio::test]
+    async fn a_rename_that_only_changes_case_holds_both_names() {
+        let sessions = Sessions::default();
+        let folder = unique("");
+        let (old, new) = (format!("{folder}a.txt"), format!("{folder}A.txt"));
+        let pair =
+            Reservation::acquire_remote_pair(&sessions, "connection", &old, &new, Access::Write)
+                .await
+                .unwrap();
+        assert!(
+            Reservation::acquire_remote(&sessions, "connection", &new, Access::Write)
+                .await
+                .is_err()
+        );
+        drop(pair);
+        assert!(
+            Reservation::acquire_remote(&sessions, "connection", &old, Access::Write)
+                .await
+                .is_ok()
+        );
     }
 
     #[tokio::test]

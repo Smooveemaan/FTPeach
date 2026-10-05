@@ -66,6 +66,7 @@
     "screenshot:readme": "node --experimental-strip-types scripts/screenshot/readme.ts",
     "screenshot:video": "node --experimental-strip-types scripts/screenshot/readme.ts --video",
     "site:build": "node --experimental-strip-types scripts/site/build.ts",
+    "site:social": "node --experimental-strip-types scripts/site/social.ts",
     "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts"
   },
   "author": "Smooveemaan",

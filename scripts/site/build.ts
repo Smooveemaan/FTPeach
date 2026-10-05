@@ -96,6 +96,7 @@ async function main() {
     'ftpeach-light.mp4',
     'ftpeach-light-poster.webp',
     'icon.png',
+    'og.jpg',
   ]) {
     await copyFile(path.join(root, 'assets/images', image), path.join(out, image));
   }

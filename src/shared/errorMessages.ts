@@ -34,6 +34,7 @@ const ERROR_CODE_KEYS = {
   replaceUnsupported: 'errors.replaceUnsupported',
   createUnsupported: 'errors.createUnsupported',
   activeModeFailed: 'errors.activeModeFailed',
+  linkNotFollowed: 'errors.linkNotFollowed',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 

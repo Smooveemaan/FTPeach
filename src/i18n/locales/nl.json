@@ -329,6 +329,7 @@
     "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
     "createUnsupported": "Deze FTP-server ondersteunt het maken van nieuwe bestanden niet. Probeer SFTP of WebDAV als de server die aanbiedt.",
     "activeModeFailed": "De server kon in de actieve FTP-modus geen verbinding maken met deze computer. Probeer de passieve modus.",
+    "linkNotFollowed": "Het pad loopt via een koppeling (een junction of symbolische koppeling). Koppelingen worden niet gevolgd.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan.",
     "savedSecretUnreadable": "Een opgeslagen wachtwoord kan op deze computer niet worden gelezen. Voer het opnieuw in bij de bladwijzer of in de proxy-instellingen."
   },

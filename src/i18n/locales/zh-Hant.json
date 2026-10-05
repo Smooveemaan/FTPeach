@@ -329,6 +329,7 @@
     "replaceUnsupported": "伺服器不允許覆寫現有檔案。",
     "createUnsupported": "此 FTP 伺服器不支援建立新檔案。如果伺服器提供 SFTP 或 WebDAV，請改用它們。",
     "activeModeFailed": "在主動 FTP 模式下，伺服器無法連線到此電腦。請改用被動模式。",
+    "linkNotFollowed": "此路徑經過連結（目錄連接或符號連結）。不支援跟隨連結。",
     "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
     "savedSecretUnreadable": "無法在這台電腦上讀取已儲存的密碼。請在書籤或 Proxy 設定中重新輸入。"
   },

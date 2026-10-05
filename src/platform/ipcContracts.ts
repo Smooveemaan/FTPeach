@@ -40,6 +40,7 @@ export const COMMAND_ERROR_CODES = [
   'replaceUnsupported',
   'createUnsupported',
   'activeModeFailed',
+  'linkNotFollowed',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

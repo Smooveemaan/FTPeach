@@ -329,6 +329,7 @@
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
     "activeModeFailed": "Servern kunde inte ansluta till den här datorn i aktivt FTP-läge. Prova passivt läge.",
+    "linkNotFollowed": "Sökvägen går via en länk (en junction eller symbolisk länk). Länkar följs inte.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
     "savedSecretUnreadable": "Ett sparat lösenord kan inte läsas på den här datorn. Ange det igen i bokmärket eller i proxyinställningarna."
   },

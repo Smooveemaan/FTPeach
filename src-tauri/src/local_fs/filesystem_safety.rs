@@ -339,9 +339,11 @@ pub(crate) fn ensure_path_no_reparse_points_now(path: &Path) -> anyhow::Result<(
         }
         match component_metadata_no_follow(&current) {
             Ok(metadata) if is_reparse_point(&metadata) => {
-                return Err(refused(
+                return Err(crate::ipc::CommandError::new(
+                    crate::ipc::ErrorCode::LinkNotFollowed,
                     "Refusing to traverse a symbolic link, junction, or reparse point",
-                ));
+                )
+                .into());
             }
             Ok(_) => {}
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
@@ -641,6 +643,10 @@ mod tests {
 
         let error = ensure_path_no_reparse_points_now(&junction.join("file.txt")).unwrap_err();
         assert!(error.to_string().contains("reparse point"));
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::LinkNotFollowed
+        );
         assert!(validate_copy_relationship(&root, &junction.join("child")).is_err());
         assert!(validate_copy_relationship(&external, &junction.join("child")).is_err());
         assert!(ensure_path_no_reparse_points_now(&junction.join("../file.txt")).is_err());

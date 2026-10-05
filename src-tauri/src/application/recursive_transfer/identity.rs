@@ -131,10 +131,13 @@ pub(super) fn receipt(file: &File) -> Result<Receipt> {
                 std::mem::size_of_val(&basic) as u32,
             )?;
         }
-        anyhow::ensure!(
-            info.dwFileAttributes & 0x400 == 0,
-            "Object is a reparse point"
-        );
+        if info.dwFileAttributes & 0x400 != 0 {
+            return Err(crate::ipc::CommandError::new(
+                crate::ipc::ErrorCode::LinkNotFollowed,
+                "Object is a reparse point",
+            )
+            .into());
+        }
         Ok(Receipt {
             identity: (
                 info.dwVolumeSerialNumber as u64,

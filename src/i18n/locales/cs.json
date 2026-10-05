@@ -337,6 +337,7 @@
     "replaceUnsupported": "Server nepovolil přepsat existující soubor.",
     "createUnsupported": "Tento FTP server nepodporuje vytváření nových souborů. Zkuste SFTP nebo WebDAV, pokud je server nabízí.",
     "activeModeFailed": "Server se v aktivním režimu FTP nedokázal připojit k tomuto počítači. Zkuste pasivní režim.",
+    "linkNotFollowed": "Cesta vede přes odkaz (junction nebo symbolický odkaz). Přes odkazy nelze procházet.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
     "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy."
   },

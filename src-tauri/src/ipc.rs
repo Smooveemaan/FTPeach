@@ -57,6 +57,9 @@ pub enum ErrorCode {
     CreateUnsupported,
     /// In FTP active mode the server would not, or could not, connect back.
     ActiveModeFailed,
+    /// A local path runs through a junction, symbolic link or other reparse
+    /// point, which FTPeach does not follow.
+    LinkNotFollowed,
     Internal,
 }
 
@@ -391,6 +394,7 @@ impl CommandError {
             ErrorCode::Internal => "Command failed",
             ErrorCode::CreateUnsupported => "The FTP server does not support creating new files",
             ErrorCode::ActiveModeFailed => "The server could not connect back in FTP active mode",
+            ErrorCode::LinkNotFollowed => "The path goes through a link, which is not followed",
         };
         Self {
             code,
@@ -437,6 +441,7 @@ mod tests {
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
             (ErrorCode::CreateUnsupported, "createUnsupported"),
             (ErrorCode::ActiveModeFailed, "activeModeFailed"),
+            (ErrorCode::LinkNotFollowed, "linkNotFollowed"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

@@ -329,6 +329,7 @@
     "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
     "createUnsupported": "Server FTP ini tidak mendukung pembuatan file baru. Coba SFTP atau WebDAV jika server menyediakannya.",
     "activeModeFailed": "Server tidak dapat terhubung ke komputer ini dalam mode FTP aktif. Coba mode pasif.",
+    "linkNotFollowed": "Jalur melewati tautan (junction atau tautan simbolik). Tautan tidak diikuti.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
     "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy."
   },

@@ -333,6 +333,7 @@
     "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente.",
     "createUnsupported": "Questo server FTP non supporta la creazione di nuovi file. Prova SFTP o WebDAV se il server li offre.",
     "activeModeFailed": "Il server non è riuscito a connettersi a questo computer in modalità FTP attiva. Prova la modalità passiva.",
+    "linkNotFollowed": "Il percorso passa per un collegamento (una junction o un collegamento simbolico). I collegamenti non vengono seguiti.",
     "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli.",
     "savedSecretUnreadable": "Impossibile leggere una password salvata su questo computer. Inseriscila di nuovo nel segnalibro o nelle impostazioni del proxy."
   },

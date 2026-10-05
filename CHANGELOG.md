@@ -67,6 +67,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   no longer shows the server's files and offers to connect again, instead of still looking
   connected and failing every action. Connecting again clears the error.
 - A folder with a junction or symbolic link inside can be moved or renamed on the same disk.
+- Moving such a folder to another disk, or using any path that goes through a link, says that
+  links aren't followed, instead of "You don't have permission" or "An unexpected error
+  occurred".
 - Saving a bookmark that moves its password while the vault is locked asks for the master
   password first and whether to move the password only once.
 - A bookmark with no port and one with the default port are recognised as the same server.

@@ -118,6 +118,8 @@ test('friendlyError localizes every structured command error code', () => {
     createUnsupported:
       'This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.',
     activeModeFailed: "The server couldn't connect back in active FTP mode. Try passive mode.",
+    linkNotFollowed:
+      "The path goes through a link (a junction or symbolic link). Links aren't followed.",
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

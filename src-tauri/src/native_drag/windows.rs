@@ -248,6 +248,7 @@ impl TransferReporter {
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         });
     }
 
@@ -261,6 +262,7 @@ impl TransferReporter {
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         });
     }
 
@@ -274,6 +276,7 @@ impl TransferReporter {
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         });
     }
 
@@ -289,6 +292,7 @@ impl TransferReporter {
             // safe sentence otherwise; the renderer localizes the code anyway.
             error: Some(failure.details.unwrap_or(failure.message)),
             landed: None,
+            file: None,
         });
     }
 }

@@ -8,6 +8,13 @@
 
 /* ---------- Transfer queue ---------- */
 
+/* One typeface for everything in the queue, its notes under a name included. */
+.transfer-col-header,
+.transfer-list,
+.transfer-empty {
+  font-family: var(--font-mono);
+}
+
 .transfer-queue {
   /* height comes from an inline style (see TransferQueue.jsx) — it's a
      user-resizable, persisted value, not a fixed design constant. */
@@ -113,7 +120,6 @@ body.column-resize-active .transfer-item:hover {
 
 .t-name-wrap { min-width: 0; display: flex; flex-direction: column; }
 .t-name {
-  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-primary);
   overflow: hidden;
@@ -144,7 +150,6 @@ body.column-resize-active .transfer-item:hover {
 .t-route {
   /* Keep text clear of the header's resize handle. */
   padding-inline-end: 8px;
-  font-family: var(--font-mono);
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -178,7 +183,6 @@ body.column-resize-active .transfer-item:hover {
   align-items: baseline;
   justify-content: flex-start;
   gap: 3px;
-  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
@@ -238,7 +242,6 @@ body.column-resize-active .transfer-item:hover {
   /* Logical, not `right`: the percentage trails the bar it belongs to, and
      in RTL the flex row puts it on the left with the bar to its right. */
   text-align: end;
-  font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
@@ -247,7 +250,6 @@ body.column-resize-active .transfer-item:hover {
 
 .t-speed,
 .t-remain {
-  font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--text-secondary);
   /* `start`, matching the untouched default of the neighbouring `.t-size`
@@ -345,7 +347,6 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
   justify-content: center;
   text-align: center;
   height: 100%;
-  font-family: var(--font-ui);
   color: var(--text-faint);
   font-size: 12px;
   padding: 10px 12px;

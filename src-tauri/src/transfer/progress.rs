@@ -30,18 +30,31 @@ pub struct TransferProgressPayload {
     /// what the walk writes shows up while it runs, not only once it ends.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub landed: Option<u64>,
+    /// The file a folder walk is on, so its row shows more than the bytes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file: Option<FolderFile>,
+}
+
+/// The file a folder walk is on: its place among the walk's files, from one,
+/// and its path inside the folder.
+#[derive(Serialize, Clone, Debug, PartialEq)]
+pub struct FolderFile {
+    pub number: u64,
+    pub count: u64,
+    pub path: String,
 }
 
 /// Where a child transfer's byte count belongs in its parent's running total.
 #[derive(Clone)]
-struct Aggregate {
-    parent_id: String,
-    connection_id: String,
+pub struct Aggregate {
+    pub parent_id: String,
+    pub connection_id: String,
     /// Bytes the parent had already finished before this child started.
-    base: u64,
-    total: u64,
+    pub base: u64,
+    pub total: u64,
     /// What the parent had put in place before this child started.
-    landed: u64,
+    pub landed: u64,
+    pub file: FolderFile,
 }
 
 /// The children currently reporting on some parent's behalf.
@@ -88,6 +101,7 @@ impl AggregateIndex {
             // Carried along, or a child's report overtaking the parent's own
             // in the flush window would lose the count the parent just sent.
             landed: Some(aggregate.landed),
+            file: Some(aggregate.file),
         })
     }
 }
@@ -139,29 +153,11 @@ impl ProgressEmitter {
         }
     }
 
-    /// Starts folding progress sent under `child_id` into `parent_id`'s own
-    /// running total, `base` bytes into a transfer of `total` bytes, with
-    /// `landed` entries already in place. The guard stops it again, so an early
-    /// return cannot leave a stale entry behind.
-    pub fn aggregate_into(
-        &self,
-        child_id: String,
-        parent_id: String,
-        connection_id: String,
-        base: u64,
-        total: u64,
-        landed: u64,
-    ) -> AggregateGuard {
-        self.aggregates.track(
-            child_id,
-            Aggregate {
-                parent_id,
-                connection_id,
-                base,
-                total,
-                landed,
-            },
-        )
+    /// Starts folding progress sent under `child_id` into its parent's own
+    /// running total. The guard stops it again, so an early return cannot
+    /// leave a stale entry behind.
+    pub fn aggregate_into(&self, child_id: String, aggregate: Aggregate) -> AggregateGuard {
+        self.aggregates.track(child_id, aggregate)
     }
 
     pub fn send(&self, payload: TransferProgressPayload) {
@@ -180,6 +176,7 @@ impl ProgressEmitter {
                 payload.bytes = payload.bytes.or(prev.bytes);
                 payload.total = payload.total.or(prev.total);
                 payload.landed = payload.landed.or(prev.landed);
+                payload.file = payload.file.or(prev.file);
             }
             (self.emit)(payload);
             return;
@@ -195,6 +192,7 @@ impl ProgressEmitter {
             payload.bytes = payload.bytes.or(latest.bytes);
             payload.total = payload.total.or(latest.total);
             payload.landed = payload.landed.or(latest.landed);
+            payload.file = payload.file.or(latest.file.take());
             // A folder walk says it is queued before each file, and the file
             // that it has started a moment later; setting up the next file can
             // take longer than a window. Whichever came last would win, and the
@@ -243,6 +241,7 @@ impl ProgressEmitter {
                         error: None,
                         error_code: None,
                         landed: None,
+                        file: None,
                     });
                 }
             }
@@ -264,6 +263,7 @@ mod tests {
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         }
     }
 
@@ -274,6 +274,11 @@ mod tests {
             base: 100,
             total: 900,
             landed: 3,
+            file: FolderFile {
+                number: 2,
+                count: 5,
+                path: "sub/b.bin".into(),
+            },
         }
     }
 
@@ -289,6 +294,10 @@ mod tests {
         assert_eq!(rolled_up.bytes, Some(150));
         assert_eq!(rolled_up.total, Some(900));
         assert_eq!(rolled_up.landed, Some(3));
+        assert_eq!(
+            rolled_up.file.map(|file| (file.number, file.count)),
+            Some((2, 5))
+        );
     }
 
     #[test]

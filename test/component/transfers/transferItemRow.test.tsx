@@ -381,3 +381,37 @@ test('long endpoint names retain their full text and keep the route arrow separa
     `C:\\Work\\${folder}\\file.txt`,
   );
 });
+
+test('a folder at work names the file it is on, and how far through the folder it is', () => {
+  const folder: TransferRow = {
+    id: 'folder',
+    name: '/remote/Folder',
+    direction: 'recursive',
+    status: 'progress',
+    bytes: 0,
+    startedAt: 1,
+    currentFile: { number: 12, count: 300, path: 'sub/file.bin' },
+    intent: {
+      id: 'folder',
+      source: { kind: 'remote', path: '/remote/Folder', connectionId: 'a' },
+      target: { kind: 'local', path: 'D:\target' },
+      moving: false,
+      overwrite: false,
+    },
+  };
+  const { container, rerender } = renderRow(folder);
+  expect(container.querySelector('.t-sub')?.textContent).toBe('12/300 sub/file.bin');
+  rerender(
+    <TransferItemRow
+      item={{ ...folder, status: 'done' }}
+      connectionLabel={() => '?'}
+      columnOrder={['file', 'status']}
+      gridTemplateColumns="1fr"
+      speedSamples={{}}
+      onRetry={vi.fn()}
+      onPause={vi.fn()}
+      onStop={vi.fn()}
+    />,
+  );
+  expect(container.querySelector('.t-sub')).toBeNull();
+});

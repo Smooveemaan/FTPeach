@@ -18,7 +18,7 @@ use crate::ipc::{CommandError, ErrorCode};
 use crate::local_fs::target_reservation::{Access, Reservation};
 use crate::local_fs::{filesystem_safety as safety, mutations};
 use crate::session::Sessions;
-use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
+use crate::transfer::progress::{Aggregate, FolderFile, ProgressEmitter, TransferProgressPayload};
 use anyhow::{Context, Result};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -236,6 +236,16 @@ fn status_notice(
     intent: &Intent,
     status: &'static str,
 ) -> impl FnOnce() + Send + 'static {
+    file_notice(progress, intent, status, None)
+}
+
+/// A status notice that also names the file the walk is on, or will start with.
+fn file_notice(
+    progress: Option<&ProgressEmitter>,
+    intent: &Intent,
+    status: &'static str,
+    file: Option<FolderFile>,
+) -> impl FnOnce() + Send + 'static {
     let progress = progress.cloned();
     let (id, connection_id) = (intent.id.clone(), intent.target.connection().to_owned());
     move || {
@@ -249,6 +259,7 @@ fn status_notice(
                 error: None,
                 error_code: None,
                 landed: None,
+                file,
             });
         }
     }
@@ -378,6 +389,9 @@ async fn run_inner(
                 CommandError::new(ErrorCode::IntegrityMismatch, format!("Destination changed or cannot be verified; resolve the conflict before restarting: {}", intent.target.path(relative))));
         }
         report.scanned = manifest.entries.len();
+        let file_count = manifest.entries.iter().filter(|e| !e.directory).count() as u64;
+        // Named while the folders wait their turn, before the files do.
+        let first_file = manifest.entries.iter().find(|e| !e.directory).map(|e| FolderFile { number: 1, count: file_count, path: e.relative.clone() });
         for entry in &manifest.entries {
             if matches!(intent.target, Endpoint::Local { .. }) {
                 // Each listed name on its own first: joined to the target, one
@@ -398,7 +412,7 @@ async fn run_inner(
         for entry in manifest.entries.iter().filter(|e| e.directory) {
             check_cancel(&token)?;
             // A folder made on a server waits its turn like a file sent there.
-            if matches!(intent.target, Endpoint::Remote { .. }) { status_notice(progress, &intent, "queued")(); }
+            if matches!(intent.target, Endpoint::Remote { .. }) { file_notice(progress, &intent, "queued", first_file.clone())(); }
             let parent = entry.relative.rsplit_once('/').map_or("", |(parent, _)| parent);
             let fresh_parent = !entry.relative.is_empty() && made_now.contains(parent);
             let created = mkdir(sessions, &intent.target, &entry.relative, fresh_parent, &token, status_notice(progress, &intent, "progress")).await.with_context(|| intent.target.path(&entry.relative))?;
@@ -450,9 +464,10 @@ async fn run_inner(
                 error: None,
                 error_code: None,
                 landed: Some(landed(&journal)),
+                file: None,
             });
         }
-        for entry in manifest.entries.iter().filter(|e| !e.directory) {
+        for (number, entry) in (1..).zip(manifest.entries.iter().filter(|e| !e.directory)) {
             check_cancel(&token)?;
             if delivered(&journal, entry) {
                 if let Some(expected) = journal.sources.get(&entry.relative) {
@@ -478,22 +493,28 @@ async fn run_inner(
             } else { None };
             journal.done.remove(&entry.relative);
             journal.in_flight = Some(entry.relative.clone());
+            // The row names the file it is on, and how far through the files.
+            let file = FolderFile { number, count: file_count, path: entry.relative.clone() };
             // Roll this file's own byte reports into the walk's row, so a
             // single large file no longer looks frozen between boundaries.
             let _aggregate = progress.map(|progress| {
                 progress.aggregate_into(
                     format!("{}:file", intent.id),
-                    intent.id.clone(),
-                    intent.target.connection().into(),
-                    completed_bytes,
-                    total_bytes,
-                    landed(&journal),
+                    Aggregate {
+                        parent_id: intent.id.clone(),
+                        connection_id: intent.target.connection().into(),
+                        base: completed_bytes,
+                        total: total_bytes,
+                        landed: landed(&journal),
+                        file: file.clone(),
+                    },
                 )
             });
             // A file to or from a server waits for a connection and a free
             // transfer slot. The row says so until the file's own notice that
             // it has started, which the aggregate passes on.
-            if !matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. })) { status_notice(progress, &intent, "queued")(); }
+            let local = matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. }));
+            file_notice(progress, &intent, if local { "progress" } else { "queued" }, Some(file))();
             // Whether a file found at the name after a cancel can only be this one.
             let ours_if_found = match intent.target {
                 Endpoint::Local { .. } => std::fs::symlink_metadata(intent.target.path(&entry.relative)).is_err(),
@@ -558,7 +579,7 @@ async fn run_inner(
                     if report.errors.len() < 100 { report.errors.push(CommandError::from_anyhow(&error.context(intent.source.path(&entry.relative)))); }
                 }
             }
-            if let Some(progress) = progress { progress.send(TransferProgressPayload { id: intent.id.clone(), connection_id: intent.target.connection().into(), status: "progress", bytes: Some(completed_bytes), total: Some(total_bytes), error: None, error_code: None, landed: Some(landed(&journal)) }); }
+            if let Some(progress) = progress { progress.send(TransferProgressPayload { id: intent.id.clone(), connection_id: intent.target.connection().into(), status: "progress", bytes: Some(completed_bytes), total: Some(total_bytes), error: None, error_code: None, landed: Some(landed(&journal)), file: None }); }
         }
         anyhow::ensure!(report.errors.is_empty(), "Recursive copy was incomplete; source retained");
         check_cancel(&token)?;
@@ -623,6 +644,7 @@ async fn run_inner(
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         });
     }
     report

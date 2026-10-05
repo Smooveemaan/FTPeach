@@ -198,6 +198,7 @@ fn make_progress_sink(
                 error: None,
                 error_code: None,
                 landed: None,
+                file: None,
             },
             ProgressInfo::Done => TransferProgressPayload {
                 id: transfer_id.clone(),
@@ -208,6 +209,7 @@ fn make_progress_sink(
                 error: None,
                 error_code: None,
                 landed: None,
+                file: None,
             },
             ProgressInfo::Error { error, code } => TransferProgressPayload {
                 id: transfer_id.clone(),
@@ -218,6 +220,7 @@ fn make_progress_sink(
                 error_code: Some(transfer_error_kind(code)),
                 error: Some(error),
                 landed: None,
+                file: None,
             },
         };
         emitter.send(payload);
@@ -272,6 +275,7 @@ fn dispatch_notifier(
             error: None,
             error_code: None,
             landed: None,
+            file: None,
         });
     }
 }
@@ -554,6 +558,7 @@ pub async fn transfer_remote_copy(
                     error: None,
                     error_code: None,
                     landed: None,
+                    file: None,
                 });
             }
         }

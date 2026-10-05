@@ -47,6 +47,7 @@ export function useTransferProgressAdapter(
               bytes: payload.bytes ?? existing.bytes,
               total: payload.total ?? existing.total,
               landed: payload.landed ?? existing.landed,
+              currentFile: payload.file ?? existing.currentFile,
               status,
               errorMessage:
                 status === 'error'

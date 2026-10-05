@@ -94,7 +94,9 @@ function TransferItemRow({
       ? item.errorMessage
       : item.status === 'stopped'
         ? t('transferQueue.cancelledByUser')
-        : null;
+        : (item.status === 'progress' || item.status === 'queued') && item.currentFile
+          ? `${item.currentFile.number}/${item.currentFile.count} ${item.currentFile.path}`
+          : null;
   const statusLabel = t(
     item.status === 'progress'
       ? moving

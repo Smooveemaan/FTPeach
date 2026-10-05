@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Showing a saved password, and other actions that ask for the master password, ask Windows
   Hello first where it is enabled; the master password is asked if Windows Hello does not confirm.
 - A lock button on the toolbar locks the vault and unlocks it.
+- A folder in Transfers shows the file it is on and how far through its files it is, such as
+  "12/300 photos/img.jpg".
 - Page Up and Page Down move through the file list a screen at a time; with Shift they select.
 - The … in the path bar opens a list of the folders it hides, like the one in Move to.
 - Nine more colors for bookmarks.
@@ -39,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The message about saved passwords that could not be read no longer says it happened after an
   update: it also appears after moving the portable copy to another computer.
 - The tray icon's menu no longer locks saved passwords: the lock is on the toolbar.
+- Everything in Transfers, column names and statuses included, is in one monospaced typeface.
 
 ### Fixed
 

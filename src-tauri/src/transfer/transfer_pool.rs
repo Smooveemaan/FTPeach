@@ -979,19 +979,16 @@ mod tests {
         assert_eq!(max_seen.load(Ordering::SeqCst), 1);
     }
 
-    #[tokio::test]
-    async fn shared_limit_queues_other_tabs_and_allows_cancellation_and_live_changes() {
-        let limiter = Arc::new(ConcurrencyLimiter::default());
-        limiter.set_limit(1);
-        let a =
-            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
-        let b =
-            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+    /// A transfer that holds its connection until it is cancelled, once it runs.
+    async fn start_endless(
+        pool: &TransferPool,
+        id: &str,
+    ) -> tokio::task::JoinHandle<BackendResult<()>> {
         let (started_tx, started_rx) = oneshot::channel();
-        let first_pool = a.clone();
-        let first = tokio::spawn(async move {
-            a.run_notified(
-                "first".into(),
+        let (pool, id) = (pool.clone(), id.to_owned());
+        let task = tokio::spawn(async move {
+            pool.run_notified(
+                id,
                 Box::new(|_| Box::pin(std::future::pending())),
                 move || {
                     let _ = started_tx.send(());
@@ -1000,6 +997,18 @@ mod tests {
             .await
         });
         started_rx.await.unwrap();
+        task
+    }
+
+    #[tokio::test]
+    async fn shared_limit_queues_other_tabs_and_allows_cancellation_and_live_changes() {
+        let limiter = Arc::new(ConcurrencyLimiter::default());
+        limiter.set_limit(1);
+        let a =
+            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+        let b =
+            TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
+        let first = start_endless(&a, "first").await;
         let notified = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let spawn_waiter = |id: &'static str| {
             let b = b.clone();
@@ -1035,7 +1044,7 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(notified.load(Ordering::SeqCst), 1);
-        first_pool.cancel("first");
+        a.cancel("first");
         assert!(first.await.unwrap().is_err());
         assert!(limiter.try_acquire().is_some());
     }
@@ -1046,20 +1055,7 @@ mod tests {
         limiter.set_limit(1);
         let pool =
             TransferPool::new(fake_factory(), PoolSize::Unlimited).with_limiter(limiter.clone());
-        let (started_tx, started_rx) = oneshot::channel();
-        let first_pool = pool.clone();
-        let first = tokio::spawn(async move {
-            first_pool
-                .run_notified(
-                    "first".into(),
-                    Box::new(|_| Box::pin(std::future::pending())),
-                    move || {
-                        let _ = started_tx.send(());
-                    },
-                )
-                .await
-        });
-        started_rx.await.unwrap();
+        let first = start_endless(&pool, "first").await;
         // The one connection is busy, so the second file waits for a new one.
         let second_pool = pool.clone();
         let second = tokio::spawn(async move {

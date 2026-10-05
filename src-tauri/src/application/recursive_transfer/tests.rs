@@ -1122,6 +1122,69 @@ async fn download_of_src(server: &Arc<Server>, root: &Path) -> (Sessions, Intent
 
 /// A walk whose next file waits for a transfer slot reads Queued, not as if
 /// it were already at work.
+/// A server whose one transfer slot is taken until the permit returned drops.
+async fn serve_busy(
+    server: &Arc<Server>,
+) -> (
+    Sessions,
+    String,
+    Arc<crate::transfer::concurrency_limiter::Permit>,
+) {
+    let limiter = Arc::new(crate::transfer::concurrency_limiter::ConcurrencyLimiter::default());
+    limiter.set_limit(1);
+    let busy = limiter.try_acquire().unwrap();
+    let (sessions, connection_id) = serve_limited(server, limiter).await;
+    (sessions, connection_id, busy)
+}
+
+/// What a walk's row was told: its status and the file it named.
+type Told = Arc<Mutex<Vec<(&'static str, Option<FolderFile>)>>>;
+
+/// Runs a walk, keeping what its row is told.
+fn watch(sessions: Sessions, intent: Intent) -> (tokio::task::JoinHandle<Report>, Told) {
+    let told = Told::default();
+    let (log, walk_id) = (told.clone(), intent.id.clone());
+    let progress = ProgressEmitter::for_tests(move |payload| {
+        if payload.id == walk_id {
+            log.lock().unwrap().push((payload.status, payload.file));
+        }
+    });
+    let walk = tokio::spawn(async move { run(&sessions, Some(&progress), intent).await });
+    (walk, told)
+}
+
+async fn wait_until(told: &Told, done: impl Fn(&[(&'static str, Option<FolderFile>)]) -> bool) {
+    let waited = async {
+        loop {
+            let finished = done(&told.lock().unwrap());
+            if finished {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(5), waited)
+        .await
+        .expect("the row is told in time");
+}
+
+/// The last file the row named.
+fn named(told: &Told) -> Option<FolderFile> {
+    told.lock()
+        .unwrap()
+        .iter()
+        .rev()
+        .find_map(|(_, file)| file.clone())
+}
+
+fn only_file_a() -> Option<FolderFile> {
+    Some(FolderFile {
+        number: 1,
+        count: 1,
+        path: "a".into(),
+    })
+}
+
 #[tokio::test]
 async fn a_walk_waiting_for_a_slot_reads_queued() {
     let root = std::env::temp_dir().join(format!("ftpeach-recursive-{}", uuid::Uuid::new_v4()));
@@ -1130,38 +1193,52 @@ async fn a_walk_waiting_for_a_slot_reads_queued() {
         files: HashMap::from([("/src/a".to_owned(), b"small".to_vec())]),
         ..Server::default()
     });
-    let limiter = Arc::new(crate::transfer::concurrency_limiter::ConcurrencyLimiter::default());
-    limiter.set_limit(1);
-    let busy = limiter.try_acquire().unwrap();
-    let (sessions, connection_id) = serve_limited(&server, limiter).await;
+    let (sessions, connection_id, busy) = serve_busy(&server).await;
     let (_, mut intent) = download_of_src(&server, &root).await;
     intent.source = Endpoint::Remote {
         path: "/src".into(),
         connection_id,
     };
-    let statuses = Arc::new(Mutex::new(Vec::new()));
-    let (seen, walk_id) = (statuses.clone(), intent.id.clone());
-    let progress = ProgressEmitter::for_tests(move |payload| {
-        if payload.id == walk_id {
-            seen.lock().unwrap().push(payload.status);
-        }
-    });
-    let walk = tokio::spawn({
-        let progress = progress.clone();
-        async move { run(&sessions, Some(&progress), intent).await }
-    });
+    let (walk, told) = watch(sessions, intent);
     // A wait that follows the walk's start is shown once it has lasted a while.
-    let queued = async {
-        while statuses.lock().unwrap().last() != Some(&"queued") {
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
-    };
-    tokio::time::timeout(Duration::from_secs(5), queued)
-        .await
-        .expect("the waiting walk reads Queued");
+    wait_until(&told, |told| {
+        told.last().is_some_and(|(status, _)| *status == "queued")
+    })
+    .await;
+    // The row names the file that waits, and how far through the folder it is.
+    assert_eq!(named(&told), only_file_a());
     drop(busy);
     assert!(walk.await.unwrap().ok);
-    assert_eq!(statuses.lock().unwrap().last(), Some(&"done"));
+    assert_eq!(
+        told.lock().unwrap().last().map(|(status, _)| *status),
+        Some("done")
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+/// An upload waits for its turn while it makes its folders on the server,
+/// before any file: the row already names the file it will start with.
+#[tokio::test]
+async fn an_upload_waiting_to_make_its_folders_names_its_first_file() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    std::fs::write(root.join("source/a"), b"small").unwrap();
+    let server = Arc::new(Server {
+        dirs: vec!["/dst".into()],
+        ..Server::default()
+    });
+    let (sessions, connection_id, busy) = serve_busy(&server).await;
+    intent.target = Endpoint::Remote {
+        path: "/dst/up".into(),
+        connection_id,
+    };
+    let (walk, told) = watch(sessions, intent);
+    wait_until(&told, |told| told.iter().any(|(_, file)| file.is_some())).await;
+    assert!(!walk.is_finished(), "named while it waits");
+    assert_eq!(named(&told), only_file_a());
+    drop(busy);
+    let report = walk.await.unwrap();
+    assert!(report.ok, "{:?}", report.errors);
     std::fs::remove_dir_all(root).unwrap();
 }
 

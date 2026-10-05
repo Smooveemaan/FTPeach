@@ -1,5 +1,6 @@
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { RecursiveIntent } from '../../platform/api/transfers.ts';
+import type { FolderFile } from '../../platform/ipcContracts.ts';
 
 export type TransferStatus =
   'cancelling' | 'queued' | 'progress' | 'paused' | 'stopped' | 'done' | 'error';
@@ -12,6 +13,8 @@ interface TransferBase {
   total?: number | undefined;
   /** What a folder walk last reported putting in place on its target. */
   landed?: number | undefined;
+  /** The file a folder walk last said it is on. */
+  currentFile?: FolderFile | undefined;
   startedAt: number;
   /** The overwrite answer the transfer ran under, reused when a pause resumes. */
   overwrite?: boolean | undefined;
@@ -454,7 +457,7 @@ function replaceRow(id: string, row: TransferRow | undefined): boolean {
     !row ||
     Object.keys({ ...previous, ...row }).some(
       (key) =>
-        !['bytes', 'total', 'landed'].includes(key) &&
+        !['bytes', 'total', 'landed', 'currentFile'].includes(key) &&
         previous[key as keyof TransferRow] !== row[key as keyof TransferRow],
     );
   if (structural) {

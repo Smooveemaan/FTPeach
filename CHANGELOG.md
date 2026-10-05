@@ -48,6 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- In a bookmark, a new password typed right after removing the saved one is no longer cut off after
+  its first character.
 - Opening a server file that is already open in another program opens the same copy, instead of
   a second one whose upload would overwrite the first one's changes.
 - With "On name conflict: Skip", a folder whose contents are all already there no longer shows up

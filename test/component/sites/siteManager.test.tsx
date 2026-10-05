@@ -367,6 +367,24 @@ describe('Site Manager workflows', () => {
     expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ password: '' }));
   });
 
+  test('a password typed right after removing the saved one is taken in full', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+    const row = screen.getByText('Production').closest('.site-manage-row');
+    await user.click(
+      within(requireHtml(row)).getByRole('button', { name: 'siteManagerDialog.titleEdit' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'siteManagerDialog.removeSavedPassword' }));
+    const input = screen.getByLabelText<HTMLInputElement>('connectionBar.fields.password');
+    await user.type(input, 'new-secret');
+    expect(input.readOnly).toBe(false);
+    expect(input.value).toBe('new-secret');
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ password: 'new-secret', removePassword: false }),
+    );
+  });
+
   test('limits connections only when a limit is chosen', async () => {
     const user = userEvent.setup();
     const { props } = renderManager();

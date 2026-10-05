@@ -142,6 +142,9 @@ export default function SiteEditor({
         current[field] === typed ? current : { ...current, [field]: typed },
       );
       setForm((current) => (current[removeField] ? { ...current, [removeField]: false } : current));
+      // Typing over a removed secret replaces it instead, so the field stays
+      // open for the rest of the typing rather than locking after one key.
+      setEditingSecret(field);
     };
 
   const secret = (

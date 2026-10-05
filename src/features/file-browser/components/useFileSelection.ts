@@ -4,6 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import { useCallback, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
@@ -242,6 +243,11 @@ export default function useFileSelection({
     const scrollTick = () => {
       if (listEl && autoScrollSpeed) {
         listEl.scrollTop += autoScrollSpeed;
+        // The list moves now, but its own scroll event, and the rows it
+        // renders for the new place, would come a frame or more later: a fast
+        // sweep showed blank stripes. The rows are rendered before this frame
+        // is painted.
+        flushSync(() => listEl.dispatchEvent(new Event('scroll')));
         applySelection(state.lastX, state.lastY);
         updateMarqueeVisual(state.lastX, state.lastY);
       }

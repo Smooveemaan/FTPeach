@@ -156,3 +156,34 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     }
   });
 }
+
+test('a rectangle swept fast past the edge never shows the list blank', async ({ page }) => {
+  const { list, row, box, startX } = await openLongList(page);
+  await page.mouse.move(startX, row.y + 2);
+  await page.mouse.down();
+  // Far below the list: the fastest the rectangle scrolls it.
+  await page.mouse.move(startX, box.y + box.height + 400, { steps: 5 });
+  // Every frame, the rows on screen reach from the list's top to its bottom.
+  const gaps = await list.evaluate(
+    (el) =>
+      new Promise<string[]>((resolve) => {
+        const found: string[] = [];
+        let frames = 0;
+        const check = () => {
+          const top = el.getBoundingClientRect().top;
+          const bottom = top + el.clientHeight;
+          const rows = [...el.querySelectorAll('.row[data-index]')].map((row) =>
+            row.getBoundingClientRect(),
+          );
+          const covers = (y: number) => rows.some((rect) => rect.top <= y && rect.bottom >= y);
+          if (!covers(top + 1) || !covers(bottom - 1))
+            found.push(`frame ${frames} at ${el.scrollTop}`);
+          if (++frames < 30) requestAnimationFrame(check);
+          else resolve(found);
+        };
+        requestAnimationFrame(check);
+      }),
+  );
+  await page.mouse.up();
+  expect(gaps).toEqual([]);
+});

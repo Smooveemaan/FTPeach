@@ -87,7 +87,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   instead of several columns further, and columns no longer jump after the list is scrolled
   sideways, a column is hidden or the language is switched to a right-to-left one.
 - Renaming a file with F2 selects its name without the extension, as Explorer does.
-- Sweeping a selection rectangle past the end of a long list scrolls faster the further you go.
+- Sweeping a selection rectangle past the end of a long list scrolls faster the further you go,
+  without blank rows.
 - The Date modified and Date created columns are wide enough for a date with a 12-hour time.
 - Ctrl+A outside the file lists and text fields no longer selects the text of the window, such
   as the log after closing Settings; after a click into the log it selects the log's lines.

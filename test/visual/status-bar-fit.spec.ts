@@ -99,15 +99,17 @@ for (const language of languages) {
       await expect(page.locator('html')).toHaveAttribute('lang', language);
       await page.evaluate(() => document.fonts.ready);
       await expect(page.locator('.status-transfers')).toBeVisible();
-      // A click that lands while the app is still starting can leave the menu shut.
+      // A click that lands while the app is still starting can leave the menu shut,
+      // or close it again under the pointer.
       const manage = page.getByRole('menuitem', { name: text.manageBookmarks });
-      await expect(async () => {
-        await page.getByRole('menuitem', { name: text.bookmarks, exact: true }).click();
-        await expect(manage).toBeVisible({ timeout: 1000 });
-      }).toPass();
-      await manage.click();
       const footer = page.locator('.site-manager-footer');
-      await expect(footer).toBeVisible();
+      await expect(async () => {
+        if (!(await manage.isVisible())) {
+          await page.getByRole('menuitem', { name: text.bookmarks, exact: true }).click();
+        }
+        await manage.click({ timeout: 1000 });
+        await expect(footer).toBeVisible({ timeout: 1000 });
+      }).toPass();
       await page.getByRole('button', { name: text.importBookmarks, exact: true }).click();
       await page.getByRole('checkbox', { name: text.includeLocalPaths }).check();
       await page.getByRole('button', { name: text.confirmImport }).click();

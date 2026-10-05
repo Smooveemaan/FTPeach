@@ -4,264 +4,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-05
+
 ### Added
 
-- The portable zip has `keys` and `certificates` folders, and the key and certificate pickers open
-  there.
-- Settings → Logging can write the log files to a folder of your choice, and opens the log folder.
-- Settings → Password protection can unlock the vault with Windows Hello.
-- Showing a saved password, and other actions that ask for the master password, ask Windows
-  Hello first where it is enabled; the master password is asked if Windows Hello does not confirm.
-- A lock button on the toolbar locks the vault and unlocks it.
-- A folder in Transfers shows the file it is on and how far through its files it is, such as
-  "12/300 photos/img.jpg".
+- A portable version: unpack the zip and run it. Settings, bookmarks, passwords, keys and
+  certificates stay in its folder, and it updates itself.
+- The right-click menu has Cut, Copy, Paste and Open, and sends files to the other pane.
+- The "…" in the path bar opens a list of the folders it hides.
 - Page Up and Page Down move through the file list a screen at a time; with Shift they select.
-- The … in the path bar opens a list of the folders it hides, like the one in Move to.
+- A folder in Transfers shows the file it is on and how many of its files are done.
+- A lock button on the toolbar locks and unlocks the vault.
+- Showing a saved password and other actions that ask for the master password accept Windows
+  Hello where it is enabled.
+- Settings → Logging can write the log files to a folder of your choice.
 - Nine more colors for bookmarks.
 
 ### Changed
 
-- Open with… shows the Windows list of programs to choose from, instead of asking you to find
-  the program's file.
-- Ctrl+N starts a new connection in the left pane and Ctrl+Shift+N in the right one; File has an
-  item for each. A pane that is in use asks before it is disconnected.
-- "Allow system unlock" says why it cannot be turned on while the vault is locked, and says that
-  Windows is creating the Windows Hello key while it is being turned on.
-- Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", "Name (3)" and so on,
-  instead of opening an editor with "(copy)" added to the name. It works while the vault is
-  locked, and a failure shows in the status line at the bottom.
-- The FTPeach icon and the tray icon are the peach on its own, without the square background, so
-  they stand out on a light taskbar too.
-- A bookmark's icon and color menus open scrolled to the one that is chosen.
-- The languages in Settings are in alphabetical order of their own names.
-- Move to shows which folder has the focus as soon as it opens, shows the whole name of a folder
-  cut short when you point at it, and is narrower when the names are short.
-- The hint under "Auto-lock after, min" is one short paragraph, and "System protection" says why
-  it cannot be chosen while the vault is locked.
-- Help → Report an Issue lets you choose between a bug report, a feature request and a
-  translation fix.
-- The message about saved passwords that could not be read no longer says it happened after an
-  update: it also appears after moving the portable copy to another computer.
-- The tray icon's menu no longer locks saved passwords: the lock is on the toolbar.
-- Everything in Transfers, column names and statuses included, is in one monospaced typeface.
-- While Windows Hello is being turned on, its note in Settings turns orange and shows a spinner.
-
-### Fixed
-
-- In a bookmark, a new password typed right after removing the saved one is no longer cut off after
-  its first character.
-- Opening a server file that is already open in another program opens the same copy, instead of
-  a second one whose upload would overwrite the first one's changes.
-- With "On name conflict: Skip", a folder whose contents are all already there no longer shows up
-  in Transfers as done.
-- A folder dragged out to a place that already has a file of that name no longer shows up in
-  Transfers as done when Windows could not copy it.
-- In Arabic and Hebrew, sizes, dates, speeds and times read left to right ("39 B", not "B 39"),
-  the log keeps a space between the time and the connection, and the protocol in Recent
-  connections is no longer cut off at its start.
-- Arabic text in column headers, the log, the status bar and file names is no longer stretched
-  letter by letter.
-- In Arabic and Hebrew, a long file name in the file list and in Transfers is cut at its end,
-  not at its start.
-- A file too large for a WebDAV server, a server with no free connections and other limits say
-  that a limit was reached, instead of "The provided value is invalid".
-- Check Now in a portable copy says there is no update, instead of "Couldn't check for updates",
-  while the latest release has no portable package.
-- The hint for "Write log to file" no longer names the installed copy's folder in a portable copy.
-- The "File changed" question says that Later asks again the next time the file is saved.
-- When the connection to a server is lost, stops answering or is refused, the pane says so,
-  no longer shows the server's files and offers to connect again, instead of still looking
-  connected and failing every action. Connecting again clears the error.
-- A folder with a junction or symbolic link inside can be moved or renamed on the same disk.
-- Moving such a folder to another disk, or using any path that goes through a link, says that
-  links aren't followed, instead of "You don't have permission" or "An unexpected error
-  occurred".
-- Saving a bookmark that moves its password while the vault is locked asks for the master
-  password first and whether to move the password only once.
-- A bookmark with no port and one with the default port are recognised as the same server.
-- Pausing or resuming a transfer leaves its row where it is in Transfers.
-- Raising Concurrent transfers while files wait in the queue starts the next ones at once.
-- The notification at the end of a big transfer counts every file, not at most 1000.
-- Files dragged out to Explorer one after another give one notification, not one each.
-- The notification at the end of a transfer counts the files in a folder, not the folder as one
-  file, and a file that failed and then went through on a retry only once. Any failure makes it
-  a "Transfer Error" notification, and a paused transfer no longer holds one back.
-- Dragging files from Explorer no longer makes the window stop responding over the column
-  headers or while a key is held, and the list lights up only where the files can be dropped.
-- Pressing Alt, or Alt+Space, while dragging files in from Explorer no longer leaves the window
-  unable to take a click or be switched to until FTPeach is closed.
-- Files dragged in from Explorer show a "no" cursor where they cannot be dropped, such as over
-  Transfers, the log or the column headers, instead of a copy cursor over the whole window.
-- Changing the protocol of a connection or a bookmark changes a default port to the new
-  protocol's, and an empty port field shows which port will be used; a port of your own stays.
-- The address field of a bookmark takes at most 255 characters, the longest a server name can be,
-  instead of refusing the bookmark when you save it.
-- Dragging a column header in a list scrolled sideways moves the column to where you drop it,
-  instead of several columns further, and columns no longer jump after the list is scrolled
-  sideways, a column is hidden or the language is switched to a right-to-left one.
-- A pane that is not connected no longer scrolls sideways.
-- Renaming a file with F2 selects its name without the extension, as Explorer does.
-- Sweeping a selection rectangle past the end of a long list scrolls faster the further you go,
-  without blank rows.
-- The Date modified and Date created columns are wide enough for a date with a 12-hour time.
-- Ctrl+A outside the file lists and text fields no longer selects the text of the window, such
-  as the log after closing Settings; after a click into the log it selects the log's lines.
-- Lines copied from the log keep the space between the time and the server.
-- Settings → Shortcuts warns when a global shortcut and a file pane shortcut use the same keys.
-- Renaming a file on an FTP or SFTP server to the same name in other letter case works instead
-  of failing, and on a server that ignores letter case, such as IIS, no longer asks to replace
-  the file with itself.
-- A server that turns you away because it already has its maximum number of users says so,
-  instead of reporting that the connection was unexpectedly closed, also for a transfer, and
-  Retry tries again instead of failing with "Transfer pool is closed".
-- Tabs that have finished their transfers log out of the server after ten seconds instead of
-  keeping their connections open, and give them up at once when another tab is turned away, so
-  its transfer starts as soon as the others end.
-- The error bar about a transfer goes away when a retry of that transfer succeeds.
-- When the server cannot connect back in FTP active mode, the message says so and suggests passive
-  mode, instead of "An unexpected error occurred".
-- With a proxy on, the Active FTP mode setting stays ticked but greyed out, instead of looking
-  switched off.
-- Importing a file that is not FTPeach settings says so, instead of "EOF while parsing a
-  value".
-- A missing key or certificate file is named by its path when connecting, instead of "File or
-  folder not found".
-- A network folder that was not chosen with Choose folder… is refused with a message that says
-  how to open it, instead of "You don't have permission".
-- A WebDAV address with a user name, a password, ? or # in it says what to change, instead of
-  "The provided value is invalid".
-- An invalid mode in SFTP permissions is shown in the dialog, which stays open with what you
-  typed.
-- The log names the reason a WebDAV connection failed, and says when FTP uses active mode.
-- Errors about the master password stay on screen until you try again or change the field,
-  instead of fading out after two seconds.
-- The proxy test result fades in on a line kept for it, and fades out after a few seconds or as
-  soon as a proxy field changes, so the settings below never move.
-- Switching the proxy on or off in Settings unfolds or folds its fields, and the page follows
-  them.
-- At 125% display scale, Settings no longer shift by a pixel when the pointer passes over a field.
-- The warning about RSA keys in Manage Bookmarks spans the whole dialog instead of a narrow
-  column under the passphrase.
-- Opening a bookmark in a pane connected to a WebDAV server names that server in the question
-  instead of showing empty quotes.
-- A folder of thousands of small files goes to a server much faster and no longer loads the
-  computer and the server more with every file.
-- Files in very deeply nested folders, whose full path is longer than 260 characters, download
-  instead of failing with "File or folder not found".
-- While a file downloads, other downloads, copies, moves, deletes and new local folders or
-  files no longer wait for it to finish, and stopping a folder no longer hangs on "Cancelling".
-- Stopping a folder download, also once paused, removes the file it was in the middle of
-  instead of keeping it and reporting "Cleanup is incomplete".
-- Pausing or stopping a folder transfer just as a file finishes no longer makes the resume
-  fail with "A file or folder with that name already exists", or the stop leave the folder
-  behind with "Cleanup is incomplete".
-- Moving a folder with files over 1 MB to a disk without the NTFS change journal, such as a
-  USB stick, removes the original instead of failing with "Command failed"; resuming or
-  stopping transfers there works with big files too.
-- A folder transfer resumed after its files changed on the server says that files changed,
-  instead of that the transferred file failed the integrity check.
-- A folder copy leaves out the working files other transfers keep beside their files
-  (`.ftpeach-….part` and resume records) instead of copying them along.
-- Stopping a file download, also once paused, removes the partly downloaded file instead of
-  leaving it and its resume record behind.
-- A folder that is gone from the server no longer drops the connection when a paused folder
-  transfer is resumed.
-- Folders of more than 10 000 files on a server can be opened, filled and deleted.
-- Deleting a big folder on an FTP server that lists only part of it at a time removes it whole
-  instead of failing with "Directory not empty".
-- A folder's row in Transfers no longer flickers between Queued and Upload, Download or Copy,
-  and keeps showing its speed and time remaining, while it transfers many small files.
-- The pane a transfer goes to no longer jumps back to the folder it started in, or loses its
-  selection, while the transfer runs.
-- A refreshed folder keeps the selection of the files that are still there.
-- A file that finishes quickly shows its real size in Transfers, also after it changed on the
-  server.
-- A path pasted with quotes, as Explorer's "Copy as path" gives it, opens in the path bar.
-- Opening FTPeach's own data folder is refused with a clear message instead of "An unexpected
-  error occurred".
-- Several files copied from one server to another wait their turn instead of failing with
-  "Relay requires two available workers".
-- A folder, or a file dragged out to Explorer, reads Queued in Transfers while it waits for
-  its turn, instead of looking as if it were already being transferred.
-- Copying from one server to another runs at the full speed limit instead of half of it.
-- A changed Concurrent transfers limit applies at once again, not only after a restart.
-- A security confirmation no longer adds a second FTPeach button to the taskbar.
-- A file opened with an external application whose download was cut short no longer shows up
-  in "Edits that were not uploaded" as `.part` and `.ftpeach-resume.json` files.
-- In a pane that is not connected, the sign-in form now ends level with the column headers of
-  the other pane instead of a pixel above them.
-
-## [0.4.0] - 2026-10-02
-
-### Added
-
-- A portable version: unpack the zip and run it. Settings, bookmarks and passwords stay in its
-  folder, and it updates itself.
-- The right-click menu has Cut and Copy for files, Paste in a pane's empty space, and Open for
-  files on your computer.
-- The right-click menu sends a folder, or everything selected, to the other pane.
-- The "…" in a path that does not fit the pane can be clicked to open the nearest folder it hides.
-
-### Changed
-
-- Concurrent transfers in Settings can be set up to 128 instead of 10.
+- Ctrl+N starts a new connection in the left pane and Ctrl+Shift+N in the right one.
+- Open with… shows the Windows list of programs to choose from.
 - The right-click menu follows the order of the Windows Explorer menu.
-- With a server in both panes, the File menu offers Disconnect for each side.
-- Save Connection in the Bookmarks menu works before you connect, like the button beside the
-  connection form.
-- The Move to dialog is as wide as its folder names need.
-- "System protection" in Settings says why it cannot be chosen while the vault is locked.
-- A settings file that cannot be imported says what is wrong with it.
+- Concurrent transfers in Settings can be set up to 128 instead of 10.
+- Duplicate in Manage Bookmarks makes the copy at once, named "Name (2)", and works while the
+  vault is locked.
+- Help → Report an Issue lets you choose a bug report, a feature request or a translation fix.
+- The FTPeach and tray icons are the peach without the square background.
+- The languages in Settings are in alphabetical order of their own names.
 
 ### Security
 
-- Downloading a folder refuses a name like `d:name`, which Windows would have saved outside the
-  folder you chose.
-- Dragging a server file to Explorer refuses a name like `a:b`.
-- Moving a saved password from an FTPS bookmark to plain FTP is marked as less secure when you
-  confirm it.
+- Downloading a folder or dragging a file to Explorer refuses a name like `d:name`, which
+  Windows would have saved outside the folder you chose.
+- Moving a saved password from an FTPS bookmark to plain FTP is marked as less secure.
 - Locking the vault from Settings hides a password shown with the eye button.
 
 ### Fixed
 
-- After the vault is moved to another computer, Windows Hello unlock can be switched on there; the
-  switch no longer gets stuck.
-- Connecting to an address that does not exist says the server was not found.
-- When the proxy cannot be reached, the message says so instead of blaming the server.
-- Testing a proxy that works no longer reports a failure.
-- A proxy can be switched off and its fields emptied in one save.
-- With a timeout of a few seconds, a server that stops answering is reported sooner.
-- The log of a WebDAV connection warns about an unchecked certificate once, and not at all for an
-  `http://` address.
-- With several FTP transfers starting at once, one of them no longer fails now and then.
-- Pausing, stopping or skipping files in a copy no longer reports them as not transferred.
-- Stopping a folder upload keeps the files already uploaded and no longer reports "Cleanup is
-  incomplete".
-- A folder download that contains a name Windows cannot use no longer reports an unexpected error.
-- Copying a folder onto a file of the same name, or a file onto a folder, no longer asks to
-  replace it: it says which name is taken and copies the rest.
-- A file another program has open, a name that is already taken and a full disk each get their
-  own message.
-- Renaming a file on your computer to another file's name asks whether to replace it.
-- Creating a file on your computer with the name of an existing folder says that the name is
-  taken.
-- With Windows set to Turkish, opening a local `.inf`, `.msi` or `.iso` file is no longer refused.
-- A bookmark saved as FTPS in an older format shows as FTPS, and saving it no longer asks to
-  confirm moving its password.
-- A bookmark switched from SFTP with a key to another protocol keeps the password entered for it.
-- A bookmark whose start folder has no leading slash (`pub`) connects and opens that folder.
-- A bookmark with a server name too long to connect to is refused when it is saved.
-- Showing a bookmark's password when none is saved no longer reports an error.
-- When a saved password cannot be read on this computer, connecting says so and asks for it again.
-- A wrong master password says that it was not accepted instead of "Command failed".
-- The vault no longer locks up to half a minute before the auto-lock time is up.
-- Settings shows the vault as unlocked as soon as it is unlocked anywhere, and the auto-lock time
-  counts from that moment.
-- After a vault reset, the passwords deleted with it are no longer shown as saved.
-- Deleting a bookmark while the vault is locked asks for the master password.
-- Keyboard shortcuts no longer act on the panes behind Settings, the bookmark manager and other
-  dialogs, and Settings no longer opens underneath the bookmark manager.
-- The translations were corrected in every language: wording, grammar and punctuation.
+- When the connection to a server is lost or refused, the pane says so and offers to connect
+  again, instead of still looking connected.
+- A full server, a missing key file, a link, a network folder or a failed active FTP mode each
+  get their own message, instead of "An unexpected error occurred" or "You don't have permission".
+- Proxy errors, tests and settings behave as expected.
+- A folder of thousands of small files uploads much faster.
+- Folders of more than 10 000 files and paths longer than 260 characters work.
+- Pausing, resuming and stopping transfers no longer fails, hangs or leaves partial files behind.
+- Downloads no longer hold up other transfers and file actions.
+- Transfers, notifications and the Concurrent transfers limit count and start files correctly.
+- Opening a server file that is already open in another program reuses the same copy.
+- Renaming a file to the same name in other letter case works on FTP and SFTP servers.
+- Panes keep their folder and selection while a transfer runs or the folder refreshes.
+- Dragging files in from Explorer no longer freezes the window or shows the wrong cursor.
+- Bookmarks keep their passwords, ports and start folders when edited, and the vault locks on time.
+- In Arabic and Hebrew, sizes, dates and file names read correctly.
+- Column dragging, F2 rename, Ctrl+A and the selection rectangle behave as in Explorer.
+- The translations were corrected in every language.
 
 ## [0.3.0] - 2026-09-27
 

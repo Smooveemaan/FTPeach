@@ -72,7 +72,7 @@ function isVaultStatus(value: unknown): value is VaultStatus {
 
 type SaveFileResult = CommandResult & { canceled?: boolean; path?: string };
 type ResetLayoutResult = CommandResult & { settings?: AppSettings };
-type OpenWithStartResult = CommandResult & { localPath?: string };
+type OpenWithStartResult = CommandResult & { id?: string; localPath?: string };
 
 function isSaveFileResult(value: unknown): value is SaveFileResult {
   return hasCommandOutcome(value) && optionalBoolean(value.canceled) && optionalString(value.path);
@@ -104,8 +104,8 @@ function isImportSettingsResult(value: unknown): value is ImportSettingsResult {
 }
 
 /** What `open_with_start` answers when the editor was opened. */
-function isOpenWithStarted(value: unknown): value is { localPath: string } {
-  return isRecord(value) && typeof value.localPath === 'string';
+function isOpenWithStarted(value: unknown): value is { id: string; localPath: string } {
+  return isRecord(value) && typeof value.id === 'string' && typeof value.localPath === 'string';
 }
 
 /**

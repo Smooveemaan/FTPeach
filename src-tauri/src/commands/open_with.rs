@@ -19,6 +19,9 @@ static OPEN_ADMISSION: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(()
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenWithStarted {
+    /// The watched copy's id: the caller's own, or that of the copy already
+    /// open for this file, which is reused.
+    id: String,
     local_path: String,
 }
 
@@ -55,6 +58,17 @@ pub async fn open_with_start(
         &intent.grant_target(),
     )?;
     let _admission = OPEN_ADMISSION.lock().await;
+    // A second copy of the same file would race the first back to the
+    // server, and whichever saved last would silently win.
+    let server = sessions.server_for(&connection_id).await;
+    if let Some((watched, local_path)) = watchers.watched_copy(&server, &remote_path) {
+        let (local_path, application) = reauthorized_launch(&approved_paths, &intent, &local_path)?;
+        open_in(&app, &local_path, application)?;
+        return Ok(OpenWithStarted {
+            id: watched,
+            local_path: local_path.to_string_lossy().into_owned(),
+        });
+    }
     let recovery = recovery_root(&app)?;
     let session = paths.open_with_dir.clone();
     let check_session = session.clone();
@@ -111,24 +125,28 @@ pub async fn open_with_start(
             return Err(error);
         }
     };
-    let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
     // Recorded before the editor can touch the copy, so a save made straight
     // after opening already differs from the recorded signature.
     watchers.register(&id, local_path.clone(), remote_path.clone());
-    if let Err(err) = app
-        .opener()
-        .open_path(local_path.to_string_lossy().into_owned(), application)
-    {
+    if let Err(error) = open_in(&app, &local_path, application) {
         watchers.forget(&id);
         let _ = tokio::fs::remove_file(&local_path).await;
         let _ = tokio::fs::remove_dir(&dir).await;
-        return Err(CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())));
+        return Err(error);
     }
 
-    watchers.start(app, id);
+    watchers.start(app, id.clone(), server);
     Ok(OpenWithStarted {
+        id,
         local_path: local_path.to_string_lossy().into_owned(),
     })
+}
+
+fn open_in(app: &AppHandle, local_path: &Path, application: Option<PathBuf>) -> CommandResult<()> {
+    let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
+    app.opener()
+        .open_path(local_path.to_string_lossy().into_owned(), application)
+        .map_err(|err| CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())))
 }
 
 /// The grant covered this class of file and this program. The final path is
@@ -155,6 +173,17 @@ fn authorized_launch(
         authorized => authorized.map(Path::to_path_buf),
     };
     Ok((local_path, application))
+}
+
+/// [`authorized_launch`] again for a copy already launched. Its recorded path
+/// is the canonical `\\?\` form, which the path check refuses as typed text.
+fn reauthorized_launch(
+    approved_paths: &ApprovedLocalPaths,
+    intent: &OpenWithIntent,
+    recorded: &Path,
+) -> CommandResult<(PathBuf, Option<PathBuf>)> {
+    let recorded = PathBuf::from(crate::local_fs::local_open::shell_path(recorded));
+    authorized_launch(approved_paths, intent, &recorded)
 }
 
 #[tauri::command]
@@ -277,6 +306,18 @@ mod tests {
     }
 
     #[test]
+    fn a_launched_copy_can_be_launched_again_from_its_recorded_path() {
+        let dir = workspace();
+        let approved = ApprovedLocalPaths::default();
+        let (intent, local) = prepare(&dir, "/srv/two.txt", None);
+        approved.approve_from_listing(&local);
+        let (recorded, _) = authorized_launch(&approved, &intent, &local).unwrap();
+        let (again, _) = reauthorized_launch(&approved, &intent, &recorded).unwrap();
+        assert_eq!(again, recorded);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
     fn a_program_replaced_after_authorization_is_refused() {
         let dir = workspace();
         let editor = dir.join("editor.exe");
@@ -299,6 +340,7 @@ mod tests {
     #[test]
     fn ok_result_local_path_is_camel_case() {
         let value = serde_json::to_value(OpenWithStarted {
+            id: "a".into(),
             local_path: "C:\\x".into(),
         })
         .unwrap();

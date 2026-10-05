@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Runtime};
 
 const POLL_INTERVAL: Duration = Duration::from_secs(1);
 pub(crate) const MANIFEST: &str = "copies.json";
@@ -104,10 +104,16 @@ impl Manifest {
     }
 }
 
+/// A copy being watched, and the server account its file lives on.
+struct Poll {
+    stop: Arc<AtomicBool>,
+    server: String,
+}
+
 struct State {
     dir: PathBuf,
     manifest: Manifest,
-    polls: HashMap<String, Arc<AtomicBool>>,
+    polls: HashMap<String, Poll>,
 }
 
 #[derive(Clone)]
@@ -170,8 +176,9 @@ impl OpenWithWatchers {
     }
 
     /// Starts reporting changes to a registered copy, measured from its
-    /// recorded signature.
-    pub fn start(&self, app: AppHandle, id: String) {
+    /// recorded signature. `server` is the account the file was downloaded
+    /// from, as [`crate::session::Sessions::server_for`] names it.
+    pub fn start<R: Runtime>(&self, app: AppHandle<R>, id: String, server: String) {
         let stop = Arc::new(AtomicBool::new(false));
         let (local_path, mut last) = {
             let mut state = self.inner.lock().unwrap();
@@ -179,8 +186,12 @@ impl OpenWithWatchers {
                 return;
             };
             let watched = (record.local_path.clone(), record.synced);
-            if let Some(previous) = state.polls.insert(id.clone(), stop.clone()) {
-                previous.store(true, Ordering::Relaxed);
+            let poll = Poll {
+                stop: stop.clone(),
+                server,
+            };
+            if let Some(previous) = state.polls.insert(id.clone(), poll) {
+                previous.stop.store(true, Ordering::Relaxed);
             }
             watched
         };
@@ -228,17 +239,33 @@ impl OpenWithWatchers {
     /// Stops watching. The copy and its record stay: the external app may
     /// still hold it open, and unsynced edits in it must outlive the watch.
     pub fn stop(&self, id: &str) {
-        if let Some(stop) = self.inner.lock().unwrap().polls.remove(id) {
-            stop.store(true, Ordering::Relaxed);
+        if let Some(poll) = self.inner.lock().unwrap().polls.remove(id) {
+            poll.stop.store(true, Ordering::Relaxed);
         }
     }
 
     /// Stops every watcher during application shutdown. The coordinator then
     /// hands the session directory to [`super::edit_recovery`].
     pub fn stop_all(&self) {
-        for (_, stop) in self.inner.lock().unwrap().polls.drain() {
-            stop.store(true, Ordering::Relaxed);
+        for (_, poll) in self.inner.lock().unwrap().polls.drain() {
+            poll.stop.store(true, Ordering::Relaxed);
         }
+    }
+
+    /// The watched copy of `remote_path` on `server`, whichever pane opened
+    /// it. Opening the file again reuses it, so two copies never race each
+    /// other back to the server.
+    pub fn watched_copy(&self, server: &str, remote_path: &str) -> Option<(String, PathBuf)> {
+        let state = self.inner.lock().unwrap();
+        state
+            .polls
+            .iter()
+            .filter(|(_, poll)| poll.server == server)
+            .find_map(|(id, _)| {
+                let record = state.manifest.copies.get(id)?;
+                (record.remote_path == remote_path && record.local_path.exists())
+                    .then(|| (id.clone(), record.local_path.clone()))
+            })
     }
 }
 
@@ -306,6 +333,28 @@ mod tests {
         assert_eq!(watchers.unsynced_count(), 0);
         assert!(!Manifest::read(&dir).unwrap().copies["a"].has_unsynced_edits());
         assert!(!watchers.mark_synced("missing", &latest));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_file_opened_again_reuses_its_watched_copy_until_the_watch_stops() {
+        let (dir, watchers) = session();
+        let file = dir.join("two.txt");
+        std::fs::write(&file, b"x").unwrap();
+        watchers.register("a", file.clone(), "/two.txt".into());
+        assert_eq!(watchers.watched_copy("server", "/two.txt"), None);
+
+        let app = tauri::test::mock_app();
+        watchers.start(app.handle().clone(), "a".into(), "server".into());
+        assert_eq!(
+            watchers.watched_copy("server", "/two.txt"),
+            Some(("a".into(), file))
+        );
+        assert_eq!(watchers.watched_copy("other server", "/two.txt"), None);
+        assert_eq!(watchers.watched_copy("server", "/Two.txt"), None);
+
+        watchers.stop("a");
+        assert_eq!(watchers.watched_copy("server", "/two.txt"), None);
         std::fs::remove_dir_all(dir).unwrap();
     }
 

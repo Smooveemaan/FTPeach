@@ -191,8 +191,8 @@ const cases: Case[] = [
     call: () => api.openWith.start('c', '/a.txt', 'id', null),
     success: [
       {
-        wire: resolve({ localPath: 'C:\\t\\a.txt' }),
-        seen: { ok: true, localPath: 'C:\\t\\a.txt' },
+        wire: resolve({ id: 'id', localPath: 'C:\\t\\a.txt' }),
+        seen: { ok: true, id: 'id', localPath: 'C:\\t\\a.txt' },
       },
     ],
   },

@@ -46,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Opening a server file that is already open in another program opens the same copy, instead of
+  a second one whose upload would overwrite the first one's changes.
 - With "On name conflict: Skip", a folder whose contents are all already there no longer shows up
   in Transfers as done.
 - A folder dragged out to a place that already has a file of that name no longer shows up in

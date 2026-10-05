@@ -145,8 +145,9 @@ export function useOpenWithLifecycle(
     ({ id, localPath, remotePath }: OpenWithOpened) => {
       if (!target) return;
       const name = remotePath.split('/').filter(Boolean).pop() || remotePath;
+      // A reused copy keeps the pane that first opened it: its edits go up
+      // through that connection, and stop being watched when it closes.
       setWatches((current) => ({
-        ...current,
         [id]: {
           localPath,
           remotePath,
@@ -155,6 +156,7 @@ export function useOpenWithLifecycle(
           paneId: target.paneId,
           tabId: target.tabId,
         },
+        ...current,
       }));
       setTarget(null);
     },

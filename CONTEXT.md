@@ -31,3 +31,9 @@ _Avoid_: Windows Hello unlock, biometric unlock
 **Accepted risk**:
 A known weakness the project keeps on purpose and documents in the threat model. A report that only demonstrates an accepted risk is not a vulnerability.
 _Avoid_: known issue, won't fix
+
+## Editing server files
+
+**Edit copy**:
+The local copy of a server file that Open with hands to another program. FTPeach watches it while the file's connection stays open and offers each save for upload back to the same file. A server file (the same server, account and path, whichever tab opens it) has at most one watched edit copy: opening it again, in any program, reuses that copy. Once its connection closes, the next Open with makes a new edit copy.
+_Avoid_: open-with copy, temp file, local copy

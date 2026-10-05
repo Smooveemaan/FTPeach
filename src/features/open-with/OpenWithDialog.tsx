@@ -52,7 +52,8 @@ export default function OpenWithDialog({
           // watching, but nobody will ever consume the events; unwind it. The
           // user has already dismissed the dialog, so a failed unwind has no
           // surface to report to and nothing they could act on.
-          if (res.ok) void api.openWith.stop(id);
+          // A copy that was already open stays watched for its first opener.
+          if (res.ok && res.id === id) void api.openWith.stop(id);
           return;
         }
         // Declining the backend's confirmation closes the dialog without a
@@ -61,11 +62,11 @@ export default function OpenWithDialog({
           onClose();
           return;
         }
-        if (!res.ok || !res.localPath) {
+        if (!res.ok || !res.id || !res.localPath) {
           setError(friendlyError(commandResultError(res)) || t('errors.internal'));
           return;
         }
-        onOpened({ id, localPath: res.localPath, remotePath });
+        onOpened({ id: res.id, localPath: res.localPath, remotePath });
       })(),
     );
     return () => {

@@ -11,12 +11,14 @@ vi.mock('react-i18next', async (importOriginal) => ({
 
 function open() {
   let emit!: (_progress: PreviewProgress) => void;
-  let finish!: (_result: CommandResult & { localPath?: string }) => void;
+  let finish!: (_result: CommandResult & { id?: string; localPath?: string }) => void;
   let reject!: (_error: Error) => void;
-  const pending = new Promise<CommandResult & { localPath?: string }>((resolve, fail) => {
-    finish = resolve;
-    reject = fail;
-  });
+  const pending = new Promise<CommandResult & { id?: string; localPath?: string }>(
+    (resolve, fail) => {
+      finish = resolve;
+      reject = fail;
+    },
+  );
   const unsubscribe = vi.fn();
   const start = vi.fn(
     (_connectionId: string, _path: string, _id: string, _application: string | null) => pending,
@@ -70,7 +72,7 @@ test('download ignores other jobs, clamps progress and registers a completed edi
   expect(h.container.querySelector<HTMLElement>('.openwith-progress-fill')!.style.width).toBe(
     '100%',
   );
-  await act(async () => h.finish({ ok: true, localPath: 'C:\\temp\\file.txt' }));
+  await act(async () => h.finish({ ok: true, id: h.id, localPath: 'C:\\temp\\file.txt' }));
   expect(h.props.onOpened).toHaveBeenCalledExactlyOnceWith({
     id: h.id,
     localPath: 'C:\\temp\\file.txt',
@@ -90,9 +92,24 @@ test('dismissal cancels the original session and cleans up a late successful wat
   expect(h.props.onClose).toHaveBeenCalledOnce();
   h.unmount();
   expect(h.cancel).toHaveBeenCalledExactlyOnceWith('original-session', h.id, 'stop');
-  await act(async () => h.finish({ ok: true, localPath: 'C:\\temp\\late.txt' }));
+  await act(async () => h.finish({ ok: true, id: h.id, localPath: 'C:\\temp\\late.txt' }));
   expect(h.stop).toHaveBeenCalledWith(h.id);
   expect(h.props.onOpened).not.toHaveBeenCalled();
+});
+
+test('a file already open hands back its watched copy, which a dismissal leaves watched', async () => {
+  const h = open();
+  await act(async () => h.finish({ ok: true, id: 'earlier', localPath: 'C:\\temp\\file.txt' }));
+  expect(h.props.onOpened).toHaveBeenCalledExactlyOnceWith({
+    id: 'earlier',
+    localPath: 'C:\\temp\\file.txt',
+    remotePath: '/folder/file.txt',
+  });
+
+  const late = open();
+  late.unmount();
+  await act(async () => late.finish({ ok: true, id: 'earlier', localPath: 'C:\\temp\\file.txt' }));
+  expect(late.stop).not.toHaveBeenCalled();
 });
 
 test('backend cancellation closes quietly without registering an edit', async () => {

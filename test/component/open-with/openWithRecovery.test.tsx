@@ -118,6 +118,33 @@ test('a closed connection drops its questions but a retry cannot revive them', (
   expect(h.openWithApi.stop).toHaveBeenCalledWith('a');
 });
 
+test('a reused copy stays with the pane that first opened it', () => {
+  const h = openWithHarness();
+  h.open('a');
+  act(() =>
+    h.hook.result.current.setTarget({
+      path: '/a.txt',
+      connectionId: 'other-session',
+      paneId: 'b',
+      tabId: 'other-tab',
+    }),
+  );
+  act(() =>
+    h.hook.result.current.registerOpened({
+      id: 'a',
+      localPath: 'C:\\tmp\\a.txt',
+      remotePath: '/a.txt',
+    }),
+  );
+  const otherTab = {
+    panes: { ...connectedTab.panes, a: { ...connectedTab.panes.a, connectionId: 'other-session' } },
+  };
+  h.hook.rerender({ tabs: [otherTab] as never[] });
+  expect(h.openWithApi.stop).toHaveBeenCalledExactlyOnceWith('a');
+  h.emit({ id: 'a', revision: '1' });
+  expect(h.hook.result.current.changed).toBeNull();
+});
+
 test('an upload finishing or failing cannot consume or replace a newer queued edit', async () => {
   const h = openWithHarness();
   h.open('a');

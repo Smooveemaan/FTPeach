@@ -20,10 +20,7 @@ interface ClipboardState {
 }
 
 interface FileClipboardOptions {
-  browser: Pick<
-    PanesModel,
-    'panes' | 'confirmOverwriteIfNeeded' | 'canCopyBetween' | 'refreshPaneIfAt'
-  >;
+  browser: Pick<PanesModel, 'panes' | 'canCopyBetween' | 'refreshPaneIfAt'>;
   transfers: Pick<TransfersModel, 'copyEntries'>;
 }
 
@@ -51,31 +48,24 @@ export interface FileClipboardModel {
 }
 
 export function useFileClipboard({ browser, transfers }: FileClipboardOptions): FileClipboardModel {
-  const { panes, confirmOverwriteIfNeeded, canCopyBetween, refreshPaneIfAt } = browser;
+  const { panes, canCopyBetween, refreshPaneIfAt } = browser;
   const { copyEntries } = transfers;
   const { t } = useTranslation();
-  const copySelectedWithConfirm = (
+  const copySelectedWithConfirm = async (
     sourcePane: PaneState,
     targetPane: PaneState,
     refreshSource: () => unknown,
     refreshTarget: () => unknown,
-  ) =>
-    confirmOverwriteIfNeeded(
+  ) => {
+    await copyEntries({
+      sourcePane,
       targetPane,
-      undefined,
-      [...sourcePane.selected],
-      (namesToUse: string[], overwriteApproved: boolean) =>
-        copyEntries({
-          sourcePane,
-          targetPane,
-          names: namesToUse,
-          move: false,
-          refreshSource,
-          refreshTarget,
-          overwriteApproved,
-        }),
-      sourcePane.entries,
-    );
+      names: [...sourcePane.selected],
+      move: false,
+      refreshSource,
+      refreshTarget,
+    });
+  };
 
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
   const copyToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'copy' });
@@ -99,28 +89,19 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
       return;
     }
     reportRejection(
-      confirmOverwriteIfNeeded(
+      copyEntries({
+        sourcePane,
         targetPane,
-        undefined,
-        [...sourcePane.selected],
-        (namesToUse: string[], overwriteApproved: boolean) =>
-          copyEntries({
-            sourcePane,
-            targetPane,
-            names: namesToUse,
-            move: mode === 'cut',
-            refreshSource: () => refreshPaneIfAt(sourceId, sourcePane.path),
-            refreshTarget: () => refreshPaneIfAt(targetId, targetPane.path),
-            overwriteApproved,
-          })
-            .then((result) => {
-              // A cut whose files are still where they were is not spent: the
-              // user can paste it again once the reason is out of the way.
-              if (mode === 'cut' && result.ok && !result.sourceRetained) setClipboard(null);
-            })
-            .catch((error: unknown) => console.error('Paste failed', error)),
-        sourcePane.entries,
-      ),
+        names: [...sourcePane.selected],
+        move: mode === 'cut',
+        refreshSource: () => refreshPaneIfAt(sourceId, sourcePane.path),
+        refreshTarget: () => refreshPaneIfAt(targetId, targetPane.path),
+      })
+        .then((result) => {
+          // A skipped or refused move leaves the cut available for another try.
+          if (mode === 'cut' && result.ok && !result.sourceRetained) setClipboard(null);
+        })
+        .catch((error: unknown) => console.error('Paste failed', error)),
     );
   };
 
@@ -184,25 +165,16 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
     ({ sourceSide, names, targetSide, targetFolder, isMove }) => {
       const sourcePane = panes[sourceSide];
       const targetPane = panes[targetSide];
-      const proceed = (namesToUse: string[], overwriteApproved: boolean) =>
+      reportRejection(
         copyEntries({
           sourcePane,
           targetPane,
-          names: namesToUse,
+          names,
           targetFolder,
           move: isMove,
           refreshSource: () => refreshPaneIfAt(sourceSide, sourcePane.path),
           refreshTarget: () => refreshPaneIfAt(targetSide, targetPane.path),
-          overwriteApproved,
-        });
-      reportRejection(
-        confirmOverwriteIfNeeded(
-          targetPane,
-          targetFolder ?? undefined,
-          names,
-          proceed,
-          sourcePane.entries,
-        ),
+        }),
       );
     },
     {

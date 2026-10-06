@@ -44,6 +44,7 @@ import { buildApplicationWorkspaceModel } from './applicationWorkspaceModel.ts';
 import { buildApplicationDialogsModel } from './applicationDialogsModel.ts';
 import { handler, reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
+import { isolate } from '../shared/bidi.ts';
 import type { PaneId } from '../shared/paneContracts.ts';
 
 export default function Application() {
@@ -163,6 +164,14 @@ export default function Application() {
   const transfers = useTransfers({
     setErrorMessage: reportError,
     withdrawErrorMessage: withdrawError,
+    confirmMerge: (path) =>
+      new Promise<boolean>((resolve) =>
+        requestConfirm(t('confirm.mergeFolder', { name: isolate(path) }), () => resolve(true), {
+          confirmLabel: t('confirm.mergeLabel'),
+          danger: true,
+          onCancel: () => resolve(false),
+        }),
+      ),
     overwriteAction: settings.transfers.overwriteAction,
     confirmOverwrite: (path) =>
       new Promise<boolean>((resolve) =>
@@ -171,6 +180,20 @@ export default function Application() {
           danger: true,
           onCancel: () => resolve(false),
         }),
+      ),
+    confirmOverwriteBatch: (names) =>
+      new Promise<boolean>((resolve) =>
+        requestConfirm(
+          names.length === 1
+            ? t('confirm.overwriteSingleExists', { name: isolate(names[0]!) })
+            : t('confirm.overwriteConflicts', { count: names.length }),
+          () => resolve(true),
+          {
+            confirmLabel: t('confirm.overwriteLabel'),
+            danger: true,
+            onCancel: () => resolve(false),
+          },
+        ),
       ),
   });
   const {
@@ -203,7 +226,6 @@ export default function Application() {
     requestConfirm,
     connectTimeout: settings.connection.connectTimeout,
     paneOrientation: effectivePaneOrientation,
-    overwriteAction: settings.transfers.overwriteAction,
     ftpActiveMode: settings.connection.ftpActiveMode,
     saveSessionOnExit: settings.connection.saveSessionOnExit,
     defaultLocalPath: settings.interface.defaultLocalPath,
@@ -474,8 +496,12 @@ export default function Application() {
     paneActions: {
       submitNewFolder: browser.submitNewFolder,
       submitNewFile: browser.submitNewFile,
-      confirmOverwriteIfNeeded: browser.confirmOverwriteIfNeeded,
-      movePaneSamePane: browser.movePaneSamePane,
+      movePaneSamePane: (id, names, folder, tabId) => {
+        const pane = panes[id];
+        return transfers.moveWithinPane(pane, names, folder, () =>
+          browser.refreshPane(id, pane.path, undefined, tabId),
+        );
+      },
     },
     openWith,
     recoveredEdits,

@@ -1,13 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { usePanes } from '../../../src/features/file-browser/usePanes.ts';
-import { initialForm, makePane } from '../../../src/features/file-browser/panes/paneModel.ts';
+import { initialForm } from '../../../src/features/file-browser/panes/paneModel.ts';
 import {
   resetTransfersStoreForTests,
   setTransfersStore,
 } from '../../../src/features/transfers/transferStore.ts';
 import type { CommandResult } from '../../../src/platform/ipcContracts.ts';
-import { isolate } from '../../../src/shared/bidi.ts';
 import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
@@ -65,14 +64,13 @@ beforeEach(() => {
 });
 afterEach(resetTransfersStoreForTests);
 
-async function open(overwriteAction: 'ask' | 'skip' | 'overwrite' = 'ask') {
+async function open() {
   const options = {
     reportError: vi.fn(),
     setErrorMessage: vi.fn(),
     requestConfirm: vi.fn(),
     connectTimeout: 30,
     paneOrientation: 'horizontal' as const,
-    overwriteAction,
     ftpActiveMode: false,
     saveSessionOnExit: false,
     defaultLocalPath: 'C:\\home',
@@ -323,81 +321,6 @@ test('replacing a connected bookmark asks before disconnecting; local bookmarks 
   expect(result.current.panes.a.history).toEqual(['C:\\home']);
 });
 
-test.each(['ask', 'skip', 'overwrite'] as const)(
-  'local overwrite policy %s handles case-insensitive collisions without losing new files',
-  async (policy) => {
-    const { result, options } = await open(policy);
-    const target = { ...result.current.panes.a, entries: [file('EXISTS.txt')] };
-    const proceed = vi.fn();
-    await act(async () =>
-      result.current.confirmOverwriteIfNeeded(
-        target,
-        undefined,
-        ['exists.txt', 'new.txt'],
-        proceed,
-      ),
-    );
-    if (policy === 'ask') {
-      expect(proceed).not.toHaveBeenCalled();
-      act(() => options.requestConfirm.mock.calls[0]![1]());
-      expect(proceed).toHaveBeenCalledWith(['exists.txt', 'new.txt'], true);
-    } else if (policy === 'skip') expect(proceed).toHaveBeenCalledWith(['new.txt'], false);
-    else expect(proceed).toHaveBeenCalledWith(['exists.txt', 'new.txt'], true);
-  },
-);
-
-test('skip-all conflicts and destination listing failures never start a transfer', async () => {
-  const { result, options } = await open('skip');
-  const target = { ...result.current.panes.a, entries: [file('exists')] };
-  const proceed = vi.fn();
-  await act(async () =>
-    result.current.confirmOverwriteIfNeeded(target, undefined, ['exists'], proceed),
-  );
-  const refused = { error: 'File or folder not found', errorCode: 'notFound' };
-  client.fsLocal.list.mockResolvedValueOnce({ ok: false, path: '', entries: [], ...refused });
-  await act(async () => result.current.confirmOverwriteIfNeeded(target, 'sub', ['new'], proceed));
-  expect(proceed).not.toHaveBeenCalled();
-  // The code goes along, so the failure is reported in the user's language.
-  expect(options.reportError).toHaveBeenCalledExactlyOnceWith({
-    code: 'notFound',
-    message: 'File or folder not found',
-  });
-});
-
-test('remote names are case-sensitive and directory merges do not ask to replace a file', async () => {
-  const { result, options } = await open();
-  const target = { ...makePane('b', 'remote'), entries: [file('EXISTS'), file('folder', true)] };
-  const proceed = vi.fn();
-  await act(async () =>
-    result.current.confirmOverwriteIfNeeded(target, undefined, ['exists', 'folder'], proceed, [
-      file('exists'),
-      file('folder', true),
-    ]),
-  );
-  expect(proceed).toHaveBeenCalledWith(['exists', 'folder'], false);
-  expect(options.requestConfirm).not.toHaveBeenCalled();
-});
-
-test('a folder is never offered in place of a file of its name, nor a file in place of a folder', async () => {
-  const { result, options } = await open();
-  const target = { ...makePane('b', 'remote'), entries: [file('one'), file('two', true)] };
-  const proceed = vi.fn();
-  await act(async () =>
-    result.current.confirmOverwriteIfNeeded(target, undefined, ['one', 'two', 'new'], proceed, [
-      file('one', true),
-      file('two'),
-      file('new'),
-    ]),
-  );
-  // No server replaces one kind with the other, so there is nothing to ask:
-  // the taken names are refused and the rest goes ahead.
-  expect(options.requestConfirm).not.toHaveBeenCalled();
-  expect(options.reportError).toHaveBeenCalledExactlyOnceWith(
-    `errors.alreadyExists: ${isolate('one')}, ${isolate('two')}`,
-  );
-  expect(proceed).toHaveBeenCalledExactlyOnceWith(['new'], false);
-});
-
 test('delete confirmation filters stale selections, preserves recycle policy and reports failures', async () => {
   const { result, options } = await open();
   act(() =>
@@ -417,13 +340,12 @@ test('delete confirmation filters stale selections, preserves recycle policy and
   expect(client.fsLocal.delete).toHaveBeenLastCalledWith('C:\\home\\permanent', true);
 });
 
-test('create, rename and move operations refresh the pane and never assume overwrite approval', async () => {
+test('create and rename operations refresh the pane and never assume overwrite approval', async () => {
   const { result } = await open();
   const tab = result.current.activeTabId;
   await act(async () => result.current.submitNewFolder('folder', tab, 'a'));
   await act(async () => result.current.submitNewFile('new.txt', tab, 'a'));
   await act(async () => result.current.renamePaneEntry('a', file('old.txt'), 'new.txt'));
-  await act(async () => result.current.movePaneSamePane('a', ['new.txt'], 'folder'));
   expect(client.fsLocal.mkdir).toHaveBeenCalledWith('C:\\home\\folder');
   expect(client.fsLocal.createFile).toHaveBeenCalledWith('C:\\home\\new.txt');
   expect(client.fsLocal.rename).toHaveBeenNthCalledWith(
@@ -432,12 +354,7 @@ test('create, rename and move operations refresh the pane and never assume overw
     'C:\\home\\new.txt',
     false,
   );
-  expect(client.fsLocal.rename).toHaveBeenNthCalledWith(
-    2,
-    'C:\\home\\new.txt',
-    'C:\\home\\folder\\new.txt',
-    false,
-  );
+
   await act(async () => result.current.chooseLocalDir('a')());
   expect(result.current.panes.a.path).toBe('C:\\chosen');
   await act(async () => result.current.goPaneHome('a')());

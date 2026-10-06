@@ -30,12 +30,7 @@ interface CopyEntriesOptions {
   move?: boolean;
   refreshSource?: RefreshCallback;
   refreshTarget?: RefreshCallback;
-  /**
-   * The caller already asked about every name that collides at the destination
-   * (see usePanes' confirmOverwriteIfNeeded) and the user said yes. Without
-   * this the per-destination approval below asks a second time about the very
-   * same file, one dialog behind the other.
-   */
+  /** Batch approval supplied internally by useTransfers. */
   overwriteApproved?: boolean;
 }
 interface OsDropFile {
@@ -86,11 +81,15 @@ export interface TransferRoutingModel {
 /** Routes pane copies, moves and OS drops through the transfer lifecycle. */
 export function createTransferRouting(
   {
+    runLocalCopy,
     runRecursive,
     runUpload,
     runDownload,
     runRemoteCopy,
-  }: Pick<TransferLifecycleModel, 'runRecursive' | 'runUpload' | 'runDownload' | 'runRemoteCopy'>,
+  }: Pick<
+    TransferLifecycleModel,
+    'runLocalCopy' | 'runRecursive' | 'runUpload' | 'runDownload' | 'runRemoteCopy'
+  >,
   approveTarget: OverwriteApproval,
   overwriteAction: TransferOverwriteOptions['overwriteAction'],
   setErrorMessage: (message?: string) => unknown,
@@ -101,17 +100,16 @@ export function createTransferRouting(
     sourcePath: string,
     targetPath: string,
     moving = false,
-    overwriteApproved = false,
     refreshTarget?: RefreshCallback,
   ): Promise<TransferItemOutcome> => {
-    const approved = overwriteApproved
-      ? true
-      : overwriteAction === 'skip' &&
-          !(moving && source.kind === 'remote' && target.kind === 'remote')
+    const approved =
+      overwriteAction === 'skip' &&
+      !(moving && source.kind === 'remote' && target.kind === 'remote')
         ? false
         : await approveTarget({
             kind: target.kind,
             path: targetPath,
+            merge: !(moving && source.kind === 'remote' && target.kind === 'remote'),
             ...(target.connectionId ? { connectionId: target.connectionId } : {}),
           });
     if (approved === null) return 'skipped';
@@ -157,7 +155,6 @@ export function createTransferRouting(
     sourcePath: string,
     name: string,
     targetDir: string,
-    overwriteApproved = false,
     refreshTarget?: RefreshCallback,
   ) =>
     recursiveFolder(
@@ -166,7 +163,6 @@ export function createTransferRouting(
       sourcePath,
       joinRemotePath(targetDir, name),
       false,
-      overwriteApproved,
       refreshTarget,
     );
 
@@ -175,15 +171,15 @@ export function createTransferRouting(
     source: string,
     destination: string,
     overwriteApproved: boolean,
+    size?: number,
   ): Promise<TransferItemOutcome> => {
     await requireSuccess(api.fsLocal.validateCopy(source, destination), destination);
     const overwrite = overwriteApproved
       ? true
       : await approveTarget({ kind: 'local', path: destination });
     if (overwrite === null) return 'skipped';
-    const res = await api.fsLocal.copyFile(source, destination, overwrite);
-    if (!res.ok) throw new Error(`${source}: ${res.error || 'Copy failed'}`);
-    return 'copied';
+    const res = await runLocalCopy(source, destination, overwrite, size);
+    return outcomeOf(res, 'copied');
   };
 
   const copyLocalEntry = async (
@@ -197,6 +193,7 @@ export function createTransferRouting(
       joinLocalPath(sourceDir, entry.name),
       joinLocalPath(targetDir, entry.name),
       overwriteApproved,
+      entry.size,
     );
   };
 
@@ -311,15 +308,7 @@ export function createTransferRouting(
           : joinRemotePath(targetDir, name);
       results.push(
         await runItem(name, !!move, () =>
-          recursiveFolder(
-            sourcePane,
-            targetPane,
-            sourcePath,
-            targetPath,
-            move,
-            overwriteApproved,
-            refreshTarget,
-          ),
+          recursiveFolder(sourcePane, targetPane, sourcePath, targetPath, move, refreshTarget),
         ),
       );
     }
@@ -478,10 +467,9 @@ export function createTransferRouting(
               file.path,
               destination,
               false,
-              overwriteApproved,
               refreshTarget,
             )
-          : copyLocalFile(file.path, destination, overwriteApproved);
+          : copyLocalFile(file.path, destination, overwriteApproved, file.size);
       });
       refreshTarget?.();
       return results;
@@ -500,7 +488,6 @@ export function createTransferRouting(
             file.path,
             file.name,
             targetDir,
-            overwriteApproved,
             refreshTarget,
           );
         }

@@ -37,6 +37,12 @@ export type TransferRow = TransferBase &
         targetProtocol?: SiteProtocol | undefined;
       }
     | {
+        direction: 'local';
+        dragOut?: false;
+        localFile: string;
+        localTarget: string;
+      }
+    | {
         direction: 'up';
         protocol: SiteProtocol;
         dragOut?: false;
@@ -263,7 +269,7 @@ const RESUMABLE_UPLOAD_PROTOCOLS: ReadonlySet<SiteProtocol> = new Set(['ftp', 'f
  * stream at all, and a drag-out has no destination of ours to resume into.
  */
 export function canPauseTransfer(row: TransferRow): boolean {
-  if (row.dragOut) return false;
+  if (row.dragOut || row.direction === 'local') return false;
   if (row.direction === 'recursive') {
     const { moving, source, target } = row.intent;
     if (target.kind === 'local') return true;
@@ -280,6 +286,7 @@ export function canPauseTransfer(row: TransferRow): boolean {
 }
 
 export function transferConnectionIds(row: TransferRow): string[] {
+  if (row.direction === 'local') return [];
   if (row.direction === 'recursive') {
     return [row.intent.source, row.intent.target]
       .filter((endpoint) => endpoint.kind === 'remote')
@@ -398,7 +405,7 @@ export function transferTargetKey(row: TransferRow): string | undefined {
       ? `local:${target.path.replaceAll('/', '\\').toLowerCase()}`
       : `remote:${target.connectionId}:${target.path}`;
   }
-  return row.direction === 'down'
+  return row.direction === 'down' || row.direction === 'local'
     ? `local:${row.localTarget.replaceAll('/', '\\').toLowerCase()}`
     : `remote:${row.direction === 'up' ? row.connectionId : row.targetConnectionId}:${row.remoteTarget}`;
 }

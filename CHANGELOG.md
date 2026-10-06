@@ -4,6 +4,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- File operation errors explain when a file and a folder have the same name.
+- Folder merge confirmation explains which files will be replaced and which will be kept.
+
+### Fixed
+
+- Creating a folder no longer recreates its parent if that parent was moved or deleted.
+- A cut selection stays available to paste when some files are skipped.
+- Local file copies appear in Transfers, including when replacing existing files.
+- Deleting a server selection handles names that differ only in letter case without a false
+  busy error between those deletions.
+
 ## [0.4.0] - 2026-10-05
 
 ### Added

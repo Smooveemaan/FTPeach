@@ -264,7 +264,7 @@ function TransferItemRow({
       </div>
       {columnOrder.map((key) => renderCell(key))}
       <div className="transfer-actions">
-        {item.status !== 'done' && (
+        {item.status !== 'done' && !(item.direction === 'local' && item.status === 'progress') && (
           <>
             {item.status === 'paused' && (
               <button

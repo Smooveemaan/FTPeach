@@ -44,10 +44,14 @@ impl NewEntry {
     }
 }
 
-/// Creates `path` and any missing parents.
+/// Creates `path` under an existing parent, leaving an existing folder alone.
 pub(crate) async fn create_dir(path: &Path) -> Result<()> {
     let entry = NewEntry::reserve(path).await?;
-    tokio::fs::create_dir_all(&entry.path).await?;
+    match tokio::fs::create_dir(&entry.path).await {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists && entry.path.is_dir() => {}
+        Err(error) => return Err(error.into()),
+    }
     entry.check().await
 }
 
@@ -84,8 +88,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn creates_folders_with_parents_and_files_without_replacing() {
+    async fn creates_folders_and_files_without_replacing() {
         let root = scratch();
+        create_dir(&root.join("a")).await.unwrap();
         create_dir(&root.join("a/b")).await.unwrap();
         assert!(root.join("a/b").is_dir());
         // An existing folder is already what was asked for.
@@ -100,6 +105,27 @@ mod tests {
             ErrorCode::AlreadyExists
         );
         assert_eq!(std::fs::read(&file).unwrap(), b"keep");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_missing_parent_is_not_recreated_by_new_entries() {
+        let root = scratch();
+        let parent = root.join("destination");
+        let moved = root.join("destination-away");
+        std::fs::create_dir(&parent).unwrap();
+        std::fs::write(parent.join("keep.txt"), b"keep").unwrap();
+        std::fs::rename(&parent, &moved).unwrap();
+
+        for error in [
+            create_dir(&parent.join("new-folder")).await.unwrap_err(),
+            create_file(&parent.join("new-file.txt")).await.unwrap_err(),
+        ] {
+            assert_eq!(CommandError::from_anyhow(&error).code, ErrorCode::NotFound);
+        }
+        assert!(!parent.exists());
+        assert_eq!(std::fs::read(moved.join("keep.txt")).unwrap(), b"keep");
+        assert_eq!(std::fs::read_dir(&moved).unwrap().count(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
 

@@ -232,7 +232,9 @@
     "deletePermanentSelected": "선택한 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deletePermanentEntry": "“{{name}}”을(를) 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deleteRemoteSelected": "서버에서 선택한 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "deleteRemoteEntry": "서버의 “{{name}}”을(를) 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    "deleteRemoteEntry": "서버의 “{{name}}”을(를) 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
+    "mergeLabel": "Merge and replace"
   },
   "paneSide": {
     "top": "위",
@@ -331,7 +333,8 @@
     "activeModeFailed": "액티브 FTP 모드에서 서버가 이 컴퓨터에 연결하지 못했습니다. 패시브 모드를 사용해 보세요.",
     "linkNotFollowed": "경로가 링크(정션 또는 심볼릭 링크)를 거칩니다. 링크는 따라가지 않습니다.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
-    "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요."
+    "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요.",
+    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
   },
   "settings": {
     "openWithAssociations": {
@@ -621,7 +624,8 @@
     "pauseUnsupportedCopy": "서버 간 복사는 일시 중지할 수 없습니다",
     "pauseUnsupportedServerCopy": "서버에서 복사할 때는 일시 중지할 수 없습니다",
     "pauseUnsupportedWebdav": "WebDAV는 일시 중지를 지원하지 않습니다",
-    "retryUnsupportedConnection": "재시도할 수 없습니다: 연결이 닫혔습니다"
+    "retryUnsupportedConnection": "재시도할 수 없습니다: 연결이 닫혔습니다",
+    "pauseUnsupportedLocal": "This local file copy cannot be paused."
   },
   "log": {
     "connecting": "{{addr}}에 연결 중...",

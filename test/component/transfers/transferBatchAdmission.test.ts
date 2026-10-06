@@ -34,7 +34,13 @@ test('a large selection is admitted in bounded batches instead of all at once', 
     return { ok: true };
   });
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload, runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload,
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     vi.fn(),
@@ -75,7 +81,13 @@ test('a failed copy does not end the batch while another copy is still running',
   const setError = vi.fn();
   const refreshTarget = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: copyFile,
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(true),
     'ask',
     setError,
@@ -101,5 +113,5 @@ test('a failed copy does not end the batch while another copy is still running',
   releaseSecond();
   expect(await settled).toBe('done');
   expect(secondFinished).toBe(true);
-  expect(setError).toHaveBeenCalledWith(expect.stringContaining('Copy denied'));
+  expect((await batch).failed).toBe(1);
 });

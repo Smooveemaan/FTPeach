@@ -14,6 +14,7 @@ import { isolate } from '../../shared/bidi.ts';
 export type TransferRoute = 'up' | 'down' | 'copy' | 'local-copy' | 'server-copy';
 
 export function transferRoute(row: TransferRow): TransferRoute {
+  if (row.direction === 'local') return 'local-copy';
   if (row.direction === 'copy') {
     return row.sourceConnectionId === row.targetConnectionId ? 'server-copy' : 'copy';
   }
@@ -33,6 +34,11 @@ export function transferEndpoints(row: TransferRow): {
   target: RecursiveEndpoint | null;
 } {
   switch (row.direction) {
+    case 'local':
+      return {
+        source: { kind: 'local', path: row.localFile },
+        target: { kind: 'local', path: row.localTarget },
+      };
     case 'recursive':
       return row.intent;
     case 'up':
@@ -113,6 +119,7 @@ export function transferRouteTooltip(
  */
 export function pauseUnsupportedKey(row: TransferRow): string | null {
   if (canPauseTransfer(row)) return null;
+  if (row.direction === 'local') return 'transferQueue.pauseUnsupportedLocal';
   const route = transferRoute(row);
   const relayOrMove =
     row.direction === 'copy' || (row.direction === 'recursive' && row.intent.moving);
@@ -162,7 +169,7 @@ export const STATUS_TAG_KEYS: readonly string[] = [
 export function transferFilePath(item: TransferRow): string {
   return item.direction === 'recursive'
     ? item.intent.source.path
-    : item.direction === 'up'
+    : item.direction === 'up' || item.direction === 'local'
       ? item.localFile
       : item.direction === 'down'
         ? item.remoteFile

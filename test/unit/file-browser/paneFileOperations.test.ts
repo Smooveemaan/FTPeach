@@ -60,29 +60,11 @@ test('remote file creation refuses overwrite without IPC; failed mutations still
   await h.operations.submitNewFolder('folder', 'tab', 'b');
   await h.operations.submitNewFile('new', 'tab', 'b');
   await h.operations.renamePaneEntry('b', h.panes.b.entries[0]!, 'renamed');
-  await h.operations.movePaneSamePane('b', ['one', 'two'], 'target');
-  assert.equal(h.errors.length, 6);
-  assert.equal(h.refreshes.length, 4);
-  assert.deepEqual(
-    h.calls.slice(-2).map((call) => call.args),
-    [
-      {
-        connectionId: 'session',
-        oldPath: '/root/one',
-        newPath: '/root/target/one',
-        overwrite: false,
-      },
-      {
-        connectionId: 'session',
-        oldPath: '/root/two',
-        newPath: '/root/target/two',
-        overwrite: false,
-      },
-    ],
-  );
+  assert.equal(h.errors.length, 4);
+  assert.equal(h.refreshes.length, 3);
 });
 
-test('rename and move replace a target only on an explicit decision', async () => {
+test('rename replaces a target only on an explicit decision', async () => {
   const h = harness();
   h.panes.a.entries = [{ name: 'a.txt', isDirectory: false }];
   h.panes.b.entries = [
@@ -97,11 +79,9 @@ test('rename and move replace a target only on an explicit decision', async () =
   await h.operations.renamePaneEntry('b', h.panes.b.entries[0]!, 'A.txt');
   // Here another entry already has the new name exactly.
   await h.operations.renamePaneEntry('b', h.panes.b.entries[1]!, 'b.txt');
-  await h.operations.movePaneSamePane('a', ['a.txt'], 'folder', 'tab');
-  await h.operations.movePaneSamePane('a', ['a.txt'], 'folder', 'tab', true);
   assert.deepEqual(
     h.calls.map((call) => call.args!.overwrite),
-    [false, false, false, false, false, false, true],
+    [false, false, false, false, false],
   );
   assert.ok(h.calls.every((call) => call.command.endsWith('_rename')));
 });
@@ -136,10 +116,46 @@ test('remote permission errors do not offer an overwrite retry', async () => {
   assert.equal(h.errors.length, 1);
 });
 
+test('creating under a missing parent reports once without a second listing error', async () => {
+  const h = harness(() => ({ ok: false, errorCode: 'notFound', error: 'Parent is gone' }));
+  await h.operations.submitNewFolder('folder', 'tab', 'a');
+  await h.operations.submitNewFile('file.txt', 'tab', 'a');
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.errors.length, 2);
+  assert.deepEqual(h.refreshes, []);
+});
+
 test('directory chooser cancellation does not navigate and a chosen home does', async () => {
   const h = harness((command) => (command.includes('homedir') ? 'C:\\Users\\me' : null));
   await h.operations.chooseLocalDir('a')();
   assert.deepEqual(h.navigations, []);
   await h.operations.goPaneHome('a')();
   assert.deepEqual(h.navigations, [['a', 'C:\\Users\\me']]);
+});
+
+test('remote deletion serializes case-only siblings without hiding real failures', async () => {
+  let finish!: (_result: { ok: boolean }) => void;
+  const held = new Promise<{ ok: boolean }>((resolve) => {
+    finish = resolve;
+  });
+  const h = harness((_command, args) =>
+    args?.remotePath === '/root/test.txt'
+      ? held
+      : { ok: false, error: 'denied', errorCode: 'permissionDenied' },
+  );
+  h.panes.b.entries = [
+    { name: 'test.txt', isDirectory: false },
+    { name: 'Test.txt', isDirectory: false },
+  ];
+  h.panes.b.selected = new Set(['test.txt', 'Test.txt']);
+  h.operations.deletePaneSelected('b');
+  const deleting = h.confirmations[0]!.run();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.refreshes.length, 0);
+  finish({ ok: true });
+  await deleting;
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.errors.length, 1);
+  assert.equal(h.refreshes.length, 1);
 });

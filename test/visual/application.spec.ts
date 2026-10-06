@@ -431,3 +431,31 @@ test('file columns scroll sideways with their header', async ({ page }) => {
   const listBox = (await list.boundingBox())!;
   expect(cell!.x + cell!.width).toBeLessThanOrEqual(listBox.x + listBox.width + 0.5);
 });
+
+test('file operation errors use the dismissible error banner', async ({ page }) => {
+  await openHarness(page);
+  await page.evaluate(() => {
+    window.api.fsLocal.delete = async () => ({
+      ok: false,
+      errorCode: 'permissionDenied',
+      error: 'Denied',
+    });
+  });
+  const row = page
+    .locator('.pane')
+    .first()
+    .locator('.pane-list .row:not(.row-header)')
+    .filter({ hasText: 'release-notes.md' });
+  await row.click();
+  await row.press('Delete');
+  const confirmation = page.getByRole('dialog');
+  await expect(confirmation).toBeVisible();
+  await confirmation.locator('.modal-footer button').last().click();
+  const error = page.locator('.app-error-bar[role="alert"]');
+  await expect(error).toBeVisible();
+  await expect(error).toContainText(en.errors.accessDenied);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/file-operation-error.png' });
+  await error.getByRole('button', { name: en.common.close }).click();
+  await expect(error).toHaveCount(0);
+});

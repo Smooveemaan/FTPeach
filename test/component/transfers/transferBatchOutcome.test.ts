@@ -29,7 +29,13 @@ test('a selection reports what each file did, not just that it finished', async 
   }));
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload, runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload,
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     setError,
@@ -65,7 +71,13 @@ test('a transfer the user paused, stopped or skipped is not reported as failed',
   );
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload, runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload,
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     setError,
@@ -95,7 +107,13 @@ test('a folder walk counts as skipped only when the user ended it', async () => 
       endings[intent.target.path as keyof typeof endings],
   );
   const routing = createTransferRouting(
-    { runRecursive, runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive,
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     vi.fn(),
@@ -121,7 +139,13 @@ test('a move that was refused says the originals are still in place', async () =
   window.api = { ...tauriApi, fsLocal: { ...tauriApi.fsLocal, rename } };
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(true),
     'ask',
     setError,
@@ -147,7 +171,13 @@ test('declining the overwrite question is a skip, not a failure', async () => {
   window.api = tauriApi;
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     // The user closed the question instead of answering it.
     vi.fn().mockResolvedValue(null),
     'ask',
@@ -169,7 +199,13 @@ test('a Move between endpoints is refused as a whole and keeps its sources', asy
   window.api = tauriApi;
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(true),
     'ask',
     setError,

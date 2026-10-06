@@ -1,4 +1,3 @@
-import { joinLocalPath, joinRemotePath } from '../../../shared/paths.ts';
 import { mapWithConcurrency } from '../../../shared/lang.ts';
 import { isolate } from '../../../shared/bidi.ts';
 import { commandResultError } from '../../../shared/errorMessages.ts';
@@ -57,11 +56,17 @@ export function createPaneFileOperations({
         const names = [...pane.selected].filter((name) =>
           pane.entries.some((e) => e.name === name),
         );
-        await mapWithConcurrency(names, DELETE_CONCURRENCY_LIMIT, async (name) => {
-          const entry = pane.entries.find((e) => e.name === name)!;
-          const res = await backend.remove(paneJoin(pane, name), entry.isDirectory, permanent);
-          if (!res.ok) reportError(commandResultError(res));
-        });
+        // The browse connection runs one command at a time. Serial admission also
+        // keeps case-only siblings from colliding in the conservative path leases.
+        await mapWithConcurrency(
+          names,
+          pane.kind === 'remote' ? 1 : DELETE_CONCURRENCY_LIMIT,
+          async (name) => {
+            const entry = pane.entries.find((e) => e.name === name)!;
+            const res = await backend.remove(paneJoin(pane, name), entry.isDirectory, permanent);
+            if (!res.ok) reportError(commandResultError(res));
+          },
+        );
         refreshPane(id, pane.path, undefined, tabId);
       },
     );
@@ -100,7 +105,11 @@ export function createPaneFileOperations({
   const submitNewFolder = async (name: string, tabId: string, id: PaneId) => {
     const pane = panes[id];
     const res = await backendFor(pane, client).mkdir(paneJoin(pane, name));
-    if (!res.ok) reportError(commandResultError(res));
+    if (!res.ok) {
+      reportError(commandResultError(res));
+      // Relisting a missing parent would repeat the same failure in the global banner.
+      if (res.errorCode === 'notFound') return;
+    }
     refreshPane(id, pane.path, undefined, tabId);
   };
 
@@ -111,7 +120,10 @@ export function createPaneFileOperations({
       return;
     }
     const res = await backendFor(pane, client).createFile(paneJoin(pane, name));
-    if (!res.ok) reportError(commandResultError(res));
+    if (!res.ok) {
+      reportError(commandResultError(res));
+      if (res.errorCode === 'notFound') return;
+    }
     refreshPane(id, pane.path, undefined, tabId);
   };
 
@@ -165,34 +177,12 @@ export function createPaneFileOperations({
     refreshPane(id, pane.path, undefined, tabId);
   };
 
-  const movePaneSamePane = async (
-    id: PaneId,
-    names: readonly string[],
-    targetFolder: string,
-    tabId = activeTabId,
-    overwriteApproved = false,
-  ) => {
-    const pane = panes[id];
-    const backend = backendFor(pane, client);
-    const targetDir = paneJoin(pane, targetFolder);
-    for (const name of names) {
-      const res = await backend.rename(
-        paneJoin(pane, name),
-        pane.kind === 'local' ? joinLocalPath(targetDir, name) : joinRemotePath(targetDir, name),
-        overwriteApproved,
-      );
-      if (!res.ok) reportError(commandResultError(res));
-    }
-    refreshPane(id, pane.path, undefined, tabId);
-  };
-
   return {
     deletePaneSelected,
     deletePaneEntry,
     submitNewFolder,
     submitNewFile,
     renamePaneEntry,
-    movePaneSamePane,
     chooseLocalDir,
     goPaneHome,
   };

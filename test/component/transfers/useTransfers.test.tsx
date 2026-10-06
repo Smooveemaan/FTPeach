@@ -14,6 +14,8 @@ import {
 } from '../../../src/features/transfers/transferStore.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import { useOverwriteApproval } from '../../../src/features/transfers/useOverwriteApproval.ts';
+import { useFileClipboard } from '../../../src/features/file-browser/useFileClipboard.ts';
+import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { NOTIFY_SETTLE_MS } from '../../../src/features/transfers/useTransferNotifications.ts';
 import type {
   CommandResult,
@@ -49,10 +51,12 @@ test('overwrite checks share in-flight listings, preserve conflicts and refresh 
     });
   window.api = { ...tauriApi, session: { ...tauriApi.session, list } };
   const confirm = vi.fn().mockResolvedValue(true);
-  const { result, unmount } = renderHook(() => useOverwriteApproval({ confirmOverwrite: confirm }));
+  const { result, unmount } = renderHook(() =>
+    useOverwriteApproval({ confirmOverwrite: confirm }, vi.fn()),
+  );
   try {
     const checks = Array.from({ length: 8 }, (_, index) =>
-      result.current({
+      result.current.approveTarget({
         kind: 'remote',
         connectionId: 'ftp',
         path: '/' + (index === 0 ? 'Folder' : `file${index}`),
@@ -73,7 +77,7 @@ test('overwrite checks share in-flight listings, preserve conflicts and refresh 
     assert.equal(confirm.mock.calls.length, 1);
     assert.equal(confirm.mock.calls[0]?.[0], '/Folder');
     assert.equal(
-      await result.current({ kind: 'remote', connectionId: 'ftp', path: '/file1' }),
+      await result.current.approveTarget({ kind: 'remote', connectionId: 'ftp', path: '/file1' }),
       true,
     );
     assert.equal(list.mock.calls.length, 2);
@@ -89,7 +93,7 @@ test('listing sharing isolates sessions and folders and retries rejected request
   const failure = createDeferred<Awaited<ReturnType<typeof tauriApi.session.list>>>();
   const list = vi.fn().mockReturnValue(failure.promise);
   window.api = { ...tauriApi, session: { ...tauriApi.session, list } };
-  const { result, unmount } = renderHook(() => useOverwriteApproval({}));
+  const { result, unmount } = renderHook(() => useOverwriteApproval({}, vi.fn()));
   try {
     const targets = [
       { kind: 'remote' as const, connectionId: 'one', path: '/file' },
@@ -97,12 +101,14 @@ test('listing sharing isolates sessions and folders and retries rejected request
       { kind: 'remote' as const, connectionId: 'two', path: '/file' },
       { kind: 'remote' as const, connectionId: 'one', path: '/sub/file' },
     ];
-    const checks = Promise.allSettled(targets.map((target) => result.current(target)));
+    const checks = Promise.allSettled(
+      targets.map((target) => result.current.approveTarget(target)),
+    );
     assert.equal(list.mock.calls.length, 3);
     failure.resolve(Promise.reject(new Error('Connection lost')));
     assert.ok((await checks).every((check) => check.status === 'rejected'));
     list.mockResolvedValue({ ok: true, entries: [] });
-    assert.equal(await result.current(targets[0]!), false);
+    assert.equal(await result.current.approveTarget(targets[0]!), false);
     assert.equal(list.mock.calls.length, 4);
   } finally {
     unmount();
@@ -165,7 +171,6 @@ test('waiting folders can pause, resume and stop before backend dispatch', async
         move: false,
         sourcePane: { ...localFolderMove().sourcePane, entries },
         names: entries.map((entry) => entry.name),
-        overwriteApproved: true,
       });
     });
     assert.equal(Object.keys(getSnapshot()).length, 20);
@@ -221,7 +226,6 @@ test('all protocols queue the whole selection while folder and file commands rem
               entries: [],
             },
             names: entries.map((entry) => entry.name),
-            overwriteApproved: true,
           }),
         );
       }
@@ -311,7 +315,7 @@ test('a failure a retry got through takes its message out of the banner', async 
               errors: [{ message: 'full' }],
             };
       await act(async () => {
-        await getApi().copyEntries({ ...localFolderMove(), move: false, overwriteApproved: true });
+        await getApi().copyEntries({ ...localFolderMove(), move: false });
       });
       assert.equal(errors.length, 1);
       assert.deepEqual(withdrawn, []);
@@ -945,6 +949,8 @@ async function withHarness(
   const errors: string[] = [];
   const { result, unmount } = renderHook(() =>
     useTransfers({
+      confirmOverwriteBatch: async () => true,
+      confirmMerge: async () => true,
       ...options,
       setErrorMessage: (message) => {
         if (message) errors.push(message);
@@ -1043,7 +1049,7 @@ test('declining an existing recursive destination never submits a destructive op
           entries: [
             {
               name: 'FOLDER',
-              isDirectory: false,
+              isDirectory: true,
               size: 1,
             },
           ],
@@ -1058,7 +1064,7 @@ test('declining an existing recursive destination never submits a destructive op
       },
       {
         overwriteAction: policy,
-        confirmOverwrite: async (path) => {
+        confirmMerge: async (path) => {
           prompts.push(path);
           return false;
         },
@@ -1127,46 +1133,34 @@ test('an OS drop onto a local pane is copied there without a session', async () 
   });
 });
 
-test('a destination the caller already approved is not asked about a second time', async () => {
-  for (const approvedAlready of [false, true]) {
-    const prompts: string[] = [];
-    await withHarness(
-      async ({ getApi, mockApi, calls }) => {
-        mockApi.session.list = async () => ({
-          ok: true,
-          entries: [{ name: 'file.bin', isDirectory: false, size: 1 }],
-        });
-        mockApi._nextUpload.resolve({ ok: true });
-        await act(async () => {
-          await getApi().handleOsDropFiles(
-            {
-              kind: 'remote',
-              status: 'connected',
-              connectionId: 'c1',
-              protocol: 'sftp',
-              path: '/upload',
-              entries: [],
-            },
-            [{ path: 'D:\\drop\\file.bin', name: 'file.bin', isDirectory: false }],
-            null,
-            undefined,
-            approvedAlready,
-          );
-        });
-        // Without the answer carried down, the pane's own "overwrite it?"
-        // dialog is followed by this one about the same file.
-        assert.deepEqual(prompts, approvedAlready ? [] : ['/upload/file.bin']);
-        assert.equal(calls.upload.length, 1);
-      },
-      {
-        overwriteAction: 'ask',
-        confirmOverwrite: async (path) => {
-          prompts.push(path);
-          return true;
-        },
-      },
-    );
-  }
+test('batch approval is requested once and never repeated by the upload', async () => {
+  const confirmBatch = vi.fn().mockResolvedValue(true);
+  const confirmSingle = vi.fn().mockResolvedValue(true);
+  await withHarness(
+    async ({ getApi, mockApi, calls }) => {
+      const entries = [{ name: 'file.bin', isDirectory: false, size: 1 }];
+      mockApi.session.list = async () => ({ ok: true, entries });
+      mockApi._nextUpload.resolve({ ok: true });
+      await act(async () => {
+        await getApi().handleOsDropFiles(
+          {
+            kind: 'remote',
+            status: 'connected',
+            connectionId: 'c1',
+            protocol: 'sftp',
+            path: '/upload',
+            entries,
+          },
+          [{ path: 'D:\\drop\\file.bin', name: 'file.bin', isDirectory: false }],
+        );
+      });
+      assert.deepEqual(confirmBatch.mock.calls, [[['file.bin']]]);
+      assert.equal(confirmSingle.mock.calls.length, 0);
+      assert.equal(calls.upload.length, 1);
+      assert.equal(calls.upload[0]?.overwrite, true);
+    },
+    { confirmOverwriteBatch: confirmBatch, confirmOverwrite: confirmSingle },
+  );
 });
 
 test('uploads to free names on an FTP server ask nothing and commit without replacing', async () => {
@@ -2041,7 +2035,6 @@ test('a folder counts every file it delivered in the notification', () =>
         await getApi().copyEntries({
           ...localFolderMove(),
           move: false,
-          overwriteApproved: true,
         });
       });
       settle();
@@ -2345,5 +2338,361 @@ test('a retry stopped while it waits for overwrite approval never starts', async
           answer = resolve;
         }),
     },
+  );
+});
+
+for (const policy of ['ask', 'skip', 'overwrite'] as const) {
+  test('batch ' + policy + ' handles local case collisions and keeps new files', async () => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    await withHarness(
+      async ({ getApi, mockApi }) => {
+        const rename = vi.fn().mockResolvedValue({ ok: true });
+        mockApi.fsLocal.rename = rename;
+        mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [] });
+        const sourcePane = {
+          ...localDropTarget,
+          path: 'C:\\source',
+          entries: ['exists.txt', 'new.txt'].map((name) => ({ name, isDirectory: false })),
+        };
+        const targetPane = {
+          ...localDropTarget,
+          entries: [{ name: 'EXISTS.txt', isDirectory: false }],
+        };
+        let result!: Awaited<ReturnType<TransfersApi['copyEntries']>>;
+        await act(async () => {
+          result = await getApi().copyEntries({
+            sourcePane,
+            targetPane,
+            names: ['exists.txt', 'new.txt'],
+            move: true,
+          });
+        });
+        assert.deepEqual(
+          rename.mock.calls.map((call) => call[0]),
+          policy === 'skip'
+            ? ['C:\\source\\new.txt']
+            : ['C:\\source\\exists.txt', 'C:\\source\\new.txt'],
+        );
+        assert.equal(confirm.mock.calls.length, policy === 'ask' ? 1 : 0);
+        assert.equal(result.sourceRetained, policy === 'skip');
+        assert.equal(result.skipped, policy === 'skip' ? 1 : 0);
+        assert.ok(rename.mock.calls.every((call) => call[2] === (policy !== 'skip')));
+      },
+      { overwriteAction: policy, confirmOverwriteBatch: confirm },
+    );
+  });
+}
+
+for (const operation of ['copy', 'drop', 'move'] as const) {
+  test(operation + ' waits for batch approval and cancellation touches nothing', async () => {
+    const question = createDeferred<boolean>();
+    const confirm = vi.fn(() => question.promise);
+    await withHarness(
+      async ({ getApi, mockApi }) => {
+        const entry = { name: 'file.txt', isDirectory: false };
+        const pane = { ...localDropTarget, entries: [entry] };
+        const copy = vi.fn().mockResolvedValue({ ok: true });
+        const rename = vi.fn().mockResolvedValue({ ok: true });
+        mockApi.fsLocal.copyFile = copy;
+        mockApi.fsLocal.rename = rename;
+        mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [entry] });
+        let pending!: Promise<Awaited<ReturnType<TransfersApi['copyEntries']>>>;
+        await act(async () => {
+          pending =
+            operation === 'copy'
+              ? getApi().copyEntries({
+                  sourcePane: { ...pane, path: 'C:\\source' },
+                  targetPane: pane,
+                  names: ['file.txt'],
+                })
+              : operation === 'drop'
+                ? getApi().handleOsDropFiles(pane, [{ ...entry, path: 'C:\\source\\file.txt' }])
+                : getApi().moveWithinPane(pane, ['file.txt'], 'sub', () => {});
+        });
+        assert.equal(confirm.mock.calls.length, 1);
+        assert.equal(copy.mock.calls.length + rename.mock.calls.length, 0);
+        await act(async () => {
+          question.resolve(false);
+          const result = await pending;
+          assert.equal(result.skipped, 1);
+          assert.equal(result.sourceRetained, operation === 'move');
+        });
+        assert.equal(copy.mock.calls.length + rename.mock.calls.length, 0);
+      },
+      { confirmOverwriteBatch: confirm },
+    );
+  });
+}
+
+test('batch skip-all and failed destination listing never start work', async () => {
+  await withHarness(
+    async ({ getApi, mockApi, errors, calls }) => {
+      const entry = { name: 'exists', isDirectory: false };
+      const pane = { ...localDropTarget, entries: [entry] };
+      const copy = vi.fn();
+      mockApi.fsLocal.copyFile = copy;
+      let result!: Awaited<ReturnType<TransfersApi['copyEntries']>>;
+      await act(async () => {
+        result = await getApi().copyEntries({
+          sourcePane: pane,
+          targetPane: pane,
+          names: ['exists'],
+        });
+      });
+      assert.equal(result.skipped, 1);
+      mockApi.fsLocal.list = async (path = '') => ({
+        ok: false,
+        path,
+        entries: [],
+        errorCode: 'notFound',
+        error: 'Missing',
+      });
+      await act(async () => {
+        result = await getApi().handleOsDropFiles(pane, [{ ...entry, path: 'D:\\exists' }], 'sub');
+      });
+      assert.equal(result.ok, false);
+      assert.match(errors[0]!, /not found/i);
+      assert.equal(copy.mock.calls.length + calls.upload.length, 0);
+    },
+    { overwriteAction: 'skip' },
+  );
+});
+
+test('batch names preserve remote case and directory merge semantics', async () => {
+  const confirm = vi.fn().mockResolvedValue(true);
+  const { result, unmount } = renderHook(() =>
+    useOverwriteApproval({ confirmOverwriteBatch: confirm }, vi.fn()),
+  );
+  try {
+    const target = {
+      kind: 'remote' as const,
+      path: '/',
+      entries: [{ name: 'EXISTS', isDirectory: false }, folderEntry],
+    };
+    const sources = [{ name: 'exists', isDirectory: false }, folderEntry];
+    assert.deepEqual(
+      await result.current.approveBatch(target, undefined, ['exists', 'folder'], sources),
+      { names: ['exists', 'folder'], overwriteApproved: false },
+    );
+    assert.equal(confirm.mock.calls.length, 0);
+  } finally {
+    unmount();
+  }
+});
+
+test('batch rejects file-folder mismatches and still copies the other names', async () => {
+  const confirm = vi.fn().mockResolvedValue(true);
+  await withHarness(
+    async ({ getApi, mockApi, errors }) => {
+      const copy = vi.fn().mockResolvedValue({ ok: true });
+      mockApi.fsLocal.copyFile = copy;
+      mockApi.fsLocal.validateCopy = async () => ({ ok: true });
+      mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [] });
+      const sources = [
+        { name: 'one', isDirectory: true },
+        { name: 'two', isDirectory: false },
+        { name: 'new', isDirectory: false },
+      ];
+      const targets = [
+        { name: 'one', isDirectory: false },
+        { name: 'two', isDirectory: true },
+      ];
+      await act(async () => {
+        await getApi().copyEntries({
+          sourcePane: { ...localDropTarget, path: 'C:\\source', entries: sources },
+          targetPane: { ...localDropTarget, entries: targets },
+          names: ['one', 'two', 'new'],
+        });
+      });
+      assert.equal(confirm.mock.calls.length, 0);
+      assert.equal(errors.length, 1);
+      assert.match(errors[0]!, /one/);
+      assert.match(errors[0]!, /two/);
+      assert.match(errors[0]!, /file cannot replace a folder/);
+      assert.deepEqual(copy.mock.calls, [['C:\\source\\new', 'C:\\target\\new', false]]);
+    },
+    { confirmOverwriteBatch: confirm },
+  );
+});
+
+for (const kind of ['local', 'remote'] as const) {
+  test('Move to uses ' + kind + ' rename, continues after failure and refreshes once', async () => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    await withHarness(
+      async ({ getApi, mockApi, errors }) => {
+        const entries = [
+          { name: 'one', isDirectory: false },
+          { name: 'two', isDirectory: true },
+        ];
+        const local = kind === 'local';
+        const pane = {
+          kind,
+          path: local ? 'C:\\root' : '/root',
+          connectionId: local ? null : 'session',
+          entries,
+        };
+        const rename = vi
+          .fn()
+          .mockResolvedValueOnce({ ok: false, error: 'denied', errorCode: 'permissionDenied' })
+          .mockResolvedValue({ ok: true });
+        const refresh = vi.fn();
+        if (local) {
+          mockApi.fsLocal.rename = rename;
+          mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [entries[0]!] });
+        } else {
+          mockApi.session.rename = rename;
+          mockApi.session.list = async () => ({ ok: true, entries: [entries[0]!] });
+        }
+        await act(async () => {
+          await getApi().moveWithinPane(pane, ['one', 'two'], 'target', refresh);
+        });
+        assert.deepEqual(confirm.mock.calls, [[['one']]]);
+        assert.deepEqual(
+          rename.mock.calls,
+          local
+            ? [
+                ['C:\\root\\one', 'C:\\root\\target\\one', true],
+                ['C:\\root\\two', 'C:\\root\\target\\two', true],
+              ]
+            : [
+                ['session', '/root/one', '/root/target/one', true],
+                ['session', '/root/two', '/root/target/two', true],
+              ],
+        );
+        assert.equal(errors.length, 1);
+        assert.equal(refresh.mock.calls.length, 1);
+      },
+      { confirmOverwriteBatch: confirm },
+    );
+  });
+}
+
+test('a cut with skipped conflicts stays on the clipboard after the other files move', async () => {
+  await withHarness(
+    async ({ getApi, mockApi }) => {
+      const tab = makeTab('tab');
+      Object.assign(tab.panes.a, {
+        path: 'C:/source',
+        entries: ['old', 'new'].map((name) => ({ name, isDirectory: false })),
+        selected: new Set(['old', 'new']),
+      });
+      Object.assign(tab.panes.b, {
+        kind: 'local',
+        path: 'C:/target',
+        entries: [{ name: 'OLD', isDirectory: false }],
+      });
+      const rename = vi.fn().mockResolvedValue({ ok: true });
+      mockApi.fsLocal.rename = rename;
+      mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [] });
+      const clipboard = renderHook(() =>
+        useFileClipboard({
+          browser: {
+            panes: tab.panes,
+            canCopyBetween: () => true,
+            refreshPaneIfAt: async () => {},
+          },
+          transfers: getApi(),
+        }),
+      );
+      try {
+        act(() => clipboard.result.current.cutToClipboard('a', tab.panes.a));
+        await act(async () => clipboard.result.current.pasteClipboard('b', tab.panes.b));
+        assert.equal(rename.mock.calls.length, 1);
+        assert.ok(rename.mock.calls[0]?.[0].endsWith('new'));
+        assert.equal(clipboard.result.current.canPaste(tab.panes.b), true);
+      } finally {
+        clipboard.unmount();
+      }
+    },
+    { overwriteAction: 'skip' },
+  );
+});
+
+test('Move to replaces a target only after explicit approval', async () => {
+  const confirm = vi.fn().mockResolvedValue(true);
+  await withHarness(
+    async ({ getApi, mockApi }) => {
+      const entry = { name: 'file', isDirectory: false };
+      const pane = { ...localDropTarget, entries: [entry] };
+      const rename = vi.fn().mockResolvedValue({ ok: true });
+      mockApi.fsLocal.rename = rename;
+      mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [] });
+      await act(async () => {
+        await getApi().moveWithinPane(pane, ['file'], 'sub', () => {});
+      });
+      assert.equal(rename.mock.calls[0]?.[2], false);
+      assert.equal(confirm.mock.calls.length, 0);
+      mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries: [entry] });
+      await act(async () => {
+        await getApi().moveWithinPane(pane, ['file'], 'sub', () => {});
+      });
+      assert.equal(rename.mock.calls[1]?.[2], true);
+      assert.equal(confirm.mock.calls.length, 1);
+    },
+    { confirmOverwriteBatch: confirm },
+  );
+});
+
+test('local copies appear in Transfers while running and keep their final result', async () => {
+  await withHarness(
+    async ({ getApi, mockApi, getSnapshot }) => {
+      const pending = createDeferred<CommandResult>();
+      mockApi.fsLocal.validateCopy = async () => ({ ok: true });
+      mockApi.fsLocal.copyFile = vi
+        .fn()
+        .mockReturnValueOnce(pending.promise)
+        .mockResolvedValue({ ok: true });
+      let operation!: Promise<unknown>;
+      await act(async () => {
+        operation = getApi().handleOsDropFiles(localDropTarget, [
+          { path: 'C:\\source\\a.txt', name: 'a.txt', isDirectory: false, size: 42 },
+        ]);
+      });
+      const row = Object.values(getSnapshot())[0]!;
+      assert.equal(row.direction, 'local');
+      assert.equal(row.status, 'progress');
+      await act(async () => {
+        pending.resolve({ ok: false, error: 'Disk full', errorCode: 'storageFull' });
+        await operation;
+      });
+      assert.equal(getSnapshot()[row.id]?.status, 'error');
+      assert.equal(getSnapshot()[row.id]?.errorCode, 'storageFull');
+      await act(async () => {
+        await Promise.all([getApi().retryTransfer(row.id), getApi().retryTransfer(row.id)]);
+      });
+      assert.equal(getSnapshot()[row.id]?.status, 'done');
+      assert.equal(getSnapshot()[row.id]?.bytes, 42);
+      assert.equal(Object.keys(getSnapshot()).length, 1);
+      assert.equal(vi.mocked(mockApi.fsLocal.copyFile).mock.calls.length, 2);
+    },
+    { overwriteAction: 'overwrite' },
+  );
+});
+
+test('file batch consent does not authorize replacing files inside a sibling folder', async () => {
+  const confirmFiles = vi.fn().mockResolvedValue(true);
+  const confirmMerge = vi.fn().mockResolvedValue(false);
+  await withHarness(
+    async ({ getApi, mockApi }) => {
+      const entries = [folderEntry, { name: 'file.txt', isDirectory: false, size: 1 }];
+      mockApi.fsLocal.list = async (path = '') => ({ ok: true, path, entries });
+      mockApi.fsLocal.validateCopy = async () => ({ ok: true });
+      const copy = vi.fn().mockResolvedValue({ ok: true });
+      const recursive = vi.fn();
+      mockApi.fsLocal.copyFile = copy;
+      mockApi.transfer.recursive = recursive;
+      await act(async () => {
+        await getApi().copyEntries({
+          sourcePane: { ...localDropTarget, path: 'C:\\source', entries },
+          targetPane: { ...localDropTarget, entries },
+          names: ['folder', 'file.txt'],
+        });
+      });
+      assert.equal(confirmFiles.mock.calls.length, 1);
+      assert.equal(confirmMerge.mock.calls.length, 1);
+      assert.equal(recursive.mock.calls.length, 0);
+      assert.equal(copy.mock.calls.length, 1);
+    },
+    { confirmOverwriteBatch: confirmFiles, confirmMerge },
   );
 });

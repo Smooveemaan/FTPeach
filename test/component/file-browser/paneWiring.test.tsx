@@ -110,7 +110,6 @@ function harness({ a, b, sites = [bookmark], driveMenu = null }: HarnessOptions 
     cancelConnectPane: vi.fn(),
     siteConnectPane: vi.fn(),
     activatePane: vi.fn(),
-    confirmOverwriteIfNeeded: vi.fn(async (..._args: unknown[]) => {}),
     canCopyBetween: vi.fn(() => true),
   };
   const clipboard = {
@@ -285,34 +284,12 @@ describe('dropping files from the system', () => {
     { name: 'two.txt', path: 'E:\\two.txt', isDirectory: false },
   ];
 
-  test('asks about overwriting, hands the approved files to transfers and refreshes', async () => {
+  test('hands the drop to transfers and refreshes the originating pane', async () => {
     const h = harness();
-    const pane = h.mount('a');
-    pane.onDropFiles?.(dropped, 'docs');
-    const [target, folder, names, proceed, entries] = h.browser.confirmOverwriteIfNeeded.mock
-      .calls[0] as unknown as [
-      PaneState,
-      string | undefined,
-      string[],
-      (_names: string[], _approved: boolean) => void,
-      unknown,
-    ];
-    expect([target, folder, names, entries]).toEqual([
-      h.browser.panes.a,
-      'docs',
-      ['one.txt', 'two.txt'],
-      dropped,
-    ]);
-
-    proceed(['two.txt'], true);
-    const [dropPane, files, dropFolder, refresh, approved] = h.transfers.handleOsDropFiles.mock
-      .calls[0] as unknown as [PaneState, unknown, string | null, () => void, boolean];
-    expect([dropPane, files, dropFolder, approved]).toEqual([
-      h.browser.panes.a,
-      [dropped[1]],
-      'docs',
-      true,
-    ]);
+    h.mount('a').onDropFiles?.(dropped, 'docs');
+    const [target, files, folder, refresh] = h.transfers.handleOsDropFiles.mock
+      .calls[0] as unknown as [PaneState, unknown, string, () => void];
+    expect([target, files, folder]).toEqual([h.browser.panes.a, dropped, 'docs']);
     refresh();
     expect(h.browser.refreshPane).toHaveBeenCalledWith('a', 'C:\\work');
   });
@@ -320,14 +297,8 @@ describe('dropping files from the system', () => {
   test('a drop on the listing itself has no target folder', () => {
     const h = harness();
     h.mount('b').onDropFiles?.(dropped, null);
-    expect(h.browser.confirmOverwriteIfNeeded.mock.calls[0]?.[1]).toBeUndefined();
-    const proceed = h.browser.confirmOverwriteIfNeeded.mock.calls[0]?.[3] as unknown as (
-      _names: string[],
-      _approved: boolean,
-    ) => void;
-    proceed(['one.txt'], false);
     expect(h.transfers.handleOsDropFiles.mock.calls[0]?.[2]).toBeNull();
-    expect(h.transfers.handleOsDropFiles.mock.calls[0]?.[4]).toBe(false);
+    expect(h.transfers.handleOsDropFiles.mock.calls[0]).toHaveLength(4);
   });
 });
 

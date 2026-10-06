@@ -79,12 +79,42 @@ stays with the file when the file is renamed.
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_carries_the_address_but_never_an_account -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_lands_beside_the_file_and_survives_being_renamed -->
 
+## Copying files and folders
+
+Creating a local file or folder requires its parent to still exist. If that
+parent was moved or deleted outside FTPeach, the operation fails without
+recreating it.
+
+<!-- verified-by: pr src-tauri/src/local_fs/local_create.rs::a_missing_parent_is_not_recreated_by_new_entries -->
+
+Local file copies appear in Transfers while running and retain their final result.
+A failed copy can be retried from its row.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::local copies appear in Transfers while running and keep their final result -->
+
+With overwrite handling set to Ask, merging into an existing folder asks separately
+for permission to replace matching files inside it. Approving other files in the
+same selection does not approve the folder's contents.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::file batch consent does not authorize replacing files inside a sibling folder -->
+
+A file cannot replace a folder, or a folder a file. The message identifies the
+skipped names; other selected files can still be copied.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::batch rejects file-folder mismatches and still copies the other names -->
+
 ## Renaming and moving
 
 Renaming or moving a file never replaces another file with the same name,
 unless you choose to replace it.
 
-<!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::rename and move replace a target only on an explicit decision -->
+<!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::rename replaces a target only on an explicit decision -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Move to replaces a target only after explicit approval -->
+
+When a cut selection includes files you skip, it stays available to paste after
+the other files move.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a cut with skipped conflicts stays on the clipboard after the other files move -->
 
 Files can be moved only on your computer or within one server connection.
 Between your computer and a server, or between two servers, FTPeach refuses the

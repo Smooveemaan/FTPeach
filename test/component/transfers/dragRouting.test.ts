@@ -14,7 +14,13 @@ test('local file Move to an absolute breadcrumb uses rename and never copy/delet
   window.api = { ...tauriApi, fsLocal: { ...tauriApi.fsLocal, rename, copyFile, delete: remove } };
   const setError = vi.fn();
   const routing = createTransferRouting(
-    { runRecursive: vi.fn(), runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     setError,
@@ -47,7 +53,13 @@ test('folder Copy to a remote breadcrumb preserves the absolute endpoint and cop
   window.api = tauriApi;
   const runRecursive = vi.fn().mockResolvedValue({ ok: true });
   const routing = createTransferRouting(
-    { runRecursive, runUpload: vi.fn(), runDownload: vi.fn(), runRemoteCopy: vi.fn() },
+    {
+      runLocalCopy: vi.fn(),
+      runRecursive,
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
     vi.fn().mockResolvedValue(false),
     'ask',
     vi.fn(),

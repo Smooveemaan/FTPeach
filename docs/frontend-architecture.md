@@ -45,9 +45,17 @@ write pixel dimensions back into inherited root custom properties from JavaScrip
   included — file-browser reads the snapshot through `features/transfers/index.ts` rather than
   the store being pushed down into `shared/` to make that import legal. Its lifecycle hook owns
   individual jobs and queue commands. `useTransfers` composes that lifecycle with
-  `useOverwriteApproval` (destination checks and serialized confirmations),
+  `useOverwriteApproval` (single-target and batch destination checks, including type conflicts,
+  skip policy and serialized confirmations),
   `createTransferRouting` (recursive operations, pane copies/moves and OS drops), and the queue
-  summary. `TransferQueue` owns queue layout and scrolling; `components/TransferItemRow` renders
+  summary. Its public copy, drop and same-pane move operations own approval before execution;
+  callers supply the selection and refresh callbacks, not an overwrite approval flag.
+  Folder merges require their own explicit consent, separate from sibling file replacements.
+  Local file copies use lifecycle rows as well; their native copy command has no pause or
+  cancellation support. File operation and connection errors use the shell's dismissible
+  error banner. Same-pane
+  Move to uses native rename. Skipped batch names remain in the result so a partially moved cut
+  stays on the clipboard. `TransferQueue` owns queue layout and scrolling; `components/TransferItemRow` renders
   one transfer; `transferColumns` and `transferPresentation` define column and label contracts;
 - `features/settings/`, `logs/`, `open-with/`, `connections/`, `updater/` own their workflows;
 - `components/` contains reusable leaf UI without feature-specific state or feature imports;

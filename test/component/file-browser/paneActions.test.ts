@@ -25,7 +25,6 @@ function mocks(tab: ReturnType<typeof makeTab>) {
     refreshPane: vi.fn(),
     refreshPaneIfAt: vi.fn(),
     canCopyBetween: vi.fn(() => true),
-    confirmOverwriteIfNeeded: vi.fn(),
     copyEntries: vi.fn(),
     deletePaneSelected: vi.fn(),
     deletePaneEntry: vi.fn(),
@@ -59,7 +58,6 @@ function actions(
       refreshPane: options.refreshPane,
       refreshPaneIfAt: options.refreshPaneIfAt,
       canCopyBetween: options.canCopyBetween,
-      confirmOverwriteIfNeeded: options.confirmOverwriteIfNeeded,
       deletePaneSelected: options.deletePaneSelected,
       deletePaneEntry: options.deletePaneEntry,
       connectPane: vi.fn(),
@@ -195,12 +193,10 @@ test('a folder, and a whole selection, can be sent to the other pane from the me
   const send = (entry: FileEntry) =>
     menu('a')(entry).find((item) => item.label === 'paneMenu.uploadToOtherPane')!;
   send(folder).onClick!();
-  expect(options.confirmOverwriteIfNeeded.mock.calls[0]![2]).toEqual(['folder']);
-  expect(options.confirmOverwriteIfNeeded.mock.calls[0]![4]).toEqual([folder]);
+  expect(options.copyEntries.mock.calls[0]![0].names).toEqual(['folder']);
   tab.panes.a.selected = new Set(['file.txt', 'folder']);
   send(file).onClick!();
-  expect(options.confirmOverwriteIfNeeded.mock.calls[1]![2]).toEqual(['file.txt', 'folder']);
-  expect(options.confirmOverwriteIfNeeded.mock.calls[1]![4]).toEqual([file, folder]);
+  expect(options.copyEntries.mock.calls[1]![0].names).toEqual(['file.txt', 'folder']);
 });
 
 test('Open on a file of this computer opens it as a double click does', async () => {
@@ -232,23 +228,17 @@ test('empty-pane actions are disabled for disconnected servers and route to the 
 });
 
 test.each(['a', 'b'] as const)(
-  'copy from pane %s waits for conflict approval and passes the decision downstream',
+  'copy from pane %s delegates approval and execution to transfers',
   (id) => {
     const { options, menu, tab } = setup();
     const label = id === 'a' ? 'paneMenu.uploadToOtherPane' : 'paneMenu.downloadToOtherPane';
     menu(id)(file).find((item) => item.label === label)!.onClick!();
-    expect(options.copyEntries).not.toHaveBeenCalled();
-    const call = options.confirmOverwriteIfNeeded.mock.calls[0]!;
-    expect(call[2]).toEqual(['file.txt']);
-    expect(call[4]).toEqual([file]);
-    call[3](['file.txt'], true);
     const other = id === 'a' ? 'b' : 'a';
     expect(options.copyEntries).toHaveBeenCalledWith(
       expect.objectContaining({
         sourcePane: tab.panes[id],
         targetPane: tab.panes[other],
         names: ['file.txt'],
-        overwriteApproved: true,
         move: false,
       }),
     );

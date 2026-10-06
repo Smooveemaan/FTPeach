@@ -70,7 +70,6 @@ interface PaneActionsOptions {
     | 'refreshPane'
     | 'refreshPaneIfAt'
     | 'canCopyBetween'
-    | 'confirmOverwriteIfNeeded'
     | 'deletePaneSelected'
     | 'deletePaneEntry'
     | 'connectPane'
@@ -135,7 +134,6 @@ export function usePaneActions({
     refreshPane,
     refreshPaneIfAt,
     canCopyBetween,
-    confirmOverwriteIfNeeded,
     deletePaneSelected,
     deletePaneEntry,
   } = browser;
@@ -196,9 +194,6 @@ export function usePaneActions({
       // entry under the pointer.
       const actsOnSelection = pane.selected.size > 1 && pane.selected.has(entry.name);
       const names = actsOnSelection ? [...pane.selected] : [entry.name];
-      const acted = actsOnSelection
-        ? pane.entries.filter((candidate) => pane.selected.has(candidate.name))
-        : [entry];
       const otherId = otherPaneId(id);
       const otherPane = panes[otherId];
       const open: MenuItem[] = [];
@@ -212,21 +207,13 @@ export function usePaneActions({
                 : t('paneMenu.downloadToOtherPane'),
           disabled: !canCopyBetween(pane, otherPane),
           onClick: () =>
-            confirmOverwriteIfNeeded(
-              otherPane,
-              undefined,
+            copyEntries({
+              sourcePane: pane,
+              targetPane: otherPane,
               names,
-              (approved, overwriteApproved) =>
-                copyEntries({
-                  sourcePane: pane,
-                  targetPane: otherPane,
-                  names: approved,
-                  move: false,
-                  refreshTarget: () => refreshPaneIfAt(otherId, otherPane.path),
-                  overwriteApproved,
-                }),
-              acted,
-            ),
+              move: false,
+              refreshTarget: () => refreshPaneIfAt(otherId, otherPane.path),
+            }),
         },
       ];
       if (entry.isDirectory) {
@@ -355,21 +342,10 @@ export function usePaneActions({
         shell.reportError(commandResultError(result));
     });
 
-  const dropFiles = (id: PaneId, files: DroppedFile[], targetFolder: string | null) => {
+  const dropFiles = async (id: PaneId, files: DroppedFile[], targetFolder: string | null) => {
     const pane = panes[id];
-    return confirmOverwriteIfNeeded(
-      pane,
-      targetFolder ?? undefined,
-      files.map((file) => file.name),
-      (names, overwriteApproved) =>
-        shell.transfers.handleOsDropFiles(
-          pane,
-          files.filter((file) => names.includes(file.name)),
-          targetFolder,
-          () => refreshPane(id, pane.path),
-          overwriteApproved,
-        ),
-      files,
+    await shell.transfers.handleOsDropFiles(pane, files, targetFolder, () =>
+      refreshPane(id, pane.path),
     );
   };
 

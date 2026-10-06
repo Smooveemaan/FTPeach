@@ -1,20 +1,13 @@
-import { dropDestinationPath } from '../../shared/paths.ts';
 import type { Dispatch, SetStateAction } from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../platform/api/index.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
-import { isolate } from '../../shared/bidi.ts';
-import { commandResultError } from '../../shared/errorMessages.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
-import {
-  getTransfersSnapshot,
-  isTransferNameConflict,
-  transferTouchesConnection,
-} from '../transfers/index.ts';
+import { getTransfersSnapshot, transferTouchesConnection } from '../transfers/index.ts';
 import type { PathCrumb } from './components/PathBar.tsx';
 import type { ClosedTab } from './panes/closedTabs.ts';
 import {
@@ -27,7 +20,7 @@ import { createPaneFileOperations } from './panes/createPaneFileOperations.ts';
 import type { NavigateOptions } from './panes/createPaneNavigation.ts';
 import { createPaneNavigation } from './panes/createPaneNavigation.ts';
 import { createPaneSessionLifecycle } from './panes/createPaneSessionLifecycle.ts';
-import { backendFor, paneJoin } from './panes/paneBackend.ts';
+import { paneJoin } from './panes/paneBackend.ts';
 import { buildPaneConnectionModel } from './panes/paneConnectionModel.ts';
 import { connectionLabel } from '../../shared/siteContracts.ts';
 import type { ConnectionForm, PaneId, PaneState, PaneStatus, TabState } from './panes/paneModel.ts';
@@ -47,7 +40,6 @@ interface UsePanesOptions {
   requestConfirm: (message: string, onConfirm: () => unknown, options?: ConfirmOptions) => unknown;
   connectTimeout: number;
   paneOrientation: 'horizontal' | 'vertical';
-  overwriteAction: 'ask' | 'skip' | 'overwrite';
   ftpActiveMode: boolean;
   saveSessionOnExit: boolean;
   defaultLocalPath: string;
@@ -119,22 +111,8 @@ export interface PanesModel {
   submitNewFolder: (name: string, tabId: string, id: PaneId) => Promise<void>;
   submitNewFile: (name: string, tabId: string, id: PaneId) => Promise<void>;
   renamePaneEntry: (id: PaneId, entry: FileEntry, newName: string, tabId?: string) => Promise<void>;
-  movePaneSamePane: (
-    id: PaneId,
-    names: readonly string[],
-    targetFolder: string,
-    tabId?: string,
-    overwriteApproved?: boolean,
-  ) => Promise<void>;
   chooseLocalDir: (id: PaneId) => () => Promise<void>;
   goPaneHome: (id: PaneId) => () => Promise<void>;
-  confirmOverwriteIfNeeded: (
-    targetPane: PaneState,
-    targetFolder: string | undefined,
-    names: string[],
-    proceed: (names: string[], overwriteApproved: boolean) => unknown,
-    sourceEntries?: FileEntry[],
-  ) => Promise<void>;
   canCopyBetween: (source: PaneState, target: PaneState) => boolean;
   aggregateStatus: PaneStatus;
   connectedRemotePanes: PaneState[];
@@ -151,7 +129,6 @@ export function usePanes({
   requestConfirm,
   connectTimeout,
   paneOrientation,
-  overwriteAction,
   ftpActiveMode,
   saveSessionOnExit,
   defaultLocalPath,
@@ -323,77 +300,6 @@ export function usePanes({
     });
   };
 
-  const confirmOverwriteIfNeeded = async (
-    targetPane: PaneState,
-    targetFolder: string | undefined,
-    names: string[],
-    proceed: (names: string[], overwriteApproved: boolean) => unknown,
-    sourceEntries: FileEntry[] = [],
-  ) => {
-    let destEntries;
-    if (!targetFolder) {
-      destEntries = targetPane.entries;
-    } else {
-      const res = await backendFor(targetPane).list(
-        dropDestinationPath(targetPane.kind, targetPane.path, targetFolder),
-      );
-      if (!res.ok) {
-        reportError(commandResultError(res) || 'Cannot list destination');
-        return;
-      }
-      destEntries = res.entries;
-    }
-    const sourceOf = (name: string) => sourceEntries.find((entry) => entry.name === name);
-    const destinationOf = (name: string) =>
-      destEntries.find((entry) =>
-        targetPane.kind === 'local'
-          ? entry.name.toLowerCase() === name.toLowerCase()
-          : entry.name === name,
-      );
-    // A folder cannot take a file's place, nor a file a folder's, here or on
-    // any server: an approved "replace" would only fail. Such a name is taken,
-    // so it is refused instead of asked about, and the rest goes on.
-    const taken = names.filter((name) => {
-      const source = sourceOf(name);
-      const destination = destinationOf(name);
-      return !!source && !!destination && source.isDirectory !== destination.isDirectory;
-    });
-    if (taken.length > 0) {
-      reportError(t('errors.alreadyExists', { name: taken.map(isolate).join(', ') }));
-      names = names.filter((name) => !taken.includes(name));
-      if (names.length === 0) return;
-    }
-    const conflicts = names.filter((name) =>
-      isTransferNameConflict(sourceOf(name), destinationOf(name)),
-    );
-    // Whether the caller may treat the destination as approved: nothing to
-    // overwrite, or the user has just said to overwrite it. The operation this
-    // hands off to asks per destination path of its own accord, and without
-    // this answer it would put a second dialog about the same file straight
-    // after this one.
-    if (conflicts.length === 0) {
-      proceed(names, false);
-      return;
-    }
-    if (overwriteAction === 'overwrite') {
-      proceed(names, true);
-      return;
-    }
-    if (overwriteAction === 'skip') {
-      const remaining = names.filter((name) => !conflicts.includes(name));
-      if (remaining.length > 0) proceed(remaining, false);
-      return;
-    }
-    const message =
-      conflicts.length === 1
-        ? t('confirm.overwriteSingleExists', { name: isolate(conflicts[0]!) })
-        : t('confirm.overwriteConflicts', { count: conflicts.length });
-    requestConfirm(message, () => proceed(names, true), {
-      confirmLabel: t('confirm.overwriteLabel'),
-      danger: true,
-    });
-  };
-
   const canCopyBetween = (source: PaneState, target: PaneState) => {
     if (source.kind === 'remote' && source.status !== 'connected') return false;
     if (target.kind === 'remote' && target.status !== 'connected') return false;
@@ -446,7 +352,6 @@ export function usePanes({
     submitNewFolder,
     submitNewFile,
     renamePaneEntry,
-    movePaneSamePane,
     chooseLocalDir,
     goPaneHome,
   } = createPaneFileOperations({
@@ -497,10 +402,8 @@ export function usePanes({
     submitNewFolder,
     submitNewFile,
     renamePaneEntry,
-    movePaneSamePane,
     chooseLocalDir,
     goPaneHome,
-    confirmOverwriteIfNeeded,
     canCopyBetween,
     aggregateStatus,
     connectedRemotePanes,

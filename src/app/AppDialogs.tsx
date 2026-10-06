@@ -125,19 +125,11 @@ export interface AppDialogsModel {
   paneActions: {
     submitNewFolder: (name: string, tabId: string, paneId: PaneId) => unknown;
     submitNewFile: (name: string, tabId: string, paneId: PaneId) => unknown;
-    confirmOverwriteIfNeeded: (
-      pane: PaneState,
-      folderName: string,
-      names: string[],
-      proceed: (names: string[], overwriteApproved: boolean) => unknown,
-      entries: PaneState['entries'],
-    ) => unknown;
     movePaneSamePane: (
       paneId: PaneId,
       names: string[],
       folderName: string,
       tabId: string,
-      overwriteApproved: boolean,
     ) => unknown;
     chmod: (target: NonNullable<DialogHook['chmodTarget']>, mode: string) => unknown;
   };
@@ -423,21 +415,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onSubmit={(folderName) => {
             const target = dialogs.moveToTarget;
             if (!target) return;
-            const pane = panes[target.id];
-            paneActions.confirmOverwriteIfNeeded(
-              pane,
-              folderName,
-              target.names,
-              (names, overwriteApproved) =>
-                paneActions.movePaneSamePane(
-                  target.id,
-                  names,
-                  folderName,
-                  activeTabId,
-                  overwriteApproved,
-                ),
-              pane.entries,
-            );
+            paneActions.movePaneSamePane(target.id, target.names, folderName, activeTabId);
           }}
           onClose={() => dialogs.setMoveToTarget(null)}
         />

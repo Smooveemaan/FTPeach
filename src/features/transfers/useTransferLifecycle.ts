@@ -96,6 +96,13 @@ function followLanded(id: string, attemptId: string, refresh: RefreshCallback | 
 /** Owns individual transfer state, retries, cancellation and queue-wide actions. */
 
 export interface TransferLifecycleModel {
+  runLocalCopy: (
+    source: string,
+    destination: string,
+    overwrite: boolean,
+    size?: number,
+    existingId?: string,
+  ) => Promise<CommandResult>;
   runRecursive: (
     intent: RecursiveIntent,
     existingId?: string,
@@ -276,6 +283,44 @@ export function useTransferLifecycle(
         : previous,
     );
     return !!intent;
+  };
+
+  const runLocalCopy: TransferLifecycleModel['runLocalCopy'] = async (
+    source,
+    destination,
+    overwrite,
+    size,
+    existingId,
+  ) => {
+    const id =
+      existingId ||
+      startTransfer({
+        direction: 'local',
+        name: source.split(/[\\/]/).pop()!,
+        localFile: source,
+        localTarget: destination,
+        total: size,
+      });
+    const attemptId = existingId
+      ? requeueAttempt(id, { keepBytes: false, overwrite })
+      : beginAttempt(id, overwrite);
+    setTransfersStore((previous) => ({
+      ...previous,
+      [id]: { ...previous[id]!, status: 'progress' },
+    }));
+    let result: CommandResult;
+    try {
+      result = await api.fsLocal.copyFile(source, destination, overwrite);
+    } catch (error) {
+      result = { ok: false, error: String(error) };
+    }
+    if (result.ok)
+      setTransfersStore((previous) => ({
+        ...previous,
+        [id]: { ...previous[id]!, bytes: size ?? 0 },
+      }));
+    settleTransferResult(id, result, attemptId, { kind: 'local', path: destination });
+    return result;
   };
 
   const runUpload = async (
@@ -562,6 +607,32 @@ export function useTransferLifecycle(
       !canRetryTransfer(transfer)
     )
       return;
+    if (transfer.direction === 'local') {
+      // Reserve the row before asking, so repeated Retry cannot start competing copies.
+      const attemptId = requeueAttempt(id, { keepBytes: false });
+      const target = { kind: 'local' as const, path: transfer.localTarget };
+      try {
+        const overwrite = await approveTarget(target);
+        if (overwrite === null) {
+          setTransfersStore((previous) => ({
+            ...previous,
+            [id]: { ...previous[id]!, status: 'stopped' },
+          }));
+        } else {
+          await runLocalCopy(
+            transfer.localFile,
+            transfer.localTarget,
+            overwrite,
+            transfer.total,
+            id,
+          );
+        }
+      } catch (error) {
+        settleTransferResult(id, { ok: false, error: String(error) }, attemptId, target);
+      }
+      refreshTarget?.();
+      return;
+    }
     if (transfer.direction === 'recursive') {
       // A paused walk carries on from the journal its attempt kept; any other
       // ending starts over.
@@ -666,7 +737,12 @@ export function useTransferLifecycle(
 
   const requestCancel = async (id: string, intent: 'paused' | 'stopped') => {
     const current = getTransferRow(id);
-    if (!current || ['done', 'error', 'stopped'].includes(current.status)) return;
+    if (
+      !current ||
+      current.direction === 'local' ||
+      ['done', 'error', 'stopped'].includes(current.status)
+    )
+      return;
     const wasRunning = current.status === 'progress' || current.status === 'queued';
     // A paused folder walk still holds what it wrote, kept for a resume a stop
     // now rules out. The row reads "cancelling" while that is taken back.
@@ -826,6 +902,7 @@ export function useTransferLifecycle(
   };
 
   return {
+    runLocalCopy,
     runRecursive,
     runUpload,
     runDownload,

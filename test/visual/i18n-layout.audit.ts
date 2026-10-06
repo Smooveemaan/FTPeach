@@ -432,11 +432,18 @@ const SCREENS: Record<
   'vault-unlock': {
     run: async ({ page, t, snap }) => {
       // Saving needs the vault; a locked one asks for it to be unlocked first.
+      // Without Windows Hello: it would unlock at once, the save would be
+      // refused again and the retries would never stop.
       await page.evaluate(() => {
         window.api.sites.save = async () => ({
           ok: false,
           errorCode: 'vaultLocked',
           error: 'vault is locked',
+        });
+        const status = window.api.vault.status;
+        window.api.vault.status = async () => ({
+          ...(await status()),
+          systemUnlockEnabled: false,
         });
       });
       await menuItem(page, MENU.bookmarks, 0);

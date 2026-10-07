@@ -69,7 +69,8 @@ server's disk and the local disk and compare SHA-256 sums.
 
 - `ftp.e2e.ts` covers an upload, a download, a name conflict cancelled and then
   overwritten, a folder with nested and empty folders, a rename and a Move to on
-  the server, a bookmark opening its folder with a listing that matches the
+  the server, a cut refused when pasted across to the other side either way, a
+  bookmark opening its folder with a listing that matches the
   server's disk name for name, a sign-in retried after a wrong password, Stop
   during an upload over an existing file, Pause and Resume of an
   upload, and an upload the server refuses. It expects IIS FTP from
@@ -88,7 +89,8 @@ server's disk and the local disk and compare SHA-256 sums.
   existing file there.
 - `sftp.e2e.ts` trusts the server's key in the security window, which must show
   the key's real fingerprint, then covers an upload, Stop with the staging file
-  removed, and Resume appending to the staging file the pause kept. It expects
+  removed, Resume appending to the staging file the pause kept, and Resume
+  after the source was edited starting over without leaving that file behind. It expects
   OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
   whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.
   OpenSSH keeps a partly uploaded file, so what is left is FTPeach's doing.

@@ -109,6 +109,11 @@ async fn relay_staged(
     }
 }
 
+/// How often, and how far apart, a refused staging removal is tried again:
+/// about five seconds for the server to let go of the file.
+const STAGING_REMOVE_ATTEMPTS: u32 = 10;
+const STAGING_REMOVE_PAUSE: Duration = Duration::from_millis(500);
+
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
@@ -122,26 +127,41 @@ pub(crate) async fn cleanup_remote_partial(
     // with it, so once started it gets as long as a server that still answers
     // could need.
     let cleaned = async {
-        let slot = sessions.lookup_slot(connection_id);
-        let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await else {
-            return false;
-        };
-        let Some(session) = guard.as_mut() else {
-            return true;
-        };
-        match tokio::time::timeout(
-            Duration::from_secs(10),
-            session.browse_client.remove(partial, false),
-        )
-        .await
-        {
-            Ok(Ok(())) => true,
-            Ok(Err(error)) => {
-                log::warn!("Could not clean transfer staging file {partial}: {error}");
-                true
+        for attempt in 1..=STAGING_REMOVE_ATTEMPTS {
+            let refused = {
+                let slot = sessions.lookup_slot(connection_id);
+                let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await
+                else {
+                    return false;
+                };
+                let Some(session) = guard.as_mut() else {
+                    return true;
+                };
+                match tokio::time::timeout(
+                    Duration::from_secs(10),
+                    session.browse_client.remove(partial, false),
+                )
+                .await
+                {
+                    Ok(Ok(())) => return true,
+                    Ok(Err(error)) => error,
+                    Err(_) => return false,
+                }
+            };
+            if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
+                return true;
             }
-            Err(_) => false,
+            if attempt == STAGING_REMOVE_ATTEMPTS {
+                log::warn!("Could not clean transfer staging file {partial}: {refused}");
+                return true;
+            }
+            // A server on Windows refuses to delete a file that the stopped
+            // upload's session still holds open, and that session takes a
+            // moment to close after the client has gone. The pane may list
+            // in between.
+            tokio::time::sleep(STAGING_REMOVE_PAUSE).await;
         }
+        true
     };
     if cleaned.await {
         return;

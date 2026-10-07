@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Local file copies appear in Transfers, including when replacing existing files.
 - Deleting a server selection handles names that differ only in letter case without a false
   busy error between those deletions.
+- Stopping an upload to an SFTP server on Windows no longer leaves a temporary file on the
+  server.
 
 ## [0.4.0] - 2026-10-05
 

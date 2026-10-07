@@ -3,6 +3,7 @@ use crate::protocol::{BackendResult, EntryInfo, ProtocolBackend};
 use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
 use std::collections::HashMap;
 use std::sync::Mutex;
+use std::sync::atomic::Ordering::SeqCst;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 #[derive(Default)]
@@ -11,6 +12,9 @@ struct Remote {
     writing: tokio::sync::Notify,
     stall: bool,
     reject_rename: bool,
+    /// Removals refused before the server lets go, as a Windows server does
+    /// while a stopped upload still holds the file open.
+    held_removals: std::sync::atomic::AtomicUsize,
 }
 
 struct Backend {
@@ -48,6 +52,13 @@ impl ProtocolBackend for Backend {
         unreachable!()
     }
     async fn remove(&mut self, path: &str, _: bool) -> BackendResult<()> {
+        let held = &self.remote.held_removals;
+        if held
+            .try_update(SeqCst, SeqCst, |left| left.checked_sub(1))
+            .is_ok()
+        {
+            anyhow::bail!("Permission denied");
+        }
         self.remote.files.lock().unwrap().remove(path);
         Ok(())
     }
@@ -234,6 +245,40 @@ async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_o
         assert_old(&remote);
         pool.destroy().await;
     }
+}
+
+#[tokio::test]
+async fn staging_cleanup_outlasts_a_server_still_holding_the_stopped_upload() {
+    let remote = fixture(false, false);
+    let partial = remote_partial_path("/target");
+    remote
+        .files
+        .lock()
+        .unwrap()
+        .insert(partial.clone(), b"ne".to_vec());
+    remote.held_removals.store(3, SeqCst);
+    let remote_for_factory = remote.clone();
+    let pool = TransferPool::new(
+        Arc::new(move || {
+            let remote = remote_for_factory.clone();
+            Box::pin(async move { Ok(backend(&remote)) })
+        }),
+        PoolSize::Fixed(1),
+    );
+    let sessions = Sessions::default();
+    *sessions.slot_for("test").lock().await = Some(crate::session::Session {
+        browse_client: backend(&remote),
+        server: "test".into(),
+        origin_base: String::new(),
+        transfer_pool: pool.clone(),
+        browse_timeout_ms: 1000,
+    });
+
+    cleanup_remote_partial(&sessions, "test", &partial).await;
+
+    assert!(!remote.files.lock().unwrap().contains_key(&partial));
+    assert_old(&remote);
+    pool.destroy().await;
 }
 
 #[tokio::test]

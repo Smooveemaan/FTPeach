@@ -147,6 +147,29 @@ fn fixture(stall: bool, reject_rename: bool) -> Arc<Remote> {
         .insert("/target".into(), b"old".to_vec());
     remote
 }
+/// A pool of one connection to `remote`.
+fn one_connection_pool(remote: &Arc<Remote>) -> TransferPool {
+    let remote = remote.clone();
+    TransferPool::new(
+        Arc::new(move || {
+            let remote = remote.clone();
+            Box::pin(async move { Ok(backend(&remote)) })
+        }),
+        PoolSize::Fixed(1),
+    )
+}
+/// Sessions holding one, "test", browsing `remote` beside `pool`.
+async fn sessions_with(remote: &Arc<Remote>, pool: &TransferPool) -> Sessions {
+    let sessions = Sessions::default();
+    *sessions.slot_for("test").lock().await = Some(crate::session::Session {
+        browse_client: backend(remote),
+        server: "test".into(),
+        origin_base: String::new(),
+        transfer_pool: pool.clone(),
+        browse_timeout_ms: 1000,
+    });
+    sessions
+}
 fn assert_old(remote: &Remote) {
     assert_eq!(remote.files.lock().unwrap()["/target"], b"old");
 }
@@ -190,14 +213,7 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
 async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_only_staging() {
     for queued in [false, true] {
         let remote = fixture(true, false);
-        let remote_for_factory = remote.clone();
-        let pool = TransferPool::new(
-            Arc::new(move || {
-                let remote = remote_for_factory.clone();
-                Box::pin(async move { Ok(backend(&remote)) })
-            }),
-            PoolSize::Fixed(1),
-        );
+        let pool = one_connection_pool(&remote);
         let partial = remote_partial_path("/target");
         let task_partial = partial.clone();
         let task: TaskFn = Box::new(move |backend| {
@@ -232,14 +248,7 @@ async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_o
                 .is_err()
         );
         assert_old(&remote);
-        let sessions = Sessions::default();
-        *sessions.slot_for("test").lock().await = Some(crate::session::Session {
-            browse_client: backend(&remote),
-            server: "test".into(),
-            origin_base: String::new(),
-            transfer_pool: pool.clone(),
-            browse_timeout_ms: 1000,
-        });
+        let sessions = sessions_with(&remote, &pool).await;
         cleanup_remote_partial(&sessions, "test", &partial).await;
         assert_eq!(remote.files.lock().unwrap().len(), 1);
         assert_old(&remote);
@@ -257,22 +266,8 @@ async fn staging_cleanup_outlasts_a_server_still_holding_the_stopped_upload() {
         .unwrap()
         .insert(partial.clone(), b"ne".to_vec());
     remote.held_removals.store(3, SeqCst);
-    let remote_for_factory = remote.clone();
-    let pool = TransferPool::new(
-        Arc::new(move || {
-            let remote = remote_for_factory.clone();
-            Box::pin(async move { Ok(backend(&remote)) })
-        }),
-        PoolSize::Fixed(1),
-    );
-    let sessions = Sessions::default();
-    *sessions.slot_for("test").lock().await = Some(crate::session::Session {
-        browse_client: backend(&remote),
-        server: "test".into(),
-        origin_base: String::new(),
-        transfer_pool: pool.clone(),
-        browse_timeout_ms: 1000,
-    });
+    let pool = one_connection_pool(&remote);
+    let sessions = sessions_with(&remote, &pool).await;
 
     cleanup_remote_partial(&sessions, "test", &partial).await;
 

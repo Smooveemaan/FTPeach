@@ -2253,9 +2253,10 @@ mod recursive_stop_tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn staging_the_server_will_not_delete_does_not_turn_a_stop_into_a_failure() {
+        // Every time: a removal refused once is tried again, and goes.
         let disk = disk(|disk| {
             disk.pace = Duration::from_millis(50);
-            disk.deletes_to_refuse = 1;
+            disk.deletes_to_refuse = usize::MAX;
         });
         // Logged, as a stopped single upload's is; the stop itself went as asked.
         stop_midway(&disk).await;

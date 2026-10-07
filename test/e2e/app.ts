@@ -3,7 +3,15 @@
 // the ordinary application), a throwaway profile, and Playwright attached to
 // its WebView2 over the Chrome DevTools Protocol.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { createServer, connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -49,6 +57,30 @@ async function waitFor<T>(what: string, probe: () => Promise<T | undefined>, sec
   throw new Error(`Timed out after ${seconds} s waiting for ${what}`);
 }
 
+/**
+ * What a launch that never opened its debugging port left to go on: whether
+ * the process is alive, what WebView2 was started with, and the app's log.
+ */
+function diagnose(child: ChildProcess, profile: string): string {
+  const webviews = spawnSync(
+    'powershell',
+    [
+      '-NoProfile',
+      '-Command',
+      'Get-CimInstance Win32_Process -Filter "name=\'msedgewebview2.exe\'" | ForEach-Object { $_.CommandLine }',
+    ],
+    { encoding: 'utf8' },
+  ).stdout;
+  const logs = (readdirSync(profile, { recursive: true }) as string[])
+    .filter((file) => file.endsWith('.log'))
+    .map((file) => `--- ${file}\n${readFileSync(path.join(profile, file), 'utf8').slice(-4000)}`);
+  return [
+    `app process: ${child.exitCode === null ? 'running' : `exited with ${child.exitCode}`}`,
+    `WebView2 processes:\n${webviews.trim() || '(none)'}`,
+    ...logs,
+  ].join('\n');
+}
+
 function stop(child: ChildProcess) {
   if (child.pid && child.exitCode === null) {
     spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
@@ -91,6 +123,9 @@ export async function launchApp(): Promise<RunningApp> {
       ...env,
       APPDATA: path.join(profile, 'Roaming'),
       LOCALAPPDATA: path.join(profile, 'Local'),
+      // Tauri finds its WebView2 profile through the Windows known-folder API,
+      // not LOCALAPPDATA: without this the run shares the real user's profile.
+      WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2'),
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${cdpPort}`,
     },
   });
@@ -111,7 +146,11 @@ export async function launchApp(): Promise<RunningApp> {
     }
   };
   try {
-    await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
+    try {
+      await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
+    } catch (error) {
+      throw new Error(`${(error as Error).message}\n${diagnose(child, profile)}`);
+    }
     browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
     const page = await waitFor(
       'the main window',

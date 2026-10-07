@@ -97,7 +97,8 @@ server's disk and the local disk and compare SHA-256 sums.
   the name is free, Stop of a folder merge that keeps the file being replaced
   and a staging file that is not its own, Quit when transfers finish, called
   off and then let through, Stop of an upload waiting for the one connection
-  allowed, and a connection cut by a relay in the test: the pane says it is gone, and
+  allowed, one name uploaded from two tabs at once, a selection where some
+  files copy, existing ones are skipped and unreadable ones fail, and a connection cut by a relay in the test: the pane says it is gone, and
   connecting it again lists and uploads. It expects
   OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
   whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.

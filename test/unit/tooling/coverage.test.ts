@@ -8,6 +8,7 @@ import {
   parseIstanbulSummary,
   parseLcov,
   percent,
+  rustTestOnlyLines,
   section,
 } from '../../../scripts/coverage/coverage.ts';
 
@@ -34,6 +35,34 @@ test('changed-line floor catches an untested addition hidden by whole-file cover
   const changed = changedCoverage(report, new Map([[file, '@@ -99,0 +100 @@\n+untested();']]));
   assert.deepEqual(changed.get(file)!.lines, { found: 1, hit: 0 });
   assert.match(checkFloors(changed, floors)[0]!, /0\.00% below its floor of 98%/);
+});
+
+test('code only the tests compile is left out of changed Rust lines', () => {
+  const source = [
+    'pub fn shipped() -> u8 {', // 1
+    '    1', // 2
+    '}', // 3
+    '', // 4
+    '#[cfg(test)]', // 5
+    'mod tests {', // 6
+    '    fn skipped_without_privilege() {}', // 7
+    '}', // 8
+  ].join('\n');
+  assert.deepEqual([...rustTestOnlyLines(source)], [5, 6, 7, 8]);
+
+  const file = 'src-tauri/src/local_fs/example.rs';
+  const report = parseLcov(`SF:${file}\nDA:2,0\nDA:7,0\nLF:2\nLH:0\nend_of_record\n`);
+  const diff = '@@ -1,0 +2 @@\n+    1\n@@ -6,0 +7 @@\n+    fn skipped_without_privilege() {}';
+  // A test line that never ran counts against the floor unless it is left out.
+  assert.deepEqual(changedCoverage(report, new Map([[file, diff]])).get(file)!.lines, {
+    found: 2,
+    hit: 0,
+  });
+  const tests = rustTestOnlyLines(source);
+  assert.deepEqual(changedCoverage(report, new Map([[file, diff]]), () => tests).get(file)!.lines, {
+    found: 1,
+    hit: 0,
+  });
 });
 
 test('changed coverage counts only measured new-side lines across diff hunks', () => {

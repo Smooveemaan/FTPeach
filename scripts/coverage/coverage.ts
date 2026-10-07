@@ -13,6 +13,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { ignoredTests } from '../checks/check-ignored-tests.ts';
+import { splitInlineTests } from '../checks/rust-source.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const out = path.join(root, 'coverage');
@@ -131,8 +132,16 @@ export function checkFloors(report: Report, floors: Record<string, number>): str
   return problems;
 }
 
-/** Intersect zero-context diff hunks with the runner's measured lines. */
-export function changedCoverage(report: Report, diffs: Map<string, string>): Report {
+/**
+ * Intersect zero-context diff hunks with the runner's measured lines. Lines in
+ * `testOnly` are left out: code that exists only for the tests is no product
+ * code to cover.
+ */
+export function changedCoverage(
+  report: Report,
+  diffs: Map<string, string>,
+  testOnly: (_file: string) => ReadonlySet<number> = () => new Set(),
+): Report {
   const changed: Report = new Map();
   for (const [file, diff] of diffs) {
     const lines = new Set<number>();
@@ -141,6 +150,8 @@ export function changedCoverage(report: Report, diffs: Map<string, string>): Rep
       const count = match[2] === undefined ? 1 : Number(match[2]);
       for (let line = start; line < start + count; line++) lines.add(line);
     }
+    const skipped = testOnly(file);
+    for (const line of skipped) lines.delete(line);
     if (lines.size === 0) continue;
     const coverage = report.get(file);
     if (!coverage || (!coverage.lineHits && coverage.lines.found > 0))
@@ -155,6 +166,16 @@ export function changedCoverage(report: Report, diffs: Map<string, string>): Rep
     if (entry.lines.found > 0) changed.set(file, entry);
   }
   return changed;
+}
+
+/** The lines of a Rust file that only `#[cfg(test)]` builds compile. */
+export function rustTestOnlyLines(source: string): Set<number> {
+  const lines = new Set<number>();
+  const production = splitInlineTests(source).production.split('\n');
+  source.split('\n').forEach((line, index) => {
+    if (line.trim() && !production[index]?.trim()) lines.add(index + 1);
+  });
+  return lines;
 }
 
 function productionFiles(): string[] {
@@ -264,7 +285,11 @@ function main(): void {
         ),
       ]),
     );
-    const changed = changedCoverage(report, diffs);
+    const changed = changedCoverage(report, diffs, (file) =>
+      suite === 'rust'
+        ? rustTestOnlyLines(fs.readFileSync(path.join(root, file), 'utf8'))
+        : new Set(),
+    );
     const changedFloors = Object.fromEntries(
       Object.entries(floors[suite]).filter(([file]) => changed.has(file)),
     );
@@ -272,7 +297,7 @@ function main(): void {
       [
         `### ${suite}: changed lines`,
         '',
-        `Compared with \`${baseCommit}\`; only measured added or modified lines in floored modules count.`,
+        `Compared with \`${baseCommit}\`; only measured added or modified lines in floored modules count, not code that only tests compile.`,
         '',
         ...(changed.size === 0
           ? ['No measured lines changed in floored modules.']

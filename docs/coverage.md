@@ -101,6 +101,8 @@ verification matrix.
 CI also enforces each module's existing floor on its added or modified measured lines,
 separately for each runner. This catches untested additions that a file's overall percentage can
 hide. Only modules in `coverage-floors.json` participate; there is no project-wide or 100% target.
+In Rust files, lines that only `#[cfg(test)]` builds compile are not product code and do not
+count as changed lines; the whole-file floors still measure them as before.
 The report includes a per-file changed-line table and fails if any of those floors is missed.
 
 CI sets `COVERAGE_DIFF_BASE` to the pull request's base commit, or for a push to the commit the

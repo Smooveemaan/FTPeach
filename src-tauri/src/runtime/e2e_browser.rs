@@ -33,14 +33,24 @@ pub(crate) fn show_in_background(window: &tauri::WebviewWindow) {
 /// Shows a window without activating it.
 pub(crate) fn show_without_focus(window: &tauri::WebviewWindow) {
     #[cfg(windows)]
-    if let Ok(hwnd) = super::confirmation_window::window_handle(window) {
+    {
+        use raw_window_handle::{HasWindowHandle, RawWindowHandle};
         use windows::Win32::{
             Foundation::HWND,
             UI::WindowsAndMessaging::{SW_SHOWNOACTIVATE, ShowWindow},
         };
+        let Ok(handle) = window.window_handle() else {
+            return;
+        };
+        let RawWindowHandle::Win32(handle) = handle.as_raw() else {
+            return;
+        };
         // SAFETY: the handle belongs to this live window.
         unsafe {
-            let _ = ShowWindow(HWND(hwnd as *mut std::ffi::c_void), SW_SHOWNOACTIVATE);
+            let _ = ShowWindow(
+                HWND(handle.hwnd.get() as *mut std::ffi::c_void),
+                SW_SHOWNOACTIVATE,
+            );
         }
     }
 }

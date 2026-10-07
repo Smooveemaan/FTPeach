@@ -8,9 +8,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { test as appTest } from './app.ts';
 
 export interface Server {
-  protocol: 'FTP' | 'FTPS' | 'SFTP';
+  protocol: 'FTP' | 'FTPS' | 'SFTP' | 'WebDAV';
+  /** The host, or for WebDAV the whole address. */
   host: string;
+  /** Empty for WebDAV, whose port is in the address. */
   port: string;
+  /** WebDAV over http:// only: tick Allow unencrypted sign-in. */
+  allowCleartext?: boolean;
   user: string;
   password: string;
   /** The folder the account lands in, read directly from disk. */
@@ -72,7 +76,12 @@ export async function startConnecting(page: Page, server: Server) {
     await page.getByRole('option', { name: server.protocol, exact: true }).click();
   }
   await remote.getByRole('textbox', { name: 'Address', exact: true }).fill(server.host);
-  await remote.getByRole('textbox', { name: 'Port', exact: true }).fill(server.port);
+  if (server.port) {
+    await remote.getByRole('textbox', { name: 'Port', exact: true }).fill(server.port);
+  }
+  if (server.allowCleartext) {
+    await remote.getByRole('checkbox', { name: 'Allow unencrypted sign-in' }).check();
+  }
   await remote.getByRole('textbox', { name: 'Username', exact: true }).fill(server.user);
   await remote.getByLabel('Password', { exact: true }).fill(server.password);
   await remote.getByRole('button', { name: 'Connect', exact: true }).click();

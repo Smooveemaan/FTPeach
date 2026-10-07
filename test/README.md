@@ -79,6 +79,10 @@ server's disk and the local disk and compare SHA-256 sums.
   the certificate's CA (`cert.pem` from `iis.ps1`). The CA can only be chosen in a
   native file dialog, so the bookmark is put in the profile as a user would have
   saved it.
+- `webdav.e2e.ts` runs a recording http:// server of its own to check that the
+  password reaches it only once Allow unencrypted sign-in is ticked, then
+  uploads and downloads over the IIS WebDAV site and stops an upload over an
+  existing file there.
 - `sftp.e2e.ts` trusts the server's key in the security window, which must show
   the key's real fingerprint, then covers an upload, Stop with the staging file
   removed, and Resume appending to the staging file the pause kept. It expects

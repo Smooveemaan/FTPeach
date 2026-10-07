@@ -64,21 +64,28 @@ Packaged application smoke tests remain a separate CI-owned check.
 `test/e2e/` starts the real application (`npm run build:packaged-smoke` builds it;
 it runs as the ordinary application) with a throwaway profile, attaches Playwright
 to its WebView2 over the DevTools protocol and works through the window against a
-real server. The result is judged outside the application: the FTP tests read the
-server's disk and the local disk and compare SHA-256 sums. They cover an upload, a
-download, a name conflict cancelled and then overwritten, Stop during an upload
-over an existing file, Pause and Resume of an upload, and an upload the server
-refuses.
+real server. The result is judged outside the application: the tests read the
+server's disk and the local disk and compare SHA-256 sums.
 
-The tests expect IIS FTP from `scripts/test-servers/iis.ps1 install`, with its
-`fixtures/perms` folders, or a server named by the `FTPEACH_E2E_FTP_*` variables in
-`test/e2e/ftp.e2e.ts`. A missing server fails the test. IIS deletes an aborted
-upload itself, so against IIS the tests cannot see whether FTPeach removes its own
-staging file after Stop, and a paused upload always starts over there. A test can
-start the application with its own settings through `test.use({ appSettings })`.
-Close FTPeach first: the application is single-instance, so the tests run one at a
-time and never beside a running copy. A failed test keeps a
-trace and a screenshot under `test-results/e2e/`.
+- `ftp.e2e.ts` covers an upload, a download, a name conflict cancelled and then
+  overwritten, Stop during an upload over an existing file, Pause and Resume of an
+  upload, and an upload the server refuses. It expects IIS FTP from
+  `scripts/test-servers/iis.ps1 install`, with its `fixtures/perms` folders, or a
+  server named by the `FTPEACH_E2E_FTP_*` variables. IIS deletes an aborted upload
+  itself, so these tests cannot see whether FTPeach removes its own staging file
+  after Stop, and a paused upload always starts over there.
+- `sftp.e2e.ts` trusts the server's key in the security window, which must show
+  the key's real fingerprint, then covers an upload, Stop with the staging file
+  removed, and Resume appending to the staging file the pause kept. It expects
+  OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
+  whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.
+  OpenSSH keeps a partly uploaded file, so what is left is FTPeach's doing.
+
+Both scripts change the machine and need an elevated PowerShell. A missing server
+fails the test. A test can start the application with its own settings through
+`test.use({ appSettings })`. Close FTPeach first: the application is
+single-instance, so the tests run one at a time and never beside a running copy. A
+failed test keeps a trace and a screenshot under `test-results/e2e/`.
 
 ## Choosing the runtime
 

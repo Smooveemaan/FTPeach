@@ -25,7 +25,10 @@ export interface RunningApp {
   page: Page;
   /** A folder of this run's own, for local files the test prepares. */
   workDir: string;
-  close: () => Promise<void>;
+  /** The next window the application opens besides the main one, such as a security confirmation. */
+  otherWindow: () => Promise<Page>;
+  /** Stops the application, removes its profile and returns its log. */
+  close: () => Promise<string>;
 }
 
 function freePort(): Promise<number> {
@@ -71,14 +74,19 @@ function diagnose(child: ChildProcess, profile: string): string {
     ],
     { encoding: 'utf8' },
   ).stdout;
-  const logs = (readdirSync(profile, { recursive: true }) as string[])
-    .filter((file) => /ftpeach[^\\/]*\.log$/i.test(file))
-    .map((file) => `--- ${file}\n${readFileSync(path.join(profile, file), 'utf8').slice(-4000)}`);
   return [
     `app process: ${child.exitCode === null ? 'running' : `exited with ${child.exitCode}`}`,
     `WebView2 processes:\n${webviews.trim() || '(none)'}`,
-    ...logs,
+    appLogs(profile, 4000),
   ].join('\n');
+}
+
+/** The tail of each of the application's own log files in the profile. */
+function appLogs(profile: string, tail: number): string {
+  return (readdirSync(profile, { recursive: true }) as string[])
+    .filter((file) => /ftpeach[^\\/]*\.log$/i.test(file))
+    .map((file) => `--- ${file}\n${readFileSync(path.join(profile, file), 'utf8').slice(-tail)}`)
+    .join('\n');
 }
 
 function stop(child: ChildProcess) {
@@ -137,15 +145,17 @@ export async function launchApp(settings: Record<string, unknown> = {}): Promise
     await browser?.close().catch(() => {});
     stop(child);
     await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
+    const logs = appLogs(profile, 200_000);
     // WebView2 lets go of its profile a moment after the process ends.
     for (let attempt = 0; attempt < 20; attempt++) {
       try {
         rmSync(base, { recursive: true, force: true });
-        return;
+        return logs;
       } catch {
         await new Promise((resolve) => setTimeout(resolve, 250));
       }
     }
+    return logs;
   };
   try {
     try {
@@ -160,7 +170,17 @@ export async function launchApp(settings: Record<string, unknown> = {}): Promise
       30,
     );
     await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
-    return { page, workDir, close };
+    const otherWindow = () =>
+      waitFor(
+        'another window',
+        async () =>
+          browser!
+            .contexts()
+            .flatMap((context) => context.pages())
+            .find((other) => other !== page),
+        30,
+      );
+    return { page, workDir, otherWindow, close };
   } catch (error) {
     await close();
     throw error;
@@ -181,14 +201,20 @@ export const test = base.extend<{ appSettings: Record<string, unknown>; app: Run
     try {
       await use(app);
     } finally {
-      if (testInfo.status !== testInfo.expectedStatus) {
+      const failed = testInfo.status !== testInfo.expectedStatus;
+      if (failed) {
         await testInfo.attach('window', {
           body: await app.page.screenshot().catch(() => Buffer.alloc(0)),
           contentType: 'image/png',
         });
       }
       await tracing.stop({ path: testInfo.outputPath('trace.zip') }).catch(() => {});
-      await app.close();
+      const logs = await app.close();
+      // A file, so the CI artifact of test results carries it too.
+      if (failed) {
+        writeFileSync(testInfo.outputPath('app.log'), logs);
+        await testInfo.attach('app.log', { path: testInfo.outputPath('app.log') });
+      }
     }
   },
 });

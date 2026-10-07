@@ -1,8 +1,8 @@
 name: Desktop E2E
 
 # The real application on a GitHub-hosted Windows runner, driven through its
-# window over the Chrome DevTools Protocol, against IIS FTP on the same runner
-# (test/e2e). Runs on changes to anything that ends up in the application.
+# window over the Chrome DevTools Protocol, against IIS FTP and OpenSSH SFTP on
+# the same runner (test/e2e). Runs on changes to anything that ends up in the application.
 
 permissions: {}
 
@@ -23,6 +23,7 @@ on:
       - package-lock.json
       - test/e2e/**
       - scripts/test-servers/iis.ps1
+      - scripts/test-servers/openssh.ps1
       - .github/workflows/desktop-e2e.yml
   pull_request:
     paths:
@@ -38,6 +39,7 @@ on:
       - package-lock.json
       - test/e2e/**
       - scripts/test-servers/iis.ps1
+      - scripts/test-servers/openssh.ps1
       - .github/workflows/desktop-e2e.yml
 
 concurrency:
@@ -92,6 +94,11 @@ jobs:
         shell: powershell
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
 
+      # A service of its own on 127.0.0.1:2223, with the IIS test account.
+      - name: Install the OpenSSH SFTP test server
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/openssh.ps1 install
+
       - name: Run the desktop tests
         run: npm run test:e2e
 
@@ -105,13 +112,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Upload IIS logs
+      - name: Upload server logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: desktop-e2e-iis-logs
+          name: desktop-e2e-server-logs
           path: |
             C:\inetpub\logs\LogFiles
             C:\Windows\System32\LogFiles\HTTPERR
+            C:\ProgramData\ssh\logs
           retention-days: 14
           if-no-files-found: ignore

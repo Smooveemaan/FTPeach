@@ -64,12 +64,17 @@ Packaged application smoke tests remain a separate CI-owned check.
 `test/e2e/` starts the real application (`npm run build:packaged-smoke` builds it;
 it runs as the ordinary application) with a throwaway profile, attaches Playwright
 to its WebView2 over the DevTools protocol and works through the window against a
-real server. The result is judged outside the application: the FTP test reads the
-uploaded file from the server's disk and compares its SHA-256.
+real server. The result is judged outside the application: the FTP tests read the
+server's disk and the local disk and compare SHA-256 sums. They cover an upload, a
+download, a name conflict cancelled and then overwritten, Stop during an upload
+over an existing file, and an upload the server refuses.
 
-The tests expect IIS FTP from `scripts/test-servers/iis.ps1 install`, or a server
-named by the `FTPEACH_E2E_FTP_*` variables in `test/e2e/ftp-upload.e2e.ts`. A missing
-server fails the test. Close FTPeach first: the application is single-instance, so
+The tests expect IIS FTP from `scripts/test-servers/iis.ps1 install`, with its
+`fixtures/perms` folders, or a server named by the `FTPEACH_E2E_FTP_*` variables in
+`test/e2e/ftp.e2e.ts`. A missing server fails the test. IIS deletes an aborted
+upload itself, so against IIS the tests cannot see whether FTPeach removes its own
+staging file after Stop. A test can start the application with its own settings
+through `test.use({ appSettings })`. Close FTPeach first: the application is single-instance, so
 the tests run one at a time and never beside a running copy. A failed test keeps a
 trace and a screenshot under `test-results/e2e/`.
 

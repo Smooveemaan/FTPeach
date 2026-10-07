@@ -87,7 +87,7 @@ function stop(child: ChildProcess) {
   }
 }
 
-export async function launchApp(): Promise<RunningApp> {
+export async function launchApp(settings: Record<string, unknown> = {}): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
   }
@@ -106,10 +106,10 @@ export async function launchApp(): Promise<RunningApp> {
   mkdirSync(path.join(profile, 'Local'), { recursive: true });
   mkdirSync(workDir);
   // An explicit language, so the run reads the same on any Windows display
-  // language; everything else starts from the defaults.
+  // language; everything else starts from the defaults unless the test says.
   writeFileSync(
     path.join(profile, 'Roaming', 'FTPeach', 'settings.json'),
-    JSON.stringify({ schemaVersion: 1, data: { language: 'en' } }),
+    JSON.stringify({ schemaVersion: 1, data: { language: 'en', ...settings } }),
   );
 
   const cdpPort = await freePort();
@@ -170,11 +170,12 @@ export async function launchApp(): Promise<RunningApp> {
 /**
  * The test API with `app`: the running application, with a trace of the run
  * attached and the process and profile gone afterwards, a timed-out test too.
+ * `test.use({ appSettings })` starts it with those settings in its profile.
  */
-export const test = base.extend<{ app: RunningApp }>({
-  // eslint-disable-next-line no-empty-pattern
-  app: async ({}, use, testInfo) => {
-    const app = await launchApp();
+export const test = base.extend<{ appSettings: Record<string, unknown>; app: RunningApp }>({
+  appSettings: [{}, { option: true }],
+  app: async ({ appSettings }, use, testInfo) => {
+    const app = await launchApp(appSettings);
     const tracing = app.page.context().tracing;
     await tracing.start({ screenshots: true, snapshots: true });
     try {

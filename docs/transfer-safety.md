@@ -18,7 +18,9 @@ the one policy for drag and drop, paste after Cut and transfer routing.
 
 Approved replacement of an upload renames a server's refusal aside to `.ftpeach-<uuid>.old`,
 publishes the staging file and deletes the old file only afterwards; a failed publication puts it
-back. FTP has no atomic no-replace rename, so no FTP row above is atomic; see
+back. If the connection is lost before it can, the old file is put back over the pane's
+connection before the staging file is removed, and the staging file is kept when that fails too.
+FTP has no atomic no-replace rename, so no FTP row above is atomic; see
 [conservative limits](#conservative-limits).
 
 | Promise | Tests |
@@ -26,7 +28,7 @@ back. FTP has no atomic no-replace rename, so no FTP row above is atomic; see
 | No flag keeps the target, locally and remotely | `commands::fs::tests::rename_and_copy_without_an_overwrite_decision_keep_the_existing_target`; `test/unit/file-browser/paneFileOperations.test.ts` |
 | Remote no-replace rename per protocol | `ftp_tests::no_replace_rename_refuses_a_taken_target_and_moves_onto_a_free_one`, `sftp_tests::no_replace_rename_keeps_a_target_the_server_would_overwrite`, `webdav_tests::no_replace_move_onto_a_taken_destination_says_it_exists` |
 | Download commit keeps a target created after the preflight | `transfer_file::tests::no_replace_commit_preserves_a_target_created_after_preflight` |
-| Approved replacement sets aside and restores | `sftp_tests::without_posix_rename_the_existing_file_is_set_aside_then_removed`, `a_set_aside_file_is_put_back_when_the_new_one_cannot_take_its_name` |
+| Approved replacement sets aside and restores | `sftp_tests::without_posix_rename_the_existing_file_is_set_aside_then_removed`, `a_set_aside_file_is_put_back_when_the_new_one_cannot_take_its_name`, `a_file_left_aside_is_put_back_before_its_staging_file_goes`; against IIS, `test/e2e/chaos.e2e.ts` |
 | New file never truncates | `local_create::tests::creates_folders_and_files_without_replacing`, `ftp_tests::create_new_never_truncates_an_existing_or_newly_arrived_ftp_file`, `create_new_reports_a_refused_or_failed_append_without_storing`, `sftp_tests::creating_a_taken_name_says_it_exists_and_opens_nothing_else`, `webdav_tests::a_file_arriving_before_the_empty_put_is_reported_as_existing`; against real servers, `round_trip` in `src-tauri/tests/docker_integration.rs` for all four protocols |
 | Single local copy is staged | `staged_copy::tests::a_fault_before_commit_keeps_the_old_target_and_leaves_no_partial` |
 | Skipped nested file keeps the Move source | `recursive_transfer::tests::skip_merges_missing_files_and_retains_move_source` |

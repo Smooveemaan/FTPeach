@@ -140,6 +140,12 @@ pub(crate) async fn cleanup_remote_partial(
                     log::warn!("No session to clean transfer staging file {partial}");
                     return None;
                 };
+                if attempt == 1
+                    && !crate::protocol::put_back_set_aside(session.browse_client.as_mut(), partial)
+                        .await
+                {
+                    return Some(true);
+                }
                 match tokio::time::timeout(
                     Duration::from_secs(10),
                     session.browse_client.remove(partial, false),
@@ -181,6 +187,9 @@ pub(crate) async fn cleanup_remote_partial(
         let path = partial.to_owned();
         let task: crate::transfer::transfer_pool::TaskFn = Box::new(move |backend| {
             Box::pin(async move {
+                if !crate::protocol::put_back_set_aside(backend.as_mut(), &path).await {
+                    return Ok(());
+                }
                 match tokio::time::timeout(
                     std::time::Duration::from_secs(20),
                     backend.remove(&path, false),

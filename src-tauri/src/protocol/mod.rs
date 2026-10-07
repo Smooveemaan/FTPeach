@@ -113,8 +113,9 @@ pub fn overwrite_allowed() -> bool {
 /// not rename over an existing file. That file is renamed aside to a hidden
 /// sibling rather than deleted, so one version stands at a name at every
 /// step: if the new file cannot take its place, the old one is put back, and
-/// it is removed only once the new one is in. A stop between the two renames
-/// leaves it under the hidden name.
+/// it is removed only once the new one is in. A stop or a lost connection
+/// between the two renames leaves it under the hidden name, recorded for
+/// [`put_back_set_aside`].
 pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
     backend: &mut B,
     old_path: &str,
@@ -128,7 +129,13 @@ pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
     if let Err(error) = backend.rename_no_replace(new_path, &aside).await {
         return Err(refused_replacement(error, new_path));
     }
+    SET_ASIDE
+        .lock()
+        .unwrap()
+        .insert(old_path.to_owned(), (aside.clone(), new_path.to_owned()));
+    let settled = || SET_ASIDE.lock().unwrap().remove(old_path);
     let Err(error) = backend.rename_no_replace(old_path, new_path).await else {
+        settled();
         if let Err(error) = backend.remove(&aside, false).await {
             log::warn!(
                 "Replaced {new_path}, but could not remove its previous version {aside}: {error:#}"
@@ -142,7 +149,48 @@ pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
             "The previous version of {new_path} is kept as {aside}"
         )));
     }
+    settled();
     Err(refused_replacement(error, new_path))
+}
+
+/// Replacements that stopped between their two renames, by the file that was
+/// to take the name: the hidden name of the file set aside, and its own name.
+// ponytail: process-wide map keyed by remote path, emptied by staging cleanup;
+// an entry outlives a pause that lands between the renames.
+static SET_ASIDE: std::sync::LazyLock<
+    std::sync::Mutex<std::collections::HashMap<String, (String, String)>>,
+> = std::sync::LazyLock::new(Default::default);
+
+/// Before `staging` is deleted: puts back the file a replacement by it set
+/// aside and did not get to put back itself, over a connection that still
+/// works. False when that failed: the staging file has to stay, since it may be
+/// the only copy of the new version while the old one is still hidden.
+pub(crate) async fn put_back_set_aside<B: ProtocolBackend + ?Sized>(
+    backend: &mut B,
+    staging: &str,
+) -> bool {
+    let Some((aside, name)) = SET_ASIDE.lock().unwrap().remove(staging) else {
+        return true;
+    };
+    let put_back = tokio::time::timeout(
+        std::time::Duration::from_secs(10),
+        backend.rename_no_replace(&aside, &name),
+    )
+    .await;
+    match put_back {
+        Ok(Ok(())) => {
+            log::warn!("Put {aside} back as {name}: replacing it with {staging} was cut off");
+            true
+        }
+        Ok(Err(error)) => {
+            log::error!("Could not put {aside} back as {name}, kept it and {staging}: {error:#}");
+            false
+        }
+        Err(_) => {
+            log::error!("Timed out putting {aside} back as {name}, kept it and {staging}");
+            false
+        }
+    }
 }
 
 /// A refusal the server gave no reason for is named for what it refused.

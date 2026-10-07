@@ -212,7 +212,7 @@ mod transfer_tests {
         names: Option<std::collections::BTreeSet<String>>,
         /// A plain rename replaces an existing target, as SFTPGo does.
         rename_replaces: bool,
-        /// Sources whose rename the server refuses.
+        /// Sources whose rename the server refuses, by the start of their path.
         refused_sources: Vec<String>,
         removed: Vec<String>,
     }
@@ -377,7 +377,10 @@ mod transfer_tests {
             new: String,
         ) -> Result<Status, StatusCode> {
             let mut disk = self.0.lock().unwrap();
-            let refused = disk.refused_sources.contains(&old);
+            let refused = disk
+                .refused_sources
+                .iter()
+                .any(|source| old.starts_with(source));
             let replaces = disk.rename_replaces;
             let Some(names) = disk.names.as_mut() else {
                 return Err(StatusCode::Failure);
@@ -502,6 +505,35 @@ mod transfer_tests {
             ]
         );
         assert!(disk.removed.is_empty());
+    }
+
+    #[tokio::test]
+    async fn a_file_left_aside_is_put_back_before_its_staging_file_goes() {
+        for (dir, connection_comes_back) in [("/back", true), ("/gone", false)] {
+            let (staging, file) = (format!("{dir}/staging"), format!("{dir}/file"));
+            // The connection is lost once the old file is set aside: neither
+            // rename that follows reaches the server.
+            let disk = Arc::new(StdMutex::new(Disk {
+                names: names(&[&staging, &file]),
+                refused_sources: vec![staging.clone(), format!("{dir}/.ftpeach-")],
+                ..Default::default()
+            }));
+            let mut backend = backend(disk.clone()).await;
+            backend.rename(&staging, &file).await.unwrap_err();
+            let aside = disk.lock().unwrap().renames[0].2.clone();
+            if connection_comes_back {
+                disk.lock().unwrap().refused_sources.clear();
+            }
+
+            let put_back = crate::protocol::put_back_set_aside(&mut backend, &staging).await;
+
+            assert_eq!(put_back, connection_comes_back);
+            // Failing, it keeps the staging file: the new version may be there only.
+            let expected = if put_back { &file } else { &aside };
+            assert_eq!(disk.lock().unwrap().names, names(&[&staging, expected]));
+            // Each is put back once.
+            assert!(crate::protocol::put_back_set_aside(&mut backend, &staging).await);
+        }
     }
 
     #[tokio::test]

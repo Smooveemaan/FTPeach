@@ -245,6 +245,9 @@ pub(crate) async fn remove_staging_on(
     staging_path: &str,
     attempts: u32,
 ) {
+    if !crate::protocol::put_back_set_aside(browse, staging_path).await {
+        return;
+    }
     for attempt in 1..=attempts {
         match tokio::time::timeout(
             std::time::Duration::from_secs(5),

@@ -228,6 +228,18 @@ function main(): void {
         encoding: 'utf8',
       }).trim()
     : undefined;
+  // Without a base nothing compares changed lines; the report says so rather
+  // than reading as a pass. CI has none on a first push or a scheduled run.
+  if (!baseCommit) {
+    sections.push(
+      [
+        '### Changed lines',
+        '',
+        'Not checked: COVERAGE_DIFF_BASE is not set, so only the per-file floors apply.',
+        '',
+      ].join('\n'),
+    );
+  }
 
   function checkChanged(suite: Suite, report: Report): void {
     if (!baseCommit) return;

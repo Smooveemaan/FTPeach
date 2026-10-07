@@ -69,7 +69,7 @@ pub async fn run(id: &str, scenario: impl FnOnce(Target) -> Scenario) {
 pub async fn run_target(target: Target, scenario: impl FnOnce(Target) -> Scenario) {
     let id = target.id;
     if !selected(&target) {
-        not_run(format_args!(
+        not_selected(format_args!(
             "{id} is not selected by FTPEACH_MATRIX / FTPEACH_MATRIX_TARGETS"
         ));
         return;
@@ -81,12 +81,20 @@ pub async fn run_target(target: Target, scenario: impl FnOnce(Target) -> Scenari
         .unwrap_or_else(|_| panic!("{id}: scenario timed out after {:?}", timeout()));
 }
 
-/// A test that passes without running. The thread libtest runs a test on is
-/// named after it, so the line says which test it was (scripts/test-servers/ci.ts
-/// counts them from that).
+/// A test that passes without running although its servers are selected. The
+/// thread libtest runs a test on is named after it, so the line says which test
+/// it was; scripts/test-servers/ci.ts fails the run on it unless the test is one
+/// of its listed exceptions.
 pub fn not_run(why: impl std::fmt::Display) {
     let thread = std::thread::current();
     println!("NOT RUN [{}]: {why}", thread.name().unwrap_or("?"));
+}
+
+/// A test whose servers this run did not select: another profile covers it.
+/// scripts/test-servers/ci.ts leaves these out of its report.
+pub fn not_selected(why: impl std::fmt::Display) {
+    let thread = std::thread::current();
+    println!("NOT SELECTED [{}]: {why}", thread.name().unwrap_or("?"));
 }
 
 fn service_lock(service: &'static str) -> Arc<tokio::sync::Mutex<()>> {
@@ -107,7 +115,7 @@ pub async fn run_pair(
 ) {
     let (source, destination) = (target(source), target(destination));
     if !selected(&source) || !selected(&destination) {
-        not_run(format_args!(
+        not_selected(format_args!(
             "{} -> {} needs both selected by FTPEACH_MATRIX / FTPEACH_MATRIX_TARGETS",
             source.id, destination.id
         ));

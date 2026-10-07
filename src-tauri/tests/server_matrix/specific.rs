@@ -606,7 +606,7 @@ fn through(kind: Kind, proxy: Value) -> Target {
 async fn run_proxied(target: Target, scenario: impl FnOnce(Target) -> Scenario) {
     let behind = crate::targets::target(target.id);
     if !selected(&behind) {
-        not_run(format_args!(
+        not_selected(format_args!(
             "{} (behind the proxy) is not selected",
             behind.id
         ));

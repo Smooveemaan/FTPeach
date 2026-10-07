@@ -55,10 +55,15 @@ The tests read the selection from `FTPEACH_MATRIX` (profiles, which is what
 `servers:test` and `servers:ci` set) or `FTPEACH_MATRIX_TARGETS` (single
 servers, such as `vsftpd,dropbear`). No selection is the same as `all`.
 
-A test for a server that is not selected prints `NOT RUN [test name]` and
-passes. A selected server that does not answer fails the test: a broken setup
-is never reported as a pass. Tests that need two servers (relays) or a server
-and a proxy run only when both are selected.
+A test for a server that is not selected prints `NOT SELECTED [test name]`
+and passes; another profile covers it. A selected server that does not answer
+fails the test: a broken setup is never reported as a pass. Tests that need two
+servers (relays) or a server and a proxy run only when both are selected.
+
+A test that skips itself although its servers are selected prints
+`NOT RUN [test name]` with the reason. `servers:ci` fails the run on it unless
+the test is one of the exceptions listed in `scripts/test-servers/ci.ts`
+(`EXPECTED_NOT_RUN`), each with its reason.
 
 ### IIS
 
@@ -86,7 +91,8 @@ npm run servers:test -- iis
 
 Active-mode FTP needs the container to reach the client back. On Linux the test
 connects to the container's bridge address; Docker Desktop routes neither way,
-so on Windows and macOS those tests report NOT RUN with the reason.
+so on Windows and macOS those tests report NOT RUN with the reason. This is the
+one listed exception.
 
 ## Weekly CI
 
@@ -100,7 +106,9 @@ so on Windows and macOS those tests report NOT RUN with the reason.
   cache; Rust builds use `rust-cache`. Each job has its own time limit.
 - `servers:ci` runs each scenario in its own test process with a 20-minute
   limit, so a hung scenario costs one group rather than the job. The job summary
-  shows passed, failed, timed-out and NOT RUN counts per server.
+  shows passed, failed, timed-out and NOT RUN counts for each selected server
+  and how many tests belong to servers outside the run. A failed or timed-out
+  scenario, or a NOT RUN that is not a listed exception, fails the job.
 - On a failure the container logs (IIS logs on Windows) are uploaded as an
   artifact. A scheduled failure opens or updates the issue
   "Scheduled server matrix failed".

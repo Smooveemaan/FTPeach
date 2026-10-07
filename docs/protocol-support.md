@@ -55,8 +55,9 @@ See also [`networking.md`](networking.md).
 
 ## Compatibility verification
 
-The scheduled **Protocol compatibility** GitHub Actions workflow runs every
-Wednesday and can also be started manually with `workflow_dispatch`. It starts
+The **Protocol compatibility** GitHub Actions workflow runs every Wednesday,
+on every push and pull request that changes Rust code, tests or Cargo
+manifests, and can also be started manually with `workflow_dispatch`. It starts
 disposable containerized FTP/FTPS, SFTP, and WebDAV servers and runs the ignored
 `docker_integration` suite without permanent external credentials.
 

@@ -713,6 +713,12 @@ mod tests {
             if error.kind() == std::io::ErrorKind::PermissionDenied
                 || error.raw_os_error() == Some(1314)
             {
+                // A developer without Developer Mode may lack the privilege;
+                // CI runs elevated, where a skip would hide a broken fixture.
+                assert!(
+                    std::env::var_os("CI").is_none(),
+                    "CI could not create a symlink: {error}"
+                );
                 let _ = tokio::fs::remove_dir_all(base).await;
                 return;
             }

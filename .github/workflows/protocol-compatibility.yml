@@ -7,13 +7,29 @@ on:
     - cron: '43 3 * * 3'
   workflow_dispatch:
   workflow_call:
-  # A dependency update, Dependabot's included, must not merge on unit tests
-  # alone: the protocol crates only show regressions against real servers.
-  pull_request:
+  # Transfers break in more places than the protocol modules (application,
+  # transfer, session, commands, credentials, shared types), and the protocol
+  # crates only show regressions against real servers, so any Rust change runs
+  # the round trips, a dependency update from Dependabot included.
+  push:
+    branches: [master]
     paths:
+      - src-tauri/src/**
       - src-tauri/Cargo.lock
       - src-tauri/Cargo.toml
-      - src-tauri/tests/docker/**
+      - src-tauri/tests/**
+      - .github/workflows/protocol-compatibility.yml
+  pull_request:
+    paths:
+      - src-tauri/src/**
+      - src-tauri/Cargo.lock
+      - src-tauri/Cargo.toml
+      - src-tauri/tests/**
+      - .github/workflows/protocol-compatibility.yml
+
+concurrency:
+  group: protocol-compatibility-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 jobs:
   docker-round-trips:

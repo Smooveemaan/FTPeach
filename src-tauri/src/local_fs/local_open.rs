@@ -427,6 +427,11 @@ mod tests {
         std::fs::write(&target, b"test").unwrap();
         if let Err(error) = symlink_file(&target, &link) {
             if error.raw_os_error() == Some(1314) {
+                // CI runs elevated, where a skip would hide a broken fixture.
+                assert!(
+                    std::env::var_os("CI").is_none(),
+                    "CI could not create a symlink: {error}"
+                );
                 eprintln!("skipping symlink assertion: Windows symlink privilege is unavailable");
                 std::fs::remove_dir_all(root).unwrap();
                 return;

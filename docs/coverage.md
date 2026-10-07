@@ -98,12 +98,13 @@ verification matrix.
 
 ## Changed-line floors
 
-Pull requests also enforce each module's existing floor on its added or modified measured lines,
+CI also enforces each module's existing floor on its added or modified measured lines,
 separately for each runner. This catches untested additions that a file's overall percentage can
 hide. Only modules in `coverage-floors.json` participate; there is no project-wide or 100% target.
 The report includes a per-file changed-line table and fails if any of those floors is missed.
 
-CI sets `COVERAGE_DIFF_BASE` to the pull request's base commit and fetches full history. Locally,
+CI sets `COVERAGE_DIFF_BASE` to the pull request's base commit, or for a push to the commit the
+branch pointed to before it, and fetches full history. Locally,
 set it to a commit or ref before running either coverage command, for example in PowerShell:
 
 ```powershell
@@ -119,4 +120,5 @@ deletion plus addition, so move the floor to the new path and cover its measured
 Deleted lines and lines absent from LCOV's line records do not count. A change with no measured
 added lines has no changed-line floor. Missing or unmeasured floored files still fail the whole-file check.
 An invalid or unavailable base fails the command rather than silently skipping this check.
-Without `COVERAGE_DIFF_BASE` (including non-PR CI runs), only whole-file floors apply.
+Without `COVERAGE_DIFF_BASE` (a first push, a scheduled or manual run, a release tag), only
+whole-file floors apply, and the report says the changed lines were not checked.

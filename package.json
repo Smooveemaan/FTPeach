@@ -25,6 +25,7 @@
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
     "test:e2e": "playwright test --config test/e2e/playwright.config.ts",
+    "test:strength": "node --experimental-strip-types scripts/test-strength/run.ts",
     "lint": "eslint . --max-warnings 0 && node --experimental-strip-types scripts/checks/check-feature-boundaries.ts && npm run typecheck",
     "typecheck": "tsc --noEmit",
     "check:release-config": "node --experimental-strip-types scripts/checks/check-release-config.ts",

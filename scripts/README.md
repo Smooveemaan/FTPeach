@@ -8,6 +8,7 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | `checks/` | Repository, architecture, locale, and release validation | `npm run check`, `npm run lint`, `npm run i18n:check` |
 | `benchmarks/` | Frontend models, transfer history, and browser measurements | `npm run benchmark:frontend`, `npm run benchmark:transfer-history`, `npm run benchmark:transfer-ui` |
 | `release/` | Release notes, license notices, SBOMs, advisory reports, the release-environment gate and the trust report | `npm run licenses:check`, `npm run sbom:generate`; CI runs the rest |
+| `test-strength/` | Applies deliberate defects one at a time and checks that the desktop end-to-end tests catch each | `npm run test:strength [-- <break name>]` |
 | `packaged-smoke/` | Native application smoke harness | [Instructions](packaged-smoke/README.md) |
 | `manual-tests/` | Manual file-type icon fixtures | [Instructions](manual-tests/README.md) |
 | `test-servers/` | The test server matrix: start, stop, run and report; IIS on the host | `npm run servers:up`, `servers:test`, `servers:ci`; [instructions](../docs/test-server-matrix.md) |

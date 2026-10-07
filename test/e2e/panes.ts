@@ -8,7 +8,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { test as appTest } from './app.ts';
 
 export interface Server {
-  protocol: 'FTP' | 'SFTP';
+  protocol: 'FTP' | 'FTPS' | 'SFTP';
   host: string;
   port: string;
   user: string;
@@ -54,6 +54,10 @@ export const isStaging = (name: string) => /^\.ftpeach-.*\.part$/.test(name);
 export const localPane = (page: Page) => page.locator('.pane[data-side=a]');
 export const remotePane = (page: Page) => page.locator('.pane[data-side=b]');
 
+/** A file or folder in a pane's list, by its exact name; never the path bar. */
+export const fileRow = (pane: Locator, name: string) =>
+  pane.locator(`[role=option][data-name="${name.replace(/["\\]/g, '\\$&')}"]`);
+
 export async function openFolder(pane: Locator, folder: string) {
   await pane.getByRole('button', { name: 'Edit path' }).press('Enter');
   await pane.locator('.path-input').fill(folder);
@@ -96,6 +100,6 @@ export async function settledRow(page: Page, name: string) {
 
 /** Selects a file in a pane and copies it to the other pane with F8. */
 export async function copyAcross(pane: Locator, name: string) {
-  await pane.getByText(name, { exact: true }).click();
+  await fileRow(pane, name).click();
   await pane.page().keyboard.press('F8');
 }

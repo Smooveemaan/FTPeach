@@ -11,6 +11,7 @@ import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import {
   copyAcross,
+  fileRow,
   localPane,
   openFolder,
   payload,
@@ -52,7 +53,7 @@ test('a file uploaded over FTP through the window lands on the server byte for b
   writeFileSync(path.join(app.workDir, name), bytes);
 
   await openFolder(localPane(page), app.workDir);
-  await localPane(page).getByText(name, { exact: true }).waitFor({ timeout: 15_000 });
+  await fileRow(localPane(page), name).waitFor({ timeout: 15_000 });
   await connect(page);
   await copyAcross(localPane(page), name);
   await expect(await settledRow(page, name)).toHaveAccessibleName(/: Done\b/);
@@ -65,7 +66,7 @@ test('a file uploaded over FTP through the window lands on the server byte for b
   expect(sha256(landed)).toBe(sha256(bytes));
 
   // And the pane the file went to lists it.
-  await expect(remotePane(page).getByText(name, { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(fileRow(remotePane(page), name)).toBeVisible({ timeout: 15_000 });
 });
 
 test('a file downloaded over FTP through the window lands on this computer byte for byte', async ({
@@ -89,7 +90,7 @@ test('a file downloaded over FTP through the window lands on this computer byte 
   // The download read the server's file, never changed it.
   expect(serverRoot.added()).toEqual([name]);
   expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(bytes));
-  await expect(localPane(page).getByText(name, { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(fileRow(localPane(page), name)).toBeVisible({ timeout: 15_000 });
 });
 
 test('an upload onto an existing name changes nothing until Overwrite is chosen', async ({
@@ -105,7 +106,7 @@ test('an upload onto an existing name changes nothing until Overwrite is chosen'
 
   await openFolder(localPane(page), app.workDir);
   await connect(page);
-  await remotePane(page).getByText(name, { exact: true }).waitFor({ timeout: 15_000 });
+  await fileRow(remotePane(page), name).waitFor({ timeout: 15_000 });
 
   // Cancel: the server keeps the old bytes and no transfer starts.
   await copyAcross(localPane(page), name);
@@ -143,7 +144,7 @@ test.describe('with a speed limit, so a transfer is still running when Stop is p
 
     await openFolder(localPane(page), app.workDir);
     await connect(page);
-    await remotePane(page).getByText(name, { exact: true }).waitFor({ timeout: 15_000 });
+    await fileRow(remotePane(page), name).waitFor({ timeout: 15_000 });
     await copyAcross(localPane(page), name);
     await page.getByRole('dialog').getByRole('button', { name: 'Overwrite', exact: true }).click();
 
@@ -207,7 +208,7 @@ test('a server that refuses an upload reports an error, and the next upload stil
   await openFolder(localPane(page), app.workDir);
   await connect(page);
   await openFolder(remotePane(page), '/fixtures/perms/read-only-dir');
-  await remotePane(page).getByText('inner.txt', { exact: true }).waitFor({ timeout: 15_000 });
+  await fileRow(remotePane(page), 'inner.txt').waitFor({ timeout: 15_000 });
   await copyAcross(localPane(page), name);
 
   const failed = await settledRow(page, name);
@@ -217,7 +218,7 @@ test('a server that refuses an upload reports an error, and the next upload stil
 
   // The same connection carries on: the file goes to the root instead.
   await openFolder(remotePane(page), '/');
-  await remotePane(page).getByText('fixtures', { exact: true }).waitFor({ timeout: 15_000 });
+  await fileRow(remotePane(page), 'fixtures').waitFor({ timeout: 15_000 });
   await copyAcross(localPane(page), name);
   await expect(queueRow(page, name, 'Done\\b')).toHaveCount(1, { timeout: 60_000 });
   expect(serverRoot.added()).toEqual([name]);

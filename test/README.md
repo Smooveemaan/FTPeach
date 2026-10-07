@@ -74,6 +74,11 @@ server's disk and the local disk and compare SHA-256 sums.
   server named by the `FTPEACH_E2E_FTP_*` variables. IIS deletes an aborted upload
   itself, so these tests cannot see whether FTPeach removes its own staging file
   after Stop, and a paused upload always starts over there.
+- `ftps.e2e.ts` checks that the IIS site's self-signed certificate is refused
+  when nothing vouches for it, then uploads over FTPS from a bookmark saved with
+  the certificate's CA (`cert.pem` from `iis.ps1`). The CA can only be chosen in a
+  native file dialog, so the bookmark is put in the profile as a user would have
+  saved it.
 - `sftp.e2e.ts` trusts the server's key in the security window, which must show
   the key's real fingerprint, then covers an upload, Stop with the staging file
   removed, and Resume appending to the staging file the pause kept. It expects
@@ -82,10 +87,11 @@ server's disk and the local disk and compare SHA-256 sums.
   OpenSSH keeps a partly uploaded file, so what is left is FTPeach's doing.
 
 Both scripts change the machine and need an elevated PowerShell. A missing server
-fails the test. A test can start the application with its own settings through
-`test.use({ appSettings })`. Close FTPeach first: the application is
-single-instance, so the tests run one at a time and never beside a running copy. A
-failed test keeps a trace and a screenshot under `test-results/e2e/`.
+fails the test. A test can start the application with its own settings and saved
+store files through `test.use({ appSettings, appStore })`. Close FTPeach first:
+the application is single-instance, so the tests run one at a time and never
+beside a running copy. A failed test keeps a trace, a screenshot and the
+application's log (`app.log`) under `test-results/e2e/`.
 
 ## Choosing the runtime
 

@@ -14,6 +14,7 @@ import { expect } from '@playwright/test';
 import type { RunningApp } from './app.ts';
 import {
   copyAcross,
+  fileRow,
   isStaging,
   localPane,
   openFolder,
@@ -86,7 +87,7 @@ test('the first connection shows the server key, and an upload over SFTP lands b
 
   expect(serverRoot.added()).toEqual([name]);
   expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(bytes));
-  await expect(remotePane(app.page).getByText(name, { exact: true })).toBeVisible({
+  await expect(fileRow(remotePane(app.page), name)).toBeVisible({
     timeout: 15_000,
   });
 });

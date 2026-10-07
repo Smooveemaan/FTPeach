@@ -95,7 +95,10 @@ function stop(child: ChildProcess) {
   }
 }
 
-export async function launchApp(settings: Record<string, unknown> = {}): Promise<RunningApp> {
+export async function launchApp(
+  settings: Record<string, unknown> = {},
+  store: Record<string, unknown> = {},
+): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
   }
@@ -115,10 +118,14 @@ export async function launchApp(settings: Record<string, unknown> = {}): Promise
   mkdirSync(workDir);
   // An explicit language, so the run reads the same on any Windows display
   // language; everything else starts from the defaults unless the test says.
-  writeFileSync(
-    path.join(profile, 'Roaming', 'FTPeach', 'settings.json'),
-    JSON.stringify({ schemaVersion: 1, data: { language: 'en', ...settings } }),
-  );
+  // Other store files, such as sites.json, are what a user saved earlier.
+  const files = { ...store, 'settings.json': { language: 'en', ...settings } };
+  for (const [name, data] of Object.entries(files)) {
+    writeFileSync(
+      path.join(profile, 'Roaming', 'FTPeach', name),
+      JSON.stringify({ schemaVersion: 1, data }),
+    );
+  }
 
   const cdpPort = await freePort();
   // The smoke build runs its self-test whenever this variable exists, even empty.
@@ -190,12 +197,18 @@ export async function launchApp(settings: Record<string, unknown> = {}): Promise
 /**
  * The test API with `app`: the running application, with a trace of the run
  * attached and the process and profile gone afterwards, a timed-out test too.
- * `test.use({ appSettings })` starts it with those settings in its profile.
+ * `test.use({ appSettings, appStore })` starts it with those settings and
+ * store files (name to data) in its profile.
  */
-export const test = base.extend<{ appSettings: Record<string, unknown>; app: RunningApp }>({
+export const test = base.extend<{
+  appSettings: Record<string, unknown>;
+  appStore: Record<string, unknown>;
+  app: RunningApp;
+}>({
   appSettings: [{}, { option: true }],
-  app: async ({ appSettings }, use, testInfo) => {
-    const app = await launchApp(appSettings);
+  appStore: [{}, { option: true }],
+  app: async ({ appSettings, appStore }, use, testInfo) => {
+    const app = await launchApp(appSettings, appStore);
     const tracing = app.page.context().tracing;
     await tracing.start({ screenshots: true, snapshots: true });
     try {

@@ -82,9 +82,8 @@ export async function openFolder(pane: Locator, folder: string) {
   await pane.locator('.path-input').press('Enter');
 }
 
-/** Fills the right pane's connection bar and presses Connect. */
-export async function startConnecting(page: Page, server: Server) {
-  const remote = remotePane(page);
+/** Fills a pane's connection bar, the right one's unless told, and presses Connect. */
+export async function startConnecting(page: Page, server: Server, remote = remotePane(page)) {
   if (server.protocol !== 'FTP') {
     await remote.locator('.protocol-select-trigger').click();
     await page.getByRole('option', { name: server.protocol, exact: true }).click();
@@ -109,10 +108,8 @@ export async function connectBookmark(page: Page, name: string) {
   await waitConnected(page);
 }
 
-export async function waitConnected(page: Page) {
-  await remotePane(page)
-    .getByRole('button', { name: 'Disconnect', exact: true })
-    .waitFor({ timeout: 30_000 });
+export async function waitConnected(page: Page, pane = remotePane(page)) {
+  await pane.getByRole('button', { name: 'Disconnect', exact: true }).waitFor({ timeout: 30_000 });
 }
 
 /** The queue row of a transfer, in any state or in the one given; a percentage may follow. */

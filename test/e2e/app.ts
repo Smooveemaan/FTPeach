@@ -72,7 +72,7 @@ function diagnose(child: ChildProcess, profile: string): string {
     { encoding: 'utf8' },
   ).stdout;
   const logs = (readdirSync(profile, { recursive: true }) as string[])
-    .filter((file) => file.endsWith('.log'))
+    .filter((file) => /ftpeach[^\\/]*\.log$/i.test(file))
     .map((file) => `--- ${file}\n${readFileSync(path.join(profile, file), 'utf8').slice(-4000)}`);
   return [
     `app process: ${child.exitCode === null ? 'running' : `exited with ${child.exitCode}`}`,
@@ -126,7 +126,9 @@ export async function launchApp(): Promise<RunningApp> {
       // Tauri finds its WebView2 profile through the Windows known-folder API,
       // not LOCALAPPDATA: without this the run shares the real user's profile.
       WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2'),
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${cdpPort}`,
+      // The test build listens for DevTools on this port (runtime/startup.rs);
+      // WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS on some runners.
+      FTPEACH_E2E_CDP_PORT: String(cdpPort),
     },
   });
 

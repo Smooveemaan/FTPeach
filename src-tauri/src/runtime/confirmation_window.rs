@@ -194,6 +194,10 @@ pub(crate) fn create(
     if let Some(root) = crate::local_fs::portable::root() {
         builder = builder.data_directory(crate::local_fs::portable::webview_dir(root));
     }
+    #[cfg(feature = "smoke-test")]
+    if let Some(args) = super::e2e_browser::args() {
+        builder = builder.additional_browser_args(&args);
+    }
     let main = app.get_webview_window("main");
     // Owned by the main window, so it gets no taskbar button of its own.
     if let Some(main) = &main {

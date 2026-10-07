@@ -39,6 +39,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if let Some(root) = local_fs::portable::root() {
         main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
     }
+    #[cfg(feature = "smoke-test")]
+    if let Some(args) = super::e2e_browser::args() {
+        main_window = main_window.additional_browser_args(&args);
+    }
     main_window.build()?;
     let data_dir = local_fs::edit_recovery::data_dir(app.handle())
         .ok_or_else(|| std::io::Error::other("No local application data directory"))?;

@@ -204,6 +204,36 @@ test.describe('with a speed limit, so a transfer is still running when Stop is p
     await expect.poll(() => ftpRoot.added(), { timeout: 15_000 }).toEqual([name]);
     expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(old));
   });
+
+  // Pausing aborts the STOR, and IIS deletes an aborted upload: what was sent
+  // is gone when Resume comes, so the upload has to start over, not fail and
+  // not append to nothing.
+  test('a paused upload resumes to the exact file even after the server dropped the partial one', async ({
+    ftpRoot,
+    app,
+  }) => {
+    const { page } = app;
+    const name = uniqueName();
+    const bytes = payload();
+    writeFileSync(path.join(app.workDir, name), bytes);
+
+    await openFolder(localPane(page), app.workDir);
+    await connect(page);
+    await copyAcross(localPane(page), name);
+    const running = queueRow(page, name, '[^:]+, [1-9]\\d?%$');
+    await running.waitFor({ timeout: 30_000 });
+    await running.getByRole('button', { name: 'Pause', exact: true }).click();
+
+    const paused = queueRow(page, name, 'Paused');
+    await paused.waitFor({ timeout: 15_000 });
+    // The case this test is about: nothing of the upload is left on the server.
+    await expect.poll(() => ftpRoot.added(), { timeout: 15_000 }).toEqual([]);
+    await paused.getByRole('button', { name: 'Resume', exact: true }).click();
+
+    await expect(await settledRow(page, name)).toHaveAccessibleName(/: Done\b/);
+    expect(ftpRoot.added()).toEqual([name]);
+    expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(bytes));
+  });
 });
 
 test('a server that refuses an upload reports an error, and the next upload still works', async ({

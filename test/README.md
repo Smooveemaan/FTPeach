@@ -67,15 +67,17 @@ to its WebView2 over the DevTools protocol and works through the window against 
 real server. The result is judged outside the application: the FTP tests read the
 server's disk and the local disk and compare SHA-256 sums. They cover an upload, a
 download, a name conflict cancelled and then overwritten, Stop during an upload
-over an existing file, and an upload the server refuses.
+over an existing file, Pause and Resume of an upload, and an upload the server
+refuses.
 
 The tests expect IIS FTP from `scripts/test-servers/iis.ps1 install`, with its
 `fixtures/perms` folders, or a server named by the `FTPEACH_E2E_FTP_*` variables in
 `test/e2e/ftp.e2e.ts`. A missing server fails the test. IIS deletes an aborted
 upload itself, so against IIS the tests cannot see whether FTPeach removes its own
-staging file after Stop. A test can start the application with its own settings
-through `test.use({ appSettings })`. Close FTPeach first: the application is single-instance, so
-the tests run one at a time and never beside a running copy. A failed test keeps a
+staging file after Stop, and a paused upload always starts over there. A test can
+start the application with its own settings through `test.use({ appSettings })`.
+Close FTPeach first: the application is single-instance, so the tests run one at a
+time and never beside a running copy. A failed test keeps a
 trace and a screenshot under `test-results/e2e/`.
 
 ## Choosing the runtime

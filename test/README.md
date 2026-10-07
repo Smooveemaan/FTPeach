@@ -73,7 +73,8 @@ server's disk and the local disk and compare SHA-256 sums.
   bookmark opening its folder with a listing that matches the
   server's disk name for name, a sign-in retried after a wrong password, Stop
   during an upload over an existing file, Pause and Resume of an
-  upload, and an upload the server refuses. It expects IIS FTP from
+  upload, an upload the server refuses, and a file someone else stores under
+  the name while it uploads, which stays. It expects IIS FTP from
   `scripts/test-servers/iis.ps1 install`, with its `fixtures/perms` folders, or a
   server named by the `FTPEACH_E2E_FTP_*` variables. IIS deletes an aborted upload
   itself, so these tests cannot see whether FTPeach removes its own staging file
@@ -85,13 +86,16 @@ server's disk and the local disk and compare SHA-256 sums.
   saved it.
 - `webdav.e2e.ts` runs a recording http:// server of its own to check that the
   password reaches it only once Allow unencrypted sign-in is ticked, then
-  uploads and downloads over the IIS WebDAV site and stops an upload over an
-  existing file there.
+  uploads and downloads over the IIS WebDAV site, stops an upload over an
+  existing file there and keeps a file someone else stores under the name
+  while it uploads.
 - `sftp.e2e.ts` trusts the server's key in the security window, which must show
   the key's real fingerprint, then covers an upload, Stop with the staging file
   removed, Resume appending to the staging file the pause kept, and Resume
   after the source was edited starting over without leaving that file behind,
-  and a connection cut by a relay in the test: the pane says it is gone, and
+  a file someone else stores under the name while it uploads, Stop of a
+  folder merge that keeps the file being replaced and a staging file that is
+  not its own, and a connection cut by a relay in the test: the pane says it is gone, and
   connecting it again lists and uploads. It expects
   OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
   whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.

@@ -6,6 +6,7 @@ import type { RecursiveIntent, RecursiveReport } from '../../platform/api/transf
 import type { CommandResult } from '../../platform/ipcContracts.ts';
 import { isCommandErrorCode } from '../../platform/ipcContracts.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
+import { isolate } from '../../shared/bidi.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
@@ -256,11 +257,13 @@ export function useTransferLifecycle(
     result: CommandResult,
     attemptId: string,
     _target: TransferTarget,
+    /** Says more than the error code alone would. */
+    notice?: string,
   ) => {
     if (getTransferRow(id)?.attemptId !== attemptId) return false;
     const intent = cancelIntentRef.current[id];
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
-      const message = friendlyError(commandResultError(result)) || undefined;
+      const message = notice ?? (friendlyError(commandResultError(result)) || undefined);
       setErrorMessage(message);
       if (message) shownErrors.current.set(id, message);
     }
@@ -559,15 +562,26 @@ export function useTransferLifecycle(
       if (row?.attemptId !== attemptId) return previous;
       return { ...previous, [id]: { ...row, files: report.completed } };
     });
+    const result = {
+      ok: report.ok,
+      error: report.errors.map((error) => error.message).join('\n'),
+      errorCode: isCommandErrorCode(report.errors[0]?.code) ? report.errors[0].code : undefined,
+    };
+    // A move that copied everything and then could not remove an original
+    // says so, rather than reading like a failed copy.
+    const notice =
+      report.sourceNotRemoved === undefined
+        ? undefined
+        : t('transfers.moveSourceNotRemoved', {
+            name: isolate(report.sourceNotRemoved),
+            reason: friendlyError(commandResultError(result)) ?? '',
+          });
     const cancelled = settleTransferResult(
       id,
-      {
-        ok: report.ok,
-        error: report.errors.map((error) => error.message).join('\n'),
-        errorCode: isCommandErrorCode(report.errors[0]?.code) ? report.errors[0].code : undefined,
-      },
+      result,
       attemptId,
       { kind: intent.target.kind, path: intent.target.path },
+      notice,
     );
     // A skip that found everything already there sent nothing: like a skipped
     // file, it leaves no row behind. A retried row stays where the user put it.

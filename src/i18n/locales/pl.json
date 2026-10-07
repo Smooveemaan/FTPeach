@@ -592,7 +592,8 @@
     "notifyFailed_few": "Nie przesłano {{count}} plików",
     "notifyFailed_many": "Nie przesłano {{count}} plików",
     "batchFailed": "Nie przeniesiono {{failed}} z {{total}} elementów.",
-    "sourcesKept": "Oryginały pozostały na swoim miejscu."
+    "sourcesKept": "Oryginały pozostały na swoim miejscu.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Kolejka jest pełna (do {{limit}} aktywnych lub oczekujących zadań). Poczekaj na zakończenie.",

@@ -600,7 +600,12 @@ async fn run_inner(
                     Some(identity::protect(Path::new(&intent.target.path(&entry.relative)), expected, false)?)
                 };
                 let expected = if entry.directory { source_directories.get(&entry.relative) } else { journal.sources.get(&entry.relative) }.context("Source identity unavailable; source retained")?;
-                io::remove_local(&intent.source, &entry.relative, expected, false).await?;
+                if let Err(error) = io::remove_local(&intent.source, &entry.relative, expected, false).await {
+                    let path = intent.source.path(&entry.relative);
+                    log::warn!("Move copied every file, but could not remove the original {path}: {error:#}");
+                    report.source_not_removed = Some(path.clone());
+                    return Err(error.context(path));
+                }
             }
         }
         Ok(())

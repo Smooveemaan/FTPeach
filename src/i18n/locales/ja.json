@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} 個のファイルが失敗しました",
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "batchFailed": "{{total}} 件のうち {{failed}} 件が転送されませんでした。",
-    "sourcesKept": "元のファイルはそのまま残っています。"
+    "sourcesKept": "元のファイルはそのまま残っています。",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大 {{limit}} 件）。完了するまでお待ちください。",

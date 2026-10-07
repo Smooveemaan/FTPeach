@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} Dateien fehlgeschlagen",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} von {{total}} Elementen wurden nicht übertragen.",
-    "sourcesKept": "Die Originale sind unverändert vorhanden."
+    "sourcesKept": "Die Originale sind unverändert vorhanden.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Die Warteschlange ist voll (bis zu {{limit}} aktive oder wartende Aufgaben). Warten Sie auf den Abschluss.",

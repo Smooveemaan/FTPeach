@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} filer mislykkedes",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} af {{total}} elementer blev ikke overført.",
-    "sourcesKept": "Originalerne ligger der stadig."
+    "sourcesKept": "Originalerne ligger der stadig.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Køen er fuld (op til {{limit}} aktive eller ventende opgaver). Vent på afslutning.",

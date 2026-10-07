@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} αρχεία απέτυχαν",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} από {{total}} στοιχεία δεν μεταφέρθηκαν.",
-    "sourcesKept": "Τα αρχικά αρχεία παραμένουν στη θέση τους."
+    "sourcesKept": "Τα αρχικά αρχεία παραμένουν στη θέση τους.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Η ουρά είναι πλήρης (έως {{limit}} ενεργές ή εκκρεμείς εργασίες). Περιμένετε να ολοκληρωθούν.",

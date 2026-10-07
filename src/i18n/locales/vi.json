@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} tệp thất bại",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} trong {{total}} mục chưa được truyền.",
-    "sourcesKept": "Các tệp gốc vẫn còn nguyên."
+    "sourcesKept": "Các tệp gốc vẫn còn nguyên.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Hàng đợi đã đầy (tối đa {{limit}} tác vụ đang chạy hoặc chờ). Hãy đợi hoàn tất.",

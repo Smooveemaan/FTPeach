@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} files failed",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} of {{total}} items were not transferred.",
-    "sourcesKept": "The originals are still in place."
+    "sourcesKept": "The originals are still in place.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "The queue is full (up to {{limit}} active or waiting tasks). Wait for tasks to finish.",

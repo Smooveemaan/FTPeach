@@ -586,7 +586,8 @@
     "notifySucceeded_many": "{{count}} archivos transferidos",
     "notifyFailed_many": "{{count}} archivos con error",
     "batchFailed": "{{failed}} de {{total}} elementos no se transfirieron.",
-    "sourcesKept": "Los originales siguen en su sitio."
+    "sourcesKept": "Los originales siguen en su sitio.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "La cola está llena (hasta {{limit}} tareas activas o en espera). Espera a que terminen.",

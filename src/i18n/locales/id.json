@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} file gagal",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} dari {{total}} item tidak dipindahkan.",
-    "sourcesKept": "File aslinya masih ada di tempatnya."
+    "sourcesKept": "File aslinya masih ada di tempatnya.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",

@@ -31,10 +31,13 @@ export interface RecursiveReport {
   errors: { message: string; code?: string }[];
   /** The walk was paused and kept its journal for the next attempt. */
   paused?: boolean;
+  /** A move copied everything, but removing its originals stopped at this one. */
+  sourceNotRemoved?: string;
 }
 function isRecursiveReport(value: unknown): value is RecursiveReport {
   return (
     isCommandRecord(value) &&
+    (value.sourceNotRemoved === undefined || typeof value.sourceNotRemoved === 'string') &&
     typeof value.ok === 'boolean' &&
     ['complete', 'partial', 'failed'].includes(String(value.outcome)) &&
     typeof value.scanned === 'number' &&

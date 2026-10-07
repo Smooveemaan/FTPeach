@@ -580,7 +580,8 @@
     "notifyFailed_other": "파일 {{count}}개 실패",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}}개 중 {{failed}}개가 전송되지 않았습니다.",
-    "sourcesKept": "원본은 그대로 남아 있습니다."
+    "sourcesKept": "원본은 그대로 남아 있습니다.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "대기열이 가득 찼습니다(실행 중이거나 대기 중인 작업 최대 {{limit}}개). 완료를 기다리세요.",

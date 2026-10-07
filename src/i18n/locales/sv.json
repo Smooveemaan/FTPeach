@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} filer misslyckades",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} av {{total}} objekt överfördes inte.",
-    "sourcesKept": "Originalen finns kvar."
+    "sourcesKept": "Originalen finns kvar.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Kön är full (upp till {{limit}} aktiva eller väntande uppgifter). Vänta tills uppgifter slutförs.",

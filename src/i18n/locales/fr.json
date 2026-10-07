@@ -586,7 +586,8 @@
     "notifySucceeded_many": "{{count}} fichiers transférés",
     "notifyFailed_many": "{{count}} fichiers en échec",
     "batchFailed": "{{failed}} éléments sur {{total}} n'ont pas été transférés.",
-    "sourcesKept": "Les originaux sont toujours en place."
+    "sourcesKept": "Les originaux sont toujours en place.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "La file est pleine (jusqu'à {{limit}} tâches actives ou en attente). Attendez leur fin.",

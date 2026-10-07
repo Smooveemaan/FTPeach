@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} 個檔案失敗",
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "batchFailed": "{{total}} 個項目中有 {{failed}} 個未傳輸。",
-    "sourcesKept": "原始檔案仍在原處。"
+    "sourcesKept": "原始檔案仍在原處。",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "佇列已滿（最多 {{limit}} 個執行中或等待中的工作）。請等待工作完成。",

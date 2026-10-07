@@ -210,8 +210,12 @@ pub(super) fn delete(file: &File) -> Result<()> {
                 FileDispositionInfo,
                 (&disposition as *const FILE_DISPOSITION_INFO).cast(),
                 std::mem::size_of_val(&disposition) as u32,
-            )?;
+            )
         }
+        // As an io::Error, so a read-only file classifies as permission denied
+        // rather than reaching the user as an unexpected error.
+        // The call fails with a Win32 code wrapped in an HRESULT.
+        .map_err(|error| std::io::Error::from_raw_os_error(error.code().0 & 0xFFFF))?;
         Ok(())
     }
     #[cfg(not(windows))]

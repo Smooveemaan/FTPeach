@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} फ़ाइलें विफल रहीं",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}} में से {{failed}} आइटम स्थानांतरित नहीं हुए।",
-    "sourcesKept": "मूल फ़ाइलें अपनी जगह पर हैं।"
+    "sourcesKept": "मूल फ़ाइलें अपनी जगह पर हैं।",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "कतार भरी हुई है (अधिकतम {{limit}} सक्रिय या प्रतीक्षारत कार्य)। कार्य पूरे होने तक प्रतीक्षा करें।",

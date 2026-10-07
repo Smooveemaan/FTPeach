@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} 个文件失败",
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "batchFailed": "{{total}} 个项目中有 {{failed}} 个未传输。",
-    "sourcesKept": "原文件仍在原处。"
+    "sourcesKept": "原文件仍在原处。",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "队列已满（最多 {{limit}} 个正在运行或等待的任务）。请等待任务完成。",

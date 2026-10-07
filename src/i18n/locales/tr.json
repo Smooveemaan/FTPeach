@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} dosya başarısız oldu",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}} öğeden {{failed}} tanesi aktarılmadı.",
-    "sourcesKept": "Özgün dosyalar yerinde kaldı."
+    "sourcesKept": "Özgün dosyalar yerinde kaldı.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Kuyruk dolu (en fazla {{limit}} etkin veya bekleyen görev). Görevlerin bitmesini bekleyin.",

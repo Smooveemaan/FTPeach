@@ -586,7 +586,8 @@
     "notifySucceeded_few": "{{count}} fișiere transferate",
     "notifyFailed_few": "{{count}} fișiere eșuate",
     "batchFailed": "{{failed}} din {{total}} elemente nu au fost transferate.",
-    "sourcesKept": "Originalele sunt încă la locul lor."
+    "sourcesKept": "Originalele sunt încă la locul lor.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Coada este plină (până la {{limit}} sarcini active sau în așteptare). Așteptați finalizarea.",

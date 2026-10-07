@@ -604,7 +604,8 @@
     "notifyFailed_few": "فشل نقل {{count}} ملفات",
     "notifyFailed_many": "فشل نقل {{count}} ملفًا",
     "batchFailed": "لم يُنقل {{failed}} من {{total}} عنصر.",
-    "sourcesKept": "الملفات الأصلية باقية في مكانها."
+    "sourcesKept": "الملفات الأصلية باقية في مكانها.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "قائمة الانتظار ممتلئة (حتى {{limit}} مهمة نشطة أو منتظرة). انتظر اكتمال المهام.",

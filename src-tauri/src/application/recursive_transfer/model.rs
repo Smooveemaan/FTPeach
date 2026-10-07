@@ -70,6 +70,9 @@ pub struct Report {
     pub errors: Vec<CommandError>,
     /// The walk was paused and kept its journal for the next attempt.
     pub paused: bool,
+    /// A move copied everything, but removing its originals stopped at this one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_not_removed: Option<String>,
 }
 
 pub(super) fn check_cancel(token: &CancellationToken) -> Result<()> {

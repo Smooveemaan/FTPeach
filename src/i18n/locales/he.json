@@ -586,7 +586,8 @@
     "notifySucceeded_two": "{{count}} קבצים הועברו",
     "notifyFailed_two": "{{count}} קבצים נכשלו",
     "batchFailed": "{{failed}} מתוך {{total}} פריטים לא הועברו.",
-    "sourcesKept": "קבצי המקור נותרו במקומם."
+    "sourcesKept": "קבצי המקור נותרו במקומם.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "התור מלא (עד {{limit}} משימות פעילות או ממתינות). יש להמתין לסיום.",

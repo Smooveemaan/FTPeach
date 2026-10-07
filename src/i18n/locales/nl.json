@@ -580,7 +580,8 @@
     "notifyFailed_other": "{{count}} bestanden mislukt",
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} van {{total}} items zijn niet overgedragen.",
-    "sourcesKept": "De originelen staan er nog."
+    "sourcesKept": "De originelen staan er nog.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "De wachtrij is vol (maximaal {{limit}} actieve of wachtende taken). Wacht tot taken klaar zijn.",

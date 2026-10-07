@@ -592,7 +592,8 @@
     "notifyFailed_few": "Nepodařilo se přenést {{count}} soubory",
     "notifyFailed_many": "Nepodařilo se přenést {{count}} souboru",
     "batchFailed": "{{failed}} z {{total}} položek nebylo přeneseno.",
-    "sourcesKept": "Originály zůstaly na svém místě."
+    "sourcesKept": "Originály zůstaly na svém místě.",
+    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
   },
   "transferQueue": {
     "capacity": "Fronta je plná (až {{limit}} aktivních nebo čekajících úloh). Počkejte na dokončení.",

@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect } from '@playwright/test';
 import {
+  connectBookmark,
   copyAcross,
   localPane,
   openFolder,
@@ -19,7 +20,6 @@ import {
   sha256,
   startConnecting,
   uniqueName,
-  waitConnected,
   type Server,
 } from './panes.ts';
 
@@ -75,11 +75,7 @@ test.describe('with a bookmark saved with the server certificate', () => {
     writeFileSync(path.join(app.workDir, name), bytes);
     await openFolder(localPane(page), app.workDir);
 
-    await remotePane(page).getByRole('button', { name: 'Manage Bookmarks…', exact: true }).click();
-    const manager = page.getByRole('dialog');
-    await manager.getByRole('treeitem', { name: bookmark }).click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Connect', exact: true }).click();
-    await waitConnected(page);
+    await connectBookmark(page, bookmark);
     // IIS also takes plain FTP on this port, so a bookmark that skipped TLS
     // would pass the rest. The certificate check that the test above proves
     // real happens in this handshake.

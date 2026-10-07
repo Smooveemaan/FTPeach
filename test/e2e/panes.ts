@@ -101,6 +101,14 @@ export async function startConnecting(page: Page, server: Server) {
   await remote.getByRole('button', { name: 'Connect', exact: true }).click();
 }
 
+/** Connects the right pane from a saved bookmark, through Manage Bookmarks. */
+export async function connectBookmark(page: Page, name: string) {
+  await remotePane(page).getByRole('button', { name: 'Manage Bookmarks…', exact: true }).click();
+  await page.getByRole('dialog').getByRole('treeitem', { name }).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Connect', exact: true }).click();
+  await waitConnected(page);
+}
+
 export async function waitConnected(page: Page) {
   await remotePane(page)
     .getByRole('button', { name: 'Disconnect', exact: true })

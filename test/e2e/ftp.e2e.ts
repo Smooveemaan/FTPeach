@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import {
+  connectBookmark,
   copyAcross,
   fileRow,
   localPane,
@@ -293,4 +294,70 @@ test('Move to puts a server file into a folder there and takes it from where it 
   await expect.poll(() => serverRoot.added(), { timeout: 15_000 }).toEqual([folder]);
   expect(tree(path.join(server.root, folder))).toEqual([`${name} ${sha256(bytes)}`]);
   await expect(fileRow(remote, name)).toHaveCount(0);
+});
+
+test.describe('with a bookmark whose default folder holds hard names', () => {
+  const bookmark = 'IIS FTP names';
+  test.use({
+    appStore: {
+      'sites.json': [
+        {
+          id: 'e2e-ftp-names',
+          name: bookmark,
+          protocol: 'ftp',
+          host: server.host,
+          port: Number(server.port),
+          user: server.user,
+          // Saved in plain text by an older version; protected on first read.
+          plain: server.password,
+          remotePath: '/fixtures/names',
+        },
+      ],
+    },
+  });
+
+  test('connecting from the bookmark opens its folder and lists exactly what the server holds', async ({
+    app,
+  }) => {
+    const folder = path.join(server.root, 'fixtures', 'names');
+    expect(existsSync(folder), `${folder} (run iis.ps1 install)`).toBe(true);
+    await connectBookmark(app.page, bookmark);
+
+    // Spaces at both ends, punctuation, accents, Cyrillic, CJK, emoji and a
+    // 255-character name: each listed under its own name, none lost or added.
+    const listed = remotePane(app.page).locator('[role=option][data-name]');
+    await expect
+      .poll(
+        async () =>
+          (await listed.evaluateAll((rows) => rows.map((row) => row.dataset.name))).sort(),
+        {
+          timeout: 15_000,
+        },
+      )
+      .toEqual(readdirSync(folder).sort());
+  });
+});
+
+test('after a wrong password the same pane connects with the right one and works', async ({
+  serverRoot,
+  app,
+}) => {
+  const { page } = app;
+  const name = uniqueName();
+  const bytes = payload();
+  writeFileSync(path.join(app.workDir, name), bytes);
+  await openFolder(localPane(page), app.workDir);
+
+  await startConnecting(page, { ...server, password: 'not-the-password' });
+  const remote = remotePane(page);
+  await expect(remote).toContainText('Incorrect username or password', { timeout: 30_000 });
+  await expect(remote.getByRole('button', { name: 'Disconnect', exact: true })).toHaveCount(0);
+
+  await remote.getByLabel('Password', { exact: true }).fill(server.password);
+  await remote.getByRole('button', { name: 'Connect', exact: true }).click();
+  await waitConnected(page);
+  await copyAcross(localPane(page), name);
+  await expect(await settledRow(page, name)).toHaveAccessibleName(/: Done\b/);
+  expect(serverRoot.added()).toEqual([name]);
+  expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(bytes));
 });

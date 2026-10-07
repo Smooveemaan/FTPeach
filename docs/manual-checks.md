@@ -1,9 +1,76 @@
 # Manual checks
 
-Some statements in the [user guide](user-guide.md) can only be confirmed by a
-person running the real application. Each run is recorded here, and the guide
-points to it with `<!-- verified-by: manual <heading> -->`, which
-`npm run check:verified-by` requires to match a heading below.
+Some behavior can only be confirmed by a person running the real application:
+a fingerprint or a face, a locked Windows session, how a moving window looks.
+This page lists those checks and records each run. Everything else is either
+covered by an automated check or listed as a known gap (lane `none`) in the
+[verification matrix](verification-matrix.md#release-matrix).
+
+The [user guide](user-guide.md) points to a recorded run with
+`<!-- verified-by: manual <heading> -->`, which `npm run check:verified-by`
+requires to match a heading on this page.
+
+## What is checked by hand
+
+### Windows Hello
+
+When: before each release, on a computer with Windows Hello set up.
+
+1. Settings → Security: protect saved passwords with a master password, then
+   turn on **Allow system unlock**.
+   Expected: Windows creates the Hello key (up to a minute) and the switch
+   stays on.
+2. **Lock now**, then connect with a bookmark that has a saved password.
+   Expected: Windows Hello asks at once; after confirming, the connection
+   proceeds without the master password.
+3. Lock again, connect again and cancel the Hello prompt.
+   Expected: the vault stays locked and asks for the master password with
+   "Windows Hello did not confirm. Enter the master password."; the master
+   password unlocks it.
+4. Copy `%APPDATA%\FTPeach` into another Windows account and start FTPeach
+   there.
+   Expected: **Allow system unlock** is off. Turn it on, unlock with Hello,
+   turn it off there; back on the first account Hello still unlocks.
+
+### Vault locks with Windows
+
+When: before each release.
+
+1. With saved passwords protected by a master password, unlock the vault,
+   start a long download, press Win+L and sign back in.
+   Expected: Settings → Security shows the vault locked, showing a saved
+   password asks to unlock, and the download is still running.
+
+### Window resize and monitor scaling
+
+When: after a change to the window frame, its scaling or the WebView setup.
+
+1. Rapidly widen and narrow the window in the dark and the light theme.
+   Expected: no flashing white line. Black edges near the corners are a known
+   open issue (see the records below); note whether they got worse.
+2. Move the window between two monitors with different display scaling.
+   Expected: the interface keeps its size on each monitor.
+
+### A new or changed screen
+
+When: before accepting the first reference snapshot of a new or visibly
+changed screen.
+
+1. Look at it in the running application in the dark and the light theme, at
+   100 % and 150 % interface scale, in Arabic and in German.
+   Expected: nothing is cut off, overlaps or reads in the wrong direction.
+
+### Update from the previous published release
+
+When: right after publishing a release.
+
+1. Install the previous release and add a bookmark with a saved password;
+   unpack the previous portable zip and do the same there.
+2. In each copy: Help → Check for Updates, install the update.
+   Expected: Help → About shows the new version; bookmarks, settings and the
+   saved password are still there; the portable copy's `data\` is unchanged.
+
+## Recorded runs
 
 Record a run as:
 

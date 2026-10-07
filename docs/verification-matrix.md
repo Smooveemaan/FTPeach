@@ -17,7 +17,8 @@ never as a pass.
 | packaged smoke | `npm run build:packaged-smoke`, then `npm run test:packaged-smoke` | CI `packaged-smoke`, a release gate |
 | fuzz | `src-tauri/fuzz`, 60 s per target | weekly `security-audit`; saved inputs replay in the default lane |
 | native | one command per test below, on a host that has the prerequisite | by hand |
-| manual | a person, following the release matrix below | before each release |
+| manual | a person, following [what is checked by hand](manual-checks.md#what-is-checked-by-hand) | before each release |
+| none | nothing: no automated check exists yet and no person repeats it | a known gap, printed as NOT VERIFIED in every release |
 
 The three Rust steps of the default lane compile different things:
 
@@ -96,26 +97,28 @@ the explicit cases of `temp_name_handles_windows_devices_controls_and_unicode_ed
 The release trust report copies this table into every draft release. Rows in
 the `ci` lane are proven by jobs the release workflow requires; every other row
 is printed as NOT VERIFIED until someone records a result in
-[native validation](native-validation.md).
+[native validation](native-validation.md). A `none` row has no check at all:
+it stays NOT VERIFIED until a test covers it.
 
 | Cell | Lane | How |
 | --- | --- | --- |
 | Default Rust, Node, component and visual suites | ci | `checks.yml` |
 | Docker compatibility round trips | ci | `protocol-compatibility.yml` |
 | Packaged WebView2 smoke: shutdown flush, editor recovery, vault lock | ci | `packaged-smoke` |
-| Portable copy keeps its data beside the program and none in the profile | ci | `packaged-smoke`, second run |
-| Server matrix, all targets including IIS | manual | `npm run servers:test` |
-| Same-volume and cross-volume move | manual | `cross_volume_disk_move`, then drag a file between two drives |
-| Reparse points and junctions | manual | default suite, then move a folder containing a junction |
-| UNC share | manual | `FTPEACH_REQUIRE_UNC_FIXTURES=1 npm run rust:test`, then copy to and from a share |
-| Recycle bin | manual | delete a local file and folder, restore both from the bin |
-| Explorer drag-out | manual | drag a remote file and folder to Explorer and to the desktop |
-| Editor recovery | manual | edit a remote file, kill FTPeach, restart, upload the recovered copy |
-| Windows Hello unlock | manual | enable enhanced protection, lock, unlock with Hello |
-| Windows Hello on a second computer or account | manual | carry the vault files over, check the switch is off, enable it there, unlock with Hello on both, disable it on one |
-| Upgrade keeps data | manual | install the previous release, add a site, upgrade, check sites, settings and vault |
-| Uninstall keeps data unless asked | manual | uninstall, reinstall, check the data is still there |
-| Portable copy leaves nothing behind | manual | snapshot `%APPDATA%`, `%LOCALAPPDATA%` and the notification registry key, run the zip's copy, connect, show a notification, exit, compare |
-| Portable passwords on another account | manual | save a password without a master password, open the folder as another Windows user; repeat with a master password |
-| Portable key file after the folder moves | manual | choose a key and a CA certificate inside the program's folder, connect, move the folder to another drive letter, connect again |
-| Portable update | manual | unpack the previous release's zip, update to this one, check the program version and that `data\` is unchanged |
+| Portable copy keeps its data beside the program and none in the profile folders | ci | `packaged-smoke`, second run |
+| Server matrix, all targets including IIS | native | `npm run servers:test -- all chaos heavy iis` |
+| Cross-volume move | native | `cross_volume_disk_move` with a second volume in `FTPEACH_MOVE_TEST_VOLUME` |
+| UNC share | native | `FTPEACH_REQUIRE_UNC_FIXTURES=1 npm run rust:test` |
+| File operations through the interface on a second drive, through a junction and on a share | none | no check drives the interface on these file systems |
+| Recycle bin | none | nothing deletes to the bin and restores from it |
+| Explorer drag-in and drag-out | none | nothing drags between Explorer and FTPeach |
+| Editor recovery after a crash | none | packaged smoke covers recovery after a normal exit; nothing kills FTPeach with an edited copy open |
+| Windows Hello unlock | manual | [Windows Hello](manual-checks.md#windows-hello) |
+| Windows Hello on a second account | manual | [Windows Hello](manual-checks.md#windows-hello) |
+| Vault locks with Windows | manual | [Vault locks with Windows](manual-checks.md#vault-locks-with-windows) |
+| Upgrade keeps data | none | nothing installs the previous release and upgrades it |
+| Uninstall keeps data unless asked | none | nothing uninstalls and reinstalls |
+| Portable copy leaves no notification registry key behind | none | packaged smoke checks the profile folders, not the registry |
+| Portable passwords on another account | none | nothing opens the folder as another Windows user |
+| Portable key file after the folder moves | none | nothing moves the folder or changes its drive letter |
+| Portable update | none | nothing updates a portable copy |

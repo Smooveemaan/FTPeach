@@ -92,8 +92,13 @@ function Install-Server {
   # timeout. Log on once here instead.
   $secure = ConvertTo-SecureString $Password -AsPlainText -Force
   $credential = New-Object System.Management.Automation.PSCredential($UserName, $secure)
-  Start-Process cmd.exe -ArgumentList '/c', 'exit' -Credential $credential -LoadUserProfile `
-    -WorkingDirectory $env:WINDIR -WindowStyle Hidden -Wait
+  try {
+    Start-Process cmd.exe -ArgumentList '/c', 'exit' -Credential $credential -LoadUserProfile `
+      -WorkingDirectory $env:WINDIR -WindowStyle Hidden -Wait
+  } catch [System.InvalidOperationException] {
+    # Windows PowerShell's -Wait can miss a process that has already exited;
+    # the logon, which is the point, happened before it started.
+  }
 
   [IO.Directory]::CreateDirectory($Jail) | Out-Null
   Invoke-Native icacls $Jail /grant "${UserName}:(OI)(CI)M" /Q

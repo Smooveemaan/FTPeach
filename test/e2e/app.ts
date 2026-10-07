@@ -29,6 +29,8 @@ export interface RunningApp {
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
   running: () => boolean;
+  /** The application's own log so far. */
+  log: () => string;
   /** Stops the application, removes its profile and returns its log. */
   close: () => Promise<string>;
 }
@@ -194,7 +196,14 @@ export async function launchApp(
             .find((other) => other !== page),
         30,
       );
-    return { page, workDir, otherWindow, running: () => child.exitCode === null, close };
+    return {
+      page,
+      workDir,
+      otherWindow,
+      running: () => child.exitCode === null,
+      log: () => appLogs(profile, 200_000),
+      close,
+    };
   } catch (error) {
     await close();
     throw error;

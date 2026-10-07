@@ -93,9 +93,11 @@ server's disk and the local disk and compare SHA-256 sums.
   the key's real fingerprint, then covers an upload, Stop with the staging file
   removed, Resume appending to the staging file the pause kept, and Resume
   after the source was edited starting over without leaving that file behind,
-  a file someone else stores under the name while it uploads, Stop of a
-  folder merge that keeps the file being replaced and a staging file that is
-  not its own, and a connection cut by a relay in the test: the pane says it is gone, and
+  a file someone else stores under the name while it uploads, then Retry once
+  the name is free, Stop of a folder merge that keeps the file being replaced
+  and a staging file that is not its own, Quit when transfers finish, called
+  off and then let through, Stop of an upload waiting for the one connection
+  allowed, and a connection cut by a relay in the test: the pane says it is gone, and
   connecting it again lists and uploads. It expects
   OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
   whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.

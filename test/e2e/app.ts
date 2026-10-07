@@ -27,6 +27,8 @@ export interface RunningApp {
   workDir: string;
   /** The next window the application opens besides the main one, such as a security confirmation. */
   otherWindow: () => Promise<Page>;
+  /** Whether the application process is still alive. */
+  running: () => boolean;
   /** Stops the application, removes its profile and returns its log. */
   close: () => Promise<string>;
 }
@@ -187,7 +189,7 @@ export async function launchApp(
             .find((other) => other !== page),
         30,
       );
-    return { page, workDir, otherWindow, close };
+    return { page, workDir, otherWindow, running: () => child.exitCode === null, close };
   } catch (error) {
     await close();
     throw error;

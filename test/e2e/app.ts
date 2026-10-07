@@ -120,8 +120,13 @@ export async function launchApp(
   mkdirSync(workDir);
   // An explicit language, so the run reads the same on any Windows display
   // language; everything else starts from the defaults unless the test says.
+  // The window sits off screen and unfocused, where a finished transfer would
+  // pop a Windows notification, so those are off.
   // Other store files, such as sites.json, are what a user saved earlier.
-  const files = { ...store, 'settings.json': { language: 'en', ...settings } };
+  const files = {
+    ...store,
+    'settings.json': { language: 'en', notifyOnTransferComplete: false, ...settings },
+  };
   for (const [name, data] of Object.entries(files)) {
     writeFileSync(
       path.join(profile, 'Roaming', 'FTPeach', name),

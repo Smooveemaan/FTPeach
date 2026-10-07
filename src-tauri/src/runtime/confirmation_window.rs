@@ -80,6 +80,13 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .get_webview_window("main")
         .ok_or("Parent window unavailable")?;
     center_over_parent(&parent, window);
+    // Centred over a main window that sits off screen; it must not take the
+    // focus from whoever works at the desktop either.
+    #[cfg(feature = "smoke-test")]
+    if super::e2e_browser::active() {
+        super::e2e_browser::show_without_focus(window);
+        return Ok(());
+    }
     window
         .show()
         .map_err(|_| "Confirmation could not be displayed")?;

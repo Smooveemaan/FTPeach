@@ -128,6 +128,10 @@ export async function settledRow(page: Page, name: string) {
 
 /** Selects a file in a pane and copies it to the other pane with F8. */
 export async function copyAcross(pane: Locator, name: string) {
-  await fileRow(pane, name).click();
+  const row = fileRow(pane, name);
+  // Two clicks on one name within half a second are a double click, which
+  // opens the file. A selected row may have been clicked just now.
+  if ((await row.getAttribute('aria-selected')) === 'true') await pane.page().waitForTimeout(600);
+  await row.click();
   await pane.page().keyboard.press('F8');
 }

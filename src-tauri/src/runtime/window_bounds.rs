@@ -72,6 +72,10 @@ fn parse_bounds(value: Option<&Value>) -> Option<Bounds> {
 }
 
 pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
+    #[cfg(feature = "smoke-test")]
+    if super::e2e_browser::active() {
+        return super::e2e_browser::show_in_background(&window);
+    }
     let settings = store.get_settings().await;
     let saved = parse_bounds(settings.get("windowBounds"));
     let maximized = settings

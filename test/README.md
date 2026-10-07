@@ -111,7 +111,9 @@ server's disk and the local disk and compare SHA-256 sums.
 
 Both scripts change the machine and need an elevated PowerShell. A missing server
 fails the test. A test can start the application with its own settings and saved
-store files through `test.use({ appSettings, appStore })`. Close FTPeach first:
+store files through `test.use({ appSettings, appStore })`. The application's
+windows open off screen without taking the focus, and its notifications are
+off, so a run leaves the desktop free to work at. Close FTPeach first:
 the application is single-instance, so the tests run one at a time and never
 beside a running copy. A failed test keeps a trace, a screenshot and the
 application's log (`app.log`) under `test-results/e2e/`.

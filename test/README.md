@@ -100,6 +100,9 @@ server's disk and the local disk and compare SHA-256 sums.
   OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
   whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.
   OpenSSH keeps a partly uploaded file, so what is left is FTPeach's doing.
+- `local.e2e.ts` needs no server: a folder cut and pasted into a folder of the
+  same name, where one file cannot be replaced, copies the rest and deletes
+  none of its sources.
 
 Both scripts change the machine and need an elevated PowerShell. A missing server
 fails the test. A test can start the application with its own settings and saved

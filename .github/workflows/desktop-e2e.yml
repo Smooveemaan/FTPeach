@@ -2,12 +2,47 @@ name: Desktop E2E
 
 # The real application on a GitHub-hosted Windows runner, driven through its
 # window over the Chrome DevTools Protocol, against IIS FTP on the same runner
-# (test/e2e). A pilot: started by hand until its runs prove stable.
+# (test/e2e). Runs on changes to anything that ends up in the application.
 
 permissions: {}
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - src/**
+      - src-tauri/src/**
+      - src-tauri/Cargo.lock
+      - src-tauri/Cargo.toml
+      - src-tauri/tauri.conf.json
+      - src-tauri/capabilities/**
+      - index.html
+      - vite.config.ts
+      - package.json
+      - package-lock.json
+      - test/e2e/**
+      - scripts/test-servers/iis.ps1
+      - .github/workflows/desktop-e2e.yml
+  pull_request:
+    paths:
+      - src/**
+      - src-tauri/src/**
+      - src-tauri/Cargo.lock
+      - src-tauri/Cargo.toml
+      - src-tauri/tauri.conf.json
+      - src-tauri/capabilities/**
+      - index.html
+      - vite.config.ts
+      - package.json
+      - package-lock.json
+      - test/e2e/**
+      - scripts/test-servers/iis.ps1
+      - .github/workflows/desktop-e2e.yml
+
+concurrency:
+  group: desktop-e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   desktop-e2e:

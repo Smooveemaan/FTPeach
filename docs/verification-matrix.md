@@ -16,7 +16,7 @@ never as a pass.
 | server matrix | `npm run servers:up -- all`, then `npm run servers:test` ([how](test-server-matrix.md)) | CI `server-matrix`: weekly and on demand, by profile, not a gate; by hand before a release; IIS targets need `scripts/test-servers/iis.ps1 install` |
 | packaged smoke | `npm run build:packaged-smoke`, then `npm run test:packaged-smoke` | CI `packaged-smoke`, a release gate |
 | fuzz | `src-tauri/fuzz`, 60 s per target | weekly `security-audit`; saved inputs replay in the default lane |
-| desktop e2e | `npm run build:packaged-smoke`, `iis.ps1 install`, then `npm run test:e2e` | CI `desktop-e2e`, started by hand |
+| desktop e2e | `npm run build:packaged-smoke`, `iis.ps1 install`, then `npm run test:e2e` | CI `desktop-e2e`, on push and PR when the application changes |
 | native | one command per test below, on a host that has the prerequisite | by hand |
 | manual | a person, following [what is checked by hand](manual-checks.md#what-is-checked-by-hand) | before each release |
 | none | nothing: no automated check exists yet and no person repeats it | a known gap, printed as NOT VERIFIED in every release |

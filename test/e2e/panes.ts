@@ -57,10 +57,12 @@ export const isStaging = (name: string) => /^\.ftpeach-.*\.part$/.test(name);
 
 /**
  * A folder's whole content, read from disk: `path/` for each folder, empty
- * ones included, and `path sha256` for each file, sorted.
+ * ones included, and `path sha256` for each file, sorted. Names `skip`
+ * accepts are left out unread, such as a staging file still being written.
  */
-export function tree(root: string): string[] {
+export function tree(root: string, skip: (_name: string) => boolean = () => false): string[] {
   return readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => !skip(entry.name))
     .map((entry) => {
       const full = path.join(entry.parentPath, entry.name);
       const relative = path.relative(root, full).replaceAll('\\', '/');

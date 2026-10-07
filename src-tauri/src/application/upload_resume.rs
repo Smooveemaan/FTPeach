@@ -18,8 +18,10 @@ mod tests;
 
 use crate::protocol::LogKind;
 use crate::session::Sessions;
+#[cfg(test)]
+pub(crate) use crate::transfer::upload_staging::remember;
 pub(crate) use crate::transfer::upload_staging::{
-    Key, mark_paused, pin, remember, staged_len, take_pause_mark,
+    Key, mark_paused, pin, staged_len, take_pause_mark,
 };
 use crate::transfer::upload_staging::{Paused, SourcePin, remove_staging_on, take};
 use std::path::Path;
@@ -45,7 +47,7 @@ async fn remove_staging(sessions: &Sessions, connection_id: &str, staging_path: 
     let slot = sessions.lookup_slot(connection_id);
     let mut guard = slot.lock().await;
     if let Some(session) = guard.as_mut() {
-        remove_staging_on(session.browse_client.as_mut(), staging_path).await;
+        remove_staging_on(session.browse_client.as_mut(), staging_path, 1).await;
     }
 }
 
@@ -145,7 +147,7 @@ pub async fn resolve(
             restart.params(&key.remote_path),
             LogKind::Status,
         );
-        remove_staging_on(session.browse_client.as_mut(), &entry.staging_path).await;
+        remove_staging_on(session.browse_client.as_mut(), &entry.staging_path, 1).await;
     } else {
         log::warn!(
             "Disconnected resume staging retained: {}",

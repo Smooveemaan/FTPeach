@@ -629,6 +629,11 @@ impl TransferPool {
         self.growth_cancel.cancelled().await;
     }
 
+    /// The session behind this pool is closing or gone.
+    pub fn is_closed(&self) -> bool {
+        self.growth_cancel.is_cancelled()
+    }
+
     /// Synchronous cancellation also runs when a deadline drops the session.
     pub fn cancel_all(&self) {
         self.growth_cancel.cancel();

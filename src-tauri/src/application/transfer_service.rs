@@ -109,19 +109,21 @@ async fn relay_staged(
     }
 }
 
-/// How often, and how far apart, a refused staging removal is tried again:
-/// about five seconds for the server to let go of the file.
-const STAGING_REMOVE_ATTEMPTS: u32 = 10;
-const STAGING_REMOVE_PAUSE: Duration = Duration::from_millis(500);
+use crate::transfer::upload_staging::{
+    REMOVE_ATTEMPTS as STAGING_REMOVE_ATTEMPTS, REMOVE_PAUSE as STAGING_REMOVE_PAUSE,
+};
 
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
+///
+/// Says whether a session was there to try. Without one the file is left to
+/// the connection's teardown, which is what took the session away.
 pub(crate) async fn cleanup_remote_partial(
     sessions: &Sessions,
     connection_id: &str,
     partial: &str,
-) {
+) -> bool {
     // Only the wait for the browsing connection is kept short. A removal cut
     // off mid-reply would cost FTP that connection, and the pane its listing
     // with it, so once started it gets as long as a server that still answers
@@ -132,10 +134,11 @@ pub(crate) async fn cleanup_remote_partial(
                 let slot = sessions.lookup_slot(connection_id);
                 let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await
                 else {
-                    return false;
+                    return Some(false);
                 };
                 let Some(session) = guard.as_mut() else {
-                    return true;
+                    log::warn!("No session to clean transfer staging file {partial}");
+                    return None;
                 };
                 match tokio::time::timeout(
                     Duration::from_secs(10),
@@ -143,17 +146,17 @@ pub(crate) async fn cleanup_remote_partial(
                 )
                 .await
                 {
-                    Ok(Ok(())) => return true,
+                    Ok(Ok(())) => return Some(true),
                     Ok(Err(error)) => error,
-                    Err(_) => return false,
+                    Err(_) => return Some(false),
                 }
             };
             if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
-                return true;
+                return Some(true);
             }
             if attempt == STAGING_REMOVE_ATTEMPTS {
                 log::warn!("Could not clean transfer staging file {partial}: {refused}");
-                return true;
+                return Some(true);
             }
             // A server on Windows refuses to delete a file that the stopped
             // upload's session still holds open, and that session takes a
@@ -161,10 +164,12 @@ pub(crate) async fn cleanup_remote_partial(
             // in between.
             tokio::time::sleep(STAGING_REMOVE_PAUSE).await;
         }
-        true
+        Some(true)
     };
-    if cleaned.await {
-        return;
+    match cleaned.await {
+        None => return false,
+        Some(true) => return true,
+        Some(false) => {}
     }
     // The browsing connection is busy or no longer answering. A transfer
     // connection is free to try, now that this upload has let go of its own.
@@ -198,8 +203,13 @@ pub(crate) async fn cleanup_remote_partial(
             log::warn!("Could not clean transfer staging file {partial}: {error}");
         }
         Err(_) => log::warn!("Timed out cleaning transfer staging file {partial}"),
-        Ok(_) => {}
+        Ok(None) => {
+            log::warn!("No session to clean transfer staging file {partial}");
+            return false;
+        }
+        Ok(Some(Ok(()))) => {}
     }
+    true
 }
 
 fn make_progress_sink(
@@ -352,6 +362,9 @@ pub async fn transfer_upload(
         .map(|(staging, _)| staging)
         .unwrap_or_else(|| remote_partial_path(&remote_path));
     let partial_for_task = partial.clone();
+    // Recorded before the attempt runs, so a disconnect that overtakes it
+    // still finds the file to delete.
+    crate::transfer::upload_staging::begin(&transfer_id, key, partial.clone());
     let local_for_resume = local.to_string_lossy().into_owned();
     let cleanup_connection = connection_id.clone();
     let started = Arc::new(std::sync::atomic::AtomicBool::new(false));
@@ -396,19 +409,25 @@ pub async fn transfer_upload(
     // The staging file exists on the server if this attempt adopted one or got
     // far enough to create its own. A pause hands it to the next attempt; every
     // other unfinished ending abandons it.
-    let paused = upload_resume::take_pause_mark(&transfer_id);
-    if result.is_err() && (resumed || started.load(std::sync::atomic::Ordering::SeqCst)) {
-        if paused {
-            upload_resume::remember(
-                key,
-                partial,
-                local_for_resume,
-                pin,
-                staged.load(std::sync::atomic::Ordering::SeqCst),
-            );
-        } else {
-            cleanup_remote_partial(sessions, &cleanup_connection, &partial).await;
-        }
+    let unfinished =
+        result.is_err() && (resumed || started.load(std::sync::atomic::Ordering::SeqCst));
+    let live = unfinished
+        && sessions
+            .pool_for(&cleanup_connection)
+            .await
+            .is_some_and(|pool| !pool.is_closed());
+    if let Some(partial) = crate::transfer::upload_staging::end_attempt(
+        &transfer_id,
+        unfinished,
+        live,
+        local_for_resume,
+        pin,
+        staged.load(std::sync::atomic::Ordering::SeqCst),
+    ) && cleanup_remote_partial(sessions, &cleanup_connection, &partial).await
+    {
+        // Only now: a disconnect before the deletion reached the server
+        // still finds the file through its record.
+        crate::transfer::upload_staging::release(&transfer_id);
     }
     result
 }
@@ -466,21 +485,25 @@ pub async fn transfer_download(
     )
     .await;
     // A pause keeps the partial for the next attempt; a stop leaves nothing.
-    // Any other failure keeps it too: a retry carries on from it.
-    let paused = upload_resume::take_pause_mark(&transfer_id);
-    if result
-        .as_ref()
-        .is_err_and(|error| error.code == ErrorCode::Cancelled)
-    {
-        if paused {
-            let mut paused = PAUSED_DOWNLOADS.lock().unwrap();
-            if paused.len() >= crate::transfer::upload_staging::MARK_CAP {
-                paused.clear();
+    // Any other failure keeps it too: a retry carries on from it. The mark is
+    // taken under the same lock a Stop takes, so a Stop that overtakes the
+    // pause finds either the mark or the kept partial.
+    let discard = {
+        let mut kept = PAUSED_DOWNLOADS.lock().unwrap();
+        let paused = upload_resume::take_pause_mark(&transfer_id);
+        let cancelled = result
+            .as_ref()
+            .is_err_and(|error| error.code == ErrorCode::Cancelled);
+        if cancelled && paused {
+            if kept.len() >= crate::transfer::upload_staging::MARK_CAP {
+                kept.clear();
             }
-            paused.insert(transfer_id, destination);
-        } else {
-            crate::protocol::transfer_file::discard(&destination).await;
+            kept.insert(transfer_id, destination.clone());
         }
+        cancelled && !paused
+    };
+    if discard {
+        crate::protocol::transfer_file::discard(&destination).await;
     }
     result
 }
@@ -512,12 +535,21 @@ pub async fn transfer_cancel(
     if intent == CancelIntent::Pause {
         upload_resume::mark_paused(&transfer_id);
     }
-    // A stop after a pause: nothing runs, but the pause kept a partial.
-    let kept = (intent == CancelIntent::Stop)
-        .then(|| PAUSED_DOWNLOADS.lock().unwrap().remove(&transfer_id))
-        .flatten();
-    if let Some(destination) = kept {
-        crate::protocol::transfer_file::discard(&destination).await;
+    // A stop after a pause: nothing runs, but the pause kept a partial or a
+    // staging file. A stop overtaking a pause that is still unwinding takes
+    // its mark back instead, and the transfer cleans up as a stopped one.
+    if intent == CancelIntent::Stop {
+        let kept = {
+            let mut kept = PAUSED_DOWNLOADS.lock().unwrap();
+            let staged = crate::transfer::upload_staging::stop(&transfer_id);
+            (kept.remove(&transfer_id), staged)
+        };
+        if let Some(destination) = kept.0 {
+            crate::protocol::transfer_file::discard(&destination).await;
+        }
+        if let Some((key, staging_path)) = kept.1 {
+            cleanup_remote_partial(sessions, &key.connection_id, &staging_path).await;
+        }
     }
     let Some(pool) = sessions.pool_for(&connection_id).await else {
         return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));

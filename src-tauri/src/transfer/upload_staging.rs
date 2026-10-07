@@ -1,4 +1,5 @@
-//! The staging files paused uploads leave on the server, by destination.
+//! The staging files uploads write on the server: by attempt while one runs,
+//! by destination once it is paused.
 //!
 //! Kept below the session layer on purpose: a session being torn down has to
 //! delete what is staged for its connection while it can still reach the
@@ -56,13 +57,23 @@ pub(crate) struct Paused {
     /// How far the paused attempt last reported, for showing before the next
     /// attempt has proven anything. Never what the resume appends from.
     pub(crate) staged: u64,
+    /// The attempt that paused, so a Stop sent to it later finds this file.
+    attempt: String,
 }
 
 #[derive(Default)]
 struct State {
     paused: HashMap<Key, Paused>,
     marks: Vec<String>,
+    /// Staging files of attempts still running, so a disconnect that overtakes
+    /// one can delete its file while the connection still reaches it.
+    active: HashMap<String, (Key, String)>,
 }
+
+/// How often, and how far apart, a refused staging removal is tried again:
+/// about five seconds for the server to let go of the file.
+pub(crate) const REMOVE_ATTEMPTS: u32 = 10;
+pub(crate) const REMOVE_PAUSE: std::time::Duration = std::time::Duration::from_millis(500);
 
 fn state() -> &'static StdMutex<State> {
     static STATE: OnceLock<StdMutex<State>> = OnceLock::new();
@@ -84,7 +95,10 @@ pub fn mark_paused(transfer_id: &str) {
 }
 
 pub fn take_pause_mark(transfer_id: &str) -> bool {
-    let mut state = state().lock().unwrap();
+    take_mark(&mut state().lock().unwrap(), transfer_id)
+}
+
+fn take_mark(state: &mut State, transfer_id: &str) -> bool {
     if let Some(index) = state.marks.iter().position(|id| id == transfer_id) {
         state.marks.remove(index);
         return true;
@@ -92,6 +106,7 @@ pub fn take_pause_mark(transfer_id: &str) -> bool {
     false
 }
 
+#[cfg(test)]
 pub fn remember(key: Key, staging_path: String, local_path: String, pin: SourcePin, staged: u64) {
     state().lock().unwrap().paused.insert(
         key,
@@ -100,8 +115,87 @@ pub fn remember(key: Key, staging_path: String, local_path: String, pin: SourceP
             local_path,
             pin,
             staged,
+            attempt: String::new(),
         },
     );
+}
+
+/// Records the staging file an attempt is about to write, before it starts.
+pub(crate) fn begin(transfer_id: &str, key: Key, staging_path: String) {
+    state()
+        .lock()
+        .unwrap()
+        .active
+        .insert(transfer_id.to_owned(), (key, staging_path));
+}
+
+/// Settles an attempt's staging file. Under one lock with its pause mark, so
+/// a Stop sent meanwhile finds either the mark or the paused entry.
+///
+/// `unfinished`: the attempt ended without completing, and its staging file
+/// may be on the server. A paused one is kept for the next attempt. While the
+/// connection is closing (`live` false) the file is left to the teardown,
+/// which still reaches the server. Otherwise the caller gets the path to
+/// delete, but the record stays until [`release`]: a disconnect that comes
+/// before the deletion reaches the server still finds the file. A teardown
+/// that got here first already deleted it.
+pub(crate) fn end_attempt(
+    transfer_id: &str,
+    unfinished: bool,
+    live: bool,
+    local_path: String,
+    pin: SourcePin,
+    staged: u64,
+) -> Option<String> {
+    let mut state = state().lock().unwrap();
+    let paused = take_mark(&mut state, transfer_id);
+    let (key, staging_path) = state.active.get(transfer_id)?;
+    if !unfinished {
+        state.active.remove(transfer_id);
+        return None;
+    }
+    if !live {
+        log::info!(
+            "Staging file {staging_path} left to the cleanup of closing {}",
+            key.connection_id
+        );
+        return None;
+    }
+    if !paused {
+        return Some(staging_path.clone());
+    }
+    let (key, staging_path) = state.active.remove(transfer_id)?;
+    let attempt = transfer_id.to_owned();
+    state.paused.insert(
+        key,
+        Paused {
+            staging_path,
+            local_path,
+            pin,
+            staged,
+            attempt,
+        },
+    );
+    None
+}
+
+/// The attempt's own cleanup reached the server: the record has served.
+pub(crate) fn release(transfer_id: &str) {
+    state().lock().unwrap().active.remove(transfer_id);
+}
+
+/// A Stop for this attempt: a pause it overtakes, still unwinding, becomes a
+/// stop, and what a finished pause kept is handed to the caller to delete.
+pub(crate) fn stop(transfer_id: &str) -> Option<(Key, String)> {
+    let mut state = state().lock().unwrap();
+    take_mark(&mut state, transfer_id);
+    let key = state
+        .paused
+        .iter()
+        .find(|(_, entry)| entry.attempt == transfer_id)
+        .map(|(key, _)| key.clone())?;
+    let entry = state.paused.remove(&key)?;
+    Some((key, entry.staging_path))
 }
 
 /// How much of this destination a paused upload reported sent, if one is
@@ -143,26 +237,33 @@ pub(crate) fn take(key: &Key) -> Option<Paused> {
     state().lock().unwrap().paused.remove(key)
 }
 
+/// Removes a staging file, trying a refused removal again up to `attempts`
+/// times: a server on Windows refuses while the session that wrote the file
+/// still holds it, and that session takes a moment to close.
 pub(crate) async fn remove_staging_on(
     browse: &mut (dyn ProtocolBackend + Send),
     staging_path: &str,
+    attempts: u32,
 ) {
-    match tokio::time::timeout(
-        std::time::Duration::from_secs(5),
-        browse.remove(staging_path, false),
-    )
-    .await
-    {
-        Ok(Ok(())) => log::debug!("Removed staging file {staging_path}"),
-        // One the pause came before is not there to remove.
-        Ok(Err(error))
-            if crate::ipc::CommandError::from_anyhow(&error).code
-                == crate::ipc::ErrorCode::NotFound =>
+    for attempt in 1..=attempts {
+        match tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            browse.remove(staging_path, false),
+        )
+        .await
         {
-            log::debug!("No staging file to remove at {staging_path}");
+            Ok(Ok(())) => return log::debug!("Removed staging file {staging_path}"),
+            // One the pause came before is not there to remove.
+            Ok(Err(error))
+                if crate::ipc::CommandError::from_anyhow(&error).code
+                    == crate::ipc::ErrorCode::NotFound =>
+            {
+                return log::debug!("No staging file to remove at {staging_path}");
+            }
+            Ok(Err(_)) if attempt < attempts => tokio::time::sleep(REMOVE_PAUSE).await,
+            Ok(Err(error)) => log::warn!("Could not remove staging file {staging_path}: {error}"),
+            Err(_) => return log::warn!("Staging cleanup timed out; retained {staging_path}"),
         }
-        Ok(Err(error)) => log::warn!("Could not remove staging file {staging_path}: {error}"),
-        Err(_) => log::warn!("Staging cleanup timed out; retained {staging_path}"),
     }
 }
 
@@ -182,24 +283,35 @@ pub async fn discard_for_connection(
             .filter(|key| key.connection_id == connection_id)
             .cloned()
             .collect();
-        keys.iter()
+        let mut abandoned: Vec<String> = keys
+            .iter()
             .filter_map(|key| state.paused.remove(key))
             .map(|entry| entry.staging_path)
-            .collect()
+            .collect();
+        // Uploads the disconnect cut off: their own cleanup finds no session.
+        state.active.retain(|_, (key, staging_path)| {
+            if key.connection_id != connection_id {
+                return true;
+            }
+            abandoned.push(std::mem::take(staging_path));
+            false
+        });
+        abandoned
     };
     for staging_path in &abandoned {
         // Log before awaiting: cancellation of teardown must not lose paths.
         log::warn!("Disconnect cleanup pending for {connection_id}: {staging_path}");
     }
     for staging_path in abandoned {
-        remove_staging_on(browse, &staging_path).await;
+        remove_staging_on(browse, &staging_path, REMOVE_ATTEMPTS).await;
     }
 }
 
 /// Release RAM even when shutdown exhausted its network budget. Server files
 /// remain for manual cleanup; diagnostics retain the exact paths.
 pub fn retain_for_connection(connection_id: &str) {
-    state().lock().unwrap().paused.retain(|key, entry| {
+    let mut state = state().lock().unwrap();
+    state.paused.retain(|key, entry| {
         if key.connection_id != connection_id {
             return true;
         }
@@ -207,6 +319,13 @@ pub fn retain_for_connection(connection_id: &str) {
             "Disconnected staging retained for {connection_id}: {}",
             entry.staging_path
         );
+        false
+    });
+    state.active.retain(|_, (key, staging_path)| {
+        if key.connection_id != connection_id {
+            return true;
+        }
+        log::warn!("Disconnected staging retained for {connection_id}: {staging_path}");
         false
     });
 }

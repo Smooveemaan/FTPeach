@@ -787,8 +787,11 @@ export function useTransferLifecycle(
       }
     } else if (
       wasRunning ||
-      // Nothing runs, but the pause kept a partial file that a stop takes back.
-      (intent === 'stopped' && current.status === 'paused' && current.direction === 'down')
+      // Nothing runs, but the pause kept a partial or a staging file that a
+      // stop takes back. One still winding the pause down drops it instead.
+      (intent === 'stopped' &&
+        (current.status === 'paused' || current.status === 'cancelling') &&
+        (current.direction === 'down' || current.direction === 'up'))
     ) {
       if (current.direction === 'copy') {
         await api.transfer.cancelRemoteCopy(

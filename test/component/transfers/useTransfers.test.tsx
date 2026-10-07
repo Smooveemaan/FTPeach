@@ -1286,7 +1286,10 @@ test('pause then stop on an upload never deletes its remote destination', async 
       await getApi().stopTransfer(id);
     });
     assert.equal(getSnapshot()[id]?.status, 'cancelling');
-    assert.equal(calls.cancel.length, 1, 'stop-after-pause must not send a second cancel');
+    // The stop reaches the backend, which drops the pause and its staging
+    // file; the destination itself is never deleted.
+    assert.equal(calls.cancel.length, 2);
+    assert.equal(calls.cancel[1]?.intent, 'stop');
     assert.equal(calls.sessionDelete.length, 0);
 
     mockApi._nextUpload.resolve({ ok: false, error: 'Connection closed' });
@@ -1673,9 +1676,14 @@ test('pauseAllTransfers only pauses uploads that can prove a resume, but stopAll
       'cancelling',
       'stop reaches a still-running WebDAV upload too',
     );
+    // The pause still winding down gets the stop too, so it keeps nothing.
     assert.deepEqual(
-      calls.cancel.map((call) => call.intent),
-      ['pause', 'stop'],
+      calls.cancel.map((call) => [call.connectionId, call.intent]),
+      [
+        ['c1', 'pause'],
+        ['c1', 'stop'],
+        ['c2', 'stop'],
+      ],
       'a stop is never sent as a pause: only a pause may keep staging on the server',
     );
     await act(async () => {
@@ -1783,7 +1791,8 @@ test('disconnecting settles every transfer on that connection, paused ones inclu
       calls.cancel,
       [
         { connectionId: 'c1', id: getSnapshot()[running]?.attemptId, intent: 'stop' },
-        // The paused download's partial goes with the stop.
+        // The paused upload's staging file and download's partial go with the stop.
+        { connectionId: 'c1', id: 'pausedUpload', intent: 'stop' },
         { connectionId: 'c1', id: 'pausedDownload', intent: 'stop' },
       ],
       'a teardown never asks the backend to keep staging it is about to delete',

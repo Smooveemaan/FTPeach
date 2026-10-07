@@ -1,0 +1,82 @@
+name: Desktop E2E
+
+# The real application on a GitHub-hosted Windows runner, driven through its
+# window over the Chrome DevTools Protocol, against IIS FTP on the same runner
+# (test/e2e). A pilot: started by hand until its runs prove stable.
+
+permissions: {}
+
+on:
+  workflow_dispatch:
+
+jobs:
+  desktop-e2e:
+    permissions:
+      contents: read
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+          # smoke-build writes to this target directory instead of src-tauri/target.
+          cache-directories: .tools/smoke-target
+
+      - run: npm ci
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      # The production frontend in a debug build; without FTPEACH_SMOKE_TEST it
+      # runs as the ordinary application.
+      - name: Build the application
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command smoke-build
+
+      # The runner is disposable and elevated; on Windows Server the script
+      # uses Install-WindowsFeature instead of the client's optional features.
+      - name: Install IIS FTP and WebDAV test sites
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
+
+      - name: Run the desktop tests
+        run: npm run test:e2e
+
+      # Trace, screenshot and the error context of a failed test.
+      - name: Keep the test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-e2e-results
+          path: test-results/e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload IIS logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-e2e-iis-logs
+          path: |
+            C:\inetpub\logs\LogFiles
+            C:\Windows\System32\LogFiles\HTTPERR
+          retention-days: 14
+          if-no-files-found: ignore

@@ -30,6 +30,7 @@ test/
     shared/              Dialogs, menus, drag and resize hooks
     helpers/             Global setup and Tauri test adapter
   visual/                Playwright scenarios, browser harness and snapshots
+  e2e/                   The real application driven through its window (CDP)
   fixtures/updater/      Signed sample update and local fixture server
 ```
 
@@ -41,6 +42,7 @@ test/
 | `npm run test:unit` | `test/unit/**/*.test.ts`, using `node:test` |
 | `npm run test:components` | `test/component/**/*.test.{ts,tsx}`, using Vitest |
 | `npm run test:visual` | Browser scenarios in `test/visual/` |
+| `npm run test:e2e` | The packaged smoke build driven through its window against a real server, see below |
 | `npm run test:updater-fixtures` | Accept the valid update signature and reject a damaged artifact |
 | `npm run rust:test` | Native Rust tests under `src-tauri/` |
 
@@ -56,6 +58,20 @@ npm run test:components -- test/component/sites/siteManager.test.tsx
 measure code coverage. `npm run coverage` runs both suites with coverage, see
 [docs/coverage.md](../docs/coverage.md).
 Packaged application smoke tests remain a separate CI-owned check.
+
+## Desktop end-to-end tests
+
+`test/e2e/` starts the real application (`npm run build:packaged-smoke` builds it;
+it runs as the ordinary application) with a throwaway profile, attaches Playwright
+to its WebView2 over the DevTools protocol and works through the window against a
+real server. The result is judged outside the application: the FTP test reads the
+uploaded file from the server's disk and compares its SHA-256.
+
+The tests expect IIS FTP from `scripts/test-servers/iis.ps1 install`, or a server
+named by the `FTPEACH_E2E_FTP_*` variables in `test/e2e/ftp-upload.e2e.ts`. A missing
+server fails the test. Close FTPeach first: the application is single-instance, so
+the tests run one at a time and never beside a running copy. A failed test keeps a
+trace and a screenshot under `test-results/e2e/`.
 
 ## Choosing the runtime
 

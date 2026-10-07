@@ -35,3 +35,29 @@ test('the status snapshot is read once the listener is in place, and a live even
   await act(async () => answer({ state: 'available', version: '2.0.0' }));
   expect(result.current.status).toEqual({ state: 'downloaded', version: '2.0.0' });
 });
+
+test('the daily check runs only with automatic updates on and nothing transferring', async () => {
+  vi.useFakeTimers();
+  vi.mocked(api.updater.onStatus).mockImplementation(() =>
+    Object.assign(() => {}, { ready: new Promise<boolean>(() => {}) }),
+  );
+  vi.mocked(api.updater.check).mockReset();
+  const day = 24 * 60 * 60 * 1000;
+  const { rerender, unmount } = renderHook(({ auto, busy }) => useUpdater(auto, busy), {
+    initialProps: { auto: false, busy: false },
+  });
+  await act(async () => vi.advanceTimersByTimeAsync(day));
+  expect(api.updater.check).not.toHaveBeenCalled();
+
+  rerender({ auto: true, busy: true });
+  await act(async () => vi.advanceTimersByTimeAsync(day));
+  expect(api.updater.check).not.toHaveBeenCalled();
+
+  rerender({ auto: true, busy: false });
+  await act(async () => vi.advanceTimersByTimeAsync(day - 1));
+  expect(api.updater.check).not.toHaveBeenCalled();
+  await act(async () => vi.advanceTimersByTimeAsync(1));
+  expect(api.updater.check).toHaveBeenCalledTimes(1);
+  unmount();
+  vi.useRealTimers();
+});

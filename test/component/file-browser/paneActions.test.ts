@@ -344,3 +344,15 @@ test('clipboard failures are reported and a missing clipboard leaves the menu us
     dispose();
   }
 });
+
+test('Shift on this computer turns Delete into Delete permanently; a server has no bin to skip', () => {
+  const { tab, menu } = setup();
+  const deleteLabel = (pane: 'a' | 'b', permanent: boolean) =>
+    menu(pane)(file, { permanent }).find((item) => item.danger)!.label;
+  expect(deleteLabel('a', false)).toBe('paneMenu.delete');
+  expect(deleteLabel('a', true)).toBe('paneMenu.deletePermanently');
+  tab.panes.a.selected = new Set(['file.txt', 'another.txt']);
+  expect(deleteLabel('a', false)).toBe('paneMenu.deleteSelected');
+  expect(deleteLabel('a', true)).toBe('paneMenu.deleteSelectedPermanently');
+  expect(deleteLabel('b', true)).toBe('paneMenu.delete');
+});

@@ -661,6 +661,55 @@ mod local_integration_tests {
         server.abort();
     }
 
+    /// Turning certificate checks off is said once in the log, as an error, and
+    /// never for a connection that checks or that has no TLS at all.
+    #[tokio::test]
+    async fn an_unchecked_ftps_certificate_is_warned_about_once_and_only_over_tls() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        let warnings = |port: u16, secure: bool, allow_invalid_cert: bool| async move {
+            let lines = Arc::new(std::sync::Mutex::new(Vec::new()));
+            let sink = lines.clone();
+            let mut backend = FtpBackend::new();
+            backend.set_log_sink(Some(Arc::new(move |text, kind| {
+                if let LogText::Raw(line) = text {
+                    sink.lock().unwrap().push((line, kind));
+                }
+            })));
+            let map = json!({
+                "protocol": "ftp",
+                "host": "127.0.0.1",
+                "port": port,
+                "user": "local",
+                "password": "test",
+                "secure": secure,
+                "allowInvalidCert": allow_invalid_cert
+            })
+            .as_object()
+            .unwrap()
+            .clone();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
+            let _ = backend.connect(&config).await;
+            let _ = backend.disconnect().await;
+            let lines = lines.lock().unwrap();
+            lines
+                .iter()
+                .filter(|(line, kind)| {
+                    line.contains("certificate verification is disabled")
+                        && matches!(kind, LogKind::Error)
+                })
+                .count()
+        };
+
+        let (port, server) = spawn_ftps_server().await;
+        assert_eq!(warnings(port, true, true).await, 1);
+        assert_eq!(warnings(port, true, false).await, 0);
+        server.abort();
+
+        let (port, server) = spawn_ftp_server(TestServer::holding(&[], true)).await;
+        assert_eq!(warnings(port, false, true).await, 0);
+        server.abort();
+    }
+
     const MATCHING_ROOT_CERT_DER: &str = "MIIBhDCCASqgAwIBAgIUb+aUDSU0xdgv8DyDqyweoBbNY2IwCgYIKoZIzj0EAwIwHzEdMBsGA1UEAwwUZnRwZWFjaC10ZXN0LXJvb3QtY2EwIBcNMjYwODI5MTg1NDE5WhgPMjEyNjA4MDUxODU0MTlaMB8xHTAbBgNVBAMMFGZ0cGVhY2gtdGVzdC1yb290LWNhMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER9qbh6qJqIt9daFwpqqwfliFHFlIGfaCJWAb2dFxrNuzd91LsTjvW/RlheCJMzIZrv83d/L6mqt8UgL+LDHhqqNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMaBfeeoVBs54Dvo0Sfk0qNhgO/GMAoGCCqGSM49BAMCA0gAMEUCIFkn2z+GloHeuNRJr922v1nlK2+yr0b6dJ7pLXY0IwL8AiEAjGntu0RK6TTuIuTdP0uNbMAUnGGDOdYQHYoKLm6amWo=";
     const MATCHING_LEAF_CERT_DER: &str = "MIIBvzCCAWWgAwIBAgIUWjQBguKnJwGAYeIVifukEv8gnDkwCgYIKoZIzj0EAwIwHzEdMBsGA1UEAwwUZnRwZWFjaC10ZXN0LXJvb3QtY2EwIBcNMjYwODI5MTg1NDIwWhgPMjEyNjA4MDUxODU0MjBaMBQxEjAQBgNVBAMMCTEyNy4wLjAuMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHwttXYm5NqoSl/OAECWZCe+05Xox2b1CRbi5DD06G+giQwHY2Y/OdPLLi9/RXmlRbaZIylbZ248cz9z5a4xamyjgYcwgYQwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDwYDVR0RBAgwBocEfwAAATAdBgNVHQ4EFgQUcbODXE4zLwiGgbRcN2o6vZdCIC4wHwYDVR0jBBgwFoAUxoF956hUGzngO+jRJ+TSo2GA78YwCgYIKoZIzj0EAwIDSAAwRQIhAJJuw37Zo/u97GiDu39z8qbWMjxpTeRRM1h0KbcCESjtAiBeUGrcOteQZ4pTaMyuv6UPfKQzaGxxroBQoJeasrY9Ug==";
     const MATCHING_LEAF_KEY_DER: &str = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgno6yGLnBy7FvEU9JgjG1Xq0iKPB4ZGEDELeHt/rFhxWhRANCAAR8LbV2JuTaqEpfzgBAlmQnvtOV6Mdm9QkW4uQw9OhvoIkMB2NmPznTyy4vf0V5pUW2mSMpW2duPHM/c+WuMWps";

@@ -262,6 +262,27 @@ describe('Site Manager workflows', () => {
     );
   });
 
+  test('New Bookmark Here in a folder context menu saves the bookmark into that folder', async () => {
+    const user = userEvent.setup();
+    const { props } = renderManager();
+    fireEvent.contextMenu(requireHtml(screen.getByText('Servers').closest('.site-manage-row')));
+    await user.click(
+      screen.getByRole('menuitem', { name: 'siteManagerDialog.newBookmarkInFolder' }),
+    );
+    expect(
+      screen.getByRole('button', { name: 'siteManagerDialog.fields.folder' }).textContent,
+    ).toContain('Servers');
+    await user.type(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }), 'Here');
+    await user.type(
+      screen.getByRole('textbox', { name: 'connectionBar.fields.address' }),
+      'here.example',
+    );
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Here', host: 'here.example', parentId: 'folder-1' }),
+    );
+  });
+
   test('creates a local path in a selected local-path folder', async () => {
     const user = userEvent.setup();
     const { props } = renderManager({ managerKind: 'localPaths' });

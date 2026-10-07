@@ -403,6 +403,66 @@ describe('FilePane interactions', () => {
     );
   });
 
+  test('typing letters jumps to the first matching name, and a repeated letter cycles', () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
+    const { container, props } = renderPane({
+      entries: [
+        { name: 'beta.txt', isDirectory: false, size: 1 },
+        { name: 'Alpha', isDirectory: true, size: 0 },
+        { name: 'avocado.txt', isDirectory: false, size: 1 },
+        { name: 'Bear.txt', isDirectory: false, size: 1 },
+        { name: 'apple.txt', isDirectory: false, size: 1 },
+      ],
+    });
+    const pane = requireHtml(container.querySelector('.pane'));
+    pane.focus();
+    const type = (key: string) => fireEvent.keyDown(pane, { key });
+    const selected = () => vi.mocked(props.onSelectionChange).mock.lastCall?.[0];
+
+    // Letters typed in quick succession build one prefix, case-insensitively.
+    type('b');
+    expect(selected()).toEqual(new Set(['Bear.txt']));
+    type('e');
+    type('t');
+    expect(selected()).toEqual(new Set(['beta.txt']));
+
+    // A pause longer than the typing window starts a new prefix.
+    now.mockReturnValue(11_000);
+    type('a');
+    expect(selected()).toEqual(new Set(['Alpha']));
+
+    // The same letter again moves on to the next name with it, then wraps.
+    type('a');
+    expect(selected()).toEqual(new Set(['apple.txt']));
+    type('a');
+    expect(selected()).toEqual(new Set(['avocado.txt']));
+    type('a');
+    expect(selected()).toEqual(new Set(['Alpha']));
+
+    // A letter no name starts with leaves the selection where it was.
+    now.mockReturnValue(13_000);
+    const calls = vi.mocked(props.onSelectionChange).mock.calls.length;
+    type('q');
+    expect(vi.mocked(props.onSelectionChange).mock.calls.length).toBe(calls);
+    now.mockRestore();
+  });
+
+  test('a right-click with Shift asks the menu for permanent deletion', () => {
+    const getContextMenuItems = vi.fn(() => [{ label: 'x', onClick: vi.fn() }]);
+    renderPane({ getContextMenuItems });
+    const row = screen.getByText('beta.txt');
+    fireEvent.contextMenu(row);
+    expect(getContextMenuItems).toHaveBeenLastCalledWith(
+      expect.objectContaining({ name: 'beta.txt' }),
+      expect.objectContaining({ permanent: false }),
+    );
+    fireEvent.contextMenu(row, { shiftKey: true });
+    expect(getContextMenuItems).toHaveBeenLastCalledWith(
+      expect.objectContaining({ name: 'beta.txt' }),
+      expect.objectContaining({ permanent: true }),
+    );
+  });
+
   test('Space toggles the active row in/out of the selection without moving the cursor', () => {
     const { container, props } = renderPane({ selectedNames: new Set() });
     const pane = requireHtml(container.querySelector('.pane'));

@@ -47,6 +47,36 @@ test('Copy flashes its tooltip on the button once the clipboard write settles', 
   expect(flashTooltip).toHaveBeenCalledWith(copy, 'logPanel.copiedTooltip');
 });
 
+test('Save writes only the lines shown, and says so only when the write failed', async () => {
+  const save = vi.fn(async (_content: string) => ({ ok: true }) as Record<string, unknown>);
+  window.api = { log: { save } } as unknown as Window['api'];
+  vi.mocked(flashTooltip).mockClear();
+  renderPanel([line(1, 'USER alice'), line(2, '331 Password required')]);
+  fireEvent.change(screen.getByRole('textbox', { name: 'logPanel.searchPlaceholder' }), {
+    target: { value: 'password' },
+  });
+  const button = screen.getByRole('button', { name: 'logPanel.saveToFile' });
+  const click = () =>
+    act(async () => {
+      button.click();
+      await Promise.resolve();
+    });
+
+  await click();
+  expect(save).toHaveBeenCalledTimes(1);
+  expect(save.mock.lastCall?.[0]).toContain('331 Password required');
+  expect(save.mock.lastCall?.[0]).not.toContain('USER alice');
+  expect(flashTooltip).not.toHaveBeenCalled();
+
+  // Closing the save dialog is not a failure; a refused write is.
+  save.mockResolvedValueOnce({ ok: false, canceled: true });
+  await click();
+  expect(flashTooltip).not.toHaveBeenCalled();
+  save.mockResolvedValueOnce({ ok: false, error: 'disk full' });
+  await click();
+  expect(flashTooltip).toHaveBeenCalledWith(button, 'logPanel.saveFailedTooltip');
+});
+
 const copyButton = (container: HTMLElement) =>
   container.querySelector('[data-tooltip="logPanel.copyToClipboard"]');
 

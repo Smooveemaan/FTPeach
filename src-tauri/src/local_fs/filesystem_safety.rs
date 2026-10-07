@@ -617,14 +617,20 @@ mod tests {
     }
 
     #[cfg(windows)]
-    fn create_test_junction(target: &Path, junction: &Path) -> bool {
-        std::process::Command::new("cmd")
+    /// A junction needs no privilege, so failing to make one is a broken
+    /// fixture and fails the test rather than skipping it.
+    fn create_test_junction(target: &Path, junction: &Path) {
+        let output = std::process::Command::new("cmd")
             .args(["/C", "mklink", "/J"])
             .arg(junction)
             .arg(target)
             .output()
-            .map(|output| output.status.success())
-            .unwrap_or(false)
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "mklink /J failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
 
     #[cfg(windows)]
@@ -636,10 +642,7 @@ mod tests {
         let junction = root.join("nested").join("junction");
         std::fs::create_dir_all(junction.parent().unwrap()).unwrap();
         std::fs::create_dir_all(&external).unwrap();
-        if !create_test_junction(&external, &junction) {
-            let _ = std::fs::remove_dir_all(base);
-            return;
-        }
+        create_test_junction(&external, &junction);
 
         let error = ensure_path_no_reparse_points_now(&junction.join("file.txt")).unwrap_err();
         assert!(error.to_string().contains("reparse point"));
@@ -663,10 +666,7 @@ mod tests {
         let external = base.join("external");
         std::fs::create_dir_all(&folder).unwrap();
         std::fs::create_dir_all(&external).unwrap();
-        if !create_test_junction(&external, &folder.join("link")) {
-            let _ = std::fs::remove_dir_all(base);
-            return;
-        }
+        create_test_junction(&external, &folder.join("link"));
 
         assert!(validated_rename_source(&folder).await.unwrap().is_some());
         assert!(validated_delete_target(&folder).await.is_err());
@@ -687,10 +687,7 @@ mod tests {
         validate_write_destination(&destination).await.unwrap();
 
         std::fs::remove_dir(&parent).unwrap();
-        if !create_test_junction(&external, &parent) {
-            let _ = std::fs::remove_dir_all(base);
-            return;
-        }
+        create_test_junction(&external, &parent);
 
         let error = ensure_path_no_reparse_points_now(&destination).unwrap_err();
         assert!(error.to_string().contains("reparse point"));

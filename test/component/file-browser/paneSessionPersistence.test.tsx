@@ -252,4 +252,65 @@ describe('pane session persistence', () => {
       written.map((args) => (args as { state: { tabs: { name: string }[] } }).state.tabs[0]!.name),
     ).toEqual(['one', 'two']);
   });
+
+  test.each([
+    [true, 1],
+    [false, 0],
+  ])(
+    'a restored bookmark tab reconnects on startup only with the setting on (%s)',
+    async (autoReconnectTabs, connects) => {
+      installApi({
+        tabs_get: () => ({
+          activeTabId: 'restored',
+          tabs: [
+            {
+              id: 'restored',
+              panes: {
+                a: { kind: 'local', path: 'C:\\' },
+                b: { kind: 'remote', siteId: 's1', path: '/pub' },
+              },
+            },
+          ],
+        }),
+        tabs_set: () => ({ ok: true }),
+      });
+      window.api.sites.list = async () =>
+        [
+          { id: 's1', name: 'Box', protocol: 'sftp', host: 'box.test', port: 22, user: 'me' },
+        ] as never;
+      window.api.settings.get = async () =>
+        ({ saveSessionOnExit: true, autoReconnectTabs }) as never;
+      const setTabs = vi.fn();
+      const connectPane = vi.fn(() => async () => undefined);
+      const refreshPane = vi.fn(async () => undefined);
+      const tabs = named('current');
+      renderHook(() =>
+        usePaneSessionPersistence({
+          tabs,
+          activeTabId: tabs[0]!.id,
+          setTabs,
+          setActiveTabId: vi.fn(),
+          panes: tabs[0]!.panes,
+          saveSessionOnExit: true,
+          refreshPane,
+          connectPane,
+        }),
+      );
+      await act(async () => {});
+
+      // Either way the tab comes back with its bookmark and the local pane is listed.
+      expect(setTabs.mock.lastCall?.[0][0].panes.b).toMatchObject({ siteId: 's1', path: '/pub' });
+      expect(refreshPane).toHaveBeenCalledWith('a', 'C:\\', expect.anything(), 'restored');
+      expect(connectPane).toHaveBeenCalledTimes(connects);
+      if (connects) {
+        expect(connectPane).toHaveBeenCalledWith(
+          'b',
+          expect.objectContaining({ host: 'box.test' }),
+          expect.anything(),
+          'restored',
+          '/pub',
+        );
+      }
+    },
+  );
 });

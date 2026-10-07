@@ -162,3 +162,14 @@ test.each([false, true])(
     expect(h.form().webdavUrl).toBe('https://example/dav');
   },
 );
+
+test('plain FTP carries the unencrypted warning, and an encrypted protocol drops it', () => {
+  const { container } = open();
+  const warning = () => container.querySelector('[data-tooltip="protocolSelect.insecureWarning"]');
+  expect(warning()).not.toBeNull();
+  for (const protocol of ['FTPS', 'SFTP']) {
+    fireEvent.click(screen.getByRole('button', { name: /^(FTP|FTPS|SFTP)$/ }));
+    fireEvent.click(screen.getByRole('option', { name: protocol }));
+    expect(warning()).toBeNull();
+  }
+});

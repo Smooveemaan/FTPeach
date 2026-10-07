@@ -161,8 +161,8 @@ function harness({ a, b, sites = [bookmark], driveMenu = null }: HarnessOptions 
   };
   return {
     ...h,
-    mount(id: PaneId) {
-      render(mount(h, id));
+    mount(id: PaneId, orientation: 'horizontal' | 'vertical' = 'horizontal') {
+      render(mount(h, id, orientation));
       return filePane!;
     },
     title: () => (filePane!.titleSlot as ReactElement<PaneSourceSwitcherProps>).props,
@@ -172,7 +172,7 @@ function harness({ a, b, sites = [bookmark], driveMenu = null }: HarnessOptions 
 type Harness = Omit<ReturnType<typeof harness>, 'mount' | 'title' | 'toolbar'>;
 
 // The only place that knows how Application puts a pane together.
-function mount(h: Harness, id: PaneId) {
+function mount(h: Harness, id: PaneId, orientation: 'horizontal' | 'vertical') {
   return (
     <FileBrowserPane
       id={id}
@@ -197,7 +197,7 @@ function mount(h: Harness, id: PaneId) {
         changeLocalColumnWidths: () => vi.fn(),
         changeRemoteColumnWidths: () => vi.fn(),
       }}
-      paneOrientation="horizontal"
+      paneOrientation={orientation}
       shell={{
         dialogs: h.dialogs,
         transfers: h.transfers,
@@ -348,6 +348,19 @@ describe('moving and copying the selection', () => {
     h.mount('a').onMoveTo?.(['docs']);
     expect(h.dialogs.setMoveToTarget).not.toHaveBeenCalled();
   });
+
+  test.each([
+    ['horizontal', 'a', 'filePane.copyToPaneRight'],
+    ['horizontal', 'b', 'filePane.copyToPaneLeft'],
+    ['vertical', 'a', 'filePane.copyToPaneBelow'],
+    ['vertical', 'b', 'filePane.copyToPaneAbove'],
+  ] as const)(
+    'copying to the other pane names where it goes (%s, %s)',
+    (orientation, id, label) => {
+      harness().mount(id, orientation);
+      expect((filePane!.toolbar as ReactElement<PaneToolbarProps>).props.copyLabel).toBe(label);
+    },
+  );
 
   test('copying to the other pane refreshes both panes', () => {
     const h = harness();

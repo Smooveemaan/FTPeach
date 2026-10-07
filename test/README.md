@@ -68,7 +68,8 @@ real server. The result is judged outside the application: the tests read the
 server's disk and the local disk and compare SHA-256 sums.
 
 - `ftp.e2e.ts` covers an upload, a download, a name conflict cancelled and then
-  overwritten, Stop during an upload over an existing file, Pause and Resume of an
+  overwritten, a folder with nested and empty folders, a rename and a Move to on
+  the server, Stop during an upload over an existing file, Pause and Resume of an
   upload, and an upload the server refuses. It expects IIS FTP from
   `scripts/test-servers/iis.ps1 install`, with its `fixtures/perms` folders, or a
   server named by the `FTPEACH_E2E_FTP_*` variables. IIS deletes an aborted upload

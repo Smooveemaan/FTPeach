@@ -2,7 +2,7 @@
 // connect the right pane, copy across with F8 and read the queue, plus the
 // server folder the test may only add to.
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { expect, type Locator, type Page } from '@playwright/test';
 import { test as appTest } from './app.ts';
@@ -54,6 +54,20 @@ export const payload = () => randomBytes(3 * 1024 * 1024 + 17);
 export const uniqueName = () => `e2e-${randomUUID()}.bin`;
 /** The staging files FTPeach writes beside an upload's destination. */
 export const isStaging = (name: string) => /^\.ftpeach-.*\.part$/.test(name);
+
+/**
+ * A folder's whole content, read from disk: `path/` for each folder, empty
+ * ones included, and `path sha256` for each file, sorted.
+ */
+export function tree(root: string): string[] {
+  return readdirSync(root, { recursive: true, withFileTypes: true })
+    .map((entry) => {
+      const full = path.join(entry.parentPath, entry.name);
+      const relative = path.relative(root, full).replaceAll('\\', '/');
+      return entry.isDirectory() ? `${relative}/` : `${relative} ${sha256(readFileSync(full))}`;
+    })
+    .sort();
+}
 
 export const localPane = (page: Page) => page.locator('.pane[data-side=a]');
 export const remotePane = (page: Page) => page.locator('.pane[data-side=b]');

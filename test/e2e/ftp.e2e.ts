@@ -6,7 +6,8 @@
 // FTPEACH_E2E_FTP_* variables name another; FTPEACH_E2E_FTP_ROOT is the folder
 // the FTP account lands in, read directly from disk. The error tests use the
 // permission fixtures iis.ps1 creates under fixtures/perms.
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import {
@@ -23,6 +24,7 @@ import {
   sha256,
   startConnecting,
   uniqueName,
+  tree,
   waitConnected,
   type Server,
 } from './panes.ts';
@@ -223,4 +225,72 @@ test('a server that refuses an upload reports an error, and the next upload stil
   await expect(queueRow(page, name, 'Done\\b')).toHaveCount(1, { timeout: 60_000 });
   expect(serverRoot.added()).toEqual([name]);
   expect(sha256(readFileSync(path.join(server.root, name)))).toBe(sha256(bytes));
+});
+
+test('a folder uploaded over FTP arrives whole: every file, its bytes and its empty folders', async ({
+  serverRoot,
+  app,
+}) => {
+  const { page } = app;
+  const folder = `e2e-${randomUUID()}`;
+  const local = path.join(app.workDir, folder);
+  for (const dir of ['sub/deeper', 'empty', 'sub/empty-too']) {
+    mkdirSync(path.join(local, dir), { recursive: true });
+  }
+  for (const file of ['a.bin', 'sub/b.bin', 'sub/deeper/c.bin']) {
+    writeFileSync(path.join(local, file), randomBytes(70_001));
+  }
+
+  await openFolder(localPane(page), app.workDir);
+  await connect(page);
+  await copyAcross(localPane(page), folder);
+  await expect(await settledRow(page, folder)).toHaveAccessibleName(/: Done\b/);
+
+  expect(serverRoot.added()).toEqual([folder]);
+  expect(tree(path.join(server.root, folder))).toEqual(tree(local));
+});
+
+test('a file renamed on the server is there under the new name only, unchanged', async ({
+  serverRoot,
+  app,
+}) => {
+  const { page } = app;
+  const name = uniqueName();
+  const renamed = uniqueName();
+  const bytes = payload();
+  writeFileSync(path.join(server.root, name), bytes);
+
+  await connect(page);
+  const remote = remotePane(page);
+  await fileRow(remote, name).click();
+  await page.keyboard.press('F2');
+  await remote.locator('.rename-input').fill(renamed);
+  await remote.locator('.rename-input').press('Enter');
+
+  await expect.poll(() => serverRoot.added(), { timeout: 15_000 }).toEqual([renamed]);
+  expect(sha256(readFileSync(path.join(server.root, renamed)))).toBe(sha256(bytes));
+  await expect(fileRow(remote, renamed)).toBeVisible({ timeout: 15_000 });
+  await expect(fileRow(remote, name)).toHaveCount(0);
+});
+
+test('Move to puts a server file into a folder there and takes it from where it was', async ({
+  serverRoot,
+  app,
+}) => {
+  const { page } = app;
+  const name = uniqueName();
+  const folder = `e2e-${randomUUID()}`;
+  const bytes = payload();
+  writeFileSync(path.join(server.root, name), bytes);
+  mkdirSync(path.join(server.root, folder));
+
+  await connect(page);
+  const remote = remotePane(page);
+  await fileRow(remote, name).click();
+  await page.keyboard.press('F6');
+  await page.getByRole('dialog').getByRole('menuitem', { name: folder, exact: true }).click();
+
+  await expect.poll(() => serverRoot.added(), { timeout: 15_000 }).toEqual([folder]);
+  expect(tree(path.join(server.root, folder))).toEqual([`${name} ${sha256(bytes)}`]);
+  await expect(fileRow(remote, name)).toHaveCount(0);
 });

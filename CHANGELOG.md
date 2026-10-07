@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.
 - A cut selection stays available to paste when some files are skipped.
+- The count of items not transferred includes the files skipped because they already exist.
 - Local file copies appear in Transfers, including when replacing existing files.
 - Deleting a server selection handles names that differ only in letter case without a false
   busy error between those deletions.

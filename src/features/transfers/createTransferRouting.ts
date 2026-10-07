@@ -32,6 +32,8 @@ interface CopyEntriesOptions {
   refreshTarget?: RefreshCallback;
   /** Batch approval supplied internally by useTransfers. */
   overwriteApproved?: boolean;
+  /** Names the batch approval already settled, counted in the batch's result. */
+  settled?: TransferItemResult[];
 }
 interface OsDropFile {
   path: string;
@@ -75,6 +77,7 @@ export interface TransferRoutingModel {
     targetFolder?: string | null,
     refreshTarget?: RefreshCallback,
     overwriteApproved?: boolean,
+    settled?: TransferItemResult[],
   ) => Promise<TransferBatchResult>;
 }
 
@@ -511,15 +514,18 @@ export function createTransferRouting(
    * Turns a batch into one answer: what each item did, and the one message the
    * user needs about it. An error thrown before any item ran — a Move the
    * policy refuses — is the batch's own failure and is reported as such.
+   * Names settled before routing (skipped by the overwrite setting) still
+   * count towards the selection the message speaks of.
    */
   const reportOperation = async (
     operation: (stopped: () => boolean) => Promise<TransferItemResult[]>,
     moving = false,
+    settled: TransferItemResult[] = [],
   ): Promise<TransferBatchResult> => {
     const batch = beginTransferBatch();
     let result;
     try {
-      result = summarizeBatch(await operation(batch.stopped), moving);
+      result = summarizeBatch([...settled, ...(await operation(batch.stopped))], moving);
     } catch (error) {
       result = failedBatch(error instanceof Error ? error.message : String(error), moving);
     } finally {
@@ -531,9 +537,24 @@ export function createTransferRouting(
   const copyEntries = (options: CopyEntriesOptions) =>
     options.names.length === 0
       ? Promise.resolve(emptyBatch())
-      : reportOperation((stopped) => copyEntriesUnchecked(options, stopped), !!options.move);
-  const handleOsDropFiles: TransferRoutingModel['handleOsDropFiles'] = (...args) =>
-    reportOperation((stopped) => handleOsDropFilesUnchecked(stopped, ...args));
+      : reportOperation(
+          (stopped) => copyEntriesUnchecked(options, stopped),
+          !!options.move,
+          options.settled,
+        );
+  const handleOsDropFiles: TransferRoutingModel['handleOsDropFiles'] = (
+    target,
+    files,
+    folder,
+    refresh,
+    approved,
+    settled,
+  ) =>
+    reportOperation(
+      (stopped) => handleOsDropFilesUnchecked(stopped, target, files, folder, refresh, approved),
+      false,
+      settled,
+    );
 
   return { copyEntries, handleOsDropFiles };
 }

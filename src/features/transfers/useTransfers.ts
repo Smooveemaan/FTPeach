@@ -16,7 +16,7 @@ import type { TransferBatchResult, TransferItemResult } from './transferBatchRes
 
 type CopyEntriesOptions = Omit<
   Parameters<TransferRoutingModel['copyEntries']>[0],
-  'overwriteApproved'
+  'overwriteApproved' | 'settled'
 >;
 
 export interface TransfersModel
@@ -70,29 +70,29 @@ export function useTransfers({
     folder: string | null | undefined,
     names: string[],
     sources: Pick<FileEntry, 'name' | 'isDirectory'>[],
-    execute: (names: string[], approved: boolean) => Promise<TransferBatchResult>,
+    // `settled` are the names approval left out; the executor counts them in
+    // the batch it reports, so "2 of 12" still says 12 when 2 were skipped.
+    execute: (
+      names: string[],
+      approved: boolean,
+      settled: TransferItemResult[],
+    ) => Promise<TransferBatchResult>,
     moving = false,
   ): Promise<TransferBatchResult> => {
     if (!names.length) return emptyBatch();
     try {
       const approved = await approveBatch(target, folder, names, sources);
-      const result = approved.names.length
-        ? await execute(approved.names, approved.overwriteApproved)
-        : emptyBatch();
       const included = new Set(approved.names);
-      const skipped = names
+      const settled = names
         .filter((name) => !included.has(name))
         .map((name) => ({
           name,
           outcome: 'skipped' as const,
           sourceRetained: moving,
         }));
-      return {
-        ...result,
-        items: [...skipped, ...result.items],
-        skipped: result.skipped + skipped.length,
-        sourceRetained: result.sourceRetained || (moving && skipped.length > 0),
-      };
+      return approved.names.length
+        ? await execute(approved.names, approved.overwriteApproved, settled)
+        : summarizeBatch(settled, moving);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setErrorMessage(message);
@@ -105,7 +105,8 @@ export function useTransfers({
       options.targetFolder,
       options.names,
       options.sourcePane.entries,
-      (names, overwriteApproved) => routing.copyEntries({ ...options, names, overwriteApproved }),
+      (names, overwriteApproved, settled) =>
+        routing.copyEntries({ ...options, names, overwriteApproved, settled }),
       !!options.move,
     );
   const handleOsDropFiles: TransfersModel['handleOsDropFiles'] = (target, files, folder, refresh) =>
@@ -114,13 +115,14 @@ export function useTransfers({
       folder,
       files.map((file) => file.name),
       files,
-      (names, approved) =>
+      (names, approved, settled) =>
         routing.handleOsDropFiles(
           target,
           files.filter((file) => names.includes(file.name)),
           folder,
           refresh,
           approved,
+          settled,
         ),
     );
   const moveWithinPane: TransfersModel['moveWithinPane'] = (pane, names, folder, refresh) =>
@@ -129,7 +131,7 @@ export function useTransfers({
       folder,
       names,
       pane.entries,
-      async (approvedNames, overwrite) => {
+      async (approvedNames, overwrite, settled) => {
         const join = pane.kind === 'local' ? joinLocalPath : joinRemotePath;
         const target = dropDestinationPath(pane.kind, pane.path, folder);
         if (pane.kind === 'remote' && !pane.connectionId)
@@ -151,7 +153,7 @@ export function useTransfers({
           });
         }
         refresh();
-        return summarizeBatch(items, true);
+        return summarizeBatch([...settled, ...items], true);
       },
       true,
     );

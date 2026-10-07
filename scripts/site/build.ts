@@ -101,6 +101,9 @@ async function main() {
     await copyFile(path.join(root, 'assets/images', image), path.join(out, image));
   }
   await copyFile(path.join(root, 'public/favicon.ico'), path.join(out, 'favicon.ico'));
+  for (const file of ['robots.txt', 'sitemap.xml']) {
+    await copyFile(path.join(root, 'site', file), path.join(out, file));
+  }
   console.log(
     `Built dist-site for ${release.tag_name}: ${stats.stars} stars, ${stats.downloads} downloads`,
   );

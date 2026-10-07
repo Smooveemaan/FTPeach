@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FTPeach</title>
+    <title>FTPeach: free FTP, FTPS, SFTP and WebDAV client for Windows</title>
     <meta
       name="description"
       content="A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows. Two panes side by side, drag and drop, and a transfer queue you can pause and resume."
@@ -25,19 +25,29 @@
     <meta property="og:image:alt" content="FTPeach: drag files to your server and back. FTP, FTPS, SFTP and WebDAV." />
     <meta name="twitter:card" content="summary_large_image" />
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "FTPeach",
-        "description": "A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows.",
-        "url": "https://ftpeach.com/",
-        "applicationCategory": "UtilitiesApplication",
-        "operatingSystem": "Windows 10, Windows 11",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "license": "https://www.apache.org/licenses/LICENSE-2.0",
-        "isAccessibleForFree": true,
-        "sameAs": ["https://github.com/Smooveemaan/ftpeach"]
-      }
+      [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "FTPeach",
+          "alternateName": ["FTP Peach", "FTPeach client"],
+          "url": "https://ftpeach.com/"
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "FTPeach",
+          "description": "A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows.",
+          "url": "https://ftpeach.com/",
+          "downloadUrl": "{{SETUP_URL}}",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Windows 10, Windows 11",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+          "license": "https://www.apache.org/licenses/LICENSE-2.0",
+          "isAccessibleForFree": true,
+          "sameAs": ["https://github.com/Smooveemaan/ftpeach"]
+        }
+      ]
     </script>
     <!-- Only the screenshot for the current theme is downloaded. -->
     <link rel="preload" as="image" href="ftpeach-light.png" media="(prefers-color-scheme: light)" />

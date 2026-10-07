@@ -29,6 +29,7 @@ test('a release with a portable copy offers both downloads', () => {
   assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-portable\.zip"/);
   assert.match(page, /v1\.2\.3(?:<\/span>)? · Windows/);
   assert.doesNotMatch(page, /Coming in the next release/);
+  assert.match(page, /"downloadUrl": "[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
 });
 
 test('a release without a portable copy says it is coming', () => {

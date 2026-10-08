@@ -68,8 +68,9 @@ const FIXTURE_DATA = [
   String.raw`^(?:(?:Ctrl|Shift|Alt|Meta)\+)*(?:F\d{1,2}|Backspace|Escape|Enter|Delete|Del|Tab|Space|Home|End|PageUp|PageDown|Insert|[A-Z0-9,.;/=←→↑↓-])$`,
   String.raw`^v\d+\.\d+\.\d+`,
   String.raw`^(?:FTPeach|FTP|FTPS|SFTP|WebDAV|GitHub|Ko-fi|MIT|Apache-2\.0|UTC|each|v|[A-Z]:\\?|Users|var|www|developer|backups|deploy|editor|archivist|UTF-8|RESET)$`,
-  // The language picker shows each language by its own name; this one is Russian.
-  String.raw`^\u0420\u0443\u0441\u0441\u043a\u0438\u0439$`,
+  // The language picker shows each language by its own name; the pseudo-locale
+  // is none of them, and shows as English, the language the window falls back to.
+  String.raw`^English$`,
 ];
 
 interface Audit {

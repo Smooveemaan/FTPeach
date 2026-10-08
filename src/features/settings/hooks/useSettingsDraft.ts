@@ -135,7 +135,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     ),
     shortcutOverridesValue: { ...settings.keyboardShortcuts },
     themeValue: settings.theme,
-    languageValue: matchSupportedLanguage(settings.language) || 'ru',
+    languageValue: matchSupportedLanguage(settings.language) || 'en',
     interfaceScaleValue: settings.interfaceScale || 100,
     dateFormatValue: settings.dateFormat || 'locale',
     defaultLocalPathValue: settings.defaultLocalPath || '',

@@ -42,6 +42,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Files selected while a folder is still loading stay selected when the list arrives.
 - A download that fails before receiving anything, for example because the file was deleted on
   the server, no longer leaves a `.ftpeach-resume.json` file beside it.
+- Settings shows English, not Russian, as the language when the saved language is not one
+  FTPeach has.
 
 ## [0.4.0] - 2026-10-05
 

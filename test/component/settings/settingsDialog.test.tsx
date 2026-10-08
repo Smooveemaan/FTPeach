@@ -206,6 +206,16 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(screen.getByRole('listbox')).toBeTruthy();
   });
 
+  test('a language it does not know shows as English, the language the window falls back to', async () => {
+    const user = userEvent.setup();
+    renderDialog({ language: 'xx' });
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+
+    expect(screen.getByRole('button', { name: 'settings.languageLabel' }).textContent).toContain(
+      'English',
+    );
+  });
+
   async function toggleNotifyOnComplete(user: UserEvent): Promise<void> {
     await user.click(screen.getByRole('button', { name: 'settings.categories.transfers' }));
     await user.click(screen.getByRole('checkbox', { name: 'settings.notifyOnComplete' }));

@@ -90,7 +90,7 @@ pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<Strin
     let window = wait_for(Duration::from_secs(10), || {
         app.webview_windows()
             .into_iter()
-            .find(|(label, _)| label.starts_with("security-confirmation-"))
+            .find(|(label, _)| label.starts_with(crate::runtime::confirmation_window::LABEL_PREFIX))
             .map(|(_, window)| window)
     })
     .await

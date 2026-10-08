@@ -17,6 +17,11 @@ pub(crate) fn args() -> Option<String> {
     ))
 }
 
+/// The folder a save dialog answers with while the desktop tests drive the run.
+pub(crate) fn save_folder() -> Option<std::path::PathBuf> {
+    std::env::var_os("FTPEACH_E2E_SAVE_DIR").map(Into::into)
+}
+
 /// Whether the desktop tests drive this run.
 pub(crate) fn active() -> bool {
     std::env::var_os("FTPEACH_E2E_CDP_PORT").is_some()
@@ -30,27 +35,11 @@ pub(crate) fn show_in_background(window: &tauri::WebviewWindow) {
     show_without_focus(window);
 }
 
-/// Shows a window without activating it.
+/// Shows a window without activating it. A window that cannot take the focus
+/// is shown without being activated, and it is shown through the windowing
+/// library rather than around it: a window shown behind its back stays hidden
+/// as far as it knows, and a later `hide`, to the tray say, does nothing.
 pub(crate) fn show_without_focus(window: &tauri::WebviewWindow) {
-    #[cfg(windows)]
-    {
-        use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-        use windows::Win32::{
-            Foundation::HWND,
-            UI::WindowsAndMessaging::{SW_SHOWNOACTIVATE, ShowWindow},
-        };
-        let Ok(handle) = window.window_handle() else {
-            return;
-        };
-        let RawWindowHandle::Win32(handle) = handle.as_raw() else {
-            return;
-        };
-        // SAFETY: the handle belongs to this live window.
-        unsafe {
-            let _ = ShowWindow(
-                HWND(handle.hwnd.get() as *mut std::ffi::c_void),
-                SW_SHOWNOACTIVATE,
-            );
-        }
-    }
+    let _ = window.set_focusable(false);
+    let _ = window.show();
 }

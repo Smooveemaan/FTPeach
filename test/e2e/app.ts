@@ -30,10 +30,14 @@ export interface RunningApp {
   dataDir: string;
   /** The profile's local application data: Open with copies, recovered edits. */
   localDir: string;
+  /** Where a save dialog saves: the test build answers it with this folder. */
+  savedDir: string;
   /** The next window the application opens besides the main one, such as a security confirmation. */
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
   running: () => boolean;
+  /** The application's process id. */
+  pid: () => number;
   /** The application's own log so far. */
   log: () => string;
   /** Ends the process at once, as a crash or Task Manager would. */
@@ -122,7 +126,12 @@ interface Run {
  * Starts the application on a prepared profile. `run` is filled in as soon as
  * the process exists, so a failed start can still be stopped.
  */
-async function start(profile: string, workDir: string, run: Partial<Run>): Promise<Page> {
+async function start(
+  profile: string,
+  workDir: string,
+  savedDir: string,
+  run: Partial<Run>,
+): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
   // over and the test would drive the wrong profile.
   const running = spawnSync('tasklist', ['/FI', 'IMAGENAME eq app.exe'], { encoding: 'utf8' });
@@ -147,6 +156,8 @@ async function start(profile: string, workDir: string, run: Partial<Run>): Promi
       // The test build listens for DevTools on this port (runtime/startup.rs);
       // WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS on some runners.
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
+      // No one can answer a native save dialog in a run; the test build saves here.
+      FTPEACH_E2E_SAVE_DIR: savedDir,
     },
   });
   Object.assign(run, { child, cdpPort });
@@ -178,10 +189,12 @@ export async function launchApp(
   const base = mkdtempSync(path.join(tmpdir(), 'ftpeach-e2e-'));
   const profile = path.join(base, 'profile');
   const workDir = path.join(base, 'work');
+  const savedDir = path.join(base, 'saved');
   const dataDir = path.join(profile, 'Roaming', 'FTPeach');
   mkdirSync(dataDir, { recursive: true });
   mkdirSync(path.join(profile, 'Local'), { recursive: true });
   mkdirSync(workDir);
+  mkdirSync(savedDir);
   // An explicit language, so the run reads the same on any Windows display
   // language; everything else starts from the defaults unless the test says.
   // The window sits off screen and unfocused, where a finished transfer would
@@ -230,6 +243,7 @@ export async function launchApp(
     workDir,
     dataDir,
     localDir: path.join(profile, 'Local', 'com.smooveemaan.ftpeach'),
+    savedDir,
     otherWindow: () =>
       waitFor(
         'another window',
@@ -241,18 +255,19 @@ export async function launchApp(
         30,
       ),
     running: () => run.child?.exitCode === null,
+    pid: () => run.child!.pid!,
     log: () => appLogs(profile, 200_000),
     kill: () => end(true),
     relaunch: async () => {
       await end(false);
       run = {};
-      app.page = await start(profile, workDir, run);
+      app.page = await start(profile, workDir, savedDir, run);
       await onStart(app.page);
     },
     close,
   };
   try {
-    app.page = await start(profile, workDir, run);
+    app.page = await start(profile, workDir, savedDir, run);
     await onStart(app.page);
     return app;
   } catch (error) {

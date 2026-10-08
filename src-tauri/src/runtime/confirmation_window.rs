@@ -74,6 +74,20 @@ pub(crate) fn refocus_main(app: &tauri::AppHandle) {
 #[cfg(not(windows))]
 pub(crate) fn refocus_main(_: &tauri::AppHandle) {}
 
+/// What every confirmation window's label starts with; the request id follows.
+pub(crate) const LABEL_PREFIX: &str = "security-confirmation-";
+
+/// Closes every open confirmation, which refuses each request. A window gone
+/// to the tray asks nothing: its question would stay on screen over nothing
+/// and an answer would act for a window nobody is looking at.
+pub(crate) fn close_all<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    for (label, window) in app.webview_windows() {
+        if label.starts_with(LABEL_PREFIX) {
+            let _ = window.close();
+        }
+    }
+}
+
 pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
     let parent = window
         .app_handle()

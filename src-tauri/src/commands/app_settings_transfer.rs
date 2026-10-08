@@ -77,16 +77,14 @@ pub async fn app_export_settings(
         "app_export_settings",
         "native-dialog",
     )?;
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
-        .set_title("Export FTPeach settings")
-        .set_file_name("ftpeach-settings.json")
-        .add_filter("JSON", &["json"])
-        .save_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let Some(path) = rx.await.ok().flatten() else {
+    let Some(path_str) = crate::runtime::save_dialog::save_path(
+        &app,
+        "Export FTPeach settings",
+        "ftpeach-settings.json".into(),
+        ("JSON", &["json"]),
+    )
+    .await
+    else {
         return Ok(ExportResult::Canceled {
             ok: false,
             canceled: true,
@@ -124,7 +122,6 @@ pub async fn app_export_settings(
         payload.insert("sites".into(), serde_json::Value::Array(stripped));
     }
 
-    let path_str = path.to_string();
     let body = serde_json::to_string_pretty(&payload).unwrap_or_default();
     match tokio::fs::write(&path_str, body).await {
         Ok(()) => Ok(ExportResult::Ok {

@@ -33,6 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A stopped upload whose temporary file the server would not delete names that file.
 - Programs that open a server file get its ordinary path, so those that could not open it now
   can.
+- Closing the window to the tray cancels a security confirmation that was still open, instead of
+  leaving it on screen.
 
 ## [0.4.0] - 2026-10-05
 

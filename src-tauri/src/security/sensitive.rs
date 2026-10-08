@@ -792,7 +792,10 @@ pub async fn authorize_sensitive(
     }
     let app = window.app_handle().clone();
     let request_id = uuid::Uuid::new_v4().to_string();
-    let confirmation_label = format!("security-confirmation-{request_id}");
+    let confirmation_label = format!(
+        "{}{request_id}",
+        crate::runtime::confirmation_window::LABEL_PREFIX
+    );
     let (tx, rx) = tokio::sync::oneshot::channel();
     {
         let mut pending = state

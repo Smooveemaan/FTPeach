@@ -5,7 +5,6 @@ use crate::security::redaction::redact;
 use crate::store::Store;
 use serde::Serialize;
 use tauri::{AppHandle, State};
-use tauri_plugin_dialog::DialogExt;
 
 /// Largest renderer log the user can save to a file.
 const MAX_RENDERER_LOG_BYTES: usize = 2 * 1024 * 1024;
@@ -61,22 +60,19 @@ pub enum LogSaveResult {
 pub async fn log_save(app: AppHandle, content: String) -> CommandResult<LogSaveResult> {
     validate_log_size(&content)?;
     let stamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
-        .set_title("Save log")
-        .set_file_name(format!("ftpeach-log-{stamp}.txt"))
-        .add_filter("Text", &["txt"])
-        .save_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let Some(path) = rx.await.ok().flatten() else {
+    let Some(path_str) = crate::runtime::save_dialog::save_path(
+        &app,
+        "Save log",
+        format!("ftpeach-log-{stamp}.txt"),
+        ("Text", &["txt"]),
+    )
+    .await
+    else {
         return Ok(LogSaveResult::Canceled {
             ok: false,
             canceled: true,
         });
     };
-    let path_str = path.to_string();
     match tokio::fs::write(&path_str, redact(&content)).await {
         Ok(()) => Ok(LogSaveResult::Ok {
             ok: true,
@@ -110,22 +106,19 @@ pub async fn log_export_diagnostics(
     let serialized = serde_json::to_string_pretty(&bundle)
         .map_err(anyhow::Error::from)
         .map_err(CommandError::from)?;
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
-        .set_title("Export diagnostic bundle")
-        .set_file_name(format!("ftpeach-diagnostics-{stamp}.json"))
-        .add_filter("JSON", &["json"])
-        .save_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let Some(path) = rx.await.ok().flatten() else {
+    let Some(path_str) = crate::runtime::save_dialog::save_path(
+        &app,
+        "Export diagnostic bundle",
+        format!("ftpeach-diagnostics-{stamp}.json"),
+        ("JSON", &["json"]),
+    )
+    .await
+    else {
         return Ok(LogSaveResult::Canceled {
             ok: false,
             canceled: true,
         });
     };
-    let path_str = path.to_string();
     tokio::fs::write(&path_str, serialized)
         .await
         .map_err(CommandError::from)?;

@@ -409,10 +409,9 @@ pub async fn transfer_download(
         let cancelled = result
             .as_ref()
             .is_err_and(|error| error.code == ErrorCode::Cancelled);
+        // Not capped: an entry leaves with the Resume or the Stop of its row,
+        // and a disconnect stops every paused row.
         if cancelled && paused {
-            if kept.len() >= crate::transfer::upload_staging::MARK_CAP {
-                kept.clear();
-            }
             kept.insert(transfer_id, destination.clone());
         }
         cancelled && !paused

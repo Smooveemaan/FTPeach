@@ -1,4 +1,5 @@
 export {
+  adoptClosedConnections,
   getTransfersSnapshot,
   isConnectionDead,
   retainConnectionRequest,

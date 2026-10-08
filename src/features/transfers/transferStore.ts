@@ -356,6 +356,12 @@ export function isConnectionDead(connectionId: string): boolean {
 const connectionLabelMemory = new Map<string, string>();
 const connectionRequests = new Map<string, number>();
 let liveLabelIds = new Set<string>();
+/**
+ * The server and account each connection was opened to. A connection id is
+ * never reissued, so a row of a lost connection could never be retried; a new
+ * connection to the same server and account takes such rows over instead.
+ */
+const connectionAccounts = new Map<string, string>();
 
 function pruneConnectionMemory(): void {
   const referenced = new Set(liveLabelIds);
@@ -363,7 +369,12 @@ function pruneConnectionMemory(): void {
     for (const id of transferConnectionIds(row)) referenced.add(id);
   }
   for (const id of connectionRequests.keys()) referenced.add(id);
-  for (const id of deadConnectionIds) if (!referenced.has(id)) deadConnectionIds.delete(id);
+  for (const id of deadConnectionIds) {
+    if (referenced.has(id)) continue;
+    deadConnectionIds.delete(id);
+    // A closed connection nothing refers to has nothing left to hand over.
+    connectionAccounts.delete(id);
+  }
   for (const id of connectionLabelMemory.keys()) {
     if (!referenced.has(id)) connectionLabelMemory.delete(id);
   }
@@ -391,6 +402,55 @@ export function rememberConnectionLabels(labels: ReadonlyMap<string, string>): v
 
 export function rememberedConnectionLabel(connectionId: string): string | undefined {
   return connectionLabelMemory.get(connectionId);
+}
+
+function withConnection(row: TransferRow, swap: (id: string) => string): TransferRow {
+  switch (row.direction) {
+    case 'local':
+      return row;
+    case 'recursive': {
+      const end = (endpoint: RecursiveIntent['source']) =>
+        endpoint.kind === 'remote'
+          ? { ...endpoint, connectionId: swap(endpoint.connectionId) }
+          : endpoint;
+      return {
+        ...row,
+        intent: { ...row.intent, source: end(row.intent.source), target: end(row.intent.target) },
+      };
+    }
+    case 'copy':
+      return {
+        ...row,
+        sourceConnectionId: swap(row.sourceConnectionId),
+        targetConnectionId: swap(row.targetConnectionId),
+      };
+    default:
+      return { ...row, connectionId: swap(row.connectionId) };
+  }
+}
+
+/**
+ * Records that `connectionId` is open to `account`, and hands it the finished
+ * rows of closed connections to the same account, so that Retry works on them
+ * again.
+ */
+export function adoptClosedConnections(connectionId: string, account: string): void {
+  connectionAccounts.set(connectionId, account);
+  const closed = new Set(
+    [...deadConnectionIds].filter((id) => connectionAccounts.get(id) === account),
+  );
+  if (!closed.size) return;
+  const swap = (id: string) => (closed.has(id) ? connectionId : id);
+  setTransfersStore((previous) => {
+    let next = previous;
+    for (const [id, row] of Object.entries(previous)) {
+      if (!isFinished(row)) continue;
+      if (!transferConnectionIds(row).some((used) => closed.has(used))) continue;
+      if (next === previous) next = { ...previous };
+      next[id] = withConnection(row, swap);
+    }
+    return next;
+  });
 }
 
 export function canRetryTransfer(row: TransferRow): boolean {
@@ -561,5 +621,6 @@ export function resetTransfersStoreForTests(): void {
   deadConnectionIds.clear();
   connectionLabelMemory.clear();
   connectionRequests.clear();
+  connectionAccounts.clear();
   liveLabelIds.clear();
 }

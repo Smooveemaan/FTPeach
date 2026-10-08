@@ -11,6 +11,8 @@ import {
   canPauseTransfer,
   canRetryTransfer,
   markConnectionDead,
+  adoptClosedConnections,
+  transferConnectionIds,
   isConnectionDead,
   retainConnectionRequest,
   rememberConnectionLabels,
@@ -151,6 +153,58 @@ test('a connection marked dead can never be retried into again, on either side o
   markConnectionDead('gone');
   assert.equal(notifications, 1, 'remarking a known-dead connection redraws nothing');
   unsubscribe();
+  resetTransfersStoreForTests();
+});
+
+test('a new connection to the same account takes over the finished rows a closed one left', () => {
+  resetTransfersStoreForTests();
+  const row = (id: string, connectionId: string, status: TransferRow['status']): TransferRow => ({
+    id,
+    direction: 'up',
+    protocol: 'sftp',
+    name: id,
+    connectionId,
+    localFile: `C:\\${id}`,
+    remoteTarget: `/${id}`,
+    status,
+    bytes: 0,
+    startedAt: 0,
+  });
+  const walk: TransferRow = {
+    id: 'walk',
+    direction: 'recursive',
+    name: 'walk',
+    status: 'stopped',
+    bytes: 0,
+    startedAt: 0,
+    intent: {
+      id: 'walk',
+      source: { kind: 'local', path: 'C:\\walk' },
+      target: { kind: 'remote', path: '/walk', connectionId: 'lost' },
+      moving: false,
+      overwrite: false,
+    },
+  };
+  adoptClosedConnections('lost', 'server A');
+  adoptClosedConnections('elsewhere', 'server B');
+  setTransfersStore({
+    failed: row('failed', 'lost', 'error'),
+    other: row('other', 'elsewhere', 'error'),
+    walk,
+  });
+  markConnectionDead('lost');
+  markConnectionDead('elsewhere');
+  assert.equal(canRetryTransfer(getTransfersSnapshot().failed!), false);
+
+  adoptClosedConnections('again', 'server A');
+
+  const rows = getTransfersSnapshot();
+  assert.equal(canRetryTransfer(rows.failed!), true);
+  assert.deepEqual(transferConnectionIds(rows.failed!), ['again']);
+  assert.deepEqual(transferConnectionIds(rows.walk!), ['again']);
+  // Another server's rows stay with their own closed connection.
+  assert.deepEqual(transferConnectionIds(rows.other!), ['elsewhere']);
+  assert.equal(canRetryTransfer(rows.other!), false);
   resetTransfersStoreForTests();
 });
 

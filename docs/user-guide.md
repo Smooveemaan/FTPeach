@@ -41,6 +41,11 @@ there: it keeps the answer given when the transfer started.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
 
+When the connection to a server is lost, the transfers it cut off can be retried once the
+pane is connected again to the same server with the same account.
+
+<!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a new connection to the same account takes over the finished rows a closed one left -->
+
 Stopping an upload never deletes a file that was already on the server under
 the same name. The old file stays in place until the new one has fully
 arrived.

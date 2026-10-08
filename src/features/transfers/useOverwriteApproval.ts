@@ -80,7 +80,8 @@ export function useOverwriteApproval(
     const parent = parts.join(target.kind === 'local' ? '\\' : '/') || '/';
     const pending = list({ ...target, path: parent });
     const listing = await pending;
-    if (!listing.ok) throw new Error(parent + ': ' + (listing.error || 'Cannot check destination'));
+    if (!listing.ok)
+      throw new Error(friendlyError(commandResultError(listing)) || 'Cannot check destination');
     const exists = listing.entries.find((entry) => matches(target.kind, entry.name, name));
     if (target.merge && exists && !exists.isDirectory)
       throw new Error(t('errors.typeConflict', { name: isolate(name) }));

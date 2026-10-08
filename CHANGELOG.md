@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   connect to that server.
 - When a copy between two servers loses the connection it reads from, that pane is shown as
   disconnected, not the one it writes to.
+- Transfers cut off by a lost connection can be retried after connecting to the server again.
 
 ## [0.4.0] - 2026-10-05
 

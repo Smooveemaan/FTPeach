@@ -11,6 +11,7 @@ import type { ConnectRequest } from '../../../platform/api/session.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
+import { adoptClosedConnections } from '../../transfers/index.ts';
 
 type PanePatch = Partial<PaneState> | ((pane: PaneState) => Partial<PaneState>);
 type RequestIds = Record<string, Record<PaneId, number>>;
@@ -213,6 +214,12 @@ export function createPaneSessionLifecycle({
         return;
       }
       if (res.ok) {
+        // Rows a closed connection to the same server and account left can
+        // be retried over this one.
+        adoptClosedConnections(
+          connectionId,
+          JSON.stringify([f.protocol, f.host.toLowerCase(), f.port, f.webdavUrl, f.user]),
+        );
         const nextPane: PaneState = {
           ...pane,
           kind: 'remote',

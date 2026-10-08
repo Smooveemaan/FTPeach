@@ -642,7 +642,12 @@ export function useTransferLifecycle(
           );
         }
       } catch (error) {
-        settleTransferResult(id, { ok: false, error: String(error) }, attemptId, target);
+        settleTransferResult(
+          id,
+          { ok: false, error: error instanceof Error ? error.message : String(error) },
+          attemptId,
+          target,
+        );
       }
       refreshTarget?.();
       return;
@@ -688,10 +693,15 @@ export function useTransferLifecycle(
                   },
             );
     } catch (error) {
-      settleTransferResult(id, { ok: false, error: String(error) }, attemptId, {
-        kind: 'local',
-        path: '',
-      });
+      settleTransferResult(
+        id,
+        { ok: false, error: error instanceof Error ? error.message : String(error) },
+        attemptId,
+        {
+          kind: 'local',
+          path: '',
+        },
+      );
       return;
     }
     if (overwrite === null || cancelIntentRef.current[id]) {

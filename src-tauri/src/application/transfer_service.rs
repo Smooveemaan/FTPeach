@@ -658,6 +658,16 @@ pub async fn transfer_remote_copy(
     let (total_tx, total_rx) = tokio::sync::oneshot::channel();
     let (complete_tx, complete_rx) = tokio::sync::oneshot::channel();
     let partial = remote_partial_path(&target_path);
+    // Recorded before the copy runs, so a disconnect of the target that
+    // overtakes it still finds the file to delete.
+    crate::transfer::upload_staging::begin(
+        &transfer_id,
+        crate::transfer::upload_staging::Key {
+            connection_id: dispatch_connection_id.clone(),
+            remote_path: target_path.clone(),
+        },
+        partial.clone(),
+    );
     let partial_for_task = partial.clone();
     let started = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let started_for_task = started.clone();
@@ -717,8 +727,19 @@ pub async fn transfer_remote_copy(
         )
         .await;
     let mut result = result.map_err(|err| CommandError::from_anyhow(&err));
-    if result.is_err() && started.load(std::sync::atomic::Ordering::SeqCst) {
-        cleanup_remote_partial(sessions, &dispatch_connection_id, &partial).await;
+    if result.is_ok() || !started.load(std::sync::atomic::Ordering::SeqCst) {
+        crate::transfer::upload_staging::release(&transfer_id);
+    } else {
+        // While the target is closing, its teardown deletes the file through
+        // the record; otherwise the record goes once the deletion has reached
+        // the server.
+        let live = sessions
+            .pool_for(&dispatch_connection_id)
+            .await
+            .is_some_and(|pool| !pool.is_closed());
+        if live && cleanup_remote_partial(sessions, &dispatch_connection_id, &partial).await {
+            crate::transfer::upload_staging::release(&transfer_id);
+        }
         result = result.map_err(|error| interrupted_replacement(error, &partial, &target_server));
     }
 

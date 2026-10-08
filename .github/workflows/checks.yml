@@ -332,6 +332,12 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium
       - run: npm run test:visual
+      # The layout audit in a sample of languages: the pseudo-locale, the most
+      # text (Greek), long words (Dutch), right to left (Arabic) and Japanese.
+      # i18n-audit.yml runs every language weekly.
+      - run: npm run i18n:audit
+        env:
+          I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
       # Traces, screenshots and diffs of failed attempts, including a test that
       # passed only on a retry: a pass after a retry is not proof.
       - name: Keep the visual test results
@@ -339,7 +345,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: visual-results
-          path: test-results/visual/
+          path: |
+            test-results/visual/
+            test-results/i18n-audit/
           if-no-files-found: ignore
           retention-days: 14
 

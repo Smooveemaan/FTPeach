@@ -2,7 +2,8 @@
  * Global setup of the i18n layout audit: clears the last run's findings, and
  * returns the teardown that folds this run's findings into
  * test-results/i18n-audit/summary.md — one line per problem, with every
- * language that has it, most widespread first.
+ * language that has it, most widespread first. A problem not among the known
+ * ones below fails the run.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,6 +17,26 @@ interface Finding {
   state: string;
   problems: LayoutProblem[];
 }
+
+/**
+ * Problems looked at and left as they are: kind and element, the languages
+ * that have it, and why. Any other problem, or one of these in another
+ * language, fails the run.
+ */
+const KNOWN: { kind: string; where: string; languages: string[]; why: string }[] = [
+  {
+    kind: 'truncated',
+    where: 'div.pane-body > div.row.row-header > span.col-header.sortable > span.col-header-label',
+    languages: ['pseudo'],
+    why: 'a column header too narrow for its name ends in an ellipsis and shows the name as a tooltip; every real language fits',
+  },
+  {
+    kind: 'wraps',
+    where: 'div.app-shell > div.menu-bar > div.menu-bar-item > button.menu-bar-trigger',
+    languages: ['pseudo'],
+    why: 'the pseudo-locale lengthens a short menu title far past any translation; every real language fits the smallest window',
+  },
+];
 
 interface Group {
   problem: LayoutProblem;
@@ -80,6 +101,16 @@ function summarize() {
   mkdirSync(root, { recursive: true });
   writeFileSync(join(root, 'summary.md'), lines.join('\n'));
   console.log(`\n${headline}\nReport: ${join(root, 'summary.md')}`);
+  const unexpected = ranked.flatMap(({ problem, languages }) => {
+    const known = KNOWN.find(
+      (entry) => entry.kind === problem.kind && entry.where === problem.where,
+    );
+    const others = [...languages.keys()].filter((language) => !known?.languages.includes(language));
+    return others.length ? [`${problem.kind} \`${problem.where}\` in ${others.join(', ')}`] : [];
+  });
+  if (unexpected.length > 0) {
+    throw new Error(`The layout lets the text down (summary.md):\n${unexpected.join('\n')}`);
+  }
 }
 
 export default function setup() {

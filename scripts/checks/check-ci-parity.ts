@@ -25,6 +25,10 @@ const excluded = new Map([
     'builds and drives a packaged Tauri binary; minutes per run, so CI owns it',
   ],
   [
+    'i18n:audit',
+    'the layout audit of every screen in a sample of languages, a minute or more; CI runs it on interface changes',
+  ],
+  [
     'rust:coverage',
     'an instrumented rebuild of the crate running the tests rust:test already runs',
   ],

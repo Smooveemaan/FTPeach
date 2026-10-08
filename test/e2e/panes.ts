@@ -78,6 +78,12 @@ export const remotePane = (page: Page) => page.locator('.pane[data-side=b]');
 export const fileRow = (pane: Locator, name: string) =>
   pane.locator(`[role=option][data-name="${name.replace(/["\\]/g, '\\$&')}"]`);
 
+/** Clicks a menu of the title bar, then one of its items, which may carry a check mark and a shortcut. */
+export async function menu(page: Page, title: string, item: string) {
+  await page.getByRole('menubar').getByRole('menuitem', { name: title, exact: true }).click();
+  await page.getByRole('menuitem', { name: new RegExp(`^(✓ ?)?${escape(item)}( |$)`) }).click();
+}
+
 export async function openFolder(pane: Locator, folder: string) {
   await pane.getByRole('button', { name: 'Edit path' }).press('Enter');
   await pane.locator('.path-input').fill(folder);

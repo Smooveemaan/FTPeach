@@ -31,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - An upload whose connection broke just as the server finished saving it is shown as done, not
   as failed.
 - A stopped upload whose temporary file the server would not delete names that file.
+- Programs that open a server file get its ordinary path, so those that could not open it now
+  can.
 
 ## [0.4.0] - 2026-10-05
 

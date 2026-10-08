@@ -156,9 +156,11 @@ async fn open_in(
             .await
             .map_err(|err| CommandError::from_anyhow(&err));
     }
+    // Both as people read them: many programs cannot open a `\\?\` path.
+    let file = crate::local_fs::local_open::shell_path(local_path);
     let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
     app.opener()
-        .open_path(local_path.to_string_lossy().into_owned(), application)
+        .open_path(file, application)
         .map_err(|err| CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())))
 }
 

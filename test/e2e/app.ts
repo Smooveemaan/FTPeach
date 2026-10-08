@@ -22,15 +22,27 @@ export const APP_PATH =
   process.env.FTPEACH_E2E_APP ?? path.join(root, '.tools', 'smoke-target', 'debug', 'app.exe');
 
 export interface RunningApp {
+  /** The main window of the current run; `relaunch` replaces it. */
   page: Page;
   /** A folder of this run's own, for local files the test prepares. */
   workDir: string;
+  /** The profile's `%APPDATA%\FTPeach`, where settings.json and tabs.json live. */
+  dataDir: string;
+  /** The profile's local application data: Open with copies, recovered edits. */
+  localDir: string;
   /** The next window the application opens besides the main one, such as a security confirmation. */
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
   running: () => boolean;
   /** The application's own log so far. */
   log: () => string;
+  /** Ends the process at once, as a crash or Task Manager would. */
+  kill: () => Promise<void>;
+  /**
+   * Starts the application again on the same profile and work folder, once
+   * the last run has exited (a quit through the window, or `kill`).
+   */
+  relaunch: () => Promise<void>;
   /** Stops the application, removes its profile and returns its log. */
   close: () => Promise<string>;
 }
@@ -99,13 +111,18 @@ function stop(child: ChildProcess) {
   }
 }
 
-export async function launchApp(
-  settings: Record<string, unknown> = {},
-  store: Record<string, unknown> = {},
-): Promise<RunningApp> {
-  if (!existsSync(APP_PATH)) {
-    throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
-  }
+/** One process of the application, attached over DevTools. */
+interface Run {
+  child: ChildProcess;
+  cdpPort: number;
+  browser?: Browser;
+}
+
+/**
+ * Starts the application on a prepared profile. `run` is filled in as soon as
+ * the process exists, so a failed start can still be stopped.
+ */
+async function start(profile: string, workDir: string, run: Partial<Run>): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
   // over and the test would drive the wrong profile.
   const running = spawnSync('tasklist', ['/FI', 'IMAGENAME eq app.exe'], { encoding: 'utf8' });
@@ -113,29 +130,6 @@ export async function launchApp(
   if (running.stdout.includes('app.exe') || ftpeach.stdout.includes('FTPeach.exe')) {
     throw new Error('Close every running FTPeach first: the application is single-instance');
   }
-
-  const base = mkdtempSync(path.join(tmpdir(), 'ftpeach-e2e-'));
-  const profile = path.join(base, 'profile');
-  const workDir = path.join(base, 'work');
-  mkdirSync(path.join(profile, 'Roaming', 'FTPeach'), { recursive: true });
-  mkdirSync(path.join(profile, 'Local'), { recursive: true });
-  mkdirSync(workDir);
-  // An explicit language, so the run reads the same on any Windows display
-  // language; everything else starts from the defaults unless the test says.
-  // The window sits off screen and unfocused, where a finished transfer would
-  // pop a Windows notification, so those are off.
-  // Other store files, such as sites.json, are what a user saved earlier.
-  const files = {
-    ...store,
-    'settings.json': { language: 'en', notifyOnTransferComplete: false, ...settings },
-  };
-  for (const [name, data] of Object.entries(files)) {
-    writeFileSync(
-      path.join(profile, 'Roaming', 'FTPeach', name),
-      JSON.stringify({ schemaVersion: 1, data }),
-    );
-  }
-
   const cdpPort = await freePort();
   // The smoke build runs its self-test whenever this variable exists, even empty.
   const env = { ...process.env };
@@ -155,12 +149,70 @@ export async function launchApp(
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
     },
   });
+  Object.assign(run, { child, cdpPort });
+  try {
+    await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
+  } catch (error) {
+    throw new Error(`${(error as Error).message}\n${diagnose(child, profile)}`);
+  }
+  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+  run.browser = browser;
+  const page = await waitFor('the main window', async () => browser.contexts()[0]?.pages()[0], 30);
+  await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
+  return page;
+}
 
-  let browser: Browser | undefined;
-  const close = async () => {
+/**
+ * Launches the application on a throwaway profile holding `settings` and the
+ * `store` files (name to data, or to the raw text of a file that is not a
+ * plain store). `onStart` runs on the main window of every run.
+ */
+export async function launchApp(
+  settings: Record<string, unknown> = {},
+  store: Record<string, unknown> = {},
+  onStart: (_page: Page) => Promise<void> = async () => {},
+): Promise<RunningApp> {
+  if (!existsSync(APP_PATH)) {
+    throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
+  }
+  const base = mkdtempSync(path.join(tmpdir(), 'ftpeach-e2e-'));
+  const profile = path.join(base, 'profile');
+  const workDir = path.join(base, 'work');
+  const dataDir = path.join(profile, 'Roaming', 'FTPeach');
+  mkdirSync(dataDir, { recursive: true });
+  mkdirSync(path.join(profile, 'Local'), { recursive: true });
+  mkdirSync(workDir);
+  // An explicit language, so the run reads the same on any Windows display
+  // language; everything else starts from the defaults unless the test says.
+  // The window sits off screen and unfocused, where a finished transfer would
+  // pop a Windows notification, so those are off.
+  // Other store files, such as sites.json, are what a user saved earlier.
+  const files = {
+    'settings.json': { language: 'en', notifyOnTransferComplete: false, ...settings },
+    ...store,
+  };
+  for (const [name, data] of Object.entries(files)) {
+    writeFileSync(
+      path.join(dataDir, name),
+      typeof data === 'string' ? data : JSON.stringify({ schemaVersion: 1, data }),
+    );
+  }
+
+  let run: Partial<Run> = {};
+  /** Waits for the process and its debugging port to be gone, killing it if `force`. */
+  const end = async (force: boolean) => {
+    const { child, cdpPort, browser } = run;
     await browser?.close().catch(() => {});
-    stop(child);
-    await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
+    if (child && force) stop(child);
+    if (child) {
+      await waitFor('the app to exit', async () => child.exitCode !== null || undefined, 30);
+    }
+    if (cdpPort) {
+      await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
+    }
+  };
+  const close = async () => {
+    await end(true);
     const logs = appLogs(profile, 200_000);
     // WebView2 lets go of its profile a moment after the process ends.
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -173,37 +225,36 @@ export async function launchApp(
     }
     return logs;
   };
-  try {
-    try {
-      await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
-    } catch (error) {
-      throw new Error(`${(error as Error).message}\n${diagnose(child, profile)}`);
-    }
-    browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-    const page = await waitFor(
-      'the main window',
-      async () => browser!.contexts()[0]?.pages()[0],
-      30,
-    );
-    await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
-    const otherWindow = () =>
+  const app: RunningApp = {
+    page: undefined as unknown as Page,
+    workDir,
+    dataDir,
+    localDir: path.join(profile, 'Local', 'com.smooveemaan.ftpeach'),
+    otherWindow: () =>
       waitFor(
         'another window',
         async () =>
-          browser!
-            .contexts()
+          run
+            .browser!.contexts()
             .flatMap((context) => context.pages())
-            .find((other) => other !== page),
+            .find((other) => other !== app.page),
         30,
-      );
-    return {
-      page,
-      workDir,
-      otherWindow,
-      running: () => child.exitCode === null,
-      log: () => appLogs(profile, 200_000),
-      close,
-    };
+      ),
+    running: () => run.child?.exitCode === null,
+    log: () => appLogs(profile, 200_000),
+    kill: () => end(true),
+    relaunch: async () => {
+      await end(false);
+      run = {};
+      app.page = await start(profile, workDir, run);
+      await onStart(app.page);
+    },
+    close,
+  };
+  try {
+    app.page = await start(profile, workDir, run);
+    await onStart(app.page);
+    return app;
   } catch (error) {
     await close();
     throw error;
@@ -211,10 +262,10 @@ export async function launchApp(
 }
 
 /**
- * The test API with `app`: the running application, with a trace of the run
- * attached and the process and profile gone afterwards, a timed-out test too.
- * `test.use({ appSettings, appStore })` starts it with those settings and
- * store files (name to data) in its profile.
+ * The test API with `app`: the running application, with a trace of the last
+ * run attached and the process and profile gone afterwards, a timed-out test
+ * too. `test.use({ appSettings, appStore })` starts it with those settings and
+ * store files (see `launchApp`) in its profile.
  */
 export const test = base.extend<{
   appSettings: Record<string, unknown>;
@@ -224,9 +275,10 @@ export const test = base.extend<{
   appSettings: [{}, { option: true }],
   appStore: [{}, { option: true }],
   app: async ({ appSettings, appStore }, use, testInfo) => {
-    const app = await launchApp(appSettings, appStore);
-    const tracing = app.page.context().tracing;
-    await tracing.start({ screenshots: true, snapshots: true });
+    // A run that exits takes its trace along; each relaunch starts a new one.
+    const app = await launchApp(appSettings, appStore, (page) =>
+      page.context().tracing.start({ screenshots: true, snapshots: true }),
+    );
     try {
       await use(app);
     } finally {
@@ -237,7 +289,10 @@ export const test = base.extend<{
           contentType: 'image/png',
         });
       }
-      await tracing.stop({ path: testInfo.outputPath('trace.zip') }).catch(() => {});
+      await app.page
+        ?.context()
+        .tracing.stop({ path: testInfo.outputPath('trace.zip') })
+        .catch(() => {});
       const logs = await app.close();
       // A file, so the CI artifact of test results carries it too.
       if (failed) {

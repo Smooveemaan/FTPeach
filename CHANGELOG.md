@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   disconnected, not the one it writes to.
 - Transfers cut off by a lost connection can be retried after connecting to the server again.
 - Stopping a transfer on a server that stopped answering takes seconds, not half a minute.
+- An upload whose connection broke just as the server finished saving it is shown as done, not
+  as failed.
 
 ## [0.4.0] - 2026-10-05
 

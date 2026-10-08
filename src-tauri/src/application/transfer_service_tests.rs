@@ -182,6 +182,7 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
         let partial = remote_partial_path("/target");
         let events = Arc::new(Mutex::new(Vec::new()));
         let events_for_sink = events.clone();
+        let staged_whole = std::sync::atomic::AtomicBool::new(false);
         let upload = upload_staged(
             &mut backend,
             std::path::Path::new("unused"),
@@ -189,6 +190,7 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
             "/target",
             false,
             Arc::new(move |event| events_for_sink.lock().unwrap().push(event)),
+            &staged_whole,
         );
         let result = crate::protocol::ALLOW_OVERWRITE.scope(true, upload).await;
         assert_eq!(result.is_err(), reject);
@@ -225,6 +227,7 @@ async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_o
                     "/target",
                     false,
                     Arc::new(|_| {}),
+                    &std::sync::atomic::AtomicBool::new(false),
                 )
                 .await
             })

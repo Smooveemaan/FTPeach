@@ -64,6 +64,7 @@ async fn upload_staged(
     target: &str,
     resume: bool,
     sink: ProgressSink,
+    staged_whole: &std::sync::atomic::AtomicBool,
 ) -> anyhow::Result<()> {
     let progress_sink = sink.clone();
     let staged_sink: ProgressSink = Arc::new(move |info| {
@@ -73,6 +74,7 @@ async fn upload_staged(
     });
     let result = async {
         backend.upload(local, partial, resume, staged_sink).await?;
+        staged_whole.store(true, std::sync::atomic::Ordering::SeqCst);
         // A server that will not replace sets the old file aside; never delete-then-rename.
         if crate::protocol::overwrite_allowed() {
             backend.rename(partial, target).await?;
@@ -85,9 +87,50 @@ async fn upload_staged(
     .await;
     match &result {
         Ok(()) => sink(ProgressInfo::Done),
+        // Lost while the whole file was being put in place: the caller first
+        // looks whether the server finished anyway.
+        Err(error)
+            if staged_whole.load(std::sync::atomic::Ordering::SeqCst)
+                && lost_connection(CommandError::from_anyhow(error).code) => {}
         Err(error) => sink(ProgressInfo::failed(error)),
     }
     result
+}
+
+fn lost_connection(code: ErrorCode) -> bool {
+    matches!(code, ErrorCode::ConnectionLost | ErrorCode::TimedOut)
+}
+
+/// After the connection broke while the whole staging file was being put in
+/// place: whether the server did it anyway, as the pane's connection sees it.
+/// The name holds a file of the uploaded size and the staging file is gone.
+async fn published_anyway(
+    sessions: &Sessions,
+    connection_id: &str,
+    partial: &str,
+    target: &str,
+    size: u64,
+) -> bool {
+    let slot = sessions.lookup_slot(connection_id);
+    let Ok(mut guard) = tokio::time::timeout(std::time::Duration::from_secs(5), slot.lock()).await
+    else {
+        return false;
+    };
+    let Some(session) = guard.as_mut() else {
+        return false;
+    };
+    let browse = session.browse_client.as_mut();
+    let checked = async {
+        browse.known_size(target).await == Some(size) && browse.known_size(partial).await.is_none()
+    };
+    let landed = matches!(
+        tokio::time::timeout(std::time::Duration::from_secs(10), checked).await,
+        Ok(true)
+    );
+    if landed {
+        crate::protocol::remove_set_aside(browse, partial).await;
+    }
+    landed
 }
 
 async fn relay_staged(
@@ -268,8 +311,12 @@ pub async fn transfer_upload(
     crate::transfer::upload_staging::begin(&transfer_id, key, partial.clone());
     let local_for_resume = local.to_string_lossy().into_owned();
     let cleanup_connection = connection_id.clone();
+    let target = remote_path.clone();
+    let report = make_progress_sink(progress.clone(), connection_id.clone(), transfer_id.clone());
     let started = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let started_for_task = started.clone();
+    let staged_whole = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let staged_whole_for_task = staged_whole.clone();
     let result = run_pool_task(
         sessions,
         progress,
@@ -299,6 +346,7 @@ pub async fn transfer_upload(
                                 &remote_path,
                                 resumed,
                                 sink,
+                                &staged_whole_for_task,
                             ),
                         )
                         .await
@@ -307,32 +355,78 @@ pub async fn transfer_upload(
         },
     )
     .await;
+    let deferred = staged_whole.load(std::sync::atomic::Ordering::SeqCst)
+        && result
+            .as_ref()
+            .is_err_and(|error| lost_connection(error.code));
+    let result = if deferred
+        && published_anyway(sessions, &cleanup_connection, &partial, &target, pin.size()).await
+    {
+        log::warn!("The server's reply to putting {target} in place was lost; it is there, whole");
+        report(ProgressInfo::Done);
+        Ok(())
+    } else {
+        result
+    };
+    let result = settle_upload(
+        sessions,
+        &transfer_id,
+        &cleanup_connection,
+        &server,
+        result,
+        resumed || started.load(std::sync::atomic::Ordering::SeqCst),
+        (
+            local_for_resume,
+            pin,
+            staged.load(std::sync::atomic::Ordering::SeqCst),
+        ),
+    )
+    .await;
+    if deferred && let Err(error) = &result {
+        report(ProgressInfo::Error {
+            error: error.message.clone(),
+            code: error.code,
+        });
+    }
+    result
+}
+
+/// Hands the attempt's staging file on: to the next attempt after a pause,
+/// to the cleanup after any other unfinished ending.
+async fn settle_upload(
+    sessions: &Sessions,
+    transfer_id: &str,
+    cleanup_connection: &str,
+    server: &str,
+    result: CommandResult<()>,
+    staging_made: bool,
+    (local_for_resume, pin, staged): (String, crate::transfer::upload_staging::SourcePin, u64),
+) -> CommandResult<()> {
     // The staging file exists on the server if this attempt adopted one or got
     // far enough to create its own. A pause hands it to the next attempt; every
     // other unfinished ending abandons it.
-    let unfinished =
-        result.is_err() && (resumed || started.load(std::sync::atomic::Ordering::SeqCst));
+    let unfinished = result.is_err() && staging_made;
     let live = unfinished
         && sessions
-            .pool_for(&cleanup_connection)
+            .pool_for(cleanup_connection)
             .await
             .is_some_and(|pool| !pool.is_closed());
     let Some(partial) = crate::transfer::upload_staging::end_attempt(
-        &transfer_id,
+        transfer_id,
         unfinished,
         live,
         local_for_resume,
         pin,
-        staged.load(std::sync::atomic::Ordering::SeqCst),
+        staged,
     ) else {
         return result;
     };
-    if cleanup_remote_partial(sessions, &cleanup_connection, &partial).await {
+    if cleanup_remote_partial(sessions, cleanup_connection, &partial).await {
         // Only now: a disconnect before the deletion reached the server
         // still finds the file through its record.
-        crate::transfer::upload_staging::release(&transfer_id);
+        crate::transfer::upload_staging::release(transfer_id);
     }
-    result.map_err(|error| interrupted_replacement(error, &partial, &server))
+    result.map_err(|error| interrupted_replacement(error, &partial, server))
 }
 
 /// A replacement whose old file is still set aside after cleanup tried to put

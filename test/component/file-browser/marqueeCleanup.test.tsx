@@ -21,7 +21,7 @@ function startDrag() {
   const onSelectionChange = vi.fn();
   const hook = renderHook(() =>
     useFileSelection({
-      entries,
+      folder: '/',
       sorted: entries,
       selectedNames: new Set(),
       onSelectionChange,

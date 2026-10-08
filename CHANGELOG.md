@@ -35,6 +35,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   can.
 - Closing the window to the tray cancels a security confirmation that was still open, instead of
   leaving it on screen.
+- After typing a path and pressing Enter, the keyboard works in the file list right away; Esc
+  returns to the path bar.
+- A file list that refreshes, for example when a transfer finishes, keeps the keyboard position:
+  arrow keys and Shift carry on from the same file instead of the top.
+- Files selected while a folder is still loading stay selected when the list arrives.
 
 ## [0.4.0] - 2026-10-05
 

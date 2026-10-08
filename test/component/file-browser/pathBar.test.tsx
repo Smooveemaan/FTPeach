@@ -47,3 +47,25 @@ test('the ellipsis of a path that does not fit lists the folders it hides, neare
   // The click belongs to the crumb: the bar does not turn into the path field.
   expect(screen.queryByRole('textbox')).toBeNull();
 });
+
+test('the path field hands the keys to the list on Enter and back to the bar on Escape', () => {
+  const onPathSubmit = vi.fn();
+  render(
+    <div className="pane" tabIndex={0}>
+      <PathBar kind="local" crumbs={crumbs} onCrumbClick={vi.fn()} onPathSubmit={onPathSubmit} />
+    </div>,
+  );
+  const bar = screen.getByRole('button', { name: 'filePane.editPathAriaLabel' });
+
+  fireEvent.keyDown(bar, { key: 'Enter' });
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: '/a/b' } });
+  fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+  expect(onPathSubmit).toHaveBeenCalledExactlyOnceWith('/a/b');
+  expect(document.activeElement).toBe(document.querySelector('.pane'));
+
+  fireEvent.keyDown(bar, { key: 'Enter' });
+  fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' });
+  expect(screen.queryByRole('textbox')).toBeNull();
+  expect(document.activeElement).toBe(bar);
+  expect(onPathSubmit).toHaveBeenCalledOnce();
+});

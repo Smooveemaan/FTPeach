@@ -16,7 +16,8 @@ const AUTO_SCROLL_EDGE = 48;
 const AUTO_SCROLL_MAX_SPEED = 16;
 
 interface FileSelectionOptions {
-  entries: readonly FileEntry[];
+  /** The folder listed; the cursor and the range start belong to it. */
+  folder: string;
   sorted: readonly FileEntry[];
   selectedNames: ReadonlySet<string>;
   onSelectionChange: (selectedNames: Set<string>) => void;
@@ -39,7 +40,7 @@ export interface FileSelectionModel {
 }
 
 export default function useFileSelection({
-  entries,
+  folder,
   sorted,
   selectedNames,
   onSelectionChange,
@@ -63,11 +64,13 @@ export default function useFileSelection({
     activeNameRef.current = index == null ? null : (stateRef.current.sorted[index]?.name ?? null);
   };
 
+  // Another folder starts from the top. The same folder listed again (F5, a
+  // transfer that finished there) keeps both, by name, as the effect below does.
   useEffect(() => {
     anchorNameRef.current = null;
     setActive(null);
     typeaheadRef.current = { buffer: '', lastTime: 0 };
-  }, [entries]);
+  }, [folder]);
 
   useEffect(() => {
     const name = activeNameRef.current;

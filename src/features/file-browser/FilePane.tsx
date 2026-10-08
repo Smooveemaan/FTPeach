@@ -248,7 +248,7 @@ function FilePane({
     handleTypeahead,
     clear: clearSelection,
   } = useFileSelection({
-    entries,
+    folder: currentFullPath,
     sorted,
     selectedNames,
     onSelectionChange,

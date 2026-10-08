@@ -1,12 +1,17 @@
 import { act, renderHook } from '@testing-library/react';
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi, type Mock } from 'vitest';
 import { usePaneRefresh } from '../../../src/features/file-browser/panes/usePaneRefresh.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
+import type { PaneState } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { friendlyError } from '../../../src/shared/errorMessages.ts';
 import {
   markConnectionDead,
   resetTransfersStoreForTests,
 } from '../../../src/features/transfers/transferStore.ts';
+
+/** What each call made of the pane given: a patch that is a function is worked out on it. */
+const patches = (updatePane: Mock, pane: PaneState): Partial<PaneState>[] =>
+  updatePane.mock.calls.map(([, patch]) => (typeof patch === 'function' ? patch(pane) : patch));
 
 test.each(['connecting', 'connected'] as const)(
   'reports listing failure globally only outside connection setup (%s)',
@@ -131,7 +136,7 @@ test('a successful late reply cannot repopulate a closed remote pane', async () 
     resolve({ ok: true, entries: [{ name: 'stale' }] });
     await pending;
   });
-  expect(updatePane.mock.calls.some(([, patch]) => 'entries' in patch)).toBe(false);
+  expect(patches(updatePane, tab.panes.a).some((patch) => 'entries' in patch)).toBe(false);
   unmount();
   resetTransfersStoreForTests();
 });
@@ -174,7 +179,9 @@ test('local navigation and unmount abort obsolete listings without publishing th
     await first;
   });
   expect(
-    updatePane.mock.calls.filter(([, patch]) => 'entries' in patch).map(([, patch]) => patch.path),
+    patches(updatePane, tab.panes.a)
+      .filter((patch) => 'entries' in patch)
+      .map((patch) => patch.path),
   ).toEqual(['C:\\second']);
   let last!: ReturnType<typeof result.current.refreshPane>;
   await act(async () => {
@@ -224,10 +231,10 @@ test('switching a pane back to local keeps the listing it just started', async (
     requests[0]!.resolve({ ok: true, path: 'C:/root', entries: [] });
     await pending;
   });
-  expect(updatePane).toHaveBeenLastCalledWith(
-    'a',
+  expect(updatePane.mock.lastCall?.slice(0, 1)).toEqual(['a']);
+  expect(updatePane.mock.lastCall?.[2]).toBe(remoteTab.id);
+  expect(patches(updatePane, localPanes.a).at(-1)).toEqual(
     expect.objectContaining({ loading: false, path: 'C:/root' }),
-    remoteTab.id,
   );
   unmount();
 });
@@ -266,7 +273,7 @@ test('switching a pane away from local aborts its listing and clears the spinner
     requests[0]!.resolve({ ok: true, path: 'C:/root', entries: [{ name: 'stale' }] });
     await pending;
   });
-  expect(updatePane.mock.calls.some(([, patch]) => 'entries' in patch)).toBe(false);
+  expect(patches(updatePane, tab.panes.a).some((patch) => 'entries' in patch)).toBe(false);
   expect(updatePane).toHaveBeenLastCalledWith('a', { loading: false }, tab.id);
   unmount();
 });
@@ -299,10 +306,9 @@ test('a transfer refresh leaves a pane the user browsed away from, and keeps the
   await act(async () => {
     await refresh('b', '/upload');
   });
-  expect(updatePane).toHaveBeenLastCalledWith(
-    'b',
+  expect(updatePane.mock.lastCall?.[2]).toBe(tab.id);
+  expect(patches(updatePane, tab.panes.b).at(-1)).toEqual(
     expect.objectContaining({ path: '/upload', selected: new Set(['kept']) }),
-    tab.id,
   );
   // The user went into another folder while the transfer kept reporting.
   rerender({ panes: { ...tab.panes, b: { ...tab.panes.b, path: '/upload/many' } } });
@@ -349,4 +355,40 @@ test('a listing that works clears only the error a failed listing put up', async
     await result.current.refreshPane('b', '/');
   });
   expect(message).toBe('');
+});
+
+test('a selection made while the folder is listed again is the one kept', async () => {
+  const tab = makeTab('reselect');
+  tab.panes.a.path = 'C:/root';
+  tab.panes.a.selected = new Set(['first.txt']);
+  let answer!: (_value: unknown) => void;
+  window.api = {
+    fsLocal: { list: () => new Promise((resolve) => (answer = resolve)) },
+  } as unknown as Window['api'];
+  const updatePane = vi.fn();
+  const { result } = renderHook(() =>
+    usePaneRefresh({
+      panes: tab.panes,
+      activeTabId: tab.id,
+      updatePane,
+      reportError: vi.fn(),
+      setErrorMessage: vi.fn(),
+      defaultLocalPath: '',
+    }),
+  );
+  let pending!: ReturnType<typeof result.current.refreshPane>;
+  await act(async () => {
+    pending = result.current.refreshPane('a', 'C:/root');
+  });
+  // While the list loads the user picks two other files, one of them since deleted.
+  const now = { ...tab.panes.a, selected: new Set(['second.txt', 'gone.txt']) };
+  await act(async () => {
+    answer({
+      ok: true,
+      path: 'C:/root',
+      entries: [{ name: 'first.txt' }, { name: 'second.txt' }],
+    });
+    await pending;
+  });
+  expect(patches(updatePane, now).at(-1)?.selected).toEqual(new Set(['second.txt']));
 });

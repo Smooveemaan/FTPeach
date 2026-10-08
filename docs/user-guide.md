@@ -23,6 +23,15 @@ the edge.
 
 <!-- verified-by: manual Selection rectangle past the edge of the list -->
 
+When a folder's list is refreshed, with F5 or because a transfer finished
+there, the files still in it stay selected, and the arrow keys and Shift carry
+on from the same file. Files you select while the list is still loading are the
+ones that stay selected.
+
+<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a transfer refresh leaves a pane the user browsed away from, and keeps the selection -->
+<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a selection made while the folder is listed again is the one kept -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::the folder listed again keeps the keyboard cursor; another folder starts from the top -->
+
 ## Pausing, stopping and resuming transfers
 
 **Pause** keeps what has been transferred so far. Resuming a paused upload over

@@ -403,6 +403,32 @@ describe('FilePane interactions', () => {
     );
   });
 
+  test('the folder listed again keeps the keyboard cursor; another folder starts from the top', () => {
+    const { container, props, rerender } = renderPane({ selectedNames: new Set() });
+    const pane = requireHtml(container.querySelector('.pane'));
+    pane.focus();
+    fireEvent.keyDown(pane, { key: 'ArrowDown' });
+    fireEvent.keyDown(pane, { key: 'ArrowDown' });
+    expect(props.onSelectionChange).toHaveBeenLastCalledWith(new Set(['beta.txt']));
+
+    // F5, or a transfer finishing in this folder: a new list, one name more.
+    const listedAgain = [...entries, { name: 'new.txt', isDirectory: false, size: 1 }];
+    rerender(<FilePane {...props} entries={listedAgain} selectedNames={new Set(['beta.txt'])} />);
+    fireEvent.keyDown(pane, { key: 'ArrowDown', shiftKey: true });
+    expect(props.onSelectionChange).toHaveBeenLastCalledWith(new Set(['beta.txt', 'new.txt']));
+
+    rerender(
+      <FilePane
+        {...props}
+        crumbs={[{ label: 'other', path: '/other' }]}
+        entries={listedAgain}
+        selectedNames={new Set()}
+      />,
+    );
+    fireEvent.keyDown(pane, { key: 'ArrowDown' });
+    expect(props.onSelectionChange).toHaveBeenLastCalledWith(new Set(['Alpha']));
+  });
+
   test('typing letters jumps to the first matching name, and a repeated letter cycles', () => {
     const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
     const { container, props } = renderPane({

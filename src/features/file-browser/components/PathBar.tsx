@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import ContextMenu from '../../../components/ContextMenu.tsx';
 import FolderList from '../../../components/FolderList.tsx';
@@ -108,8 +109,15 @@ export default function PathBar({
       .trim()
       .replace(/^"(.*)"$/, '$1')
       .trim();
+    // The field goes away; the keys go on to the list it opened, as in Explorer.
+    containerRef.current?.closest<HTMLElement>('.pane')?.focus();
     setEditing(false);
     if (nextValue) onPathSubmit?.(nextValue);
+  };
+  const cancel = () => {
+    // Back to the bar the field came from, which is a button again by then.
+    flushSync(() => setEditing(false));
+    containerRef.current?.focus();
   };
   const renderCrumb = (crumb: PathCrumb, index: number, measured = false) => {
     const isDriveCrumb = index === 0 && kind === 'local' && Boolean(onDriveMenuOpen);
@@ -173,7 +181,7 @@ export default function PathBar({
             onKeyDown={(event) => {
               event.stopPropagation();
               if (event.key === 'Enter') commit();
-              if (event.key === 'Escape') setEditing(false);
+              if (event.key === 'Escape') cancel();
             }}
             onBlur={() => setEditing(false)}
           />

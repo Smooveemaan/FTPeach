@@ -142,21 +142,22 @@ export function usePaneRefresh({
           const nextPath = pane.kind === 'local' ? result.path : targetPath;
           updatePane(
             id,
-            {
+            // Listing the same folder again keeps what is still there selected,
+            // as selected now: the user may have chosen again while it loaded.
+            (current) => ({
               loading: false,
               ...(nextPath === undefined ? {} : { path: nextPath }),
               entries: result.entries,
-              // Listing the same folder again keeps what is still there selected.
               selected:
-                (nextPath ?? pane.path) === pane.path
+                (nextPath ?? current.path) === current.path
                   ? new Set(
                       result.entries
                         .map((entry) => entry.name)
-                        .filter((name) => pane.selected.has(name)),
+                        .filter((name) => current.selected.has(name)),
                     )
                   : new Set(),
               refreshedAt: Date.now(),
-            },
+            }),
             tabId,
           );
           const listingError = listingErrorRef.current;

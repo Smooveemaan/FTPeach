@@ -147,21 +147,13 @@ pub(super) fn close_connection(connection_id: &str) {
         {
             return true;
         }
+        // What landed stays. The staging file of the file it stopped in stays
+        // recorded: nothing can resume the walk now, so it goes with its
+        // connection's teardown, as a paused single upload's does.
         log::warn!(
             "Disconnected recursive journal {id}; results retained at {}",
             paused.target.path("")
         );
-        if let Endpoint::Remote { connection_id, .. } = &paused.target
-            && let Some(relative) = &paused.journal.in_flight
-        {
-            let key = crate::transfer::upload_staging::Key {
-                connection_id: connection_id.clone(),
-                remote_path: paused.target.path(relative),
-            };
-            for path in &paused.journal.staging {
-                crate::transfer::upload_staging::forget_retained(&key, path);
-            }
-        }
         false
     });
 }
@@ -298,6 +290,43 @@ mod tests {
             },
             journal: Journal::default(),
         }
+    }
+
+    #[tokio::test]
+    async fn a_disconnect_leaves_a_paused_walks_staging_file_to_the_teardown() {
+        let key = crate::transfer::upload_staging::Key {
+            connection_id: "closing walk".into(),
+            remote_path: "/target/a.bin".into(),
+        };
+        let staging = "/target/.ftpeach-walk.part";
+        let pin = crate::transfer::upload_staging::pin(&std::env::current_exe().unwrap())
+            .await
+            .unwrap();
+        crate::transfer::upload_staging::remember(
+            key.clone(),
+            staging.into(),
+            "a.bin".into(),
+            pin,
+            5,
+        );
+        let mut walk = paused();
+        walk.target = Endpoint::Remote {
+            path: "/target".into(),
+            connection_id: "closing walk".into(),
+        };
+        walk.journal.in_flight = Some("a.bin".into());
+        walk.journal.staging = vec![staging.into()];
+        assert!(keep("closing walk".into(), walk).is_ok());
+
+        close_connection("closing walk");
+
+        // Nothing can resume the walk now: the teardown that follows deletes
+        // the file it was writing, as it does a paused single upload's.
+        assert!(take_any("closing walk").is_none());
+        assert_eq!(
+            crate::transfer::upload_staging::staged_path(&key).as_deref(),
+            Some(staging)
+        );
     }
 
     #[test]

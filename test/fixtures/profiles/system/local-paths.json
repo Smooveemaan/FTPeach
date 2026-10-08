@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "data": [
+    {
+      "id": "system-local",
+      "kind": "local",
+      "name": "Fixture folder",
+      "localPath": "$fixtures",
+      "parentId": null,
+      "icon": "folder",
+      "color": null
+    }
+  ]
+}

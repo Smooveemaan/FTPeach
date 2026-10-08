@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "kdf": {
+    "algorithm": "argon2id",
+    "version": 1,
+    "memoryKib": 65536,
+    "iterations": 3,
+    "parallelism": 1,
+    "salt": "QUVzFLzDK8l4S69OuETJHg=="
+  },
+  "wrappedKey": "HNV0bxeMLT8Lp6rsBr/yKZxERD3qMxjqlcY4CxXhUxCHyUQYP5MgCgw1Tf7YMzWP",
+  "nonce": "K0rP1bqO9l7X8qcilL8GW2PEidGHKaAE"
+}

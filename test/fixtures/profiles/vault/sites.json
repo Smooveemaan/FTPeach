@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "data": [
+    {
+      "hasPassword": true,
+      "host": "$ftp.host",
+      "id": "vault-ftp",
+      "name": "IIS FTP",
+      "port": "$ftp.port",
+      "protocol": "ftp",
+      "user": "$ftp.user"
+    }
+  ]
+}

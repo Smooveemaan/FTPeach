@@ -113,6 +113,10 @@ pub fn ask_to_quit(app: &AppHandle, unsynced_edits: usize) {
 fn show_and_focus(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
+        #[cfg(feature = "smoke-test")]
+        if crate::runtime::e2e_browser::active() {
+            return crate::runtime::e2e_browser::show_without_focus(&window);
+        }
         let _ = window.show();
         let _ = window.set_focus();
     }

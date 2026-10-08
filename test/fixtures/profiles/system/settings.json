@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "language": "en",
+    "theme": "dark",
+    "showTransferQueue": false,
+    "notifyOnTransferComplete": false
+  }
+}

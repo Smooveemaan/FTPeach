@@ -71,12 +71,16 @@ pub async fn settings_set(
     log_emitter: State<'_, LogEmitter>,
     patch: AppSettings,
 ) -> CommandResult<AppSettings> {
-    let patch = patch.0;
+    let mut patch = patch.0;
     if security_policy::needs_confirmation_path(&store.get_settings().await, &patch) {
         return Err(CommandError::new(
             ErrorCode::PermissionDenied,
             "Relaxing protection or moving the proxy password needs settings_set_security",
         ));
+    }
+    // A log folder inside a portable copy is kept relative, so it moves with the copy.
+    if let Some(Value::String(folder)) = patch.get_mut("logFolder") {
+        *folder = crate::local_fs::portable::stored_path(folder, crate::local_fs::portable::root());
     }
     let had_transfer_limits = changes_transfer_limits(&patch);
     let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");

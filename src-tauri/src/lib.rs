@@ -221,6 +221,10 @@ fn open_store() -> Store {
 
 /// Says why FTPeach cannot start, before there is a window to say it in.
 fn fatal(message: &str) -> ! {
+    #[cfg(feature = "smoke-test")]
+    if runtime::e2e_browser::say_instead_of_message_box(message) {
+        std::process::exit(1);
+    }
     #[cfg(windows)]
     {
         use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};

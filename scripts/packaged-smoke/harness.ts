@@ -7,6 +7,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -19,6 +20,42 @@ const APP_PATH = path.join(REPO_ROOT, '.tools', 'smoke-target', 'debug', 'app.ex
 
 /** What a portable copy must have put beside the program by the time it exits. */
 const PORTABLE_DATA = ['settings.json', 'tabs.json', 'local', 'webview'];
+
+/**
+ * The real profile folders, as this process sees them. Tauri and WebView2 find
+ * theirs through the Windows known-folder API, which the APPDATA and
+ * LOCALAPPDATA given to the smoke run do not change.
+ */
+const REAL_PROFILE = [process.env.APPDATA, process.env.LOCALAPPDATA].filter(
+  (folder): folder is string => Boolean(folder),
+);
+
+/**
+ * Every entry of the real profile folders named after FTPeach, with each
+ * file's size and time, so a portable run that wrote there shows.
+ */
+function realProfileTraces(): string[] {
+  return REAL_PROFILE.flatMap((root) =>
+    readdirSync(root)
+      .filter((name) => /ftpeach|smooveemaan/i.test(name))
+      .flatMap((name) => {
+        const top = path.join(root, name);
+        const entries = statSync(top).isDirectory()
+          ? (readdirSync(top, { recursive: true }) as string[]).map((entry) =>
+              path.join(top, entry),
+            )
+          : [];
+        return [top, ...entries].map((entry) => {
+          try {
+            const { size, mtimeMs } = statSync(entry);
+            return `${entry} ${size} ${mtimeMs}`;
+          } catch {
+            return `${entry} gone`;
+          }
+        });
+      }),
+  );
+}
 
 /**
  * Runs the smoke build with an isolated profile. With `portable`, the build is
@@ -38,12 +75,16 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
     writeFileSync(path.join(program, 'FTPeach.portable'), '');
   }
   const resultPath = path.join(isolatedRoot, 'result.txt');
+  const tracesBefore = portable ? realProfileTraces() : [];
   const child = spawn(appPath, [], {
     cwd: REPO_ROOT,
     env: {
       ...process.env,
       APPDATA: profile,
       LOCALAPPDATA: profile,
+      // An installed copy's WebView2 profile would otherwise go to the real
+      // one; a portable copy names its own, which this would override.
+      ...(portable ? {} : { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'webview2') }),
       FTPEACH_SMOKE_TEST: '1',
       FTPEACH_SMOKE_RESULT: resultPath,
     },
@@ -67,7 +108,7 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
       }
       if (child.exitCode !== null) {
         if (successReported && child.exitCode === 0) {
-          if (portable) assertPortableData(program, profile);
+          if (portable) assertPortableData(program, profile, tracesBefore);
           return;
         }
         throw new Error(`FTPeach smoke process exited early with code ${child.exitCode}`);
@@ -100,7 +141,7 @@ async function removeWhenReleased(directory: string) {
   }
 }
 
-function assertPortableData(program: string, profile: string) {
+function assertPortableData(program: string, profile: string, tracesBefore: string[]) {
   const data = path.join(program, 'data');
   const missing = PORTABLE_DATA.filter((name) => !existsSync(path.join(data, name)));
   if (missing.length > 0) {
@@ -109,5 +150,12 @@ function assertPortableData(program: string, profile: string) {
   const leaked = readdirSync(profile);
   if (leaked.length > 0) {
     throw new Error(`the portable copy wrote to the Windows profile: ${leaked.join(', ')}`);
+  }
+  const before = new Set(tracesBefore);
+  const changed = realProfileTraces().filter((trace) => !before.has(trace));
+  if (changed.length > 0) {
+    throw new Error(
+      `the portable copy wrote to the real Windows profile:\n${changed.slice(0, 20).join('\n')}`,
+    );
   }
 }

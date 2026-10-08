@@ -37,6 +37,10 @@ pub async fn log_open_folder(
     tokio::fs::create_dir_all(&dir)
         .await
         .map_err(|error| CommandError::from_anyhow(&error.into()))?;
+    #[cfg(feature = "smoke-test")]
+    if crate::runtime::e2e_browser::hold_back_opening(&dir.to_string_lossy()) {
+        return Ok(());
+    }
     app.opener()
         .open_path(dir.to_string_lossy().into_owned(), None::<String>)
         .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))

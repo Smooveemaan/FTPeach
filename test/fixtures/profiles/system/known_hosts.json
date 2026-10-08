@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "data": {
+    "$sftp.address": "$sftp.fingerprint"
+  }
+}

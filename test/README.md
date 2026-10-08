@@ -82,9 +82,8 @@ server's disk and the local disk and compare SHA-256 sums.
   after Stop, and a paused upload always starts over there.
 - `ftps.e2e.ts` checks that the IIS site's self-signed certificate is refused
   when nothing vouches for it, then uploads over FTPS from a bookmark saved with
-  the certificate's CA (`cert.pem` from `iis.ps1`). The CA can only be chosen in a
-  native file dialog, so the bookmark is put in the profile as a user would have
-  saved it.
+  the certificate's CA (`cert.pem` from `iis.ps1`), put in the profile as a
+  user would have saved it.
 - `webdav.e2e.ts` runs a recording http:// server of its own to check that the
   password reaches it only once Allow unencrypted sign-in is ticked, then
   uploads and downloads over the IIS WebDAV site, stops an upload over an
@@ -116,19 +115,39 @@ server's disk and the local disk and compare SHA-256 sums.
   instead of chosen, FTPeach's own data folder, the Mark of the Web on an IIS
   FTP download, and names a WebDAV server of the test's own lists that Windows
   cannot hold.
+- `profiles.e2e.ts` starts on each profile of `test/fixtures/profiles` (its
+  README says what each holds): one without the schema envelope from before
+  0.1.0 with a password in plain text, one with system protection as 0.1.0 to
+  0.4.0 write it, and one with a master password. It judges settings,
+  bookmarks, local paths, the session and the protection in the window, connects
+  with the saved password, changes something and judges it after a restart.
+- `portable.e2e.ts` runs portable copies (`test.use({ appPortable: true })`):
+  a certificate and a log folder chosen inside the copy, found again after the
+  folder moves and under two drive letters made with `subst`; the copy without
+  its marker; the notification entry in the registry while it runs, at exit and
+  after a crash; a data folder it cannot write, said before any window; and a
+  second start, which brings back an installed copy hidden in the tray.
 - `*.stand.ts` (`npm run test:e2e:stand`, not part of `npm run test:e2e`) needs
   the stand of `scripts/test-servers/fs-stand.ps1 install`: a small NTFS drive to
   move to and fill, an exFAT drive without a USN journal, two SMB shares (one
   read only, one the tests take away through two scheduled tasks) and symbolic
   links. The stand describes itself in `C:\ftpeach-test-servers\fs-stand.json`;
-  a part of it that is missing fails the test. A Choose folder… dialog is
-  answered through `app.pickFolder`.
+  a part of it that is missing fails the test.
 
 All three scripts change the machine and need an elevated PowerShell. A missing server
 fails the test. A test can start the application with its own settings and saved
-store files through `test.use({ appSettings, appStore })`. The application's
+store files through `test.use({ appSettings, appStore })`, or as a portable copy
+with `appPortable`. A Choose folder… dialog and a key or certificate picker are
+answered through `app.pick`. The application's
 windows open off screen without taking the focus, and its notifications are
-off, so a run leaves the desktop free to work at. Close FTPeach first:
+off, so a run leaves the desktop free to work at. For the same reason the test
+build opens nothing outside FTPeach: a file with its default program or Windows'
+Open with chooser, Explorer, a log folder or a web page is held back and logged,
+and a test that set one off fails (a program a test associates itself, such as
+the editor of `open-with.e2e.ts`, still starts). Bringing the window back from
+the tray does not take the focus either, and a reason not to start that would
+be a message box is written to the file `FTPEACH_E2E_MESSAGE_FILE` names. Close
+FTPeach first:
 the application is single-instance, so the tests run one at a time and never
 beside a running copy. A failed test keeps a trace, a screenshot and the
 application's log (`app.log`) under `test-results/e2e/`.

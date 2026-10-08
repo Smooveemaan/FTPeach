@@ -148,6 +148,10 @@ pub fn debug_open_devtools(app: AppHandle) {
 
 #[tauri::command]
 pub fn app_open_external(app: AppHandle, url: String) {
+    #[cfg(feature = "smoke-test")]
+    if crate::runtime::e2e_browser::hold_back_opening(&url) {
+        return;
+    }
     if url.starts_with("https://") {
         let _ = app.opener().open_url(url, None::<String>);
     }

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "data": [
+    {
+      "id": "system-folder",
+      "kind": "folder",
+      "name": "Servers",
+      "parentId": null
+    },
+    {
+      "id": "system-sftp",
+      "name": "Saved SFTP",
+      "icon": "server",
+      "color": "",
+      "protocol": "sftp",
+      "host": "$sftp.host",
+      "port": "$sftp.port",
+      "user": "$sftp.user",
+      "maxConnections": 0,
+      "webdavUrl": "",
+      "secure": false,
+      "allowInvalidCert": false,
+      "allowCleartextAuth": false,
+      "remotePath": "/",
+      "parentId": "system-folder",
+      "useKeyAuth": false,
+      "keyPath": "",
+      "caCertPath": "",
+      "encoding": "",
+      "enc": "$dpapi:$sftp.password"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "activeTabId": "legacy-tab",
+  "tabs": [
+    {
+      "id": "legacy-tab",
+      "name": "Legacy tab",
+      "panes": {
+        "a": { "kind": "local", "path": "$fixtures" }
+      }
+    }
+  ]
+}

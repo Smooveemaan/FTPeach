@@ -151,6 +151,14 @@ async fn open_in(
     application: Option<PathBuf>,
     choose: bool,
 ) -> CommandResult<()> {
+    // The desktop tests start a program of their own; Windows' default for
+    // the file, or its chooser, would come up on the screen.
+    #[cfg(feature = "smoke-test")]
+    if application.is_none()
+        && crate::runtime::e2e_browser::hold_back_opening(&local_path.to_string_lossy())
+    {
+        return Ok(());
+    }
     if choose && application.is_none() {
         return open_with_chooser(window, local_path)
             .await

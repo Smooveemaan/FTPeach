@@ -1,0 +1,3 @@
+{
+  "$sftp.address": "$sftp.fingerprint"
+}

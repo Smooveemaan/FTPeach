@@ -591,6 +591,10 @@ async fn open_validated_path(
     kind: crate::local_fs::local_open::OpenKind,
 ) -> CommandResult<()> {
     let canonical = approved_paths.validate(Path::new(&local_path), kind)?;
+    #[cfg(feature = "smoke-test")]
+    if crate::runtime::e2e_browser::hold_back_opening(&canonical.to_string_lossy()) {
+        return Ok(());
+    }
     if kind == crate::local_fs::local_open::OpenKind::Reveal {
         #[cfg(windows)]
         let result = std::process::Command::new("explorer.exe")

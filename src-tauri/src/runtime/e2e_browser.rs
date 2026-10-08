@@ -22,19 +22,39 @@ pub(crate) fn save_folder() -> Option<std::path::PathBuf> {
     std::env::var_os("FTPEACH_E2E_SAVE_DIR").map(Into::into)
 }
 
-/// The answer to a Choose folder dialog while the desktop tests drive the run:
-/// `FTPEACH_E2E_PICK_FILE` names a file holding the folder to pick, empty or
-/// missing to cancel. `None` outside the tests.
-pub(crate) fn picked_folder() -> Option<Option<String>> {
+/// The answer to a Choose folder dialog or a key or certificate picker while
+/// the desktop tests drive the run: `FTPEACH_E2E_PICK_FILE` names a file
+/// holding the path to pick, empty or missing to cancel. `None` outside the
+/// tests.
+pub(crate) fn picked_path() -> Option<Option<String>> {
     let file = std::env::var_os("FTPEACH_E2E_PICK_FILE")?;
-    let folder = std::fs::read_to_string(file).unwrap_or_default();
-    let folder = folder.trim();
-    Some((!folder.is_empty()).then(|| folder.to_owned()))
+    let picked = std::fs::read_to_string(file).unwrap_or_default();
+    let picked = picked.trim();
+    Some((!picked.is_empty()).then(|| picked.to_owned()))
 }
 
 /// Whether the desktop tests drive this run.
 pub(crate) fn active() -> bool {
     std::env::var_os("FTPEACH_E2E_CDP_PORT").is_some()
+}
+
+/// Whether to hold back opening `what` outside FTPeach: a program, Explorer or
+/// Windows' own Open with chooser would come up on the screen of whoever works
+/// at it while the desktop tests drive the run. The log says what was held
+/// back, and the tests fail on that line.
+pub(crate) fn hold_back_opening(what: &str) -> bool {
+    let held = active();
+    if held {
+        log::warn!("desktop tests: held back opening {what} outside FTPeach");
+    }
+    held
+}
+
+/// Says why FTPeach cannot start in the file `FTPEACH_E2E_MESSAGE_FILE` names,
+/// instead of a message box that would take the focus; false without it.
+pub(crate) fn say_instead_of_message_box(message: &str) -> bool {
+    std::env::var_os("FTPEACH_E2E_MESSAGE_FILE")
+        .is_some_and(|file| std::fs::write(file, message).is_ok())
 }
 
 /// Shows the main window off every screen and without taking the focus, so a

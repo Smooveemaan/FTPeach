@@ -4,6 +4,7 @@
 // its WebView2 over the Chrome DevTools Protocol.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -26,14 +27,18 @@ export interface RunningApp {
   page: Page;
   /** A folder of this run's own, for local files the test prepares. */
   workDir: string;
-  /** The profile's `%APPDATA%\FTPeach`, where settings.json and tabs.json live. */
+  /** The profile's `%APPDATA%\FTPeach`, where settings.json and tabs.json live; a portable copy's `data`. */
   dataDir: string;
-  /** The profile's local application data: Open with copies, recovered edits. */
+  /** The profile's local application data: Open with copies, recovered edits; a portable copy's `data\local`. */
   localDir: string;
+  /** The throwaway profile in place of the Windows one, with `Roaming` and `Local` in it. */
+  profileDir: string;
+  /** The program the next start runs: a test that moves a portable copy points it at the new place. */
+  exe: string;
   /** Where a save dialog saves: the test build answers it with this folder. */
   savedDir: string;
-  /** How the test build answers the next Choose folder dialogs: that folder, or `null` to cancel. */
-  pickFolder: (_folder: string | null) => void;
+  /** How the test build answers the next Choose folder dialogs and key or certificate pickers: that path, or `null` to cancel. */
+  pick: (_picked: string | null) => void;
   /** The next window the application opens besides the main one, such as a security confirmation. */
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
@@ -103,11 +108,11 @@ function diagnose(child: ChildProcess, profile: string): string {
   ].join('\n');
 }
 
-/** The tail of each of the application's own log files in the profile. */
-function appLogs(profile: string, tail: number): string {
-  return (readdirSync(profile, { recursive: true }) as string[])
+/** The tail of each of the application's own log files in the profile, or beside a portable copy. */
+function appLogs(base: string, tail: number): string {
+  return (readdirSync(base, { recursive: true }) as string[])
     .filter((file) => /ftpeach[^\\/]*\.log$/i.test(file))
-    .map((file) => `--- ${file}\n${readFileSync(path.join(profile, file), 'utf8').slice(-tail)}`)
+    .map((file) => `--- ${file}\n${readFileSync(path.join(base, file), 'utf8').slice(-tail)}`)
     .join('\n');
 }
 
@@ -129,6 +134,7 @@ interface Run {
  * the process exists, so a failed start can still be stopped.
  */
 async function start(
+  exe: string,
   profile: string,
   workDir: string,
   savedDir: string,
@@ -143,10 +149,11 @@ async function start(
     throw new Error('Close every running FTPeach first: the application is single-instance');
   }
   const cdpPort = await freePort();
+  const portable = existsSync(path.join(path.dirname(exe), 'FTPeach.portable'));
   // The smoke build runs its self-test whenever this variable exists, even empty.
   const env = { ...process.env };
   delete env.FTPEACH_SMOKE_TEST;
-  const child = spawn(APP_PATH, [], {
+  const child = spawn(exe, [], {
     cwd: workDir,
     stdio: 'ignore',
     env: {
@@ -155,13 +162,14 @@ async function start(
       LOCALAPPDATA: path.join(profile, 'Local'),
       // Tauri finds its WebView2 profile through the Windows known-folder API,
       // not LOCALAPPDATA: without this the run shares the real user's profile.
-      WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2'),
+      // A portable copy names its own, which this variable would override.
+      ...(portable ? {} : { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2') }),
       // The test build listens for DevTools on this port (runtime/startup.rs);
       // WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS on some runners.
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
       // No one can answer a native save dialog in a run; the test build saves here.
       FTPEACH_E2E_SAVE_DIR: savedDir,
-      // Nor a Choose folder dialog: the test build picks the folder this file names.
+      // Nor a Choose folder dialog or a file picker: the test build picks what this file names.
       FTPEACH_E2E_PICK_FILE: pickFile,
     },
   });
@@ -169,7 +177,7 @@ async function start(
   try {
     await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
   } catch (error) {
-    throw new Error(`${(error as Error).message}\n${diagnose(child, profile)}`);
+    throw new Error(`${(error as Error).message}\n${diagnose(child, path.dirname(profile))}`);
   }
   const browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
   run.browser = browser;
@@ -180,13 +188,16 @@ async function start(
 
 /**
  * Launches the application on a throwaway profile holding `settings` and the
- * `store` files (name to data, or to the raw text of a file that is not a
- * plain store). `onStart` runs on the main window of every run.
+ * `store` files (name to data, or to the raw text or bytes of a file that is
+ * not a plain store). `onStart` runs on the main window of every run. A `portable`
+ * copy is the program copied into a folder of its own beside the
+ * `FTPeach.portable` marker, with the store files in `data` there.
  */
 export async function launchApp(
   settings: Record<string, unknown> = {},
   store: Record<string, unknown> = {},
   onStart: (_page: Page) => Promise<void> = async () => {},
+  portable = false,
 ): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
@@ -196,8 +207,16 @@ export async function launchApp(
   const workDir = path.join(base, 'work');
   const savedDir = path.join(base, 'saved');
   const pickFile = path.join(base, 'pick.txt');
-  const dataDir = path.join(profile, 'Roaming', 'FTPeach');
+  const program = path.join(base, 'program');
+  const exe = portable ? path.join(program, 'FTPeach.exe') : APP_PATH;
+  if (portable) {
+    mkdirSync(program);
+    copyFileSync(APP_PATH, exe);
+    writeFileSync(path.join(program, 'FTPeach.portable'), '');
+  }
+  const dataDir = portable ? path.join(program, 'data') : path.join(profile, 'Roaming', 'FTPeach');
   mkdirSync(dataDir, { recursive: true });
+  mkdirSync(path.join(profile, 'Roaming'), { recursive: true });
   mkdirSync(path.join(profile, 'Local'), { recursive: true });
   mkdirSync(workDir);
   mkdirSync(savedDir);
@@ -213,7 +232,9 @@ export async function launchApp(
   for (const [name, data] of Object.entries(files)) {
     writeFileSync(
       path.join(dataDir, name),
-      typeof data === 'string' ? data : JSON.stringify({ schemaVersion: 1, data }),
+      typeof data === 'string' || Buffer.isBuffer(data)
+        ? data
+        : JSON.stringify({ schemaVersion: 1, data }),
     );
   }
 
@@ -232,7 +253,7 @@ export async function launchApp(
   };
   const close = async () => {
     await end(true);
-    const logs = appLogs(profile, 200_000);
+    const logs = appLogs(base, 200_000);
     // WebView2 lets go of its profile a moment after the process ends.
     for (let attempt = 0; attempt < 20; attempt++) {
       try {
@@ -248,9 +269,13 @@ export async function launchApp(
     page: undefined as unknown as Page,
     workDir,
     dataDir,
-    localDir: path.join(profile, 'Local', 'com.smooveemaan.ftpeach'),
+    localDir: portable
+      ? path.join(dataDir, 'local')
+      : path.join(profile, 'Local', 'com.smooveemaan.ftpeach'),
+    profileDir: profile,
+    exe,
     savedDir,
-    pickFolder: (folder) => writeFileSync(pickFile, folder ?? ''),
+    pick: (picked) => writeFileSync(pickFile, picked ?? ''),
     otherWindow: () =>
       waitFor(
         'another window',
@@ -263,18 +288,18 @@ export async function launchApp(
       ),
     running: () => run.child?.exitCode === null,
     pid: () => run.child!.pid!,
-    log: () => appLogs(profile, 200_000),
+    log: () => appLogs(base, 200_000),
     kill: () => end(true),
     relaunch: async () => {
       await end(false);
       run = {};
-      app.page = await start(profile, workDir, savedDir, pickFile, run);
+      app.page = await start(app.exe, profile, workDir, savedDir, pickFile, run);
       await onStart(app.page);
     },
     close,
   };
   try {
-    app.page = await start(profile, workDir, savedDir, pickFile, run);
+    app.page = await start(exe, profile, workDir, savedDir, pickFile, run);
     await onStart(app.page);
     return app;
   } catch (error) {
@@ -286,21 +311,28 @@ export async function launchApp(
 /**
  * The test API with `app`: the running application, with a trace of the last
  * run attached and the process and profile gone afterwards, a timed-out test
- * too. `test.use({ appSettings, appStore })` starts it with those settings and
- * store files (see `launchApp`) in its profile.
+ * too. `test.use({ appSettings, appStore, appPortable })` starts it with those
+ * settings and store files in its profile, or as a portable copy (see
+ * `launchApp`).
  */
 export const test = base.extend<{
   appSettings: Record<string, unknown>;
   appStore: Record<string, unknown>;
+  appPortable: boolean;
   app: RunningApp;
 }>({
   appSettings: [{}, { option: true }],
   appStore: [{}, { option: true }],
-  app: async ({ appSettings, appStore }, use, testInfo) => {
+  appPortable: [false, { option: true }],
+  app: async ({ appSettings, appStore, appPortable }, use, testInfo) => {
     // A run that exits takes its trace along; each relaunch starts a new one.
-    const app = await launchApp(appSettings, appStore, (page) =>
-      page.context().tracing.start({ screenshots: true, snapshots: true }),
+    const app = await launchApp(
+      appSettings,
+      appStore,
+      (page) => page.context().tracing.start({ screenshots: true, snapshots: true }),
+      appPortable,
     );
+    let held: string[] = [];
     try {
       await use(app);
     } finally {
@@ -321,6 +353,13 @@ export const test = base.extend<{
         writeFileSync(testInfo.outputPath('app.log'), logs);
         await testInfo.attach('app.log', { path: testInfo.outputPath('app.log') });
       }
+      held = logs.split('\n').filter((line) => line.includes('desktop tests: held back'));
+    }
+    // The test build holds back a program, Explorer or Windows' Open with
+    // chooser that would come up on the screen; a test that set one off, say
+    // by a double click it did not mean, fails.
+    if (held.length > 0) {
+      throw new Error(`The test opened something outside FTPeach:\n${held.join('\n')}`);
     }
   },
 });

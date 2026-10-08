@@ -34,26 +34,31 @@ fn is_rsa_private_key(path: &std::path::Path) -> bool {
     prefix_identifies_rsa_private_key(&prefix)
 }
 
+type Picked = tokio::sync::oneshot::Sender<Option<tauri_plugin_dialog::FilePath>>;
+
+/// The path the user picks in the dialog `show` opens, `None` if cancelled.
+async fn picked(show: impl FnOnce(Picked)) -> Option<String> {
+    // The desktop tests answer for the user, since nothing can drive the native dialog.
+    #[cfg(feature = "smoke-test")]
+    if let Some(answer) = crate::runtime::e2e_browser::picked_path() {
+        return answer;
+    }
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    show(tx);
+    rx.await.ok().flatten().map(|p| p.to_string())
+}
+
 #[tauri::command]
 pub async fn dialog_select_local_dir(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
-    // The desktop tests answer for the user, since nothing can drive the native dialog.
-    #[cfg(feature = "smoke-test")]
-    let answered = crate::runtime::e2e_browser::picked_folder();
-    #[cfg(not(feature = "smoke-test"))]
-    let answered = None;
-    let selected = match answered {
-        Some(answer) => answer,
-        None => {
-            let (tx, rx) = tokio::sync::oneshot::channel();
-            app.dialog().file().pick_folder(move |path| {
-                let _ = tx.send(path);
-            });
-            rx.await.ok().flatten().map(|p| p.to_string())
-        }
-    };
+    let selected = picked(|tx| {
+        app.dialog().file().pick_folder(move |path| {
+            let _ = tx.send(path);
+        })
+    })
+    .await;
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
     }
@@ -65,14 +70,15 @@ pub async fn dialog_select_key_file(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<SelectedSshKey>, crate::ipc::CommandError> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    in_portable_folder(app.dialog().file(), PORTABLE_KEYS)
-        .add_filter("All files", &["*"])
-        .add_filter("SSH keys", &["pem", "ppk", "key"])
-        .pick_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let selected = rx.await.ok().flatten().map(|p| p.to_string());
+    let selected = picked(|tx| {
+        in_portable_folder(app.dialog().file(), PORTABLE_KEYS)
+            .add_filter("All files", &["*"])
+            .add_filter("SSH keys", &["pem", "ppk", "key"])
+            .pick_file(move |path| {
+                let _ = tx.send(path);
+            })
+    })
+    .await;
     Ok(selected.map(|path| {
         approved.approve_from_dialog(std::path::Path::new(&path));
         SelectedSshKey {
@@ -103,14 +109,15 @@ pub async fn dialog_select_ca_cert_file(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    in_portable_folder(app.dialog().file(), PORTABLE_CERTIFICATES)
-        .add_filter("Certificates", &["pem", "crt", "cer"])
-        .add_filter("All files", &["*"])
-        .pick_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let selected = rx.await.ok().flatten().map(|p| p.to_string());
+    let selected = picked(|tx| {
+        in_portable_folder(app.dialog().file(), PORTABLE_CERTIFICATES)
+            .add_filter("Certificates", &["pem", "crt", "cer"])
+            .add_filter("All files", &["*"])
+            .pick_file(move |path| {
+                let _ = tx.send(path);
+            })
+    })
+    .await;
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
     }

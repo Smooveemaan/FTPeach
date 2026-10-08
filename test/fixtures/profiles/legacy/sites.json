@@ -1,0 +1,32 @@
+[
+  {
+    "id": "legacy-folder",
+    "kind": "folder",
+    "name": "Old servers"
+  },
+  {
+    "id": "legacy-ftp",
+    "name": "Legacy FTP",
+    "protocol": "ftp",
+    "host": "$ftp.host",
+    "port": "$ftp.port",
+    "user": "$ftp.user",
+    "plain": "$ftp.password",
+    "parentId": "legacy-folder"
+  },
+  {
+    "id": "electron-era",
+    "name": "Electron era",
+    "protocol": "ftp",
+    "host": "$ftp.host",
+    "port": "$ftp.port",
+    "user": "$ftp.user",
+    "enc": "djEwAAECAwQFBgcICQoLDA0ODw=="
+  },
+  {
+    "id": "legacy-local",
+    "kind": "local",
+    "name": "Legacy work",
+    "localPath": "$fixtures"
+  }
+]

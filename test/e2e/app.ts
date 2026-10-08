@@ -32,6 +32,8 @@ export interface RunningApp {
   localDir: string;
   /** Where a save dialog saves: the test build answers it with this folder. */
   savedDir: string;
+  /** How the test build answers the next Choose folder dialogs: that folder, or `null` to cancel. */
+  pickFolder: (_folder: string | null) => void;
   /** The next window the application opens besides the main one, such as a security confirmation. */
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
@@ -130,6 +132,7 @@ async function start(
   profile: string,
   workDir: string,
   savedDir: string,
+  pickFile: string,
   run: Partial<Run>,
 ): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
@@ -158,6 +161,8 @@ async function start(
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
       // No one can answer a native save dialog in a run; the test build saves here.
       FTPEACH_E2E_SAVE_DIR: savedDir,
+      // Nor a Choose folder dialog: the test build picks the folder this file names.
+      FTPEACH_E2E_PICK_FILE: pickFile,
     },
   });
   Object.assign(run, { child, cdpPort });
@@ -190,6 +195,7 @@ export async function launchApp(
   const profile = path.join(base, 'profile');
   const workDir = path.join(base, 'work');
   const savedDir = path.join(base, 'saved');
+  const pickFile = path.join(base, 'pick.txt');
   const dataDir = path.join(profile, 'Roaming', 'FTPeach');
   mkdirSync(dataDir, { recursive: true });
   mkdirSync(path.join(profile, 'Local'), { recursive: true });
@@ -244,6 +250,7 @@ export async function launchApp(
     dataDir,
     localDir: path.join(profile, 'Local', 'com.smooveemaan.ftpeach'),
     savedDir,
+    pickFolder: (folder) => writeFileSync(pickFile, folder ?? ''),
     otherWindow: () =>
       waitFor(
         'another window',
@@ -261,13 +268,13 @@ export async function launchApp(
     relaunch: async () => {
       await end(false);
       run = {};
-      app.page = await start(profile, workDir, savedDir, run);
+      app.page = await start(profile, workDir, savedDir, pickFile, run);
       await onStart(app.page);
     },
     close,
   };
   try {
-    app.page = await start(profile, workDir, savedDir, run);
+    app.page = await start(profile, workDir, savedDir, pickFile, run);
     await onStart(app.page);
     return app;
   } catch (error) {

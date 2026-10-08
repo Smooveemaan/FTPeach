@@ -43,6 +43,7 @@ test/
 | `npm run test:components` | `test/component/**/*.test.{ts,tsx}`, using Vitest |
 | `npm run test:visual` | Browser scenarios in `test/visual/` |
 | `npm run test:e2e` | The packaged smoke build driven through its window against a real server, see below |
+| `npm run test:e2e:stand` | The same, on the file-system stand of `fs-stand.ps1`, see below |
 | `npm run test:updater-fixtures` | Accept the valid update signature and reject a damaged artifact |
 | `npm run rust:test` | Native Rust tests under `src-tauri/` |
 
@@ -108,8 +109,22 @@ server's disk and the local disk and compare SHA-256 sums.
 - `local.e2e.ts` needs no server: a folder cut and pasted into a folder of the
   same name, where one file cannot be replaced, copies the rest and deletes
   none of its sources.
+- `filesystem.e2e.ts` covers what NTFS does to file operations: junctions not
+  entered or deleted, a copy that does not write through a hard link, a file
+  another program holds, a folder the account may not add files to, names in a
+  folder deeper than 260 characters, the Recycle Bin, a network path typed
+  instead of chosen, FTPeach's own data folder, the Mark of the Web on an IIS
+  FTP download, and names a WebDAV server of the test's own lists that Windows
+  cannot hold.
+- `*.stand.ts` (`npm run test:e2e:stand`, not part of `npm run test:e2e`) needs
+  the stand of `scripts/test-servers/fs-stand.ps1 install`: a small NTFS drive to
+  move to and fill, an exFAT drive without a USN journal, two SMB shares (one
+  read only, one the tests take away through two scheduled tasks) and symbolic
+  links. The stand describes itself in `C:\ftpeach-test-servers\fs-stand.json`;
+  a part of it that is missing fails the test. A Choose folder… dialog is
+  answered through `app.pickFolder`.
 
-Both scripts change the machine and need an elevated PowerShell. A missing server
+All three scripts change the machine and need an elevated PowerShell. A missing server
 fails the test. A test can start the application with its own settings and saved
 store files through `test.use({ appSettings, appStore })`. The application's
 windows open off screen without taking the focus, and its notifications are

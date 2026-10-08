@@ -14,6 +14,16 @@ fn refused(message: &str) -> anyhow::Error {
     crate::ipc::CommandError::new(crate::ipc::ErrorCode::PermissionDenied, message).into()
 }
 
+/// A delete that would reach a link, which is never followed: told as such,
+/// not as a missing permission.
+fn link_refused() -> anyhow::Error {
+    crate::ipc::CommandError::new(
+        crate::ipc::ErrorCode::LinkNotFollowed,
+        "Refusing to delete a symbolic link, junction, or reparse point",
+    )
+    .into()
+}
+
 const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
 
 pub(crate) fn is_filesystem_root(path: &Path) -> bool {
@@ -151,13 +161,18 @@ pub(crate) fn resolved_path(path: &Path) -> anyhow::Result<PathBuf> {
                 return Ok(canonical);
             }
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                suffix.push(
-                    ancestor
-                        .file_name()
-                        .context("path has no existing ancestor")?
-                        .to_os_string(),
-                );
-                ancestor = ancestor.parent().context("path has no existing ancestor")?;
+                // Nothing of it exists, not even its drive or share: one
+                // unplugged or taken away, which is a missing path to the
+                // user, not an unexpected failure.
+                let (Some(name), Some(parent)) = (ancestor.file_name(), ancestor.parent()) else {
+                    return Err(crate::ipc::CommandError::new(
+                        crate::ipc::ErrorCode::NotFound,
+                        "path has no existing ancestor",
+                    )
+                    .into());
+                };
+                suffix.push(name.to_os_string());
+                ancestor = parent;
             }
             Err(error) => return Err(error.into()),
         }
@@ -392,9 +407,7 @@ pub(crate) async fn ensure_tree_has_no_reparse_points(root: &Path) -> anyhow::Re
     while let Some(path) = pending.pop() {
         let metadata = tokio::fs::symlink_metadata(&path).await?;
         if is_reparse_point(&metadata) {
-            return Err(refused(
-                "Refusing to delete a symbolic link, junction, or reparse point",
-            ));
+            return Err(link_refused());
         }
         if !metadata.is_dir() {
             continue;
@@ -433,9 +446,7 @@ async fn validated_target(
         Err(error) => return Err(error.into()),
     };
     if is_reparse_point(&metadata) {
-        return Err(refused(
-            "Refusing to delete a symbolic link, junction, or reparse point",
-        ));
+        return Err(link_refused());
     }
 
     let canonical = tokio::fs::canonicalize(path).await?;
@@ -659,6 +670,21 @@ mod tests {
     }
 
     #[cfg(windows)]
+    #[test]
+    fn a_path_on_a_drive_that_is_not_there_is_not_found() {
+        let missing = ('D'..='Z')
+            .map(|letter| PathBuf::from(format!("{letter}:\\")))
+            .find(|root| !root.exists())
+            .expect("a free drive letter");
+        let error = resolved_path(&missing.join("folder")).unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::NotFound,
+            "{error:#}"
+        );
+    }
+
+    #[cfg(windows)]
     #[tokio::test]
     async fn a_folder_with_a_junction_inside_can_be_renamed_but_not_deleted() {
         let base = std::env::temp_dir().join(format!("ftpeach-fs-test-{}", uuid::Uuid::new_v4()));
@@ -669,7 +695,11 @@ mod tests {
         create_test_junction(&external, &folder.join("link"));
 
         assert!(validated_rename_source(&folder).await.unwrap().is_some());
-        assert!(validated_delete_target(&folder).await.is_err());
+        let error = validated_delete_target(&folder).await.unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::LinkNotFollowed
+        );
 
         std::fs::remove_dir(folder.join("link")).unwrap();
         let _ = std::fs::remove_dir_all(base);

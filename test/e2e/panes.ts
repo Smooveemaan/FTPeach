@@ -90,6 +90,55 @@ export async function openFolder(pane: Locator, folder: string) {
   await pane.locator('.path-input').press('Enter');
 }
 
+/** Opens a folder by its path and waits for the pane to show it, empty or not. */
+export async function showFolder(pane: Locator, folder: string) {
+  await openFolder(pane, folder);
+  await expect(pane.locator('.pane-path > .crumb[data-drop-path]').last()).toHaveAttribute(
+    'data-drop-path',
+    folder,
+  );
+}
+
+let lastSelected = { name: '', time: 0 };
+
+/**
+ * Selects an entry. Two clicks on one name within half a second are a double
+ * click, which opens it, so a second selection of the same name waits that out.
+ */
+export async function selectRow(pane: Locator, name: string) {
+  const row = fileRow(pane, name);
+  await row.waitFor({ timeout: 15_000 });
+  const since = Date.now() - lastSelected.time;
+  if (lastSelected.name === name && since < 600) await pane.page().waitForTimeout(600 - since);
+  await row.click();
+  lastSelected = { name, time: Date.now() };
+  // A click that a new listing swallowed would leave the next key acting on nothing.
+  await expect(row).toHaveAttribute('aria-selected', 'true');
+}
+
+/**
+ * Copies `name` from the folder the pane shows into `folder` through the
+ * clipboard, answering a name conflict with `answer`.
+ */
+export async function copyInto(pane: Locator, name: string, folder: string, answer?: string) {
+  const page = pane.page();
+  await selectRow(pane, name);
+  await page.keyboard.press('Control+C');
+  await showFolder(pane, folder);
+  await page.keyboard.press('Control+V');
+  if (answer) {
+    await page.getByRole('dialog').getByRole('button', { name: answer, exact: true }).click();
+  }
+}
+
+/** Waits for an error banner with `text` and closes it. */
+export async function dismissAlert(page: Page, text: string | RegExp) {
+  const shown = page.getByRole('alert').filter({ hasText: text });
+  await expect(shown).toBeVisible({ timeout: 15_000 });
+  await shown.getByRole('button', { name: 'Close' }).click();
+  await expect(shown).toHaveCount(0);
+}
+
 /** Fills a pane's connection bar, the right one's unless told, and presses Connect. */
 export async function startConnecting(page: Page, server: Server, remote = remotePane(page)) {
   if (server.protocol !== 'FTP') {
@@ -126,6 +175,15 @@ export const queueRow = (page: Page, name: string, status = '[^:]+') =>
 
 /** A row whose transfer is under way, past its first percent. */
 export const runningRow = (page: Page, name: string) => queueRow(page, name, '[^:]+, [1-9]\\d?%$');
+
+/**
+ * Waits for a Done row of `name`. A test reads what a copy wrote only after
+ * this: FTPeach holds the files it is writing and checking to itself, and a
+ * reader in the middle would make the copy fail as a file in use.
+ */
+export async function waitDone(page: Page, name: string) {
+  await queueRow(page, name, 'Done\\b').waitFor({ timeout: 60_000 });
+}
 
 /** Waits for the transfer to settle and returns its row. */
 export async function settledRow(page: Page, name: string) {

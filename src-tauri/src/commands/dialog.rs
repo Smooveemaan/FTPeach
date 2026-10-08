@@ -39,11 +39,21 @@ pub async fn dialog_select_local_dir(
     app: AppHandle,
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog().file().pick_folder(move |path| {
-        let _ = tx.send(path);
-    });
-    let selected = rx.await.ok().flatten().map(|p| p.to_string());
+    // The desktop tests answer for the user, since nothing can drive the native dialog.
+    #[cfg(feature = "smoke-test")]
+    let answered = crate::runtime::e2e_browser::picked_folder();
+    #[cfg(not(feature = "smoke-test"))]
+    let answered = None;
+    let selected = match answered {
+        Some(answer) => answer,
+        None => {
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            app.dialog().file().pick_folder(move |path| {
+                let _ = tx.send(path);
+            });
+            rx.await.ok().flatten().map(|p| p.to_string())
+        }
+    };
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
     }

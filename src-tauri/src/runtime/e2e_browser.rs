@@ -22,6 +22,16 @@ pub(crate) fn save_folder() -> Option<std::path::PathBuf> {
     std::env::var_os("FTPEACH_E2E_SAVE_DIR").map(Into::into)
 }
 
+/// The answer to a Choose folder dialog while the desktop tests drive the run:
+/// `FTPEACH_E2E_PICK_FILE` names a file holding the folder to pick, empty or
+/// missing to cancel. `None` outside the tests.
+pub(crate) fn picked_folder() -> Option<Option<String>> {
+    let file = std::env::var_os("FTPEACH_E2E_PICK_FILE")?;
+    let folder = std::fs::read_to_string(file).unwrap_or_default();
+    let folder = folder.trim();
+    Some((!folder.is_empty()).then(|| folder.to_owned()))
+}
+
 /// Whether the desktop tests drive this run.
 pub(crate) fn active() -> bool {
     std::env::var_os("FTPEACH_E2E_CDP_PORT").is_some()

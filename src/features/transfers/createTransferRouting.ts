@@ -9,6 +9,7 @@ import type {
   TransferItemOutcome,
   TransferItemResult,
 } from './transferBatchResult.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { canMoveBetween } from '../../shared/movePolicy.ts';
 import { dropDestinationPath, joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { FileEntry, PaneKind, PaneStatus } from '../../shared/paneContracts.ts';
@@ -66,7 +67,11 @@ const MOVE_BETWEEN_ENDPOINTS =
 
 async function requireSuccess(result: Promise<CommandResult>, path: string) {
   const outcome = await result;
-  if (!outcome.ok) throw new Error(`${path}: ${outcome.error || 'File operation failed'}`);
+  // Told by its code, in the user's language; the backend's own sentence is for the log.
+  if (!outcome.ok) {
+    const reason = friendlyError(commandResultError(outcome)) || 'File operation failed';
+    throw new Error(`${path}: ${reason}`);
+  }
 }
 
 export interface TransferRoutingModel {

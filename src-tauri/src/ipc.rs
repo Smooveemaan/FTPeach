@@ -256,6 +256,10 @@ impl CommandError {
         match error.raw_os_error() {
             // ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION
             Some(32 | 33) => return Some(ErrorCode::FileInUse),
+            // ERROR_INVALID_DRIVE, ERROR_NOT_READY, ERROR_BAD_NETPATH,
+            // ERROR_BAD_NET_NAME: a drive unplugged or without its medium, or a
+            // share taken away; the path is not there.
+            Some(15 | 21 | 53 | 67) => return Some(ErrorCode::NotFound),
             // WSAHOST_NOT_FOUND, WSANO_DATA: the resolver found no address.
             Some(11001 | 11004) => return Some(ErrorCode::HostNotFound),
             _ => {}
@@ -385,7 +389,7 @@ impl CommandError {
             ErrorCode::ConnectionLost => "Connection lost",
             ErrorCode::InvalidInput => "Invalid input",
             ErrorCode::ResourceLimit => "Resource limit exceeded",
-            ErrorCode::StorageFull => "Not enough storage space on the server",
+            ErrorCode::StorageFull => "Not enough storage space",
             ErrorCode::KeyUnreadable => "The private key could not be read",
             ErrorCode::CredentialFileMissing => "The key or certificate file was not found",
             ErrorCode::NetworkPathNotChosen => "Network paths require native-dialog confirmation",
@@ -575,6 +579,11 @@ mod tests {
             // ERROR_SHARING_VIOLATION, ERROR_LOCK_VIOLATION
             (32, ErrorCode::FileInUse),
             (33, ErrorCode::FileInUse),
+            // ERROR_INVALID_DRIVE, ERROR_NOT_READY, ERROR_BAD_NETPATH, ERROR_BAD_NET_NAME
+            (15, ErrorCode::NotFound),
+            (21, ErrorCode::NotFound),
+            (53, ErrorCode::NotFound),
+            (67, ErrorCode::NotFound),
             // ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
             (39, ErrorCode::StorageFull),
             (112, ErrorCode::StorageFull),

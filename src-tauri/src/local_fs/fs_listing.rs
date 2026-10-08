@@ -160,6 +160,16 @@ fn list_with_metadata(
                 format!("Metadata unavailable for {name}: {error}"),
             )
         })?;
+        // The metadata is the entry's own, not a link's target: a junction or
+        // a directory symlink is no directory to it, yet it is one to the
+        // user, who enters it like a folder and is told links aren't
+        // followed, rather than "opening" it into its target.
+        #[cfg(windows)]
+        let is_directory = {
+            use std::os::windows::fs::MetadataExt;
+            meta.is_dir() || meta.file_attributes() & 0x10 != 0
+        };
+        #[cfg(not(windows))]
         let is_directory = meta.is_dir();
         let size = meta.len();
         let modified_at = iso(meta.modified());
@@ -244,6 +254,26 @@ mod tests {
         let third = ListingRequest::start(Some(key)).unwrap();
         assert!(second.token.is_cancelled());
         assert!(!third.token.is_cancelled());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_junction_is_listed_as_a_folder() {
+        let root = std::env::temp_dir().join(format!("ftpeach-list-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("target")).unwrap();
+        let made = std::process::Command::new("cmd")
+            .args(["/C", "mklink", "/J"])
+            .arg(root.join("link"))
+            .arg(root.join("target"))
+            .output()
+            .unwrap();
+        assert!(made.status.success(), "mklink /J failed: {made:?}");
+        let token = CancellationToken::new();
+        let entries = list_bounded(&root, MAX_ENTRIES, MAX_BYTES, &token).unwrap();
+        let link = entries.iter().find(|entry| entry.name == "link").unwrap();
+        assert!(link.is_directory);
+        std::fs::remove_dir(root.join("link")).unwrap();
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[tokio::test]

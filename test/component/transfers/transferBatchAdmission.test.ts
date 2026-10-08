@@ -115,3 +115,42 @@ test('a failed copy does not end the batch while another copy is still running',
   expect(secondFinished).toBe(true);
   expect((await batch).failed).toBe(1);
 });
+
+test('a copy the backend refuses before it starts is reported by its code, not the backend text', async () => {
+  window.api = {
+    ...tauriApi,
+    fsLocal: {
+      ...tauriApi.fsLocal,
+      validateCopy: async () => ({
+        ok: false,
+        errorCode: 'linkNotFollowed',
+        error: 'Refusing to traverse a symbolic link, junction, or reparse point',
+      }),
+    },
+  };
+  const runLocalCopy = vi.fn();
+  const routing = createTransferRouting(
+    {
+      runLocalCopy,
+      runRecursive: vi.fn(),
+      runUpload: vi.fn(),
+      runDownload: vi.fn(),
+      runRemoteCopy: vi.fn(),
+    },
+    vi.fn().mockResolvedValue(true),
+    'ask',
+    vi.fn(),
+  );
+
+  const batch = await routing.copyEntries({
+    sourcePane: localPane(['link.txt']),
+    targetPane: { ...makePane('b', 'local'), path: 'C:\target' },
+    names: ['link.txt'],
+    move: false,
+    overwriteApproved: true,
+  });
+
+  expect(runLocalCopy).not.toHaveBeenCalled();
+  expect(batch.message).toContain("Links aren't followed.");
+  expect(batch.message).not.toContain('Refusing to traverse');
+});

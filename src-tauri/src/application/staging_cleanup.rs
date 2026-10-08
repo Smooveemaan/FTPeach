@@ -7,17 +7,43 @@ use crate::transfer::upload_staging::{
 };
 use std::time::Duration;
 
+/// How long a transfer waits for its staging file to go before it settles. A
+/// server that stopped answering gets the rest of the cleanup in the
+/// background, so a Stop does not sit in "Cancelling" for its timeouts.
+const SETTLE_BUDGET: Duration = Duration::from_secs(10);
+
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
 ///
 /// Says whether a session was there to try. Without one the file is left to
-/// the connection's teardown, which is what took the session away.
+/// the connection's teardown, which is what took the session away. A cleanup
+/// that outlasts [`SETTLE_BUDGET`] goes on behind the caller and logs how it
+/// ended.
 pub(crate) async fn cleanup_remote_partial(
     sessions: &Sessions,
     connection_id: &str,
     partial: &str,
 ) -> bool {
+    let (sessions, connection_id, owned) = (
+        sessions.clone(),
+        connection_id.to_owned(),
+        partial.to_owned(),
+    );
+    let cleanup =
+        tokio::spawn(async move { clean_staging(&sessions, &connection_id, &owned).await });
+    match tokio::time::timeout(SETTLE_BUDGET, cleanup).await {
+        Ok(had_session) => had_session.unwrap_or(false),
+        Err(_) => {
+            log::warn!(
+                "Still cleaning transfer staging file {partial}; the transfer settles meanwhile"
+            );
+            true
+        }
+    }
+}
+
+async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) -> bool {
     // Only the wait for the browsing connection is kept short. A removal cut
     // off mid-reply would cost FTP that connection, and the pane its listing
     // with it, so once started it gets as long as a server that still answers

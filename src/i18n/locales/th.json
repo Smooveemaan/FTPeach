@@ -329,6 +329,7 @@
     "connectFailedPrefix": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ {{raw}}",
     "alreadyExists": "\"{{name}}\" มีอยู่แล้ว",
     "replaceUnsupported": "เซิร์ฟเวอร์ไม่อนุญาตให้เขียนทับไฟล์ที่มีอยู่",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "เซิร์ฟเวอร์ FTP นี้ไม่รองรับการสร้างไฟล์ใหม่ ลองใช้ SFTP หรือ WebDAV หากเซิร์ฟเวอร์รองรับ",
     "activeModeFailed": "เซิร์ฟเวอร์ไม่สามารถเชื่อมต่อกลับมายังคอมพิวเตอร์เครื่องนี้ในโหมด FTP แบบแอคทีฟ โปรดลองใช้โหมดพาสซีฟ",

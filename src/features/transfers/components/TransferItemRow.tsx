@@ -3,6 +3,7 @@ import { memo, useCallback, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatSpeed, formatDuration } from '../../../shared/format.ts';
 import { isolate } from '../../../shared/bidi.ts';
+import { friendlyError } from '../../../shared/errorMessages.ts';
 import { fileIconName } from '../../../shared/fileIcons.ts';
 import Icon from '../../../components/Icon.tsx';
 import { useTruncated } from '../../../hooks/useTruncated.ts';
@@ -93,7 +94,9 @@ function TransferItemRow({
     item.status === 'error' && item.errorMessage
       ? item.errorMessage
       : item.status === 'stopped'
-        ? t('transferQueue.cancelledByUser')
+        ? item.errorCode === 'stagingLeft'
+          ? friendlyError({ code: item.errorCode, message: item.errorMessage })
+          : t('transferQueue.cancelledByUser')
         : (item.status === 'progress' || item.status === 'queued') && item.currentFile
           ? `${item.currentFile.number}/${item.currentFile.count} ${item.currentFile.path}`
           : null;

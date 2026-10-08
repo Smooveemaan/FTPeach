@@ -337,6 +337,7 @@
     "connectFailedPrefix": "Nie udało się połączyć z serwerem. {{raw}}",
     "alreadyExists": "„{{name}}” już istnieje",
     "replaceUnsupported": "Serwer nie zezwolił na nadpisanie istniejącego pliku.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Ten serwer FTP nie obsługuje tworzenia nowych plików. Spróbuj SFTP lub WebDAV, jeśli serwer je udostępnia.",
     "activeModeFailed": "Serwer nie mógł połączyć się z tym komputerem w trybie aktywnego FTP. Spróbuj trybu pasywnego.",

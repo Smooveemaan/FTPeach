@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
     "alreadyExists": "\"{{name}}\" bestaat al",
     "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Deze FTP-server ondersteunt het maken van nieuwe bestanden niet. Probeer SFTP of WebDAV als de server die aanbiedt.",
     "activeModeFailed": "De server kon in de actieve FTP-modus geen verbinding maken met deze computer. Probeer de passieve modus.",

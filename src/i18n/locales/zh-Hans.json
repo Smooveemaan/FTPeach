@@ -329,6 +329,7 @@
     "connectFailedPrefix": "无法连接到服务器。{{raw}}",
     "alreadyExists": "“{{name}}”已经存在",
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
     "activeModeFailed": "在主动 FTP 模式下，服务器无法连接到本计算机。请尝试被动模式。",

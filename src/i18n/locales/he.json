@@ -333,6 +333,7 @@
     "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
     "alreadyExists": "\"{{name}}\" כבר קיים",
     "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסה SFTP או WebDAV אם השרת מציע אותם.",
     "activeModeFailed": "השרת לא הצליח להתחבר למחשב הזה במצב FTP פעיל. נסה מצב פסיבי.",

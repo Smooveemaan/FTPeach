@@ -329,6 +329,7 @@
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
     "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "この FTP サーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTP または WebDAV をお試しください。",
     "activeModeFailed": "アクティブ FTP モードで、サーバーからこのコンピューターに接続できませんでした。パッシブモードをお試しください。",

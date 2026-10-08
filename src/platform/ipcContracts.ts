@@ -39,6 +39,7 @@ export const COMMAND_ERROR_CODES = [
   'alreadyExists',
   'replaceUnsupported',
   'replaceInterrupted',
+  'stagingLeft',
   'createUnsupported',
   'activeModeFailed',
   'linkNotFollowed',

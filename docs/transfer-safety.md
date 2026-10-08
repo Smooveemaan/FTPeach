@@ -55,7 +55,8 @@ Downloads resume only with a compatible source-identity sidecar (see the Downloa
 If a connection is lost or staging cleanup fails, a `.ftpeach-<uuid>.part` artifact can remain
 on the server. Cleanup is bounded and logged; it never substitutes the final destination. A
 transfer waits for it at most ten seconds before it settles; a server that stopped answering gets
-the rest of the cleanup in the background, which logs how it ended.
+the rest of the cleanup in the background, which logs how it ended. A stopped upload whose
+staging file the server refused to delete names that file in its row.
 Recursive Stop follows the more conservative ownership rules below.
 Once a server receives the final rename, cancellation cannot roll back a committed replacement.
 

@@ -333,6 +333,7 @@
     "connectFailedPrefix": "Impossible de se connecter au serveur. {{raw}}",
     "alreadyExists": "« {{name}} » existe déjà",
     "replaceUnsupported": "Le serveur n'a pas autorisé le remplacement du fichier existant.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Ce serveur FTP ne permet pas de créer de nouveaux fichiers. Essayez SFTP ou WebDAV si le serveur les propose.",
     "activeModeFailed": "Le serveur n'a pas pu se connecter à cet ordinateur en mode FTP actif. Essayez le mode passif.",

@@ -329,6 +329,7 @@
     "connectFailedPrefix": "無法連線到伺服器。{{raw}}",
     "alreadyExists": "「{{name}}」已存在",
     "replaceUnsupported": "伺服器不允許覆寫現有檔案。",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "此 FTP 伺服器不支援建立新檔案。如果伺服器提供 SFTP 或 WebDAV，請改用它們。",
     "activeModeFailed": "在主動 FTP 模式下，伺服器無法連線到此電腦。請改用被動模式。",

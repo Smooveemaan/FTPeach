@@ -333,6 +333,7 @@
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
     "alreadyExists": "„{{name}}” există deja",
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
     "activeModeFailed": "Serverul nu s-a putut conecta la acest computer în modul FTP activ. Încercați modul pasiv.",

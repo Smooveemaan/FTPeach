@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
     "alreadyExists": "“{{name}}” đã tồn tại",
     "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Máy chủ FTP này không hỗ trợ tạo tệp mới. Hãy thử SFTP hoặc WebDAV nếu máy chủ có hỗ trợ.",
     "activeModeFailed": "Máy chủ không thể kết nối đến máy tính này ở chế độ FTP chủ động. Hãy thử chế độ thụ động.",

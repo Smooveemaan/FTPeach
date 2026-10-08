@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
     "activeModeFailed": "Sunucu, aktif FTP modunda bu bilgisayara bağlanamadı. Pasif modu deneyin.",

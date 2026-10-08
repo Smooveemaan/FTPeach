@@ -153,7 +153,7 @@ async fn relay_staged(
     }
 }
 
-pub(crate) use crate::application::staging_cleanup::cleanup_remote_partial;
+pub(crate) use crate::application::staging_cleanup::{Cleanup, cleanup_remote_partial};
 
 fn make_progress_sink(
     emitter: ProgressEmitter,
@@ -421,12 +421,21 @@ async fn settle_upload(
     ) else {
         return result;
     };
-    if cleanup_remote_partial(sessions, cleanup_connection, &partial).await {
+    let cleanup = cleanup_remote_partial(sessions, cleanup_connection, &partial).await;
+    if cleanup != Cleanup::NoSession {
         // Only now: a disconnect before the deletion reached the server
         // still finds the file through its record.
         crate::transfer::upload_staging::release(transfer_id);
     }
-    result.map_err(|error| interrupted_replacement(error, &partial, server))
+    result.map_err(
+        |error| match interrupted_replacement(error, &partial, server) {
+            // A stop says so itself; what it could not take back is news.
+            error if error.code == ErrorCode::Cancelled && cleanup == Cleanup::Left => {
+                CommandError::new(ErrorCode::StagingLeft, partial)
+            }
+            error => error,
+        },
+    )
 }
 
 /// A replacement whose old file is still set aside after cleanup tried to put
@@ -719,7 +728,10 @@ pub async fn transfer_remote_copy(
             .pool_for(&dispatch_connection_id)
             .await
             .is_some_and(|pool| !pool.is_closed());
-        if live && cleanup_remote_partial(sessions, &dispatch_connection_id, &partial).await {
+        if live
+            && cleanup_remote_partial(sessions, &dispatch_connection_id, &partial).await
+                != Cleanup::NoSession
+        {
             crate::transfer::upload_staging::release(&transfer_id);
         }
         result = result.map_err(|error| interrupted_replacement(error, &partial, &target_server));

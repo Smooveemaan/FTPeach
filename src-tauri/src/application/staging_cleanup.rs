@@ -12,19 +12,30 @@ use std::time::Duration;
 /// background, so a Stop does not sit in "Cancelling" for its timeouts.
 const SETTLE_BUDGET: Duration = Duration::from_secs(10);
 
+/// How a staging cleanup ended, as far as the caller has to know.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum Cleanup {
+    /// Nothing to tell: the file is gone, a removal is still at it in the
+    /// background, or it was kept on purpose and reported otherwise.
+    Done,
+    /// The server would not let the file go; it stays, and the log says so.
+    Left,
+    /// No session to try with: the connection's teardown deletes the file.
+    NoSession,
+}
+
 /// Only an attempt's randomly named staging file is eligible for cleanup.
 /// A disconnected server may retain that artifact; never fall back to deleting
 /// the final destination. Retries use a fresh staging file and restart upload.
 ///
-/// Says whether a session was there to try. Without one the file is left to
-/// the connection's teardown, which is what took the session away. A cleanup
-/// that outlasts [`SETTLE_BUDGET`] goes on behind the caller and logs how it
-/// ended.
+/// Without a session the file is left to the connection's teardown, which is
+/// what took the session away. A cleanup that outlasts [`SETTLE_BUDGET`] goes
+/// on behind the caller and logs how it ended.
 pub(crate) async fn cleanup_remote_partial(
     sessions: &Sessions,
     connection_id: &str,
     partial: &str,
-) -> bool {
+) -> Cleanup {
     let (sessions, connection_id, owned) = (
         sessions.clone(),
         connection_id.to_owned(),
@@ -33,38 +44,38 @@ pub(crate) async fn cleanup_remote_partial(
     let cleanup =
         tokio::spawn(async move { clean_staging(&sessions, &connection_id, &owned).await });
     match tokio::time::timeout(SETTLE_BUDGET, cleanup).await {
-        Ok(had_session) => had_session.unwrap_or(false),
+        Ok(ended) => ended.unwrap_or(Cleanup::NoSession),
         Err(_) => {
             log::warn!(
                 "Still cleaning transfer staging file {partial}; the transfer settles meanwhile"
             );
-            true
+            Cleanup::Done
         }
     }
 }
 
-async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) -> bool {
+async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) -> Cleanup {
     // Only the wait for the browsing connection is kept short. A removal cut
     // off mid-reply would cost FTP that connection, and the pane its listing
     // with it, so once started it gets as long as a server that still answers
-    // could need.
-    let cleaned = async {
+    // could need. Err: the browsing connection is busy or not answering.
+    let cleaned: Result<Cleanup, ()> = async {
         for attempt in 1..=STAGING_REMOVE_ATTEMPTS {
             let refused = {
                 let slot = sessions.lookup_slot(connection_id);
                 let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await
                 else {
-                    return Some(false);
+                    return Err(());
                 };
                 let Some(session) = guard.as_mut() else {
                     log::warn!("No session to clean transfer staging file {partial}");
-                    return None;
+                    return Ok(Cleanup::NoSession);
                 };
                 if attempt == 1
                     && !crate::protocol::put_back_set_aside(session.browse_client.as_mut(), partial)
                         .await
                 {
-                    return Some(true);
+                    return Ok(Cleanup::Done);
                 }
                 match tokio::time::timeout(
                     Duration::from_secs(10),
@@ -72,17 +83,17 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                 )
                 .await
                 {
-                    Ok(Ok(())) => return Some(true),
+                    Ok(Ok(())) => return Ok(Cleanup::Done),
                     Ok(Err(error)) => error,
-                    Err(_) => return Some(false),
+                    Err(_) => return Err(()),
                 }
             };
             if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
-                return Some(true);
+                return Ok(Cleanup::Done);
             }
             if attempt == STAGING_REMOVE_ATTEMPTS {
                 log::warn!("Could not clean transfer staging file {partial}: {refused}");
-                return Some(true);
+                return Ok(Cleanup::Left);
             }
             // A server on Windows refuses to delete a file that the stopped
             // upload's session still holds open, and that session takes a
@@ -90,12 +101,11 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
             // in between.
             tokio::time::sleep(STAGING_REMOVE_PAUSE).await;
         }
-        Some(true)
-    };
-    match cleaned.await {
-        None => return false,
-        Some(true) => return true,
-        Some(false) => {}
+        Ok(Cleanup::Done)
+    }
+    .await;
+    if let Ok(ended) = cleaned {
+        return ended;
     }
     // The browsing connection is busy or no longer answering. A transfer
     // connection is free to try, now that this upload has let go of its own.
@@ -130,13 +140,16 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
     match tokio::time::timeout(std::time::Duration::from_secs(30), retry).await {
         Ok(Some(Err(error))) => {
             log::warn!("Could not clean transfer staging file {partial}: {error}");
+            Cleanup::Left
         }
-        Err(_) => log::warn!("Timed out cleaning transfer staging file {partial}"),
+        Err(_) => {
+            log::warn!("Timed out cleaning transfer staging file {partial}");
+            Cleanup::Left
+        }
         Ok(None) => {
             log::warn!("No session to clean transfer staging file {partial}");
-            return false;
+            Cleanup::NoSession
         }
-        Ok(Some(Ok(()))) => {}
+        Ok(Some(Ok(()))) => Cleanup::Done,
     }
-    true
 }

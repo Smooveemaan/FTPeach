@@ -326,6 +326,7 @@
     "invalidInput": "The provided value is invalid.",
     "resourceLimit": "A limit was reached: too many connections or requests at once, or something too large. Try again later, or with less.",
     "replaceUnsupported": "The server didn't allow the existing file to be replaced.",
+    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
     "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.",
     "activeModeFailed": "The server couldn't connect back in active FTP mode. Try passive mode.",

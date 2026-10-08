@@ -33,6 +33,7 @@ const ERROR_CODE_KEYS = {
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',
   replaceInterrupted: 'errors.replaceInterrupted',
+  stagingLeft: 'errors.stagingLeft',
   createUnsupported: 'errors.createUnsupported',
   activeModeFailed: 'errors.activeModeFailed',
   linkNotFollowed: 'errors.linkNotFollowed',
@@ -58,9 +59,9 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
   if (!raw) return raw;
   if (typeof raw === 'object') {
     const key = lookupByUnknownKey(ERROR_CODE_KEYS, raw.code);
-    // The one code whose message is data: the path of the missing file.
-    if (raw.code === 'credentialFileMissing')
-      return i18n.t('errors.credentialFileMissing', { path: raw.message });
+    // The codes whose message is data: the path of the file concerned.
+    if (raw.code === 'credentialFileMissing' || raw.code === 'stagingLeft')
+      return i18n.t(`errors.${raw.code}`, { path: raw.message });
     return key ? i18n.t(key) : raw.message || raw.code;
   }
   return raw;

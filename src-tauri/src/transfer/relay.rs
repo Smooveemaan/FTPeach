@@ -12,6 +12,8 @@ pub const RELAY_BUF_SIZE: usize = 64 * 1024;
 
 struct CountingWriter {
     inner: DuplexStream,
+    /// The target side stopped reading: its own connection is what failed.
+    partner_gone: bool,
     transferred: Arc<AtomicU64>,
     total: u64,
     progress: ProgressSink,
@@ -25,6 +27,7 @@ impl AsyncWrite for CountingWriter {
     ) -> Poll<std::io::Result<usize>> {
         let this = self.get_mut();
         let res = Pin::new(&mut this.inner).poll_write(cx, buf);
+        this.partner_gone |= matches!(res, Poll::Ready(Err(_)));
         if let Poll::Ready(Ok(n)) = res {
             let transferred = this.transferred.fetch_add(n as u64, Ordering::SeqCst) + n as u64;
             (this.progress)(ProgressInfo::Progress {
@@ -58,13 +61,29 @@ pub async fn relay_download(
     let _ = total_tx.send(total);
     let mut counting = CountingWriter {
         inner: writer,
+        partner_gone: false,
         transferred: Arc::new(AtomicU64::new(0)),
         total: total.unwrap_or(0),
         progress,
     };
-    source_backend
+    let result = source_backend
         .download_to_writer(source_path, &mut counting)
-        .await
+        .await;
+    if counting.partner_gone {
+        return result.map_err(|error| error.context(PartnerGone));
+    }
+    result
+}
+
+/// Marks a source side that failed only because the target side stopped
+/// reading, so the connection that was lost is told apart from its partner.
+#[derive(Debug)]
+pub struct PartnerGone;
+
+impl std::fmt::Display for PartnerGone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Relay target stopped reading")
+    }
 }
 
 /// Target-side half: pipes `reader` into `target_path`, then verifies the

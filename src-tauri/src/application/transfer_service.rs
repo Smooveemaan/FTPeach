@@ -616,6 +616,15 @@ pub async fn transfer_remote_copy(
     };
     let dispatch_connection_id = target_connection_id.clone();
     let sink = make_progress_sink(progress.clone(), target_connection_id, transfer_id.clone());
+    // A failure is reported against the connection that was lost, which a
+    // pane shows as lost; the other leg only fails because its partner went.
+    let source_sink = make_progress_sink(
+        progress.clone(),
+        source_connection_id.clone(),
+        transfer_id.clone(),
+    );
+    let source_lost = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let source_lost_for_task = source_lost.clone();
     let src_task_id = format!("{transfer_id}:src");
     let dst_task_id = format!("{transfer_id}:dst");
 
@@ -667,6 +676,14 @@ pub async fn transfer_remote_copy(
                 sink_for_download,
             )
             .await;
+            source_lost_for_task.store(
+                result.as_ref().is_err_and(|error| {
+                    error
+                        .downcast_ref::<crate::transfer::relay::PartnerGone>()
+                        .is_none()
+                }),
+                std::sync::atomic::Ordering::SeqCst,
+            );
             let _ = complete_tx.send(result.is_ok());
             result
         })
@@ -707,10 +724,17 @@ pub async fn transfer_remote_copy(
 
     match &result {
         Ok(()) => sink(ProgressInfo::Done),
-        Err(err) => sink(ProgressInfo::Error {
-            error: err.message.clone(),
-            code: err.code,
-        }),
+        Err(err) => {
+            let lost = if source_lost.load(std::sync::atomic::Ordering::SeqCst) {
+                &source_sink
+            } else {
+                &sink
+            };
+            lost(ProgressInfo::Error {
+                error: err.message.clone(),
+                code: err.code,
+            })
+        }
     }
     result
 }

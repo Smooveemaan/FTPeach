@@ -139,6 +139,7 @@ async function start(
   workDir: string,
   savedDir: string,
   pickFile: string,
+  realDialogs: boolean,
   run: Partial<Run>,
 ): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
@@ -168,9 +169,9 @@ async function start(
       // WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS on some runners.
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
       // No one can answer a native save dialog in a run; the test build saves here.
-      FTPEACH_E2E_SAVE_DIR: savedDir,
-      // Nor a Choose folder dialog or a file picker: the test build picks what this file names.
-      FTPEACH_E2E_PICK_FILE: pickFile,
+      // Nor a Choose folder dialog or a file picker: the test build picks what
+      // this file names. The native tests answer the real dialogs instead.
+      ...(realDialogs ? {} : { FTPEACH_E2E_SAVE_DIR: savedDir, FTPEACH_E2E_PICK_FILE: pickFile }),
     },
   });
   Object.assign(run, { child, cdpPort });
@@ -191,13 +192,15 @@ async function start(
  * `store` files (name to data, or to the raw text or bytes of a file that is
  * not a plain store). `onStart` runs on the main window of every run. A `portable`
  * copy is the program copied into a folder of its own beside the
- * `FTPeach.portable` marker, with the store files in `data` there.
+ * `FTPeach.portable` marker, with the store files in `data` there. With
+ * `realDialogs` it shows the real file dialogs, which the native tests answer.
  */
 export async function launchApp(
   settings: Record<string, unknown> = {},
   store: Record<string, unknown> = {},
   onStart: (_page: Page) => Promise<void> = async () => {},
   portable = false,
+  realDialogs = false,
 ): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
@@ -293,13 +296,13 @@ export async function launchApp(
     relaunch: async () => {
       await end(false);
       run = {};
-      app.page = await start(app.exe, profile, workDir, savedDir, pickFile, run);
+      app.page = await start(app.exe, profile, workDir, savedDir, pickFile, realDialogs, run);
       await onStart(app.page);
     },
     close,
   };
   try {
-    app.page = await start(exe, profile, workDir, savedDir, pickFile, run);
+    app.page = await start(exe, profile, workDir, savedDir, pickFile, realDialogs, run);
     await onStart(app.page);
     return app;
   } catch (error) {
@@ -311,26 +314,29 @@ export async function launchApp(
 /**
  * The test API with `app`: the running application, with a trace of the last
  * run attached and the process and profile gone afterwards, a timed-out test
- * too. `test.use({ appSettings, appStore, appPortable })` starts it with those
- * settings and store files in its profile, or as a portable copy (see
- * `launchApp`).
+ * too. `test.use({ appSettings, appStore, appPortable, appRealDialogs })`
+ * starts it with those settings and store files in its profile, as a portable
+ * copy, or with the real file dialogs (see `launchApp`).
  */
 export const test = base.extend<{
   appSettings: Record<string, unknown>;
   appStore: Record<string, unknown>;
   appPortable: boolean;
+  appRealDialogs: boolean;
   app: RunningApp;
 }>({
   appSettings: [{}, { option: true }],
   appStore: [{}, { option: true }],
   appPortable: [false, { option: true }],
-  app: async ({ appSettings, appStore, appPortable }, use, testInfo) => {
+  appRealDialogs: [false, { option: true }],
+  app: async ({ appSettings, appStore, appPortable, appRealDialogs }, use, testInfo) => {
     // A run that exits takes its trace along; each relaunch starts a new one.
     const app = await launchApp(
       appSettings,
       appStore,
       (page) => page.context().tracing.start({ screenshots: true, snapshots: true }),
       appPortable,
+      appRealDialogs,
     );
     let held: string[] = [];
     try {

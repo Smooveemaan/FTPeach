@@ -60,6 +60,24 @@ changed screen.
    100 % and 150 % interface scale, in Arabic and in German.
    Expected: nothing is cut off, overlaps or reads in the wrong direction.
 
+### Clicking the transfer notification
+
+When: before each release. The native tests confirm the notification itself,
+but the shell may hold its banner back (Do not disturb, a full-screen window),
+and the notification center is out of reach of UI Automation, so the click is
+made by hand.
+
+1. Turn on Settings → Transfers → **Notify when transfers finish** and
+   Settings → Interface → **Close to tray**. Start an upload of a few large files, then close the
+   window to the tray.
+   Expected: when the uploads finish, one notification from FTPeach says how
+   many files were transferred.
+2. Click the notification while it is on the screen.
+   Expected: the FTPeach window comes back in front, and the tray icon goes
+   away.
+3. Repeat with the window minimized instead of in the tray.
+   Expected: the click restores the window.
+
 ### Update from the previous published release
 
 When: right after publishing a release.

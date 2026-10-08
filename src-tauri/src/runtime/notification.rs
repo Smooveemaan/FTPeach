@@ -128,15 +128,22 @@ fn icon_uri(path: &std::path::Path) -> String {
 #[cfg(not(windows))]
 pub fn register_identity(_app: &AppHandle) {}
 
-/// Shows the toast. `title` and `body` arrive already localized.
+/// Shows the toast. `title` and `body` arrive already localized. A click on
+/// it brings the window back the way the tray icon does, from the taskbar or
+/// the tray alike, while FTPeach runs.
 #[cfg(windows)]
-pub fn show(_app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
+pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
     use tauri_winrt_notification::{Duration, Toast};
 
+    let app = app.clone();
     Toast::new(APP_USER_MODEL_ID)
         .title(title)
         .text1(body)
         .duration(Duration::Short)
+        .on_activated(move |_| {
+            crate::runtime::tray::restore(&app);
+            Ok(())
+        })
         .show()
         .map_err(|error| error.to_string())
 }

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Clicking the notification that transfers finished brings the FTPeach window back, also from
+  the tray.
 - File operation errors explain when a file and a folder have the same name.
 - Folder merge confirmation explains which files will be replaced and which will be kept.
 - When a moved folder is copied but an original cannot be removed, the message says so and names

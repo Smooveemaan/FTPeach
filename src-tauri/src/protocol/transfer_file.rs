@@ -362,6 +362,11 @@ impl LocalDownload {
         };
         if result.is_err() {
             remove_empty_new_partial(&self.partial, self.start).await;
+            // Gone, the partial has nothing to resume; its record would only
+            // be litter beside the destination.
+            if tokio::fs::symlink_metadata(&self.partial).await.is_err() {
+                forget_resume_record(&self.partial, &self.target.destination).await;
+            }
         }
         result
     }
@@ -607,6 +612,19 @@ mod tests {
         leave_half(&destination).await;
         discard(&destination).await;
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_download_that_gets_nothing_leaves_nothing_behind() {
+        let (root, destination) = scratch();
+        // Refused before its first byte, as a file deleted on the server is.
+        cancel(begin(&destination, true, identity(None, None)).await).await;
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
+        // A later attempt that gets nothing keeps what an earlier one left to resume.
+        leave_half(&destination).await;
+        cancel(begin(&destination, true, identity(Some(8), Some("v1"))).await).await;
+        assert_eq!(resumable_len(&destination), Some(4));
         std::fs::remove_dir_all(root).unwrap();
     }
 

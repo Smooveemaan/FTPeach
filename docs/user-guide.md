@@ -83,6 +83,11 @@ unchanged.
 
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
 
+A download that fails before receiving anything, such as one of a file deleted
+on the server, leaves nothing beside the destination.
+
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_download_that_gets_nothing_leaves_nothing_behind -->
+
 ## Downloaded files
 
 Downloaded files are marked as coming from the internet, the same way a browser

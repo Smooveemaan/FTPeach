@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A file list that refreshes, for example when a transfer finishes, keeps the keyboard position:
   arrow keys and Shift carry on from the same file instead of the top.
 - Files selected while a folder is still loading stay selected when the list arrives.
+- A download that fails before receiving anything, for example because the file was deleted on
+  the server, no longer leaves a `.ftpeach-resume.json` file beside it.
 
 ## [0.4.0] - 2026-10-05
 

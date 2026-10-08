@@ -507,33 +507,62 @@ mod transfer_tests {
         assert!(disk.removed.is_empty());
     }
 
+    /// Replaces `{dir}/file` with `{dir}/staging` over a connection that is
+    /// lost once the old file is set aside: neither rename that follows
+    /// reaches the server until the refusals are cleared. Returns the hidden
+    /// name the old file was given.
+    async fn cut_between_renames(dir: &str) -> (Arc<StdMutex<Disk>>, SftpBackend, String) {
+        let disk = Arc::new(StdMutex::new(Disk {
+            names: names(&[&format!("{dir}/staging"), &format!("{dir}/file")]),
+            refused_sources: vec![format!("{dir}/staging"), format!("{dir}/.ftpeach-")],
+            ..Default::default()
+        }));
+        let mut backend = backend(disk.clone()).await;
+        backend
+            .rename(&format!("{dir}/staging"), &format!("{dir}/file"))
+            .await
+            .unwrap_err();
+        let aside = disk.lock().unwrap().renames[0].2.clone();
+        (disk, backend, aside)
+    }
+
     #[tokio::test]
     async fn a_file_left_aside_is_put_back_before_its_staging_file_goes() {
-        for (dir, connection_comes_back) in [("/back", true), ("/gone", false)] {
-            let (staging, file) = (format!("{dir}/staging"), format!("{dir}/file"));
-            // The connection is lost once the old file is set aside: neither
-            // rename that follows reaches the server.
-            let disk = Arc::new(StdMutex::new(Disk {
-                names: names(&[&staging, &file]),
-                refused_sources: vec![staging.clone(), format!("{dir}/.ftpeach-")],
-                ..Default::default()
-            }));
-            let mut backend = backend(disk.clone()).await;
-            backend.rename(&staging, &file).await.unwrap_err();
-            let aside = disk.lock().unwrap().renames[0].2.clone();
-            if connection_comes_back {
-                disk.lock().unwrap().refused_sources.clear();
-            }
+        let (disk, mut backend, aside) = cut_between_renames("/cut").await;
+        let staging = "/cut/staging";
 
-            let put_back = crate::protocol::put_back_set_aside(&mut backend, &staging).await;
+        // Failing, it keeps the staging file, since the new version may be
+        // there only, and the record, for the next connection to the server.
+        assert!(!crate::protocol::put_back_set_aside(&mut backend, staging).await);
+        assert_eq!(disk.lock().unwrap().names, names(&[staging, &aside]));
+        assert!(crate::protocol::strand_set_aside(staging, "cut server"));
+        assert_eq!(crate::protocol::stranded_on("cut server"), [staging]);
+        assert!(crate::protocol::stranded_on("another server").is_empty());
 
-            assert_eq!(put_back, connection_comes_back);
-            // Failing, it keeps the staging file: the new version may be there only.
-            let expected = if put_back { &file } else { &aside };
-            assert_eq!(disk.lock().unwrap().names, names(&[&staging, expected]));
-            // Each is put back once.
-            assert!(crate::protocol::put_back_set_aside(&mut backend, &staging).await);
-        }
+        disk.lock().unwrap().refused_sources.clear();
+        assert!(crate::protocol::put_back_set_aside(&mut backend, staging).await);
+        assert_eq!(disk.lock().unwrap().names, names(&[staging, "/cut/file"]));
+        // Each is put back once.
+        assert!(crate::protocol::stranded_on("cut server").is_empty());
+        assert!(!crate::protocol::strand_set_aside(staging, "cut server"));
+    }
+
+    #[tokio::test]
+    async fn a_resumed_upload_that_takes_the_name_removes_the_file_its_pause_left_aside() {
+        let (disk, mut backend, aside) = cut_between_renames("/paused").await;
+        disk.lock().unwrap().refused_sources.clear();
+
+        // The resumed attempt finds the name free and takes it.
+        let staging = "/paused/staging";
+        backend
+            .rename_no_replace(staging, "/paused/file")
+            .await
+            .unwrap();
+        crate::protocol::remove_set_aside(&mut backend, staging).await;
+
+        assert_eq!(disk.lock().unwrap().names, names(&["/paused/file"]));
+        assert_eq!(disk.lock().unwrap().removed, [aside]);
+        assert!(crate::protocol::put_back_set_aside(&mut backend, staging).await);
     }
 
     #[tokio::test]

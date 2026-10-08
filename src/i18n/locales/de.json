@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Es konnte keine Verbindung zum Server hergestellt werden. {{raw}}",
     "alreadyExists": "„{{name}}“ existiert bereits",
     "replaceUnsupported": "Der Server hat das Überschreiben der vorhandenen Datei nicht zugelassen.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Dieser FTP-Server unterstützt das Erstellen neuer Dateien nicht. Versuchen Sie SFTP oder WebDAV, falls der Server sie anbietet.",
     "activeModeFailed": "Der Server konnte im aktiven FTP-Modus keine Verbindung zu diesem Computer herstellen. Versuchen Sie es mit dem passiven Modus.",
     "linkNotFollowed": "Der Pfad führt über einen Link (eine Junction oder einen symbolischen Link). Links werden nicht verfolgt.",

@@ -115,6 +115,8 @@ test('friendlyError localizes every structured command error code', () => {
       "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings.",
     alreadyExists: 'A file or folder with that name already exists.',
     replaceUnsupported: "The server didn't allow the existing file to be replaced.",
+    replaceInterrupted:
+      'The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.',
     createUnsupported:
       'This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.',
     activeModeFailed: "The server couldn't connect back in active FTP mode. Try passive mode.",

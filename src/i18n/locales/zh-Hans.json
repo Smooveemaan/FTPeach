@@ -329,6 +329,7 @@
     "connectFailedPrefix": "无法连接到服务器。{{raw}}",
     "alreadyExists": "“{{name}}”已经存在",
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
     "activeModeFailed": "在主动 FTP 模式下，服务器无法连接到本计算机。请尝试被动模式。",
     "linkNotFollowed": "该路径经过链接（目录联接或符号链接）。不支持跟随链接。",

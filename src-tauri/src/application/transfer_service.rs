@@ -76,10 +76,12 @@ async fn upload_staged(
         backend.upload(local, partial, resume, staged_sink).await?;
         // A server that will not replace sets the old file aside; never delete-then-rename.
         if crate::protocol::overwrite_allowed() {
-            backend.rename(partial, target).await
+            backend.rename(partial, target).await?;
         } else {
-            backend.rename_no_replace(partial, target).await
+            backend.rename_no_replace(partial, target).await?;
         }
+        crate::protocol::remove_set_aside(backend.as_mut(), partial).await;
+        Ok(())
     }
     .await;
     match &result {
@@ -334,6 +336,7 @@ pub async fn transfer_upload(
         Reservation::acquire_remote(sessions, &connection_id, &remote_path, Access::Write)
             .await
             .map_err(CommandError::from)?;
+    let server = sessions.server_for(&connection_id).await;
     let local = PathBuf::from(local_path);
     if let Err(error) = validate_read_source(&local).await {
         return Err(CommandError::new(
@@ -425,20 +428,34 @@ pub async fn transfer_upload(
             .pool_for(&cleanup_connection)
             .await
             .is_some_and(|pool| !pool.is_closed());
-    if let Some(partial) = crate::transfer::upload_staging::end_attempt(
+    let Some(partial) = crate::transfer::upload_staging::end_attempt(
         &transfer_id,
         unfinished,
         live,
         local_for_resume,
         pin,
         staged.load(std::sync::atomic::Ordering::SeqCst),
-    ) && cleanup_remote_partial(sessions, &cleanup_connection, &partial).await
-    {
+    ) else {
+        return result;
+    };
+    if cleanup_remote_partial(sessions, &cleanup_connection, &partial).await {
         // Only now: a disconnect before the deletion reached the server
         // still finds the file through its record.
         crate::transfer::upload_staging::release(&transfer_id);
     }
-    result
+    result.map_err(|error| interrupted_replacement(error, &partial, &server))
+}
+
+/// A replacement whose old file is still set aside after cleanup tried to put
+/// it back is left for the next connection to `server`, and says so.
+fn interrupted_replacement(error: CommandError, partial: &str, server: &str) -> CommandError {
+    if !crate::protocol::strand_set_aside(partial, server) {
+        return error;
+    }
+    CommandError::new(
+        ErrorCode::ReplaceInterrupted,
+        "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -590,6 +607,7 @@ pub async fn transfer_remote_copy(
             .await
             .map_err(CommandError::from)?,
     );
+    let target_server = sessions.server_for(&target_connection_id).await;
     let Some(source_pool) = sessions.pool_for(&source_connection_id).await else {
         return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
@@ -681,18 +699,20 @@ pub async fn transfer_remote_copy(
             (dst_task_id, dst_task, Box::new(dst_on_dispatch)),
         )
         .await;
+    let mut result = result.map_err(|err| CommandError::from_anyhow(&err));
     if result.is_err() && started.load(std::sync::atomic::Ordering::SeqCst) {
         cleanup_remote_partial(sessions, &dispatch_connection_id, &partial).await;
+        result = result.map_err(|error| interrupted_replacement(error, &partial, &target_server));
     }
 
     match &result {
         Ok(()) => sink(ProgressInfo::Done),
-        Err(err) => sink(ProgressInfo::failed(err)),
+        Err(err) => sink(ProgressInfo::Error {
+            error: err.message.clone(),
+            code: err.code,
+        }),
     }
-    match result {
-        Ok(()) => Ok(()),
-        Err(err) => Err(CommandError::from_anyhow(&err)),
-    }
+    result
 }
 
 pub async fn transfer_cancel_remote_copy(

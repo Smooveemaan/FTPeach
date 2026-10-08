@@ -333,6 +333,7 @@
     "connectFailedPrefix": "Não foi possível conectar-se ao servidor. {{raw}}",
     "alreadyExists": "“{{name}}” já existe",
     "replaceUnsupported": "O servidor não permitiu substituir o arquivo existente.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Este servidor FTP não permite criar arquivos novos. Tente SFTP ou WebDAV, se o servidor oferecer.",
     "activeModeFailed": "O servidor não conseguiu se conectar a este computador no modo FTP ativo. Tente o modo passivo.",
     "linkNotFollowed": "O caminho passa por um link (uma junção ou um link simbólico). Links não são seguidos.",

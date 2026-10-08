@@ -329,6 +329,7 @@
     "connectFailedPrefix": "सर्वर से कनेक्ट नहीं हो सका। {{raw}}",
     "alreadyExists": "\"{{name}}\" पहले से मौजूद है",
     "replaceUnsupported": "सर्वर ने मौजूदा फ़ाइल को अधिलेखित करने की अनुमति नहीं दी।",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "यह FTP सर्वर नई फ़ाइलें बनाना समर्थित नहीं करता। अगर सर्वर उपलब्ध कराता है, तो SFTP या WebDAV आज़माएँ।",
     "activeModeFailed": "सक्रिय FTP मोड में सर्वर इस कंप्यूटर से कनेक्ट नहीं कर सका। पैसिव मोड आज़माएँ।",
     "linkNotFollowed": "पथ एक लिंक (junction या सिम्बॉलिक लिंक) से होकर जाता है। लिंक का अनुसरण नहीं किया जाता।",

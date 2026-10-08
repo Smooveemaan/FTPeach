@@ -32,6 +32,7 @@ const ERROR_CODE_KEYS = {
   savedSecretUnreadable: 'errors.savedSecretUnreadable',
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',
+  replaceInterrupted: 'errors.replaceInterrupted',
   createUnsupported: 'errors.createUnsupported',
   activeModeFailed: 'errors.activeModeFailed',
   linkNotFollowed: 'errors.linkNotFollowed',

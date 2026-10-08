@@ -270,6 +270,15 @@ pub(crate) async fn remove_staging_on(
     }
 }
 
+/// On a new connection to `server`: puts back the files replacements there set
+/// aside and no connection could put back when they were cut off, and removes
+/// their staging files.
+pub async fn put_back_stranded(browse: &mut (dyn ProtocolBackend + Send), server: &str) {
+    for staging_path in crate::protocol::stranded_on(server) {
+        remove_staging_on(browse, &staging_path, 1).await;
+    }
+}
+
 /// Abandons everything held for a connection. Takes the browsing backend
 /// directly because teardown already owns the session: the deletions have to
 /// happen while the connection can still reach the server, and once it is

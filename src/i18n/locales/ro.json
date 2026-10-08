@@ -333,6 +333,7 @@
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
     "alreadyExists": "„{{name}}” există deja",
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
     "activeModeFailed": "Serverul nu s-a putut conecta la acest computer în modul FTP activ. Încercați modul pasiv.",
     "linkNotFollowed": "Calea trece printr-o legătură (junction sau legătură simbolică). Legăturile nu sunt urmate.",

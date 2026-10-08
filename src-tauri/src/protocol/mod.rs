@@ -129,10 +129,14 @@ pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
     if let Err(error) = backend.rename_no_replace(new_path, &aside).await {
         return Err(refused_replacement(error, new_path));
     }
-    SET_ASIDE
-        .lock()
-        .unwrap()
-        .insert(old_path.to_owned(), (aside.clone(), new_path.to_owned()));
+    SET_ASIDE.lock().unwrap().insert(
+        old_path.to_owned(),
+        SetAside {
+            aside: aside.clone(),
+            name: new_path.to_owned(),
+            stranded_on: None,
+        },
+    );
     let settled = || SET_ASIDE.lock().unwrap().remove(old_path);
     let Err(error) = backend.rename_no_replace(old_path, new_path).await else {
         settled();
@@ -153,23 +157,39 @@ pub(crate) async fn replace_by_setting_aside<B: ProtocolBackend + ?Sized>(
     Err(refused_replacement(error, new_path))
 }
 
-/// Replacements that stopped between their two renames, by the file that was
-/// to take the name: the hidden name of the file set aside, and its own name.
-// ponytail: process-wide map keyed by remote path, emptied by staging cleanup;
-// an entry outlives a pause that lands between the renames.
+/// A replacement that stopped between its two renames, by the file that was to
+/// take the name.
+struct SetAside {
+    /// The hidden name the old file was given.
+    aside: String,
+    /// The name it is to go back to.
+    name: String,
+    /// The server, once no connection there could put it back: the next one
+    /// to it does.
+    stranded_on: Option<String>,
+}
+
+// ponytail: process-wide map keyed by remote path and kept in memory only; a
+// file stranded when the application closes stays under its hidden name.
 static SET_ASIDE: std::sync::LazyLock<
-    std::sync::Mutex<std::collections::HashMap<String, (String, String)>>,
+    std::sync::Mutex<std::collections::HashMap<String, SetAside>>,
 > = std::sync::LazyLock::new(Default::default);
 
 /// Before `staging` is deleted: puts back the file a replacement by it set
 /// aside and did not get to put back itself, over a connection that still
 /// works. False when that failed: the staging file has to stay, since it may be
-/// the only copy of the new version while the old one is still hidden.
+/// the only copy of the new version while the old one is still hidden. The
+/// record stays for another try, unless something else has taken the name.
 pub(crate) async fn put_back_set_aside<B: ProtocolBackend + ?Sized>(
     backend: &mut B,
     staging: &str,
 ) -> bool {
-    let Some((aside, name)) = SET_ASIDE.lock().unwrap().remove(staging) else {
+    let Some((aside, name)) = SET_ASIDE
+        .lock()
+        .unwrap()
+        .get(staging)
+        .map(|entry| (entry.aside.clone(), entry.name.clone()))
+    else {
         return true;
     };
     let put_back = tokio::time::timeout(
@@ -179,17 +199,60 @@ pub(crate) async fn put_back_set_aside<B: ProtocolBackend + ?Sized>(
     .await;
     match put_back {
         Ok(Ok(())) => {
+            SET_ASIDE.lock().unwrap().remove(staging);
             log::warn!("Put {aside} back as {name}: replacing it with {staging} was cut off");
-            true
+            return true;
+        }
+        Ok(Err(error))
+            if crate::ipc::CommandError::from_anyhow(&error).code
+                == crate::ipc::ErrorCode::AlreadyExists =>
+        {
+            SET_ASIDE.lock().unwrap().remove(staging);
+            log::error!("{name} is taken again; kept its previous version {aside} and {staging}");
         }
         Ok(Err(error)) => {
             log::error!("Could not put {aside} back as {name}, kept it and {staging}: {error:#}");
-            false
         }
-        Err(_) => {
-            log::error!("Timed out putting {aside} back as {name}, kept it and {staging}");
-            false
-        }
+        Err(_) => log::error!("Timed out putting {aside} back as {name}, kept it and {staging}"),
+    }
+    false
+}
+
+/// Once cleanup has had its try: marks a file `staging` set aside that is
+/// still waiting to be put back as left on `server`, for the next connection
+/// there. Says whether there is one.
+pub(crate) fn strand_set_aside(staging: &str, server: &str) -> bool {
+    SET_ASIDE
+        .lock()
+        .unwrap()
+        .get_mut(staging)
+        .map(|entry| entry.stranded_on = Some(server.to_owned()))
+        .is_some()
+}
+
+/// The staging files whose set-aside file waits on `server` to be put back.
+pub(crate) fn stranded_on(server: &str) -> Vec<String> {
+    SET_ASIDE
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|(_, entry)| entry.stranded_on.as_deref() == Some(server))
+        .map(|(staging, _)| staging.clone())
+        .collect()
+}
+
+/// After `staging` has taken its name: removes the file it replaced that an
+/// earlier attempt set aside, when a pause came between the two renames.
+pub(crate) async fn remove_set_aside<B: ProtocolBackend + ?Sized>(backend: &mut B, staging: &str) {
+    let Some(entry) = SET_ASIDE.lock().unwrap().remove(staging) else {
+        return;
+    };
+    if let Err(error) = backend.remove(&entry.aside, false).await {
+        log::warn!(
+            "Replaced {}, but could not remove its previous version {}: {error:#}",
+            entry.name,
+            entry.aside
+        );
     }
 }
 

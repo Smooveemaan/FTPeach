@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
     "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Server FTP ini tidak mendukung pembuatan file baru. Coba SFTP atau WebDAV jika server menyediakannya.",
     "activeModeFailed": "Server tidak dapat terhubung ke komputer ini dalam mode FTP aktif. Coba mode pasif.",
     "linkNotFollowed": "Jalur melewati tautan (junction atau tautan simbolik). Tautan tidak diikuti.",

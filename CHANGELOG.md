@@ -22,7 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Stopping an upload, running or paused, or disconnecting or closing its tab no longer leaves a
   temporary file on the server.
 - A replacing upload cut off at the last moment no longer leaves nothing under the file's name:
-  the previous version is put back.
+  the previous version is put back, or, if the whole connection was lost, the next time you
+  connect to that server.
 
 ## [0.4.0] - 2026-10-05
 

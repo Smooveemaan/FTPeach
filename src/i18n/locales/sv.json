@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
     "alreadyExists": "”{{name}}” finns redan",
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
     "activeModeFailed": "Servern kunde inte ansluta till den här datorn i aktivt FTP-läge. Prova passivt läge.",
     "linkNotFollowed": "Sökvägen går via en länk (en junction eller symbolisk länk). Länkar följs inte.",

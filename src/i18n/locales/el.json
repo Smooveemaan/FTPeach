@@ -329,6 +329,7 @@
     "connectFailedPrefix": "Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. {{raw}}",
     "alreadyExists": "Το «{{name}}» υπάρχει ήδη",
     "replaceUnsupported": "Ο διακομιστής δεν επέτρεψε την αντικατάσταση του υπάρχοντος αρχείου.",
+    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
     "createUnsupported": "Αυτός ο διακομιστής FTP δεν υποστηρίζει τη δημιουργία νέων αρχείων. Δοκιμάστε SFTP ή WebDAV, αν τα προσφέρει ο διακομιστής.",
     "activeModeFailed": "Ο διακομιστής δεν μπόρεσε να συνδεθεί σε αυτόν τον υπολογιστή στην ενεργή λειτουργία FTP. Δοκιμάστε την παθητική λειτουργία.",
     "linkNotFollowed": "Η διαδρομή περνά από σύνδεσμο (junction ή συμβολικό σύνδεσμο). Οι σύνδεσμοι δεν ακολουθούνται.",

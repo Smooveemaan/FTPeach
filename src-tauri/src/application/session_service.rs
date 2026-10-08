@@ -191,6 +191,8 @@ pub(crate) async fn connect(
         });
     }
 
+    crate::transfer::upload_staging::put_back_stranded(browse_client.as_mut(), &server).await;
+
     let pool_size = pool_size(typed_config.common().max_connections);
     let pool_protocol = protocol;
     let pool_connection_id = connection_id.to_string();

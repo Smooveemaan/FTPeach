@@ -53,6 +53,10 @@ pub enum ErrorCode {
     /// The server would not let an existing file be replaced, not even by
     /// setting it aside first.
     ReplaceUnsupported,
+    /// The connection was lost between setting an existing file aside and
+    /// putting the new one in its place, and the old one could not be put
+    /// back yet: the next connection to the server does it.
+    ReplaceInterrupted,
     /// The protocol cannot exclusively create a file at the requested name.
     CreateUnsupported,
     /// In FTP active mode the server would not, or could not, connect back.
@@ -391,6 +395,9 @@ impl CommandError {
             ErrorCode::ReplaceUnsupported => {
                 "The server did not allow the existing file to be replaced"
             }
+            ErrorCode::ReplaceInterrupted => {
+                "The connection was lost while the file was being replaced; its previous version will be put back on the next connection"
+            }
             ErrorCode::Internal => "Command failed",
             ErrorCode::CreateUnsupported => "The FTP server does not support creating new files",
             ErrorCode::ActiveModeFailed => "The server could not connect back in FTP active mode",
@@ -439,6 +446,7 @@ mod tests {
             (ErrorCode::SavedSecretUnreadable, "savedSecretUnreadable"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),
+            (ErrorCode::ReplaceInterrupted, "replaceInterrupted"),
             (ErrorCode::CreateUnsupported, "createUnsupported"),
             (ErrorCode::ActiveModeFailed, "activeModeFailed"),
             (ErrorCode::LinkNotFollowed, "linkNotFollowed"),

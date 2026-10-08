@@ -38,6 +38,7 @@ export const COMMAND_ERROR_CODES = [
   'savedSecretUnreadable',
   'alreadyExists',
   'replaceUnsupported',
+  'replaceInterrupted',
   'createUnsupported',
   'activeModeFailed',
   'linkNotFollowed',

@@ -23,7 +23,7 @@ pub(crate) use crate::transfer::upload_staging::remember;
 pub(crate) use crate::transfer::upload_staging::{
     Key, mark_paused, pin, staged_len, take_pause_mark,
 };
-use crate::transfer::upload_staging::{Paused, SourcePin, remove_staging_on, take};
+use crate::transfer::upload_staging::{Paused, SourcePin, take};
 use std::path::Path;
 
 /// Read back at most this much of the staging tail to prove the overlap.
@@ -43,12 +43,15 @@ use std::path::Path;
 /// window of a real file betrays those. The source pin covers the rest.
 const VERIFY_WINDOW: u64 = 8 * 1024;
 
+/// The record is already taken, so this is the last that knows the file: it
+/// goes the way every abandoned staging file goes.
 async fn remove_staging(sessions: &Sessions, connection_id: &str, staging_path: &str) {
-    let slot = sessions.lookup_slot(connection_id);
-    let mut guard = slot.lock().await;
-    if let Some(session) = guard.as_mut() {
-        remove_staging_on(session.browse_client.as_mut(), staging_path, 1).await;
-    }
+    crate::application::staging_cleanup::cleanup_remote_partial(
+        sessions,
+        connection_id,
+        staging_path,
+    )
+    .await;
 }
 
 /// Abandons any staging held for this destination, deleting it server-side.
@@ -139,21 +142,19 @@ pub async fn resolve(
         key.remote_path,
         restart.log_key()
     );
-    let slot = sessions.lookup_slot(&key.connection_id);
-    let mut guard = slot.lock().await;
-    if let Some(session) = guard.as_mut() {
+    if let Some(session) = sessions
+        .lookup_slot(&key.connection_id)
+        .lock()
+        .await
+        .as_ref()
+    {
         session.browse_client.log_event(
             restart.log_key(),
             restart.params(&key.remote_path),
             LogKind::Status,
         );
-        remove_staging_on(session.browse_client.as_mut(), &entry.staging_path, 1).await;
-    } else {
-        log::warn!(
-            "Disconnected resume staging retained: {}",
-            entry.staging_path
-        );
     }
+    remove_staging(sessions, &key.connection_id, &entry.staging_path).await;
     None
 }
 

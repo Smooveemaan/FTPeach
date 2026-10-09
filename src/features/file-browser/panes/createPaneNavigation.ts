@@ -230,11 +230,12 @@ export function createPaneNavigation({
     );
   };
 
-  const refreshBothPanes = (tabId = activeTabId) => {
+  // No tab argument: buttons and menu items call it with their event.
+  const refreshBothPanes = () => {
     PANE_IDS.forEach((id) => {
       const pane = panes[id];
       if (pane.kind === 'local' || pane.status === 'connected')
-        reportRejection(refreshPane(id, pane.path, undefined, tabId));
+        reportRejection(refreshPane(id, pane.path, undefined, activeTabId));
     });
   };
 

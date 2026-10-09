@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.
+- The toolbar's Refresh button lists both folders again; before, it did not show new files.
 - A cut selection stays available to paste when some files are skipped.
 - The count of items not transferred includes the files skipped because they already exist.
 - Local file copies appear in Transfers, including when replacing existing files.

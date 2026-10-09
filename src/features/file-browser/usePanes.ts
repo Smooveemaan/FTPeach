@@ -86,7 +86,7 @@ export interface PanesModel {
   openDirectory: (id: PaneId, name: string, tabId?: string) => void;
   goPaneBack: (id: PaneId, tabId?: string) => void;
   goPaneForward: (id: PaneId, tabId?: string) => void;
-  refreshBothPanes: (tabId?: string) => void;
+  refreshBothPanes: () => void;
   toggleSync: (tabId?: string) => void;
   startPaneConnect: (id: PaneId, tabId?: string) => void;
   switchPaneToLocal: (id: PaneId, tabId?: string, targetPath?: string) => void;

@@ -208,7 +208,7 @@ fn ready_with(
     check: Checker,
 ) -> Option<StagedUpdate> {
     let staged = read_manifest(dir).and_then(|manifest| match manifest {
-        Some(manifest) if !is_newer(&manifest, current)? => Ok(None),
+        Some(manifest) if !is_newer(dir, &manifest, current)? => Ok(None),
         Some(manifest) => {
             let pinned = Pinned::open(dir, &manifest, package)?;
             pinned.check(&manifest, check)?;
@@ -225,14 +225,45 @@ fn ready_with(
     None
 }
 
-fn is_newer(manifest: &Manifest, current: &semver::Version) -> anyhow::Result<bool> {
-    if semver::Version::parse(&manifest.version)? <= *current {
+fn is_newer(dir: &Path, manifest: &Manifest, current: &semver::Version) -> anyhow::Result<bool> {
+    let version = semver::Version::parse(&manifest.version)?;
+    if version <= *current {
         return Ok(false);
     }
     if manifest.attempted {
+        remember_failed(dir, &version);
         anyhow::bail!("the installer for {} did not complete", manifest.version);
     }
     Ok(true)
+}
+
+/// Beside the staging directory, which every discard removes: the version
+/// whose installer was started and did not install it.
+fn failed_record(dir: &Path) -> PathBuf {
+    dir.with_file_name("update-failed")
+}
+
+fn remember_failed(dir: &Path, version: &semver::Version) {
+    if let Err(error) = std::fs::write(failed_record(dir), version.to_string()) {
+        log::warn!("could not remember that the update to {version} failed: {error}");
+    }
+}
+
+/// The version whose installer was started and did not install it, while it
+/// is still newer than `current`. FTPeach installs that version only when
+/// asked to, so an installer that keeps failing cannot take every other
+/// start: started silently, it ends that start with nothing on the screen.
+/// A record this build has passed is removed.
+pub fn failed_version(dir: &Path, current: &semver::Version) -> Option<semver::Version> {
+    let record = failed_record(dir);
+    let version = semver::Version::parse(std::fs::read_to_string(&record).ok()?.trim()).ok();
+    match version {
+        Some(version) if version > *current => Some(version),
+        _ => {
+            let _ = std::fs::remove_file(record);
+            None
+        }
+    }
 }
 
 /// Starts the staged installer without any window: `/S` is silent,
@@ -360,7 +391,7 @@ fn install_with(
     launch: &dyn Fn(&Path) -> std::io::Result<()>,
 ) -> anyhow::Result<String> {
     let mut manifest = read_manifest(dir)?.ok_or_else(|| anyhow::anyhow!("No staged update"))?;
-    if !is_newer(&manifest, current)? {
+    if !is_newer(dir, &manifest, current)? {
         anyhow::bail!("the staged update is not newer than {current}");
     }
     let pinned = Pinned::open(dir, &manifest, package)?;
@@ -499,16 +530,20 @@ fn read_manifest(dir: &Path) -> anyhow::Result<Option<Manifest>> {
 /// The product version in an installer's `VS_FIXEDFILEINFO`, which Tauri's
 /// NSIS installer fills from the app version (`VIProductVersion`). It is
 /// part of the signed bytes, so an older installer cannot pass for a newer
-/// one by what the unsigned manifest says.
+/// one by what the unsigned manifest says. NSIS leaves the structure version
+/// at 0 where the resource compiler writes 1.0, so either is taken.
 pub fn embedded_version(bytes: &[u8]) -> Option<(u64, u64, u64)> {
     const SIGNATURE: [u8; 4] = 0xFEEF_04BDu32.to_le_bytes();
-    const STRUCTURE_VERSION: [u8; 4] = 0x0001_0000u32.to_le_bytes();
+    const STRUCTURE_VERSIONS: [[u8; 4]; 2] = [0u32.to_le_bytes(), 0x0001_0000u32.to_le_bytes()];
     let word = |at: usize| -> Option<u32> {
         Some(u32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?))
     };
-    let start = bytes
-        .windows(8)
-        .position(|window| window[..4] == SIGNATURE && window[4..] == STRUCTURE_VERSION)?;
+    let start = bytes.windows(8).position(|window| {
+        window[..4] == SIGNATURE
+            && STRUCTURE_VERSIONS
+                .iter()
+                .any(|version| window[4..] == *version)
+    })?;
     let (high, low) = (word(start + 16)?, word(start + 20)?);
     let version = (
         u64::from(high >> 16),

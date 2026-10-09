@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Folder merge confirmation explains which files will be replaced and which will be kept.
 - When a moved folder is copied but an original cannot be removed, the message says so and names
   it, instead of "An unexpected error occurred."
+- An update that failed to install is offered in the status bar instead of being installed again
+  when FTPeach starts.
 
 ### Fixed
 
@@ -56,6 +58,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   the server, no longer leaves a `.ftpeach-resume.json` file beside it.
 - Settings shows English, not Russian, as the language when the saved language is not one
   FTPeach has.
+- A downloaded update installs from **Install update** or at the next start, instead of being
+  thrown away and downloaded again.
 
 ## [0.4.0] - 2026-10-05
 

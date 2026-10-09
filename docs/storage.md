@@ -113,6 +113,12 @@ next launch verifies it and installs it silently before any window appears,
 and the updated FTPeach removes the directory. An update never touches
 `%APPDATA%\FTPeach`.
 
+An installer that was started and did not install its version leaves that
+version in `update-failed` beside the `updates` folder. FTPeach then offers
+that version in the status bar instead of downloading and installing it on its
+own, so a failing installer cannot take over every other start; the record goes
+once FTPeach is at that version or newer.
+
 ## Edits recovered from Open with
 
 A file opened with **Open with** is downloaded to a per-run folder under

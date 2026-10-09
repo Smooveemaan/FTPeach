@@ -16,6 +16,11 @@
 ; installer template; this macro is expanded inside its `Section Uninstall`,
 ; after the template's own app-data cleanup.
 
+; The finished installer gets a second copy of its version information that
+; FTPeach 0.3.0 to 0.4.0 can read (see version-info.ps1), before the updater
+; signature is made over it. A failure fails the build.
+!finalize 'powershell -NoProfile -ExecutionPolicy Bypass -File "${__FILEDIR__}\version-info.ps1" "%1"' = 0
+
 !macro NSIS_HOOK_POSTUNINSTALL
   ; An updater-driven uninstall runs while that very installer may be the
   ; file in the updates directory, and the new version clears it on launch.

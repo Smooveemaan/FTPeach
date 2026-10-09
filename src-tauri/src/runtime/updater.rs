@@ -187,6 +187,12 @@ pub fn install_staged_at_startup(app: &AppHandle) {
     let Some(staged) = update_staging::ready_to_install(&dir, current, &pubkey, package()) else {
         return;
     };
+    // Downloaded again by hand; it installs from the status bar, not here.
+    if update_staging::failed_version(&dir, current)
+        .is_some_and(|failed| failed.to_string() == staged.version)
+    {
+        return;
+    }
     match start_staged(app, &dir, current, &pubkey) {
         // Nothing needs an orderly shutdown yet: there is no tray icon, no
         // visible window and no connection.
@@ -238,11 +244,23 @@ pub async fn check(app: &AppHandle) -> anyhow::Result<()> {
             return Err(error);
         }
     };
+    let failed = failed_before(app, &version);
     send(app, UpdaterStatus::Available { version });
-    if auto_update_enabled(app).await {
+    if auto_update_enabled(app).await && !failed {
         download_available(app, &state).await?;
     }
     Ok(())
+}
+
+/// Whether an installer of `version` already failed to install it; such a
+/// version is only offered, and the user decides whether to try again.
+fn failed_before(app: &AppHandle, version: &str) -> bool {
+    staging_dir(app)
+        .ok()
+        .and_then(|dir| update_staging::failed_version(&dir, &app.package_info().version))
+        .is_some_and(|failed| {
+            semver::Version::parse(version).is_ok_and(|offered| offered == failed)
+        })
 }
 
 fn missing_target(error: &tauri_plugin_updater::Error) -> bool {

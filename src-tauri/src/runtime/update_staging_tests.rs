@@ -76,6 +76,23 @@ fn the_embedded_version_must_be_the_announced_one_and_newer() {
 }
 
 #[test]
+fn an_nsis_installer_says_its_version_with_structure_version_zero() {
+    // The VS_FIXEDFILEINFO of the published FTPeach_0.4.0_x64-setup.exe,
+    // word for word: NSIS leaves dwStrucVersion at 0.
+    let words: [u32; 13] = [
+        0xfeef04bd, 0x00000000, 0x00000004, 0x00000000, 0x00000004, 0x00000000, 0x00000000,
+        0x00000000, 0x00000004, 0x00000001, 0x00000000, 0x00000000, 0x00000000,
+    ];
+    let mut installer = b"MZ...NSIS stub...".to_vec();
+    for word in words {
+        installer.extend_from_slice(&word.to_le_bytes());
+    }
+    installer.extend_from_slice(b"...compressed payload...");
+    assert_eq!(embedded_version(&installer), Some((0, 4, 0)));
+    assert!(check_embedded_version(&installer, "0.4.0", &current()).is_ok());
+}
+
+#[test]
 fn an_update_that_is_not_newer_is_cleared_away() {
     let dir = staging_dir();
     stage(&dir, "0.1.1", SIGNATURE, ARTIFACT, Package::Installer).unwrap();
@@ -252,6 +269,34 @@ fn an_install_that_did_not_complete_is_not_retried() {
         None
     );
     assert!(!dir.exists());
+}
+
+#[test]
+fn a_version_that_failed_to_install_is_remembered_until_this_build_passes_it() {
+    let dir = staging_dir();
+    assert_eq!(failed_version(&dir, &current()), None);
+    stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Installer).unwrap();
+    let _ = install_with(
+        &dir,
+        &current(),
+        Package::Installer,
+        &signature_only,
+        &|_| Ok(()),
+    );
+    // The next start finds the attempt: the download goes, the version stays known.
+    assert_eq!(
+        ready_with(&dir, &current(), Package::Installer, &signature_only),
+        None
+    );
+    let failed = Some(semver::Version::new(0, 2, 0));
+    assert_eq!(failed_version(&dir, &current()), failed);
+    // A download of it again does not make it forgotten.
+    stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Installer).unwrap();
+    assert_eq!(failed_version(&dir, &current()), failed);
+    // Once installed some other way, the record goes.
+    assert_eq!(failed_version(&dir, &semver::Version::new(0, 2, 0)), None);
+    assert_eq!(failed_version(&dir, &current()), None);
+    discard(&dir);
 }
 
 #[test]

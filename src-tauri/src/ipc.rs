@@ -67,6 +67,9 @@ pub enum ErrorCode {
     /// A local path runs through a junction, symbolic link or other reparse
     /// point, which FTPeach does not follow.
     LinkNotFollowed,
+    /// A delete to the Recycle Bin where Windows keeps none (a network share,
+    /// a removable drive): nothing was deleted.
+    NoRecycleBin,
     Internal,
 }
 
@@ -410,6 +413,7 @@ impl CommandError {
             ErrorCode::CreateUnsupported => "The FTP server does not support creating new files",
             ErrorCode::ActiveModeFailed => "The server could not connect back in FTP active mode",
             ErrorCode::LinkNotFollowed => "The path goes through a link, which is not followed",
+            ErrorCode::NoRecycleBin => "This location has no Recycle Bin; nothing was deleted",
         };
         Self {
             code,
@@ -459,6 +463,7 @@ mod tests {
             (ErrorCode::CreateUnsupported, "createUnsupported"),
             (ErrorCode::ActiveModeFailed, "activeModeFailed"),
             (ErrorCode::LinkNotFollowed, "linkNotFollowed"),
+            (ErrorCode::NoRecycleBin, "noRecycleBin"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

@@ -43,6 +43,7 @@ export const COMMAND_ERROR_CODES = [
   'createUnsupported',
   'activeModeFailed',
   'linkNotFollowed',
+  'noRecycleBin',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

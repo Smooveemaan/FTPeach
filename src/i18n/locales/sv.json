@@ -231,6 +231,7 @@
     "recycleEntry": "Ska ”{{name}}” flyttas till papperskorgen?",
     "deletePermanentSelected": "Vill du ta bort de markerade objekten ({{count}}) permanent? Den här åtgärden går inte att ångra.",
     "deletePermanentEntry": "Vill du ta bort ”{{name}}” permanent? Den här åtgärden går inte att ångra.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Vill du ta bort de markerade objekten på servern ({{count}}) permanent? Den här åtgärden går inte att ångra.",
     "deleteRemoteEntry": "Vill du ta bort ”{{name}}” på servern permanent? Den här åtgärden går inte att ångra.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
     "activeModeFailed": "Servern kunde inte ansluta till den här datorn i aktivt FTP-läge. Prova passivt läge.",
     "linkNotFollowed": "Sökvägen går via en länk (en junction eller symbolisk länk). Länkar följs inte.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
     "savedSecretUnreadable": "Ett sparat lösenord kan inte läsas på den här datorn. Ange det igen i bokmärket eller i proxyinställningarna.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

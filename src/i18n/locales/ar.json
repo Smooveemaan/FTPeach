@@ -243,6 +243,7 @@
     "recycleEntry": "هل تريد نقل «{{name}}» إلى سلة المحذوفات؟",
     "deletePermanentSelected": "هل تريد حذف العناصر المحددة نهائيًا ({{count}})؟ لا يمكن التراجع عن هذا الإجراء.",
     "deletePermanentEntry": "هل تريد حذف «{{name}}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "هل تريد حذف العناصر المحددة على الخادم ({{count}}) نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteRemoteEntry": "هل تريد حذف «{{name}}» على الخادم نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -350,6 +351,7 @@
     "createUnsupported": "خادم FTP هذا لا يدعم إنشاء ملفات جديدة. جرّب SFTP أو WebDAV إذا كان الخادم يوفّرهما.",
     "activeModeFailed": "تعذّر على الخادم الاتصال بهذا الكمبيوتر في وضع FTP النشط. جرّب الوضع السلبي.",
     "linkNotFollowed": "يمر المسار عبر رابط (junction أو رابط رمزي). لا يمكن تتبّع الروابط.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلًا من ذلك.",
     "savedSecretUnreadable": "تعذرت قراءة كلمة مرور محفوظة على هذا الكمبيوتر. أدخلها من جديد في الإشارة المرجعية أو في إعدادات الوكيل.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

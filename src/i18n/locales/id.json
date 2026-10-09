@@ -231,6 +231,7 @@
     "recycleEntry": "Apakah ingin memindahkan \"{{name}}\" ke Keranjang Sampah?",
     "deletePermanentSelected": "Apakah Anda ingin menghapus item yang dipilih secara permanen ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deletePermanentEntry": "Apakah Anda ingin menghapus \"{{name}}\" secara permanen? Tindakan ini tidak dapat dibatalkan.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Hapus permanen item yang dipilih di server ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deleteRemoteEntry": "Hapus permanen \"{{name}}\" di server? Tindakan ini tidak dapat dibatalkan.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Server FTP ini tidak mendukung pembuatan file baru. Coba SFTP atau WebDAV jika server menyediakannya.",
     "activeModeFailed": "Server tidak dapat terhubung ke komputer ini dalam mode FTP aktif. Coba mode pasif.",
     "linkNotFollowed": "Jalur melewati tautan (junction atau tautan simbolik). Tautan tidak diikuti.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
     "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

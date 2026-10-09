@@ -50,6 +50,27 @@ test('deletion waits for confirmation, ignores stale selections and refreshes th
   assert.deepEqual(h.refreshes, [['a', 'C:\\root', undefined, 'origin']]);
 });
 
+test('what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin', async () => {
+  const h = harness((_command, args) =>
+    String(args?.localPath).endsWith('share') && !args?.permanent
+      ? { ok: false, error: 'no bin', errorCode: 'noRecycleBin' }
+      : { ok: true },
+  );
+  h.panes.a.entries = [
+    { name: 'share', isDirectory: false },
+    { name: 'local', isDirectory: false },
+  ];
+  h.panes.a.selected = new Set(['share', 'local']);
+  h.operations.deletePaneSelected('a');
+  await h.confirmations[0]!.run();
+  assert.deepEqual(h.errors, []);
+  assert.equal(h.confirmations[1]!.key, 'confirm.noRecycleBin');
+  assert.equal(h.calls.length, 2);
+  await h.confirmations[1]!.run();
+  assert.deepEqual(h.calls[2]!.args, { localPath: 'C:\\root\\share', permanent: true });
+  assert.equal(h.confirmations.length, 2);
+});
+
 test('remote file creation refuses overwrite without IPC; failed mutations still refresh', async () => {
   const h = harness(() => ({ ok: false, error: 'denied', errorCode: 'permissionDenied' }));
   h.panes.b.entries = [{ name: 'existing', isDirectory: false }];

@@ -231,6 +231,7 @@
     "recycleEntry": "要將「{{name}}」移至資源回收筒嗎？",
     "deletePermanentSelected": "要永久刪除所選項目（{{count}}）嗎？此操作無法復原。",
     "deletePermanentEntry": "要永久刪除「{{name}}」嗎？此操作無法復原。",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "要永久刪除伺服器上的所選項目（{{count}}）嗎？此操作無法復原。",
     "deleteRemoteEntry": "要永久刪除伺服器上的「{{name}}」嗎？此操作無法復原。",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "此 FTP 伺服器不支援建立新檔案。如果伺服器提供 SFTP 或 WebDAV，請改用它們。",
     "activeModeFailed": "在主動 FTP 模式下，伺服器無法連線到此電腦。請改用被動模式。",
     "linkNotFollowed": "此路徑經過連結（目錄連接或符號連結）。不支援跟隨連結。",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
     "savedSecretUnreadable": "無法在這台電腦上讀取已儲存的密碼。請在書籤或 Proxy 設定中重新輸入。",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

@@ -8,7 +8,10 @@ export default defineConfig({
   outputDir: './test-results/visual',
   fullyParallel: true,
   forbidOnly: isCI,
+  // A retry tells a flaky failure from a steady one in the report, but a
+  // test that passed only on a retry still fails the run.
   retries: isCI ? 2 : 0,
+  failOnFlakyTests: isCI,
   reporter: isCI ? 'github' : 'list',
   expect: {
     toHaveScreenshot: {

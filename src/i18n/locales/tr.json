@@ -231,6 +231,7 @@
     "recycleEntry": "\"{{name}}\" Geri Dönüşüm Kutusu'na taşınsın mı?",
     "deletePermanentSelected": "Seçili öğeleri ({{count}}) kalıcı olarak silmek istiyor musunuz? Bu işlem geri alınamaz.",
     "deletePermanentEntry": "\"{{name}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Sunucudaki seçili öğeler ({{count}}) kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
     "deleteRemoteEntry": "Sunucudaki \"{{name}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
     "activeModeFailed": "Sunucu, aktif FTP modunda bu bilgisayara bağlanamadı. Pasif modu deneyin.",
     "linkNotFollowed": "Yol bir bağlantıdan geçiyor (junction veya sembolik bağlantı). Bağlantılar izlenmez.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
     "savedSecretUnreadable": "Kaydedilmiş bir şifre bu bilgisayarda okunamıyor. Şifreyi yer iminde veya proxy ayarlarında yeniden girin.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

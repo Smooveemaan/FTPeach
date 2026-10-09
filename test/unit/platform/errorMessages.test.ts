@@ -124,6 +124,7 @@ test('friendlyError localizes every structured command error code', () => {
     activeModeFailed: "The server couldn't connect back in active FTP mode. Try passive mode.",
     linkNotFollowed:
       "The path goes through a link (a junction or symbolic link). Links aren't followed.",
+    noRecycleBin: 'This location has no Recycle Bin, so nothing was deleted.',
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

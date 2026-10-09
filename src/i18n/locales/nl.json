@@ -231,6 +231,7 @@
     "recycleEntry": "\"{{name}}\" naar de Prullenbak verplaatsen?",
     "deletePermanentSelected": "De geselecteerde items ({{count}}) definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deletePermanentEntry": "\"{{name}}\" definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "De geselecteerde items op de server ({{count}}) definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "deleteRemoteEntry": "\"{{name}}\" op de server definitief verwijderen? Deze handeling kan niet ongedaan worden gemaakt.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Deze FTP-server ondersteunt het maken van nieuwe bestanden niet. Probeer SFTP of WebDAV als de server die aanbiedt.",
     "activeModeFailed": "De server kon in de actieve FTP-modus geen verbinding maken met deze computer. Probeer de passieve modus.",
     "linkNotFollowed": "Het pad loopt via een koppeling (een junction of symbolische koppeling). Koppelingen worden niet gevolgd.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan.",
     "savedSecretUnreadable": "Een opgeslagen wachtwoord kan op deze computer niet worden gelezen. Voer het opnieuw in bij de bladwijzer of in de proxy-instellingen.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

@@ -35,6 +35,40 @@ export function createPaneFileOperations({
   navigatePane,
   t,
 }: PaneFileOperationsOptions) {
+  /**
+   * Deletes `entries` of a pane, then lists it again. Those in a place
+   * Windows keeps no Recycle Bin for (a share, a removable drive) are left
+   * alone and offered for a permanent delete instead, as Explorer does.
+   */
+  const removeEntries = async (
+    id: PaneId,
+    pane: PaneState,
+    tabId: string,
+    entries: FileEntry[],
+    permanent: boolean,
+  ) => {
+    const backend = backendFor(pane, client);
+    const unrecyclable: FileEntry[] = [];
+    // The browse connection runs one command at a time. Serial admission also
+    // keeps case-only siblings from colliding in the conservative path leases.
+    await mapWithConcurrency(
+      entries,
+      pane.kind === 'remote' ? 1 : DELETE_CONCURRENCY_LIMIT,
+      async (entry) => {
+        const res = await backend.remove(paneJoin(pane, entry.name), entry.isDirectory, permanent);
+        if (res.ok) return;
+        if (res.errorCode === 'noRecycleBin') unrecyclable.push(entry);
+        else reportError(commandResultError(res));
+      },
+    );
+    refreshPane(id, pane.path, undefined, tabId);
+    if (unrecyclable.length > 0) {
+      requestConfirm(t('confirm.noRecycleBin', { count: unrecyclable.length }), () =>
+        removeEntries(id, pane, tabId, unrecyclable, true),
+      );
+    }
+  };
+
   // Toolbar actions
 
   const deletePaneSelected = (id: PaneId, tabId = activeTabId, permanent = false) => {
@@ -51,24 +85,14 @@ export function createPaneFileOperations({
           count: pane.selected.size,
         },
       ),
-      async () => {
-        const backend = backendFor(pane, client);
-        const names = [...pane.selected].filter((name) =>
-          pane.entries.some((e) => e.name === name),
-        );
-        // The browse connection runs one command at a time. Serial admission also
-        // keeps case-only siblings from colliding in the conservative path leases.
-        await mapWithConcurrency(
-          names,
-          pane.kind === 'remote' ? 1 : DELETE_CONCURRENCY_LIMIT,
-          async (name) => {
-            const entry = pane.entries.find((e) => e.name === name)!;
-            const res = await backend.remove(paneJoin(pane, name), entry.isDirectory, permanent);
-            if (!res.ok) reportError(commandResultError(res));
-          },
-        );
-        refreshPane(id, pane.path, undefined, tabId);
-      },
+      () =>
+        removeEntries(
+          id,
+          pane,
+          tabId,
+          pane.entries.filter((entry) => pane.selected.has(entry.name)),
+          permanent,
+        ),
     );
   };
 
@@ -90,15 +114,7 @@ export function createPaneFileOperations({
           name: isolate(entry.name),
         },
       ),
-      async () => {
-        const res = await backendFor(pane, client).remove(
-          paneJoin(pane, entry.name),
-          entry.isDirectory,
-          permanent,
-        );
-        if (!res.ok) reportError(commandResultError(res));
-        refreshPane(id, pane.path, undefined, tabId);
-      },
+      () => removeEntries(id, pane, tabId, [entry], permanent),
     );
   };
 

@@ -234,6 +234,7 @@
     "recycleEntry": "להעביר את \"{{name}}\" לסל המיחזור?",
     "deletePermanentSelected": "האם ברצונך למחוק לצמיתות את הפריטים שנבחרו ({{count}})? לא ניתן לבטל פעולה זו.",
     "deletePermanentEntry": "האם ברצונך למחוק לצמיתות את \"{{name}}\"? לא ניתן לבטל פעולה זו.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "למחוק לצמיתות את הפריטים שנבחרו בשרת ({{count}})? לא ניתן לבטל פעולה זו.",
     "deleteRemoteEntry": "למחוק לצמיתות את \"{{name}}\" בשרת? לא ניתן לבטל פעולה זו.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -338,6 +339,7 @@
     "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסה SFTP או WebDAV אם השרת מציע אותם.",
     "activeModeFailed": "השרת לא הצליח להתחבר למחשב הזה במצב FTP פעיל. נסה מצב פסיבי.",
     "linkNotFollowed": "הנתיב עובר דרך קישור (junction או קישור סימבולי). לא ניתן לעבור דרך קישורים.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת.",
     "savedSecretUnreadable": "לא ניתן לקרוא סיסמה שמורה במחשב הזה. הזן אותה שוב בסימנייה או בהגדרות הפרוקסי.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

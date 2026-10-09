@@ -437,6 +437,7 @@ pub async fn commit(partial: &Path, destination: &Path) -> Result<()> {
     if super::overwrite_allowed() {
         tokio::fs::rename(partial, destination)
             .await
+            .map_err(|error| held_by_another_program(error, destination))
             .context("committing verified download")?;
     } else {
         rename_no_replace(partial, destination)
@@ -447,6 +448,31 @@ pub async fn commit(partial: &Path, destination: &Path) -> Result<()> {
     // it is spent; left behind, one would sit beside every downloaded file.
     forget_resume_record(partial, destination).await;
     Ok(())
+}
+
+/// Windows refuses to replace a file another program holds without sharing
+/// delete (as Word does) with access denied, not a sharing violation, which
+/// would send the user looking at permissions instead of closing the file.
+/// Opening the file for delete tells the two apart.
+fn held_by_another_program(error: std::io::Error, destination: &Path) -> std::io::Error {
+    #[cfg(windows)]
+    if error.raw_os_error() == Some(5) {
+        use std::os::windows::fs::OpenOptionsExt;
+        const DELETE: u32 = 0x0001_0000;
+        // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+        let probe = std::fs::OpenOptions::new()
+            .access_mode(DELETE)
+            .share_mode(7)
+            .open(destination);
+        if let Err(busy) = probe
+            && busy.raw_os_error() == Some(32)
+        {
+            return busy;
+        }
+    }
+    #[cfg(not(windows))]
+    let _ = destination;
+    error
 }
 
 pub async fn remove_empty_new_partial(path: &Path, started_at: u64) {
@@ -913,6 +939,33 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(std::fs::read(&destination).unwrap(), b"verified");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[tokio::test]
+    async fn a_file_another_program_holds_is_reported_in_use_not_forbidden() {
+        use std::os::windows::fs::OpenOptionsExt;
+        let (root, destination) = scratch();
+        let partial = partial_path(&destination);
+        std::fs::write(&destination, b"old").unwrap();
+        std::fs::write(&partial, b"new").unwrap();
+        // Shares reading and writing but not delete, as Word does.
+        let held = std::fs::OpenOptions::new()
+            .read(true)
+            .share_mode(1 | 2)
+            .open(&destination)
+            .unwrap();
+        let error = crate::protocol::ALLOW_OVERWRITE
+            .scope(true, commit(&partial, &destination))
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from(error).code,
+            crate::ipc::ErrorCode::FileInUse
+        );
+        drop(held);
+        assert_eq!(std::fs::read(&destination).unwrap(), b"old");
         std::fs::remove_dir_all(root).unwrap();
     }
 

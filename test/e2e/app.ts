@@ -31,7 +31,7 @@ export interface RunningApp {
   dataDir: string;
   /** The profile's local application data: Open with copies, recovered edits; a portable copy's `data\local`. */
   localDir: string;
-  /** The throwaway profile in place of the Windows one, with `Roaming` and `Local` in it. */
+  /** The throwaway profile in place of the Windows one, with `Roaming` and `Local` in it; the next start uses the one set here. */
   profileDir: string;
   /** The program the next start runs: a test that moves a portable copy points it at the new place. */
   exe: string;
@@ -58,7 +58,7 @@ export interface RunningApp {
   close: () => Promise<string>;
 }
 
-function freePort(): Promise<number> {
+export function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const server = createServer();
     server.once('error', reject);
@@ -363,7 +363,15 @@ export async function launchApp(
     relaunch: async () => {
       await end(false);
       run = {};
-      app.page = await start(app.exe, profile, workDir, savedDir, pickFile, realDialogs, run);
+      app.page = await start(
+        app.exe,
+        app.profileDir,
+        workDir,
+        savedDir,
+        pickFile,
+        realDialogs,
+        run,
+      );
       await onStart(app.page);
     },
     close,

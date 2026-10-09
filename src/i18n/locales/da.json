@@ -231,6 +231,7 @@
     "recycleEntry": "Skal »{{name}}« flyttes til papirkurven?",
     "deletePermanentSelected": "Vil du slette de valgte elementer ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deletePermanentEntry": "Vil du slette »{{name}}« permanent? Denne handling kan ikke fortrydes.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Vil du slette de valgte elementer på serveren ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deleteRemoteEntry": "Vil du slette »{{name}}« på serveren permanent? Denne handling kan ikke fortrydes.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
     "activeModeFailed": "Serveren kunne ikke oprette forbindelse til denne computer i aktiv FTP-tilstand. Prøv passiv tilstand.",
     "linkNotFollowed": "Stien går gennem et link (en junction eller et symbolsk link). Links følges ikke.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
     "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

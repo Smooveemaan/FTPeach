@@ -231,6 +231,7 @@
     "recycleEntry": "จะย้าย \"{{name}}\" ไปยังถังขยะหรือไม่?",
     "deletePermanentSelected": "จะลบรายการที่เลือกไว้อย่างถาวร ({{count}}) หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "deletePermanentEntry": "จะลบ \"{{name}}\" อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "จะลบรายการที่เลือกบนเซิร์ฟเวอร์ ({{count}}) อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "deleteRemoteEntry": "จะลบ \"{{name}}\" บนเซิร์ฟเวอร์อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "เซิร์ฟเวอร์ FTP นี้ไม่รองรับการสร้างไฟล์ใหม่ ลองใช้ SFTP หรือ WebDAV หากเซิร์ฟเวอร์รองรับ",
     "activeModeFailed": "เซิร์ฟเวอร์ไม่สามารถเชื่อมต่อกลับมายังคอมพิวเตอร์เครื่องนี้ในโหมด FTP แบบแอคทีฟ โปรดลองใช้โหมดพาสซีฟ",
     "linkNotFollowed": "เส้นทางผ่านลิงก์ (junction หรือลิงก์สัญลักษณ์) ไม่รองรับการตามลิงก์",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "ย้ายไฟล์ได้เฉพาะภายในคอมพิวเตอร์เครื่องนี้หรือภายในการเชื่อมต่อเซิร์ฟเวอร์เดียวกันเท่านั้น โปรดคัดลอกไฟล์แทน",
     "savedSecretUnreadable": "ไม่สามารถอ่านรหัสผ่านที่บันทึกไว้บนคอมพิวเตอร์เครื่องนี้ได้ โปรดป้อนใหม่ในบุ๊กมาร์กหรือในการตั้งค่าพร็อกซี",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

@@ -237,6 +237,7 @@
     "recycleEntry": "Przenieść „{{name}}” do Kosza?",
     "deletePermanentSelected": "Czy chcesz trwale usunąć zaznaczone elementy ({{count}})? Tego działania nie można cofnąć.",
     "deletePermanentEntry": "Czy chcesz trwale usunąć „{{name}}”? Tego działania nie można cofnąć.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Czy chcesz trwale usunąć zaznaczone elementy na serwerze ({{count}})? Tego działania nie można cofnąć.",
     "deleteRemoteEntry": "Czy chcesz trwale usunąć „{{name}}” na serwerze? Tego działania nie można cofnąć.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -342,6 +343,7 @@
     "createUnsupported": "Ten serwer FTP nie obsługuje tworzenia nowych plików. Spróbuj SFTP lub WebDAV, jeśli serwer je udostępnia.",
     "activeModeFailed": "Serwer nie mógł połączyć się z tym komputerem w trybie aktywnego FTP. Spróbuj trybu pasywnego.",
     "linkNotFollowed": "Ścieżka prowadzi przez łącze (junction lub łącze symboliczne). Przez łącza nie można przechodzić.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj.",
     "savedSecretUnreadable": "Nie można odczytać zapisanego hasła na tym komputerze. Wprowadź je ponownie w zakładce lub w ustawieniach serwera proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

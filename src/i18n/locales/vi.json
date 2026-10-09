@@ -231,6 +231,7 @@
     "recycleEntry": "Di chuyển “{{name}}” vào Thùng rác?",
     "deletePermanentSelected": "Xóa vĩnh viễn các mục đã chọn ({{count}})? Thao tác này không thể hoàn tác.",
     "deletePermanentEntry": "Xóa vĩnh viễn “{{name}}”? Thao tác này không thể hoàn tác.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Xóa vĩnh viễn các mục đã chọn trên máy chủ ({{count}})? Thao tác này không thể hoàn tác.",
     "deleteRemoteEntry": "Xóa vĩnh viễn “{{name}}” trên máy chủ? Thao tác này không thể hoàn tác.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Máy chủ FTP này không hỗ trợ tạo tệp mới. Hãy thử SFTP hoặc WebDAV nếu máy chủ có hỗ trợ.",
     "activeModeFailed": "Máy chủ không thể kết nối đến máy tính này ở chế độ FTP chủ động. Hãy thử chế độ thụ động.",
     "linkNotFollowed": "Đường dẫn đi qua một liên kết (junction hoặc liên kết tượng trưng). Không thể đi qua liên kết.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển.",
     "savedSecretUnreadable": "Không đọc được mật khẩu đã lưu trên máy tính này. Hãy nhập lại trong dấu trang hoặc trong cài đặt proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

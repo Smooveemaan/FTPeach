@@ -231,6 +231,7 @@
     "recycleEntry": "\"{{name}}\" को रीसायकल बिन में ले जाएँ?",
     "deletePermanentSelected": "चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deletePermanentEntry": "\"{{name}}\" को स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "सर्वर पर चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteRemoteEntry": "सर्वर पर \"{{name}}\" स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "यह FTP सर्वर नई फ़ाइलें बनाना समर्थित नहीं करता। अगर सर्वर उपलब्ध कराता है, तो SFTP या WebDAV आज़माएँ।",
     "activeModeFailed": "सक्रिय FTP मोड में सर्वर इस कंप्यूटर से कनेक्ट नहीं कर सका। पैसिव मोड आज़माएँ।",
     "linkNotFollowed": "पथ एक लिंक (junction या सिम्बॉलिक लिंक) से होकर जाता है। लिंक का अनुसरण नहीं किया जाता।",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।",
     "savedSecretUnreadable": "सहेजा गया पासवर्ड इस कंप्यूटर पर पढ़ा नहीं जा सकता। इसे बुकमार्क में या प्रॉक्सी सेटिंग्स में फिर से दर्ज करें।",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

@@ -60,6 +60,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   FTPeach has.
 - A downloaded update installs from **Install update** or at the next start, instead of being
   thrown away and downloaded again.
+- When the disk is full, settings and other saved data are no longer emptied: the change is not
+  saved and FTPeach says there is not enough disk space.
+- **Delete** on a network share or a removable drive, which have no Recycle Bin, asks before
+  deleting for good, instead of deleting without a word.
+- Replacing a file another program has open says the file is in use, not that permission is
+  missing.
 
 ## [0.4.0] - 2026-10-05
 

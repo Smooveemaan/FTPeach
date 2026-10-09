@@ -231,6 +231,7 @@
     "recycleEntry": "Áthelyezi a(z) „{{name}}” elemet a Lomtárba?",
     "deletePermanentSelected": "Véglegesen törli a kijelölt elemeket ({{count}})? Ez a művelet nem vonható vissza.",
     "deletePermanentEntry": "Véglegesen törli a(z) „{{name}}” elemet? Ez a művelet nem vonható vissza.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Véglegesen törli a kijelölt elemeket a szerverről ({{count}})? Ez a művelet nem vonható vissza.",
     "deleteRemoteEntry": "Véglegesen törli a(z) „{{name}}” elemet a szerverről? Ez a művelet nem vonható vissza.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Ez az FTP-szerver nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a szerver kínálja őket.",
     "activeModeFailed": "A szerver aktív FTP-módban nem tudott csatlakozni ehhez a számítógéphez. Próbálja ki a passzív módot.",
     "linkNotFollowed": "Az útvonal hivatkozáson halad át (junction vagy szimbolikus hivatkozás). Hivatkozásokon nem lehet áthaladni.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
     "savedSecretUnreadable": "Egy mentett jelszó nem olvasható ezen a számítógépen. Adja meg újra a könyvjelzőben vagy a proxybeállításokban.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

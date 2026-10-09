@@ -234,6 +234,7 @@
     "recycleEntry": "¿Quieres mover «{{name}}» a la Papelera de reciclaje?",
     "deletePermanentSelected": "¿Deseas eliminar definitivamente los elementos seleccionados ({{count}})? Esta acción no se puede deshacer.",
     "deletePermanentEntry": "¿Deseas eliminar definitivamente «{{name}}»? Esta acción no se puede deshacer.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "¿Deseas eliminar definitivamente los elementos seleccionados del servidor ({{count}})? Esta acción no se puede deshacer.",
     "deleteRemoteEntry": "¿Deseas eliminar definitivamente «{{name}}» del servidor? Esta acción no se puede deshacer.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -338,6 +339,7 @@
     "createUnsupported": "Este servidor FTP no admite la creación de archivos nuevos. Prueba SFTP o WebDAV si el servidor los ofrece.",
     "activeModeFailed": "El servidor no ha podido conectarse a este equipo en modo FTP activo. Prueba el modo pasivo.",
     "linkNotFollowed": "La ruta pasa por un vínculo (un junction o un vínculo simbólico). Los vínculos no se siguen.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar.",
     "savedSecretUnreadable": "No se puede leer una contraseña guardada en este equipo. Vuelve a introducirla en el marcador o en la configuración del proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

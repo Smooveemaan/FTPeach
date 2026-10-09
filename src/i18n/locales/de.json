@@ -231,6 +231,7 @@
     "recycleEntry": "„{{name}}“ in den Papierkorb verschieben?",
     "deletePermanentSelected": "Die ausgewählten Elemente ({{count}}) endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deletePermanentEntry": "„{{name}}“ endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Die ausgewählten Elemente auf dem Server ({{count}}) endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteRemoteEntry": "„{{name}}“ auf dem Server endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "Dieser FTP-Server unterstützt das Erstellen neuer Dateien nicht. Versuchen Sie SFTP oder WebDAV, falls der Server sie anbietet.",
     "activeModeFailed": "Der Server konnte im aktiven FTP-Modus keine Verbindung zu diesem Computer herstellen. Versuchen Sie es mit dem passiven Modus.",
     "linkNotFollowed": "Der Pfad führt über einen Link (eine Junction oder einen symbolischen Link). Links werden nicht verfolgt.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen.",
     "savedSecretUnreadable": "Ein gespeichertes Passwort kann auf diesem Computer nicht gelesen werden. Geben Sie es im Lesezeichen oder in den Proxy-Einstellungen erneut ein.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

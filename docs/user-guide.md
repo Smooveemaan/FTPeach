@@ -106,6 +106,12 @@ recreating it.
 
 <!-- verified-by: pr src-tauri/src/local_fs/local_create.rs::a_missing_parent_is_not_recreated_by_new_entries -->
 
+**Delete** moves local files to the Recycle Bin. A network share or a
+removable drive has none, so there FTPeach asks again before deleting for
+good, and nothing is deleted if you cancel.
+
+<!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin -->
+
 Local file copies appear in Transfers while running and retain their final result.
 A failed copy can be retried from its row.
 

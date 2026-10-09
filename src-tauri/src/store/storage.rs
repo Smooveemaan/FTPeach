@@ -122,21 +122,33 @@ pub(super) fn backup_without_stale_secrets(previous: Value, next: &Value) -> Val
     }
 }
 
-/// Writes `body` to `tmp`, flushes it and renames it over `target`, so a
-/// reader sees either the old file or the complete new one.
-async fn publish(tmp: &Path, target: &Path, body: &[u8]) -> Result<()> {
+/// Writes `body` to `tmp` and flushes it to disk; a failed write leaves no
+/// `tmp` behind.
+async fn write_synced(tmp: &Path, body: &[u8]) -> std::io::Result<()> {
     let written = async {
         let mut file = tokio::fs::File::create(tmp).await?;
         file.write_all(body).await?;
-        file.sync_all().await?;
-        drop(file);
-        tokio::fs::rename(tmp, target).await
+        // tokio writes in the background and reports a failed write, such as
+        // a full disk, from `flush` only: `sync_all` would pass an empty file.
+        file.flush().await?;
+        file.sync_all().await
     }
     .await;
     if written.is_err() {
         let _ = tokio::fs::remove_file(tmp).await;
     }
-    Ok(written?)
+    written
+}
+
+/// Writes `body` to `tmp`, flushes it and renames it over `target`, so a
+/// reader sees either the old file or the complete new one.
+async fn publish(tmp: &Path, target: &Path, body: &[u8]) -> Result<()> {
+    write_synced(tmp, body).await?;
+    if let Err(error) = tokio::fs::rename(tmp, target).await {
+        let _ = tokio::fs::remove_file(tmp).await;
+        return Err(error.into());
+    }
+    Ok(())
 }
 
 /// Replaces `path`'s last-good backup with `backup`, atomically.
@@ -424,15 +436,9 @@ impl Store {
         ));
         let value = serde_json::to_value(data)?;
         let body = serde_json::to_string_pretty(&encode_versioned_store(path, value.clone()))?;
-        let mut tmp_file = tokio::fs::File::create(&tmp)
-            .await
-            .context("creating tmp file")?;
-        tmp_file
-            .write_all(body.as_bytes())
+        write_synced(&tmp, body.as_bytes())
             .await
             .context("writing tmp file")?;
-        tmp_file.sync_all().await.context("syncing tmp file")?;
-        drop(tmp_file);
         if let Some(previous) = tokio::fs::read_to_string(path)
             .await
             .ok()

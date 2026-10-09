@@ -231,6 +231,7 @@
     "recycleEntry": "将“{{name}}”移至回收站吗？",
     "deletePermanentSelected": "是否要永久删除所选项目（{{count}}）？此操作无法撤销。",
     "deletePermanentEntry": "是否要永久删除“{{name}}”？此操作无法撤销。",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "是否永久删除服务器上的所选项目（{{count}}）？此操作无法撤销。",
     "deleteRemoteEntry": "是否永久删除服务器上的“{{name}}”？此操作无法撤销。",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
     "activeModeFailed": "在主动 FTP 模式下，服务器无法连接到本计算机。请尝试被动模式。",
     "linkNotFollowed": "该路径经过链接（目录联接或符号链接）。不支持跟随链接。",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
     "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

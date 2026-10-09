@@ -237,6 +237,7 @@
     "recycleEntry": "Přesunout „{{name}}“ do koše?",
     "deletePermanentSelected": "Chcete trvale odstranit vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
     "deletePermanentEntry": "Trvale odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Chcete trvale odstranit vybrané položky na serveru ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteRemoteEntry": "Chcete trvale odstranit „{{name}}“ na serveru? Tuto akci nelze vrátit zpět.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -342,6 +343,7 @@
     "createUnsupported": "Tento FTP server nepodporuje vytváření nových souborů. Zkuste SFTP nebo WebDAV, pokud je server nabízí.",
     "activeModeFailed": "Server se v aktivním režimu FTP nedokázal připojit k tomuto počítači. Zkuste pasivní režim.",
     "linkNotFollowed": "Cesta vede přes odkaz (junction nebo symbolický odkaz). Přes odkazy nelze procházet.",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
     "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

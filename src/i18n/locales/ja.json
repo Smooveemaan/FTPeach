@@ -231,6 +231,7 @@
     "recycleEntry": "「{{name}}」をごみ箱に移動しますか？",
     "deletePermanentSelected": "選択した項目（{{count}}）を完全に削除しますか？この操作は元に戻せません。",
     "deletePermanentEntry": "「{{name}}」を完全に削除しますか？この操作は元に戻せません。",
+    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "サーバー上の選択した項目（{{count}}）を完全に削除しますか？この操作は元に戻せません。",
     "deleteRemoteEntry": "サーバー上の「{{name}}」を完全に削除しますか？この操作は元に戻せません。",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -334,6 +335,7 @@
     "createUnsupported": "この FTP サーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTP または WebDAV をお試しください。",
     "activeModeFailed": "アクティブ FTP モードで、サーバーからこのコンピューターに接続できませんでした。パッシブモードをお試しください。",
     "linkNotFollowed": "パスがリンク（ジャンクションまたはシンボリック リンク）を経由しています。リンクをたどることはできません。",
+    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。",
     "savedSecretUnreadable": "保存済みのパスワードをこのコンピューターで読み取れません。ブックマークまたはプロキシ設定でもう一度入力してください。",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

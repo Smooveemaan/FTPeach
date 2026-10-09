@@ -50,13 +50,17 @@ function version(): string {
   return config.version;
 }
 
-function zipPath(releaseDir: string): string {
-  return path.join(releaseDir, 'bundle', 'portable', portableZipName(version()));
+function zipPath(releaseDir: string, of = version()): string {
+  return path.join(releaseDir, 'bundle', 'portable', portableZipName(of));
 }
 
-/** What the installer puts in the program's folder, plus the marker and the license. */
-function build(releaseDir: string): string {
-  const zip = zipPath(releaseDir);
+/**
+ * What the installer puts in the program's folder, plus the marker and the
+ * license. `of` names the version the program was built as, when a build
+ * overrode the one in tauri.conf.json (scripts/release/test-installers.ts).
+ */
+export function build(releaseDir: string, of = version()): string {
+  const zip = zipPath(releaseDir, of);
   const folder = path.join(path.dirname(zip), 'FTPeach');
   rmSync(path.dirname(zip), { recursive: true, force: true });
   mkdirSync(folder, { recursive: true });

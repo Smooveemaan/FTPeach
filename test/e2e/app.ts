@@ -130,12 +130,14 @@ interface Run {
 }
 
 /**
- * Starts the application on a prepared profile. `run` is filled in as soon as
- * the process exists, so a failed start can still be stopped.
+ * Starts the application on a prepared profile, or with `null` on the
+ * profile of the account running the test, as an installed copy runs. `run`
+ * is filled in as soon as the process exists, so a failed start can still be
+ * stopped.
  */
 async function start(
   exe: string,
-  profile: string,
+  profile: string | null,
   workDir: string,
   savedDir: string,
   pickFile: string,
@@ -159,12 +161,15 @@ async function start(
     stdio: 'ignore',
     env: {
       ...env,
-      APPDATA: path.join(profile, 'Roaming'),
-      LOCALAPPDATA: path.join(profile, 'Local'),
+      ...(profile && {
+        APPDATA: path.join(profile, 'Roaming'),
+        LOCALAPPDATA: path.join(profile, 'Local'),
+      }),
       // Tauri finds its WebView2 profile through the Windows known-folder API,
       // not LOCALAPPDATA: without this the run shares the real user's profile.
       // A portable copy names its own, which this variable would override.
-      ...(portable ? {} : { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2') }),
+      ...(profile &&
+        !portable && { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'Local', 'webview2') }),
       // The test build listens for DevTools on this port (runtime/startup.rs);
       // WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS on some runners.
       FTPEACH_E2E_CDP_PORT: String(cdpPort),
@@ -178,13 +183,75 @@ async function start(
   try {
     await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
   } catch (error) {
-    throw new Error(`${(error as Error).message}\n${diagnose(child, path.dirname(profile))}`);
+    const logs = profile
+      ? path.dirname(profile)
+      : portable
+        ? path.dirname(exe)
+        : path.join(process.env.APPDATA!, 'FTPeach');
+    throw new Error(`${(error as Error).message}\n${diagnose(child, logs)}`);
   }
-  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  run.browser = browser;
+  run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+  return mainWindow(run.browser);
+}
+
+/** The main window once its page has loaded. */
+async function mainWindow(browser: Browser): Promise<Page> {
   const page = await waitFor('the main window', async () => browser.contexts()[0]?.pages()[0], 30);
   await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
   return page;
+}
+
+/** A program started outside `launchApp`, on the profile of the account running the test. */
+export interface StartedProgram {
+  page: Page;
+  cdpPort: number;
+  pid: () => number;
+  running: () => boolean;
+  /** Waits for the process to end by itself. */
+  exited: () => Promise<void>;
+  /** Ends the process at once, if it still runs. */
+  kill: () => Promise<void>;
+}
+
+/**
+ * Starts `exe`, an installed FTPeach or a portable copy built for the tests,
+ * on the profile of the account running the test, as people run it. The
+ * installer tests (install.vm.ts) do this on a throwaway machine only.
+ */
+export async function startProgram(exe: string): Promise<StartedProgram> {
+  const workDir = mkdtempSync(path.join(tmpdir(), 'ftpeach-program-'));
+  const run: Partial<Run> = {};
+  const exited = async () => {
+    await waitFor('the program to exit', async () => run.child!.exitCode !== null || undefined, 60);
+  };
+  try {
+    const page = await start(exe, null, workDir, workDir, path.join(workDir, 'pick'), false, run);
+    return {
+      page,
+      cdpPort: run.cdpPort!,
+      pid: () => run.child!.pid!,
+      running: () => run.child!.exitCode === null,
+      exited,
+      kill: async () => {
+        await run.browser?.close().catch(() => {});
+        stop(run.child!);
+        await exited();
+      },
+    };
+  } catch (error) {
+    if (run.child) stop(run.child);
+    throw error;
+  }
+}
+
+/**
+ * The main window of whatever FTPeach listens on `cdpPort` now: the program a
+ * portable update starts in place of the old one inherits its variables, the
+ * debugging port too.
+ */
+export async function attach(cdpPort: number): Promise<Page> {
+  await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
+  return mainWindow(await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`));
 }
 
 /**

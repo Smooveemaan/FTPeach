@@ -1,0 +1,103 @@
+name: Installer
+
+# The installer on a throwaway GitHub-hosted Windows runner (test/e2e/install.vm.ts):
+# a clean install, uninstalling with and without the data, upgrading the
+# previous published release with a profile in place, and the updater
+# installing from a local feed, for the installed and the portable copy,
+# including updates that are damaged or fail. The installers are this
+# checkout's release build with a test key (scripts/release/test-installers.ts).
+# A release gate (release.yml), and on demand. `strength` runs the breaks of
+# scripts/test-strength/breaks.ts that only this suite can catch instead.
+
+permissions: {}
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      strength:
+        description: Run the installer breaks of test:strength instead of the suite
+        type: boolean
+        default: false
+
+concurrency:
+  group: installer-${{ github.ref }}-${{ inputs.strength }}
+  cancel-in-progress: true
+
+jobs:
+  installer:
+    permissions:
+      contents: read
+    runs-on: windows-latest
+    timeout-minutes: ${{ inputs.strength && 340 || 90 }}
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install pinned Rust toolchain
+        run: rustup show
+
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri
+          # test-installers writes to this target directory instead of src-tauri/target.
+          cache-directories: .tools/installer-target
+
+      - run: npm ci
+
+      - name: Download pinned libsodium archive
+        shell: powershell
+        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
+
+      # Extracts libsodium into .tools, where every later build finds it.
+      - name: Prepare libsodium
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
+
+      # The profiles the tests put in place name the IIS FTP account and the
+      # OpenSSH server, as in desktop-e2e.
+      - name: Install IIS FTP and WebDAV test sites
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
+
+      - name: Install the OpenSSH SFTP test server
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/openssh.ps1 install
+
+      - name: Build the test installers
+        if: ${{ !inputs.strength }}
+        run: npm run build:test-installers
+
+      # The previous release is read from GitHub; the token keeps the API
+      # within its limits.
+      - name: Run the installer tests
+        if: ${{ !inputs.strength }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run test:e2e:vm
+
+      - name: Check that the installer tests catch the breaks
+        if: ${{ inputs.strength }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run test:strength -- --vm
+
+      - name: Keep the test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: installer-results
+          path: test-results/e2e/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -22,6 +22,13 @@ jobs:
       issues: write
     uses: ./.github/workflows/protocol-compatibility.yml
 
+  # Install, uninstall and update with the installer this tag builds, on a
+  # throwaway runner.
+  installer:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/installer.yml
+
   # The signing secrets live in the `release` environment. Naming it below
   # does not prove anyone has to approve the run, so the rules are read first.
   release-environment:
@@ -48,7 +55,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    needs: [gates, protocol-compatibility, release-environment]
+    needs: [gates, protocol-compatibility, installer, release-environment]
     runs-on: windows-latest
     timeout-minutes: 45
     environment: release

@@ -4,7 +4,7 @@ param(
 
     [string]$EnvironmentFile,
 
-    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'verify-updater', 'benchmark-listing', 'server-matrix', 'coverage')]
+    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'test-installers', 'verify-updater', 'benchmark-listing', 'server-matrix', 'coverage')]
     [string]$Command = 'build',
 
     [ValidateSet('debug', 'release')]
@@ -97,6 +97,9 @@ if ($Command -eq 'build') {
 elseif ($Command -eq 'smoke-build') {
     $env:CARGO_TARGET_DIR = Join-Path $workspace '.tools\smoke-target'
 }
+elseif ($Command -eq 'test-installers') {
+    $env:CARGO_TARGET_DIR = Join-Path $workspace '.tools\installer-target'
+}
 
 # Object records in the upstream archive refer to libsodium.pdb by basename.
 # Put the matching symbols in every linker output directory (llvm-cov has its own) before
@@ -170,6 +173,11 @@ try {
             if ($LASTEXITCODE -eq 0) {
                 & npx.cmd tauri build --debug --no-bundle --features smoke-test
             }
+        }
+        'test-installers' {
+            # Two release installers with a test key and a local update feed,
+            # for the installer tests (test/e2e/install.vm.ts).
+            & node --experimental-strip-types scripts/release/test-installers.ts
         }
         'verify-updater' {
             $publicKey = (Get-Content -Raw 'test\fixtures\updater\spike.key.pub').Trim()

@@ -110,6 +110,12 @@ assert.match(
   /RMDir \/r "\$LOCALAPPDATA\\\$\{BUNDLEID\}\\updates"/,
   'A real uninstall must remove the staged update the next launch would have installed',
 );
+// FTPeach 0.3.0 to 0.4.0 refuse an installer without a version structure of
+// 1.0, which NSIS does not write; without this their users never update.
+assert.ok(
+  installerHooks.includes('!finalize') && installerHooks.includes('version-info.ps1'),
+  'The installer must get the version information FTPeach 0.3.0 to 0.4.0 read (version-info.ps1)',
+);
 
 // A release ships the NSIS installer and nothing else, so bundling anything
 // else only produces installers no one tests. The MSI in particular has no
@@ -185,10 +191,12 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'Verify every generated updater signature'],
   // HF-52: approvals are read from GitHub, not inferred from `environment:`,
   // and the report keeps updater signature, Authenticode and advisories apart.
+  // The installer gate proves the matrix rows on upgrades, uninstalls and updates.
+  [releaseWorkflow, 'release.yml', '    uses: ./.github/workflows/installer.yml'],
   [
     releaseWorkflow,
     'release.yml',
-    '    needs: [gates, protocol-compatibility, release-environment]',
+    '    needs: [gates, protocol-compatibility, installer, release-environment]',
   ],
   [
     releaseWorkflow,

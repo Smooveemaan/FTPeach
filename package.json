@@ -28,6 +28,7 @@
     "test:e2e:stand": "playwright test --config test/e2e/playwright.config.ts --project stand",
     "test:e2e:native": "playwright test --config test/e2e/playwright.config.ts --project native",
     "test:e2e:vm": "playwright test --config test/e2e/playwright.config.ts --project vm",
+    "test:e2e:soak": "playwright test --config test/e2e/playwright.config.ts --project soak",
     "test:strength": "node --experimental-strip-types scripts/test-strength/run.ts",
     "lint": "eslint . --max-warnings 0 && node --experimental-strip-types scripts/checks/check-feature-boundaries.ts && npm run typecheck",
     "typecheck": "tsc --noEmit",

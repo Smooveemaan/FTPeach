@@ -13,7 +13,8 @@ for (const theme of ['dark', 'light'] as const) {
         const badge = document.createElement('span');
         const bar = document.createElement('span');
         const status = document.createElement('span');
-        host.append(badge, bar, status);
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        host.append(badge, bar, status, icon);
         document.body.append(host);
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = 1;
@@ -50,6 +51,7 @@ for (const theme of ['dark', 'light'] as const) {
               badge.className = 'status-tag ' + state;
               bar.className = 'p-fill status-' + state;
               status.className = 'status-text state-' + bottom;
+              icon.setAttribute('class', 'line-pulse state-' + bottom);
               const css = getComputedStyle(badge);
               const fg = rgba(css.color);
               const tint = rgba(css.backgroundColor);
@@ -67,6 +69,8 @@ for (const theme of ['dark', 'light'] as const) {
                 barMatches:
                   state === 'error' || getComputedStyle(bar).backgroundColor === css.color,
                 bottomMatches: !bottom || getComputedStyle(status).color === css.color,
+                iconMatches:
+                  !bottom || getComputedStyle(icon).color === getComputedStyle(status).color,
               });
             }
           }
@@ -80,6 +84,7 @@ for (const theme of ['dark', 'light'] as const) {
       expect(row.contrast, JSON.stringify(row)).toBeGreaterThanOrEqual(4.5);
       expect(row.barMatches, JSON.stringify(row)).toBe(true);
       expect(row.bottomMatches, JSON.stringify(row)).toBe(true);
+      expect(row.iconMatches, JSON.stringify(row)).toBe(true);
     }
     const colors = results.filter(
       (row) => row.scheme === 'black' && row.background === '--bg-panel',

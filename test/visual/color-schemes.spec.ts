@@ -10,7 +10,7 @@ const PALETTES = [
   ['cocoa', 'Cocoa'],
   ['ember', 'Ember'],
   ['clay', 'Clay'],
-  ['leaves', 'Leaves'],
+  ['leaves', 'Grass'],
   ['forest', 'Forest'],
   ['solarized', 'Lagoon'],
   ['nord', 'Frost'],

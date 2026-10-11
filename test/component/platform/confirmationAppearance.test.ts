@@ -67,7 +67,7 @@ test('palette names follow color order without changing stored identifiers', () 
     'Cocoa',
     'Ember',
     'Clay',
-    'Leaves',
+    'Grass',
     'Forest',
     'Lagoon',
     'Frost',

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "peach",
+    "name": "Peach",
+    "color": "#ff9d72"
+  },
+  {
+    "id": "black",
+    "name": "Onyx",
+    "color": "#eeeeee"
+  },
+  {
+    "id": "gray",
+    "name": "Ash",
+    "color": "#c4c4c4"
+  },
+  {
+    "id": "graphite",
+    "name": "Graphite",
+    "color": "#b6cbe1"
+  },
+  {
+    "id": "linen",
+    "name": "Linen",
+    "color": "#dfca94"
+  },
+  {
+    "id": "sand",
+    "name": "Sand",
+    "color": "#f0c36c"
+  },
+  {
+    "id": "cocoa",
+    "name": "Cocoa",
+    "color": "#e6bb87"
+  },
+  {
+    "id": "ember",
+    "name": "Ember",
+    "color": "#ffb16f"
+  },
+  {
+    "id": "clay",
+    "name": "Clay",
+    "color": "#edac91"
+  },
+  {
+    "id": "leaves",
+    "name": "Grass",
+    "color": "#bed397"
+  },
+  {
+    "id": "forest",
+    "name": "Forest",
+    "color": "#8cddb5"
+  },
+  {
+    "id": "solarized",
+    "name": "Lagoon",
+    "color": "#65d5c4"
+  },
+  {
+    "id": "nord",
+    "name": "Frost",
+    "color": "#a1dce5"
+  },
+  {
+    "id": "ocean",
+    "name": "Ocean",
+    "color": "#69c8ed"
+  },
+  {
+    "id": "midnight",
+    "name": "Midnight",
+    "color": "#a7b9f5"
+  },
+  {
+    "id": "catppuccin",
+    "name": "Bluebell",
+    "color": "#89b4fa"
+  },
+  {
+    "id": "dracula",
+    "name": "Orchid",
+    "color": "#bd93f9"
+  },
+  {
+    "id": "plum",
+    "name": "Plum",
+    "color": "#dbace0"
+  },
+  {
+    "id": "burgundy",
+    "name": "Burgundy",
+    "color": "#ee9fb5"
+  },
+  {
+    "id": "rose",
+    "name": "Rose",
+    "color": "#f0a0bf"
+  }
+]

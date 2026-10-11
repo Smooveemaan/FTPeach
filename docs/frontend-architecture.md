@@ -214,8 +214,12 @@ Menu items share hover and keyboard-focus backgrounds in `styles/dialogs/menus.c
 selected value. Menu focus uses `:focus-visible` independently of the global
 Tab-only outline mode. `test/visual/keyboard-navigation.spec.ts` checks this behavior.
 
-Transfer badges, progress bars and status-bar states use shared `--status-*` tokens.
-Their semantic hues depend on light/dark mode, not the decorative palette accent.
+Transfer badges, connection indicators and status-bar states use shared `--status-*`
+tokens. Readable text and saturated, borderless progress fills have separate values.
+Connection dots retain a contrasting inset edge in light mode. Semantic hues depend on
+light/dark mode, not the decorative palette accent. Separate `--log-*` tokens keep commands
+orange and responses green across palettes. Errors retain the original red in both modes.
+Connecting uses yellow throughout; the disconnected Connect button and pane dot use red.
 
 `focusMenuItem` prevents native focus recentering and reveals only the hidden edge
 of a row in its nearest menu scroller. Scrollable select menus keep their padding

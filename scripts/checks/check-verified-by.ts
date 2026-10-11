@@ -54,7 +54,7 @@ export function gateOf(file: string, source: string, name: string): Gate | strin
       ? 'weekly'
       : `\`${name}\` is #[ignore] and no workflow runs it`;
   }
-  if (/\.test\.tsx?$/.test(file)) {
+  if (/\.(?:test|spec)\.tsx?$/.test(file)) {
     const quoted = `(?<quote>['"\`])${escape(name)}\\k<quote>`;
     const call = new RegExp(`\\b(?:test|it)(\\.(?:skip|todo|only))?\\(\\s*${quoted}`);
     const match = call.exec(source);

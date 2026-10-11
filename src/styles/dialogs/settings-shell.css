@@ -5,5 +5,5 @@
 }
 
 .preview-error {
-  color: var(--accent-red);
+  color: var(--status-error);
 }

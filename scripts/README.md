@@ -30,3 +30,23 @@ Use `npm run clean -- -WhatIf` to preview cleanup paths. Use
 Tauri schemas/permissions while keeping native build caches (including fuzz targets).
 Reports include coverage and duplication output. Local audit logs belong in
 `.local/logs/`; `.local/`, `.tools/` SDKs and `node_modules/` are retained by cleanup.
+
+## Promotional captures
+
+`npm run screenshot:readme -- --palettes` captures all color schemes from the
+native app, refreshes both README screenshots, and generates labelled animations
+and individual website previews. `npm run screenshot:video` records the dark and
+light website demos. Both require the Docker baseline servers; palette animations
+and videos also require ffmpeg. Close both release and debug copies of FTPeach
+before starting, and keep the real mouse off the capture window.
+
+The capture uses a temporary profile. Once the screenshots are captured, transfers
+are stopped and the capture app closes before image composition and animation
+encoding begin. Each video session also closes before its recording is encoded.
+The session cleanup closes the app on capture errors as well.
+
+`npm run site:build` copies the individual palette previews and their picker script
+into `dist-site/`. The picker starts in the page's theme and downloads new previews
+on demand. Its light/dark buttons override the preview mode independently of the
+page. The header theme switch resets that override and changes the preview in the
+same page transition. Browser coverage lives in `test/visual/website-palettes.spec.ts`.

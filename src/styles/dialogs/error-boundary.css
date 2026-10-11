@@ -27,7 +27,7 @@
 .error-boundary-card h1 {
   margin: 0 0 10px;
   font-size: 15px;
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 .error-boundary-card p {
   margin: 0 0 12px;

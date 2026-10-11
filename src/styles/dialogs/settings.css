@@ -59,11 +59,11 @@
 }
 
 .settings-hint.settings-warning {
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 
 .settings-hint.settings-success {
-  color: var(--accent-green);
+  color: var(--status-success);
 }
 
 /* Work that takes a while, such as Windows making a Windows Hello key:
@@ -395,7 +395,7 @@
 
 .settings-shortcuts-reset.btn-icon:hover {
   background: transparent;
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 
 
@@ -498,7 +498,7 @@
 
 .settings-shortcut-icon-btn:hover:not(:disabled) {
   background: transparent;
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 
 /* Browse ("Choose application") isn't destructive like the other row
@@ -512,7 +512,7 @@
 .settings-shortcut-conflict-btn.btn-icon {
   background: transparent;
   border-color: transparent;
-  color: var(--accent-amber);
+  color: var(--status-warning);
 }
 .settings-shortcut-conflict-btn.btn-icon:hover {
   border-color: transparent;

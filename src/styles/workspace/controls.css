@@ -31,7 +31,7 @@
 }
 
 .title-bar-btn-close:hover {
-  background: var(--accent-red);
+  background: var(--status-error);
   color: var(--accent-fill-text);
 }
 
@@ -77,7 +77,7 @@
 .protocol-select-insecure {
   display: inline-flex;
   align-items: center;
-  color: var(--accent-amber);
+  color: var(--status-warning);
   cursor: default;
 }
 

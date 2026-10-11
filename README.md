@@ -13,7 +13,11 @@ Browse local and remote folders side by side, copy files between servers, and ke
 > **Made with AI, use at your own risk!**  
 > I made FTPeach with a lot of help from AI. I’ve tested it carefully, but please back up files that matter to you.
 
-![FTPeach showing local and remote file panes, connection tabs, and the transfer queue.](assets/images/ftpeach.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/ftpeach-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/ftpeach-light.png">
+  <img alt="FTPeach showing local and remote file panes, connection tabs, and the transfer queue." src="assets/images/ftpeach-dark.png">
+</picture>
 
 If FTPeach is useful to you, you can also support its development:
 
@@ -39,8 +43,20 @@ The project is in pre-release; see the [changelog](CHANGELOG.md) for changes bet
 - **Move files where you need them.** Upload, download, or copy between servers through FTPeach, with drag and drop for everyday operations.
 - **Stay in control.** Run concurrent transfers, pause or cancel jobs, and set speed limits from the transfer queue.
 - **Use your own editor.** Open remote files in an external application and upload your changes back to the server.
-- **Make it comfortable.** Choose a light or dark theme and use the interface in any of 27 languages.
+- **Make it comfortable.** Choose from 20 color schemes in light or dark mode, and use the interface in any of 27 languages.
 - **Keep connections handy.** Save server details, protect stored passwords, and optionally add a master password.
+
+## Color schemes
+
+Make FTPeach your own with 20 color schemes, from warm Peach and leafy greens to cool blues and neutral grays. Every scheme supports light and dark mode; Peach is the default. Choose yours in **Settings > Interface**.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/ftpeach-palettes-dark.webp">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/ftpeach-palettes-light.webp">
+  <img alt="All 20 FTPeach color schemes, starting with Peach." src="assets/images/ftpeach-palettes-dark.webp">
+</picture>
+
+[Try the color schemes on the website](https://ftpeach.com/#themes).
 
 ## Protocols and compatibility
 

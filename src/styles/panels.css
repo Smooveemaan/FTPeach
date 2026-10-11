@@ -11,7 +11,7 @@
   padding: 2px 6px;
   border-radius: 3px;
 }
-.filter-clear:hover { color: var(--accent-red); }
+.filter-clear:hover { color: var(--status-error); }
 
 .pane:focus { outline: none; }
 
@@ -75,8 +75,8 @@
 .transfer-item .retry-btn:disabled,
 .transfer-item .pause-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .transfer-item .retry-btn:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }
-.transfer-item .pause-btn:hover:not(:disabled) { border-color: var(--accent-amber); color: var(--accent-amber); }
-.transfer-item .stop-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
+.transfer-item .pause-btn:hover:not(:disabled) { border-color: var(--status-warning); color: var(--status-warning); }
+.transfer-item .stop-btn:hover { border-color: var(--status-error); color: var(--status-error); }
 
 /* ---------- Log panel ---------- */
 
@@ -270,9 +270,9 @@
 }
 
 
-.log-line-command { color: var(--accent-primary); }
-.log-line-response { color: var(--accent-green); }
-.log-line-error { color: var(--accent-red); }
+.log-line-command { color: var(--log-command); }
+.log-line-response { color: var(--log-response); }
+.log-line-error { color: var(--log-error); }
 
 /* Isolated, so in a right-to-left line the time and the connection keep
    their own order and the gap between them. */

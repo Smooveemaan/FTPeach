@@ -91,13 +91,13 @@
 }
 
 .vault-lock-toggle.is-locked {
-  border-color: color-mix(in srgb, var(--accent-red) 50%, var(--bg-base));
-  color: var(--accent-red);
-  background: var(--accent-red-dim);
+  border-color: color-mix(in srgb, var(--status-error) 50%, var(--bg-base));
+  color: var(--status-error);
+  background: var(--status-error-dim);
 }
 
 .vault-lock-toggle.is-locked:hover {
-  background: color-mix(in srgb, var(--accent-red) 22%, var(--bg-base));
+  background: color-mix(in srgb, var(--status-error) 22%, var(--bg-base));
 }
 
 .vault-system-unlock {
@@ -111,13 +111,13 @@
 }
 
 .vault-lock-toggle.is-unlocked {
-  border-color: color-mix(in srgb, var(--accent-green) 50%, var(--bg-base));
-  color: var(--accent-green);
-  background: var(--accent-green-dim);
+  border-color: color-mix(in srgb, var(--status-success) 50%, var(--bg-base));
+  color: var(--status-success);
+  background: var(--status-success-dim);
 }
 
 .vault-lock-toggle.is-unlocked:hover {
-  background: color-mix(in srgb, var(--accent-green) 22%, var(--bg-base));
+  background: color-mix(in srgb, var(--status-success) 22%, var(--bg-base));
 }
 
 .vault-unlock-row {
@@ -314,15 +314,15 @@
 }
 
 .password-strength.tooShort {
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 
 .password-strength.acceptable {
-  color: var(--accent-amber);
+  color: var(--status-warning);
 }
 
 .password-strength.strong {
-  color: var(--accent-green);
+  color: var(--status-success);
 }
 
 .settings-danger-zone {
@@ -455,7 +455,7 @@
   color: var(--text-primary);
 }
 .btn.field-icon-btn.saved-secret-remove:hover:not(:disabled) {
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 .btn.field-icon-btn.active {
   color: var(--accent-primary);

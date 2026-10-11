@@ -122,8 +122,8 @@
 }
 
 .password-input.is-invalid > input {
-  border-color: var(--accent-red);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-red) 35%, transparent);
+  border-color: var(--status-error);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--status-error) 35%, transparent);
   transition-duration: 0.12s;
 }
 
@@ -309,9 +309,9 @@
 
 .btn-danger {
   background: transparent;
-  color: var(--accent-red);
+  color: var(--status-error);
 }
-.btn-danger:hover { background: var(--accent-red-dim); }
+.btn-danger:hover { background: var(--status-error-dim); }
 
 .btn-danger-reveal {
   background: var(--bg-raised);
@@ -321,8 +321,8 @@
 
 .btn-danger-reveal:hover,
 .btn-danger-reveal:focus-visible:where(html[data-keyboard-navigation] *) {
-  color: var(--accent-red);
-  background: var(--accent-red-dim);
+  color: var(--status-error);
+  background: var(--status-error-dim);
 }
 
 
@@ -330,32 +330,32 @@
   background: var(--bg-base);
 }
 .connect-toggle-btn.state-idle {
-  border-color: color-mix(in srgb, var(--accent-red) 50%, var(--bg-base));
-  color: var(--accent-red);
-  background: var(--accent-red-dim);
+  border-color: color-mix(in srgb, var(--status-error) 50%, var(--bg-base));
+  color: var(--status-error);
+  background: var(--status-error-dim);
 }
 .connect-toggle-btn.state-idle:hover {
-  background: color-mix(in srgb, var(--accent-red) 22%, var(--bg-base));
+  background: color-mix(in srgb, var(--status-error) 22%, var(--bg-base));
 }
 
-.connect-toggle-btn.state-connecting,
+.connect-toggle-btn.state-connecting { color: var(--status-warning); border-color: var(--status-warning); background: var(--status-warning-dim); }
+.connect-toggle-btn.state-connecting:hover { background: color-mix(in srgb, var(--status-warning-fill) 22%, var(--bg-base)); }
 .connect-toggle-btn.state-paused {
-  border-color: color-mix(in srgb, var(--accent-amber) 50%, var(--bg-base));
-  color: var(--accent-amber);
-  background: var(--accent-amber-dim);
+  border-color: color-mix(in srgb, var(--status-warning) 50%, var(--bg-base));
+  color: var(--status-warning);
+  background: var(--status-warning-dim);
 }
-.connect-toggle-btn.state-connecting:hover,
 .connect-toggle-btn.state-paused:hover {
-  background: color-mix(in srgb, var(--accent-amber) 22%, var(--bg-base));
+  background: color-mix(in srgb, var(--status-warning) 22%, var(--bg-base));
 }
 
 .connect-toggle-btn.state-connected {
-  border-color: color-mix(in srgb, var(--accent-green) 50%, var(--bg-base));
-  color: var(--accent-green);
-  background: var(--accent-green-dim);
+  border-color: color-mix(in srgb, var(--status-success) 50%, var(--bg-base));
+  color: var(--status-success);
+  background: var(--status-success-dim);
 }
 .connect-toggle-btn.state-connected:hover {
-  background: color-mix(in srgb, var(--accent-green) 22%, var(--bg-base));
+  background: color-mix(in srgb, var(--status-success) 22%, var(--bg-base));
 }
 
 
@@ -371,7 +371,7 @@
 .btn-ghost:hover { color: var(--accent-fill-text); background: var(--accent-fill); }
 
 .conn-error {
-  color: var(--accent-red);
+  color: var(--status-error);
   font-size: 10px;
   font-family: var(--font-mono);
   margin-inline-start: 4px;

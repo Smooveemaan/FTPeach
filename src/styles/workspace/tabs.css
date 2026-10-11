@@ -119,6 +119,7 @@
 }
 
 .tab-strip-dot {
+  color: var(--status-neutral);
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -129,9 +130,9 @@
      shouldn't read as one. .error below is the only state that uses red. */
   background: var(--text-faint);
 }
-.tab-strip-dot.connecting { background: var(--accent-amber); }
-.tab-strip-dot.connected { background: var(--accent-green); }
-.tab-strip-dot.error { background: var(--accent-red); }
+.tab-strip-dot.connecting { color: var(--status-warning); background: var(--status-warning-fill); }
+.tab-strip-dot.connected { color: var(--status-success); background: var(--status-success-fill); }
+.tab-strip-dot.error { color: var(--status-error); background: var(--status-error-fill); }
 
 .tab-strip-label {
   overflow: hidden;
@@ -194,8 +195,8 @@
   pointer-events: auto;
 }
 .tab-strip-close:hover {
-  background: color-mix(in srgb, var(--accent-red) 16%, transparent);
-  color: var(--accent-red);
+  background: color-mix(in srgb, var(--status-error) 16%, transparent);
+  color: var(--status-error);
 }
 
 .tab-strip-close.floating {
@@ -209,7 +210,7 @@
 }
 .tab-strip-item.active .tab-strip-close.floating { --tab-fill: var(--bg-panel); }
 .tab-strip-item .tab-strip-close.floating:hover {
-  background: color-mix(in srgb, var(--accent-red) 16%, var(--tab-fill));
+  background: color-mix(in srgb, var(--status-error) 16%, var(--tab-fill));
 }
 /* Over a shrunk tab the × sits on the label's end: the label fades out into
    it instead of stopping at a hard edge. */
@@ -276,7 +277,7 @@
   line-height: 1;
   cursor: pointer;
 }
-.app-error-bar-close:hover { background: var(--bg-raised); color: var(--accent-red); }
+.app-error-bar-close:hover { background: var(--bg-raised); color: var(--status-error); }
 
 
 .pane-area-divider {

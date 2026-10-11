@@ -35,6 +35,8 @@ test('a running test is found; a missing, disabled or non-test one is not', () =
   assert.match(gateOf('src-tauri/src/x.rs', rust, 'helper_not_a_test'), /no test fn/);
   assert.match(gateOf('src-tauri/src/x.rs', rust, 'against_a_real_server'), /no workflow runs/);
   assert.equal(gateOf('test/unit/a.test.ts', typescript, 'a paused upload resumes'), 'pr');
+  assert.equal(gateOf('test/visual/a.spec.ts', typescript, 'a paused upload resumes'), 'pr');
+  assert.match(gateOf('test/visual/a.spec.ts', typescript, 'a flaky scenario'), /switched off/);
   assert.match(gateOf('test/unit/a.test.ts', typescript, 'a flaky scenario'), /switched off/);
   assert.match(gateOf('test/unit/a.test.ts', typescript, 'a paused upload'), /no test titled/);
 });

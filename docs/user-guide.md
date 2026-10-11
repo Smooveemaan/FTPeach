@@ -14,7 +14,7 @@ For installing FTPeach and the list of supported protocols, see the
 In Settings > Interface, choose a color scheme independently of the light, dark or
 system theme. The default Peach is always first, followed by neutral shades through
 warm, green, blue and purple hues: Onyx, Ash, Graphite, Linen, Sand, Cocoa, Ember,
-Clay, Leaves, Forest, Lagoon, Frost, Ocean, Midnight, Bluebell, Orchid, Plum,
+Clay, Grass, Forest, Lagoon, Frost, Ocean, Midnight, Bluebell, Orchid, Plum,
 Burgundy and Rose. Older settings keep their chosen palette; settings with
 no palette keep Peach. Changes preview immediately, Save keeps them and Cancel
 restores the previous scheme.
@@ -28,6 +28,14 @@ Security confirmation windows follow the same theme and color scheme, including
 settings previews and Cancel.
 
 <!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::confirmations apply the initial snapshot and follow preview and rollback -->
+
+Transfer states keep the same meaning across color schemes: orange for active transfers,
+yellow for paused, green for completed, red for failed and grey for cancelling, queued
+or stopped. Connection indicators and the status bar use the same colors.
+Connection dots and progress bars have flat fills without outlines.
+
+<!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::transfer status colors stay readable across palettes -->
+<!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::connection indicators and auxiliary progress share semantic colors across palettes -->
 
 ## Selecting files
 

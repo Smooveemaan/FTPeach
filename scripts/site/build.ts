@@ -4,8 +4,12 @@
 // fetched here, not by the page, so visitors' browsers never call GitHub's API.
 // The Pages workflow runs it on a push, when a release is published and once a
 // day; `npm run site:build` runs it locally.
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+
+const palettes: Array<{ id: string; name: string; color: string }> = JSON.parse(
+  await readFile(new URL('../../assets/images/palettes/index.json', import.meta.url), 'utf8'),
+);
 
 export interface Release {
   tag_name: string;
@@ -44,6 +48,7 @@ export function fillPage(html: string, release: Release, stats: Stats): string {
     .replace(/<!-- downloads -->([\s\S]*?)<!-- \/downloads -->/, (_, shown: string) =>
       stats.downloads >= DOWNLOADS_SHOWN_FROM ? shown : '',
     )
+    .replaceAll('{{PALETTE_DATA}}', JSON.stringify(palettes).replaceAll('<', '\u003c'))
     .replaceAll('{{VERSION}}', release.tag_name)
     .replaceAll('{{SETUP_URL}}', setup.browser_download_url)
     .replaceAll('{{SETUP_NAME}}', setup.name)
@@ -89,10 +94,10 @@ async function main() {
   await mkdir(out);
   await writeFile(path.join(out, 'index.html'), fillPage(html, release, stats));
   for (const image of [
-    'ftpeach.png',
+    'ftpeach-dark.png',
     'ftpeach-light.png',
-    'ftpeach.mp4',
-    'ftpeach-poster.webp',
+    'ftpeach-dark.mp4',
+    'ftpeach-dark-poster.webp',
     'ftpeach-light.mp4',
     'ftpeach-light-poster.webp',
     'icon.png',
@@ -101,7 +106,10 @@ async function main() {
     await copyFile(path.join(root, 'assets/images', image), path.join(out, image));
   }
   await copyFile(path.join(root, 'public/favicon.ico'), path.join(out, 'favicon.ico'));
-  for (const file of ['robots.txt', 'sitemap.xml']) {
+  await cp(path.join(root, 'assets/images/palettes'), path.join(out, 'palettes'), {
+    recursive: true,
+  });
+  for (const file of ['robots.txt', 'sitemap.xml', 'palettes.js']) {
     await copyFile(path.join(root, 'site', file), path.join(out, file));
   }
   console.log(

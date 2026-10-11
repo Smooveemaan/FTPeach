@@ -22,7 +22,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Transfer status colors stay distinct across color schemes, including neutral palettes.
+- Transfer and connection status colors stay consistent across color schemes, with orange active
+  transfers, yellow pause indicators and grey cancellation indicators. Connection dots and
+  progress bars have flat fills without outlines.
 
 - Dropdown and context menus highlight keyboard focus; long lists scroll evenly in both
   directions and keep a gap between the highlight and the frame.

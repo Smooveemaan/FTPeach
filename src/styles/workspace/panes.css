@@ -145,14 +145,16 @@
 .pane-source.open { color: var(--text-primary); border-color: var(--border); background: var(--bg-raised); }
 
 .pane-source-dot {
+  color: var(--status-error);
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex: 0 0 auto;
-  background: var(--accent-red);
+  background: var(--status-error-fill);
 }
-.pane-source-dot.state-connecting { background: var(--accent-amber); }
-.pane-source-dot.state-connected { background: var(--accent-green); }
+.pane-source-dot.state-connecting { color: var(--status-warning); background: var(--status-warning-fill); }
+.pane-source-dot.state-connected { color: var(--status-success); background: var(--status-success-fill); }
+.pane-source-dot.state-error { color: var(--status-error); background: var(--status-error-fill); }
 
 .pane-source-label {
   overflow: hidden;

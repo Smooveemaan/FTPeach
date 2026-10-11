@@ -137,7 +137,7 @@
 
 :is(.status-text, .line-pulse).state-idle { color: var(--text-faint); }
 :is(.status-text, .line-pulse).state-error { color: var(--status-error); }
-:is(.status-text, .line-pulse).state-connecting,
+:is(.status-text, .line-pulse).state-connecting { color: var(--status-warning); }
 :is(.status-text, .line-pulse).state-paused { color: var(--status-warning); }
 :is(.status-text, .line-pulse).state-connected { color: var(--status-success); }
 :is(.status-text, .line-pulse).state-transferring { color: var(--status-active); }

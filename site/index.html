@@ -51,7 +51,7 @@
     </script>
     <!-- Only the screenshot for the current theme is downloaded. -->
     <link rel="preload" as="image" href="ftpeach-light.png" media="(prefers-color-scheme: light)" />
-    <link rel="preload" as="image" href="ftpeach.png" media="(prefers-color-scheme: dark)" />
+    <link rel="preload" as="image" href="ftpeach-dark.png" media="(prefers-color-scheme: dark)" />
     <script>
       // Applies the remembered theme before the first paint.
       try {
@@ -186,7 +186,7 @@ button {
     --shadow-rgb: 0 0 0;
     --grain-opacity: 0.06;
     --grain-blend: screen;
-    --shot: url(ftpeach.png);
+    --shot: url(ftpeach-dark.png);
     --demo-light: 0;
   }
 }
@@ -195,7 +195,7 @@ button {
   --shadow-rgb: 0 0 0;
   --grain-opacity: 0.06;
   --grain-blend: screen;
-  --shot: url(ftpeach.png);
+  --shot: url(ftpeach-dark.png);
   --demo-light: 0;
 }
 
@@ -1360,6 +1360,28 @@ a:hover {
     transform: translateY(28px);
   }
 }
+
+/* Palette previews load on demand; controls stay touch-sized on small screens. */
+.palette-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.palette-navigation { display: flex; align-items: center; gap: 10px; }
+.palette-step { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--ink); font-size: 24px; cursor: pointer; }
+.palette-step:hover { background: var(--soft); }
+.palette-caption { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; }
+.palette-dot { width: 14px; height: 14px; flex: 0 0 14px; border-radius: 50%; background: var(--swatch, #ff9d72); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .15); }
+.palette-modes { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 14px; }
+.palette-modes button { min-height: 44px; border: 1px solid transparent; border-radius: 10px; padding: 8px 14px; color: var(--ink); background: transparent; cursor: pointer; }
+.palette-modes button { transition: background-color .45s ease, color .45s ease; }
+#palette-dot { transition: background-color .45s ease; }
+.palette-modes button[aria-pressed='true'] { background: var(--soft); }
+/* Match the captured window's 18 px corners at its native 2364 x 1484 size. */
+.palette-preview { display: grid; overflow: hidden; border-radius: calc(1800% / 2364) / calc(1800% / 1484); box-shadow: var(--shadow-3); }
+.palette-preview > * { grid-area: 1 / 1; width: 100%; min-width: 0; }
+.palette-preview img { width: 100%; height: auto; }
+.palette-error { color: var(--ink); }
+@media (max-width: 479px) {
+  .palette-toolbar { gap: 12px; }
+}
+[hidden] { display: none !important; }
     </style>
   </head>
   <body>
@@ -1411,7 +1433,7 @@ a:hover {
         </div>
         <div class="wrap shot rise" style="--i: 4">
           <div class="frame">
-            <div class="crop" role="img" aria-label="FTPeach with a local folder on the left, an FTP server on the right, two uploads in the transfer queue and the connection log below."><video class="demo" muted loop playsinline preload="none" poster="ftpeach-poster.webp" data-src="ftpeach.mp4" aria-hidden="true"></video><video class="demo demo-light" muted loop playsinline preload="none" poster="ftpeach-light-poster.webp" data-src="ftpeach-light.mp4" aria-hidden="true"></video></div>
+            <div class="crop" role="img" aria-label="FTPeach with a local folder on the left, an FTP server on the right, two uploads in the transfer queue and the connection log below."><video class="demo" muted loop playsinline preload="none" poster="ftpeach-dark-poster.webp" data-src="ftpeach-dark.mp4" aria-hidden="true"></video><video class="demo demo-light" muted loop playsinline preload="none" poster="ftpeach-light-poster.webp" data-src="ftpeach-light.mp4" aria-hidden="true"></video></div>
             <button class="play" type="button" aria-label="Play the demo" hidden>
               <svg class="i-play" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4c0 .6.6.9 1.1.6l8-5.2c.5-.3.5-1 0-1.2l-8-5.2c-.5-.3-1.1 0-1.1.6Z" /></svg>
               <svg class="i-stop" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="2" /></svg>
@@ -1528,6 +1550,34 @@ a:hover {
               </ul>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section id="themes" class="section" aria-labelledby="themes-title">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 id="themes-title">Your workspace, <em>your colors.</em></h2>
+            <p>From warm Peach to soft Grass and quiet neutrals. 20 color schemes, each in light and dark.</p>
+          </div>
+          <div class="palette-toolbar">
+            <div class="palette-navigation" role="group" aria-label="Browse color schemes">
+              <button class="palette-step" type="button" data-palette-step="-1" aria-label="Previous color scheme" hidden>‹</button>
+              <button class="palette-step" type="button" data-palette-step="1" aria-label="Next color scheme" hidden>›</button>
+              <p class="palette-caption"><span class="palette-dot" id="palette-dot" aria-hidden="true"></span><span id="palette-name" aria-live="polite">Peach</span></p>
+            </div>
+            <div class="palette-modes" role="group" aria-label="Preview appearance" hidden>
+              <button type="button" data-mode="light" aria-pressed="false">Light</button>
+              <button type="button" data-mode="dark" aria-pressed="false">Dark</button>
+            </div>
+          </div>
+          <div class="palette-preview">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="palettes/peach-dark.webp">
+              <img src="palettes/peach-light.webp" alt="FTPeach in the Peach color scheme" width="2364" height="1484" loading="lazy" decoding="async">
+            </picture>
+          </div>
+          <script type="application/json" id="palette-data">{{PALETTE_DATA}}</script>
+          <p class="palette-error" role="status" hidden>Could not load this preview. Please try again.</p>
         </div>
       </section>
 
@@ -1686,9 +1736,9 @@ a:hover {
         const theme = isDark() ? 'light' : 'dark';
         // Fetch the other screenshot first, so it is in the picture the cross-fade ends on.
         const shot = new Image();
-        shot.src = theme === 'dark' ? 'ftpeach.png' : 'ftpeach-light.png';
+        shot.src = theme === 'dark' ? 'ftpeach-dark.png' : 'ftpeach-light.png';
         await shot.decode().catch(() => {});
-        const apply = () =>
+        const apply = async () => {
           instantly(() => {
             root.dataset.theme = theme;
             try {
@@ -1696,6 +1746,8 @@ a:hover {
             } catch {}
             sync();
           });
+          await syncPaletteTheme();
+        };
         if (document.startViewTransition) document.startViewTransition(apply);
         else apply();
       });
@@ -1776,5 +1828,6 @@ a:hover {
         target.focus({ preventScroll: true });
       });
     </script>
+    <script src="palettes.js"></script>
   </body>
 </html>

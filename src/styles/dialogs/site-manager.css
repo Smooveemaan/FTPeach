@@ -299,7 +299,7 @@
   border-color: transparent;
 }
 .site-manage-row .site-manage-row-btn.site-manage-row-delete:hover {
-  color: var(--accent-red);
+  color: var(--status-error);
 }
 
 

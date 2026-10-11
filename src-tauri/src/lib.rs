@@ -98,6 +98,7 @@ pub fn run() {
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
         .manage(runtime::window_scale::InterfaceScale::default())
+        .manage(runtime::confirmation_window::AppearanceState::default())
         .manage(AutoLock::default())
         .manage(AuthorizationState::new(vault))
         .invoke_handler(tauri::generate_handler![

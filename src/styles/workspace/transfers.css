@@ -144,7 +144,7 @@ body.column-resize-active .transfer-item:hover {
   mask-image: var(--truncate-fade);
   -webkit-mask-image: var(--truncate-fade);
 }
-.t-sub.err { color: var(--accent-red); }
+.t-sub.err { color: var(--status-error); }
 
 .t-route {
   /* Keep text clear of the header's resize handle. */
@@ -219,19 +219,19 @@ body.column-resize-active .transfer-item:hover {
 .p-fill {
   height: 100%;
   border-radius: 2px;
-  background: var(--accent-primary);
+  background: var(--status-active);
   transition: width 0.15s ease;
 }
 .p-fill.status-paused,
 .p-fill.status-cancelling {
-  background: var(--accent-amber);
+  background: var(--status-warning);
 }
 .p-fill.status-queued,
 .p-fill.status-stopped {
-  background: var(--text-faint);
+  background: var(--status-neutral);
 }
 .p-fill.status-done {
-  background: var(--accent-green);
+  background: var(--status-success);
 }
 .p-pct {
   flex: 0 0 auto;
@@ -325,13 +325,13 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
   white-space: nowrap;
 }
 
-.status-tag.queued { color: var(--text-secondary); background: var(--bg-raised); }
-.status-tag.progress { color: var(--accent-primary); background: var(--accent-primary-dim); }
-.status-tag.done { color: var(--accent-green); background: var(--accent-green-dim); }
-.status-tag.error { color: var(--accent-red); background: var(--accent-red-dim); }
+.status-tag.queued { color: var(--status-neutral); background: var(--status-neutral-dim); }
+.status-tag.progress { color: var(--status-active); background: var(--status-active-dim); }
+.status-tag.done { color: var(--status-success); background: var(--status-success-dim); }
+.status-tag.error { color: var(--status-error); background: var(--status-error-dim); }
 .status-tag.paused,
-.status-tag.cancelling { color: var(--accent-amber); background: var(--accent-amber-dim); }
-.status-tag.stopped { color: var(--text-secondary); background: var(--bg-raised); }
+.status-tag.cancelling { color: var(--status-warning); background: var(--status-warning-dim); }
+.status-tag.stopped { color: var(--status-neutral); background: var(--status-neutral-dim); }
 
 .transfer-actions {
   display: flex;

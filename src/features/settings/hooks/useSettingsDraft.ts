@@ -27,6 +27,7 @@ export type SettingsDraftValues = Pick<
   | 'transferSpeedLimitKBps'
   | 'openWithAssociations'
   | 'theme'
+  | 'colorScheme'
   | 'language'
   | 'interfaceScale'
   | 'dateFormat'
@@ -86,6 +87,7 @@ interface SettingsDraft {
   openWithAssociationRows: AssociationRow[];
   shortcutOverridesValue: SettingsValues['keyboardShortcuts'];
   themeValue: SettingsValues['theme'];
+  colorSchemeValue: string;
   languageValue: SupportedLanguage;
   interfaceScaleValue: number;
   dateFormatValue: SettingsValues['dateFormat'];
@@ -135,6 +137,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     ),
     shortcutOverridesValue: { ...settings.keyboardShortcuts },
     themeValue: settings.theme,
+    colorSchemeValue: settings.colorScheme,
     languageValue: matchSupportedLanguage(settings.language) || 'en',
     interfaceScaleValue: settings.interfaceScale || 100,
     dateFormatValue: settings.dateFormat || 'locale',
@@ -203,6 +206,7 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
     transferSpeedLimitKBps: speedLimit,
     openWithAssociations,
     theme: draft.themeValue,
+    colorScheme: draft.colorSchemeValue,
     language: draft.languageValue,
     interfaceScale: Number(draft.interfaceScaleValue),
     dateFormat: draft.dateFormatValue,
@@ -412,6 +416,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setOpenWithAssociationRows: setter('openWithAssociationRows'),
     setShortcutOverridesValue: setter('shortcutOverridesValue'),
     setThemeValue: setter('themeValue'),
+    setColorSchemeValue: setter('colorSchemeValue'),
     setLanguageValue: setter('languageValue'),
     setInterfaceScaleValue: setter('interfaceScaleValue'),
     setDateFormatValue: setter('dateFormatValue'),

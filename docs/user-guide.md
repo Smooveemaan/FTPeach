@@ -9,6 +9,26 @@ For installing FTPeach and the list of supported protocols, see the
 [README](../README.md). For what changed between versions, see the
 [changelog](../CHANGELOG.md).
 
+## Appearance
+
+In Settings > Interface, choose a color scheme independently of the light, dark or
+system theme. The default Peach is always first, followed by neutral shades through
+warm, green, blue and purple hues: Onyx, Ash, Graphite, Linen, Sand, Cocoa, Ember,
+Clay, Leaves, Forest, Lagoon, Frost, Ocean, Midnight, Bluebell, Orchid, Plum,
+Burgundy and Rose. Older settings keep their chosen palette; settings with
+no palette keep Peach. Changes preview immediately, Save keeps them and Cancel
+restores the previous scheme.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::previews and saves a palette independently of the theme -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Cancel restores the palette before preview -->
+<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::old or unknown settings use Peach and valid palettes survive hydration -->
+<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::palette names follow color order without changing stored identifiers -->
+
+Security confirmation windows follow the same theme and color scheme, including
+settings previews and Cancel.
+
+<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::confirmations apply the initial snapshot and follow preview and rollback -->
+
 ## Selecting files
 
 The selection rectangle follows the pointer without animation and stays within

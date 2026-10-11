@@ -105,7 +105,23 @@ pub fn app_system_hour_cycle() -> Option<&'static str> {
 /// hands us the resolved --border of whichever theme it just applied.
 #[tauri::command]
 #[cfg_attr(not(windows), allow(unused_variables))]
-pub fn app_set_window_border(app: AppHandle, red: u8, green: u8, blue: u8) {
+pub fn app_set_window_border(
+    app: AppHandle,
+    window: tauri::WebviewWindow,
+    red: u8,
+    green: u8,
+    blue: u8,
+    appearance: crate::runtime::confirmation_window::Appearance,
+) -> CommandResult<()> {
+    if window.label() != "main" {
+        return Err(CommandError::new(
+            crate::ipc::ErrorCode::PermissionDenied,
+            "Main window only",
+        ));
+    }
+    let appearance_result =
+        crate::runtime::confirmation_window::update_appearance(&app, appearance)
+            .map_err(|error| CommandError::from(anyhow::Error::from(error)));
     #[cfg(windows)]
     {
         use raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -115,13 +131,13 @@ pub fn app_set_window_border(app: AppHandle, red: u8, green: u8, blue: u8) {
         };
 
         let Some(window) = app.get_webview_window("main") else {
-            return;
+            return appearance_result;
         };
         let Ok(handle) = window.window_handle() else {
-            return;
+            return appearance_result;
         };
         let RawWindowHandle::Win32(handle) = handle.as_raw() else {
-            return;
+            return appearance_result;
         };
         // COLORREF is 0x00BBGGRR, the reverse of the RGB order it arrives in.
         let color = u32::from(red) | (u32::from(green) << 8) | (u32::from(blue) << 16);
@@ -135,6 +151,7 @@ pub fn app_set_window_border(app: AppHandle, red: u8, green: u8, blue: u8) {
             );
         }
     }
+    appearance_result
 }
 
 #[tauri::command]

@@ -74,15 +74,20 @@ the startup figures.
 
 Budgets are `scripts/checks/bundle-baseline.json` plus 10%, raw and gzip alike; any single
 JavaScript chunk above 950 KiB also fails. An intended increase updates the baseline in the same
-change. Baseline of 24 September 2026:
+change. Baseline of 24 September 2026, with the security confirmation measurement
+updated on 11 October 2026 for shared appearance synchronization and twelve palettes:
 
 | Graph | Raw | Gzip |
 | --- | ---: | ---: |
 | Main window startup | 768.3 KiB | 231.4 KiB |
-| Security confirmation startup | 411.1 KiB | 119.9 KiB |
+| Security confirmation startup | 453.4 KiB | 131.8 KiB |
 | Deferred (settings, dialogs, locales, …) | 1226.4 KiB | 387.2 KiB |
 
 CI writes the table with the change against the baseline to the job summary and keeps
+The last four palettes add about 2.8 KiB raw / 0.6 KiB gzip to each startup graph
+compared with the eight-palette build. The shared stylesheet makes them available
+to confirmations before their first render. The 10% growth allowance is unchanged.
+
 `dist/bundle-report.json` as the `bundle-report` artifact.
 
 Packaged startup timing is intentionally not used as a release gate at this stage. The Windows

@@ -11,6 +11,10 @@ the confirmation window receives neither.
 The main window also grants `core:webview:allow-set-webview-background-color` so
 theme changes can recolor WebView2's default background as well as the host window.
 This permission changes presentation only and is not granted to confirmation windows.
+`app_set_window_border` also accepts an appearance snapshot from the main window: a
+light/dark flag, a named palette enum, and three byte channels for the panel background.
+The runtime applies it to new and open confirmations through their existing trusted
+webviews. It accepts no script or arbitrary CSS and grants confirmations no new commands.
 
 `allow-app-set-interface-scale` replaces direct WebView zoom permission. The command
 accepts only finite factors from 0.8 to 1.5 and only the `main` window. It changes

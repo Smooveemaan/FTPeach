@@ -31,6 +31,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     transferSpeedLimitKBps: 0,
     openWithAssociations: {},
     theme: 'system',
+    colorScheme: 'peach',
     language: 'en',
     interfaceScale: 100,
     dateFormat: 'locale',
@@ -66,6 +67,28 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
 }
 
 describe('SettingsDialog unsaved-changes gate', () => {
+  test('previews and saves a palette independently of the theme', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+    await user.click(screen.getByRole('button', { name: 'settings.colorSchemeLabel' }));
+    await user.click(screen.getByRole('option', { name: 'settings.colorSchemes.ocean' }));
+    expect(props.onPreview).toHaveBeenLastCalledWith({ colorScheme: 'ocean' });
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith({ colorScheme: 'ocean' });
+  });
+
+  test('Cancel restores the palette before preview', async () => {
+    const user = userEvent.setup();
+    const { props } = renderDialog({ colorScheme: 'forest' });
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+    await user.click(screen.getByRole('button', { name: 'settings.colorSchemeLabel' }));
+    await user.click(screen.getByRole('option', { name: 'settings.colorSchemes.graphite' }));
+    await user.click(screen.getByRole('button', { name: 'common.cancel' }));
+    expect(props.onPreview).toHaveBeenLastCalledWith({ colorScheme: 'forest' });
+    expect(props.onSave).not.toHaveBeenCalled();
+  });
+
   test('awaits persistence, prevents duplicate saves and preserves the draft on failure', async () => {
     const user = userEvent.setup();
     let finish!: (_value: { ok: boolean; error?: string }) => void;

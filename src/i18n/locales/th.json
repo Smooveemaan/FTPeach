@@ -548,7 +548,30 @@
     "exportDiagnostics": "ส่งออกชุดข้อมูลวินิจฉัย",
     "exportDiagnosticsBusy": "กำลังส่งออก…",
     "exportDiagnosticsHint": "ส่งออกเวอร์ชันของแอป ระบบปฏิบัติการ บันทึกล่าสุด และไฟล์บันทึกของแอปเอง รหัสผ่าน โทเค็น และข้อมูลลับอื่น ๆ จะถูกปกปิด",
-    "exportDiagnosticsFailed": "ไม่สามารถส่งออกชุดข้อมูลวินิจฉัยได้"
+    "exportDiagnosticsFailed": "ไม่สามารถส่งออกชุดข้อมูลวินิจฉัยได้",
+    "colorSchemeLabel": "ชุดสี",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "ตกลง"

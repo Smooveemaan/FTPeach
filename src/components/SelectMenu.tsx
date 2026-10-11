@@ -1,3 +1,4 @@
+import { focusMenuItem } from './focusMenuItem.ts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
@@ -50,8 +51,7 @@ export default function SelectMenu<T extends string | number>({
   useEffect(() => {
     if (!open) return;
     const option = optionRefs.current[currentIndex];
-    option?.focus();
-    option?.scrollIntoView({ block: 'nearest' });
+    focusMenuItem(option);
   }, [currentIndex, open]);
 
   const moveFocus = (index: number, key: string) => {
@@ -64,7 +64,7 @@ export default function SelectMenu<T extends string | number>({
           : key === 'ArrowDown'
             ? (index + 1) % options.length
             : (index - 1 + options.length) % options.length;
-    optionRefs.current[next]?.focus();
+    focusMenuItem(optionRefs.current[next]);
   };
   const current = options[currentIndex];
   const [valueRef, valueTruncated] = useTruncated<HTMLSpanElement>([current?.label]);

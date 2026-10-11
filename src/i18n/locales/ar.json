@@ -564,7 +564,30 @@
     "exportDiagnostics": "تصدير حزمة التشخيص",
     "exportDiagnosticsBusy": "جارٍ التصدير…",
     "exportDiagnosticsHint": "يُصدّر إصدار التطبيق ونظام التشغيل والسجل الأخير وملف السجل الخاص بالتطبيق. تُحجب كلمات المرور والرموز المميزة والأسرار الأخرى.",
-    "exportDiagnosticsFailed": "تعذّر تصدير حزمة التشخيص."
+    "exportDiagnosticsFailed": "تعذّر تصدير حزمة التشخيص.",
+    "colorSchemeLabel": "نظام الألوان",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "موافق"

@@ -552,7 +552,30 @@
     "exportDiagnostics": "Exportă pachetul de diagnosticare",
     "exportDiagnosticsBusy": "Se exportă…",
     "exportDiagnosticsHint": "Exportă versiunea aplicației, sistemul de operare, jurnalul recent și fișierul de jurnal propriu al aplicației. Parolele, tokenurile și alte date secrete sunt ascunse.",
-    "exportDiagnosticsFailed": "Pachetul de diagnosticare nu a putut fi exportat."
+    "exportDiagnosticsFailed": "Pachetul de diagnosticare nu a putut fi exportat.",
+    "colorSchemeLabel": "Schemă de culori",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

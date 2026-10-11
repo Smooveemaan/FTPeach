@@ -1,3 +1,4 @@
+import { focusMenuItem } from './focusMenuItem.ts';
 import { useEffect, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import TruncatedText from './TruncatedText.tsx';
@@ -30,7 +31,7 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
     const first = rootRef.current?.querySelector<HTMLButtonElement>(
       'button[role="menuitem"]:not(:disabled)',
     );
-    first?.focus();
+    focusMenuItem(first);
   }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -51,7 +52,7 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
     else if (e.key === 'End') next = entries.length - 1;
     else if (e.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % entries.length;
     else next = current < 0 ? entries.length - 1 : (current - 1 + entries.length) % entries.length;
-    entries[next]?.focus();
+    focusMenuItem(entries[next]);
   };
 
   const renderItem = (item: MenuItem, i: number) =>

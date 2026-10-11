@@ -21,6 +21,7 @@ export default function SegmentedControl<Value extends string>({
           key={opt.value}
           type="button"
           role="radio"
+          aria-label={opt.label}
           aria-checked={value === opt.value}
           className={value === opt.value ? 'active' : ''}
           onClick={() => onChange(opt.value)}

@@ -73,5 +73,6 @@
   "minimizeToTray": false,
   "closeToTray": false,
   "legacyPasswordNoticeShown": false,
-  "plaintextSecretNoticeShown": false
+  "plaintextSecretNoticeShown": false,
+  "colorScheme": "peach"
 }

@@ -548,7 +548,30 @@
     "exportDiagnostics": "Diagnosepaket exportieren",
     "exportDiagnosticsBusy": "Wird exportiert…",
     "exportDiagnosticsHint": "Exportiert die Anwendungsversion, das Betriebssystem, die letzten Protokolleinträge und die eigene Protokolldatei der Anwendung. Passwörter, Token und andere vertrauliche Daten werden unkenntlich gemacht.",
-    "exportDiagnosticsFailed": "Das Diagnosepaket konnte nicht exportiert werden."
+    "exportDiagnosticsFailed": "Das Diagnosepaket konnte nicht exportiert werden.",
+    "colorSchemeLabel": "Farbschema",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

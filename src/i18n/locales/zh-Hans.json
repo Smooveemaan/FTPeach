@@ -548,7 +548,30 @@
     "exportDiagnostics": "导出诊断包",
     "exportDiagnosticsBusy": "正在导出…",
     "exportDiagnosticsHint": "导出应用版本、操作系统、最近的日志以及应用自身的日志文件。密码、令牌和其他机密信息将被隐去。",
-    "exportDiagnosticsFailed": "无法导出诊断包。"
+    "exportDiagnosticsFailed": "无法导出诊断包。",
+    "colorSchemeLabel": "配色方案",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "确定"

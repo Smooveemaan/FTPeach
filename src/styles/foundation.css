@@ -10,59 +10,6 @@
 :root {
   --app-viewport-w: 100vw;
   --app-viewport-h: 100vh;
-  /* Peach — dark. Soft dark leaf-green base (the twig, not the fruit),
-     coral-peach accent (the fruit itself) — same idea as the app icon. */
-  --bg-base: #141312;
-  --bg-panel: #1a1917;
-  --bg-panel-alt: #211f1c;
-  --bg-raised: #2b2824;
-  --border: #504a42;
-  --border-soft: #292622;
-  --text-primary: #f3eee7;
-  --text-secondary: #bcb5ad;
-  --text-faint: #817a73;
-
-  --accent-primary: #ff9d72;
-  --accent-primary-hover: #ffab85;
-  --accent-primary-active: #ed8b63;
-  --accent-primary-dim: rgba(255, 157, 114, 0.12);
-  --accent-primary-border: rgba(255, 157, 114, 0.24);
-
-
-  --accent-fill: #ff9d72;
-  --accent-fill-text: #28150d;
-
-  --accent-amber: #ffc98f;
-  --accent-amber-dim: rgba(255, 209, 95, 0.12);
-  --accent-red: #ff7565;
-  --accent-red-dim: rgba(255, 117, 101, 0.12);
-  --accent-green: #8fba91;
-  --accent-green-dim: rgba(143, 186, 145, 0.12);
-
-
-  --btn-fill: #302923;
-  --btn-fill-text: #f5eee7;
-
-
-  --file-spreadsheet: #8dcebe;
-  --file-archive: #8dc0ce;
-  --file-text: #8da3ce;
-  --file-audio: #958dce;
-  --file-code: #b38dce;
-  --file-video: #ce8dcb;
-  --file-image: #ce8dad;
-
-  /* Site colours that no accent or file token already provides. */
-  --site-yellow: #e8d87f;
-  --site-lime: #b5cf7c;
-  --site-cyan: #7fc8da;
-  --site-indigo: #8f95e0;
-  --site-rose: #e08aa6;
-  --site-wine: #c27484;
-  --site-brown: #c29f84;
-  --site-olive: #a7a86a;
-  --site-emerald: #6cc995;
-
   --font-ui: 'Segoe UI', Inter, -apple-system, system-ui, sans-serif;
   --font-mono: 'Mono Arabic', 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
 
@@ -92,7 +39,6 @@
      Neither CSS nor the scrim can reach the border, so the dimmed variant
      is composited here and pushed to Windows by platform/windowFrame.ts --
      see the scrim that .title-bar::after paints for the same reason. */
-  --window-border: #292622;
   --window-border-dimmed: color-mix(in srgb, black 45%, var(--window-border));
   --popover-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   --dialog-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
@@ -107,60 +53,6 @@
   color-scheme: dark;
 }
 
-[data-theme='light'] {
-
-  --bg-base: #f2f0ed;
-  --bg-panel: #faf9f7;
-  --bg-panel-alt: #ebe8e4;
-  --bg-raised: #e2ded8;
-  --border: #c9c3bc;
-  --border-soft: #ddd8d2;
-  --window-border: #c9c3bc;
-  --text-primary: #27231f;
-  --text-secondary: #665f58;
-  --text-faint: #8e867e;
-
-  --accent-primary: #e87852;
-  --accent-primary-hover: #ef8964;
-  --accent-primary-active: #d96845;
-  --accent-primary-dim: rgba(232, 120, 82, 0.11);
-  --accent-primary-border: rgba(232, 120, 82, 0.3);
-
-
-  --accent-fill: #e87852;
-  --accent-fill-text: #28130c;
-
-  --accent-amber: #b8860b;
-  --accent-amber-dim: rgba(184, 134, 11, 0.12);
-  --accent-red: #d95d51;
-  --accent-red-dim: rgba(217, 93, 81, 0.11);
-  --accent-green: #4f9162;
-  --accent-green-dim: rgba(79, 145, 98, 0.11);
-
-
-  --btn-fill: #e5e1dc;
-  --btn-fill-text: #302b26;
-
-  --file-spreadsheet: #31977f;
-  --file-archive: #397f96;
-  --file-text: #5271a4;
-  --file-audio: #7167a5;
-  --file-code: #9364a5;
-  --file-video: #a96099;
-  --file-image: #a9607d;
-
-  --site-yellow: #b8a000;
-  --site-lime: #6a8a28;
-  --site-cyan: #2f8aa0;
-  --site-indigo: #5a5fb0;
-  --site-rose: #b5526f;
-  --site-wine: #8e3a50;
-  --site-brown: #8a6247;
-  --site-olive: #6f7228;
-  --site-emerald: #1f9a5c;
-
-  color-scheme: light;
-}
 
 /* In RTL the clipped edge of a truncated label is its left edge, so the fade
    has to run the other way -- see --truncate-fade above. */

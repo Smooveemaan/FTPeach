@@ -548,7 +548,30 @@
     "exportDiagnostics": "Diagnosztikai csomag exportálása",
     "exportDiagnosticsBusy": "Exportálás…",
     "exportDiagnosticsHint": "Exportálja az alkalmazás verzióját, az operációs rendszert, a legutóbbi naplót és az alkalmazás saját naplófájlját. A jelszavak, tokenek és egyéb bizalmas adatok maszkolva vannak.",
-    "exportDiagnosticsFailed": "Nem sikerült exportálni a diagnosztikai csomagot."
+    "exportDiagnosticsFailed": "Nem sikerült exportálni a diagnosztikai csomagot.",
+    "colorSchemeLabel": "Színséma",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

@@ -2,6 +2,7 @@ import { I18nextProvider } from 'react-i18next';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import i18n from './i18n/index.ts';
 import './styles/theme.css';
+import { installConfirmationAppearance } from './platform/confirmationAppearance.ts';
 import { installKeyboardNavigation } from './platform/keyboardNavigation.ts';
 
 const disposeKeyboardNavigation = installKeyboardNavigation();
@@ -9,9 +10,10 @@ if (import.meta.hot) import.meta.hot.dispose(disposeKeyboardNavigation);
 
 const query = new URLSearchParams(window.location.search);
 const securityRequestId = query.get('security-confirmation');
-// The confirmation window has no settings of its own; it is told the theme.
-if (securityRequestId && query.get('theme') === 'light')
-  document.documentElement.setAttribute('data-theme', 'light');
+if (securityRequestId) {
+  const disposeAppearance = installConfirmationAppearance();
+  if (import.meta.hot) import.meta.hot.dispose(disposeAppearance);
+}
 
 // Each window loads only its own UI. The renderer, the window's UI and the IPC
 // adapter start together so none of them adds a second module-loading

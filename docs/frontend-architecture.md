@@ -10,6 +10,16 @@ Theme changes use `WebviewWindow.setBackgroundColor` to update both the host win
 and WebView2's default background with an opaque color. Updating only `Window` leaves
 the webview background at its startup color.
 
+Mode (`theme`) and palette (`colorScheme`) are independent settings. `shared/appearance.ts`
+applies their root attributes; `styles/palettes.css` owns their colors. Community palette
+sources and adaptation details live in [asset provenance](legal/ASSET_PROVENANCE.md);
+their licenses ship in `docs/legal/THIRD_PARTY_NOTICES.txt`. `windowFrame.ts`
+reads the resolved panel background and sends a typed appearance snapshot through the
+existing `app_set_window_border` command. The runtime keeps it for new security confirmations
+and updates existing ones, including unsaved previews and cancellation. Confirmations
+receive the initial snapshot before their scripts load and refresh it before showing;
+they need no additional IPC permissions.
+
 Viewport constraints use CSS viewport units in `foundation.css`; resizing does not
 write pixel dimensions back into inherited root custom properties from JavaScript.
 
@@ -177,7 +187,8 @@ Nothing enforces this table — a locale namespace is a string key and a stylesh
 `src/styles/theme.css` is the ordered stylesheet entrypoint. Its imports preserve cascade order and
 have the following ownership:
 
-- `foundation.css` contains design tokens, theme overrides, reset, focus, and scrollbar defaults;
+- `foundation.css` contains geometry tokens, reset, focus, and scrollbar defaults;
+- `palettes.css` contains the shared color tokens and light/dark palette variants;
 - `shell.css` contains the application and title-bar shell;
 - `connection.css` contains connection forms and shared button primitives;
 - `workspace.css` is a cascade-order facade; `styles/workspace/` assigns tabs/toolbars, panes/file
@@ -197,3 +208,15 @@ first update or add a visual baseline, then make the smallest ownership change a
 `npm run test:visual`. The deterministic browser harness at `test/visual/visual.html` renders the real
 `Application` against `test/visual/visualTestApi.ts`; `npm run test:visual:update` is reserved for
 intentional, reviewed UI changes.
+
+Menu items share hover and keyboard-focus backgrounds in `styles/dialogs/menus.css`.
+`SelectMenu` and `MenuItems` move DOM focus; the focused item is distinct from the
+selected value. Menu focus uses `:focus-visible` independently of the global
+Tab-only outline mode. `test/visual/keyboard-navigation.spec.ts` checks this behavior.
+
+Transfer badges, progress bars and status-bar states use shared `--status-*` tokens.
+Their semantic hues depend on light/dark mode, not the decorative palette accent.
+
+`focusMenuItem` prevents native focus recentering and reveals only the hidden edge
+of a row in its nearest menu scroller. Scrollable select menus keep their padding
+outside the scrolling content so keyboard highlights never touch the frame.

@@ -180,6 +180,8 @@ export default function SettingsDialog({
 
             {category === 'interface' && (
               <InterfaceSettings
+                colorSchemeValue={draft.colorSchemeValue}
+                setColorSchemeValue={draft.setColorSchemeValue}
                 themeValue={draft.themeValue}
                 setThemeValue={draft.setThemeValue}
                 languageValue={draft.languageValue}

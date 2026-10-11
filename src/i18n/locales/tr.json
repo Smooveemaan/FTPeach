@@ -548,7 +548,30 @@
     "exportDiagnostics": "Tanılama paketini dışa aktar",
     "exportDiagnosticsBusy": "Dışa aktarılıyor…",
     "exportDiagnosticsHint": "Uygulama sürümünü, işletim sistemini, son günlüğü ve uygulamanın kendi günlük dosyasını dışa aktarır. Şifreler, belirteçler ve diğer gizli bilgiler maskelenir.",
-    "exportDiagnosticsFailed": "Tanılama paketi dışa aktarılamadı."
+    "exportDiagnosticsFailed": "Tanılama paketi dışa aktarılamadı.",
+    "colorSchemeLabel": "Renk düzeni",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "Tamam"

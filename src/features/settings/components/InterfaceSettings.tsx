@@ -7,10 +7,14 @@ import DateFormatSelect, {
 } from '../../../components/DateFormatSelect.tsx';
 import Icon from '../../../components/Icon.tsx';
 import type { SupportedLanguage } from '../../../i18n/index.ts';
+import SelectMenu from '../../../components/SelectMenu.tsx';
+import { COLOR_SCHEMES } from '../../../shared/appearance.ts';
 import SegmentedControl from './SegmentedControl.tsx';
 import { handler } from '../../../shared/asyncFailure.ts';
 
 interface InterfaceSettingsProps {
+  colorSchemeValue: string;
+  setColorSchemeValue: (value: string) => void;
   themeValue: string;
   setThemeValue: (value: string) => void;
   languageValue: SupportedLanguage;
@@ -34,6 +38,8 @@ interface InterfaceSettingsProps {
 }
 
 export default function InterfaceSettings({
+  colorSchemeValue,
+  setColorSchemeValue,
   themeValue,
   setThemeValue,
   languageValue,
@@ -79,6 +85,30 @@ export default function InterfaceSettings({
               { value: 'dark', label: t('settings.themeDark') },
               { value: 'system', label: t('settings.themeSystem') },
             ]}
+          />
+        </label>
+      </div>
+      <div className="settings-option-group">
+        <label className="settings-field">
+          <span>{t('settings.colorSchemeLabel')}</span>
+          <SelectMenu
+            value={colorSchemeValue}
+            onChange={setColorSchemeValue}
+            label={t('settings.colorSchemeLabel')}
+            options={COLOR_SCHEMES.map((value) => ({
+              value,
+              label: (
+                <span className="color-scheme-option" data-color-scheme={value}>
+                  <span className="color-scheme-swatch" aria-hidden="true" />
+                  {t(`settings.colorSchemes.${value}`)}
+                </span>
+              ),
+            }))}
+            rootClassName="language-select color-scheme-select"
+            triggerClassName="language-select-trigger"
+            dropdownClassName="language-select-dropdown"
+            valueClassName="language-select-value"
+            caretClassName="language-select-caret"
           />
         </label>
       </div>

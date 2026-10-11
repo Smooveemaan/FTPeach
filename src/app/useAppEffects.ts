@@ -5,6 +5,7 @@ import { changeLanguage } from '../i18n/index.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 import { applyInterfaceScale } from '../platform/interfaceScale.ts';
+import { applyAppearance } from '../shared/appearance.ts';
 import { applyWindowTheme } from '../platform/windowFrame.ts';
 import { installVaultActivityReporting } from './vaultAutoLock.ts';
 
@@ -13,20 +14,20 @@ interface AppEffectsOptions {
 }
 
 export function useAppEffects({
-  interface: { theme, language, interfaceScale, dateFormat },
+  interface: { theme, colorScheme, language, interfaceScale, dateFormat },
 }: AppEffectsOptions): void {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const applyResolvedTheme = () => {
       const resolved = theme === 'system' ? (media.matches ? 'dark' : 'light') : theme;
-      document.documentElement.setAttribute('data-theme', resolved);
+      applyAppearance(resolved, colorScheme);
       applyWindowTheme(theme);
     };
     applyResolvedTheme();
     if (theme !== 'system') return;
     media.addEventListener('change', applyResolvedTheme);
     return () => media.removeEventListener('change', applyResolvedTheme);
-  }, [theme]);
+  }, [theme, colorScheme]);
 
   useEffect(() => {
     // The latest language wins inside changeLanguage, which also sets the

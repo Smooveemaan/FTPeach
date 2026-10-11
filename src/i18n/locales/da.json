@@ -548,7 +548,30 @@
     "exportDiagnostics": "Eksportér diagnosticeringspakke",
     "exportDiagnosticsBusy": "Eksporterer…",
     "exportDiagnosticsHint": "Eksporterer appens version, operativsystemet, den seneste log og appens egen logfil. Adgangskoder, tokens og andre hemmeligheder skjules.",
-    "exportDiagnosticsFailed": "Diagnosticeringspakken kunne ikke eksporteres."
+    "exportDiagnosticsFailed": "Diagnosticeringspakken kunne ikke eksporteres.",
+    "colorSchemeLabel": "Farveskema",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

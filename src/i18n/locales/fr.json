@@ -552,7 +552,30 @@
     "exportDiagnostics": "Exporter le paquet de diagnostic",
     "exportDiagnosticsBusy": "Exportation…",
     "exportDiagnosticsHint": "Exporte la version de l'application, le système d'exploitation, le journal récent et le fichier journal propre à l'application. Les mots de passe, jetons et autres secrets sont masqués.",
-    "exportDiagnosticsFailed": "Impossible d'exporter le paquet de diagnostic."
+    "exportDiagnosticsFailed": "Impossible d'exporter le paquet de diagnostic.",
+    "colorSchemeLabel": "Palette de couleurs",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

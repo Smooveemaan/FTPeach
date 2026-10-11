@@ -548,7 +548,30 @@
     "exportDiagnostics": "Ekspor paket diagnostik",
     "exportDiagnosticsBusy": "Mengekspor…",
     "exportDiagnosticsHint": "Mengekspor versi aplikasi, sistem operasi, log terbaru, dan file log milik aplikasi itu sendiri. Kata sandi, token, dan rahasia lainnya disamarkan.",
-    "exportDiagnosticsFailed": "Paket diagnostik tidak dapat diekspor."
+    "exportDiagnosticsFailed": "Paket diagnostik tidak dapat diekspor.",
+    "colorSchemeLabel": "Skema warna",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

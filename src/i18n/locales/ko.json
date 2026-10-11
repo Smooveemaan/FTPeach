@@ -548,7 +548,30 @@
     "exportDiagnostics": "진단 패키지 내보내기",
     "exportDiagnosticsBusy": "내보내는 중…",
     "exportDiagnosticsHint": "앱 버전, 운영 체제, 최근 로그 및 앱 자체 로그 파일을 내보냅니다. 비밀번호, 토큰 및 기타 비밀 정보는 가려집니다.",
-    "exportDiagnosticsFailed": "진단 패키지를 내보낼 수 없습니다."
+    "exportDiagnosticsFailed": "진단 패키지를 내보낼 수 없습니다.",
+    "colorSchemeLabel": "색 구성표",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "확인"

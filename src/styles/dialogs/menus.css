@@ -115,7 +115,8 @@
   text-align: start;
   width: 100%;
 }
-.menu-item:hover:not(:disabled) { background: var(--bg-raised); }
+.menu-item:hover:not(:disabled),
+.menu-item:focus-visible:not(:disabled) { background: var(--bg-raised); }
 .menu-item:disabled { color: var(--text-faint); cursor: not-allowed; }
 .menu-item.danger { color: var(--accent-red); }
 

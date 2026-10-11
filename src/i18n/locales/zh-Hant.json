@@ -548,7 +548,30 @@
     "exportDiagnostics": "匯出診斷包",
     "exportDiagnosticsBusy": "正在匯出…",
     "exportDiagnosticsHint": "匯出應用程式版本、作業系統、最近的日誌以及應用程式本身的日誌檔。密碼、權杖和其他機密資訊都會被隱藏。",
-    "exportDiagnosticsFailed": "無法匯出診斷包。"
+    "exportDiagnosticsFailed": "無法匯出診斷包。",
+    "colorSchemeLabel": "配色方案",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "確定"

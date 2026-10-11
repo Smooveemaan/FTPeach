@@ -1,4 +1,5 @@
 @import './foundation.css';
+@import './palettes.css';
 @import './shell.css';
 @import './connection.css';
 @import './workspace.css';

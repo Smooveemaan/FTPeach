@@ -12,7 +12,9 @@ for (const language of ['en', 'he']) {
     await page.locator('.settings-nav-item').nth(2).click();
     await page.locator('div[class="language-select"] > .language-select-trigger').click();
 
-    const dropdown = page.locator('.language-select-dropdown:not(.select-menu-sizer)');
+    const dropdown = page.locator(
+      '.language-select-dropdown:not(.select-menu-sizer) > .menu-items',
+    );
     await expect(dropdown).toBeVisible();
     const grip = await dropdown.evaluate((element) => {
       const bounds = element.getBoundingClientRect();

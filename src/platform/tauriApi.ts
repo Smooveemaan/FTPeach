@@ -369,14 +369,23 @@ export const tauriApi: Window['api'] = {
      */
     setWindowTheme: (
       theme: string,
-      colors: { background: [number, number, number]; border: [number, number, number] },
+      colors: {
+        background: [number, number, number];
+        border: [number, number, number];
+        confirmation: { light: boolean; colorScheme: string; background: [number, number, number] };
+      },
     ) => {
       const native: Theme | null = theme === 'dark' || theme === 'light' ? theme : null;
       const appWindow = getCurrentWebviewWindow();
       void appWindow.setTheme(native).catch(reportAsyncFailure);
       void appWindow.setBackgroundColor([...colors.background, 255]).catch(reportAsyncFailure);
       const [red, green, blue] = colors.border;
-      void invoke('app_set_window_border', { red, green, blue });
+      void invoke('app_set_window_border', {
+        red,
+        green,
+        blue,
+        appearance: colors.confirmation,
+      }).catch(reportAsyncFailure);
     },
     resetLayout: (): Promise<ResetLayoutResult> =>
       checkedResponse(

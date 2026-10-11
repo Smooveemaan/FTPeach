@@ -548,7 +548,30 @@
     "exportDiagnostics": "Diagnosepakket exporteren",
     "exportDiagnosticsBusy": "Bezig met exporteren…",
     "exportDiagnosticsHint": "Exporteert de versie van de toepassing, het besturingssysteem, het recente logboek en het eigen logbestand van de toepassing. Wachtwoorden, tokens en andere geheime gegevens worden onleesbaar gemaakt.",
-    "exportDiagnosticsFailed": "Het diagnosepakket kon niet worden geëxporteerd."
+    "exportDiagnosticsFailed": "Het diagnosepakket kon niet worden geëxporteerd.",
+    "colorSchemeLabel": "Kleurenschema",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

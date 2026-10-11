@@ -130,6 +130,31 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
     }
     for (key, allowed) in [
         ("theme", &["dark", "light", "system"][..]),
+        (
+            "colorScheme",
+            &[
+                "peach",
+                "graphite",
+                "ocean",
+                "forest",
+                "dracula",
+                "catppuccin",
+                "nord",
+                "solarized",
+                "black",
+                "gray",
+                "sand",
+                "rose",
+                "leaves",
+                "midnight",
+                "plum",
+                "ember",
+                "clay",
+                "cocoa",
+                "linen",
+                "burgundy",
+            ][..],
+        ),
         ("overwriteAction", &["ask", "skip", "overwrite"][..]),
         ("proxyType", &["socks4", "socks5", "http"][..]),
         ("paneOrientation", &["horizontal", "vertical"][..]),
@@ -235,6 +260,31 @@ mod tests {
     #[test]
     fn ipc_and_import_share_integer_ranges_and_zero_semantics() {
         for allow_secrets in [false, true] {
+            for scheme in [
+                "peach",
+                "graphite",
+                "ocean",
+                "forest",
+                "dracula",
+                "catppuccin",
+                "nord",
+                "solarized",
+                "black",
+                "gray",
+                "sand",
+                "rose",
+                "leaves",
+                "midnight",
+                "plum",
+                "ember",
+                "clay",
+                "cocoa",
+                "linen",
+                "burgundy",
+            ] {
+                let patch = serde_json::json!({"colorScheme": scheme});
+                assert!(validate_settings(patch.as_object().unwrap(), allow_secrets).is_ok());
+            }
             let zeros = serde_json::json!({"concurrency":0,"connectTimeout":0});
             assert!(validate_settings(zeros.as_object().unwrap(), allow_secrets).is_ok());
             let largest = serde_json::json!({"concurrency":128});
@@ -245,6 +295,7 @@ mod tests {
                 serde_json::json!({"concurrency":129}),
                 serde_json::json!({"unknown":true}),
                 serde_json::json!({"theme":"invalid"}),
+                serde_json::json!({"colorScheme":"invalid"}),
                 serde_json::json!({"proxyPort":"21"}),
             ] {
                 assert!(

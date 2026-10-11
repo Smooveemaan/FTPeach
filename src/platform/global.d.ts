@@ -91,6 +91,11 @@ declare global {
           colors: {
             background: [number, number, number];
             border: [number, number, number];
+            confirmation: {
+              light: boolean;
+              colorScheme: string;
+              background: [number, number, number];
+            };
           },
         ) => void;
         resetLayout: () => Promise<CommandResult & { settings?: AppSettings }>;

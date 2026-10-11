@@ -548,7 +548,30 @@
     "exportDiagnostics": "Εξαγωγή πακέτου διαγνωστικών",
     "exportDiagnosticsBusy": "Εξαγωγή…",
     "exportDiagnosticsHint": "Εξάγει την έκδοση της εφαρμογής, το λειτουργικό σύστημα, την πρόσφατη καταγραφή και το αρχείο καταγραφής της ίδιας της εφαρμογής. Οι κωδικοί πρόσβασης, τα διακριτικά και άλλα μυστικά αποκρύπτονται.",
-    "exportDiagnosticsFailed": "Δεν ήταν δυνατή η εξαγωγή του πακέτου διαγνωστικών."
+    "exportDiagnosticsFailed": "Δεν ήταν δυνατή η εξαγωγή του πακέτου διαγνωστικών.",
+    "colorSchemeLabel": "Συνδυασμός χρωμάτων",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

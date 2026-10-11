@@ -3,6 +3,7 @@ import { useCallback, useMemo, useReducer } from 'react';
 import { api } from '../../platform/api/index.ts';
 import { CommandFailure } from '../../platform/ipcContracts.ts';
 import type { AppSettings, SettingsSetResult } from '../../platform/api/settings.ts';
+import { normalizeColorScheme } from '../../shared/appearance.ts';
 import SETTINGS_DEFAULTS from '../../shared/settingsDefaults.ts';
 import { isValidBinding } from '../../shortcuts/bindings.ts';
 import { SHORTCUT_ACTIONS } from '../../shortcuts/registry.ts';
@@ -22,6 +23,7 @@ export type OverwriteAction = 'ask' | 'skip' | 'overwrite';
  */
 export interface SettingsValues {
   theme: string;
+  colorScheme: string;
   language: string;
   interfaceScale: number;
   dateFormat: string;
@@ -85,6 +87,7 @@ export interface SettingsValues {
 export const SETTING_GROUPS = {
   interface: [
     'theme',
+    'colorScheme',
     'language',
     'interfaceScale',
     'dateFormat',
@@ -295,6 +298,7 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     : (SETTINGS_DEFAULTS.overwriteAction as OverwriteAction);
   return {
     theme: stringSetting(s.theme, SETTINGS_DEFAULTS.theme),
+    colorScheme: normalizeColorScheme(s.colorScheme),
     language: stringSetting(s.language, SETTINGS_DEFAULTS.language),
     interfaceScale:
       typeof s.interfaceScale === 'number'

@@ -21,7 +21,34 @@ above. The screenshots are captured from the running application by
 `--light`), which also draws their window frame and shadow; they contain no
 third-party artwork beyond the interface icons noted above.
 
+`npm run screenshot:readme -- --palettes` also captures every color scheme from
+the same application state and produces `assets/images/ftpeach-palettes-dark.webp`
+and `assets/images/ftpeach-palettes-light.webp`. These looping site animations
+retain the transparent frame and shadow and add each scheme's name above the
+window. Each scheme takes one second, including a 350 ms crossfade into the next;
+the last scheme fades back to Peach. They use the same artwork and palette notices as the application.
+The command requires ffmpeg and refreshes both README PNGs in the same run.
+
 `assets/images/support.png` is the Ko-fi support button from Ko-fi's official
 press kit. It is Ko-fi's trademark, used only to link to the project's Ko-fi
 page from the README and the release notes; it is not shipped in the application
 and is not licensed under FTPeach's Apache License.
+
+## Community color palettes
+
+Orchid (Dracula), Bluebell (Catppuccin), Frost (Nord) and Lagoon (Solarized) in
+`src/styles/palettes.css` adapt the upstream palettes identified in
+`THIRD_PARTY_NOTICES.txt`. The original names remain their stored identifiers. Their original MIT
+licenses and copyright notices are included there and shipped with the application.
+These are FTPeach adaptations, not official ports or endorsements.
+
+Catppuccin uses Mocha for dark mode and Latte for light mode. Solarized uses its
+dark and light bases. Dracula light is an original FTPeach companion to the open
+Dracula palette, not Dracula PRO or Alucard. Nord light uses the Snow Storm bases.
+Some surface, muted-text and accent shades are adjusted for readable file-manager
+controls. Status and file-type colors retain FTPeach semantics.
+
+Onyx (stored as `black`), Ash (stored as `gray`), Sand, Rose, Leaves, Midnight,
+Plum, Ember, Clay, Cocoa, Linen and Burgundy are original FTPeach palettes under
+the project license. Onyx and Ash use achromatic surfaces, borders, text and primary controls; status
+and file-type colors keep their existing meanings.

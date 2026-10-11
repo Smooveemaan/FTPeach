@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Interface settings offer twenty nature-named color schemes with default Peach first and the rest
+  ordered by color; security confirmations follow the same appearance.
+
 ### Changed
 
 - Clicking the notification that transfers finished brings the FTPeach window back, also from
@@ -16,6 +21,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   when FTPeach starts.
 
 ### Fixed
+
+- Transfer status colors stay distinct across color schemes, including neutral palettes.
+
+- Dropdown and context menus highlight keyboard focus; long lists scroll evenly in both
+  directions and keep a gap between the highlight and the frame.
 
 - Junctions and folder links show as folders. Opening one says that links aren't followed,
   instead of opening the folder it points to in Explorer.

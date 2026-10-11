@@ -552,7 +552,30 @@
     "exportDiagnostics": "Esporta pacchetto diagnostico",
     "exportDiagnosticsBusy": "Esportazione…",
     "exportDiagnosticsHint": "Esporta la versione dell'applicazione, il sistema operativo, il registro recente e il file di registro dell'applicazione stessa. Password, token e altri dati segreti vengono oscurati.",
-    "exportDiagnosticsFailed": "Impossibile esportare il pacchetto diagnostico."
+    "exportDiagnosticsFailed": "Impossibile esportare il pacchetto diagnostico.",
+    "colorSchemeLabel": "Combinazione di colori",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

@@ -556,7 +556,30 @@
     "exportDiagnostics": "Exportovat diagnostický balíček",
     "exportDiagnosticsBusy": "Exportování…",
     "exportDiagnosticsHint": "Exportuje verzi aplikace, operační systém, nedávný protokol a vlastní soubor protokolu aplikace. Hesla, tokeny a další tajné údaje budou skryty.",
-    "exportDiagnosticsFailed": "Diagnostický balíček se nepodařilo exportovat."
+    "exportDiagnosticsFailed": "Diagnostický balíček se nepodařilo exportovat.",
+    "colorSchemeLabel": "Barevné schéma",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "OK"

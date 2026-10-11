@@ -556,7 +556,30 @@
     "exportDiagnostics": "Експортувати пакет діагностики",
     "exportDiagnosticsBusy": "Експортування…",
     "exportDiagnosticsHint": "Експортує версію програми, операційну систему, недавній журнал і власний файл журналу програми. Паролі, токени та інші секретні дані приховуються.",
-    "exportDiagnosticsFailed": "Не вдалося експортувати пакет діагностики."
+    "exportDiagnosticsFailed": "Не вдалося експортувати пакет діагностики.",
+    "colorSchemeLabel": "Колірна схема",
+    "colorSchemes": {
+      "peach": "Peach",
+      "graphite": "Graphite",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "dracula": "Orchid",
+      "catppuccin": "Bluebell",
+      "nord": "Frost",
+      "solarized": "Lagoon",
+      "black": "Onyx",
+      "gray": "Ash",
+      "sand": "Sand",
+      "rose": "Rose",
+      "leaves": "Leaves",
+      "midnight": "Midnight",
+      "plum": "Plum",
+      "ember": "Ember",
+      "clay": "Clay",
+      "cocoa": "Cocoa",
+      "linen": "Linen",
+      "burgundy": "Burgundy"
+    }
   },
   "promptDialog": {
     "confirmLabel": "Гаразд"

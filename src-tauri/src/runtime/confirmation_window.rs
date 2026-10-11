@@ -93,6 +93,15 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .app_handle()
         .get_webview_window("main")
         .ok_or("Parent window unavailable")?;
+    let appearance = window
+        .state::<AppearanceState>()
+        .0
+        .lock()
+        .unwrap_or_else(|error| error.into_inner())
+        .clone();
+    appearance
+        .apply(window)
+        .map_err(|_| "Confirmation appearance could not be applied")?;
     center_over_parent(&parent, window);
     // Centred over a main window that sits off screen; it must not take the
     // focus from whoever works at the desktop either.
@@ -167,37 +176,117 @@ fn enable_native_rounding(_: &tauri::WebviewWindow) {}
 const WIDTH: f64 = 460.0;
 const HEIGHT: f64 = 170.0;
 
-/// The theme the main window shows now, an unsaved preview in Settings
-/// included: a protective switch is confirmed the moment it moves, before
-/// Save. The saved choice is the fallback.
-fn light_theme(app: &tauri::AppHandle, preference: Option<&str>) -> bool {
-    app.get_webview_window("main")
-        .and_then(|main| main.theme().ok())
-        .map_or(preference == Some("light"), |theme| {
-            theme == tauri::Theme::Light
-        })
+/// Only named palettes cross the main-window appearance boundary.
+#[derive(Clone, Copy, Default, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub(crate) enum ColorScheme {
+    #[default]
+    Peach,
+    Graphite,
+    Ocean,
+    Forest,
+    Dracula,
+    Catppuccin,
+    Nord,
+    Solarized,
+    Black,
+    Gray,
+    Sand,
+    Rose,
+    Leaves,
+    Midnight,
+    Plum,
+    Ember,
+    Clay,
+    Cocoa,
+    Linen,
+    Burgundy,
+}
+
+/// CSS-resolved colors, including an unsaved preview, for isolated windows.
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct Appearance {
+    light: bool,
+    color_scheme: ColorScheme,
+    background: [u8; 3],
+}
+
+impl Default for Appearance {
+    fn default() -> Self {
+        Self {
+            light: false,
+            color_scheme: ColorScheme::Peach,
+            background: [26, 25, 23],
+        }
+    }
+}
+
+impl Appearance {
+    fn script(&self) -> String {
+        // Enum names and byte channels only; no user text enters executable code.
+        format!(
+            "window.__FTPEACH_APPEARANCE__ = {}; window.dispatchEvent(new Event('ftpeach-appearance'));",
+            serde_json::to_string(self).expect("appearance is serializable")
+        )
+    }
+
+    fn theme(&self) -> tauri::Theme {
+        if self.light {
+            tauri::Theme::Light
+        } else {
+            tauri::Theme::Dark
+        }
+    }
+
+    fn background(&self) -> tauri::utils::config::Color {
+        let [red, green, blue] = self.background;
+        tauri::utils::config::Color(red, green, blue, 255)
+    }
+
+    fn apply(&self, window: &tauri::WebviewWindow) -> tauri::Result<()> {
+        window.set_theme(Some(self.theme()))?;
+        window.set_background_color(Some(self.background()))?;
+        window.eval(self.script())
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct AppearanceState(std::sync::Mutex<Appearance>);
+
+/// Keeps new and already open confirmations on the main window's current palette.
+pub(crate) fn update_appearance(
+    app: &tauri::AppHandle,
+    appearance: Appearance,
+) -> tauri::Result<()> {
+    let state = app.state::<AppearanceState>();
+    *state.0.lock().unwrap_or_else(|error| error.into_inner()) = appearance.clone();
+    let mut result = Ok(());
+    for (label, window) in app.webview_windows() {
+        if label.starts_with(LABEL_PREFIX)
+            && let Err(error) = appearance.apply(&window)
+        {
+            result = Err(error);
+        }
+    }
+    result
 }
 
 pub(crate) fn create(
     app: &tauri::AppHandle,
     label: &str,
     request_id: &str,
-    theme: Option<&str>,
 ) -> tauri::Result<tauri::WebviewWindow> {
-    let light = light_theme(app, theme);
-    let theme = if light { "light" } else { "dark" };
-    // Matches --bg-panel, so the window shows no other color before it paints.
-    let background = if light {
-        tauri::utils::config::Color(250, 249, 247, 255)
-    } else {
-        tauri::utils::config::Color(26, 25, 23, 255)
-    };
+    let state = app.state::<AppearanceState>();
+    let appearance = state
+        .0
+        .lock()
+        .unwrap_or_else(|error| error.into_inner())
+        .clone();
     let mut builder = WebviewWindowBuilder::new(
         app,
         label,
-        WebviewUrl::App(
-            format!("index.html?security-confirmation={request_id}&theme={theme}").into(),
-        ),
+        WebviewUrl::App(format!("index.html?security-confirmation={request_id}").into()),
     )
     .title("FTPeach")
     .inner_size(WIDTH, HEIGHT)
@@ -208,7 +297,9 @@ pub(crate) fn create(
     .decorations(false)
     .shadow(false)
     .always_on_top(true)
-    .background_color(background)
+    .initialization_script(appearance.script())
+    .theme(Some(appearance.theme()))
+    .background_color(appearance.background())
     .visible(false);
     // The same WebView2 profile as the main window, which a portable copy
     // keeps beside the program.
@@ -232,4 +323,49 @@ pub(crate) fn create(
         center_over_parent(main, &window);
     }
     Ok(window)
+}
+
+#[cfg(test)]
+mod appearance_tests {
+    use super::*;
+
+    #[test]
+    fn appearance_accepts_only_named_schemes_and_byte_colors() {
+        for scheme in [
+            "peach",
+            "graphite",
+            "ocean",
+            "forest",
+            "dracula",
+            "catppuccin",
+            "nord",
+            "solarized",
+            "black",
+            "gray",
+            "sand",
+            "rose",
+            "leaves",
+            "midnight",
+            "plum",
+            "ember",
+            "clay",
+            "cocoa",
+            "linen",
+            "burgundy",
+        ] {
+            let appearance: Appearance = serde_json::from_value(serde_json::json!({
+                "light": true, "colorScheme": scheme, "background": [248, 251, 255]
+            }))
+            .unwrap();
+            assert!(appearance.script().contains(scheme));
+            assert_eq!(appearance.theme(), tauri::Theme::Light);
+        }
+        for value in [
+            serde_json::json!({"light": true, "colorScheme": "unknown", "background": [0,0,0]}),
+            serde_json::json!({"light": true, "colorScheme": "peach", "background": [256,0,0]}),
+            serde_json::json!({"light": "light", "colorScheme": "peach", "background": [0,0,0]}),
+        ] {
+            assert!(serde_json::from_value::<Appearance>(value).is_err());
+        }
+    }
 }

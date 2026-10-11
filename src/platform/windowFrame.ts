@@ -13,7 +13,7 @@ import { api } from './api/index.ts';
  * both here is what lets either change alone without the frame going stale,
  * the way `interfaceScale.ts` owns the write and the read of its one property.
  *
- * The colors themselves stay in foundation.css and are read back through
+ * The colors themselves stay in palettes.css and are read back through
  * `resolveThemeColor`, so a token edit still reaches the frame.
  */
 
@@ -76,6 +76,11 @@ function push(): void {
   api.app.setWindowTheme(preference, {
     background: resolveThemeColor('var(--bg-base)', FALLBACK_BASE),
     border: resolveThemeColor(border, FALLBACK_BORDER),
+    confirmation: {
+      light: document.documentElement.dataset.theme === 'light',
+      colorScheme: document.documentElement.dataset.colorScheme ?? 'peach',
+      background: resolveThemeColor('var(--bg-panel)', FALLBACK_BASE),
+    },
   });
 }
 

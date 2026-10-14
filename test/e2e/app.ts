@@ -3,6 +3,7 @@
 // the ordinary application), a throwaway profile, and Playwright attached to
 // its WebView2 over the Chrome DevTools Protocol.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   copyFileSync,
   existsSync,
@@ -11,6 +12,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { createServer, connect } from 'node:net';
@@ -436,6 +438,32 @@ export async function launchApp(
 }
 
 /**
+ * Every file and folder under a run's folder (work, saved, profile, a portable
+ * program) with its size, and the SHA-256 of files up to a megabyte outside
+ * WebView2's own data.
+ */
+function inventory(root: string): string {
+  return readdirSync(root, { recursive: true, withFileTypes: true })
+    .map((entry) => {
+      const full = path.join(entry.parentPath, entry.name);
+      const relative = path.relative(root, full);
+      if (entry.isDirectory()) return `${relative}\\`;
+      try {
+        const size = statSync(full).size;
+        const hash =
+          size <= 1 << 20 && !relative.includes('EBWebView')
+            ? createHash('sha256').update(readFileSync(full)).digest('hex')
+            : '';
+        return `${relative} ${size} ${hash}`.trimEnd();
+      } catch (error) {
+        return `${relative} unreadable: ${(error as Error).message}`;
+      }
+    })
+    .sort()
+    .join('\n');
+}
+
+/**
  * The test API with `app`: the running application, with a trace of the last
  * run attached and the process and profile gone afterwards, a timed-out test
  * too. `test.use({ appSettings, appStore, appPortable, appRealDialogs })`
@@ -477,6 +505,11 @@ export const test = base.extend<{
         ?.context()
         .tracing.stop({ path: testInfo.outputPath('trace.zip') })
         .catch(() => {});
+      // What the run left on disk, before close removes it.
+      if (failed) {
+        writeFileSync(testInfo.outputPath('files.txt'), inventory(path.dirname(app.profileDir)));
+        await testInfo.attach('files.txt', { path: testInfo.outputPath('files.txt') });
+      }
       const logs = await app.close();
       // A file, so the CI artifact of test results carries it too.
       if (failed) {

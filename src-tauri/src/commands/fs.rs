@@ -591,14 +591,16 @@ async fn open_validated_path(
     kind: crate::local_fs::local_open::OpenKind,
 ) -> CommandResult<()> {
     let canonical = approved_paths.validate(Path::new(&local_path), kind)?;
+    // Explorer and the programs it starts do not all take a verbatim path.
+    let shell = crate::local_fs::local_open::shell_path(&canonical);
     #[cfg(feature = "smoke-test")]
-    if crate::runtime::e2e_browser::hold_back_opening(&canonical.to_string_lossy()) {
+    if crate::runtime::e2e_browser::hold_back_opening(&shell) {
         return Ok(());
     }
     if kind == crate::local_fs::local_open::OpenKind::Reveal {
         #[cfg(windows)]
         let result = std::process::Command::new("explorer.exe")
-            .arg(format!("/select,{}", canonical.to_string_lossy()))
+            .arg(format!("/select,{shell}"))
             .spawn()
             .map(|_| ());
         #[cfg(not(windows))]
@@ -613,7 +615,7 @@ async fn open_validated_path(
     use tauri_plugin_opener::OpenerExt;
     Ok(app
         .opener()
-        .open_path(canonical.to_string_lossy().into_owned(), None::<String>)
+        .open_path(shell, None::<String>)
         .map_err(anyhow::Error::from)?)
 }
 

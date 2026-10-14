@@ -70,8 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   as failed.
 - A stopped upload whose temporary file the server would not delete names that file, in its row
   and in the connection's log.
-- Programs that open a server file get its ordinary path, so those that could not open it now
-  can.
+- Programs that open a server file or a file on this computer get its ordinary path, so those
+  that could not open it now can.
 - Closing the window to the tray cancels a security confirmation that was still open, instead of
   leaving it on screen.
 - After typing a path and pressing Enter, the keyboard works in the file list right away; Esc

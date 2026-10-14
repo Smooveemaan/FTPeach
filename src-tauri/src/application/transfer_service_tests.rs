@@ -14,6 +14,9 @@ struct Remote {
     reject_rename: bool,
     /// Saves over the local source at its own length while it uploads.
     rewrite_source: bool,
+    /// Saves a longer version over the local source while it uploads, so
+    /// the upload fails its length check.
+    lengthen_source: bool,
     /// Removals refused before the server lets go, as a Windows server does
     /// while a stopped upload still holds the file open.
     held_removals: std::sync::atomic::AtomicUsize,
@@ -98,6 +101,13 @@ impl ProtocolBackend for Backend {
         self.remote.writing.notify_one();
         if self.remote.rewrite_source {
             std::fs::write(local, b"xyz").unwrap();
+        }
+        if self.remote.lengthen_source {
+            std::fs::write(local, b"abcdef").unwrap();
+            return Err(crate::protocol::fail(
+                ErrorCode::IntegrityMismatch,
+                "Expected 3 bytes, received 6",
+            ));
         }
         if self.remote.stall {
             std::future::pending::<()>().await;
@@ -232,45 +242,49 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
 }
 
 #[tokio::test]
-async fn a_source_saved_over_at_its_own_length_while_uploading_is_not_put_in_place() {
-    let remote = Arc::new(Remote {
-        rewrite_source: true,
-        ..Remote::default()
-    });
-    remote
-        .files
-        .lock()
-        .unwrap()
-        .insert("/target".into(), b"old".to_vec());
-    let mut backend = backend(&remote);
-    let partial = remote_partial_path("/target");
-    let source = Source::new();
-    let done = Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let done_for_sink = done.clone();
-    let staged_whole = std::sync::atomic::AtomicBool::new(false);
-    let upload = upload_staged(
-        &mut backend,
-        &source.0,
-        &partial,
-        "/target",
-        false,
-        Arc::new(move |event| {
-            if matches!(event, ProgressInfo::Done) {
-                done_for_sink.store(true, SeqCst);
-            }
-        }),
-        &staged_whole,
-    );
-    let error = crate::protocol::ALLOW_OVERWRITE
-        .scope(true, upload)
-        .await
-        .unwrap_err();
-    assert_eq!(
-        CommandError::from_anyhow(&error).code,
-        ErrorCode::IntegrityMismatch
-    );
-    assert!(!done.load(SeqCst));
-    assert_old(&remote);
+async fn a_source_saved_over_while_uploading_is_not_put_in_place_and_says_so() {
+    for lengthen in [false, true] {
+        let remote = Arc::new(Remote {
+            rewrite_source: !lengthen,
+            lengthen_source: lengthen,
+            ..Remote::default()
+        });
+        remote
+            .files
+            .lock()
+            .unwrap()
+            .insert("/target".into(), b"old".to_vec());
+        let mut backend = backend(&remote);
+        let partial = remote_partial_path("/target");
+        let source = Source::new();
+        let done = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let done_for_sink = done.clone();
+        let staged_whole = std::sync::atomic::AtomicBool::new(false);
+        let upload = upload_staged(
+            &mut backend,
+            &source.0,
+            &partial,
+            "/target",
+            false,
+            Arc::new(move |event| {
+                if matches!(event, ProgressInfo::Done) {
+                    done_for_sink.store(true, SeqCst);
+                }
+            }),
+            &staged_whole,
+        );
+        let error = crate::protocol::ALLOW_OVERWRITE
+            .scope(true, upload)
+            .await
+            .unwrap_err();
+        // At its own length or not, the error names the source as what changed.
+        assert_eq!(
+            CommandError::from_anyhow(&error).code,
+            ErrorCode::SourceChanged
+        );
+        assert!(!done.load(SeqCst));
+        assert_old(&remote);
+    }
 }
 
 #[tokio::test]

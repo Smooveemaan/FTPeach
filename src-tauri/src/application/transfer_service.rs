@@ -77,14 +77,23 @@ async fn upload_staged(
         // the length checks miss it; publishing then puts a mix of two versions
         // in place. The source must be the file it was when reading began.
         let before = crate::application::recursive_transfer::identity::capture(local)?;
-        backend.upload(local, partial, resume, staged_sink).await?;
+        let uploaded = backend.upload(local, partial, resume, staged_sink).await;
+        // A save of another length fails the length check first; either way
+        // the source is what changed. Any other failure says what it is.
+        let may_have_changed = match &uploaded {
+            Ok(()) => true,
+            Err(error) => CommandError::from_anyhow(error).code == ErrorCode::IntegrityMismatch,
+        };
         anyhow::ensure!(
-            crate::application::recursive_transfer::identity::capture(local).ok() == Some(before),
+            !may_have_changed
+                || crate::application::recursive_transfer::identity::capture(local).ok()
+                    == Some(before),
             CommandError::new(
-                ErrorCode::IntegrityMismatch,
+                ErrorCode::SourceChanged,
                 "The file changed while it was uploading; the server's copy was left as it was"
             )
         );
+        uploaded?;
         staged_whole.store(true, std::sync::atomic::Ordering::SeqCst);
         // A server that will not replace sets the old file aside; never delete-then-rename.
         if crate::protocol::overwrite_allowed() {

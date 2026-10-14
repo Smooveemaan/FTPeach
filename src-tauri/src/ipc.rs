@@ -79,6 +79,9 @@ pub enum ErrorCode {
     /// FTPeach may not write in the folder that keeps its data; the message is
     /// that folder.
     StoreNotWritable,
+    /// The local file changed while it was being uploaded; nothing was put in
+    /// place on the server.
+    SourceChanged,
     Internal,
 }
 
@@ -426,6 +429,7 @@ impl CommandError {
             ErrorCode::StoreNewer => "The data was saved by a newer version of FTPeach",
             ErrorCode::StoreUnreadable => "The data file cannot be read, so it is not overwritten",
             ErrorCode::StoreNotWritable => "The data folder cannot be written",
+            ErrorCode::SourceChanged => "The file changed while it was uploading",
         };
         Self {
             code,
@@ -479,6 +483,7 @@ mod tests {
             (ErrorCode::StoreNewer, "storeNewer"),
             (ErrorCode::StoreUnreadable, "storeUnreadable"),
             (ErrorCode::StoreNotWritable, "storeNotWritable"),
+            (ErrorCode::SourceChanged, "sourceChanged"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

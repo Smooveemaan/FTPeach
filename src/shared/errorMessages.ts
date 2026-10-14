@@ -41,6 +41,7 @@ const ERROR_CODE_KEYS = {
   storeNewer: 'errors.storeNewer',
   storeUnreadable: 'errors.storeUnreadable',
   storeNotWritable: 'errors.storeNotWritable',
+  sourceChanged: 'errors.sourceChanged',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 

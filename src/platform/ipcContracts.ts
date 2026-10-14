@@ -47,6 +47,7 @@ export const COMMAND_ERROR_CODES = [
   'storeNewer',
   'storeUnreadable',
   'storeNotWritable',
+  'sourceChanged',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

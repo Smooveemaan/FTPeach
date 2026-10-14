@@ -338,6 +338,7 @@
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
     "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
+    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
     "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
     "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。",

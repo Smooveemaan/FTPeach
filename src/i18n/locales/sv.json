@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
     "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
     "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Några rader i protokolloggen gick förlorade eftersom skrivningen inte hann med: {{dropped}}"
   },
   "logPanel": {

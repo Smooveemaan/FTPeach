@@ -679,6 +679,7 @@
     "uploadRestartedSourceChanged": "Il file locale non corrisponde più all'invio in pausa di {{path}}: verrà inviato di nuovo dall'inizio.",
     "uploadRestartedMismatch": "I dati già presenti sul server non corrispondono al file locale: {{path}} verrà inviato di nuovo dall'inizio.",
     "uploadRestartedUnverified": "Non è stato possibile verificare l'invio in pausa di {{path}} ({{error}}): il file verrà inviato di nuovo dall'inizio.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_many": "Ricevute {{count}} voci",
     "droppedRecords": "Alcune righe del registro di protocollo sono state scartate perché la scrittura non teneva il passo: {{dropped}}"
   },

@@ -679,6 +679,7 @@
     "uploadRestartedSourceChanged": "הקובץ המקומי כבר אינו תואם להעלאה המושהית של {{path}} — הוא יישלח שוב מההתחלה.",
     "uploadRestartedMismatch": "מה שכבר נמצא בשרת אינו תואם לקובץ המקומי — {{path}} יישלח שוב מההתחלה.",
     "uploadRestartedUnverified": "לא ניתן היה לאמת את ההעלאה המושהית של {{path}} ({{error}}) — הקובץ יישלח שוב מההתחלה.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_two": "התקבלו {{count}} רשומות",
     "droppedRecords": "חלק מרשומות יומן הפרוטוקול הושמטו כי הכתיבה לא הדביקה את הקצב: {{dropped}}"
   },

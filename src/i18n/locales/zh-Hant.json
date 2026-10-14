@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "本機檔案與已暫停的 {{path}} 上傳不再相符，將從頭重新傳送。",
     "uploadRestartedMismatch": "伺服器上已有的資料與本機檔案不相符，將從頭重新傳送 {{path}}。",
     "uploadRestartedUnverified": "無法驗證已暫停的 {{path}} 上傳（{{error}}），將從頭重新傳送該檔案。",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "由於寫入速度跟不上，協定記錄中的部分項目已被捨棄：{{dropped}}"
   },
   "logPanel": {

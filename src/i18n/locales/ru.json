@@ -684,6 +684,7 @@
     "uploadRestartedSourceChanged": "Локальный файл больше не совпадает с приостановленной отправкой {{path}} — файл будет отправлен заново.",
     "uploadRestartedMismatch": "Данные на сервере не совпадают с локальным файлом — {{path}} будет отправлен заново.",
     "uploadRestartedUnverified": "Не удалось проверить приостановленную отправку {{path}} ({{error}}) — файл будет отправлен заново.",
+    "stagingLeft": "Не удалось удалить с сервера временный файл {{path}}: {{error}}",
     "receivedEntries_one": "Получена {{count}} запись",
     "receivedEntries_few": "Получено {{count}} записи",
     "receivedEntries_many": "Получено {{count}} записей",

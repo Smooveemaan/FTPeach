@@ -4,6 +4,7 @@ use crate::ipc::{CommandError, ErrorCode};
 use crate::session::Sessions;
 use crate::transfer::upload_staging::{
     REMOVE_ATTEMPTS as STAGING_REMOVE_ATTEMPTS, REMOVE_PAUSE as STAGING_REMOVE_PAUSE,
+    log_staging_left,
 };
 use std::time::Duration;
 
@@ -61,7 +62,7 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
     // could need. Err: the browsing connection is busy or not answering.
     let cleaned: Result<Cleanup, ()> = async {
         for attempt in 1..=STAGING_REMOVE_ATTEMPTS {
-            let refused = {
+            {
                 let slot = sessions.lookup_slot(connection_id);
                 let Ok(mut guard) = tokio::time::timeout(Duration::from_secs(5), slot.lock()).await
                 else {
@@ -77,7 +78,7 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                 {
                     return Ok(Cleanup::Done);
                 }
-                match tokio::time::timeout(
+                let refused = match tokio::time::timeout(
                     Duration::from_secs(10),
                     session.browse_client.remove(partial, false),
                 )
@@ -86,14 +87,19 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                     Ok(Ok(())) => return Ok(Cleanup::Done),
                     Ok(Err(error)) => error,
                     Err(_) => return Err(()),
+                };
+                if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
+                    return Ok(Cleanup::Done);
                 }
-            };
-            if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
-                return Ok(Cleanup::Done);
-            }
-            if attempt == STAGING_REMOVE_ATTEMPTS {
-                log::warn!("Could not clean transfer staging file {partial}: {refused}");
-                return Ok(Cleanup::Left);
+                if attempt == STAGING_REMOVE_ATTEMPTS {
+                    log::warn!("Could not clean transfer staging file {partial}: {refused}");
+                    log_staging_left(
+                        session.browse_client.as_ref(),
+                        partial,
+                        &format!("{refused:#}"),
+                    );
+                    return Ok(Cleanup::Left);
+                }
             }
             // A server on Windows refuses to delete a file that the stopped
             // upload's session still holds open, and that session takes a
@@ -120,7 +126,7 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                 if !crate::protocol::put_back_set_aside(backend.as_mut(), &path).await {
                     return Ok(());
                 }
-                match tokio::time::timeout(
+                let removed = match tokio::time::timeout(
                     std::time::Duration::from_secs(20),
                     backend.remove(&path, false),
                 )
@@ -128,11 +134,16 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                 {
                     Ok(result) => result,
                     Err(elapsed) => {
+                        log_staging_left(backend.as_ref(), &path, "timed out");
                         // Cut off mid-reply, the connection must not serve again.
                         let _ = backend.disconnect().await;
-                        Err(elapsed.into())
+                        return Err(elapsed.into());
                     }
+                };
+                if let Err(error) = &removed {
+                    log_staging_left(backend.as_ref(), &path, &format!("{error:#}"));
                 }
+                removed
             })
         });
         Some(pool.run(uuid::Uuid::new_v4().to_string(), task).await)

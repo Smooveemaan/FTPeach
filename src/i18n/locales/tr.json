@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "Yerel dosya, duraklatılan {{path}} yüklemesiyle artık eşleşmiyor — dosya baştan yeniden gönderilecek.",
     "uploadRestartedMismatch": "Sunucuda bulunanlar yerel dosyayla eşleşmiyor — {{path}} baştan yeniden gönderilecek.",
     "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Yazma işlemi yetişemediği için protokol günlüğündeki bazı kayıtlar atıldı: {{dropped}}"
   },
   "logPanel": {

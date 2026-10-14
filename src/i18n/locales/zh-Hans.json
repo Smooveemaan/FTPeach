@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
     "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
     "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "由于写入速度跟不上，协议日志的部分记录已被丢弃：{{dropped}}"
   },
   "logPanel": {

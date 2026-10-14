@@ -700,6 +700,7 @@
     "uploadRestartedSourceChanged": "لم يعد الملف المحلي مطابقًا لعملية الرفع المتوقفة مؤقتًا للملف {{path}} — سيُرسل من جديد من البداية.",
     "uploadRestartedMismatch": "ما هو موجود على الخادم لا يطابق الملف المحلي — سيُرسل {{path}} من جديد من البداية.",
     "uploadRestartedUnverified": "تعذّر التحقق من عملية الرفع المتوقفة مؤقتًا للملف {{path}} ({{error}}) — سيُرسل الملف من جديد من البداية.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_zero": "تم استلام {{count}} سجل",
     "receivedEntries_two": "تم استلام {{count}} سجلين",
     "receivedEntries_few": "تم استلام {{count}} سجلات",

@@ -264,10 +264,29 @@ pub(crate) async fn remove_staging_on(
                 return log::debug!("No staging file to remove at {staging_path}");
             }
             Ok(Err(_)) if attempt < attempts => tokio::time::sleep(REMOVE_PAUSE).await,
-            Ok(Err(error)) => log::warn!("Could not remove staging file {staging_path}: {error}"),
-            Err(_) => return log::warn!("Staging cleanup timed out; retained {staging_path}"),
+            Ok(Err(error)) => {
+                log::warn!("Could not remove staging file {staging_path}: {error}");
+                log_staging_left(browse, staging_path, &format!("{error:#}"));
+            }
+            Err(_) => {
+                log::warn!("Staging cleanup timed out; retained {staging_path}");
+                return log_staging_left(browse, staging_path, "timed out");
+            }
         }
     }
+}
+
+/// Tells the connection's log that `staging_path` stays on the server.
+pub(crate) fn log_staging_left(
+    backend: &(dyn ProtocolBackend + Send),
+    staging_path: &str,
+    error: &str,
+) {
+    backend.log_event(
+        "stagingLeft",
+        serde_json::json!({ "path": staging_path, "error": error }),
+        crate::protocol::LogKind::Error,
+    );
 }
 
 /// On a new connection to `server`: puts back the files replacements there set

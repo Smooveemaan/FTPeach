@@ -686,6 +686,7 @@
     "uploadRestartedSourceChanged": "Plik lokalny nie odpowiada już wstrzymanemu wysyłaniu {{path}} — zostanie wysłany ponownie od początku.",
     "uploadRestartedMismatch": "Dane znajdujące się już na serwerze nie odpowiadają plikowi lokalnemu — {{path}} zostanie wysłany ponownie od początku.",
     "uploadRestartedUnverified": "Nie udało się zweryfikować wstrzymanego wysyłania {{path}} ({{error}}) — plik zostanie wysłany ponownie od początku.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_few": "Otrzymano {{count}} wpisy",
     "receivedEntries_many": "Otrzymano {{count}} wpisów",
     "droppedRecords": "Część wpisów dziennika protokołu została odrzucona, bo zapis nie nadążał: {{dropped}}"

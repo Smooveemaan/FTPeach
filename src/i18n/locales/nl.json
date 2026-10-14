@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "Het lokale bestand komt niet meer overeen met de gepauzeerde upload van {{path}} — het wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Enkele regels van het protocollogboek zijn verloren omdat het wegschrijven het niet bijhield: {{dropped}}"
   },
   "logPanel": {

@@ -60,7 +60,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Stopping a transfer on a server that stopped answering takes seconds, not half a minute.
 - An upload whose connection broke just as the server finished saving it is shown as done, not
   as failed.
-- A stopped upload whose temporary file the server would not delete names that file.
+- A stopped upload whose temporary file the server would not delete names that file, in its row
+  and in the connection's log.
 - Programs that open a server file get its ordinary path, so those that could not open it now
   can.
 - Closing the window to the tray cancels a security confirmation that was still open, instead of

@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
     "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
     "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "書き込みが追いつかなかったため、プロトコルログの一部の記録が破棄されました: {{dropped}}"
   },
   "logPanel": {

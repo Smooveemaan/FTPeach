@@ -679,6 +679,7 @@
     "uploadRestartedSourceChanged": "Le fichier local ne correspond plus à l'envoi en pause de {{path}} — il sera envoyé à nouveau depuis le début.",
     "uploadRestartedMismatch": "Les données déjà présentes sur le serveur ne correspondent pas au fichier local — {{path}} sera envoyé à nouveau depuis le début.",
     "uploadRestartedUnverified": "Impossible de vérifier l'envoi en pause de {{path}} ({{error}}) — le fichier sera envoyé à nouveau depuis le début.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_many": "{{count}} entrées reçues",
     "droppedRecords": "Certaines lignes du journal de protocole ont été perdues car l'écriture ne suivait pas : {{dropped}}"
   },

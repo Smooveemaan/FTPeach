@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "स्थानीय फ़ाइल अब {{path}} के रोके गए अपलोड से मेल नहीं खाती — इसे शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedMismatch": "सर्वर पर पहले से मौजूद डेटा स्थानीय फ़ाइल से मेल नहीं खाता — {{path}} को शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "लेखन गति पीछे रह जाने के कारण प्रोटोकॉल लॉग के कुछ रिकॉर्ड छोड़ दिए गए: {{dropped}}"
   },
   "logPanel": {

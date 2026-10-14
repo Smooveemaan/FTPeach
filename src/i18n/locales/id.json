@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "File lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — file akan dikirim ulang dari awal.",
     "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan file lokal — {{path}} akan dikirim ulang dari awal.",
     "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — file akan dikirim ulang dari awal.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Sebagian catatan log protokol dibuang karena penulisan tidak mengejar: {{dropped}}"
   },
   "logPanel": {

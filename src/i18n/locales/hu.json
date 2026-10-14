@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
     "uploadRestartedMismatch": "A szerveren lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
     "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől.",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "A protokollnapló néhány bejegyzése elveszett, mert az írás nem tudott lépést tartani: {{dropped}}"
   },
   "logPanel": {

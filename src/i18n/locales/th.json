@@ -672,6 +672,7 @@
     "uploadRestartedSourceChanged": "ไฟล์ในเครื่องไม่ตรงกับการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้แล้ว — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
     "uploadRestartedMismatch": "ข้อมูลที่มีอยู่บนเซิร์ฟเวอร์ไม่ตรงกับไฟล์ในเครื่อง — จะส่ง {{path}} ใหม่ตั้งแต่ต้น",
     "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
+    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "บันทึกโปรโตคอลบางรายการถูกทิ้งเพราะการเขียนตามไม่ทัน: {{dropped}}"
   },
   "logPanel": {

@@ -507,6 +507,25 @@ impl Store {
         path: &PathBuf,
         data: &T,
     ) -> Result<()> {
+        self.write_json_unnamed(path, data).await.map_err(|error| {
+            // Refused by Windows: what the user can act on is the folder.
+            if CommandError::from_anyhow(&error).code == ErrorCode::PermissionDenied {
+                log::warn!("Could not save {}: {error:#}", path.display());
+                anyhow::Error::new(CommandError::new(
+                    ErrorCode::StoreNotWritable,
+                    self.dir.display().to_string(),
+                ))
+            } else {
+                error
+            }
+        })
+    }
+
+    async fn write_json_unnamed<T: serde::Serialize + serde::de::DeserializeOwned>(
+        &self,
+        path: &PathBuf,
+        data: &T,
+    ) -> Result<()> {
         self.ensure_writable(path).await?;
         tokio::fs::create_dir_all(&self.dir)
             .await

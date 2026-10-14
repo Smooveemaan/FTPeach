@@ -338,6 +338,7 @@
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
     "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
     "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
+    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
     "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."

@@ -129,6 +129,8 @@ test('friendlyError localizes every structured command error code', () => {
     noRecycleBin: 'This location has no Recycle Bin, so nothing was deleted.',
     storeNewer: "This data was saved by a newer version of FTPeach, so the change can't be saved.",
     storeUnreadable: "The file that keeps this data can't be read, so the change can't be saved.",
+    storeNotWritable:
+      "Couldn't save changes in unlocalized backend fallback: FTPeach isn't allowed to write to this folder.",
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

@@ -13,6 +13,7 @@ function harness() {
     reject: (_error: unknown) => void;
   }[] = [];
   const errors: unknown[] = [];
+  const withdrawn: unknown[] = [];
   let id = 0;
   const persist = createSettingPersister({
     schedule: (callback) => {
@@ -30,13 +31,16 @@ function harness() {
     report: (error) => {
       errors.push(error);
     },
+    withdraw: (error) => {
+      withdrawn.push(error);
+    },
   });
   const tick = () => {
     const callbacks = [...timers.values()];
     timers.clear();
     callbacks.forEach((callback) => callback());
   };
-  return { persist, calls, errors, timers, tick };
+  return { persist, calls, errors, withdrawn, timers, tick };
 }
 
 test('settings coalesce rapid changes with the latest value and serialize in-flight writes', async () => {
@@ -111,4 +115,22 @@ test('a failed flush retains the patch for an explicit retry', async () => {
   h.calls[1]!.resolve({ ok: true });
   await retry;
   assert.equal(h.persist.status().pending, false);
+});
+
+test('a refused save is reported, and taken back once a later save works', async () => {
+  const h = harness();
+  h.persist({ theme: 'light' });
+  h.tick();
+  h.calls[0]!.resolve({ ok: false, error: 'D:/FTPeach data' });
+  await settle();
+  assert.equal(h.errors.length, 1);
+  assert.deepEqual(h.withdrawn, []);
+
+  h.persist({ paneOrientation: 'vertical' });
+  h.tick();
+  // The failed change goes out again with the new one.
+  assert.deepEqual(h.calls[1]!.patch, { theme: 'light', paneOrientation: 'vertical' });
+  h.calls[1]!.resolve({ ok: true });
+  await settle();
+  assert.deepEqual(h.withdrawn, h.errors);
 });

@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Warnings at start about a damaged settings or bookmarks file name the file in your language,
   and a change refused because a newer FTPeach saved that file says so, instead of "An
   unexpected error occurred."
+- When FTPeach may not write to its data folder, the message names the folder and goes away once
+  saving works again, instead of "You don't have permission for this operation."
 
 ### Fixed
 

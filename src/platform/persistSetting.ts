@@ -1,5 +1,5 @@
 import { commandResultError } from '../shared/errorMessages.ts';
-import { reportAsyncFailure } from '../shared/asyncFailure.ts';
+import { reportAsyncFailure, withdrawAsyncFailure } from '../shared/asyncFailure.ts';
 import { api } from './api/index.ts';
 import { registerShutdownWriter } from './shutdownPersistence.ts';
 
@@ -14,6 +14,7 @@ interface SettingPersister {
 export function createSettingPersister({
   write = (patch) => api.settings.set(patch),
   report = reportAsyncFailure,
+  withdraw = withdrawAsyncFailure,
   schedule = (callback) => setTimeout(callback, 75),
   cancel = (timer) => clearTimeout(timer),
 }: {
@@ -21,6 +22,8 @@ export function createSettingPersister({
     patch: Record<string, unknown>,
   ) => Promise<{ ok?: boolean | undefined; error?: unknown; errorCode?: unknown }>;
   report?: (error: unknown) => void;
+  /** Takes back a reported failure once a later write works. */
+  withdraw?: (error: unknown) => void;
   schedule?: (callback: () => void) => ReturnType<typeof setTimeout>;
   cancel?: (timer: ReturnType<typeof setTimeout>) => void;
 } = {}): SettingPersister {
@@ -28,6 +31,7 @@ export function createSettingPersister({
   let timer: ReturnType<typeof setTimeout> | undefined;
   let writing: Promise<void> | undefined;
   let revision = 0;
+  let reported: unknown;
 
   async function drain(): Promise<void> {
     while (Object.keys(pending).length > 0) {
@@ -45,8 +49,11 @@ export function createSettingPersister({
             ? Object.assign(new Error(failure.message), failure)
             : new Error(failure ?? 'Settings could not be saved');
         }
+        if (reported !== undefined) withdraw(reported);
+        reported = undefined;
       } catch (error) {
         pending = { ...patch, ...pending };
+        reported = error;
         report(error);
         // A failing disk must not cause an endless automatic retry loop.
         if (revision === sentRevision) throw error;

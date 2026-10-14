@@ -40,6 +40,7 @@ const ERROR_CODE_KEYS = {
   noRecycleBin: 'errors.noRecycleBin',
   storeNewer: 'errors.storeNewer',
   storeUnreadable: 'errors.storeUnreadable',
+  storeNotWritable: 'errors.storeNotWritable',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 
@@ -62,8 +63,12 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
   if (!raw) return raw;
   if (typeof raw === 'object') {
     const key = lookupByUnknownKey(ERROR_CODE_KEYS, raw.code);
-    // The codes whose message is data: the path of the file concerned.
-    if (raw.code === 'credentialFileMissing' || raw.code === 'stagingLeft')
+    // The codes whose message is data: the path of the file or folder concerned.
+    if (
+      raw.code === 'credentialFileMissing' ||
+      raw.code === 'stagingLeft' ||
+      raw.code === 'storeNotWritable'
+    )
       return i18n.t(`errors.${raw.code}`, { path: raw.message });
     return key ? i18n.t(key) : raw.message || raw.code;
   }

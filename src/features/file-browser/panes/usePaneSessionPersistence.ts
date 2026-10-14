@@ -4,7 +4,11 @@ import { registerShutdownWriter } from '../../../platform/shutdownPersistence.ts
 import { api } from '../../../platform/api/index.ts';
 import type { PersistedTabsState } from '../../../platform/api/tabs.ts';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
-import { reportAsyncFailure, reportRejection } from '../../../shared/asyncFailure.ts';
+import {
+  reportAsyncFailure,
+  reportRejection,
+  withdrawAsyncFailure,
+} from '../../../shared/asyncFailure.ts';
 import { commandResultError } from '../../../shared/errorMessages.ts';
 import type { ConnectionForm, PaneId, PaneState, TabState } from './paneModel.ts';
 import { PANE_IDS } from './paneModel.ts';
@@ -69,7 +73,7 @@ export function usePaneSessionPersistence({
   const writeChainRef = useRef<Promise<void>>(Promise.resolve());
   const revisionRef = useRef(0);
   const savedSnapshotRef = useRef<string | null>(null);
-  const reportedFailureRef = useRef<string | null>(null);
+  const reportedFailureRef = useRef<{ signature: string; error: unknown } | null>(null);
   const writeFailedRef = useRef(false);
 
   // A disk that refuses one write refuses the next one too, and the user
@@ -77,8 +81,8 @@ export function usePaneSessionPersistence({
   // every 400 ms would bury whatever else the app has to say.
   const reportWriteFailure = useCallback((error: unknown) => {
     const signature = failureSignature(error);
-    if (reportedFailureRef.current === signature) return;
-    reportedFailureRef.current = signature;
+    if (reportedFailureRef.current?.signature === signature) return;
+    reportedFailureRef.current = { signature, error };
     reportAsyncFailure(error);
   }, []);
 
@@ -100,6 +104,8 @@ export function usePaneSessionPersistence({
           }
           savedSnapshotRef.current = snapshot;
           writeFailedRef.current = false;
+          // Saved again: the refusal on screen is no longer true.
+          if (reportedFailureRef.current) withdrawAsyncFailure(reportedFailureRef.current.error);
           reportedFailureRef.current = null;
         } catch (error) {
           writeFailedRef.current = true;

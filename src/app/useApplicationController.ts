@@ -35,7 +35,7 @@ export function useApplicationError(): ApplicationErrorModel {
 
   // Gives the async helpers in shared/asyncFailure.ts somewhere to write, so a
   // rejected IPC call deep in a hook still surfaces in this banner.
-  useEffect(() => setAsyncFailureSink(reportError), [reportError]);
+  useEffect(() => setAsyncFailureSink(reportError, withdrawError), [reportError, withdrawError]);
 
   return { errorMessage, setErrorMessage, reportError, withdrawError, dismissError };
 }

@@ -76,6 +76,9 @@ pub enum ErrorCode {
     /// A file of FTPeach's own data cannot be read and no copy of it could be
     /// kept, so it is not written over.
     StoreUnreadable,
+    /// FTPeach may not write in the folder that keeps its data; the message is
+    /// that folder.
+    StoreNotWritable,
     Internal,
 }
 
@@ -422,6 +425,7 @@ impl CommandError {
             ErrorCode::NoRecycleBin => "This location has no Recycle Bin; nothing was deleted",
             ErrorCode::StoreNewer => "The data was saved by a newer version of FTPeach",
             ErrorCode::StoreUnreadable => "The data file cannot be read, so it is not overwritten",
+            ErrorCode::StoreNotWritable => "The data folder cannot be written",
         };
         Self {
             code,
@@ -474,6 +478,7 @@ mod tests {
             (ErrorCode::NoRecycleBin, "noRecycleBin"),
             (ErrorCode::StoreNewer, "storeNewer"),
             (ErrorCode::StoreUnreadable, "storeUnreadable"),
+            (ErrorCode::StoreNotWritable, "storeNotWritable"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

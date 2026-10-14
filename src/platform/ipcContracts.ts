@@ -46,6 +46,7 @@ export const COMMAND_ERROR_CODES = [
   'noRecycleBin',
   'storeNewer',
   'storeUnreadable',
+  'storeNotWritable',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

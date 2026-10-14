@@ -18,17 +18,30 @@
 type FailureSink = (error: unknown) => void;
 
 let sink: FailureSink | null = null;
+let withdrawSink: FailureSink | null = null;
 
 /**
- * Points {@link reportAsyncFailure} at the live error banner. Returns a
- * disposer so a re-registration (or an unmounting test render) cannot leave a
- * stale reporter pointing at a dead component.
+ * Points {@link reportAsyncFailure} and {@link withdrawAsyncFailure} at the
+ * live error banner. Returns a disposer so a re-registration (or an unmounting
+ * test render) cannot leave a stale reporter pointing at a dead component.
  */
-export function setAsyncFailureSink(next: FailureSink): () => void {
+export function setAsyncFailureSink(next: FailureSink, withdraw?: FailureSink): () => void {
   sink = next;
+  withdrawSink = withdraw ?? null;
   return () => {
-    if (sink === next) sink = null;
+    if (sink === next) {
+      sink = null;
+      withdrawSink = null;
+    }
   };
+}
+
+/**
+ * Takes back a failure reported earlier, once whatever failed has worked: the
+ * banner clears only if it still shows that failure.
+ */
+export function withdrawAsyncFailure(error: unknown): void {
+  withdrawSink?.(error);
 }
 
 export function reportAsyncFailure(error: unknown): void {

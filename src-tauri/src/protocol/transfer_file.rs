@@ -431,16 +431,22 @@ pub async fn commit(partial: &Path, destination: &Path) -> Result<()> {
     // destination in one step (MoveFileExW with REPLACE_EXISTING on Windows).
     // Never move or delete the old file first: a failed commit leaves it intact,
     // and interruption before commit leaves the verified partial recoverable.
-    open_artifact(partial, false)?
-        .sync_all()
+    // A virus scanner or a search indexer reading the partial holds it
+    // only for a moment; waiting it out saves the download. A destination
+    // held by another program fails access denied, so it is not waited for.
+    while_busy(|| async { Ok(open_artifact(partial, false)?.sync_all()?) })
+        .await
         .context("flushing verified download")?;
     if super::overwrite_allowed() {
-        tokio::fs::rename(partial, destination)
+        while_busy(|| async { Ok(tokio::fs::rename(partial, destination).await?) })
             .await
-            .map_err(|error| held_by_another_program(error, destination))
+            .map_err(|error| match error.downcast::<std::io::Error>() {
+                Ok(error) => held_by_another_program(error, destination).into(),
+                Err(error) => error,
+            })
             .context("committing verified download")?;
     } else {
-        rename_no_replace(partial, destination)
+        while_busy(|| rename_no_replace(partial, destination))
             .await
             .context("committing download without replacement")?;
     }
@@ -483,24 +489,83 @@ pub async fn remove_empty_new_partial(path: &Path, started_at: u64) {
 
 /// The resume record kept beside a destination, if one can be read.
 fn read_record(metadata: &Path) -> Option<ResumeRecord> {
+    load_record(metadata).ok().flatten()
+}
+
+/// The resume record, `None` when there is none or it is not one; an error
+/// when it cannot be read, as while another program holds it.
+fn load_record(metadata: &Path) -> Result<Option<ResumeRecord>> {
     use std::io::Read;
+    let file = match open_artifact(metadata, false) {
+        Ok(file) => file,
+        Err(error) if not_found(&error) => return Ok(None),
+        Err(error) => return Err(error.context("reading the resume record")),
+    };
     let mut bytes = Vec::new();
-    open_artifact(metadata, false)
-        .ok()?
-        .take(16 * 1024)
+    file.take(16 * 1024)
         .read_to_end(&mut bytes)
-        .ok()?;
-    serde_json::from_slice(&bytes).ok()
+        .context("reading the resume record")?;
+    Ok(serde_json::from_slice(&bytes).ok())
+}
+
+fn io_errors(error: &anyhow::Error) -> impl Iterator<Item = &std::io::Error> {
+    error.chain().filter_map(|cause| cause.downcast_ref())
+}
+
+fn not_found(error: &anyhow::Error) -> bool {
+    io_errors(error).any(|error| error.kind() == std::io::ErrorKind::NotFound)
+}
+
+/// How many times, half a second apart, a step is tried while another
+/// program (a virus scanner, a search indexer, a preview) holds its file.
+const BUSY_TRIES: u32 = 10;
+
+/// Runs `step` again while it fails on a file another program holds open:
+/// ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION, which only Windows has.
+async fn while_busy<T, F: Future<Output = Result<T>>>(mut step: impl FnMut() -> F) -> Result<T> {
+    let mut tries = 1;
+    loop {
+        match step().await {
+            Err(error)
+                if cfg!(windows)
+                    && tries < BUSY_TRIES
+                    && io_errors(&error)
+                        .any(|error| matches!(error.raw_os_error(), Some(32 | 33))) =>
+            {
+                tries += 1;
+                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+            }
+            result => return result,
+        }
+    }
+}
+
+/// Removes `path` unless it is already gone or behind a link.
+fn remove_artifact(path: &Path) -> Result<()> {
+    crate::local_fs::filesystem_safety::ensure_path_no_reparse_points_now(path)?;
+    match std::fs::remove_file(path) {
+        Err(error) if error.kind() != std::io::ErrorKind::NotFound => {
+            Err(error).with_context(|| format!("removing {}", path.display()))
+        }
+        _ => Ok(()),
+    }
 }
 
 /// Forgets the record naming `partial` once `partial` has become the
 /// destination. A record naming any other artifact is not this download's.
 async fn forget_resume_record(partial: &Path, destination: &Path) {
-    let metadata = sidecar(destination);
-    if read_record(&metadata)
-        .is_some_and(|record| artifact_path(destination, record.artifact) == partial)
-    {
-        let _ = tokio::fs::remove_file(&metadata).await;
+    let metadata = &sidecar(destination);
+    let forgotten = while_busy(|| async {
+        match load_record(metadata)? {
+            Some(record) if artifact_path(destination, record.artifact) == partial => {
+                remove_artifact(metadata)
+            }
+            _ => Ok(()),
+        }
+    })
+    .await;
+    if let Err(error) = forgotten {
+        log::warn!("A spent resume record was left beside the download: {error:#}");
     }
 }
 
@@ -512,10 +577,19 @@ pub async fn discard(destination: &Path) {
         return;
     };
     let _mutation = crate::local_fs::mutations::guard().read().await;
-    for path in retained_paths(destination) {
-        if crate::local_fs::filesystem_safety::ensure_path_no_reparse_points_now(&path).is_ok() {
-            let _ = tokio::fs::remove_file(&path).await;
-        }
+    let metadata = &sidecar(destination);
+    let discarded = while_busy(|| async {
+        let Some(record) = load_record(metadata)? else {
+            return Ok(());
+        };
+        // The record is what finds the partial again, so it goes only after
+        // the partial; a retry after either step starts from the record.
+        remove_artifact(&artifact_path(destination, record.artifact))?;
+        remove_artifact(metadata)
+    })
+    .await;
+    if let Err(error) = discarded {
+        log::warn!("A stopped download left files beside its destination: {error:#}");
     }
 }
 
@@ -637,6 +711,58 @@ mod tests {
         let (root, destination) = scratch();
         leave_half(&destination).await;
         discard(&destination).await;
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    /// Opens `path` as a virus scanner might, without sharing delete, and
+    /// lets go of it a second later.
+    #[cfg(windows)]
+    fn hold_for_a_second(path: &Path) -> std::thread::JoinHandle<()> {
+        use std::os::windows::fs::OpenOptionsExt;
+        let file = std::fs::OpenOptions::new()
+            .read(true)
+            .share_mode(1) // FILE_SHARE_READ
+            .open(path)
+            .unwrap();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            drop(file);
+        })
+    }
+
+    #[cfg(windows)]
+    #[tokio::test]
+    async fn a_record_or_partial_held_for_a_moment_is_still_committed_and_cleaned_up() {
+        let (root, destination) = scratch();
+        let source = identity(Some(8), Some("v1"));
+
+        // The record, held as the download commits, cannot even be read.
+        let download = begin(&destination, true, source.clone()).await;
+        let written = write(&download, 0, b"complete").await;
+        let held = hold_for_a_second(&sidecar(&destination));
+        finish(download, written, Some(8)).await.unwrap();
+        held.join().unwrap();
+        assert!(!sidecar(&destination).exists());
+
+        // The partial, held as it is flushed and renamed.
+        std::fs::remove_file(&destination).unwrap();
+        let download = begin(&destination, true, source).await;
+        let written = write(&download, 0, b"complete").await;
+        let held = hold_for_a_second(&download.partial);
+        finish(download, written, Some(8)).await.unwrap();
+        held.join().unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
+        assert!(!sidecar(&destination).exists());
+
+        // A stopped download's partial, held as it is discarded: removed,
+        // and its record only after it.
+        std::fs::remove_file(&destination).unwrap();
+        leave_half(&destination).await;
+        let record = read_record(&sidecar(&destination)).unwrap();
+        let held = hold_for_a_second(&artifact_path(&destination, record.artifact));
+        discard(&destination).await;
+        held.join().unwrap();
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
         std::fs::remove_dir_all(root).unwrap();
     }

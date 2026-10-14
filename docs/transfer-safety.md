@@ -180,6 +180,10 @@ Developer Mode or SeCreateSymbolicLinkPrivilege. Hardlink fixtures and existing 
 checks run normally.
 
 A successful download consumes its UUID partial and removes its matching source metadata sidecar. Interrupted downloads may retain both; recursive Stop does not delete unverified artifacts.
+While another program holds the partial or the sidecar open, committing, removing the spent
+sidecar and discarding a stopped download are tried again for up to five seconds, each time
+reading the sidecar again; discard removes the partial before the sidecar that names it. What
+still cannot be removed then is logged with its path.
 
 ## Open with uploads
 

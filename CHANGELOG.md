@@ -53,6 +53,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Security confirmations follow the interface scale, like the main window.
 - At a larger interface scale the window can no longer be made so small that the file lists
   disappear and menus run off its edge.
+- A download that a virus scanner or Windows Search opens just as it completes still finishes
+  and no longer leaves its .ftpeach-resume.json file behind.
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.

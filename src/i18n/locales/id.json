@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} item",
     "moveMode": "pindahkan",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "Salin ke sini",
     "moveHere": "Pindahkan ke sini"
   },

@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} element",
     "itemCount_other": "{{count}} elementer",
     "moveMode": "flyt",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "Kopiér hertil",
     "moveHere": "Flyt hertil"
   },

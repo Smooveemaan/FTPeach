@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} 個項目",
     "itemCount_other": "{{count}} 個項目",
     "moveMode": "移動",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "複製到這裡",
     "moveHere": "移動到這裡"
   },

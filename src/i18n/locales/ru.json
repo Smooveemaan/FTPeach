@@ -177,6 +177,8 @@
   },
   "dragMove": {
     "moveMode": "перемещение",
+    "modeMove": "Перемещение",
+    "modeCopy": "Копирование",
     "itemCount_one": "{{count}} элемент",
     "itemCount_few": "{{count}} элемента",
     "itemCount_many": "{{count}} элементов",

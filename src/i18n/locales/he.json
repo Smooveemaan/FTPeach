@@ -177,6 +177,8 @@
     "itemCount_one": "{{count}} פריט",
     "itemCount_other": "{{count}} פריטים",
     "moveMode": "העברה",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "itemCount_two": "{{count}} פריטים",
     "copyHere": "העתק לכאן",
     "moveHere": "העבר לכאן"

@@ -179,6 +179,8 @@
     "itemCount_one": "{{count}} позиція",
     "itemCount_other": "{{count}} позиції",
     "moveMode": "переміщення",
+    "modeMove": "Переміщення",
+    "modeCopy": "Копіювання",
     "itemCount_few": "{{count}} позиції",
     "itemCount_many": "{{count}} позицій",
     "copyHere": "Копіювати сюди",

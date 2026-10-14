@@ -11,25 +11,6 @@ use crate::store::Store;
 use crate::transfer::progress::ProgressEmitter;
 use tauri::{Emitter, Manager};
 
-#[cfg(windows)]
-fn disable_browser_accelerator_keys(window: &tauri::WebviewWindow) {
-    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings3;
-    use windows::core::Interface;
-
-    let _ = window.with_webview(|webview| unsafe {
-        let Ok(core) = webview.controller().CoreWebView2() else {
-            return;
-        };
-        let Ok(settings) = core.Settings() else {
-            return;
-        };
-        let Ok(settings3) = settings.cast::<ICoreWebView2Settings3>() else {
-            return;
-        };
-        let _ = settings3.SetAreBrowserAcceleratorKeysEnabled(false);
-    });
-}
-
 pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     // Declared in tauri.conf.json with `create: false` and built here, so a
     // portable copy can keep the WebView2 profile beside the program. Left to
@@ -81,7 +62,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
         && let Some(main_window) = app.get_webview_window("main")
     {
-        disable_browser_accelerator_keys(&main_window);
+        super::browser_keys::disable(&main_window);
     }
     // The icon itself only appears while the window is hidden to the tray.
     tray::install(app.handle(), shutdown::quit);

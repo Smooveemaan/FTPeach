@@ -400,7 +400,7 @@ function FilePane({
         ref={dragDrop.ghostRef}
         className={`drag-move-ghost ${dragDrop.showGhost && !dragDrop.dragRejected ? 'active' : ''}`}
       >
-        <span className="mode">Copy</span>
+        <span className="mode">{t('dragMove.modeCopy')}</span>
       </div>
       <PaneTitleBar
         title={title}

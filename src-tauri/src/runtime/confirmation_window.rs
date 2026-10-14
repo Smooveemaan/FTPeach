@@ -317,6 +317,12 @@ pub(crate) fn create(
     }
     let window = builder.build()?;
     enable_native_rounding(&window);
+    // F5 or Ctrl+R would reload the question away, Ctrl+P print it. Left on
+    // under the smoke test, as in the main window.
+    #[cfg(windows)]
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
+        super::browser_keys::disable(&window);
+    }
     // Moved over the main window before its page loads, so it has taken that
     // monitor's scale by the time it sizes itself to its content.
     if let Some(main) = &main {

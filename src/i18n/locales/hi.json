@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} आइटम",
     "itemCount_other": "{{count}} आइटम",
     "moveMode": "ले जाएँ",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "यहाँ कॉपी करें",
     "moveHere": "यहाँ ले जाएँ"
   },

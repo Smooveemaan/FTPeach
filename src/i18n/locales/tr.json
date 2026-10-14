@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} öğe",
     "itemCount_other": "{{count}} öğe",
     "moveMode": "taşıma",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "Buraya kopyala",
     "moveHere": "Buraya taşı"
   },

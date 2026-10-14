@@ -48,6 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   of "An unexpected error occurred."
 - When a copy is refused before it starts, the reason is shown in your language.
 - A failed transfer shows its error in Transfers in your language.
+- The Move or Copy label shown while dragging files is in your language.
+- F5, Ctrl+R and Ctrl+P no longer reload or print a security confirmation window.
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.

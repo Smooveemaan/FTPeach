@@ -175,6 +175,8 @@
     "itemCount_one": "{{count}} 个项目",
     "itemCount_other": "{{count}} 个项目",
     "moveMode": "移动",
+    "modeMove": "Move",
+    "modeCopy": "Copy",
     "copyHere": "复制到此处",
     "moveHere": "移动到此处"
   },

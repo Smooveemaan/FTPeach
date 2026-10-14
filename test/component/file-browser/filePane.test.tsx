@@ -89,7 +89,7 @@ describe('FilePane interactions', () => {
     fireEvent.dragOver(crumb, { dataTransfer, clientX: 40, clientY: 40 });
     expect(dataTransfer.dropEffect).toBe('copy');
     expect(crumb.classList.contains('drag-target')).toBe(true);
-    expect(container.querySelector('.drag-move-ghost')?.textContent).toBe('Copy');
+    expect(container.querySelector('.drag-move-ghost')?.textContent).toBe('dragMove.modeCopy');
     fireEvent.drop(crumb, { dataTransfer });
     expect(props.onDropFiles).toHaveBeenCalledTimes(1);
     expect(props.onDropFiles).toHaveBeenCalledWith(expect.any(Array), 'C:\\parent');

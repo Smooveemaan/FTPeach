@@ -123,7 +123,9 @@ export default function Workspace({
                 : dragMove.dragInfo.name}
             </span>
             {dragMove.dragInfo.action && (
-              <span className="mode">{dragMove.dragInfo.action === 'move' ? 'Move' : 'Copy'}</span>
+              <span className="mode">
+                {t(dragMove.dragInfo.action === 'move' ? 'dragMove.modeMove' : 'dragMove.modeCopy')}
+              </span>
             )}
           </>
         )}

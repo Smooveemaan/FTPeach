@@ -241,8 +241,15 @@ export function keepEdit(local = localDir) {
   writeFileSync(path.join(folder, 'file', RECOVERED_EDIT), `kept ${randomUUID()}\n`);
 }
 
-/** The recovered edits, compared byte for byte. */
-export const recoveredEdits = () => (existsSync(recoveredDir) ? tree(recoveredDir) : []);
+/** The recovered edits, compared byte for byte; a portable copy keeps them in `data\local`. */
+export const recoveredEdits = (folder = recoveredDir) => (existsSync(folder) ? tree(folder) : []);
+
+/** The settings and the session as their files hold them; compare with toMatchObject. */
+export const savedProfile = (folder = dataDir) => {
+  const read = (name: string) =>
+    (JSON.parse(readFileSync(path.join(folder, `${name}.json`), 'utf8')) as { data: object }).data;
+  return { settings: read('settings'), tabs: read('tabs') };
+};
 
 /**
  * The store files FTPeach keeps until something changes them, byte for byte:

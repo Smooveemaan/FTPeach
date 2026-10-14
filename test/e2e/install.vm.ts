@@ -54,6 +54,7 @@ import {
   runningFrom,
   runningVersion,
   runSettings,
+  savedProfile,
   serveFeed,
   setupOf,
   shortcutTarget,
@@ -379,6 +380,12 @@ test('a portable copy replaces its program with the update and leaves its data a
   const data = path.join(folder, 'data');
   writeProfile(profile('system'), runSettings(true), data);
   keepEdit(path.join(data, 'local'));
+  // What the user had before any FTPeach ran: the run and the update leave
+  // the edit byte for byte and keep the settings and the session (each start
+  // may add fields to them).
+  const editsDir = path.join(data, 'local', 'recovered-edits');
+  const edits = recoveredEdits(editsDir);
+  const profileBefore = savedProfile(data);
   const feed = await serveFeed(next, { portable: portableOf(next) });
   try {
     const app = await startProgram(exe);
@@ -395,6 +402,8 @@ test('a portable copy replaces its program with the update and leaves its data a
     expect(await runningVersion(page)).toBe(next);
     expect(fileVersion(exe)).toBe(next);
     expect(storedData(data)).toEqual(stored);
+    expect(recoveredEdits(editsDir)).toEqual(edits);
+    expect(savedProfile(data)).toMatchObject(profileBefore);
     // The program's files are the update's. The old program, renamed aside,
     // goes as soon as it has exited: at once, or at the next start.
     const names = (entries: string[]) => entries.map((entry) => entry.split(' ')[0]).sort();

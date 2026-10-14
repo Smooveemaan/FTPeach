@@ -156,6 +156,8 @@ const SCREENS: Record<
   workspace: { run: ({ snap }) => snap('workspace') },
   'workspace-narrow': { viewport: [900, 720], run: ({ snap }) => snap('workspace-narrow') },
   'workspace-min': {
+    // The smallest page at any interface scale: window_scale grows the
+    // window's minimum with it, as far as the screen holds.
     viewport: [480, 520],
     run: async ({ page, snap }) => {
       await snap('workspace-min');

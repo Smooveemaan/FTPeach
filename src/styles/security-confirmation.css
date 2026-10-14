@@ -34,6 +34,8 @@ body,
 
 .security-confirmation .modal-body {
   flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .security-confirmation__content p {

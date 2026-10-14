@@ -72,6 +72,21 @@ test('loads the request, falls back to English, sizes the window and reports rea
   expect(approve().disabled).toBe(false);
 });
 
+test('sizes the window in physical pixels at the page scale, no larger than the screen', async () => {
+  vi.spyOn(window, 'devicePixelRatio', 'get').mockReturnValue(1.5);
+  vi.spyOn(window.screen, 'availWidth', 'get').mockReturnValue(1920);
+  vi.spyOn(window.screen, 'availHeight', 'get').mockReturnValue(100);
+  await open();
+  const [width, height] = [
+    mocks.setSize.mock.lastCall?.[0].width,
+    mocks.setSize.mock.lastCall?.[0].height,
+  ];
+  // 440 CSS pixels at 150 %; jsdom lays nothing out, so the height is the
+  // screen's 100 CSS pixels at most.
+  expect(width).toBe(660);
+  expect(height).toBeLessThanOrEqual(150);
+});
+
 test('a missing prompt closes the window without authorizing anything', async () => {
   mocks.invoke.mockRejectedValue(new Error('expired request'));
   render(<SecurityConfirmation requestId="expired" />);

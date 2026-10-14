@@ -50,6 +50,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A failed transfer shows its error in Transfers in your language.
 - The Move or Copy label shown while dragging files is in your language.
 - F5, Ctrl+R and Ctrl+P no longer reload or print a security confirmation window.
+- Security confirmations follow the interface scale, like the main window.
+- At a larger interface scale the window can no longer be made so small that the file lists
+  disappear and menus run off its edge.
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.

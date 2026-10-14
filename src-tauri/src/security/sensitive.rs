@@ -545,22 +545,28 @@ fn reject_pending(state: &AuthorizationState, request_id: &str) {
 }
 
 #[tauri::command]
-pub fn sensitive_confirmation_prompt(
+pub async fn sensitive_confirmation_prompt(
     window: tauri::WebviewWindow,
     state: State<'_, AuthorizationState>,
     request_id: String,
 ) -> CommandResult<ConfirmationPrompt> {
-    let pending = state
-        .pending
-        .lock()
-        .map_err(|_| denied("PermissionDenied"))?;
-    let request = pending
-        .get(&request_id)
-        .ok_or_else(|| denied("PermissionDenied"))?;
-    if request.window != window.label() {
-        return Err(denied("PermissionDenied"));
-    }
-    Ok(request.prompt.clone())
+    let prompt = {
+        let pending = state
+            .pending
+            .lock()
+            .map_err(|_| denied("PermissionDenied"))?;
+        let request = pending
+            .get(&request_id)
+            .ok_or_else(|| denied("PermissionDenied"))?;
+        if request.window != window.label() {
+            return Err(denied("PermissionDenied"));
+        }
+        request.prompt.clone()
+    };
+    // At the interface scale before the page measures its question, which
+    // it does once it has the prompt.
+    crate::runtime::confirmation_window::scale_to_interface(&window).await;
+    Ok(prompt)
 }
 
 #[tauri::command]

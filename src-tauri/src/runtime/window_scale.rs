@@ -26,6 +26,49 @@ impl InterfaceScale {
     }
 }
 
+/// The main window's smallest size, as `minWidth`/`minHeight` in tauri.conf.json.
+const MIN_SIZE: (f64, f64) = (480.0, 520.0);
+
+/// The smallest window that still gives the page `MIN_SIZE` CSS pixels at
+/// this interface scale, as far as the work area holds it.
+fn scaled_min_size(scale: f64, work: (f64, f64)) -> (f64, f64) {
+    let fit = |base: f64, room: f64| (base * scale).min(room).max(base);
+    (fit(MIN_SIZE.0, work.0), fit(MIN_SIZE.1, work.1))
+}
+
+/// Grows the main window's minimum with the interface scale, and the window
+/// with it: a program's resize is not held to the minimum, so it is done here.
+fn fit_min_size(window: &WebviewWindow) -> Result<()> {
+    let work = match window.current_monitor().map_err(scale_error)? {
+        Some(monitor) => {
+            let area = monitor
+                .work_area()
+                .size
+                .to_logical::<f64>(monitor.scale_factor());
+            (area.width, area.height)
+        }
+        None => (f64::INFINITY, f64::INFINITY),
+    };
+    let (width, height) = scaled_min_size(window.state::<InterfaceScale>().get(), work);
+    window
+        .set_min_size(Some(tauri::LogicalSize::new(width, height)))
+        .map_err(scale_error)?;
+    let size = window
+        .inner_size()
+        .map_err(scale_error)?
+        .to_logical::<f64>(window.scale_factor().map_err(scale_error)?);
+    if !window.is_maximized().map_err(scale_error)? && (size.width < width || size.height < height)
+    {
+        window
+            .set_size(tauri::LogicalSize::new(
+                size.width.max(width),
+                size.height.max(height),
+            ))
+            .map_err(scale_error)?;
+    }
+    Ok(())
+}
+
 fn scale_error(error: impl std::fmt::Display) -> anyhow::Error {
     anyhow::anyhow!("Could not apply interface scale: {error}")
 }
@@ -42,6 +85,14 @@ pub(crate) fn refresh(window: &WebviewWindow) {
 
 /// Completes only after the window thread has applied the latest preference.
 pub(crate) async fn apply(window: &WebviewWindow) -> Result<()> {
+    zoom(window).await?;
+    if window.label() == "main" {
+        fit_min_size(window)?;
+    }
+    Ok(())
+}
+
+async fn zoom(window: &WebviewWindow) -> Result<()> {
     #[cfg(windows)]
     {
         let (send, receive) = tokio::sync::oneshot::channel();
@@ -131,6 +182,17 @@ pub(crate) async fn smoke_check(window: &WebviewWindow) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_smallest_window_grows_with_the_scale_as_far_as_the_screen_holds() {
+        let roomy = (2560.0, 1400.0);
+        assert_eq!(scaled_min_size(1.0, roomy), MIN_SIZE);
+        assert_eq!(scaled_min_size(0.8, roomy), MIN_SIZE);
+        assert_eq!(scaled_min_size(1.5, roomy), (720.0, 780.0));
+        // 1920x1080 at 200 % with a taskbar: no taller than the work area,
+        // and never below the minimum the page was made for.
+        assert_eq!(scaled_min_size(1.5, (960.0, 516.0)), (720.0, 520.0));
+    }
 
     #[test]
     fn invalid_requests_preserve_the_latest_preference() {

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 /* The dialog is as wide as its folder names need, up to a cap, and never
-   wider than the window: the smallest one at 150% scale is 320 CSS pixels. */
+   wider than the window, checked at 320 CSS pixels: narrower than any window now gets. */
 test('Move to is sized to its folder names, within the window', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
   await page

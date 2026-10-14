@@ -118,6 +118,14 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .map_err(|_| "Confirmation could not be focused")
 }
 
+/// Gives the window the interface zoom, which it no longer takes from the
+/// monitor alone once the interface scale is set.
+pub(crate) async fn scale_to_interface(window: &tauri::WebviewWindow) {
+    if let Err(error) = super::window_scale::apply(window).await {
+        log::warn!("Confirmation shown without the interface scale: {error:?}");
+    }
+}
+
 /// The child is sized in logical pixels. Its physical size is taken from that
 /// at the parent's scale: when it has just crossed to the parent's monitor,
 /// Windows may not have resized it for that monitor's scale yet.
@@ -328,6 +336,14 @@ pub(crate) fn create(
     if let Some(main) = &main {
         center_over_parent(main, &window);
     }
+    // Its zoom no longer follows the monitor by itself once the interface
+    // scale is applied.
+    let rescaled = window.clone();
+    window.on_window_event(move |event| {
+        if let tauri::WindowEvent::ScaleFactorChanged { .. } = event {
+            super::window_scale::refresh(&rescaled);
+        }
+    });
     Ok(window)
 }
 

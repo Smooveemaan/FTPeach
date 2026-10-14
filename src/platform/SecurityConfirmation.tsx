@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { LogicalSize } from '@tauri-apps/api/dpi';
+import { PhysicalSize } from '@tauri-apps/api/dpi';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -128,11 +128,20 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
       const titlebar = content.previousElementSibling as HTMLElement | null;
       const actions = content.nextElementSibling as HTMLElement | null;
       const message = content.querySelector('p');
+      // Measured in CSS pixels, which the interface scale enlarges; a CSS
+      // pixel is devicePixelRatio physical ones. No larger than the screen,
+      // where the message scrolls instead.
+      const { availWidth, availHeight } = window.screen;
+      const size = (width: number, height: number) =>
+        new PhysicalSize(
+          Math.ceil(Math.min(width, availWidth) * window.devicePixelRatio),
+          Math.ceil(Math.min(height, availHeight) * window.devicePixelRatio),
+        );
       // As wide as the unlock dialog, unless the message needs more.
-      const availableWidth = Math.max(440, window.screen.availWidth - 48);
+      const availableWidth = Math.max(440, availWidth - 48);
       const messageWidth = message?.scrollWidth ?? 0;
       const width = Math.ceil(Math.min(720, availableWidth, Math.max(440, messageWidth + 28)));
-      await getCurrentWindow().setSize(new LogicalSize(width, window.innerHeight));
+      await getCurrentWindow().setSize(size(width, window.innerHeight));
       // Set by this effect's cleanup, which the compiler does not model.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) return;
@@ -145,7 +154,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
               currentContent.scrollHeight +
               (actions?.offsetHeight ?? 0),
           );
-          await getCurrentWindow().setSize(new LogicalSize(width, height));
+          await getCurrentWindow().setSize(size(width, height));
           // Set by this effect's cleanup, which the compiler does not model.
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (cancelled) return;

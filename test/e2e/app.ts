@@ -60,6 +60,8 @@ export interface RunningApp {
   heldBack: () => string[];
   /** Ends the process at once, as a crash or Task Manager would. */
   kill: () => Promise<void>;
+  /** Quits through File > Quit and waits for the process to exit. */
+  quit: () => Promise<void>;
   /**
    * Starts the application again on the same profile and work folder, once
    * the last run has exited (a quit through the window, or `kill`).
@@ -297,6 +299,8 @@ export async function attach(cdpPort: number): Promise<Page> {
  * copy is the program copied into a folder of its own beside the
  * `FTPeach.portable` marker, with the store files in `data` there. With
  * `realDialogs` it shows the real file dialogs, which the native tests answer.
+ * `onPhaseEnd` runs on the main window just before a test ends a run itself
+ * (`quit`, `kill`), while the window can still give up its trace.
  */
 export async function launchApp(
   settings: Record<string, unknown> = {},
@@ -304,6 +308,7 @@ export async function launchApp(
   onStart: (_page: Page) => Promise<void> = async () => {},
   portable = false,
   realDialogs = false,
+  onPhaseEnd: (_page: Page) => Promise<void> = async () => {},
 ): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
@@ -409,7 +414,17 @@ export async function launchApp(
           expectedHeld.add(line);
           return line.replace(/.*held back opening (.*) outside FTPeach.*/, '$1');
         }),
-    kill: () => end(true),
+    kill: async () => {
+      await onPhaseEnd(app.page).catch(() => {});
+      await end(true);
+    },
+    quit: async () => {
+      await onPhaseEnd(app.page).catch(() => {});
+      const { page } = app;
+      await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
+      await page.getByRole('menuitem', { name: /^Quit( |$)/ }).click();
+      await waitFor('the app to exit', async () => run.child?.exitCode !== null || undefined, 30);
+    },
     relaunch: async () => {
       await end(false);
       run = {};
@@ -442,7 +457,7 @@ export async function launchApp(
  * program) with its size, and the SHA-256 of files up to a megabyte outside
  * WebView2's own data.
  */
-function inventory(root: string): string {
+export function inventory(root: string): string {
   return readdirSync(root, { recursive: true, withFileTypes: true })
     .map((entry) => {
       const full = path.join(entry.parentPath, entry.name);
@@ -482,13 +497,18 @@ export const test = base.extend<{
   appPortable: [false, { option: true }],
   appRealDialogs: [false, { option: true }],
   app: async ({ appSettings, appStore, appPortable, appRealDialogs }, use, testInfo) => {
-    // A run that exits takes its trace along; each relaunch starts a new one.
+    // Each run records a trace. One the test ends itself (quit, kill) is
+    // saved as trace-phase-N.zip first; a run that exits any other way takes
+    // its trace along. The last run's is trace.zip.
+    let phase = 0;
     const app = await launchApp(
       appSettings,
       appStore,
       (page) => page.context().tracing.start({ screenshots: true, snapshots: true }),
       appPortable,
       appRealDialogs,
+      (page) =>
+        page.context().tracing.stop({ path: testInfo.outputPath(`trace-phase-${++phase}.zip`) }),
     );
     let held: string[] = [];
     try {

@@ -21,7 +21,7 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { attach, startProgram } from './app.ts';
+import { attach, inventory, startProgram } from './app.ts';
 import {
   changeSettings,
   closeOnceShown,
@@ -80,8 +80,15 @@ test.beforeEach(async () => {
 // The next test starts by removing them, and CI keeps only the test results.
 // eslint-disable-next-line no-empty-pattern
 test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status === testInfo.expectedStatus) return;
+  // What the program and its data looked like: each folder's files with size and hash.
+  const files = [installDir, dataDir, localDir]
+    .filter((folder) => existsSync(folder))
+    .map((folder) => `== ${folder}\n${inventory(folder)}`)
+    .join('\n\n');
+  await testInfo.attach('files.txt', { body: files, contentType: 'text/plain' });
   const logs = path.join(dataDir, 'logs');
-  if (testInfo.status === testInfo.expectedStatus || !existsSync(logs)) return;
+  if (!existsSync(logs)) return;
   for (const name of readdirSync(logs)) {
     await testInfo.attach(name, { path: path.join(logs, name) });
   }

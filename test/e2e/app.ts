@@ -22,6 +22,10 @@ const root = path.resolve(import.meta.dirname, '../..');
 export const APP_PATH =
   process.env.FTPEACH_E2E_APP ?? path.join(root, '.tools', 'smoke-target', 'debug', 'app.exe');
 
+const HELD_BACK = 'desktop tests: held back';
+/** Held-back lines a test read through `heldBack`. */
+const expectedHeld = new Set<string>();
+
 export interface RunningApp {
   /** The main window of the current run; `relaunch` replaces it. */
   page: Page;
@@ -47,6 +51,11 @@ export interface RunningApp {
   pid: () => number;
   /** The application's own log so far. */
   log: () => string;
+  /**
+   * What the test build held back from opening outside FTPeach so far (a
+   * program, Explorer); the ones read here are expected and no longer fail the test.
+   */
+  heldBack: () => string[];
   /** Ends the process at once, as a crash or Task Manager would. */
   kill: () => Promise<void>;
   /**
@@ -359,6 +368,15 @@ export async function launchApp(
     running: () => run.child?.exitCode === null,
     pid: () => run.child!.pid!,
     log: () => appLogs(base, 200_000),
+    heldBack: () =>
+      app
+        .log()
+        .split('\n')
+        .filter((line) => line.includes(HELD_BACK))
+        .map((line) => {
+          expectedHeld.add(line);
+          return line.replace(/.*held back opening (.*) outside FTPeach.*/, '$1');
+        }),
     kill: () => end(true),
     relaunch: async () => {
       await end(false);
@@ -434,7 +452,7 @@ export const test = base.extend<{
         writeFileSync(testInfo.outputPath('app.log'), logs);
         await testInfo.attach('app.log', { path: testInfo.outputPath('app.log') });
       }
-      held = logs.split('\n').filter((line) => line.includes('desktop tests: held back'));
+      held = logs.split('\n').filter((line) => line.includes(HELD_BACK) && !expectedHeld.has(line));
     }
     // The test build holds back a program, Explorer or Windows' Open with
     // chooser that would come up on the screen; a test that set one off, say

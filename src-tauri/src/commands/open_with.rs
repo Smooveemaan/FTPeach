@@ -303,6 +303,10 @@ pub async fn open_with_recovered_edits(
 #[tauri::command]
 pub fn open_with_reveal_recovered_edits(app: AppHandle) -> CommandResult<()> {
     let root = recovery_root(&app)?;
+    #[cfg(feature = "smoke-test")]
+    if crate::runtime::e2e_browser::hold_back_opening(&root.to_string_lossy()) {
+        return Ok(());
+    }
     app.opener()
         .open_path(root.to_string_lossy().into_owned(), None::<String>)
         .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))

@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A drive that was removed, or a network share that went away, is reported as not found instead
   of "An unexpected error occurred."
 - When a copy is refused before it starts, the reason is shown in your language.
+- A failed transfer shows its error in Transfers in your language.
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.

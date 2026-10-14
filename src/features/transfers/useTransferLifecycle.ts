@@ -262,8 +262,10 @@ export function useTransferLifecycle(
   ) => {
     if (getTransferRow(id)?.attemptId !== attemptId) return false;
     const intent = cancelIntentRef.current[id];
+    const message = result.ok
+      ? undefined
+      : (notice ?? (friendlyError(commandResultError(result)) || undefined));
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
-      const message = notice ?? (friendlyError(commandResultError(result)) || undefined);
       setErrorMessage(message);
       if (message) shownErrors.current.set(id, message);
     }
@@ -280,7 +282,8 @@ export function useTransferLifecycle(
               ...previous[id],
               status: result.ok ? 'done' : intent || 'error',
               errorCode: result.ok ? undefined : result.errorCode,
-              errorMessage: result.ok ? undefined : result.error,
+              // A stopped row keeps the raw message: for `stagingLeft` it is the path.
+              errorMessage: intent && !result.ok ? result.error : message,
             },
           }
         : previous,

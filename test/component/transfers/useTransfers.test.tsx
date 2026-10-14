@@ -3,6 +3,7 @@ import { beforeEach, test, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
+import { friendlyError } from '../../../src/shared/errorMessages.ts';
 import { act, renderHook } from '@testing-library/react';
 import { getTransfersSnapshot, useTransfers } from '../../../src/features/transfers/index.ts';
 import {
@@ -2666,6 +2667,9 @@ test('local copies appear in Transfers while running and keep their final result
       });
       assert.equal(getSnapshot()[row.id]?.status, 'error');
       assert.equal(getSnapshot()[row.id]?.errorCode, 'storageFull');
+      // The row says it in the interface language, not in the backend's words.
+      assert.equal(getSnapshot()[row.id]?.errorMessage, friendlyError({ code: 'storageFull' }));
+      assert.notEqual(getSnapshot()[row.id]?.errorMessage, 'Disk full');
       await act(async () => {
         await Promise.all([getApi().retryTransfer(row.id), getApi().retryTransfer(row.id)]);
       });

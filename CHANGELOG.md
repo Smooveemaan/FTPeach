@@ -35,6 +35,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Dropdown and context menus highlight keyboard focus; long lists scroll evenly in both
   directions and keep a gap between the highlight and the frame.
+- Screen readers say whether a menu item such as a theme or Show hidden files is on, and no
+  longer announce a tab being renamed as unavailable.
 
 - Junctions and folder links show as folders. Opening one says that links aren't followed,
   instead of opening the folder it points to in Explorer.

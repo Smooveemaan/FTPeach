@@ -39,7 +39,7 @@ export function auditLayout({ keys, pseudo, data }: LayoutAuditOptions): LayoutP
   const isDataText = (text: string) => dataPatterns.some((pattern) => pattern.test(text));
   const TOLERANCE = 1;
   const CONTROL =
-    'button, [role="button"], [role="menuitem"], [role="menuitemradio"], [role="tab"], [role="option"], .btn, .segmented-control label';
+    'button, [role="button"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="option"], .btn, .segmented-control label';
   const LAYER =
     '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .menu-dropdown, .context-menu, .tooltip';
   const view = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };

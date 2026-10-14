@@ -19,6 +19,8 @@ function unnamedControls(page: Page): Promise<string[]> {
       '[role="checkbox"]',
       '[role="tab"]',
       '[role="menuitem"]',
+      '[role="menuitemcheckbox"]',
+      '[role="menuitemradio"]',
       '[role="option"]',
       '[role="combobox"]',
       '[role="slider"]',

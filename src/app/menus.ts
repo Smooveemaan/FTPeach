@@ -266,16 +266,19 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         {
           label: t('menu.view.lightTheme'),
           checked: settings.interface.theme === 'light',
+          radio: true,
           onClick: () => ctx.applicationSettings.changeTheme('light'),
         },
         {
           label: t('menu.view.darkTheme'),
           checked: settings.interface.theme === 'dark',
+          radio: true,
           onClick: () => ctx.applicationSettings.changeTheme('dark'),
         },
         {
           label: t('menu.view.systemTheme'),
           checked: settings.interface.theme === 'system',
+          radio: true,
           onClick: () => ctx.applicationSettings.changeTheme('system'),
         },
         { separator: true },

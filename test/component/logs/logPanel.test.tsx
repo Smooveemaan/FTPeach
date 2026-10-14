@@ -124,28 +124,28 @@ test('the kind filter hides a type of line', () => {
     line(2, '530 Login incorrect', 'error'),
   ]);
   fireEvent.click(container.querySelector('[data-tooltip="logPanel.filterKinds"]')!);
-  fireEvent.click(screen.getByRole('menuitem', { name: /logPanel\.kindCommand/ }));
+  fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ }));
   expect(shownLines(container)).toEqual(['530 Login incorrect']);
 });
 
 test('the filter menu stays open while kinds are toggled, and closes on a press outside', () => {
   const { container } = renderPanel([line(1, 'USER alice', 'command')]);
   fireEvent.click(container.querySelector('[data-tooltip="logPanel.filterKinds"]')!);
-  fireEvent.click(screen.getByRole('menuitem', { name: /logPanel\.kindCommand/ }));
-  fireEvent.click(screen.getByRole('menuitem', { name: /logPanel\.kindError/ }));
-  expect(screen.queryByRole('menuitem', { name: /logPanel\.kindCommand/ })).not.toBeNull();
+  fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ }));
+  fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /logPanel\.kindError/ }));
+  expect(screen.queryByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ })).not.toBeNull();
   fireEvent.mouseDown(document.body);
-  expect(screen.queryByRole('menuitem', { name: /logPanel\.kindCommand/ })).toBeNull();
+  expect(screen.queryByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ })).toBeNull();
 });
 
 test('pressing the filter button again closes its menu', () => {
   const { container } = renderPanel([line(1, 'USER alice', 'command')]);
   const button = container.querySelector('[data-tooltip="logPanel.filterKinds"]')!;
   fireEvent.click(button);
-  expect(screen.queryByRole('menuitem', { name: /logPanel\.kindCommand/ })).not.toBeNull();
+  expect(screen.queryByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ })).not.toBeNull();
   fireEvent.mouseDown(button);
   fireEvent.click(button);
-  expect(screen.queryByRole('menuitem', { name: /logPanel\.kindCommand/ })).toBeNull();
+  expect(screen.queryByRole('menuitemcheckbox', { name: /logPanel\.kindCommand/ })).toBeNull();
 });
 
 test('resizing slides the panel edge over the lines, and back puts them where they were', () => {

@@ -47,7 +47,10 @@ interface EditingTab {
 
 interface SortableTabProps extends Omit<HTMLAttributes<HTMLDivElement>, 'id'> {
   id: string;
-  disabled?: boolean;
+  /** The tab cannot be used: screen readers are told so. */
+  disabled?: boolean | undefined;
+  /** Only dragging is off, as while the tab is renamed; the tab itself is not unavailable. */
+  dragLocked?: boolean;
   tabRef: (element: HTMLDivElement | null) => void;
   style?: CSSProperties;
   className?: string;
@@ -130,6 +133,7 @@ const CLOSE_BUTTON_SPACE = 19; // close button (16px) + the gap before it (6px) 
 function SortableTab({
   id,
   disabled,
+  dragLocked,
   tabRef,
   style,
   className,
@@ -138,7 +142,7 @@ function SortableTab({
 }: SortableTabProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id,
-    disabled: disabled ?? false,
+    disabled: !!disabled || !!dragLocked,
     transition: {
       duration: 220,
       easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -163,6 +167,7 @@ function SortableTab({
         transition,
       }}
       {...attributes}
+      aria-disabled={disabled || undefined}
       {...listeners}
       {...props}
     >
@@ -415,7 +420,8 @@ export default function TabStrip({
               return (
                 <SortableTab
                   id={tab.id}
-                  disabled={disabled || editing?.id === tab.id}
+                  disabled={disabled}
+                  dragLocked={editing?.id === tab.id}
                   key={tab.id}
                   tabRef={(el) => {
                     tabRefs.current[index] = el;

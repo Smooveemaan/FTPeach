@@ -11,7 +11,10 @@ export interface MenuItem {
   disabled?: boolean | undefined;
   onClick?: (() => void) | undefined;
   glyph?: ReactNode | undefined;
+  /** Set on an item that is on or off; screen readers are told which. */
   checked?: boolean | undefined;
+  /** One choice of a set where only one is on, rather than a toggle of its own. */
+  radio?: boolean | undefined;
   /** A toggle that leaves the menu open, so several can be set in a row. */
   keepOpen?: boolean | undefined;
   icon?: ReactNode | undefined;
@@ -24,23 +27,24 @@ interface MenuItemsProps {
   onAction: () => void;
 }
 
+/** Every item keyboard navigation moves through, whatever kind it is. */
+const ENTRIES =
+  ':is(button[role="menuitem"], button[role="menuitemcheckbox"], button[role="menuitemradio"]):not(:disabled)';
+
+const itemRole = (item: MenuItem) =>
+  item.checked === undefined ? 'menuitem' : item.radio ? 'menuitemradio' : 'menuitemcheckbox';
+
 export default function MenuItems({ items, onAction }: MenuItemsProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const first = rootRef.current?.querySelector<HTMLButtonElement>(
-      'button[role="menuitem"]:not(:disabled)',
-    );
+    const first = rootRef.current?.querySelector<HTMLButtonElement>(ENTRIES);
     focusMenuItem(first);
   }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
-    const entries = Array.from(
-      rootRef.current?.querySelectorAll<HTMLButtonElement>(
-        'button[role="menuitem"]:not(:disabled)',
-      ) || [],
-    );
+    const entries = Array.from(rootRef.current?.querySelectorAll<HTMLButtonElement>(ENTRIES) || []);
     if (entries.length === 0) return;
     e.preventDefault();
     e.stopPropagation();
@@ -62,7 +66,8 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
       <button
         type="button"
         key={typeof item.label === 'string' ? item.label : `item-${i}`}
-        role="menuitem"
+        role={itemRole(item)}
+        aria-checked={item.checked}
         className={`menu-item ${item.danger ? 'danger' : ''} ${item.className || ''}`}
         disabled={item.disabled}
         onClick={() => {
@@ -74,7 +79,9 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
             different marker (PaneSourceSwitcher's "+" on "new
             connection") — falls back to the usual checked/unchecked
             behavior when unset. */}
-        <span className="menu-item-check">{item.glyph ?? (item.checked ? '✓' : '')}</span>
+        <span className="menu-item-check" aria-hidden="true">
+          {item.glyph ?? (item.checked ? '✓' : '')}
+        </span>
         {item.icon && <span className="menu-item-icon">{item.icon}</span>}
         <TruncatedText className="menu-item-label">{item.label}</TruncatedText>
         {item.shortcut && <span className="menu-item-shortcut">{item.shortcut}</span>}

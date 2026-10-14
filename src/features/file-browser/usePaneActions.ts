@@ -383,6 +383,7 @@ export function usePaneActions({
       items: drives.map((drive) => ({
         label: drive.label,
         checked: currentPath.startsWith(drive.path.toUpperCase()),
+        radio: true,
         onClick: () => navigatePane(id, drive.path),
       })),
     });

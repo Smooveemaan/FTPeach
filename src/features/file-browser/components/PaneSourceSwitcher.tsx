@@ -127,11 +127,13 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                   label: t('paneSourceSwitcher.connectToServer'),
                   className: 'new-connection',
                   checked: pane.kind === 'remote',
+                  radio: true,
                   onClick: onStartConnect,
                 },
                 {
                   label: t('paneSourceSwitcher.local'),
                   checked: pane.kind === 'local',
+                  radio: true,
                   disabled: pane.kind === 'local',
                   onClick: onSwitchLocal,
                 },
@@ -148,6 +150,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                           />
                         ),
                         checked: pane.siteId === site.id,
+                        radio: true,
                         onClick: () => onLocalPathOpen(site),
                       })),
                     ]
@@ -165,6 +168,7 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                           />
                         ),
                         checked: isConnected && pane.siteId === site.id,
+                        radio: true,
                         onClick: () => onSiteConnect(site),
                         ...(i === 0 ? { scrollStart: true } : {}),
                       })),

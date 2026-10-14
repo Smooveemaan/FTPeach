@@ -53,6 +53,25 @@ test('typing a tab name does not reselect and replace each previous character', 
   expect(onRename).toHaveBeenCalledWith('tab-1', 'Renamed');
 });
 
+test('a tab being renamed is not announced as unavailable', async () => {
+  const user = userEvent.setup();
+  const tab = { ...makeTab('tab-1'), name: 'Original' };
+  render(
+    <TabStrip
+      tabs={[tab]}
+      activeTabId={tab.id}
+      onSelect={vi.fn()}
+      onClose={vi.fn()}
+      onNew={vi.fn()}
+      onRename={vi.fn()}
+    />,
+  );
+
+  await user.pointer({ target: screen.getByRole('tab'), keys: '[MouseRight]' });
+  expect(screen.getByRole('textbox', { name: 'tabStrip.rename' })).toBeTruthy();
+  expect(screen.getByRole('tab').getAttribute('aria-disabled')).toBeNull();
+});
+
 test.each([
   ['ltr', 1, 0],
   ['ltr', 1.5, 120],

@@ -102,7 +102,13 @@ export const fileRow = (pane: Locator, name: string) =>
 /** Clicks a menu of the title bar, then one of its items, which may carry a check mark and a shortcut. */
 export async function menu(page: Page, title: string, item: string) {
   await page.getByRole('menubar').getByRole('menuitem', { name: title, exact: true }).click();
-  await page.getByRole('menuitem', { name: new RegExp(`^(✓ ?)?${escape(item)}( |$)`) }).click();
+  // A toggle or a choice of several is a menu item of its own kind.
+  const name = new RegExp(`^${escape(item)}( |$)`);
+  await page
+    .getByRole('menuitem', { name })
+    .or(page.getByRole('menuitemcheckbox', { name }))
+    .or(page.getByRole('menuitemradio', { name }))
+    .click();
 }
 
 export async function openFolder(pane: Locator, folder: string) {

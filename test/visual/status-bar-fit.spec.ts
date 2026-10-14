@@ -38,7 +38,7 @@ async function crowd(page: Page, language: string) {
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.status-quit')).toBeVisible();
   await page.getByRole('menuitem', { name: text.view, exact: true }).click();
-  await page.getByRole('menuitem', { name: text.syncBrowsing }).click();
+  await page.getByRole('menuitemcheckbox', { name: text.syncBrowsing }).click();
   await expect(page.locator('.sync-indicator')).toHaveCount(1);
   return text;
 }

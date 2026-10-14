@@ -197,7 +197,7 @@ pub async fn prepare(
     origin: crate::local_fs::provenance::Origin,
 ) -> Result<(PathBuf, u64)> {
     let metadata = sidecar(destination);
-    let existing = match open_artifact(&metadata, false) {
+    let existing = match while_busy(|| async { open_artifact(&metadata, false) }).await {
         Ok(mut file) => {
             use std::io::Read;
             let mut bytes = Vec::new();
@@ -221,7 +221,16 @@ pub async fn prepare(
         && record.source == source
     {
         let path = artifact_path(destination, record.artifact);
-        if let Ok(file) = open_artifact(&path, false) {
+        // Held by another program, the partial is not given up for a new
+        // one: the record would then name the new one, and nothing would
+        // ever remove the old.
+        let opened = while_busy(|| async { open_artifact(&path, false) }).await;
+        if let Err(error) = &opened
+            && busy(error)
+        {
+            return Err(opened.unwrap_err());
+        }
+        if let Ok(file) = opened {
             let start = file.metadata()?.len();
             if source.size.is_some_and(|size| start <= size) {
                 // A resumed artifact already carries the mark, but one
@@ -331,10 +340,11 @@ impl LocalDownload {
     /// when the server sends the whole file again, which drops what was there.
     pub async fn open_at(&self, offset: u64) -> Result<tokio::fs::File> {
         use tokio::io::AsyncSeekExt;
-        let file = {
+        let file = while_busy(|| async {
             let _mutation = crate::local_fs::mutations::guard().read().await;
-            open_artifact(&self.partial, false)?
-        };
+            open_artifact(&self.partial, false)
+        })
+        .await?;
         let mut file = tokio::fs::File::from_std(file);
         if offset == 0 {
             file.set_len(0).await?;
@@ -520,18 +530,18 @@ fn not_found(error: &anyhow::Error) -> bool {
 /// program (a virus scanner, a search indexer, a preview) holds its file.
 const BUSY_TRIES: u32 = 10;
 
-/// Runs `step` again while it fails on a file another program holds open:
+/// Whether `error` is a file another program holds open:
 /// ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION, which only Windows has.
+fn busy(error: &anyhow::Error) -> bool {
+    cfg!(windows) && io_errors(error).any(|error| matches!(error.raw_os_error(), Some(32 | 33)))
+}
+
+/// Runs `step` again while it fails on a file another program holds open.
 async fn while_busy<T, F: Future<Output = Result<T>>>(mut step: impl FnMut() -> F) -> Result<T> {
     let mut tries = 1;
     loop {
         match step().await {
-            Err(error)
-                if cfg!(windows)
-                    && tries < BUSY_TRIES
-                    && io_errors(&error)
-                        .any(|error| matches!(error.raw_os_error(), Some(32 | 33))) =>
-            {
+            Err(error) if tries < BUSY_TRIES && busy(&error) => {
                 tries += 1;
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             }
@@ -755,10 +765,23 @@ mod tests {
         assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
         assert!(!sidecar(&destination).exists());
 
-        // A stopped download's partial, held as it is discarded: removed,
-        // and its record only after it.
+        // A paused download's partial, held as it resumes: resumed, not
+        // given up for a new partial that the record would name instead.
         std::fs::remove_file(&destination).unwrap();
         leave_half(&destination).await;
+        let record = read_record(&sidecar(&destination)).unwrap();
+        let held = hold_for_a_second(&artifact_path(&destination, record.artifact));
+        let download = begin(&destination, true, identity(Some(8), Some("v1"))).await;
+        held.join().unwrap();
+        assert_eq!(download.start(), 4);
+        cancel(download).await;
+        assert_eq!(
+            read_record(&sidecar(&destination)).unwrap().artifact,
+            record.artifact
+        );
+
+        // A stopped download's partial, held as it is discarded: removed,
+        // and its record only after it.
         let record = read_record(&sidecar(&destination)).unwrap();
         let held = hold_for_a_second(&artifact_path(&destination, record.artifact));
         discard(&destination).await;

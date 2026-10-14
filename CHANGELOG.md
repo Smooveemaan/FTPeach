@@ -55,6 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   disappear and menus run off its edge.
 - A download that a virus scanner or Windows Search opens just as it completes still finishes
   and no longer leaves its .ftpeach-resume.json file behind.
+- A paused download resumed while another program holds its partial file waits for it, then says
+  the file is in use and keeps it for Retry, instead of starting over and leaving the old part.
 - In the portable copy, a log folder chosen inside the program's folder is still used after the
   folder is moved or its drive gets another letter.
 - Creating a folder no longer recreates its parent if that parent was moved or deleted.

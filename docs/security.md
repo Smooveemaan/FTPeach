@@ -4,7 +4,7 @@ This document describes the trust boundaries and defensive decisions of the curr
 
 ## Scope
 
-The model covers the React/WebView renderer, Tauri IPC commands, the Rust backend, the local Windows filesystem, `%APPDATA%\FTPeach`, remote FTP/FTPS/SFTP/WebDAV servers, the updater endpoint, and applications that receive files through **Open with**.
+The model covers the React/WebView renderer, Tauri IPC commands, the Rust backend, the local Windows filesystem, the installed or portable data folder, remote FTP/FTPS/SFTP/WebDAV servers, the updater endpoint, and applications that receive files through **Open with**.
 
 The security of Windows and the user's account, vulnerabilities in WebView2 or an external editor after it receives a file, and compromise of the FTPeach process with full memory access are outside the model.
 
@@ -67,7 +67,7 @@ A portable copy's `data\` folder holds what `%APPDATA%\FTPeach` holds, so whoeve
 
 ### FTPeach and external applications
 
-**Open with** downloads an untrusted remote file to a temporary directory and passes it to the Windows-registered application. FTPeach removes its unchanged temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server; a modified copy that was never uploaded is moved to the recovery folder described in [storage](storage.md) instead of being deleted.
+**Open with** downloads an untrusted remote file to a persistent per-run edit directory and passes it to the Windows-registered application. FTPeach removes its unchanged temporary copies on a best-effort basis but cannot control editor vulnerabilities, recent-file history, backups, or cloud synchronization. A file modified by the external application may be offered for upload to the server; a modified copy that was never uploaded is moved to the recovery folder described in [storage](storage.md) instead of being deleted.
 
 ## Secret storage modes
 
@@ -126,7 +126,7 @@ Under enhanced protection, DPAPI fields migrate into the vault only while it is 
 | Renderer XSS/compromise | Strict CSP, custom plugin permissions, one-use authorization tokens, secrets not returned to renderer | The renderer can still invoke non-sensitive operations granted to its window |
 | FTP MITM | No cryptographic protection in plain FTP | Accepted risk; UI recommends FTPS/SFTP |
 | FTPS/WebDAV MITM | TLS validation enabled by default | Users can explicitly enable `allowInvalidCert` |
-| A downloaded file treated as locally authored | Mark of the Web on every download, carried through commit and resume | Needs NTFS; a drag-out is marked only if the drop target honours the `ZoneIdentifier` format; the mark informs SmartScreen and Protected View rather than enforcing anything itself |
+| A downloaded file treated as locally authored | Best-effort Mark of the Web on downloads to filesystems with alternate data streams, carried through commit and resume | Needs NTFS; a drag-out is marked only if the drop target honours the `ZoneIdentifier` format; the mark informs SmartScreen and Protected View rather than enforcing anything itself |
 | SMB authentication to an unchosen share | UNC paths are refused from their text before any filesystem call | A share the user picked in a dialog is reachable as they intended; what Windows does with the credentials of an allowed share is its own policy |
 | SSH man-in-the-middle on first contact | `strictHostKeyCheck` refuses an unpinned key and shows its fingerprint before credentials are offered | The user still has to compare the fingerprint with one obtained out of band; turning the setting off restores trust on first use |
 | WebDAV password on a cleartext connection | `http://` is probed unauthenticated and upgraded to `https://` before credentials are sent | Users can explicitly enable `allowCleartextAuth`; a server reached over plain HTTP still sees the request itself |
@@ -154,7 +154,9 @@ An **Open with** token covers the whole request: the connection, the remote path
 
 When security confirmations are enabled, execution requires a backend-owned confirmation window showing the canonical target, followed by a short-lived token for that exact operation. Vault reset is always confirmed. Users may disable routine security confirmations in settings; command separation, path provenance, canonicalization, token binding, and executable classification still apply, but a compromised main renderer could then request an execution token without an interactive prompt.
 
-The renderer cannot make that decision for the user. `settings_set` refuses to turn security confirmations off or to lengthen or disable the vault idle lock; only the sensitive `settings_set_security` command does, after a backend confirmation window that is shown whatever the confirmation setting says and that asks for the master password when a vault is configured. Strengthening either setting needs no confirmation. A settings import keeps the current protection instead of relaxing it. Once the policy changes, every unused token is withdrawn, and a token issued before the vault was last locked is refused.
+The renderer cannot make that decision for the user. `settings_set` refuses to turn security confirmations off or to lengthen or disable the vault idle lock; only the sensitive `settings_set_security` command does, after a backend confirmation window that is shown whatever the confirmation setting says
+and requires reauthentication when a vault is configured, with the master password
+or Windows Hello where enabled. Strengthening either setting needs no confirmation. A settings import keeps the current protection instead of relaxing it. Once the policy changes, every unused token is withdrawn, and a token issued before the vault was last locked is refused.
 
 The settings dialog asks for that confirmation the moment the switch moves, not when the dialog is saved, and holds the token until then: nothing is written before Save, and declining simply leaves the switch where it was. The confirmation window is written in the language the main window is showing, which the dialog may itself be previewing, so the renderer passes that language with the request; only the shape of a language tag is trusted from there, and the window falls back to English for one it has no translations for.
 
@@ -164,11 +166,16 @@ IPC strings are validated before storage or network use, including host, usernam
 
 FTP control replies are bounded as well, from the greeting on: 256 KiB per reply, in `suppaftp` and in FTPeach's own encoding relay. A server that exceeds it loses the connection and the operation returns `resourceLimit`, without the reply text reaching errors or logs. In active mode the data connection is accepted only from the server's address, so another local program cannot answer the listener first; this is not protection against an attacker who also controls the network path.
 
-Limits are per operation and in total. Each one refuses before the expensive work rather than after it, and a refusal is a `resourceLimit` error, never a success. The protocol log's writer queue holds 512 records and its in-memory tail 5,000 records or 4 MiB, with a counter reporting what was dropped and no secret-bearing payload. At most 32 unused authorization grants and 4 open confirmation windows exist at once, 64 connection slots, one proxy test at a time under a 20-second deadline covering the whole connect and handshake rather than the operating system's own timeouts, 4 bridged SOCKS connections, 4 concurrent local listings and 4 probes of a network path. Editor copies are admitted against a disk budget and an age limit before a new one is written.
+Limits apply both per operation and to shared resources. Admission checks bound
+concurrency before work starts; streaming and listing checks enforce their budgets
+as data arrives. Protocol logs drop excess records with an aggregate notice, and
+paused-journal exhaustion returns `cleanupIncomplete`; other resource-budget refusals
+normally use `resourceLimit`. These are not interchangeable outcomes. The protocol log's writer queue holds 512 records and its in-memory tail 5,000 records or 4 MiB, with a counter reporting what was dropped and no secret-bearing payload. At most 32 unused authorization grants and 4 open confirmation windows exist at once, 64 connection slots, one proxy test at a time under a 20-second deadline covering the whole connect and handshake rather than the operating system's own timeouts, 4 bridged SOCKS connections, 4 concurrent local listings and 4 probes of a network path. Editor copies are admitted against a disk budget and an age limit before a new one is written.
 
 The SOCKS bridge's connections belong to its accept loop through a `JoinSet`, so closing the bridge stops them.
 
-Remote directory responses are limited to 10,000 entries and 8 MiB of names/text. WebDAV PROPFIND XML is capped at 8 MiB before full parsing, WebDAV upload bodies stream through bounded buffers with at most 16 admitted bodies, remote paths at 4,096 bytes, filenames at 1,024 bytes, and recursive removal at 40 levels. Limit violations return stable `invalidInput` or `resourceLimit` errors instead of panicking or continuing to accumulate memory.
+Remote directory listings are limited to 100,000 entries and 32 MiB of names/text
+(`protocol/limits.rs`). WebDAV PROPFIND XML is capped at 8 MiB before full parsing, WebDAV upload bodies stream through bounded buffers with at most 16 admitted bodies, remote paths at 4,096 bytes, filenames at 1,024 bytes, and recursive removal at 40 levels. Limit violations return stable `invalidInput` or `resourceLimit` errors instead of panicking or continuing to accumulate memory.
 
 Protocol events are structured before they reach the renderer. Credential, authorization, token, private-key, and secret-named fields are replaced with `[REDACTED]`; the generic text redactor remains a final export/file-logging barrier. Redaction does not make diagnostics anonymous: server hostnames, IP addresses, user-selected local paths, and remote names may remain. Users should review diagnostic bundles before sharing them.
 

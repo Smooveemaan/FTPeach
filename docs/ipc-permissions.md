@@ -64,7 +64,7 @@ any. Application commands are grouped as follows:
   user; it can postpone the backend's idle lock but cannot disable it, and it has no effect
   on the lock that follows a Windows session lock or a hidden window.
 - Ordinary list/edit IPC returns only secret-presence flags. The reveal commands,
-  `sites_reveal_secret` and `settings_reveal_proxy_password`, require a one-use confirmation token; Stronghold mode additionally requires master-password reauthentication before the token is issued.
+  `sites_reveal_secret` and `settings_reveal_proxy_password`, require a one-use confirmation token; enhanced protection additionally requires reauthentication with the master password or Windows Hello where enabled before the token is issued.
 - Local path operations: `fs_reveal_path`, `fs_open_document`,
   `fs_execute_path`, `open_with_start`.
 - Network paths: every command that resolves, stats or opens a local path refuses a
@@ -82,11 +82,12 @@ any. Application commands are grouped as follows:
   the host, the port, the fingerprint trusted until now and the one being trusted, and the
   backend writes the new pin only if the stored one is still what the token named. There is
   no command that deletes a pin.
-- Security settings: `settings_set_security` is the only command that applies
+- Security settings: `settings_set_security` is the command that can confirm weakening of
   `showSecurityConfirmations`, `vaultAutoLockMinutes` and `strictHostKeyCheck`, and it also carries the proxy's
   switch, type, host, port, account and password, so an address is checked against the switch it
   is saved with; `settings_set` rejects a patch that would relax
-  either setting or move the saved proxy password, and an import keeps the current values.
+  any of those protections or move the saved proxy password. Ordinary saves and imports
+  may strengthen protection; imports discard weakening changes and preserve the proxy recipient.
 - Bookmarks: `sites_save` lives in the `sensitive` plugin. Its token names the bookmark and
   any move of its saved password to a new server, port, account or TLS policy; such a move
   is confirmed in the backend window first.
@@ -131,4 +132,4 @@ window cannot invoke their approve command.
 
 Calling an old top-level command cannot reach these handlers. Calling the plugin
 without a valid token, from another window, for another target, after expiry, or a
-second time returns `PermissionDenied`.
+second time returns `permissionDenied`.

@@ -121,7 +121,8 @@ body:
     attributes:
       label: Log
       description: |
-        Copy the relevant lines from the log panel, or enable **Settings → Logging → Write log to file** and take them from `%APPDATA%\FTPeach\logs`.
+        Copy the relevant lines from the log panel, or enable **Settings → Logging → Write log to file** and use **Open log folder** there.
+        By default, logs are under `%APPDATA%\FTPeach\logs` for an installed copy or `data\logs` beside a portable copy; a custom log folder overrides that location.
         Passwords and tokens are redacted automatically, but server names, IP addresses and paths are not: please review before posting.
       render: text
   - type: textarea

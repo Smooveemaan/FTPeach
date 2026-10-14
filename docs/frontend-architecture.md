@@ -118,8 +118,9 @@ The persisted format is unchanged and stays flat: `SettingsValues` is one field 
 which is what the backend stores and what a settings patch names. `settingsValues(state)` flattens
 the groups for the settings dialog, which shows them all.
 
-Adding a setting means editing the Rust store, the IPC type and `shared/settingsDefaults.ts`; on
-the renderer side it is one group and its consumer.
+Adding a setting starts in `shared/settingsDefaults.json`, the defaults read by both Rust
+and the renderer. Update the store's validation, the IPC contract, the owning settings group
+and its consumer or dialog section as needed; `shared/settingsDefaults.ts` only exports the JSON.
 
 ## Global channels
 
@@ -134,8 +135,8 @@ Preferences that every row reads have an explicit owner rather than an ambient g
   and applies monitor DPI times the user factor through page zoom. Native DPI-change
   events reapply the latest in-memory preference; other platforms use ordinary page zoom.
 
-`shared/asyncFailure.ts`'s failure sink is the one global on purpose; the reason is
-written at the top of that file.
+`shared/asyncFailure.ts` keeps a module-level failure sink; the reason is written
+at the top of that file.
 
 ## Boundary check
 

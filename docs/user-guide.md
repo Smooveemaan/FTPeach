@@ -2,8 +2,8 @@
 
 What FTPeach does in the situations where it matters most: a transfer that
 stops halfway, a file that already exists, a server you have not seen before.
-Each statement here is backed by an automated check, so it describes how the
-current version actually behaves.
+Behavior statements link to automated checks or recorded manual runs. These
+checks cover the conditions they exercise, including the limits described below.
 
 For installing FTPeach and the list of supported protocols, see the
 [README](../README.md). For what changed between versions, see the
@@ -62,11 +62,17 @@ ones that stay selected.
 
 ## Pausing, stopping and resuming transfers
 
-**Pause** keeps what has been transferred so far. Resuming a paused upload over
-FTP or SFTP continues where it stopped. Over WebDAV, a resumed upload starts
-again from the beginning, because WebDAV cannot add to a partly uploaded file.
+**Pause** keeps the partial data for a later attempt. A paused FTP, FTPS or SFTP
+upload resumes when the source and the retained server data pass verification;
+otherwise it starts again. WebDAV uploads, including folder uploads, do not
+offer Pause because they cannot continue a partly uploaded file.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::retryTransfer resumes paused uploads and downloads, but restarts stopped ones -->
+<!-- verified-by: pr src-tauri/src/application/upload_resume_tests.rs::staged_prefix_of_an_unchanged_source_resumes_at_its_length -->
+<!-- verified-by: pr src-tauri/src/application/upload_resume_tests.rs::a_source_edited_while_paused_restarts_and_drops_its_staging -->
+<!-- verified-by: pr src-tauri/src/application/upload_resume_tests.rs::staging_that_is_not_a_prefix_restarts_even_when_the_pin_matches -->
+<!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a folder walk pauses only where the file it cuts short can carry on -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::pauseAllTransfers only pauses uploads that can prove a resume, but stopAllTransfers reaches everything active -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
 
 Resuming a paused transfer does not ask again whether to replace the file
@@ -90,18 +96,21 @@ arrived.
 <!-- verified-by: pr src-tauri/src/application/transfer_service_tests.rs::queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_only_staging -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::stopping queued and active uploads never requests deletion of the destination -->
 
-Stopping a folder upload keeps the files that already reached the server; only
-the file that was still being sent is removed.
+Stopping a folder upload keeps the files that already reached the server.
+Cleanup targets only its own temporary upload file; a server that refuses
+cleanup or cannot be reached can leave that temporary file behind.
 
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::a_stopped_folder_upload_settles_at_once_and_keeps_what_landed -->
+<!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::staging_the_server_will_not_delete_does_not_turn_a_stop_into_a_failure -->
 <!-- verified-by: pr src-tauri/src/application/recursive_transfer/tests.rs::stopping_a_paused_upload_keeps_what_landed_and_removes_only_its_own_staging -->
 
 ## Interrupted downloads
 
-An interrupted download continues where it stopped only if the file on the
-server is still the same one: the same server, path, size and version. If any
-of these changed, the download starts over, so a file is never put together
-from two different versions.
+An interrupted download resumes only when the recorded server, account, path,
+size and version still match. A changed or unavailable size or version starts
+a new download. This compares the server's metadata, not the complete file
+contents: a same-size change with the same reported version can go unnoticed.
+See [resume limits](protocol-support.md#limitations).
 
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
@@ -118,11 +127,14 @@ on the server, leaves nothing beside the destination.
 
 ## Downloaded files
 
-Downloaded files are marked as coming from the internet, the same way a browser
-marks its downloads, so Windows and Office open them with the usual care. The
-mark records the server address but never your user name or password, and it
-stays with the file when the file is renamed.
+On NTFS, FTPeach writes a Windows origin mark to downloaded files. It identifies
+local-network servers as intranet and other servers as internet. The mark
+records the server address without your user name or password and stays with
+the file when it is renamed. Writing it is best effort; filesystems without
+alternate data streams cannot keep it. See [download security limits](security.md#rust-and-remote-servers).
 
+<!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::a_host_that_cannot_be_reached_from_outside_is_the_intranet -->
+<!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::anything_else_is_the_internet -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_carries_the_address_but_never_an_account -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_lands_beside_the_file_and_survives_being_renamed -->
 
@@ -158,11 +170,14 @@ skipped names; other selected files can still be copied.
 
 ## Renaming and moving
 
-Renaming or moving a file never replaces another file with the same name,
-unless you choose to replace it.
+When renaming or moving finds another file with the same name, FTPeach asks
+before replacing it. FTP cannot make the check and rename atomic: a file
+another client creates between them can still be replaced. Server-specific
+limits are listed in the [file operation guarantees](transfer-safety.md#guarantee-matrix).
 
 <!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::rename replaces a target only on an explicit decision -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Move to replaces a target only after explicit approval -->
+<!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::no_replace_rename_refuses_a_taken_target_and_moves_onto_a_free_one -->
 
 When a cut selection includes files you skip, it stays available to paste after
 the other files move.
@@ -232,7 +247,7 @@ nothing changes.
 
 ## Unlocking with Windows Hello
 
-Windows Hello unlock is switched on for one computer at a time. When the vault
+Windows Hello unlock is enabled separately on each computer. When the vault
 is moved or carried to another computer, it opens there with the master
 password, and Windows Hello can be switched on there as well. Switching it off
 on one computer leaves it on for the others.
@@ -257,8 +272,8 @@ password.
 
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::the connect retried after trusting a key keeps the bookmark and its saved password -->
 
-With an `http://` WebDAV address, your password is not sent until you allow
-unencrypted sign-in for that connection.
+With an `http://` WebDAV address, your password is not sent over plain HTTP
+unless you allow unencrypted sign-in for that connection.
 
 <!-- verified-by: pr src-tauri/src/protocol/webdav_tests.rs::an_unencrypted_server_never_sees_the_password -->
 <!-- verified-by: pr src-tauri/src/protocol/webdav_tests.rs::cleartext_login_is_refused_until_the_user_allows_it -->

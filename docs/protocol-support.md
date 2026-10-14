@@ -28,7 +28,12 @@ FTPS means explicit TLS (`AUTH TLS`), not implicit FTPS. TLS certificate verific
 
 Downloads are written to a hidden sibling `.ftpeach-<id>.part` file. A download resumes only when the remote file still has the size and version (FTP `MDTM`, SFTP modification time, WebDAV strong `ETag` or `Last-Modified`) recorded when the partial was started. FTP/FTPS and SFTP resume from the partial file size; WebDAV sends a Range request with `If-Range` and validates `Content-Range`. A WebDAV version read in the same second the file was last modified is not trusted, since the file could change again within that second without a new version; such a download restarts instead of resuming. If a server ignores Range, the download safely restarts. The partial file replaces the destination only after its size is verified.
 
-FTP/FTPS and SFTP uploads resume from the remote file size. An invalid offset produces an integrity error. WebDAV upload resume is not supported.
+Paused FTP/FTPS and SFTP uploads resume from their retained staging file only after
+the local source identity still matches and up to 8 KiB of the staging tail matches
+the source. Changed, missing or unverifiable data starts a fresh upload; this is not
+a full hash of everything already sent. An invalid offset at the protocol layer
+produces an integrity error. WebDAV uploads, including folder uploads, offer no
+Pause and restart from the beginning when retried.
 
 ## Limitations
 
@@ -73,10 +78,15 @@ demand in its own workflow: about thirty server implementations and
 configurations, IIS, proxies, relays between different servers and faulty
 links. It is informational and never blocks a pull request or a release.
 
-Maintainers can reproduce the compatibility workflow on a Docker host from `src-tauri`:
+On Windows, run from the repository root after the [libsodium setup](../README.md#set-up-and-run):
 
-```sh
-docker compose -f tests/docker/docker-compose.yml up --detach
-cargo test --locked --features test-utils --test docker_integration -- --ignored
-docker compose -f tests/docker/docker-compose.yml down --volumes
+```powershell
+docker compose -f src-tauri/tests/docker/docker-compose.yml up --detach
+# Wait for the FTP 220 banner on 2131 and ports 2222, 6065, 6443 and 6444.
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command compatibility
+docker compose -f src-tauri/tests/docker/docker-compose.yml down --volumes
 ```
+
+The wrapper runs both the Docker integration target and the recursive FTP stop
+fixtures. The Linux commands and strict TLS endpoint probes are in
+[protocol-compatibility.yml](../.github/workflows/protocol-compatibility.yml).

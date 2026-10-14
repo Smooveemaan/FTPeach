@@ -46,11 +46,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Local file copies appear in Transfers, including when replacing existing files.
 - Deleting a server selection handles names that differ only in letter case without a false
   busy error between those deletions.
-- Stopping an upload, running or paused, or disconnecting or closing its tab no longer leaves a
-  temporary file on the server. The same goes for a copy between two servers.
-- A replacing upload cut off at the last moment no longer leaves nothing under the file's name:
-  the previous version is put back, or, if the whole connection was lost, the next time you
-  connect to that server.
+- Stopping an upload, running or paused, or disconnecting or closing its tab also tries to remove
+  its temporary file from the server. The same goes for a copy between two servers.
+- An interrupted replacement upload tries to put the previous file back; if the connection is
+  lost, recovery is retried when you next connect to that server.
 - When a copy between two servers loses the connection it reads from, that pane is shown as
   disconnected, not the one it writes to.
 - Transfers cut off by a lost connection can be retried after connecting to the server again.

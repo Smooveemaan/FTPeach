@@ -68,8 +68,8 @@ is no safe in-band rotation: publish the new build as a manual download.
 
 The installer uses Tauri's default WebView2 mode: when the runtime is missing
 it downloads Microsoft's Evergreen bootstrapper over HTTPS from Microsoft. The
-bootstrapper is Microsoft-signed and FTPeach does not ship or pin it; Windows
-Update keeps the runtime current afterwards.
+bootstrapper is Microsoft-signed and FTPeach does not ship or pin it. Runtime
+servicing is separate from FTPeach's release artifacts.
 
 ## RSA and dependency upgrades
 

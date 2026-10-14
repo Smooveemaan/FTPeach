@@ -24,7 +24,7 @@ All tests below are in `src-tauri/src/application/recursive_transfer/tests.rs` a
 | Missing remote metadata fails closed | `resume_with_missing_remote_metadata_retains_source_and_destination` |
 | Stop retains a replacement and an in-place same-size/restored-mtime edit, returns structured cleanup details | `stop_preserves_an_external_replacement_with_restored_timestamp`, `stop_preserves_in_place_changes_and_reports_cleanup_details` |
 | Replacement directories and external children survive rollback | `rollback_preserves_a_replacement_directory_and_new_children` |
-| Foreign staging and unverifiable remote objects survive; retained staging cannot later be removed by disconnect | `stopping_a_paused_upload_retains_unverifiable_objects_and_foreign_staging` |
+| Stop keeps delivered remote files and foreign staging, removing only the paused upload's own registered staging | `stopping_a_paused_upload_keeps_what_landed_and_removes_only_its_own_staging` |
 | Source replacement/in-place change after final scan survives, even with original size/mtime | `move_preserves_source_changes_after_final_scan` |
 | Destination mutation before source deletion preserves source | `move_rechecks_destination_immediately_before_source_deletion` |
 | Protected Windows handles deny writes/replacement through deletion | `protected_file_rejects_writes_and_replacement_until_handle_deletion` |

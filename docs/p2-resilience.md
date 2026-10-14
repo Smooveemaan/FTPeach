@@ -8,12 +8,16 @@ Skip merges missing files into existing directories and preserves conflicting fi
 
 Move deletes source entries only after successful copying and an unchanged source manifest. Empty directories are included. Copy/delete Move runs only between local folders; every Move between the computer and a server, or between two connections, is refused before it starts (see the [guarantee matrix](transfer-safety.md#guarantee-matrix)). External-process filesystem races and crash-atomic transactions spanning multiple stores are not claimed to be solved by these changes.
 
-Navigation commits back/forward stacks only after the winning listing succeeds. Transfer rows form a discriminated union; each retry owns a new attempt ID, and stale events cannot settle a replacement attempt. Recursive rows use the same attempt ownership and cancellation lifecycle. Successful history is retained to 1,000 rows; retryable error, stopped and paused rows remain available. Attempt and active-target indexes are rebuilt when publishing a store snapshot.
+Navigation commits back/forward stacks only after the winning listing succeeds. Transfer rows form a discriminated union; each retry owns a new attempt ID, and stale events cannot settle a replacement attempt. Recursive rows use the same attempt ownership and cancellation lifecycle. History retains the newest 1,000 successful rows and, separately, the newest
+1,000 failed or stopped rows, ordered by completion. Paused and active rows are
+not evicted. Admission allows at most 1,000 active rows (queued, running or
+cancelling) and 10,000 total rows. Attempt and active-target indexes are updated
+on structural row changes; byte-only progress leaves them and the summary intact.
 
 | Event | State transition | Ownership |
 | --- | --- | --- |
 | Start/retry | queued, then progress | New attempt ID; retry waits for the previous attempt to settle |
-| Pause/stop | cancelling, then paused/stopped | Keep the existing attempt until backend acknowledgement; recursive operations support stop |
+| Pause/stop | cancelling, then paused/stopped, or error if cleanup fails | Keep the existing attempt until backend acknowledgement; Pause is offered only where the row can resume |
 | Completion/failure | done/error | Only the current attempt can settle the row; a completed commit wins a late cancellation |
 | Late progress/completion | unchanged | Events from replaced attempts are discarded |
 

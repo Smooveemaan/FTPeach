@@ -20,6 +20,6 @@
   release tag recorded in a comment. Dependabot proposes updates; action changes
   receive the same review as dependency changes.
 - Secrets never belong in manifests, lockfiles, workflow arguments, fixtures
-  or release/dependency scripts. `check:tracked-secrets` runs in every CI job.
+  or release/dependency scripts. `check:tracked-secrets` runs in the shared `supply-chain` job on every CI run and release.
 - FTPeach does not send telemetry. Any future telemetry requires a separate
   design decision, disabled-by-default implementation and explicit consent.

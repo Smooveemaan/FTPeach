@@ -1,6 +1,7 @@
 # Duplication
 
-`npm run check:duplicates` runs `scripts/checks/check-duplicates.ts`: jscpd 5.2.1 with at least
+`npm run check:duplicates` runs `scripts/checks/check-duplicates.ts` with the jscpd version
+recorded in `package-lock.json` and `scripts/checks/duplication-baseline.json`, at least
 60 tokens, once per area, so each area has its own denominator.
 
 | Area | What it measures |
@@ -21,7 +22,9 @@ threshold. A change that deliberately adds or removes duplication updates the ba
 commit. CI writes the table to the job summary and keeps `duplication-report/` as an artifact; each
 area's `jscpd-report.json` lists the clones with file and line.
 
-Baseline of 24 September 2026 (`2a68b2c` plus the upload-outcome and resume-helper cleanups):
+Historical measurement of 24 September 2026 (`2a68b2c` plus the upload-outcome and
+resume-helper cleanups). The current gate uses `scripts/checks/duplication-baseline.json`,
+not the figures below:
 
 | Area | Files | Code lines | Clones | Duplicated lines | Share |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -32,8 +35,9 @@ Baseline of 24 September 2026 (`2a68b2c` plus the upload-outcome and resume-help
 
 ## Findings and decisions
 
-Groups of at least 20 duplicated lines, and every frontend and CSS clone. IDs refer to the audit in
-the hotfix plan.
+Decisions recorded with that historical measurement for groups of at least 20 duplicated
+lines and every frontend and CSS clone. IDs refer to that audit's hotfix plan; they are
+traceability labels, not a current list of outstanding changes.
 
 | Where | Lines | Decision |
 | --- | ---: | --- |

@@ -27,8 +27,10 @@ guarantees are in [transfer safety](transfer-safety.md),
 ```
 
 - **Main window.** The whole interface. It is treated as untrusted input: a
-  compromised renderer must not be able to read secrets, delete files or trust
-  a host key without the user seeing a native confirmation.
+  compromised renderer remains able to request ordinary file operations.
+  Rust validates paths and operation tokens; secret reveal and host-key trust
+  also require backend-owned confirmation when the policy calls for it.
+  See [renderer trust limits](security.md#renderer-and-taurirust).
 - **Confirmation window.** A second window the backend opens for sensitive
   operations. It loads the same bundle, renders only
   `platform/SecurityConfirmation.tsx` and has its own capability file
@@ -54,11 +56,12 @@ composition root. Code is grouped by what the user would name:
 | `platform/` | The only code that talks to Tauri: `tauriApi.ts` (invoke and events) and typed wrappers in `platform/api/`. |
 | `components/`, `hooks/`, `shared/`, `shortcuts/`, `i18n/` | Reusable UI, UI mechanics and plain functions. They never import a feature. |
 
-State lives with its owner and flows down as props; there is no global store
-and no React context. Two deliberate exceptions keep hot paths cheap: the
-transfer queue is a module-level store read with `useSyncExternalStore`
-(`features/transfers/transferStore.ts`), sized for 100,000 rows, and the
-async-failure sink in `shared/asyncFailure.ts`.
+State lives with its owner and flows down as props. The transfer queue uses a
+module-level store read with `useSyncExternalStore`
+(`features/transfers/transferStore.ts`), with row subscriptions and bounded
+admission and history; [resilience](p2-resilience.md) describes its limits.
+Date-format preferences and the async-failure sink also have explicit shared
+owners, described in [frontend architecture](frontend-architecture.md#global-channels).
 
 Logic that must be testable without React is written as plain factories that
 take their collaborators as arguments (`features/file-browser/panes/create*.ts`,
@@ -77,7 +80,7 @@ import the headless part without JSX. `npm run lint` enforces the import rules.
 | `protocol/` | The `ProtocolBackend` trait, its FTP, SFTP and WebDAV drivers, listing parsers, the TCP/proxy transport, and the typed per-protocol connection config. |
 | `transfer/` | Worker pools, server-to-server relay, progress events, rate and concurrency limits, upload staging. |
 | `local_fs/` | Every operation on the user's own disk: listing, create, rename, delete, recycle bin, staged copy, verified move, reservations, open-with copies. |
-| `store/` | JSON persistence in `%APPDATA%\FTPeach` and secret-field placement. |
+| `store/` | JSON persistence in the installed or portable data folder and secret-field placement. |
 | `security/` | Vault, DPAPI, Windows Hello unlock, sensitive-operation grants, path and name guards, redaction. |
 | `runtime/` | Process lifecycle: startup, shutdown, tray, window geometry and scale, logging, updater staging, auto-lock. |
 | `native_drag/` | Dragging remote and local files out to Explorer as OLE virtual files. |
@@ -190,7 +193,8 @@ On success `application/session_service.rs` builds a `TransferPool` whose
 factory opens further backends from the same `ConnectionConfig`, and stores
 both in the slot. The slot's async mutex serializes browse operations for one
 connection (list, mkdir, rename, delete, disconnect); different connections
-run in parallel. Transfers never take the browse lock. A connect has its own
+run in parallel. Transfer bytes use pool workers, while admission, resume checks
+and cleanup may briefly need session lookup or the browse connection. A connect has its own
 cancellation token, so a disconnect can abandon a stalled connect without
 waiting for the lock. Teardown stops the pool, waits for its tasks, removes
 staging files that can no longer be resumed, then closes the browse
@@ -234,8 +238,8 @@ FTPeach carries a patched copy of `wry` in `src-tauri/vendor/`; its
 
 ## Transfers
 
-A transfer runs on a worker from the connection's `TransferPool`, never on the
-browse connection. Workers are separate authenticated backends. A pool grows
+Transfer data runs on a worker from the connection's `TransferPool`; recovery and
+staging cleanup may use the browse connection. Workers are separate authenticated backends. A pool grows
 with demand, up to the site's connection limit minus the browse connection; a
 process-wide limiter applies the global concurrency setting, and a
 process-wide rate limiter applies the speed limit, charging a byte copied
@@ -246,8 +250,10 @@ interrupted is stopped by dropping its worker, which the pool replaces.
 - **Single files** (`application/transfer_service.rs`): uploads go to a
   hidden staging name and are renamed into place; downloads write a partial
   file with a resume record that proves it belongs to the same source.
-  Replacing an existing file is explicit, and protocols without an atomic
-  no-replace rename refuse rather than guess.
+  Replacing a detected existing file requires approval. FTP checks before
+  renaming but cannot make that check atomic; other protocols depend on the
+  server honoring their no-replace operation. See the
+  [guarantee matrix](transfer-safety.md#guarantee-matrix).
 - **Server to server**: the bytes are relayed through this computer over a
   bounded in-memory pipe between a worker of each pool; relays do not resume.
 - **Folders** (`application/recursive_transfer/`): the renderer sends one
@@ -267,7 +273,8 @@ decisions before a transfer starts. [Transfer safety](transfer-safety.md) and
 
 ## Persistence
 
-`store::Store` owns `%APPDATA%\FTPeach`:
+`store::Store` owns `%APPDATA%\FTPeach` for an installed copy, or `data\`
+beside a portable program:
 
 | File | Content |
 | --- | --- |
@@ -276,18 +283,20 @@ decisions before a transfer starts. [Transfer safety](transfer-safety.md) and
 | `tabs.json` | Restored tabs and panes. No connection state, listings or secrets. |
 | `known_hosts.json` | Pinned SSH host-key fingerprints. |
 | `trusted_applications.json` | Applications the user allowed for "Open with". |
-| `vault.json` + snapshot | The Stronghold vault under enhanced protection. |
+| `vault.json`, `vault.hold` | Vault metadata and the encrypted Stronghold snapshot under enhanced protection. |
 
-Writes go through `store/storage.rs`: one lock per file, a temporary sibling,
-then an atomic replace. Reads are tolerant: a record written by any earlier
-version must still load, and unknown or missing fields fall back to defaults
-rather than failing. `src/shared/settingsDefaults.json` is the single source
+JSON store writes go through `store/storage.rs`: one lock per file, a temporary
+sibling, then an atomic replace. Supported legacy formats are read with their
+migration rules. Unsupported schemas and unreadable stores are protected from
+writes; recoverable settings and site files may use a last-good backup. SSH
+host-key pins use a strict reader and never fall back to an empty trust store
+on damage. `src/shared/settingsDefaults.json` is the single source
 of setting names, types and defaults for both sides. [Storage](storage.md)
 has the details.
 
 ## Security boundaries
 
-- **Secrets never reach the renderer** unless the user reveals one through a
+- **Saved secrets never reach the renderer** unless the user reveals one through a
   grant. Site records sent to the renderer carry `hasPassword` flags only.
   In Rust, secrets are `SensitiveString`, which redacts itself in `Debug` and
   zeroizes on drop.
@@ -298,7 +307,9 @@ has the details.
   device, a stream separator, a trailing dot) is refused before a file is
   created, by `local_fs::windows_names`, and the renderer repeats that check
   only to keep a doomed download out of the queue.
-- **Destructive and revealing operations need a grant** (see IPC above).
+- **Sensitive-plugin operations need a grant** (see IPC above). Ordinary remote
+  deletion and other main-window commands remain governed by their ACL and
+  backend validation; a grant does not imply an interactive confirmation.
 - **Text written to disk or exported is redacted**: `security::redaction`
   cleans the protocol log, the application log, saved logs and the
   diagnostic bundle.

@@ -50,8 +50,9 @@ state. Its minimum still includes the fixed controls and the address field's flo
 
 ## Bundle baseline
 
-Production bundle sizes are measured with `npm run build`. Sizes below are minified output from
-Vite 8.1.4 on 24 August 2026; gzip sizes are included for comparison.
+Production bundle sizes are measured with `npm run build`. The table below records the
+24 August 2026 dialog-splitting measurements, not the current build; gzip sizes are included
+for comparison. The current Vite version is recorded in `package-lock.json`.
 
 | Build | Entry JavaScript | Entry gzip |
 | --- | ---: | ---: |
@@ -83,11 +84,11 @@ updated on 11 October 2026 for shared appearance synchronization and twelve pale
 | Security confirmation startup | 453.4 KiB | 131.8 KiB |
 | Deferred (settings, dialogs, locales, …) | 1226.4 KiB | 387.2 KiB |
 
-CI writes the table with the change against the baseline to the job summary and keeps
 The last four palettes add about 2.8 KiB raw / 0.6 KiB gzip to each startup graph
 compared with the eight-palette build. The shared stylesheet makes them available
 to confirmations before their first render. The 10% growth allowance is unchanged.
 
+CI writes the table with the change against the baseline to the job summary and keeps
 `dist/bundle-report.json` as the `bundle-report` artifact.
 
 Packaged startup timing is intentionally not used as a release gate at this stage. The Windows
@@ -109,9 +110,10 @@ are therefore no unreachable icon exports for the bundler to remove. Splitting i
 would add asynchronous fallback behavior to frequently rendered controls for negligible savings.
 
 Translation resources are loaded on demand. English is the eager fallback; each of the other 26
-locales is emitted as an independent 25–56 kB chunk and fetched only when selected. Before this
-split, every locale occupied a single 964.54 kB (265.50 kB gzip) startup chunk. The shared i18n
-runtime and English fallback now occupy 74.72 kB (25.29 kB gzip).
+locales is emitted as an independent chunk and fetched only when selected. In the historical
+lazy-loading measurement above, each locale chunk was 25–56 kB; before the split, every locale
+occupied a single 964.54 kB (265.50 kB gzip) startup chunk. The shared i18n runtime and English
+fallback measured 74.72 kB (25.29 kB gzip). Use the build report for current sizes.
 
 ## Large directories
 
@@ -158,24 +160,26 @@ the explicit `npm run test:visual:update` command and a visual review.
 
 ## Transfer progress renders
 
-Raw `transfer:progress` events update the module-level transfer store. `TransferQueue` is the only
-component that consumes the full snapshot, so it renders once per published progress snapshot. The
-application composition root consumes `useTransferSummary`; that hook preserves its previous
-snapshot reference while the coarse status flags and active count remain equal. Byte-only progress
-therefore does not rerender `App` or either file pane. Existing transfer-summary and progress-event
-tests cover the status transitions that are allowed to invalidate the coarse snapshot.
+Raw `transfer:progress` events update individual rows in the module-level transfer store.
+Deferred progress notifications are coalesced over 16 ms; terminal changes flush immediately.
+Mounted rows subscribe to their own values, while `TransferQueue` reads a revision counter.
+The application composition root consumes `useTransferSummary`, whose snapshot stays the same
+while its coarse status flags and counts are unchanged. Byte-only progress therefore does not
+invalidate the application summary or either file pane.
 
-The transfer store treats an updater returning the current snapshot as a no-op and does not notify
-subscribers. `TransferQueue` memoizes chronological ordering by snapshot identity, so its own
-one-second stalled-speed display tick does not repeat the queue sort when transfer data is unchanged.
+Identity updates and unchanged rows do not notify subscribers. Queue ordering is cached by
+structure revision for static columns; sorting by size, transferred bytes, progress, speed or
+remaining time also follows progress revisions. Speed and remaining-time sorts additionally
+follow the one-second speed tick. The store and queue suites cover these distinct update paths.
 
 ## Transfer concurrency
 
-Renderer-side folder contents, multi-selection copies, deletes after a move, and operating-system
-drops share a concurrency limit of eight operations. This prevents a large top-level selection from
-creating an unbounded `Promise.all` fan-out. A selection is also admitted to the transfer queue at
-most 64 items at a time, as earlier ones settle, so a 10,000-file selection does not build its
-whole queue in the renderer first.
+Recursive folder traversal runs in the backend, with one active child transfer per operation.
+Renderer-side local file copies and moves, and drops into a local pane, use a fan-out limit of
+eight operations. Network file selections admit at most 64 items at a time as earlier ones settle,
+so a 10,000-file selection does not build its whole queue in the renderer first. Backend pools
+apply the connection and transfer limits independently; [resilience](p2-resilience.md) lists the
+queue's admission and history budgets.
 Selected entries are indexed by name once before routing, avoiding repeated linear scans of large
 directory listings.
 

@@ -44,6 +44,9 @@ test/
 | `npm run test:visual` | Browser scenarios in `test/visual/` |
 | `npm run test:e2e` | The packaged smoke build driven through its window against a real server, see below |
 | `npm run test:e2e:stand` | The same, on the file-system stand of `fs-stand.ps1`, see below |
+| `npm run test:e2e:native` | Native dialogs, tray, notifications and Explorer drag and drop; takes over the desktop |
+| `npm run test:e2e:vm` | Installer, uninstall and update tests; only on a disposable Windows machine |
+| `npm run test:e2e:soak` | Repeated application cycles and resource measurements; separate long-running suite |
 | `npm run test:updater-fixtures` | Accept the valid update signature and reject a damaged artifact |
 | `npm run rust:test` | Native Rust tests under `src-tauri/` |
 
@@ -55,10 +58,11 @@ npm run test:components -- test/component/sites/siteManager.test.tsx
 ```
 
 `npm run check` includes the project checks and test runners. The
-`check:ci-parity` command checks that its npm steps stay aligned with CI; it does not
-measure code coverage. `npm run coverage` runs both suites with coverage, see
+`check:ci-parity` command compares its npm steps with `checks.yml`, with explicit
+exclusions; it does not measure code coverage or cover every workflow. `npm run coverage` runs both suites with coverage, see
 [docs/coverage.md](../docs/coverage.md).
-Packaged application smoke tests remain a separate CI-owned check.
+Packaged smoke, Rust coverage, the layout audit and other native/server lanes run
+separately; see the [verification matrix](../docs/verification-matrix.md).
 
 ## Desktop end-to-end tests
 
@@ -151,6 +155,10 @@ FTPeach first:
 the application is single-instance, so the tests run one at a time and never
 beside a running copy. A failed test keeps a trace, a screenshot and the
 application's log (`app.log`) under `test-results/e2e/`.
+
+The native, installer and soak prerequisites and opt-in environment variables are
+listed in the [verification matrix](../docs/verification-matrix.md#lanes). They are
+separate Playwright projects and are not included by `npm run test:e2e`.
 
 ## Choosing the runtime
 

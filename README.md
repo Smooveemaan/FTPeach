@@ -168,7 +168,10 @@ Before submitting a pull request, run:
 npm run check
 ```
 
-`npm run check` does not run packaged application smoke tests or the live-server compatibility matrix. Those have separate setup and commands in the [verification matrix](docs/verification-matrix.md).
+`npm run check` is the local baseline, not every CI check. Packaged smoke, live-server
+and desktop tests, the language layout audit, Rust coverage, the Linux build, Semgrep,
+`npm audit` and `cargo deny` run separately. Their setup and scope are in the
+[verification matrix](docs/verification-matrix.md).
 
 See the [test guide](test/README.md) for individual suites and the [contribution guide](.github/CONTRIBUTING.md) for review expectations.
 

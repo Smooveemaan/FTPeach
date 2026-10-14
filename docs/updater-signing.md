@@ -29,7 +29,7 @@ stops before the signing job when approval is not required
 ([release-trust.md](release-trust.md)).
 
 The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
-frontend, Rust, packaged smoke and protocol compatibility gates pass. It builds the Windows NSIS
+frontend, Rust, packaged smoke, protocol compatibility and installer gates pass. It builds the Windows NSIS
 installer and its `.sig`, then assembles `FTPeach_<version>_x64-portable.zip`
 from the same build (`scripts/release/portable.ts`) and signs it with the same
 key. It verifies every signature with the configured
@@ -46,10 +46,16 @@ Run a local signed build only in the current PowerShell session:
 
 ```powershell
 $env:TAURI_SIGNING_PRIVATE_KEY = 'C:\secure\ftpeach-updater.key'
-$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = '<password>'
-npm.cmd run build:tauri
-Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY
-Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+$signingCredential = Get-Credential -UserName 'updater-signing' -Message 'Updater key password'
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $signingCredential.GetNetworkCredential().Password
+try { npm.cmd run build:tauri }
+finally {
+  Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY
+  Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+  Remove-Variable signingCredential
+}
 ```
 
-Do not pass the password as a command-line argument; it may be recorded in shell history or exposed in the process list.
+Enter the password in the credential prompt, not as a literal command or command-line
+argument, which can be saved in shell history or exposed in the process list. The
+`finally` block removes this session's signing variables even when the build fails.

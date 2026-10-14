@@ -31,8 +31,8 @@ their count, and [the verification matrix](verification-matrix.md) says what eac
 `scripts/coverage/coverage-floors.json` gives the modules behind the P0/P1 guarantees a floor on
 line coverage, per runner. The command fails when such a file drops below its floor, disappears
 from its report or is in it with no measured lines (the unit report lists modules the Node suite
-never loaded with zero lines, which must not pass as 100%), so a rename has to move its floor too. Floors sit two points below the baseline
-below: slack for a harmless refactor, not for a lost test. There is deliberately no floor for the
+never loaded with zero lines, which must not pass as 100%), so a rename has to move its floor too. The original floors sat two points below the historical baseline
+below. The JSON file records the current floors: slack for a harmless refactor, not for a lost test. There is deliberately no floor for the
 whole project and no 100% target.
 
 A line percentage does not prove a guarantee. The scenarios that do — no-replace, keeping the old
@@ -41,8 +41,9 @@ and settling — are listed per task in the [verification matrix](verification-m
 protocol in the [guarantee matrix](transfer-safety.md#guarantee-matrix).
 
 CI runs the frontend command in `lint-test-build` and the Rust command in `rust-coverage`, and keeps
-both `coverage/` directories as artifacts. `check:ci-parity` checks that `npm run check` runs what CI
-runs; it measures no coverage.
+both `coverage/` directories as artifacts. `check:ci-parity` checks the npm steps in
+`checks.yml` against `npm run check` and its explicit exclusions; Rust coverage is one
+of those exclusions. It measures no coverage itself.
 
 ## Baseline of 24 September 2026
 

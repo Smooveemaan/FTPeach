@@ -99,4 +99,7 @@ journal memory rejection, stalled remove/disconnect with 40 paused uploads,
 lifecycles, metadata failure injection, cancellation during enumeration, late
 successful replies after disconnect, and local navigation/unmount cancellation.
 
-Live SMB faults and long soak runs are not covered by any suite.
+Live SMB faults are exercised by `test:e2e:stand`, and repeated application cycles by
+`test:e2e:soak`; both run outside the default suite. These later suites are described in
+the [verification matrix](verification-matrix.md). Their existence does not turn the
+historical listing measurements above into SMB or long-duration performance results.

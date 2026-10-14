@@ -29,6 +29,6 @@ The threat model in [`docs/security.md`](../docs/security.md) documents the risk
 - An application opened through **Open with** can keep, sync, or leak the file it received.
 - Failed vault unlock attempts are counted per application run and reset on restart.
 - RSA SSH keys are exposed to `RUSTSEC-2023-0071`.
-- With security confirmations turned off in settings, sensitive actions run without a prompt.
+- With routine security confirmations turned off, executable launches can proceed without a prompt. Mandatory confirmations, including vault reset, host-key trust and protection weakening, still apply.
 
 A chain that lets web content or a remote server run commands through the application's renderer is in scope, even if each command is individually allowed.

@@ -336,6 +336,8 @@
     "activeModeFailed": "Server tidak dapat terhubung ke komputer ini dalam mode FTP aktif. Coba mode pasif.",
     "linkNotFollowed": "Jalur melewati tautan (junction atau tautan simbolik). Tautan tidak diikuti.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
     "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — file akan dikirim ulang dari awal.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Sebagian catatan log protokol dibuang karena penulisan tidak mengejar: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Tampilkan semua koneksi",

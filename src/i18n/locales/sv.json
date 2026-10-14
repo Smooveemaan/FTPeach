@@ -336,6 +336,8 @@
     "activeModeFailed": "Servern kunde inte ansluta till den här datorn i aktivt FTP-läge. Prova passivt läge.",
     "linkNotFollowed": "Sökvägen går via en länk (en junction eller symbolisk länk). Länkar följs inte.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
     "savedSecretUnreadable": "Ett sparat lösenord kan inte läsas på den här datorn. Ange det igen i bokmärket eller i proxyinställningarna.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Några rader i protokolloggen gick förlorade eftersom skrivningen inte hann med: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",

@@ -32,7 +32,7 @@ pub async fn sites_list(store: State<'_, Store>) -> CommandResult<SiteList> {
 #[derive(Serialize)]
 pub struct SiteList {
     sites: Vec<SavedSite>,
-    warnings: Vec<String>,
+    warnings: Vec<crate::store::StorageWarning>,
 }
 
 #[tauri::command]

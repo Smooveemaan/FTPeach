@@ -1,8 +1,10 @@
 //! Versioned JSON persistence and observable recovery for user preferences.
-//! Unsupported schemas and unreadable stores remain read-only. Critical SSH
-//! trust reads use the separate fail-closed known-hosts contract.
+//! Newer schemas stay read-only; an unreadable store is overwritten only once
+//! a copy of its bytes is kept. Critical SSH trust reads use the separate
+//! fail-closed known-hosts contract.
 
 use super::Store;
+use crate::ipc::{CommandError, ErrorCode};
 use anyhow::{Context, Result};
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -49,12 +51,16 @@ pub(super) fn decode_versioned_store(path: &Path, value: Value) -> Result<Value>
             .cloned()
             .context("versioned store is missing data"),
         other => {
-            anyhow::bail!(
+            let message = format!(
                 "unsupported {} schema version {other} (maximum supported: {STORAGE_SCHEMA_VERSION})",
                 path.file_name()
                     .and_then(|name| name.to_str())
                     .unwrap_or("store")
-            )
+            );
+            if other > STORAGE_SCHEMA_VERSION {
+                anyhow::bail!(CommandError::new(ErrorCode::StoreNewer, message))
+            }
+            anyhow::bail!(message)
         }
     }
 }
@@ -165,7 +171,8 @@ const CORRUPT_COPIES_KEPT: usize = 5;
 /// Keeps `raw`, the unreadable contents of `path`, as
 /// `<store>.corrupt-<hash>.bak`. The name follows the content, so reading
 /// the same broken file again adds nothing, and only the newest
-/// [`CORRUPT_COPIES_KEPT`] copies of a store are kept.
+/// [`CORRUPT_COPIES_KEPT`] copies of a store are kept. Ok only once a file of
+/// that name holds exactly `raw`: the store may then be written over.
 async fn archive_corrupt(path: &Path, raw: &[u8]) -> Result<()> {
     use sha2::{Digest, Sha256};
     let hash: String = Sha256::digest(raw)[..8]
@@ -173,7 +180,7 @@ async fn archive_corrupt(path: &Path, raw: &[u8]) -> Result<()> {
         .map(|byte| format!("{byte:02x}"))
         .collect();
     let target = path.with_extension(format!("corrupt-{hash}.bak"));
-    if tokio::fs::try_exists(&target).await? {
+    if tokio::fs::read(&target).await.is_ok_and(|kept| kept == raw) {
         return Ok(());
     }
     let tmp = path.with_extension(format!("corrupt-{hash}.{}.tmp", std::process::id()));
@@ -221,6 +228,44 @@ fn store_tmp_pid(name: &str) -> Option<u32> {
         [copy, pid] if copy.starts_with("corrupt-") => pid.parse().ok(),
         _ => None,
     }
+}
+
+/// Why a store is not as it was last saved, as the interface names it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum StorageIssue {
+    /// Unreadable or missing, and put back from its last-good backup.
+    Recovered,
+    /// Unreadable with no backup to recover: a copy of its bytes is kept and
+    /// the next save replaces it.
+    Replaced,
+    /// Unreadable, and no copy could be kept: saving is refused.
+    Unreadable,
+    /// Saved by a newer FTPeach: saving is refused.
+    Newer,
+    /// Saved, but its last-good backup could not be updated.
+    BackupNotUpdated,
+}
+
+impl StorageIssue {
+    fn refusal(self) -> Option<ErrorCode> {
+        match self {
+            Self::Unreadable => Some(ErrorCode::StoreUnreadable),
+            Self::Newer => Some(ErrorCode::StoreNewer),
+            _ => None,
+        }
+    }
+}
+
+/// A store file and what is wrong with it.
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+pub struct StorageWarning {
+    pub file: String,
+    pub code: StorageIssue,
+}
+
+fn is_newer(error: &anyhow::Error) -> bool {
+    CommandError::from_anyhow(error).code == ErrorCode::StoreNewer
 }
 
 impl Store {
@@ -290,40 +335,72 @@ impl Store {
         }
     }
 
-    fn storage_issue(&self, path: &Path, message: String, blocked: bool) {
-        log::warn!("Store {}: {message}", path.display());
+    fn storage_issue(&self, path: &Path, issue: StorageIssue, detail: String) {
+        log::warn!("Store {}: {issue:?}: {detail}", path.display());
         self.storage_issues
             .lock()
             .unwrap()
-            .insert(path.to_owned(), (message, blocked));
+            .insert(path.to_owned(), (issue, detail));
     }
 
-    pub fn storage_warnings(&self) -> Vec<String> {
-        self.storage_issues
+    pub fn storage_warnings(&self) -> Vec<StorageWarning> {
+        let mut warnings: Vec<StorageWarning> = self
+            .storage_issues
             .lock()
             .unwrap()
             .iter()
-            .map(|(path, (reason, _))| {
-                format!(
-                    "{}: {reason}",
-                    path.file_name().unwrap_or_default().to_string_lossy()
-                )
+            .map(|(path, (issue, _))| StorageWarning {
+                file: path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .into_owned(),
+                code: *issue,
             })
-            .collect()
+            .collect();
+        warnings.sort_by(|a, b| a.file.cmp(&b.file));
+        warnings
     }
 
+    /// Refuses to write `path` while it holds what saving would lose: a
+    /// newer FTPeach's data, or bytes no copy of could be kept. Unreadable
+    /// bytes are copied aside first, so a store damaged while FTPeach runs is
+    /// not lost either.
     pub(super) async fn ensure_writable(&self, path: &Path) -> Result<()> {
-        if let Some((reason, true)) = self.storage_issues.lock().unwrap().get(path) {
-            anyhow::bail!("Store is read-only: {reason}");
+        if let Some((issue, detail)) = self.storage_issues.lock().unwrap().get(path)
+            && let Some(code) = issue.refusal()
+        {
+            anyhow::bail!(CommandError::new(
+                code,
+                format!("Store is read-only: {detail}")
+            ));
         }
-        match tokio::fs::read_to_string(path).await {
+        match tokio::fs::read(path).await {
             Ok(raw) => {
-                if let Ok(value) = serde_json::from_str::<Value>(&raw) {
-                    decode_versioned_store(path, value)?;
+                let decoded = serde_json::from_slice::<Value>(&raw)
+                    .context("parsing JSON")
+                    .and_then(|value| decode_versioned_store(path, value));
+                if let Err(error) = decoded {
+                    if is_newer(&error) {
+                        return Err(error);
+                    }
+                    if let Err(kept) = archive_corrupt(path, &raw).await {
+                        anyhow::bail!(CommandError::new(
+                            ErrorCode::StoreUnreadable,
+                            format!(
+                                "refusing to overwrite an unreadable store without a copy: {kept:#}"
+                            ),
+                        ));
+                    }
                 }
             }
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-            Err(error) => return Err(error).context("refusing to overwrite unreadable store"),
+            Err(error) => {
+                anyhow::bail!(CommandError::new(
+                    ErrorCode::StoreUnreadable,
+                    format!("refusing to overwrite unreadable store: {error}"),
+                ))
+            }
         }
         Ok(())
     }
@@ -333,31 +410,31 @@ impl Store {
         path: &PathBuf,
         fallback: T,
     ) -> T {
-        match tokio::fs::read_to_string(path).await {
-            Ok(raw) => match serde_json::from_str::<Value>(&raw)
+        match tokio::fs::read(path).await {
+            Ok(raw) => match serde_json::from_slice::<Value>(&raw)
                 .context("parsing JSON")
                 .and_then(|value| decode_versioned_store(path, value))
                 .and_then(|value| serde_json::from_value(value).context("decoding store payload"))
             {
                 Ok(value) => value,
                 Err(error) => {
-                    if let Ok(value) = serde_json::from_str::<Value>(&raw)
-                        && decode_versioned_store(path, value).is_err()
-                    {
-                        self.storage_issue(path, format!("{error:#}"), true);
+                    if is_newer(&error) {
+                        self.storage_issue(path, StorageIssue::Newer, format!("{error:#}"));
                         return fallback;
                     }
-                    self.storage_issue(
-                        path,
-                        format!("{error:#}; last-good recovery unavailable"),
-                        true,
-                    );
-                    if let Err(error) = archive_corrupt(path, raw.as_bytes()).await {
-                        log::warn!(
-                            "Could not keep a copy of the unreadable {}: {error:#}",
-                            path.display()
-                        );
-                    }
+                    // With a copy of its bytes kept, nothing is lost by
+                    // saving over it; without one, it stays as it is.
+                    let issue = match archive_corrupt(path, &raw).await {
+                        Ok(()) => StorageIssue::Replaced,
+                        Err(kept) => {
+                            log::warn!(
+                                "Could not keep a copy of the unreadable {}: {kept:#}",
+                                path.display()
+                            );
+                            StorageIssue::Unreadable
+                        }
+                    };
+                    self.storage_issue(path, issue, format!("{error:#}"));
                     let last_good = path.with_extension("last-good.bak");
                     match tokio::fs::read_to_string(&last_good).await {
                         Ok(raw) => serde_json::from_str::<Value>(&raw)
@@ -369,8 +446,8 @@ impl Store {
                             .inspect(|_| {
                                 self.storage_issue(
                                     path,
-                                    "Recovered from last-good backup".into(),
-                                    false,
+                                    StorageIssue::Recovered,
+                                    format!("{error:#}; recovered from last-good backup"),
                                 );
                             })
                             .unwrap_or(fallback),
@@ -380,7 +457,7 @@ impl Store {
             },
             Err(error) => {
                 if error.kind() != std::io::ErrorKind::NotFound {
-                    self.storage_issue(path, error.to_string(), true);
+                    self.storage_issue(path, StorageIssue::Unreadable, error.to_string());
                 } else {
                     let backup = path.with_extension("last-good.bak");
                     match tokio::fs::read_to_string(&backup).await {
@@ -396,17 +473,25 @@ impl Store {
                                 Ok(value) => {
                                     self.storage_issue(
                                         path,
+                                        StorageIssue::Recovered,
                                         "Main store missing; recovered from last-good backup"
                                             .into(),
-                                        false,
                                     );
                                     return value;
                                 }
-                                Err(error) => self.storage_issue(path, format!("{error:#}"), true),
+                                // The store itself is missing and its backup stays
+                                // as it is: a save makes a new store.
+                                Err(error) => self.storage_issue(
+                                    path,
+                                    StorageIssue::Replaced,
+                                    format!("{error:#}"),
+                                ),
                             }
                         }
                         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                        Err(error) => self.storage_issue(path, error.to_string(), true),
+                        Err(error) => {
+                            self.storage_issue(path, StorageIssue::Replaced, error.to_string())
+                        }
                     }
                 }
                 fallback
@@ -450,8 +535,8 @@ impl Store {
         {
             self.storage_issue(
                 path,
+                StorageIssue::BackupNotUpdated,
                 format!("last-good backup not updated: {error:#}"),
-                false,
             );
         }
         if let Err(error) = tokio::fs::rename(&tmp, path).await {

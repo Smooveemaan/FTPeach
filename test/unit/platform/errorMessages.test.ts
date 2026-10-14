@@ -2,6 +2,8 @@ import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import i18n, { changeLanguage } from '../../../src/i18n/index.ts';
 import {
+  isStorageWarnings,
+  storageWarningText,
   commandResultError,
   friendlyError,
   friendlyConnectError,
@@ -125,6 +127,8 @@ test('friendlyError localizes every structured command error code', () => {
     linkNotFollowed:
       "The path goes through a link (a junction or symbolic link). Links aren't followed.",
     noRecycleBin: 'This location has no Recycle Bin, so nothing was deleted.',
+    storeNewer: "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    storeUnreadable: "The file that keeps this data can't be read, so the change can't be saved.",
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 
@@ -172,4 +176,19 @@ test('a missing key or certificate is named by its path', () => {
     friendlyError({ code: 'credentialFileMissing', message: 'C:/keys/id_ed25519' }),
     'The key or certificate file was not found: C:/keys/id_ed25519',
   );
+});
+
+test('storage warnings at start name the file and say what it means, in the interface language', () => {
+  const warnings = [
+    { file: 'settings.json', code: 'replaced' },
+    { file: 'sites.json', code: 'newer' },
+  ];
+  assert.ok(isStorageWarnings(warnings));
+  assert.equal(
+    storageWarningText(warnings as never),
+    "settings.json couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.\n" +
+      "sites.json was saved by a newer version of FTPeach, so changes to it can't be saved.",
+  );
+  // Backend text from an older build is not shown raw.
+  assert.ok(!isStorageWarnings(['settings.json: parsing JSON']));
 });

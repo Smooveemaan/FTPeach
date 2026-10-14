@@ -336,6 +336,8 @@
     "activeModeFailed": "アクティブ FTP モードで、サーバーからこのコンピューターに接続できませんでした。パッシブモードをお試しください。",
     "linkNotFollowed": "パスがリンク（ジャンクションまたはシンボリック リンク）を経由しています。リンクをたどることはできません。",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。",
     "savedSecretUnreadable": "保存済みのパスワードをこのコンピューターで読み取れません。ブックマークまたはプロキシ設定でもう一度入力してください。",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "書き込みが追いつかなかったため、プロトコルログの一部の記録が破棄されました: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "すべての接続を表示",

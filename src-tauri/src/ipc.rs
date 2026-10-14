@@ -70,6 +70,12 @@ pub enum ErrorCode {
     /// A delete to the Recycle Bin where Windows keeps none (a network share,
     /// a removable drive): nothing was deleted.
     NoRecycleBin,
+    /// A file of FTPeach's own data was saved by a newer version, so it is
+    /// not written over.
+    StoreNewer,
+    /// A file of FTPeach's own data cannot be read and no copy of it could be
+    /// kept, so it is not written over.
+    StoreUnreadable,
     Internal,
 }
 
@@ -414,6 +420,8 @@ impl CommandError {
             ErrorCode::ActiveModeFailed => "The server could not connect back in FTP active mode",
             ErrorCode::LinkNotFollowed => "The path goes through a link, which is not followed",
             ErrorCode::NoRecycleBin => "This location has no Recycle Bin; nothing was deleted",
+            ErrorCode::StoreNewer => "The data was saved by a newer version of FTPeach",
+            ErrorCode::StoreUnreadable => "The data file cannot be read, so it is not overwritten",
         };
         Self {
             code,
@@ -464,6 +472,8 @@ mod tests {
             (ErrorCode::ActiveModeFailed, "activeModeFailed"),
             (ErrorCode::LinkNotFollowed, "linkNotFollowed"),
             (ErrorCode::NoRecycleBin, "noRecycleBin"),
+            (ErrorCode::StoreNewer, "storeNewer"),
+            (ErrorCode::StoreUnreadable, "storeUnreadable"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {

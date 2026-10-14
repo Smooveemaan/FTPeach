@@ -8,11 +8,15 @@ An installed Windows copy stores `settings.json`, `sites.json`, `local-paths.jso
 files use a `{ schemaVersion, data }` envelope, atomic replacement and a
 per-file write lock; a bare legacy array or object is read as schema 0.
 
-For settings, sites, local paths and tabs, an unsupported schema or an
-unreadable file remains read-only. Malformed JSON or a payload of the wrong
-shape is archived as `*.corrupt-<hash>.bak` before last-good recovery is tried;
-without a usable backup, defaults are returned and writes remain blocked.
-An unsupported schema does not fall back to an older backup. The archive name
+For settings, sites, local paths and tabs, a schema from a newer FTPeach stays
+read-only, and saving there is refused with `storeNewer`. Malformed JSON or a payload of
+the wrong shape is archived as `*.corrupt-<hash>.bak` before last-good recovery is tried;
+without a usable backup, defaults are returned and the next save replaces the damaged
+file, since its bytes are in the copy. A save checks the copy holds exactly those bytes,
+and copies any damaged content it finds first. A file that cannot be read at all, or
+whose copy cannot be written, stays read-only (`storeUnreadable`); after fixing it,
+restart FTPeach. An unsupported schema does not fall back to an older backup. Each
+problem is shown at start as a translated warning naming the file. The archive name
 follows the content, so the same damage is kept once, and only the five newest
 copies per file are kept.
 

@@ -336,6 +336,8 @@
     "activeModeFailed": "De server kon in de actieve FTP-modus geen verbinding maken met deze computer. Probeer de passieve modus.",
     "linkNotFollowed": "Het pad loopt via een koppeling (een junction of symbolische koppeling). Koppelingen worden niet gevolgd.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan.",
     "savedSecretUnreadable": "Een opgeslagen wachtwoord kan op deze computer niet worden gelezen. Voer het opnieuw in bij de bladwijzer of in de proxy-instellingen.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Enkele regels van het protocollogboek zijn verloren omdat het wegschrijven het niet bijhield: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Alle verbindingen weergeven",

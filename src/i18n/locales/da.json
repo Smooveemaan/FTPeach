@@ -336,6 +336,8 @@
     "activeModeFailed": "Serveren kunne ikke oprette forbindelse til denne computer i aktiv FTP-tilstand. Prøv passiv tilstand.",
     "linkNotFollowed": "Stien går gennem et link (en junction eller et symbolsk link). Links følges ikke.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
     "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Den pausede upload af {{path}} kunne ikke verificeres ({{error}}) – filen sendes igen fra begyndelsen.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Nogle linjer i protokolloggen blev kasseret, fordi skrivningen ikke kunne følge med: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Vis alle forbindelser",

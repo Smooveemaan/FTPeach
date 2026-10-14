@@ -344,6 +344,8 @@
     "activeModeFailed": "Server se v aktivním režimu FTP nedokázal připojit k tomuto počítači. Zkuste pasivní režim.",
     "linkNotFollowed": "Cesta vede přes odkaz (junction nebo symbolický odkaz). Přes odkazy nelze procházet.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
     "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -690,6 +692,13 @@
     "receivedEntries_few": "Přijaty {{count}} záznamy",
     "receivedEntries_many": "Přijato {{count}} záznamu",
     "droppedRecords": "Některé záznamy protokolu byly zahozeny, protože zápis nestíhal: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Zobrazit všechna připojení",

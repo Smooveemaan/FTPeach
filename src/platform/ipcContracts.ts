@@ -44,6 +44,8 @@ export const COMMAND_ERROR_CODES = [
   'activeModeFailed',
   'linkNotFollowed',
   'noRecycleBin',
+  'storeNewer',
+  'storeUnreadable',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

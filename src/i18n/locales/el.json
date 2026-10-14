@@ -336,6 +336,8 @@
     "activeModeFailed": "Ο διακομιστής δεν μπόρεσε να συνδεθεί σε αυτόν τον υπολογιστή στην ενεργή λειτουργία FTP. Δοκιμάστε την παθητική λειτουργία.",
     "linkNotFollowed": "Η διαδρομή περνά από σύνδεσμο (junction ή συμβολικό σύνδεσμο). Οι σύνδεσμοι δεν ακολουθούνται.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Τα αρχεία μπορούν να μετακινηθούν μόνο μέσα σε αυτόν τον υπολογιστή ή μέσα στην ίδια σύνδεση με τον διακομιστή. Αντιγράψτε τα αντί γι' αυτό.",
     "savedSecretUnreadable": "Δεν είναι δυνατή η ανάγνωση ενός αποθηκευμένου κωδικού πρόσβασης σε αυτόν τον υπολογιστή. Εισαγάγετέ τον ξανά στον σελιδοδείκτη ή στις ρυθμίσεις του διακομιστή μεσολάβησης.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Δεν ήταν δυνατή η επαλήθευση της αποστολής του {{path}} που είχε τεθεί σε παύση ({{error}}) — το αρχείο θα σταλεί ξανά από την αρχή.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Ορισμένες εγγραφές του αρχείου καταγραφής πρωτοκόλλου χάθηκαν, επειδή η εγγραφή δεν προλάβαινε: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Εμφάνιση όλων των συνδέσεων",

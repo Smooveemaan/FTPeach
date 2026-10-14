@@ -38,6 +38,8 @@ const ERROR_CODE_KEYS = {
   activeModeFailed: 'errors.activeModeFailed',
   linkNotFollowed: 'errors.linkNotFollowed',
   noRecycleBin: 'errors.noRecycleBin',
+  storeNewer: 'errors.storeNewer',
+  storeUnreadable: 'errors.storeUnreadable',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
 
@@ -66,6 +68,40 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
     return key ? i18n.t(key) : raw.message || raw.code;
   }
   return raw;
+}
+
+const STORAGE_WARNING_CODES = [
+  'recovered',
+  'replaced',
+  'unreadable',
+  'newer',
+  'backupNotUpdated',
+] as const;
+
+/** A file of FTPeach's own data that is not as it was saved, as the backend reports it. */
+export interface StorageWarning {
+  file: string;
+  code: (typeof STORAGE_WARNING_CODES)[number];
+}
+
+export function isStorageWarnings(value: unknown): value is StorageWarning[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (warning: unknown) =>
+        typeof warning === 'object' &&
+        warning !== null &&
+        typeof (warning as StorageWarning).file === 'string' &&
+        (STORAGE_WARNING_CODES as readonly unknown[]).includes((warning as StorageWarning).code),
+    )
+  );
+}
+
+/** One line per warning, in the interface language. */
+export function storageWarningText(warnings: readonly StorageWarning[]): string {
+  return warnings
+    .map((warning) => i18n.t(`storageWarnings.${warning.code}`, { file: warning.file }))
+    .join('\n');
 }
 
 /** What is wrong with a WebDAV address, as the backend would refuse it, or null. */

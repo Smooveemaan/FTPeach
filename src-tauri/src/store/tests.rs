@@ -581,8 +581,15 @@ async fn downgrade_and_read_errors_never_overwrite_store() {
     std::fs::write(&path, future).unwrap();
     let store = Store::new_at(root.clone());
     let _ = store.get_settings().await;
-    assert!(!store.storage_warnings().is_empty());
-    assert!(store.set_settings(JsonMap::new()).await.is_err());
+    assert_eq!(
+        store.storage_warnings()[0].code,
+        crate::store::StorageIssue::Newer
+    );
+    let refused = store.set_settings(JsonMap::new()).await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&refused).code,
+        crate::ipc::ErrorCode::StoreNewer
+    );
     assert_eq!(std::fs::read(&path).unwrap(), future);
     let reopened = Store::new_at(root.clone());
     assert!(reopened.write_json(&path, &json!({})).await.is_err());
@@ -1728,7 +1735,7 @@ async fn a_failed_backup_update_is_reported_and_keeps_the_save() {
         store
             .storage_warnings()
             .iter()
-            .any(|warning| warning.contains("last-good backup not updated"))
+            .any(|warning| warning.code == crate::store::StorageIssue::BackupNotUpdated)
     );
     assert!(std::fs::read_to_string(&path).unwrap().contains("light"));
     let leftovers: Vec<_> = std::fs::read_dir(&dir)
@@ -2047,5 +2054,76 @@ async fn a_saved_secret_that_cannot_be_opened_refuses_the_connect_that_needs_it(
         );
     }
     assert!(store.saved_server("unused-key", &vault).await.is_ok());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn an_unreadable_store_with_no_backup_is_kept_as_a_copy_and_saved_over() {
+    let root =
+        std::env::temp_dir().join(format!("ftpeach-storage-corrupt-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let path = root.join("settings.json");
+    // Not even UTF-8: still unreadable store content, not an unreadable file.
+    let broken: &[u8] = b"{ broken \xff";
+    std::fs::write(&path, broken).unwrap();
+    let store = Store::new_at(root.clone());
+    let _ = store.get_settings().await;
+    assert_eq!(
+        store.storage_warnings(),
+        [crate::store::StorageWarning {
+            file: "settings.json".into(),
+            code: crate::store::StorageIssue::Replaced,
+        }]
+    );
+    let copies: Vec<_> = std::fs::read_dir(&root)
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| {
+            entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with("settings.corrupt-")
+        })
+        .collect();
+    assert_eq!(copies.len(), 1);
+    assert_eq!(std::fs::read(copies[0].path()).unwrap(), broken);
+
+    store
+        .set_settings(JsonMap::from_iter([("theme".into(), json!("light"))]))
+        .await
+        .unwrap();
+    let next_start = Store::new_at(root.clone());
+    assert_eq!(
+        next_start.get_settings().await.get("theme"),
+        Some(&json!("light"))
+    );
+    assert!(next_start.storage_warnings().is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn a_copy_of_the_wrong_bytes_under_the_copy_name_is_not_enough_to_save_over() {
+    let root = std::env::temp_dir().join(format!("ftpeach-storage-copy-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let path = root.join("settings.json");
+    std::fs::write(&path, b"broken").unwrap();
+    let store = Store::new_at(root.clone());
+    let _ = store.get_settings().await;
+    let copy = std::fs::read_dir(&root)
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .find(|entry| {
+            entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with("settings.corrupt-")
+        })
+        .unwrap()
+        .path();
+    // Something else under that name: the next start writes the copy again.
+    std::fs::write(&copy, b"other").unwrap();
+    let next_start = Store::new_at(root.clone());
+    let _ = next_start.get_settings().await;
+    assert_eq!(std::fs::read(&copy).unwrap(), b"broken");
     std::fs::remove_dir_all(root).unwrap();
 }

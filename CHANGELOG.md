@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   it, instead of "An unexpected error occurred."
 - An update that failed to install is offered in the status bar instead of being installed again
   when FTPeach starts.
+- Warnings at start about a damaged settings or bookmarks file name the file in your language,
+  and a change refused because a newer FTPeach saved that file says so, instead of "An
+  unexpected error occurred."
 
 ### Fixed
 
@@ -79,6 +82,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   thrown away and downloaded again.
 - When the disk is full, settings and other saved data are no longer emptied: the change is not
   saved and FTPeach says there is not enough disk space.
+- A settings or bookmarks file that can't be read and has no backup no longer stops every later
+  change from being saved: FTPeach keeps a copy of it and saves over it.
 - **Delete** on a network share or a removable drive, which have no Recycle Bin, asks before
   deleting for good, instead of deleting without a word.
 - Replacing a file another program has open says the file is in use, not that permission is

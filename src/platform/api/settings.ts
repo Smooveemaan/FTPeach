@@ -8,6 +8,7 @@ import {
 } from '../ipcContracts.ts';
 import type { CommandErrorCode, CommandResult, InvokeFn } from '../ipcContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
+import { isStorageWarnings, storageWarningText } from '../../shared/errorMessages.ts';
 
 export interface AppSettings {
   recentSiteIds?: string[];
@@ -141,8 +142,8 @@ export function createSettingsApi(invoke: InvokeFn, authorize?: AuthorizeSensiti
         isAppSettings,
         (): AppSettings => ({}),
       ).then((settings) => {
-        if (isStringArray(settings.storageWarnings) && settings.storageWarnings.length > 0)
-          reportAsyncFailure(settings.storageWarnings.join('\n'));
+        if (isStorageWarnings(settings.storageWarnings) && settings.storageWarnings.length > 0)
+          reportAsyncFailure(storageWarningText(settings.storageWarnings));
         return settings;
       }),
     /**

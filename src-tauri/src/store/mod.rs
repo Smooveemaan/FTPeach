@@ -6,6 +6,7 @@ mod settings_schema;
 pub(crate) use settings_schema::validate_settings;
 mod sites;
 mod storage;
+pub use storage::{StorageIssue, StorageWarning};
 mod tabs;
 mod trusted_applications;
 
@@ -24,7 +25,7 @@ pub type JsonMap = Map<String, serde_json::Value>;
 pub struct Store {
     dir: PathBuf,
     vault_updates: Arc<AsyncMutex<()>>,
-    storage_issues: Arc<std::sync::Mutex<HashMap<PathBuf, (String, bool)>>>,
+    storage_issues: Arc<std::sync::Mutex<HashMap<PathBuf, (StorageIssue, String)>>>,
     write_locks: Arc<std::sync::Mutex<HashMap<PathBuf, Arc<AsyncMutex<()>>>>>,
 }
 

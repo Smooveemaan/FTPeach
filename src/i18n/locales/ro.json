@@ -340,6 +340,8 @@
     "activeModeFailed": "Serverul nu s-a putut conecta la acest computer în modul FTP activ. Încercați modul pasiv.",
     "linkNotFollowed": "Calea trece printr-o legătură (junction sau legătură simbolică). Legăturile nu sunt urmate.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb.",
     "savedSecretUnreadable": "O parolă salvată nu poate fi citită pe acest computer. Introduceți-o din nou în marcaj sau în setările proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -682,6 +684,13 @@
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_few": "S-au primit {{count}} înregistrări",
     "droppedRecords": "Unele linii din jurnalul de protocol au fost pierdute, deoarece scrierea nu a putut ține pasul: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Afișează toate conexiunile",

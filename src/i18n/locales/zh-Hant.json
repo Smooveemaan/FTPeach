@@ -336,6 +336,8 @@
     "activeModeFailed": "在主動 FTP 模式下，伺服器無法連線到此電腦。請改用被動模式。",
     "linkNotFollowed": "此路徑經過連結（目錄連接或符號連結）。不支援跟隨連結。",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
     "savedSecretUnreadable": "無法在這台電腦上讀取已儲存的密碼。請在書籤或 Proxy 設定中重新輸入。",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "無法驗證已暫停的 {{path}} 上傳（{{error}}），將從頭重新傳送該檔案。",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "由於寫入速度跟不上，協定記錄中的部分項目已被捨棄：{{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "顯示所有連線",

@@ -340,6 +340,8 @@
     "activeModeFailed": "השרת לא הצליח להתחבר למחשב הזה במצב FTP פעיל. נסה מצב פסיבי.",
     "linkNotFollowed": "הנתיב עובר דרך קישור (junction או קישור סימבולי). לא ניתן לעבור דרך קישורים.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת.",
     "savedSecretUnreadable": "לא ניתן לקרוא סיסמה שמורה במחשב הזה. הזן אותה שוב בסימנייה או בהגדרות הפרוקסי.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -682,6 +684,13 @@
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_two": "התקבלו {{count}} רשומות",
     "droppedRecords": "חלק מרשומות יומן הפרוטוקול הושמטו כי הכתיבה לא הדביקה את הקצב: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "הצג את כל החיבורים",

@@ -336,6 +336,8 @@
     "activeModeFailed": "Sunucu, aktif FTP modunda bu bilgisayara bağlanamadı. Pasif modu deneyin.",
     "linkNotFollowed": "Yol bir bağlantıdan geçiyor (junction veya sembolik bağlantı). Bağlantılar izlenmez.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
     "savedSecretUnreadable": "Kaydedilmiş bir şifre bu bilgisayarda okunamıyor. Şifreyi yer iminde veya proxy ayarlarında yeniden girin.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Yazma işlemi yetişemediği için protokol günlüğündeki bazı kayıtlar atıldı: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Tüm bağlantıları göster",

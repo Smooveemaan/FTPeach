@@ -336,6 +336,8 @@
     "activeModeFailed": "เซิร์ฟเวอร์ไม่สามารถเชื่อมต่อกลับมายังคอมพิวเตอร์เครื่องนี้ในโหมด FTP แบบแอคทีฟ โปรดลองใช้โหมดพาสซีฟ",
     "linkNotFollowed": "เส้นทางผ่านลิงก์ (junction หรือลิงก์สัญลักษณ์) ไม่รองรับการตามลิงก์",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "ย้ายไฟล์ได้เฉพาะภายในคอมพิวเตอร์เครื่องนี้หรือภายในการเชื่อมต่อเซิร์ฟเวอร์เดียวกันเท่านั้น โปรดคัดลอกไฟล์แทน",
     "savedSecretUnreadable": "ไม่สามารถอ่านรหัสผ่านที่บันทึกไว้บนคอมพิวเตอร์เครื่องนี้ได้ โปรดป้อนใหม่ในบุ๊กมาร์กหรือในการตั้งค่าพร็อกซี",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "บันทึกโปรโตคอลบางรายการถูกทิ้งเพราะการเขียนตามไม่ทัน: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",

@@ -336,6 +336,8 @@
     "activeModeFailed": "Der Server konnte im aktiven FTP-Modus keine Verbindung zu diesem Computer herstellen. Versuchen Sie es mit dem passiven Modus.",
     "linkNotFollowed": "Der Pfad führt über einen Link (eine Junction oder einen symbolischen Link). Links werden nicht verfolgt.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen.",
     "savedSecretUnreadable": "Ein gespeichertes Passwort kann auf diesem Computer nicht gelesen werden. Geben Sie es im Lesezeichen oder in den Proxy-Einstellungen erneut ein.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "Der pausierte Upload von {{path}} konnte nicht überprüft werden ({{error}}) – die Datei wird erneut von vorn gesendet.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Einige Protokolleinträge wurden verworfen, weil das Schreiben nicht mitkam: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Alle Verbindungen anzeigen",

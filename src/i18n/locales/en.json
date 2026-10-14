@@ -333,6 +333,8 @@
     "activeModeFailed": "The server couldn't connect back in active FTP mode. Try passive mode.",
     "linkNotFollowed": "The path goes through a link (a junction or symbolic link). Links aren't followed.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "internal": "An unexpected error occurred.",
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
     "alreadyExists": "\"{{name}}\" already exists",
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "The paused upload of {{path}} couldn't be verified ({{error}}) — sending it again from the start.",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "Some protocol log records were dropped because the log writer could not keep up: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Show all connections",

@@ -352,6 +352,8 @@
     "activeModeFailed": "تعذّر على الخادم الاتصال بهذا الكمبيوتر في وضع FTP النشط. جرّب الوضع السلبي.",
     "linkNotFollowed": "يمر المسار عبر رابط (junction أو رابط رمزي). لا يمكن تتبّع الروابط.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلًا من ذلك.",
     "savedSecretUnreadable": "تعذرت قراءة كلمة مرور محفوظة على هذا الكمبيوتر. أدخلها من جديد في الإشارة المرجعية أو في إعدادات الوكيل.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -706,6 +708,13 @@
     "receivedEntries_few": "تم استلام {{count}} سجلات",
     "receivedEntries_many": "تم استلام {{count}} سجلًا",
     "droppedRecords": "أُسقطت بعض مدخلات سجل البروتوكول لأن الكتابة لم تستطع اللحاق: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "عرض جميع الاتصالات",

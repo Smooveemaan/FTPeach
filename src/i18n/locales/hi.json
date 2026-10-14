@@ -336,6 +336,8 @@
     "activeModeFailed": "सक्रिय FTP मोड में सर्वर इस कंप्यूटर से कनेक्ट नहीं कर सका। पैसिव मोड आज़माएँ।",
     "linkNotFollowed": "पथ एक लिंक (junction या सिम्बॉलिक लिंक) से होकर जाता है। लिंक का अनुसरण नहीं किया जाता।",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।",
     "savedSecretUnreadable": "सहेजा गया पासवर्ड इस कंप्यूटर पर पढ़ा नहीं जा सकता। इसे बुकमार्क में या प्रॉक्सी सेटिंग्स में फिर से दर्ज करें।",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -674,6 +676,13 @@
     "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।",
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "droppedRecords": "लेखन गति पीछे रह जाने के कारण प्रोटोकॉल लॉग के कुछ रिकॉर्ड छोड़ दिए गए: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "सभी कनेक्शन दिखाएँ",

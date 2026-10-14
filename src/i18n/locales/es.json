@@ -340,6 +340,8 @@
     "activeModeFailed": "El servidor no ha podido conectarse a este equipo en modo FTP activo. Prueba el modo pasivo.",
     "linkNotFollowed": "La ruta pasa por un vínculo (un junction o un vínculo simbólico). Los vínculos no se siguen.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
+    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar.",
     "savedSecretUnreadable": "No se puede leer una contraseña guardada en este equipo. Vuelve a introducirla en el marcador o en la configuración del proxy.",
     "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
@@ -682,6 +684,13 @@
     "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
     "receivedEntries_many": "Se han recibido {{count}} entradas",
     "droppedRecords": "Se descartaron algunas líneas del registro de protocolo porque la escritura no daba abasto: {{dropped}}"
+  },
+  "storageWarnings": {
+    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
+    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
+    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
+    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
+    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
   },
   "logPanel": {
     "showAllConnections": "Mostrar todas las conexiones",

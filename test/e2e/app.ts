@@ -200,13 +200,38 @@ async function start(
     throw new Error(`${(error as Error).message}\n${diagnose(child, logs)}`);
   }
   run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  return mainWindow(run.browser);
+  return mainWindow(run.browser, startLanguage(exe, profile));
 }
 
-/** The main window once its page has loaded. */
-async function mainWindow(browser: Browser): Promise<Page> {
+/**
+ * The language a start shows, from the settings it reads: a portable copy's
+ * beside the program, else the profile's (the account's own for `null`).
+ */
+function startLanguage(exe: string, profile: string | null): string {
+  const portable = existsSync(path.join(path.dirname(exe), 'FTPeach.portable'));
+  const dataDir = portable
+    ? path.join(path.dirname(exe), 'data')
+    : path.join(profile ? path.join(profile, 'Roaming') : process.env.APPDATA!, 'FTPeach');
+  try {
+    return (
+      JSON.parse(readFileSync(path.join(dataDir, 'settings.json'), 'utf8')).data.language ?? 'en'
+    );
+  } catch {
+    return 'en';
+  }
+}
+
+/**
+ * The main window once its page has loaded: the remote pane's buttons are
+ * there, and `lang` names the language, set only once its text has loaded.
+ * Whatever the language, the English names of the first frame never count.
+ */
+async function mainWindow(browser: Browser, language = 'en'): Promise<Page> {
   const page = await waitFor('the main window', async () => browser.contexts()[0]?.pages()[0], 30);
-  await page.getByRole('button', { name: 'Manage Bookmarks', exact: true }).waitFor();
+  await page
+    .locator(`html[lang="${language}"] .pane[data-side=b] button[aria-label]`)
+    .first()
+    .waitFor();
   return page;
 }
 

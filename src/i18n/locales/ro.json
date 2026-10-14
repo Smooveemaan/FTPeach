@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Cheia cu care se identifică acest server s-a schimbat. Asta se întâmplă după o reinstalare, dar tot așa arată și un server fals.",
         "approve": "Ai încredere în noua cheie"
+      },
+      "exportSecrets": {
+        "message": "Exportați într-un fișier parolele salvate ale marcajelor?",
+        "approve": "Exportă"
       }
     },
     "savedAs": "Se salvează pe acest computer ca: {{name}}",
@@ -592,7 +596,17 @@
     "includeSettings": "Setări ale aplicației",
     "includeBookmarks": "Marcaje",
     "includeLocalPaths": "Căi locale",
-    "passwordHint": "Parolele și frazele de acces ale cheilor SSH nu sunt incluse în export — va trebui să le reintroduceți după import pe alt computer."
+    "passwordHint": "Parolele și frazele de acces ale cheilor SSH nu sunt incluse în export — va trebui să le reintroduceți după import pe alt computer.",
+    "includePasswords": "Include parolele salvate",
+    "passwordsCount": "Parole și fraze de acces ale cheilor: {{count}}",
+    "passwordsWarning": "Parolele sunt criptate cu parola de mai jos. Adresele, numele de utilizator și celelalte setări din fișier rămân lizibile. O parolă a fișierului uitată nu poate fi recuperată.",
+    "exportPassword": "Parola fișierului",
+    "confirmExportPassword": "Confirmă parola",
+    "passwordTooShort": "Folosiți cel puțin 12 caractere; cel mai bine este o frază lungă pe care nu o folosiți în altă parte.",
+    "passwordMismatch": "Parolele nu coincid.",
+    "keysHint": "Fișierele cheilor private nu sunt incluse. Copiați-le separat; pe celălalt computer, căile lor ar putea necesita corectare.",
+    "unreadable": "Parolele salvate ale acestor marcaje nu pot fi deschise pe acest computer:",
+    "exportWithoutThem": "Exportă fără parolele lor"
   },
   "importSettingsDialog": {
     "title": "Importă setările",
@@ -600,7 +614,14 @@
     "includeSettings": "Setări ale aplicației",
     "includeBookmarks": "Marcaje",
     "includeLocalPaths": "Căi locale",
-    "passwordHint": "Parolele și frazele de acces ale cheilor SSH nu sunt incluse în import — va trebui să le reintroduceți pentru fiecare server importat."
+    "passwordHint": "Dacă fișierul conține parole salvate, vi se va cere parola cu care a fost exportat.",
+    "filePasswordHint": "Acest fișier conține parole salvate. Pentru a le importa și pe ele, introduceți parola cu care a fost exportat fișierul.",
+    "filePassword": "Parola fișierului",
+    "wrongPassword": "Această parolă nu deschide parolele din fișier.",
+    "importWithPasswords": "Importă cu parole",
+    "importWithoutPasswords": "Importă fără parole",
+    "scopeMismatch": "Setările de conexiune ale acestor marcaje au fost modificate după export, așa că parolele lor nu au fost importate:",
+    "unmatched": "Aceste marcaje sunt salvate de mai multe ori pentru același server, așa că parolele lor nu au fost importate:"
   },
   "openWithDialog": {
     "title": "Deschide în aplicație",
@@ -935,6 +956,7 @@
     "importedShort": "Importat",
     "importNothingNewShort": "Nimic nou",
     "importSkippedShort": "Omise: {{count}}",
+    "transferPasswords": "Parole: {{count}}",
     "quitPendingShort": "Se închide…",
     "upToDate": "La zi",
     "cancelQuitLong": "Anulează ieșirea",

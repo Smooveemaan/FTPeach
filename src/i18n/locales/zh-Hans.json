@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "此服务器用于证明身份的密钥已更改。重新安装后会出现这种情况，但冒充的服务器看起来也是这样。",
         "approve": "信任新密钥"
+      },
+      "exportSecrets": {
+        "message": "是否将书签保存的密码导出到文件？",
+        "approve": "导出"
       }
     },
     "savedAs": "在本计算机上保存为：{{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "应用设置",
     "includeBookmarks": "书签",
     "includeLocalPaths": "本地路径",
-    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台计算机上导入后需要重新输入。"
+    "passwordHint": "密码和 SSH 密钥的密码短语不会包含在导出文件中——在另一台计算机上导入后需要重新输入。",
+    "includePasswords": "包含已保存的密码",
+    "passwordsCount": "密码和密钥的密码短语：{{count}}",
+    "passwordsWarning": "密码将使用下方的密码加密。文件中的地址、用户名和其他设置仍可读取。忘记文件密码后无法恢复。",
+    "exportPassword": "文件密码",
+    "confirmExportPassword": "确认密码",
+    "passwordTooShort": "至少使用 12 个字符；最好是在其他地方都没有用过的长短语。",
+    "passwordMismatch": "两次输入的密码不一致。",
+    "keysHint": "不包含私钥文件。请单独复制它们；在另一台计算机上可能需要更正它们的路径。",
+    "unreadable": "以下书签保存的密码无法在此计算机上打开：",
+    "exportWithoutThem": "导出时不包含这些密码"
   },
   "importSettingsDialog": {
     "title": "导入设置",
@@ -596,7 +610,14 @@
     "includeSettings": "应用设置",
     "includeBookmarks": "书签",
     "includeLocalPaths": "本地路径",
-    "passwordHint": "密码和 SSH 密钥的密码短语不会被导入——需要为每个导入的服务器重新输入。"
+    "passwordHint": "如果文件包含已保存的密码，将要求您输入导出时使用的密码。",
+    "filePasswordHint": "此文件包含已保存的密码。若要一并导入，请输入导出此文件时使用的密码。",
+    "filePassword": "文件密码",
+    "wrongPassword": "此密码无法打开文件中的密码。",
+    "importWithPasswords": "导入并包含密码",
+    "importWithoutPasswords": "导入但不包含密码",
+    "scopeMismatch": "以下书签的连接设置在导出后已更改，因此未导入其密码：",
+    "unmatched": "以下书签为同一服务器保存了多次，因此未导入其密码："
   },
   "openWithDialog": {
     "title": "在应用程序中打开",
@@ -927,6 +948,7 @@
     "importedShort": "已导入",
     "importNothingNewShort": "无新内容",
     "importSkippedShort": "已跳过：{{count}}",
+    "transferPasswords": "密码：{{count}}",
     "quitPendingShort": "正在退出…",
     "upToDate": "已是最新版本",
     "cancelQuitLong": "取消退出",

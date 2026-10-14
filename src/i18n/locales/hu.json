@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "A kulcs, amellyel a szerver azonosítja magát, megváltozott. Ez újratelepítés után előfordul, de egy hamis szerver is pontosan így néz ki.",
         "approve": "Új kulcs elfogadása"
+      },
+      "exportSecrets": {
+        "message": "Exportálja fájlba a könyvjelzők mentett jelszavait?",
+        "approve": "Exportálás"
       }
     },
     "savedAs": "Mentés ezen a számítógépen a következő néven: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Alkalmazásbeállítások",
     "includeBookmarks": "Könyvjelzők",
     "includeLocalPaths": "Helyi útvonalak",
-    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek az exportba – egy másik gépen importálás után újra meg kell adnia őket."
+    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek az exportba – egy másik gépen importálás után újra meg kell adnia őket.",
+    "includePasswords": "Mentett jelszavak belefoglalása",
+    "passwordsCount": "Jelszavak és kulcsjelmondatok: {{count}}",
+    "passwordsWarning": "A jelszavakat az alábbi jelszóval titkosítja a program. A címek, a felhasználónevek és a fájl többi beállítása olvasható marad. Az elfelejtett fájljelszó nem állítható vissza.",
+    "exportPassword": "Fájljelszó",
+    "confirmExportPassword": "Jelszó megerősítése",
+    "passwordTooShort": "Legalább 12 karakter; a legjobb egy hosszú kifejezés, amelyet máshol nem használ.",
+    "passwordMismatch": "A jelszavak nem egyeznek.",
+    "keysHint": "A titkos kulcsok fájljai nem kerülnek bele. Másolja át őket külön; a másik gépen az útvonalukat esetleg javítani kell.",
+    "unreadable": "Ezeknek a könyvjelzőknek a mentett jelszavai ezen a gépen nem nyithatók meg:",
+    "exportWithoutThem": "Exportálás a jelszavaik nélkül"
   },
   "importSettingsDialog": {
     "title": "Beállítások importálása",
@@ -596,7 +610,14 @@
     "includeSettings": "Alkalmazásbeállítások",
     "includeBookmarks": "Könyvjelzők",
     "includeLocalPaths": "Helyi útvonalak",
-    "passwordHint": "A jelszavak és az SSH-kulcsok jelmondatai nem kerülnek importálásra – minden importált szerverhez újra meg kell adnia őket."
+    "passwordHint": "Ha a fájl mentett jelszavakat tartalmaz, a program bekéri azt a jelszót, amellyel exportálták.",
+    "filePasswordHint": "Ez a fájl mentett jelszavakat tartalmaz. Ha ezeket is importálni szeretné, adja meg a jelszót, amellyel a fájlt exportálták.",
+    "filePassword": "Fájljelszó",
+    "wrongPassword": "Ez a jelszó nem nyitja meg a fájlban lévő jelszavakat.",
+    "importWithPasswords": "Importálás jelszavakkal",
+    "importWithoutPasswords": "Importálás jelszavak nélkül",
+    "scopeMismatch": "Ezeknek a könyvjelzőknek a kapcsolati beállításai az exportálás után megváltoztak, ezért a jelszavaikat nem importálta a program:",
+    "unmatched": "Ezek a könyvjelzők ugyanahhoz a szerverhez többször is el vannak mentve, ezért a jelszavaikat nem importálta a program:"
   },
   "openWithDialog": {
     "title": "Megnyitás alkalmazásban",
@@ -927,6 +948,7 @@
     "importedShort": "Importálva",
     "importNothingNewShort": "Nincs új elem",
     "importSkippedShort": "Kihagyva: {{count}}",
+    "transferPasswords": "Jelszavak: {{count}}",
     "quitPendingShort": "Kilépés…",
     "upToDate": "Naprakész",
     "cancelQuitLong": "Kilépés megszakítása",

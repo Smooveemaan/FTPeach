@@ -355,9 +355,7 @@ fn without_new_ids(mut files: Value) -> Value {
 /// Import checks each exported bookmark, then saves the valid ones into an
 /// empty profile.
 async fn import_case(case: &Value) -> Value {
-    use crate::commands::app::settings_transfer::{
-        import_sites, strip_site_secrets, validate_import_site,
-    };
+    use crate::commands::app::settings_transfer::{strip_site_secrets, validate_import_site};
     let scratch = Scratch::new(case.get("sites"), case.get("localPaths"));
     let mut records: Vec<JsonMap> = scratch
         .store()
@@ -384,14 +382,20 @@ async fn import_case(case: &Value) -> Value {
             },
         )
         .collect();
-    let accepted: Vec<Value> = records
+    let accepted: Vec<JsonMap> = records
         .into_iter()
         .zip(&verdicts)
         .filter(|(_, verdict)| verdict.as_str() == Some("accepted"))
-        .map(|(record, _)| Value::Object(record))
+        .map(|(record, _)| record)
         .collect();
     let target = Scratch::new(None, None);
-    let outcome = import_sites(&target.store(), accepted, &[]).await;
+    let vault = Vault::new(target.root.join("no-vault"));
+    let outcome = target
+        .store()
+        .import_sites(&vault, &accepted, Default::default())
+        .await
+        .map(|(done, _kept)| done)
+        .map_err(|failed| failed.error);
     json!({
         "verdicts": verdicts,
         "outcome": outcome.map(|done| json!({"added": done.added, "skipped": done.skipped})).map_err(|error| format!("{error:#}")),

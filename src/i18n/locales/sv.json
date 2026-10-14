@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Nyckeln som servern identifierar sig med har ändrats. Det händer efter en ominstallation, men det är också så en falsk server ser ut.",
         "approve": "Lita på den nya nyckeln"
+      },
+      "exportSecrets": {
+        "message": "Exportera de sparade lösenorden för dina bokmärken till en fil?",
+        "approve": "Exportera"
       }
     },
     "savedAs": "Sparas på den här datorn som: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Programinställningar",
     "includeBookmarks": "Bokmärken",
     "includeLocalPaths": "Lokala sökvägar",
-    "passwordHint": "Lösenord och lösenfraser för SSH-nycklar ingår inte i exporten – du måste ange dem på nytt efter importen till en annan dator."
+    "passwordHint": "Lösenord och lösenfraser för SSH-nycklar ingår inte i exporten – du måste ange dem på nytt efter importen till en annan dator.",
+    "includePasswords": "Ta med sparade lösenord",
+    "passwordsCount": "Lösenord och lösenfraser för nycklar: {{count}}",
+    "passwordsWarning": "Lösenorden krypteras med lösenordet nedan. Adresser, användarnamn och övriga inställningar i filen förblir läsbara. Ett glömt fillösenord kan inte återställas.",
+    "exportPassword": "Fillösenord",
+    "confirmExportPassword": "Bekräfta lösenordet",
+    "passwordTooShort": "Använd minst 12 tecken; en lång fras som du inte använder någon annanstans är bäst.",
+    "passwordMismatch": "Lösenorden stämmer inte överens.",
+    "keysHint": "Filer med privata nycklar ingår inte. Kopiera dem separat; på den andra datorn kan deras sökvägar behöva rättas.",
+    "unreadable": "De sparade lösenorden för de här bokmärkena kan inte öppnas på den här datorn:",
+    "exportWithoutThem": "Exportera utan deras lösenord"
   },
   "importSettingsDialog": {
     "title": "Importera inställningar",
@@ -596,7 +610,14 @@
     "includeSettings": "Programinställningar",
     "includeBookmarks": "Bokmärken",
     "includeLocalPaths": "Lokala sökvägar",
-    "passwordHint": "Lösenord och lösenfraser för SSH-nycklar ingår inte i importen – du måste ange dem på nytt för varje importerad server."
+    "passwordHint": "Om filen innehåller sparade lösenord blir du ombedd att ange lösenordet som den exporterades med.",
+    "filePasswordHint": "Den här filen innehåller sparade lösenord. Ange lösenordet som filen exporterades med för att importera även dem.",
+    "filePassword": "Fillösenord",
+    "wrongPassword": "Det här lösenordet öppnar inte lösenorden i filen.",
+    "importWithPasswords": "Importera med lösenord",
+    "importWithoutPasswords": "Importera utan lösenord",
+    "scopeMismatch": "Anslutningsinställningarna för de här bokmärkena ändrades efter exporten, så deras lösenord importerades inte:",
+    "unmatched": "De här bokmärkena är sparade mer än en gång för samma server, så deras lösenord importerades inte:"
   },
   "openWithDialog": {
     "title": "Öppna i program",
@@ -927,6 +948,7 @@
     "importedShort": "Importerat",
     "importNothingNewShort": "Inget nytt",
     "importSkippedShort": "Överhoppade: {{count}}",
+    "transferPasswords": "Lösenord: {{count}}",
     "quitPendingShort": "Avslutar…",
     "upToDate": "Uppdaterad",
     "cancelQuitLong": "Avbryt avslutning",

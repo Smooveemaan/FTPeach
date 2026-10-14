@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "The key this server identifies itself with has changed. That happens after a reinstall, but it is also what an impostor looks like.",
         "approve": "Trust the new key"
+      },
+      "exportSecrets": {
+        "message": "Export the saved passwords of your bookmarks to a file?",
+        "approve": "Export"
       }
     },
     "savedAs": "Saved on this computer as: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Application settings",
     "includeBookmarks": "Bookmarks",
     "includeLocalPaths": "Local paths",
-    "passwordHint": "Passwords and SSH key passphrases are not included in the export — you'll need to re-enter them after importing on another machine."
+    "passwordHint": "Passwords and SSH key passphrases are not included in the export — you'll need to re-enter them after importing on another machine.",
+    "includePasswords": "Include saved passwords",
+    "passwordsCount": "Passwords and key passphrases to include: {{count}}",
+    "passwordsWarning": "The passwords are encrypted with the password below. Addresses, user names and the other settings in the file stay readable. A forgotten file password cannot be recovered.",
+    "exportPassword": "File password",
+    "confirmExportPassword": "Confirm password",
+    "passwordTooShort": "Use at least 12 characters; a long phrase you use nowhere else is best.",
+    "passwordMismatch": "The passwords do not match.",
+    "keysHint": "Private key files are not included. Copy them separately; on the other computer their paths may need correcting.",
+    "unreadable": "The saved passwords of these bookmarks cannot be opened on this computer:",
+    "exportWithoutThem": "Export without their passwords"
   },
   "importSettingsDialog": {
     "title": "Import Settings",
@@ -596,7 +610,14 @@
     "includeSettings": "Application settings",
     "includeBookmarks": "Bookmarks",
     "includeLocalPaths": "Local paths",
-    "passwordHint": "Passwords and SSH key passphrases are not included in the import — you'll need to enter them again for each imported site."
+    "passwordHint": "If the file contains saved passwords, you will be asked for the password it was exported with.",
+    "filePasswordHint": "This file contains saved passwords. Enter the password the file was exported with to import them too.",
+    "filePassword": "File password",
+    "wrongPassword": "This password does not open the passwords in the file.",
+    "importWithPasswords": "Import with passwords",
+    "importWithoutPasswords": "Import without passwords",
+    "scopeMismatch": "The connection settings of these bookmarks were changed after the export, so their passwords were not imported:",
+    "unmatched": "These bookmarks are saved more than once for the same server, so their passwords were not imported:"
   },
   "openWithDialog": {
     "title": "Open in Application",
@@ -927,6 +948,7 @@
     "importedShort": "Imported",
     "importNothingNewShort": "Nothing new",
     "importSkippedShort": "Skipped: {{count}}",
+    "transferPasswords": "Passwords: {{count}}",
     "quitPendingShort": "Quitting…",
     "upToDate": "Up to date",
     "cancelQuitLong": "Cancel quit",

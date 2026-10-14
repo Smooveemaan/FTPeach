@@ -6,7 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import UnsavedChangesDialog from '../../components/UnsavedChangesDialog.tsx';
 import { isolate } from '../../shared/bidi.ts';
 import { SettingsTransferDialog } from '../settings/ui.ts';
-import type { SettingsTransferOptions } from '../../platform/api/settings.ts';
+import type { SettingsTransferModel } from '../settings/index.ts';
 import Icon from '../../components/Icon.tsx';
 import {
   canSubmitSiteForm,
@@ -29,7 +29,6 @@ import { useTruncated } from '../../hooks/useTruncated.ts';
 import { useFitLevel } from '../../hooks/useFitLevel.ts';
 import NoticeText from '../../components/NoticeText.tsx';
 import { useNoticeSwap, useStatusNotice } from '../../hooks/useStatusNotice.ts';
-import type { NoticeMessage } from '../../hooks/useStatusNotice.ts';
 import { entriesForManager, sortManagedEntries } from './siteManagerModel.ts';
 import type { SiteManagerKind, SiteSortMode } from './siteManagerModel.ts';
 import { portAfterProtocolChange } from '../../shared/siteContracts.ts';
@@ -48,9 +47,8 @@ export interface SiteManagerDialogProps {
   onApplyLayout: (layout: SiteLayout) => Promise<SiteMutationResult | undefined>;
   onSaveFolder: (payload: SavedSite) => Promise<SiteMutationResult | undefined>;
   onDeleteFolder: (id: string) => Promise<SiteMutationResult | undefined>;
-  /** Resolve to the message the footer shows, or undefined when cancelled or failed. */
-  onImport: (options: SettingsTransferOptions) => Promise<NoticeMessage | undefined>;
-  onExport: (options: SettingsTransferOptions) => Promise<NoticeMessage | undefined>;
+  /** Export and import; what they finish with goes to the manager's own footer. */
+  settingsTransfer: SettingsTransferModel;
   onConnect: (site: ManagedSite) => void;
   onVaultUnlockRequired: (retry: () => void) => void;
   onClose: () => void;
@@ -70,8 +68,7 @@ export default function SiteManagerDialog({
   onApplyLayout,
   onSaveFolder,
   onDeleteFolder,
-  onImport,
-  onExport,
+  settingsTransfer,
   onConnect,
   onVaultUnlockRequired,
   onClose,
@@ -341,16 +338,6 @@ export default function SiteManagerDialog({
     setLocalEntries,
     onFolderDeleted: forgetCollapsedFolder,
   });
-
-  const handleImportConfirm = async (options: SettingsTransferOptions) => {
-    const message = await onImport(options);
-    if (message) showNotice(message);
-  };
-
-  const handleExportConfirm = async (options: SettingsTransferOptions) => {
-    const message = await onExport(options);
-    if (message) showNotice(message);
-  };
 
   const toggleFolder = (id: string) => {
     setExpandedFolderIds((prev) => {
@@ -699,7 +686,10 @@ export default function SiteManagerDialog({
       {showExportOptions && (
         <SettingsTransferDialog
           mode="export"
-          onConfirm={handleExportConfirm}
+          transfer={settingsTransfer}
+          sites={entries}
+          onDone={showNotice}
+          onVaultUnlockRequired={onVaultUnlockRequired}
           onClose={() => setShowExportOptions(false)}
           initialOptions={{
             includeSettings: false,
@@ -711,7 +701,10 @@ export default function SiteManagerDialog({
       {showImportOptions && (
         <SettingsTransferDialog
           mode="import"
-          onConfirm={handleImportConfirm}
+          transfer={settingsTransfer}
+          sites={entries}
+          onDone={showNotice}
+          onVaultUnlockRequired={onVaultUnlockRequired}
           onClose={() => setShowImportOptions(false)}
           initialOptions={{
             includeSettings: false,

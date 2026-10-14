@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Klucz, którym ten serwer się przedstawia, zmienił się. Tak bywa po ponownej instalacji, ale tak samo wygląda podszywanie się pod serwer.",
         "approve": "Zaufaj nowemu kluczowi"
+      },
+      "exportSecrets": {
+        "message": "Wyeksportować zapisane hasła zakładek do pliku?",
+        "approve": "Eksportuj"
       }
     },
     "savedAs": "Zapisywany na tym komputerze jako: {{name}}",
@@ -596,7 +600,17 @@
     "includeSettings": "Ustawienia aplikacji",
     "includeBookmarks": "Zakładki",
     "includeLocalPaths": "Ścieżki lokalne",
-    "passwordHint": "Hasła i frazy hasła kluczy SSH nie trafiają do eksportu — po zaimportowaniu na innym komputerze trzeba je wprowadzić ponownie."
+    "passwordHint": "Hasła i frazy hasła kluczy SSH nie trafiają do eksportu — po zaimportowaniu na innym komputerze trzeba je wprowadzić ponownie.",
+    "includePasswords": "Dołącz zapisane hasła",
+    "passwordsCount": "Hasła i frazy hasła kluczy: {{count}}",
+    "passwordsWarning": "Hasła są szyfrowane hasłem podanym poniżej. Adresy, nazwy użytkowników i pozostałe ustawienia w pliku pozostają czytelne. Zapomnianego hasła pliku nie da się odzyskać.",
+    "exportPassword": "Hasło pliku",
+    "confirmExportPassword": "Potwierdź hasło",
+    "passwordTooShort": "Użyj co najmniej 12 znaków; najlepiej długiej frazy, której nie używasz nigdzie indziej.",
+    "passwordMismatch": "Hasła nie są zgodne.",
+    "keysHint": "Pliki kluczy prywatnych nie są dołączane. Skopiuj je osobno; na drugim komputerze może być trzeba poprawić ich ścieżki.",
+    "unreadable": "Zapisanych haseł tych zakładek nie można otworzyć na tym komputerze:",
+    "exportWithoutThem": "Eksportuj bez ich haseł"
   },
   "importSettingsDialog": {
     "title": "Import ustawień",
@@ -604,7 +618,14 @@
     "includeSettings": "Ustawienia aplikacji",
     "includeBookmarks": "Zakładki",
     "includeLocalPaths": "Ścieżki lokalne",
-    "passwordHint": "Hasła i frazy hasła kluczy SSH nie są importowane — trzeba je wprowadzić ponownie dla każdego zaimportowanego serwera."
+    "passwordHint": "Jeśli plik zawiera zapisane hasła, pojawi się prośba o hasło, z którym go wyeksportowano.",
+    "filePasswordHint": "Ten plik zawiera zapisane hasła. Aby zaimportować także je, wprowadź hasło, z którym plik wyeksportowano.",
+    "filePassword": "Hasło pliku",
+    "wrongPassword": "To hasło nie otwiera haseł w pliku.",
+    "importWithPasswords": "Importuj z hasłami",
+    "importWithoutPasswords": "Importuj bez haseł",
+    "scopeMismatch": "Ustawienia połączenia tych zakładek zmieniono po eksporcie, dlatego ich hasła nie zostały zaimportowane:",
+    "unmatched": "Te zakładki są zapisane więcej niż raz dla tego samego serwera, dlatego ich hasła nie zostały zaimportowane:"
   },
   "openWithDialog": {
     "title": "Otwórz w aplikacji",
@@ -943,6 +964,7 @@
     "importedShort": "Zaimportowano",
     "importNothingNewShort": "Nic nowego",
     "importSkippedShort": "Pominięto: {{count}}",
+    "transferPasswords": "Hasła: {{count}}",
     "quitPendingShort": "Zamykanie…",
     "upToDate": "Aktualna wersja",
     "cancelQuitLong": "Anuluj wyjście",

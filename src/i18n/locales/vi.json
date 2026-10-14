@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Khóa mà máy chủ này dùng để xác minh danh tính đã thay đổi. Điều này xảy ra sau khi cài đặt lại, nhưng một máy chủ giả mạo cũng trông y như vậy.",
         "approve": "Tin cậy khóa mới"
+      },
+      "exportSecrets": {
+        "message": "Xuất mật khẩu đã lưu của các dấu trang ra tệp?",
+        "approve": "Xuất"
       }
     },
     "savedAs": "Lưu trên máy tính này với tên: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Cài đặt ứng dụng",
     "includeBookmarks": "Dấu trang",
     "includeLocalPaths": "Đường dẫn cục bộ",
-    "passwordHint": "Mật khẩu và cụm mật khẩu khóa SSH không có trong tệp xuất — bạn sẽ cần nhập lại sau khi nhập cài đặt trên máy tính khác."
+    "passwordHint": "Mật khẩu và cụm mật khẩu khóa SSH không có trong tệp xuất — bạn sẽ cần nhập lại sau khi nhập cài đặt trên máy tính khác.",
+    "includePasswords": "Bao gồm mật khẩu đã lưu",
+    "passwordsCount": "Mật khẩu và cụm mật khẩu khóa: {{count}}",
+    "passwordsWarning": "Mật khẩu được mã hóa bằng mật khẩu bên dưới. Địa chỉ, tên người dùng và các cài đặt khác trong tệp vẫn đọc được. Mật khẩu tệp bị quên không thể khôi phục.",
+    "exportPassword": "Mật khẩu tệp",
+    "confirmExportPassword": "Xác nhận mật khẩu",
+    "passwordTooShort": "Dùng ít nhất 12 ký tự; tốt nhất là một cụm từ dài bạn không dùng ở nơi nào khác.",
+    "passwordMismatch": "Mật khẩu không khớp.",
+    "keysHint": "Tệp khóa riêng tư không được đưa vào. Hãy sao chép chúng riêng; trên máy tính kia có thể cần sửa lại đường dẫn của chúng.",
+    "unreadable": "Không thể mở mật khẩu đã lưu của các dấu trang này trên máy tính này:",
+    "exportWithoutThem": "Xuất không kèm mật khẩu của chúng"
   },
   "importSettingsDialog": {
     "title": "Nhập cài đặt",
@@ -596,7 +610,14 @@
     "includeSettings": "Cài đặt ứng dụng",
     "includeBookmarks": "Dấu trang",
     "includeLocalPaths": "Đường dẫn cục bộ",
-    "passwordHint": "Mật khẩu và cụm mật khẩu khóa SSH không được nhập — bạn sẽ cần nhập lại cho từng máy chủ đã nhập."
+    "passwordHint": "Nếu tệp có mật khẩu đã lưu, bạn sẽ được yêu cầu nhập mật khẩu đã dùng khi xuất tệp.",
+    "filePasswordHint": "Tệp này có mật khẩu đã lưu. Để nhập cả chúng, hãy nhập mật khẩu đã dùng khi xuất tệp.",
+    "filePassword": "Mật khẩu tệp",
+    "wrongPassword": "Mật khẩu này không mở được các mật khẩu trong tệp.",
+    "importWithPasswords": "Nhập kèm mật khẩu",
+    "importWithoutPasswords": "Nhập không kèm mật khẩu",
+    "scopeMismatch": "Cài đặt kết nối của các dấu trang này đã thay đổi sau khi xuất, nên mật khẩu của chúng không được nhập:",
+    "unmatched": "Các dấu trang này được lưu nhiều lần cho cùng một máy chủ, nên mật khẩu của chúng không được nhập:"
   },
   "openWithDialog": {
     "title": "Mở trong ứng dụng",
@@ -927,6 +948,7 @@
     "importedShort": "Đã nhập",
     "importNothingNewShort": "Không có gì mới",
     "importSkippedShort": "Đã bỏ qua: {{count}}",
+    "transferPasswords": "Mật khẩu: {{count}}",
     "quitPendingShort": "Đang thoát…",
     "upToDate": "Phiên bản mới nhất",
     "cancelQuitLong": "Hủy thoát",

@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Den nøgle, serveren identificerer sig med, er ændret. Det sker efter en geninstallation, men det er også sådan, en falsk server ser ud.",
         "approve": "Stol på den nye nøgle"
+      },
+      "exportSecrets": {
+        "message": "Eksportér de gemte adgangskoder til dine bogmærker til en fil?",
+        "approve": "Eksportér"
       }
     },
     "savedAs": "Gemmes på denne computer som: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten – du skal indtaste dem igen efter import på en anden computer."
+    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i eksporten – du skal indtaste dem igen efter import på en anden computer.",
+    "includePasswords": "Medtag gemte adgangskoder",
+    "passwordsCount": "Adgangskoder og adgangssætninger til nøgler: {{count}}",
+    "passwordsWarning": "Adgangskoderne krypteres med adgangskoden herunder. Adresser, brugernavne og de øvrige indstillinger i filen forbliver læsbare. En glemt filadgangskode kan ikke gendannes.",
+    "exportPassword": "Filadgangskode",
+    "confirmExportPassword": "Bekræft adgangskode",
+    "passwordTooShort": "Brug mindst 12 tegn; en lang sætning, du ikke bruger andre steder, er bedst.",
+    "passwordMismatch": "Adgangskoderne er ikke ens.",
+    "keysHint": "Filer med private nøgler medtages ikke. Kopiér dem separat; på den anden computer skal deres stier måske rettes.",
+    "unreadable": "De gemte adgangskoder til disse bogmærker kan ikke åbnes på denne computer:",
+    "exportWithoutThem": "Eksportér uden deres adgangskoder"
   },
   "importSettingsDialog": {
     "title": "Importér indstillinger",
@@ -596,7 +610,14 @@
     "includeSettings": "Programindstillinger",
     "includeBookmarks": "Bogmærker",
     "includeLocalPaths": "Lokale stier",
-    "passwordHint": "Adgangskoder og adgangssætninger til SSH-nøgler indgår ikke i importen – du skal indtaste dem igen for hver importeret server."
+    "passwordHint": "Hvis filen indeholder gemte adgangskoder, bliver du bedt om den adgangskode, den blev eksporteret med.",
+    "filePasswordHint": "Denne fil indeholder gemte adgangskoder. Indtast den adgangskode, filen blev eksporteret med, for også at importere dem.",
+    "filePassword": "Filadgangskode",
+    "wrongPassword": "Denne adgangskode åbner ikke adgangskoderne i filen.",
+    "importWithPasswords": "Importér med adgangskoder",
+    "importWithoutPasswords": "Importér uden adgangskoder",
+    "scopeMismatch": "Forbindelsesindstillingerne for disse bogmærker er ændret efter eksporten, så deres adgangskoder blev ikke importeret:",
+    "unmatched": "Disse bogmærker er gemt mere end én gang til den samme server, så deres adgangskoder blev ikke importeret:"
   },
   "openWithDialog": {
     "title": "Åbn i program",
@@ -927,6 +948,7 @@
     "importedShort": "Importeret",
     "importNothingNewShort": "Intet nyt",
     "importSkippedShort": "Sprunget over: {{count}}",
+    "transferPasswords": "Adgangskoder: {{count}}",
     "quitPendingShort": "Afslutter…",
     "upToDate": "Opdateret",
     "cancelQuitLong": "Annuller afslutning",

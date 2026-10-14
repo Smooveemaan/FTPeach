@@ -9,11 +9,11 @@
 //! backend window that shows the old and the new recipient.
 use crate::domain::{Protocol, ServerSettings};
 use crate::store::JsonMap;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CredentialScope {
     pub protocol: String,
     pub host: String,

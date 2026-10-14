@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Kunci yang dipakai server ini untuk mengidentifikasi diri telah berubah. Hal ini terjadi setelah instalasi ulang, tetapi seperti inilah juga tampilan server palsu.",
         "approve": "Percayai kunci baru"
+      },
+      "exportSecrets": {
+        "message": "Ekspor kata sandi tersimpan dari bookmark Anda ke file?",
+        "approve": "Ekspor"
       }
     },
     "savedAs": "Disimpan di komputer ini sebagai: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Pengaturan aplikasi",
     "includeBookmarks": "Bookmark",
     "includeLocalPaths": "Jalur lokal",
-    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam ekspor — Anda perlu memasukkannya lagi setelah mengimpor di komputer lain."
+    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam ekspor — Anda perlu memasukkannya lagi setelah mengimpor di komputer lain.",
+    "includePasswords": "Sertakan kata sandi tersimpan",
+    "passwordsCount": "Kata sandi dan frasa sandi kunci: {{count}}",
+    "passwordsWarning": "Kata sandi dienkripsi dengan kata sandi di bawah. Alamat, nama pengguna, dan pengaturan lain dalam file tetap dapat dibaca. Kata sandi file yang terlupa tidak dapat dipulihkan.",
+    "exportPassword": "Kata sandi file",
+    "confirmExportPassword": "Konfirmasi kata sandi",
+    "passwordTooShort": "Gunakan minimal 12 karakter; sebaiknya frasa panjang yang tidak Anda gunakan di tempat lain.",
+    "passwordMismatch": "Kata sandi tidak cocok.",
+    "keysHint": "File kunci privat tidak disertakan. Salin secara terpisah; di komputer lain, jalurnya mungkin perlu diperbaiki.",
+    "unreadable": "Kata sandi tersimpan untuk bookmark berikut tidak dapat dibuka di komputer ini:",
+    "exportWithoutThem": "Ekspor tanpa kata sandinya"
   },
   "importSettingsDialog": {
     "title": "Impor Pengaturan",
@@ -596,7 +610,14 @@
     "includeSettings": "Pengaturan aplikasi",
     "includeBookmarks": "Bookmark",
     "includeLocalPaths": "Jalur lokal",
-    "passwordHint": "Kata sandi dan frasa sandi kunci SSH tidak disertakan dalam impor — Anda perlu memasukkannya lagi untuk setiap server yang diimpor."
+    "passwordHint": "Jika file berisi kata sandi tersimpan, Anda akan diminta memasukkan kata sandi yang digunakan saat file diekspor.",
+    "filePasswordHint": "File ini berisi kata sandi tersimpan. Untuk mengimpornya juga, masukkan kata sandi yang digunakan saat file diekspor.",
+    "filePassword": "Kata sandi file",
+    "wrongPassword": "Kata sandi ini tidak membuka kata sandi dalam file.",
+    "importWithPasswords": "Impor dengan kata sandi",
+    "importWithoutPasswords": "Impor tanpa kata sandi",
+    "scopeMismatch": "Pengaturan koneksi bookmark berikut diubah setelah ekspor, sehingga kata sandinya tidak diimpor:",
+    "unmatched": "Bookmark berikut tersimpan lebih dari sekali untuk server yang sama, sehingga kata sandinya tidak diimpor:"
   },
   "openWithDialog": {
     "title": "Buka di Aplikasi",
@@ -927,6 +948,7 @@
     "importedShort": "Diimpor",
     "importNothingNewShort": "Tidak ada yang baru",
     "importSkippedShort": "Dilewati: {{count}}",
+    "transferPasswords": "Kata sandi: {{count}}",
     "quitPendingShort": "Keluar…",
     "upToDate": "Versi terbaru",
     "cancelQuitLong": "Batalkan keluar",

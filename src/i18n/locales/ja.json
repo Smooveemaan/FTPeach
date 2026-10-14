@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "このサーバーが自身を証明するための鍵が変更されました。再インストール後に起こることですが、なりすましの場合も同じように見えます。",
         "approve": "新しい鍵を信頼"
+      },
+      "exportSecrets": {
+        "message": "ブックマークに保存されたパスワードをファイルにエクスポートしますか？",
+        "approve": "エクスポート"
       }
     },
     "savedAs": "このコンピューターに次の名前で保存されます: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "アプリの設定",
     "includeBookmarks": "ブックマーク",
     "includeLocalPaths": "ローカルパス",
-    "passwordHint": "パスワードと SSH 鍵のパスフレーズはエクスポートに含まれません。別のコンピューターでインポートした後に再入力してください。"
+    "passwordHint": "パスワードと SSH 鍵のパスフレーズはエクスポートに含まれません。別のコンピューターでインポートした後に再入力してください。",
+    "includePasswords": "保存されたパスワードを含める",
+    "passwordsCount": "パスワードと鍵のパスフレーズ: {{count}}",
+    "passwordsWarning": "パスワードは下のパスワードで暗号化されます。アドレス、ユーザー名、ファイル内のその他の設定は読める状態のままです。ファイルのパスワードを忘れると復元できません。",
+    "exportPassword": "ファイルのパスワード",
+    "confirmExportPassword": "パスワードの確認",
+    "passwordTooShort": "12 文字以上にしてください。ほかで使っていない長いフレーズが最適です。",
+    "passwordMismatch": "パスワードが一致しません。",
+    "keysHint": "秘密鍵ファイルは含まれません。別途コピーしてください。別のコンピューターではパスの修正が必要になる場合があります。",
+    "unreadable": "次のブックマークの保存されたパスワードは、このコンピューターでは開けません:",
+    "exportWithoutThem": "それらのパスワードなしでエクスポート"
   },
   "importSettingsDialog": {
     "title": "設定のインポート",
@@ -596,7 +610,14 @@
     "includeSettings": "アプリの設定",
     "includeBookmarks": "ブックマーク",
     "includeLocalPaths": "ローカルパス",
-    "passwordHint": "パスワードと SSH 鍵のパスフレーズはインポートされません。インポートしたサーバーごとに再入力してください。"
+    "passwordHint": "ファイルに保存されたパスワードが含まれている場合は、エクスポート時のパスワードの入力を求められます。",
+    "filePasswordHint": "このファイルには保存されたパスワードが含まれています。パスワードもインポートするには、ファイルのエクスポート時のパスワードを入力してください。",
+    "filePassword": "ファイルのパスワード",
+    "wrongPassword": "このパスワードではファイル内のパスワードを開けません。",
+    "importWithPasswords": "パスワードを含めてインポート",
+    "importWithoutPasswords": "パスワードなしでインポート",
+    "scopeMismatch": "次のブックマークはエクスポート後に接続設定が変更されたため、パスワードをインポートしませんでした:",
+    "unmatched": "次のブックマークは同じサーバーに対して複数保存されているため、パスワードをインポートしませんでした:"
   },
   "openWithDialog": {
     "title": "アプリケーションで開く",
@@ -927,6 +948,7 @@
     "importedShort": "インポートしました",
     "importNothingNewShort": "新しい項目なし",
     "importSkippedShort": "スキップ: {{count}}",
+    "transferPasswords": "パスワード: {{count}}",
     "quitPendingShort": "終了しています…",
     "upToDate": "最新の状態",
     "cancelQuitLong": "終了をキャンセル",

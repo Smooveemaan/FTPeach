@@ -25,6 +25,7 @@ import {
   isVaultLocked,
   isPreviewProgress,
   isRecord,
+  isStringArray,
   normalizeCommandError,
   optionalBoolean,
   optionalNumber,
@@ -42,7 +43,9 @@ import type {
 } from './ipcContracts.ts';
 import type {
   AppSettings,
+  ExportSecrets,
   ExportSettingsResult,
+  ImportPreviewResult,
   ImportSettingsResult,
   SettingsTransferOptions,
 } from './api/settings.ts';
@@ -88,8 +91,18 @@ function isResetLayout(value: unknown): value is { settings: AppSettings } {
 }
 
 function isExportSettingsResult(value: unknown): value is ExportSettingsResult {
-  return hasCommandOutcome(value) && optionalBoolean(value.canceled);
+  return (
+    hasCommandOutcome(value) && optionalBoolean(value.canceled) && optionalNumber(value.secrets)
+  );
 }
+
+function isImportPreviewResult(value: unknown): value is ImportPreviewResult {
+  return (
+    hasCommandOutcome(value) && optionalBoolean(value.canceled) && optionalBoolean(value.hasSecrets)
+  );
+}
+
+const optionalStrings = (value: unknown) => value === undefined || isStringArray(value);
 
 function isImportSettingsResult(value: unknown): value is ImportSettingsResult {
   return (
@@ -98,8 +111,11 @@ function isImportSettingsResult(value: unknown): value is ImportSettingsResult {
     isSettingsMap(value.settings) &&
     optionalNumber(value.sitesAdded) &&
     optionalNumber(value.sitesSkipped) &&
-    (value.issues === undefined ||
-      (Array.isArray(value.issues) && value.issues.every((issue) => typeof issue === 'string')))
+    optionalNumber(value.secretsSaved) &&
+    optionalNumber(value.flagsRestored) &&
+    optionalStrings(value.scopeMismatches) &&
+    optionalStrings(value.unmatched) &&
+    optionalStrings(value.issues)
   );
 }
 
@@ -172,8 +188,16 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
           // the same string it confirmed.
           return typeof args?.request === 'string' ? args.request : '';
         case 'app_export_settings':
-        case 'app_import_settings':
+          // Exporting the saved passwords is confirmed on its own, with the
+          // master password or Windows Hello when the vault is set up.
+          return isRecord(args?.options) && args.options.includeSecrets === true
+            ? 'secrets'
+            : 'native-dialog';
+        case 'app_import_preview':
           return 'native-dialog';
+        case 'app_import_apply':
+        case 'app_import_discard':
+          return 'staged-import';
         default:
           return null;
       }
@@ -394,20 +418,38 @@ export const tauriApi: Window['api'] = {
         isResetLayout,
         (raw): ResetLayoutResult => commandFailure('app_reset_layout', raw),
       ).then((result) => ('ok' in result ? result : { ok: true, ...result })),
-    exportSettings: (options: SettingsTransferOptions): Promise<ExportSettingsResult> =>
+    exportSettings: (
+      options: SettingsTransferOptions,
+      secrets?: ExportSecrets,
+    ): Promise<ExportSettingsResult> =>
       checkedResponse(
         'app_export_settings',
-        invoke('app_export_settings', { options }),
+        invoke('app_export_settings', {
+          options: {
+            ...options,
+            includeSecrets: !!secrets,
+            skipUnreadable: secrets?.skipUnreadable ?? false,
+          },
+          exportPassword: secrets?.password ?? null,
+        }),
         isExportSettingsResult,
         (raw): ExportSettingsResult => commandFailure('app_export_settings', raw),
       ),
-    importSettings: (options: SettingsTransferOptions): Promise<ImportSettingsResult> =>
+    importPreview: (options: SettingsTransferOptions): Promise<ImportPreviewResult> =>
       checkedResponse(
-        'app_import_settings',
-        invoke('app_import_settings', { options }),
-        isImportSettingsResult,
-        (raw): ImportSettingsResult => commandFailure('app_import_settings', raw),
+        'app_import_preview',
+        invoke('app_import_preview', { options }),
+        isImportPreviewResult,
+        (raw): ImportPreviewResult => commandFailure('app_import_preview', raw),
       ),
+    importApply: (password: string | null): Promise<ImportSettingsResult> =>
+      checkedResponse(
+        'app_import_apply',
+        invoke('app_import_apply', { password }),
+        isImportSettingsResult,
+        (raw): ImportSettingsResult => commandFailure('app_import_apply', raw),
+      ),
+    importDiscard: () => voidOutcome(invoke, 'app_import_discard'),
     openExternal: (url: string) => invoke('app_open_external', { url }),
     openDevtools: () => invoke('debug_open_devtools'),
     quit: (preserveEdits = false) => invoke('app_quit', { preserveEdits }),

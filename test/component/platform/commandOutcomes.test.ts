@@ -234,8 +234,8 @@ const cases: Case[] = [
       }),
     success: [
       {
-        wire: resolve({ result: 'ok', ok: true, path: 'C:\\s.json' }),
-        seen: { ok: true, path: 'C:\\s.json' },
+        wire: resolve({ result: 'ok', ok: true, path: 'C:\\s.json', secrets: 2 }),
+        seen: { ok: true, path: 'C:\\s.json', secrets: 2 },
       },
       {
         wire: resolve({ result: 'canceled', ok: false, canceled: true }),
@@ -244,15 +244,32 @@ const cases: Case[] = [
     ],
   },
   {
-    name: 'app.importSettings',
-    command: 'app_import_settings',
+    name: 'app.importPreview',
+    command: 'app_import_preview',
     sensitive: true,
     call: () =>
-      api.app.importSettings({
+      api.app.importPreview({
         includeSettings: true,
         includeBookmarks: true,
         includeLocalPaths: true,
       }),
+    success: [
+      {
+        wire: resolve({ result: 'ok', ok: true, hasSecrets: true }),
+        seen: { ok: true, hasSecrets: true },
+      },
+      {
+        wire: resolve({ result: 'canceled', ok: false, canceled: true }),
+        seen: { ok: false, canceled: true },
+      },
+    ],
+  },
+  sensitiveVoid('app.importDiscard', 'app_import_discard', () => api.app.importDiscard()),
+  {
+    name: 'app.importApply',
+    command: 'app_import_apply',
+    sensitive: true,
+    call: () => api.app.importApply('file password'),
     success: [
       {
         wire: resolve({
@@ -265,8 +282,25 @@ const cases: Case[] = [
         seen: { ok: true, settings: { theme: 'dark' }, sitesAdded: 2, sitesSkipped: 1 },
       },
       {
-        wire: resolve({ result: 'canceled', ok: false, canceled: true }),
-        seen: { ok: false, canceled: true },
+        wire: resolve({
+          result: 'ok',
+          ok: true,
+          sitesAdded: 0,
+          sitesSkipped: 1,
+          secretsSaved: 1,
+          flagsRestored: 0,
+          scopeMismatches: ['Work'],
+          unmatched: [],
+        }),
+        seen: {
+          ok: true,
+          sitesAdded: 0,
+          sitesSkipped: 1,
+          secretsSaved: 1,
+          flagsRestored: 0,
+          scopeMismatches: ['Work'],
+          unmatched: [],
+        },
       },
     ],
   },

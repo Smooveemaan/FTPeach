@@ -303,8 +303,7 @@ export default function Application() {
   });
 
   const [statusNotice, showStatusNotice] = useStatusNotice();
-  const { exportSettings: handleExportSettings, importSettings: handleImportSettings } =
-    useSettingsTransfer({ applySettings, refreshSites, reportError });
+  const settingsTransfer = useSettingsTransfer({ applySettings, refreshSites, reportError });
 
   const { handleSaveSite, saveFromPane: handleSaveSiteFromPane } = useSiteSaveWorkflow({
     panes,
@@ -474,8 +473,7 @@ export default function Application() {
       // A reset removes the secrets the site list and the proxy settings show
       // as saved; both flags are the backend's to tell.
       vaultReset: handler(() => Promise.all([refreshSites(), refreshProxyPasswordSet()])),
-      export: handleExportSettings,
-      import: handleImportSettings,
+      transfer: settingsTransfer,
       notify: showStatusNotice,
     },
     dialogs,

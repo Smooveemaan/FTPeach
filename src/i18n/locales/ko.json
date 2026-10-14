@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "이 서버가 자신을 증명하는 키가 변경되었습니다. 재설치 후에 이런 일이 생기지만, 서버를 사칭하는 경우에도 똑같이 보입니다.",
         "approve": "새 키 신뢰"
+      },
+      "exportSecrets": {
+        "message": "북마크에 저장된 비밀번호를 파일로 내보낼까요?",
+        "approve": "내보내기"
       }
     },
     "savedAs": "이 컴퓨터에 다음 이름으로 저장됩니다: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "앱 설정",
     "includeBookmarks": "북마크",
     "includeLocalPaths": "로컬 경로",
-    "passwordHint": "비밀번호와 SSH 키 암호 문구는 내보내기에 포함되지 않습니다. 다른 컴퓨터에서 가져온 후 다시 입력해야 합니다."
+    "passwordHint": "비밀번호와 SSH 키 암호 문구는 내보내기에 포함되지 않습니다. 다른 컴퓨터에서 가져온 후 다시 입력해야 합니다.",
+    "includePasswords": "저장된 비밀번호 포함",
+    "passwordsCount": "비밀번호 및 키 암호 문구: {{count}}",
+    "passwordsWarning": "비밀번호는 아래 비밀번호로 암호화됩니다. 주소, 사용자 이름 및 파일의 나머지 설정은 읽을 수 있는 상태로 남습니다. 파일 비밀번호를 잊으면 복구할 수 없습니다.",
+    "exportPassword": "파일 비밀번호",
+    "confirmExportPassword": "비밀번호 확인",
+    "passwordTooShort": "12자 이상 사용하세요. 다른 곳에서 쓰지 않는 긴 문구가 가장 좋습니다.",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다.",
+    "keysHint": "개인 키 파일은 포함되지 않습니다. 따로 복사하세요. 다른 컴퓨터에서는 경로를 수정해야 할 수 있습니다.",
+    "unreadable": "다음 북마크의 저장된 비밀번호는 이 컴퓨터에서 열 수 없습니다:",
+    "exportWithoutThem": "해당 비밀번호 없이 내보내기"
   },
   "importSettingsDialog": {
     "title": "설정 가져오기",
@@ -596,7 +610,14 @@
     "includeSettings": "앱 설정",
     "includeBookmarks": "북마크",
     "includeLocalPaths": "로컬 경로",
-    "passwordHint": "비밀번호와 SSH 키 암호 문구는 가져오지 않습니다. 가져온 서버마다 다시 입력해야 합니다."
+    "passwordHint": "파일에 저장된 비밀번호가 있으면 내보낼 때 사용한 비밀번호를 묻습니다.",
+    "filePasswordHint": "이 파일에는 저장된 비밀번호가 있습니다. 비밀번호도 가져오려면 파일을 내보낼 때 사용한 비밀번호를 입력하세요.",
+    "filePassword": "파일 비밀번호",
+    "wrongPassword": "이 비밀번호로는 파일의 비밀번호를 열 수 없습니다.",
+    "importWithPasswords": "비밀번호와 함께 가져오기",
+    "importWithoutPasswords": "비밀번호 없이 가져오기",
+    "scopeMismatch": "다음 북마크는 내보낸 후 연결 설정이 변경되어 비밀번호를 가져오지 않았습니다:",
+    "unmatched": "다음 북마크는 같은 서버에 대해 두 번 이상 저장되어 있어 비밀번호를 가져오지 않았습니다:"
   },
   "openWithDialog": {
     "title": "앱에서 열기",
@@ -927,6 +948,7 @@
     "importedShort": "가져오기 완료",
     "importNothingNewShort": "새 항목 없음",
     "importSkippedShort": "건너뜀: {{count}}",
+    "transferPasswords": "비밀번호: {{count}}",
     "quitPendingShort": "종료 중…",
     "upToDate": "최신 상태",
     "cancelQuitLong": "종료 취소",

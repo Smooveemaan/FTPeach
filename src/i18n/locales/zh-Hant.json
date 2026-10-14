@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "此伺服器用來證明身分的金鑰已變更。重新安裝後會出現這種情況，但冒充的伺服器看起來也是如此。",
         "approve": "信任新金鑰"
+      },
+      "exportSecrets": {
+        "message": "要將書籤儲存的密碼匯出至檔案嗎？",
+        "approve": "匯出"
       }
     },
     "savedAs": "在此電腦上儲存為：{{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "應用程式設定",
     "includeBookmarks": "書籤",
     "includeLocalPaths": "本機路徑",
-    "passwordHint": "密碼和 SSH 金鑰密語不會包含在匯出內容中——在另一台電腦上匯入後需要重新輸入。"
+    "passwordHint": "密碼和 SSH 金鑰密語不會包含在匯出內容中——在另一台電腦上匯入後需要重新輸入。",
+    "includePasswords": "包含已儲存的密碼",
+    "passwordsCount": "密碼和金鑰密語：{{count}}",
+    "passwordsWarning": "密碼將以下方的密碼加密。檔案中的位址、使用者名稱和其他設定仍可讀取。忘記檔案密碼後無法復原。",
+    "exportPassword": "檔案密碼",
+    "confirmExportPassword": "確認密碼",
+    "passwordTooShort": "請至少使用 12 個字元；最好是在其他地方都沒有用過的長句。",
+    "passwordMismatch": "兩次輸入的密碼不一致。",
+    "keysHint": "不包含私密金鑰檔案。請另行複製；在另一台電腦上可能需要修正它們的路徑。",
+    "unreadable": "以下書籤儲存的密碼無法在此電腦上開啟：",
+    "exportWithoutThem": "匯出時不包含這些密碼"
   },
   "importSettingsDialog": {
     "title": "匯入設定",
@@ -596,7 +610,14 @@
     "includeSettings": "應用程式設定",
     "includeBookmarks": "書籤",
     "includeLocalPaths": "本機路徑",
-    "passwordHint": "密碼和 SSH 金鑰密語不會被匯入——需要為每個匯入的伺服器重新輸入。"
+    "passwordHint": "若檔案包含已儲存的密碼，系統會要求您輸入匯出時使用的密碼。",
+    "filePasswordHint": "此檔案包含已儲存的密碼。若要一併匯入，請輸入匯出此檔案時使用的密碼。",
+    "filePassword": "檔案密碼",
+    "wrongPassword": "此密碼無法開啟檔案中的密碼。",
+    "importWithPasswords": "匯入並包含密碼",
+    "importWithoutPasswords": "匯入但不包含密碼",
+    "scopeMismatch": "以下書籤的連線設定在匯出後已變更，因此未匯入其密碼：",
+    "unmatched": "以下書籤為同一伺服器儲存了多次，因此未匯入其密碼："
   },
   "openWithDialog": {
     "title": "在應用程式中開啟",
@@ -927,6 +948,7 @@
     "importedShort": "已匯入",
     "importNothingNewShort": "沒有新項目",
     "importSkippedShort": "已略過：{{count}}",
+    "transferPasswords": "密碼：{{count}}",
     "quitPendingShort": "正在結束…",
     "upToDate": "已是最新版本",
     "cancelQuitLong": "取消結束",

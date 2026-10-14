@@ -100,3 +100,45 @@
 .modal-export-settings {
   width: min(420px, calc(var(--app-viewport-w) - 40px));
 }
+
+/* Blocks one step apart: the parts, then the passwords below a rule, each
+   block's own lines closer together. A checkbox row keeps its own padding. */
+.modal-export-settings .modal-body,
+.settings-transfer-secrets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-export-settings .modal-body p,
+.modal-export-settings .settings-hint.vault-unlock-error {
+  margin: 0;
+}
+
+.settings-transfer-parts,
+.settings-transfer-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-transfer-text {
+  gap: 4px;
+}
+
+.settings-transfer-secrets {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.settings-transfer-secrets > .secure-toggle {
+  align-self: flex-start;
+}
+
+/* Bookmarks an export or import names: their passwords stayed behind. */
+.settings-transfer-names {
+  margin: 0;
+  padding-left: 20px;
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}

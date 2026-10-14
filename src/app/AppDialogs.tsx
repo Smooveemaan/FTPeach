@@ -98,8 +98,7 @@ export interface AppDialogsModel {
     preview: SettingsDialogProps['onPreview'];
     save: SettingsDialogProps['onSave'];
     vaultReset: SettingsDialogProps['onVaultReset'];
-    export: SiteManagerProps['onExport'];
-    import: SiteManagerProps['onImport'];
+    transfer: SiteManagerProps['settingsTransfer'];
     /** The status bar line File → Export/Import reports to; the managers show it themselves. */
     notify: (message: NoticeMessage) => void;
     exportDiagnostics: SettingsDialogProps['onExportDiagnostics'];
@@ -203,8 +202,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onApplyLayout={siteActions.applyLayout}
           onSaveFolder={siteActions.saveFolder}
           onDeleteFolder={siteActions.deleteFolder}
-          onImport={settings.import}
-          onExport={settings.export}
+          settingsTransfer={settings.transfer}
           onConnect={(site) => {
             const targetPaneId =
               dialogs.showSiteManagerDialog === true ? undefined : dialogs.showSiteManagerDialog;
@@ -226,8 +224,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onApplyLayout={siteActions.applyLayout}
           onSaveFolder={siteActions.saveFolder}
           onDeleteFolder={siteActions.deleteFolder}
-          onImport={settings.import}
-          onExport={settings.export}
+          settingsTransfer={settings.transfer}
           onConnect={(path) => {
             const targetPaneId =
               dialogs.showLocalPathManagerDialog === true
@@ -256,10 +253,12 @@ export default function AppDialogs({ model }: AppDialogsProps) {
       {dialogs.showExportSettings && (
         <SettingsTransferDialog
           mode="export"
-          onConfirm={async (options) => {
-            const message = await settings.export(options);
-            if (message) settings.notify(message);
-          }}
+          transfer={settings.transfer}
+          sites={siteActions.sites}
+          onDone={settings.notify}
+          onVaultUnlockRequired={(retry) =>
+            dialogs.setVaultUnlockRetries((current) => [...current, retry])
+          }
           onClose={() => dialogs.setShowExportSettings(false)}
           initialOptions={{
             includeSettings: true,
@@ -271,10 +270,12 @@ export default function AppDialogs({ model }: AppDialogsProps) {
       {dialogs.showImportSettings && (
         <SettingsTransferDialog
           mode="import"
-          onConfirm={async (options) => {
-            const message = await settings.import(options);
-            if (message) settings.notify(message);
-          }}
+          transfer={settings.transfer}
+          sites={siteActions.sites}
+          onDone={settings.notify}
+          onVaultUnlockRequired={(retry) =>
+            dialogs.setVaultUnlockRetries((current) => [...current, retry])
+          }
           onClose={() => dialogs.setShowImportSettings(false)}
           initialOptions={{
             includeSettings: true,
@@ -364,8 +365,7 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onApplyLayout={siteActions.applyLayout}
           onSaveFolder={siteActions.saveFolder}
           onDeleteFolder={siteActions.deleteFolder}
-          onImport={settings.import}
-          onExport={settings.export}
+          settingsTransfer={settings.transfer}
           onConnect={siteActions.connect}
           onVaultUnlockRequired={(retry) =>
             dialogs.setVaultUnlockRetries((current) => [...current, retry])

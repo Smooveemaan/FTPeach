@@ -48,17 +48,17 @@
   min-width: 0;
 }
 
-.settings-security .password-input > input {
+:is(.settings-security, .modal-export-settings) .password-input > input {
   width: 100%;
 }
 
 /* A master password field shows its focus the way the confirmation
    window's does, wherever it is asked. */
-:is(.settings-security, .modal-vault-unlock) .password-input > input {
+:is(.settings-security, .modal-vault-unlock, .modal-export-settings) .password-input > input {
   transition: var(--control-transition);
 }
 
-:is(.settings-security, .modal-vault-unlock) .password-input:not(.is-invalid) > input:focus {
+:is(.settings-security, .modal-vault-unlock, .modal-export-settings) .password-input:not(.is-invalid) > input:focus {
   border-color: var(--accent-primary);
 }
 

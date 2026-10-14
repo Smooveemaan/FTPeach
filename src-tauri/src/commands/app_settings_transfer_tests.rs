@@ -7,6 +7,10 @@ fn import_result_sites_added_is_camel_case() {
         settings: None,
         sites_added: 3,
         sites_skipped: 0,
+        secrets_saved: 0,
+        flags_restored: 0,
+        scope_mismatches: Vec::new(),
+        unmatched: Vec::new(),
     })
     .unwrap();
     assert!(
@@ -99,6 +103,19 @@ fn imported_site_cannot_inject_any_supported_secret_representation() {
     }
 }
 
+/// Imports `sites` without secrets, as a file without them does.
+async fn import_sites(store: &Store, sites: Vec<serde_json::Value>) -> SitesImported {
+    let vault = Vault::new(store.data_dir().join("no-vault"));
+    let records: Vec<JsonMap> = sites
+        .into_iter()
+        .map(|site| site.as_object().unwrap().clone())
+        .collect();
+    match store.import_sites(&vault, &records, HashMap::new()).await {
+        Ok((outcome, _kept)) => outcome,
+        Err(failed) => panic!("{:#}", failed.error),
+    }
+}
+
 #[tokio::test]
 async fn bookmark_import_remaps_folders_and_strips_secrets() {
     let dir = std::env::temp_dir().join(format!("ftpeach-import-test-{}", uuid::Uuid::new_v4()));
@@ -119,7 +136,7 @@ async fn bookmark_import_remaps_folders_and_strips_secrets() {
         }),
     ];
 
-    let outcome = import_sites(&store, sites, &[]).await.unwrap();
+    let outcome = import_sites(&store, sites).await;
     assert_eq!(outcome.added, 4);
     assert_eq!(outcome.skipped, 0);
     let imported = store.list_sites().await.unwrap();
@@ -169,7 +186,7 @@ async fn legacy_folder_shared_across_both_kinds_falls_back_the_mismatched_child_
         }),
     ];
 
-    let outcome = import_sites(&store, sites, &[]).await.unwrap();
+    let outcome = import_sites(&store, sites).await;
     assert_eq!(outcome.added, 3);
     assert_eq!(outcome.skipped, 0);
     let imported = store.list_sites().await.unwrap();
@@ -214,11 +231,11 @@ async fn reimporting_the_same_bookmarks_skips_exact_duplicates() {
         ]
     };
 
-    let first = import_sites(&store, sites(), &[]).await.unwrap();
+    let first = import_sites(&store, sites()).await;
     assert_eq!((first.added, first.skipped), (4, 0));
 
     let existing = store.list_sites().await.unwrap();
-    let second = import_sites(&store, sites(), &existing).await.unwrap();
+    let second = import_sites(&store, sites()).await;
     assert_eq!((second.added, second.skipped), (0, 4));
 
     let after = store.list_sites().await.unwrap();
@@ -283,4 +300,179 @@ fn an_empty_or_foreign_file_is_named_as_not_a_settings_file() {
         .err()
         .unwrap();
     assert!(parse_failure_reason(&foreign).contains("unknown field `name`"));
+}
+
+fn options() -> ImportSettingsOptions {
+    ImportSettingsOptions {
+        include_settings: true,
+        include_bookmarks: true,
+        include_local_paths: true,
+    }
+}
+
+fn document(value: serde_json::Value) -> ImportDocument {
+    serde_json::from_value(value).unwrap()
+}
+
+fn site(id: &str, host: &str) -> serde_json::Value {
+    serde_json::json!({"id": id, "kind": "site", "name": id, "protocol": "ftp", "host": host})
+}
+
+async fn sealed_for(sites: &[serde_json::Value], password: &str) -> serde_json::Value {
+    let entries: Vec<SealEntry> = sites
+        .iter()
+        .map(|site| SealEntry {
+            id: site["id"].as_str().unwrap(),
+            scope: site_scope(site.as_object().unwrap()),
+            password: Some("server password"),
+            key_passphrase: None,
+        })
+        .collect();
+    serde_json::to_value(export_secrets::seal(password, &entries).await.unwrap()).unwrap()
+}
+
+#[test]
+fn a_file_with_repeated_ids_or_a_future_format_is_refused() {
+    let repeated =
+        document(serde_json::json!({"sites": [site("a", "a.test"), site("a", "b.test")]}));
+    let issues = stage(repeated, &options(), "main").err().unwrap();
+    assert!(
+        issues.iter().any(|issue| issue.contains("appears twice")),
+        "{issues:?}"
+    );
+
+    let future = document(serde_json::json!({"formatVersion": 3, "sites": []}));
+    let issues = stage(future, &options(), "main").err().unwrap();
+    assert!(issues[0].contains("newer FTPeach"), "{issues:?}");
+
+    let unsealed = document(serde_json::json!({"formatVersion": 2, "sites": []}));
+    assert!(stage(unsealed, &options(), "main").is_err());
+
+    let old = document(serde_json::json!({"sites": [site("a", "a.test")]}));
+    let staged = stage(old, &options(), "main").unwrap();
+    assert!(staged.secrets.is_none());
+}
+
+#[tokio::test]
+async fn the_file_password_opens_its_secrets_only_for_bookmarks_in_the_file() {
+    let sites = [site("a", "a.test")];
+    let file = document(serde_json::json!({
+        "formatVersion": 2,
+        "sites": sites,
+        "secrets": sealed_for(&sites, "a long export password").await,
+    }));
+    let staged = stage(file, &options(), "main").unwrap();
+    assert!(staged.secrets.is_some());
+
+    let wrong = open_secrets(&staged, Some("not the export password"))
+        .await
+        .err()
+        .unwrap();
+    assert_eq!(wrong.code, ErrorCode::AuthFailed);
+    assert!(open_secrets(&staged, None).await.unwrap().is_empty());
+    let opened = open_secrets(&staged, Some("a long export password"))
+        .await
+        .unwrap();
+    assert_eq!(
+        opened["a"].password.as_ref().unwrap().expose(),
+        "server password"
+    );
+
+    // A secret naming a bookmark the file does not have.
+    let file = document(serde_json::json!({
+        "formatVersion": 2,
+        "sites": [site("b", "b.test")],
+        "secrets": sealed_for(&sites, "a long export password").await,
+    }));
+    let staged = stage(file, &options(), "main").unwrap();
+    let error = open_secrets(&staged, Some("a long export password"))
+        .await
+        .err()
+        .unwrap();
+    assert_eq!(error.code, ErrorCode::InvalidInput);
+}
+
+#[tokio::test]
+async fn importing_only_local_paths_never_asks_for_the_file_password() {
+    let sites = [site("a", "a.test")];
+    let file = document(serde_json::json!({
+        "formatVersion": 2,
+        "sites": sites,
+        "secrets": sealed_for(&sites, "a long export password").await,
+    }));
+    let mut options = options();
+    options.include_bookmarks = false;
+    assert!(stage(file, &options, "main").unwrap().secrets.is_none());
+}
+
+#[test]
+fn an_export_never_damages_a_file_beside_its_destination() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-export-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let neighbour = dir.join("backup.txt");
+    std::fs::write(&neighbour, "keep me").unwrap();
+    for name in ["backup.json", "backup.json"] {
+        write_export(&dir.join(name), b"{}").unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&neighbour).unwrap(), "keep me");
+    assert_eq!(
+        std::fs::read_to_string(dir.join("backup.json")).unwrap(),
+        "{}"
+    );
+    let left: Vec<_> = std::fs::read_dir(&dir).unwrap().collect();
+    assert_eq!(left.len(), 2, "no temporary file stays behind");
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn settings_that_cannot_be_saved_undo_the_bookmarks_and_their_passwords() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let dir = std::env::temp_dir().join(format!("ftpeach-import-test-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(dir.clone());
+    let vault = Vault::new(dir.join("vault"));
+    vault.setup("correct horse battery staple").await.unwrap();
+    store
+        .set_settings(
+            serde_json::json!({"theme": "light"})
+                .as_object()
+                .unwrap()
+                .clone(),
+        )
+        .await
+        .unwrap();
+    let record = site("a", "a.test").as_object().unwrap().clone();
+    let secrets = HashMap::from([(
+        "a".to_owned(),
+        ImportedSecret {
+            scope: site_scope(&record),
+            password: Some("p".to_owned().into()),
+            key_passphrase: None,
+        },
+    )]);
+    let deny_replace = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(1)
+        .open(dir.join("settings.json"))
+        .unwrap();
+    let failed = apply_import(
+        store.clone(),
+        vault.clone(),
+        vec![record],
+        secrets,
+        Some(
+            serde_json::json!({"theme": "dark"})
+                .as_object()
+                .unwrap()
+                .clone(),
+        ),
+    )
+    .await
+    .err()
+    .unwrap();
+    drop(deny_replace);
+    assert!(failed.not_restored.is_empty(), "{:?}", failed.not_restored);
+    assert!(store.list_sites().await.unwrap().is_empty());
+    assert_eq!(store.get_settings().await["theme"], "light");
+    let _ = tokio::fs::remove_dir_all(dir).await;
 }

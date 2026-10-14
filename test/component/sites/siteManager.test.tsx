@@ -76,8 +76,12 @@ function renderManager(overrides: Partial<SiteManagerDialogProps> = {}) {
     onSaveFolder: vi.fn(async () => ({ ok: true })),
     onDeleteFolder: vi.fn(async () => ({ ok: true })),
     onConnect: vi.fn(),
-    onImport: vi.fn(),
-    onExport: vi.fn(),
+    settingsTransfer: {
+      exportSettings: vi.fn(),
+      previewImport: vi.fn(),
+      applyImport: vi.fn(),
+      discardImport: vi.fn(),
+    },
     onVaultUnlockRequired: vi.fn(),
     onClose: vi.fn(),
     ...overrides,
@@ -1270,15 +1274,21 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
 test('the footer counts the entries and an import here reports in their place', async () => {
   installSiteManagerApiMocks();
   const user = userEvent.setup();
-  const onImport = vi.fn(async () => ({ text: 'Imported: Bookmarks', short: 'Imported' }));
-  const { container } = renderManager({ onImport });
+  const done = { text: 'Imported: Bookmarks', short: 'Imported' };
+  const settingsTransfer = {
+    exportSettings: vi.fn(),
+    previewImport: vi.fn(async () => ({ hasSecrets: false })),
+    applyImport: vi.fn(async () => ({ done, warnings: null })),
+    discardImport: vi.fn(),
+  };
+  const { container } = renderManager({ settingsTransfer });
   const footer = requireHtml(container.querySelector('.site-manager-footer'));
   expect(within(footer).getByText('siteManagerDialog.footerFolders')).toBeTruthy();
   expect(within(footer).getByText('siteManagerDialog.footerSites')).toBeTruthy();
 
   await user.click(screen.getByRole('button', { name: 'siteManagerDialog.importBookmarks' }));
   await user.click(screen.getByRole('button', { name: 'importSettingsDialog.confirmLabel' }));
-  expect(onImport).toHaveBeenCalledOnce();
+  await waitFor(() => expect(settingsTransfer.applyImport).toHaveBeenCalledOnce());
   expect(footer.className).toContain('is-leaving');
   // jsdom has no AnimationEvent, so React listens for the prefixed name there.
   fireEvent(

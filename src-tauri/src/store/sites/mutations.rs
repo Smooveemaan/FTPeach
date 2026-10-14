@@ -92,25 +92,8 @@ impl Store {
             )?;
         }
 
-        let mut record = JsonMap::new();
-        record.insert("id".into(), Value::String(id.clone()));
+        let mut record = site_record(&input, &id, parent_id, existing.as_ref())?;
         if is_local {
-            record.insert("kind".into(), Value::String("local".into()));
-            record.insert(
-                "name".into(),
-                input.get("name").cloned().unwrap_or(Value::Null),
-            );
-            record.insert(
-                "localPath".into(),
-                input.get("localPath").cloned().unwrap_or(Value::Null),
-            );
-            record.insert(
-                "parentId".into(),
-                parent_id.map(Value::String).unwrap_or(Value::Null),
-            );
-            for key in ["icon", "color"] {
-                record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
-            }
             match idx {
                 Some(i) => sites[i] = record,
                 None => sites.push(record),
@@ -121,29 +104,6 @@ impl Store {
                 secret_not_persisted: false,
             });
         }
-        let mut server = ServerSettings::from_json(&input)
-            .map_err(|error| CommandError::new(ErrorCode::InvalidInput, format!("{error:#}")))?;
-        // A save that leaves the connection limit out keeps the stored one.
-        if !input.contains_key("maxConnections") {
-            server.max_connections = existing
-                .as_ref()
-                .and_then(|site| ServerSettings::from_json_or_unset(site).max_connections);
-        }
-        let named_limit = input.contains_key("maxConnections")
-            || existing
-                .as_ref()
-                .is_some_and(|site| site.contains_key("maxConnections"));
-        record.extend(server.to_json());
-        if !named_limit {
-            record.remove("maxConnections");
-        }
-        for key in ["name", "icon", "color"] {
-            record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
-        }
-        record.insert(
-            "parentId".into(),
-            parent_id.clone().map(Value::String).unwrap_or(Value::Null),
-        );
         if let Some((field, value)) = pw_field {
             record.insert(field, value);
         }
@@ -233,20 +193,7 @@ impl Store {
             ));
         }
 
-        let mut record = JsonMap::new();
-        record.insert("id".into(), Value::String(id.clone()));
-        record.insert("kind".into(), Value::String("folder".into()));
-        record.insert(
-            "name".into(),
-            input.get("name").cloned().unwrap_or(Value::Null),
-        );
-        record.insert("parentId".into(), Value::Null);
-        if let Some(scope) = input.get("managerScope").and_then(Value::as_str)
-            && matches!(scope, "bookmarks" | "localPaths")
-        {
-            record.insert("managerScope".into(), Value::String(scope.to_string()));
-        }
-
+        let record = folder_record(&input, &id);
         match idx {
             Some(i) => entries[i] = record,
             None => entries.push(record),
@@ -373,4 +320,74 @@ impl Store {
 
         self.write_json(&path, &reordered).await
     }
+}
+
+/// What `save_site` stores for `input` under `id`, before its secrets and
+/// their flags. `existing` is the record it replaces.
+pub(super) fn site_record(
+    input: &JsonMap,
+    id: &str,
+    parent_id: Option<String>,
+    existing: Option<&JsonMap>,
+) -> Result<JsonMap> {
+    let mut record = JsonMap::new();
+    record.insert("id".into(), Value::String(id.to_owned()));
+    if input.get("kind").and_then(Value::as_str) == Some("local") {
+        record.insert("kind".into(), Value::String("local".into()));
+        record.insert(
+            "name".into(),
+            input.get("name").cloned().unwrap_or(Value::Null),
+        );
+        record.insert(
+            "localPath".into(),
+            input.get("localPath").cloned().unwrap_or(Value::Null),
+        );
+        record.insert(
+            "parentId".into(),
+            parent_id.map(Value::String).unwrap_or(Value::Null),
+        );
+        for key in ["icon", "color"] {
+            record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
+        }
+        return Ok(record);
+    }
+    let mut server = ServerSettings::from_json(input)
+        .map_err(|error| CommandError::new(ErrorCode::InvalidInput, format!("{error:#}")))?;
+    // A save that leaves the connection limit out keeps the stored one.
+    if !input.contains_key("maxConnections") {
+        server.max_connections =
+            existing.and_then(|site| ServerSettings::from_json_or_unset(site).max_connections);
+    }
+    let named_limit = input.contains_key("maxConnections")
+        || existing.is_some_and(|site| site.contains_key("maxConnections"));
+    record.extend(server.to_json());
+    if !named_limit {
+        record.remove("maxConnections");
+    }
+    for key in ["name", "icon", "color"] {
+        record.insert(key.into(), input.get(key).cloned().unwrap_or(Value::Null));
+    }
+    record.insert(
+        "parentId".into(),
+        parent_id.map(Value::String).unwrap_or(Value::Null),
+    );
+    Ok(record)
+}
+
+/// What `save_folder` stores for `input` under `id`.
+pub(super) fn folder_record(input: &JsonMap, id: &str) -> JsonMap {
+    let mut record = JsonMap::new();
+    record.insert("id".into(), Value::String(id.to_owned()));
+    record.insert("kind".into(), Value::String("folder".into()));
+    record.insert(
+        "name".into(),
+        input.get("name").cloned().unwrap_or(Value::Null),
+    );
+    record.insert("parentId".into(), Value::Null);
+    if let Some(scope) = input.get("managerScope").and_then(Value::as_str)
+        && matches!(scope, "bookmarks" | "localPaths")
+    {
+        record.insert("managerScope".into(), Value::String(scope.to_string()));
+    }
+    record
 }

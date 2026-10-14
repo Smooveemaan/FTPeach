@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "La chiave con cui questo server si identifica è cambiata. Succede dopo una reinstallazione, ma è anche l'aspetto che avrebbe un server contraffatto.",
         "approve": "Considera attendibile la nuova chiave"
+      },
+      "exportSecrets": {
+        "message": "Esportare in un file le password salvate dei segnalibri?",
+        "approve": "Esporta"
       }
     },
     "savedAs": "Salvato su questo computer come: {{name}}",
@@ -592,7 +596,17 @@
     "includeSettings": "Impostazioni dell'applicazione",
     "includeBookmarks": "Segnalibri",
     "includeLocalPaths": "Percorsi locali",
-    "passwordHint": "Le password e le passphrase delle chiavi SSH non sono incluse nell'esportazione: dovrai reinserirle dopo l'importazione su un altro computer."
+    "passwordHint": "Le password e le passphrase delle chiavi SSH non sono incluse nell'esportazione: dovrai reinserirle dopo l'importazione su un altro computer.",
+    "includePasswords": "Includi le password salvate",
+    "passwordsCount": "Password e passphrase delle chiavi: {{count}}",
+    "passwordsWarning": "Le password vengono cifrate con la password qui sotto. Gli indirizzi, i nomi utente e le altre impostazioni nel file restano leggibili. Una password del file dimenticata non può essere recuperata.",
+    "exportPassword": "Password del file",
+    "confirmExportPassword": "Conferma password",
+    "passwordTooShort": "Usa almeno 12 caratteri; l'ideale è una frase lunga che non usi altrove.",
+    "passwordMismatch": "Le password non coincidono.",
+    "keysHint": "I file delle chiavi private non sono inclusi. Copiali a parte; sull'altro computer potrebbe essere necessario correggerne i percorsi.",
+    "unreadable": "Le password salvate di questi segnalibri non possono essere aperte su questo computer:",
+    "exportWithoutThem": "Esporta senza le loro password"
   },
   "importSettingsDialog": {
     "title": "Importa impostazioni",
@@ -600,7 +614,14 @@
     "includeSettings": "Impostazioni dell'applicazione",
     "includeBookmarks": "Segnalibri",
     "includeLocalPaths": "Percorsi locali",
-    "passwordHint": "Le password e le passphrase delle chiavi SSH non sono incluse nell'importazione: dovrai reinserirle per ogni sito importato."
+    "passwordHint": "Se il file contiene password salvate, ti verrà chiesta la password con cui è stato esportato.",
+    "filePasswordHint": "Questo file contiene password salvate. Per importare anche quelle, inserisci la password con cui il file è stato esportato.",
+    "filePassword": "Password del file",
+    "wrongPassword": "Questa password non apre le password nel file.",
+    "importWithPasswords": "Importa con le password",
+    "importWithoutPasswords": "Importa senza le password",
+    "scopeMismatch": "Le impostazioni di connessione di questi segnalibri sono state modificate dopo l'esportazione, quindi le loro password non sono state importate:",
+    "unmatched": "Questi segnalibri sono salvati più volte per lo stesso server, quindi le loro password non sono state importate:"
   },
   "openWithDialog": {
     "title": "Apri nell'applicazione",
@@ -935,6 +956,7 @@
     "importedShort": "Importato",
     "importNothingNewShort": "Niente di nuovo",
     "importSkippedShort": "Saltati: {{count}}",
+    "transferPasswords": "Password: {{count}}",
     "quitPendingShort": "Uscita…",
     "upToDate": "Aggiornato",
     "cancelQuitLong": "Annulla l'uscita",

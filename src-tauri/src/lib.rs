@@ -102,6 +102,7 @@ pub fn run() {
         .manage(runtime::confirmation_window::AppearanceState::default())
         .manage(AutoLock::default())
         .manage(AuthorizationState::new(vault))
+        .manage(commands::app::settings_transfer::StagedImport::default())
         .invoke_handler(tauri::generate_handler![
             commands::fs::fs_list,
             commands::fs::fs_cancel_list,

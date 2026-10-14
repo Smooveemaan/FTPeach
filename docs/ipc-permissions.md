@@ -77,7 +77,13 @@ any. Application commands are grouped as follows:
   `open_with_recovered_edits`, `open_with_reveal_recovered_edits` and
   `open_with_discard_recovered_edits` act only on the backend-owned recovery folder and
   accept no path from the renderer.
-- Import/export: `app_import_settings`, `app_export_settings`.
+- Import/export: `app_export_settings`, `app_import_preview`, `app_import_apply`,
+  `app_import_discard`. An export that carries the saved passwords asks for a grant with
+  the target `secrets`, which the backend confirmation window grants only after the master
+  password or Windows Hello when the vault is set up. The passwords are read and sealed in
+  Rust; only the export password comes from the renderer. The preview chooses and checks a file and
+  keeps it in the backend for the window that chose it, for 15 minutes; apply and discard act
+  only on that file, and apply holds it through a whole import, so two never run at once.
 - SSH host keys: `session_trust_host_key` lives in the `sensitive` plugin. Its token names
   the host, the port, the fingerprint trusted until now and the one being trusted, and the
   backend writes the new pin only if the stored one is still what the token named. There is

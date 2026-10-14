@@ -26,7 +26,9 @@ pub fn init() -> tauri::plugin::TauriPlugin<tauri::Wry> {
             crate::commands::open_with::open_with_start,
             crate::commands::session::connection::session_trust_host_key,
             crate::commands::app::settings_transfer::app_export_settings,
-            crate::commands::app::settings_transfer::app_import_settings,
+            crate::commands::app::settings_transfer::app_import_preview,
+            crate::commands::app::settings_transfer::app_import_apply,
+            crate::commands::app::settings_transfer::app_import_discard,
         ])
         .build()
 }

@@ -9,7 +9,9 @@ import type { createTrayApi } from './api/tray.ts';
 import type { createUpdaterApi } from './api/updater.ts';
 import type {
   AppSettings,
+  ExportSecrets,
   ExportSettingsResult,
+  ImportPreviewResult,
   ImportSettingsResult,
   SettingsTransferOptions,
 } from './api/settings.ts';
@@ -99,8 +101,15 @@ declare global {
           },
         ) => void;
         resetLayout: () => Promise<CommandResult & { settings?: AppSettings }>;
-        exportSettings: (options: SettingsTransferOptions) => Promise<ExportSettingsResult>;
-        importSettings: (options: SettingsTransferOptions) => Promise<ImportSettingsResult>;
+        exportSettings: (
+          options: SettingsTransferOptions,
+          secrets?: ExportSecrets,
+        ) => Promise<ExportSettingsResult>;
+        /** Chooses and checks the file; `importApply` or `importDiscard` answers it. */
+        importPreview: (options: SettingsTransferOptions) => Promise<ImportPreviewResult>;
+        /** Imports the previewed file, with its passwords when `password` opens them. */
+        importApply: (password: string | null) => Promise<ImportSettingsResult>;
+        importDiscard: () => Promise<CommandResult>;
         openExternal: (url: string) => Promise<unknown>;
         openDevtools: () => Promise<unknown>;
         /** Quits without asking about running transfers again. */

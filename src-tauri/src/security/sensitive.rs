@@ -108,6 +108,7 @@ pub enum ConfirmationKind {
     UseSystemProtection,
     TransferSecret,
     TrustHostKey,
+    ExportSecrets,
 }
 
 /// The two fingerprints a host-key decision is about.
@@ -270,6 +271,7 @@ fn confirmation_prompt(
         "vault_reset" => (ConfirmationKind::VaultReset, false),
         "vault_use_system_protection" => (ConfirmationKind::UseSystemProtection, false),
         "fs_execute_path" => (ConfirmationKind::ExecuteLocalFile, true),
+        "app_export_settings" => (ConfirmationKind::ExportSecrets, false),
         _ => return Err(denied("Unsupported confirmation operation")),
     };
     Ok(ConfirmationPrompt {
@@ -382,14 +384,21 @@ fn plan_operation(
     locale: String,
 ) -> CommandResult<Plan> {
     let target = normalized_target(operation, target)?;
-    let required = requires_confirmation(operation);
+    // An export that carries the saved passwords has a grant of its own,
+    // asked for as a saved password is shown.
+    let exports_secrets = operation == "app_export_settings" && target == "secrets";
+    if operation == "app_export_settings" && !exports_secrets && target != "native-dialog" {
+        return Err(denied("Invalid export request"));
+    }
+    let required = requires_confirmation(operation) || exports_secrets;
     let requires_reauthentication = vault_configured
-        && matches!(
-            operation,
-            "sites_reveal_secret"
-                | "settings_reveal_proxy_password"
-                | "vault_use_system_protection"
-        );
+        && (exports_secrets
+            || matches!(
+                operation,
+                "sites_reveal_secret"
+                    | "settings_reveal_proxy_password"
+                    | "vault_use_system_protection"
+            ));
     let prompt = (required || requires_reauthentication)
         .then(|| confirmation_prompt(operation, &target, locale, requires_reauthentication))
         .transpose()?;
@@ -740,7 +749,9 @@ pub async fn authorize_sensitive(
         "fs_execute_path",
         "open_with_start",
         "app_export_settings",
-        "app_import_settings",
+        "app_import_preview",
+        "app_import_apply",
+        "app_import_discard",
         "settings_set_security",
         "vault_use_system_protection",
         "sites_save",

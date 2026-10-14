@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Bu sunucunun kendini tanıttığı anahtar değişti. Bu, yeniden kurulumdan sonra olur; ancak sahte bir sunucu da tam olarak böyle görünür.",
         "approve": "Yeni anahtara güven"
+      },
+      "exportSecrets": {
+        "message": "Yer imlerinizin kayıtlı şifreleri bir dosyaya dışa aktarılsın mı?",
+        "approve": "Dışa aktar"
       }
     },
     "savedAs": "Bu bilgisayarda şu adla kaydedilir: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Uygulama ayarları",
     "includeBookmarks": "Yer imleri",
     "includeLocalPaths": "Yerel yollar",
-    "passwordHint": "Şifreler ve SSH anahtar parolaları dışa aktarıma dahil edilmez — başka bir bilgisayara içe aktardıktan sonra bunları yeniden girmeniz gerekir."
+    "passwordHint": "Şifreler ve SSH anahtar parolaları dışa aktarıma dahil edilmez — başka bir bilgisayara içe aktardıktan sonra bunları yeniden girmeniz gerekir.",
+    "includePasswords": "Kayıtlı şifreleri dahil et",
+    "passwordsCount": "Şifreler ve anahtar parolaları: {{count}}",
+    "passwordsWarning": "Şifreler, aşağıda belirlediğiniz dosya şifresiyle şifrelenir. Adresler, kullanıcı adları ve dosyadaki diğer ayarlar okunabilir kalır. Unutulan dosya şifresi kurtarılamaz.",
+    "exportPassword": "Dosya şifresi",
+    "confirmExportPassword": "Şifreyi onaylayın",
+    "passwordTooShort": "En az 12 karakter kullanın; en iyisi başka hiçbir yerde kullanmadığınız uzun bir ifadedir.",
+    "passwordMismatch": "Şifreler eşleşmiyor.",
+    "keysHint": "Özel anahtar dosyaları dahil edilmez. Bunları ayrıca kopyalayın; diğer bilgisayarda yollarının düzeltilmesi gerekebilir.",
+    "unreadable": "Bu yer imlerinin kayıtlı şifreleri bu bilgisayarda açılamıyor:",
+    "exportWithoutThem": "Şifreleri olmadan dışa aktar"
   },
   "importSettingsDialog": {
     "title": "Ayarları İçe Aktar",
@@ -596,7 +610,14 @@
     "includeSettings": "Uygulama ayarları",
     "includeBookmarks": "Yer imleri",
     "includeLocalPaths": "Yerel yollar",
-    "passwordHint": "Şifreler ve SSH anahtar parolaları içe aktarılmaz — içe aktarılan her sunucu için bunları yeniden girmeniz gerekir."
+    "passwordHint": "Dosyada kayıtlı şifreler varsa, dosyanın dışa aktarıldığı şifre sorulur.",
+    "filePasswordHint": "Bu dosyada kayıtlı şifreler var. Bunları da içe aktarmak için dosyanın dışa aktarıldığı şifreyi girin.",
+    "filePassword": "Dosya şifresi",
+    "wrongPassword": "Bu şifre dosyadaki şifreleri açmıyor.",
+    "importWithPasswords": "Şifrelerle içe aktar",
+    "importWithoutPasswords": "Şifreler olmadan içe aktar",
+    "scopeMismatch": "Bu yer imlerinin bağlantı ayarları dışa aktarımdan sonra değiştirildiği için şifreleri içe aktarılmadı:",
+    "unmatched": "Bu yer imleri aynı sunucu için birden fazla kez kayıtlı olduğundan şifreleri içe aktarılmadı:"
   },
   "openWithDialog": {
     "title": "Uygulamada Aç",
@@ -927,6 +948,7 @@
     "importedShort": "İçe aktarıldı",
     "importNothingNewShort": "Yeni bir şey yok",
     "importSkippedShort": "Atlandı: {{count}}",
+    "transferPasswords": "Şifreler: {{count}}",
     "quitPendingShort": "Çıkılıyor…",
     "upToDate": "Güncel",
     "cancelQuitLong": "Çıkışı iptal et",

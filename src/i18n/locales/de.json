@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Der Schlüssel, mit dem sich dieser Server ausweist, hat sich geändert. Das passiert nach einer Neuinstallation, genauso sieht aber auch ein gefälschter Server aus.",
         "approve": "Neuem Schlüssel vertrauen"
+      },
+      "exportSecrets": {
+        "message": "Die gespeicherten Passwörter Ihrer Lesezeichen in eine Datei exportieren?",
+        "approve": "Exportieren"
       }
     },
     "savedAs": "Auf diesem Computer gespeichert als: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Anwendungseinstellungen",
     "includeBookmarks": "Lesezeichen",
     "includeLocalPaths": "Lokale Pfade",
-    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Export nicht enthalten – Sie müssen diese nach dem Import auf einem anderen Rechner erneut eingeben."
+    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Export nicht enthalten – Sie müssen diese nach dem Import auf einem anderen Rechner erneut eingeben.",
+    "includePasswords": "Gespeicherte Passwörter einschließen",
+    "passwordsCount": "Passwörter und Passphrasen für Schlüssel: {{count}}",
+    "passwordsWarning": "Die Passwörter werden mit dem Passwort unten verschlüsselt. Adressen, Benutzernamen und die übrigen Einstellungen in der Datei bleiben lesbar. Ein vergessenes Dateipasswort lässt sich nicht wiederherstellen.",
+    "exportPassword": "Dateipasswort",
+    "confirmExportPassword": "Passwort bestätigen",
+    "passwordTooShort": "Mindestens 12 Zeichen; am besten eine lange Phrase, die Sie nirgendwo sonst verwenden.",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+    "keysHint": "Dateien mit privaten Schlüsseln sind nicht enthalten. Kopieren Sie sie separat; auf dem anderen Rechner müssen ihre Pfade eventuell angepasst werden.",
+    "unreadable": "Die gespeicherten Passwörter dieser Lesezeichen lassen sich auf diesem Rechner nicht öffnen:",
+    "exportWithoutThem": "Ohne deren Passwörter exportieren"
   },
   "importSettingsDialog": {
     "title": "Einstellungen importieren",
@@ -596,7 +610,14 @@
     "includeSettings": "Anwendungseinstellungen",
     "includeBookmarks": "Lesezeichen",
     "includeLocalPaths": "Lokale Pfade",
-    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Import nicht enthalten – Sie müssen sie für jeden importierten Server erneut eingeben."
+    "passwordHint": "Enthält die Datei gespeicherte Passwörter, werden Sie nach dem Passwort gefragt, mit dem sie exportiert wurde.",
+    "filePasswordHint": "Diese Datei enthält gespeicherte Passwörter. Geben Sie das Passwort ein, mit dem die Datei exportiert wurde, um auch sie zu importieren.",
+    "filePassword": "Dateipasswort",
+    "wrongPassword": "Dieses Passwort öffnet die Passwörter in der Datei nicht.",
+    "importWithPasswords": "Mit Passwörtern importieren",
+    "importWithoutPasswords": "Ohne Passwörter importieren",
+    "scopeMismatch": "Die Verbindungseinstellungen dieser Lesezeichen wurden nach dem Export geändert, daher wurden ihre Passwörter nicht importiert:",
+    "unmatched": "Diese Lesezeichen sind mehrfach für denselben Server gespeichert, daher wurden ihre Passwörter nicht importiert:"
   },
   "openWithDialog": {
     "title": "In Anwendung öffnen",
@@ -927,6 +948,7 @@
     "importedShort": "Importiert",
     "importNothingNewShort": "Nichts Neues",
     "importSkippedShort": "Übersprungen: {{count}}",
+    "transferPasswords": "Passwörter: {{count}}",
     "quitPendingShort": "Wird beendet…",
     "upToDate": "Aktuell",
     "cancelQuitLong": "Beenden abbrechen",

@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "Klíč, kterým se server prokazuje, se změnil. To se stává po přeinstalaci, ale přesně tak vypadá i podvržený server.",
         "approve": "Důvěřovat novému klíči"
+      },
+      "exportSecrets": {
+        "message": "Exportovat uložená hesla záložek do souboru?",
+        "approve": "Exportovat"
       }
     },
     "savedAs": "Ukládá se na tomto počítači jako: {{name}}",
@@ -596,7 +600,17 @@
     "includeSettings": "Nastavení aplikace",
     "includeBookmarks": "Záložky",
     "includeLocalPaths": "Místní cesty",
-    "passwordHint": "Hesla a přístupové fráze k SSH klíčům nejsou součástí exportu – po importu na jiný počítač je budete muset zadat znovu."
+    "passwordHint": "Hesla a přístupové fráze k SSH klíčům nejsou součástí exportu – po importu na jiný počítač je budete muset zadat znovu.",
+    "includePasswords": "Zahrnout uložená hesla",
+    "passwordsCount": "Hesla a přístupové fráze ke klíčům: {{count}}",
+    "passwordsWarning": "Hesla se zašifrují heslem níže. Adresy, uživatelská jména a ostatní nastavení v souboru zůstanou čitelná. Zapomenuté heslo souboru nelze obnovit.",
+    "exportPassword": "Heslo souboru",
+    "confirmExportPassword": "Potvrďte heslo",
+    "passwordTooShort": "Použijte alespoň 12 znaků; nejlepší je dlouhá fráze, kterou nikde jinde nepoužíváte.",
+    "passwordMismatch": "Hesla se neshodují.",
+    "keysHint": "Soubory soukromých klíčů nejsou zahrnuty. Zkopírujte je zvlášť; na druhém počítači může být nutné opravit jejich cesty.",
+    "unreadable": "Uložená hesla těchto záložek nelze na tomto počítači otevřít:",
+    "exportWithoutThem": "Exportovat bez jejich hesel"
   },
   "importSettingsDialog": {
     "title": "Import nastavení",
@@ -604,7 +618,14 @@
     "includeSettings": "Nastavení aplikace",
     "includeBookmarks": "Záložky",
     "includeLocalPaths": "Místní cesty",
-    "passwordHint": "Hesla a přístupové fráze k SSH klíčům nejsou součástí importu – budete je muset znovu zadat pro každý importovaný server."
+    "passwordHint": "Pokud soubor obsahuje uložená hesla, budete požádáni o heslo, se kterým byl exportován.",
+    "filePasswordHint": "Tento soubor obsahuje uložená hesla. Chcete-li importovat i je, zadejte heslo, se kterým byl soubor exportován.",
+    "filePassword": "Heslo souboru",
+    "wrongPassword": "Toto heslo neotevírá hesla v souboru.",
+    "importWithPasswords": "Importovat s hesly",
+    "importWithoutPasswords": "Importovat bez hesel",
+    "scopeMismatch": "Nastavení připojení těchto záložek se po exportu změnilo, proto jejich hesla nebyla importována:",
+    "unmatched": "Tyto záložky jsou pro stejný server uloženy vícekrát, proto jejich hesla nebyla importována:"
   },
   "openWithDialog": {
     "title": "Otevřít v aplikaci",
@@ -943,6 +964,7 @@
     "importedShort": "Importováno",
     "importNothingNewShort": "Nic nového",
     "importSkippedShort": "Přeskočeno: {{count}}",
+    "transferPasswords": "Hesla: {{count}}",
     "quitPendingShort": "Ukončování…",
     "upToDate": "Aktuální verze",
     "cancelQuitLong": "Zrušit ukončení",

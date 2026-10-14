@@ -211,13 +211,13 @@ test('failed reauthentication clears the password and allows a corrected retry',
   const password = screen.getByLabelText('settings.security.masterPassword') as HTMLInputElement;
   fireEvent.change(password, { target: { value: 'wrong' } });
   fireEvent.keyDown(password, { key: 'Enter' });
-  await screen.findByText('siteManagerDialog.revealFailed');
+  await screen.findByText('settings.security.unlockRefused');
   expect(password.value).toBe('');
   expect(password.getAttribute('aria-invalid')).toBe('true');
   expect(approve().disabled).toBe(true);
   expect(mocks.close).not.toHaveBeenCalled();
   fireEvent.change(password, { target: { value: 'correct' } });
-  expect(screen.queryByText('siteManagerDialog.revealFailed')).toBeNull();
+  expect(screen.queryByText('settings.security.unlockRefused')).toBeNull();
   fireEvent.click(approve());
   await waitFor(() => expect(mocks.respond).toHaveBeenCalledTimes(2));
   expect(password.value).toBe('');

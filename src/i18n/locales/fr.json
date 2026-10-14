@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "La clé par laquelle ce serveur s'identifie a changé. Cela arrive après une réinstallation, mais c'est aussi à cela que ressemble une usurpation.",
         "approve": "Faire confiance à la nouvelle clé"
+      },
+      "exportSecrets": {
+        "message": "Exporter les mots de passe enregistrés de vos signets dans un fichier ?",
+        "approve": "Exporter"
       }
     },
     "savedAs": "Enregistré sur cet ordinateur sous le nom : {{name}}",
@@ -592,7 +596,17 @@
     "includeSettings": "Paramètres de l'application",
     "includeBookmarks": "Signets",
     "includeLocalPaths": "Chemins locaux",
-    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'exportation ; vous devrez les saisir à nouveau après l'importation sur un autre ordinateur."
+    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'exportation ; vous devrez les saisir à nouveau après l'importation sur un autre ordinateur.",
+    "includePasswords": "Inclure les mots de passe enregistrés",
+    "passwordsCount": "Mots de passe et phrases secrètes des clés : {{count}}",
+    "passwordsWarning": "Les mots de passe sont chiffrés avec le mot de passe ci-dessous. Les adresses, les noms d'utilisateur et les autres paramètres du fichier restent lisibles. Un mot de passe de fichier oublié ne peut pas être récupéré.",
+    "exportPassword": "Mot de passe du fichier",
+    "confirmExportPassword": "Confirmer le mot de passe",
+    "passwordTooShort": "Au moins 12 caractères ; une longue phrase que vous n'utilisez nulle part ailleurs est idéale.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "keysHint": "Les fichiers de clés privées ne sont pas inclus. Copiez-les séparément ; sur l'autre ordinateur, leurs chemins devront peut-être être corrigés.",
+    "unreadable": "Les mots de passe enregistrés de ces signets ne peuvent pas être ouverts sur cet ordinateur :",
+    "exportWithoutThem": "Exporter sans leurs mots de passe"
   },
   "importSettingsDialog": {
     "title": "Importer les paramètres",
@@ -600,7 +614,14 @@
     "includeSettings": "Paramètres de l'application",
     "includeBookmarks": "Signets",
     "includeLocalPaths": "Chemins locaux",
-    "passwordHint": "Les mots de passe et les phrases secrètes des clés SSH ne sont pas inclus dans l'importation ; vous devrez les saisir à nouveau pour chaque site importé."
+    "passwordHint": "Si le fichier contient des mots de passe enregistrés, le mot de passe utilisé lors de son exportation vous sera demandé.",
+    "filePasswordHint": "Ce fichier contient des mots de passe enregistrés. Pour les importer aussi, saisissez le mot de passe utilisé lors de l'exportation du fichier.",
+    "filePassword": "Mot de passe du fichier",
+    "wrongPassword": "Ce mot de passe n'ouvre pas les mots de passe du fichier.",
+    "importWithPasswords": "Importer avec les mots de passe",
+    "importWithoutPasswords": "Importer sans les mots de passe",
+    "scopeMismatch": "Les paramètres de connexion de ces signets ont été modifiés après l'exportation ; leurs mots de passe n'ont donc pas été importés :",
+    "unmatched": "Ces signets sont enregistrés plusieurs fois pour le même serveur ; leurs mots de passe n'ont donc pas été importés :"
   },
   "openWithDialog": {
     "title": "Ouvrir dans l'application",
@@ -935,6 +956,7 @@
     "importedShort": "Importé",
     "importNothingNewShort": "Rien de nouveau",
     "importSkippedShort": "Ignorés : {{count}}",
+    "transferPasswords": "Mots de passe : {{count}}",
     "quitPendingShort": "Fermeture…",
     "upToDate": "À jour",
     "cancelQuitLong": "Annuler la fermeture",

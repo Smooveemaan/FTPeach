@@ -99,10 +99,37 @@ fn confirmation_is_reserved_for_secrets_reset_and_executables() {
         "fs_reveal_path",
         "fs_open_document",
         "app_export_settings",
-        "app_import_settings",
+        "app_import_preview",
+        "app_import_apply",
+        "app_import_discard",
     ] {
         assert!(!requires_confirmation(operation));
     }
+}
+
+#[test]
+fn an_export_names_whether_it_carries_the_saved_passwords() {
+    let plain = plan_operation("app_export_settings", "native-dialog", true, "en".into()).unwrap();
+    assert!(!plain.required);
+    assert!(plain.prompt.is_none());
+    assert_eq!(plain.target, "native-dialog");
+    // The passwords are asked for as one saved password is shown: confirmed,
+    // and with a vault behind the master password or Windows Hello.
+    for vault_configured in [true, false] {
+        let plan = plan_operation(
+            "app_export_settings",
+            "secrets",
+            vault_configured,
+            "en".into(),
+        )
+        .unwrap();
+        assert!(plan.required);
+        assert_eq!(plan.target, "secrets");
+        let prompt = plan.prompt.unwrap();
+        assert_eq!(prompt.kind, ConfirmationKind::ExportSecrets);
+        assert_eq!(prompt.requires_reauthentication, vault_configured);
+    }
+    assert!(plan_operation("app_export_settings", "anything", true, "en".into()).is_err());
 }
 
 fn open_with(remote_path: &str, application: Option<&str>) -> OpenWithIntent {

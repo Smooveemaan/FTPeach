@@ -19,7 +19,8 @@ type ConfirmationKind =
   | 'weakenSecuritySettings'
   | 'useSystemProtection'
   | 'transferSecret'
-  | 'trustHostKey';
+  | 'trustHostKey'
+  | 'exportSecrets';
 
 const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
@@ -31,6 +32,7 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   weakenSecuritySettings: 'securityConfirmation.operations.weakenSecuritySettings',
   useSystemProtection: 'securityConfirmation.operations.useSystemProtection',
   transferSecret: 'securityConfirmation.operations.transferSecret',
+  exportSecrets: 'securityConfirmation.operations.exportSecrets',
   // The two host-key decisions read differently enough to deserve their own
   // wording, so the key is chosen from the prompt rather than the kind.
   trustHostKey: 'securityConfirmation.operations.trustHostKeyFirst',
@@ -398,7 +400,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
                 role="status"
               >
                 {authenticationError
-                  ? t('siteManagerDialog.revealFailed')
+                  ? t('settings.security.unlockRefused')
                   : t('securityConfirmation.systemUnlockFailed')}
               </p>
             )}

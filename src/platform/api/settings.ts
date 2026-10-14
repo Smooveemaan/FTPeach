@@ -31,18 +31,40 @@ export interface SettingsSetResult extends AppSettings {
   proxyPasswordSet?: boolean | undefined;
 }
 
-/** What a settings export or import covers: `app_export_settings` / `app_import_settings`. */
+/** What a settings export or import covers: `app_export_settings` / `app_import_preview`. */
 export interface SettingsTransferOptions {
   includeSettings: boolean;
   includeBookmarks: boolean;
   includeLocalPaths: boolean;
 }
-export type ExportSettingsResult = CommandResult & { canceled?: boolean };
+/** The bookmarks' saved passwords, sealed into an export with a password of its own. */
+export interface ExportSecrets {
+  password: string;
+  /** Leave out the passwords this computer cannot open instead of refusing. */
+  skipUnreadable: boolean;
+}
+export type ExportSettingsResult = CommandResult & {
+  canceled?: boolean;
+  /** Passwords and passphrases sealed into the file. */
+  secrets?: number;
+};
+/** A file chosen and checked; nothing is imported yet. */
+export type ImportPreviewResult = CommandResult & {
+  canceled?: boolean;
+  /** The file has saved passwords for the bookmarks being imported. */
+  hasSecrets?: boolean;
+};
 export type ImportSettingsResult = CommandResult & {
   canceled?: boolean;
   settings?: AppSettings;
   sitesAdded?: number;
   sitesSkipped?: number;
+  secretsSaved?: number;
+  flagsRestored?: number;
+  /** Bookmarks whose password stayed behind: the file sends them elsewhere. */
+  scopeMismatches?: string[];
+  /** Duplicates whose passwords had no single bookmark here to go to. */
+  unmatched?: string[];
   issues?: string[];
 };
 

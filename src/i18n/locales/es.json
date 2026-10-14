@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "La clave con la que se identifica este servidor ha cambiado. Pasa tras una reinstalación, pero también es lo que se ve cuando alguien suplanta al servidor.",
         "approve": "Confiar en la nueva clave"
+      },
+      "exportSecrets": {
+        "message": "¿Exportar a un archivo las contraseñas guardadas de tus marcadores?",
+        "approve": "Exportar"
       }
     },
     "savedAs": "Se guarda en este equipo como: {{name}}",
@@ -592,7 +596,17 @@
     "includeSettings": "Configuración de la aplicación",
     "includeBookmarks": "Marcadores",
     "includeLocalPaths": "Rutas locales",
-    "passwordHint": "Las contraseñas y las frases de acceso de las claves SSH no se incluyen en la exportación; tendrás que volver a introducirlas tras importarlas en otro equipo."
+    "passwordHint": "Las contraseñas y las frases de acceso de las claves SSH no se incluyen en la exportación; tendrás que volver a introducirlas tras importarlas en otro equipo.",
+    "includePasswords": "Incluir contraseñas guardadas",
+    "passwordsCount": "Contraseñas y frases de acceso de claves: {{count}}",
+    "passwordsWarning": "Las contraseñas se cifran con la contraseña de abajo. Las direcciones, los nombres de usuario y el resto de la configuración del archivo siguen siendo legibles. Una contraseña de archivo olvidada no se puede recuperar.",
+    "exportPassword": "Contraseña del archivo",
+    "confirmExportPassword": "Confirmar contraseña",
+    "passwordTooShort": "Usa al menos 12 caracteres; lo mejor es una frase larga que no uses en ningún otro sitio.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "keysHint": "Los archivos de claves privadas no se incluyen. Cópialos por separado; en el otro equipo puede que haya que corregir sus rutas.",
+    "unreadable": "Las contraseñas guardadas de estos marcadores no se pueden abrir en este equipo:",
+    "exportWithoutThem": "Exportar sin sus contraseñas"
   },
   "importSettingsDialog": {
     "title": "Importar configuración",
@@ -600,7 +614,14 @@
     "includeSettings": "Configuración de la aplicación",
     "includeBookmarks": "Marcadores",
     "includeLocalPaths": "Rutas locales",
-    "passwordHint": "Las contraseñas y las frases de acceso de las claves SSH no se incluyen en la importación; tendrás que volver a introducirlas para cada sitio importado."
+    "passwordHint": "Si el archivo contiene contraseñas guardadas, se te pedirá la contraseña con la que se exportó.",
+    "filePasswordHint": "Este archivo contiene contraseñas guardadas. Para importarlas también, introduce la contraseña con la que se exportó el archivo.",
+    "filePassword": "Contraseña del archivo",
+    "wrongPassword": "Esta contraseña no abre las contraseñas del archivo.",
+    "importWithPasswords": "Importar con contraseñas",
+    "importWithoutPasswords": "Importar sin contraseñas",
+    "scopeMismatch": "La configuración de conexión de estos marcadores cambió después de la exportación, así que sus contraseñas no se importaron:",
+    "unmatched": "Estos marcadores están guardados más de una vez para el mismo servidor, así que sus contraseñas no se importaron:"
   },
   "openWithDialog": {
     "title": "Abrir en la aplicación",
@@ -935,6 +956,7 @@
     "importedShort": "Importado",
     "importNothingNewShort": "Nada nuevo",
     "importSkippedShort": "Omitidos: {{count}}",
+    "transferPasswords": "Contraseñas: {{count}}",
     "quitPendingShort": "Cerrando…",
     "upToDate": "Actualizado",
     "cancelQuitLong": "Cancelar la salida",

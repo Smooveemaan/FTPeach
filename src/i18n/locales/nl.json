@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "De sleutel waarmee deze server zich identificeert, is gewijzigd. Dat gebeurt na een herinstallatie, maar zo ziet ook een nagebootste server eruit.",
         "approve": "Nieuwe sleutel vertrouwen"
+      },
+      "exportSecrets": {
+        "message": "De opgeslagen wachtwoorden van je bladwijzers naar een bestand exporteren?",
+        "approve": "Exporteren"
       }
     },
     "savedAs": "Op deze computer opgeslagen als: {{name}}",
@@ -588,7 +592,17 @@
     "includeSettings": "Toepassingsinstellingen",
     "includeBookmarks": "Bladwijzers",
     "includeLocalPaths": "Lokale paden",
-    "passwordHint": "Wachtwoorden en wachtwoordzinnen voor SSH-sleutels worden niet meegenomen in de export — je moet ze na het importeren op een andere computer opnieuw invoeren."
+    "passwordHint": "Wachtwoorden en wachtwoordzinnen voor SSH-sleutels worden niet meegenomen in de export — je moet ze na het importeren op een andere computer opnieuw invoeren.",
+    "includePasswords": "Opgeslagen wachtwoorden meenemen",
+    "passwordsCount": "Wachtwoorden en wachtwoordzinnen van sleutels: {{count}}",
+    "passwordsWarning": "De wachtwoorden worden versleuteld met het wachtwoord hieronder. Adressen, gebruikersnamen en de overige instellingen in het bestand blijven leesbaar. Een vergeten bestandswachtwoord kan niet worden hersteld.",
+    "exportPassword": "Bestandswachtwoord",
+    "confirmExportPassword": "Wachtwoord bevestigen",
+    "passwordTooShort": "Gebruik minstens 12 tekens; een lange zin die je nergens anders gebruikt, is het beste.",
+    "passwordMismatch": "De wachtwoorden komen niet overeen.",
+    "keysHint": "Bestanden met privésleutels worden niet meegenomen. Kopieer ze apart; op de andere computer moeten de paden misschien worden aangepast.",
+    "unreadable": "De opgeslagen wachtwoorden van deze bladwijzers kunnen op deze computer niet worden geopend:",
+    "exportWithoutThem": "Exporteren zonder hun wachtwoorden"
   },
   "importSettingsDialog": {
     "title": "Instellingen importeren",
@@ -596,7 +610,14 @@
     "includeSettings": "Toepassingsinstellingen",
     "includeBookmarks": "Bladwijzers",
     "includeLocalPaths": "Lokale paden",
-    "passwordHint": "Wachtwoorden en wachtwoordzinnen voor SSH-sleutels worden niet meegenomen bij het importeren — je moet ze voor elke geïmporteerde server opnieuw invoeren."
+    "passwordHint": "Als het bestand opgeslagen wachtwoorden bevat, wordt gevraagd om het wachtwoord waarmee het is geëxporteerd.",
+    "filePasswordHint": "Dit bestand bevat opgeslagen wachtwoorden. Voer het wachtwoord in waarmee het bestand is geëxporteerd om ook die te importeren.",
+    "filePassword": "Bestandswachtwoord",
+    "wrongPassword": "Dit wachtwoord opent de wachtwoorden in het bestand niet.",
+    "importWithPasswords": "Importeren met wachtwoorden",
+    "importWithoutPasswords": "Importeren zonder wachtwoorden",
+    "scopeMismatch": "De verbindingsinstellingen van deze bladwijzers zijn na de export gewijzigd, dus hun wachtwoorden zijn niet geïmporteerd:",
+    "unmatched": "Deze bladwijzers zijn meer dan eens opgeslagen voor dezelfde server, dus hun wachtwoorden zijn niet geïmporteerd:"
   },
   "openWithDialog": {
     "title": "Openen in toepassing",
@@ -927,6 +948,7 @@
     "importedShort": "Geïmporteerd",
     "importNothingNewShort": "Niets nieuws",
     "importSkippedShort": "Overgeslagen: {{count}}",
+    "transferPasswords": "Wachtwoorden: {{count}}",
     "quitPendingShort": "Afsluiten…",
     "upToDate": "Up-to-date",
     "cancelQuitLong": "Afsluiten annuleren",

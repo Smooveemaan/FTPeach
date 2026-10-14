@@ -92,7 +92,7 @@ impl Store {
         Ok(())
     }
 
-    async fn migrate_plaintext_secrets(&self) -> Result<()> {
+    pub(super) async fn migrate_plaintext_secrets(&self) -> Result<()> {
         self.migrate_plaintext_secrets_with(Self::protect_secret)
             .await
     }

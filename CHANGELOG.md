@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Interface settings offer twenty nature-named color schemes with default Peach first and the rest
   ordered by color; security confirmations follow the same appearance.
+- Settings export can include the saved passwords of your bookmarks, protected by a password you
+  choose for the file; importing the file asks for it. Older versions cannot import such a file.
 
 ### Changed
 
@@ -27,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A wrong master password in a security confirmation now says the password was not accepted,
+  instead of "Could not show the saved secret."
 - A file another program saved over while it uploaded no longer reaches the server as a mix of
   the old and new contents; the upload ends with an error saying the file changed, and the server
   keeps its file.

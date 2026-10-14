@@ -17,7 +17,9 @@ fn main() {
         "open_with_start",
         "session_trust_host_key",
         "app_export_settings",
-        "app_import_settings",
+        "app_import_preview",
+        "app_import_apply",
+        "app_import_discard",
         "settings_set_security",
         "vault_use_system_protection",
     ];

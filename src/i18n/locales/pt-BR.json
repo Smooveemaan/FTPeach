@@ -69,6 +69,10 @@
       "trustHostKeyChanged": {
         "message": "A chave com que este servidor se identifica mudou. Isso acontece depois de uma reinstalação, mas também é assim que um servidor impostor aparece.",
         "approve": "Confiar na nova chave"
+      },
+      "exportSecrets": {
+        "message": "Exportar para um arquivo as senhas salvas dos favoritos?",
+        "approve": "Exportar"
       }
     },
     "savedAs": "Salvo neste computador como: {{name}}",
@@ -592,7 +596,17 @@
     "includeSettings": "Configurações do aplicativo",
     "includeBookmarks": "Favoritos",
     "includeLocalPaths": "Caminhos locais",
-    "passwordHint": "Senhas e frases secretas das chaves SSH não estão incluídas na exportação — você precisará digitá-las novamente após a importação em outro computador."
+    "passwordHint": "Senhas e frases secretas das chaves SSH não estão incluídas na exportação — você precisará digitá-las novamente após a importação em outro computador.",
+    "includePasswords": "Incluir senhas salvas",
+    "passwordsCount": "Senhas e frases secretas de chaves: {{count}}",
+    "passwordsWarning": "As senhas são criptografadas com a senha abaixo. Endereços, nomes de usuário e as demais configurações do arquivo continuam legíveis. Uma senha de arquivo esquecida não pode ser recuperada.",
+    "exportPassword": "Senha do arquivo",
+    "confirmExportPassword": "Confirmar senha",
+    "passwordTooShort": "Use pelo menos 12 caracteres; o ideal é uma frase longa que você não use em nenhum outro lugar.",
+    "passwordMismatch": "As senhas não coincidem.",
+    "keysHint": "Os arquivos de chaves privadas não são incluídos. Copie-os separadamente; no outro computador, pode ser preciso corrigir os caminhos deles.",
+    "unreadable": "As senhas salvas destes favoritos não podem ser abertas neste computador:",
+    "exportWithoutThem": "Exportar sem as senhas deles"
   },
   "importSettingsDialog": {
     "title": "Importar configurações",
@@ -600,7 +614,14 @@
     "includeSettings": "Configurações do aplicativo",
     "includeBookmarks": "Favoritos",
     "includeLocalPaths": "Caminhos locais",
-    "passwordHint": "Senhas e frases secretas das chaves SSH não estão incluídas na importação — você precisará digitá-las novamente para cada site importado."
+    "passwordHint": "Se o arquivo contiver senhas salvas, será pedida a senha usada na exportação.",
+    "filePasswordHint": "Este arquivo contém senhas salvas. Para importá-las também, digite a senha usada na exportação do arquivo.",
+    "filePassword": "Senha do arquivo",
+    "wrongPassword": "Esta senha não abre as senhas do arquivo.",
+    "importWithPasswords": "Importar com senhas",
+    "importWithoutPasswords": "Importar sem senhas",
+    "scopeMismatch": "As configurações de conexão destes favoritos foram alteradas após a exportação, por isso as senhas deles não foram importadas:",
+    "unmatched": "Estes favoritos estão salvos mais de uma vez para o mesmo servidor, por isso as senhas deles não foram importadas:"
   },
   "openWithDialog": {
     "title": "Abrir no aplicativo",
@@ -935,6 +956,7 @@
     "importedShort": "Importado",
     "importNothingNewShort": "Nada novo",
     "importSkippedShort": "Ignorados: {{count}}",
+    "transferPasswords": "Senhas: {{count}}",
     "quitPendingShort": "Saindo…",
     "upToDate": "Atualizado",
     "cancelQuitLong": "Cancelar saída",

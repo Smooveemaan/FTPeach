@@ -85,8 +85,10 @@ there: it keeps the answer given when the transfer started.
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
 
 When the connection to a server is lost, the transfers it cut off can be retried once the
-pane is connected again to the same server with the same account.
+pane is connected again to the same server with the same account. Until then their Retry button
+is unavailable.
 
+<!-- verified-by: pr test/component/file-browser/transferConnectionLoss.test.tsx::Retry of a transfer on a lost connection waits until the pane connects again -->
 <!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a new connection to the same account takes over the finished rows a closed one left -->
 
 Stopping an upload never deletes a file that was already on the server under

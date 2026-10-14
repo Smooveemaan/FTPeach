@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useEffect } from 'react';
 import { api } from '../../../platform/api/index.ts';
-import { transferForAttempt } from '../../transfers/index.ts';
+import { markConnectionDead, transferForAttempt } from '../../transfers/index.ts';
 import type { TabState } from './paneModel.ts';
 import { isLostConnection, lostConnectionPane } from './paneModel.ts';
 
@@ -21,6 +21,9 @@ export function useTransferConnectionLoss(setTabs: SetTabs, connectionResetMessa
           return;
         const transfer = transferForAttempt(payload.id);
         if (transfer && ENDED_BY_USER.has(transfer.status)) return;
+        // Nothing can be retried over it any more: Retry waits for Connect,
+        // which hands this connection's rows to the new one.
+        markConnectionDead(payload.connectionId);
         setTabs((previous) =>
           previous.map((tab) => ({
             ...tab,

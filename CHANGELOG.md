@@ -55,7 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   lost, recovery is retried when you next connect to that server, also after FTPeach was closed.
 - When a copy between two servers loses the connection it reads from, that pane is shown as
   disconnected, not the one it writes to.
-- Transfers cut off by a lost connection can be retried after connecting to the server again.
+- Transfers cut off by a lost connection can be retried after connecting to the server again;
+  until then their Retry button is unavailable.
 - Stopping a transfer on a server that stopped answering takes seconds, not half a minute.
 - An upload whose connection broke just as the server finished saving it is shown as done, not
   as failed.

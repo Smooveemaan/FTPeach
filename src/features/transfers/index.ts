@@ -2,6 +2,7 @@ export {
   adoptClosedConnections,
   getTransfersSnapshot,
   isConnectionDead,
+  markConnectionDead,
   retainConnectionRequest,
   rememberConnectionLabels,
   subscribeTransfers,

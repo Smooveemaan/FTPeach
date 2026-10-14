@@ -12,6 +12,8 @@ import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { useTransferConnectionLoss } from '../../../src/features/file-browser/panes/usePaneRuntimeEffects.ts';
 import type { TransferStatus } from '../../../src/features/transfers/transferStore.ts';
 import {
+  canRetryTransfer,
+  getTransferRow,
   resetTransfersStoreForTests,
   setTransfersStore,
 } from '../../../src/features/transfers/transferStore.ts';
@@ -19,6 +21,49 @@ import {
 afterEach(() => {
   resetTransfersStoreForTests();
 });
+
+/** Lets a transfer in `status` report its connection lost, and returns the tabs it left. */
+function loseConnection(status: TransferStatus): TabState[] {
+  let progress: ((_payload: TransferProgress) => void) | undefined;
+  vi.spyOn(api.transfer, 'onProgress').mockImplementation((callback) => {
+    progress = callback;
+    return readyUnsubscribe(() => {});
+  });
+  setTransfersStore({
+    upload: {
+      id: 'upload',
+      name: 'text.txt',
+      status,
+      bytes: 0,
+      startedAt: 0,
+      direction: 'up',
+      protocol: 'ftp',
+      connectionId: 'session',
+      localFile: 'C:\text.txt',
+      remoteTarget: '/text.txt',
+    },
+  });
+  const tab = makeTab('tab');
+  tab.panes.b.kind = 'remote';
+  tab.panes.b.connectionId = 'session';
+  tab.panes.b.status = 'connected';
+  let tabs: TabState[] = [tab];
+  const setTabs = (update: SetStateAction<TabState[]>) => {
+    tabs = typeof update === 'function' ? update(tabs) : update;
+  };
+  renderHook(() => useTransferConnectionLoss(setTabs, 'The connection was lost.'));
+
+  expect(progress).toBeDefined();
+  // What a stopped FTP transfer reports as its pool lets the connection go.
+  progress?.({
+    id: 'upload',
+    connectionId: 'session',
+    status: 'error',
+    errorCode: 'connectionLost',
+    error: 'Connection closed',
+  });
+  return tabs;
+}
 
 test.each([
   ['progress', true],
@@ -28,47 +73,14 @@ test.each([
 ] as const satisfies ReadonlyArray<readonly [TransferStatus, boolean]>)(
   'a connection a %s transfer reports lost marks the pane: %s',
   (status, marked) => {
-    let progress: ((_payload: TransferProgress) => void) | undefined;
-    vi.spyOn(api.transfer, 'onProgress').mockImplementation((callback) => {
-      progress = callback;
-      return readyUnsubscribe(() => {});
-    });
-    setTransfersStore({
-      upload: {
-        id: 'upload',
-        name: 'text.txt',
-        status,
-        bytes: 0,
-        startedAt: 0,
-        direction: 'up',
-        protocol: 'ftp',
-        connectionId: 'session',
-        localFile: 'C:\\text.txt',
-        remoteTarget: '/text.txt',
-      },
-    });
-    const tab = makeTab('tab');
-    tab.panes.b.kind = 'remote';
-    tab.panes.b.connectionId = 'session';
-    tab.panes.b.status = 'connected';
-    let tabs: TabState[] = [tab];
-    const setTabs = (update: SetStateAction<TabState[]>) => {
-      tabs = typeof update === 'function' ? update(tabs) : update;
-    };
-    renderHook(() => useTransferConnectionLoss(setTabs, 'The connection was lost.'));
-
-    expect(progress).toBeDefined();
-    // What a stopped FTP transfer reports as its pool lets the connection go.
-    progress?.({
-      id: 'upload',
-      connectionId: 'session',
-      status: 'error',
-      errorCode: 'connectionLost',
-      error: 'Connection closed',
-    });
-    expect(tabs[0]?.panes.b.status).toBe(marked ? 'error' : 'connected');
+    expect(loseConnection(status)[0]?.panes.b.status).toBe(marked ? 'error' : 'connected');
   },
 );
+
+test('Retry of a transfer on a lost connection waits until the pane connects again', () => {
+  loseConnection('progress');
+  expect(canRetryTransfer(getTransferRow('upload')!)).toBe(false);
+});
 
 test('a server reply about the data channel does not read as a lost connection', async () => {
   const { isConnectionLoss } =

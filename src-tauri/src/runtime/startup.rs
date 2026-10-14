@@ -82,6 +82,22 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                 persister.schedule(window_for_events.clone());
                 if window_for_events.is_minimized().unwrap_or(false) {
                     super::vault_auto_lock::enforce_now(window_for_events.app_handle());
+                    // The title bar button asks for the tray itself; this
+                    // covers minimizing from outside the page: the window
+                    // menu, Win+Down, the taskbar button.
+                    let window = window_for_events.clone();
+                    let store = window.state::<Store>().inner().clone();
+                    tauri::async_runtime::spawn(async move {
+                        let to_tray = store
+                            .get_settings()
+                            .await
+                            .get("minimizeToTray")
+                            .and_then(|value| value.as_bool())
+                            .unwrap_or(false);
+                        if to_tray {
+                            tray::hide_to_tray(window);
+                        }
+                    });
                 }
             }
             tauri::WindowEvent::Moved(_) => {

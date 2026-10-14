@@ -29,6 +29,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The minimize, maximize and close buttons no longer stay highlighted after the pointer moves
+  off them into the title bar.
+- A right click on the title bar opens the window menu (Restore, Move, Size, Minimize, Maximize,
+  Close), as in other Windows programs.
+- With Minimize to tray on, the window also goes to the tray when minimized from the window menu,
+  with Win+Down or from the taskbar.
 - A wrong master password in a security confirmation now says the password was not accepted,
   instead of "Could not show the saved secret."
 - A file another program saved over while it uploaded no longer reaches the server as a mix of

@@ -339,6 +339,7 @@ export const visualTestApi = {
       ),
     openExternal: () => resolved(ok),
     openDevtools: () => resolved(ok),
+    showSystemMenu: () => resolved(ok),
     quit: () => resolved(ok),
   },
   notifications: { transfersComplete: () => resolved(ok) },

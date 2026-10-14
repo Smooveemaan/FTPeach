@@ -18,7 +18,9 @@
   background: var(--bg-base);
   position: relative;
 
-  -webkit-app-region: drag;
+  /* Dragging comes from data-tauri-drag-region, not app-region: WebView2 sends
+     no mouse leave into a non-client region, so the window buttons kept their
+     hover after the cursor slid off them into the title bar. */
   gap: 8px;
 }
 

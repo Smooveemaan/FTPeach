@@ -112,6 +112,8 @@ declare global {
         importDiscard: () => Promise<CommandResult>;
         openExternal: (url: string) => Promise<unknown>;
         openDevtools: () => Promise<unknown>;
+        /** Opens the window's system menu at the pointer, as a native title bar does. */
+        showSystemMenu: () => Promise<unknown>;
         /** Quits without asking about running transfers again. */
         quit: (preserveEdits?: boolean) => Promise<unknown>;
       };

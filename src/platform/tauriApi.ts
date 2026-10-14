@@ -452,6 +452,7 @@ export const tauriApi: Window['api'] = {
     importDiscard: () => voidOutcome(invoke, 'app_import_discard'),
     openExternal: (url: string) => invoke('app_open_external', { url }),
     openDevtools: () => invoke('debug_open_devtools'),
+    showSystemMenu: () => invoke('app_show_system_menu'),
     quit: (preserveEdits = false) => invoke('app_quit', { preserveEdits }),
   },
   notifications: {

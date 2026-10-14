@@ -10,6 +10,7 @@ export interface NativeWindowControls {
   minimize: () => Promise<void>;
   toggleMaximize: () => Promise<void>;
   close: () => Promise<void>;
+  showSystemMenu: () => Promise<unknown>;
 }
 
 const loadWindow = async (): Promise<NativeWindowControls> => {
@@ -23,6 +24,7 @@ const loadWindow = async (): Promise<NativeWindowControls> => {
     minimize: () => nativeWindow.minimize(),
     toggleMaximize: () => nativeWindow.toggleMaximize(),
     close: () => nativeWindow.close(),
+    showSystemMenu: () => api.app.showSystemMenu(),
   };
 };
 
@@ -32,6 +34,7 @@ export interface WindowControlsModel {
   minimize: () => void;
   toggleMaximize: () => void;
   close: () => void;
+  showSystemMenu: () => void;
 }
 
 /** Owns native window commands and releases even subscriptions that resolve after unmount. */
@@ -97,5 +100,6 @@ export function useWindowControls(
     ),
     toggleMaximize: handler(() => windowRef.current?.toggleMaximize()),
     close: handler(() => windowRef.current?.close()),
+    showSystemMenu: handler(() => windowRef.current?.showSystemMenu()),
   };
 }

@@ -2,7 +2,6 @@
 
 .title-bar-spacer {
   flex: 1 1 auto;
-  -webkit-app-region: drag;
 }
 
 
@@ -10,8 +9,6 @@
   display: flex;
   align-self: stretch;
   flex: 0 0 auto;
-
-  -webkit-app-region: no-drag;
 }
 
 .title-bar-btn {

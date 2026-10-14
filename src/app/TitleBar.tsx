@@ -1,16 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.tsx';
-import { useWindowControls } from '../platform/useWindowControls.ts';
+import { useWindowControls, type WindowControlsModel } from '../platform/useWindowControls.ts';
 
 interface TitleBarProps {
   minimizeToTray: boolean;
 }
 
-function TauriWindowControls({ minimizeToTray }: TitleBarProps) {
+function TauriWindowControls({
+  maximized,
+  minimize,
+  toggleMaximize,
+  close,
+}: Omit<WindowControlsModel, 'available' | 'showSystemMenu'>) {
   const { t } = useTranslation();
-  const { available, maximized, minimize, toggleMaximize, close } =
-    useWindowControls(minimizeToTray);
-  if (!available) return null;
 
   return (
     <div className="title-bar-controls">
@@ -43,13 +45,25 @@ function TauriWindowControls({ minimizeToTray }: TitleBarProps) {
 }
 
 export default function TitleBar({ minimizeToTray }: TitleBarProps) {
+  const { available, showSystemMenu, ...controls } = useWindowControls(minimizeToTray);
   return (
-    <div className="title-bar" data-tauri-drag-region="deep">
+    <div
+      className="title-bar"
+      data-tauri-drag-region="deep"
+      onContextMenu={
+        available
+          ? (event) => {
+              event.preventDefault();
+              showSystemMenu();
+            }
+          : undefined
+      }
+    >
       <span className="wordmark">
         <b>FTP</b>each
       </span>
       <span className="title-bar-spacer" />
-      <TauriWindowControls minimizeToTray={minimizeToTray} />
+      {available && <TauriWindowControls {...controls} />}
     </div>
   );
 }

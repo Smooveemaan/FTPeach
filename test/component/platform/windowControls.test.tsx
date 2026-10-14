@@ -20,6 +20,7 @@ function nativeWindow(): NativeWindowControls {
     hideToTray: vi.fn(async () => {}),
     toggleMaximize: vi.fn(async () => {}),
     close: vi.fn(async () => {}),
+    showSystemMenu: vi.fn(async () => {}),
   };
 }
 

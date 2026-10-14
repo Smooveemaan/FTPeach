@@ -154,6 +154,81 @@ pub fn app_set_window_border(
     appearance_result
 }
 
+/// Opens the window's system menu (Restore, Move, Size, ...) at the pointer,
+/// as a right click on a native title bar does. The frameless window keeps the
+/// menu itself -- Alt+Space reaches it -- but a right click on the webview's
+/// title bar is an ordinary page event, so the frontend asks for it here.
+#[tauri::command]
+#[cfg_attr(not(windows), allow(unused_variables))]
+pub fn app_show_system_menu(window: tauri::WebviewWindow) {
+    #[cfg(windows)]
+    {
+        use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+
+        let Ok(handle) = window.window_handle() else {
+            return;
+        };
+        let RawWindowHandle::Win32(handle) = handle.as_raw() else {
+            return;
+        };
+        let hwnd = handle.hwnd.get();
+        // TrackPopupMenu needs the thread that owns the window.
+        if let Err(error) = window.run_on_main_thread(move || show_system_menu(hwnd)) {
+            log::warn!("could not show the system menu: {error}");
+        }
+    }
+}
+
+#[cfg(windows)]
+fn show_system_menu(hwnd: isize) {
+    use windows::Win32::{
+        Foundation::{HWND, LPARAM, POINT, WPARAM},
+        UI::WindowsAndMessaging::{
+            EnableMenuItem, GetCursorPos, GetSystemMenu, IsZoomed, MF_BYCOMMAND, MF_ENABLED,
+            MF_GRAYED, PostMessageW, SC_MAXIMIZE, SC_MOVE, SC_RESTORE, SC_SIZE, TPM_RETURNCMD,
+            TPM_RIGHTBUTTON, TrackPopupMenu, WM_SYSCOMMAND,
+        },
+    };
+
+    let hwnd = HWND(hwnd as *mut std::ffi::c_void);
+    // SAFETY: hwnd is the live main window and this runs on its thread; the
+    // menu belongs to that window and is only read and shown here.
+    unsafe {
+        let menu = GetSystemMenu(hwnd, false);
+        if menu.is_invalid() {
+            return;
+        }
+        // Windows refreshes these only for the menus it opens itself.
+        let maximized = IsZoomed(hwnd).as_bool();
+        let state = |enabled: bool| MF_BYCOMMAND | if enabled { MF_ENABLED } else { MF_GRAYED };
+        let _ = EnableMenuItem(menu, SC_RESTORE, state(maximized));
+        let _ = EnableMenuItem(menu, SC_MOVE, state(!maximized));
+        let _ = EnableMenuItem(menu, SC_SIZE, state(!maximized));
+        let _ = EnableMenuItem(menu, SC_MAXIMIZE, state(!maximized));
+        let mut point = POINT::default();
+        if GetCursorPos(&raw mut point).is_err() {
+            return;
+        }
+        let command = TrackPopupMenu(
+            menu,
+            TPM_RETURNCMD | TPM_RIGHTBUTTON,
+            point.x,
+            point.y,
+            None,
+            hwnd,
+            None,
+        );
+        if command.0 != 0 {
+            let _ = PostMessageW(
+                Some(hwnd),
+                WM_SYSCOMMAND,
+                WPARAM(command.0 as usize),
+                LPARAM(0),
+            );
+        }
+    }
+}
+
 #[tauri::command]
 #[cfg_attr(not(debug_assertions), allow(unused_variables))]
 pub fn debug_open_devtools(app: AppHandle) {

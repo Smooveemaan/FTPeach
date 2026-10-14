@@ -82,6 +82,7 @@ pub fn run() {
         }))
     };
     let store = open_store();
+    protocol::keep_stranded_in(store.data_dir());
     let vault = vault::Vault::new(store.data_dir().to_path_buf());
     builder
         .plugin(tauri_plugin_updater::Builder::new().build())

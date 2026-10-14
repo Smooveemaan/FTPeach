@@ -21,7 +21,9 @@ publishes the staging file and deletes the old file only afterwards; a failed pu
 back. If the connection is lost before it can, the old file is put back over the pane's
 connection before the staging file is removed. When that fails too, both stay, the transfer
 reports `replaceInterrupted`, and the next connection to the server puts the old file back and
-removes the staging file. An attempt resumed after a pause between the two renames removes the
+removes the staging file, also after FTPeach was closed in between: such a replacement is kept in
+`stranded-replacements.json` (see [storage](storage.md)). A crash between the two renames
+themselves leaves the old file under its hidden name. An attempt resumed after a pause between the two renames removes the
 set-aside file once its staging file has the name.
 FTP has no atomic no-replace rename, so no FTP row above is atomic; see
 [conservative limits](#conservative-limits).

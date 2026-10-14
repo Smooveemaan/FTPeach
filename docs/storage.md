@@ -63,6 +63,12 @@ over the limits is cut to them on read. A repeated tab id keeps its first tab, a
 active id naming no kept tab is dropped. Automatic
 reconnection is disabled by default and can be enabled in connection settings.
 
+`stranded-replacements.json` exists only while an upload that replaced a file was cut off
+between its two renames and no connection could put the old file back yet. It names the
+server, the hidden `.ftpeach-<uuid>.old` file and the staging file, so the next connection to
+that server puts the old file back even after a restart. A record that names any other file is
+ignored, and the file is removed once nothing waits.
+
 `trusted_applications.json` lists the canonical paths of programs the user
 picked in the **Browse** dialog or approved in a security confirmation for
 **Open with** (at most 256, oldest dropped first). Deleting it only makes

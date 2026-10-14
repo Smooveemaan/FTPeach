@@ -492,7 +492,9 @@ async fn stop_takes_back_only_what_the_walk_created() {
         intent.overwrite = true;
         std::fs::create_dir_all(root.join("source/old/deep")).unwrap();
         std::fs::create_dir_all(root.join("source/new/deep")).unwrap();
-        for name in ["a", "b", "old/deep/c", "new/deep/d"] {
+        // "a" is the only top-level file, so the walk delivers it first.
+        let sources = ["a", "new/deep/d", "old/deep/c"];
+        for name in sources {
             std::fs::write(root.join("source").join(name), format!("new {name}")).unwrap();
         }
         // What the user already had there: a file the walk overwrites, one it
@@ -519,9 +521,25 @@ async fn stop_takes_back_only_what_the_walk_created() {
         }
         // Overwritten or not, "a" was the user's before the walk began.
         assert_eq!(files_under(&root.join("target")), ["a", "keep", "old/keep"]);
+        assert_eq!(
+            std::fs::read_to_string(root.join("target/a")).unwrap(),
+            "new a"
+        );
+        for name in ["keep", "old/keep"] {
+            assert_eq!(
+                std::fs::read_to_string(root.join("target").join(name)).unwrap(),
+                "user"
+            );
+        }
         assert!(!root.join("target/new").exists());
         assert!(!root.join("target/old/deep").exists());
-        assert_eq!(files_under(&root.join("source")).len(), 4);
+        assert_eq!(files_under(&root.join("source")), sources);
+        for name in sources {
+            assert_eq!(
+                std::fs::read_to_string(root.join("source").join(name)).unwrap(),
+                format!("new {name}")
+            );
+        }
         std::fs::remove_dir_all(root).unwrap();
     }
 }

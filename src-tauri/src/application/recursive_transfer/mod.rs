@@ -1,5 +1,5 @@
 //! Recursive scan, execute, verify and optional-delete coordination.
-mod identity;
+pub(crate) mod identity;
 mod io;
 mod journal;
 mod manifest;

@@ -96,6 +96,12 @@ arrived.
 <!-- verified-by: pr src-tauri/src/application/transfer_service_tests.rs::queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_only_staging -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::stopping queued and active uploads never requests deletion of the destination -->
 
+If another program saves over a file while it uploads, the upload ends with an
+error and the file already on the server stays as it was; upload it again to
+send the new version.
+
+<!-- verified-by: pr src-tauri/src/application/transfer_service_tests.rs::a_source_saved_over_at_its_own_length_while_uploading_is_not_put_in_place -->
+
 Stopping a folder upload keeps the files that already reached the server.
 Cleanup targets only its own temporary upload file; a server that refuses
 cleanup or cannot be reached can leave that temporary file behind.

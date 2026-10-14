@@ -12,6 +12,8 @@ struct Remote {
     writing: tokio::sync::Notify,
     stall: bool,
     reject_rename: bool,
+    /// Saves over the local source at its own length while it uploads.
+    rewrite_source: bool,
     /// Removals refused before the server lets go, as a Windows server does
     /// while a stopped upload still holds the file open.
     held_removals: std::sync::atomic::AtomicUsize,
@@ -82,7 +84,7 @@ impl ProtocolBackend for Backend {
     }
     async fn upload(
         &mut self,
-        _: &std::path::Path,
+        local: &std::path::Path,
         path: &str,
         resume: bool,
         sink: ProgressSink,
@@ -94,6 +96,9 @@ impl ProtocolBackend for Backend {
             .unwrap()
             .insert(path.into(), b"new".to_vec());
         self.remote.writing.notify_one();
+        if self.remote.rewrite_source {
+            std::fs::write(local, b"xyz").unwrap();
+        }
         if self.remote.stall {
             std::future::pending::<()>().await;
         }
@@ -170,6 +175,20 @@ async fn sessions_with(remote: &Arc<Remote>, pool: &TransferPool) -> Sessions {
     });
     sessions
 }
+/// A local file to upload, removed when dropped.
+struct Source(PathBuf);
+impl Source {
+    fn new() -> Self {
+        let path = std::env::temp_dir().join(format!("ftpeach-source-{}", uuid::Uuid::new_v4()));
+        std::fs::write(&path, b"abc").unwrap();
+        Self(path)
+    }
+}
+impl Drop for Source {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
 fn assert_old(remote: &Remote) {
     assert_eq!(remote.files.lock().unwrap()["/target"], b"old");
 }
@@ -183,9 +202,10 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
         let events = Arc::new(Mutex::new(Vec::new()));
         let events_for_sink = events.clone();
         let staged_whole = std::sync::atomic::AtomicBool::new(false);
+        let source = Source::new();
         let upload = upload_staged(
             &mut backend,
-            std::path::Path::new("unused"),
+            &source.0,
             &partial,
             "/target",
             false,
@@ -212,17 +232,61 @@ async fn upload_commit_reports_done_only_after_successful_rename() {
 }
 
 #[tokio::test]
+async fn a_source_saved_over_at_its_own_length_while_uploading_is_not_put_in_place() {
+    let remote = Arc::new(Remote {
+        rewrite_source: true,
+        ..Remote::default()
+    });
+    remote
+        .files
+        .lock()
+        .unwrap()
+        .insert("/target".into(), b"old".to_vec());
+    let mut backend = backend(&remote);
+    let partial = remote_partial_path("/target");
+    let source = Source::new();
+    let done = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let done_for_sink = done.clone();
+    let staged_whole = std::sync::atomic::AtomicBool::new(false);
+    let upload = upload_staged(
+        &mut backend,
+        &source.0,
+        &partial,
+        "/target",
+        false,
+        Arc::new(move |event| {
+            if matches!(event, ProgressInfo::Done) {
+                done_for_sink.store(true, SeqCst);
+            }
+        }),
+        &staged_whole,
+    );
+    let error = crate::protocol::ALLOW_OVERWRITE
+        .scope(true, upload)
+        .await
+        .unwrap_err();
+    assert_eq!(
+        CommandError::from_anyhow(&error).code,
+        ErrorCode::IntegrityMismatch
+    );
+    assert!(!done.load(SeqCst));
+    assert_old(&remote);
+}
+
+#[tokio::test]
 async fn queued_and_active_upload_cancellation_preserve_old_target_and_cleanup_only_staging() {
     for queued in [false, true] {
         let remote = fixture(true, false);
         let pool = one_connection_pool(&remote);
         let partial = remote_partial_path("/target");
         let task_partial = partial.clone();
+        let source = Source::new();
+        let task_source = source.0.clone();
         let task: TaskFn = Box::new(move |backend| {
             Box::pin(async move {
                 upload_staged(
                     backend,
-                    std::path::Path::new("unused"),
+                    &task_source,
                     &task_partial,
                     "/target",
                     false,

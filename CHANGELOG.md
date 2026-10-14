@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A file another program saved over while it uploaded no longer reaches the server as a mix of
+  the old and new contents; the upload ends with an error and the server keeps its file.
 - Transfer and connection status colors stay consistent across color schemes, with orange active
   transfers, yellow pause indicators and grey cancellation indicators. Connection dots and
   progress bars have flat fills without outlines.

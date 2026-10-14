@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use std::{fs::File, path::Path};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Receipt {
+pub(crate) struct Receipt {
     identity: (u64, u64),
     version: (i128, i128),
     revision: Option<Revision>,
@@ -175,7 +175,7 @@ pub(super) fn receipt(file: &File) -> Result<Receipt> {
     anyhow::bail!("Object identity unavailable")
 }
 
-pub(super) fn capture(path: &Path) -> Result<Receipt> {
+pub(crate) fn capture(path: &Path) -> Result<Receipt> {
     receipt(&open(path, false, false)?)
 }
 

@@ -22,28 +22,49 @@ export interface Server {
 }
 
 /**
- * The test API with `app` and `serverRoot`: the server folder as it was
- * before the test, and whatever the test added to it removed afterwards, a
- * timed-out test included.
+ * What a test may leave on a server for its fixture to remove: names it made
+ * (`e2e-…`) and the staging and set-aside files FTPeach writes beside them.
+ */
+export const isTestOwned = (name: string) => /^(e2e-|\.ftpeach-)/.test(name);
+
+/**
+ * The test API with `app` and `serverRoot`, which every test gets: the
+ * server folder as it was before the test. Afterwards, a timed-out test
+ * included, the test's own new names are removed; any other new name, or one
+ * that was there and is gone, fails the test and is left as it is.
  */
 export function serverTest(server: Server, setup: string) {
   return appTest.extend<{ serverRoot: { added: () => string[] } }>({
-    // eslint-disable-next-line no-empty-pattern
-    serverRoot: async ({}, use) => {
-      // A missing server is a broken setup, never a pass.
-      expect(existsSync(server.root), `${server.protocol} root ${server.root} (${setup})`).toBe(
-        true,
-      );
-      const before = new Set(readdirSync(server.root));
-      const added = () => readdirSync(server.root).filter((entry) => !before.has(entry));
-      try {
-        await use({ added });
-      } finally {
-        for (const entry of added()) {
-          rmSync(path.join(server.root, entry), { recursive: true, force: true });
+    serverRoot: [
+      // eslint-disable-next-line no-empty-pattern
+      async ({}, use) => {
+        // A missing server is a broken setup, never a pass.
+        expect(existsSync(server.root), `${server.protocol} root ${server.root} (${setup})`).toBe(
+          true,
+        );
+        const before = new Set(readdirSync(server.root));
+        const added = () => readdirSync(server.root).filter((entry) => !before.has(entry));
+        try {
+          await use({ added });
+        } finally {
+          const left = added();
+          for (const entry of left.filter(isTestOwned)) {
+            rmSync(path.join(server.root, entry), { recursive: true, force: true });
+          }
+          const now = new Set(readdirSync(server.root));
+          expect(
+            left.filter((entry) => !isTestOwned(entry)),
+            `not the test's own, left in ${server.root}`,
+          ).toEqual([]);
+          expect(
+            [...before].filter((entry) => !now.has(entry)),
+            `gone from ${server.root}`,
+          ).toEqual([]);
         }
-      }
-    },
+      },
+      // Set up before `app`, so it is torn down after the app and any editor have let go.
+      { auto: true },
+    ],
   });
 }
 

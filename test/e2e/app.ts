@@ -334,15 +334,20 @@ export async function launchApp(
     await end(true);
     const logs = appLogs(base, 200_000);
     // WebView2 lets go of its profile a moment after the process ends.
+    let failure: unknown;
     for (let attempt = 0; attempt < 20; attempt++) {
       try {
         rmSync(base, { recursive: true, force: true });
         return logs;
-      } catch {
+      } catch (error) {
+        failure = error;
         await new Promise((resolve) => setTimeout(resolve, 250));
       }
     }
-    return logs;
+    // A profile left behind is a leak into the next run, never a pass.
+    throw new Error(`Could not remove the test profile ${base}; its logs are still there`, {
+      cause: failure,
+    });
   };
   const app: RunningApp = {
     page: undefined as unknown as Page,
@@ -399,7 +404,8 @@ export async function launchApp(
     await onStart(app.page);
     return app;
   } catch (error) {
-    await close();
+    // The start failing is the news; a profile it leaves is secondary.
+    await close().catch(() => {});
     throw error;
   }
 }

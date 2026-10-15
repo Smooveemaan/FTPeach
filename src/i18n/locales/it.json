@@ -360,7 +360,8 @@
     "resumeExpired": "Questo trasferimento in pausa non può essere ripreso. Avvialo di nuovo.",
     "programUnavailable": "Il programma non è stato trovato o non può essere eseguito.",
     "secretNotProtected": "Impossibile cifrare la password, quindi la modifica non è stata salvata.",
-    "serverRefused": "Il server ha rifiutato l'operazione: {{reply}}"
+    "serverRefused": "Il server ha rifiutato l'operazione: {{reply}}",
+    "importRefused": "Il file non può essere importato."
   },
   "settings": {
     "openWithAssociations": {

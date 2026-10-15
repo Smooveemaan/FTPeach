@@ -356,7 +356,8 @@
     "resumeExpired": "Den här pausade överföringen kan inte återupptas. Starta den igen.",
     "programUnavailable": "Programmet hittades inte eller kan inte köras.",
     "secretNotProtected": "Lösenordet kunde inte krypteras, så ändringen sparades inte.",
-    "serverRefused": "Servern avvisade åtgärden: {{reply}}"
+    "serverRefused": "Servern avvisade åtgärden: {{reply}}",
+    "importRefused": "Filen kan inte importeras."
   },
   "settings": {
     "openWithAssociations": {

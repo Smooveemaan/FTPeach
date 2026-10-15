@@ -364,7 +364,8 @@
     "resumeExpired": "Це призупинене передавання не можна продовжити. Запустіть його знову.",
     "programUnavailable": "Програму не знайдено або її не вдається запустити.",
     "secretNotProtected": "Не вдалося зашифрувати пароль, зміну не збережено.",
-    "serverRefused": "Сервер відмовив: {{reply}}"
+    "serverRefused": "Сервер відмовив: {{reply}}",
+    "importRefused": "Цей файл не можна імпортувати."
   },
   "settings": {
     "openWithAssociations": {

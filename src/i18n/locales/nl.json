@@ -356,7 +356,8 @@
     "resumeExpired": "Deze gepauzeerde overdracht kan niet worden hervat. Start hem opnieuw.",
     "programUnavailable": "Het programma is niet gevonden of kan niet worden uitgevoerd.",
     "secretNotProtected": "Het wachtwoord kon niet worden versleuteld, dus de wijziging is niet opgeslagen.",
-    "serverRefused": "De server heeft de bewerking geweigerd: {{reply}}"
+    "serverRefused": "De server heeft de bewerking geweigerd: {{reply}}",
+    "importRefused": "Het bestand kan niet worden geïmporteerd."
   },
   "settings": {
     "openWithAssociations": {

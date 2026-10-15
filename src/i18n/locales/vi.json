@@ -356,7 +356,8 @@
     "resumeExpired": "Không thể tiếp tục quá trình truyền đã tạm dừng này. Hãy bắt đầu lại.",
     "programUnavailable": "Không tìm thấy chương trình hoặc không thể chạy chương trình.",
     "secretNotProtected": "Không thể mã hóa mật khẩu nên thay đổi chưa được lưu.",
-    "serverRefused": "Máy chủ đã từ chối thao tác: {{reply}}"
+    "serverRefused": "Máy chủ đã từ chối thao tác: {{reply}}",
+    "importRefused": "Không thể nhập tệp này."
   },
   "settings": {
     "openWithAssociations": {

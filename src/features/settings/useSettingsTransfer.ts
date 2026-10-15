@@ -94,9 +94,12 @@ export function useSettingsTransfer({
     (result: CommandResult) => {
       const reason = result.diagnosticDetails?.split('\n')[0];
       const failure = commandResultError(result);
-      reportError(reason ? `${friendlyError(failure) ?? ''} ${reason}` : failure);
+      // What the file holds or how big it is: the file is refused, nothing went wrong.
+      const refused = result.errorCode === 'invalidInput' || result.errorCode === 'resourceLimit';
+      const message = refused ? t('errors.importRefused') : friendlyError(failure);
+      reportError(reason ? `${message ?? ''} ${reason}` : failure);
     },
-    [reportError],
+    [reportError, t],
   );
 
   const exportSettings = useCallback(

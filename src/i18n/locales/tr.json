@@ -356,7 +356,8 @@
     "resumeExpired": "Duraklatılan bu aktarım sürdürülemez. Yeniden başlatın.",
     "programUnavailable": "Program bulunamadı veya çalıştırılamıyor.",
     "secretNotProtected": "Parola şifrelenemedi, bu nedenle değişiklik kaydedilmedi.",
-    "serverRefused": "Sunucu işlemi reddetti: {{reply}}"
+    "serverRefused": "Sunucu işlemi reddetti: {{reply}}",
+    "importRefused": "Dosya içe aktarılamıyor."
   },
   "settings": {
     "openWithAssociations": {

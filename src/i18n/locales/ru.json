@@ -364,7 +364,8 @@
     "resumeExpired": "Эту приостановленную передачу нельзя продолжить. Запустите её заново.",
     "programUnavailable": "Программа не найдена или не запускается.",
     "secretNotProtected": "Не удалось зашифровать пароль, изменение не сохранено.",
-    "serverRefused": "Сервер отказал: {{reply}}"
+    "serverRefused": "Сервер отказал: {{reply}}",
+    "importRefused": "Этот файл нельзя импортировать."
   },
   "settings": {
     "openWithAssociations": {

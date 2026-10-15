@@ -364,7 +364,8 @@
     "resumeExpired": "Tento pozastavený přenos nelze obnovit. Spusťte ho znovu.",
     "programUnavailable": "Program nebyl nalezen nebo ho nelze spustit.",
     "secretNotProtected": "Heslo se nepodařilo zašifrovat, proto změna nebyla uložena.",
-    "serverRefused": "Server operaci odmítl: {{reply}}"
+    "serverRefused": "Server operaci odmítl: {{reply}}",
+    "importRefused": "Soubor nelze importovat."
   },
   "settings": {
     "openWithAssociations": {

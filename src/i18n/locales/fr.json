@@ -360,7 +360,8 @@
     "resumeExpired": "Ce transfert en pause ne peut pas être repris. Relancez-le.",
     "programUnavailable": "Le programme est introuvable ou ne peut pas être exécuté.",
     "secretNotProtected": "Le mot de passe n'a pas pu être chiffré, la modification n'a donc pas été enregistrée.",
-    "serverRefused": "Le serveur a refusé l'opération : {{reply}}"
+    "serverRefused": "Le serveur a refusé l'opération : {{reply}}",
+    "importRefused": "Le fichier ne peut pas être importé."
   },
   "settings": {
     "openWithAssociations": {

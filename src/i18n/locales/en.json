@@ -356,7 +356,8 @@
     "resumeExpired": "This paused transfer can't be resumed. Start it again.",
     "programUnavailable": "The program wasn't found or can't be run.",
     "secretNotProtected": "The password couldn't be encrypted, so the change wasn't saved.",
-    "serverRefused": "The server refused: {{reply}}"
+    "serverRefused": "The server refused: {{reply}}",
+    "importRefused": "The file can't be imported."
   },
   "settings": {
     "openWithAssociations": {

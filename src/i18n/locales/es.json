@@ -360,7 +360,8 @@
     "resumeExpired": "Esta transferencia en pausa no se puede reanudar. Vuelve a iniciarla.",
     "programUnavailable": "No se encontró el programa o no se puede ejecutar.",
     "secretNotProtected": "No se pudo cifrar la contraseña, así que no se guardó el cambio.",
-    "serverRefused": "El servidor rechazó la operación: {{reply}}"
+    "serverRefused": "El servidor rechazó la operación: {{reply}}",
+    "importRefused": "El archivo no se puede importar."
   },
   "settings": {
     "openWithAssociations": {

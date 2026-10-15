@@ -364,7 +364,8 @@
     "resumeExpired": "Tego wstrzymanego przesyłania nie można wznowić. Uruchom je ponownie.",
     "programUnavailable": "Nie znaleziono programu lub nie można go uruchomić.",
     "secretNotProtected": "Nie udało się zaszyfrować hasła, więc zmiana nie została zapisana.",
-    "serverRefused": "Serwer odrzucił operację: {{reply}}"
+    "serverRefused": "Serwer odrzucił operację: {{reply}}",
+    "importRefused": "Nie można zaimportować pliku."
   },
   "settings": {
     "openWithAssociations": {

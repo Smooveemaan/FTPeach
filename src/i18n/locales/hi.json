@@ -356,7 +356,8 @@
     "resumeExpired": "रोके गए इस स्थानांतरण को जारी नहीं रखा जा सकता। इसे फिर से शुरू करें।",
     "programUnavailable": "प्रोग्राम नहीं मिला या उसे चलाया नहीं जा सकता।",
     "secretNotProtected": "पासवर्ड एन्क्रिप्ट नहीं हो सका, इसलिए बदलाव सहेजा नहीं गया।",
-    "serverRefused": "सर्वर ने कार्रवाई अस्वीकार कर दी: {{reply}}"
+    "serverRefused": "सर्वर ने कार्रवाई अस्वीकार कर दी: {{reply}}",
+    "importRefused": "फ़ाइल आयात नहीं की जा सकती।"
   },
   "settings": {
     "openWithAssociations": {

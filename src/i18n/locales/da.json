@@ -356,7 +356,8 @@
     "resumeExpired": "Denne pausede overførsel kan ikke genoptages. Start den igen.",
     "programUnavailable": "Programmet blev ikke fundet eller kan ikke køres.",
     "secretNotProtected": "Adgangskoden kunne ikke krypteres, så ændringen blev ikke gemt.",
-    "serverRefused": "Serveren afviste handlingen: {{reply}}"
+    "serverRefused": "Serveren afviste handlingen: {{reply}}",
+    "importRefused": "Filen kan ikke importeres."
   },
   "settings": {
     "openWithAssociations": {

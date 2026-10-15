@@ -360,7 +360,8 @@
     "resumeExpired": "Esta transferência pausada não pode ser retomada. Inicie-a novamente.",
     "programUnavailable": "O programa não foi encontrado ou não pode ser executado.",
     "secretNotProtected": "Não foi possível criptografar a senha, então a alteração não foi salva.",
-    "serverRefused": "O servidor recusou a operação: {{reply}}"
+    "serverRefused": "O servidor recusou a operação: {{reply}}",
+    "importRefused": "O arquivo não pode ser importado."
   },
   "settings": {
     "openWithAssociations": {

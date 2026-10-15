@@ -372,7 +372,8 @@
     "resumeExpired": "لا يمكن استئناف هذا النقل الموقوف مؤقتًا. ابدأه من جديد.",
     "programUnavailable": "لم يُعثر على البرنامج أو تعذّر تشغيله.",
     "secretNotProtected": "تعذّر تشفير كلمة المرور، لذا لم يُحفظ التغيير.",
-    "serverRefused": "رفض الخادم العملية: {{reply}}"
+    "serverRefused": "رفض الخادم العملية: {{reply}}",
+    "importRefused": "لا يمكن استيراد الملف."
   },
   "settings": {
     "openWithAssociations": {

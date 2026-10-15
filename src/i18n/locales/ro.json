@@ -360,7 +360,8 @@
     "resumeExpired": "Acest transfer în pauză nu poate fi reluat. Porniți-l din nou.",
     "programUnavailable": "Programul nu a fost găsit sau nu poate fi rulat.",
     "secretNotProtected": "Parola nu a putut fi criptată, așa că modificarea nu a fost salvată.",
-    "serverRefused": "Serverul a refuzat operația: {{reply}}"
+    "serverRefused": "Serverul a refuzat operația: {{reply}}",
+    "importRefused": "Fișierul nu poate fi importat."
   },
   "settings": {
     "openWithAssociations": {

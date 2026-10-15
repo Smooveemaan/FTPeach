@@ -356,7 +356,8 @@
     "resumeExpired": "Ez a szüneteltetett átvitel nem folytatható. Indítsa újra.",
     "programUnavailable": "A program nem található, vagy nem futtatható.",
     "secretNotProtected": "A jelszót nem sikerült titkosítani, ezért a módosítás nem lett mentve.",
-    "serverRefused": "A szerver elutasította a műveletet: {{reply}}"
+    "serverRefused": "A szerver elutasította a műveletet: {{reply}}",
+    "importRefused": "A fájl nem importálható."
   },
   "settings": {
     "openWithAssociations": {

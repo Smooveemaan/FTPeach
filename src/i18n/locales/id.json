@@ -356,7 +356,8 @@
     "resumeExpired": "Transfer yang dijeda ini tidak dapat dilanjutkan. Mulai lagi.",
     "programUnavailable": "Program tidak ditemukan atau tidak dapat dijalankan.",
     "secretNotProtected": "Kata sandi tidak dapat dienkripsi, sehingga perubahan tidak disimpan.",
-    "serverRefused": "Server menolak operasi: {{reply}}"
+    "serverRefused": "Server menolak operasi: {{reply}}",
+    "importRefused": "File tidak dapat diimpor."
   },
   "settings": {
     "openWithAssociations": {

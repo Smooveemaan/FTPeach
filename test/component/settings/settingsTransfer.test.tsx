@@ -285,7 +285,7 @@ test('a refused import names what was wrong with the file', async () => {
   await act(() => model.previewImport(options));
   // The translated message says the file was refused; the first reason says where.
   expect(reportError).toHaveBeenCalledExactlyOnceWith(
-    expect.stringMatching(/\S sites\[3\]: Host is required$/),
+    'errors.importRefused sites[3]: Host is required',
   );
 });
 

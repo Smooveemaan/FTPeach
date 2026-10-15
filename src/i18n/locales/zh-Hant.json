@@ -356,7 +356,8 @@
     "resumeExpired": "這個已暫停的傳輸無法繼續。請重新開始。",
     "programUnavailable": "找不到程式或無法執行。",
     "secretNotProtected": "無法加密密碼，因此未儲存變更。",
-    "serverRefused": "伺服器拒絕了此操作：{{reply}}"
+    "serverRefused": "伺服器拒絕了此操作：{{reply}}",
+    "importRefused": "無法匯入此檔案。"
   },
   "settings": {
     "openWithAssociations": {

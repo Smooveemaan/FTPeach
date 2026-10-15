@@ -356,7 +356,8 @@
     "resumeExpired": "この一時停止中の転送は再開できません。もう一度開始してください。",
     "programUnavailable": "プログラムが見つからないか、実行できません。",
     "secretNotProtected": "パスワードを暗号化できなかったため、変更は保存されませんでした。",
-    "serverRefused": "サーバーが操作を拒否しました: {{reply}}"
+    "serverRefused": "サーバーが操作を拒否しました: {{reply}}",
+    "importRefused": "このファイルはインポートできません。"
   },
   "settings": {
     "openWithAssociations": {

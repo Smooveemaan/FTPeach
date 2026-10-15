@@ -356,7 +356,8 @@
     "resumeExpired": "Diese pausierte Übertragung kann nicht fortgesetzt werden. Starten Sie sie neu.",
     "programUnavailable": "Das Programm wurde nicht gefunden oder kann nicht ausgeführt werden.",
     "secretNotProtected": "Das Passwort konnte nicht verschlüsselt werden, daher wurde die Änderung nicht gespeichert.",
-    "serverRefused": "Der Server hat den Vorgang abgelehnt: {{reply}}"
+    "serverRefused": "Der Server hat den Vorgang abgelehnt: {{reply}}",
+    "importRefused": "Die Datei kann nicht importiert werden."
   },
   "settings": {
     "openWithAssociations": {

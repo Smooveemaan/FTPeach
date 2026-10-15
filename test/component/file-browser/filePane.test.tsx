@@ -152,7 +152,7 @@ describe('FilePane interactions', () => {
   });
 
   test('leaves both panes unfocused until user interaction', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const left = renderPane({ side: 'a', onActivate: vi.fn() });
     const right = renderPane({ side: 'b', onActivate: vi.fn() });
     const leftPane = requireHtml(left.container.querySelector('.pane'));
@@ -172,7 +172,7 @@ describe('FilePane interactions', () => {
   });
 
   test('selects, sorts, filters and supports keyboard actions', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { container, props } = renderPane({ selectedNames: new Set(['beta.txt']) });
     const list = screen.getByRole('listbox');
     expect(
@@ -252,7 +252,7 @@ describe('FilePane interactions', () => {
   });
 
   test('focus returns to the pane after a rename commits, so arrow keys keep working', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { container } = renderPane({ selectedNames: new Set(['beta.txt']) });
     const pane = requireHtml(container.querySelector('.pane'));
     pane.focus();

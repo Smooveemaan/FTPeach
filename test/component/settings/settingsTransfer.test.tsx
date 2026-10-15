@@ -56,7 +56,7 @@ const box = (name: string) => screen.getByRole('checkbox', { name });
 
 for (const mode of ['import', 'export'] as const) {
   test(`the ${mode} form starts from the given scope and runs with what is ticked`, async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const transfer = model();
     const props = renderDialog(mode, transfer);
     expect(screen.getByRole('dialog', { name: `${mode}SettingsDialog.title` })).toBeTruthy();
@@ -82,7 +82,7 @@ for (const mode of ['import', 'export'] as const) {
 }
 
 test('an export with the saved passwords needs a long password typed twice', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const transfer = model();
   renderDialog('export', transfer);
   const withPasswords = box('exportSettingsDialog.includePasswords');
@@ -115,7 +115,7 @@ test('an export with the saved passwords needs a long password typed twice', asy
 });
 
 test('bookmarks whose passwords cannot be opened are named, and left out only when asked', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const transfer = model({
     exportSettings: vi
       .fn<SettingsTransferModel['exportSettings']>()
@@ -141,7 +141,7 @@ test('bookmarks whose passwords cannot be opened are named, and left out only wh
 });
 
 test('a file with passwords asks for its password and keeps asking until it opens them', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const transfer = model({
     previewImport: vi.fn(async () => ({ hasSecrets: true })),
     applyImport: vi
@@ -179,7 +179,7 @@ test('a file with passwords asks for its password and keeps asking until it open
 });
 
 test('a file with passwords can be imported without them, or let go', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const transfer = model({ previewImport: vi.fn(async () => ({ hasSecrets: true })) });
   renderDialog('import', transfer);
   await user.click(button('importSettingsDialog.confirmLabel'));
@@ -199,7 +199,7 @@ test('a file with passwords can be imported without them, or let go', async () =
 });
 
 test('a locked vault is unlocked first and the import goes on with the same password', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const transfer = model({
     previewImport: vi.fn(async () => ({ hasSecrets: true })),
     applyImport: vi

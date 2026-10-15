@@ -392,7 +392,10 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   };
   const requestClose = (vaultBusy: boolean) => {
     if (vaultBusy || savingRef.current) return;
-    if (hasUnsavedChanges) {
+    // The flag is set after the change is drawn; a close clicked before
+    // then still sees the change in the draft.
+    const changed = Object.keys(changedSettings(buildPatch(draft), openedPatch)).length > 0;
+    if (hasUnsavedChanges || changed) {
       setConfirmCloseArmed(true);
       return;
     }

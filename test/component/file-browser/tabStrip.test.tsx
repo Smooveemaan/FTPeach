@@ -30,7 +30,7 @@ vi.mock('react-i18next', async (importOriginal) => ({
 }));
 
 test('typing a tab name does not reselect and replace each previous character', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const onRename = vi.fn();
   const tab = { ...makeTab('tab-1'), name: 'Original' };
 
@@ -54,7 +54,7 @@ test('typing a tab name does not reselect and replace each previous character', 
 });
 
 test('a tab being renamed is not announced as unavailable', async () => {
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const tab = { ...makeTab('tab-1'), name: 'Original' };
   render(
     <TabStrip

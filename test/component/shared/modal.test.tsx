@@ -14,7 +14,7 @@ describe('critical dialog accessibility', () => {
   beforeEach(() => document.body.replaceChildren());
 
   test('labels the dialog, traps Tab, closes with Escape and restores focus', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const opener = document.createElement('button');
     document.body.append(opener);
     opener.focus();
@@ -69,7 +69,7 @@ describe('critical dialog accessibility', () => {
   });
 
   test('prompt trims input and submits from the keyboard', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSubmit = vi.fn();
     const onClose = vi.fn();
     render(
@@ -106,7 +106,7 @@ describe('critical dialog accessibility', () => {
   });
 
   test('a prompt that fails validation keeps the dialog and the input', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSubmit = vi.fn();
     const onClose = vi.fn();
     render(
@@ -129,7 +129,7 @@ describe('critical dialog accessibility', () => {
   });
 
   test('Tab belongs to the dialog on top, and skips hidden fields', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const tree = (showUpper: boolean) => (
       <>
         <Modal title="Lower" onClose={() => {}}>
@@ -203,7 +203,7 @@ describe('critical dialog accessibility', () => {
   });
 
   test('a dialog with nothing to focus keeps focus on itself', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     render(
       <Modal title="Busy" onClose={() => {}} closeDisabled>
         <p>Working</p>

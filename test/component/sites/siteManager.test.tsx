@@ -143,7 +143,7 @@ describe('Site Manager workflows', () => {
   test.each(['ftp', 'ftps', 'sftp', 'webdav'] as const)(
     'prefills and saves a %s connection using the manager form',
     async (protocol) => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       const useKeyAuth = protocol === 'sftp';
       const initialForm = createPaneSiteForm({
         kind: 'remote',
@@ -206,7 +206,7 @@ describe('Site Manager workflows', () => {
   );
 
   test('opens a prefilled local path and closes on cancel without saving', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager({
       managerKind: 'localPaths',
       initialForm: createPaneSiteForm({
@@ -227,7 +227,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('creates and edits a bookmark through the form', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
@@ -267,7 +267,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('New Bookmark Here in a folder context menu saves the bookmark into that folder', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     fireEvent.contextMenu(requireHtml(screen.getByText('Servers').closest('.site-manage-row')));
     await user.click(
@@ -288,7 +288,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('creates a local path in a selected local-path folder', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager({ managerKind: 'localPaths' });
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addLocalBookmark' }));
     await user.type(
@@ -313,7 +313,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('keeps saved secrets out of form state and clears an explicit reveal on blur and lock', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.sites.revealSecret).mockResolvedValue({
       ok: true,
       value: 'revealed-bookmark-secret',
@@ -339,7 +339,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('locking from the settings dialog clears a password revealed here', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.sites.revealSecret).mockResolvedValue({
       ok: true,
       value: 'revealed-bookmark-secret',
@@ -363,7 +363,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('a saved password stays locked until its edit button is pressed', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     const row = screen.getByText('Production').closest('.site-manage-row');
     await user.click(
@@ -393,7 +393,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('a password typed right after removing the saved one is taken in full', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     const row = screen.getByText('Production').closest('.site-manage-row');
     await user.click(
@@ -411,7 +411,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('limits connections only when a limit is chosen', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     const row = screen.getByText('Production').closest('.site-manage-row');
     await user.click(
@@ -444,7 +444,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('a late reveal never fills a field the user moved on from', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const pending: Array<(_value: { ok: true; value: string }) => void> = [];
     vi.mocked(window.api.sites.revealSecret).mockImplementation(
       () => new Promise((resolve) => pending.push(resolve)),
@@ -502,7 +502,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('the confirmation window taking focus does not drop the reveal it asked for', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     let answer: (_value: { ok: true; value: string }) => void = () => {};
     vi.mocked(window.api.sites.revealSecret).mockImplementation(
       () => new Promise((resolve) => (answer = resolve)),
@@ -523,7 +523,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('requests vault unlock and retries saving a bookmark with the password typed', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi
       .fn()
       .mockResolvedValueOnce({ ok: false, errorCode: 'vaultLocked', error: 'vault is locked' })
@@ -549,7 +549,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('requests vault unlock and retries deleting a bookmark', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onDelete = vi
       .fn()
       .mockResolvedValueOnce({ ok: false, errorCode: 'vaultLocked', error: 'vault is locked' })
@@ -575,7 +575,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('keeps the bookmark and local-path managers independent', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const bookmarkManager = renderManager();
 
     expect(screen.getByText('Production')).toBeTruthy();
@@ -597,14 +597,14 @@ describe('Site Manager workflows', () => {
   });
 
   test('does not offer protocol sorting in the local-path manager', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderManager({ managerKind: 'localPaths' });
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.sortMode' }));
     expect(screen.queryByRole('option', { name: 'siteManagerDialog.sortProtocol' })).toBeNull();
   });
 
   test('uses the app-styled bookmark sorting menu', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderManager();
 
     const trigger = screen.getByRole('button', { name: 'siteManagerDialog.sortMode' });
@@ -621,7 +621,7 @@ describe('Site Manager workflows', () => {
   test('sorting disables drag handles without changing sensor effect dependencies', async () => {
     const errors = vi.spyOn(console, 'error');
     try {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       const { container } = renderManager();
       const handles = () =>
         Array.from(container.querySelectorAll('.site-manage-list [aria-disabled]'));
@@ -641,7 +641,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('warns before saving a probable duplicate and allows explicit confirmation', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
     await user.type(screen.getByRole('textbox', { name: 'siteManagerDialog.fields.name' }), 'Copy');
@@ -667,7 +667,7 @@ describe('Site Manager workflows', () => {
   ] as const)(
     '%s checkbox uses Space and leaves Enter unchanged',
     async (protocol, label, initial) => {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ delay: null });
       const { props } = renderManager();
       await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
       await user.click(screen.getByRole('button', { name: 'FTP' }));
@@ -691,7 +691,7 @@ describe('Site Manager workflows', () => {
   );
 
   test('a password typed after switching from SFTP with a key to WebDAV is saved', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
@@ -714,7 +714,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('warns when the selected SSH private key uses RSA', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.fsLocal.selectKeyFile).mockResolvedValue({
       path: 'C:\\keys\\legacy-rsa',
       isRsa: true,
@@ -731,7 +731,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('creates, renames and deletes folders and deletes a bookmark', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.newFolder' }));
@@ -780,7 +780,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('keeps the appearance dropdown fully inside the window when its trigger sits at an edge', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderManager();
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
 
@@ -813,7 +813,7 @@ describe('Site Manager workflows', () => {
   });
 
   test('search filters bookmarks by name, host, user and folder, and connects from results', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager({ entries: searchEntries });
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.searchPlaceholder' }));
@@ -865,7 +865,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('clicking a site row connects; clicking its own buttons does not', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     const row = screen.getByText('Production').closest('.site-manage-row');
@@ -905,7 +905,9 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
       screen.getByRole<HTMLInputElement>('textbox', { name: 'siteManagerDialog.fields.name' })
         .value,
     ).toBe('Production');
-    await userEvent.setup().click(screen.getByRole('button', { name: 'common.cancel' }));
+    await userEvent
+      .setup({ delay: null })
+      .click(screen.getByRole('button', { name: 'common.cancel' }));
 
     const folderRow = screen.getByRole('treeitem', { name: 'Servers' });
     fireEvent.keyDown(folderRow, { key: 'F2' });
@@ -922,7 +924,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('Escape and the ✕ button back out of the edit form instead of closing the whole dialog', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
@@ -943,7 +945,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('asks before Escape or a click outside drops an edited bookmark', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props, container } = renderManager();
 
     const row = screen.getByText('Production').closest('.site-manage-row');
@@ -972,7 +974,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('saves an edited bookmark from the unsaved-changes prompt', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     const row = screen.getByText('Production').closest('.site-manage-row');
@@ -994,7 +996,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('a revealed saved password is not an unsaved change, a typed one is', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.sites.revealSecret).mockResolvedValue({ ok: true, value: 'revealed' });
     renderManager();
 
@@ -1016,7 +1018,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('Escape on the duplicate warning keeps the bookmark form open', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.addBookmark' }));
@@ -1085,7 +1087,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('duplicating a site saves a copy at once under the next free name', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     const row = screen.getByText('Production').closest('.site-manage-row');
@@ -1106,7 +1108,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('a failure in the list reads in the footer, not above the list', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
     vi.mocked(props.onSave).mockResolvedValueOnce({ ok: false, error: 'disk is full' });
 
@@ -1120,7 +1122,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('"New Bookmark Here" from a folder saves the new bookmark into that folder', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     const folderRow = screen.getByText('Servers').closest('.site-manage-row.is-folder');
@@ -1140,7 +1142,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('search results expose connect, duplicate and context-menu quick actions', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager({ entries: searchEntries });
     await user.click(screen.getByRole('button', { name: 'siteManagerDialog.searchPlaceholder' }));
     await user.type(
@@ -1167,7 +1169,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('right-click rename on a bookmark edits its name inline without opening the full editor', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     const row = screen.getByText('Production').closest('.site-manage-row');
@@ -1186,7 +1188,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
   });
 
   test('Tab reaches every row, folder headers included, on every pass', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderManager();
 
     const reached: string[] = [];
@@ -1231,7 +1233,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
     ['bookmark rename', 'filePane.rename'],
     ['folder rename', 'siteManagerDialog.folderNamePlaceholder'],
   ])('Escape in the %s field backs out of it without closing the dialog', async (field, label) => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderManager();
 
     if (field === 'new folder') {
@@ -1273,7 +1275,7 @@ describe('Site Manager tree: click-to-connect, keyboard model and quick actions'
 
 test('the footer counts the entries and an import here reports in their place', async () => {
   installSiteManagerApiMocks();
-  const user = userEvent.setup();
+  const user = userEvent.setup({ delay: null });
   const done = { text: 'Imported: Bookmarks', short: 'Imported' };
   const settingsTransfer = {
     exportSettings: vi.fn(),

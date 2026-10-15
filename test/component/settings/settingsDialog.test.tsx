@@ -68,7 +68,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
 
 describe('SettingsDialog unsaved-changes gate', () => {
   test('previews and saves a palette independently of the theme', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
     await user.click(screen.getByRole('button', { name: 'settings.colorSchemeLabel' }));
@@ -79,7 +79,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('Cancel restores the palette before preview', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ colorScheme: 'forest' });
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
     await user.click(screen.getByRole('button', { name: 'settings.colorSchemeLabel' }));
@@ -90,7 +90,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('awaits persistence, prevents duplicate saves and preserves the draft on failure', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     let finish!: (_value: { ok: boolean; error?: string }) => void;
     const onSave = vi.fn(
       () =>
@@ -122,7 +122,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
   });
   test('asks to unlock the vault and retries the same save', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi
       .fn()
       .mockResolvedValueOnce({ ok: false, error: 'Vault is locked', errorCode: 'vaultLocked' })
@@ -142,7 +142,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(retriedPatch).toEqual(firstPatch);
   });
   test('a save refused by the locked vault asks to unlock it, whichever way it fails', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi
       .fn()
       .mockRejectedValueOnce(new CommandFailure('Vault is locked', 'vaultLocked'));
@@ -186,7 +186,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('selects and saves an explicit date/time format', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
@@ -205,7 +205,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('keeps ISO 8601 available as a separate date/time format', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
@@ -217,7 +217,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('keeps the language menu open when its list background is clicked', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
@@ -230,7 +230,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a language it does not know shows as English, the language the window falls back to', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderDialog({ language: 'xx' });
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
 
@@ -245,7 +245,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   }
 
   test('prompts to save when the close button is clicked after an edit', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -261,7 +261,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('prompts to save when the backdrop is clicked after an edit', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props, container } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -272,7 +272,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('prompts to save when Escape is pressed after an edit', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -289,7 +289,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('Cancel discards an edit and closes without prompting', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -304,7 +304,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('"Don\'t Save" discards the edit, reverts the preview and closes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -322,7 +322,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('Cancel on the prompt keeps the dialog open', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -339,7 +339,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('editing the proxy password flags unsaved changes and is included in the save patch', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
@@ -356,7 +356,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a chosen log folder is saved, reset to the default, and opened', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const openFolder = vi.fn(async () => ({ ok: true }));
     const selectDir = vi.fn(async () => 'D:/logs');
     Object.assign(window.api, { log: { openFolder }, fsLocal: { selectDir } });
@@ -378,7 +378,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a reset log folder opens the default one before it is saved', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const openFolder = vi.fn(async () => ({ ok: true }));
     Object.assign(window.api, { log: { openFolder } });
     renderDialog({ logFolder: 'D:/logs' });
@@ -390,7 +390,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a proxy test error fades once a tested field changes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const test = vi.fn(async () => ({ ok: false, error: 'Proxy refused the password' }));
     Object.assign(window.api, { proxy: { test } });
     renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
@@ -409,7 +409,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('removing a saved proxy password flags unsaved changes and requests removal on save', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({
       proxyEnabled: true,
       proxyHost: '203.0.113.5',
@@ -429,7 +429,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('clears a revealed saved proxy password on blur without persisting it', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.settings.revealProxyPassword).mockResolvedValue('revealed-proxy-secret');
     const { props } = renderDialog({
       proxyEnabled: true,
@@ -451,7 +451,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('clears a revealed saved proxy password when the vault locks', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.settings.revealProxyPassword).mockResolvedValue('revealed-proxy-secret');
     renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5', proxyPasswordSet: true });
 
@@ -465,7 +465,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('system protection says why it cannot be chosen while the vault is locked', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const status = { configured: true, locked: true };
     vi.mocked(window.api.vault.status).mockImplementation(async () => ({
       ...status,
@@ -490,7 +490,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a portable copy says where passwords stay until a master password is set', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const status = { configured: false, locked: true, portable: true };
     vi.mocked(window.api.vault.status).mockImplementation(async () => ({
       ...status,
@@ -510,7 +510,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('an installed copy shows no portable line', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderDialog();
     await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
     await screen.findByRole('radio', { name: /settings\.security\.systemMode/ });
@@ -518,7 +518,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a vault reset tells the owner that the saved secrets are gone', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     Object.assign(window.api.vault, { reset: vi.fn(async () => ({ ok: true })) });
     vi.mocked(window.api.vault.status).mockResolvedValue({
       configured: true,
@@ -533,7 +533,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ transferSpeedLimitKBps: 512 });
 
     await toggleNotifyOnComplete(user);
@@ -544,7 +544,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a concurrency above ten is offered and saved as typed', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ concurrency: 3 });
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.transfers' }));
@@ -560,7 +560,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('an edit put back is previewed once more and then left out of the save', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
@@ -572,7 +572,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a change to one proxy setting saves the proxy settings together', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
@@ -589,7 +589,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a text selection dragged out of a proxy port field keeps the focus there', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     renderDialog({ proxyEnabled: true, proxyHost: '203.0.113.5' });
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
@@ -602,7 +602,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('exports diagnostics from the Logging settings category', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onExportDiagnostics = vi.fn(async () => ({ ok: true }));
     renderDialog({ onExportDiagnostics });
 
@@ -613,7 +613,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('confirms turning the security confirmations off at the switch, not at save', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
@@ -629,7 +629,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a declined confirmation leaves the switch on and says nothing', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.settings.confirmSecurityChange).mockResolvedValue({
       ok: false,
       error: 'Operation was cancelled',
@@ -652,7 +652,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test('a save cancelled in the confirmation window reports nothing and keeps the dialog', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi.fn(async () => ({
       ok: false,
       error: 'Operation was cancelled',

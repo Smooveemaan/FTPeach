@@ -143,6 +143,7 @@ pub fn run() {
             commands::app::app_version,
             commands::app::app_quit,
             commands::app::app_state_flushed,
+            commands::app::app_double_click_time,
             commands::app::app_system_hour_cycle,
             commands::app::app_open_external,
             commands::app::app_set_window_border,

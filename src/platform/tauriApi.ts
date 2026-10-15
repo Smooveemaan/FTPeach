@@ -373,6 +373,10 @@ export const tauriApi: Window['api'] = {
       if (typeof result === 'string') return result;
       throw new Error(result.error ?? 'Unable to read application version.');
     },
+    doubleClickTime: async (): Promise<number | null> => {
+      const result = await invoke<number | null>('app_double_click_time');
+      return typeof result === 'number' && result > 0 ? result : null;
+    },
     systemHourCycle: async (): Promise<'h12' | 'h23' | null> => {
       const result = await invoke<string | null>('app_system_hour_cycle');
       return result === 'h12' || result === 'h23' ? result : null;

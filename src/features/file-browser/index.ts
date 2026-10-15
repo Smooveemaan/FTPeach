@@ -10,3 +10,4 @@ export type { FileSearchHandle } from './components/useFileSearch.ts';
 export type { FileBrowserShell } from './usePaneActions.ts';
 export type { PanesModel } from './usePanes.ts';
 export type { FileClipboardModel } from './useFileClipboard.ts';
+export { setDoubleClickMs } from './doubleClick.ts';

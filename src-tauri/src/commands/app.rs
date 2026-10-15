@@ -66,6 +66,20 @@ pub fn app_quit(app: AppHandle, preserve_edits: Option<bool>) {
     shutdown::quit_now(&app);
 }
 
+/// The Windows double-click speed in milliseconds, so a row opens on the
+/// same two clicks Explorer would take as a double click.
+#[tauri::command]
+pub fn app_double_click_time() -> Option<u32> {
+    #[cfg(windows)]
+    {
+        let ms = unsafe { windows::Win32::UI::Input::KeyboardAndMouse::GetDoubleClickTime() };
+        (ms > 0).then_some(ms)
+    }
+
+    #[cfg(not(windows))]
+    None
+}
+
 #[tauri::command]
 pub fn app_system_hour_cycle() -> Option<&'static str> {
     #[cfg(windows)]

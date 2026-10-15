@@ -75,6 +75,7 @@ fn main() {
         "app_version",
         "app_quit",
         "app_state_flushed",
+        "app_double_click_time",
         "app_system_hour_cycle",
         "app_open_external",
         "app_set_window_border",

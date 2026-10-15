@@ -34,6 +34,7 @@ import useFilePaneSorting from './components/useFilePaneSorting.ts';
 import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { PaneId, PaneKind } from './panes/paneModel.ts';
+import { getDoubleClickMs } from './doubleClick.ts';
 
 export interface FilePaneProps {
   side: PaneId;
@@ -265,7 +266,6 @@ function FilePane({
   // app bug). Detecting the double-click ourselves from plain `click` timing
   // sidesteps that entirely: it only depends on `click` firing, which it
   // reliably does.
-  const DOUBLE_CLICK_MS = 500;
   const lastRowClickRef = useRef<{ name: string; time: number } | null>(null);
   const handleRowClickWithDoubleDetect = useCallback(
     (index: number, e: ReactMouseEvent<HTMLElement>) => {
@@ -277,7 +277,7 @@ function FilePane({
       }
       const now = performance.now();
       const last = lastRowClickRef.current;
-      if (last && last.name === entry.name && now - last.time <= DOUBLE_CLICK_MS) {
+      if (last && last.name === entry.name && now - last.time <= getDoubleClickMs()) {
         lastRowClickRef.current = null;
         handleRowDoubleClick(entry);
       } else {

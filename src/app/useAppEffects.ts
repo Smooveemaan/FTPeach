@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { SettingsState } from '../features/settings/index.ts';
 import { setDateFormatPreference } from '../features/settings/index.ts';
+import { setDoubleClickMs } from '../features/file-browser/index.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
@@ -16,6 +17,10 @@ interface AppEffectsOptions {
 export function useAppEffects({
   interface: { theme, colorScheme, language, interfaceScale, dateFormat },
 }: AppEffectsOptions): void {
+  useEffect(() => {
+    void api.app.doubleClickTime().then(setDoubleClickMs, reportAsyncFailure);
+  }, []);
+
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const applyResolvedTheme = () => {

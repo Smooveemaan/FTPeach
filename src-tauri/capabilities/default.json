@@ -73,6 +73,7 @@
     "allow-app-version",
     "allow-app-quit",
     "allow-app-state-flushed",
+    "allow-app-double-click-time",
     "allow-app-system-hour-cycle",
     "allow-app-open-external",
     "allow-app-set-window-border",

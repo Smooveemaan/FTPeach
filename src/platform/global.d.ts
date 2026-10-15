@@ -87,6 +87,7 @@ declare global {
       };
       app: {
         version: () => Promise<string>;
+        doubleClickTime: () => Promise<number | null>;
         systemHourCycle: () => Promise<'h12' | 'h23' | null>;
         setWindowTheme: (
           theme: string,

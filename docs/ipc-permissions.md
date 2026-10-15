@@ -30,7 +30,7 @@ any. Application commands are grouped as follows:
 
 - Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
-  `vault_status`, `app_version`, `app_system_hour_cycle`, `session_list`, `log_recent`,
+  `vault_status`, `app_version`, `app_double_click_time`, `app_system_hour_cycle`, `session_list`, `log_recent`,
   `updater_status`, `updater_check`.
 - Window and shell: `app_set_interface_scale`, `app_set_window_border`, `app_show_system_menu`, which opens the window's own Windows system menu at the pointer, `app_set_drop_allowed`, which only sets the cursor shown over the window during a file drag from another app, `app_reset_layout`, `app_open_external`, which
   opens only an `https://` URL, `log_open_folder`, which opens the log folder typed in Settings (FTPeach's own when it is empty), a folder that saving the setting could point the log at anyway, and `debug_open_devtools`, which does nothing in a release build.

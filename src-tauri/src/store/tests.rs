@@ -2127,3 +2127,41 @@ async fn a_copy_of_the_wrong_bytes_under_the_copy_name_is_not_enough_to_save_ove
     assert_eq!(std::fs::read(&copy).unwrap(), b"broken");
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[tokio::test]
+async fn bookmarks_and_tabs_with_no_backup_are_saved_over_once_copied() {
+    let root =
+        std::env::temp_dir().join(format!("ftpeach-storage-others-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("sites.json"), b"{broken").unwrap();
+    std::fs::write(root.join("tabs.json"), b"{broken").unwrap();
+    let store = Store::new_at(root.clone());
+    assert!(store.list_sites().await.unwrap().is_empty());
+    let _ = store.get_tabs().await;
+
+    let mut site = JsonMap::new();
+    site.insert("name".into(), json!("Kept"));
+    site.insert("protocol".into(), json!("ftp"));
+    site.insert("host".into(), json!("kept.test"));
+    store.save_site(site).await.unwrap();
+    store.clear_tabs().await.unwrap();
+
+    for stem in ["sites", "tabs"] {
+        let copies = std::fs::read_dir(&root)
+            .unwrap()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| {
+                let name = entry.file_name().to_string_lossy().into_owned();
+                name.starts_with(&format!("{stem}.corrupt-"))
+                    && std::fs::read(entry.path()).unwrap() == b"{broken"
+            })
+            .count();
+        assert_eq!(copies, 1, "{stem}");
+    }
+    let next_start = Store::new_at(root.clone());
+    let sites = next_start.list_sites().await.unwrap();
+    assert_eq!(sites[0].get("name"), Some(&json!("Kept")));
+    assert_eq!(next_start.get_tabs().await["tabs"], json!([]));
+    assert!(next_start.storage_warnings().is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+}

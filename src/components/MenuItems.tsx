@@ -68,6 +68,7 @@ export default function MenuItems({ items, onAction }: MenuItemsProps) {
         key={typeof item.label === 'string' ? item.label : `item-${i}`}
         role={itemRole(item)}
         aria-checked={item.checked}
+        aria-keyshortcuts={item.shortcut?.replace(/\bCtrl\b/, 'Control') || undefined}
         className={`menu-item ${item.danger ? 'danger' : ''} ${item.className || ''}`}
         disabled={item.disabled}
         onClick={() => {

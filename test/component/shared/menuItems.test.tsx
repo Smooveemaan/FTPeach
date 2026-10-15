@@ -33,3 +33,21 @@ test('a menu says which items are toggles and choices, and arrows move through e
   fireEvent.keyDown(plain, { key: 'End' });
   expect(document.activeElement).toBe(choice);
 });
+
+test('a shortcut shown on an item is also announced', () => {
+  render(
+    <MenuItems
+      onAction={() => {}}
+      items={[
+        { label: 'New tab', shortcut: 'Ctrl+Shift+T', onClick: () => {} },
+        { label: 'About', onClick: () => {} },
+      ]}
+    />,
+  );
+  expect(screen.getByRole('menuitem', { name: /New tab/ }).getAttribute('aria-keyshortcuts')).toBe(
+    'Control+Shift+T',
+  );
+  expect(screen.getByRole('menuitem', { name: 'About' }).hasAttribute('aria-keyshortcuts')).toBe(
+    false,
+  );
+});

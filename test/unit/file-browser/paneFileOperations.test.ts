@@ -78,6 +78,10 @@ test('remote file creation refuses overwrite without IPC; failed mutations still
   assert.equal(h.calls.length, 0);
   assert.equal(h.refreshes.length, 0);
   assert.equal(h.errors[0], 'errors.alreadyExists');
+  await h.operations.submitNewFolder('existing', 'tab', 'b');
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.errors[1], 'errors.alreadyExists');
+  h.errors.splice(1);
   await h.operations.submitNewFolder('folder', 'tab', 'b');
   await h.operations.submitNewFile('new', 'tab', 'b');
   await h.operations.renamePaneEntry('b', h.panes.b.entries[0]!, 'renamed');

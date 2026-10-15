@@ -102,7 +102,7 @@
     "downloadToOtherPane": "Unduh ke panel satunya",
     "openWith": "Buka dengan…",
     "permissions": "Izin…",
-    "moveTo": "Pindah ke…",
+    "moveTo": "Pindahkan ke folder…",
     "copyPath": "Salin jalur",
     "delete": "Hapus",
     "deleteSelected_one": "Hapus ({{count}} file)",
@@ -216,7 +216,7 @@
     "label": "Nama file (termasuk ekstensi):"
   },
   "moveToDialog": {
-    "title": "Pindah ke…",
+    "title": "Pindahkan ke folder…",
     "labelSingle": "Pindahkan \"{{name}}\" ke folder:",
     "labelMultiple": "Pindahkan item yang dipilih ({{count}}) ke folder:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "Apakah ingin memindahkan \"{{name}}\" ke Keranjang Sampah?",
     "deletePermanentSelected": "Apakah Anda ingin menghapus item yang dipilih secara permanen ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deletePermanentEntry": "Apakah Anda ingin menghapus \"{{name}}\" secara permanen? Tindakan ini tidak dapat dibatalkan.",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "Lokasi ini tidak memiliki Keranjang Sampah. Hapus item ({{count}}) secara permanen? Tindakan ini tidak dapat dibatalkan.",
     "deleteRemoteSelected": "Hapus permanen item yang dipilih di server ({{count}})? Tindakan ini tidak dapat dibatalkan.",
     "deleteRemoteEntry": "Hapus permanen \"{{name}}\" di server? Tindakan ini tidak dapat dibatalkan.",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "Gabungkan ke folder \"{{name}}\" yang sudah ada? File dengan nama yang sama di dalamnya akan diganti. File lain yang sudah ada tetap disimpan.",
+    "mergeLabel": "Gabungkan dan ganti"
   },
   "paneSide": {
     "top": "atas",
@@ -409,7 +409,7 @@
         "navigateBack": "Kembali",
         "navigateForward": "Maju",
         "navigateHome": "Ke folder beranda",
-        "moveTo": "Pindah ke…",
+        "moveTo": "Pindahkan ke folder…",
         "newFolder": "Folder baru…",
         "newFile": "File baru…",
         "copyToOtherPane": "Salin ke panel satunya",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "Tanpa batas",
     "connectTimeoutLabel": "Batas waktu koneksi, dtk",
-    "connectTimeoutHint": "Berapa lama waktu tunggu respons server saat terhubung sebelum dianggap tidak dapat dijangkau (0 atau kosong — tanpa batas). Berlaku untuk koneksi berikutnya.",
+    "connectTimeoutHint": "Berapa lama waktu tunggu respons server saat terhubung sebelum dianggap tidak dapat dijangkau (0 atau kosong — tanpa batas, selain itu minimal 5). Server yang dimatikan langsung menolak, tanpa menunggu. Berlaku untuk koneksi berikutnya.",
     "ftpActiveMode": "Mode FTP aktif (bukan pasif)",
     "ftpActiveModeHint": "Hanya FTP/FTPS — tidak berpengaruh pada SFTP/WebDAV. Jarang diperlukan, hanya pada jaringan/server di mana mode pasif tidak dapat menembus NAT. Berlaku untuk koneksi berikutnya.",
     "ftpActiveModeDisabledByProxy": "Tidak tersedia saat proxy diaktifkan — terowongan proxy hanya mendukung koneksi keluar, sehingga FTP harus tetap dalam mode pasif.",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "Jeda tidak didukung saat menyalin di server",
     "pauseUnsupportedWebdav": "WebDAV tidak mendukung jeda",
     "retryUnsupportedConnection": "Tidak dapat mencoba lagi: koneksi telah ditutup",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "Penyalinan file lokal ini tidak dapat dijeda."
   },
   "log": {
     "connecting": "Sedang terhubung ke {{addr}}...",

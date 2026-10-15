@@ -102,7 +102,7 @@
     "downloadToOtherPane": "Letöltés a másik panelre",
     "openWith": "Megnyitás ezzel…",
     "permissions": "Jogosultságok…",
-    "moveTo": "Áthelyezés ide…",
+    "moveTo": "Áthelyezés mappába…",
     "copyPath": "Útvonal másolása",
     "delete": "Törlés",
     "deleteSelected_one": "Törlés ({{count}} fájl)",
@@ -216,7 +216,7 @@
     "label": "Fájlnév (kiterjesztéssel):"
   },
   "moveToDialog": {
-    "title": "Áthelyezés ide…",
+    "title": "Áthelyezés mappába…",
     "labelSingle": "A(z) „{{name}}” áthelyezése ebbe a mappába:",
     "labelMultiple": "A kijelölt elemek ({{count}}) áthelyezése a következő mappába:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "Áthelyezi a(z) „{{name}}” elemet a Lomtárba?",
     "deletePermanentSelected": "Véglegesen törli a kijelölt elemeket ({{count}})? Ez a művelet nem vonható vissza.",
     "deletePermanentEntry": "Véglegesen törli a(z) „{{name}}” elemet? Ez a művelet nem vonható vissza.",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "Ezen a helyen nincs Lomtár. Véglegesen törli az elemeket ({{count}})? Ez a művelet nem vonható vissza.",
     "deleteRemoteSelected": "Véglegesen törli a kijelölt elemeket a szerverről ({{count}})? Ez a művelet nem vonható vissza.",
     "deleteRemoteEntry": "Véglegesen törli a(z) „{{name}}” elemet a szerverről? Ez a művelet nem vonható vissza.",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "Egyesíti a meglévő „{{name}}” mappával? A benne lévő azonos nevű fájlok lecserélődnek. A többi meglévő fájl megmarad.",
+    "mergeLabel": "Egyesítés és csere"
   },
   "paneSide": {
     "top": "felül",
@@ -409,7 +409,7 @@
         "navigateBack": "Vissza",
         "navigateForward": "Előre",
         "navigateHome": "Ugrás a saját mappába",
-        "moveTo": "Áthelyezés ide…",
+        "moveTo": "Áthelyezés mappába…",
         "newFolder": "Új mappa…",
         "newFile": "Új fájl…",
         "copyToOtherPane": "Másolás a másik panelre",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "Nincs korlát",
     "connectTimeoutLabel": "Csatlakozási időtúllépés, s",
-    "connectTimeoutHint": "Mennyi ideig várjon a szerver válaszára csatlakozáskor, mielőtt elérhetetlennek tekinti (0 vagy üres – nincs korlát). A következő csatlakozástól érvényes.",
+    "connectTimeoutHint": "Mennyi ideig várjon a szerver válaszára csatlakozáskor, mielőtt elérhetetlennek tekinti (0 vagy üres – nincs korlát, egyébként legalább 5). A kikapcsolt szerver azonnal elutasítja a kapcsolatot, várakozás nélkül. A következő csatlakozástól érvényes.",
     "ftpActiveMode": "Aktív FTP-mód (a passzív helyett)",
     "ftpActiveModeHint": "Csak FTP/FTPS – nincs hatása az SFTP-re és a WebDAV-ra. Ritkán van rá szükség, kizárólag olyan hálózatokon/szervereken, ahol a passzív mód nem jut át a NAT-on. A következő csatlakozásra vonatkozik.",
     "ftpActiveModeDisabledByProxy": "Proxy használata esetén nem érhető el – a proxyalagút csak a kimenő kapcsolatokat támogatja, ezért az FTP-nek passzív módban kell maradnia.",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "Szerveren belüli másolásnál nem lehet szüneteltetni",
     "pauseUnsupportedWebdav": "A WebDAV nem támogatja a szüneteltetést",
     "retryUnsupportedConnection": "Nem lehet újrapróbálni: a kapcsolat lezárult",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "Ez a helyi fájlmásolás nem szüneteltethető."
   },
   "log": {
     "connecting": "Csatlakozás ide: {{addr}}...",

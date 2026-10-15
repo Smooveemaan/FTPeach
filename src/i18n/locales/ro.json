@@ -102,7 +102,7 @@
     "downloadToOtherPane": "Descarcă în celălalt panou",
     "openWith": "Deschide cu…",
     "permissions": "Permisiuni…",
-    "moveTo": "Mută în…",
+    "moveTo": "Mută în folder…",
     "copyPath": "Copiază calea",
     "delete": "Șterge",
     "deleteSelected_one": "Șterge ({{count}} fișier)",
@@ -219,7 +219,7 @@
     "label": "Numele fișierului (cu extensie):"
   },
   "moveToDialog": {
-    "title": "Mută în…",
+    "title": "Mută în folder…",
     "labelSingle": "Mută „{{name}}” în folderul:",
     "labelMultiple": "Mută elementele selectate ({{count}}) în folderul:"
   },
@@ -240,11 +240,11 @@
     "recycleEntry": "Mutați „{{name}}” în Coșul de reciclare?",
     "deletePermanentSelected": "Doriți să ștergeți definitiv elementele selectate ({{count}})? Această acțiune nu poate fi anulată.",
     "deletePermanentEntry": "Doriți să ștergeți definitiv „{{name}}”? Această acțiune nu poate fi anulată.",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "Această locație nu are Coș de reciclare. Doriți să ștergeți definitiv elementele ({{count}})? Această acțiune nu poate fi anulată.",
     "deleteRemoteSelected": "Doriți să ștergeți definitiv elementele selectate de pe server ({{count}})? Această acțiune nu poate fi anulată.",
     "deleteRemoteEntry": "Doriți să ștergeți definitiv „{{name}}” de pe server? Această acțiune nu poate fi anulată.",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace",
+    "mergeFolder": "Doriți să combinați conținutul cu folderul existent „{{name}}”? Fișierele cu același nume din el vor fi înlocuite. Celelalte fișiere existente vor fi păstrate.",
+    "mergeLabel": "Combină și înlocuiește",
     "overwriteConflicts_few": "{{count}} elemente există deja în folderul de destinație. Doriți să le suprascrieți?"
   },
   "paneSide": {
@@ -413,7 +413,7 @@
         "navigateBack": "Înapoi",
         "navigateForward": "Înainte",
         "navigateHome": "Mergi la folderul personal",
-        "moveTo": "Mută în…",
+        "moveTo": "Mută în folder…",
         "newFolder": "Folder nou…",
         "newFile": "Fișier nou…",
         "copyToOtherPane": "Copiază în celălalt panou",
@@ -480,7 +480,7 @@
     },
     "unlimitedPlaceholder": "Fără limită",
     "connectTimeoutLabel": "Timp de așteptare la conectare, s",
-    "connectTimeoutHint": "Cât se așteaptă un răspuns de la server la conectare înainte ca acesta să fie considerat inaccesibil (0 sau gol — fără limită). Se aplică la următoarea conexiune.",
+    "connectTimeoutHint": "Cât se așteaptă un răspuns de la server la conectare înainte ca acesta să fie considerat inaccesibil (0 sau gol — fără limită, altfel cel puțin 5). Un server oprit refuză imediat, fără așteptare. Se aplică la următoarea conexiune.",
     "ftpActiveMode": "Modul FTP activ (în loc de cel pasiv)",
     "ftpActiveModeHint": "Numai pentru FTP/FTPS — nu afectează SFTP/WebDAV. Rareori necesar, doar în rețele sau pe servere unde modul pasiv nu trece de NAT. Se aplică la următoarea conexiune.",
     "ftpActiveModeDisabledByProxy": "Indisponibil atâta timp cât este activat un proxy — un tunel proxy acceptă doar conexiunile de ieșire, așa că FTP-ul trebuie să rămână în modul pasiv.",
@@ -686,7 +686,7 @@
     "pauseUnsupportedServerCopy": "Pauza nu este disponibilă la copierea pe server",
     "pauseUnsupportedWebdav": "WebDAV nu acceptă pauza",
     "retryUnsupportedConnection": "Nu se poate reîncerca: conexiunea a fost închisă",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused.",
+    "pauseUnsupportedLocal": "Această copiere locală a fișierului nu poate fi pusă pe pauză.",
     "newTransfers_few": "{{count}} transferuri noi"
   },
   "log": {

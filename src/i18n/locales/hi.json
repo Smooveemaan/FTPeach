@@ -102,7 +102,7 @@
     "downloadToOtherPane": "अन्य फलक पर डाउनलोड करें",
     "openWith": "इसके साथ खोलें…",
     "permissions": "अनुमतियाँ…",
-    "moveTo": "यहाँ ले जाएँ…",
+    "moveTo": "फ़ोल्डर में ले जाएँ…",
     "copyPath": "पथ कॉपी करें",
     "delete": "हटाएँ",
     "deleteSelected_one": "हटाएँ ({{count}} फ़ाइल)",
@@ -216,7 +216,7 @@
     "label": "फ़ाइल का नाम (एक्सटेंशन के साथ):"
   },
   "moveToDialog": {
-    "title": "यहाँ ले जाएँ…",
+    "title": "फ़ोल्डर में ले जाएँ…",
     "labelSingle": "\"{{name}}\" को फ़ोल्डर में ले जाएँ:",
     "labelMultiple": "चयनित आइटम ({{count}}) को फ़ोल्डर में ले जाएँ:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "\"{{name}}\" को रीसायकल बिन में ले जाएँ?",
     "deletePermanentSelected": "चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deletePermanentEntry": "\"{{name}}\" को स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "इस स्थान पर रीसायकल बिन नहीं है। आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteRemoteSelected": "सर्वर पर चयनित आइटम ({{count}}) स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
     "deleteRemoteEntry": "सर्वर पर \"{{name}}\" स्थायी रूप से हटाएँ? इस कार्रवाई को वापस नहीं किया जा सकता।",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "मौजूदा फ़ोल्डर \"{{name}}\" में मर्ज करें? उसके अंदर समान नाम वाली फ़ाइलें बदल दी जाएँगी। बाकी मौजूदा फ़ाइलें बनी रहेंगी।",
+    "mergeLabel": "मर्ज करें और बदलें"
   },
   "paneSide": {
     "top": "ऊपर",
@@ -409,7 +409,7 @@
         "navigateBack": "पीछे",
         "navigateForward": "आगे",
         "navigateHome": "होम फ़ोल्डर पर जाएँ",
-        "moveTo": "यहाँ ले जाएँ…",
+        "moveTo": "फ़ोल्डर में ले जाएँ…",
         "newFolder": "नया फ़ोल्डर…",
         "newFile": "नई फ़ाइल…",
         "copyToOtherPane": "अन्य फलक पर कॉपी करें",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "कोई सीमा नहीं",
     "connectTimeoutLabel": "कनेक्शन टाइमआउट, सेकंड",
-    "connectTimeoutHint": "कनेक्ट करते समय सर्वर को अनुपलब्ध मानने से पहले उसके जवाब का कितनी देर इंतज़ार करें (0 या खाली — कोई सीमा नहीं)। अगले कनेक्शन पर लागू होता है।",
+    "connectTimeoutHint": "कनेक्ट करते समय सर्वर को अनुपलब्ध मानने से पहले उसके जवाब का कितनी देर इंतज़ार करें (0 या खाली — कोई सीमा नहीं, वरना कम से कम 5)। बंद सर्वर बिना इंतज़ार के तुरंत मना कर देता है। अगले कनेक्शन पर लागू होता है।",
     "ftpActiveMode": "सक्रिय FTP मोड (पैसिव के बजाय)",
     "ftpActiveModeHint": "केवल FTP/FTPS — SFTP/WebDAV पर कोई असर नहीं। बहुत कम ज़रूरत पड़ती है, केवल उन नेटवर्क/सर्वरों पर जहाँ पैसिव मोड NAT से पार नहीं हो पाता। अगले कनेक्शन पर लागू होता है।",
     "ftpActiveModeDisabledByProxy": "प्रॉक्सी चालू होने पर उपलब्ध नहीं — प्रॉक्सी टनल केवल बाहर जाने वाले कनेक्शन का समर्थन करती है, इसलिए FTP को पैसिव मोड में रहना होगा।",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "सर्वर पर कॉपी करते समय रोकना समर्थित नहीं है",
     "pauseUnsupportedWebdav": "WebDAV रोकने का समर्थन नहीं करता",
     "retryUnsupportedConnection": "पुनः प्रयास उपलब्ध नहीं है: कनेक्शन बंद हो गया है",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "इस स्थानीय फ़ाइल कॉपी को रोका नहीं जा सकता।"
   },
   "log": {
     "connecting": "{{addr}} से कनेक्ट हो रहा है...",

@@ -102,7 +102,7 @@
     "downloadToOtherPane": "다른 창으로 다운로드",
     "openWith": "다른 앱으로 열기…",
     "permissions": "권한…",
-    "moveTo": "다른 위치로 이동…",
+    "moveTo": "폴더로 이동…",
     "copyPath": "경로 복사",
     "delete": "삭제",
     "deleteSelected_one": "삭제(파일 {{count}}개)",
@@ -216,7 +216,7 @@
     "label": "파일 이름 (확장자 포함):"
   },
   "moveToDialog": {
-    "title": "다른 위치로 이동…",
+    "title": "폴더로 이동…",
     "labelSingle": "“{{name}}”을(를) 이동할 폴더:",
     "labelMultiple": "선택한 항목({{count}})을 이동할 폴더:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "“{{name}}”을(를) 휴지통으로 이동하시겠습니까?",
     "deletePermanentSelected": "선택한 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deletePermanentEntry": "“{{name}}”을(를) 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "이 위치에는 휴지통이 없습니다. 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deleteRemoteSelected": "서버에서 선택한 항목({{count}})을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deleteRemoteEntry": "서버의 “{{name}}”을(를) 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "기존 폴더 “{{name}}”에 병합하시겠습니까? 그 안에 있는 같은 이름의 파일은 대체됩니다. 나머지 기존 파일은 유지됩니다.",
+    "mergeLabel": "병합 및 대체"
   },
   "paneSide": {
     "top": "위",
@@ -409,7 +409,7 @@
         "navigateBack": "뒤로",
         "navigateForward": "앞으로",
         "navigateHome": "홈 폴더로 이동",
-        "moveTo": "다른 위치로 이동…",
+        "moveTo": "폴더로 이동…",
         "newFolder": "새 폴더…",
         "newFile": "새 파일…",
         "copyToOtherPane": "다른 창에 복사",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "제한 없음",
     "connectTimeoutLabel": "연결 시간 초과(초)",
-    "connectTimeoutHint": "연결할 때 서버를 응답 없음으로 판단하기 전까지 기다리는 시간(0 또는 빈칸 — 제한 없음). 다음 연결부터 적용됩니다.",
+    "connectTimeoutHint": "연결할 때 서버를 응답 없음으로 판단하기 전까지 기다리는 시간(0 또는 빈칸 — 제한 없음, 그 외에는 최소 5). 꺼져 있는 서버는 기다리지 않고 바로 거부합니다. 다음 연결부터 적용됩니다.",
     "ftpActiveMode": "액티브 FTP 모드(패시브 대신)",
     "ftpActiveModeHint": "FTP/FTPS 전용 — SFTP/WebDAV에는 영향을 미치지 않습니다. 패시브 모드가 NAT를 통과하지 못하는 네트워크나 서버에서만 드물게 필요합니다. 다음 연결부터 적용됩니다.",
     "ftpActiveModeDisabledByProxy": "프록시가 활성화된 상태에서는 사용할 수 없습니다. 프록시 터널은 아웃바운드 연결만 지원하므로, FTP는 패시브 모드로 유지되어야 합니다.",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "서버에서 복사할 때는 일시 중지할 수 없습니다",
     "pauseUnsupportedWebdav": "WebDAV는 일시 중지를 지원하지 않습니다",
     "retryUnsupportedConnection": "재시도할 수 없습니다: 연결이 닫혔습니다",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "이 로컬 파일 복사는 일시 중지할 수 없습니다."
   },
   "log": {
     "connecting": "{{addr}}에 연결 중...",

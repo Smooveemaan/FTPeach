@@ -102,7 +102,7 @@
     "downloadToOtherPane": "Download til den anden rude",
     "openWith": "Åbn med…",
     "permissions": "Tilladelser…",
-    "moveTo": "Flyt til…",
+    "moveTo": "Flyt til mappe…",
     "copyPath": "Kopiér sti",
     "delete": "Slet",
     "deleteSelected_one": "Slet ({{count}} fil)",
@@ -216,7 +216,7 @@
     "label": "Filnavn (med filtypenavn):"
   },
   "moveToDialog": {
-    "title": "Flyt til…",
+    "title": "Flyt til mappe…",
     "labelSingle": "Flyt »{{name}}« til mappen:",
     "labelMultiple": "Flyt de valgte elementer ({{count}}) til mappen:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "Skal »{{name}}« flyttes til papirkurven?",
     "deletePermanentSelected": "Vil du slette de valgte elementer ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deletePermanentEntry": "Vil du slette »{{name}}« permanent? Denne handling kan ikke fortrydes.",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "Denne placering har ingen papirkurv. Vil du slette elementerne ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deleteRemoteSelected": "Vil du slette de valgte elementer på serveren ({{count}}) permanent? Denne handling kan ikke fortrydes.",
     "deleteRemoteEntry": "Vil du slette »{{name}}« på serveren permanent? Denne handling kan ikke fortrydes.",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "Skal indholdet flettes ind i den eksisterende mappe »{{name}}«? Filer med samme navn i den bliver erstattet. Andre eksisterende filer bevares.",
+    "mergeLabel": "Flet og erstat"
   },
   "paneSide": {
     "top": "øverst",
@@ -409,7 +409,7 @@
         "navigateBack": "Tilbage",
         "navigateForward": "Frem",
         "navigateHome": "Gå til hjemmemappen",
-        "moveTo": "Flyt til…",
+        "moveTo": "Flyt til mappe…",
         "newFolder": "Ny mappe…",
         "newFile": "Ny fil…",
         "copyToOtherPane": "Kopiér til den anden rude",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "Ingen begrænsning",
     "connectTimeoutLabel": "Tidsgrænse for forbindelse, s",
-    "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt – ingen begrænsning). Gælder for den næste forbindelse.",
+    "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt – ingen begrænsning, ellers mindst 5). En server, der er slukket, afviser med det samme uden at vente. Gælder for den næste forbindelse.",
     "ftpActiveMode": "Aktiv FTP-tilstand (i stedet for passiv)",
     "ftpActiveModeHint": "Gælder kun FTP/FTPS – har ingen indflydelse på SFTP/WebDAV. Er sjældent nødvendigt, kun på netværk/servere, hvor passiv tilstand ikke kommer igennem NAT. Gælder for den næste forbindelse.",
     "ftpActiveModeDisabledByProxy": "Kan ikke bruges, når en proxy er aktiveret – en proxytunnel understøtter kun udgående forbindelser, så FTP skal forblive i passiv tilstand.",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "Pause understøttes ikke ved kopiering på serveren",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
     "retryUnsupportedConnection": "Kan ikke prøve igen: forbindelsen er lukket",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "Denne lokale filkopiering kan ikke sættes på pause."
   },
   "log": {
     "connecting": "Opretter forbindelse til {{addr}}...",

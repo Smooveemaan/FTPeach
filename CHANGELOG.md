@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   unexpected error occurred."
 - When FTPeach may not write to its data folder, the message names the folder and goes away once
   saving works again, instead of "You don't have permission for this operation."
+- Translations updated for new messages.
 
 ### Fixed
 

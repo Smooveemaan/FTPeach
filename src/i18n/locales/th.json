@@ -102,7 +102,7 @@
     "downloadToOtherPane": "ดาวน์โหลดไปยังแผงอีกฝั่ง",
     "openWith": "เปิดด้วย…",
     "permissions": "สิทธิ์…",
-    "moveTo": "ย้ายไปยัง…",
+    "moveTo": "ย้ายไปยังโฟลเดอร์…",
     "copyPath": "คัดลอกเส้นทาง",
     "delete": "ลบ",
     "deleteSelected_one": "ลบ ({{count}} ไฟล์)",
@@ -216,7 +216,7 @@
     "label": "ชื่อไฟล์ (พร้อมนามสกุล):"
   },
   "moveToDialog": {
-    "title": "ย้ายไปยัง…",
+    "title": "ย้ายไปยังโฟลเดอร์…",
     "labelSingle": "ย้าย \"{{name}}\" ไปยังโฟลเดอร์:",
     "labelMultiple": "ย้ายรายการที่เลือก ({{count}}) ไปยังโฟลเดอร์:"
   },
@@ -237,11 +237,11 @@
     "recycleEntry": "จะย้าย \"{{name}}\" ไปยังถังขยะหรือไม่?",
     "deletePermanentSelected": "จะลบรายการที่เลือกไว้อย่างถาวร ({{count}}) หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "deletePermanentEntry": "จะลบ \"{{name}}\" อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
-    "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin": "ตำแหน่งนี้ไม่มีถังขยะ จะลบรายการ ({{count}}) อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "deleteRemoteSelected": "จะลบรายการที่เลือกบนเซิร์ฟเวอร์ ({{count}}) อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
     "deleteRemoteEntry": "จะลบ \"{{name}}\" บนเซิร์ฟเวอร์อย่างถาวรหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
-    "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
-    "mergeLabel": "Merge and replace"
+    "mergeFolder": "จะรวมเข้ากับโฟลเดอร์ \"{{name}}\" ที่มีอยู่หรือไม่? ไฟล์ที่มีชื่อตรงกันภายในจะถูกแทนที่ ไฟล์อื่นที่มีอยู่จะยังคงอยู่",
+    "mergeLabel": "รวมและแทนที่"
   },
   "paneSide": {
     "top": "ด้านบน",
@@ -409,7 +409,7 @@
         "navigateBack": "กลับ",
         "navigateForward": "ไปข้างหน้า",
         "navigateHome": "ไปที่โฟลเดอร์โฮม",
-        "moveTo": "ย้ายไปยัง…",
+        "moveTo": "ย้ายไปยังโฟลเดอร์…",
         "newFolder": "โฟลเดอร์ใหม่…",
         "newFile": "ไฟล์ใหม่…",
         "copyToOtherPane": "คัดลอกไปยังแผงอีกฝั่ง",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "ไม่มีขีดจำกัด",
     "connectTimeoutLabel": "หมดเวลาการเชื่อมต่อ (วินาที)",
-    "connectTimeoutHint": "ระยะเวลาที่รอการตอบกลับจากเซิร์ฟเวอร์ขณะเชื่อมต่อ ก่อนถือว่าติดต่อไม่ได้ (0 หรือว่าง — ไม่จำกัด) ใช้กับการเชื่อมต่อครั้งถัดไป",
+    "connectTimeoutHint": "ระยะเวลาที่รอการตอบกลับจากเซิร์ฟเวอร์ขณะเชื่อมต่อ ก่อนถือว่าติดต่อไม่ได้ (0 หรือว่าง — ไม่จำกัด มิฉะนั้นอย่างน้อย 5) เซิร์ฟเวอร์ที่ปิดอยู่จะปฏิเสธทันทีโดยไม่ต้องรอ ใช้กับการเชื่อมต่อครั้งถัดไป",
     "ftpActiveMode": "โหมด FTP แบบแอคทีฟ (แทนแบบพาสซีฟ)",
     "ftpActiveModeHint": "ใช้กับ FTP/FTPS เท่านั้น — ไม่มีผลต่อ SFTP/WebDAV ใช้ในกรณีที่จำเป็นน้อยมาก และเฉพาะในเครือข่าย/เซิร์ฟเวอร์ที่โหมดพาสซีฟไม่สามารถผ่าน NAT ได้ ใช้กับการเชื่อมต่อครั้งต่อไป",
     "ftpActiveModeDisabledByProxy": "ไม่สามารถใช้งานได้เมื่อเปิดใช้งานพร็อกซี — ทันเนลพร็อกซีรองรับการเชื่อมต่อขาออกเท่านั้น ดังนั้น FTP จึงต้องอยู่ในโหมดพาสซีฟ",
@@ -680,7 +680,7 @@
     "pauseUnsupportedServerCopy": "ไม่รองรับการหยุดชั่วคราวเมื่อคัดลอกบนเซิร์ฟเวอร์",
     "pauseUnsupportedWebdav": "WebDAV ไม่รองรับการหยุดชั่วคราว",
     "retryUnsupportedConnection": "ไม่สามารถลองใหม่ได้: การเชื่อมต่อถูกปิดแล้ว",
-    "pauseUnsupportedLocal": "This local file copy cannot be paused."
+    "pauseUnsupportedLocal": "ไม่สามารถหยุดการคัดลอกไฟล์ภายในเครื่องนี้ชั่วคราวได้"
   },
   "log": {
     "connecting": "กำลังเชื่อมต่อกับ {{addr}}...",

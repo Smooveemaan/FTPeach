@@ -23,7 +23,7 @@ test('download validation rejects forbidden segments, devices and traversal at a
     'COM³.log',
     'CONIN$',
   ]) {
-    assert.throws(() => validateWindowsDownloadName(name), /Invalid Windows download name/, name);
+    assert.throws(() => validateWindowsDownloadName(name), /Windows doesn't allow the name/, name);
   }
   for (const name of [
     'file.txt',
@@ -43,7 +43,7 @@ test('the renderer pre-check gives the same verdict as the backend on every shar
   for (const name of names.rejected) {
     assert.throws(
       () => validateWindowsDownloadName(name),
-      /Invalid Windows download name/,
+      /Windows doesn't allow the name/,
       JSON.stringify(name),
     );
   }

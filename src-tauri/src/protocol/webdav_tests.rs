@@ -225,7 +225,7 @@ async fn cleartext_login_is_refused_until_the_user_allows_it() {
     let error = WebDavBackend::new().connect(&config).await.unwrap_err();
     assert_eq!(
         crate::ipc::CommandError::from_anyhow(&error).code,
-        ErrorCode::PermissionDenied
+        ErrorCode::CleartextSignIn
     );
     assert!(!carried_authorization(&seen).await);
 
@@ -1943,6 +1943,8 @@ fn http_statuses_name_proxy_and_space_failures() {
         (429, ErrorCode::ResourceLimit),
         (503, ErrorCode::ResourceLimit),
         (507, ErrorCode::StorageFull),
+        (409, ErrorCode::ServerRefused),
+        (500, ErrorCode::ServerRefused),
     ] {
         let error = response::status_error(status, "PUT");
         assert_eq!(
@@ -1951,4 +1953,6 @@ fn http_statuses_name_proxy_and_space_failures() {
             "{status}"
         );
     }
+    let error = crate::ipc::CommandError::from_anyhow(&response::status_error(409, "MKCOL"));
+    assert_eq!(error.message, "HTTP 409 Conflict");
 }

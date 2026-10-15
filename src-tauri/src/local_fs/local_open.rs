@@ -186,7 +186,7 @@ impl ApprovedLocalPaths {
     pub fn recheck_application(&self, path: &Path) -> CommandResult<PathBuf> {
         let not_found = || {
             CommandError::new(
-                ErrorCode::InvalidInput,
+                ErrorCode::ProgramUnavailable,
                 "Configured application was not found",
             )
         };
@@ -243,7 +243,7 @@ impl ApprovedLocalPaths {
                 "Executable content must use the explicit execute command",
             )),
             (OpenKind::Execute, false) => Err(CommandError::new(
-                ErrorCode::InvalidInput,
+                ErrorCode::ProgramUnavailable,
                 "The selected file is not an executable or script type",
             )),
             _ => Ok(canonical),
@@ -381,7 +381,7 @@ mod tests {
         for rejected in [document, root.join("missing.exe"), root.clone()] {
             assert_eq!(
                 state.canonical_application(&rejected).unwrap_err().code,
-                ErrorCode::InvalidInput,
+                ErrorCode::ProgramUnavailable,
                 "{}",
                 rejected.display()
             );

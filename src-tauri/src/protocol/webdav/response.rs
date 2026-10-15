@@ -38,8 +38,18 @@ pub(super) fn status_error(status: u16, operation: &str) -> anyhow::Error {
         404 => ErrorCode::NotFound,
         408 | 504 => ErrorCode::TimedOut,
         416 => ErrorCode::IntegrityMismatch,
-        409 | 412 => ErrorCode::InvalidInput,
-        _ => ErrorCode::Internal,
+        // The server's answer is all there is to say: its status line.
+        _ => {
+            let reason = StatusCode::from_u16(status)
+                .ok()
+                .and_then(|status| status.canonical_reason())
+                .unwrap_or_default();
+            return anyhow::Error::msg(format!("WebDAV {operation} returned HTTP {status}"))
+                .context(crate::ipc::CommandError::new(
+                    ErrorCode::ServerRefused,
+                    format!("HTTP {status} {reason}").trim_end().to_owned(),
+                ));
+        }
     };
     fail(code, format!("WebDAV {operation} returned HTTP {status}"))
 }

@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useState } from 'react';
 import type { SavedSite, SiteMutationResult } from '../../platform/api/sites.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { createSiteForm, normalizeSiteForm } from './siteForm.ts';
 import { findProbableDuplicate } from './siteManagerModel.ts';
@@ -100,7 +101,8 @@ export function useSiteManagerMutations({
           }
           // Declining the backend's confirmation is not a failure to report:
           // the user cancelled it themselves and nothing was saved.
-          if (result?.errorCode !== 'cancelled') setError(result?.error || saveFailedMessage);
+          if (result?.errorCode !== 'cancelled')
+            setError(friendlyError(commandResultError(result ?? {})) || saveFailedMessage);
           return;
         }
         setEditingId(null);
@@ -138,7 +140,7 @@ export function useSiteManagerMutations({
             onVaultUnlockRequired(() => void deleteEntry(target));
             return;
           }
-          setError(result.error || saveFailedMessage);
+          setError(friendlyError(commandResultError(result)) || saveFailedMessage);
           return;
         }
         if (target.kind === 'folder') {
@@ -192,7 +194,7 @@ export function useSiteManagerMutations({
         managerScope: isLocalPathManager ? 'localPaths' : 'bookmarks',
       });
       if (result?.ok === false) {
-        setError(result.error || saveFailedMessage);
+        setError(friendlyError(commandResultError(result)) || saveFailedMessage);
         return;
       }
       setAddingFolder(false);
@@ -230,7 +232,7 @@ export function useSiteManagerMutations({
           managerScope: isLocalPathManager ? 'localPaths' : 'bookmarks',
         });
         if (result?.ok === false) {
-          setError(result.error || saveFailedMessage);
+          setError(friendlyError(commandResultError(result)) || saveFailedMessage);
           return;
         }
         setRenamingFolderId(null);
@@ -265,7 +267,8 @@ export function useSiteManagerMutations({
       try {
         const result = await onSave(normalizeSiteForm({ ...createSiteForm(site), name }, site.id));
         if (result?.ok === false) {
-          if (result.errorCode !== 'cancelled') setError(result.error || saveFailedMessage);
+          if (result.errorCode !== 'cancelled')
+            setError(friendlyError(commandResultError(result)) || saveFailedMessage);
           return;
         }
         setRenamingSiteId(null);

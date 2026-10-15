@@ -25,6 +25,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { SiteLayout, SiteMutationResult } from '../../platform/api/sites.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { SiteContainers } from './siteDragModel.ts';
 import {
@@ -507,7 +508,7 @@ export function useSiteDragController({
           persistedEntriesRef.current = finalEntries;
           return null;
         }
-        return result.error || '';
+        return friendlyError(commandResultError(result)) || '';
       } catch (cause) {
         return cause instanceof Error ? cause.message : '';
       }

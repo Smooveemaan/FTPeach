@@ -1340,7 +1340,7 @@ async fn a_secret_that_cannot_be_encrypted_is_not_reported_as_saved() {
         .unwrap_err();
     assert_eq!(
         crate::ipc::CommandError::from_anyhow(&error).code,
-        crate::ipc::ErrorCode::Internal
+        crate::ipc::ErrorCode::SecretNotProtected
     );
     assert_eq!(settings_raw(), saved);
     assert!(!settings_raw().contains("second-secret"));
@@ -1980,7 +1980,7 @@ mod saved_password_recipient {
 
         assert_eq!(
             crate::ipc::CommandError::from_anyhow(&error).code,
-            crate::ipc::ErrorCode::Internal
+            crate::ipc::ErrorCode::SecretNotProtected
         );
         assert_eq!(std::fs::read(root.join("sites.json")).unwrap(), before);
         assert_eq!(recipient(&store, None).await, unchanged());

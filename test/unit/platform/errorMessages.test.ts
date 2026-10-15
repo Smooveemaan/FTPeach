@@ -64,15 +64,15 @@ test('structured command errors are localized by stable code without inspecting 
   );
   assertFriendlyConnectMatches(
     { code: 'tlsNegotiationFailed', message: 'TLS negotiation failed' },
-    /^TLS negotiation failed\./,
+    /^Couldn't set up encryption \(TLS\)/,
   );
   assertFriendlyConnectMatches(
     { code: 'sshNegotiationFailed', message: 'SSH negotiation failed' },
-    /^SSH negotiation failed\./,
+    /no SSH algorithm in common\.$/,
   );
   assertFriendlyConnectMatches(
     { code: 'proxyFailed', message: 'Proxy connection failed' },
-    /^The proxy connection failed\./,
+    /^Couldn't connect through the proxy\.$/,
   );
 });
 
@@ -81,46 +81,39 @@ test('friendlyError localizes every structured command error code', () => {
     authFailed: 'Incorrect username or password.',
     connectionRefused: 'The server refused the connection. Check the address and port.',
     hostNotFound: 'Server not found. Check that the address is correct.',
-    timedOut:
-      'The server is not responding (connection timed out). Check the address, port, and network connection.',
-    hostKeyMismatch: 'The server host key has changed.',
-    invalidCertificate:
-      'The server presented an invalid certificate. If you trust this server, disable certificate verification in the connection settings.',
-    tlsNegotiationFailed:
-      'TLS negotiation failed. Check that the server supports explicit FTPS or HTTPS and a compatible TLS version.',
-    sshNegotiationFailed:
-      'SSH negotiation failed. The server and FTPeach could not agree on a compatible SSH algorithm or protocol version.',
-    proxyFailed:
-      'The proxy connection failed. Check the proxy type, address, credentials, and whether it can reach the target server.',
+    timedOut: "The server isn't responding. Check the address, port and network.",
+    hostKeyMismatch: "The server's host key has changed, so FTPeach didn't connect.",
+    invalidCertificate: "The server's certificate isn't valid.",
+    tlsNegotiationFailed: "Couldn't set up encryption (TLS) with the server.",
+    sshNegotiationFailed: 'The server and FTPeach have no SSH algorithm in common.',
+    proxyFailed: "Couldn't connect through the proxy.",
     notFound: 'File or folder not found.',
     permissionDenied: "You don't have permission for this operation.",
     cancelled: 'Cancelled by user',
-    integrityMismatch: 'Files changed during the transfer or could not be verified.',
-    cleanupIncomplete:
-      'Cleanup is incomplete. Files whose ownership could not be verified were kept. Review the destination before removing them manually.',
+    integrityMismatch: "A file changed during the transfer or couldn't be checked.",
+    cleanupIncomplete: "Some files were kept: FTPeach couldn't confirm it created them.",
     networkUnreachable: 'The server is unreachable — check your network connection.',
     connectionLost: 'The connection to the server was unexpectedly closed.',
-    invalidInput: 'The provided value is invalid.',
-    resourceLimit:
-      'A limit was reached: too many connections or requests at once, or something too large. Try again later, or with less.',
-    storageFull: 'Not enough disk space.',
+    invalidInput: 'An unexpected error occurred.',
+    resourceLimit: 'Too many connections or requests, or too much data. Try again later.',
+    storageFull: 'Not enough free space.',
     keyUnreadable: "Couldn't read the key — the file is corrupted or the passphrase is incorrect.",
     credentialFileMissing:
       'The key or certificate file was not found: unlocalized backend fallback',
     networkPathNotChosen:
       'FTPeach opens a network path only after you choose it in a dialog, such as Choose folder…',
     busy: 'Another operation is already working with this file or folder. Try again once it finishes.',
-    fileInUse: 'The file is in use by another process.',
+    fileInUse: 'The file is open in another program.',
     vaultLocked: 'Unlock vault',
     vaultAuthFailed: 'The master password was not accepted. Wait a moment before trying again.',
     savedSecretUnreadable:
       "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings.",
     alreadyExists: 'A file or folder with that name already exists.',
     replaceUnsupported: "The server didn't allow the existing file to be replaced.",
+    replaceInterrupted:
+      'The connection was lost while replacing the file. The old version will be restored on the next connection.',
     stagingLeft:
       'The temporary file unlocalized backend fallback could not be deleted from the server.',
-    replaceInterrupted:
-      'The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.',
     createUnsupported:
       'This FTP server does not support creating new files. Try SFTP or WebDAV if the server offers them.',
     activeModeFailed: "The server couldn't connect back in active FTP mode. Try passive mode.",
@@ -129,10 +122,21 @@ test('friendlyError localizes every structured command error code', () => {
     noRecycleBin: 'This location has no Recycle Bin, so nothing was deleted.',
     storeNewer: "This data was saved by a newer version of FTPeach, so the change can't be saved.",
     storeUnreadable: "The file that keeps this data can't be read, so the change can't be saved.",
-    sourceChanged:
-      "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
     storeNotWritable:
       "Couldn't save changes in unlocalized backend fallback: FTPeach isn't allowed to write to this folder.",
+    sourceChanged:
+      "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
+    invalidFileName: 'Windows doesn\'t allow the name "unlocalized backend fallback".',
+    insideSource: "A folder can't be copied or moved into itself.",
+    webdavRedirect: 'The server redirects to another address: unlocalized backend fallback',
+    cleartextSignIn:
+      'The server asks for a password over an unencrypted connection. Use https:// or allow unencrypted sign-in.',
+    editsRetained:
+      'Edits that were not uploaded take over 1 GB or are over 30 days old. Upload or delete them first.',
+    resumeExpired: "This paused transfer can't be resumed. Start it again.",
+    programUnavailable: "The program wasn't found or can't be run.",
+    secretNotProtected: "The password couldn't be encrypted, so the change wasn't saved.",
+    serverRefused: 'The server refused: unlocalized backend fallback',
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;
 

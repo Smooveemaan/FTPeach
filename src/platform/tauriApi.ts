@@ -219,7 +219,7 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
     // wrong password, a missing file, a declined confirmation. Only one nothing
     // classified is worth a line in the application log, with the detail that
     // says where it came from; the log redacts what it writes.
-    if (error.code === 'internal') {
+    if (error.code === 'internal' || error.code === 'invalidInput') {
       console.warn(`${command} failed: ${error.message}`, error.details ?? '');
     }
     return {

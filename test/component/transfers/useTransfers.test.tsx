@@ -2518,7 +2518,7 @@ test('batch rejects file-folder mismatches and still copies the other names', as
       assert.equal(errors.length, 1);
       assert.match(errors[0]!, /one/);
       assert.match(errors[0]!, /two/);
-      assert.match(errors[0]!, /file cannot replace a folder/);
+      assert.match(errors[0]!, /a file and a folder can't replace each other/);
       assert.deepEqual(copy.mock.calls, [['C:\\source\\new', 'C:\\target\\new', false]]);
     },
     { confirmOverwriteBatch: confirm },

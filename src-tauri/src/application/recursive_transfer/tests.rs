@@ -1473,7 +1473,7 @@ async fn a_listed_name_that_reads_as_a_drive_is_refused_before_anything_is_writt
         assert!(!report.ok);
         assert_eq!(
             report.errors[0].code,
-            ErrorCode::InvalidInput,
+            ErrorCode::InvalidFileName,
             "{:?}",
             report.errors
         );

@@ -387,12 +387,9 @@ impl WebDavBackend {
                 .and_then(|value| value.to_str().ok())
                 .unwrap_or_default()
                 .to_owned();
-            return Err(anyhow::Error::new(CrossOriginRedirect(location)).context(
-                crate::ipc::CommandError::new(
-                    ErrorCode::InvalidInput,
-                    "The WebDAV server redirects to another address",
-                ),
-            ));
+            let refusal =
+                crate::ipc::CommandError::new(ErrorCode::WebdavRedirect, location.clone());
+            return Err(anyhow::Error::new(CrossOriginRedirect(location)).context(refusal));
         }
         if status == StatusCode::NOT_FOUND {
             return Err(super::fail(
@@ -740,7 +737,7 @@ impl ProtocolBackend for WebDavBackend {
                 // fallback, and no password sent to find out.
                 if needs_login && !send_credentials {
                     return Err(super::fail(
-                        ErrorCode::PermissionDenied,
+                        ErrorCode::CleartextSignIn,
                         "This WebDAV server asks for a password over an unencrypted connection. Use an https:// address, or allow unencrypted sign-in for this connection.",
                     ));
                 }

@@ -215,7 +215,7 @@ impl Store {
                     // rather than seeing it reported as done.
                     if secret_not_persisted {
                         anyhow::bail!(CommandError::new(
-                            ErrorCode::Internal,
+                            ErrorCode::SecretNotProtected,
                             "The proxy password could not be protected; the saved one was kept",
                         ));
                     }

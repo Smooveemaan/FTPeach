@@ -17,12 +17,7 @@ pub(crate) fn validate_download_name(path: &std::path::Path) -> anyhow::Result<(
             let name = name
                 .to_str()
                 .ok_or_else(|| anyhow::anyhow!("Invalid local filename"))?;
-            super::windows_names::validate_file_name(name).map_err(|_| {
-                crate::ipc::CommandError::new(
-                    crate::ipc::ErrorCode::InvalidInput,
-                    format!("{}: invalid Windows download name", path.display()),
-                )
-            })?;
+            super::windows_names::validate_file_name(name)?;
         }
     }
     Ok(())
@@ -52,13 +47,12 @@ mod tests {
         assert!(validate_download_name(std::path::Path::new("C:/downloads/normal.txt")).is_ok());
     }
     #[test]
-    fn a_refused_download_name_reports_invalid_input() {
+    fn a_refused_download_name_reports_the_name() {
         let error =
             validate_download_name(std::path::Path::new("C:/downloads/CON.txt")).unwrap_err();
-        assert_eq!(
-            crate::ipc::CommandError::from_anyhow(&error).code,
-            crate::ipc::ErrorCode::InvalidInput
-        );
+        let error = crate::ipc::CommandError::from_anyhow(&error);
+        assert_eq!(error.code, crate::ipc::ErrorCode::InvalidFileName);
+        assert_eq!(error.message, "CON.txt");
     }
     #[tokio::test]
     async fn mutations_wait_until_the_download_releases_its_guard() {

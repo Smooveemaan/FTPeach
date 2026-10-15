@@ -1,3 +1,4 @@
+import i18n from '../../i18n/index.ts';
 import { api } from '../../platform/api/index.ts';
 import type { TransferLifecycleModel, RefreshCallback } from './useTransferLifecycle.ts';
 import type { CommandResult } from '../../platform/ipcContracts.ts';
@@ -62,8 +63,6 @@ const outcomeOf = (
     : report.skipped || report.alreadyRunning || report.cancelled
       ? 'skipped'
       : 'failed';
-const MOVE_BETWEEN_ENDPOINTS =
-  'Files can be moved only within this computer or within one server connection';
 
 async function requireSuccess(result: Promise<CommandResult>, path: string) {
   const outcome = await result;
@@ -269,7 +268,7 @@ export function createTransferRouting(
     // Every UI entry point already offers only Copy here; this keeps a caller
     // that asks anyway from reaching the copy, let alone a delete.
     if (move && !canMoveBetween(sourcePane, targetPane)) {
-      throw new Error(MOVE_BETWEEN_ENDPOINTS);
+      throw new Error(i18n.t('errors.moveBetweenEndpoints'));
     }
     const sourceEntriesByName = new Map(sourcePane.entries.map((entry) => [entry.name, entry]));
     const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);

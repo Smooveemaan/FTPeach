@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Clicking the notification that transfers finished brings the FTPeach window back, also from
   the tray.
 - File operation errors explain when a file and a folder have the same name.
+- Error messages are shorter, and several general ones now say what happened: a name Windows
+  doesn't allow, a folder copied into itself, a server redirect or what the server answered.
+- Errors in Manage Bookmarks and settings appear in your language.
 - Folder merge confirmation explains which files will be replaced and which will be kept.
 - When a moved folder is copied but an original cannot be removed, the message says so and names
   it, instead of "An unexpected error occurred."

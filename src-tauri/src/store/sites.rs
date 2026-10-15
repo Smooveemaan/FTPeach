@@ -250,7 +250,7 @@ fn ensure_confirmed_move(
     }
     if new_password_failed {
         anyhow::bail!(CommandError::new(
-            ErrorCode::Internal,
+            ErrorCode::SecretNotProtected,
             "The new password could not be protected; the bookmark was not changed",
         ));
     }

@@ -19,7 +19,8 @@ const ERROR_CODE_KEYS = {
   cleanupIncomplete: 'errors.cleanupIncomplete',
   networkUnreachable: 'errors.networkUnreachable',
   connectionLost: 'errors.connectionReset',
-  invalidInput: 'errors.invalidInput',
+  // A request the backend refused as malformed: nothing the user can act on.
+  invalidInput: 'errors.internal',
   resourceLimit: 'errors.resourceLimit',
   storageFull: 'errors.diskFull',
   keyUnreadable: 'errors.keyReadFailed',
@@ -42,8 +43,27 @@ const ERROR_CODE_KEYS = {
   storeUnreadable: 'errors.storeUnreadable',
   storeNotWritable: 'errors.storeNotWritable',
   sourceChanged: 'errors.sourceChanged',
+  invalidFileName: 'errors.invalidFileName',
+  insideSource: 'errors.insideSource',
+  webdavRedirect: 'errors.webdavRedirect',
+  cleartextSignIn: 'errors.cleartextSignIn',
+  editsRetained: 'errors.editsRetained',
+  resumeExpired: 'errors.resumeExpired',
+  programUnavailable: 'errors.programUnavailable',
+  secretNotProtected: 'errors.secretNotProtected',
+  serverRefused: 'errors.serverRefused',
   internal: 'errors.internal',
 } as const satisfies Record<CommandErrorCode, string>;
+
+/** The codes whose message is data, and the placeholder it fills. */
+const ERROR_CODE_DATA = {
+  credentialFileMissing: 'path',
+  stagingLeft: 'path',
+  storeNotWritable: 'path',
+  invalidFileName: 'name',
+  webdavRedirect: 'address',
+  serverRefused: 'reply',
+} as const satisfies Partial<Record<CommandErrorCode, string>>;
 
 interface FriendlyErrorValue {
   code?: string | undefined;
@@ -64,13 +84,8 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
   if (!raw) return raw;
   if (typeof raw === 'object') {
     const key = lookupByUnknownKey(ERROR_CODE_KEYS, raw.code);
-    // The codes whose message is data: the path of the file or folder concerned.
-    if (
-      raw.code === 'credentialFileMissing' ||
-      raw.code === 'stagingLeft' ||
-      raw.code === 'storeNotWritable'
-    )
-      return i18n.t(`errors.${raw.code}`, { path: raw.message });
+    const data = lookupByUnknownKey(ERROR_CODE_DATA, raw.code);
+    if (key && data) return i18n.t(key, { [data]: raw.message });
     return key ? i18n.t(key) : raw.message || raw.code;
   }
   return raw;

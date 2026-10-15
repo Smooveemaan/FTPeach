@@ -48,6 +48,15 @@ export const COMMAND_ERROR_CODES = [
   'storeUnreadable',
   'storeNotWritable',
   'sourceChanged',
+  'invalidFileName',
+  'insideSource',
+  'webdavRedirect',
+  'cleartextSignIn',
+  'editsRetained',
+  'resumeExpired',
+  'programUnavailable',
+  'secretNotProtected',
+  'serverRefused',
   'internal',
 ] as const;
 export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number];

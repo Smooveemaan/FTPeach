@@ -44,7 +44,7 @@ pub fn validate_remote_relationship(source: &str, destination: &str) -> anyhow::
     }
     if target_folded.starts_with(&source_folded) {
         anyhow::bail!(crate::ipc::CommandError::new(
-            crate::ipc::ErrorCode::InvalidInput,
+            crate::ipc::ErrorCode::InsideSource,
             format!("{destination}: Destination is the source or is inside the source folder"),
         ));
     }

@@ -170,7 +170,7 @@ mod tests {
             &approved,
         )
         .unwrap_err();
-        assert_eq!(missing.code, ErrorCode::InvalidInput);
+        assert_eq!(missing.code, ErrorCode::ProgramUnavailable);
         let blank = OpenWithIntent::from_request(
             r#"{"connectionId":"c1","remotePath":"/a.txt","application":"  "}"#,
             &approved,

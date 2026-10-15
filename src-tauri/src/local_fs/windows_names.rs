@@ -33,10 +33,7 @@ pub(crate) fn validate_file_name(name: &str) -> Result<(), CommandError> {
             .chars()
             .any(|c| c.is_control() || "<>:\"|?*".contains(c))
     {
-        return Err(CommandError::new(
-            ErrorCode::InvalidInput,
-            format!("{name}: invalid Windows file name"),
-        ));
+        return Err(CommandError::new(ErrorCode::InvalidFileName, name));
     }
     Ok(())
 }
@@ -60,7 +57,8 @@ pub(crate) mod tests {
         let names = fixture();
         for name in &names.rejected {
             let error = validate_file_name(name).expect_err(name);
-            assert_eq!(error.code, ErrorCode::InvalidInput, "{name:?}");
+            assert_eq!(error.code, ErrorCode::InvalidFileName, "{name:?}");
+            assert_eq!(error.message, *name);
         }
         for name in &names.accepted {
             assert!(validate_file_name(name).is_ok(), "{name:?}");

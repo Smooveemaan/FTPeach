@@ -82,6 +82,25 @@ pub enum ErrorCode {
     /// The local file changed while it was being uploaded; nothing was put in
     /// place on the server.
     SourceChanged,
+    /// A name Windows cannot hold; the message is that name.
+    InvalidFileName,
+    /// A folder copied or moved into itself or into a folder inside it.
+    InsideSource,
+    /// A WebDAV server that answers with a redirect; the message is where to.
+    WebdavRedirect,
+    /// A WebDAV server that asks for a password over plain http, which is not
+    /// sent unless the connection allows it.
+    CleartextSignIn,
+    /// Recovered edits fill their limit, so no more files are opened.
+    EditsRetained,
+    /// A paused folder transfer whose record is gone, so it starts over.
+    ResumeExpired,
+    /// The program chosen for Open with is gone or cannot be run.
+    ProgramUnavailable,
+    /// A new password could not be encrypted, so the change was not saved.
+    SecretNotProtected,
+    /// A server reply no other code explains; the message is that reply.
+    ServerRefused,
     Internal,
 }
 
@@ -169,7 +188,44 @@ impl CommandError {
                     .and_then(Self::code_for_io_error)
             })
             .unwrap_or_else(|| Self::code_for_message(&details));
+        // Nothing names the failure, but the server said something: show that.
+        if code == ErrorCode::Internal
+            && let Some(reply) = error.chain().find_map(Self::server_reply_text)
+        {
+            return Self {
+                code: ErrorCode::ServerRefused,
+                message: reply,
+                details: Some(details),
+            };
+        }
         Self::with_safe_message(code, details)
+    }
+
+    /// True when no code explains the failure: callers that know more about
+    /// the request may name it themselves.
+    pub fn unexplained(error: &anyhow::Error) -> bool {
+        matches!(
+            Self::from_anyhow(error).code,
+            ErrorCode::Internal | ErrorCode::ServerRefused
+        )
+    }
+
+    /// The server's own reply, on one line and cut short: an FTP reply or an
+    /// SFTP status message.
+    fn server_reply_text(source: &(dyn std::error::Error + 'static)) -> Option<String> {
+        let text = if let Some(suppaftp::FtpError::UnexpectedResponse(response)) =
+            source.downcast_ref::<suppaftp::FtpError>()
+        {
+            String::from_utf8_lossy(&response.body).into_owned()
+        } else if let Some(russh_sftp::client::error::Error::Status(status)) =
+            source.downcast_ref::<russh_sftp::client::error::Error>()
+        {
+            status.error_message.clone()
+        } else {
+            return None;
+        };
+        let line = text.split_whitespace().collect::<Vec<_>>().join(" ");
+        (!line.is_empty()).then(|| line.chars().take(200).collect())
     }
 
     /// A server's own verdict: an FTP reply code or an SFTP status. The reply
@@ -430,6 +486,17 @@ impl CommandError {
             ErrorCode::StoreUnreadable => "The data file cannot be read, so it is not overwritten",
             ErrorCode::StoreNotWritable => "The data folder cannot be written",
             ErrorCode::SourceChanged => "The file changed while it was uploading",
+            ErrorCode::InvalidFileName => "Windows doesn't allow this name",
+            ErrorCode::InsideSource => "A folder can't be copied or moved into itself",
+            ErrorCode::WebdavRedirect => "The server redirects to another address",
+            ErrorCode::CleartextSignIn => {
+                "The server asks for a password over an unencrypted connection"
+            }
+            ErrorCode::EditsRetained => "Too many edits weren't uploaded",
+            ErrorCode::ResumeExpired => "This paused transfer can't be resumed",
+            ErrorCode::ProgramUnavailable => "The program wasn't found or can't be run",
+            ErrorCode::SecretNotProtected => "The password couldn't be encrypted",
+            ErrorCode::ServerRefused => "The server refused",
         };
         Self {
             code,
@@ -484,6 +551,15 @@ mod tests {
             (ErrorCode::StoreUnreadable, "storeUnreadable"),
             (ErrorCode::StoreNotWritable, "storeNotWritable"),
             (ErrorCode::SourceChanged, "sourceChanged"),
+            (ErrorCode::InvalidFileName, "invalidFileName"),
+            (ErrorCode::InsideSource, "insideSource"),
+            (ErrorCode::WebdavRedirect, "webdavRedirect"),
+            (ErrorCode::CleartextSignIn, "cleartextSignIn"),
+            (ErrorCode::EditsRetained, "editsRetained"),
+            (ErrorCode::ResumeExpired, "resumeExpired"),
+            (ErrorCode::ProgramUnavailable, "programUnavailable"),
+            (ErrorCode::SecretNotProtected, "secretNotProtected"),
+            (ErrorCode::ServerRefused, "serverRefused"),
             (ErrorCode::Internal, "internal"),
         ];
         for (code, expected) in cases {
@@ -537,7 +613,7 @@ mod tests {
             ftp(550, "/a.txt: Operation not permitted"),
             ErrorCode::PermissionDenied
         );
-        assert_eq!(ftp(550, "Failed to open file."), ErrorCode::Internal);
+        assert_eq!(ftp(550, "Failed to open file."), ErrorCode::ServerRefused);
         assert_eq!(ftp(552, "Disk full"), ErrorCode::StorageFull);
         assert_eq!(
             ftp(451, "Failure writing to local file."),
@@ -584,6 +660,31 @@ mod tests {
         assert_eq!(unexpected("sender dropped"), ErrorCode::ConnectionLost);
         assert_eq!(unexpected("session closed"), ErrorCode::ConnectionLost);
         assert_eq!(unexpected("no file"), ErrorCode::Internal);
+    }
+
+    /// A reply nothing else explains is shown as the server gave it.
+    #[test]
+    fn an_unexplained_server_reply_is_shown_as_given() {
+        let error = anyhow::Error::from(suppaftp::FtpError::UnexpectedResponse(
+            suppaftp::types::Response::new(
+                suppaftp::Status::from(550),
+                b"550 Failed to open\r\n   file.\r\n".to_vec(),
+            ),
+        ))
+        .context("RETR failed");
+        let refused = CommandError::from_anyhow(&error);
+        assert_eq!(refused.code, ErrorCode::ServerRefused);
+        assert_eq!(refused.message, "550 Failed to open file.");
+        assert!(CommandError::unexplained(&error));
+        let sftp = anyhow::Error::from(russh_sftp::client::error::Error::Status(
+            russh_sftp::protocol::Status {
+                id: 1,
+                status_code: russh_sftp::protocol::StatusCode::Failure,
+                error_message: "x".repeat(300),
+                language_tag: String::new(),
+            },
+        ));
+        assert_eq!(CommandError::from_anyhow(&sftp).message.len(), 200);
     }
 
     /// What the user is told about the operating system's own failures. The

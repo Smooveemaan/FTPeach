@@ -269,7 +269,7 @@ fn refused_greeting(error: anyhow::Error) -> anyhow::Error {
             Some(suppaftp::FtpError::UnexpectedResponse(_))
         )
     });
-    if replied && crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::Internal {
+    if replied && crate::ipc::CommandError::unexplained(&error) {
         return error.context(crate::ipc::CommandError::new(
             ErrorCode::ConnectionRefused,
             "The server refused the connection",
@@ -969,8 +969,8 @@ impl FtpBackend {
     /// the same plain 550 ("Failed to open file"). Whether the parent lists
     /// the name tells the two apart.
     async fn explain_refusal(&mut self, path: &str, error: anyhow::Error) -> anyhow::Error {
-        let unexplained = refused_by_server(&error)
-            && crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::Internal;
+        let unexplained =
+            refused_by_server(&error) && crate::ipc::CommandError::unexplained(&error);
         if !unexplained {
             return error;
         }
@@ -1669,9 +1669,7 @@ impl ProtocolBackend for FtpBackend {
         // over is the server refusing to create one.
         match made {
             Err(error)
-                if refused_by_server(&error)
-                    && crate::ipc::CommandError::from_anyhow(&error).code
-                        == ErrorCode::Internal =>
+                if refused_by_server(&error) && crate::ipc::CommandError::unexplained(&error) =>
             {
                 Err(error.context(crate::ipc::CommandError::new(
                     ErrorCode::PermissionDenied,

@@ -366,7 +366,11 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
           onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
           return;
         }
-        throw new Error('error' in result ? String(result.error) : 'Settings could not be saved');
+        // The code goes with it, so the message below is the translated one.
+        throw Object.assign(
+          new Error('error' in result ? String(result.error) : 'Settings could not be saved'),
+          { code: 'errorCode' in result ? result.errorCode : undefined },
+        );
       }
       onClose();
     } catch (error) {

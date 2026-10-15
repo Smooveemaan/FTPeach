@@ -290,12 +290,10 @@ pub async fn transfer_upload(
             .map_err(CommandError::from)?;
     let server = sessions.server_for(&connection_id).await;
     let local = PathBuf::from(local_path);
-    if let Err(error) = validate_read_source(&local).await {
-        return Err(CommandError::new(
-            ErrorCode::InvalidInput,
-            error.to_string(),
-        ));
-    }
+    // A link or FTPeach's own folder keeps its code: the user is told which.
+    validate_read_source(&local)
+        .await
+        .map_err(|error| CommandError::from_anyhow(&error))?;
     // Pin the source before a byte moves. A later attempt may only append to
     // this attempt's staging file by proving it is still reading the same file.
     let Some(pin) = upload_resume::pin(&local).await else {
@@ -485,12 +483,10 @@ pub async fn transfer_download(
         .try_with(Clone::clone)
         .unwrap_or_else(|_| uuid::Uuid::new_v4().to_string());
     let local = PathBuf::from(local_path);
-    if let Err(error) = validate_write_destination(&local).await {
-        return Err(CommandError::new(
-            ErrorCode::InvalidInput,
-            error.to_string(),
-        ));
-    }
+    // A link or FTPeach's own folder keeps its code: the user is told which.
+    validate_write_destination(&local)
+        .await
+        .map_err(|error| CommandError::from_anyhow(&error))?;
     // An attempt carrying on from a pause now owns what that pause kept.
     PAUSED_DOWNLOADS
         .lock()

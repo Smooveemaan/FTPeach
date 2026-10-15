@@ -2,7 +2,11 @@ import { checkedResponse, commandFailure, isRecord, voidOutcome } from '../ipcCo
 import type { CommandResult, InvokeFn } from '../ipcContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
-import { isStorageWarnings, storageWarningText } from '../../shared/errorMessages.ts';
+import {
+  commandResultError,
+  isStorageWarnings,
+  storageWarningText,
+} from '../../shared/errorMessages.ts';
 
 export type SavedSite = Record<string, unknown> & {
   id?: string;
@@ -50,7 +54,7 @@ export function createSitesApi(invoke: InvokeFn) {
         return result.sites;
       }
       if (isManagedSiteArray(result)) return result;
-      reportAsyncFailure(commandFailure('sites_list', result).error);
+      reportAsyncFailure(commandResultError(commandFailure('sites_list', result)));
       return [];
     },
     save: (site: SavedSite) => save('sites_save', { site }),

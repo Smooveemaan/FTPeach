@@ -333,7 +333,7 @@ async fn run_inner(
             None => {
                 report.outcome = "failed".into();
                 report.errors.push(CommandError::new(
-                    ErrorCode::InvalidInput,
+                    ErrorCode::ResumeExpired,
                     "This paused folder transfer can no longer be resumed; start it again",
                 ));
                 return report;

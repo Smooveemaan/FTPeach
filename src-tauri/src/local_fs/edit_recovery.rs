@@ -72,7 +72,7 @@ fn check_budget(
 
 fn retention_limit() -> anyhow::Error {
     crate::ipc::CommandError::new(
-        crate::ipc::ErrorCode::ResourceLimit,
+        crate::ipc::ErrorCode::EditsRetained,
         "Save or discard recovered editor copies before opening more files (1 GiB or 30 days). Existing edits have been kept.",
     ).into()
 }

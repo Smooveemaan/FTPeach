@@ -1,3 +1,5 @@
+import i18n from '../../i18n/index.ts';
+
 // Refuses a download the backend would refuse, before its row is queued. The
 // authority is src-tauri/src/local_fs/windows_names.rs; test/fixtures/windows-names.json
 // holds the two to the same verdicts.
@@ -17,7 +19,7 @@ export function validateWindowsDownloadName(relativePath: string): void {
         stem,
       )
     ) {
-      throw new Error(`${relativePath}: Invalid Windows download name`);
+      throw new Error(i18n.t('errors.invalidFileName', { name }));
     }
   }
 }

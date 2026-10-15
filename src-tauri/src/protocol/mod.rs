@@ -458,7 +458,7 @@ pub(crate) async fn remove_set_aside<B: ProtocolBackend + ?Sized>(backend: &mut 
 
 /// A refusal the server gave no reason for is named for what it refused.
 fn refused_replacement(error: anyhow::Error, new_path: &str) -> anyhow::Error {
-    if crate::ipc::CommandError::from_anyhow(&error).code != crate::ipc::ErrorCode::Internal {
+    if !crate::ipc::CommandError::unexplained(&error) {
         return error;
     }
     fail(
@@ -615,7 +615,7 @@ mod log_safety_tests {
         let error = validate_remote_relationship("/data/folder", "/data/folder/child").unwrap_err();
         assert_eq!(
             crate::ipc::CommandError::from_anyhow(&error).code,
-            crate::ipc::ErrorCode::InvalidInput
+            crate::ipc::ErrorCode::InsideSource
         );
     }
 

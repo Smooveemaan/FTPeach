@@ -5,6 +5,7 @@ import Modal, { ModalFooterActions } from '../../components/Modal.tsx';
 import ConfirmDialog from '../../components/ConfirmDialog.tsx';
 import UnsavedChangesDialog from '../../components/UnsavedChangesDialog.tsx';
 import { isolate } from '../../shared/bidi.ts';
+import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { SettingsTransferDialog } from '../settings/ui.ts';
 import type { SettingsTransferModel } from '../settings/index.ts';
 import Icon from '../../components/Icon.tsx';
@@ -247,7 +248,9 @@ export default function SiteManagerDialog({
     try {
       const result = await onSave(normalizeSiteForm(copy, '__new__'));
       if (!result?.ok && result?.errorCode !== 'cancelled')
-        setError(result?.error || t('siteManagerDialog.saveFailed'));
+        setError(
+          friendlyError(commandResultError(result ?? {})) || t('siteManagerDialog.saveFailed'),
+        );
     } catch (cause) {
       setError(errorMessage(cause) || t('siteManagerDialog.saveFailed'));
     }

@@ -139,7 +139,7 @@ fn entry_path<R: Read>(file: &zip::read::ZipFile<'_, R>) -> anyhow::Result<PathB
 /// Every entry of the zip stays inside the program's folder, the whole of it
 /// unpacks to a bounded size, and the program it carries passes the version
 /// check an installer does.
-fn check_portable_zip(
+pub(crate) fn check_portable_zip(
     bytes: &[u8],
     manifest_version: &str,
     current: &semver::Version,
@@ -330,7 +330,7 @@ fn replace_program(
     started
 }
 
-fn unpack(zip: &Path, destination: &Path) -> std::io::Result<()> {
+pub(crate) fn unpack(zip: &Path, destination: &Path) -> std::io::Result<()> {
     let mut archive = zip::ZipArchive::new(File::open(zip)?)?;
     let mut budget = MAX_UNPACKED_BYTES;
     for index in 0..archive.len() {

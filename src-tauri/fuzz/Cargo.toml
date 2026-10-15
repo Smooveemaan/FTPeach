@@ -22,9 +22,17 @@ percent-encoding = "2.3.2"
 suppaftp = { version = "=12.1.1", default-features = false, features = ["tokio"] }
 tokio = { version = "1.53.1", features = ["rt", "net", "io-util", "time", "macros"] }
 russh-sftp = "=3.0.1"
+# runtime/update_staging.rs
+log = "0.4.34"
+base64 = "0.23.1"
+minisign-verify = "0.2.5"
+semver = "1.0.28"
+serde_json = "1.0.151"
+zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 
 [dev-dependencies]
-serde_json = "1.0.151"
+# The tests of the included modules.
+uuid = { version = "1.26.0", features = ["v4"] }
 
 [[bin]]
 name = "list_parse"
@@ -43,6 +51,20 @@ bench = false
 [[bin]]
 name = "webdav_propfind"
 path = "fuzz_targets/webdav_propfind.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "names_paths"
+path = "fuzz_targets/names_paths.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "update_package"
+path = "fuzz_targets/update_package.rs"
 test = false
 doc = false
 bench = false

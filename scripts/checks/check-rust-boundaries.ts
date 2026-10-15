@@ -84,6 +84,8 @@ export const ALLOWED: Record<string, readonly string[]> = {
   domain: ['ipc', 'security::sensitive_string'],
   // The wire types depend on nothing in the crate.
   ipc: [],
+  // Inputs for the generated tests; only tests compile it.
+  test_inputs: [],
 };
 
 const COMPOSITION_ROOT = new Set(['lib', 'main']);

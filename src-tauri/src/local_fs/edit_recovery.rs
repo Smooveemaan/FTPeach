@@ -307,12 +307,16 @@ pub(crate) struct Recovered {
 /// Reads one edit's folder. One whose description is missing, unreadable or
 /// names no file it holds is still listed, under the name of a file it does
 /// hold and with no server path: it may be the only copy of someone's edits,
-/// and the user can find and discard only what is listed.
+/// and the user can find and discard only what is listed. A description
+/// naming a path rather than a file is believed for nothing it names.
 fn read_folder(folder: PathBuf) -> Option<Recovered> {
     let described: Option<RecoveredEdit> = std::fs::read(folder.join(DESCRIPTION))
         .ok()
         .and_then(|bytes| serde_json::from_slice(&bytes).ok());
-    if let Some(edit) = described.clone() {
+    if let Some(edit) = described.clone().filter(|edit| {
+        !edit.name.contains(['/', '\\'])
+            && super::windows_names::validate_file_name(&edit.name).is_ok()
+    }) {
         let current = folder.join(PAYLOAD).join(&edit.name);
         // Earlier versions kept the file beside its description.
         let legacy =
@@ -833,5 +837,39 @@ mod tests {
         discard(&fixture.root).unwrap();
         assert!(!overwritten.exists() && !mismatched.exists());
         assert!(empty.exists(), "a folder with nothing in it is not listed");
+    }
+
+    /// Whatever a damaged or edited description says, the edit listed is a
+    /// file inside its own folder.
+    #[test]
+    fn generated_descriptions_never_list_a_file_outside_the_edit() {
+        let fixture = Fixture::new();
+        let folder = fixture.root.join(uuid::Uuid::new_v4().to_string());
+        std::fs::create_dir_all(folder.join(PAYLOAD)).unwrap();
+        std::fs::write(folder.join(PAYLOAD).join("edited.txt"), b"edits").unwrap();
+        // What a description pointing out of the folder would find.
+        std::fs::write(fixture.root.join("outside.txt"), b"not an edit").unwrap();
+        let example = serde_json::to_value(RecoveredEdit {
+            name: "edited.txt".into(),
+            remote_path: Some("/edited.txt".into()),
+            saved_at: "2026-10-15T00:00:00Z".into(),
+        })
+        .unwrap();
+        let keys = ["name", "remotePath", "savedAt"];
+        for value in crate::test_inputs::variants(&example, &keys, 0xed17_0000, 2_000) {
+            std::fs::write(
+                folder.join(DESCRIPTION),
+                serde_json::to_vec(&value).unwrap(),
+            )
+            .unwrap();
+            let found = entries(&fixture.root);
+            assert_eq!(found.len(), 1, "{value}");
+            assert!(
+                found[0].file.starts_with(&folder),
+                "{value}: {:?}",
+                found[0].file
+            );
+        }
+        std::fs::remove_dir_all(&fixture.base).unwrap();
     }
 }

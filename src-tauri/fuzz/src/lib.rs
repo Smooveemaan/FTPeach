@@ -15,8 +15,14 @@ pub mod protocol {
         MAX_DIRECTORY_ENTRIES, MAX_DIRECTORY_TEXT_BYTES, MAX_RAW_DIRECTORY_ENTRIES,
     };
 }
+#[path = "../../src/protocol/remote_path.rs"]
+mod remote_path;
 #[path = "../../src/protocol/webdav/response.rs"]
 mod response;
+#[path = "../../src/runtime/update_staging.rs"]
+mod update_staging;
+#[path = "../../src/local_fs/windows_names.rs"]
+mod windows_names;
 type BackendResult<T> = anyhow::Result<T>;
 
 pub fn list(data: &[u8]) {
@@ -42,6 +48,74 @@ pub fn propfind(data: &[u8]) {
                 }
             }
         }
+    }
+}
+
+/// One name or path per line; a tab splits a source from a destination.
+pub fn names(data: &[u8]) {
+    let Ok(text) = std::str::from_utf8(data) else {
+        return;
+    };
+    for line in text.lines() {
+        if windows_names::validate_file_name(line).is_ok() {
+            assert!(!windows_names::is_reserved_name(line), "{line:?}");
+            assert!(!line.ends_with(['.', ' ']), "{line:?}");
+            assert!(
+                !line
+                    .chars()
+                    .any(|c| c.is_control() || "<>:\"|?*".contains(c)),
+                "{line:?}"
+            );
+        }
+        let (source, destination) = line.split_once('\t').unwrap_or((line, ""));
+        let _ = remote_path::validate_remote_path(source);
+        let _ = remote_path::validate_remote_relationship(source, destination);
+        // Whatever the source spells, a name put under it is inside it.
+        assert!(
+            remote_path::validate_remote_relationship(source, &format!("{source}/x")).is_err(),
+            "{source:?}"
+        );
+    }
+}
+
+/// A staged portable update: its checks never panic, and unpacking it writes
+/// only inside the program's folder and never under `data`.
+pub fn update(data: &[u8]) {
+    let _ = update_staging::embedded_version(data);
+    let _ = update_staging::check_portable_zip(data, "999.0.0", &semver::Version::new(0, 0, 1));
+    if !data.starts_with(b"PK") {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("ftpeach-fuzz-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    let program = root.join("program");
+    std::fs::create_dir_all(&program).unwrap();
+    let zip = root.join("update.zip");
+    std::fs::write(&zip, data).unwrap();
+    let _ = update_staging::unpack(&zip, &program);
+    let mut written = Vec::new();
+    let mut pending = vec![root.clone()];
+    while let Some(dir) = pending.pop() {
+        for entry in std::fs::read_dir(&dir).unwrap().flatten() {
+            let path = entry.path();
+            if entry.file_type().unwrap().is_dir() {
+                pending.push(path.clone());
+            }
+            written.push(path);
+        }
+    }
+    let _ = std::fs::remove_dir_all(&root);
+    for path in written {
+        if path == zip || path == program {
+            continue;
+        }
+        let inside = path.strip_prefix(&program);
+        assert!(inside.is_ok(), "{path:?} is outside the program's folder");
+        let first = inside.unwrap().components().next().unwrap();
+        assert!(
+            !first.as_os_str().eq_ignore_ascii_case("data"),
+            "{path:?} is under data"
+        );
     }
 }
 
@@ -91,6 +165,8 @@ mod corpus_tests {
             ("list_parse", super::list as fn(&[u8])),
             ("ftp_response", super::ftp),
             ("webdav_propfind", super::propfind),
+            ("names_paths", super::names),
+            ("update_package", super::update),
         ] {
             let directory = format!("{}/corpus/{target}", env!("CARGO_MANIFEST_DIR"));
             let seeds: Vec<_> = std::fs::read_dir(directory).unwrap().collect();

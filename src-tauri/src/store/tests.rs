@@ -2165,3 +2165,36 @@ async fn bookmarks_and_tabs_with_no_backup_are_saved_over_once_copied() {
     assert!(next_start.storage_warnings().is_empty());
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn generated_stores_round_trip_their_envelope_and_a_newer_schema_stays_refused() {
+    let example = json!({"schemaVersion": 1, "data": {"theme": "dark", "sites": [{"id": "a"}]}});
+    let keys = ["schemaVersion", "data", "theme"];
+    for value in crate::test_inputs::variants(&example, &keys, 0x5704_e000, 2_000) {
+        for name in [
+            "sites.json",
+            "settings.json",
+            "known_hosts.json",
+            "tabs.json",
+            "local-paths.json",
+        ] {
+            let path = std::path::Path::new(name);
+            let encoded = encode_versioned_store(path, value.clone());
+            assert_eq!(
+                decode_versioned_store(path, encoded).unwrap(),
+                value,
+                "{name}"
+            );
+            let read = decode_versioned_store(path, value.clone());
+            if let Some(version) = value.get("schemaVersion").and_then(Value::as_u64)
+                && version > 1
+            {
+                assert_eq!(
+                    crate::ipc::CommandError::from_anyhow(&read.unwrap_err()).code,
+                    crate::ipc::ErrorCode::StoreNewer,
+                    "{value}"
+                );
+            }
+        }
+    }
+}

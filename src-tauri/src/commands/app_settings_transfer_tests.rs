@@ -476,3 +476,67 @@ async fn settings_that_cannot_be_saved_undo_the_bookmarks_and_their_passwords() 
     assert_eq!(store.get_settings().await["theme"], "light");
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
+
+#[test]
+fn generated_import_files_never_stage_a_secret_or_an_entry_that_fails_its_checks() {
+    let example = serde_json::json!({
+        "exportedAt": "2026-10-15T00:00:00Z",
+        "appVersion": "0.4.0",
+        "settings": {"concurrency": 4, "proxyPort": 8080},
+        "sites": [
+            site("a", "a.test"),
+            {"id": "f", "kind": "folder", "name": "Folder"},
+            {"id": "l", "kind": "local", "name": "Here", "localPath": "C:\\Users"},
+            {"id": "w", "kind": "site", "name": "Dav", "protocol": "webdav", "webdavUrl": "https://dav.test/x"},
+        ],
+    });
+    const SECRETS: &[&str] = &[
+        "password",
+        "keyPassphrase",
+        "enc",
+        "plain",
+        "keyEnc",
+        "keyPlain",
+        "proxyPassword",
+        "proxyPasswordEnc",
+        "proxyPasswordPlain",
+    ];
+    let keys: Vec<&str> = SECRETS
+        .iter()
+        .copied()
+        .chain([
+            "kind",
+            "localPath",
+            "webdavUrl",
+            "protocol",
+            "host",
+            "port",
+            "id",
+            "parentId",
+            "formatVersion",
+            "secrets",
+        ])
+        .collect();
+    let mut staged_count = 0;
+    for value in crate::test_inputs::variants(&example, &keys, 0x1a90_7000, 3_000) {
+        let Ok(file) = serde_json::from_value::<ImportDocument>(value) else {
+            continue;
+        };
+        let Ok(staged) = stage(file, &options(), "main") else {
+            continue;
+        };
+        staged_count += 1;
+        for key in staged.settings.iter().flat_map(|settings| settings.keys()) {
+            assert!(!SECRETS.contains(&key.as_str()), "settings.{key}");
+        }
+        for (index, site) in staged.sites.iter().enumerate() {
+            assert!(
+                site.keys().all(|key| !SECRETS.contains(&key.as_str())),
+                "{site:?}"
+            );
+            assert_eq!(validate_import_site(site, index), Ok(()));
+        }
+    }
+    // The edits must leave enough files whole for the checks above to mean something.
+    assert!(staged_count > 300, "{staged_count}");
+}

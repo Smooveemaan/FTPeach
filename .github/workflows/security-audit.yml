@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [list_parse, ftp_response, webdav_propfind]
+        target: [list_parse, ftp_response, webdav_propfind, names_paths, update_package]
     env:
       RUSTUP_TOOLCHAIN: nightly-2026-09-01
     steps:

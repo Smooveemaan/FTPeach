@@ -1238,4 +1238,27 @@ mod tests {
         assert!(tokio::fs::metadata(&partial).await.is_err());
         tokio::fs::remove_dir_all(root).await.unwrap();
     }
+
+    /// A damaged or edited resume record resumes from its own partial or
+    /// from nothing, never from another file.
+    #[test]
+    fn generated_resume_records_resume_only_their_own_partial() {
+        let (root, destination) = scratch();
+        let artifact = uuid::Uuid::new_v4();
+        std::fs::write(artifact_path(&destination, artifact), b"partial").unwrap();
+        std::fs::write(root.join("outside.txt"), b"not a partial").unwrap();
+        let example = serde_json::to_value(ResumeRecord {
+            source: identity(Some(7), Some("v1")),
+            artifact,
+        })
+        .unwrap();
+        let keys = ["source", "artifact", "endpoint", "remote_path", "size"];
+        for value in crate::test_inputs::variants(&example, &keys, 0x5ec0_4d00, 2_000) {
+            std::fs::write(sidecar(&destination), serde_json::to_vec(&value).unwrap()).unwrap();
+            if let Some(len) = resumable_len(&destination) {
+                assert_eq!(len, 7, "{value}");
+            }
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

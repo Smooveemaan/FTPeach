@@ -18,6 +18,8 @@ mod session;
 mod store;
 #[cfg(feature = "test-utils")]
 pub mod store;
+#[cfg(test)]
+mod test_inputs;
 mod transfer;
 
 // Expose the backends, the store, the pool and the server-to-server relay only

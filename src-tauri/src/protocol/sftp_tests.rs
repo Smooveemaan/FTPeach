@@ -1132,11 +1132,11 @@ mod tofu_tests {
         (port, handle)
     }
 
-    fn test_store() -> Store {
+    fn test_store() -> (Store, std::path::PathBuf) {
         let dir =
             std::env::temp_dir().join(format!("ftpeach-sftp-tofu-test-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
-        Store::new_at(dir)
+        (Store::new_at(dir.clone()), dir)
     }
 
     enum Outcome {
@@ -1179,7 +1179,7 @@ mod tofu_tests {
     #[tokio::test]
     async fn tofu_pins_matches_and_fails_closed_on_mismatch() {
         let _ = rustls::crypto::ring::default_provider().install_default();
-        let store = test_store();
+        let (store, dir) = test_store();
 
         let key_a = random_host_key();
         let (port_a, server_a) = spawn_server(key_a).await;
@@ -1222,5 +1222,6 @@ mod tofu_tests {
             still_pinned, pinned,
             "a rejected mismatch must never be auto-persisted"
         );
+        let _ = std::fs::remove_dir_all(dir);
     }
 }

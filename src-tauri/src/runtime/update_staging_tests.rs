@@ -4,10 +4,34 @@ const ARTIFACT: &[u8] = include_bytes!("../../../test/fixtures/updater/dummy-upd
 const SIGNATURE: &str = include_str!("../../../test/fixtures/updater/dummy-update.bin.sig");
 const PUBKEY: &str = include_str!("../../../test/fixtures/updater/spike.key.pub");
 
-fn staging_dir() -> PathBuf {
-    std::env::temp_dir()
-        .join(format!("ftpeach-update-{}", uuid::Uuid::new_v4()))
-        .join("updates")
+/// The `updates` folder of a throwaway data folder, removed with it when dropped.
+struct StagingDir(PathBuf);
+
+impl std::ops::Deref for StagingDir {
+    type Target = Path;
+    fn deref(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl AsRef<Path> for StagingDir {
+    fn as_ref(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for StagingDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(self.0.parent().unwrap());
+    }
+}
+
+fn staging_dir() -> StagingDir {
+    StagingDir(
+        std::env::temp_dir()
+            .join(format!("ftpeach-update-{}", uuid::Uuid::new_v4()))
+            .join("updates"),
+    )
 }
 
 fn current() -> semver::Version {

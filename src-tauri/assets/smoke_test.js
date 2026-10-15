@@ -72,7 +72,7 @@
     assertContrast('--accent-fill-text', '--accent-fill');
   };
   const assertRtlLayout = async (languageLabel, languageCode) => {
-    const languageTrigger = await waitFor('.language-select-trigger');
+    const languageTrigger = await waitFor('.interface-language-select .language-select-trigger');
     if (!(languageTrigger instanceof HTMLElement))
       throw new Error('language trigger is not clickable');
     languageTrigger.click();

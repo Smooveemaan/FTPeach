@@ -13,7 +13,7 @@ export default function LanguageSelect(props: LanguageSelectProps) {
     <SelectMenu
       {...props}
       options={SUPPORTED_LANGUAGES}
-      rootClassName="language-select"
+      rootClassName="language-select interface-language-select"
       triggerClassName="language-select-trigger"
       dropdownClassName="language-select-dropdown"
       valueClassName="language-select-value"

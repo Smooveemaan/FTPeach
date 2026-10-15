@@ -215,6 +215,7 @@ export const visualTestApi = {
     isDir: () => resolved(false),
     onOsDragDrop: () => unsubscribe,
     setDropAllowed: () => {},
+    validateCopy: () => resolved(ok),
   },
   session: {
     connect: () => resolved(ok),
@@ -226,7 +227,7 @@ export const visualTestApi = {
     delete: () => resolved(ok),
     rename: () => resolved(ok),
     chmod: () => resolved(ok),
-    forgetHostKey: () => resolved(ok),
+    trustHostKey: () => resolved(ok),
   },
   transfer: {
     upload: () => resolved(ok),
@@ -236,6 +237,10 @@ export const visualTestApi = {
     cancelRemoteCopy: () => resolved(ok),
     onProgress: () => unsubscribe,
     onDragOutStarted: () => unsubscribe,
+    recursive: () => new Promise<never>(() => {}),
+    cancelRecursive: () => resolved(ok),
+    discardRecursive: () => resolved(ok),
+    validateRemoteCopy: () => resolved(ok),
   },
   updater: {
     status: () => resolved(null),
@@ -290,6 +295,7 @@ export const visualTestApi = {
   },
   log: {
     setFileLogging: () => resolved(ok),
+    openFolder: () => resolved(ok),
     recent: () => resolved(logHistory()),
     save: () => resolved(ok),
     exportDiagnostics: () => resolved(ok),
@@ -313,8 +319,8 @@ export const visualTestApi = {
     unlock: () => resolved(ok),
     lock: () => resolved(ok),
     noteActivity: () => {},
-    onLocked: () => () => {},
-    onUnlocked: () => () => {},
+    onLocked: () => unsubscribe,
+    onUnlocked: () => unsubscribe,
     enableSystemUnlock: () => resolved(ok),
     unlockSystem: () => resolved(ok),
     disableSystemUnlock: () => resolved(ok),
@@ -324,6 +330,7 @@ export const visualTestApi = {
   },
   app: {
     version: () => resolved('0.2.0-visual'),
+    doubleClickTime: () => resolved(null),
     systemHourCycle: () => resolved<'h23'>('h23'),
     setWindowTheme: () => {},
     resetLayout: () => resolved(ok),
@@ -343,6 +350,7 @@ export const visualTestApi = {
     quit: () => resolved(ok),
   },
   notifications: { transfersComplete: () => resolved(ok) },
+  dragOut: { start: () => resolved(ok), startLocal: () => resolved(ok) },
   tray: {
     setModel: () => resolved(ok),
     hideWindow: () => resolved(ok),
@@ -355,4 +363,4 @@ export const visualTestApi = {
       return unsubscribe;
     },
   },
-} as unknown as Window['api'];
+} satisfies Window['api'];

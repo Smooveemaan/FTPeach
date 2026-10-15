@@ -28,6 +28,9 @@
   background: transparent;
   border-radius: var(--radius-sm);
   padding: 5px 8px;
+  /* A whole-pixel row: the font's normal line height is fractional, and the
+     rounding left the list a pixel more room below a row than above it. */
+  line-height: 20px;
   cursor: pointer;
 }
 /* The list focuses its first row when it opens, from the mouse too, and the

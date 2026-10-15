@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Double-clicking a file or folder follows the double-click speed set in Windows.
+- "Move to…" is now called "Move to folder…".
 - Creating a folder on a server where a file of that name exists says so straight away.
 - Clicking the notification that transfers finished brings the FTPeach window back, also from
   the tray.

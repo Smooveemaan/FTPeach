@@ -102,7 +102,7 @@
     "downloadToOtherPane": "Download to other pane",
     "openWith": "Open with…",
     "permissions": "Permissions…",
-    "moveTo": "Move to…",
+    "moveTo": "Move to folder…",
     "copyPath": "Copy path",
     "delete": "Delete",
     "deleteSelected_one": "Delete ({{count}} file)",
@@ -216,7 +216,7 @@
     "label": "File name (with extension):"
   },
   "moveToDialog": {
-    "title": "Move to…",
+    "title": "Move to folder…",
     "labelSingle": "Move \"{{name}}\" to folder:",
     "labelMultiple": "Move the selected items ({{count}}) to folder:"
   },
@@ -409,7 +409,7 @@
         "navigateBack": "Go back",
         "navigateForward": "Go forward",
         "navigateHome": "Go to home folder",
-        "moveTo": "Move to…",
+        "moveTo": "Move to folder…",
         "newFolder": "New folder…",
         "newFile": "New file…",
         "copyToOtherPane": "Copy to other pane",
@@ -476,7 +476,7 @@
     },
     "unlimitedPlaceholder": "No limit",
     "connectTimeoutLabel": "Connection timeout, sec",
-    "connectTimeoutHint": "How long to wait for a server response when connecting before considering it unreachable (0 or blank — no limit). Applies to the next connection.",
+    "connectTimeoutHint": "How long to wait for a server response when connecting before considering it unreachable (0 or blank — no limit, otherwise at least 5). A server that is switched off refuses at once, without waiting. Applies to the next connection.",
     "ftpActiveMode": "Active FTP mode (instead of passive)",
     "ftpActiveModeHint": "FTP/FTPS only — has no effect on SFTP/WebDAV. Rarely needed, only on networks/servers where passive mode doesn't get through NAT. Applies to the next connection.",
     "ftpActiveModeDisabledByProxy": "Unavailable while a proxy is enabled — a proxy tunnel only supports outbound connections, so FTP has to stay in passive mode.",

@@ -103,6 +103,9 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .apply(window)
         .map_err(|_| "Confirmation appearance could not be applied")?;
     center_over_parent(&parent, window);
+    // Modal, as Windows Hello is: the main window ignores the pointer and the
+    // keyboard until the question is answered.
+    enable_main(&parent, false);
     // Centred over a main window that sits off screen; it must not take the
     // focus from whoever works at the desktop either.
     #[cfg(feature = "smoke-test")]
@@ -152,6 +155,23 @@ pub(crate) fn center_over_parent(parent: &tauri::WebviewWindow, child: &tauri::W
     );
     let _ = child.set_position(position);
 }
+
+/// Turns the main window's input on or off; a disabled window drops clicks
+/// and keys, and the taskbar brings its confirmation forward instead.
+#[cfg(windows)]
+fn enable_main(main: &tauri::WebviewWindow, enabled: bool) {
+    use windows::Win32::{Foundation::HWND, UI::Input::KeyboardAndMouse::EnableWindow};
+    let Ok(hwnd) = window_handle(main) else {
+        return;
+    };
+    // SAFETY: hwnd is the live main window; EnableWindow only changes its state.
+    unsafe {
+        let _ = EnableWindow(HWND(hwnd as *mut std::ffi::c_void), enabled);
+    }
+}
+
+#[cfg(not(windows))]
+fn enable_main(_: &tauri::WebviewWindow, _: bool) {}
 
 #[cfg(windows)]
 fn enable_native_rounding(window: &tauri::WebviewWindow) {
@@ -304,7 +324,6 @@ pub(crate) fn create(
     .minimizable(false)
     .decorations(false)
     .shadow(false)
-    .always_on_top(true)
     .initialization_script(appearance.script())
     .theme(Some(appearance.theme()))
     .background_color(appearance.background())
@@ -339,10 +358,24 @@ pub(crate) fn create(
     // Its zoom no longer follows the monitor by itself once the interface
     // scale is applied.
     let rescaled = window.clone();
-    window.on_window_event(move |event| {
-        if let tauri::WindowEvent::ScaleFactorChanged { .. } = event {
+    window.on_window_event(move |event| match event {
+        tauri::WindowEvent::ScaleFactorChanged { .. } => {
             super::window_scale::refresh(&rescaled);
         }
+        // The main window takes input again once no confirmation is left --
+        // before this one goes, or Windows finds the owner disabled and hands
+        // the activation to another program.
+        tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed => {
+            let app = rescaled.app_handle();
+            let others = app
+                .webview_windows()
+                .into_keys()
+                .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
+            if let (false, Some(main)) = (others, app.get_webview_window("main")) {
+                enable_main(&main, true);
+            }
+        }
+        _ => {}
     });
     Ok(window)
 }

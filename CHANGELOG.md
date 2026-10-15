@@ -35,6 +35,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   Close), as in other Windows programs.
 - With Minimize to tray on, the window also goes to the tray when minimized from the window menu,
   with Win+Down or from the taskbar.
+- A security confirmation stays above FTPeach only, not above other programs, and the main window
+  ignores clicks and keys until it is answered.
 - A wrong master password in a security confirmation now says the password was not accepted,
   instead of "Could not show the saved secret."
 - A file another program saved over while it uploaded no longer reaches the server as a mix of

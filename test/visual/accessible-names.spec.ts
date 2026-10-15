@@ -79,8 +79,7 @@ async function openWithTransfers(page: Page, search = '') {
   await page.goto(`/test/visual/visual.html${search}`);
   await expect(page.locator('.pane-list').first()).toBeVisible();
   await page.evaluate(async () => {
-    const path = '/src/features/transfers/transferStore.ts';
-    const store = await import(/* @vite-ignore */ path);
+    const store = (window as any).transferStore;
     const base = {
       direction: 'down',
       protocol: 'sftp',

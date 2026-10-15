@@ -212,8 +212,7 @@ const SCREENS: Record<
   'transfer-statuses': {
     run: async ({ page, snap }) => {
       await page.evaluate(async () => {
-        const path = '/src/features/transfers/transferStore.ts';
-        const store = await import(/* @vite-ignore */ path);
+        const store = (window as any).transferStore;
         const base = {
           direction: 'down',
           protocol: 'sftp',

@@ -67,11 +67,15 @@ for (const theme of ['dark', 'light'] as const) {
         ].includes(scheme)
       ) {
         const contrasts = await page.evaluate(() => {
-          const styles = getComputedStyle(document.documentElement);
+          // The browser resolves the token, whatever form the stylesheet spells it in.
+          const probe = document.body.appendChild(document.createElement('span'));
           const luminance = (token: string) => {
-            const hex = styles.getPropertyValue(token).trim().slice(1);
-            const channels = [0, 2, 4].map((offset) => {
-              const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+            probe.style.color = `var(${token})`;
+            const rgb = getComputedStyle(probe)
+              .color.match(/[\d.]+/g)!
+              .slice(0, 3);
+            const channels = rgb.map((channel) => {
+              const value = Number(channel) / 255;
               return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
             });
             return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
@@ -89,7 +93,7 @@ for (const theme of ['dark', 'light'] as const) {
       }
       if (['black', 'gray'].includes(scheme)) {
         const colors = await page.evaluate(() => {
-          const styles = getComputedStyle(document.documentElement);
+          const probe = document.body.appendChild(document.createElement('span'));
           return [
             '--bg-base',
             '--bg-panel',
@@ -104,9 +108,13 @@ for (const theme of ['dark', 'light'] as const) {
             '--accent-primary-hover',
             '--accent-primary-active',
             '--accent-fill-text',
-          ].map((token) => styles.getPropertyValue(token).trim());
+          ].map((token) => {
+            probe.style.color = `var(${token})`;
+            return getComputedStyle(probe).color;
+          });
         });
-        for (const color of colors) expect(color).toMatch(/^#([0-9a-f]{2})\1\1$/i);
+        // Grey: red, green and blue the same.
+        for (const color of colors) expect(color).toMatch(/^rgb\((\d+), \1, \1\)$/);
       }
       await page.locator('.modal-header').click();
       await expect(page.locator('.modal-settings')).toHaveScreenshot(

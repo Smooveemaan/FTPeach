@@ -6,8 +6,7 @@ test('large queue fits offscreen names and supports keyboard navigation at RTL z
   await page.goto('/test/visual/visual.html');
   await expect(page.locator('.pane-list').first()).toBeVisible();
   await page.evaluate(async () => {
-    const path = '/src/features/transfers/transferStore.ts';
-    const store = await import(/* @vite-ignore */ path);
+    const store = (window as any).transferStore;
     store.setTransfersStore(
       Object.fromEntries(
         Array.from({ length: 10_000 }, (_, i) => {

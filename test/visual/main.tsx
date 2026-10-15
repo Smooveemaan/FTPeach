@@ -3,10 +3,7 @@ import { I18nextProvider } from 'react-i18next';
 
 import Application from '../../src/app/Application.tsx';
 import ErrorBoundary from '../../src/components/ErrorBoundary.tsx';
-import {
-  rememberConnectionLabels,
-  setTransfersStore,
-} from '../../src/features/transfers/transferStore.ts';
+import * as transferStore from '../../src/features/transfers/transferStore.ts';
 import i18n from '../../src/i18n/index.ts';
 import '../../src/styles/theme.css';
 import { visualTestApi } from './visualTestApi.ts';
@@ -20,6 +17,8 @@ const disposeKeyboardNavigation = installKeyboardNavigation();
 if (import.meta.hot) import.meta.hot.dispose(disposeKeyboardNavigation);
 
 window.api = visualTestApi;
+// Specs fill the queue through the same store the app reads, built or served.
+(window as unknown as { transferStore: typeof transferStore }).transferStore = transferStore;
 const params = new URLSearchParams(window.location.search);
 // `?lang=pseudo` falls back to English, so English becomes the pseudo-locale.
 if (params.get('lang') === 'pseudo') {
@@ -27,8 +26,8 @@ if (params.get('lang') === 'pseudo') {
 }
 // The rows below point at a connection no pane opens, so it is named the way
 // the app remembers any connection's name once it has been open.
-rememberConnectionLabels(new Map([['visual-remote', 'Production']]));
-setTransfersStore({
+transferStore.rememberConnectionLabels(new Map([['visual-remote', 'Production']]));
+transferStore.setTransfersStore({
   upload: {
     id: 'upload',
     direction: 'up',

@@ -28,18 +28,21 @@ test('desktop workspace', async ({ page }) => {
 });
 
 test('startup defers optional dialogs until they are opened', async ({ page }) => {
-  const loadedDialogs: string[] = [];
+  // Built, a dialog is a chunk with no name of its own: opening one must load
+  // a script that the start did not.
+  const scripts: string[] = [];
   page.on('request', (request) => {
-    if (/\/(SettingsDialog|SiteManagerDialog|OpenWithDialog)\.tsx/.test(request.url())) {
-      loadedDialogs.push(request.url());
-    }
+    if (request.resourceType() === 'script') scripts.push(request.url());
   });
   await openHarness(page);
-  expect(loadedDialogs).toEqual([]);
+  const atStart = new Set(scripts);
+  expect(
+    scripts.filter((url) => /(SettingsDialog|SiteManagerDialog|OpenWithDialog)/.test(url)),
+  ).toEqual([]);
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.getByRole('menuitem', { name: 'Settings…' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  expect(loadedDialogs.some((url) => url.includes('/SettingsDialog.tsx'))).toBe(true);
+  expect(scripts.filter((url) => !atStart.has(url)).length).toBeGreaterThan(0);
 });
 
 test('narrow workspace', async ({ page }) => {

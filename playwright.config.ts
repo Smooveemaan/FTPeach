@@ -29,7 +29,12 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run dev:renderer -- --port 4173 --strictPort',
+    // The harness built once (test/visual/vite.config.ts): a test then loads
+    // a few bundled files instead of every module from the dev server.
+    command:
+      'vite build --config test/visual/vite.config.ts --logLevel error && vite preview --config test/visual/vite.config.ts',
+    // From the repository root, also for configs elsewhere that reuse this one.
+    cwd: import.meta.dirname,
     url: `${baseURL}/test/visual/visual.html`,
     reuseExistingServer: !isCI,
     timeout: 120_000,

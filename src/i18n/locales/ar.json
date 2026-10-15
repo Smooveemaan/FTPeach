@@ -352,19 +352,19 @@
     "connectFailedPrefix": "تعذر الاتصال بالخادم. {{raw}}",
     "alreadyExists": "«{{name}}» موجود بالفعل",
     "replaceUnsupported": "لم يسمح الخادم بالكتابة فوق الملف الموجود.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "تعذّر حذف الملف المؤقت {{path}} من الخادم.",
+    "replaceInterrupted": "انقطع الاتصال أثناء استبدال الملف. ستُعاد نسخته السابقة في المرة التالية التي تتصل فيها بهذا الخادم.",
     "createUnsupported": "خادم FTP هذا لا يدعم إنشاء ملفات جديدة. جرّب SFTP أو WebDAV إذا كان الخادم يوفّرهما.",
     "activeModeFailed": "تعذّر على الخادم الاتصال بهذا الكمبيوتر في وضع FTP النشط. جرّب الوضع السلبي.",
     "linkNotFollowed": "يمر المسار عبر رابط (junction أو رابط رمزي). لا يمكن تتبّع الروابط.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "لا توجد سلة محذوفات في هذا الموقع، لذا لم يُحذف أي شيء.",
+    "storeNewer": "حُفظت هذه البيانات بإصدار أحدث من FTPeach، لذا لا يمكن حفظ التغيير.",
+    "storeUnreadable": "تتعذّر قراءة الملف الذي يحفظ هذه البيانات، لذا لا يمكن حفظ التغيير.",
+    "sourceChanged": "تغيّر الملف أثناء رفعه، لذا تُركت النسخة الموجودة على الخادم كما هي. ارفعه مرة أخرى.",
+    "storeNotWritable": "تعذّر حفظ التغييرات في {{path}}: غير مسموح لـ FTPeach بالكتابة في هذا المجلد.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلًا من ذلك.",
     "savedSecretUnreadable": "تعذرت قراءة كلمة مرور محفوظة على هذا الكمبيوتر. أدخلها من جديد في الإشارة المرجعية أو في إعدادات الوكيل.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "تم التخطي: {{name}}. لا يمكن لملف أن يحل محل مجلد، ولا لمجلد أن يحل محل ملف. وسيستمر العمل على العناصر المحددة الأخرى."
   },
   "settings": {
     "openWithAssociations": {
@@ -577,26 +577,26 @@
     "exportDiagnosticsFailed": "تعذّر تصدير حزمة التشخيص.",
     "colorSchemeLabel": "نظام الألوان",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "خوخ",
+      "graphite": "غرافيت",
+      "ocean": "محيط",
+      "forest": "غابة",
+      "dracula": "أوركيد",
+      "catppuccin": "جريس",
+      "nord": "صقيع",
+      "solarized": "بحيرة",
+      "black": "جزع",
+      "gray": "رماد",
+      "sand": "رمل",
+      "rose": "ورد",
+      "leaves": "عشب",
+      "midnight": "منتصف الليل",
+      "plum": "برقوق",
+      "ember": "جمر",
+      "clay": "صلصال",
+      "cocoa": "كاكاو",
+      "linen": "كتان",
+      "burgundy": "عنابي"
     }
   },
   "promptDialog": {
@@ -659,7 +659,7 @@
     "notifyFailed_many": "فشل نقل {{count}} ملفًا",
     "batchFailed": "لم يُنقل {{failed}} من {{total}} عنصر.",
     "sourcesKept": "الملفات الأصلية باقية في مكانها.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "تم نسخ كل شيء، لكن تعذّرت إزالة الأصل «{{name}}». {{reason}} لا يزال هو والأصول التي لم تُزل بعد في مكانها."
   },
   "transferQueue": {
     "capacity": "قائمة الانتظار ممتلئة (حتى {{limit}} مهمة نشطة أو منتظرة). انتظر اكتمال المهام.",
@@ -727,7 +727,7 @@
     "uploadRestartedSourceChanged": "لم يعد الملف المحلي مطابقًا لعملية الرفع المتوقفة مؤقتًا للملف {{path}} — سيُرسل من جديد من البداية.",
     "uploadRestartedMismatch": "ما هو موجود على الخادم لا يطابق الملف المحلي — سيُرسل {{path}} من جديد من البداية.",
     "uploadRestartedUnverified": "تعذّر التحقق من عملية الرفع المتوقفة مؤقتًا للملف {{path}} ({{error}}) — سيُرسل الملف من جديد من البداية.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "تعذّر حذف الملف المؤقت {{path}} من الخادم: {{error}}",
     "receivedEntries_zero": "تم استلام {{count}} سجل",
     "receivedEntries_two": "تم استلام {{count}} سجلين",
     "receivedEntries_few": "تم استلام {{count}} سجلات",
@@ -735,11 +735,11 @@
     "droppedRecords": "أُسقطت بعض مدخلات سجل البروتوكول لأن الكتابة لم تستطع اللحاق: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "كان الملف «{{file}}» تالفًا أو مفقودًا، لذا استعاده FTPeach من نسخته الاحتياطية.",
+    "replaced": "تعذّرت قراءة الملف «{{file}}». احتفظ FTPeach بنسخة منه وبدأ من دون محتواه؛ وسيحفظ تغييرك التالي ملفًا جديدًا.",
+    "unreadable": "تعذّرت قراءة الملف «{{file}}»، لذا لا يمكن حفظ التغييرات عليه.",
+    "newer": "حُفظ الملف «{{file}}» بإصدار أحدث من FTPeach، لذا لا يمكن حفظ التغييرات عليه.",
+    "backupNotUpdated": "تعذّر تحديث النسخة الاحتياطية من الملف «{{file}}»."
   },
   "logPanel": {
     "showAllConnections": "عرض جميع الاتصالات",

@@ -340,19 +340,19 @@
     "connectFailedPrefix": "לא ניתן להתחבר לשרת. {{raw}}",
     "alreadyExists": "\"{{name}}\" כבר קיים",
     "replaceUnsupported": "השרת לא אפשר להחליף את הקובץ הקיים.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "לא ניתן היה למחוק מהשרת את הקובץ הזמני {{path}}.",
+    "replaceInterrupted": "החיבור נותק בזמן החלפת הקובץ. הגרסה הקודמת שלו תוחזר בפעם הבאה שתתחבר לשרת זה.",
     "createUnsupported": "שרת FTP זה אינו תומך ביצירת קבצים חדשים. נסה SFTP או WebDAV אם השרת מציע אותם.",
     "activeModeFailed": "השרת לא הצליח להתחבר למחשב הזה במצב FTP פעיל. נסה מצב פסיבי.",
     "linkNotFollowed": "הנתיב עובר דרך קישור (junction או קישור סימבולי). לא ניתן לעבור דרך קישורים.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "במיקום זה אין סל מיחזור, ולכן דבר לא נמחק.",
+    "storeNewer": "נתונים אלה נשמרו בגרסה חדשה יותר של FTPeach, ולכן לא ניתן לשמור את השינוי.",
+    "storeUnreadable": "לא ניתן לקרוא את הקובץ שמכיל נתונים אלה, ולכן לא ניתן לשמור את השינוי.",
+    "sourceChanged": "הקובץ השתנה בזמן ההעלאה, ולכן העותק בשרת נשאר כפי שהיה. העלה אותו שוב.",
+    "storeNotWritable": "לא ניתן היה לשמור שינויים ב-{{path}}: ל-FTPeach אין הרשאה לכתוב בתיקייה זו.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת.",
     "savedSecretUnreadable": "לא ניתן לקרוא סיסמה שמורה במחשב הזה. הזן אותה שוב בסימנייה או בהגדרות הפרוקסי.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "דולגו: {{name}}. קובץ אינו יכול להחליף תיקייה, ותיקייה אינה יכולה להחליף קובץ. שאר הפריטים שנבחרו ימשיכו."
   },
   "settings": {
     "openWithAssociations": {
@@ -565,26 +565,26 @@
     "exportDiagnosticsFailed": "לא ניתן לייצא את חבילת האבחון.",
     "colorSchemeLabel": "ערכת צבעים",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "אפרסק",
+      "graphite": "גרפיט",
+      "ocean": "אוקיינוס",
+      "forest": "יער",
+      "dracula": "סחלב",
+      "catppuccin": "פעמונית",
+      "nord": "כפור",
+      "solarized": "לגונה",
+      "black": "אוניקס",
+      "gray": "אפר",
+      "sand": "חול",
+      "rose": "ורד",
+      "leaves": "דשא",
+      "midnight": "חצות",
+      "plum": "שזיף",
+      "ember": "גחלים",
+      "clay": "חימר",
+      "cocoa": "קקאו",
+      "linen": "פשתן",
+      "burgundy": "בורדו"
     }
   },
   "promptDialog": {
@@ -641,7 +641,7 @@
     "notifyFailed_two": "{{count}} קבצים נכשלו",
     "batchFailed": "{{failed}} מתוך {{total}} פריטים לא הועברו.",
     "sourcesKept": "קבצי המקור נותרו במקומם.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "הכול הועתק, אך לא ניתן היה להסיר את המקור \"{{name}}\". {{reason}} הוא והמקורות שעדיין לא הוסרו נשארו במקומם."
   },
   "transferQueue": {
     "capacity": "התור מלא (עד {{limit}} משימות פעילות או ממתינות). יש להמתין לסיום.",
@@ -706,16 +706,16 @@
     "uploadRestartedSourceChanged": "הקובץ המקומי כבר אינו תואם להעלאה המושהית של {{path}} — הוא יישלח שוב מההתחלה.",
     "uploadRestartedMismatch": "מה שכבר נמצא בשרת אינו תואם לקובץ המקומי — {{path}} יישלח שוב מההתחלה.",
     "uploadRestartedUnverified": "לא ניתן היה לאמת את ההעלאה המושהית של {{path}} ({{error}}) — הקובץ יישלח שוב מההתחלה.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "לא ניתן היה למחוק מהשרת את הקובץ הזמני {{path}}: {{error}}",
     "receivedEntries_two": "התקבלו {{count}} רשומות",
     "droppedRecords": "חלק מרשומות יומן הפרוטוקול הושמטו כי הכתיבה לא הדביקה את הקצב: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "הקובץ \"{{file}}\" היה פגום או חסר, ולכן FTPeach שחזר אותו מהעותק הגיבוי.",
+    "replaced": "לא ניתן היה לקרוא את הקובץ \"{{file}}\". FTPeach שמר עותק שלו והופעל בלי התוכן שלו; השינוי הבא שלך ישמור קובץ חדש.",
+    "unreadable": "לא ניתן היה לקרוא את הקובץ \"{{file}}\", ולכן לא ניתן לשמור בו שינויים.",
+    "newer": "הקובץ \"{{file}}\" נשמר בגרסה חדשה יותר של FTPeach, ולכן לא ניתן לשמור בו שינויים.",
+    "backupNotUpdated": "לא ניתן היה לעדכן את עותק הגיבוי של הקובץ \"{{file}}\"."
   },
   "logPanel": {
     "showAllConnections": "הצג את כל החיבורים",

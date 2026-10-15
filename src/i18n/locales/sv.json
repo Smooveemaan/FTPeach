@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Det gick inte att ansluta till servern. {{raw}}",
     "alreadyExists": "”{{name}}” finns redan",
     "replaceUnsupported": "Servern tillät inte att den befintliga filen skrevs över.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Den tillfälliga filen {{path}} kunde inte tas bort från servern.",
+    "replaceInterrupted": "Anslutningen bröts medan filen ersattes. Den tidigare versionen läggs tillbaka nästa gång du ansluter till den här servern.",
     "createUnsupported": "Den här FTP-servern stöder inte att nya filer skapas. Prova SFTP eller WebDAV om servern erbjuder dem.",
     "activeModeFailed": "Servern kunde inte ansluta till den här datorn i aktivt FTP-läge. Prova passivt läge.",
     "linkNotFollowed": "Sökvägen går via en länk (en junction eller symbolisk länk). Länkar följs inte.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Den här platsen har ingen papperskorg, så inget togs bort.",
+    "storeNewer": "De här uppgifterna sparades av en nyare version av FTPeach, så ändringen kan inte sparas.",
+    "storeUnreadable": "Filen som innehåller de här uppgifterna kan inte läsas, så ändringen kan inte sparas.",
+    "sourceChanged": "Filen ändrades medan den laddades upp, så kopian på servern lämnades som den var. Ladda upp den igen.",
+    "storeNotWritable": "Det gick inte att spara ändringar i {{path}}: FTPeach får inte skriva till den här mappen.",
     "moveBetweenEndpoints": "Filer kan bara flyttas inom den här datorn eller inom samma serveranslutning. Kopiera dem i stället.",
     "savedSecretUnreadable": "Ett sparat lösenord kan inte läsas på den här datorn. Ange det igen i bokmärket eller i proxyinställningarna.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Hoppade över: {{name}}. En fil kan inte ersätta en mapp, och en mapp kan inte ersätta en fil. Övriga markerade objekt fortsätter."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Det gick inte att exportera diagnostikpaketet.",
     "colorSchemeLabel": "Färgschema",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
+      "peach": "Persika",
+      "graphite": "Grafit",
+      "ocean": "Hav",
+      "forest": "Skog",
+      "dracula": "Orkidé",
+      "catppuccin": "Blåklocka",
+      "nord": "Rimfrost",
+      "solarized": "Lagun",
       "black": "Onyx",
-      "gray": "Ash",
+      "gray": "Aska",
       "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "rose": "Ros",
+      "leaves": "Gräs",
+      "midnight": "Midnatt",
+      "plum": "Plommon",
+      "ember": "Glöd",
+      "clay": "Lera",
+      "cocoa": "Kakao",
+      "linen": "Linne",
+      "burgundy": "Vinröd"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} av {{total}} objekt överfördes inte.",
     "sourcesKept": "Originalen finns kvar.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Allt kopierades, men originalet ”{{name}}” kunde inte tas bort. {{reason}} Det och de original som ännu inte tagits bort finns kvar."
   },
   "transferQueue": {
     "capacity": "Kön är full (upp till {{limit}} aktiva eller väntande uppgifter). Vänta tills uppgifter slutförs.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Den lokala filen matchar inte längre den pausade uppladdningen av {{path}} – den skickas om från början.",
     "uploadRestartedMismatch": "Det som redan finns på servern matchar inte den lokala filen – {{path}} skickas om från början.",
     "uploadRestartedUnverified": "Den pausade uppladdningen av {{path}} kunde inte verifieras ({{error}}) – filen skickas om från början.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Det gick inte att ta bort den tillfälliga filen {{path}} från servern: {{error}}",
     "droppedRecords": "Några rader i protokolloggen gick förlorade eftersom skrivningen inte hann med: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Filen ”{{file}}” var skadad eller saknades, så FTPeach återställde den från säkerhetskopian.",
+    "replaced": "Filen ”{{file}}” kunde inte läsas. FTPeach sparade en kopia av den och startade utan dess innehåll; din nästa ändring sparar en ny.",
+    "unreadable": "Filen ”{{file}}” kunde inte läsas, så ändringar i den kan inte sparas.",
+    "newer": "Filen ”{{file}}” sparades av en nyare version av FTPeach, så ändringar i den kan inte sparas.",
+    "backupNotUpdated": "Säkerhetskopian av filen ”{{file}}” kunde inte uppdateras."
   },
   "logPanel": {
     "showAllConnections": "Visa alla anslutningar",

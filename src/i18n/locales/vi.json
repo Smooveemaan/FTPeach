@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Không thể kết nối với máy chủ. {{raw}}",
     "alreadyExists": "“{{name}}” đã tồn tại",
     "replaceUnsupported": "Máy chủ không cho phép ghi đè tệp hiện có.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Không thể xóa tệp tạm {{path}} khỏi máy chủ.",
+    "replaceInterrupted": "Mất kết nối trong khi đang thay thế tệp. Phiên bản trước của tệp sẽ được khôi phục vào lần tới bạn kết nối với máy chủ này.",
     "createUnsupported": "Máy chủ FTP này không hỗ trợ tạo tệp mới. Hãy thử SFTP hoặc WebDAV nếu máy chủ có hỗ trợ.",
     "activeModeFailed": "Máy chủ không thể kết nối đến máy tính này ở chế độ FTP chủ động. Hãy thử chế độ thụ động.",
     "linkNotFollowed": "Đường dẫn đi qua một liên kết (junction hoặc liên kết tượng trưng). Không thể đi qua liên kết.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Vị trí này không có Thùng rác, nên không có gì bị xóa.",
+    "storeNewer": "Dữ liệu này được lưu bởi phiên bản FTPeach mới hơn, nên không thể lưu thay đổi.",
+    "storeUnreadable": "Không thể đọc tệp chứa dữ liệu này, nên không thể lưu thay đổi.",
+    "sourceChanged": "Tệp đã thay đổi trong khi tải lên, nên bản trên máy chủ được giữ nguyên. Hãy tải tệp lên lại.",
+    "storeNotWritable": "Không thể lưu thay đổi trong {{path}}: FTPeach không được phép ghi vào thư mục này.",
     "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển.",
     "savedSecretUnreadable": "Không đọc được mật khẩu đã lưu trên máy tính này. Hãy nhập lại trong dấu trang hoặc trong cài đặt proxy.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Đã bỏ qua: {{name}}. Tệp không thể thay thế thư mục, và thư mục không thể thay thế tệp. Các mục đã chọn khác vẫn tiếp tục."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Không thể xuất gói chẩn đoán.",
     "colorSchemeLabel": "Bảng màu",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "Đào",
+      "graphite": "Than chì",
+      "ocean": "Đại dương",
+      "forest": "Rừng",
+      "dracula": "Hoa lan",
+      "catppuccin": "Hoa chuông",
+      "nord": "Sương giá",
+      "solarized": "Đầm phá",
+      "black": "Mã não đen",
+      "gray": "Tro",
+      "sand": "Cát",
+      "rose": "Hoa hồng",
+      "leaves": "Cỏ",
+      "midnight": "Nửa đêm",
+      "plum": "Mận",
+      "ember": "Than hồng",
+      "clay": "Đất sét",
+      "cocoa": "Ca cao",
+      "linen": "Vải lanh",
+      "burgundy": "Đỏ rượu vang"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} trong {{total}} mục chưa được truyền.",
     "sourcesKept": "Các tệp gốc vẫn còn nguyên.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Đã sao chép xong, nhưng không thể xóa bản gốc “{{name}}”. {{reason}} Bản này và các bản gốc chưa được xóa vẫn còn nguyên chỗ cũ."
   },
   "transferQueue": {
     "capacity": "Hàng đợi đã đầy (tối đa {{limit}} tác vụ đang chạy hoặc chờ). Hãy đợi hoàn tất.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Tệp cục bộ không còn khớp với phiên tải lên đang tạm dừng của {{path}} — tệp sẽ được gửi lại từ đầu.",
     "uploadRestartedMismatch": "Dữ liệu đã có trên máy chủ không khớp với tệp cục bộ — {{path}} sẽ được gửi lại từ đầu.",
     "uploadRestartedUnverified": "Không thể xác minh phiên tải lên đang tạm dừng của {{path}} ({{error}}) — tệp sẽ được gửi lại từ đầu.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Không thể xóa tệp tạm {{path}} khỏi máy chủ: {{error}}",
     "droppedRecords": "Một số dòng trong bản ghi giao thức đã bị loại bỏ vì ghi không theo kịp: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Tệp “{{file}}” bị hỏng hoặc bị thiếu, nên FTPeach đã khôi phục tệp từ bản sao lưu.",
+    "replaced": "Không thể đọc tệp “{{file}}”. FTPeach đã giữ một bản sao và khởi động mà không có nội dung của tệp; lần thay đổi tiếp theo của bạn sẽ lưu một tệp mới.",
+    "unreadable": "Không thể đọc tệp “{{file}}”, nên không thể lưu các thay đổi trong tệp.",
+    "newer": "Tệp “{{file}}” được lưu bởi phiên bản FTPeach mới hơn, nên không thể lưu các thay đổi trong tệp.",
+    "backupNotUpdated": "Không thể cập nhật bản sao lưu của tệp “{{file}}”."
   },
   "logPanel": {
     "showAllConnections": "Hiển thị tất cả các kết nối",

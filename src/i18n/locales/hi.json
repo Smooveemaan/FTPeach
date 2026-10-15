@@ -336,19 +336,19 @@
     "connectFailedPrefix": "सर्वर से कनेक्ट नहीं हो सका। {{raw}}",
     "alreadyExists": "\"{{name}}\" पहले से मौजूद है",
     "replaceUnsupported": "सर्वर ने मौजूदा फ़ाइल को अधिलेखित करने की अनुमति नहीं दी।",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "अस्थायी फ़ाइल {{path}} को सर्वर से हटाया नहीं जा सका।",
+    "replaceInterrupted": "फ़ाइल बदली जा रही थी तभी कनेक्शन टूट गया। अगली बार इस सर्वर से कनेक्ट करने पर उसका पिछला संस्करण वापस रख दिया जाएगा।",
     "createUnsupported": "यह FTP सर्वर नई फ़ाइलें बनाना समर्थित नहीं करता। अगर सर्वर उपलब्ध कराता है, तो SFTP या WebDAV आज़माएँ।",
     "activeModeFailed": "सक्रिय FTP मोड में सर्वर इस कंप्यूटर से कनेक्ट नहीं कर सका। पैसिव मोड आज़माएँ।",
     "linkNotFollowed": "पथ एक लिंक (junction या सिम्बॉलिक लिंक) से होकर जाता है। लिंक का अनुसरण नहीं किया जाता।",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "इस स्थान पर रीसायकल बिन नहीं है, इसलिए कुछ भी नहीं हटाया गया।",
+    "storeNewer": "यह डेटा FTPeach के नए संस्करण ने सहेजा था, इसलिए बदलाव सहेजा नहीं जा सकता।",
+    "storeUnreadable": "इस डेटा वाली फ़ाइल पढ़ी नहीं जा सकती, इसलिए बदलाव सहेजा नहीं जा सकता।",
+    "sourceChanged": "अपलोड के दौरान फ़ाइल बदल गई, इसलिए सर्वर वाली प्रति जैसी थी वैसी छोड़ दी गई। इसे फिर से अपलोड करें।",
+    "storeNotWritable": "{{path}} में बदलाव सहेजे नहीं जा सके: FTPeach को इस फ़ोल्डर में लिखने की अनुमति नहीं है।",
     "moveBetweenEndpoints": "फ़ाइलों को केवल इसी कंप्यूटर के भीतर या सर्वर के एक ही कनेक्शन के भीतर ले जाया जा सकता है। इसके बजाय उन्हें कॉपी करें।",
     "savedSecretUnreadable": "सहेजा गया पासवर्ड इस कंप्यूटर पर पढ़ा नहीं जा सकता। इसे बुकमार्क में या प्रॉक्सी सेटिंग्स में फिर से दर्ज करें।",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "छोड़े गए: {{name}}। फ़ाइल किसी फ़ोल्डर की जगह नहीं ले सकती, और फ़ोल्डर किसी फ़ाइल की जगह नहीं ले सकता। बाकी चयनित आइटम जारी रहेंगे।"
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "डायग्नोस्टिक बंडल निर्यात नहीं किया जा सका।",
     "colorSchemeLabel": "रंग योजना",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "आड़ू",
+      "graphite": "ग्रेफ़ाइट",
+      "ocean": "महासागर",
+      "forest": "वन",
+      "dracula": "ऑर्किड",
+      "catppuccin": "ब्लूबेल",
+      "nord": "पाला",
+      "solarized": "लैगून",
+      "black": "गोमेद",
+      "gray": "राख",
+      "sand": "रेत",
+      "rose": "गुलाब",
+      "leaves": "घास",
+      "midnight": "आधी रात",
+      "plum": "आलूबुखारा",
+      "ember": "अंगार",
+      "clay": "मिट्टी",
+      "cocoa": "कोको",
+      "linen": "लिनन",
+      "burgundy": "बरगंडी"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}} में से {{failed}} आइटम स्थानांतरित नहीं हुए।",
     "sourcesKept": "मूल फ़ाइलें अपनी जगह पर हैं।",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "सब कुछ कॉपी हो गया, लेकिन मूल \"{{name}}\" को हटाया नहीं जा सका। {{reason}} यह और अभी तक न हटाए गए मूल आइटम अपनी जगह पर हैं।"
   },
   "transferQueue": {
     "capacity": "कतार भरी हुई है (अधिकतम {{limit}} सक्रिय या प्रतीक्षारत कार्य)। कार्य पूरे होने तक प्रतीक्षा करें।",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "स्थानीय फ़ाइल अब {{path}} के रोके गए अपलोड से मेल नहीं खाती — इसे शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedMismatch": "सर्वर पर पहले से मौजूद डेटा स्थानीय फ़ाइल से मेल नहीं खाता — {{path}} को शुरू से फिर से भेजा जाएगा।",
     "uploadRestartedUnverified": "{{path}} के रोके गए अपलोड की पुष्टि नहीं हो सकी ({{error}}) — फ़ाइल को शुरू से फिर से भेजा जाएगा।",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "अस्थायी फ़ाइल {{path}} को सर्वर से हटाया नहीं जा सका: {{error}}",
     "droppedRecords": "लेखन गति पीछे रह जाने के कारण प्रोटोकॉल लॉग के कुछ रिकॉर्ड छोड़ दिए गए: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "फ़ाइल \"{{file}}\" खराब थी या मौजूद नहीं थी, इसलिए FTPeach ने उसे बैकअप प्रति से बहाल कर दिया।",
+    "replaced": "फ़ाइल \"{{file}}\" पढ़ी नहीं जा सकी। FTPeach ने उसकी एक प्रति रख ली और उसकी सामग्री के बिना शुरू हुआ; आपका अगला बदलाव नई फ़ाइल सहेजेगा।",
+    "unreadable": "फ़ाइल \"{{file}}\" पढ़ी नहीं जा सकी, इसलिए उसमें बदलाव सहेजे नहीं जा सकते।",
+    "newer": "फ़ाइल \"{{file}}\" FTPeach के नए संस्करण ने सहेजी थी, इसलिए उसमें बदलाव सहेजे नहीं जा सकते।",
+    "backupNotUpdated": "फ़ाइल \"{{file}}\" की बैकअप प्रति अपडेट नहीं की जा सकी।"
   },
   "logPanel": {
     "showAllConnections": "सभी कनेक्शन दिखाएँ",

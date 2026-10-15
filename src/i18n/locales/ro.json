@@ -340,19 +340,19 @@
     "connectFailedPrefix": "Nu s-a putut stabili conexiunea cu serverul. {{raw}}",
     "alreadyExists": "„{{name}}” există deja",
     "replaceUnsupported": "Serverul nu a permis suprascrierea fișierului existent.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Fișierul temporar {{path}} nu a putut fi șters de pe server.",
+    "replaceInterrupted": "Conexiunea s-a întrerupt în timp ce fișierul era înlocuit. Versiunea anterioară va fi pusă la loc la următoarea conectare la acest server.",
     "createUnsupported": "Acest server FTP nu permite crearea de fișiere noi. Încercați SFTP sau WebDAV, dacă serverul le oferă.",
     "activeModeFailed": "Serverul nu s-a putut conecta la acest computer în modul FTP activ. Încercați modul pasiv.",
     "linkNotFollowed": "Calea trece printr-o legătură (junction sau legătură simbolică). Legăturile nu sunt urmate.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Această locație nu are Coș de reciclare, așa că nu s-a șters nimic.",
+    "storeNewer": "Aceste date au fost salvate de o versiune mai nouă a FTPeach, așa că modificarea nu poate fi salvată.",
+    "storeUnreadable": "Fișierul care păstrează aceste date nu poate fi citit, așa că modificarea nu poate fi salvată.",
+    "sourceChanged": "Fișierul s-a schimbat în timpul încărcării, așa că copia de pe server a rămas neschimbată. Încărcați-l din nou.",
+    "storeNotWritable": "Modificările din {{path}} nu au putut fi salvate: FTPeach nu are permisiunea de a scrie în acest folder.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb.",
     "savedSecretUnreadable": "O parolă salvată nu poate fi citită pe acest computer. Introduceți-o din nou în marcaj sau în setările proxy.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Omise: {{name}}. Un fișier nu poate înlocui un folder, iar un folder nu poate înlocui un fișier. Celelalte elemente selectate vor continua."
   },
   "settings": {
     "openWithAssociations": {
@@ -565,26 +565,26 @@
     "exportDiagnosticsFailed": "Pachetul de diagnosticare nu a putut fi exportat.",
     "colorSchemeLabel": "Schemă de culori",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
+      "peach": "Piersică",
+      "graphite": "Grafit",
       "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "forest": "Pădure",
+      "dracula": "Orhidee",
+      "catppuccin": "Clopoțel",
+      "nord": "Brumă",
+      "solarized": "Lagună",
+      "black": "Onix",
+      "gray": "Cenușă",
+      "sand": "Nisip",
+      "rose": "Trandafir",
+      "leaves": "Iarbă",
+      "midnight": "Miezul nopții",
+      "plum": "Prună",
+      "ember": "Jar",
+      "clay": "Lut",
+      "cocoa": "Cacao",
+      "linen": "In",
+      "burgundy": "Bordo"
     }
   },
   "promptDialog": {
@@ -641,7 +641,7 @@
     "notifyFailed_few": "{{count}} fișiere eșuate",
     "batchFailed": "{{failed}} din {{total}} elemente nu au fost transferate.",
     "sourcesKept": "Originalele sunt încă la locul lor.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Totul a fost copiat, dar originalul „{{name}}” nu a putut fi eliminat. {{reason}} Acesta și originalele încă neeliminate sunt în continuare la locul lor."
   },
   "transferQueue": {
     "capacity": "Coada este plină (până la {{limit}} sarcini active sau în așteptare). Așteptați finalizarea.",
@@ -706,16 +706,16 @@
     "uploadRestartedSourceChanged": "Fișierul local nu mai corespunde încărcării puse pe pauză a {{path}} — va fi trimis din nou de la început.",
     "uploadRestartedMismatch": "Ceea ce se află deja pe server nu corespunde fișierului local — {{path}} va fi trimis din nou de la început.",
     "uploadRestartedUnverified": "Încărcarea pusă pe pauză a {{path}} nu a putut fi verificată ({{error}}) — fișierul va fi trimis din nou de la început.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Fișierul temporar {{path}} nu a putut fi șters de pe server: {{error}}",
     "receivedEntries_few": "S-au primit {{count}} înregistrări",
     "droppedRecords": "Unele linii din jurnalul de protocol au fost pierdute, deoarece scrierea nu a putut ține pasul: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Fișierul „{{file}}” era deteriorat sau lipsea, așa că FTPeach l-a restaurat din copia de rezervă.",
+    "replaced": "Fișierul „{{file}}” nu a putut fi citit. FTPeach a păstrat o copie a lui și a pornit fără conținutul său; următoarea modificare va salva unul nou.",
+    "unreadable": "Fișierul „{{file}}” nu a putut fi citit, așa că modificările din el nu pot fi salvate.",
+    "newer": "Fișierul „{{file}}” a fost salvat de o versiune mai nouă a FTPeach, așa că modificările din el nu pot fi salvate.",
+    "backupNotUpdated": "Copia de rezervă a fișierului „{{file}}” nu a putut fi actualizată."
   },
   "logPanel": {
     "showAllConnections": "Afișează toate conexiunile",

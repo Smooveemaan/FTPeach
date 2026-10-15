@@ -336,19 +336,19 @@
     "connectFailedPrefix": "サーバーに接続できませんでした。{{raw}}",
     "alreadyExists": "「{{name}}」はすでに存在します",
     "replaceUnsupported": "サーバーで既存のファイルの上書きが許可されませんでした。",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "一時ファイル {{path}} をサーバーから削除できませんでした。",
+    "replaceInterrupted": "ファイルの置き換え中に接続が切れました。次にこのサーバーに接続したときに、以前のバージョンに戻されます。",
     "createUnsupported": "この FTP サーバーは新しいファイルの作成に対応していません。サーバーが提供している場合は、SFTP または WebDAV をお試しください。",
     "activeModeFailed": "アクティブ FTP モードで、サーバーからこのコンピューターに接続できませんでした。パッシブモードをお試しください。",
     "linkNotFollowed": "パスがリンク（ジャンクションまたはシンボリック リンク）を経由しています。リンクをたどることはできません。",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "この場所にはごみ箱がないため、何も削除されませんでした。",
+    "storeNewer": "このデータは新しいバージョンの FTPeach で保存されたため、変更を保存できません。",
+    "storeUnreadable": "このデータを保存しているファイルを読み取れないため、変更を保存できません。",
+    "sourceChanged": "アップロード中にファイルが変更されたため、サーバー上のコピーはそのままにしました。もう一度アップロードしてください。",
+    "storeNotWritable": "{{path}} に変更を保存できませんでした: FTPeach にはこのフォルダーへの書き込みが許可されていません。",
     "moveBetweenEndpoints": "ファイルを移動できるのは、このコンピューター内または同じサーバー接続内だけです。代わりにコピーしてください。",
     "savedSecretUnreadable": "保存済みのパスワードをこのコンピューターで読み取れません。ブックマークまたはプロキシ設定でもう一度入力してください。",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "スキップしました: {{name}}。ファイルでフォルダーを置き換えることも、フォルダーでファイルを置き換えることもできません。選択したほかの項目の処理は続行します。"
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "診断パッケージをエクスポートできませんでした。",
     "colorSchemeLabel": "配色",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "ピーチ",
+      "graphite": "グラファイト",
+      "ocean": "オーシャン",
+      "forest": "フォレスト",
+      "dracula": "オーキッド",
+      "catppuccin": "ブルーベル",
+      "nord": "フロスト",
+      "solarized": "ラグーン",
+      "black": "オニキス",
+      "gray": "アッシュ",
+      "sand": "サンド",
+      "rose": "ローズ",
+      "leaves": "グラス",
+      "midnight": "ミッドナイト",
+      "plum": "プラム",
+      "ember": "エンバー",
+      "clay": "クレイ",
+      "cocoa": "ココア",
+      "linen": "リネン",
+      "burgundy": "バーガンディ"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "batchFailed": "{{total}} 件のうち {{failed}} 件が転送されませんでした。",
     "sourcesKept": "元のファイルはそのまま残っています。",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "すべてコピーしましたが、元の「{{name}}」を削除できませんでした。{{reason}} この項目と、まだ削除されていない元の項目はそのまま残っています。"
   },
   "transferQueue": {
     "capacity": "キューがいっぱいです（実行中または待機中のタスクは最大 {{limit}} 件）。完了するまでお待ちください。",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "ローカルファイルが一時停止中の {{path}} のアップロードと一致しなくなりました。最初から送信し直します。",
     "uploadRestartedMismatch": "サーバー上のデータがローカルファイルと一致しません。{{path}} を最初から送信し直します。",
     "uploadRestartedUnverified": "一時停止中の {{path}} のアップロードを検証できませんでした（{{error}}）。最初から送信し直します。",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "一時ファイル {{path}} をサーバーから削除できませんでした: {{error}}",
     "droppedRecords": "書き込みが追いつかなかったため、プロトコルログの一部の記録が破棄されました: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "ファイル「{{file}}」が破損しているか見つからなかったため、FTPeach がバックアップ コピーから復元しました。",
+    "replaced": "ファイル「{{file}}」を読み取れませんでした。FTPeach はそのコピーを残し、内容なしで起動しました。次に変更すると新しいファイルが保存されます。",
+    "unreadable": "ファイル「{{file}}」を読み取れないため、変更を保存できません。",
+    "newer": "ファイル「{{file}}」は新しいバージョンの FTPeach で保存されたため、変更を保存できません。",
+    "backupNotUpdated": "ファイル「{{file}}」のバックアップ コピーを更新できませんでした。"
   },
   "logPanel": {
     "showAllConnections": "すべての接続を表示",

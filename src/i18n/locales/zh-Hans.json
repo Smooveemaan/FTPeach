@@ -336,19 +336,19 @@
     "connectFailedPrefix": "无法连接到服务器。{{raw}}",
     "alreadyExists": "“{{name}}”已经存在",
     "replaceUnsupported": "服务器不允许覆盖现有文件。",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "无法从服务器删除临时文件 {{path}}。",
+    "replaceInterrupted": "替换文件时连接中断。下次连接到此服务器时，将恢复该文件的先前版本。",
     "createUnsupported": "此 FTP 服务器不支持创建新文件。如果服务器提供 SFTP 或 WebDAV，请改用它们。",
     "activeModeFailed": "在主动 FTP 模式下，服务器无法连接到本计算机。请尝试被动模式。",
     "linkNotFollowed": "该路径经过链接（目录联接或符号链接）。不支持跟随链接。",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "此位置没有回收站，因此未删除任何内容。",
+    "storeNewer": "这些数据由更新版本的 FTPeach 保存，因此无法保存更改。",
+    "storeUnreadable": "无法读取保存这些数据的文件，因此无法保存更改。",
+    "sourceChanged": "文件在上传期间发生了变化，因此服务器上的副本保持原样。请重新上传。",
+    "storeNotWritable": "无法保存 {{path}} 中的更改：FTPeach 无权写入此文件夹。",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
     "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "已跳过：{{name}}。文件不能替换文件夹，文件夹也不能替换文件。其他所选项目将继续处理。"
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "无法导出诊断包。",
     "colorSchemeLabel": "配色方案",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "蜜桃",
+      "graphite": "石墨",
+      "ocean": "海洋",
+      "forest": "森林",
+      "dracula": "兰花",
+      "catppuccin": "风铃草",
+      "nord": "霜",
+      "solarized": "泻湖",
+      "black": "黑玛瑙",
+      "gray": "灰烬",
+      "sand": "沙",
+      "rose": "玫瑰",
+      "leaves": "青草",
+      "midnight": "午夜",
+      "plum": "李子",
+      "ember": "余烬",
+      "clay": "陶土",
+      "cocoa": "可可",
+      "linen": "亚麻",
+      "burgundy": "酒红"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}、{{failed}}",
     "batchFailed": "{{total}} 个项目中有 {{failed}} 个未传输。",
     "sourcesKept": "原文件仍在原处。",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "已全部复制，但无法删除原项目“{{name}}”。{{reason}} 该项目和尚未删除的原项目仍在原处。"
   },
   "transferQueue": {
     "capacity": "队列已满（最多 {{limit}} 个正在运行或等待的任务）。请等待任务完成。",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "本地文件与已暂停的 {{path}} 上传不再匹配，将从头重新发送。",
     "uploadRestartedMismatch": "服务器上已有的数据与本地文件不匹配，将从头重新发送 {{path}}。",
     "uploadRestartedUnverified": "无法验证已暂停的 {{path}} 上传（{{error}}），将从头重新发送该文件。",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "无法从服务器删除临时文件 {{path}}：{{error}}",
     "droppedRecords": "由于写入速度跟不上，协议日志的部分记录已被丢弃：{{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "文件“{{file}}”已损坏或丢失，FTPeach 已从备份副本恢复。",
+    "replaced": "无法读取文件“{{file}}”。FTPeach 保留了它的副本，并在不含其内容的情况下启动；下次更改时将保存新文件。",
+    "unreadable": "无法读取文件“{{file}}”，因此无法保存对其所做的更改。",
+    "newer": "文件“{{file}}”由更新版本的 FTPeach 保存，因此无法保存对其所做的更改。",
+    "backupNotUpdated": "无法更新文件“{{file}}”的备份副本。"
   },
   "logPanel": {
     "showAllConnections": "显示所有连接",

@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. {{raw}}",
     "alreadyExists": "Το «{{name}}» υπάρχει ήδη",
     "replaceUnsupported": "Ο διακομιστής δεν επέτρεψε την αντικατάσταση του υπάρχοντος αρχείου.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Δεν ήταν δυνατή η διαγραφή του προσωρινού αρχείου {{path}} από τον διακομιστή.",
+    "replaceInterrupted": "Η σύνδεση χάθηκε κατά την αντικατάσταση του αρχείου. Η προηγούμενη έκδοσή του θα επανέλθει την επόμενη φορά που θα συνδεθείτε σε αυτόν τον διακομιστή.",
     "createUnsupported": "Αυτός ο διακομιστής FTP δεν υποστηρίζει τη δημιουργία νέων αρχείων. Δοκιμάστε SFTP ή WebDAV, αν τα προσφέρει ο διακομιστής.",
     "activeModeFailed": "Ο διακομιστής δεν μπόρεσε να συνδεθεί σε αυτόν τον υπολογιστή στην ενεργή λειτουργία FTP. Δοκιμάστε την παθητική λειτουργία.",
     "linkNotFollowed": "Η διαδρομή περνά από σύνδεσμο (junction ή συμβολικό σύνδεσμο). Οι σύνδεσμοι δεν ακολουθούνται.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Αυτή η θέση δεν διαθέτει Κάδο Ανακύκλωσης, επομένως δεν διαγράφηκε τίποτα.",
+    "storeNewer": "Αυτά τα δεδομένα αποθηκεύτηκαν από νεότερη έκδοση του FTPeach, επομένως η αλλαγή δεν μπορεί να αποθηκευτεί.",
+    "storeUnreadable": "Το αρχείο που περιέχει αυτά τα δεδομένα δεν μπορεί να διαβαστεί, επομένως η αλλαγή δεν μπορεί να αποθηκευτεί.",
+    "sourceChanged": "Το αρχείο άλλαξε κατά τη μεταφόρτωση, επομένως το αντίγραφο στον διακομιστή έμεινε ως είχε. Μεταφορτώστε το ξανά.",
+    "storeNotWritable": "Δεν ήταν δυνατή η αποθήκευση αλλαγών στο {{path}}: το FTPeach δεν επιτρέπεται να γράψει σε αυτόν τον φάκελο.",
     "moveBetweenEndpoints": "Τα αρχεία μπορούν να μετακινηθούν μόνο μέσα σε αυτόν τον υπολογιστή ή μέσα στην ίδια σύνδεση με τον διακομιστή. Αντιγράψτε τα αντί γι' αυτό.",
     "savedSecretUnreadable": "Δεν είναι δυνατή η ανάγνωση ενός αποθηκευμένου κωδικού πρόσβασης σε αυτόν τον υπολογιστή. Εισαγάγετέ τον ξανά στον σελιδοδείκτη ή στις ρυθμίσεις του διακομιστή μεσολάβησης.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Παραλείφθηκαν: {{name}}. Ένα αρχείο δεν μπορεί να αντικαταστήσει φάκελο ούτε ένας φάκελος αρχείο. Τα υπόλοιπα επιλεγμένα στοιχεία θα συνεχίσουν."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Δεν ήταν δυνατή η εξαγωγή του πακέτου διαγνωστικών.",
     "colorSchemeLabel": "Συνδυασμός χρωμάτων",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "Ροδάκινο",
+      "graphite": "Γραφίτης",
+      "ocean": "Ωκεανός",
+      "forest": "Δάσος",
+      "dracula": "Ορχιδέα",
+      "catppuccin": "Καμπανούλα",
+      "nord": "Πάχνη",
+      "solarized": "Λιμνοθάλασσα",
+      "black": "Όνυχας",
+      "gray": "Στάχτη",
+      "sand": "Άμμος",
+      "rose": "Τριαντάφυλλο",
+      "leaves": "Γρασίδι",
+      "midnight": "Μεσάνυχτα",
+      "plum": "Δαμάσκηνο",
+      "ember": "Θράκα",
+      "clay": "Πηλός",
+      "cocoa": "Κακάο",
+      "linen": "Λινό",
+      "burgundy": "Μπορντό"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} από {{total}} στοιχεία δεν μεταφέρθηκαν.",
     "sourcesKept": "Τα αρχικά αρχεία παραμένουν στη θέση τους.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Όλα αντιγράφηκαν, αλλά το αρχικό «{{name}}» δεν ήταν δυνατό να αφαιρεθεί. {{reason}} Αυτό και τα αρχικά που δεν έχουν αφαιρεθεί ακόμη παραμένουν στη θέση τους."
   },
   "transferQueue": {
     "capacity": "Η ουρά είναι πλήρης (έως {{limit}} ενεργές ή εκκρεμείς εργασίες). Περιμένετε να ολοκληρωθούν.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Το τοπικό αρχείο δεν αντιστοιχεί πλέον στην αποστολή του {{path}} που είχε τεθεί σε παύση — θα σταλεί ξανά από την αρχή.",
     "uploadRestartedMismatch": "Τα δεδομένα που βρίσκονται ήδη στον διακομιστή δεν αντιστοιχούν στο τοπικό αρχείο — το {{path}} θα σταλεί ξανά από την αρχή.",
     "uploadRestartedUnverified": "Δεν ήταν δυνατή η επαλήθευση της αποστολής του {{path}} που είχε τεθεί σε παύση ({{error}}) — το αρχείο θα σταλεί ξανά από την αρχή.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Δεν ήταν δυνατή η διαγραφή του προσωρινού αρχείου {{path}} από τον διακομιστή: {{error}}",
     "droppedRecords": "Ορισμένες εγγραφές του αρχείου καταγραφής πρωτοκόλλου χάθηκαν, επειδή η εγγραφή δεν προλάβαινε: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Το αρχείο «{{file}}» ήταν κατεστραμμένο ή έλειπε, επομένως το FTPeach το επανέφερε από το αντίγραφο ασφαλείας.",
+    "replaced": "Το αρχείο «{{file}}» δεν ήταν δυνατό να διαβαστεί. Το FTPeach κράτησε ένα αντίγραφό του και ξεκίνησε χωρίς το περιεχόμενό του· η επόμενη αλλαγή σας θα αποθηκεύσει νέο.",
+    "unreadable": "Το αρχείο «{{file}}» δεν ήταν δυνατό να διαβαστεί, επομένως οι αλλαγές του δεν μπορούν να αποθηκευτούν.",
+    "newer": "Το αρχείο «{{file}}» αποθηκεύτηκε από νεότερη έκδοση του FTPeach, επομένως οι αλλαγές του δεν μπορούν να αποθηκευτούν.",
+    "backupNotUpdated": "Δεν ήταν δυνατή η ενημέρωση του αντιγράφου ασφαλείας του αρχείου «{{file}}»."
   },
   "logPanel": {
     "showAllConnections": "Εμφάνιση όλων των συνδέσεων",

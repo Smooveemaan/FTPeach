@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Er kon geen verbinding worden gemaakt met de server. {{raw}}",
     "alreadyExists": "\"{{name}}\" bestaat al",
     "replaceUnsupported": "De server stond niet toe dat het bestaande bestand werd overschreven.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Het tijdelijke bestand {{path}} kon niet van de server worden verwijderd.",
+    "replaceInterrupted": "De verbinding is verbroken terwijl het bestand werd vervangen. De vorige versie wordt teruggezet zodra je weer verbinding maakt met deze server.",
     "createUnsupported": "Deze FTP-server ondersteunt het maken van nieuwe bestanden niet. Probeer SFTP of WebDAV als de server die aanbiedt.",
     "activeModeFailed": "De server kon in de actieve FTP-modus geen verbinding maken met deze computer. Probeer de passieve modus.",
     "linkNotFollowed": "Het pad loopt via een koppeling (een junction of symbolische koppeling). Koppelingen worden niet gevolgd.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Deze locatie heeft geen Prullenbak, dus er is niets verwijderd.",
+    "storeNewer": "Deze gegevens zijn opgeslagen door een nieuwere versie van FTPeach, dus de wijziging kan niet worden opgeslagen.",
+    "storeUnreadable": "Het bestand met deze gegevens kan niet worden gelezen, dus de wijziging kan niet worden opgeslagen.",
+    "sourceChanged": "Het bestand is tijdens het uploaden gewijzigd, dus de kopie op de server is gelaten zoals hij was. Upload het opnieuw.",
+    "storeNotWritable": "Kan wijzigingen in {{path}} niet opslaan: FTPeach mag niet naar deze map schrijven.",
     "moveBetweenEndpoints": "Bestanden kunnen alleen op deze computer of binnen dezelfde serververbinding worden verplaatst. Kopieer ze in plaats daarvan.",
     "savedSecretUnreadable": "Een opgeslagen wachtwoord kan op deze computer niet worden gelezen. Voer het opnieuw in bij de bladwijzer of in de proxy-instellingen.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Overgeslagen: {{name}}. Een bestand kan geen map vervangen en een map geen bestand. De andere geselecteerde items gaan door."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Het diagnosepakket kon niet worden geëxporteerd.",
     "colorSchemeLabel": "Kleurenschema",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
+      "peach": "Perzik",
+      "graphite": "Grafiet",
+      "ocean": "Oceaan",
+      "forest": "Bos",
+      "dracula": "Orchidee",
+      "catppuccin": "Klokje",
+      "nord": "Rijp",
+      "solarized": "Lagune",
       "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "gray": "As",
+      "sand": "Zand",
+      "rose": "Roos",
+      "leaves": "Gras",
+      "midnight": "Middernacht",
+      "plum": "Pruim",
+      "ember": "Gloed",
+      "clay": "Klei",
+      "cocoa": "Cacao",
+      "linen": "Linnen",
+      "burgundy": "Bordeaux"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} van {{total}} items zijn niet overgedragen.",
     "sourcesKept": "De originelen staan er nog.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Alles is gekopieerd, maar het origineel \"{{name}}\" kon niet worden verwijderd. {{reason}} Het staat nog op zijn plaats, net als de originelen die nog niet zijn verwijderd."
   },
   "transferQueue": {
     "capacity": "De wachtrij is vol (maximaal {{limit}} actieve of wachtende taken). Wacht tot taken klaar zijn.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Het lokale bestand komt niet meer overeen met de gepauzeerde upload van {{path}} — het wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Kan het tijdelijke bestand {{path}} niet van de server verwijderen: {{error}}",
     "droppedRecords": "Enkele regels van het protocollogboek zijn verloren omdat het wegschrijven het niet bijhield: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Het bestand \"{{file}}\" was beschadigd of ontbrak, dus FTPeach heeft het hersteld uit de reservekopie.",
+    "replaced": "Het bestand \"{{file}}\" kon niet worden gelezen. FTPeach heeft er een kopie van bewaard en is zonder de inhoud gestart; je volgende wijziging slaat een nieuw bestand op.",
+    "unreadable": "Het bestand \"{{file}}\" kon niet worden gelezen, dus wijzigingen eraan kunnen niet worden opgeslagen.",
+    "newer": "Het bestand \"{{file}}\" is opgeslagen door een nieuwere versie van FTPeach, dus wijzigingen eraan kunnen niet worden opgeslagen.",
+    "backupNotUpdated": "De reservekopie van het bestand \"{{file}}\" kon niet worden bijgewerkt."
   },
   "logPanel": {
     "showAllConnections": "Alle verbindingen weergeven",

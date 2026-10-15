@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Det var ikke muligt at oprette forbindelse til serveren. {{raw}}",
     "alreadyExists": "»{{name}}« findes allerede",
     "replaceUnsupported": "Serveren tillod ikke, at den eksisterende fil blev overskrevet.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Den midlertidige fil {{path}} kunne ikke slettes fra serveren.",
+    "replaceInterrupted": "Forbindelsen blev afbrudt, mens filen blev erstattet. Den tidligere version bliver lagt tilbage, næste gang du opretter forbindelse til denne server.",
     "createUnsupported": "Denne FTP-server understøtter ikke oprettelse af nye filer. Prøv SFTP eller WebDAV, hvis serveren tilbyder dem.",
     "activeModeFailed": "Serveren kunne ikke oprette forbindelse til denne computer i aktiv FTP-tilstand. Prøv passiv tilstand.",
     "linkNotFollowed": "Stien går gennem et link (en junction eller et symbolsk link). Links følges ikke.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Denne placering har ingen papirkurv, så intet blev slettet.",
+    "storeNewer": "Disse data blev gemt af en nyere version af FTPeach, så ændringen kan ikke gemmes.",
+    "storeUnreadable": "Filen med disse data kan ikke læses, så ændringen kan ikke gemmes.",
+    "sourceChanged": "Filen blev ændret under uploaden, så kopien på serveren blev ikke rørt. Upload den igen.",
+    "storeNotWritable": "Ændringerne i {{path}} kunne ikke gemmes: FTPeach har ikke tilladelse til at skrive i denne mappe.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
     "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Sprunget over: {{name}}. En fil kan ikke erstatte en mappe, og en mappe kan ikke erstatte en fil. De øvrige valgte elementer fortsætter."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Diagnosticeringspakken kunne ikke eksporteres.",
     "colorSchemeLabel": "Farveskema",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
+      "peach": "Fersken",
+      "graphite": "Grafit",
+      "ocean": "Hav",
+      "forest": "Skov",
+      "dracula": "Orkidé",
+      "catppuccin": "Blåklokke",
+      "nord": "Rimfrost",
+      "solarized": "Lagune",
       "black": "Onyx",
-      "gray": "Ash",
+      "gray": "Aske",
       "sand": "Sand",
       "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "leaves": "Græs",
+      "midnight": "Midnat",
+      "plum": "Blomme",
+      "ember": "Glød",
+      "clay": "Ler",
+      "cocoa": "Kakao",
+      "linen": "Hør",
+      "burgundy": "Bordeaux"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} af {{total}} elementer blev ikke overført.",
     "sourcesKept": "Originalerne ligger der stadig.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Alt blev kopieret, men originalen »{{name}}« kunne ikke fjernes. {{reason}} Den og de originaler, der endnu ikke er fjernet, er stadig på plads."
   },
   "transferQueue": {
     "capacity": "Køen er fuld (op til {{limit}} aktive eller ventende opgaver). Vent på afslutning.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Den lokale fil svarer ikke længere til den pausede upload af {{path}} – den sendes igen fra begyndelsen.",
     "uploadRestartedMismatch": "Det, der allerede ligger på serveren, svarer ikke til den lokale fil – {{path}} sendes igen fra begyndelsen.",
     "uploadRestartedUnverified": "Den pausede upload af {{path}} kunne ikke verificeres ({{error}}) – filen sendes igen fra begyndelsen.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Den midlertidige fil {{path}} kunne ikke slettes fra serveren: {{error}}",
     "droppedRecords": "Nogle linjer i protokolloggen blev kasseret, fordi skrivningen ikke kunne følge med: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Filen »{{file}}« var beskadiget eller manglede, så FTPeach gendannede den fra sikkerhedskopien.",
+    "replaced": "Filen »{{file}}« kunne ikke læses. FTPeach beholdt en kopi af den og startede uden dens indhold; din næste ændring gemmer en ny.",
+    "unreadable": "Filen »{{file}}« kunne ikke læses, så ændringer i den kan ikke gemmes.",
+    "newer": "Filen »{{file}}« blev gemt af en nyere version af FTPeach, så ændringer i den kan ikke gemmes.",
+    "backupNotUpdated": "Sikkerhedskopien af filen »{{file}}« kunne ikke opdateres."
   },
   "logPanel": {
     "showAllConnections": "Vis alle forbindelser",

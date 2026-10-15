@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Tidak dapat terhubung ke server. {{raw}}",
     "alreadyExists": "\"{{name}}\" sudah ada",
     "replaceUnsupported": "Server tidak mengizinkan file yang sudah ada untuk ditimpa.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "File sementara {{path}} tidak dapat dihapus dari server.",
+    "replaceInterrupted": "Koneksi terputus saat file sedang diganti. Versi sebelumnya akan dikembalikan saat Anda terhubung lagi ke server ini.",
     "createUnsupported": "Server FTP ini tidak mendukung pembuatan file baru. Coba SFTP atau WebDAV jika server menyediakannya.",
     "activeModeFailed": "Server tidak dapat terhubung ke komputer ini dalam mode FTP aktif. Coba mode pasif.",
     "linkNotFollowed": "Jalur melewati tautan (junction atau tautan simbolik). Tautan tidak diikuti.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Lokasi ini tidak memiliki Keranjang Sampah, jadi tidak ada yang dihapus.",
+    "storeNewer": "Data ini disimpan oleh versi FTPeach yang lebih baru, jadi perubahan tidak dapat disimpan.",
+    "storeUnreadable": "File yang menyimpan data ini tidak dapat dibaca, jadi perubahan tidak dapat disimpan.",
+    "sourceChanged": "File berubah saat sedang diunggah, jadi salinan di server dibiarkan seperti semula. Unggah lagi.",
+    "storeNotWritable": "Tidak dapat menyimpan perubahan di {{path}}: FTPeach tidak diizinkan menulis ke folder ini.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
     "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Dilewati: {{name}}. File tidak dapat menggantikan folder, dan folder tidak dapat menggantikan file. Item terpilih lainnya akan dilanjutkan."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Paket diagnostik tidak dapat diekspor.",
     "colorSchemeLabel": "Skema warna",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
+      "peach": "Persik",
+      "graphite": "Grafit",
+      "ocean": "Samudra",
+      "forest": "Hutan",
+      "dracula": "Anggrek",
+      "catppuccin": "Lonceng Biru",
+      "nord": "Embun Beku",
+      "solarized": "Laguna",
+      "black": "Oniks",
+      "gray": "Abu",
+      "sand": "Pasir",
+      "rose": "Mawar",
+      "leaves": "Rumput",
+      "midnight": "Tengah Malam",
       "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
+      "ember": "Bara",
+      "clay": "Tanah Liat",
+      "cocoa": "Kakao",
       "linen": "Linen",
-      "burgundy": "Burgundy"
+      "burgundy": "Burgundi"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{failed}} dari {{total}} item tidak dipindahkan.",
     "sourcesKept": "File aslinya masih ada di tempatnya.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Semua telah disalin, tetapi aslinya, \"{{name}}\", tidak dapat dihapus. {{reason}} Item itu dan item asli yang belum dihapus masih ada di tempatnya."
   },
   "transferQueue": {
     "capacity": "Antrean penuh (hingga {{limit}} tugas aktif atau menunggu). Tunggu hingga selesai.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "File lokal tidak lagi cocok dengan unggahan {{path}} yang dijeda — file akan dikirim ulang dari awal.",
     "uploadRestartedMismatch": "Data yang sudah ada di server tidak cocok dengan file lokal — {{path}} akan dikirim ulang dari awal.",
     "uploadRestartedUnverified": "Unggahan {{path}} yang dijeda tidak dapat diverifikasi ({{error}}) — file akan dikirim ulang dari awal.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Tidak dapat menghapus file sementara {{path}} dari server: {{error}}",
     "droppedRecords": "Sebagian catatan log protokol dibuang karena penulisan tidak mengejar: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "File \"{{file}}\" rusak atau hilang, jadi FTPeach memulihkannya dari salinan cadangan.",
+    "replaced": "File \"{{file}}\" tidak dapat dibaca. FTPeach menyimpan salinannya dan dimulai tanpa isinya; perubahan Anda berikutnya akan menyimpan file baru.",
+    "unreadable": "File \"{{file}}\" tidak dapat dibaca, jadi perubahan pada file itu tidak dapat disimpan.",
+    "newer": "File \"{{file}}\" disimpan oleh versi FTPeach yang lebih baru, jadi perubahan pada file itu tidak dapat disimpan.",
+    "backupNotUpdated": "Salinan cadangan file \"{{file}}\" tidak dapat diperbarui."
   },
   "logPanel": {
     "showAllConnections": "Tampilkan semua koneksi",

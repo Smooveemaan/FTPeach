@@ -340,19 +340,19 @@
     "connectFailedPrefix": "Impossibile connettersi al server. {{raw}}",
     "alreadyExists": "\"{{name}}\" esiste già",
     "replaceUnsupported": "Il server non ha consentito di sovrascrivere il file esistente.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "Impossibile eliminare dal server il file temporaneo {{path}}.",
+    "replaceInterrupted": "La connessione si è interrotta durante la sostituzione del file. La versione precedente verrà ripristinata alla prossima connessione a questo server.",
     "createUnsupported": "Questo server FTP non supporta la creazione di nuovi file. Prova SFTP o WebDAV se il server li offre.",
     "activeModeFailed": "Il server non è riuscito a connettersi a questo computer in modalità FTP attiva. Prova la modalità passiva.",
     "linkNotFollowed": "Il percorso passa per un collegamento (una junction o un collegamento simbolico). I collegamenti non vengono seguiti.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Questa posizione non ha un Cestino, quindi non è stato eliminato nulla.",
+    "storeNewer": "Questi dati sono stati salvati da una versione più recente di FTPeach, quindi la modifica non può essere salvata.",
+    "storeUnreadable": "Il file che contiene questi dati non è leggibile, quindi la modifica non può essere salvata.",
+    "sourceChanged": "Il file è cambiato durante il caricamento, quindi la copia sul server è rimasta com'era. Caricalo di nuovo.",
+    "storeNotWritable": "Impossibile salvare le modifiche in {{path}}: FTPeach non ha il permesso di scrivere in questa cartella.",
     "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli.",
     "savedSecretUnreadable": "Impossibile leggere una password salvata su questo computer. Inseriscila di nuovo nel segnalibro o nelle impostazioni del proxy.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Saltati: {{name}}. Un file non può sostituire una cartella, né una cartella un file. Gli altri elementi selezionati proseguiranno."
   },
   "settings": {
     "openWithAssociations": {
@@ -565,26 +565,26 @@
     "exportDiagnosticsFailed": "Impossibile esportare il pacchetto diagnostico.",
     "colorSchemeLabel": "Combinazione di colori",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "Pesca",
+      "graphite": "Grafite",
+      "ocean": "Oceano",
+      "forest": "Foresta",
+      "dracula": "Orchidea",
+      "catppuccin": "Campanula",
+      "nord": "Brina",
+      "solarized": "Laguna",
+      "black": "Onice",
+      "gray": "Cenere",
+      "sand": "Sabbia",
+      "rose": "Rosa",
+      "leaves": "Erba",
+      "midnight": "Mezzanotte",
+      "plum": "Prugna",
+      "ember": "Brace",
+      "clay": "Argilla",
+      "cocoa": "Cacao",
+      "linen": "Lino",
+      "burgundy": "Bordeaux"
     }
   },
   "promptDialog": {
@@ -641,7 +641,7 @@
     "notifyFailed_many": "{{count}} file non riusciti",
     "batchFailed": "{{failed}} elementi su {{total}} non sono stati trasferiti.",
     "sourcesKept": "Gli originali sono ancora al loro posto.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "È stato copiato tutto, ma non è stato possibile rimuovere l'originale \"{{name}}\". {{reason}} Questo e gli originali non ancora rimossi sono ancora al loro posto."
   },
   "transferQueue": {
     "capacity": "La coda è piena (fino a {{limit}} attività attive o in attesa). Attendi il completamento.",
@@ -706,16 +706,16 @@
     "uploadRestartedSourceChanged": "Il file locale non corrisponde più all'invio in pausa di {{path}}: verrà inviato di nuovo dall'inizio.",
     "uploadRestartedMismatch": "I dati già presenti sul server non corrispondono al file locale: {{path}} verrà inviato di nuovo dall'inizio.",
     "uploadRestartedUnverified": "Non è stato possibile verificare l'invio in pausa di {{path}} ({{error}}): il file verrà inviato di nuovo dall'inizio.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Impossibile eliminare dal server il file temporaneo {{path}}: {{error}}",
     "receivedEntries_many": "Ricevute {{count}} voci",
     "droppedRecords": "Alcune righe del registro di protocollo sono state scartate perché la scrittura non teneva il passo: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "Il file \"{{file}}\" era danneggiato o mancante, quindi FTPeach lo ha ripristinato dalla copia di backup.",
+    "replaced": "Impossibile leggere il file \"{{file}}\". FTPeach ne ha conservato una copia e si è avviato senza il suo contenuto; la tua prossima modifica ne salverà uno nuovo.",
+    "unreadable": "Impossibile leggere il file \"{{file}}\", quindi le modifiche non possono essere salvate.",
+    "newer": "Il file \"{{file}}\" è stato salvato da una versione più recente di FTPeach, quindi le modifiche non possono essere salvate.",
+    "backupNotUpdated": "Impossibile aggiornare la copia di backup del file \"{{file}}\"."
   },
   "logPanel": {
     "showAllConnections": "Mostra tutte le connessioni",

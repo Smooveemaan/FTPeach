@@ -336,19 +336,19 @@
     "connectFailedPrefix": "서버에 연결할 수 없습니다. {{raw}}",
     "alreadyExists": "“{{name}}”이(가) 이미 있습니다",
     "replaceUnsupported": "서버에서 기존 파일 덮어쓰기를 허용하지 않았습니다.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "임시 파일 {{path}}을(를) 서버에서 삭제하지 못했습니다.",
+    "replaceInterrupted": "파일을 바꾸는 중에 연결이 끊어졌습니다. 다음에 이 서버에 연결하면 이전 버전으로 되돌립니다.",
     "createUnsupported": "이 FTP 서버는 새 파일 만들기를 지원하지 않습니다. 서버에서 제공하는 경우 SFTP 또는 WebDAV를 사용해 보세요.",
     "activeModeFailed": "액티브 FTP 모드에서 서버가 이 컴퓨터에 연결하지 못했습니다. 패시브 모드를 사용해 보세요.",
     "linkNotFollowed": "경로가 링크(정션 또는 심볼릭 링크)를 거칩니다. 링크는 따라가지 않습니다.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "이 위치에는 휴지통이 없어 아무것도 삭제하지 않았습니다.",
+    "storeNewer": "이 데이터는 더 새로운 버전의 FTPeach에서 저장되어 변경 내용을 저장할 수 없습니다.",
+    "storeUnreadable": "이 데이터를 담은 파일을 읽을 수 없어 변경 내용을 저장할 수 없습니다.",
+    "sourceChanged": "업로드하는 동안 파일이 바뀌어 서버의 사본은 그대로 두었습니다. 다시 업로드하세요.",
+    "storeNotWritable": "{{path}}에 변경 내용을 저장하지 못했습니다. FTPeach에 이 폴더에 쓸 권한이 없습니다.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
     "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "건너뜀: {{name}}. 파일은 폴더를, 폴더는 파일을 대체할 수 없습니다. 선택한 나머지 항목은 계속 처리합니다."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "진단 패키지를 내보낼 수 없습니다.",
     "colorSchemeLabel": "색 구성표",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "피치",
+      "graphite": "그래파이트",
+      "ocean": "오션",
+      "forest": "포레스트",
+      "dracula": "오키드",
+      "catppuccin": "블루벨",
+      "nord": "프로스트",
+      "solarized": "라군",
+      "black": "오닉스",
+      "gray": "애시",
+      "sand": "샌드",
+      "rose": "로즈",
+      "leaves": "그래스",
+      "midnight": "미드나이트",
+      "plum": "플럼",
+      "ember": "엠버",
+      "clay": "클레이",
+      "cocoa": "코코아",
+      "linen": "리넨",
+      "burgundy": "버건디"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}}개 중 {{failed}}개가 전송되지 않았습니다.",
     "sourcesKept": "원본은 그대로 남아 있습니다.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "모두 복사했지만 원본 “{{name}}”을(를) 제거하지 못했습니다. {{reason}} 이 항목과 아직 제거되지 않은 원본은 그대로 있습니다."
   },
   "transferQueue": {
     "capacity": "대기열이 가득 찼습니다(실행 중이거나 대기 중인 작업 최대 {{limit}}개). 완료를 기다리세요.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "로컬 파일이 일시 중지된 {{path}} 업로드와 더 이상 일치하지 않습니다. 처음부터 다시 전송합니다.",
     "uploadRestartedMismatch": "서버에 있는 데이터가 로컬 파일과 일치하지 않습니다. {{path}}을(를) 처음부터 다시 전송합니다.",
     "uploadRestartedUnverified": "일시 중지된 {{path}} 업로드를 확인할 수 없습니다({{error}}). 처음부터 다시 전송합니다.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "임시 파일 {{path}}을(를) 서버에서 삭제하지 못했습니다: {{error}}",
     "droppedRecords": "기록 속도가 따라가지 못해 프로토콜 로그의 일부 기록이 버려졌습니다: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "“{{file}}” 파일이 손상되었거나 없어서 FTPeach가 백업 사본에서 복원했습니다.",
+    "replaced": "“{{file}}” 파일을 읽을 수 없습니다. FTPeach는 사본을 보관하고 내용 없이 시작했습니다. 다음에 변경하면 새 파일이 저장됩니다.",
+    "unreadable": "“{{file}}” 파일을 읽을 수 없어 변경 내용을 저장할 수 없습니다.",
+    "newer": "“{{file}}” 파일은 더 새로운 버전의 FTPeach에서 저장되어 변경 내용을 저장할 수 없습니다.",
+    "backupNotUpdated": "“{{file}}” 파일의 백업 사본을 업데이트하지 못했습니다."
   },
   "logPanel": {
     "showAllConnections": "모든 연결 보기",

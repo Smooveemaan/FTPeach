@@ -336,19 +336,19 @@
     "connectFailedPrefix": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ {{raw}}",
     "alreadyExists": "\"{{name}}\" มีอยู่แล้ว",
     "replaceUnsupported": "เซิร์ฟเวอร์ไม่อนุญาตให้เขียนทับไฟล์ที่มีอยู่",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "ลบไฟล์ชั่วคราว {{path}} ออกจากเซิร์ฟเวอร์ไม่ได้",
+    "replaceInterrupted": "การเชื่อมต่อขาดหายระหว่างแทนที่ไฟล์ เวอร์ชันก่อนหน้าจะถูกนำกลับมาเมื่อคุณเชื่อมต่อกับเซิร์ฟเวอร์นี้ครั้งถัดไป",
     "createUnsupported": "เซิร์ฟเวอร์ FTP นี้ไม่รองรับการสร้างไฟล์ใหม่ ลองใช้ SFTP หรือ WebDAV หากเซิร์ฟเวอร์รองรับ",
     "activeModeFailed": "เซิร์ฟเวอร์ไม่สามารถเชื่อมต่อกลับมายังคอมพิวเตอร์เครื่องนี้ในโหมด FTP แบบแอคทีฟ โปรดลองใช้โหมดพาสซีฟ",
     "linkNotFollowed": "เส้นทางผ่านลิงก์ (junction หรือลิงก์สัญลักษณ์) ไม่รองรับการตามลิงก์",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "ตำแหน่งนี้ไม่มีถังขยะ จึงไม่ได้ลบสิ่งใด",
+    "storeNewer": "ข้อมูลนี้ถูกบันทึกโดย FTPeach เวอร์ชันที่ใหม่กว่า จึงบันทึกการเปลี่ยนแปลงไม่ได้",
+    "storeUnreadable": "อ่านไฟล์ที่เก็บข้อมูลนี้ไม่ได้ จึงบันทึกการเปลี่ยนแปลงไม่ได้",
+    "sourceChanged": "ไฟล์เปลี่ยนไประหว่างอัปโหลด จึงคงสำเนาบนเซิร์ฟเวอร์ไว้ตามเดิม โปรดอัปโหลดอีกครั้ง",
+    "storeNotWritable": "บันทึกการเปลี่ยนแปลงใน {{path}} ไม่ได้: FTPeach ไม่ได้รับอนุญาตให้เขียนลงในโฟลเดอร์นี้",
     "moveBetweenEndpoints": "ย้ายไฟล์ได้เฉพาะภายในคอมพิวเตอร์เครื่องนี้หรือภายในการเชื่อมต่อเซิร์ฟเวอร์เดียวกันเท่านั้น โปรดคัดลอกไฟล์แทน",
     "savedSecretUnreadable": "ไม่สามารถอ่านรหัสผ่านที่บันทึกไว้บนคอมพิวเตอร์เครื่องนี้ได้ โปรดป้อนใหม่ในบุ๊กมาร์กหรือในการตั้งค่าพร็อกซี",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "ข้ามแล้ว: {{name}} ไฟล์แทนที่โฟลเดอร์ไม่ได้ และโฟลเดอร์แทนที่ไฟล์ไม่ได้ รายการอื่นที่เลือกจะดำเนินการต่อ"
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "ไม่สามารถส่งออกชุดข้อมูลวินิจฉัยได้",
     "colorSchemeLabel": "ชุดสี",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "พีช",
+      "graphite": "กราไฟต์",
+      "ocean": "มหาสมุทร",
+      "forest": "ป่าไม้",
+      "dracula": "กล้วยไม้",
+      "catppuccin": "บลูเบลล์",
+      "nord": "น้ำค้างแข็ง",
+      "solarized": "ลากูน",
+      "black": "นิล",
+      "gray": "เถ้า",
+      "sand": "ทราย",
+      "rose": "กุหลาบ",
+      "leaves": "หญ้า",
+      "midnight": "เที่ยงคืน",
+      "plum": "พลัม",
+      "ember": "ถ่านแดง",
+      "clay": "ดินเหนียว",
+      "cocoa": "โกโก้",
+      "linen": "ลินิน",
+      "burgundy": "เบอร์กันดี"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "ไม่ได้โอน {{failed}} จาก {{total}} รายการ",
     "sourcesKept": "ไฟล์ต้นทางยังอยู่ที่เดิม",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "คัดลอกครบแล้ว แต่ลบต้นฉบับ \"{{name}}\" ไม่ได้ {{reason}} รายการนี้และต้นฉบับที่ยังไม่ได้ลบยังคงอยู่ที่เดิม"
   },
   "transferQueue": {
     "capacity": "คิวเต็มแล้ว (งานที่กำลังทำงานหรือรอได้สูงสุด {{limit}} งาน) โปรดรอให้งานเสร็จ",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "ไฟล์ในเครื่องไม่ตรงกับการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้แล้ว — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
     "uploadRestartedMismatch": "ข้อมูลที่มีอยู่บนเซิร์ฟเวอร์ไม่ตรงกับไฟล์ในเครื่อง — จะส่ง {{path}} ใหม่ตั้งแต่ต้น",
     "uploadRestartedUnverified": "ไม่สามารถตรวจสอบการอัปโหลด {{path}} ที่หยุดชั่วคราวไว้ได้ ({{error}}) — จะส่งไฟล์ใหม่ตั้งแต่ต้น",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "ลบไฟล์ชั่วคราว {{path}} ออกจากเซิร์ฟเวอร์ไม่ได้: {{error}}",
     "droppedRecords": "บันทึกโปรโตคอลบางรายการถูกทิ้งเพราะการเขียนตามไม่ทัน: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "ไฟล์ \"{{file}}\" เสียหายหรือหายไป FTPeach จึงกู้คืนจากสำเนาสำรอง",
+    "replaced": "อ่านไฟล์ \"{{file}}\" ไม่ได้ FTPeach เก็บสำเนาไว้และเริ่มทำงานโดยไม่มีเนื้อหาของไฟล์ การเปลี่ยนแปลงครั้งถัดไปจะบันทึกไฟล์ใหม่",
+    "unreadable": "อ่านไฟล์ \"{{file}}\" ไม่ได้ จึงบันทึกการเปลี่ยนแปลงในไฟล์นี้ไม่ได้",
+    "newer": "ไฟล์ \"{{file}}\" ถูกบันทึกโดย FTPeach เวอร์ชันที่ใหม่กว่า จึงบันทึกการเปลี่ยนแปลงในไฟล์นี้ไม่ได้",
+    "backupNotUpdated": "อัปเดตสำเนาสำรองของไฟล์ \"{{file}}\" ไม่ได้"
   },
   "logPanel": {
     "showAllConnections": "แสดงการเชื่อมต่อทั้งหมด",

@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Sunucuya bağlanılamadı. {{raw}}",
     "alreadyExists": "\"{{name}}\" halihazırda mevcut",
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "{{path}} geçici dosyası sunucudan silinemedi.",
+    "replaceInterrupted": "Dosya değiştirilirken bağlantı koptu. Önceki sürümü, bu sunucuya bir sonraki bağlanışınızda geri konacak.",
     "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
     "activeModeFailed": "Sunucu, aktif FTP modunda bu bilgisayara bağlanamadı. Pasif modu deneyin.",
     "linkNotFollowed": "Yol bir bağlantıdan geçiyor (junction veya sembolik bağlantı). Bağlantılar izlenmez.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Bu konumda Geri Dönüşüm Kutusu yok, bu yüzden hiçbir şey silinmedi.",
+    "storeNewer": "Bu veriler FTPeach'in daha yeni bir sürümüyle kaydedildi, bu yüzden değişiklik kaydedilemiyor.",
+    "storeUnreadable": "Bu verileri tutan dosya okunamıyor, bu yüzden değişiklik kaydedilemiyor.",
+    "sourceChanged": "Dosya yüklenirken değişti, bu yüzden sunucudaki kopya olduğu gibi bırakıldı. Dosyayı yeniden yükleyin.",
+    "storeNotWritable": "{{path}} konumundaki değişiklikler kaydedilemedi: FTPeach'in bu klasöre yazma izni yok.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
     "savedSecretUnreadable": "Kaydedilmiş bir şifre bu bilgisayarda okunamıyor. Şifreyi yer iminde veya proxy ayarlarında yeniden girin.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Atlananlar: {{name}}. Bir dosya bir klasörün, bir klasör de bir dosyanın yerini alamaz. Seçili diğer öğelerle devam edilecek."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Tanılama paketi dışa aktarılamadı.",
     "colorSchemeLabel": "Renk düzeni",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "Şeftali",
+      "graphite": "Grafit",
+      "ocean": "Okyanus",
+      "forest": "Orman",
+      "dracula": "Orkide",
+      "catppuccin": "Çan Çiçeği",
+      "nord": "Kırağı",
+      "solarized": "Lagün",
+      "black": "Oniks",
+      "gray": "Kül",
+      "sand": "Kum",
+      "rose": "Gül",
+      "leaves": "Çimen",
+      "midnight": "Gece Yarısı",
+      "plum": "Erik",
+      "ember": "Kor",
+      "clay": "Kil",
+      "cocoa": "Kakao",
+      "linen": "Keten",
+      "burgundy": "Bordo"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}} öğeden {{failed}} tanesi aktarılmadı.",
     "sourcesKept": "Özgün dosyalar yerinde kaldı.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Her şey kopyalandı, ancak \"{{name}}\" özgün öğesi kaldırılamadı. {{reason}} Bu öğe ve henüz kaldırılmamış özgün öğeler yerinde duruyor."
   },
   "transferQueue": {
     "capacity": "Kuyruk dolu (en fazla {{limit}} etkin veya bekleyen görev). Görevlerin bitmesini bekleyin.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "Yerel dosya, duraklatılan {{path}} yüklemesiyle artık eşleşmiyor — dosya baştan yeniden gönderilecek.",
     "uploadRestartedMismatch": "Sunucuda bulunanlar yerel dosyayla eşleşmiyor — {{path}} baştan yeniden gönderilecek.",
     "uploadRestartedUnverified": "Duraklatılan {{path}} yüklemesi doğrulanamadı ({{error}}) — dosya baştan yeniden gönderilecek.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "{{path}} geçici dosyası sunucudan silinemedi: {{error}}",
     "droppedRecords": "Yazma işlemi yetişemediği için protokol günlüğündeki bazı kayıtlar atıldı: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "\"{{file}}\" dosyası bozuk ya da eksikti, bu yüzden FTPeach onu yedek kopyasından geri yükledi.",
+    "replaced": "\"{{file}}\" dosyası okunamadı. FTPeach dosyanın bir kopyasını sakladı ve içeriği olmadan başladı; bir sonraki değişikliğiniz yeni bir dosya kaydeder.",
+    "unreadable": "\"{{file}}\" dosyası okunamadı, bu yüzden dosyadaki değişiklikler kaydedilemiyor.",
+    "newer": "\"{{file}}\" dosyası FTPeach'in daha yeni bir sürümüyle kaydedildi, bu yüzden dosyadaki değişiklikler kaydedilemiyor.",
+    "backupNotUpdated": "\"{{file}}\" dosyasının yedek kopyası güncellenemedi."
   },
   "logPanel": {
     "showAllConnections": "Tüm bağlantıları göster",

@@ -336,19 +336,19 @@
     "connectFailedPrefix": "Nem sikerült csatlakozni a szerverhez. {{raw}}",
     "alreadyExists": "A(z) „{{name}}” már létezik",
     "replaceUnsupported": "A szerver nem engedélyezte a meglévő fájl felülírását.",
-    "stagingLeft": "The temporary file {{path}} could not be deleted from the server.",
-    "replaceInterrupted": "The connection was lost while the file was being replaced. Its previous version will be put back the next time you connect to this server.",
+    "stagingLeft": "A(z) {{path}} ideiglenes fájlt nem sikerült törölni a szerverről.",
+    "replaceInterrupted": "A kapcsolat megszakadt a fájl cseréje közben. Az előző verziót a szerverhez való következő csatlakozáskor visszaállítja a program.",
     "createUnsupported": "Ez az FTP-szerver nem támogatja új fájlok létrehozását. Próbálja az SFTP-t vagy a WebDAV-ot, ha a szerver kínálja őket.",
     "activeModeFailed": "A szerver aktív FTP-módban nem tudott csatlakozni ehhez a számítógéphez. Próbálja ki a passzív módot.",
     "linkNotFollowed": "Az útvonal hivatkozáson halad át (junction vagy szimbolikus hivatkozás). Hivatkozásokon nem lehet áthaladni.",
-    "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
-    "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
-    "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
-    "sourceChanged": "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
-    "storeNotWritable": "Couldn't save changes in {{path}}: FTPeach isn't allowed to write to this folder.",
+    "noRecycleBin": "Ezen a helyen nincs Lomtár, ezért semmi sem lett törölve.",
+    "storeNewer": "Ezeket az adatokat az FTPeach újabb verziója mentette, ezért a módosítás nem menthető.",
+    "storeUnreadable": "Az adatokat tároló fájl nem olvasható, ezért a módosítás nem menthető.",
+    "sourceChanged": "A fájl feltöltés közben megváltozott, ezért a szerveren lévő példány változatlan maradt. Töltse fel újra.",
+    "storeNotWritable": "Nem sikerült menteni a módosításokat ide: {{path}}. Az FTPeach nem írhat ebbe a mappába.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
     "savedSecretUnreadable": "Egy mentett jelszó nem olvasható ezen a számítógépen. Adja meg újra a könyvjelzőben vagy a proxybeállításokban.",
-    "typeConflict": "Skipped {{name}}: a file cannot replace a folder, and a folder cannot replace a file. Other selected items will continue."
+    "typeConflict": "Kihagyva: {{name}}. Fájl nem helyettesíthet mappát, és mappa sem fájlt. A többi kijelölt elem feldolgozása folytatódik."
   },
   "settings": {
     "openWithAssociations": {
@@ -561,26 +561,26 @@
     "exportDiagnosticsFailed": "Nem sikerült exportálni a diagnosztikai csomagot.",
     "colorSchemeLabel": "Színséma",
     "colorSchemes": {
-      "peach": "Peach",
-      "graphite": "Graphite",
-      "ocean": "Ocean",
-      "forest": "Forest",
-      "dracula": "Orchid",
-      "catppuccin": "Bluebell",
-      "nord": "Frost",
-      "solarized": "Lagoon",
-      "black": "Onyx",
-      "gray": "Ash",
-      "sand": "Sand",
-      "rose": "Rose",
-      "leaves": "Grass",
-      "midnight": "Midnight",
-      "plum": "Plum",
-      "ember": "Ember",
-      "clay": "Clay",
-      "cocoa": "Cocoa",
-      "linen": "Linen",
-      "burgundy": "Burgundy"
+      "peach": "Barack",
+      "graphite": "Grafit",
+      "ocean": "Óceán",
+      "forest": "Erdő",
+      "dracula": "Orchidea",
+      "catppuccin": "Harangvirág",
+      "nord": "Dér",
+      "solarized": "Lagúna",
+      "black": "Ónix",
+      "gray": "Hamu",
+      "sand": "Homok",
+      "rose": "Rózsa",
+      "leaves": "Fű",
+      "midnight": "Éjfél",
+      "plum": "Szilva",
+      "ember": "Parázs",
+      "clay": "Agyag",
+      "cocoa": "Kakaó",
+      "linen": "Len",
+      "burgundy": "Bordó"
     }
   },
   "promptDialog": {
@@ -635,7 +635,7 @@
     "notifyBoth": "{{succeeded}}, {{failed}}",
     "batchFailed": "{{total}} elem közül {{failed}} nem lett átvive.",
     "sourcesKept": "Az eredeti fájlok a helyükön maradtak.",
-    "moveSourceNotRemoved": "Everything was copied, but the original {{name}} could not be removed. {{reason}} It and the originals not yet removed are still in place."
+    "moveSourceNotRemoved": "Minden át lett másolva, de az eredeti „{{name}}” elemet nem sikerült eltávolítani. {{reason}} Ez és a még el nem távolított eredetik a helyükön maradtak."
   },
   "transferQueue": {
     "capacity": "A sor megtelt (legfeljebb {{limit}} aktív vagy várakozó feladat). Várja meg a befejezést.",
@@ -699,15 +699,15 @@
     "uploadRestartedSourceChanged": "A helyi fájl már nem egyezik a(z) {{path}} szüneteltetett feltöltésével – a fájl újra elküldésre kerül az elejétől.",
     "uploadRestartedMismatch": "A szerveren lévő adatok nem egyeznek a helyi fájllal – a(z) {{path}} újra elküldésre kerül az elejétől.",
     "uploadRestartedUnverified": "A(z) {{path}} szüneteltetett feltöltése nem ellenőrizhető ({{error}}) – a fájl újra elküldésre kerül az elejétől.",
-    "stagingLeft": "Couldn't delete the temporary file {{path}} from the server: {{error}}",
+    "stagingLeft": "Nem sikerült törölni a(z) {{path}} ideiglenes fájlt a szerverről: {{error}}",
     "droppedRecords": "A protokollnapló néhány bejegyzése elveszett, mert az írás nem tudott lépést tartani: {{dropped}}"
   },
   "storageWarnings": {
-    "recovered": "{{file}} was damaged or missing, so FTPeach restored it from its backup copy.",
-    "replaced": "{{file}} couldn't be read. FTPeach kept a copy of it and started without its contents; your next change saves a new one.",
-    "unreadable": "{{file}} couldn't be read, so changes to it can't be saved.",
-    "newer": "{{file}} was saved by a newer version of FTPeach, so changes to it can't be saved.",
-    "backupNotUpdated": "The backup copy of {{file}} couldn't be updated."
+    "recovered": "A(z) „{{file}}” fájl sérült volt vagy hiányzott, ezért az FTPeach visszaállította a biztonsági másolatából.",
+    "replaced": "A(z) „{{file}}” fájl nem olvasható. Az FTPeach megtartott róla egy másolatot, és a tartalma nélkül indult el; a következő módosítás újat ment.",
+    "unreadable": "A(z) „{{file}}” fájl nem olvasható, ezért a módosításai nem menthetők.",
+    "newer": "A(z) „{{file}}” fájlt az FTPeach újabb verziója mentette, ezért a módosításai nem menthetők.",
+    "backupNotUpdated": "A(z) „{{file}}” fájl biztonsági másolatát nem sikerült frissíteni."
   },
   "logPanel": {
     "showAllConnections": "Az összes kapcsolat megjelenítése",

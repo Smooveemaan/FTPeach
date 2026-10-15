@@ -866,7 +866,7 @@ mod tests {
             assert_eq!(found.len(), 1, "{value}");
             assert!(
                 found[0].file.starts_with(&folder),
-                "{value}: {:?}",
+                "{value}: listed outside the edit: {:?}",
                 found[0].file
             );
         }

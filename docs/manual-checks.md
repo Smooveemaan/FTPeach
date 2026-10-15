@@ -50,6 +50,31 @@ When: after a change to the window frame, its scaling or the WebView setup.
    open issue (see the records below); note whether they got worse.
 2. Move the window between two monitors with different display scaling.
    Expected: the interface keeps its size on each monitor.
+3. On the second monitor, open a bookmark with a saved password in the
+   bookmark manager and click **Show password**, so the security confirmation
+   appears; repeat after moving the main window back.
+   Expected: each time the confirmation is centered over the main window, at
+   the same scale, with its question and buttons whole.
+
+### The Windows shell
+
+When: before each release. The test build holds back the programs and the
+Explorer windows FTPeach would open, and the desktop is no window the tests
+can drag to.
+
+1. Drag a file from a server pane onto the desktop.
+   Expected: the file appears on the desktop with the server's contents.
+2. In the Computer pane, right-click a file → **Show in folder**.
+   Expected: Explorer opens its folder with the file selected.
+3. Double-click a text file in the Computer pane.
+   Expected: it opens in the program Windows uses for the type.
+4. In Windows mouse settings set the double-click speed to the slowest, then
+   double-click a folder in a pane slowly.
+   Expected: the folder opens; at the fastest speed the same slow clicks only
+   select it.
+5. Delete a file on a USB drive or a memory card.
+   Expected: FTPeach says the drive has no Recycle Bin and asks before
+   deleting permanently.
 
 ### A new or changed screen
 
@@ -77,6 +102,18 @@ made by hand.
    away.
 3. Repeat with the window minimized instead of in the tray.
    Expected: the click restores the window.
+
+### Portable copy on a computer it has not run on
+
+When: before each release, under a Windows account FTPeach has never run in.
+
+1. Unpack the portable zip on a USB drive, start it, finish an upload with
+   Settings → Transfers → **Notify when transfers finish** on, and quit.
+   Expected: the notification names FTPeach with its icon; `%APPDATA%`,
+   `%LOCALAPPDATA%` and `HKCU\Software` have nothing of FTPeach.
+2. Make the copy's `data` folder read-only and start it.
+   Expected: a message box says the data folder cannot be written, and the
+   program exits.
 
 ### Update from the previous published release
 

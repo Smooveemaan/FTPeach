@@ -15,7 +15,8 @@
   status     show the service and the listening port
 
   The server: sftp://127.0.0.1:2223, account ftpeach_test / FTPeach-test-2026!,
-  password authentication only, SFTP only, jailed in
+  a password or the key C:\ftpeach-test-servers\openssh\client_ed25519 (the
+  only authorized key, made by install), SFTP only, jailed in
   C:\ftpeach-test-servers\openssh\root. It is a separate service
   (FTPeachTestSshd) with its own configuration, so a machine's own sshd is left
   alone. The host's public key is C:\ftpeach-test-servers\openssh\ssh_host_ed25519_key.pub.
@@ -42,6 +43,8 @@ $Root = 'C:\ftpeach-test-servers\openssh'
 $Jail = Join-Path $Root 'root'
 $HostKey = Join-Path $Root 'ssh_host_ed25519_key'
 $Config = Join-Path $Root 'sshd_config'
+$ClientKey = Join-Path $Root 'client_ed25519'
+$AuthorizedKeys = Join-Path $Root 'authorized_keys'
 $StateFile = 'C:\ftpeach-test-servers\openssh-state.json'
 $Service = 'FTPeachTestSshd'
 $Port = 2223
@@ -113,14 +116,28 @@ function Install-Server {
   Invoke-Native icacls $HostKey /inheritance:r /grant:r '*S-1-5-18:F' /grant:r '*S-1-5-32-544:F' /Q
   Invoke-Native icacls $HostKey /setowner '*S-1-5-32-544' /Q
 
+  # The key the tests log in with; the tests copy it, so every user may read
+  # it. sshd reads the authorized keys only when SYSTEM and Administrators
+  # alone may change them.
+  if (-not (Test-Path $ClientKey)) {
+    Invoke-Native $SshKeygen -q -t ed25519 -N '""' -C 'FTPeach SFTP test client' -f $ClientKey
+  }
+  Invoke-Native icacls $ClientKey /grant '*S-1-5-32-545:R' /Q
+  Copy-Item "$ClientKey.pub" $AuthorizedKeys -Force
+  Invoke-Native icacls $AuthorizedKeys /reset /Q
+  Invoke-Native icacls $AuthorizedKeys /inheritance:r /grant:r '*S-1-5-18:F' /grant:r '*S-1-5-32-544:F' /Q
+  Invoke-Native icacls $AuthorizedKeys /setowner '*S-1-5-32-544' /Q
+
   $jailPath = $Jail -replace '\\', '/'
   $keyPath = $HostKey -replace '\\', '/'
+  $authorizedPath = $AuthorizedKeys -replace '\\', '/'
   @"
 Port $Port
 ListenAddress 127.0.0.1
 HostKey $keyPath
 PasswordAuthentication yes
-PubkeyAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile $authorizedPath
 KbdInteractiveAuthentication no
 AllowUsers $UserName
 Subsystem sftp internal-sftp

@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} elem",
     "itemCount_other": "{{count}} elem",
     "moveMode": "áthelyezés",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Áthelyezés",
+    "modeCopy": "Másolás",
     "copyHere": "Másolás ide",
     "moveHere": "Áthelyezés ide"
   },

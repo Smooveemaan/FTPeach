@@ -181,8 +181,8 @@
     "itemCount_one": "{{count}} elemento",
     "itemCount_other": "{{count}} elementos",
     "moveMode": "mover",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Mover",
+    "modeCopy": "Copiar",
     "itemCount_many": "{{count}} elementos",
     "copyHere": "Copiar aquí",
     "moveHere": "Mover aquí"

@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} 個の項目",
     "itemCount_other": "{{count}} 個の項目",
     "moveMode": "移動",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "移動",
+    "modeCopy": "コピー",
     "copyHere": "ここにコピー",
     "moveHere": "ここに移動"
   },

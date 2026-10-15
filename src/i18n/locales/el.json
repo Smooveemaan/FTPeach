@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} στοιχείο",
     "itemCount_other": "{{count}} στοιχεία",
     "moveMode": "μετακίνηση",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Μετακίνηση",
+    "modeCopy": "Αντιγραφή",
     "copyHere": "Αντιγραφή εδώ",
     "moveHere": "Μετακίνηση εδώ"
   },

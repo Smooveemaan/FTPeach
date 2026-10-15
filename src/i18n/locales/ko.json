@@ -179,8 +179,8 @@
     "itemCount_one": "항목 {{count}}개",
     "itemCount_other": "항목 {{count}}개",
     "moveMode": "이동",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "이동",
+    "modeCopy": "복사",
     "copyHere": "여기에 복사",
     "moveHere": "여기로 이동"
   },

@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} items",
     "moveMode": "verplaatsen",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Verplaatsen",
+    "modeCopy": "Kopiëren",
     "copyHere": "Hierheen kopiëren",
     "moveHere": "Hierheen verplaatsen"
   },

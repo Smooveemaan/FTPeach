@@ -181,8 +181,8 @@
     "itemCount_one": "{{count}} element",
     "itemCount_other": "{{count}} de elemente",
     "moveMode": "mutare",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Mutare",
+    "modeCopy": "Copiere",
     "itemCount_few": "{{count}} elemente",
     "copyHere": "Copiază aici",
     "moveHere": "Mută aici"

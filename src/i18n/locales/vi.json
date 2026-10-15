@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} mục",
     "itemCount_other": "{{count}} mục",
     "moveMode": "di chuyển",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Di chuyển",
+    "modeCopy": "Sao chép",
     "copyHere": "Sao chép vào đây",
     "moveHere": "Di chuyển vào đây"
   },

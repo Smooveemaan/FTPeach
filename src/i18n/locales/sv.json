@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} objekt",
     "itemCount_other": "{{count}} objekt",
     "moveMode": "flytta",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "Flytta",
+    "modeCopy": "Kopiera",
     "copyHere": "Kopiera hit",
     "moveHere": "Flytta hit"
   },

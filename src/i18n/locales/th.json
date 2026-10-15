@@ -179,8 +179,8 @@
     "itemCount_one": "{{count}} รายการ",
     "itemCount_other": "{{count}} รายการ",
     "moveMode": "ย้าย",
-    "modeMove": "Move",
-    "modeCopy": "Copy",
+    "modeMove": "ย้าย",
+    "modeCopy": "คัดลอก",
     "copyHere": "คัดลอกมาที่นี่",
     "moveHere": "ย้ายมาที่นี่"
   },

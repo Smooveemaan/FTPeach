@@ -70,6 +70,12 @@ pub fn app_quit(app: AppHandle, preserve_edits: Option<bool>) {
 /// same two clicks Explorer would take as a double click.
 #[tauri::command]
 pub fn app_double_click_time() -> Option<u32> {
+    // The desktop tests click rows one after another; those clicks must pair
+    // the same way whatever double-click speed the machine is set to.
+    #[cfg(feature = "smoke-test")]
+    if crate::runtime::e2e_browser::active() {
+        return Some(500);
+    }
     #[cfg(windows)]
     {
         let ms = unsafe { windows::Win32::UI::Input::KeyboardAndMouse::GetDoubleClickTime() };

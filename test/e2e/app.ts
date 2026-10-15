@@ -69,6 +69,14 @@ export interface RunningApp {
   relaunch: () => Promise<void>;
   /** Stops the application, removes its profile and returns its log. */
   close: () => Promise<string>;
+  /**
+   * Lets go of the DevTools connection until `reattach`. While attached,
+   * Playwright keeps DevTools' network log on, and that keeps a few kilobytes
+   * of every request in the renderer, every IPC call included.
+   */
+  detach: () => Promise<void>;
+  /** Attaches again after `detach`; `page` is the main window anew. */
+  reattach: () => Promise<void>;
 }
 
 export function freePort(): Promise<number> {
@@ -440,6 +448,14 @@ export async function launchApp(
       await onStart(app.page);
     },
     close,
+    detach: async () => {
+      await run.browser?.close();
+      delete run.browser;
+    },
+    reattach: async () => {
+      run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${run.cdpPort}`);
+      app.page = await mainWindow(run.browser);
+    },
   };
   try {
     app.page = await start(exe, profile, workDir, savedDir, pickFile, realDialogs, run);

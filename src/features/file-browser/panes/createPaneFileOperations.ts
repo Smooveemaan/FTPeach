@@ -120,6 +120,10 @@ export function createPaneFileOperations({
 
   const submitNewFolder = async (name: string, tabId: string, id: PaneId) => {
     const pane = panes[id];
+    if (pane.kind === 'remote' && pane.entries.some((e) => e.name === name)) {
+      reportError(t('errors.alreadyExists', { name: isolate(name) }));
+      return;
+    }
     const res = await backendFor(pane, client).mkdir(paneJoin(pane, name));
     if (!res.ok) {
       reportError(commandResultError(res));

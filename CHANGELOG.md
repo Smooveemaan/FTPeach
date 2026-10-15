@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Double-clicking a file or folder follows the double-click speed set in Windows.
+- Creating a folder on a server where a file of that name exists says so straight away.
 - Clicking the notification that transfers finished brings the FTPeach window back, also from
   the tray.
 - File operation errors explain when a file and a folder have the same name.

@@ -9,6 +9,8 @@ export interface NativeWindow {
   minimized: boolean;
   /** Owned by another window: the confirmation window is owned by the main one. */
   owned: boolean;
+  /** The page area's width and height in physical pixels. */
+  client: [number, number];
 }
 
 const script = path.join(import.meta.dirname, 'windows.ps1');
@@ -30,4 +32,9 @@ export const nativeWindows = (pid: number): NativeWindow[] =>
 /** Asks a window to close, as Alt+F4 would. */
 export const closeWindow = (pid: number, handle: number) => {
   run('close', String(pid), '-Handle', String(handle));
+};
+
+/** Sets a window's outer size in physical pixels; a program's resize is not held to its minimum. */
+export const resizeWindow = (pid: number, handle: number, width: number, height: number) => {
+  run('resize', ...[pid, '-Handle', handle, '-Width', width, '-Height', height].map(String));
 };

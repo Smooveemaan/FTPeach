@@ -97,6 +97,36 @@ function translator(language: string) {
   };
 }
 
+/**
+ * Each key with the longest run of its pseudo-locale text outside the
+ * placeholders: what is on screen whatever fills them. A key that is only
+ * placeholders cannot be told on screen and is left out.
+ */
+const NEEDLES: [string, string][] = allKeys.flatMap((key) => {
+  const text = translator('pseudo')(key);
+  const longest = text
+    .split(/\{\{[^}]+\}\}|\$t\([^)]+\)/)
+    .map((part) => part.trim())
+    .sort((a, b) => b.length - a.length)[0]!;
+  return longest.replace(/[\s~⟦⟧]/g, '').length >= 2 ? [[key, longest]] : [];
+});
+
+/** The keys of `needles` whose text the page shows, as text or as a label of an element. */
+function shownKeys(needles: [string, string][]): string[] {
+  const parts = [document.body.innerText];
+  for (const element of document.querySelectorAll('*')) {
+    for (const name of ['aria-label', 'title', 'placeholder', 'data-tooltip', 'alt']) {
+      const value = element.getAttribute(name);
+      if (value) parts.push(value);
+    }
+  }
+  for (const field of document.querySelectorAll<HTMLInputElement>('input, textarea')) {
+    parts.push(field.value);
+  }
+  const text = parts.join('\n');
+  return needles.filter(([, needle]) => text.includes(needle)).map(([key]) => key);
+}
+
 async function open(page: Page, language: string, search = '') {
   const params = new URLSearchParams(search);
   params.set('lang', language);
@@ -521,11 +551,14 @@ for (const language of languages) {
             pseudo: language === 'pseudo' ? { open: PSEUDO_OPEN, close: PSEUDO_CLOSE } : null,
             data: FIXTURE_DATA,
           });
+          // Which strings this state shows: a string no state shows is a
+          // screen the audit does not reach (i18nAuditSummary.ts).
+          const shown = language === 'pseudo' ? await page.evaluate(shownKeys, NEEDLES) : [];
           const file = name.replace(/\//g, '__');
           writeFileSync(
             new URL(`${file}.json`, dir),
             JSON.stringify(
-              { language, state: name, viewport: page.viewportSize(), problems },
+              { language, state: name, viewport: page.viewportSize(), problems, shown },
               null,
               2,
             ),

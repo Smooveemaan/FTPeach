@@ -111,6 +111,50 @@ function summarize() {
   if (unexpected.length > 0) {
     throw new Error(`The layout lets the text down (summary.md):\n${unexpected.join('\n')}`);
   }
+  checkShown();
+}
+
+/**
+ * Every string in en.json is shown by some state in the pseudo-locale, or is
+ * listed in i18nAuditUnshown.json: so a new screen without a state of its own
+ * fails here instead of going unchecked. Only a whole run tells: a run of
+ * some languages or some states skips it.
+ */
+function checkShown() {
+  const pseudo = join(findings, 'pseudo');
+  const partial = process.argv.some((arg) => arg === '-g' || arg.startsWith('--grep'));
+  if (partial || !existsSync(pseudo)) return;
+  const base = (key: string) => key.replace(/_(?:zero|one|two|few|many|other)$/, '');
+  const shown = new Set<string>();
+  for (const file of readdirSync(pseudo).filter((name) => name.endsWith('.json'))) {
+    const finding = JSON.parse(readFileSync(join(pseudo, file), 'utf8')) as { shown: string[] };
+    for (const key of finding.shown) shown.add(base(key));
+  }
+  const keys = new Set<string>();
+  (function collect(node: object, prefix: string) {
+    for (const [key, value] of Object.entries(node)) {
+      if (typeof value === 'string') keys.add(base(prefix + key));
+      else collect(value as object, `${prefix}${key}.`);
+    }
+  })(
+    JSON.parse(readFileSync(join(import.meta.dirname, '../../src/i18n/locales/en.json'), 'utf8')),
+    '',
+  );
+  const listed = JSON.parse(
+    readFileSync(join(import.meta.dirname, 'i18nAuditUnshown.json'), 'utf8'),
+  ) as { prefixes: Record<string, string>; keys: string[] };
+  const prefixed = (key: string) => Object.keys(listed.prefixes).some((p) => key.startsWith(p));
+  const missing = [...keys].filter(
+    (key) => !shown.has(key) && !prefixed(key) && !listed.keys.includes(key),
+  );
+  const stale = listed.keys.filter((key) => shown.has(key) || !keys.has(key));
+  const problems = [
+    ...missing.map((key) => `${key}: no state shows it; give its screen a state, or list it`),
+    ...stale.map((key) => `${key}: listed as never shown, but a state shows it or it is gone`),
+  ];
+  if (problems.length > 0) {
+    throw new Error(`Strings and the audit (i18nAuditUnshown.json):\n${problems.join('\n')}`);
+  }
 }
 
 export default function setup() {

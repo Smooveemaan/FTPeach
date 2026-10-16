@@ -158,3 +158,6 @@ opt-level = 3
 # Explorer could treat a copy into FTPeach as a move. See
 # vendor/wry-0.57.0/FTPEACH-PATCH.md.
 wry = { path = "vendor/wry-0.57.0" }
+# suppaftp leaves an FTPS command unflushed in TLS, and some servers then hang
+# the session. See vendor/suppaftp-12.1.1/FTPEACH-PATCH.md.
+suppaftp = { path = "vendor/suppaftp-12.1.1" }

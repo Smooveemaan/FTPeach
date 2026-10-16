@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A folder opened just after FTPeach starts no longer jumps back to the start folder or to the
   one saved from last time.
 - Refresh pressed while a folder is still loading shows what the folder holds now.
+- Connecting with FTPS to some servers, such as IIS, no longer sometimes stalls until it times out.
 - The minimize, maximize and close buttons no longer stay highlighted after the pointer moves
   off them into the title bar.
 - A right click on the title bar opens the window menu (Restore, Move, Size, Minimize, Maximize,

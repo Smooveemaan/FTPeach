@@ -341,3 +341,45 @@ describe('pane session persistence', () => {
     expect(refreshPane.mock.calls.map((call) => call[0])).toEqual(['b']);
   });
 });
+
+test('a folder opened while a saved session loads stays open in the restored tab', async () => {
+  let answer!: (_value: unknown) => void;
+  installApi({ tabs_get: () => new Promise((resolve) => (answer = resolve)) });
+  const refreshPane = vi.fn(async (_id: string, _path?: string) => undefined);
+  const setTabs = vi.fn();
+  const setActiveTabId = vi.fn();
+  const tab = makeTab('start');
+  const h = renderHook(
+    ({ panes }: { panes: TabState['panes'] }) =>
+      usePaneSessionPersistence({
+        tabs: [tab],
+        activeTabId: tab.id,
+        setTabs,
+        setActiveTabId,
+        panes,
+        saveSessionOnExit: true,
+        refreshPane,
+        connectPane: () => async () => undefined,
+      }),
+    { initialProps: { panes: tab.panes } },
+  );
+  const opened = { ...tab.panes.a, loading: true };
+  h.rerender({ panes: { ...tab.panes, a: opened } });
+  await act(async () =>
+    answer({
+      activeTabId: 'saved',
+      tabs: [
+        { id: 'saved', name: 'Saved', panes: { a: { kind: 'local', path: 'C:\\saved' } } },
+        { id: 'other', panes: { a: { kind: 'local', path: 'C:\\other' } } },
+      ],
+    }),
+  );
+
+  const [restored] = setTabs.mock.lastCall as [TabState[]];
+  // The listing on its way lands in the tab it was asked for, which keeps its name.
+  expect(restored[0]).toMatchObject({ id: 'start', name: 'Saved' });
+  expect(restored[0]!.panes.a).toBe(opened);
+  expect(setActiveTabId).toHaveBeenLastCalledWith('start');
+  // The other tab is listed as saved; the pane the user opened is not listed again.
+  expect(refreshPane.mock.calls.map((call) => [call[0], call[1]])).toEqual([['a', 'C:\\other']]);
+});

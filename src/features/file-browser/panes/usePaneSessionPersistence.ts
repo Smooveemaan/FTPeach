@@ -64,8 +64,8 @@ export function usePaneSessionPersistence({
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const persistenceEnabledRef = useRef(true);
   const hydrationRef = useRef({ panes, setTabs, setActiveTabId, refreshPane, connectPane });
-  const panesRef = useRef(panes);
-  panesRef.current = panes;
+  const latestRef = useRef({ panes, activeTabId });
+  latestRef.current = { panes, activeTabId };
 
   // The session is one document: `tabs_set` replaces all of it, so an older
   // snapshot answering after a newer one would put back tabs the user has
@@ -149,12 +149,16 @@ export function usePaneSessionPersistence({
         shouldPersistSession && Array.isArray(siteList)
           ? restorePaneTabs(persisted, siteList)
           : null;
+      // A folder opened while the session loaded stays open: neither the
+      // start folder nor the restored one may replace it.
+      const { panes: startPanes, activeTabId: startTabId } = latestRef.current;
+      const opened = PANE_IDS.filter((id) => {
+        const pane = startPanes[id];
+        return pane.kind === 'local' && (pane.loading || !!pane.path);
+      });
       if (!restored) {
         PANE_IDS.forEach((id) => {
-          // A folder opened while the session loaded stays open: listing the
-          // start folder now would replace it.
-          const pane = panesRef.current[id];
-          if (pane.kind === 'local' && !pane.loading && !pane.path) {
+          if (startPanes[id].kind === 'local' && !opened.includes(id)) {
             reportRejection(initial.refreshPane(id));
           }
         });
@@ -162,11 +166,29 @@ export function usePaneSessionPersistence({
         return;
       }
 
+      if (opened.length > 0) {
+        // The restored active tab takes the start tab's id, so the listing
+        // already on its way lands in it, and keeps the folder opened there.
+        restored.tabs = restored.tabs.map((tab) =>
+          tab.id === restored.activeTabId
+            ? {
+                ...tab,
+                id: startTabId,
+                panes: {
+                  ...tab.panes,
+                  ...Object.fromEntries(opened.map((id) => [id, startPanes[id]])),
+                },
+              }
+            : tab,
+        );
+        restored.activeTabId = startTabId;
+      }
       initial.setTabs(restored.tabs);
       initial.setActiveTabId(restored.activeTabId);
       restored.tabs.forEach((tab) => {
         PANE_IDS.forEach((id) => {
           const pane = tab.panes[id];
+          if (tab.id === startTabId && opened.includes(id)) return;
           if (pane.kind === 'local') {
             reportRejection(initial.refreshPane(id, pane.path || undefined, pane, tab.id));
           } else if (pane.siteId && storedSettings.autoReconnectTabs) {

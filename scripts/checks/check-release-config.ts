@@ -196,8 +196,10 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [
     releaseWorkflow,
     'release.yml',
-    '    needs: [gates, protocol-compatibility, installer, release-environment]',
+    '    needs: [gates, private-suites, installer, release-environment]',
   ],
+  // The closed suites prove their matrix row only through this status.
+  [releaseWorkflow, 'release.yml', 'select(.context == "private-suites")'],
   [
     releaseWorkflow,
     'release.yml',

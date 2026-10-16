@@ -8,5 +8,5 @@ powershell -File scripts/manual-tests/create-icon-category-samples.ps1 -TargetDi
 ```
 
 For native application checks, use the [packaged smoke harness](../packaged-smoke/README.md).
-For protocol scenarios, use `npm run servers:test`; see the
+For protocol scenarios, see the
 [protocol support guide](../../docs/protocol-support.md).

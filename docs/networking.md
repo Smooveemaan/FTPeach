@@ -43,7 +43,7 @@ FTP passive data connections, FTPS certificate rejection, and structured TLS/SSH
 Real NAT and firewall behavior remains environment-dependent; use the built-in proxy test and the
 protocol log when validating a deployment network.
 
-The [test server matrix](test-server-matrix.md) exercises these paths against real software: every
+A closed server matrix ([How releases are verified](release-trust.md#how-releases-are-verified)) exercises these paths against real software: every
 proxy type with and without credentials (Dante, 3proxy, Squid), a server that advertises an
 unreachable PASV address, an EPSV-only server, active mode (on Linux runners) and active mode
 staying passive behind a proxy, and Toxiproxy faults on FTP control and data, SFTP and WebDAV: a

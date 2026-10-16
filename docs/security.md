@@ -245,4 +245,4 @@ Use the repository's private vulnerability reporting as described in [`../.githu
 
 ## Verification limits
 
-[Regression coverage](regression-coverage.md) maps the file-safety guarantees to executable tests. [Native validation](native-validation.md) separates browser, packaged process and live protocol coverage. Protected-path checks cover ordinary/extended drive paths, case, missing suffixes and available UNC aliases; they do not establish resistance to an external process replacing ancestors during a path-based commit. A passing mock test does not establish real server rename semantics or TPM behavior.
+The [guarantee matrix](transfer-safety.md#guarantee-matrix) maps the file-safety guarantees to executable tests, and [How releases are verified](release-trust.md#how-releases-are-verified) lists what else a release is checked by. Protected-path checks cover ordinary/extended drive paths, case, missing suffixes and available UNC aliases; they do not establish resistance to an external process replacing ancestors during a path-based commit. A passing mock test does not establish real server rename semantics or TPM behavior.

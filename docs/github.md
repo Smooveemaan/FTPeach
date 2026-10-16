@@ -55,4 +55,5 @@ tag-triggered release workflow.
 
 Review the draft release's version, installer, signatures, update manifest,
 SBOMs and release notes before publishing. Check a clean Windows installation
-and the update path using the [native validation guide](native-validation.md).
+and the update path, and record the local and manual rows of the
+[release matrix](release-trust.md#release-matrix).

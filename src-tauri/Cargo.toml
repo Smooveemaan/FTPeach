@@ -15,9 +15,9 @@ name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
-# Exposes cfg(test)-only helpers (Store::new_at) to tests/docker_integration.rs,
-# which is its own crate and doesn't get this lib's --cfg test. Not for
-# production use — enable only when running that suite.
+# Exposes cfg(test)-only helpers (Store::new_at) and the modules integration
+# tests against real servers drive, to test crates that don't get this lib's
+# --cfg test. Not for production use — enable only when running those suites.
 test-utils = []
 smoke-test = []
 
@@ -93,8 +93,7 @@ semver = "1.0.28"
 zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 
 # Windows-only: kept out of the default [dependencies] table so the crate
-# (and its docker_integration test) still compiles on the Linux CI runners
-# used for protocol-compatibility testing.
+# and its integration tests still compile on Linux runners.
 [target.'cfg(windows)'.dependencies]
 # Toasts go out through these two rather than through
 # tauri-plugin-notification, which drops the AppUserModelID whenever the exe

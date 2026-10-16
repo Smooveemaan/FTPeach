@@ -1,7 +1,7 @@
 # Profile fixtures
 
 Whole `%APPDATA%\FTPeach` folders in each format FTPeach still reads, for the
-desktop tests that start the application on them (`test/e2e/profiles.e2e.ts`)
+desktop tests that start the application on them (the installer tests, `test/e2e/profiles.ts`)
 and for any later test of an upgrade.
 
 - `legacy`: schema 0, as installs from before 0.1.0 left it. Every file is the

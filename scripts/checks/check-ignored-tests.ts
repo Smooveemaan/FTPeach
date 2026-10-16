@@ -1,10 +1,10 @@
 // An ignored Rust test is a check that did not run. Each one must say why in
-// its attribute and be listed in docs/verification-matrix.md with what it
-// needs and how to run it, so a skipped check is never mistaken for a pass.
+// its attribute and be listed in docs/coverage.md with what it needs and how
+// to run it, so a skipped check is never mistaken for a pass.
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const registryPath = 'docs/verification-matrix.md';
+const registryPath = 'docs/coverage.md';
 const roots = ['src-tauri/src', 'src-tauri/tests'];
 
 export interface IgnoredTest {

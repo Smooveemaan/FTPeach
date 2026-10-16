@@ -30,7 +30,7 @@ test/
     shared/              Dialogs, menus, drag and resize hooks
     helpers/             Global setup and Tauri test adapter
   visual/                Playwright scenarios, browser harness and snapshots
-  e2e/                   The real application driven through its window (CDP)
+  e2e/                   The real application driven through its window (CDP); installer tests
   fixtures/updater/      Signed sample update and local fixture server
 ```
 
@@ -42,11 +42,7 @@ test/
 | `npm run test:unit` | `test/unit/**/*.test.ts`, using `node:test` |
 | `npm run test:components` | `test/component/**/*.test.{ts,tsx}`, using Vitest |
 | `npm run test:visual` | Browser scenarios in `test/visual/` |
-| `npm run test:e2e` | The packaged smoke build driven through its window against a real server, see below |
-| `npm run test:e2e:stand` | The same, on the file-system stand of `fs-stand.ps1`, see below |
-| `npm run test:e2e:native` | Native dialogs, tray, notifications and Explorer drag and drop; takes over the desktop |
-| `npm run test:e2e:vm` | Installer, uninstall and update tests; only on a disposable Windows machine |
-| `npm run test:e2e:soak` | Repeated application cycles and resource measurements; separate long-running suite |
+| `npm run test:e2e:vm` | Installer, uninstall and update tests; only on a disposable Windows machine, see below |
 | `npm run test:updater-fixtures` | Accept the valid update signature and reject a damaged artifact |
 | `npm run rust:test` | Native Rust tests under `src-tauri/` |
 
@@ -61,104 +57,28 @@ npm run test:components -- test/component/sites/siteManager.test.tsx
 `check:ci-parity` command compares its npm steps with `checks.yml`, with explicit
 exclusions; it does not measure code coverage or cover every workflow. `npm run coverage` runs both suites with coverage, see
 [docs/coverage.md](../docs/coverage.md).
-Packaged smoke, Rust coverage, the layout audit and other native/server lanes run
-separately; see the [verification matrix](../docs/verification-matrix.md).
+Packaged smoke, Rust coverage, the layout audit and the installer tests run
+separately. The end-to-end and server suites are closed and run before every release;
+see [how releases are verified](../docs/release-trust.md#how-releases-are-verified).
 
-## Desktop end-to-end tests
+## Installer tests
 
-`test/e2e/` starts the real application (`npm run build:packaged-smoke` builds it;
-it runs as the ordinary application) with a throwaway profile, attaches Playwright
-to its WebView2 over the DevTools protocol and works through the window against a
-real server. The result is judged outside the application: the tests read the
-server's disk and the local disk and compare SHA-256 sums.
+`test/e2e/app.ts` starts the real application with a throwaway profile, attaches
+Playwright to its WebView2 over the DevTools protocol and works through the window;
+`panes.ts`, `ipc.ts` and `windows.ts` are its hands in the panes, in the IPC
+contract and in what Windows says about the windows. The installer tests build on it.
 
-- `ftp.e2e.ts` covers an upload, a download, a name conflict cancelled and then
-  overwritten, a folder with nested and empty folders, a rename and a Move to on
-  the server, a cut refused when pasted across to the other side either way, a
-  bookmark opening its folder with a listing that matches the
-  server's disk name for name, a sign-in retried after a wrong password, Stop
-  during an upload over an existing file, Pause and Resume of an
-  upload, an upload the server refuses, and a file someone else stores under
-  the name while it uploads, which stays. It expects IIS FTP from
-  `scripts/test-servers/iis.ps1 install`, with its `fixtures/perms` folders, or a
-  server named by the `FTPEACH_E2E_FTP_*` variables. IIS deletes an aborted upload
-  itself, so these tests cannot see whether FTPeach removes its own staging file
-  after Stop, and a paused upload always starts over there.
-- `ftps.e2e.ts` checks that the IIS site's self-signed certificate is refused
-  when nothing vouches for it, then uploads over FTPS from a bookmark saved with
-  the certificate's CA (`cert.pem` from `iis.ps1`), put in the profile as a
-  user would have saved it.
-- `webdav.e2e.ts` runs a recording http:// server of its own to check that the
-  password reaches it only once Allow unencrypted sign-in is ticked, then
-  uploads and downloads over the IIS WebDAV site, stops an upload over an
-  existing file there and keeps a file someone else stores under the name
-  while it uploads.
-- `sftp.e2e.ts` trusts the server's key in the security window, which must show
-  the key's real fingerprint, then covers an upload, Stop with the staging file
-  removed, Resume appending to the staging file the pause kept, and Resume
-  after the source was edited starting over without leaving that file behind,
-  a file someone else stores under the name while it uploads, then Retry once
-  the name is free, Stop of a folder merge that keeps the file being replaced
-  and a staging file that is not its own, Quit when transfers finish, called
-  off and then let through, Stop of an upload waiting for the one connection
-  allowed, one name uploaded from two tabs at once, a selection where some
-  files copy, existing ones are skipped and unreadable ones fail, folders
-  copied both ways at once between two connections to the server, one in
-  each pane, while one transfer at a time is allowed, and a connection cut by a relay in the test: the pane says it is gone, and
-  connecting it again lists and uploads. It expects
-  OpenSSH from `scripts/test-servers/openssh.ps1 install` (after `iis.ps1 install`,
-  whose account it uses), or a server named by the `FTPEACH_E2E_SFTP_*` variables.
-  OpenSSH keeps a partly uploaded file, so what is left is FTPeach's doing.
-- `local.e2e.ts` needs no server: a folder cut and pasted into a folder of the
-  same name, where one file cannot be replaced, copies the rest and deletes
-  none of its sources.
-- `filesystem.e2e.ts` covers what NTFS does to file operations: junctions not
-  entered or deleted, a copy that does not write through a hard link, a file
-  another program holds, a folder the account may not add files to, names in a
-  folder deeper than 260 characters, the Recycle Bin, a network path typed
-  instead of chosen, FTPeach's own data folder, the Mark of the Web on an IIS
-  FTP download, and names a WebDAV server of the test's own lists that Windows
-  cannot hold.
-- `profiles.e2e.ts` starts on each profile of `test/fixtures/profiles` (its
-  README says what each holds): one without the schema envelope from before
-  0.1.0 with a password in plain text, one with system protection as 0.1.0 to
-  0.4.0 write it, and one with a master password. It judges settings,
-  bookmarks, local paths, the session and the protection in the window, connects
-  with the saved password, changes something and judges it after a restart.
-- `portable.e2e.ts` runs portable copies (`test.use({ appPortable: true })`):
-  a certificate and a log folder chosen inside the copy, found again after the
-  folder moves and under two drive letters made with `subst`; the copy without
-  its marker; the notification entry in the registry while it runs, at exit and
-  after a crash; a data folder it cannot write, said before any window; and a
-  second start, which brings back an installed copy hidden in the tray.
-- `*.stand.ts` (`npm run test:e2e:stand`, not part of `npm run test:e2e`) needs
-  the stand of `scripts/test-servers/fs-stand.ps1 install`: a small NTFS drive to
-  move to and fill, an exFAT drive without a USN journal, two SMB shares (one
-  read only, one the tests take away through two scheduled tasks) and symbolic
-  links. The stand describes itself in `C:\ftpeach-test-servers\fs-stand.json`;
-  a part of it that is missing fails the test.
-
-All three scripts change the machine and need an elevated PowerShell. A missing server
-fails the test. A test can start the application with its own settings and saved
-store files through `test.use({ appSettings, appStore })`, or as a portable copy
-with `appPortable`. A Choose folder… dialog and a key or certificate picker are
-answered through `app.pick`. The application's
-windows open off screen without taking the focus, and its notifications are
-off, so a run leaves the desktop free to work at. For the same reason the test
-build opens nothing outside FTPeach: a file with its default program or Windows'
-Open with chooser, Explorer, a log folder or a web page is held back and logged,
-and a test that set one off fails (a program a test associates itself, such as
-the editor of `open-with.e2e.ts`, still starts). Bringing the window back from
-the tray does not take the focus either, and a reason not to start that would
-be a message box is written to the file `FTPEACH_E2E_MESSAGE_FILE` names. Close
-FTPeach first:
-the application is single-instance, so the tests run one at a time and never
-beside a running copy. A failed test keeps a trace, a screenshot and the
-application's log (`app.log`) under `test-results/e2e/`.
-
-The native, installer and soak prerequisites and opt-in environment variables are
-listed in the [verification matrix](../docs/verification-matrix.md#lanes). They are
-separate Playwright projects and are not included by `npm run test:e2e`.
+`install.vm.ts` (`npm run test:e2e:vm`) installs the two test installers of
+`npm run build:test-installers` (this checkout's release build with a test key and a
+local update feed) and checks a clean install, uninstalling with and without the data,
+upgrading the previous published release with a profile in place, and the updater
+installing from the local feed, for the installed and the portable copy, including
+updates that are damaged or fail. Installing changes the account that runs the tests,
+so they run only on a throwaway machine with `FTPEACH_DISPOSABLE_VM=1`, or in CI
+(`installer.yml`). The profile they put in place connects to the OpenSSH server of
+`scripts/test-servers/openssh.ps1 install`, after `iis.ps1 install`, whose account it
+uses; both need an elevated PowerShell. A failed test keeps a trace, a screenshot and
+the application's log under `test-results/e2e/`.
 
 ## Choosing the runtime
 

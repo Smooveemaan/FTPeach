@@ -1,6 +1,9 @@
+> **FTPeach does not accept pull requests.** Part of the tests every change has
+> to pass are closed, so a pull request cannot be checked here and will be
+> closed. Please open an issue instead: a bug report, a feature request or a
+> translation problem (see CONTRIBUTING.md).
+
 <!--
-Thanks for contributing to FTPeach! Please read CONTRIBUTING.md first.
-For a large change, open an issue and agree on the approach before writing code.
 Never include credentials, private keys, server addresses or user data files.
 -->
 

@@ -112,13 +112,13 @@ for (const id of ignoredAdvisories(await readFile('src-tauri/deny.toml', 'utf8')
 
 lines.push(
   '',
-  '### Verification matrix',
+  '### Release matrix',
   '',
-  'Record manual results in docs/native-validation.md before publishing the draft.',
+  "Record the local and manual results in the draft release's notes before publishing the draft.",
   '',
   '| Cell | Result |',
   '| --- | --- |',
-  ...releaseMatrixLines(await readFile('docs/verification-matrix.md', 'utf8')),
+  ...releaseMatrixLines(await readFile('docs/release-trust.md', 'utf8')),
 );
 
 const report = `${lines.join('\n')}\n`;

@@ -338,7 +338,7 @@ function main(): void {
     sections.push(
       section('rust', report, [
         'Windows build of `src-tauri/src` without test files; code behind `cfg(not(windows))` is not compiled, so it is not in the denominator. Branch coverage needs a nightly toolchain and is not measured.',
-        `${ignored} \`#[ignore]\` tests (live servers, Docker, second volume, privileges) do not run here; docs/verification-matrix.md lists them and how to run each.`,
+        `${ignored} \`#[ignore]\` tests (live servers, second volume, privileges) do not run here; docs/coverage.md lists them and how to run each.`,
       ]),
     );
     problems.push(...checkFloors(report, floors.rust));

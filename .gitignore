@@ -39,9 +39,9 @@ playwright-report/
 # Rust build artifacts. Keep Cargo.lock tracked for reproducible builds.
 target/
 src-tauri/gen/
-src-tauri/tests/docker/generated-tls/*
-src-tauri/tests/docker/matrix/generated/
-!src-tauri/tests/docker/generated-tls/.gitkeep
+
+# The maintainer's closed test suites, a repository of their own cloned here.
+/private/
 
 # Downloaded native build tools and libraries.
 .tools/

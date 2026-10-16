@@ -1,4 +1,7 @@
+#[cfg(not(feature = "test-utils"))]
 mod application;
+#[cfg(feature = "test-utils")]
+pub mod application;
 mod commands;
 #[cfg(not(feature = "test-utils"))]
 mod domain;
@@ -13,7 +16,10 @@ mod protocol;
 pub mod protocol;
 mod runtime;
 mod security;
+#[cfg(not(feature = "test-utils"))]
 mod session;
+#[cfg(feature = "test-utils")]
+pub mod session;
 #[cfg(not(feature = "test-utils"))]
 mod store;
 #[cfg(feature = "test-utils")]
@@ -22,10 +28,12 @@ pub mod store;
 mod test_inputs;
 mod transfer;
 
-// Expose the backends, the store, the pool and the server-to-server relay only
-// for protocol integration tests.
+// Expose the backends, the store, the pool, the server-to-server relay, and the
+// sessions and transfers over them only for protocol integration tests.
+#[cfg(all(windows, feature = "test-utils"))]
+pub use native_drag::{DragOutFile, manifest as drag_manifest};
 #[cfg(feature = "test-utils")]
-pub use transfer::{relay, transfer_pool};
+pub use transfer::{progress, relay, transfer_pool};
 // The server matrix asserts failure categories, not message text.
 #[cfg(feature = "test-utils")]
 pub use ipc::{CommandError, ErrorCode};

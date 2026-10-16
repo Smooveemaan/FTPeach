@@ -23,10 +23,7 @@ fn validate_relative_path(name: &str) -> Result<()> {
 
 /// Enumerated when Explorer requests descriptors, never before DoDragDrop.
 /// Keep directory descriptors (including empty ones) and stable content indices.
-pub(super) async fn expand(
-    pool: &TransferPool,
-    roots: Vec<DragOutFile>,
-) -> Result<Vec<DragOutFile>> {
+pub async fn expand(pool: &TransferPool, roots: Vec<DragOutFile>) -> Result<Vec<DragOutFile>> {
     ensure!(
         roots.len() <= 100_000,
         "Drag directory contains too many entries"
@@ -100,71 +97,6 @@ mod manifest_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[tokio::test]
-    #[ignore = "requires the Docker WebDAV test server on port 6065"]
-    async fn docker_folder_manifest_preserves_nested_and_empty_directories() {
-        use crate::protocol::{ProtocolBackend, config::ConnectionConfig, webdav::WebDavBackend};
-        use crate::transfer::transfer_pool::{BackendFactory, BoxBackend, PoolSize};
-        use std::sync::Arc;
-        let _ = rustls::crypto::ring::default_provider().install_default();
-        let config = ConnectionConfig::for_test(
-            serde_json::json!({
-                "protocol": "webdav", "webdavUrl": "http://127.0.0.1:6065", "allowCleartextAuth": true,
-                "user": "testuser", "password": "testpass"
-            })
-            .as_object()
-            .unwrap(),
-        )
-        .unwrap();
-        let mut backend = WebDavBackend::new();
-        backend.connect(&config).await.unwrap();
-        let root = format!("/drag-test-{}", uuid::Uuid::new_v4());
-        backend.mkdir(&root).await.unwrap();
-        backend.mkdir(&format!("{root}/empty")).await.unwrap();
-        backend.mkdir(&format!("{root}/nested")).await.unwrap();
-        backend
-            .create_file(&format!("{root}/nested/file.txt"))
-            .await
-            .unwrap();
-        let factory: BackendFactory = Arc::new(move || {
-            let config = config.clone();
-            Box::pin(async move {
-                let mut backend = WebDavBackend::new();
-                backend.connect(&config).await?;
-                Ok(Box::new(backend) as BoxBackend)
-            })
-        });
-        let pool = TransferPool::new(factory, PoolSize::Fixed(1));
-        let result = expand(
-            &pool,
-            vec![DragOutFile {
-                remote_path: root.clone(),
-                name: "folder".into(),
-                size: None,
-                is_directory: true,
-            }],
-        )
-        .await;
-        backend.remove(&root, true).await.unwrap();
-        backend.disconnect().await.unwrap();
-        let files = result.unwrap();
-        assert_eq!(files.len(), 4);
-        assert_eq!(files[0].name, "folder");
-        assert!(
-            files
-                .iter()
-                .any(|f| f.name == "folder\\empty" && f.is_directory)
-        );
-        assert!(
-            files
-                .iter()
-                .any(|f| f.name == "folder\\nested" && f.is_directory)
-        );
-        assert!(files.iter().any(|f| f.name == "folder\\nested\\file.txt"
-            && f.remote_path == format!("{root}/nested/file.txt")
-            && !f.is_directory));
-    }
 
     #[test]
     fn validates_relative_windows_paths_without_truncation() {

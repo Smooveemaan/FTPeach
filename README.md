@@ -162,16 +162,16 @@ npm run test:visual
 
 Visual tests use a deterministic application fixture with checked-in snapshots for the workspace and dialogs. Review intentional visual changes before updating snapshots with `npm run test:visual:update`.
 
-Before submitting a pull request, run:
+To check a change locally, run:
 
 ```powershell
 npm run check
 ```
 
-`npm run check` is the local baseline, not every CI check. Packaged smoke, live-server
-and desktop tests, the language layout audit, Rust coverage, the Linux build, Semgrep,
-`npm audit` and `cargo deny` run separately. Their setup and scope are in the
-[verification matrix](docs/verification-matrix.md).
+`npm run check` is the local baseline, not every CI check. Packaged smoke, the installer
+tests, the language layout audit, Rust coverage, the Linux build, Semgrep, `npm audit` and
+`cargo deny` run separately. The end-to-end and live-server suites are closed and run before
+each release; see [how releases are verified](docs/release-trust.md#how-releases-are-verified).
 
 See the [test guide](test/README.md) for individual suites and the [contribution guide](.github/CONTRIBUTING.md) for review expectations.
 
@@ -200,7 +200,7 @@ The [documentation index](docs/README.md) includes validation reports, IPC permi
 
 Found a bug or have an idea? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, Windows version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
 
-Code improvements, documentation fixes, and bug reports are welcome. Read [CONTRIBUTING.md](.github/CONTRIBUTING.md) before starting, and open an issue to discuss larger changes.
+Bug reports, ideas and translation problems are welcome as issues. FTPeach does not accept pull requests: part of the tests a change has to pass are closed, so a pull request could not be checked here. See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 

@@ -23,8 +23,23 @@ any report is read. Not in the denominators:
   needs a nightly toolchain and is shown as not measured.
 
 Skipped and todo tests are counted in each frontend section. The `#[ignore]` Rust tests — live
-servers, Docker, a second volume, privileges — do not run under coverage; the Rust section gives
-their count, and [the verification matrix](verification-matrix.md) says what each needs.
+servers, a second volume, privileges — do not run under coverage; the Rust section gives
+their count, and [the table below](#ignored-rust-tests) says what each needs.
+
+## Ignored Rust tests
+
+Each `#[ignore]` names its reason, and `npm run check:ignored-tests` fails when an ignored test is
+missing from this table. The default run reports them as ignored; the count is the number of checks
+that did not run. The last results are historical, not checks of the current tree.
+
+| Test | Needs | Command | Last result |
+| --- | --- | --- | --- |
+| `connects_lists_and_downloads_from_rebex_ftps`, `connects_lists_and_downloads_from_rebex_sftp` | internet access to test.rebex.net | `npm run rust:test -- connects_lists_and_downloads_from_rebex --ignored` | PASS 2/2, 2026-09-23 |
+| `connects_and_round_trips_a_file` | a WebDAV server in `WEBDAV_URL`, `WEBDAV_USER`, `WEBDAV_PASS` | `npm run rust:test -- connects_and_round_trips_a_file --ignored` | NOT RUN: no external server |
+| `cross_volume_disk_move` | a second writable volume in `FTPEACH_MOVE_TEST_VOLUME` | `npm run rust:test -- cross_volume_disk_move --ignored` | PASS, C: to an NTFS drive, 2026-10-08 |
+| `artifact_symlink_cannot_write_to_its_target` | Developer Mode or SeCreateSymbolicLinkPrivilege | `npm run rust:test -- artifact_symlink_cannot_write --ignored` | NOT RUN: privilege not held (1314) |
+| `connect_without_proxy_supports_ipv6_when_loopback_is_available` | the firewall allowing IPv6 loopback connects | `npm run rust:test -- connect_without_proxy_supports_ipv6 --ignored` | NOT RUN: connect to ::1 refused (EACCES) |
+| `endless_reply_under_a_memory_cap` | nothing; its parent test runs it under a 128 MiB cap | runs inside `an_endless_reply_fits_in_a_process_with_a_hard_memory_cap` | PASS through the parent |
 
 ## Floors
 
@@ -37,8 +52,9 @@ whole project and no 100% target.
 
 A line percentage does not prove a guarantee. The scenarios that do — no-replace, keeping the old
 target, checking the source before delete, recovering a dirty file, failed envelopes, cancellation
-and settling — are listed per task in the [verification matrix](verification-matrix.md) and per
-protocol in the [guarantee matrix](transfer-safety.md#guarantee-matrix).
+and settling — are checked by the end-to-end and server suites a release waits for
+([How releases are verified](release-trust.md#how-releases-are-verified)) and listed per protocol
+in the [guarantee matrix](transfer-safety.md#guarantee-matrix).
 
 CI runs the frontend command in `lint-test-build` and the Rust command in `rust-coverage`, and keeps
 both `coverage/` directories as artifacts. `check:ci-parity` checks the npm steps in
@@ -74,7 +90,7 @@ duplicating the individual navigation helpers' Node tests.
   layout geometry is simulated in jsdom, not a native browser layout test.
 - [Native manifest tests](../src-tauri/src/native_drag/manifest_tests.rs) run without a server:
   unsafe or duplicate Windows root names, UTF-16 descriptor lengths and excessive root counts
-  fail before connecting. Recursive folder enumeration still has the separate Docker fixture.
+  fail before connecting. Recursive folder enumeration is checked against a real server.
 
 | Floored module | Runner | Baseline lines |
 | --- | --- | ---: |
@@ -94,8 +110,8 @@ duplicating the individual navigation helpers' Node tests.
 | `runtime/shutdown.rs` | rust | 33.3% |
 
 The last two are low because most of their code needs a Tauri runtime or a quitting process; their
-floors keep them from slipping further, and their scenarios are covered by the native checks in the
-verification matrix.
+floors keep them from slipping further, and their scenarios are covered by the desktop checks a
+release waits for.
 
 ## Changed-line floors
 

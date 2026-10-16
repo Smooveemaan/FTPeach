@@ -1,6 +1,9 @@
 pub(crate) mod concurrency_limiter;
 pub(crate) mod error_kind;
+#[cfg(not(feature = "test-utils"))]
 pub(crate) mod progress;
+#[cfg(feature = "test-utils")]
+pub mod progress;
 pub(crate) mod rate_limiter;
 #[cfg(not(feature = "test-utils"))]
 pub(crate) mod relay;

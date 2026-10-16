@@ -79,7 +79,41 @@ is selected; the reachable signing path and why it is kept are recorded in
 [rust-advisories.md](rust-advisories.md). The weekly audit fails if the
 register's kind for an advisory disagrees with RustSec's.
 
-Dependabot proposes updates but does not merge them. A change to
-`src-tauri/Cargo.lock` or `Cargo.toml` also runs the protocol compatibility
-suite against real servers, so a protocol crate update cannot pass on unit
-tests alone ([dependency-policy.md](dependency-policy.md)).
+Dependabot proposes updates but does not merge them. Every release also runs
+the protocol compatibility suite against real servers, so a protocol crate
+update cannot ship on unit tests alone ([dependency-policy.md](dependency-policy.md)).
+
+## How releases are verified
+
+Besides the tests in this repository, every release is checked by suites the
+maintainer keeps closed: end-to-end tests that drive the built application,
+the client against a matrix of real FTP, FTPS, SFTP and WebDAV servers, and
+protocol round trips against servers in Docker. They run on GitHub-hosted
+runners in a private repository, on the exact commit to be tagged, and report
+back as the `private-suites` commit status. The release workflow refuses to
+publish a tag whose commit lacks a green `private-suites` status. Desktop
+checks that take over the screen and the mouse (Explorer drag and drop, file
+dialogs, the tray) and the file-system checks on extra drives and shares run on
+the maintainer's machine before the release.
+
+### Release matrix
+
+The release trust report copies this table into every draft release. Rows in
+the `ci` lane are proven by jobs the release workflow requires; every other row
+is printed as NOT VERIFIED until the maintainer records its result in the draft
+release's notes. A `manual` row links to its steps.
+
+| Cell | Lane | How |
+| --- | --- | --- |
+| Default Rust, Node, component and visual suites | ci | `checks.yml` |
+| Packaged WebView2 smoke: shutdown flush, editor recovery, vault lock | ci | `packaged-smoke` |
+| Portable copy keeps its data beside the program and none in the profile folders | ci | `packaged-smoke`, second run |
+| Clean install, upgrade from the previous release, uninstall, the updater, portable update | ci | `installer` |
+| Desktop end-to-end, server matrix and protocol compatibility suites | ci | the `private-suites` status of the tagged commit |
+| Native desktop checks: Explorer drag and drop, file dialogs, the tray and its notifications | local | run by the maintainer before the release |
+| File operations on a second drive, a full drive, exFAT, a share and through links | local | run by the maintainer before the release |
+| Clicking the transfer notification brings the window back | manual | [Clicking the transfer notification](manual-checks.md#clicking-the-transfer-notification) |
+| Windows Hello unlock | manual | [Windows Hello](manual-checks.md#windows-hello) |
+| Windows Hello on a second account | manual | [Windows Hello](manual-checks.md#windows-hello) |
+| Vault locks with Windows | manual | [Vault locks with Windows](manual-checks.md#vault-locks-with-windows) |
+| Update from the previous published release with the release key, after publishing | manual | [Update from the previous published release](manual-checks.md#update-from-the-previous-published-release) |

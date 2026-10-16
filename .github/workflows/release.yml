@@ -4,6 +4,19 @@ on:
   push:
     tags:
       - 'v*'
+  # Only to release a tag without the closed suites' status, when their runs
+  # cannot report (docs/release-trust.md#how-releases-are-verified). The reason
+  # is written into the run's summary.
+  workflow_dispatch:
+    inputs:
+      skip-private-suites:
+        description: Publish without a green private-suites status
+        type: boolean
+        default: false
+      reason:
+        description: Why the status is skipped (required when skipping)
+        type: string
+        default: ''
 
 permissions: {}
 
@@ -16,11 +29,40 @@ jobs:
     with:
       force-all: true
 
-  protocol-compatibility:
+  # The closed end-to-end, server matrix and protocol suites run in a private
+  # repository on the commit to be tagged and report the `private-suites`
+  # commit status here. This job only reads it; it never starts those runs.
+  private-suites:
     permissions:
-      contents: read
-      issues: write
-    uses: ./.github/workflows/protocol-compatibility.yml
+      statuses: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require a green private-suites status on the tagged commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SKIP: ${{ inputs.skip-private-suites }}
+          REASON: ${{ inputs.reason }}
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*) ;;
+            *) echo "A release runs on a v* tag, not $GITHUB_REF." >&2; exit 1 ;;
+          esac
+          if [ "$SKIP" = "true" ]; then
+            if [ -z "$(printf '%s' "$REASON" | tr -d '[:space:]')" ]; then
+              echo 'Skipping the private-suites status needs a reason.' >&2
+              exit 1
+            fi
+            printf '### private-suites NOT CHECKED\n\nSkipped by %s: %s\n' "$GITHUB_ACTOR" "$REASON" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          state="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/statuses" \
+            --jq '[.[] | select(.context == "private-suites")][0].state // "missing"')"
+          echo "private-suites on $GITHUB_SHA: $state"
+          if [ "$state" != success ]; then
+            echo 'Run the pre-release check of the closed suites on this commit first.' >&2
+            exit 1
+          fi
 
   # Install, uninstall and update with the installer this tag builds, on a
   # throwaway runner.
@@ -55,7 +97,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    needs: [gates, protocol-compatibility, installer, release-environment]
+    needs: [gates, private-suites, installer, release-environment]
     runs-on: windows-latest
     timeout-minutes: 45
     environment: release

@@ -137,10 +137,8 @@ impl ProgressEmitter {
 
     /// An emitter that hands its payloads to `emit`, for tests that drive a
     /// transfer with no window to report to.
-    #[cfg(test)]
-    pub(crate) fn for_tests(
-        emit: impl Fn(TransferProgressPayload) + Send + Sync + 'static,
-    ) -> Self {
+    #[cfg(any(test, feature = "test-utils"))]
+    pub fn for_tests(emit: impl Fn(TransferProgressPayload) + Send + Sync + 'static) -> Self {
         Self::emitting(emit)
     }
 

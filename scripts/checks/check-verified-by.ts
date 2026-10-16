@@ -6,16 +6,16 @@
 //   <!-- verified-by: manual <heading in docs/manual-checks.md> -->
 //
 // This proves the named check exists, is not switched off, and runs where the
-// marker says: `pr` blocks every change, `weekly` runs against real servers on
-// a schedule, `manual` is a recorded run by a person. It does not prove the
-// check asserts what the sentence says; that is still read in review.
+// marker says: `pr` blocks every change, `manual` is a recorded run by a
+// person. It does not prove the check asserts what the sentence says; that is
+// still read in review.
 import { readFile } from 'node:fs/promises';
 import { ignoredTests } from './check-ignored-tests.ts';
 
 export const GUIDE = 'docs/user-guide.md';
 export const MANUAL_CHECKS = 'docs/manual-checks.md';
 
-export type Gate = 'pr' | 'weekly' | 'manual';
+export type Gate = 'pr' | 'manual';
 
 export interface Marker {
   line: number;
@@ -37,11 +37,7 @@ function escape(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/**
- * Where a test in `file` runs, or why it does not count. Ignored Rust tests
- * under `src-tauri/tests/` are the Docker suites the weekly workflows run with
- * `--ignored`; an ignored test anywhere else runs nowhere on its own.
- */
+/** Where a test in `file` runs, or why it does not count: an ignored test runs nowhere on its own. */
 export function gateOf(file: string, source: string, name: string): Gate | string {
   if (file.endsWith('.rs')) {
     const declared = new RegExp(
@@ -50,9 +46,7 @@ export function gateOf(file: string, source: string, name: string): Gate | strin
     );
     if (!declared.test(source)) return `no test fn \`${name}\` in ${file}`;
     if (!ignoredTests(file, source).some((test) => test.name === name)) return 'pr';
-    return file.startsWith('src-tauri/tests/')
-      ? 'weekly'
-      : `\`${name}\` is #[ignore] and no workflow runs it`;
+    return `\`${name}\` is #[ignore] and no workflow runs it`;
   }
   if (/\.(?:test|spec)\.tsx?$/.test(file)) {
     const quoted = `(?<quote>['"\`])${escape(name)}\\k<quote>`;
@@ -77,8 +71,8 @@ export async function markerProblems(
       ? []
       : [`${where}: no "${marker.target}" heading in ${MANUAL_CHECKS}`];
   }
-  if (marker.gate !== 'pr' && marker.gate !== 'weekly') {
-    return [`${where}: gate "${marker.gate}" is not pr, weekly or manual`];
+  if (marker.gate !== 'pr') {
+    return [`${where}: gate "${marker.gate}" is not pr or manual`];
   }
   const split = marker.target.indexOf('::');
   if (split < 0) return [`${where}: expected <file>::<test name>, got "${marker.target}"`];
@@ -88,9 +82,6 @@ export async function markerProblems(
   if (source === undefined) return [`${where}: ${file} does not exist`];
   const gate = gateOf(file, source, name);
   if (gate === marker.gate) return [];
-  if (gate === 'pr' || gate === 'weekly') {
-    return [`${where}: \`${name}\` runs on ${gate}, not ${marker.gate}`];
-  }
   return [`${where}: ${gate}`];
 }
 

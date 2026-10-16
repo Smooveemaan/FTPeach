@@ -4,7 +4,7 @@ Some behavior can only be confirmed by a person running the real application:
 a fingerprint or a face, a locked Windows session, how a moving window looks.
 This page lists those checks and records each run. Everything else is either
 covered by an automated check or listed as a known gap (lane `none`) in the
-[verification matrix](verification-matrix.md#release-matrix).
+[release matrix](release-trust.md#release-matrix).
 
 The [user guide](user-guide.md) points to a recorded run with
 `<!-- verified-by: manual <heading> -->`, which `npm run check:verified-by`
@@ -144,7 +144,7 @@ Repeat the run and update the record when the behavior it covers changes.
 
 - Version: 0.3.0 release working tree.
 - Date: 2026-09-27
-- Steps: run `npm run screenshot:readme` against the baseline Docker servers
+- Steps: retake the README screenshot against the baseline Docker servers
   and confirm the local SFTP key in the application.
 - Result: the default Playwright screenshot cropped the right and bottom of
   the window. Capturing the native viewport through CDP without an explicit

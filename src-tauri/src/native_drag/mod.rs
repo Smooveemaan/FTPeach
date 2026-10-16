@@ -3,8 +3,10 @@
 //! `.local/docs/macos.md` for the macOS/Linux design notes) — every other
 //! platform simply doesn't offer the feature yet, handled by
 //! `commands::drag_out::drag_out_start`'s `#[cfg(not(windows))]` branch.
-#[cfg(windows)]
+#[cfg(all(windows, not(feature = "test-utils")))]
 mod manifest;
+#[cfg(all(windows, feature = "test-utils"))]
+pub mod manifest;
 #[cfg(windows)]
 pub mod windows;
 

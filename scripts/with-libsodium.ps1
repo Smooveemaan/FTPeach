@@ -4,13 +4,19 @@ param(
 
     [string]$EnvironmentFile,
 
-    [ValidateSet('prepare', 'dev', 'check', 'test', 'compatibility', 'clippy', 'cargo-build', 'build', 'smoke-build', 'test-installers', 'verify-updater', 'benchmark-listing', 'server-matrix', 'coverage')]
+    [ValidateSet('prepare', 'dev', 'check', 'test', 'test-target', 'clippy', 'cargo-build', 'build', 'smoke-build', 'test-installers', 'verify-updater', 'benchmark-listing', 'coverage')]
     [string]$Command = 'build',
 
     [ValidateSet('debug', 'release')]
     [string]$Profile = 'debug',
 
-    # Passed to the test binary by the test, coverage and server-matrix commands
+    # The one integration test target test-target runs, and the package it is in:
+    # src-tauri or another package of tests that depends on it.
+    [string]$Target,
+
+    [string]$Manifest = 'src-tauri\Cargo.toml',
+
+    # Passed to the test binary by the test, test-target and coverage commands
     # (filters, --ignored, --test-threads).
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$TestArgs = @()
@@ -146,14 +152,14 @@ try {
             New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null
             & cargo run --locked --manifest-path 'src-tauri\Cargo.toml' --example benchmark_listing -- '.local\benchmarks\stage-2-listing.json' 100001
         }
-        'compatibility' {
-            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --test docker_integration -- --ignored
-            if ($LASTEXITCODE -eq 0) {
-                & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --lib protocol::ftp::protocol_tests::recursive_stop_tests::docker_ -- --ignored --test-threads=1
+        'test-target' {
+            if ([string]::IsNullOrWhiteSpace($Target)) {
+                throw 'test-target needs -Target <integration test target>.'
             }
-        }
-        'server-matrix' {
-            & cargo test --locked --manifest-path 'src-tauri\Cargo.toml' --features test-utils --test server_matrix -- --ignored @TestArgs
+            # src-tauri's target directory, where the libsodium symbols are, whatever the package.
+            # Another package's lock file is src-tauri's plus that package, so it cannot be --locked.
+            $locked = if ($Manifest -eq 'src-tauri\Cargo.toml') { @('--locked') } else { @() }
+            & cargo test @locked --manifest-path $Manifest --target-dir $targetRoot --features test-utils --test $Target -- @TestArgs
         }
         'clippy' {
             & cargo clippy --locked --manifest-path 'src-tauri\Cargo.toml' --all-targets --all-features -- -D warnings

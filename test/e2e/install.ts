@@ -4,7 +4,7 @@
 // registry says about it, the update feed the test builds read, and updates
 // made up to fail. Installing touches the real profile and registry of the
 // account running the tests, so they run only on a throwaway machine.
-import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { execFile, execFileSync, spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
   copyFileSync,
@@ -19,15 +19,16 @@ import {
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { expect, type Page } from '@playwright/test';
 import { startProgram, type StartedProgram } from './app.ts';
 import { call } from './ipc.ts';
-import { native } from './native.ts';
 import { menu, sha256, tree } from './panes.ts';
 import { closeWindow, nativeWindows } from './windows.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const built = path.join(root, '.tools', 'installer-test');
+const framework = 'C:/Windows/Microsoft.NET/Framework64/v4.0.30319';
 
 /** What scripts/release/test-installers.ts built. */
 export interface TestBuild {
@@ -150,15 +151,32 @@ export async function uninstallSilently() {
   await uninstallerDone();
 }
 
+/** uninstall.cs, built with the C# compiler every Windows has. */
+function uninstallHelper(): string {
+  const exe = path.join(mkdtempSync(path.join(tmpdir(), 'ftpeach-uninstall-')), 'uninstall.exe');
+  execFileSync(`${framework}/csc.exe`, [
+    '/nologo',
+    '/target:exe',
+    '/platform:x64',
+    `/out:${exe}`,
+    `/r:${framework}/WPF/UIAutomationClient.dll`,
+    `/r:${framework}/WPF/UIAutomationTypes.dll`,
+    `/r:${framework}/WPF/WindowsBase.dll`,
+    path.join(import.meta.dirname, 'uninstall.cs'),
+  ]);
+  return exe;
+}
+
 /** The uninstaller as people see it, with "Delete the application data" ticked. */
 export async function uninstallDeletingData() {
+  const helper = uninstallHelper();
   spawn(uninstaller, [], { detached: true, stdio: 'ignore' }).unref();
-  const answer = await native<{ ticked: boolean }>(
-    'uninstall',
-    'FTPeach Uninstall',
-    'Delete the application data',
+  const { stdout } = await promisify(execFile)(
+    helper,
+    ['FTPeach Uninstall', 'Delete the application data'],
+    { timeout: 240_000 },
   );
-  expect(answer.ticked).toBe(true);
+  expect((JSON.parse(stdout) as { ticked: boolean }).ticked).toBe(true);
   await uninstallerDone();
 }
 
@@ -515,12 +533,7 @@ export function failingInstaller(version: string, runs: string): string {
       '}',
     ].join('\n'),
   );
-  execFileSync('C:/Windows/Microsoft.NET/Framework64/v4.0.30319/csc.exe', [
-    '/nologo',
-    '/target:winexe',
-    `/out:${file}`,
-    source,
-  ]);
+  execFileSync(`${framework}/csc.exe`, ['/nologo', '/target:winexe', `/out:${file}`, source]);
   sign(file);
   return file;
 }

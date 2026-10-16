@@ -41,14 +41,12 @@ test('a running test is found; a missing, disabled or non-test one is not', () =
   assert.match(gateOf('test/unit/a.test.ts', typescript, 'a paused upload'), /no test titled/);
 });
 
-test('an ignored Docker test runs weekly, and a marker must say so', async () => {
-  const file = 'src-tauri/tests/docker_integration.rs';
-  assert.equal(gateOf(file, rust, 'against_a_real_server'), 'weekly');
+test('an ignored integration test does not count either', async () => {
+  const file = 'src-tauri/tests/webdav_proxy_policy.rs';
   const read = async () => rust;
   const target = `${file}::against_a_real_server`;
-  assert.deepEqual(await markerProblems({ line: 1, gate: 'weekly', target }, read), []);
   const claimed = await markerProblems({ line: 1, gate: 'pr', target }, read);
-  assert.match(claimed[0]!, /runs on weekly, not pr/);
+  assert.match(claimed[0]!, /no workflow runs it/);
 });
 
 test('a manual marker needs its recorded run', async () => {
@@ -65,7 +63,7 @@ test('a manual marker needs its recorded run', async () => {
 test('an unknown gate or a missing file is reported', async () => {
   const read = async () => undefined;
   const [gate] = await markerProblems({ line: 1, gate: 'nightly', target: 'a.rs::x' }, read);
-  assert.match(gate!, /not pr, weekly or manual/);
+  assert.match(gate!, /not pr or manual/);
   const [file] = await markerProblems({ line: 1, gate: 'pr', target: 'gone.rs::x' }, read);
   assert.match(file!, /does not exist/);
 });

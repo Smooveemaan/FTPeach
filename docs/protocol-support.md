@@ -60,33 +60,11 @@ See also [`networking.md`](networking.md).
 
 ## Compatibility verification
 
-The **Protocol compatibility** GitHub Actions workflow runs every Wednesday,
-on every push and pull request that changes Rust code, tests or Cargo
-manifests, and can also be started manually with `workflow_dispatch`. It starts
-disposable containerized FTP/FTPS, SFTP, and WebDAV servers and runs the ignored
-`docker_integration` suite without permanent external credentials.
-
-Coverage includes protocol round trips, cancellation/resume behavior, SFTP
-first-use host-key pinning and mismatch rejection, custom certificate
-authorities, invalid certificates, and endpoints restricted to TLS 1.2 or TLS
-1.3. A scheduled failure opens or updates a repository issue; the workflow is
-informational for ordinary pull requests and does not make a public server a
-required dependency of the main CI pipeline.
-
-The broader [test server matrix](test-server-matrix.md) runs weekly and on
-demand in its own workflow: about thirty server implementations and
-configurations, IIS, proxies, relays between different servers and faulty
-links. It is informational and never blocks a pull request or a release.
-
-On Windows, run from the repository root after the [libsodium setup](../README.md#set-up-and-run):
-
-```powershell
-docker compose -f src-tauri/tests/docker/docker-compose.yml up --detach
-# Wait for the FTP 220 banner on 2131 and ports 2222, 6065, 6443 and 6444.
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command compatibility
-docker compose -f src-tauri/tests/docker/docker-compose.yml down --volumes
-```
-
-The wrapper runs both the Docker integration target and the recursive FTP stop
-fixtures. The Linux commands and strict TLS endpoint probes are in
-[protocol-compatibility.yml](../.github/workflows/protocol-compatibility.yml).
+Before every release, closed suites check the client against real servers
+([How releases are verified](release-trust.md#how-releases-are-verified)): protocol round trips against disposable FTP/FTPS, SFTP and
+WebDAV servers in containers, with cancellation and resume, SFTP first-use
+host-key pinning and mismatch rejection, custom certificate authorities,
+invalid certificates and endpoints restricted to TLS 1.2 or TLS 1.3; and a
+broader matrix of server implementations and configurations, IIS, proxies,
+relays between different servers and faulty links. Neither needs permanent
+external credentials.

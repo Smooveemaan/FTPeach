@@ -42,7 +42,7 @@ test('tests, tooling and docs alone owe nothing', () => {
   const paths = [
     'src-tauri/src/protocol/ftp_tests.rs',
     'src-tauri/src/store/tests.rs',
-    'src-tauri/tests/server_matrix/scenarios.rs',
+    'src-tauri/tests/webdav_proxy_policy.rs',
     'test/unit/tooling/checkDocImpact.test.ts',
     'scripts/checks/check-doc-impact.ts',
     'docs/architecture.md',

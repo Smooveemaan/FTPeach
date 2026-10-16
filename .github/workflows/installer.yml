@@ -6,22 +6,16 @@ name: Installer
 # installing from a local feed, for the installed and the portable copy,
 # including updates that are damaged or fail. The installers are this
 # checkout's release build with a test key (scripts/release/test-installers.ts).
-# A release gate (release.yml), and on demand. `strength` runs the breaks of
-# scripts/test-strength/breaks.ts that only this suite can catch instead.
+# A release gate (release.yml), and on demand.
 
 permissions: {}
 
 on:
   workflow_call:
   workflow_dispatch:
-    inputs:
-      strength:
-        description: Run the installer breaks of test:strength instead of the suite
-        type: boolean
-        default: false
 
 concurrency:
-  group: installer-${{ github.ref }}-${{ inputs.strength }}
+  group: installer-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,7 +23,7 @@ jobs:
     permissions:
       contents: read
     runs-on: windows-latest
-    timeout-minutes: ${{ inputs.strength && 340 || 90 }}
+    timeout-minutes: 90
     env:
       SCCACHE_GHA_ENABLED: 'true'
       RUSTC_WRAPPER: 'sccache'
@@ -66,7 +60,7 @@ jobs:
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
 
       # The profiles the tests put in place name the IIS FTP account and the
-      # OpenSSH server, as in desktop-e2e.
+      # OpenSSH server.
       - name: Install IIS FTP and WebDAV test sites
         shell: powershell
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
@@ -76,22 +70,14 @@ jobs:
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/openssh.ps1 install
 
       - name: Build the test installers
-        if: ${{ !inputs.strength }}
         run: npm run build:test-installers
 
       # The previous release is read from GitHub; the token keeps the API
       # within its limits.
       - name: Run the installer tests
-        if: ${{ !inputs.strength }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run test:e2e:vm
-
-      - name: Check that the installer tests catch the breaks
-        if: ${{ inputs.strength }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: npm run test:strength -- --vm
 
       - name: Keep the test results
         if: ${{ always() }}

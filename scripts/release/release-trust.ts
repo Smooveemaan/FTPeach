@@ -153,16 +153,16 @@ export function privateKeyHits(contents: Buffer, secret: string | undefined): st
 }
 
 /**
- * The release matrix of `docs/verification-matrix.md` as report lines. A
+ * The release matrix of `docs/release-trust.md` as report lines. A
  * `ci` row is proven by a job the publish job needs; every other row is
  * printed as not verified, because this workflow cannot have run it.
  */
 export function releaseMatrixLines(markdown: string): string[] {
-  const section = markdown.split(/^## Release matrix$/m)[1]?.split(/^## /m)[0] ?? '';
+  const section = markdown.split(/^### Release matrix$/m)[1]?.split(/^##+ /m)[0] ?? '';
   const rows = section
     .split('\n')
     .filter((line) => line.startsWith('|') && !/^\|\s*(-|Cell\b)/.test(line));
-  if (rows.length === 0) throw new Error('docs/verification-matrix.md has no release matrix');
+  if (rows.length === 0) throw new Error('docs/release-trust.md has no release matrix');
   return rows.map((row) => {
     const [cell, lane, how] = row
       .split('|')

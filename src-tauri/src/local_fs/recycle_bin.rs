@@ -87,7 +87,7 @@ mod tests {
         path.encode_utf16().chain([0]).collect()
     }
 
-    // A share is the stand's (volumes.stand.ts); here only that a fixed drive
+    // A share is the file-system stand's; here only that a fixed drive
     // keeps its Recycle Bin and a path with no volume has none.
     #[test]
     fn a_fixed_drive_has_a_recycle_bin() {

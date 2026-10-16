@@ -130,14 +130,14 @@ test('register rows and deny.toml ids are read by column', () => {
 
 test('only ci rows of the release matrix count as passed; the rest are not verified', () => {
   const doc = [
-    '## Release matrix',
+    '### Release matrix',
     '',
     '| Cell | Lane | How |',
     '| --- | --- | --- |',
     '| Default suites | ci | `checks.yml` |',
     '| Windows Hello unlock | manual | lock, unlock with Hello |',
     '',
-    '## Later section',
+    '### Later section',
     '| Other | ci | x |',
   ].join('\n');
   assert.deepEqual(releaseMatrixLines(doc), [
@@ -149,7 +149,7 @@ test('only ci rows of the release matrix count as passed; the rest are not verif
 
 test('the release matrix in the repository parses', async () => {
   const { readFile } = await import('node:fs/promises');
-  const lines = releaseMatrixLines(await readFile('docs/verification-matrix.md', 'utf8'));
+  const lines = releaseMatrixLines(await readFile('docs/release-trust.md', 'utf8'));
   assert.ok(lines.some((line) => line.includes('NOT VERIFIED')));
   assert.ok(lines.some((line) => line.includes('passed: required job')));
 });

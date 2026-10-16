@@ -16,18 +16,16 @@ third-party interface icons identified in `THIRD_PARTY_NOTICES.txt`.
 `assets/images/icon.png` and the application screenshots `assets/images/ftpeach-dark.png`
 and `assets/images/ftpeach-light.png` are original works by Leonid Lozovskii
 (Smooveemaan) and are covered by the same statement as the application icon
-above. The screenshots are captured from the running application by
-`npm run screenshot:readme` (`scripts/screenshot/readme.ts`; the light one with
-`--light`), which also draws their window frame and shadow; they contain no
+above. The screenshots are captured from the running application by the
+maintainer's capture tool, which also draws their window frame and shadow; they contain no
 third-party artwork beyond the interface icons noted above.
 
-`npm run screenshot:readme -- --palettes` also captures every color scheme from
+The same tool also captures every color scheme from
 the same application state and produces `assets/images/ftpeach-palettes-dark.webp`
 and `assets/images/ftpeach-palettes-light.webp`. These looping README animations
 retain the transparent frame and shadow and show each scheme's name and a color
 marker in a themed pill below the window, aligned with its left edge. Each scheme takes one second, including a 350 ms crossfade into the next;
 the last scheme fades back to Peach. They use the same artwork and palette notices as the application.
-The command requires ffmpeg and refreshes both README PNGs in the same run.
 It also exports unlabelled WebP previews with the palette-specific window border, and their names and colors to
 `assets/images/palettes/` for the website's on-demand theme picker.
 

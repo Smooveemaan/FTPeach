@@ -8,11 +8,9 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | `checks/` | Repository, architecture, locale, and release validation | `npm run check`, `npm run lint`, `npm run i18n:check` |
 | `benchmarks/` | Frontend models, transfer history, and browser measurements | `npm run benchmark:frontend`, `npm run benchmark:transfer-history`, `npm run benchmark:transfer-ui` |
 | `release/` | Release notes, license notices, SBOMs, advisory reports, the release-environment gate and the trust report | `npm run licenses:check`, `npm run sbom:generate`; CI runs the rest |
-| `test-strength/` | Applies deliberate defects one at a time and checks that the desktop end-to-end tests catch each | `npm run test:strength [-- <break name>]` |
 | `packaged-smoke/` | Native application smoke harness | [Instructions](packaged-smoke/README.md) |
 | `manual-tests/` | Manual file-type icon fixtures | [Instructions](manual-tests/README.md) |
-| `test-servers/` | The test server matrix: start, stop, run and report; IIS on the host | `npm run servers:up`, `servers:test`, `servers:ci`; [instructions](../docs/test-server-matrix.md) |
-| `screenshot/` | Retakes the README screenshot from the running app against the Docker test servers | `npm run screenshot:readme [local folder]` |
+| `test-servers/` | The IIS FTP and WebDAV sites and the OpenSSH server the installer tests connect to, on the Windows host | `iis.ps1 install`, then `openssh.ps1 install`, in an elevated PowerShell |
 | `site/` | Builds the website for GitHub Pages and draws its link previews | `npm run site:build`, `npm run site:social` |
 | `with-libsodium.ps1` | Verified native library setup and Cargo/Tauri commands | `npm run rust:check`, `npm run build:tauri` |
 | `clean.ps1` | Build output and cache cleanup | `npm run clean` |
@@ -31,19 +29,11 @@ Tauri schemas/permissions while keeping native build caches (including fuzz targ
 Reports include coverage and duplication output. Local audit logs belong in
 `.local/logs/`; `.local/`, `.tools/` SDKs and `node_modules/` are retained by cleanup.
 
-## Promotional captures
+## Website palette previews
 
-`npm run screenshot:readme -- --palettes` captures all color schemes from the
-native app, refreshes both README screenshots, and generates labelled animations
-and individual website previews. `npm run screenshot:video` records the dark and
-light website demos. Both require the Docker baseline servers; palette animations
-and videos also require ffmpeg. Close both release and debug copies of FTPeach
-before starting, and keep the real mouse off the capture window.
-
-The capture uses a temporary profile. Once the screenshots are captured, transfers
-are stopped and the capture app closes before image composition and animation
-encoding begin. Each video session also closes before its recording is encoded.
-The session cleanup closes the app on capture errors as well.
+The README screenshots, the palette previews and the website demos are captured
+from the running application by the maintainer's tooling and are never edited by
+hand.
 
 `npm run site:build` copies the individual palette previews and their picker script
 into `dist-site/`. The picker starts in the page's theme and downloads new previews

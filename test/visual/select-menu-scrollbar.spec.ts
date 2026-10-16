@@ -10,7 +10,7 @@ for (const language of ['en', 'he']) {
     await page.locator('.menu-bar-trigger').nth(1).click();
     await page.locator('.menu-dropdown .menu-item').first().click();
     await page.locator('.settings-nav-item').nth(2).click();
-    await page.locator('div[class="language-select"] > .language-select-trigger').click();
+    await page.locator('.interface-language-select > .language-select-trigger').click();
 
     const dropdown = page.locator(
       '.language-select-dropdown:not(.select-menu-sizer) > .menu-items',

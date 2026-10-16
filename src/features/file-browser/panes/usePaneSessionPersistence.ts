@@ -64,6 +64,8 @@ export function usePaneSessionPersistence({
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const persistenceEnabledRef = useRef(true);
   const hydrationRef = useRef({ panes, setTabs, setActiveTabId, refreshPane, connectPane });
+  const panesRef = useRef(panes);
+  panesRef.current = panes;
 
   // The session is one document: `tabs_set` replaces all of it, so an older
   // snapshot answering after a newer one would put back tabs the user has
@@ -149,7 +151,12 @@ export function usePaneSessionPersistence({
           : null;
       if (!restored) {
         PANE_IDS.forEach((id) => {
-          if (initial.panes[id].kind === 'local') reportRejection(initial.refreshPane(id));
+          // A folder opened while the session loaded stays open: listing the
+          // start folder now would replace it.
+          const pane = panesRef.current[id];
+          if (pane.kind === 'local' && !pane.loading && !pane.path) {
+            reportRejection(initial.refreshPane(id));
+          }
         });
         setHydrated(true);
         return;

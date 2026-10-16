@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A folder opened just after FTPeach starts no longer jumps back to the start folder.
 - The minimize, maximize and close buttons no longer stay highlighted after the pointer moves
   off them into the title bar.
 - A right click on the title bar opens the window menu (Restore, Move, Size, Minimize, Maximize,

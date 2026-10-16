@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
+import { makePane, makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { TabState } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { usePaneSessionPersistence } from '../../../src/features/file-browser/panes/usePaneSessionPersistence.ts';
 import { createTabsApi } from '../../../src/platform/api/tabs.ts';
@@ -313,4 +313,31 @@ describe('pane session persistence', () => {
       }
     },
   );
+
+  test('a folder opened while the session loads is not replaced by the start folder', async () => {
+    let answer!: (_value: unknown) => void;
+    installApi({ tabs_get: () => new Promise((resolve) => (answer = resolve)) });
+    const refreshPane = vi.fn(async (_id: string) => undefined);
+    const tab = makeTab('tab-1');
+    tab.panes.b = makePane('b', 'local');
+    const h = renderHook(
+      ({ panes }: { panes: TabState['panes'] }) =>
+        usePaneSessionPersistence({
+          tabs: [tab],
+          activeTabId: tab.id,
+          setTabs: vi.fn(),
+          setActiveTabId: vi.fn(),
+          panes,
+          saveSessionOnExit: true,
+          refreshPane,
+          connectPane: () => async () => undefined,
+        }),
+      { initialProps: { panes: tab.panes } },
+    );
+    // The user opens a folder in pane a; its listing is still on its way.
+    h.rerender({ panes: { ...tab.panes, a: { ...tab.panes.a, loading: true } } });
+    await act(async () => answer({}));
+
+    expect(refreshPane.mock.calls.map((call) => call[0])).toEqual(['b']);
+  });
 });

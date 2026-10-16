@@ -24,7 +24,15 @@ interface UsePaneRefreshOptions {
 }
 
 export type PaneRequestIds = Record<string, Record<PaneId, number>>;
-export type PaneRefreshes = Record<string, { key: string; promise: Promise<CommandResult | void> }>;
+export type PaneRefreshes = Record<
+  string,
+  {
+    key: string;
+    promise: Promise<CommandResult | void>;
+    /** The listing again, once this one ends, for refreshes asked meanwhile. */
+    again?: Promise<CommandResult | void>;
+  }
+>;
 
 export interface PaneRefreshModel {
   refreshPane: (
@@ -89,6 +97,9 @@ export function usePaneRefresh({
     return () => releases.forEach((release) => release());
   }, [connectionA, connectionB]);
 
+  // The listing again after a joined one, by the refresh of the latest render.
+  const refreshPaneRef = useRef<PaneRefreshModel['refreshPane']>(() => Promise.resolve());
+
   const ensureRequestIds = useCallback((tabId: string) => {
     if (!requestIdsRef.current[tabId]) requestIdsRef.current[tabId] = { a: 0, b: 0 };
     return requestIdsRef.current[tabId];
@@ -107,7 +118,15 @@ export function usePaneRefresh({
       const refreshKey = `${pane.kind}:${pane.connectionId || ''}:${resolvedPath}`;
       const slotKey = `${tabId}:${id}`;
       const existing = inFlightRefreshesRef.current[slotKey];
-      if (existing?.key === refreshKey) return existing.promise;
+      if (existing?.key === refreshKey) {
+        // That listing may have been read before whatever this refresh is
+        // for, so the folder is listed once more after it, one listing for
+        // every refresh asked in the meantime.
+        existing.again ??= existing.promise.then(() =>
+          refreshPaneRef.current(id, targetPath, paneOverride, tabId),
+        );
+        return existing.again;
+      }
       localRequests.current.get(slotKey)?.controller.abort();
       const controller = new AbortController();
       localRequests.current.set(slotKey, { controller, tabId, id, kind: pane.kind });
@@ -227,6 +246,8 @@ export function usePaneRefresh({
       updatePane,
     ],
   );
+
+  refreshPaneRef.current = refreshPane;
 
   const latestRef = useRef({ tabId: activeTabId, panes });
   latestRef.current = { tabId: activeTabId, panes };

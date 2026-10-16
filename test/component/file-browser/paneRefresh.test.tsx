@@ -392,3 +392,45 @@ test('a selection made while the folder is listed again is the one kept', async 
   });
   expect(patches(updatePane, now).at(-1)?.selected).toEqual(new Set(['second.txt']));
 });
+
+test('a refresh asked while the folder is being listed lists it again afterwards', async () => {
+  const tab = makeTab('again');
+  tab.panes.a.path = 'C:/root';
+  const answers: Array<(_value: unknown) => void> = [];
+  window.api = {
+    fsLocal: { list: () => new Promise((resolve) => answers.push(resolve)) },
+  } as unknown as Window['api'];
+  const updatePane = vi.fn();
+  const { result } = renderHook(() =>
+    usePaneRefresh({
+      panes: tab.panes,
+      activeTabId: tab.id,
+      updatePane,
+      reportError: vi.fn(),
+      setErrorMessage: vi.fn(),
+      defaultLocalPath: '',
+    }),
+  );
+  let first!: ReturnType<typeof result.current.refreshPane>;
+  let second!: ReturnType<typeof result.current.refreshPane>;
+  let third!: ReturnType<typeof result.current.refreshPane>;
+  await act(async () => {
+    first = result.current.refreshPane('a', 'C:/root');
+    // Something is added; Refresh is pressed twice while the old listing runs.
+    second = result.current.refreshPane('a', 'C:/root');
+    third = result.current.refreshPane('a', 'C:/root');
+  });
+  expect(answers).toHaveLength(1);
+  await act(async () => {
+    answers[0]!({ ok: true, path: 'C:/root', entries: [] });
+    await first;
+  });
+  // One more listing, for both refreshes, and it shows the new file.
+  expect(answers).toHaveLength(2);
+  await act(async () => {
+    answers[1]!({ ok: true, path: 'C:/root', entries: [{ name: 'new.txt' }] });
+    await Promise.all([second, third]);
+  });
+  expect(answers).toHaveLength(2);
+  expect(patches(updatePane, tab.panes.a).at(-1)?.entries).toEqual([{ name: 'new.txt' }]);
+});

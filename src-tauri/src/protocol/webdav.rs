@@ -528,6 +528,40 @@ impl WebDavBackend {
         Ok(response)
     }
 
+    /// One MKCOL. A collection already at `path` counts as made.
+    async fn make_collection(&self, path: &str) -> BackendResult<()> {
+        self.log_kind(format!("MKCOL {path}"), LogKind::Command);
+        let res = self
+            .request_url(
+                Method::from_bytes(b"MKCOL").unwrap(),
+                self.collection_url(path),
+            )?
+            .send()
+            .await
+            .context("MKCOL request failed")?;
+        if res.status() == StatusCode::METHOD_NOT_ALLOWED {
+            // 405 can also mean MKCOL is disabled or a regular file is in
+            // the way. Only an existing collection satisfies mkdir.
+            let xml = Self::propfind(
+                self.client()?,
+                self.build_url(path),
+                0,
+                &self.user,
+                self.credentials().1,
+            )
+            .await?;
+            anyhow::ensure!(
+                parse_propfind(&xml)?
+                    .first()
+                    .is_some_and(|entry| entry.is_dir),
+                "MKCOL {path}: existing resource is not a collection"
+            );
+        } else if !res.status().is_success() {
+            return Err(response::status_error(res.status().as_u16(), "MKCOL"));
+        }
+        Ok(())
+    }
+
     async fn resource_exists(&self, path: &str) -> BackendResult<bool> {
         let client = self.client()?.clone();
         let url = self.build_url(path);
@@ -890,43 +924,30 @@ impl ProtocolBackend for WebDavBackend {
     }
 
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
-        let mut current = String::new();
-        for segment in path
+        let segments: Vec<&str> = path
             .trim_start_matches('/')
             .split('/')
             .filter(|s| !s.is_empty())
+            .collect();
+        if segments.is_empty() {
+            return Ok(());
+        }
+        // A folder is nearly always made in one that exists: one MKCOL, not
+        // two requests for every ancestor of a deep tree.
+        if self
+            .make_collection(&format!("/{}", segments.join("/")))
+            .await
+            .is_ok()
         {
+            return Ok(());
+        }
+        // Otherwise the ancestors are made one by one; servers answer a
+        // missing parent differently, and the walk reports the real refusal.
+        let mut current = String::new();
+        for segment in segments {
             current.push('/');
             current.push_str(segment);
-            self.log_kind(format!("MKCOL {current}"), LogKind::Command);
-            let res = self
-                .request_url(
-                    Method::from_bytes(b"MKCOL").unwrap(),
-                    self.collection_url(&current),
-                )?
-                .send()
-                .await
-                .context("MKCOL request failed")?;
-            if res.status() == StatusCode::METHOD_NOT_ALLOWED {
-                // 405 can also mean MKCOL is disabled or a regular file is in
-                // the way. Only an existing collection satisfies mkdir.
-                let xml = Self::propfind(
-                    self.client()?,
-                    self.build_url(&current),
-                    0,
-                    &self.user,
-                    self.credentials().1,
-                )
-                .await?;
-                anyhow::ensure!(
-                    parse_propfind(&xml)?
-                        .first()
-                        .is_some_and(|entry| entry.is_dir),
-                    "MKCOL {current}: existing resource is not a collection"
-                );
-            } else if !res.status().is_success() {
-                return Err(response::status_error(res.status().as_u16(), "MKCOL"));
-            }
+            self.make_collection(&current).await?;
         }
         Ok(())
     }

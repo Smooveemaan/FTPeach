@@ -477,6 +477,66 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
 }
 
 #[tokio::test]
+async fn mkdir_makes_the_folder_in_one_request_and_walks_only_for_a_missing_parent() {
+    // `/a` is missing on the second run: the server answers 409 Conflict until it is made.
+    for parent_missing in [false, true] {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let mut made = std::collections::HashSet::from(["/a".to_string(), "/a/b".to_string()]);
+            if parent_missing {
+                made.clear();
+            }
+            let mut seen = Vec::new();
+            let expected = if parent_missing { 4 } else { 1 };
+            for _ in 0..expected {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut header = Vec::new();
+                while !header.ends_with(b"\r\n\r\n") {
+                    header.push(socket.read_u8().await.unwrap());
+                }
+                let line = String::from_utf8(header).unwrap();
+                let path = line
+                    .split_whitespace()
+                    .nth(1)
+                    .unwrap()
+                    .trim_end_matches('/');
+                let parent = path.rsplit_once('/').unwrap().0;
+                let status = if parent.is_empty() || made.contains(parent) {
+                    made.insert(path.to_string());
+                    "201 Created"
+                } else {
+                    "409 Conflict"
+                };
+                seen.push(path.to_string());
+                socket
+                    .write_all(
+                        format!(
+                            "HTTP/1.1 {status}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                        )
+                        .as_bytes(),
+                    )
+                    .await
+                    .unwrap();
+            }
+            seen
+        });
+        let mut backend = WebDavBackend {
+            client: Some(test_client()),
+            base_url: format!("http://{address}"),
+            ..Default::default()
+        };
+        backend.mkdir("/a/b/c").await.unwrap();
+        let seen = server.await.unwrap();
+        if parent_missing {
+            assert_eq!(seen, ["/a/b/c", "/a", "/a/b", "/a/b/c"]);
+        } else {
+            assert_eq!(seen, ["/a/b/c"]);
+        }
+    }
+}
+
+#[tokio::test]
 async fn listing_excludes_encoded_self_siblings_and_nested_descendants() {
     let body = r#"<multistatus>
         <response><href>/encoded%20base/dir/</href></response>

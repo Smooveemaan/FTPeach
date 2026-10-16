@@ -4,6 +4,7 @@ import {
   authenticodeVerdict,
   environmentVerdict,
   ignoredAdvisories,
+  ignoredCrates,
   parseAdvisoryRegister,
   privateKeyHits,
   releaseMatrixLines,
@@ -126,6 +127,17 @@ test('register rows and deny.toml ids are read by column', () => {
     ignoredAdvisories('ignore = [\n  { id = "RUSTSEC-2024-0436", reason = "x" },\n]'),
     ['RUSTSEC-2024-0436'],
   );
+});
+
+test('a yanked crate is ignored by name and has its own register row', () => {
+  const deny =
+    'ignore = [\n  { id = "RUSTSEC-2024-0436" },\n  { crate = "zip@4.6.1", reason = "x" },\n]';
+  assert.deepEqual(ignoredCrates(deny), ['zip@4.6.1']);
+  assert.deepEqual(ignoredAdvisories(deny), ['RUSTSEC-2024-0436']);
+  const rows = parseAdvisoryRegister(
+    '| zip@4.6.1 | yanked | @o | 2026-10-16 | 2026-11-30 | s | c |\n',
+  );
+  assert.equal(rows.get('zip@4.6.1')?.kind, 'yanked');
 });
 
 test('only ci rows of the release matrix count as passed; the rest are not verified', () => {

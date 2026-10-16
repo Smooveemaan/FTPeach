@@ -1,7 +1,8 @@
 # Rust advisory exceptions
 
 Every entry in `src-tauri/deny.toml` must have a matching row below, with its RustSec
-kind: `vulnerability`, `unmaintained`, `unsound` or `notice`. CI rejects
+kind: `vulnerability`, `unmaintained`, `unsound` or `notice`, or `yanked` for a crate
+version ignored by name. CI rejects
 missing, expired, or longer-than-120-day reviews and unknown kinds; the weekly
 audit also fails when a kind disagrees with RustSec's own classification.
 CODEOWNERS requires the security owner to review changes. Weekly CI runs
@@ -19,6 +20,8 @@ and patched ranges are review signals, not proof of constant-time RSA signing.
 | RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
 | RUSTSEC-2024-0436 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `paste` 1.0.15 through Stronghold; no patched release | The proc macro does not process runtime input. Track replacement through `iota_stronghold` updates. |
 | RUSTSEC-2025-0141 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `bincode` 1.3.3 through Stronghold; upstream considers 1.3.3 complete | Vault snapshots are application-owned, authenticated, excluded from import, and corruption fails closed. Track replacement through `iota_stronghold` updates. |
+| zip@4.6.1 | yanked | @Smooveemaan | 2026-10-16 | 2026-11-30 | Every zip 4.x release is yanked; `tauri-plugin-updater` 2.13.1 requires zip 4 on Windows, so the application stays on 4.6.1 too | No advisory names it. It reads only update archives whose signature the updater has checked. Remove when the updater moves to zip 9. |
+| zip@8.6.0 | yanked | @Smooveemaan | 2026-10-16 | 2026-11-30 | Every zip 8.x release is yanked; `libsodium-sys-stable` 1.24.0 requires zip ^8.5 as a build dependency, through `iota_stronghold` | No advisory names it. It runs only at build time, on the pinned libsodium archive. Track through `iota_stronghold` updates. |
 
 The dependency review found no compatible direct upgrade that removes these
 transitive packages as of 2026-10-02. Remove an ignore as soon as a compatible

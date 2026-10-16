@@ -2,12 +2,14 @@ import { readFile } from 'node:fs/promises';
 import {
   advisoryKinds,
   ignoredAdvisories,
+  ignoredCrates,
   parseAdvisoryRegister,
 } from '../release/release-trust.ts';
 
 const deny = await readFile('src-tauri/deny.toml', 'utf8');
 const register = await readFile('docs/rust-advisories.md', 'utf8');
-const ignored = new Set(ignoredAdvisories(deny));
+const crates = new Set(ignoredCrates(deny));
+const ignored = new Set([...ignoredAdvisories(deny), ...crates]);
 const rows = parseAdvisoryRegister(register);
 
 const problems: string[] = [];
@@ -19,13 +21,16 @@ for (const advisory of ignored) {
     continue;
   }
   const { kind, owner, added, reviewBy, status, control } = row;
-  const exception = denyLines.find((line) => line.includes(`id = "${advisory}"`));
+  const exception = denyLines.find((line) => line.includes(`"${advisory}"`));
   if (!exception?.includes(`Review by ${reviewBy};`)) {
     problems.push(`${advisory}: deny.toml review date must match the register`);
   }
   // A vulnerability and an unmaintained crate are different risks with
   // different exits; the register has to say which one it is accepting.
-  if (!(advisoryKinds as readonly string[]).includes(kind)) {
+  if (crates.has(advisory)) {
+    if (kind !== 'yanked')
+      problems.push(`${advisory}: a crate ignored by name must be of kind yanked`);
+  } else if (!(advisoryKinds as readonly string[]).includes(kind)) {
     problems.push(`${advisory}: kind must be one of ${advisoryKinds.join(', ')}`);
   }
   if (!owner || !added || !reviewBy || !status || !control) {

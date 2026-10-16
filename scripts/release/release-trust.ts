@@ -27,7 +27,7 @@ export interface AdvisoryException {
 export function parseAdvisoryRegister(markdown: string): Map<string, AdvisoryException> {
   const rows = new Map<string, AdvisoryException>();
   for (const line of markdown.split(/\r?\n/)) {
-    if (!line.startsWith('| RUSTSEC-')) continue;
+    if (!/^\| (RUSTSEC-|[\w-]+@\d)/.test(line)) continue;
     const [id = '', kind = '', owner = '', added = '', reviewBy = '', status = '', control = ''] =
       line
         .split('|')
@@ -41,6 +41,13 @@ export function parseAdvisoryRegister(markdown: string): Map<string, AdvisoryExc
 /** Advisory ids that `deny.toml` tells cargo-deny to ignore. */
 export function ignoredAdvisories(denyToml: string): string[] {
   return [...denyToml.matchAll(/id\s*=\s*"(RUSTSEC-\d{4}-\d{4})"/g)].flatMap((m) =>
+    m[1] === undefined ? [] : [m[1]],
+  );
+}
+
+/** Crate versions (`name@version`) that `deny.toml` ignores by name, such as yanked ones. */
+export function ignoredCrates(denyToml: string): string[] {
+  return [...denyToml.matchAll(/crate\s*=\s*"([\w-]+@[\w.+-]+)"/g)].flatMap((m) =>
     m[1] === undefined ? [] : [m[1]],
   );
 }

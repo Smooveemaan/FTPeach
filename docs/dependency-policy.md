@@ -2,8 +2,8 @@
 
 - Dependabot groups minor/patch updates monthly and never merges on its own.
   Major updates are manual and require a migration note plus the full
-  `npm run check` suite. Any change to the Cargo manifest or lock file also
-  runs the protocol compatibility suite against real servers.
+  `npm run check` suite. The protocol compatibility suite runs against real
+  servers before every release, so a Cargo change ships only after it.
 - Changes to `suppaftp`, `russh`, `russh-sftp`, `reqwest`, `rustls`, Tauri or
   Tauri plugins must link the upstream changelog/security advisory in the PR.
 - CI rejects high/critical npm advisories and all unacknowledged RustSec

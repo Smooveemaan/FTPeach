@@ -29,7 +29,8 @@ stops before the signing job when approval is not required
 ([release-trust.md](release-trust.md)).
 
 The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
-frontend, Rust, packaged smoke, protocol compatibility and installer gates pass. It builds the Windows NSIS
+frontend, Rust, packaged smoke and installer gates pass and the tagged commit has a green
+`private-suites` status (the closed suites, protocol compatibility among them). It builds the Windows NSIS
 installer and its `.sig`, then assembles `FTPeach_<version>_x64-portable.zip`
 from the same build (`scripts/release/portable.ts`) and signs it with the same
 key. It verifies every signature with the configured

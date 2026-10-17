@@ -233,8 +233,8 @@ the server's greeting is lost. WebDAV uses reqwest; `socks_bridge.rs` exists
 only to work around a SOCKS4 bug in reqwest's dependency and names the
 upstream fix that will retire it.
 
-FTPeach carries a patched copy of `wry` in `src-tauri/vendor/`; its
-`FTPEACH-PATCH.md` lists the changes.
+FTPeach carries patched copies of `wry` and `suppaftp` in `src-tauri/vendor/`;
+each one's `FTPEACH-PATCH.md` lists the changes.
 
 ## Transfers
 

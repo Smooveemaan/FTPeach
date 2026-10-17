@@ -15,5 +15,17 @@ https://github.com/veeso/suppaftp), used through `[patch.crates-io]` in
    flushes after writing. `flush_tests` in the tokio `control.rs` covers it
    with a stream that holds bytes until a flush.
 
+2. **Active mode listens on the control connection's address**
+   (`src/async_ftp/tokio_ftp.rs`, `src/async_ftp/smol_ftp.rs`, `src/sync_ftp.rs`,
+   `active`). The data listener was bound to `0.0.0.0`, every interface,
+   although `PORT` names only the control connection's address. Each test
+   binary that used active mode against a local server made Windows ask about
+   the firewall, and that prompt dimmed the screen for the native tests. The
+   listener is now bound to the address `PORT` sends, as upstream does since
+   12.2.1 (#198). `should_listen_for_active_data_on_the_control_address` in
+   the tokio `tokio_ftp.rs` covers it.
+
 The fuzz crate keeps the published 12.1.1: it parses replies and sends nothing.
-Drop this copy once a released suppaftp flushes its commands.
+Drop this copy once a released suppaftp flushes its commands; 12.2.1 has the
+second change but not the first, and sends REST only with its own transfer
+commands, which FTPeach's own RETR would have to follow first.

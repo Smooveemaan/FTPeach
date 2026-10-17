@@ -25,7 +25,9 @@ retaining the advertised port.
 
 Active mode is an opt-in compatibility setting. The server connects back to the client for each
 data transfer. It therefore requires an inbound firewall rule and a client address/port reachable
-from the server; ordinary NAT usually prevents it unless port forwarding is configured. Active
+from the server; ordinary NAT usually prevents it unless port forwarding is configured. FTPeach
+listens for the data connection only on the address its control connection uses, the one it sends
+in `PORT` or `EPRT`, and accepts it only from the server. Active
 mode is not a workaround for client-side NAT and is unavailable with a proxy. SFTP and WebDAV use
 only client-initiated connections and do not have FTP data-channel modes.
 

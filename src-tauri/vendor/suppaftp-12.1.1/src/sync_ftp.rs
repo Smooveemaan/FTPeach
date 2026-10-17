@@ -1057,18 +1057,20 @@ where
     /// Create a new tcp listener and send a PORT command for it
     fn active(&self, cc: &mut ControlChannel<T>) -> FtpResult<TcpListener> {
         debug!("Starting local tcp listener...");
-        let conn = TcpListener::bind("0.0.0.0:0").map_err(FtpError::ConnectionError)?;
-        conn.set_nonblocking(true)
-            .map_err(FtpError::ConnectionError)?;
-
-        let addr = conn.local_addr().map_err(FtpError::ConnectionError)?;
-        trace!("Local address is {}", addr);
-
         let ip = cc
             .socket()
             .local_addr()
             .map_err(FtpError::ConnectionError)?
             .ip();
+        // FTPeach patch: listen only on the address the control connection
+        // uses, the one PORT names, not on every interface (as 12.2.1 does).
+        let conn =
+            TcpListener::bind(SocketAddr::new(ip, 0)).map_err(FtpError::ConnectionError)?;
+        conn.set_nonblocking(true)
+            .map_err(FtpError::ConnectionError)?;
+
+        let addr = conn.local_addr().map_err(FtpError::ConnectionError)?;
+        trace!("Local address is {}", addr);
 
         debug!("Active mode, listening on {}:{}", ip, addr.port());
 

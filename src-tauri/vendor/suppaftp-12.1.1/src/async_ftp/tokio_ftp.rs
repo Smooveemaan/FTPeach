@@ -1155,18 +1155,19 @@ where
     /// Create a new tcp listener and send a PORT command for it
     async fn active(&self, cc: &mut ControlChannel<T>) -> FtpResult<TcpListener> {
         debug!("Starting local tcp listener...");
-        let conn = TcpListener::bind("0.0.0.0:0")
-            .await
-            .map_err(FtpError::ConnectionError)?;
-
-        let addr = conn.local_addr().map_err(FtpError::ConnectionError)?;
-        trace!("Local address is {}", addr);
-
         let ip = cc
             .socket()
             .local_addr()
             .map_err(FtpError::ConnectionError)?
             .ip();
+        // FTPeach patch: listen only on the address the control connection
+        // uses, the one PORT names, not on every interface (as 12.2.1 does).
+        let conn = TcpListener::bind(SocketAddr::new(ip, 0))
+            .await
+            .map_err(FtpError::ConnectionError)?;
+
+        let addr = conn.local_addr().map_err(FtpError::ConnectionError)?;
+        trace!("Local address is {}", addr);
 
         debug!("Active mode, listening on {}:{}", ip, addr.port());
 
@@ -2192,6 +2193,44 @@ mod test {
 
         assert!(features.contains_key("UTF8"));
         handle.await.expect("server task panicked");
+    }
+
+    // FTPeach patch: the active-mode listener is on the control connection's
+    // address, not on every interface.
+    #[tokio::test]
+    async fn should_listen_for_active_data_on_the_control_address() {
+        use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader as TokioBufReader};
+
+        let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("failed to bind");
+        let port = listener.local_addr().unwrap().port();
+        let handle = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.expect("no incoming connection");
+            let (read_half, mut writer) = stream.into_split();
+            let mut reader = TokioBufReader::new(read_half);
+            writer.write_all(b"220 Welcome\r\n").await.unwrap();
+            let mut line = String::new();
+            reader.read_line(&mut line).await.unwrap();
+            writer.write_all(b"200 PORT ok\r\n").await.unwrap();
+            line
+        });
+
+        let tcp = TcpStream::connect(("127.0.0.1", port))
+            .await
+            .expect("failed to connect");
+        let stream = AsyncFtpStream::connect_with_stream(tcp)
+            .await
+            .expect("failed handshake");
+        let data = {
+            let mut control = stream.control.lock().await;
+            stream.active(&mut control).await.expect("active mode")
+        };
+
+        let address = data.local_addr().unwrap();
+        assert_eq!(address.ip(), std::net::IpAddr::from([127, 0, 0, 1]));
+        let port_line = handle.await.expect("server task panicked");
+        assert!(port_line.starts_with("PORT 127,0,0,1,"), "{port_line}");
     }
 
     #[tokio::test]

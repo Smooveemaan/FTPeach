@@ -9,14 +9,7 @@
 // registry, the files on disk, the version Windows reads from the program,
 // and the window of the program that runs.
 import { execFileSync, spawn } from 'node:child_process';
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { attach, inventory, startProgram, tempFolder } from './app.ts';

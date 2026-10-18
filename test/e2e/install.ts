@@ -10,18 +10,16 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:http';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { expect, type Page } from '@playwright/test';
-import { startProgram, type StartedProgram } from './app.ts';
+import { startProgram, tempFolder, type StartedProgram } from './app.ts';
 import { call } from './ipc.ts';
 import { menu, sha256, tree } from './panes.ts';
 import { closeWindow, nativeWindows } from './windows.ts';
@@ -153,7 +151,7 @@ export async function uninstallSilently() {
 
 /** uninstall.cs, built with the C# compiler every Windows has. */
 function uninstallHelper(): string {
-  const exe = path.join(mkdtempSync(path.join(tmpdir(), 'ftpeach-uninstall-')), 'uninstall.exe');
+  const exe = path.join(tempFolder('ftpeach-uninstall-'), 'uninstall.exe');
   execFileSync(`${framework}/csc.exe`, [
     '/nologo',
     '/target:exe',
@@ -451,7 +449,7 @@ export function sign(file: string): string {
 
 /** A copy of `file` with one byte changed, in a folder of its own. */
 export function damaged(file: string): string {
-  const copy = path.join(mkdtempSync(path.join(tmpdir(), 'ftpeach-damaged-')), path.basename(file));
+  const copy = path.join(tempFolder('ftpeach-damaged-'), path.basename(file));
   copyFileSync(file, copy);
   flipByte(copy);
   return copy;
@@ -499,10 +497,7 @@ export function versionOlderReleasesRead(installer: Buffer): string | undefined 
  * start: text, with the version information FTPeach checks.
  */
 export function notAProgram(version: string): string {
-  const file = path.join(
-    mkdtempSync(path.join(tmpdir(), 'ftpeach-not-a-program-')),
-    `FTPeach_${version}_x64-setup.exe`,
-  );
+  const file = path.join(tempFolder('ftpeach-not-a-program-'), `FTPeach_${version}_x64-setup.exe`);
   writeFileSync(file, Buffer.concat([Buffer.from('Not a program.\r\n'), versionInfo(version)]));
   sign(file);
   return file;
@@ -513,7 +508,7 @@ export function notAProgram(version: string): string {
  * a line with its arguments to `runs` and ends with 1, installing nothing.
  */
 export function failingInstaller(version: string, runs: string): string {
-  const folder = mkdtempSync(path.join(tmpdir(), 'ftpeach-failing-'));
+  const folder = tempFolder('ftpeach-failing-');
   const source = path.join(folder, 'installer.cs');
   const file = path.join(folder, `FTPeach_${version}_x64-setup.exe`);
   const assembly = `${version}.0`;

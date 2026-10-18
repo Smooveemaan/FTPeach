@@ -12,16 +12,14 @@ import { execFileSync, spawn } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
-  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { attach, inventory, startProgram } from './app.ts';
+import { attach, inventory, startProgram, tempFolder } from './app.ts';
 import {
   changeSettings,
   closeOnceShown,
@@ -335,7 +333,7 @@ test('an installer that fails is not run again unless asked, and FTPeach opens e
   const { version, next } = testBuild();
   install(setupOf(version));
   writeProfile({}, runSettings(true));
-  const runs = path.join(mkdtempSync(path.join(tmpdir(), 'ftpeach-runs-')), 'runs.txt');
+  const runs = path.join(tempFolder('ftpeach-runs-'), 'runs.txt');
   const ran = () => (existsSync(runs) ? readFileSync(runs, 'utf8').trim().split(/\r?\n/) : []);
   // The feed keeps offering it, and updates stay automatic.
   const feed = await serveFeed(next, { installer: failingInstaller(next, runs) });
@@ -372,7 +370,7 @@ test('an installer that fails is not run again unless asked, and FTPeach opens e
 
 test('a portable copy replaces its program with the update and leaves its data alone', async () => {
   const { version, next } = testBuild();
-  const folder = mkdtempSync(path.join(tmpdir(), 'ftpeach-portable-'));
+  const folder = tempFolder('ftpeach-portable-');
   // Windows' own bsdtar, as the release packs the zip with it.
   const tar = path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe');
   execFileSync(tar, ['-x', '-f', portableOf(version), '-C', folder]);

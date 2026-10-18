@@ -259,13 +259,31 @@ export interface StartedProgram {
   kill: () => Promise<void>;
 }
 
+const tempFolders: string[] = [];
+process.on('exit', () => {
+  for (const folder of tempFolders) {
+    try {
+      rmSync(folder, { recursive: true, force: true });
+    } catch (error) {
+      console.warn(`Could not remove the test folder ${folder}: ${String(error)}`);
+    }
+  }
+});
+
+/** A new folder in the temporary folder, removed when the test process ends. */
+export function tempFolder(prefix: string): string {
+  const folder = mkdtempSync(path.join(tmpdir(), prefix));
+  tempFolders.push(folder);
+  return folder;
+}
+
 /**
  * Starts `exe`, an installed FTPeach or a portable copy built for the tests,
  * on the profile of the account running the test, as people run it. The
  * installer tests (install.vm.ts) do this on a throwaway machine only.
  */
 export async function startProgram(exe: string): Promise<StartedProgram> {
-  const workDir = mkdtempSync(path.join(tmpdir(), 'ftpeach-program-'));
+  const workDir = tempFolder('ftpeach-program-');
   const run: Partial<Run> = {};
   const exited = async () => {
     await waitFor('the program to exit', async () => run.child!.exitCode !== null || undefined, 60);

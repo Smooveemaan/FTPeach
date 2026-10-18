@@ -569,6 +569,27 @@ fn pending_prompt(
         .ok_or_else(|| denied("PermissionDenied"))
 }
 
+/// Records a confirmation about to be shown. Each one is a real OS window
+/// and the renderer decides how many to ask for, so their number is capped.
+fn add_pending(
+    state: &AuthorizationState,
+    request_id: &str,
+    confirmation: PendingConfirmation,
+) -> CommandResult<()> {
+    let mut pending = state
+        .pending
+        .lock()
+        .map_err(|_| denied("Authorization state unavailable"))?;
+    if pending.len() >= MAX_PENDING_CONFIRMATIONS {
+        return Err(CommandError::new(
+            ErrorCode::ResourceLimit,
+            "Too many security confirmations are already open",
+        ));
+    }
+    pending.insert(request_id.to_owned(), confirmation);
+    Ok(())
+}
+
 fn reject_pending(state: &AuthorizationState, request_id: &str) {
     if let Some(pending) = state
         .pending
@@ -810,29 +831,16 @@ pub async fn authorize_sensitive(
         crate::runtime::confirmation_window::LABEL_PREFIX
     );
     let (tx, rx) = tokio::sync::oneshot::channel();
-    {
-        let mut pending = state
-            .pending
-            .lock()
-            .map_err(|_| denied("Authorization state unavailable"))?;
-        // Refuse before the window is built rather than after: each pending
-        // confirmation is a real OS window, and the renderer decides how
-        // many to ask for.
-        if pending.len() >= MAX_PENDING_CONFIRMATIONS {
-            return Err(CommandError::new(
-                ErrorCode::ResourceLimit,
-                "Too many security confirmations are already open",
-            ));
-        }
-        pending.insert(
-            request_id.clone(),
-            PendingConfirmation {
-                window: confirmation_label.clone(),
-                prompt: prompt.clone(),
-                response: tx,
-            },
-        );
-    }
+    // Refused before the window is built rather than after.
+    add_pending(
+        &state,
+        &request_id,
+        PendingConfirmation {
+            window: confirmation_label.clone(),
+            prompt: prompt.clone(),
+            response: tx,
+        },
+    )?;
     let confirmation =
         match crate::runtime::confirmation_window::create(&app, &confirmation_label, &request_id) {
             Ok(window) => window,

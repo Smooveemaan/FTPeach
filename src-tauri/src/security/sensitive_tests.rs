@@ -616,16 +616,47 @@ fn waiting(
     request_id: &str,
     window: &str,
 ) -> tokio::sync::oneshot::Receiver<bool> {
+    try_waiting(state, request_id, window).unwrap()
+}
+
+fn try_waiting(
+    state: &AuthorizationState,
+    request_id: &str,
+    window: &str,
+) -> CommandResult<tokio::sync::oneshot::Receiver<bool>> {
     let (response, answer) = tokio::sync::oneshot::channel();
-    state.pending.lock().unwrap().insert(
-        request_id.into(),
+    add_pending(
+        state,
+        request_id,
         PendingConfirmation {
             window: window.into(),
             prompt: confirmation_prompt("vault_reset", "vault", "en".into(), false).unwrap(),
             response,
         },
+    )?;
+    Ok(answer)
+}
+
+#[test]
+fn no_more_than_four_confirmations_wait_at_once() {
+    let state = AuthorizationState::default();
+    let _answers: Vec<_> = (0..MAX_PENDING_CONFIRMATIONS)
+        .map(|n| {
+            waiting(
+                &state,
+                &format!("request-{n}"),
+                &format!("confirmation-{n}"),
+            )
+        })
+        .collect();
+    let error = try_waiting(&state, "one-more", "confirmation-more")
+        .expect_err("a confirmation past the cap is refused");
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    reject_pending(&state, "request-0");
+    assert!(
+        try_waiting(&state, "one-more", "confirmation-more").is_ok(),
+        "an answered confirmation makes room"
     );
-    answer
 }
 
 #[test]

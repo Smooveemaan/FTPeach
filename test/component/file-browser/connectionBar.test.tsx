@@ -113,6 +113,11 @@ test('blank addresses disable connecting and saving until filled', () => {
   expect(h.callbacks.onConnect).toHaveBeenCalledOnce();
 });
 
+test('the plain FTP warning is announced by name', () => {
+  open({ protocol: 'ftp' });
+  expect(screen.getByRole('img', { name: 'protocolSelect.insecureWarning' })).toBeTruthy();
+});
+
 test('key authentication clears the password and warns for a selected RSA key', async () => {
   const selectKeyFile = vi.fn().mockResolvedValue({ path: 'C:\\keys\\id_rsa', isRsa: true });
   window.api = { fsLocal: { selectKeyFile } } as unknown as Window['api'];

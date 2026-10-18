@@ -104,6 +104,8 @@ export default function ConnectionBar({
     <span
       key="protocol-warning"
       className="protocol-select-insecure"
+      role="img"
+      aria-label={t('protocolSelect.insecureWarning')}
       data-tooltip={t('protocolSelect.insecureWarning')}
     >
       <Icon name="triangleAlert" size={13} />
@@ -187,6 +189,7 @@ export default function ConnectionBar({
       {rsaKeySelected && (
         <span
           className="protocol-select-insecure"
+          role="img"
           aria-label={t('connectionBar.rsaKeyWarning')}
           data-tooltip={t('connectionBar.rsaKeyWarning')}
         >

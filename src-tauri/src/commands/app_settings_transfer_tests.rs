@@ -540,3 +540,68 @@ fn generated_import_files_never_stage_a_secret_or_an_entry_that_fails_its_checks
     // The edits must leave enough files whole for the checks above to mean something.
     assert!(staged_count > 300, "{staged_count}");
 }
+
+fn import_test_dir() -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("ftpeach-import-read-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    dir
+}
+
+#[tokio::test]
+async fn an_import_file_is_refused_by_size_encoding_and_absence() {
+    let dir = import_test_dir();
+    let big = dir.join("big.json");
+    std::fs::write(&big, vec![b' '; MAX_IMPORT_BYTES as usize + 1]).unwrap();
+    let error = read_import_file(big.to_str().unwrap()).await.unwrap_err();
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    assert!(
+        error
+            .details
+            .unwrap()
+            .contains(&format!("maximum is {MAX_IMPORT_BYTES}"))
+    );
+
+    let latin1 = dir.join("latin1.json");
+    std::fs::write(&latin1, b"{\"name\":\"caf\xe9\"}").unwrap();
+    let error = read_import_file(latin1.to_str().unwrap())
+        .await
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::InvalidInput);
+    assert!(error.details.unwrap().contains("Invalid UTF-8"));
+
+    let missing = dir.join("missing.json");
+    let error = read_import_file(missing.to_str().unwrap())
+        .await
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::NotFound);
+
+    let fine = dir.join("fine.json");
+    std::fs::write(&fine, "{}").unwrap();
+    assert_eq!(
+        read_import_file(fine.to_str().unwrap()).await.unwrap(),
+        "{}"
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn an_import_file_another_program_holds_is_named_as_in_use() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let dir = import_test_dir();
+    let held = dir.join("held.json");
+    std::fs::write(&held, "{}").unwrap();
+    let holder = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(&held)
+        .unwrap();
+    let error = read_import_file(held.to_str().unwrap()).await.unwrap_err();
+    drop(holder);
+    assert_eq!(
+        error.code,
+        ErrorCode::FileInUse,
+        "a held import file is reported by its code"
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}

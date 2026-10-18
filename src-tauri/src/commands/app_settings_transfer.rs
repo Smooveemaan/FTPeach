@@ -532,7 +532,7 @@ async fn read_import_file(path: &str) -> CommandResult<String> {
     };
     let file = tokio::fs::File::open(path)
         .await
-        .map_err(|e| cannot_read(CommandError::from_anyhow(&anyhow::anyhow!(e.to_string()))))?;
+        .map_err(|error| cannot_read(CommandError::from(error)))?;
     let mut bytes = Vec::new();
     file.take(MAX_IMPORT_BYTES + 1)
         .read_to_end(&mut bytes)

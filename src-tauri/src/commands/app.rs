@@ -300,7 +300,7 @@ pub async fn app_reset_layout(
             }
             Ok(ResetLayout { settings })
         }
-        Err(e) => Err(CommandError::from_anyhow(&anyhow::anyhow!(e.to_string()))),
+        Err(e) => Err(CommandError::from_anyhow(&e)),
     }
 }
 

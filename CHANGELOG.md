@@ -4,133 +4,73 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-19
+
 ### Added
 
-- Interface settings offer twenty nature-named color schemes with default Peach first and the rest
-  ordered by color; security confirmations follow the same appearance.
-- Settings export can include the saved passwords of your bookmarks, protected by a password you
-  choose for the file; importing the file asks for it. Older versions cannot import such a file.
+- Twenty color schemes in Settings → Interface.
+- Settings export can include saved passwords, protected by a password you choose. Older versions
+  can't import such a file.
+- Right-clicking the title bar opens the window menu.
 
 ### Changed
 
-- Double-clicking a file or folder follows the double-click speed set in Windows.
+- Error messages are shorter, clearer and in your language.
+- Double-clicking follows the double-click speed set in Windows.
 - "Move to…" is now called "Move to folder…".
-- Creating a folder on a server where a file of that name exists says so straight away.
-- Clicking the notification that transfers finished brings the FTPeach window back, also from
-  the tray.
-- File operation errors explain when a file and a folder have the same name.
-- Error messages are shorter, and several general ones now say what happened: a name Windows
-  doesn't allow, a folder copied into itself, a server redirect or what the server answered.
-- Errors in Manage Bookmarks and settings appear in your language.
-- Folder merge confirmation explains which files will be replaced and which will be kept.
-- When a moved folder is copied but an original cannot be removed, the message says so and names
-  it, instead of "An unexpected error occurred."
-- An update that failed to install is offered in the status bar instead of being installed again
-  when FTPeach starts.
-- Warnings at start about a damaged settings or bookmarks file name the file in your language,
-  and a change refused because a newer FTPeach saved that file says so, instead of "An
-  unexpected error occurred."
-- When FTPeach may not write to its data folder, the message names the folder and goes away once
-  saving works again, instead of "You don't have permission for this operation."
-- Translations updated for new messages.
-- Deep folders upload faster over WebDAV: each new folder takes one request instead of two for
-  every folder above it.
+- The folder merge confirmation says which files will be replaced and which will be kept.
+- Clicking the "transfers finished" notification brings the window back, also from the tray.
+- An update that failed to install is offered in the status bar instead of being retried at
+  every start.
+- Folder links and junctions show as folders but aren't opened.
+- Menus show keyboard focus and scroll evenly.
+- Deep folders upload faster over WebDAV.
+- Translations updated.
+
+### Security
+
+- A security confirmation stays above FTPeach only, and the main window waits until it is answered.
+- In active FTP mode, FTPeach waits for the server's data connection only on the network it uses
+  to reach that server.
 
 ### Fixed
 
+- A file another program changes during upload no longer reaches the server half old, half new.
+- A stopped or interrupted upload, or copy between servers, removes its temporary file from the
+  server.
+- An interrupted replacement puts the previous file back, even after FTPeach is restarted.
+- Transfers cut off by a lost connection can be retried after reconnecting.
+- Stopping a transfer on a server that stopped answering takes seconds, not half a minute.
+- An upload whose connection broke just as the server saved it shows as done.
+- A download that a virus scanner opens as it finishes still completes.
+- A download that received nothing leaves no `.ftpeach-resume.json` behind.
+- A paused download whose file another program holds is no longer started over.
+- When a copy between two servers loses its source, that pane shows as disconnected.
+- Copies on this computer appear in Transfers.
+- Skipped files are counted as not transferred, and a cut selection stays available to paste.
+- Deleting server files whose names differ only in letter case works.
+- FTPS connections to some servers, such as IIS, no longer stall until they time out.
+- A full disk no longer empties settings or other saved data.
+- A damaged settings or bookmarks file no longer stops later changes from being saved.
+- Importing settings from a file another program has open says the file is in use.
+- A downloaded update installs instead of being downloaded again.
+- **Delete** on a network share or a removable drive asks before deleting for good.
+- A folder opened just after FTPeach starts no longer jumps back to another folder.
+- Refresh shows what the folder holds now, also while it is loading.
+- After typing a path and pressing Enter, the keyboard works in the file list.
+- A file list that refreshes keeps the keyboard position and the selection.
+- Creating a folder no longer recreates its parent if that was moved or deleted.
+- Some programs that couldn't open a file from FTPeach now can.
+- In the portable version, a log folder inside the program folder keeps working after it is moved.
+- A wrong master password in a security confirmation says the password was not accepted.
+- With Minimize to tray on, every way of minimizing goes to the tray.
+- The window buttons no longer stay highlighted after the pointer leaves them.
 - The window opens at the size it was left at instead of growing taller at every start (#5,
   thanks @goldkeyber112).
-- Importing settings from a file another program has open says the file is in use.
-- Screen readers announce the warning shown next to plain FTP.
-- A folder opened just after FTPeach starts no longer jumps back to the start folder or to the
-  one saved from last time.
-- Refresh pressed while a folder is still loading shows what the folder holds now.
-- Connecting with FTPS to some servers, such as IIS, no longer sometimes stalls until it times out.
-- The minimize, maximize and close buttons no longer stay highlighted after the pointer moves
-  off them into the title bar.
-- A right click on the title bar opens the window menu (Restore, Move, Size, Minimize, Maximize,
-  Close), as in other Windows programs.
-- With Minimize to tray on, the window also goes to the tray when minimized from the window menu,
-  with Win+Down or from the taskbar.
-- A security confirmation stays above FTPeach only, not above other programs, and the main window
-  ignores clicks and keys until it is answered.
-- A wrong master password in a security confirmation now says the password was not accepted,
-  instead of "Could not show the saved secret."
-- A file another program saved over while it uploaded no longer reaches the server as a mix of
-  the old and new contents; the upload ends with an error saying the file changed, and the server
-  keeps its file.
-- Transfer and connection status colors stay consistent across color schemes, with orange active
-  transfers, yellow pause indicators and grey cancellation indicators. Connection dots and
-  progress bars have flat fills without outlines.
-
-- Dropdown and context menus highlight keyboard focus; long lists scroll evenly in both
-  directions and keep a gap between the highlight and the frame.
-- Screen readers say whether a menu item such as a theme or Show hidden files is on, and no
-  longer announce a tab being renamed as unavailable.
-
-- Junctions and folder links show as folders. Opening one says that links aren't followed,
-  instead of opening the folder it points to in Explorer.
-- Deleting a folder that contains a link says that links aren't followed, not that permission is
-  missing.
-- A download that fills this computer's disk no longer says the server is out of space.
-- A drive that was removed, or a network share that went away, is reported as not found instead
-  of "An unexpected error occurred."
-- When a copy is refused before it starts, the reason is shown in your language.
-- A failed transfer shows its error in Transfers in your language.
-- The Move or Copy label shown while dragging files is in your language.
-- F5, Ctrl+R and Ctrl+P no longer reload or print a security confirmation window.
-- Security confirmations follow the interface scale, like the main window.
-- At a larger interface scale the window can no longer be made so small that the file lists
-  disappear and menus run off its edge.
-- A download that a virus scanner or Windows Search opens just as it completes still finishes
-  and no longer leaves its .ftpeach-resume.json file behind.
-- A paused download resumed while another program holds its partial file waits for it, then says
-  the file is in use and keeps it for Retry, instead of starting over and leaving the old part.
-- In the portable copy, a log folder chosen inside the program's folder is still used after the
-  folder is moved or its drive gets another letter.
-- Creating a folder no longer recreates its parent if that parent was moved or deleted.
-- The toolbar's Refresh button lists both folders again; before, it did not show new files.
-- A cut selection stays available to paste when some files are skipped.
-- The count of items not transferred includes the files skipped because they already exist.
-- Local file copies appear in Transfers, including when replacing existing files.
-- Deleting a server selection handles names that differ only in letter case without a false
-  busy error between those deletions.
-- Stopping an upload, running or paused, or disconnecting or closing its tab also tries to remove
-  its temporary file from the server. The same goes for a copy between two servers.
-- An interrupted replacement upload tries to put the previous file back; if the connection is
-  lost, recovery is retried when you next connect to that server, also after FTPeach was closed.
-- When a copy between two servers loses the connection it reads from, that pane is shown as
-  disconnected, not the one it writes to.
-- Transfers cut off by a lost connection can be retried after connecting to the server again;
-  until then their Retry button is unavailable.
-- Stopping a transfer on a server that stopped answering takes seconds, not half a minute.
-- An upload whose connection broke just as the server finished saving it is shown as done, not
-  as failed.
-- A stopped upload whose temporary file the server would not delete names that file, in its row
-  and in the connection's log.
-- Programs that open a server file or a file on this computer get its ordinary path, so those
-  that could not open it now can.
-- Closing the window to the tray cancels a security confirmation that was still open, instead of
-  leaving it on screen.
-- After typing a path and pressing Enter, the keyboard works in the file list right away; Esc
-  returns to the path bar.
-- A file list that refreshes, for example when a transfer finishes, keeps the keyboard position:
-  arrow keys and Shift carry on from the same file instead of the top.
-- Files selected while a folder is still loading stay selected when the list arrives.
-- A download that fails before receiving anything, for example because the file was deleted on
-  the server, no longer leaves a `.ftpeach-resume.json` file beside it.
-- Settings shows English, not Russian, as the language when the saved language is not one
-  FTPeach has.
-- A downloaded update installs from **Install update** or at the next start, instead of being
-  thrown away and downloaded again.
-- When the disk is full, settings and other saved data are no longer emptied: the change is not
-  saved and FTPeach says there is not enough disk space.
-- A settings or bookmarks file that can't be read and has no backup no longer stops every later
-  change from being saved: FTPeach keeps a copy of it and saves over it.
-- **Delete** on a network share or a removable drive, which have no Recycle Bin, asks before
-  deleting for good, instead of deleting without a word.
-- Replacing a file another program has open says the file is in use, not that permission is
-  missing.
+- At a larger interface scale the window can no longer be made too small for the file lists.
+- Screen readers say whether a menu item is on, read the warning shown next to plain FTP, and no
+  longer call a tab being renamed unavailable.
+- Settings shows English when the saved language is one FTPeach doesn't have.
 
 ## [0.4.0] - 2026-10-05
 

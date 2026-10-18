@@ -387,23 +387,11 @@ async fn locking_the_vault_withdraws_grants_issued_before() {
     let dir = std::env::temp_dir().join(format!("ftpeach-grants-{}", uuid::Uuid::new_v4()));
     let vault = Vault::new(dir);
     let state = AuthorizationState::new(vault.clone());
-    grant(
-        &state,
-        "before",
-        "vault_reset",
-        "vault",
-        Instant::now() + TOKEN_TTL,
-    );
+    let before = issue(&state, "vault_reset", Instant::now());
     vault.lock().await;
-    grant(
-        &state,
-        "after",
-        "vault_reset",
-        "vault",
-        Instant::now() + TOKEN_TTL,
-    );
-    assert!(consume_for_label("main", &state, "before", "vault_reset", "vault").is_err());
-    assert!(consume_for_label("main", &state, "after", "vault_reset", "vault").is_ok());
+    let after = issue(&state, "vault_reset", Instant::now());
+    assert!(consume_for_label("main", &state, &before, "vault_reset", "vault").is_err());
+    assert!(consume_for_label("main", &state, &after, "vault_reset", "vault").is_ok());
 }
 
 #[test]
@@ -571,4 +559,102 @@ fn a_password_move_asks_for_the_vault_before_the_confirmation() {
     assert_eq!(locked.code, ErrorCode::VaultLocked);
     assert!(unlock_before_moving_password(true, false).is_ok());
     assert!(unlock_before_moving_password(false, true).is_ok());
+}
+
+fn issue(state: &AuthorizationState, operation: &str, now: Instant) -> String {
+    issue_token_for_label(state, "main", operation.into(), "vault".into(), now)
+        .unwrap()
+        .token
+}
+
+#[test]
+fn an_issued_grant_is_accepted_once_for_what_it_was_issued_for() {
+    let state = AuthorizationState::default();
+    let token = issue(&state, "vault_reset", Instant::now());
+    assert!(consume_for_label("main", &state, &token, "vault_reset", "other").is_err());
+    let token = issue(&state, "vault_reset", Instant::now());
+    assert!(consume_for_label("main", &state, &token, "vault_reset", "vault").is_ok());
+    assert!(consume_for_label("main", &state, &token, "vault_reset", "vault").is_err());
+}
+
+#[test]
+fn a_grant_lives_as_long_as_its_operation_allows() {
+    let now = Instant::now();
+    for (operation, ttl) in [
+        ("vault_reset", TOKEN_TTL),
+        ("sites_reveal_secret", TOKEN_TTL),
+        ("settings_set_security", SETTINGS_TOKEN_TTL),
+    ] {
+        let state = AuthorizationState::default();
+        let token = issue(&state, operation, now);
+        let expires = state.grants.lock().unwrap()[&token].expires;
+        assert_eq!(expires, now + ttl, "{operation} grant lifetime");
+    }
+}
+
+#[test]
+fn grants_are_capped_until_old_ones_expire() {
+    let state = AuthorizationState::default();
+    let now = Instant::now();
+    for _ in 0..MAX_GRANTS {
+        issue(&state, "vault_reset", now);
+    }
+    let error = issue_token_for_label(&state, "main", "vault_reset".into(), "vault".into(), now)
+        .err()
+        .expect("one grant past the cap");
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    issue(&state, "vault_reset", now + TOKEN_TTL);
+    assert_eq!(
+        state.grants.lock().unwrap().len(),
+        1,
+        "expired grants make room"
+    );
+}
+
+fn waiting(
+    state: &AuthorizationState,
+    request_id: &str,
+    window: &str,
+) -> tokio::sync::oneshot::Receiver<bool> {
+    let (response, answer) = tokio::sync::oneshot::channel();
+    state.pending.lock().unwrap().insert(
+        request_id.into(),
+        PendingConfirmation {
+            window: window.into(),
+            prompt: confirmation_prompt("vault_reset", "vault", "en".into(), false).unwrap(),
+            response,
+        },
+    );
+    answer
+}
+
+#[test]
+fn a_confirmation_is_read_only_by_the_window_built_for_it() {
+    let state = AuthorizationState::default();
+    let _answer = waiting(&state, "request", "confirmation-a");
+    for (window, request) in [
+        ("main", "request"),
+        ("confirmation-b", "request"),
+        ("confirmation-a", "another"),
+    ] {
+        let error = pending_prompt(&state, window, request)
+            .err()
+            .unwrap_or_else(|| panic!("{window} read {request}"));
+        assert_eq!(error.code, ErrorCode::PermissionDenied);
+    }
+    let prompt = pending_prompt(&state, "confirmation-a", "request").unwrap();
+    assert_eq!(prompt.kind, ConfirmationKind::VaultReset);
+}
+
+#[test]
+fn a_rejected_confirmation_answers_no_and_is_forgotten() {
+    let state = AuthorizationState::default();
+    let mut answer = waiting(&state, "request", "confirmation");
+    reject_pending(&state, "request");
+    assert_eq!(answer.try_recv(), Ok(false), "the waiting request hears no");
+    assert!(
+        state.pending.lock().unwrap().is_empty(),
+        "a rejected request is forgotten"
+    );
+    reject_pending(&state, "request");
 }

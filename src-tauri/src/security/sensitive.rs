@@ -206,13 +206,23 @@ fn issue_token(
     operation: String,
     target: String,
 ) -> CommandResult<AuthorizationToken> {
+    issue_token_for_label(state, window.label(), operation, target, Instant::now())
+}
+
+fn issue_token_for_label(
+    state: &AuthorizationState,
+    window_label: &str,
+    operation: String,
+    target: String,
+    now: Instant,
+) -> CommandResult<AuthorizationToken> {
     let ttl = token_ttl(&operation);
     let token = uuid::Uuid::new_v4().to_string();
     let mut grants = state
         .grants
         .lock()
         .map_err(|_| denied("Authorization state unavailable"))?;
-    grants.retain(|_, grant| grant.expires > Instant::now());
+    grants.retain(|_, grant| grant.expires > now);
     if grants.len() >= MAX_GRANTS {
         return Err(CommandError::new(
             ErrorCode::ResourceLimit,
@@ -222,10 +232,10 @@ fn issue_token(
     grants.insert(
         token.clone(),
         Grant {
-            window: window.label().to_owned(),
+            window: window_label.to_owned(),
             operation,
             target,
-            expires: Instant::now() + ttl,
+            expires: now + ttl,
             vault_epoch: state.vault_epoch(),
         },
     );
@@ -542,6 +552,23 @@ pub async fn site_save_transfer_for(store: &Store, input: &JsonMap) -> Option<Se
     site_save_transfer(stored.as_ref(), input)
 }
 
+/// The question a waiting confirmation asks, for the one window built to
+/// answer it. Any other window, the main one included, is refused.
+fn pending_prompt(
+    state: &AuthorizationState,
+    window_label: &str,
+    request_id: &str,
+) -> CommandResult<ConfirmationPrompt> {
+    state
+        .pending
+        .lock()
+        .map_err(|_| denied("PermissionDenied"))?
+        .get(request_id)
+        .filter(|request| request.window == window_label)
+        .map(|request| request.prompt.clone())
+        .ok_or_else(|| denied("PermissionDenied"))
+}
+
 fn reject_pending(state: &AuthorizationState, request_id: &str) {
     if let Some(pending) = state
         .pending
@@ -559,19 +586,7 @@ pub async fn sensitive_confirmation_prompt(
     state: State<'_, AuthorizationState>,
     request_id: String,
 ) -> CommandResult<ConfirmationPrompt> {
-    let prompt = {
-        let pending = state
-            .pending
-            .lock()
-            .map_err(|_| denied("PermissionDenied"))?;
-        let request = pending
-            .get(&request_id)
-            .ok_or_else(|| denied("PermissionDenied"))?;
-        if request.window != window.label() {
-            return Err(denied("PermissionDenied"));
-        }
-        request.prompt.clone()
-    };
+    let prompt = pending_prompt(&state, window.label(), &request_id)?;
     // At the interface scale before the page measures its question, which
     // it does once it has the prompt.
     crate::runtime::confirmation_window::scale_to_interface(&window).await;
@@ -584,17 +599,7 @@ pub async fn sensitive_confirmation_ready(
     state: State<'_, AuthorizationState>,
     request_id: String,
 ) -> CommandResult<()> {
-    {
-        let pending = state
-            .pending
-            .lock()
-            .map_err(|_| denied("PermissionDenied"))?;
-        pending
-            .get(&request_id)
-            .filter(|request| request.window == window.label())
-            .ok_or_else(|| denied("PermissionDenied"))?;
-    }
-
+    pending_prompt(&state, window.label(), &request_id)?;
     crate::runtime::confirmation_window::show(&window).map_err(denied)
 }
 
@@ -674,17 +679,8 @@ pub async fn respond_sensitive_confirmation(
     master_password: Option<String>,
     use_system_unlock: Option<bool>,
 ) -> CommandResult<()> {
-    let requires_reauthentication = {
-        let pending = state
-            .pending
-            .lock()
-            .map_err(|_| denied("PermissionDenied"))?;
-        let request = pending
-            .get(&request_id)
-            .filter(|request| request.window == window.label())
-            .ok_or_else(|| denied("PermissionDenied"))?;
-        request.prompt.requires_reauthentication
-    };
+    let requires_reauthentication =
+        pending_prompt(&state, window.label(), &request_id)?.requires_reauthentication;
     if approved && requires_reauthentication {
         let mut password = master_password.unwrap_or_default();
         let permit = guard

@@ -20,6 +20,9 @@ and patched ranges are review signals, not proof of constant-time RSA signing.
 | RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
 | RUSTSEC-2024-0436 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `paste` 1.0.15 through Stronghold; no patched release | The proc macro does not process runtime input. Track replacement through `iota_stronghold` updates. |
 | RUSTSEC-2025-0141 | unmaintained | @Smooveemaan | 2026-08-30 | 2026-11-30 | `bincode` 1.3.3 through Stronghold; upstream considers 1.3.3 complete | Vault snapshots are application-owned, authenticated, excluded from import, and corruption fails closed. Track replacement through `iota_stronghold` updates. |
+| RUSTSEC-2026-0367 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | `zip` 4.6.1 (FTPeach, `tauri-plugin-updater` 2.13.1; 2.14.0 still requires `^4`) and 8.6.0 (build dependency of `libsodium-sys-stable`; 1.24.3 still requires `^8.6`); fixed in 9.0.0 | See [zip extraction](#zip-extraction-2026-10-18). |
+| RUSTSEC-2026-0368 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | as RUSTSEC-2026-0367 | See [zip extraction](#zip-extraction-2026-10-18). |
+| RUSTSEC-2026-0369 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | as RUSTSEC-2026-0367 | See [zip extraction](#zip-extraction-2026-10-18). |
 
 The dependency review found no compatible direct upgrade that removes these
 transitive packages as of 2026-10-02. Remove an ignore as soon as a compatible
@@ -29,6 +32,23 @@ The five `rust-unic` exceptions (RUSTSEC-2025-0075, -0080, -0081, -0098 and
 -0100) were removed on 2026-10-02: Tauri 2.12 uses `urlpattern` 0.6.0, which no
 longer depends on those crates, and `cargo deny` reported each advisory as not
 encountered.
+
+## Zip extraction, 2026-10-18
+
+All three advisories are in `ZipArchive::extract` and `ZipStreamReader::extract`: they keep
+SUID/SGID bits, create symbolic links that point out of the destination, and apply Unix
+permissions through such links. FTPeach does not reach them:
+
+- FTPeach's own reading of the portable update (`runtime/update_staging.rs`) never calls
+  `extract`. It takes each entry through `enclosed_name`, refuses symbolic links and anything
+  under `data`, and writes plain files with a bounded size.
+- Of `tauri-plugin-updater`, FTPeach uses only the signed download. It verifies the stored
+  package against the release key again and starts the installer, or unpacks the portable zip
+  as above, itself; the plugin's `install`, whose Windows path calls `extract` on a zip, is never
+  called.
+- `zip` 8.6.0 runs only while `libsodium-sys-stable` builds, on the archive that crate ships.
+
+Remove the exceptions once `tauri-plugin-updater` and `libsodium-sys-stable` allow `zip` 9.
 
 ## Reachability review, 2026-09-07
 

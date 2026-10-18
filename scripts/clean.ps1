@@ -21,12 +21,18 @@ $targets = [ordered]@{
     'src-tauri\fuzz\target'     = Join-Path $workspace 'src-tauri\fuzz\target'
     # Cargo target directory of `smoke-build` (with-libsodium.ps1).
     '.tools\smoke-target'       = Join-Path $workspace '.tools\smoke-target'
+    # Cargo target directory of `test-installers` (with-libsodium.ps1).
+    '.tools\installer-target'   = Join-Path $workspace '.tools\installer-target'
+    # Signed test installers of scripts/release/test-installers.ts.
+    '.tools\installer-test'     = Join-Path $workspace '.tools\installer-test'
     # Cargo target directory of `build`: with-libsodium.ps1 redirects release
     # artifacts to this ASCII path because WiX 3 light.exe fails on Cyrillic
     # output paths.
     '%LOCALAPPDATA%\FTPeachBuild' = $releaseTarget
     # Vite output checked by scripts/checks/check-bundle-budget.ts.
     'dist'                      = Join-Path $workspace 'dist'
+    # The website of scripts/site/build.ts.
+    'dist-site'                 = Join-Path $workspace 'dist-site'
     # SBOM output of scripts/release/generate-sbom.ts.
     'release'                   = Join-Path $workspace 'release'
     # Playwright output (playwright.config.ts).
@@ -43,7 +49,7 @@ $targets = [ordered]@{
 $freedBytes = 0
 foreach ($entry in $targets.GetEnumerator()) {
     $label = $entry.Key
-    if ($ArtifactsOnly -and $label -in @('src-tauri\target', 'src-tauri\fuzz\target', '.tools\smoke-target', '%LOCALAPPDATA%\FTPeachBuild')) {
+    if ($ArtifactsOnly -and $label -in @('src-tauri\target', 'src-tauri\fuzz\target', '.tools\smoke-target', '.tools\installer-target', '%LOCALAPPDATA%\FTPeachBuild')) {
         continue
     }
     $path = [System.IO.Path]::GetFullPath($entry.Value)

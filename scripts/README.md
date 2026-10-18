@@ -24,8 +24,9 @@ public network services. Cleanup removes generated directories; it is not part
 of validation.
 
 Use `npm run clean -- -WhatIf` to preview cleanup paths. Use
-`npm run clean -- -ArtifactsOnly` to remove generated frontend output, reports and
-Tauri schemas/permissions while keeping native build caches (including fuzz targets).
+`npm run clean -- -ArtifactsOnly` to remove generated frontend and website output,
+reports, the signed test installers and Tauri schemas/permissions while keeping native
+build caches (including fuzz, packaged smoke and installer test targets).
 Reports include coverage and duplication output. Local audit logs belong in
 `.local/logs/`; `.local/`, `.tools/` SDKs and `node_modules/` are retained by cleanup.
 

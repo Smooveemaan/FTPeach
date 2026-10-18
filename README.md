@@ -177,9 +177,9 @@ See the [test guide](test/README.md) for individual suites and the [contribution
 
 ### Clean up build output
 
-Preview the cleanup targets with `npm run clean -- -WhatIf`. Use `npm run clean -- -ArtifactsOnly` to remove renderer output, coverage and duplication reports, browser test results, and generated Tauri files while retaining native build caches.
+Preview the cleanup targets with `npm run clean -- -WhatIf`. Use `npm run clean -- -ArtifactsOnly` to remove renderer and website output, coverage and duplication reports, browser test results, the signed test installers, and generated Tauri files while retaining native build caches.
 
-`npm run clean` also removes native and fuzz build caches, including `%LOCALAPPDATA%\FTPeachBuild` outside the repository. The next build recreates removed output. Both modes preserve `node_modules/`, the verified libsodium SDK, and private working materials in `.local/`.
+`npm run clean` also removes native and fuzz build caches, those of packaged smoke and the installer tests among them, including `%LOCALAPPDATA%\FTPeachBuild` outside the repository. The next build recreates removed output. Both modes preserve `node_modules/`, the verified libsodium SDK, and private working materials in `.local/`.
 
 See the [script guide](scripts/README.md) for benchmarks, release tooling, and cleanup details.
 

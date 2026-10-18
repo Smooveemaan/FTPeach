@@ -43,8 +43,11 @@ for (const width of [1440, 900, 480]) {
 test('available update waits for a click, downloads, then offers installation', async ({
   page,
 }) => {
-  await page.clock.install();
+  // Paused: an installed clock still runs at wall speed, and a slow machine
+  // would see the download move on before each step is checked.
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/test/visual/visual.html?update=available');
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
   const update = page.locator('.status-update');
   await expect(update.getByRole('button')).toHaveText('available!');
   await page.clock.fastForward(10000);

@@ -25,8 +25,10 @@ pub fn sanitize_bounds(
     if !(bounds.width.is_finite() && bounds.height.is_finite()) {
         return None;
     }
-    let width = bounds.width.max(MIN_WIDTH).round();
-    let height = bounds.height.max(MIN_HEIGHT).round();
+    // Not rounded: at a scale such as 125% a whole logical size is not the
+    // physical one that was saved.
+    let width = bounds.width.max(MIN_WIDTH);
+    let height = bounds.height.max(MIN_HEIGHT);
     let (Some(x), Some(y)) = (bounds.x, bounds.y) else {
         return Some(Bounds {
             width,
@@ -71,11 +73,17 @@ fn parse_bounds(value: Option<&Value>) -> Option<Bounds> {
     })
 }
 
-pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
-    #[cfg(feature = "smoke-test")]
-    if super::e2e_browser::active() {
-        return super::e2e_browser::show_in_background(&window);
+/// Sets the page area to `width` by `height` logical pixels. Until the window
+/// without decorations is first sized, Windows still counts a title bar in
+/// its frame, and the first request leaves the page that much taller; the
+/// second is measured against the frame the window really has.
+fn restore_size(window: &WebviewWindow, width: f64, height: f64) {
+    for _ in 0..2 {
+        let _ = window.set_size(LogicalSize::new(width, height));
     }
+}
+
+pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
     let settings = store.get_settings().await;
     let saved = parse_bounds(settings.get("windowBounds"));
     let maximized = settings
@@ -99,11 +107,23 @@ pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
         })
         .collect();
 
-    if let Some(b) = sanitize_bounds(&monitors, saved) {
-        let _ = window.set_size(LogicalSize::new(b.width, b.height));
-        if let (Some(x), Some(y)) = (b.x, b.y) {
-            let _ = window.set_position(LogicalPosition::new(x, y));
-        }
+    let saved = sanitize_bounds(&monitors, saved);
+    if let Some(b) = saved {
+        restore_size(&window, b.width, b.height);
+    }
+    // A test run keeps the saved size, so a restart can be measured, but
+    // stays off every screen.
+    #[cfg(feature = "smoke-test")]
+    if super::e2e_browser::active() {
+        return super::e2e_browser::show_in_background(&window);
+    }
+    if let Some(Bounds {
+        x: Some(x),
+        y: Some(y),
+        ..
+    }) = saved
+    {
+        let _ = window.set_position(LogicalPosition::new(x, y));
     }
     if maximized {
         let _ = window.maximize();
@@ -141,7 +161,9 @@ impl BoundsPersister {
         let maximized = window.is_maximized().unwrap_or(false);
         let mut patch = JsonMap::new();
         patch.insert("windowMaximized".into(), Value::Bool(maximized));
-        if !maximized && let (Ok(pos), Ok(size)) = (window.outer_position(), window.outer_size()) {
+        // The outer size counts the frame around the page, which set_size
+        // does not: saved, it would grow the window by it at every start.
+        if !maximized && let (Ok(pos), Ok(size)) = (window.outer_position(), window.inner_size()) {
             let sf = window.scale_factor().unwrap_or(1.0);
             let bounds = serde_json::json!({
                 "width": size.width as f64 / sf,
@@ -224,6 +246,12 @@ mod tests {
             Some(bounds(800.0, 600.0, Some(1800.0), Some(100.0))),
         );
         assert_eq!(got, Some(bounds(800.0, 600.0, Some(1800.0), Some(100.0))));
+    }
+
+    #[test]
+    fn a_fractional_size_is_kept_as_saved() {
+        let got = sanitize_bounds(&[], Some(bounds(708.8, 513.6, None, None)));
+        assert_eq!(got, Some(bounds(708.8, 520.0, None, None)));
     }
 
     #[test]

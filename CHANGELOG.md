@@ -38,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The window opens at the size it was left at instead of growing taller at every start (#5,
+  thanks @goldkeyber112).
 - Importing settings from a file another program has open says the file is in use.
 - Screen readers announce the warning shown next to plain FTP.
 - A folder opened just after FTPeach starts no longer jumps back to the start folder or to the

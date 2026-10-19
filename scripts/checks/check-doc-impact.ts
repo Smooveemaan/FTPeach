@@ -23,15 +23,25 @@ export interface DocLink {
 export const DOC_LINKS: readonly DocLink[] = [
   {
     code: /^src-tauri\/src\/protocol\//,
-    docs: ['docs/protocol-support.md', 'docs/networking.md', 'docs/user-guide.md'],
+    docs: [
+      'docs/protocol-support.md',
+      'docs/networking.md',
+      'docs/guide/connecting.md',
+      'docs/guide/transfers.md',
+    ],
   },
   {
     code: /^src-tauri\/src\/(?:transfer|application)\/|^src-tauri\/src\/protocol\/transfer_file\.rs$/,
-    docs: ['docs/transfer-safety.md', 'docs/user-guide.md'],
+    docs: ['docs/transfer-safety.md', 'docs/guide/transfers.md', 'docs/guide/editing.md'],
   },
   {
     code: /^src-tauri\/src\/(?:store|security)\//,
-    docs: ['docs/storage.md', 'docs/security.md', 'docs/user-guide.md'],
+    docs: [
+      'docs/storage.md',
+      'docs/security.md',
+      'docs/guide/passwords.md',
+      'docs/guide/portable.md',
+    ],
   },
   {
     code: /^src-tauri\/capabilities\//,

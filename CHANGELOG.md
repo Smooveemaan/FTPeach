@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The user guide is available on the website, organized by topic.
+
 ## [0.5.0] - 2026-10-19
 
 ### Added

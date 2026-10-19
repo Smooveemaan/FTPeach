@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   MANUAL_CHECKS,
   gateOf,
+  guideProblems,
   markerProblems,
   markers,
 } from '../../../scripts/checks/check-verified-by.ts';
@@ -27,6 +28,25 @@ test('markers are read with their gate, target and line', () => {
     { line: 2, gate: 'pr', target: 'a.rs::one' },
     { line: 3, gate: 'manual', target: 'Drag out' },
   ]);
+});
+
+test('all guide pages are checked and failures name their source page', async () => {
+  const pages = {
+    'docs/guide/index.md': '# User guide\n\n[Transfers](transfers.md)',
+    'docs/guide/transfers.md':
+      '<!-- verified-by: pr test/unit/a.test.ts::a paused upload resumes -->',
+    'docs/guide/connecting.md': '<!-- verified-by: pr gone.rs::missing -->',
+  };
+  const result = await guideProblems(pages, async (file) =>
+    file === 'test/unit/a.test.ts' ? typescript : undefined,
+  );
+  assert.equal(result.count, 2);
+  assert.deepEqual(result.problems, ['docs/guide/connecting.md:1: gone.rs does not exist']);
+  const empty = await guideProblems(
+    { 'docs/guide/transfers.md': '# Transfers' },
+    async () => undefined,
+  );
+  assert.ok(empty.problems.some((problem) => problem.includes('transfers.md has no verified-by')));
 });
 
 test('a running test is found; a missing, disabled or non-test one is not', () => {

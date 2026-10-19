@@ -16,7 +16,7 @@ body:
       options:
         - label: I searched [existing issues](https://github.com/Smooveemaan/ftpeach/issues?q=is%3Aissue) and this has not been requested yet.
           required: true
-        - label: I checked the [user guide](https://github.com/Smooveemaan/ftpeach/blob/master/docs/user-guide.md) and the feature does not exist yet.
+        - label: I checked the [user guide](https://github.com/Smooveemaan/ftpeach/blob/master/docs/guide/index.md) and the feature does not exist yet.
           required: true
   - type: textarea
     id: problem

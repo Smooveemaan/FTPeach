@@ -2,16 +2,20 @@
 // Draws the link previews: assets/images/og.jpg (1200x630), which the website
 // names as its Open Graph image, and github-social.jpg (1280x640), uploaded by
 // hand in the repository's Settings > Social preview. Both use the website's own
-// fonts and dark colours, read from site/index.html, so they follow the page.
+// fonts and dark colours, using the site's shared stylesheet.
 // `npm run site:social` redraws them after the headline, fonts or icon change.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
 const root = path.resolve(import.meta.dirname, '../..');
-const site = await readFile(path.join(root, 'site/index.html'), 'utf8');
-const fonts = site.match(/@font-face \{[\s\S]*?\n\}/g)?.join('\n');
-if (!fonts) throw new Error('No @font-face rules found in site/index.html');
+const site = await readFile(path.join(root, 'site/styles.css'), 'utf8');
+let fonts = site.match(/@font-face \{[\s\S]*?\n\}/g)?.join('\n');
+if (!fonts) throw new Error('No @font-face rules found in site/styles.css');
+for (const match of fonts.matchAll(/url\('([^']+)'\)/g)) {
+  const data = await readFile(path.join(root, 'site', match[1]!));
+  fonts = fonts.replace(match[0], `url(data:font/woff2;base64,${data.toString('base64')})`);
+}
 const icon = (await readFile(path.join(root, 'src-tauri/icons/128x128@2x.png'))).toString('base64');
 const grain =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";

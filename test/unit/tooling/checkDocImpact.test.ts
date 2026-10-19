@@ -11,8 +11,23 @@ test('a behavior change without its document or a reason is caught', () => {
 });
 
 test('updating any linked document satisfies the link', () => {
-  const paths = ['src-tauri/src/protocol/ftp.rs', 'docs/user-guide.md', 'CHANGELOG.md'];
+  const paths = ['src-tauri/src/protocol/ftp.rs', 'docs/guide/connecting.md', 'CHANGELOG.md'];
   assert.deepEqual(docImpactProblems(paths, none), []);
+});
+
+test('the old guide redirect does not replace an update to a topic page', () => {
+  assert.equal(
+    docImpactProblems(['src-tauri/src/protocol/ftp.rs', 'docs/user-guide.md', 'CHANGELOG.md'], none)
+      .length,
+    1,
+  );
+  assert.deepEqual(
+    docImpactProblems(
+      ['src-tauri/src/security/vault.rs', 'docs/guide/passwords.md', 'CHANGELOG.md'],
+      none,
+    ),
+    [],
+  );
 });
 
 test('a refactor passes with a stated reason, and a bare "none" is not a reason', () => {

@@ -1,4 +1,4 @@
-// Builds the GitHub Pages site into dist-site/: site/index.html with the
+// Builds the GitHub Pages site and Markdown guide into dist-site/, with the
 // latest release's version and download links and the repository's star and
 // download counts filled in, next to the images it shows. The counts are
 // fetched here, not by the page, so visitors' browsers never call GitHub's API.
@@ -6,6 +6,7 @@
 // day; `npm run site:build` runs it locally.
 import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { buildGuide } from './guide.ts';
 
 const palettes: Array<{ id: string; name: string; color: string }> = JSON.parse(
   await readFile(new URL('../../assets/images/palettes/index.json', import.meta.url), 'utf8'),
@@ -94,6 +95,7 @@ async function main() {
   await rm(out, { recursive: true, force: true });
   await mkdir(out);
   await writeFile(path.join(out, 'index.html'), fillPage(html, release, stats));
+  await buildGuide(root, out);
   for (const image of [
     'ftpeach-dark.png',
     'ftpeach-light.png',
@@ -110,7 +112,15 @@ async function main() {
   await cp(path.join(root, 'assets/images/palettes'), path.join(out, 'palettes'), {
     recursive: true,
   });
-  for (const file of ['robots.txt', 'sitemap.xml', 'palettes.js']) {
+  await cp(path.join(root, 'site/fonts'), path.join(out, 'fonts'), { recursive: true });
+  for (const file of [
+    'robots.txt',
+    'palettes.js',
+    'styles.css',
+    'guide.css',
+    'theme-init.js',
+    'guide.js',
+  ]) {
     await copyFile(path.join(root, 'site', file), path.join(out, file));
   }
   console.log(

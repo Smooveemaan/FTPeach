@@ -9,10 +9,10 @@
 // marker says: `pr` blocks every change, `manual` is a recorded run by a
 // person. It does not prove the check asserts what the sentence says; that is
 // still read in review.
-import { readFile } from 'node:fs/promises';
+import { glob, readFile } from 'node:fs/promises';
 import { ignoredTests } from './check-ignored-tests.ts';
 
-export const GUIDE = 'docs/user-guide.md';
+export const GUIDE = 'docs/guide';
 export const MANUAL_CHECKS = 'docs/manual-checks.md';
 
 export type Gate = 'pr' | 'manual';
@@ -62,8 +62,9 @@ export function gateOf(file: string, source: string, name: string): Gate | strin
 export async function markerProblems(
   marker: Marker,
   read: (_file: string) => Promise<string | undefined>,
+  file = `${GUIDE}/index.md`,
 ): Promise<string[]> {
-  const where = `${GUIDE}:${marker.line}`;
+  const where = `${file}:${marker.line}`;
   if (marker.gate === 'manual') {
     const record = await read(MANUAL_CHECKS);
     const heading = new RegExp(`^#{2,4}\\s+${escape(marker.target)}\\s*$`, 'm');
@@ -76,24 +77,43 @@ export async function markerProblems(
   }
   const split = marker.target.indexOf('::');
   if (split < 0) return [`${where}: expected <file>::<test name>, got "${marker.target}"`];
-  const file = marker.target.slice(0, split);
+  const testFile = marker.target.slice(0, split);
   const name = marker.target.slice(split + 2);
-  const source = await read(file);
-  if (source === undefined) return [`${where}: ${file} does not exist`];
-  const gate = gateOf(file, source, name);
+  const source = await read(testFile);
+  if (source === undefined) return [`${where}: ${testFile} does not exist`];
+  const gate = gateOf(testFile, source, name);
   if (gate === marker.gate) return [];
   return [`${where}: ${gate}`];
 }
 
+/** Check every topic page; the index contains navigation rather than behavior statements. */
+export async function guideProblems(
+  pages: Record<string, string>,
+  read: (_file: string) => Promise<string | undefined>,
+) {
+  const problems: string[] = [];
+  let count = 0;
+  for (const [file, markdown] of Object.entries(pages)) {
+    const found = markers(markdown);
+    count += found.length;
+    if (found.length === 0 && file !== `${GUIDE}/index.md`)
+      problems.push(`${file} has no verified-by markers`);
+    for (const marker of found) problems.push(...(await markerProblems(marker, read, file)));
+  }
+  if (count === 0) problems.push(`${GUIDE} has no verified-by markers`);
+  return { count, problems };
+}
+
 if (import.meta.filename === process.argv[1]) {
   const read = (file: string) => readFile(file, 'utf8').catch(() => undefined);
-  const found = markers((await read(GUIDE)) ?? '');
-  const problems = (await Promise.all(found.map((marker) => markerProblems(marker, read)))).flat();
-  if (found.length === 0) problems.push(`${GUIDE} has no verified-by markers`);
+  const pages: Record<string, string> = {};
+  for await (const file of glob(`${GUIDE}/**/*.md`))
+    pages[file.replaceAll('\\', '/')] = await readFile(file, 'utf8');
+  const { count, problems } = await guideProblems(pages, read);
   if (problems.length > 0) {
     console.error(`User guide statements lost their checks:\n- ${problems.join('\n- ')}`);
     process.exitCode = 1;
   } else {
-    console.log(`Verified-by check OK: ${found.length} marker(s), each naming a check that runs`);
+    console.log(`Verified-by check OK: ${count} marker(s), each naming a check that runs`);
   }
 }

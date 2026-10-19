@@ -6,7 +6,7 @@ This page lists those checks and records each run. Everything else is either
 covered by an automated check or listed as a known gap (lane `none`) in the
 [release matrix](release-trust.md#release-matrix).
 
-The [user guide](user-guide.md) points to a recorded run with
+The [user guide](guide/index.md) points to a recorded run with
 `<!-- verified-by: manual <heading> -->`, which `npm run check:verified-by`
 requires to match a heading on this page.
 

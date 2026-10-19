@@ -23,16 +23,23 @@ async function openSite(page: Page) {
   await page.route('https://preview.test/**', async (route) => {
     const name = new URL(route.request().url()).pathname.slice(1);
     const file =
-      name === 'palettes.js'
-        ? 'site/palettes.js'
+      name === 'palettes.js' ||
+      name === 'theme-init.js' ||
+      name === 'styles.css' ||
+      name.startsWith('fonts/')
+        ? 'site/' + name
         : name === 'favicon.ico'
           ? 'public/favicon.ico'
           : 'assets/images/' + name;
     const type = name.endsWith('.js')
       ? 'text/javascript'
-      : name.endsWith('.webp')
-        ? 'image/webp'
-        : 'image/png';
+      : name.endsWith('.css')
+        ? 'text/css'
+        : name.endsWith('.woff2')
+          ? 'font/woff2'
+          : name.endsWith('.webp')
+            ? 'image/webp'
+            : 'image/png';
     await route.fulfill(
       name === ''
         ? { contentType: 'text/html', body: html }

@@ -25,6 +25,11 @@ export const GUIDE_PAGES = [
     description: 'Choose a protocol, connect with a password or SSH key and save a bookmark.',
   },
   {
+    slug: 'sftp',
+    description:
+      'Connect to SFTP with a password or SSH key, verify the server fingerprint and resolve key and login errors in FTPeach.',
+  },
+  {
     slug: 'transfers',
     description:
       'Pause, stop and resume FTPeach transfers, recover interrupted downloads, and copy, rename or move files.',

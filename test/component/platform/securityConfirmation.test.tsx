@@ -249,10 +249,9 @@ test('a failed response without reauthentication closes the window', async () =>
   await waitFor(() => expect(mocks.close).toHaveBeenCalledOnce());
 });
 
-test.each([null, 'SHA256:old'])(
-  'host-key confirmation shows the actual and pinned fingerprints (%s)',
-  async (expected) => {
-    const { container } = await open({
+test('host-key confirmation shows the actual and pinned fingerprints', async () => {
+  for (const expected of [null, 'SHA256:old']) {
+    const { container, unmount } = await open({
       kind: 'trustHostKey',
       target: 'sftp.example',
       hostKey: { expected, actual: 'SHA256:new' },
@@ -262,8 +261,9 @@ test.each([null, 'SHA256:old'])(
       expected ? 'trustHostKeyChanged.message' : 'trustHostKeyFirst.message',
     );
     if (expected) expect(container.textContent).toContain(expected);
-  },
-);
+    unmount();
+  }
+});
 
 test.each([0, 30])(
   'weakening security describes every changed protection (%s minutes)',

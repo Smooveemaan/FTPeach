@@ -51,6 +51,9 @@ your public key, not the private file.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->
 
+See [SFTP connections](sftp.md) for password and key setup, server fingerprints
+and help with SSH errors.
+
 ## Save a connection you will use again
 
 A bookmark saves you from entering the same details every time. Open **Bookmarks >

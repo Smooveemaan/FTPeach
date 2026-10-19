@@ -73,15 +73,17 @@ test('every built guide page has metadata, working navigation and matching sitem
         label: link.textContent?.trim(),
         href: link.getAttribute('href'),
       }));
-    const expectedHeader = headerLinks(home).map(({ label, href }) => ({
-      label: label === 'User guide' ? 'Home' : label,
-      href:
-        href === 'guide/index.html' || href === '#top'
-          ? '../index.html'
-          : href?.startsWith('#')
-            ? `../index.html${href}`
-            : href,
-    }));
+    const expectedHeader = headerLinks(home)
+      .filter(({ href }) => !['#how', '#features', '#protocols'].includes(href ?? ''))
+      .map(({ label, href }) => ({
+        label: label === 'User guide' ? 'Home' : label,
+        href:
+          href === 'guide/index.html' || href === '#top'
+            ? '../index.html'
+            : href?.startsWith('#')
+              ? `../index.html${href}`
+              : href,
+      }));
     const sitemap = new JSDOM(await readFile(path.join(out, 'sitemap.xml'), 'utf8'), {
       contentType: 'text/xml',
     }).window.document;

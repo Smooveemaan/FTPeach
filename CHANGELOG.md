@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The website's user guide explains everyday tasks and common problems, with screenshots
   that enlarge without leaving the page.
+- An SFTP guide covers password and SSH-key connections, server fingerprints and common errors.
 
 ### Fixed
 

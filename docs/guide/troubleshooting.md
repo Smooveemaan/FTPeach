@@ -21,7 +21,8 @@ from an approved network, connect from that network first.
 <!-- verified-by: pr test/unit/platform/errorMessages.test.ts::friendlyError localizes every structured command error code -->
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::invalid WebDAV addresses stay in the pane without starting a session -->
 
-For form instructions, see [Connect to a server](connecting.md).
+For form instructions, see [Connect to a server](connecting.md). For key files,
+passphrases and SSH errors, see [SFTP troubleshooting](sftp.md#when-sftp-does-not-connect).
 
 ## The server identity is not trusted
 

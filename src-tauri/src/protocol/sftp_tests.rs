@@ -3,6 +3,41 @@ use super::*;
 // `Store`, which is the implementation that has to keep working.
 use crate::store::Store;
 
+#[test]
+fn openssh_private_keys_load_with_and_without_a_passphrase() {
+    use russh::keys::ssh_key::{Algorithm, EcdsaCurve, LineEnding, PrivateKey};
+
+    let directory = std::env::temp_dir().join(format!("ftpeach-keys-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir(&directory).unwrap();
+    let path = directory.join("key");
+    for algorithm in [
+        Algorithm::Ed25519,
+        Algorithm::Rsa { hash: None },
+        Algorithm::Ecdsa {
+            curve: EcdsaCurve::NistP256,
+        },
+    ] {
+        let key = PrivateKey::random(&mut rand::rng(), algorithm).unwrap();
+        key.write_openssh_file(&path, LineEnding::LF).unwrap();
+        assert_eq!(
+            load_secret_key(&path, None).unwrap().public_key(),
+            key.public_key()
+        );
+
+        let encrypted = key.encrypt(&mut rand::rng(), "test passphrase").unwrap();
+        encrypted.write_openssh_file(&path, LineEnding::LF).unwrap();
+        assert_eq!(
+            load_secret_key(&path, Some("test passphrase"))
+                .unwrap()
+                .public_key(),
+            key.public_key()
+        );
+        assert!(load_secret_key(&path, Some("wrong passphrase")).is_err());
+        assert!(load_secret_key(&path, None).is_err());
+    }
+    std::fs::remove_dir_all(directory).unwrap();
+}
+
 #[cfg(test)]
 mod transfer_tests {
     use super::*;

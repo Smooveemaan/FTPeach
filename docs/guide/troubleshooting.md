@@ -24,6 +24,7 @@ from an approved network, connect from that network first.
 For form instructions, see [Connect to a server](connecting.md). For key files,
 passphrases and SSH errors, see [SFTP troubleshooting](sftp.md#when-sftp-does-not-connect).
 For TLS errors, see [FTPS troubleshooting](ftps.md#when-ftps-does-not-connect).
+For WebDAV URLs, HTTP sign-in and authentication methods, see [WebDAV troubleshooting](webdav.md#when-webdav-does-not-connect).
 If FTP or FTPS signs in but does not list files, check [the data-connection mode](ftp.md#passive-and-active-mode).
 
 ## The server identity is not trusted

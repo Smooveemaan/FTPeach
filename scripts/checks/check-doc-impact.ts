@@ -30,6 +30,7 @@ export const DOC_LINKS: readonly DocLink[] = [
       'docs/guide/ftp.md',
       'docs/guide/ftps.md',
       'docs/guide/sftp.md',
+      'docs/guide/webdav.md',
       'docs/guide/transfers.md',
     ],
   },

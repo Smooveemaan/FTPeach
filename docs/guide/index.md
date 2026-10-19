@@ -29,6 +29,7 @@ The illustrations throughout this guide use example connections and files.
 | Connect with SFTP or an SSH key | [SFTP connections](sftp.md) |
 | Connect with FTP or understand passive mode | [FTP connections](ftp.md) |
 | Connect with FTPS and check certificates | [FTPS connections](ftps.md) |
+| Connect to a WebDAV folder over HTTPS | [WebDAV connections](webdav.md) |
 | Upload, download, copy, pause or retry | [Transfers and files](transfers.md) |
 | Change a server file in my editor | [Editing remote files](editing.md) |
 | Move bookmarks and saved passwords to another computer | [Passwords and bookmarks](passwords.md) |

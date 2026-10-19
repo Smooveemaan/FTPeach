@@ -179,6 +179,48 @@ async fn carried_authorization(seen: &Arc<tokio::sync::Mutex<Vec<String>>>) -> b
 
 const COLLECTION_REPLY: &str = "HTTP/1.1 207 Multi-Status\r\nContent-Length: 174\r\nConnection: close\r\n\r\n<multistatus><response><href>/dav/</href><propstat><prop><resourcetype><collection/></resourcetype></prop><status>HTTP/1.1 200 OK</status></propstat></response></multistatus>";
 
+#[tokio::test]
+async fn basic_login_succeeds_but_a_digest_only_server_is_refused() {
+    for (reply, succeeds) in [
+        (COLLECTION_REPLY, true),
+        (
+            "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm=\"dav\", nonce=\"test\", qop=\"auth\"\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+            false,
+        ),
+    ] {
+        let (url, seen) = recording_http_server(reply).await;
+        let config = webdav_config(
+            &url,
+            serde_json::json!({
+                "user": "local", "password": "test", "allowCleartextAuth": true
+            }),
+        );
+        let mut backend = WebDavBackend::new();
+        let result = backend.connect(&config).await;
+        if succeeds {
+            result.unwrap();
+            backend.disconnect().await.unwrap();
+        } else {
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code,
+                ErrorCode::AuthFailed
+            );
+            assert!(!backend.is_connected());
+        }
+        let requests = seen.lock().await;
+        assert!(requests.iter().any(|request| {
+            request
+                .to_ascii_lowercase()
+                .contains("authorization: basic ")
+        }));
+        assert!(!requests.iter().any(|request| {
+            request
+                .to_ascii_lowercase()
+                .contains("authorization: digest ")
+        }));
+    }
+}
+
 /// The redirect that would make the connection safe arrives in the reply to
 /// a request that has already gone out, so a password sent with the first
 /// PROPFIND is on the wire whatever the server answers.

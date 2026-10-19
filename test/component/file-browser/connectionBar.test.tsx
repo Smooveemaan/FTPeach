@@ -162,9 +162,8 @@ test('key authentication clears the password and warns for a selected RSA key', 
   expect(h.form().keyPath).toBe('C:\\keys\\id_rsa');
 });
 
-test.each([false, true])(
-  'WebDAV distinguishes HTTP authentication permission from certificate validation (narrow: %s)',
-  async (narrow) => {
+test('WebDAV distinguishes HTTP authentication permission from certificate validation', async () => {
+  for (const narrow of [false, true]) {
     const selectCaCertFile = vi.fn().mockResolvedValue('C:\\cert.pem');
     window.api = { fsLocal: { selectCaCertFile } } as unknown as Window['api'];
     const h = open({ protocol: 'webdav', webdavUrl: 'http://example/dav' }, 'idle', narrow);
@@ -186,8 +185,9 @@ test.each([false, true])(
     });
     expect(screen.queryByLabelText('connectionBar.cleartextToggle.label')).toBeNull();
     expect(h.form().webdavUrl).toBe('https://example/dav');
-  },
-);
+    h.unmount();
+  }
+});
 
 test('plain FTP carries the unencrypted warning, and an encrypted protocol drops it', () => {
   const { container } = open();

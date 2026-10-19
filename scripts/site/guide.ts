@@ -40,6 +40,11 @@ export const GUIDE_PAGES = [
       'Connect to SFTP with a password or SSH key, verify the server fingerprint and resolve key and login errors in FTPeach.',
   },
   {
+    slug: 'webdav',
+    description:
+      'Set up a WebDAV URL in FTPeach, use HTTPS and account credentials, understand upload limits and resolve connection errors.',
+  },
+  {
     slug: 'transfers',
     description:
       'Pause, stop and resume FTPeach transfers, recover interrupted downloads, and copy, rename or move files.',

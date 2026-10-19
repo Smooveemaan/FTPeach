@@ -1,5 +1,43 @@
 # Passwords and bookmarks
 
+A bookmark remembers how to reach a server; a saved password lets FTPeach sign
+in without asking you to type that server password again. Start with
+[saving a connection](connecting.md#save-a-connection-you-will-use-again) if you
+have not created a bookmark yet.
+
+<!-- verified-by: pr test/component/sites/siteManager.test.tsx::creates and edits a bookmark through the form -->
+<!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::the connect retried after trusting a key keeps the bookmark and its saved password -->
+
+## Know which password is being requested
+
+| Password | What it is for |
+| --- | --- |
+| Server account password | Signing in to the server with your username. Your provider manages this account. |
+| SSH key passphrase | Unlocking the private key you chose for SFTP. It is not the server account password. |
+| FTPeach master password | Unlocking the vault of saved secrets when you have set up master-password protection. |
+| Export file password | Opening saved passwords included in an exported file. You choose it when exporting. |
+
+<!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::setup_lock_unlock_and_password_change_preserve_secrets -->
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
+
+Do not change a server password to solve a vault-unlock prompt, or assume that
+your master password is the password for an exported file. Read which operation
+is asking before entering a secret.
+
+## Prepare to use another computer
+
+For another installation, export your settings or bookmarks on the old computer
+and import the file on the new one. Decide whether to include saved passwords:
+leaving them out means signing in again with your server credentials. If you do
+include them, store the export file and its password separately. The steps and
+limits are below.
+
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
+
+For a folder you can carry between computers, see [Portable version](portable.md).
+Windows Hello is configured per computer, as described at the end of this page.
+
 ## Moving bookmarks and passwords to another computer
 
 File > Export Settings, and Export in the Site Manager, can take the saved

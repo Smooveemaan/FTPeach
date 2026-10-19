@@ -1,5 +1,52 @@
 # Transfers and files
 
+Use a copy when you want the file in another location while keeping the source.
+First open the destination folder in the other pane, then select the files or
+folders you want to send.
+
+## Upload, download or copy
+
+| From → to | Action in the source pane's right-click menu |
+| --- | --- |
+| Computer → server | Upload to other pane |
+| Server → computer | Download to other pane |
+| Server → another server | Copy to other pane |
+
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::the menus follow the order of the Explorer menu -->
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::remote-to-remote copies are labelled correctly and unavailable transfers are disabled -->
+
+1. Check the server or computer and the open path in both panes.
+2. Select the files or folders in the source pane. Choose the action above, or
+   press **F8** with that pane focused using the default shortcuts.
+3. If asked about existing files, decide whether those destination copies should
+   be replaced. A matching name does not mean that the contents are the same.
+4. Follow the job in **Transfers** and check its final result before closing the
+   connection or removing the source.
+
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::a folder, and a whole selection, can be sent to the other pane from the menu -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::F7/Shift+F7 create a new folder/file and F8 copies the selection to the other pane -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::file batch consent does not authorize replacing files inside a sibling folder -->
+<!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::direction arrow is pinned before Route and File, while Status stays sortable -->
+
+For a server-to-server copy, connect both panes and open the source folder on
+one and the destination folder on the other. Files and folders can be sent this
+way. For a first upload or download, follow [Your first transfer](getting-started.md).
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::folder upload, download and relay submit endpoint intent without per-file IPC -->
+
+## Choose whether to pause or stop
+
+Use **Pause** when you intend to continue later and that action is available.
+Use **Stop** when you want to cancel the job. Resume a paused job to continue;
+retry a stopped job only when you intend to start it again. The details below
+explain when partial data can be reused.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::retryTransfer resumes paused uploads and downloads, but restarts stopped ones -->
+
+If a transfer reports an error, read it before retrying: wrong permissions,
+insufficient space or a changed source need attention first. See
+[Troubleshooting](troubleshooting.md#my-transfer-did-not-finish).
+
 ## Pausing, stopping and resuming transfers
 
 **Pause** keeps the partial data for a later attempt. A paused FTP, FTPS or SFTP

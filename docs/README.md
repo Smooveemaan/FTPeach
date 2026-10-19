@@ -14,7 +14,7 @@
 
 ## Runtime behavior
 
-- [User guide](guide/index.md): what the client does when a transfer stops, a file exists or a server is new, each statement backed by a check ([manual checks](manual-checks.md) record the ones a person ran).
+- [User guide](guide/index.md): first connection and transfer, everyday file tasks, saved connections and troubleshooting. Behavior statements are backed by checks ([manual checks](manual-checks.md) record the ones a person ran).
 - [Protocol support](protocol-support.md) and [networking](networking.md).
 - [Storage](storage.md) and [transfer safety](transfer-safety.md).
 - [Resilience design](p2-resilience.md) and [lifecycle and resource budgets](optimization-lifecycle.md).

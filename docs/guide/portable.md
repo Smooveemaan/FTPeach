@@ -1,5 +1,27 @@
 # Portable version
 
+Choose the portable download when you want to keep FTPeach and its settings in
+one folder, for example on a removable drive. Plan how you will unlock saved
+passwords on another computer before relying on it while travelling.
+
+## Start and carry a portable copy
+
+1. Download the portable zip from the [website](https://ftpeach.com/).
+2. Unpack the whole archive into a writable folder, then start FTPeach from
+   that folder. Keep the `FTPeach.portable` marker beside the program.
+3. When moving the copy, keep its `data` folder with it. This is where your
+   settings, bookmarks and saved passwords live.
+4. If you need saved passwords on another computer, set a master password first
+   and make sure you remember it. Without one, those passwords remain tied to
+   the original computer.
+
+<!-- verified-by: pr test/unit/tooling/siteBuild.test.ts::a release with a portable copy offers both downloads -->
+<!-- verified-by: pr src-tauri/src/local_fs/portable.rs::only_the_marker_makes_a_folder_portable -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
+
+Keep a backup of the folder before moving it. If you want to bring connections
+into a different installation instead, use [export and import](passwords.md#moving-bookmarks-and-passwords-to-another-computer).
+
 ## The portable copy
 
 FTPeach from the portable zip keeps its settings, bookmarks and saved passwords

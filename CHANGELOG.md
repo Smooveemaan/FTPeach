@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The user guide is available on the website, organized by topic.
+- The website's user guide walks through connecting, transferring and editing files,
+  with help for common problems.
 
 ## [0.5.0] - 2026-10-19
 

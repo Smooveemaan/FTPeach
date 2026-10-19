@@ -10,9 +10,20 @@ export const GUIDE_PAGES = [
   {
     slug: 'index',
     description:
-      'The FTPeach user guide: transfers, files, portable use, passwords and safe connections.',
+      'Learn to connect to a server, transfer and edit files, manage saved connections and solve common problems in FTPeach.',
   },
-  { slug: 'interface', description: 'Choose a color scheme and select files in FTPeach.' },
+  {
+    slug: 'getting-started',
+    description: 'Prepare your connection details, upload your first file and check the result.',
+  },
+  {
+    slug: 'interface',
+    description: 'Find folders, select files, use shortcuts and follow transfers in FTPeach.',
+  },
+  {
+    slug: 'connecting',
+    description: 'Choose a protocol, connect with a password or SSH key and save a bookmark.',
+  },
   {
     slug: 'transfers',
     description:
@@ -33,8 +44,8 @@ export const GUIDE_PAGES = [
       'Move FTPeach bookmarks and saved passwords between computers, and unlock with Windows Hello.',
   },
   {
-    slug: 'connecting',
-    description: 'Understand SSH host key confirmation and unencrypted WebDAV sign-in in FTPeach.',
+    slug: 'troubleshooting',
+    description: 'Resolve connection and transfer errors, recover edits and check saved passwords.',
   },
 ];
 

@@ -29,10 +29,18 @@ Keep one pane on **Computer**. At the top of the other pane, click the source
 button and choose **Server** to open the connection form. You can use that same
 menu to switch a pane back to **Computer**.
 
+[![The Computer source menu, with Server above Computer.](images/source-menu.png)](images/source-menu.png)
+
+Choose **Server** in this menu. Click any illustration to view it at full size.
+
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 
 In the connection form, choose the supplied protocol and enter **Address**, **Port**,
 **Username** and **Password**, as applicable. Select **Connect**.
+
+[![SFTP connection form with address, port, username and password fields.](images/connection.png)](images/connection.png)
+
+Example SFTP form. Replace the sample address and username with your own details.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::blank addresses disable connecting and saving until filled -->
 
@@ -76,6 +84,10 @@ changing anything already on the server.
 Look in **Transfers** for the file and its **Route**. Check the final status;
 starting a transfer is not evidence that it finished. If it failed, read the
 error and follow [Troubleshooting](troubleshooting.md).
+
+[![Transfers panel showing file names, routes, progress and job controls.](images/transfers.png)](images/transfers.png)
+
+The transfer panel uses example jobs here; check your own job's status and result.
 
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::direction arrow is pinned before Route and File, while Status stays sortable -->
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::queue order puts running and paused rows first, newest within each status, and completed rows last -->

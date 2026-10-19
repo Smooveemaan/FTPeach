@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Marked } from 'marked';
 import { getHeadingList, gfmHeadingId } from 'marked-gfm-heading-id';
@@ -72,6 +72,13 @@ export function renderGuide(markdown: string, slug: string) {
       if (!/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)) {
         if (!url.href.startsWith(repository))
           throw new Error(`Link leaves the repository: ${href}`);
+        const asset = /^docs\/guide\/(images\/[a-z0-9-]+\.png)$/.exec(
+          url.pathname.slice(new URL(repository).pathname.length),
+        );
+        if (asset) {
+          token.href = asset[1]!;
+          return;
+        }
         const guide = /^docs\/guide\/([^/]+)\.md$/.exec(
           url.pathname.slice(new URL(repository).pathname.length),
         );
@@ -115,12 +122,15 @@ export async function buildGuide(root: string, out: string): Promise<void> {
     pages.push({ ...page, ...renderGuide(markdown, page.slug) });
   }
   await mkdir(path.join(out, 'guide'), { recursive: true });
+  await cp(path.join(root, 'docs/guide/images'), path.join(out, 'guide/images'), {
+    recursive: true,
+  });
   for (const page of pages) {
     const canonical = `https://ftpeach.com/guide/${page.slug === 'index' ? '' : `${page.slug}.html`}`;
     const navigation = pages
       .map(
         (entry) =>
-          `<li><a href="${entry.slug}.html"${entry.slug === page.slug ? ' aria-current="page"' : ''}>${escapeHtml(entry.title)}</a></li>`,
+          `<li><a href="${entry.slug}.html"${entry.slug === page.slug ? ' aria-current="page"' : ''}>${escapeHtml(entry.slug === 'index' ? 'Overview' : entry.title)}</a></li>`,
       )
       .join('\n');
     const toc = page.toc

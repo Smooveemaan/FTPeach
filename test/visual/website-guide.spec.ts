@@ -48,6 +48,17 @@ for (const colorScheme of ['light', 'dark'] as const) {
           await page.goto(`https://guide.test/guide/${entry.slug}.html`);
           await page.evaluate(() => document.fonts.ready);
           await expect(page.locator('h1')).toBeVisible();
+          expect(
+            await page
+              .locator('article img')
+              .evaluateAll((images) =>
+                images.every(
+                  (image) =>
+                    (image as HTMLImageElement).complete &&
+                    (image as HTMLImageElement).naturalWidth > 0,
+                ),
+              ),
+          ).toBe(true);
           await expect(
             page.locator('nav[aria-label="User guide"] a[aria-current="page"]'),
           ).toHaveAttribute('href', `${entry.slug}.html`);
@@ -76,6 +87,28 @@ for (const colorScheme of ['light', 'dark'] as const) {
     });
   }
 }
+
+test('the shared header keeps its actions reachable on narrow screens', async ({ page }) => {
+  await serveGuide(page);
+  await page.goto('https://guide.test/guide/index.html');
+  for (const width of [320, 375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const header = page.locator('.site-header');
+    await expect(header.getByRole('link', { name: 'Support FTPeach on Ko-fi' })).toBeVisible();
+    await expect(header.getByRole('button', { name: 'Switch to light theme' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Download' })).toBeVisible();
+    const boxes = await header.locator('.wrap > *').evaluateAll((elements) =>
+      elements
+        .map((element) => element.getBoundingClientRect())
+        .filter((box) => box.width > 0)
+        .map((box) => ({ left: box.left, right: box.right })),
+    );
+    for (let index = 0; index < boxes.length; index++) {
+      expect(boxes[index]!.left).toBeGreaterThanOrEqual(index ? boxes[index - 1]!.right : 0);
+      expect(boxes[index]!.right).toBeLessThanOrEqual(width);
+    }
+  }
+});
 
 test('theme choice persists between guide pages and keyboard links reach sections', async ({
   page,

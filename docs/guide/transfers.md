@@ -36,6 +36,10 @@ way. For a first upload or download, follow [Your first transfer](getting-starte
 
 ## Choose whether to pause or stop
 
+[![Transfers panel with Pause and Stop controls at the right of each active job.](images/transfers.png)](images/transfers.png)
+
+Example jobs; the controls for each transfer are at the right of its row.
+
 Use **Pause** when you intend to continue later and that action is available.
 Use **Stop** when you want to cancel the job. Resume a paused job to continue;
 retry a stopped job only when you intend to start it again. The details below

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The website's user guide walks through connecting, transferring and editing files,
+- The website's illustrated user guide walks through connecting, transferring and editing files,
   with help for common problems.
 
 ## [0.5.0] - 2026-10-19

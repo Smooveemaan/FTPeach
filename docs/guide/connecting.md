@@ -31,6 +31,10 @@ The [protocol reference](../protocol-support.md) lists compatibility details.
 3. Select **Connect**. Once the initial folder listing loads, browse to the
    folder you want to work in.
 
+[![SFTP connection form showing where to enter server and account details.](images/connection.png)](images/connection.png)
+
+Example connection details; use the values from your provider.
+
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::blank addresses disable connecting and saving until filled -->
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::a typed-in FTPS server is sent as it is, and becomes connected only after its first listing -->

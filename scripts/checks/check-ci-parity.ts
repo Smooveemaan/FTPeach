@@ -3,8 +3,7 @@
 // behind checks.yml by two steps, so a push could pass locally and fail on the
 // runner over work the developer never had a chance to see.
 //
-// This asserts the workflow's npm steps are reachable from `check`, with a
-// short list of deliberate exclusions that must each stay justified.
+// This asserts every npm step of the workflow is reachable from `check`.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
@@ -15,24 +14,6 @@ const scripts: Record<string, string> = JSON.parse(await readFile(packagePath, '
 const workflow = await readFile(workflowPath, 'utf8');
 
 const entryPoint = 'check';
-
-// Steps CI runs that `check` deliberately leaves out. Each needs a reason, and
-// each has to still appear in the workflow, so a step that disappears upstream
-// cannot leave a stale exemption quietly standing.
-const excluded = new Map([
-  [
-    'test:packaged-smoke',
-    'builds and drives a packaged Tauri binary; minutes per run, so CI owns it',
-  ],
-  [
-    'i18n:audit',
-    'the layout audit of every screen in a sample of languages, a minute or more; CI runs it on interface changes',
-  ],
-  [
-    'rust:coverage',
-    'an instrumented rebuild of the crate running the tests rust:test already runs',
-  ],
-]);
 
 /** Every script an `npm run` / `npm test` command in `source` invokes. */
 function invoked(source: string): string[] {
@@ -58,13 +39,8 @@ const problems: string[] = [];
 const workflowScripts = new Set(invoked(workflow));
 
 for (const name of [...workflowScripts].sort()) {
-  if (reachable.has(name) || excluded.has(name)) continue;
+  if (reachable.has(name)) continue;
   problems.push(`${name}: run by checks.yml but not reachable from \`npm run ${entryPoint}\``);
-}
-
-for (const [name, reason] of excluded) {
-  if (workflowScripts.has(name)) continue;
-  problems.push(`${name}: excluded as "${reason}", but checks.yml no longer runs it`);
 }
 
 assert.equal(
@@ -74,6 +50,4 @@ assert.equal(
 );
 
 const covered = [...workflowScripts].filter((name) => reachable.has(name)).length;
-console.log(
-  `Local suite covers ${covered} of checks.yml's ${workflowScripts.size} npm steps (${excluded.size} excluded by design)`,
-);
+console.log(`Local suite covers ${covered} of checks.yml's ${workflowScripts.size} npm steps`);

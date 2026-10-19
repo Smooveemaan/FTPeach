@@ -5,9 +5,10 @@ listed in [the GitHub configuration guide](../.github/WORKFLOWS.md).
 
 ## Before pushing
 
-- Run `npm run check` from the repository root and review the result. CI also
-  runs supply-chain, SAST and packaged application checks; the protocol
-  compatibility suite runs before every release
+- Run `npm run check` from the repository root, after `git fetch`, with Docker
+  running, and review the result. It runs everything `checks.yml` runs, the
+  supply-chain, SAST, Linux build and packaged application checks included;
+  the protocol compatibility suite runs before every release
   ([How releases are verified](release-trust.md#how-releases-are-verified)).
 - Review the exact commits that will be published. The tracked secret check
   inspects current working files, not previous commits, and ignoring or

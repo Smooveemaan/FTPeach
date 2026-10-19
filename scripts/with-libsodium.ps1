@@ -116,6 +116,11 @@ $targetRoot = if ([string]::IsNullOrWhiteSpace($env:CARGO_TARGET_DIR)) {
 else {
     $env:CARGO_TARGET_DIR
 }
+# Coverage starts from nothing, as on a fresh CI runner: llvm-cov cannot clean a
+# folder it did not create, and the builds left in it count lines twice.
+if ($Command -eq 'coverage') {
+    Remove-Item -LiteralPath (Join-Path $targetRoot 'llvm-cov-target') -Recurse -Force -ErrorAction SilentlyContinue
+}
 foreach ($cargoProfile in @('debug', 'release', 'llvm-cov-target/debug')) {
     $dependencyDirectory = Join-Path $targetRoot "$cargoProfile\deps"
     New-Item -ItemType Directory -Path $dependencyDirectory -Force | Out-Null

@@ -42,7 +42,7 @@
     "i18n:audit": "playwright test --config test/visual/playwright.i18n-audit.config.ts",
     "i18n:check": "node --experimental-strip-types scripts/checks/check-locales.ts",
     "check:ci-parity": "node --experimental-strip-types scripts/checks/check-ci-parity.ts",
-    "check": "npm run check:ci-parity && npm run check:release-config && npm run licenses:check && npm run check:tracked-secrets && npm run check:rust-advisories && npm run check:no-cyrillic && npm run check:rust-boundaries && npm run check:command-acl && npm run check:ignored-tests && npm run check:docs-impact && npm run check:verified-by && npm run check:duplicates && npm run i18n:check && npm run coverage && npm run lint && npm run format:check && npm run build && npm run test:visual && cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check && npm run rust:check && npm run rust:clippy && npm run rust:test && npm run test:updater-fixtures && npm run test:parser-regressions",
+    "check": "npm run check:ci-parity && npm run check:release-config && npm run licenses:check && npm run check:tracked-secrets && npm run check:rust-advisories && npm run check:no-cyrillic && npm run check:rust-boundaries && npm run check:command-acl && npm run check:ignored-tests && npm run check:docs-impact && npm run check:verified-by && npm run check:duplicates && npm run i18n:check && npm run coverage && npm run lint && npm run format:check && npm run build && npm run test:visual && cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check && npm run rust:check && npm run rust:clippy && npm run rust:test && npm run test:updater-fixtures && npm run test:parser-regressions && npm run check:supply-chain && npm run check:sast && npm run i18n:audit && npm run rust:coverage && npm run rust:check-linux && npm run build:packaged-smoke && npm run test:packaged-smoke",
     "benchmark:frontend": "node --experimental-strip-types scripts/benchmarks/benchmark-frontend.ts",
     "build:packaged-smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command smoke-build",
     "build:test-installers": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command test-installers",
@@ -62,7 +62,9 @@
     "benchmark:listing": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command benchmark-listing",
     "site:build": "node --experimental-strip-types scripts/site/build.ts",
     "site:social": "node --experimental-strip-types scripts/site/social.ts",
-    "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts"
+    "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts",
+    "check:supply-chain": "npm audit --audit-level=high && cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses",
+    "check:sast": "docker run --rm -v \"%cd%:/src\" -w /src semgrep/semgrep:1.176.1 semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

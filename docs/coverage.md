@@ -57,9 +57,10 @@ and settling — are checked by the end-to-end and server suites a release waits
 in the [guarantee matrix](transfer-safety.md#guarantee-matrix).
 
 CI runs the frontend command in `lint-test-build` and the Rust command in `rust-coverage`, and keeps
-both `coverage/` directories as artifacts. `check:ci-parity` checks the npm steps in
-`checks.yml` against `npm run check` and its explicit exclusions; Rust coverage is one
-of those exclusions. It measures no coverage itself.
+both `coverage/` directories as artifacts. `npm run check` runs both too; off CI the changed
+lines are compared with `origin/master`, what CI compares a push with, unless
+`COVERAGE_DIFF_BASE` names another commit. `check:ci-parity` checks that every npm step in
+`checks.yml` is reachable from `npm run check`; it measures no coverage itself.
 
 ## Baseline of 24 September 2026
 

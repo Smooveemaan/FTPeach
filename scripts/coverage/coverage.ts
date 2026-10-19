@@ -241,7 +241,8 @@ function main(): void {
   );
   const sections: string[] = [];
   const problems: string[] = [];
-  const base = process.env.COVERAGE_DIFF_BASE?.trim();
+  // Off CI, the last pushed master: what CI compares a push with.
+  const base = process.env.COVERAGE_DIFF_BASE?.trim() || (process.env.CI ? '' : 'origin/master');
   // Resolve before running tests. An unavailable base must fail, never skip the gate.
   const baseCommit = base
     ? execFileSync('git', ['rev-parse', '--verify', '--end-of-options', `${base}^{commit}`], {

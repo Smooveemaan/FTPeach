@@ -112,9 +112,15 @@ export async function menu(page: Page, title: string, item: string) {
 }
 
 export async function openFolder(pane: Locator, folder: string) {
-  await pane.getByRole('button', { name: 'Edit path' }).press('Enter');
-  await pane.locator('.path-input').fill(folder);
-  await pane.locator('.path-input').press('Enter');
+  // Again from the start when the field goes away: a session still loading
+  // after a start redraws the pane and closes it.
+  await expect(async () => {
+    const input = pane.locator('.path-input');
+    if (!(await input.isVisible()))
+      await pane.getByRole('button', { name: 'Edit path' }).press('Enter', { timeout: 5_000 });
+    await input.fill(folder, { timeout: 5_000 });
+    await input.press('Enter', { timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
 }
 
 /** Opens a folder by its path and waits for the pane to show it, empty or not. */

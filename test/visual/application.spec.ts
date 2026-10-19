@@ -24,6 +24,10 @@ async function openRtlHarness(page: Page) {
 
 test('desktop workspace', async ({ page }) => {
   await openHarness(page);
+  await expect(page.locator('.pane-path .crumb[data-drop-path="/var/www"]')).toHaveCSS(
+    'font-variant-ligatures',
+    'none',
+  );
   await expect(page).toHaveScreenshot('workspace-desktop.png');
 });
 

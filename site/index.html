@@ -606,22 +606,6 @@ a:hover {
   gap: 12px;
   margin-top: 4px;
 }
-.protocol-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-.protocol-chips li {
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  font: 500 13px/1.4 var(--font-mono);
-  color: var(--ink);
-  background: var(--card);
-}
 @media (max-width: 479px) {
   .ctas {
     width: 100%;
@@ -1438,11 +1422,8 @@ a:hover {
               <span class="stars" role="img" aria-label="{{STARS_LABEL}}"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.3l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.6l-4 2.1.8-4.5L1.5 6l4.5-.6Z" /></svg>{{STARS}}</span>
             </a>
           </div>
-          <ul class="protocol-chips rise" style="--i: 3" aria-label="Supported protocols" translate="no">
-            <li>FTP</li><li>FTPS</li><li>SFTP</li><li>WebDAV</li>
-          </ul>
         </div>
-        <div class="wrap shot rise" style="--i: 4">
+        <div class="wrap shot rise" style="--i: 3">
           <div class="frame">
             <div class="crop" role="img" aria-label="FTPeach with a local folder on the left, an FTP server on the right, two uploads in the transfer queue and the connection log below."><video class="demo" muted loop playsinline preload="none" poster="ftpeach-dark-poster.webp" data-src="ftpeach-dark.mp4" aria-hidden="true"></video><video class="demo demo-light" muted loop playsinline preload="none" poster="ftpeach-light-poster.webp" data-src="ftpeach-light.mp4" aria-hidden="true"></video></div>
             <button class="play" type="button" aria-label="Play the demo" hidden>

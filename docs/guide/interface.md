@@ -7,6 +7,18 @@ side, not a fixed upload or download folder.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::the menus follow the order of the Explorer menu -->
 
+## Work with tabs
+
+Use **File > New Tab** or **Ctrl+T** to open another workspace. **Ctrl+Tab**
+switches to the next tab; **Ctrl+Shift+Tab** goes to the previous one.
+Use **File > Close Tab** or **Ctrl+W** to close the current tab, and **Ctrl+Shift+T**
+to reopen the most recently closed tab. The last remaining tab stays open.
+Check running transfers before closing a server connection.
+
+<!-- verified-by: pr test/component/application/applicationCommands.test.tsx::tab shortcuts open, close, reopen and cycle tabs -->
+<!-- verified-by: pr test/component/application/applicationCommands.test.tsx::the last tab is not closed and a single tab does not cycle -->
+<!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
+
 ## Open folders and find files
 
 [![The two file panes, with source buttons, folder paths and file lists.](../../site/images/guide/file-panes.png)](../../site/images/guide/file-panes.png)
@@ -71,45 +83,28 @@ shortcuts, your own bindings apply.
 
 Open **Edit > Settings > Interface** to find the appearance controls shown here.
 
-In Settings > Interface, choose a color scheme independently of the light, dark or
-system theme. The default Peach is always first, followed by neutral shades through
-warm, green, blue and purple hues: Onyx, Ash, Graphite, Linen, Sand, Cocoa, Ember,
-Clay, Grass, Forest, Lagoon, Frost, Ocean, Midnight, Bluebell, Orchid, Plum,
-Burgundy and Rose. Older settings keep their chosen palette; settings with
-no palette keep Peach. Changes preview immediately, Save keeps them and Cancel
-restores the previous scheme.
+Choose **Theme** (light, dark or system) and **Color scheme** separately. Changes
+preview immediately; **Save** keeps them and **Cancel** restores the previous
+appearance. Use **Interface language** to choose your language and **Interface
+scale** to make text and controls larger or smaller, then select **Save**.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::previews and saves a palette independently of the theme -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Cancel restores the palette before preview -->
-<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::old or unknown settings use Peach and valid palettes survive hydration -->
-<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::palette names follow color order without changing stored identifiers -->
-
-Security confirmation windows follow the same theme and color scheme, including
-settings previews and Cancel.
-
-<!-- verified-by: pr test/component/platform/confirmationAppearance.test.ts::confirmations apply the initial snapshot and follow preview and rollback -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Interface saves a chosen language and text scale -->
 
 Transfer states keep the same meaning across color schemes: orange for active transfers,
 yellow for paused, green for completed, red for failed and grey for cancelling, queued
 or stopped. Connection indicators and the status bar use the same colors.
-Connection dots and progress bars have flat fills without outlines.
 
 <!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::transfer status colors stay readable across palettes -->
 <!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::connection indicators and auxiliary progress share semantic colors across palettes -->
 
 ## Selecting files
 
-The selection rectangle follows the pointer without animation and stays within
-the file list when dragged into the neighbouring pane, including when system
-animations are disabled.
+You can also drag a selection rectangle inside the file list. It stays within
+that pane when the pointer crosses into the neighbouring pane.
 
 <!-- verified-by: manual Selection rectangle with system animations disabled -->
-
-When the rectangle runs past the edge of the list, it has no border on that
-side, so it reads as carrying on beyond the visible rows rather than ending at
-the edge.
-
-<!-- verified-by: manual Selection rectangle past the edge of the list -->
 
 When a folder's list is refreshed, with F5 or because a transfer finished
 there, the files still in it stay selected, and the arrow keys and Shift carry
@@ -119,3 +114,39 @@ ones that stay selected.
 <!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a transfer refresh leaves a pane the user browsed away from, and keeps the selection -->
 <!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a selection made while the folder is listed again is the one kept -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::the folder listed again keeps the keyboard cursor; another folder starts from the top -->
+
+## Everyday settings
+
+Open **Edit > Settings**, select the category, make your changes and choose
+**Save**. Use **Cancel** to discard changes.
+
+| Task | Where to go |
+| --- | --- |
+| Limit transfer speed | **Transfers > Speed limit, KB/s**. Enter a limit; 0 or blank means no limit. |
+| Limit simultaneous transfers | **Transfers > Concurrent transfers**. Enter a count; 0 or blank means no limit. |
+| Decide what happens to matching filenames | **Transfers > On name conflict**. Choose **Ask**, **Overwrite** or **Skip**. Start with Ask if you want to review replacements. |
+| Change a keyboard shortcut | **Shortcuts**. Click its current key combination and press the new one. Review any conflict warning; **Reset to default** restores one binding. |
+| Connect through a proxy | **Connection > Use a proxy for connections**. Enter the type, host, port and credentials supplied by your administrator. Save and reconnect. |
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
+<!-- verified-by: pr test/component/settings/shortcutsSettings.test.tsx::reset buttons reflect actual differences, including recording the default again -->
+<!-- verified-by: pr test/component/settings/shortcutsSettings.test.tsx::a conflict icon names the other action with its pane side and goes to it -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a change to one proxy setting saves the proxy settings together -->
+<!-- verified-by: pr test/component/application/paneAndSettingsState.test.tsx::previews settings locally and persists only on explicit save -->
+
+For proxy troubleshooting, **Test proxy** checks the proxy against the host and
+port in **Test against**. Read the result before reconnecting.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a proxy test error fades once a tested field changes -->
+
+## Check for updates
+
+Use **Help > Check for Updates** or **Edit > Settings > Updates > Check Now**.
+The **Update automatically** setting controls automatic updates. Finish your
+work before selecting **Install update** in the status bar.
+If checking fails, keep using the current version and try again when the network
+is available.
+
+<!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
+<!-- verified-by: pr test/component/application/statusBar.test.tsx::update actions download an available version and install only a downloaded version -->

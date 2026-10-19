@@ -13,7 +13,7 @@ See [Selecting files](guide/interface.md#selecting-files).
 
 ## Pausing, stopping and resuming transfers
 
-See [Pausing, stopping and resuming transfers](guide/transfers.md#pausing,-stopping-and-resuming-transfers).
+See [Pausing, stopping and resuming transfers](guide/transfers.md#pausing-stopping-and-resuming-transfers).
 
 ## Interrupted downloads
 

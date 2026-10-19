@@ -31,16 +31,13 @@ menu to switch a pane back to **Computer**.
 
 [![The Computer source menu, with Server above Computer.](../../site/images/guide/source-menu.png)](../../site/images/guide/source-menu.png)
 
-Choose **Server** in this menu. On the website, click an illustration to enlarge
-it over the page. Press **Esc**, click the background or use **Close screenshot**
-to return to reading. Without JavaScript, the link opens the image directly.
-
-<!-- verified-by: pr test/visual/website-guide.spec.ts::screenshots enlarge without leaving the guide and restore reading position -->
+Choose **Server** in this menu.
 
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 
 In the connection form, choose the supplied protocol and enter **Address**, **Port**,
-**Username** and **Password**, as applicable. Select **Connect**.
+**Username** and **Password**, as applicable. Select **Connect**, the power-symbol
+button next to **Server**.
 
 [![SFTP connection form with address, port, username and password fields.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
 
@@ -85,13 +82,14 @@ changing anything already on the server.
 
 ## 4. Check the result
 
-Look in **Transfers** for the file and its **Route**. Check the final status;
-starting a transfer is not evidence that it finished. If it failed, read the
+Look in **Transfers** for the file and its **Route**. Wait for **Done**;
+**Upload** and **Queued** are not completed transfers. If it failed, read the
 error and follow [Troubleshooting](troubleshooting.md).
 
-[![Transfers panel showing file names, routes, progress and job controls.](../../site/images/guide/transfers.png)](../../site/images/guide/transfers.png)
+[![A completed release-notes.md upload with its route, 100% progress and Done status.](../../site/images/guide/transfer-done.png)](../../site/images/guide/transfer-done.png)
 
-The transfer panel uses example jobs here; check your own job's status and result.
+This example has finished: **Done** confirms completion. Some columns are hidden
+to keep the result readable; check your own file and destination route.
 
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::direction arrow is pinned before Route and File, while Status stays sortable -->
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::queue order puts running and paused rows first, newest within each status, and completed rows last -->

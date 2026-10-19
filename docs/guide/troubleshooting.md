@@ -96,6 +96,16 @@ computer separately.
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::windows_hello_is_switched_on_and_off_per_computer -->
 
+## I cannot unlock saved passwords
+
+Check whether the prompt wants the FTPeach master password, a server password or
+an export file password. If Windows Hello fails, try the master password.
+For a forgotten password, read [recovery and reset](passwords.md#if-you-forget-the-master-password)
+before deleting anything: resetting the vault loses its stored secrets.
+
+<!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::a refused Windows Hello asks for the password, ready to type -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a vault reset tells the owner that the saved secrets are gone -->
+
 ## Ask for help
 
 [![The Log panel filtered to a Permission denied error.](../../site/images/guide/connection-log.png)](../../site/images/guide/connection-log.png)

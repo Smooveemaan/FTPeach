@@ -230,7 +230,9 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await page.getByRole('button', { name: 'Next color scheme' }).click();
     await expect(page.locator('#palette-name')).toHaveText('Onyx');
     await expect(page.locator('.palette-preview > img')).toHaveCount(1);
-    expect(await page.evaluate(() => Reflect.get(window, 'paletteTimings'))).toEqual([450, 450]);
+    expect(await page.evaluate(() => Reflect.get(window, 'paletteTimings'))).toEqual(
+      reducedMotion === 'reduce' ? [] : [450, 450],
+    );
   });
 }
 
@@ -265,4 +267,40 @@ test('header transition waits for the preview and does not start a second fade',
       src: 'palettes/peach-light.webp',
       animations: 0,
     });
+});
+
+test('the mobile header keeps the guide visible and reduced motion skips scrolling and fades', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openSite(page);
+  for (const width of [320, 359, 390, 479, 480, 768, 860, 979, 980, 1024]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate(() => scrollTo(0, 0));
+    const guide = page.locator('.site-header').getByRole('link', { name: 'User guide' });
+    await expect(guide).toBeVisible();
+    const box = (await guide.boundingBox())!;
+    expect(box.y, `guide at ${width}px: ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    expect(box.y + box.height).toBeLessThan(150);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+  }
+  await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
+  const scroll = await page.evaluate(() => {
+    (document.querySelector('.site-header a[href="#download"]') as HTMLElement).click();
+    return scrollY;
+  });
+  expect(scroll).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    document.startViewTransition = () => {
+      throw new Error('Reduced motion started a transition');
+    };
+  });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  expect(errors).toEqual([]);
 });

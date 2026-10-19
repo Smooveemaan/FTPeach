@@ -39,11 +39,12 @@ way. For a first upload or download, follow [Your first transfer](getting-starte
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::folder upload, download and relay submit endpoint intent without per-file IPC -->
 
-## Choose whether to pause or stop
+## Pausing, stopping and resuming transfers
 
 [![Transfers panel with Pause and Stop controls at the right of each active job.](../../site/images/guide/transfers.png)](../../site/images/guide/transfers.png)
 
-Example jobs; the controls for each transfer are at the right of its row.
+Example jobs with some columns hidden. **Pause** (two bars) and **Stop** (a square)
+are at the right of an active row.
 
 Use **Pause** when you intend to continue later and that action is available.
 Use **Stop** when you want to cancel the job. Resume a paused job to continue;
@@ -55,8 +56,6 @@ explain when partial data can be reused.
 If a transfer reports an error, read it before retrying: wrong permissions,
 insufficient space or a changed source need attention first. See
 [Troubleshooting](troubleshooting.md#my-transfer-did-not-finish).
-
-## Pausing, stopping and resuming transfers
 
 **Pause** keeps the partial data for a later attempt. A paused FTP, FTPS or SFTP
 upload resumes when the source and the retained server data pass verification;
@@ -144,17 +143,13 @@ alternate data streams cannot keep it. See [download security limits](../securit
 
 ## Copying files and folders
 
-Creating a local file or folder requires its parent to still exist. If that
-parent was moved or deleted outside FTPeach, the operation fails without
-recreating it.
+To copy within your computer, keep both panes on **Computer**, open the source
+and destination folders, select the entries and press **F8**. You can also use
+**Ctrl+C**, open the destination and press **Ctrl+V**. To create a destination
+folder first, right-click empty space and choose **New Folder**, or press **F7**.
 
-<!-- verified-by: pr src-tauri/src/local_fs/local_create.rs::a_missing_parent_is_not_recreated_by_new_entries -->
-
-**Delete** moves local files to the Recycle Bin. A network share or a
-removable drive has none, so there FTPeach asks again before deleting for
-good, and nothing is deleted if you cancel.
-
-<!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::F7/Shift+F7 create a new folder/file and F8 copies the selection to the other pane -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+C/Ctrl+X mark the selection for the clipboard and Ctrl+V pastes it -->
 
 Local file copies appear in Transfers while running and retain their final result.
 A failed copy can be retried from its row.
@@ -174,10 +169,20 @@ skipped names; other selected files can still be copied.
 
 ## Renaming and moving
 
+To rename, select one entry, press **F2**, type the new name and press **Enter**.
+To move, right-click the selection and choose **Move to folder…**, then choose
+the destination folder. Alternatively, press **Ctrl+X**, open the destination
+on the same computer or server connection and press **Ctrl+V**.
+
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::selects, sorts, filters and supports keyboard actions -->
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::move destinations preserve display order and exclude selected folders -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+C/Ctrl+X mark the selection for the clipboard and Ctrl+V pastes it -->
+
 When renaming or moving finds another file with the same name, FTPeach asks
-before replacing it. FTP cannot make the check and rename atomic: a file
-another client creates between them can still be replaced. Server-specific
-limits are listed in the [file operation guarantees](../transfer-safety.md#guarantee-matrix).
+before replacing it. If several people are editing the same server folder,
+coordinate changes: FTP cannot guarantee that a new file created by another
+client during the rename will be preserved. See the
+[file operation guarantees](../transfer-safety.md#guarantee-matrix) for details.
 
 <!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::rename replaces a target only on an explicit decision -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Move to replaces a target only after explicit approval -->
@@ -193,3 +198,17 @@ Between your computer and a server, or between two servers, FTPeach refuses the
 move and changes nothing. Copy the files instead.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a move between different endpoints touches nothing, for files and folders -->
+
+## Delete files and folders
+
+Select the entries, right-click and choose **Delete**. Read the confirmation
+and check the location and selection before approving it. Local files normally
+go to the Recycle Bin. If that location has no Recycle Bin, FTPeach asks again
+before permanently deleting them; cancelling keeps the files.
+
+> [!WARNING]
+> Deleting from a server is permanent in FTPeach: remote files do not go to your
+> computer's Recycle Bin. Download a backup first if you may need them again.
+
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Shift on this computer turns Delete into Delete permanently; a server has no bin to skip -->
+<!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin -->

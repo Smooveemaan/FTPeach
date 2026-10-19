@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 
 import StatusBar from '../../../src/app/StatusBar.tsx';
+import UpdateStatus from '../../../src/app/UpdateStatus.tsx';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -11,6 +12,38 @@ vi.mock('react-i18next', async (importOriginal) => ({
 function renderBar(narrow: boolean, notice: string) {
   return render(barElement(narrow, notice));
 }
+
+test('update actions download an available version and install only a downloaded version', () => {
+  const onDownload = vi.fn();
+  const onInstall = vi.fn();
+  const view = render(
+    <UpdateStatus
+      update={{ state: 'available', version: '2.0.0' }}
+      onDownload={onDownload}
+      onInstall={onInstall}
+    />,
+  );
+  fireEvent.click(screen.getByText('update.availableAction'));
+  expect(onDownload).toHaveBeenCalledOnce();
+  expect(onInstall).not.toHaveBeenCalled();
+  view.rerender(
+    <UpdateStatus
+      update={{ state: 'downloading', version: '2.0.0', percent: 50 }}
+      onDownload={onDownload}
+      onInstall={onInstall}
+    />,
+  );
+  expect(screen.queryByRole('button')).toBeNull();
+  view.rerender(
+    <UpdateStatus
+      update={{ state: 'downloaded', version: '2.0.0' }}
+      onDownload={onDownload}
+      onInstall={onInstall}
+    />,
+  );
+  fireEvent.click(screen.getByText('update.installAction'));
+  expect(onInstall).toHaveBeenCalledOnce();
+});
 
 function barElement(narrow: boolean, notice: string) {
   return (

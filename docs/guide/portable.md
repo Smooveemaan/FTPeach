@@ -11,7 +11,7 @@ passwords on another computer before relying on it while travelling.
    that folder. Keep the `FTPeach.portable` marker beside the program.
 3. When moving the copy, keep its `data` folder with it. This is where your
    settings, bookmarks and saved passwords live.
-4. If you need saved passwords on another computer, set a master password first
+4. If you need saved passwords on another computer, [set a master password](passwords.md#set-up-a-master-password) first
    and make sure you remember it. Without one, those passwords remain tied to
    the original computer.
 
@@ -29,25 +29,17 @@ into a different installation instead, use [export and import](passwords.md#movi
 Before carrying saved passwords to another computer, check **Settings > Security**.
 This example shows master-password protection already configured.
 
-FTPeach from the portable zip keeps its settings, bookmarks and saved passwords
-in the `data` folder beside the program. What makes a copy portable is the
-`FTPeach.portable` file in its folder, so unpack the whole zip before starting
-it.
-
-<!-- verified-by: pr src-tauri/src/local_fs/portable.rs::only_the_marker_makes_a_folder_portable -->
-
-Until you set a master password, Settings says that saved passwords can be read
-only on this computer. With a master password they travel with the folder.
-
-<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
-
 A key or certificate file chosen from inside the program's folder is found
 again after the folder is moved or its drive gets another letter. A file kept
 anywhere else has to be at the same path on every computer.
 
 <!-- verified-by: pr src-tauri/src/local_fs/portable.rs::a_file_in_the_folder_is_found_again_after_the_folder_moves -->
 
-An update replaces the program and leaves the `data` folder as it is.
+## Update a portable copy
+
+Use [Check Now or the update notification](interface.md#check-for-updates), just
+as with an installed copy. An update replaces the program and leaves the `data`
+folder as it is.
 
 <!-- verified-by: pr src-tauri/src/runtime/update_staging_tests.rs::a_portable_update_replaces_the_program_and_leaves_the_data -->
 

@@ -41,9 +41,12 @@
     </header>
     <div class="wrap guide-layout">
       <aside class="guide-sidebar">
-        <nav aria-label="User guide">
-          <ul>{{NAVIGATION}}</ul>
-        </nav>
+        <details class="guide-chapters">
+          <summary>Guide chapters</summary>
+          <nav aria-label="User guide">
+            <ul>{{NAVIGATION}}</ul>
+          </nav>
+        </details>
       </aside>
       <main id="main" class="guide-content" tabindex="-1">
         <article>{{CONTENT}}</article>

@@ -110,6 +110,47 @@ test('table columns keep short words whole at desktop and mobile widths', async 
   }
 });
 
+test('mobile readers reach the introduction before expanding navigation', async ({ page }) => {
+  await serveGuide(page);
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('https://guide.test/guide/getting-started.html');
+    await page.evaluate(() => document.fonts.ready);
+    const intro = page.locator('article > p').first();
+    expect((await intro.boundingBox())!.y).toBeLessThan(400);
+    await expect(page.locator('.guide-chapters')).not.toHaveAttribute('open');
+    await expect(page.locator('.guide-toc')).not.toHaveAttribute('open');
+    await page.getByText('Guide chapters', { exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('navigation', { name: 'User guide' })).toBeVisible();
+    await page.getByRole('link', { name: 'Troubleshooting', exact: true }).first().click();
+    await expect(page.locator('h1')).toHaveText('Troubleshooting');
+  }
+});
+
+test('chapters can be opened without JavaScript and scrolled in a short desktop window', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 1280, height: 600 },
+  });
+  const page = await context.newPage();
+  try {
+    await serveGuide(page);
+    await page.goto('https://guide.test/guide/sftp.html');
+    await page.getByText('Guide chapters', { exact: true }).click();
+    await page.evaluate(() => scrollTo(0, 1000));
+    const sidebar = page.locator('.guide-sidebar');
+    const box = (await sidebar.boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(600);
+    await sidebar.getByRole('link', { name: 'Troubleshooting', exact: true }).click();
+    await expect(page).toHaveURL(/troubleshooting.html$/);
+  } finally {
+    await context.close();
+  }
+});
+
 test('the shared header keeps its actions reachable on narrow screens', async ({ page }) => {
   await serveGuide(page);
   await page.goto('https://guide.test/guide/index.html');

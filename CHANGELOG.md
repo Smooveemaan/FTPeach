@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The website's user guide explains everyday tasks and common problems, with screenshots
-  that enlarge without leaving the page.
+- The website's user guide covers everyday tasks, password protection and common problems,
+  with collapsible navigation, clear warnings and screenshots that enlarge on the page.
 - Protocol guides cover FTP data modes, FTPS certificates, SFTP keys, WebDAV setup and common connection errors.
+
+### Changed
+
+- The website keeps its user guide within reach on small screens and respects reduced motion.
 
 ### Fixed
 

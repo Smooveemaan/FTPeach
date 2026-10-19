@@ -550,6 +550,108 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await waitFor(() => expect(props.onVaultReset).toHaveBeenCalledOnce());
   });
 
+  test('Security walks from first setup through locking and changing the master password', async () => {
+    const user = userEvent.setup({ delay: null });
+    const status = {
+      configured: false,
+      locked: true,
+      systemUnlockAvailable: false,
+      systemUnlockEnabled: false,
+    };
+    vi.mocked(window.api.vault.status).mockImplementation(async () => ({ ...status }));
+    Object.assign(window.api.vault, {
+      setup: vi.fn(async () => {
+        status.configured = true;
+        status.locked = false;
+        return { ok: true };
+      }),
+      lock: vi.fn(async () => {
+        status.locked = true;
+        return { ok: true };
+      }),
+      unlock: vi.fn(async () => {
+        status.locked = false;
+        return { ok: true };
+      }),
+      changePassword: vi.fn(async () => ({ ok: true })),
+    });
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    await user.click(
+      await screen.findByRole('radio', { name: /settings.security.strongholdMode/ }),
+    );
+    expect(screen.getByText('settings.security.noRecovery')).toBeTruthy();
+    await user.type(screen.getByLabelText('settings.security.masterPassword'), 'long-password-123');
+    await user.type(screen.getByLabelText('settings.security.confirmPassword'), 'wrong');
+    await user.click(screen.getByRole('button', { name: 'settings.security.setup' }));
+    expect(window.api.vault.setup).not.toHaveBeenCalled();
+    expect(screen.getByText('settings.security.passwordMismatch')).toBeTruthy();
+    await user.clear(screen.getByLabelText('settings.security.confirmPassword'));
+    await user.type(
+      screen.getByLabelText('settings.security.confirmPassword'),
+      'long-password-123',
+    );
+    await user.click(screen.getByRole('button', { name: 'settings.security.setup' }));
+    await screen.findByText('settings.security.configuredUnlocked');
+    expect(window.api.vault.setup).toHaveBeenCalledWith('long-password-123');
+    await user.click(screen.getByRole('button', { name: 'settings.security.lockNow' }));
+    await user.type(
+      await screen.findByLabelText('settings.security.masterPassword'),
+      'long-password-123{Enter}',
+    );
+    await screen.findByText('settings.security.configuredUnlocked');
+    expect(window.api.vault.unlock).toHaveBeenCalledWith('long-password-123');
+    await user.click(screen.getByRole('button', { name: 'settings.security.changePassword' }));
+    await user.type(screen.getByLabelText('settings.security.oldPassword'), 'long-password-123');
+    await user.type(screen.getByLabelText('settings.security.newPassword'), 'new-password-123');
+    await user.type(screen.getByLabelText('settings.security.confirmPassword'), 'new-password-123');
+    await user.click(screen.getByRole('button', { name: 'settings.security.change' }));
+    await waitFor(() =>
+      expect(window.api.vault.changePassword).toHaveBeenCalledWith(
+        'long-password-123',
+        'new-password-123',
+      ),
+    );
+  });
+
+  test('Interface saves a chosen language and text scale', async () => {
+    const user = userEvent.setup({ delay: null });
+    const { props } = renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+    await user.click(screen.getByRole('button', { name: 'settings.languageLabel' }));
+    await user.click(screen.getByRole('option', { name: 'Deutsch' }));
+    await user.click(screen.getByRole('button', { name: 'settings.interfaceScaleLabel' }));
+    await user.click(screen.getByRole('option', { name: '125%' }));
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith({ language: 'de', interfaceScale: 125 });
+  });
+
+  test('Transfers saves speed, concurrency and conflict handling and Updates checks on request', async () => {
+    const user = userEvent.setup({ delay: null });
+    const { props } = renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.transfers' }));
+    for (const [name, value] of [
+      ['settings.speedLimitLabel', '1024'],
+      ['settings.concurrencyLabel', '2'],
+    ]) {
+      const input = screen.getByRole('spinbutton', { name: name! });
+      await user.clear(input);
+      await user.type(input, value!);
+    }
+    await user.click(screen.getByRole('radio', { name: 'settings.overwriteSkip' }));
+    await user.click(screen.getByRole('button', { name: 'settings.categories.updates' }));
+    await user.click(screen.getByRole('button', { name: 'settings.checkNow' }));
+    expect(props.checkForUpdates).toHaveBeenCalledOnce();
+    await user.click(screen.getByRole('checkbox', { name: 'settings.autoCheckUpdates' }));
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith({
+      transferSpeedLimitKBps: 1024,
+      concurrency: 2,
+      overwriteAction: 'skip',
+      autoCheckUpdates: false,
+    });
+  });
+
   test('saves only what the dialog changed, so a setting changed elsewhere is kept', async () => {
     const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ transferSpeedLimitKBps: 512 });

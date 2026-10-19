@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
+import { Marked } from 'marked';
+import { getHeadingList, gfmHeadingId } from 'marked-gfm-heading-id';
 import { buildGuide, GUIDE_PAGES, renderGuide } from '../../../scripts/site/guide.ts';
 
 test('Markdown keeps tables, code and unique GitHub headings, rewrites links and hides verification comments', () => {
@@ -61,6 +63,36 @@ test('invalid guide sources fail the build instead of publishing unsafe or broke
   }
 });
 
+test('guide alerts keep their label, paragraphs and safe Markdown links', () => {
+  const document = new JSDOM(
+    renderGuide(
+      '# Guide\n\n> [!WARNING]\n> Keep **a backup**.\n>\n> [Help](passwords.md).\n\n> [!NOTE]\n>\n> Read this first.\n\n> An ordinary quotation.',
+      'index',
+    ).content,
+  ).window.document;
+  assert.equal(document.querySelector('.guide-warning')?.getAttribute('aria-label'), 'Warning');
+  assert.equal(document.querySelector('.guide-warning strong')?.textContent, 'a backup');
+  assert.equal(document.querySelector('.guide-warning a')?.getAttribute('href'), 'passwords.html');
+  assert.equal(document.querySelector('.guide-warning')?.querySelectorAll('p').length, 3);
+  assert.equal(document.querySelector('.guide-note p:last-child')?.textContent, 'Read this first.');
+  assert.equal(document.querySelector('blockquote')?.textContent?.trim(), 'An ordinary quotation.');
+  assert.throws(() => renderGuide('# Guide\n\n> [!WARNING]\n> [bad](javascript:alert)', 'index'));
+});
+
+test('legacy guide links still reach their topic headings', async () => {
+  const docs = path.resolve(import.meta.dirname, '../../../docs');
+  const legacy = await readFile(path.join(docs, 'user-guide.md'), 'utf8');
+  const links = [...legacy.matchAll(/\]\((guide\/[\w-]+\.md)#([^)]*)\)/g)];
+  assert.ok(links.length > 0);
+  for (const [, target, fragment] of links) {
+    new Marked(gfmHeadingId()).parse(await readFile(path.join(docs, target!), 'utf8'));
+    assert.ok(
+      getHeadingList().some((heading) => heading.id === fragment),
+      `${target}#${fragment}`,
+    );
+  }
+});
+
 test('every built guide page has metadata, working navigation and matching sitemap entries', async () => {
   const root = path.resolve(import.meta.dirname, '../../..');
   const out = await mkdtemp(path.join(os.tmpdir(), 'ftpeach-guide-'));
@@ -104,6 +136,14 @@ test('every built guide page has metadata, working navigation and matching sitem
         urls.includes(document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? ''),
       );
       assert.equal(document.querySelectorAll('h1').length, 1);
+      const article = document.querySelector('article')!;
+      const intro = article.querySelector('p')!;
+      const toc = article.querySelector('.guide-toc');
+      if (page.slug === 'index') assert.equal(toc, null);
+      else {
+        assert.ok(toc);
+        assert.ok(intro.compareDocumentPosition(toc) & 4, 'Introduction comes before navigation');
+      }
       assert.equal(
         document.querySelector('nav[aria-label="User guide"] a[href="index.html"]')?.textContent,
         'Overview',

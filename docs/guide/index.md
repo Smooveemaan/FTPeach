@@ -19,12 +19,20 @@ from connection details to checking that a small file reached its destination.
 Two locations side by side: choose where a file comes from and where it should go.
 The illustrations throughout this guide use example connections and files.
 
+> [!NOTE]
+> Click an illustration to enlarge it. On the website, press **Esc** or use
+> **Close screenshot** to return to reading. Without JavaScript, the image opens
+> directly.
+
+<!-- verified-by: pr test/visual/website-guide.spec.ts::screenshots enlarge without leaving the guide and restore reading position -->
+
 ## Find the task you want to do
 
 | I want to… | Read |
 | --- | --- |
 | Connect and send my first file | [Your first transfer](getting-started.md) |
 | Understand the panes, find files and select them | [Find your way around](interface.md) |
+| Change language, shortcuts, transfer limits or update the app | [Everyday settings](interface.md#everyday-settings) |
 | Choose a protocol or save a connection | [Connect to a server](connecting.md) |
 | Connect with SFTP or an SSH key | [SFTP connections](sftp.md) |
 | Connect with FTP or understand passive mode | [FTP connections](ftp.md) |
@@ -33,6 +41,7 @@ The illustrations throughout this guide use example connections and files.
 | Upload, download, copy, pause or retry | [Transfers and files](transfers.md) |
 | Change a server file in my editor | [Editing remote files](editing.md) |
 | Move bookmarks and saved passwords to another computer | [Passwords and bookmarks](passwords.md) |
+| Set up a master password or recover access | [Password protection](passwords.md#set-up-a-master-password) |
 | Carry FTPeach on a removable drive | [Portable version](portable.md) |
 | Understand an error or recover unfinished work | [Troubleshooting](troubleshooting.md) |
 

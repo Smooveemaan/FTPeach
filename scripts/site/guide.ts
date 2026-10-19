@@ -112,6 +112,14 @@ export function renderGuide(markdown: string, slug: string) {
       token.href = url.href;
     },
     renderer: {
+      blockquote({ tokens }) {
+        const body = this.parser.parse(tokens);
+        const alert = /^<p>\[!(NOTE|WARNING)\](?:\n|<\/p>\n)/.exec(body);
+        if (!alert) return `<blockquote>\n${body}</blockquote>\n`;
+        const kind = alert[1]!.toLowerCase();
+        const content = (alert[0].includes('</p>') ? '' : '<p>') + body.slice(alert[0].length);
+        return `<aside class="guide-callout guide-${kind}" aria-label="${kind === 'note' ? 'Note' : 'Warning'}"><p class="guide-callout-title">${kind === 'note' ? 'Note' : 'Warning'}</p>${content}</aside>\n`;
+      },
       html({ text }) {
         // Verification comments stay in the source, not in the published page.
         if (/^\s*<!--[\s\S]*?-->\s*$/.test(text)) return '';
@@ -153,14 +161,15 @@ export async function buildGuide(root: string, out: string): Promise<void> {
           `<li><a href="${entry.slug}.html"${entry.slug === page.slug ? ' aria-current="page"' : ''}>${escapeHtml(entry.slug === 'index' ? 'Overview' : entry.title)}</a></li>`,
       )
       .join('\n');
-    const toc = page.toc
-      ? `<nav class="guide-toc" aria-label="On this page"><p>On this page</p><ul>${page.toc}</ul></nav>`
-      : '';
+    const toc =
+      page.toc && page.slug !== 'index'
+        ? `<details class="guide-toc"><summary>On this page</summary><nav aria-label="On this page"><ul>${page.toc}</ul></nav></details>`
+        : '';
     const values: Record<string, string> = {
       TITLE: escapeHtml(page.title),
       DESCRIPTION: escapeHtml(page.description),
       CANONICAL: canonical,
-      CONTENT: page.content.replace('</h1>', () => `</h1>${toc}`),
+      CONTENT: page.content.replace('<h2', () => `${toc}<h2`),
       NAVIGATION: navigation,
       SOURCE: `${repository}docs/guide/${page.slug}.md`,
     };

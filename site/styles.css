@@ -400,6 +400,7 @@ a:hover {
   margin-right: 12px;
 }
 .nav a {
+  white-space: nowrap;
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 15px;
@@ -471,10 +472,14 @@ a:hover {
     transform: scale(0.92);
   }
 }
-@media (max-width: 859px) {
+@media (max-width: 979px) {
   .nav {
     display: none;
+    margin-right: 0;
   }
+  .nav:has(.nav-guide) { display: flex; }
+  .nav a { display: none; }
+  .nav .nav-guide { display: block; padding-inline: 8px; }
   .support {
     width: 40px;
     padding: 0;
@@ -1256,8 +1261,7 @@ a:hover {
 
 /* ------------------------------------------------------------------------------------------
    Motion: a staggered rise on load, and a reveal as each block scrolls in that finishes
-   once the block is fully on screen. Like the FTPeach app, the page runs its animations regardless
-   of the system's reduced-motion setting; nothing loops.
+   once the block is fully on screen. Reduced motion skips movement and cross-fades.
    ------------------------------------------------------------------------------------------ */
 .rise {
   animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -1304,3 +1308,16 @@ a:hover {
   .palette-toolbar { gap: 12px; }
 }
 [hidden] { display: none !important; }
+
+@media (max-width: 479px) {
+  .site-header:has(.nav-guide) .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; height: auto; padding-block: 10px; }
+  .site-header:has(.nav-guide) .brand { grid-column: 1; }
+  .site-header:has(.nav-guide) .theme-toggle { grid-column: 2; }
+  .site-header:has(.nav-guide) .support { grid-column: 3; }
+  .site-header:has(.nav-guide) .nav { grid-row: 2; grid-column: 1; }
+  .site-header:has(.nav-guide) .btn { grid-row: 2; grid-column: 2 / 4; justify-self: end; }
+  :root:has(.nav-guide) { --header-h: 108px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

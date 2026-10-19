@@ -30,27 +30,74 @@ is asking before entering a secret.
 **Edit > Settings > Security** contains password protection and unlock settings.
 This example already has a master password; your choices may differ.
 
-## Prepare to use another computer
+## Set up a master password
 
-For another installation, export your settings or bookmarks on the old computer
-and import the file on the new one. Decide whether to include saved passwords:
-leaving them out means signing in again with your server credentials. If you do
-include them, store the export file and its password separately. The steps and
-limits are below.
+Open **Edit > Settings > Security**. **System protection** encrypts saved secrets
+for your Windows account. **Enhanced protection** uses a master password to
+unlock them, including when you carry a [portable copy](portable.md) to another
+computer. Choose the mode that fits how you will use the application.
 
-<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
+1. Select **Enhanced protection**.
+2. Enter at least 12 characters in **Master password**, then repeat it in
+   **Confirm master password**. Keep a safe record outside FTPeach.
+3. Select **Protect saved passwords**. Wait for the status to say the vault is
+   secured and unlocked. If an error appears, resolve it before relying on the vault.
 
-For a folder you can carry between computers, see [Portable version](portable.md).
-Windows Hello is configured per computer, as described at the end of this page.
+> [!WARNING]
+> A forgotten master password cannot be recovered. Resetting the vault deletes
+> its saved passwords and SSH key passphrases; it does not recover them.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Security walks from first setup through locking and changing the master password -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::setup_lock_unlock_and_password_change_preserve_secrets -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a vault reset tells the owner that the saved secrets are gone -->
+
+## Lock, unlock or change the master password
+
+In **Settings > Security**, the open-padlock button is **Lock now**. To unlock,
+enter **Master password** and select the closed-padlock **Unlock** button or press
+**Enter**. If Windows Hello is enabled, you can use the fingerprint button instead.
+
+To change the password, unlock the vault and select **Change master password**.
+Enter **Current master password**, **New master password** and **Confirm master
+password**, then select **Change password**. The new password must have at least
+12 characters. Changing it keeps the saved secrets.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Security walks from first setup through locking and changing the master password -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::setup_lock_unlock_and_password_change_preserve_secrets -->
+
+## If you forget the master password
+
+If **Allow system unlock** was already enabled on this computer, try Windows
+Hello. If Hello is unavailable or refused, FTPeach asks for the master password.
+Do not confuse it with a server password or an export file password.
+
+<!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::a refused Windows Hello asks for the password, ready to type -->
+
+Before starting over, make sure you can obtain your server credentials again
+from their providers, or have a usable password-protected export. When you are
+ready to discard the stored secrets, use **Settings > Security > Reset vault**.
+Read the confirmation, type `RESET` and choose **Delete vault**. Set up protection
+again and re-enter or import the credentials you still need.
+
+<!-- verified-by: pr src-tauri/src/security/sensitive_tests.rs::vault_reset_requires_typed_confirmation -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a vault reset tells the owner that the saved secrets are gone -->
 
 ## Moving bookmarks and passwords to another computer
 
-File > Export Settings, and Export in the Site Manager, can take the saved
-passwords and SSH key passphrases of your bookmarks along. Tick "Include saved
-passwords" and choose a password for the file, at least 12 characters, typed
-twice. Only the passwords are encrypted with it: addresses, user names and the
-other settings in the file stay readable, and a forgotten file password cannot
-be recovered. The proxy password is never exported.
+1. On the old computer, open **File > Export Settings** or **Export** in
+   **Manage Bookmarks**.
+2. Select **Bookmarks**. To carry their saved passwords and SSH key passphrases,
+   select **Include saved passwords** and enter a file password of at least
+   12 characters twice. Leave this off if you will enter server passwords again.
+3. Select **Export**, complete the security confirmation and save the file.
+4. On the new computer, use **File > Import Settings**, choose the file and
+   enter its file password. **Import without passwords** imports bookmarks alone.
+
+> [!WARNING]
+> Only saved passwords are encrypted in the export. Addresses, usernames and
+> other settings remain readable. Keep the file and its password separately;
+> a forgotten file password cannot be recovered. The proxy password and private
+> SSH key files are not included: move key files separately and check their paths.
 
 [![Export Settings with Bookmarks and Include saved passwords selected, and empty file-password fields.](../../site/images/guide/export-settings.png)](../../site/images/guide/export-settings.png)
 
@@ -58,15 +105,17 @@ Select **Bookmarks** before **Include saved passwords**, then enter and confirm
 the export file's password. This example has no saved secrets to include.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
+<!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
 <!-- verified-by: pr src-tauri/src/security/export_secrets.rs::sealed_secrets_open_with_the_password_only -->
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::export_strips_plaintext_encrypted_and_legacy_secret_fields -->
 
-Export then asks for confirmation in a separate window. With a master password
-set, it asks for that password even while the vault is open; where Windows
-Hello is on, Hello asks first, and the password field follows if you cancel
-it. A password that is not accepted is said there, and you can try again.
-Bookmarks whose passwords this computer cannot open are named, and the export
-goes on without their passwords only when you choose that.
+Exporting passwords asks for confirmation in a separate window. With enhanced
+protection, confirm with the master password even if the vault is already open.
+If Windows Hello is enabled, it is offered first; cancelling it shows the password
+field. If the password is incorrect, the dialog shows an error. Try again.
+If this computer cannot read some saved passwords, the dialog names the bookmarks
+and asks before exporting without those passwords.
 
 <!-- verified-by: pr src-tauri/src/security/sensitive_tests.rs::an_export_names_whether_it_carries_the_saved_passwords -->
 <!-- verified-by: pr test/component/platform/securityConfirmation.test.tsx::with Windows Hello on, Hello is asked alone and the password is the fallback -->
@@ -81,22 +130,20 @@ between system protection and a master password in either direction.
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::passwords_carry_between_every_kind_of_protection -->
 
-A password goes only to a bookmark for exactly the server, account and
-security settings it was saved for. If the file was edited to send a bookmark
-elsewhere, its password stays behind and the import names the bookmark.
+Import warnings name bookmarks whose saved passwords could not be matched safely.
+Check those connections and enter their credentials again if needed.
 
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::a_bookmark_sent_elsewhere_than_its_secret_leaves_the_secret_behind -->
 
-A bookmark you already have gets the file's password only if it has none
-saved; a saved password is never replaced. So importing the file again with
-its password fills in what an import without passwords left out. A bookmark
-saved here more than once for the same server gets no password, and is named.
+Existing saved passwords are not replaced. Importing the file again with its
+password can fill in passwords omitted by an earlier import. Duplicate bookmarks
+that cannot be matched unambiguously are named in the result.
 
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::a_second_import_fills_what_the_first_left_out_and_overwrites_nothing -->
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::a_duplicate_gets_its_secret_only_from_one_exact_recipient -->
 
-An import that cannot be finished undoes its bookmarks and their passwords. If
-even that fails, the message says what was left behind.
+If import fails, read the result before trying again: it says if anything could
+not be undone.
 
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::a_bookmark_file_that_cannot_be_written_takes_the_vault_secrets_back -->
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::settings_that_cannot_be_saved_undo_the_bookmarks_and_their_passwords -->
@@ -110,6 +157,11 @@ know.
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::an_empty_or_foreign_file_is_named_as_not_a_settings_file -->
 
 ## Unlocking with Windows Hello
+
+Unlock the vault in **Settings > Security**, turn on **Allow system unlock** and
+complete the Windows Hello prompt. Keep the master password as your recovery method.
+
+<!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::protection changes refresh status and cancelled resets preserve the setup form -->
 
 Windows Hello unlock is enabled separately on each computer. When the vault
 is moved or carried to another computer, it opens there with the master

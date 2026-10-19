@@ -24,8 +24,9 @@ Three different secrets or identities can be involved:
 | Your private key and its passphrase | Proving your account identity instead of using the account password. The passphrase unlocks the key file. |
 | Server host-key fingerprint | Checking that the server is the one you meant to reach. This is not your account's SSH key. |
 
-Keep your private key on your computer. Give the administrator the matching
-public key when arranging access, not the private file or its passphrase.
+> [!WARNING]
+> Keep your private key on your computer. Give the administrator the matching
+> public key when arranging access, not the private file or its passphrase.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->
 <!-- verified-by: pr test/component/platform/securityConfirmation.test.tsx::host-key confirmation shows the actual and pinned fingerprints -->

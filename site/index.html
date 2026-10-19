@@ -76,7 +76,7 @@
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
           <a href="#protocols">Protocols</a>
-          <a href="guide/index.html">User guide</a>
+          <a class="nav-guide" href="guide/index.html">User guide</a>
           <a href="https://github.com/Smooveemaan/ftpeach">GitHub</a>
         </nav>
         <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
@@ -149,7 +149,8 @@
               <h3>Watch them arrive</h3>
               <p>
                 Every file shows up in the queue with its speed and time left. Pause one, cancel
-                another, or set a speed limit. A paused transfer picks up where it stopped.
+                another, or set a speed limit. A paused transfer can continue where it stopped
+                when its source and partial data still match. See <a href="guide/transfers.html#pausing-stopping-and-resuming-transfers">pause and resume</a>.
               </p>
             </li>
           </ol>
@@ -428,7 +429,7 @@
           });
           await syncPaletteTheme();
         };
-        if (document.startViewTransition) document.startViewTransition(apply);
+        if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(apply);
         else apply();
       });
       systemDark.addEventListener('change', () => instantly(sync));
@@ -476,8 +477,7 @@
       for (const demo of demos) demo.addEventListener('timeupdate', follow);
       play.hidden = false;
 
-      // In-page links glide instead of jumping (CSS smooth scrolling is off when Windows animation
-      // effects are off). Download centres its panel under the header; a panel taller than the
+      // Download centres its panel under the header; a panel taller than the
       // screen (high zoom, small windows) is aligned to the top instead, so it is never cut off.
       // Layout offsets, not bounding boxes: blocks still waiting to fade in are shifted.
       const pageTop = (el) => (el ? el.offsetTop + pageTop(el.offsetParent) : 0);
@@ -499,7 +499,8 @@
         const duration = Math.min(1400, 600 + Math.abs(end - start) / 6);
         const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
         const began = performance.now();
-        requestAnimationFrame(function step(now) {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) scrollTo(0, end);
+        else requestAnimationFrame(function step(now) {
           const t = Math.min(1, (now - began) / duration);
           scrollTo(0, start + (end - start) * ease(t));
           if (t < 1) requestAnimationFrame(step);

@@ -20,6 +20,14 @@ guideSystemDark.addEventListener('change', syncGuideTheme);
 syncGuideTheme();
 guideToggle.hidden = false;
 
+const guideWideScreen = matchMedia('(min-width: 901px)');
+function syncGuideNavigation() {
+  for (const menu of document.querySelectorAll('.guide-chapters, .guide-toc'))
+    menu.open = guideWideScreen.matches;
+}
+guideWideScreen.addEventListener('change', syncGuideNavigation);
+syncGuideNavigation();
+
 const imageViewer = document.querySelector('.guide-image-viewer');
 const enlargedImage = imageViewer.querySelector('img');
 let imageOpener;

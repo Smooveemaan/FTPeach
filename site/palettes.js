@@ -35,7 +35,7 @@ async function showPalette(animate = true) {
     button.setAttribute('aria-pressed', String(button.dataset.mode === appearance));
   gallery.querySelector('#palette-name').textContent = selected.name;
   gallery.querySelector('#palette-dot').style.setProperty('--swatch', selected.color);
-  if (animate)
+  if (animate && !matchMedia('(prefers-reduced-motion: reduce)').matches)
     await next
       .animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease' })
       .finished.catch(() => {});

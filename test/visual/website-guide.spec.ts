@@ -89,6 +89,27 @@ for (const colorScheme of ['light', 'dark'] as const) {
   }
 }
 
+test('table columns keep short words whole at desktop and mobile widths', async ({ page }) => {
+  await serveGuide(page);
+  for (const width of [320, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('https://guide.test/guide/ftp.html');
+    await page.evaluate(() => document.fonts.ready);
+    for (const word of ['Mode', 'Passive', 'Active']) {
+      const cell = page.locator('th, td').filter({ hasText: new RegExp(`^${word}$`) });
+      const lines = await cell.evaluate((element) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getClientRects().length;
+      });
+      expect(lines, `${word} at ${width}px`).toBe(1);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+  }
+});
+
 test('the shared header keeps its actions reachable on narrow screens', async ({ page }) => {
   await serveGuide(page);
   await page.goto('https://guide.test/guide/index.html');

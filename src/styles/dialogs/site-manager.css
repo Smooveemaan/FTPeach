@@ -234,6 +234,7 @@
 .site-manage-row .site-name {
   font-weight: 600;
   font-size: 12.5px;
+  line-height: 1.4;
   color: var(--text-primary);
   overflow: hidden;
   white-space: nowrap;

@@ -42,6 +42,29 @@ test('a release without a portable copy says it is coming', () => {
   assert.doesNotMatch(page, /Download portable|portable\.zip"/);
 });
 
+test('search metadata describes the released app and the FTPeach project', () => {
+  for (const tag of ['v1.2.3', '1.2.3']) {
+    const page = fillPage(
+      html,
+      { tag_name: tag, assets: [download('FTPeach_1.2.3_x64-setup.exe')] },
+      stats,
+    );
+    const script = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(page);
+    assert.ok(script?.[1]);
+    const data = JSON.parse(script[1]) as Record<string, unknown>[];
+    const app = data.find((entry) => entry['@type'] === 'SoftwareApplication');
+    assert.ok(app);
+    assert.equal(app.softwareVersion, '1.2.3');
+    assert.equal(app.screenshot, 'https://ftpeach.com/ftpeach-dark.png');
+    assert.equal(app.image, 'https://ftpeach.com/icon.png');
+    const project = data.find((entry) => entry['@type'] === 'Organization');
+    assert.ok(project);
+    assert.equal(project.name, 'FTPeach');
+    assert.equal(project.url, 'https://ftpeach.com/');
+    assert.equal(project.logo, 'https://ftpeach.com/icon.png');
+  }
+});
+
 test('a release without an installer stops the build', () => {
   assert.throws(() => fillPage(html, { tag_name: 'v1.2.3', assets: [] }, stats), /no installer/);
 });

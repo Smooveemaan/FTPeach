@@ -50,6 +50,7 @@ export function fillPage(html: string, release: Release, stats: Stats): string {
     )
     .replaceAll('{{PALETTE_DATA}}', JSON.stringify(palettes).replaceAll('<', '\u003c'))
     .replaceAll('{{VERSION}}', release.tag_name)
+    .replaceAll('{{SOFTWARE_VERSION}}', release.tag_name.replace(/^v/, ''))
     .replaceAll('{{SETUP_URL}}', setup.browser_download_url)
     .replaceAll('{{SETUP_NAME}}', setup.name)
     .replaceAll('{{PORTABLE_URL}}', portable?.browser_download_url ?? '')

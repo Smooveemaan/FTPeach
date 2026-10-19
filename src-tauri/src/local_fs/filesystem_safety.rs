@@ -685,6 +685,18 @@ mod tests {
     }
 
     #[cfg(windows)]
+    #[test]
+    fn a_path_on_a_share_that_is_not_there_is_not_found() {
+        let share = PathBuf::from(r"\\localhost\ftpeach-no-such-share\folder");
+        let error = resolved_path(&share).unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::NotFound,
+            "{error:#}"
+        );
+    }
+
+    #[cfg(windows)]
     #[tokio::test]
     async fn a_folder_with_a_junction_inside_can_be_renamed_but_not_deleted() {
         let base = std::env::temp_dir().join(format!("ftpeach-fs-test-{}", uuid::Uuid::new_v4()));

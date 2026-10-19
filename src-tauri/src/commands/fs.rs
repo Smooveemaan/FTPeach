@@ -342,6 +342,17 @@ async fn fs_delete_authorized(local_path: String, permanent: bool) -> CommandRes
 mod tests {
     use super::*;
 
+    #[test]
+    fn explorer_and_programs_get_the_path_without_the_verbatim_prefix() {
+        assert_eq!(
+            shell_targets(Path::new(r"\\?\UNC\srv\share\a b.txt")),
+            (
+                r"\\srv\share\a b.txt".into(),
+                r"/select,\\srv\share\a b.txt".into()
+            )
+        );
+    }
+
     #[tokio::test]
     async fn create_commands_keep_the_service_error_codes() {
         let root =
@@ -584,6 +595,14 @@ pub async fn fs_is_dir(
         .unwrap_or(Ok(false))
 }
 
+/// The path to open, and Explorer's argument to select it. Explorer and the
+/// programs it starts do not all take a verbatim path.
+fn shell_targets(canonical: &Path) -> (String, String) {
+    let shell = crate::local_fs::local_open::shell_path(canonical);
+    let select = format!("/select,{shell}");
+    (shell, select)
+}
+
 async fn open_validated_path(
     app: tauri::AppHandle,
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
@@ -591,8 +610,7 @@ async fn open_validated_path(
     kind: crate::local_fs::local_open::OpenKind,
 ) -> CommandResult<()> {
     let canonical = approved_paths.validate(Path::new(&local_path), kind)?;
-    // Explorer and the programs it starts do not all take a verbatim path.
-    let shell = crate::local_fs::local_open::shell_path(&canonical);
+    let (shell, select) = shell_targets(&canonical);
     #[cfg(feature = "smoke-test")]
     if crate::runtime::e2e_browser::hold_back_opening(&shell) {
         return Ok(());
@@ -600,7 +618,7 @@ async fn open_validated_path(
     if kind == crate::local_fs::local_open::OpenKind::Reveal {
         #[cfg(windows)]
         let result = std::process::Command::new("explorer.exe")
-            .arg(format!("/select,{shell}"))
+            .arg(select)
             .spawn()
             .map(|_| ());
         #[cfg(not(windows))]

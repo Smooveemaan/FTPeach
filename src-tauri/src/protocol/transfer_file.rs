@@ -725,6 +725,25 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 
+    #[tokio::test]
+    async fn a_discard_with_nothing_kept_leaves_the_downloaded_file() {
+        let (root, destination) = scratch();
+        std::fs::write(&destination, b"done").unwrap();
+        discard(&destination).await;
+        assert_eq!(std::fs::read(&destination).unwrap(), b"done");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn access_denied_on_a_file_nobody_holds_stays_access_denied() {
+        let (root, destination) = scratch();
+        std::fs::write(&destination, b"old").unwrap();
+        let error = held_by_another_program(std::io::Error::from_raw_os_error(5), &destination);
+        assert_eq!(error.raw_os_error(), Some(5));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     /// Opens `path` as a virus scanner might, without sharing delete, and
     /// lets go of it a second later.
     #[cfg(windows)]

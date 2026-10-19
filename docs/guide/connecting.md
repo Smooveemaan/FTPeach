@@ -31,7 +31,7 @@ The [protocol reference](../protocol-support.md) lists compatibility details.
 3. Select **Connect**. Once the initial folder listing loads, browse to the
    folder you want to work in.
 
-[![SFTP connection form showing where to enter server and account details.](images/connection.png)](images/connection.png)
+[![SFTP connection form showing where to enter server and account details.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
 
 Example connection details; use the values from your provider.
 
@@ -53,10 +53,19 @@ your public key, not the private file.
 
 ## Save a connection you will use again
 
-A bookmark saves you from entering the same details every time. Open **File >
+A bookmark saves you from entering the same details every time. Open **Bookmarks >
 Manage Bookmarks**, choose **New Bookmark**, give it a recognizable **Name**,
 fill in the connection details and choose **Save**. Use the bookmark's edit
 button when its address or account details change.
+
+[![Manage Bookmarks with three saved connections and its search and action toolbar.](../../site/images/guide/bookmarks.png)](../../site/images/guide/bookmarks.png)
+
+The bookmark manager keeps your saved connections together. The star with a plus
+opens **New Bookmark**; hover over a row to find its edit action.
+
+[![Edit Bookmark showing its name, SFTP address, account and default folder.](../../site/images/guide/bookmark-editor.png)](../../site/images/guide/bookmark-editor.png)
+
+An existing bookmark's editor. Check the server and account, then choose **Save**.
 
 <!-- verified-by: pr test/component/sites/siteManager.test.tsx::creates and edits a bookmark through the form -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->

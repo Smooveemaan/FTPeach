@@ -18,13 +18,14 @@ test.afterAll(async () => {
 async function serveGuide(page: Page) {
   await page.route('https://guide.test/**', async (route) => {
     const name = new URL(route.request().url()).pathname.slice(1);
-    const file = name.startsWith('guide/')
-      ? path.join(output, name)
-      : name === 'icon.png'
-        ? path.join(root, 'assets/images/icon.png')
-        : name === 'favicon.ico'
-          ? path.join(root, 'public/favicon.ico')
-          : path.join(root, 'site', name);
+    const file =
+      name.startsWith('guide/') || name.startsWith('images/guide/')
+        ? path.join(output, name)
+        : name === 'icon.png'
+          ? path.join(root, 'assets/images/icon.png')
+          : name === 'favicon.ico'
+            ? path.join(root, 'public/favicon.ico')
+            : path.join(root, 'site', name);
     const contentType = name.endsWith('.html')
       ? 'text/html'
       : name.endsWith('.css')
@@ -107,6 +108,59 @@ test('the shared header keeps its actions reachable on narrow screens', async ({
       expect(boxes[index]!.left).toBeGreaterThanOrEqual(index ? boxes[index - 1]!.right : 0);
       expect(boxes[index]!.right).toBeLessThanOrEqual(width);
     }
+  }
+});
+
+test('screenshots enlarge without leaving the guide and restore reading position', async ({
+  page,
+}) => {
+  await serveGuide(page);
+  await page.goto('https://guide.test/guide/getting-started.html');
+  const thumbnail = page.locator('article a:has(> img)').nth(1);
+  const viewer = page.getByRole('dialog', { name: 'Enlarged screenshot' });
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await thumbnail.scrollIntoViewIfNeeded();
+    await thumbnail.focus();
+    const position = await page.evaluate(() => scrollY);
+    const url = page.url();
+    await page.keyboard.press('Enter');
+    await expect(viewer).toBeVisible();
+    await expect(viewer.locator('img')).toHaveAttribute('src', /images\/guide\/connection.png$/);
+    await expect(viewer.getByRole('button', { name: 'Close screenshot' })).toBeFocused();
+    const bounds = await viewer.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    if (width < 600) {
+      const stage = viewer.locator('.guide-image-stage');
+      expect(await stage.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+      await stage.evaluate((node) => {
+        node.scrollLeft = 100;
+      });
+      expect(await stage.evaluate((node) => node.scrollLeft)).toBe(100);
+    } else {
+      expect(
+        await viewer
+          .locator('.guide-image-stage')
+          .evaluate((node) => node.scrollHeight <= node.clientHeight),
+      ).toBe(true);
+      expect((await viewer.locator('img').boundingBox())!.width).toBeGreaterThan(
+        (await thumbnail.locator('img').boundingBox())!.width,
+      );
+    }
+    await page.keyboard.press('Escape');
+    await expect(viewer).not.toBeVisible();
+    await expect(thumbnail).toBeFocused();
+    expect(page.url()).toBe(url);
+    expect(await page.evaluate(() => scrollY)).toBe(position);
+    await thumbnail.click();
+    await viewer.getByRole('button', { name: 'Close screenshot' }).click();
+    await expect(viewer).not.toBeVisible();
+    await thumbnail.click();
+    await page.mouse.click(2, 2);
+    await expect(viewer).not.toBeVisible();
+    expect(page.url()).toBe(url);
+    expect(await page.evaluate(() => scrollY)).toBe(position);
   }
 });
 

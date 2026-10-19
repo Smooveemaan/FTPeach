@@ -94,6 +94,13 @@ computer separately.
 
 ## Ask for help
 
+[![The Log panel filtered to a Permission denied error.](../../site/images/guide/connection-log.png)](../../site/images/guide/connection-log.png)
+
+Use the log's search field to find the relevant message. This example filters
+for "Permission denied"; it is not a diagnosis of your connection.
+
+<!-- verified-by: pr test/component/logs/logPanel.test.tsx::search shows only the lines that contain the text, and Escape clears it -->
+
 For account details, permissions, quota or server identity, contact your server
 administrator or hosting provider. If the problem appears to be in FTPeach,
 [report an issue](https://github.com/Smooveemaan/ftpeach/issues/new/choose) with:

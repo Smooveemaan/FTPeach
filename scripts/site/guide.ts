@@ -72,11 +72,11 @@ export function renderGuide(markdown: string, slug: string) {
       if (!/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)) {
         if (!url.href.startsWith(repository))
           throw new Error(`Link leaves the repository: ${href}`);
-        const asset = /^docs\/guide\/(images\/[a-z0-9-]+\.png)$/.exec(
+        const asset = /^site\/(images\/guide\/[a-z0-9-]+\.png)$/.exec(
           url.pathname.slice(new URL(repository).pathname.length),
         );
         if (asset) {
-          token.href = asset[1]!;
+          token.href = `../${asset[1]}`;
           return;
         }
         const guide = /^docs\/guide\/([^/]+)\.md$/.exec(
@@ -122,7 +122,7 @@ export async function buildGuide(root: string, out: string): Promise<void> {
     pages.push({ ...page, ...renderGuide(markdown, page.slug) });
   }
   await mkdir(path.join(out, 'guide'), { recursive: true });
-  await cp(path.join(root, 'docs/guide/images'), path.join(out, 'guide/images'), {
+  await cp(path.join(root, 'site/images/guide'), path.join(out, 'images/guide'), {
     recursive: true,
   });
   for (const page of pages) {

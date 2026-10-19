@@ -12,6 +12,11 @@ folders you want to send.
 | Server → computer | Download to other pane |
 | Server → another server | Copy to other pane |
 
+[![The local file menu with Upload to other pane below Open.](../../site/images/guide/upload-menu.png)](../../site/images/guide/upload-menu.png)
+
+Right-click the source selection. **Upload to other pane** sends it to the server
+folder open on the other side.
+
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::the menus follow the order of the Explorer menu -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::remote-to-remote copies are labelled correctly and unavailable transfers are disabled -->
 
@@ -36,7 +41,7 @@ way. For a first upload or download, follow [Your first transfer](getting-starte
 
 ## Choose whether to pause or stop
 
-[![Transfers panel with Pause and Stop controls at the right of each active job.](images/transfers.png)](images/transfers.png)
+[![Transfers panel with Pause and Stop controls at the right of each active job.](../../site/images/guide/transfers.png)](../../site/images/guide/transfers.png)
 
 Example jobs; the controls for each transfer are at the right of its row.
 

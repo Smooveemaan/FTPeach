@@ -22,6 +22,10 @@ Check that you have permission to replace the server copy.
 5. Check the upload result and, where appropriate, check the file in the system
    that uses it, such as the website or application you are updating.
 
+[![The server file menu with Open and Open with at the top.](../../site/images/guide/remote-file-menu.png)](../../site/images/guide/remote-file-menu.png)
+
+Use **Open** for the usual application, or **Open with** to choose a program.
+
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Open on a remote file opens it with the default program, without asking -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::SFTP permissions and open-with retain the entry and its original session -->
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::changes to several copies are all asked about, one at a time -->
@@ -38,6 +42,11 @@ If FTPeach offers recovered edits at startup, inspect them before deleting them.
 Keep a separate copy of work you still need, reconnect to the intended server
 and check its current file before replacing it. Recovery preserves your local
 work; it does not mean that those changes already reached the server.
+
+[![Edits that were not uploaded dialog listing recovered files, with Show files, Later and Delete actions.](../../site/images/guide/recovered-edits.png)](../../site/images/guide/recovered-edits.png)
+
+The recovery prompt identifies unfinished edits. **Show files** lets you inspect
+the kept copies before deciding what to upload or remove.
 
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::recovered edits are offered at start and stay unless deleted -->
 

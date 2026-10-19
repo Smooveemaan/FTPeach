@@ -29,16 +29,20 @@ Keep one pane on **Computer**. At the top of the other pane, click the source
 button and choose **Server** to open the connection form. You can use that same
 menu to switch a pane back to **Computer**.
 
-[![The Computer source menu, with Server above Computer.](images/source-menu.png)](images/source-menu.png)
+[![The Computer source menu, with Server above Computer.](../../site/images/guide/source-menu.png)](../../site/images/guide/source-menu.png)
 
-Choose **Server** in this menu. Click any illustration to view it at full size.
+Choose **Server** in this menu. On the website, click an illustration to enlarge
+it over the page. Press **Esc**, click the background or use **Close screenshot**
+to return to reading. Without JavaScript, the link opens the image directly.
+
+<!-- verified-by: pr test/visual/website-guide.spec.ts::screenshots enlarge without leaving the guide and restore reading position -->
 
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 
 In the connection form, choose the supplied protocol and enter **Address**, **Port**,
 **Username** and **Password**, as applicable. Select **Connect**.
 
-[![SFTP connection form with address, port, username and password fields.](images/connection.png)](images/connection.png)
+[![SFTP connection form with address, port, username and password fields.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
 
 Example SFTP form. Replace the sample address and username with your own details.
 
@@ -85,7 +89,7 @@ Look in **Transfers** for the file and its **Route**. Check the final status;
 starting a transfer is not evidence that it finished. If it failed, read the
 error and follow [Troubleshooting](troubleshooting.md).
 
-[![Transfers panel showing file names, routes, progress and job controls.](images/transfers.png)](images/transfers.png)
+[![Transfers panel showing file names, routes, progress and job controls.](../../site/images/guide/transfers.png)](../../site/images/guide/transfers.png)
 
 The transfer panel uses example jobs here; check your own job's status and result.
 

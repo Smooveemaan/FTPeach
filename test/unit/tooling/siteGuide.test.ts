@@ -34,12 +34,18 @@ test('Markdown keeps tables, code and unique GitHub headings, rewrites links and
   );
   const illustrated = new JSDOM(
     renderGuide(
-      '# Guide\n\n[![Connection form](images/connection.png)](images/connection.png)',
+      '# Guide\n\n[![Connection form](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)',
       'index',
     ).content,
   ).window.document;
-  assert.equal(illustrated.querySelector('img')?.getAttribute('src'), 'images/connection.png');
-  assert.equal(illustrated.querySelector('a')?.getAttribute('href'), 'images/connection.png');
+  assert.equal(
+    illustrated.querySelector('img')?.getAttribute('src'),
+    '../images/guide/connection.png',
+  );
+  assert.equal(
+    illustrated.querySelector('a')?.getAttribute('href'),
+    '../images/guide/connection.png',
+  );
 });
 
 test('invalid guide sources fail the build instead of publishing unsafe or broken content', () => {
@@ -117,10 +123,10 @@ test('every built guide page has metadata, working navigation and matching sitem
     for (const [file, document] of documents) {
       for (const link of document.querySelectorAll('a[href]')) {
         const href = link.getAttribute('href')!;
-        if (href.startsWith('images/')) {
+        if (href.startsWith('../images/guide/')) {
           assert.deepEqual(
             await readFile(path.join(out, 'guide', href)),
-            await readFile(path.join(root, 'docs/guide', href)),
+            await readFile(path.join(root, 'site/guide', href)),
           );
           continue;
         }

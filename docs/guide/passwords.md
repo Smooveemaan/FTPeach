@@ -25,6 +25,11 @@ Do not change a server password to solve a vault-unlock prompt, or assume that
 your master password is the password for an exported file. Read which operation
 is asking before entering a secret.
 
+[![Security settings with Enhanced protection selected and Windows Hello unlock enabled.](../../site/images/guide/security.png)](../../site/images/guide/security.png)
+
+**Edit > Settings > Security** contains password protection and unlock settings.
+This example already has a master password; your choices may differ.
+
 ## Prepare to use another computer
 
 For another installation, export your settings or bookmarks on the old computer
@@ -46,6 +51,11 @@ passwords" and choose a password for the file, at least 12 characters, typed
 twice. Only the passwords are encrypted with it: addresses, user names and the
 other settings in the file stay readable, and a forgotten file password cannot
 be recovered. The proxy password is never exported.
+
+[![Export Settings with Bookmarks and Include saved passwords selected, and empty file-password fields.](../../site/images/guide/export-settings.png)](../../site/images/guide/export-settings.png)
+
+Select **Bookmarks** before **Include saved passwords**, then enter and confirm
+the export file's password. This example has no saved secrets to include.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
 <!-- verified-by: pr src-tauri/src/security/export_secrets.rs::sealed_secrets_open_with_the_password_only -->

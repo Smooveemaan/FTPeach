@@ -18,7 +18,21 @@
 .guide-content table { display: block; overflow-x: auto; border-collapse: collapse; margin-bottom: 24px; }
 .guide-content th, .guide-content td { padding: 10px 16px; border: 1px solid var(--line); text-align: left; }
 .guide-content blockquote { margin: 24px 0; padding-left: 20px; border-left: 3px solid var(--peach); color: var(--muted); }
-.guide-content img { max-width: 100%; height: auto; }
+.guide-content img { max-width: 100%; max-height: 480px; width: auto; height: auto; border: 1px solid var(--line); border-radius: 10px; }
+.guide-content p:has(> a > img) { margin: 24px 0 8px; }
+.guide-content p:has(> a > img) + p { font-size: 15px; line-height: 1.6; color: var(--muted); }
+.guide-content a:has(> img) { cursor: zoom-in; }
+.guide-image-open { overflow: hidden; }
+.guide-image-viewer { margin: auto; padding: 56px 16px 16px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); border: 1px solid var(--line); border-radius: 16px; background: var(--paper); color: var(--ink); }
+.guide-image-viewer::backdrop { background: rgb(0 0 0 / .8); }
+.guide-image-viewer .icon-btn { position: absolute; top: 8px; right: 8px; font-size: 28px; }
+.guide-image-stage { overflow: auto; max-width: calc(100vw - 66px); max-height: calc(100dvh - 140px); }
+.guide-image-hint { display: none; }
+.guide-image-viewer img { display: block; max-width: calc(100vw - 66px); max-height: calc(100dvh - 140px); height: auto; object-fit: contain; }
+@media (max-width: 600px) {
+  .guide-image-viewer img { max-width: none; max-height: none; }
+  .guide-image-hint { display: block; margin-top: 8px; font-size: 13px; color: var(--muted); }
+}
 .guide-toc { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 32px; }
 .guide-toc p { font-weight: 600; margin-bottom: 8px; }
 .guide-toc a { display: inline-block; padding-block: 8px; }

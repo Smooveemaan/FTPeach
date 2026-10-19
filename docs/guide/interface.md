@@ -9,6 +9,10 @@ side, not a fixed upload or download folder.
 
 ## Open folders and find files
 
+[![The two file panes, with source buttons, folder paths and file lists.](../../site/images/guide/file-panes.png)](../../site/images/guide/file-panes.png)
+
+Read each pane from top to bottom: connection or computer, open folder, then files.
+
 Double-click a folder to open it. **Backspace** goes up one directory level.
 Click a column heading to sort the listing. The file filter helps narrow the
 current list; use it after opening the folder you want to search.
@@ -21,6 +25,10 @@ Click a file to select it. **Ctrl+click** adds or removes individual files from
 the selection; **Ctrl+A** selects the list. Right-click a file for the actions
 available there, or right-click empty space for folder actions such as **Refresh**
 and **New Folder**.
+
+[![Two highlighted files selected together in the computer pane.](../../site/images/guide/selection.png)](../../site/images/guide/selection.png)
+
+Highlighted rows are the selection. Check it before copying or deleting files.
 
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+click toggles against the current selection, not the one from before the last re-render -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+A selects every file even while a descendant control (not .pane itself) has focus -->
@@ -58,6 +66,10 @@ shortcuts, your own bindings apply.
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::a keyboardShortcuts override remaps rename to its new binding and disables the old default -->
 
 ## Appearance
+
+[![Settings with the Interface category selected and theme, color scheme, language and scale controls.](../../site/images/guide/appearance.png)](../../site/images/guide/appearance.png)
+
+Open **Edit > Settings > Interface** to find the appearance controls shown here.
 
 In Settings > Interface, choose a color scheme independently of the light, dark or
 system theme. The default Peach is always first, followed by neutral shades through

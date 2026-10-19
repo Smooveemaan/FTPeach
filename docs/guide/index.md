@@ -14,6 +14,11 @@ does not create a server or a hosting account.
 **New here? Start with [Your first transfer](getting-started.md).** It takes you
 from connection details to checking that a small file reached its destination.
 
+[![The computer's files on the left and a connected server's files on the right.](../../site/images/guide/file-panes.png)](../../site/images/guide/file-panes.png)
+
+Two locations side by side: choose where a file comes from and where it should go.
+The illustrations throughout this guide use example connections and files.
+
 ## Find the task you want to do
 
 | I want to… | Read |

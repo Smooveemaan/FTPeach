@@ -24,6 +24,11 @@ into a different installation instead, use [export and import](passwords.md#movi
 
 ## The portable copy
 
+[![Security settings showing Enhanced protection with a master password already configured.](../../site/images/guide/security.png)](../../site/images/guide/security.png)
+
+Before carrying saved passwords to another computer, check **Settings > Security**.
+This example shows master-password protection already configured.
+
 FTPeach from the portable zip keeps its settings, bookmarks and saved passwords
 in the `data` folder beside the program. What makes a copy portable is the
 `FTPeach.portable` file in its folder, so unpack the whole zip before starting

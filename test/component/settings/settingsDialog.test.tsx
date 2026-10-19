@@ -67,6 +67,24 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
 }
 
 describe('SettingsDialog unsaved-changes gate', () => {
+  test('active FTP mode is saved for connections and disabled with a proxy', async () => {
+    const user = userEvent.setup({ delay: null });
+    for (const proxyEnabled of [false, true]) {
+      const h = renderDialog({ proxyEnabled });
+      await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
+      const active = screen.getByLabelText<HTMLInputElement>('settings.ftpActiveMode');
+      expect(active.checked).toBe(false);
+      if (proxyEnabled) {
+        expect(active.disabled).toBe(true);
+        expect(screen.getByText('settings.ftpActiveModeDisabledByProxy')).toBeTruthy();
+      } else {
+        await user.click(active);
+        await user.click(screen.getByRole('button', { name: 'common.save' }));
+        expect(h.props.onSave).toHaveBeenCalledWith({ ftpActiveMode: true });
+      }
+      h.unmount();
+    }
+  });
   test('previews and saves a palette independently of the theme', async () => {
     const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();

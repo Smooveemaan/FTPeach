@@ -911,6 +911,32 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
     const FLOODED_CHANNELS: [(bool, &str); 3] = [(false, ""), (true, ""), (false, "windows-1251")];
 
     #[tokio::test]
+    async fn implicit_ftps_is_rejected_as_a_tls_negotiation_error() {
+        let acceptor = flooding_tls();
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (_initial, _) = listener.accept().await.unwrap();
+            let (probe, _) = listener.accept().await.unwrap();
+            let mut tls = acceptor.accept(probe).await.unwrap();
+            tls.write_all(b"220 Implicit FTPS\r\n").await.unwrap();
+            std::future::pending::<()>().await;
+        });
+        let mut backend = FtpBackend::new();
+        let result = backend
+            .connect(&flooding_config(port, true, "", 10_000))
+            .await;
+        server.abort();
+        let error = result.unwrap_err();
+        assert!(format!("{error:#}").contains("implicit FTPS"));
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::TlsNegotiationFailed
+        );
+        assert!(!backend.is_connected());
+    }
+
+    #[tokio::test]
     async fn an_endless_control_reply_stops_on_the_client_budget() {
         let acceptor = flooding_tls();
         for flood in [Flood::Line, Flood::Lines] {

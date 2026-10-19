@@ -22,6 +22,8 @@ SFTP and FTPS are different protocols, even if both are described as "secure
 FTP" by a provider. Do not switch between them just to make an error disappear.
 The [protocol reference](../protocol-support.md) lists compatibility details.
 
+For step-by-step setup, see [FTP](ftp.md), [FTPS](ftps.md) or [SFTP](sftp.md).
+
 ## Enter your connection details
 
 1. Click the source button at the top of a pane and choose **Server**, then

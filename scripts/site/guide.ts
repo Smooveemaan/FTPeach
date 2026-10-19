@@ -25,6 +25,16 @@ export const GUIDE_PAGES = [
     description: 'Choose a protocol, connect with a password or SSH key and save a bookmark.',
   },
   {
+    slug: 'ftp',
+    description:
+      'Connect to FTP in FTPeach, understand passive and active mode and troubleshoot listing and transfer failures.',
+  },
+  {
+    slug: 'ftps',
+    description:
+      'Set up explicit FTPS in FTPeach, verify TLS certificates, choose a trusted CA and resolve connection errors.',
+  },
+  {
     slug: 'sftp',
     description:
       'Connect to SFTP with a password or SSH key, verify the server fingerprint and resolve key and login errors in FTPeach.',

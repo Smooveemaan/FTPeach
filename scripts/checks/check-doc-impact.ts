@@ -27,6 +27,8 @@ export const DOC_LINKS: readonly DocLink[] = [
       'docs/protocol-support.md',
       'docs/networking.md',
       'docs/guide/connecting.md',
+      'docs/guide/ftp.md',
+      'docs/guide/ftps.md',
       'docs/guide/sftp.md',
       'docs/guide/transfers.md',
     ],

@@ -27,6 +27,8 @@ The illustrations throughout this guide use example connections and files.
 | Understand the panes, find files and select them | [Find your way around](interface.md) |
 | Choose a protocol or save a connection | [Connect to a server](connecting.md) |
 | Connect with SFTP or an SSH key | [SFTP connections](sftp.md) |
+| Connect with FTP or understand passive mode | [FTP connections](ftp.md) |
+| Connect with FTPS and check certificates | [FTPS connections](ftps.md) |
 | Upload, download, copy, pause or retry | [Transfers and files](transfers.md) |
 | Change a server file in my editor | [Editing remote files](editing.md) |
 | Move bookmarks and saved passwords to another computer | [Passwords and bookmarks](passwords.md) |

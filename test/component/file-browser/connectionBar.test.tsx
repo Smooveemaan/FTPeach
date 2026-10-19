@@ -121,6 +121,24 @@ test('the plain FTP warning is announced by name', () => {
   expect(screen.getByRole('img', { name: 'protocolSelect.insecureWarning' })).toBeTruthy();
 });
 
+test('FTPS defaults to port 21 and keeps a custom CA behind certificate verification', async () => {
+  const selectCaCertFile = vi.fn().mockResolvedValue('C:\\certs\\ca.pem');
+  window.api = { fsLocal: { selectCaCertFile } } as unknown as Window['api'];
+  const h = open({ protocol: 'ftps', port: '' });
+  expect(screen.getByLabelText('connectionBar.fields.port').getAttribute('placeholder')).toBe('21');
+  const verify = screen.getByLabelText<HTMLInputElement>('connectionBar.secureToggle.label');
+  expect(verify.checked).toBe(true);
+  const ca = screen.getByRole<HTMLButtonElement>('button', {
+    name: 'siteManagerDialog.fields.caCertFile',
+  });
+  fireEvent.click(ca);
+  await waitFor(() => expect(h.form().caCertPath).toBe('C:\\certs\\ca.pem'));
+  expect(h.form().allowInvalidCert).toBe(false);
+  fireEvent.click(verify);
+  expect(ca.disabled).toBe(true);
+  expect(h.form().allowInvalidCert).toBe(true);
+});
+
 test('key authentication clears the password and warns for a selected RSA key', async () => {
   const selectKeyFile = vi.fn().mockResolvedValue({ path: 'C:\\keys\\id_rsa', isRsa: true });
   window.api = { fsLocal: { selectKeyFile } } as unknown as Window['api'];

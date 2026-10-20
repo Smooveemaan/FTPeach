@@ -33,6 +33,7 @@
 .guide-callout { margin: 24px 0; }
 .guide-callout > :last-child { margin-bottom: 0; }
 .guide-content img { max-width: 100%; max-height: 480px; width: auto; height: auto; }
+.guide-content img, .guide-image-viewer img { border: 1px solid var(--line); border-radius: 10px; }
 .guide-content p:has(> a > img) { margin: 24px 0 8px; }
 .guide-content p:has(> a > img) + p { font-size: 15px; line-height: 1.6; color: var(--muted); }
 .guide-content a:has(> img) { cursor: zoom-in; }

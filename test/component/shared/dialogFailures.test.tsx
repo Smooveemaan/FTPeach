@@ -17,6 +17,19 @@ afterEach(() => {
 });
 
 describe('dialog async failures', () => {
+  test('About displays the installed app version', async () => {
+    render(
+      <AboutDialog
+        onClose={vi.fn()}
+        appApi={{
+          version: vi.fn().mockResolvedValue('0.5.0'),
+          openExternal: vi.fn(),
+        }}
+      />,
+    );
+    expect(await screen.findByText('v0.5.0')).toBeTruthy();
+  });
+
   test('reports a failed version lookup while keeping About open', async () => {
     const failure = new Error('version unavailable');
     const sink = vi.fn();

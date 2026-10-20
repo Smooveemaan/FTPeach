@@ -83,7 +83,7 @@ and test servers before you start copying files.
 <!-- verified-by: pr test/component/sites/siteManager.test.tsx::Enter connects a focused site row and toggles a focused folder row -->
 <!-- verified-by: pr test/component/sites/siteManager.test.tsx::search filters bookmarks by name, host, user and folder, and connects from results -->
 
-See [Passwords and bookmarks](passwords.md) before moving saved connections to
+See [Protect passwords and move settings](passwords.md) before moving saved connections to
 another computer. If connecting fails, start with the [connection checklist](troubleshooting.md#i-cannot-connect).
 
 ## Connecting safely

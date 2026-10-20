@@ -39,6 +39,16 @@ way. For a first upload or download, follow [Your first transfer](getting-starte
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::folder upload, download and relay submit endpoint intent without per-file IPC -->
 
+Before sending files with names already at the destination, check
+**Edit > Settings > Transfers > On name conflict**:
+**Ask** requests your decision, **Overwrite** allows replacement without that
+question, and **Skip** leaves matching files alone. Start with **Ask** if you
+need to review replacements, and keep a separate backup of anything important.
+See [Everyday settings](interface.md#everyday-settings) to change the policy.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Ask confirms an existing file while Overwrite and Skip do not ask -->
+
 ## Pausing, stopping and resuming transfers
 
 [![Transfers panel with Pause and Stop controls at the right of each active job.](../../site/images/guide/transfers.png)](../../site/images/guide/transfers.png)
@@ -46,7 +56,7 @@ way. For a first upload or download, follow [Your first transfer](getting-starte
 Example jobs with some columns hidden. **Pause** (two bars) and **Stop** (a square)
 are at the right of an active row.
 
-Use **Pause** when you intend to continue later and that action is available.
+Use **Pause** when you intend to continue in the current session and that action is available.
 Use **Stop** when you want to cancel the job. Resume a paused job to continue;
 retry a stopped job only when you intend to start it again. The details below
 explain when partial data can be reused.
@@ -85,6 +95,35 @@ is unavailable.
 
 <!-- verified-by: pr test/component/file-browser/transferConnectionLoss.test.tsx::Retry of a transfer on a lost connection waits until the pane connects again -->
 <!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a new connection to the same account takes over the finished rows a closed one left -->
+
+### Before a full exit or restart
+
+If FTPeach is still in the system tray, reopen it and check **Transfers**
+before starting another copy of the same job. The instructions below concern
+a full application exit, not just a hidden window.
+
+Finish important transfers before exiting FTPeach or restarting Windows.
+The transfer queue does not return in a fresh application process. A paused
+upload is not a saved job for the next launch: keep its server connection open
+if you intend to resume it. After exiting, select the source again and start
+a new upload.
+
+<!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a fresh process starts without the previous transfer queue -->
+<!-- verified-by: pr test/component/application/quitWhenIdle.test.tsx::paused and failed transfers do not hold the quit up -->
+<!-- verified-by: pr src-tauri/src/application/upload_resume_tests.rs::tearing_down_a_connection_deletes_every_staging_it_held -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
+
+For an interrupted download, reconnect, select the same server file and download
+to the same local folder and filename. FTPeach can reuse retained partial data
+only after checking that it still belongs to this source; otherwise it starts
+over. This does not restore the old queue automatically. Check the new row's
+result before opening the downloaded file.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a real (non-user-initiated) transfer failure reports the error and marks the row -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_download_lifecycle_writes_resumes_and_commits_once -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
+
+### When an upload is interrupted
 
 Stopping an upload never deletes a file that was already on the server under
 the same name. The old file stays in place until the new one has fully

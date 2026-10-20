@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The user guide explains how to finish deferred edits, recover files and collect help information, with clearer task navigation and links to its published source.
 - The website's user guide identifies the released app version it describes.
 - The website keeps its user guide within reach on small screens and respects reduced motion.
 

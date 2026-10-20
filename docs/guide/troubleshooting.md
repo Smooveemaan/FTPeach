@@ -75,7 +75,7 @@ Verify the destination before deciding whether to delete the originals.
 
 ## My edit is not on the server
 
-Saving in the editor changes the working copy. Check that you approved its
+Saving in the editor changes the edit copy on your computer. Check that you approved its
 upload in FTPeach and that the upload succeeded. If the app closed before you
 finished, inspect the recovered edits it offers on startup. Follow
 [Editing remote files](editing.md) to finish the work.
@@ -108,12 +108,26 @@ before deleting anything: resetting the vault loses its stored secrets.
 
 ## Ask for help
 
+Open **View > Log** to show the log panel. To find your FTPeach version,
+open **Help > About** and note the version beside the application name.
+
+<!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
+<!-- verified-by: pr test/unit/application/menus.test.ts::View Log toggles the log panel -->
+<!-- verified-by: pr test/component/shared/dialogFailures.test.tsx::About displays the installed app version -->
+
 [![The Log panel filtered to a Permission denied error.](../../site/images/guide/connection-log.png)](../../site/images/guide/connection-log.png)
 
 Use the log's search field to find the relevant message. This example filters
 for "Permission denied"; it is not a diagnosis of your connection.
 
 <!-- verified-by: pr test/component/logs/logPanel.test.tsx::search shows only the lines that contain the text, and Escape clears it -->
+
+Use **Copy log to clipboard** or **Save log to file** in the log toolbar to
+collect the relevant lines. Check the copied or saved text before sharing it;
+the privacy precautions below apply to logs and screenshots too.
+
+<!-- verified-by: pr test/component/logs/logPanel.test.tsx::Copy flashes its tooltip on the button once the clipboard write settles -->
+<!-- verified-by: pr test/component/logs/logPanel.test.tsx::Save writes only the lines shown, and says so only when the write failed -->
 
 For account details, permissions, quota or server identity, contact your server
 administrator or hosting provider. If the problem appears to be in FTPeach,

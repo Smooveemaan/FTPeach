@@ -1,7 +1,8 @@
 # Editing remote files
 
 Use this workflow to change a text file or configuration on a server with a
-program installed on your computer. FTPeach opens a downloaded working copy;
+program installed on your computer. FTPeach downloads an **edit copy**, a file
+on your computer that it watches for changes while the connection stays open;
 saving in the editor and sending that revision to the server are separate steps.
 
 <!-- verified-by: pr test/component/open-with/openWithDialog.test.tsx::download ignores other jobs, clamps progress and registers a completed editable copy -->
@@ -17,8 +18,8 @@ Check that you have permission to replace the server copy.
    to choose another program.
 3. Make the change and save it in the editor.
 4. Return to FTPeach. When it asks whether to upload the changed file, choose
-   **Upload** to send that revision to the server. **Later** leaves that upload
-   for another time; do not treat a local save as a completed server update.
+   **Upload** to send that revision to the server. **Later** dismisses this
+   question without uploading; do not treat a local save as a completed server update.
 5. Check the upload result and, where appropriate, check the file in the system
    that uses it, such as the website or application you are updating.
 
@@ -30,6 +31,15 @@ Use **Open** for the usual application, or **Open with** to choose a program.
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::SFTP permissions and open-with retain the entry and its original session -->
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::changes to several copies are all asked about, one at a time -->
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::only an uploaded revision is marked synced, and a failed upload asks again -->
+
+After **Later**, FTPeach asks again when you change and save the edit copy.
+If you want to send the existing revision without changing it, keep a copy in
+a folder you can find, open that folder in the **Computer** pane and
+[upload the file](getting-started.md#3-upload-the-file) to its original server
+folder. Check the filename and destination before approving replacement.
+
+<!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::Later dismisses this revision and the next changed save asks again -->
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::a folder, and a whole selection, can be sent to the other pane from the menu -->
 
 If you save again while an upload is running, FTPeach asks about the newer save
 after that upload finishes. Keep track of the last revision you approved.
@@ -45,10 +55,27 @@ work; it does not mean that those changes already reached the server.
 
 [![Edits that were not uploaded dialog listing recovered files, with Show files, Later and Delete actions.](../../site/images/guide/recovered-edits.png)](../../site/images/guide/recovered-edits.png)
 
-The recovery prompt identifies unfinished edits. **Show files** lets you inspect
-the kept copies before deciding what to upload or remove.
+1. Choose **Show files** and find the edit copy you need. Open it to check its
+   contents, then copy it to a separate local folder you can find again.
+2. In FTPeach, open that folder in a **Computer** pane. In the other pane,
+   connect to the original server and open the original file's folder.
+3. Check the server file before replacing it: someone else may have changed it
+   since your edit. Download a separate backup if you need to keep that version.
+4. Select your saved edit copy and choose **Upload to other pane**.
+   Use the original filename; if your backup copy has a different name, rename
+   it before uploading. Follow [Your first transfer](getting-started.md#3-upload-the-file)
+   for the upload steps.
+5. Wait for **Done** in **Transfers** and check the server result. Keep your
+   separate copy until you are satisfied. Only then discard the recovered
+   copy you no longer need.
+
+If you cannot identify the original server or folder, keep the copy and confirm
+the destination before uploading. **Show files** does not send anything to the
+server, and **Delete** discards the recovered work.
 
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::recovered edits are offered at start and stay unless deleted -->
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::a folder, and a whole selection, can be sent to the other pane from the menu -->
+<!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::queue order puts running and paused rows first, newest within each status, and completed rows last -->
 
 ## Editing server files in another program
 

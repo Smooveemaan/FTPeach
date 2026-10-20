@@ -42,6 +42,10 @@ publishing an older app tag does not replace the website with an older design.
 
 The public guide describes the released application. `site/guide-review.json`
 records the reviewed release and a SHA-256 of every guide text and illustration.
+Published source links and supporting technical documents point to the build's
+Git commit; the changelog and security policy intentionally point to `master`.
+Local previews with uncommitted edits still link to `HEAD`; commit the reviewed
+changes and rebuild before checking their source links.
 `site:build` refuses to publish if that release differs from the latest download,
 or if those sources changed. Editing text between app releases is allowed, but
 requires a fresh review against the same release. Do not document unreleased

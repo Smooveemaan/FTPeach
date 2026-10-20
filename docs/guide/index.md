@@ -32,16 +32,21 @@ The illustrations throughout this guide use example connections and files.
 | --- | --- |
 | Connect and send my first file | [Your first transfer](getting-started.md) |
 | Understand the panes, find files and select them | [Find your way around](interface.md) |
-| Change language, shortcuts, transfer limits or update the app | [Everyday settings](interface.md#everyday-settings) |
+| Change the language or appearance | [Appearance](interface.md#appearance) |
+| Change shortcuts, transfer limits or conflict handling | [Everyday settings](interface.md#everyday-settings) |
+| Update FTPeach | [Check for updates](interface.md#check-for-updates) |
 | Choose a protocol or save a connection | [Connect to a server](connecting.md) |
 | Connect with SFTP or an SSH key | [SFTP connections](sftp.md) |
 | Connect with FTP or understand passive mode | [FTP connections](ftp.md) |
 | Connect with FTPS and check certificates | [FTPS connections](ftps.md) |
 | Connect to a WebDAV folder over HTTPS | [WebDAV connections](webdav.md) |
 | Upload, download, copy, pause or retry | [Transfers and files](transfers.md) |
+| Continue after exiting FTPeach | [Before a full exit or restart](transfers.md#before-a-full-exit-or-restart) |
 | Change a server file in my editor | [Editing remote files](editing.md) |
-| Move bookmarks and saved passwords to another computer | [Passwords and bookmarks](passwords.md) |
-| Set up a master password or recover access | [Password protection](passwords.md#set-up-a-master-password) |
+| Create or edit a bookmark | [Save a connection](connecting.md#save-a-connection-you-will-use-again) |
+| Move bookmarks and saved passwords to another computer | [Move your settings](passwords.md#moving-bookmarks-and-passwords-to-another-computer) |
+| Set up a master password | [Password protection](passwords.md#set-up-a-master-password) |
+| Recover access after forgetting the master password | [Recovery and reset](passwords.md#if-you-forget-the-master-password) |
 | Carry FTPeach on a removable drive | [Portable version](portable.md) |
 | Understand an error or recover unfinished work | [Troubleshooting](troubleshooting.md) |
 

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import {
   getTransfersSnapshot,
@@ -25,6 +26,31 @@ import {
 } from '../../../src/features/transfers/transferStore.ts';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
 import type { SiteProtocol } from '../../../src/shared/siteContracts.ts';
+
+test('a fresh process starts without the previous transfer queue', () => {
+  const store = new URL('../../../src/features/transfers/transferStore.ts', import.meta.url).href;
+  const run = (code: string) =>
+    execFileSync(
+      process.execPath,
+      [
+        '--experimental-strip-types',
+        '--input-type=module',
+        '-e',
+        `import { setTransfersStore, getTransfersSnapshot } from ${JSON.stringify(store)}; ${code}`,
+      ],
+      { encoding: 'utf8' },
+    ).trim();
+  assert.equal(
+    run(`
+    setTransfersStore({ paused: { id: 'paused', name: 'file', direction: 'down',
+      protocol: 'sftp', connectionId: 'server', remoteFile: '/file', localTarget: 'file',
+      status: 'paused', bytes: 10, startedAt: 0 } });
+    console.log(Object.keys(getTransfersSnapshot()).length);
+  `),
+    '1',
+  );
+  assert.equal(run('console.log(Object.keys(getTransfersSnapshot()).length);'), '0');
+});
 
 test('connection metadata follows live rows and pending responses through 10k disconnects', () => {
   resetTransfersStoreForTests();

@@ -1,4 +1,4 @@
-# Passwords and bookmarks
+# Protect passwords and move settings
 
 A bookmark remembers how to reach a server; a saved password lets FTPeach sign
 in without asking you to type that server password again. Start with

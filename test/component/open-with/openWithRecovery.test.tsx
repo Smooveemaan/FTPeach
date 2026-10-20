@@ -66,6 +66,16 @@ test('a newer revision replaces the queued one in place', () => {
   ]);
 });
 
+test('Later dismisses this revision and the next changed save asks again', () => {
+  const h = openWithHarness();
+  h.open('a');
+  h.emit({ id: 'a', revision: '1' });
+  act(() => h.hook.result.current.dismissChanged(h.hook.result.current.changed!));
+  expect(h.hook.result.current.changed).toBeNull();
+  h.emit({ id: 'a', revision: '2' });
+  expect(h.hook.result.current.changed).toEqual({ id: 'a', revision: '2' });
+});
+
 test('changes to several copies are all asked about, one at a time', () => {
   const h = openWithHarness();
   h.open('a');

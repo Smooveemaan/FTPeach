@@ -40,6 +40,38 @@ beforeEach(() => {
 
 const folderEntry = { name: 'folder', isDirectory: true, size: 0 };
 
+test('Ask confirms an existing file while Overwrite and Skip do not ask', async () => {
+  const previousApi = window.api;
+  window.api = {
+    ...tauriApi,
+    fsLocal: {
+      ...tauriApi.fsLocal,
+      list: vi.fn().mockResolvedValue({
+        ok: true,
+        path: 'C:\\target',
+        entries: [{ name: 'file.txt', isDirectory: false }],
+      }),
+    },
+  };
+  try {
+    for (const overwriteAction of ['ask', 'overwrite', 'skip'] as const) {
+      const confirmOverwrite = vi.fn().mockResolvedValue(true);
+      const { result, unmount } = renderHook(() =>
+        useOverwriteApproval({ overwriteAction, confirmOverwrite }, vi.fn()),
+      );
+      const approved = await result.current.approveTarget({
+        kind: 'local',
+        path: 'C:\\target\\file.txt',
+      });
+      assert.equal(confirmOverwrite.mock.calls.length, overwriteAction === 'ask' ? 1 : 0);
+      assert.equal(approved, overwriteAction === 'skip' ? null : true);
+      unmount();
+    }
+  } finally {
+    window.api = previousApi;
+  }
+});
+
 test('overwrite checks share in-flight listings, preserve conflicts and refresh on the next operation', async () => {
   const previousApi = window.api;
   const first = createDeferred<Awaited<ReturnType<typeof tauriApi.session.list>>>();

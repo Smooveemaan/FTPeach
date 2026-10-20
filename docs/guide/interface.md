@@ -33,6 +33,8 @@ current list; use it after opening the folder you want to search.
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Backspace navigates the pane up one directory level -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::selects, sorts, filters and supports keyboard actions -->
 
+## Selecting files
+
 Click a file to select it. **Ctrl+click** adds or removes individual files from
 the selection; **Ctrl+A** selects the list. Right-click a file for the actions
 available there, or right-click empty space for folder actions such as **Refresh**
@@ -45,6 +47,20 @@ Highlighted rows are the selection. Check it before copying or deleting files.
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+click toggles against the current selection, not the one from before the last re-render -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+A selects every file even while a descendant control (not .pane itself) has focus -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::the menus follow the order of the Explorer menu -->
+
+You can also drag a selection rectangle inside the file list. It stays within
+that pane when the pointer crosses into the neighbouring pane.
+
+<!-- verified-by: manual Selection rectangle with system animations disabled -->
+
+When a folder's list is refreshed, with F5 or because a transfer finished
+there, the files still in it stay selected, and the arrow keys and Shift carry
+on from the same file. Files you select while the list is still loading are the
+ones that stay selected.
+
+<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a transfer refresh leaves a pane the user browsed away from, and keeps the selection -->
+<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a selection made while the folder is listed again is the one kept -->
+<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::the folder listed again keeps the keyboard cursor; another folder starts from the top -->
 
 ## Follow work in Transfers
 
@@ -98,22 +114,6 @@ or stopped. Connection indicators and the status bar use the same colors.
 
 <!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::transfer status colors stay readable across palettes -->
 <!-- verified-by: pr test/visual/transfer-status-colors.spec.ts::connection indicators and auxiliary progress share semantic colors across palettes -->
-
-## Selecting files
-
-You can also drag a selection rectangle inside the file list. It stays within
-that pane when the pointer crosses into the neighbouring pane.
-
-<!-- verified-by: manual Selection rectangle with system animations disabled -->
-
-When a folder's list is refreshed, with F5 or because a transfer finished
-there, the files still in it stay selected, and the arrow keys and Shift carry
-on from the same file. Files you select while the list is still loading are the
-ones that stay selected.
-
-<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a transfer refresh leaves a pane the user browsed away from, and keeps the selection -->
-<!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a selection made while the folder is listed again is the one kept -->
-<!-- verified-by: pr test/component/file-browser/filePane.test.tsx::the folder listed again keeps the keyboard cursor; another folder starts from the top -->
 
 ## Everyday settings
 

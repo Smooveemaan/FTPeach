@@ -1,9 +1,10 @@
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { Marked } from 'marked';
 import { getHeadingList, gfmHeadingId } from 'marked-gfm-heading-id';
 
-const repository = 'https://github.com/Smooveemaan/ftpeach/blob/master/';
+const repositoryBase = 'https://github.com/Smooveemaan/ftpeach/blob/';
 
 /** Published pages, in reading order; the Markdown supplies each title. */
 export const GUIDE_PAGES = [
@@ -84,7 +85,8 @@ function escapeHtml(value: string): string {
 }
 
 /** Render repository Markdown with GitHub-compatible anchors and website links. */
-export function renderGuide(markdown: string, slug: string) {
+export function renderGuide(markdown: string, slug: string, revision = 'master') {
+  const repository = `${repositoryBase}${revision}/`;
   const parser = new Marked(gfmHeadingId(), {
     walkTokens(token) {
       if (token.type !== 'link' && token.type !== 'image') return;
@@ -114,7 +116,13 @@ export function renderGuide(markdown: string, slug: string) {
           return;
         }
       }
-      token.href = url.href;
+      // Policies and the changelog remain current; technical explanations match this edition.
+      const relativePath = url.href.startsWith(repository)
+        ? url.pathname.slice(new URL(repository).pathname.length)
+        : '';
+      token.href = ['CHANGELOG.md', '.github/SECURITY.md'].includes(relativePath)
+        ? url.href.replace(repository, `${repositoryBase}master/`)
+        : url.href;
     },
     renderer: {
       blockquote({ tokens }) {
@@ -148,12 +156,16 @@ export function renderGuide(markdown: string, slug: string) {
 
 /** Build every guide page and the sitemap from the same page list. */
 export async function buildGuide(root: string, out: string): Promise<void> {
+  const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
   const template = await readFile(path.join(root, 'site/guide.html'), 'utf8');
   const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
   const pages = [];
   for (const page of GUIDE_PAGES) {
     const markdown = await readFile(path.join(root, `docs/guide/${page.slug}.md`), 'utf8');
-    pages.push({ ...page, ...renderGuide(markdown, page.slug) });
+    pages.push({ ...page, ...renderGuide(markdown, page.slug, revision) });
   }
   await mkdir(path.join(out, 'guide'), { recursive: true });
   await cp(path.join(root, 'site/images/guide'), path.join(out, 'images/guide'), {
@@ -177,7 +189,7 @@ export async function buildGuide(root: string, out: string): Promise<void> {
       CANONICAL: canonical,
       CONTENT: page.content.replace('<h2', () => `${toc}<h2`),
       NAVIGATION: navigation,
-      SOURCE: `${repository}docs/guide/${page.slug}.md`,
+      SOURCE: `${repositoryBase}${revision}/docs/guide/${page.slug}.md`,
       RELEASE: escapeHtml(review.release),
     };
     const html = template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {

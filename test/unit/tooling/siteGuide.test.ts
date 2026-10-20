@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -50,6 +51,27 @@ test('Markdown keeps tables, code and unique GitHub headings, rewrites links and
   );
 });
 
+test('technical links follow the built revision while policies and changelog stay current', () => {
+  const revision = '1234567890abcdef1234567890abcdef12345678';
+  const document = new JSDOM(
+    renderGuide(
+      '# Guide\n\n[Safety](../transfer-safety.md#guarantee-matrix) [Changelog](../../CHANGELOG.md) [Security](../../.github/SECURITY.md) [Next](transfers.md) [External](https://example.com/)',
+      'index',
+      revision,
+    ).content,
+  ).window.document;
+  assert.deepEqual(
+    [...document.querySelectorAll('a')].map((a) => a.href),
+    [
+      `https://github.com/Smooveemaan/ftpeach/blob/${revision}/docs/transfer-safety.md#guarantee-matrix`,
+      'https://github.com/Smooveemaan/ftpeach/blob/master/CHANGELOG.md',
+      'https://github.com/Smooveemaan/ftpeach/blob/master/.github/SECURITY.md',
+      'transfers.html',
+      'https://example.com/',
+    ],
+  );
+});
+
 test('invalid guide sources fail the build instead of publishing unsafe or broken content', () => {
   for (const markdown of [
     'No title',
@@ -98,6 +120,10 @@ test('every built guide page has metadata, working navigation and matching sitem
   const out = await mkdtemp(path.join(os.tmpdir(), 'ftpeach-guide-'));
   try {
     await buildGuide(root, out);
+    const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: root,
+      encoding: 'utf8',
+    }).trim();
     const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
     const home = new JSDOM(await readFile(path.join(root, 'site/index.html'), 'utf8')).window
       .document;
@@ -140,6 +166,10 @@ test('every built guide page has metadata, working navigation and matching sitem
         urls.includes(document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? ''),
       );
       assert.equal(document.querySelectorAll('h1').length, 1);
+      assert.equal(
+        document.querySelector('.guide-source a')?.getAttribute('href'),
+        `https://github.com/Smooveemaan/ftpeach/blob/${revision}/docs/guide/${page.slug}.md`,
+      );
       assert.ok(
         document
           .querySelector('.guide-source')

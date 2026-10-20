@@ -155,6 +155,12 @@ test('menu commands bind current tab, pane and theme and both copy refresh callb
   ]);
 });
 
+test('View Log toggles the log panel', () => {
+  const h = harness();
+  h.item('menu.view.log').onClick!();
+  assert.deepEqual(h.calls, [['log']]);
+});
+
 test('availability tracks modal, selection, connected panes and the last visible pane', () => {
   const h = harness();
   assert.equal(h.item('menu.file.closeTab').disabled, true);

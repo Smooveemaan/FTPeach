@@ -149,6 +149,7 @@ export function renderGuide(markdown: string, slug: string) {
 /** Build every guide page and the sitemap from the same page list. */
 export async function buildGuide(root: string, out: string): Promise<void> {
   const template = await readFile(path.join(root, 'site/guide.html'), 'utf8');
+  const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
   const pages = [];
   for (const page of GUIDE_PAGES) {
     const markdown = await readFile(path.join(root, `docs/guide/${page.slug}.md`), 'utf8');
@@ -177,6 +178,7 @@ export async function buildGuide(root: string, out: string): Promise<void> {
       CONTENT: page.content.replace('<h2', () => `${toc}<h2`),
       NAVIGATION: navigation,
       SOURCE: `${repository}docs/guide/${page.slug}.md`,
+      RELEASE: escapeHtml(review.release),
     };
     const html = template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {
       if (!(key in values)) throw new Error(`Unknown guide placeholder: ${key}`);

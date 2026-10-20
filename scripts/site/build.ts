@@ -7,6 +7,7 @@
 import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { buildGuide } from './guide.ts';
+import { verifyGuideReview } from './guide-review.ts';
 
 const palettes: Array<{ id: string; name: string; color: string }> = JSON.parse(
   await readFile(new URL('../../assets/images/palettes/index.json', import.meta.url), 'utf8'),
@@ -92,6 +93,7 @@ async function main() {
     github<{ stargazers_count: number }>(''),
   ]);
   const stats = { stars: repo.stargazers_count, downloads: countDownloads(releases) };
+  await verifyGuideReview(root, release.tag_name);
   await rm(out, { recursive: true, force: true });
   await mkdir(out);
   await writeFile(path.join(out, 'index.html'), fillPage(html, release, stats));

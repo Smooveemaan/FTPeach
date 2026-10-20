@@ -98,6 +98,7 @@ test('every built guide page has metadata, working navigation and matching sitem
   const out = await mkdtemp(path.join(os.tmpdir(), 'ftpeach-guide-'));
   try {
     await buildGuide(root, out);
+    const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
     const home = new JSDOM(await readFile(path.join(root, 'site/index.html'), 'utf8')).window
       .document;
     const headerLinks = (document: Document) =>
@@ -139,6 +140,11 @@ test('every built guide page has metadata, working navigation and matching sitem
         urls.includes(document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? ''),
       );
       assert.equal(document.querySelectorAll('h1').length, 1);
+      assert.ok(
+        document
+          .querySelector('.guide-source')
+          ?.textContent?.includes(`For FTPeach ${review.release}`),
+      );
       const article = document.querySelector('article')!;
       const intro = article.querySelector('p')!;
       const toc = article.querySelector('.guide-toc');

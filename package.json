@@ -61,6 +61,7 @@
     "benchmark:cold-start": "node --experimental-strip-types scripts/benchmarks/benchmark-cold-start.ts",
     "benchmark:listing": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command benchmark-listing",
     "site:build": "node --experimental-strip-types scripts/site/build.ts",
+    "site:test": "node --experimental-strip-types --test \"test/unit/tooling/site*.test.ts\" && playwright test --config test/visual/playwright.site.config.ts",
     "site:social": "node --experimental-strip-types scripts/site/social.ts",
     "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts",
     "check:supply-chain": "npm audit --audit-level=high && cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses",

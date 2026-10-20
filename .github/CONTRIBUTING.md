@@ -34,6 +34,12 @@ The website at <https://ftpeach.com/> uses `site/index.html`, shared styles in `
 
 Guide illustrations live in `site/images/guide/` and are copied into the website build. Retake them with the closed screenshot tool after changing the pictured controls: it captures the real application components with example data in the visual harness, without a native profile or live server. Inspect the images before committing; do not draw or retouch interface elements. Keep captions and alt text beside the task they illustrate, and link images to their full-size copies. The website enhances these links with a modal image viewer; direct image links remain the fallback without JavaScript.
 
+Before uploading a Pages artifact, `pages.yml` runs `npm run site:test`: the
+website unit tests and Chromium checks for the landing page, guide and comparison.
+The website tests serve their own files and do not build the application's visual
+harness. Pages always checks out `master`, including on a release event, so
+publishing an older app tag does not replace the website with an older design.
+
 The comparison article lives separately in `site/compare.html`.
 When a feature changes, review the article's FTPeach claims too. For competitor
 claims, recheck the linked official sources and update the review date. Keep

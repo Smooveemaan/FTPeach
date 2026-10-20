@@ -95,7 +95,8 @@ test('guide alerts keep their label, paragraphs and safe Markdown links', () => 
   assert.equal(document.querySelector('.guide-warning')?.getAttribute('aria-label'), 'Warning');
   assert.equal(document.querySelector('.guide-warning strong')?.textContent, 'a backup');
   assert.equal(document.querySelector('.guide-warning a')?.getAttribute('href'), 'passwords.html');
-  assert.equal(document.querySelector('.guide-warning')?.querySelectorAll('p').length, 3);
+  assert.equal(document.querySelector('.guide-warning')?.querySelectorAll('p').length, 2);
+  assert.equal(document.querySelector('.guide-callout-title'), null);
   assert.equal(document.querySelector('.guide-note p:last-child')?.textContent, 'Read this first.');
   assert.equal(document.querySelector('blockquote')?.textContent?.trim(), 'An ordinary quotation.');
   assert.throws(() => renderGuide('# Guide\n\n> [!WARNING]\n> [bad](javascript:alert)', 'index'));

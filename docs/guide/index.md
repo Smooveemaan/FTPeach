@@ -20,7 +20,7 @@ Two locations side by side: choose where a file comes from and where it should g
 The illustrations throughout this guide use example connections and files.
 
 > [!NOTE]
-> Click an illustration to enlarge it. On the website, press **Esc** or use
+> **Click an illustration to enlarge it.** On the website, press **Esc** or use
 > **Close screenshot** to return to reading. Without JavaScript, the image opens
 > directly.
 

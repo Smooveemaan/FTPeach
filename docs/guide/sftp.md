@@ -25,7 +25,7 @@ Three different secrets or identities can be involved:
 | Server host-key fingerprint | Checking that the server is the one you meant to reach. This is not your account's SSH key. |
 
 > [!WARNING]
-> Keep your private key on your computer. Give the administrator the matching
+> **Keep your private key on your computer.** Give the administrator the matching
 > public key when arranging access, not the private file or its passphrase.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->

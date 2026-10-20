@@ -44,7 +44,7 @@ computer. Choose the mode that fits how you will use the application.
    secured and unlocked. If an error appears, resolve it before relying on the vault.
 
 > [!WARNING]
-> A forgotten master password cannot be recovered. Resetting the vault deletes
+> **A forgotten master password cannot be recovered.** Resetting the vault deletes
 > its saved passwords and SSH key passphrases; it does not recover them.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Security walks from first setup through locking and changing the master password -->
@@ -94,7 +94,7 @@ again and re-enter or import the credentials you still need.
    enter its file password. **Import without passwords** imports bookmarks alone.
 
 > [!WARNING]
-> Only saved passwords are encrypted in the export. Addresses, usernames and
+> **Only saved passwords are encrypted in the export.** Addresses, usernames and
 > other settings remain readable. Keep the file and its password separately;
 > a forgotten file password cannot be recovered. The proxy password and private
 > SSH key files are not included: move key files separately and check their paths.

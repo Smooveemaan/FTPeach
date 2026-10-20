@@ -131,7 +131,7 @@ export function renderGuide(markdown: string, slug: string, revision = 'master')
         if (!alert) return `<blockquote>\n${body}</blockquote>\n`;
         const kind = alert[1]!.toLowerCase();
         const content = (alert[0].includes('</p>') ? '' : '<p>') + body.slice(alert[0].length);
-        return `<aside class="guide-callout guide-${kind}" aria-label="${kind === 'note' ? 'Note' : 'Warning'}"><p class="guide-callout-title">${kind === 'note' ? 'Note' : 'Warning'}</p>${content}</aside>\n`;
+        return `<aside class="guide-callout guide-${kind}" aria-label="${kind === 'note' ? 'Note' : 'Warning'}">${content}</aside>\n`;
       },
       html({ text }) {
         // Verification comments stay in the source, not in the published page.

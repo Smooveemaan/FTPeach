@@ -246,7 +246,7 @@ go to the Recycle Bin. If that location has no Recycle Bin, FTPeach asks again
 before permanently deleting them; cancelling keeps the files.
 
 > [!WARNING]
-> Deleting from a server is permanent in FTPeach: remote files do not go to your
+> **Deleting from a server is permanent in FTPeach:** remote files do not go to your
 > computer's Recycle Bin. Download a backup first if you may need them again.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Shift on this computer turns Delete into Delete permanently; a server has no bin to skip -->

@@ -6,6 +6,13 @@
 .guide-sidebar a { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; }
 .guide-sidebar a[aria-current='page'] { background: var(--peach-wash); color: var(--peach-ink); font-weight: 600; }
 .guide-content { min-width: 0; overflow-wrap: anywhere; }
+.comparison { max-width: 1000px; padding-block: 56px 96px; }
+.comparison article > p, .comparison article > ul { max-width: 760px; }
+.comparison .comparison-meta, .comparison .comparison-sources { font-size: 15px; color: var(--muted); }
+.comparison-table { overflow-x: auto; margin-bottom: 24px; }
+.comparison-table table { display: table; min-width: 760px; width: 100%; margin-bottom: 0; }
+.comparison-table th, .comparison-table td { width: 25%; }
+.comparison-table caption { text-align: left; padding-bottom: 12px; font-weight: 600; }
 .guide-content article { font-size: 18px; line-height: 1.75; }
 .guide-content h1 { font: 500 clamp(36px, 5vw, 56px)/1.12 var(--font-display); letter-spacing: -.025em; margin-bottom: 32px; }
 .guide-content h2 { font: 500 30px/1.25 var(--font-display); margin: 48px 0 20px; }

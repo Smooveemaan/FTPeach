@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Compare FTPeach, FileZilla Client and WinSCP on a dedicated website page.
+
 - The website's user guide covers everyday tasks, password protection and common problems,
   with collapsible navigation, clear warnings and screenshots that enlarge on the page.
 - Protocol guides cover FTP data modes, FTPS certificates, SFTP keys, WebDAV setup and common connection errors.

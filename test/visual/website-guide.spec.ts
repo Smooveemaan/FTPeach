@@ -7,6 +7,33 @@ import { buildGuide, GUIDE_PAGES } from '../../scripts/site/guide.ts';
 const root = path.resolve(import.meta.dirname, '../..');
 let output: string;
 
+test('Compare stays readable, navigable and themed without a screenshot viewer', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await serveGuide(page);
+  await page.goto('https://guide.test/compare.html');
+  await expect(page.locator('h1')).toHaveText('FTPeach vs FileZilla vs WinSCP');
+  for (const width of [320, 390, 768, 1000, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator('.site-header a[aria-current="page"]')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+    const table = page.getByRole('region', { name: 'Client capability comparison' });
+    if (width < 768)
+      expect(await table.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+  }
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 247, 245)');
+  await page.locator('.site-header a[href="guide/index.html"]').click();
+  await expect(page.locator('h1')).toBeVisible();
+  await page.locator('.site-header a[href="../compare.html"]').click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 247, 245)');
+  expect(errors).toEqual([]);
+});
+
 test.beforeAll(async () => {
   output = await mkdtemp(path.join(os.tmpdir(), 'ftpeach-guide-browser-'));
   await buildGuide(root, output);
@@ -160,15 +187,24 @@ test('the shared header keeps its actions reachable on narrow screens', async ({
     await expect(header.getByRole('link', { name: 'Support FTPeach on Ko-fi' })).toBeVisible();
     await expect(header.getByRole('button', { name: 'Switch to light theme' })).toBeVisible();
     await expect(header.getByRole('link', { name: 'Download' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Compare' })).toBeVisible();
     const boxes = await header.locator('.wrap > *').evaluateAll((elements) =>
       elements
         .map((element) => element.getBoundingClientRect())
         .filter((box) => box.width > 0)
-        .map((box) => ({ left: box.left, right: box.right })),
+        .map((box) => ({ left: box.left, right: box.right, top: box.top, bottom: box.bottom })),
     );
     for (let index = 0; index < boxes.length; index++) {
-      expect(boxes[index]!.left).toBeGreaterThanOrEqual(index ? boxes[index - 1]!.right : 0);
-      expect(boxes[index]!.right).toBeLessThanOrEqual(width);
+      const box = boxes[index]!;
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(width);
+      for (const other of boxes.slice(index + 1))
+        expect(
+          box.right <= other.left ||
+            other.right <= box.left ||
+            box.bottom <= other.top ||
+            other.bottom <= box.top,
+        ).toBe(true);
     }
   }
 });

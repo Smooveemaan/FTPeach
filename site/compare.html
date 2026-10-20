@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FTPeach vs FileZilla vs WinSCP · FTPeach</title>
+    <meta name="description" content="Compare FTPeach, FileZilla Client and WinSCP by platform, protocols, editing, automation and portable use, with sources and clear limitations." />
+    <link rel="canonical" href="https://ftpeach.com/compare.html" />
+    <link rel="icon" href="favicon.ico" />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="FTPeach" />
+    <meta property="og:title" content="FTPeach vs FileZilla vs WinSCP · FTPeach" />
+    <meta property="og:description" content="Compare FTPeach, FileZilla Client and WinSCP by platform, protocols, editing, automation and portable use, with sources and clear limitations." />
+    <meta property="og:url" content="https://ftpeach.com/compare.html" />
+    <meta property="og:image" content="https://ftpeach.com/og.jpg" />
+    <script src="theme-init.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="guide.css" />
+    <script src="guide.js" defer></script>
+  </head>
+  <body class="guide-page">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html" translate="no"><img src="icon.png" alt="" width="32" height="32" />FTPeach</a>
+        <nav class="nav" aria-label="Sections">
+          <a href="index.html">Home</a>
+          <a class="nav-guide" href="guide/index.html">User guide</a>
+          <a class="nav-compare" href="compare.html" aria-current="page">Compare</a>
+          <a href="https://github.com/Smooveemaan/ftpeach">GitHub</a>
+        </nav>
+        <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" hidden>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" /></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2m0 15v2M4.6 4.6 6 6m12 12 1.4 1.4M2.5 12h2m15 0h2M4.6 19.4 6 18M18 6l1.4-1.4" /></svg>
+        </button>
+        <a class="support" href="https://ko-fi.com/smooveemaan" aria-label="Support FTPeach on Ko-fi">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2Z" /></svg>
+          <span>Support</span>
+        </a>
+        <a class="btn btn-primary btn-sm" href="index.html#download">Download</a>
+      </div>
+    </header>
+    <main id="main" class="wrap guide-content comparison" tabindex="-1">
+      <article>
+        <h1>FTPeach vs FileZilla vs WinSCP</h1>
+        <p>Choose a file client for the work you need to do: a quick upload, regular remote edits, or transfers that run without you. All three can move files; their scope and workflows differ.</p>
+        <p class="comparison-meta">Written by the FTPeach project. Documentation reviewed <time datetime="2026-10-20">20 October 2026</time>. This is a feature comparison, not an independent review or a performance benchmark.</p>
+
+        <h2 id="choose">Which one fits your work?</h2>
+        <ul>
+          <li><strong>Consider FTPeach</strong> for hands-on transfers on Windows when you want either pane to show your computer or a server, including WebDAV. Start with its <a href="guide/interface.html">interface guide</a> to see whether that arrangement suits you.</li>
+          <li><strong>Consider FileZilla Client</strong> when you want a free graphical FTP, FTPS or SFTP client across Windows, macOS and Linux. Its <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">documented workflow</a> includes a transfer queue, multiple connections and directory comparison.</li>
+          <li><strong>Consider WinSCP</strong> on Windows when synchronization, scripted transfers or a built-in editor matter. These are established parts of its <a href="https://winscp.net/eng/docs/feature_index">feature set</a> and <a href="https://winscp.net/eng/docs/task_edit">editing workflow</a>.</li>
+        </ul>
+        <p>These are recommendations based on documented capabilities, not a usability ranking. If your current client already does the job reliably, this comparison is not a reason by itself to switch.</p>
+
+        <h2 id="comparison">The capabilities that change the choice</h2>
+        <p>The FileZilla column means the <strong>free FileZilla Client desktop application</strong>. FileZilla Pro and the CLI products are separate offerings, described below. Sources beside each product cover the corresponding table entries.</p>
+        <p class="comparison-meta" id="table-help">On a narrow screen, scroll the table sideways to see every client.</p>
+        <div class="comparison-table" role="region" aria-label="Client capability comparison" aria-describedby="table-help" tabindex="0">
+          <table>
+            <caption>Desktop clients compared by task</caption>
+            <thead><tr><th scope="col">What you need</th><th scope="col">FTPeach</th><th scope="col">FileZilla Client</th><th scope="col">WinSCP</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Operating system</th><td>Windows</td><td>Windows, macOS, Linux</td><td>Windows</td></tr>
+              <tr><th scope="row">Connections</th><td>FTP, explicit FTPS, SFTP, WebDAV</td><td>FTP, FTPS, SFTP</td><td>FTP, FTPS, SFTP, SCP, WebDAV, S3</td></tr>
+              <tr><th scope="row">Everyday file work</th><td>Browse, upload, download, rename, delete; local or remote folders in either pane</td><td>Local and remote browsing, transfers, file management and directory comparison</td><td>File management, transfers; Commander or Explorer interface</td></tr>
+              <tr><th scope="row">Remote editing</th><td>External application; confirmation before uploading a changed copy</td><td>External editor with upload of changes</td><td>Built-in text editor or external editor with upload of changes</td></tr>
+              <tr><th scope="row">Unattended transfers</th><td>No transfer scripting interface</td><td>Separate paid CLI product for scripted transfers</td><td>Scripting interface and .NET assembly</td></tr>
+              <tr><th scope="row">Folder synchronization</th><td>No automatic folder synchronization</td><td>Directory comparison and synchronized browsing; these do not themselves synchronize file contents</td><td>Directory synchronization and “Keep remote directory up to date”</td></tr>
+              <tr><th scope="row">Portable use on Windows</th><td>Portable ZIP; settings travel with the copy</td><td>ZIP plus configuration for portable settings</td><td>Portable package with INI configuration</td></tr>
+              <tr><th scope="row">Cost and source license</th><td>Free; Apache-2.0</td><td>Free; GNU GPL</td><td>Free download; GNU GPL v3 or later</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="comparison-sources">
+          <li><strong>FTPeach:</strong> <a href="guide/protocol-reference.html">protocol reference</a>, <a href="guide/interface.html">file panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/portable.html">portable use</a> and <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/LICENSE">license</a>.</li>
+          <li><strong>FileZilla:</strong> <a href="https://wiki.filezilla-project.org/Client_Installation">platforms and portable setup</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">client features</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">directory comparison</a> and <a href="https://filezillapro.com/docs/v3/filezilla-product-comparisons/filezilla-pro-vs-filezilla-pro-cli-ui-based-transfers-vs-command-line-automation/">editions and licensing</a>.</li>
+          <li><strong>WinSCP:</strong> <a href="https://winscp.net/eng/docs/introduction">platform</a>, <a href="https://winscp.net/eng/docs/protocols">protocols</a>, <a href="https://winscp.net/eng/docs/feature_index">interfaces</a>, <a href="https://winscp.net/eng/docs/task_edit">editing</a>, <a href="https://winscp.net/eng/docs/scripting">automation</a>, <a href="https://winscp.net/eng/docs/task_synchronize">synchronization</a>, <a href="https://winscp.net/eng/docs/portable">portable use</a> and <a href="https://winscp.net/eng/docs/license">license</a>.</li>
+        </ul>
+
+        <h2 id="daily-work">What this means in daily work</h2>
+        <h3>Uploading a website</h3>
+        <p>For a manual upload over FTP, FTPS or SFTP, all three cover the basic task. FTPeach lets you put the source and destination in two panes and copy between them. FileZilla adds a directory-comparison view to help identify differences. WinSCP offers synchronization when you want the client to work out what needs transferring. Choose according to how you maintain the site, not a count of check marks.</p>
+        <p>See <a href="guide/getting-started.html">FTPeach's first transfer</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">FileZilla directory comparison</a> and <a href="https://winscp.net/eng/docs/task_synchronize">WinSCP synchronization</a>.</p>
+
+        <h3>Working with several servers</h3>
+        <p>FTPeach can show a different server in each pane and copy between them. The data passes through your computer; this is not a direct server-to-server transfer. FileZilla supports multiple connections through tabs. WinSCP offers sessions and saved workspaces. Those are different ways to organize work, not evidence that one client handles every multi-server task better.</p>
+        <p>See <a href="guide/transfers.html">FTPeach transfers</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">FileZilla tabs</a> and <a href="https://winscp.net/eng/docs/feature_index">WinSCP workspaces</a>.</p>
+
+        <h3>Editing a remote file regularly</h3>
+        <p>FTPeach opens a local copy in another application and asks before sending a changed copy back. It does not include a text editor. FileZilla also works with an external editor. WinSCP offers both an internal editor and external applications. If you want a built-in editor, WinSCP meets that requirement; if you already have an editor, try the save-and-upload flow before choosing.</p>
+        <p>See <a href="guide/editing.html">FTPeach editing</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">FileZilla editing</a> and <a href="https://winscp.net/eng/docs/task_edit">WinSCP editing</a>.</p>
+
+        <h2 id="limits">When FTPeach is not the right fit</h2>
+        <ul>
+          <li>You need a supported macOS or Linux desktop release. FTPeach currently ships for Windows.</li>
+          <li>You need a scheduled deployment, a transfer script or automatic folder synchronization. FTPeach currently focuses on interactive work; WinSCP documents <a href="https://winscp.net/eng/docs/scripting">automation</a> for these tasks.</li>
+          <li>You need SCP, S3 or a native Google Drive or OneDrive connector. FTPeach provides FTP, explicit FTPS, SFTP and WebDAV, not those additional protocols or provider APIs. A provider's WebDAV endpoint is a separate option only if that provider offers one.</li>
+          <li>Your server requires implicit FTPS or WebDAV Digest authentication. FTPeach does not support them. WebDAV uploads also restart rather than resume. Check the <a href="guide/protocol-reference.html">protocol limits</a> before adopting it.</li>
+        </ul>
+        <p>FTPeach is at version 0.5.0 in this comparison. The tests behind its guide help establish specific behavior; they do not establish greater reliability or security than another client. We have not run equivalent cross-client failure, speed or memory-use benchmarks.</p>
+
+        <h2 id="editions">Where FileZilla Pro and CLI fit</h2>
+        <p>Do not interpret the free-client column as a limit of the entire FileZilla family. <a href="https://filezillapro.com/filezilla-pro/">FileZilla Pro</a> adds WebDAV and cloud-storage integrations. <a href="https://filezillapro.com/cli/">FileZilla CLI and FileZilla Pro CLI</a> are paid command-line products for automation. Check the edition, platform and current terms that match your needs; a Pro desktop license and a CLI license are not interchangeable descriptions of the same product.</p>
+
+        <h2 id="scope">Scope and keeping this comparison current</h2>
+        <p>This page covers FTPeach 0.5.0, the documented FileZilla Client 3.x desktop family, and WinSCP 6.7, listed in its <a href="https://winscp.net/updatenews.php">release news</a>. FileZilla's exact current patch version was not independently confirmed. Competitor features were checked against the official documentation linked above, not by running those applications side by side.</p>
+        <p>The FTPeach claims link to its tested user guide; the absence of scripting, folder synchronization and extra provider connectors was checked against the 0.5.0 source. The review date records that check, not an automatic guarantee that these products have stayed unchanged. Feature or edition changes require a new source review.</p>
+        <p>Before switching, try a representative folder, a filename used in your own work, and a save-and-upload cycle on a test location. For unattended jobs, check failure reporting and overwrite behavior too. These are suggested checks for your environment, not results we claim to have measured.</p>
+        <p>Explore the <a href="guide/index.html">FTPeach user guide</a>, <a href="https://filezilla-project.org/">FileZilla project</a> or <a href="https://winscp.net/">WinSCP project</a>. Found a stale claim? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
+      </article>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>FTPeach · Free and open source · Apache-2.0</span>
+        <nav aria-label="Links">
+          <a href="index.html">Home</a>
+          <a href="guide/index.html">User guide</a>
+          <a href="compare.html" aria-current="page">Compare</a>
+          <a href="https://github.com/Smooveemaan/ftpeach/issues">Report a bug</a>
+          <a href="https://github.com/Smooveemaan/ftpeach">GitHub</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

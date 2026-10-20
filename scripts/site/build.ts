@@ -114,6 +114,7 @@ async function main() {
   });
   await cp(path.join(root, 'site/fonts'), path.join(out, 'fonts'), { recursive: true });
   for (const file of [
+    'compare.html',
     'robots.txt',
     'palettes.js',
     'styles.css',

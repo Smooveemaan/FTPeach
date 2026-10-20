@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { JSDOM } from 'jsdom';
+import { renderGuide } from '../../../scripts/site/guide.ts';
 import {
   countDownloads,
   DOWNLOADS_SHOWN_FROM,
@@ -14,6 +16,45 @@ const download = (name: string) => ({
   browser_download_url: `https://github.com/Smooveemaan/ftpeach/releases/download/v1.2.3/${name}`,
 });
 const stats = { stars: 10, downloads: 60 };
+
+test('Compare is a separate article reachable from both navigation areas with valid local links', async () => {
+  const article = new JSDOM(
+    await readFile(new URL('../../../site/compare.html', import.meta.url), 'utf8'),
+  ).window.document;
+  assert.equal(article.querySelectorAll('h1').length, 1);
+  assert.equal(
+    article.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+    'https://ftpeach.com/compare.html',
+  );
+  assert.ok(article.querySelector('meta[name="description"]')?.getAttribute('content'));
+  assert.equal(article.querySelector('.guide-sidebar'), null);
+  assert.ok(article.querySelector('time[datetime]'));
+  assert.equal(article.querySelectorAll('thead th[scope="col"]').length, 4);
+  for (const source of [html, article.documentElement.outerHTML]) {
+    const doc = new JSDOM(source).window.document;
+    for (const area of ['.site-header', '.site-footer'])
+      assert.equal(doc.querySelector(`${area} a[href="compare.html"]`)?.textContent, 'Compare');
+  }
+  for (const link of article.querySelectorAll('a[href]')) {
+    const href = link.getAttribute('href')!;
+    if (href.startsWith('https://')) continue;
+    const [file, fragment] = href.split('#');
+    let target = article;
+    if (file?.startsWith('guide/')) {
+      const slug = file.slice(6, -5);
+      target = new JSDOM(
+        renderGuide(
+          await readFile(new URL(`../../../docs/guide/${slug}.md`, import.meta.url), 'utf8'),
+          slug,
+        ).content,
+      ).window.document;
+    } else if (file && file !== 'compare.html') {
+      target = new JSDOM(await readFile(new URL(`../../../site/${file}`, import.meta.url), 'utf8'))
+        .window.document;
+    }
+    if (fragment) assert.ok(target.getElementById(fragment), href);
+  }
+});
 
 test('a release with a portable copy offers both downloads', () => {
   const release: Release = {

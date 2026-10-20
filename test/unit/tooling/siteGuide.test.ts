@@ -114,13 +114,16 @@ test('every built guide page has metadata, working navigation and matching sitem
             ? '../index.html'
             : href?.startsWith('#')
               ? `../index.html${href}`
-              : href,
+              : href === 'compare.html'
+                ? '../compare.html'
+                : href,
       }));
     const sitemap = new JSDOM(await readFile(path.join(out, 'sitemap.xml'), 'utf8'), {
       contentType: 'text/xml',
     }).window.document;
     const urls = [...sitemap.querySelectorAll('loc')].map((node) => node.textContent);
-    assert.equal(urls.length, GUIDE_PAGES.length + 1);
+    assert.equal(urls.length, GUIDE_PAGES.length + 2);
+    assert.ok(urls.includes('https://ftpeach.com/compare.html'));
     const documents = new Map<string, Document>();
     for (const page of GUIDE_PAGES) {
       const html = await readFile(path.join(out, `guide/${page.slug}.html`), 'utf8');

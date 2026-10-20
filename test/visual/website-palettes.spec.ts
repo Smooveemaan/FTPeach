@@ -274,11 +274,12 @@ test('the mobile header keeps the guide visible and reduced motion skips scrolli
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openSite(page);
-  for (const width of [320, 359, 390, 479, 480, 768, 860, 979, 980, 1024]) {
+  for (const width of [320, 359, 390, 479, 480, 599, 600, 768, 860, 979, 980, 1024, 1150, 1151]) {
     await page.setViewportSize({ width, height: 844 });
     await page.evaluate(() => scrollTo(0, 0));
     const guide = page.locator('.site-header').getByRole('link', { name: 'User guide' });
     await expect(guide).toBeVisible();
+    await expect(page.locator('.site-header').getByRole('link', { name: 'Compare' })).toBeVisible();
     const box = (await guide.boundingBox())!;
     expect(box.y, `guide at ${width}px: ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);

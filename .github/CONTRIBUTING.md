@@ -34,6 +34,11 @@ The website at <https://ftpeach.com/> uses `site/index.html`, shared styles in `
 
 Guide illustrations live in `site/images/guide/` and are copied into the website build. Retake them with the closed screenshot tool after changing the pictured controls: it captures the real application components with example data in the visual harness, without a native profile or live server. Inspect the images before committing; do not draw or retouch interface elements. Keep captions and alt text beside the task they illustrate, and link images to their full-size copies. The website enhances these links with a modal image viewer; direct image links remain the fallback without JavaScript.
 
+The comparison article lives separately in `site/compare.html`.
+When a feature changes, review the article's FTPeach claims too. For competitor
+claims, recheck the linked official sources and update the review date. Keep
+product editions distinct; feature documentation is not a measured benchmark.
+
 The [protocol reference](../docs/guide/protocol-reference.md) is the authoritative
 compatibility table; `docs/protocol-support.md` only preserves old links. When
 updating a protocol dependency, run the protocol tests and review this page.

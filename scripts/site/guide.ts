@@ -186,6 +186,7 @@ export async function buildGuide(root: string, out: string): Promise<void> {
   }
   const urls = [
     'https://ftpeach.com/',
+    'https://ftpeach.com/compare.html',
     ...pages.map(
       (page) => `https://ftpeach.com/guide/${page.slug === 'index' ? '' : `${page.slug}.html`}`,
     ),

@@ -60,9 +60,6 @@
         }
       ]
     </script>
-    <!-- Only the screenshot for the current theme is downloaded. -->
-    <link rel="preload" as="image" href="ftpeach-light.png" media="(prefers-color-scheme: light)" />
-    <link rel="preload" as="image" href="ftpeach-dark.png" media="(prefers-color-scheme: dark)" />
     <script src="theme-init.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -304,7 +301,7 @@
           </div>
           <p class="fine">
             Implicit FTPS is not supported.
-            <a href="https://github.com/Smooveemaan/ftpeach/blob/master/docs/protocol-support.md">All the details</a>
+            <a href="guide/protocol-reference.html">All the details</a>
           </p>
         </div>
       </section>
@@ -483,11 +480,16 @@
       // screen (high zoom, small windows) is aligned to the top instead, so it is never cut off.
       // Layout offsets, not bounding boxes: blocks still waiting to fade in are shifted.
       const pageTop = (el) => (el ? el.offsetTop + pageTop(el.offsetParent) : 0);
+      let scrollFrame = 0;
+      addEventListener('popstate', () => cancelAnimationFrame(scrollFrame));
       document.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         const link = event.target.closest('a[href^="#"]');
         const target = link && document.getElementById(link.getAttribute('href').slice(1));
         if (!target) return;
         event.preventDefault();
+        cancelAnimationFrame(scrollFrame);
+        if (location.hash !== link.hash) history.pushState(null, '', link.hash);
         const start = scrollY;
         const max = root.scrollHeight - innerHeight;
         const header = document.querySelector('.site-header').offsetHeight;
@@ -502,10 +504,10 @@
         const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
         const began = performance.now();
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) scrollTo(0, end);
-        else requestAnimationFrame(function step(now) {
+        else scrollFrame = requestAnimationFrame(function step(now) {
           const t = Math.min(1, (now - began) / duration);
           scrollTo(0, start + (end - start) * ease(t));
-          if (t < 1) requestAnimationFrame(step);
+          if (t < 1) scrollFrame = requestAnimationFrame(step);
         });
         if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
         target.focus({ preventScroll: true });

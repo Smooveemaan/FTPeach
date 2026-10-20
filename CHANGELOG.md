@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Links to homepage sections preserve their address and work with the browser's Back button.
 - Bookmark names show the lower parts of letters such as `g` and `y` in Manage Bookmarks.
 - Letters such as `www` no longer join together in folder paths.
 

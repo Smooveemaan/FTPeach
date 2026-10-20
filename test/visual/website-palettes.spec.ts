@@ -269,6 +269,35 @@ test('header transition waits for the preview and does not start a second fade',
     });
 });
 
+test('homepage sections keep their address and browser history without preloading unused screenshots', async ({
+  page,
+}) => {
+  const images: string[] = [];
+  page.on('request', (request) => {
+    if (request.resourceType() === 'image') images.push(request.url());
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
+  await page.addInitScript(() => localStorage.setItem('theme', 'light'));
+  await openSite(page);
+  const header = page.locator('.site-header');
+  await header.locator('a[href="#features"]').click();
+  await expect(page).toHaveURL('https://preview.test/#features');
+  await expect(page.locator('#features')).toBeFocused();
+  await header.locator('a[href="#protocols"]').click();
+  await expect(page).toHaveURL('https://preview.test/#protocols');
+  await header.locator('a[href="#protocols"]').click();
+  await page.goBack();
+  await expect(page).toHaveURL('https://preview.test/#features');
+  await page.goForward();
+  await expect(page).toHaveURL('https://preview.test/#protocols');
+  await expect(page.getByRole('link', { name: 'All the details' })).toHaveAttribute(
+    'href',
+    'guide/protocol-reference.html',
+  );
+  expect(images.some((url) => url.endsWith('/ftpeach-dark.png'))).toBe(false);
+  expect(images.some((url) => url.endsWith('/ftpeach-light.png'))).toBe(true);
+});
+
 test('the mobile header keeps the guide visible and reduced motion skips scrolling and fades', async ({
   page,
 }) => {

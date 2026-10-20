@@ -12,7 +12,7 @@ folders you want to send.
 | Server → computer | Download to other pane |
 | Server → another server | Copy to other pane |
 
-[![The local file menu with Upload to other pane below Open.](../../site/images/guide/upload-menu.png)](../../site/images/guide/upload-menu.png)
+[![Upload to other pane in the local file menu.](../../site/images/guide/upload-menu.png)](../../site/images/guide/upload-menu.png)
 
 Right-click the source selection. **Upload to other pane** sends it to the server
 folder open on the other side.

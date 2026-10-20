@@ -23,7 +23,7 @@ Check that you have permission to replace the server copy.
 5. Check the upload result and, where appropriate, check the file in the system
    that uses it, such as the website or application you are updating.
 
-[![The server file menu with Open and Open with at the top.](../../site/images/guide/remote-file-menu.png)](../../site/images/guide/remote-file-menu.png)
+[![Open and Open with in the server file menu.](../../site/images/guide/remote-file-menu.png)](../../site/images/guide/remote-file-menu.png)
 
 Use **Open** for the usual application, or **Open with** to choose a program.
 

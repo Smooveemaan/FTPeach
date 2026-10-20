@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FTPeach vs FileZilla vs WinSCP · FTPeach</title>
-    <meta name="description" content="Compare FTPeach, FileZilla Client and WinSCP by platform, protocols, editing, automation and portable use, with sources and clear limitations." />
+    <meta name="description" content="Should you switch from FileZilla or WinSCP to FTPeach? Compare everyday workflows, benefits, limitations and the work needed to move your connections." />
     <link rel="canonical" href="https://ftpeach.com/compare.html" />
     <link rel="icon" href="favicon.ico" />
     <meta name="color-scheme" content="light dark" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="FTPeach" />
     <meta property="og:title" content="FTPeach vs FileZilla vs WinSCP · FTPeach" />
-    <meta property="og:description" content="Compare FTPeach, FileZilla Client and WinSCP by platform, protocols, editing, automation and portable use, with sources and clear limitations." />
+    <meta property="og:description" content="Should you switch from FileZilla or WinSCP to FTPeach? Compare everyday workflows, benefits, limitations and the work needed to move your connections." />
     <meta property="og:url" content="https://ftpeach.com/compare.html" />
     <meta property="og:image" content="https://ftpeach.com/og.jpg" />
     <script src="theme-init.js"></script>
@@ -44,16 +44,23 @@
     <main id="main" class="wrap guide-content comparison" tabindex="-1">
       <article>
         <h1>FTPeach vs FileZilla vs WinSCP</h1>
-        <p>Choose a file client for the work you need to do: a quick upload, regular remote edits, or transfers that run without you. All three can move files; their scope and workflows differ.</p>
+        <p>Already using FileZilla or WinSCP on Windows? FTPeach is worth trying if you want to keep two servers visible side by side, or use WebDAV without a paid FileZilla edition. Here is what you gain, what you give up and what moving your work involves.</p>
         <p class="comparison-meta">Written by the FTPeach project. Documentation reviewed <time datetime="2026-10-20">20 October 2026</time>. This is a feature comparison, not an independent review or a performance benchmark.</p>
 
-        <h2 id="choose">Which one fits your work?</h2>
+        <h2 id="choose">Should you switch to FTPeach?</h2>
+        <h3 id="from-filezilla">Coming from FileZilla Client</h3>
+        <p><strong>Try FTPeach if you want two remote folders in view at once, or need free WebDAV.</strong> Either pane can show your computer or a server, so you can browse both ends of a server-to-server copy together. Free FileZilla Client uses local and remote views; WebDAV belongs to FileZilla Pro. FTP, FTPS and SFTP are shared capabilities.</p>
+        <p><strong>Stay with FileZilla if directory comparison, exporting a queue for later, or using the same client on macOS and Linux matters more.</strong> FTPeach is Windows-only and does not restore its queue after a full exit. See the <a href="#comparison">task comparison</a> and <a href="#daily-work">workflow details</a>.</p>
+        <h3 id="from-winscp">Coming from WinSCP</h3>
+        <p><strong>Try FTPeach if you want a server in each pane while you browse and copy.</strong> WinSCP can also copy between servers through your computer; FTPeach's distinction is keeping both remote folders visible together. WebDAV is free in both.</p>
+        <p><strong>Stay with WinSCP if you rely on its scripts, folder synchronization or built-in editor.</strong> FTPeach does not replace those tools. Its external-editor workflow suits people who already have an editor and want to approve changed files before uploading.</p>
+        <h3>Reasons to keep your current workflow</h3>
         <ul>
-          <li><strong>Consider FTPeach</strong> for hands-on transfers on Windows when you want either pane to show your computer or a server, including WebDAV. Start with its <a href="guide/interface.html">interface guide</a> to see whether that arrangement suits you.</li>
-          <li><strong>Consider FileZilla Client</strong> when you want a free graphical FTP, FTPS or SFTP client across Windows, macOS and Linux. Its <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">documented workflow</a> includes a transfer queue, multiple connections and directory comparison.</li>
-          <li><strong>Consider WinSCP</strong> on Windows when synchronization, scripted transfers or a built-in editor matter. These are established parts of its <a href="https://winscp.net/eng/docs/feature_index">feature set</a> and <a href="https://winscp.net/eng/docs/task_edit">editing workflow</a>.</li>
+          <li>You need unattended transfers or automatic folder synchronization: FTPeach has neither a transfer scripting interface nor automatic synchronization.</li>
+          <li>You need an editor inside the client: FTPeach opens files in another application.</li>
+          <li>You need to exit and later restore a saved transfer queue: FTPeach starts a new process with an empty queue. A paused upload is not a saved job for the next launch.</li>
         </ul>
-        <p>These are recommendations based on documented capabilities, not a usability ranking. If your current client already does the job reliably, this comparison is not a reason by itself to switch.</p>
+        <p>Check the <a href="#limits">protocol and platform limits</a> too. If none of the differences solves a problem in your work, there is little reason to switch.</p>
 
         <h2 id="comparison">The capabilities that change the choice</h2>
         <p>The FileZilla column means the <strong>free FileZilla Client desktop application</strong>. FileZilla Pro and the CLI products are separate offerings, described below. Sources beside each product cover the corresponding table entries.</p>
@@ -65,19 +72,22 @@
             <tbody>
               <tr><th scope="row">Operating system</th><td>Windows</td><td>Windows, macOS, Linux</td><td>Windows</td></tr>
               <tr><th scope="row">Connections</th><td>FTP, explicit FTPS, SFTP, WebDAV</td><td>FTP, FTPS, SFTP</td><td>FTP, FTPS, SFTP, SCP, WebDAV, S3</td></tr>
-              <tr><th scope="row">Everyday file work</th><td>Browse, upload, download, rename, delete; local or remote folders in either pane</td><td>Local and remote browsing, transfers, file management and directory comparison</td><td>File management, transfers; Commander or Explorer interface</td></tr>
+              <tr><th scope="row">Panes and connections</th><td>Local or remote folders in either pane, including two remote folders; tabs</td><td>Local and remote views; connection tabs</td><td>Commander: local/remote or two local panes; session tabs; Explorer interface also available</td></tr>
+              <tr><th scope="row">Everyday file work</th><td>Browse, upload, download, rename and delete</td><td>Browse, transfer and manage files; directory comparison</td><td>Browse, transfer and manage files; directory synchronization</td></tr>
               <tr><th scope="row">Remote editing</th><td>External application; confirmation before uploading a changed copy</td><td>External editor with upload of changes</td><td>Built-in text editor or external editor with upload of changes</td></tr>
               <tr><th scope="row">Unattended transfers</th><td>No transfer scripting interface</td><td>Separate paid CLI product for scripted transfers</td><td>Scripting interface and .NET assembly</td></tr>
               <tr><th scope="row">Folder synchronization</th><td>No automatic folder synchronization</td><td>Directory comparison and synchronized browsing; these do not themselves synchronize file contents</td><td>Directory synchronization and “Keep remote directory up to date”</td></tr>
-              <tr><th scope="row">Portable use on Windows</th><td>Portable ZIP; settings travel with the copy</td><td>ZIP plus configuration for portable settings</td><td>Portable package with INI configuration</td></tr>
+              <tr><th scope="row">Saved connections and passwords</th><td>Bookmarks; Windows-account encryption without a master password, or a master-password vault</td><td>Site Manager; optional master password; without it, saved passwords are reversibly encoded</td><td>Saved sites; optional master password; without it, saved passwords are easily decrypted</td></tr>
+              <tr><th scope="row">Interrupted transfers</th><td>Pause/resume with protocol limits; reconnect before Retry; queue lost after full exit</td><td>Failed transfers can be requeued; resume options; queue export/import for later</td><td>Automatic reconnect and resume for FTP/SFTP; resume depends on protocol and settings</td></tr>
+              <tr><th scope="row">Portable use on Windows</th><td>Portable ZIP; settings travel with the copy; moving saved passwords between computers requires a master password</td><td>ZIP plus configuration for portable settings</td><td>Portable package with INI configuration</td></tr>
               <tr><th scope="row">Cost and source license</th><td>Free; Apache-2.0</td><td>Free; GNU GPL</td><td>Free download; GNU GPL v3 or later</td></tr>
             </tbody>
           </table>
         </div>
         <ul class="comparison-sources">
-          <li><strong>FTPeach:</strong> <a href="guide/protocol-reference.html">protocol reference</a>, <a href="guide/interface.html">file panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/portable.html">portable use</a> and <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/LICENSE">license</a>.</li>
-          <li><strong>FileZilla:</strong> <a href="https://wiki.filezilla-project.org/Client_Installation">platforms and portable setup</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">client features</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">directory comparison</a> and <a href="https://filezillapro.com/docs/v3/filezilla-product-comparisons/filezilla-pro-vs-filezilla-pro-cli-ui-based-transfers-vs-command-line-automation/">editions and licensing</a>.</li>
-          <li><strong>WinSCP:</strong> <a href="https://winscp.net/eng/docs/introduction">platform</a>, <a href="https://winscp.net/eng/docs/protocols">protocols</a>, <a href="https://winscp.net/eng/docs/feature_index">interfaces</a>, <a href="https://winscp.net/eng/docs/task_edit">editing</a>, <a href="https://winscp.net/eng/docs/scripting">automation</a>, <a href="https://winscp.net/eng/docs/task_synchronize">synchronization</a>, <a href="https://winscp.net/eng/docs/portable">portable use</a> and <a href="https://winscp.net/eng/docs/license">license</a>.</li>
+          <li><strong>FTPeach:</strong> <a href="guide/protocol-reference.html">protocol reference</a>, <a href="guide/interface.html">file panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/passwords.html">passwords</a>, <a href="guide/transfers.html">transfer recovery</a>, <a href="guide/portable.html">portable use</a> and <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/LICENSE">license</a>.</li>
+          <li><strong>FileZilla:</strong> <a href="https://wiki.filezilla-project.org/Client_Installation">platforms and portable setup</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">client features</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">directory comparison</a>, <a href="https://filezillapro.com/docs/v3/advanced/master-password/">passwords</a>, <a href="https://filezillapro.com/docs/v3/advanced/repeat-file-transfers/">retry</a>, <a href="https://filezillapro.com/docs/v3/advanced/export-import-transferqueue/">queue export/import</a>, <a href="https://filezillapro.com/docs/v3/basic-usage-instructions/speed-up-file-transfers/">resume settings</a> and <a href="https://filezillapro.com/docs/v3/filezilla-product-comparisons/filezilla-pro-vs-filezilla-pro-cli-ui-based-transfers-vs-command-line-automation/">editions and licensing</a>.</li>
+          <li><strong>WinSCP:</strong> <a href="https://winscp.net/eng/docs/introduction">platform</a>, <a href="https://winscp.net/eng/docs/protocols">protocols</a>, <a href="https://winscp.net/eng/docs/ui_commander">panes</a>, <a href="https://winscp.net/eng/docs/task_edit">editing</a>, <a href="https://winscp.net/eng/docs/scripting">automation</a>, <a href="https://winscp.net/eng/docs/task_synchronize">synchronization</a>, <a href="https://winscp.net/eng/docs/master_password">passwords</a>, <a href="https://winscp.net/eng/docs/resume">transfer recovery</a>, <a href="https://winscp.net/eng/docs/portable">portable use</a> and <a href="https://winscp.net/eng/docs/license">license</a>.</li>
         </ul>
 
         <h2 id="daily-work">What this means in daily work</h2>
@@ -86,12 +96,31 @@
         <p>See <a href="guide/getting-started.html">FTPeach's first transfer</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">FileZilla directory comparison</a> and <a href="https://winscp.net/eng/docs/task_synchronize">WinSCP synchronization</a>.</p>
 
         <h3>Working with several servers</h3>
-        <p>FTPeach can show a different server in each pane and copy between them. The data passes through your computer; this is not a direct server-to-server transfer. FileZilla supports multiple connections through tabs. WinSCP offers sessions and saved workspaces. Those are different ways to organize work, not evidence that one client handles every multi-server task better.</p>
-        <p>See <a href="guide/transfers.html">FTPeach transfers</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">FileZilla tabs</a> and <a href="https://winscp.net/eng/docs/feature_index">WinSCP workspaces</a>.</p>
+        <p>When copying from one server to another in FTPeach, open the source in one pane and the destination in the other. Both remote folders stay visible as you browse and choose files. The data passes through your computer; this is not a direct server-to-server transfer.</p>
+        <p>WinSCP also copies between servers through a local temporary copy, including by dropping files onto another session tab. Its Commander interface shows local/remote or two local panes. FileZilla organizes multiple connections through tabs alongside its local and remote views. The reason to try FTPeach here is the arrangement of the two remote folders, not an exclusive ability to copy between servers.</p>
+        <p>See <a href="guide/interface.html">FTPeach panes</a>, <a href="guide/transfers.html">FTPeach transfers</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">FileZilla tabs</a> and <a href="https://winscp.net/eng/docs/task_move_duplicate">WinSCP copying between servers</a>.</p>
 
         <h3>Editing a remote file regularly</h3>
         <p>FTPeach opens a local copy in another application and asks before sending a changed copy back. It does not include a text editor. FileZilla also works with an external editor. WinSCP offers both an internal editor and external applications. If you want a built-in editor, WinSCP meets that requirement; if you already have an editor, try the save-and-upload flow before choosing.</p>
         <p>See <a href="guide/editing.html">FTPeach editing</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">FileZilla editing</a> and <a href="https://winscp.net/eng/docs/task_edit">WinSCP editing</a>.</p>
+
+        <h3>Saving passwords and unlocking them</h3>
+        <p>FTPeach encrypts saved passwords for your Windows account even if you do not set a master password. This is useful if you want encrypted storage without another password prompt. Anyone acting as that Windows user can still read those secrets. FileZilla documents reversible encoding without a master password; WinSCP likewise warns that its saved passwords are easily decrypted without one.</p>
+        <p>All three offer master-password protection. FTPeach also lets you enable Windows Hello to unlock its vault after setup; keep your master password for fallback. These are specific storage and unlock differences, not evidence that one client is safer overall.</p>
+        <p>See <a href="guide/passwords.html">FTPeach password protection and Windows Hello</a>, <a href="https://filezillapro.com/docs/v3/advanced/master-password/">FileZilla password options</a> and <a href="https://winscp.net/eng/docs/master_password">WinSCP master password</a>.</p>
+
+        <h3>Continuing interrupted work</h3>
+        <p>FTPeach can pause and resume transfers within its protocol limits. After a lost connection, reconnect to the same server and account before using Retry. A full exit clears the queue, and paused uploads are not saved for the next launch. For an interrupted download, selecting the same file and destination again can reuse retained partial data after source checks; it does not restore the old queue.</p>
+        <p>FileZilla lets you requeue failed transfers and export/import its queue for later. WinSCP documents automatic reconnect and resume for FTP and SFTP. These workflows differ: a resume option does not by itself mean every interrupted job survives an application exit.</p>
+        <p>See <a href="guide/transfers.html#before-a-full-exit-or-restart">FTPeach exit and recovery limits</a>, <a href="https://filezillapro.com/docs/v3/advanced/export-import-transferqueue/">FileZilla queue export/import</a> and <a href="https://winscp.net/eng/docs/resume">WinSCP recovery</a>.</p>
+
+        <h2 id="switching">What moving to FTPeach involves</h2>
+        <ul>
+          <li><strong>Recreate saved connections.</strong> FTPeach 0.5.0 imports its own settings exports, not FileZilla or WinSCP connection exports. Have your server details and credentials ready, then <a href="guide/connecting.html#save-a-connection-you-will-use-again">save each connection as a bookmark</a>.</li>
+          <li><strong>Choose an external editor.</strong> Use an application installed on Windows. Saving an edit copy does not update the server until you approve Upload; follow the <a href="guide/editing.html">editing workflow</a>.</li>
+          <li><strong>Keep tools for jobs FTPeach does not replace.</strong> Scripts, scheduled transfers and automatic synchronization need another tool. Finish important transfers before a full FTPeach exit.</li>
+        </ul>
+        <p>Try a representative folder and an edit-and-upload cycle on a test location before moving your daily work. See <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/src-tauri/src/commands/app_settings_transfer.rs">the released settings importer</a> for the import scope and the <a href="guide/getting-started.html">first-transfer guide</a> to get started.</p>
 
         <h2 id="limits">When FTPeach is not the right fit</h2>
         <ul>
@@ -107,8 +136,8 @@
 
         <h2 id="scope">Scope and keeping this comparison current</h2>
         <p>This page covers FTPeach 0.5.0, the documented FileZilla Client 3.x desktop family, and WinSCP 6.7, listed in its <a href="https://winscp.net/updatenews.php">release news</a>. FileZilla's exact current patch version was not independently confirmed. Competitor features were checked against the official documentation linked above, not by running those applications side by side.</p>
-        <p>The FTPeach claims link to its tested user guide; the absence of scripting, folder synchronization and extra provider connectors was checked against the 0.5.0 source. The review date records that check, not an automatic guarantee that these products have stayed unchanged. Feature or edition changes require a new source review.</p>
-        <p>Before switching, try a representative folder, a filename used in your own work, and a save-and-upload cycle on a test location. For unattended jobs, check failure reporting and overwrite behavior too. These are suggested checks for your environment, not results we claim to have measured.</p>
+        <p>The FTPeach claims link to its tested user guide; import support and the absence of scripting, folder synchronization and extra provider connectors were checked against the 0.5.0 source. The review date records that check, not an automatic guarantee that these products have stayed unchanged. Feature or edition changes require a new source review.</p>
+        <p>The suggested trial above is a check for your environment, not a result we claim to have measured. We do not claim that FTPeach's editing confirmation is exclusive to it, or that an undocumented competitor feature is absent.</p>
         <p>Explore the <a href="guide/index.html">FTPeach user guide</a>, <a href="https://filezilla-project.org/">FileZilla project</a> or <a href="https://winscp.net/">WinSCP project</a>. Found a stale claim? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
       </article>
     </main>

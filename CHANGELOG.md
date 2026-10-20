@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Compare FTPeach, FileZilla Client and WinSCP on a dedicated website page.
+- Compare FTPeach, FileZilla Client and WinSCP on a dedicated website page, with reasons to switch or stay and what moving your work involves.
 
 - The website's user guide covers everyday tasks, password protection and common problems,
   with collapsible navigation, clear warnings and focused screenshots that enlarge on the page.

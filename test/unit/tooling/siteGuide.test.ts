@@ -162,6 +162,14 @@ test('every built guide page has metadata, working navigation and matching sitem
       new Set([...documents.values()].map((document) => document.title)).size,
       GUIDE_PAGES.length,
     );
+    const legacyReference = await readFile(path.join(root, 'docs/protocol-support.md'), 'utf8');
+    const reference = documents.get('protocol-reference.html')!;
+    assert.ok(reference);
+    for (const match of legacyReference.matchAll(/guide\/protocol-reference\.md#([\w-]+)/g)) {
+      assert.ok(match[1]);
+      assert.ok(reference.getElementById(match[1]), `Legacy reference: missing ${match[1]}`);
+    }
+    assert.doesNotMatch(legacyReference, /^\|/m, 'Keep compatibility tables in one document');
     for (const [file, document] of documents) {
       for (const link of document.querySelectorAll('a[href]')) {
         const href = link.getAttribute('href')!;

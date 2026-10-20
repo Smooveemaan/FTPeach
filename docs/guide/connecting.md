@@ -20,7 +20,7 @@ provider. A website address alone may not be the file transfer address.
 
 SFTP and FTPS are different protocols, even if both are described as "secure
 FTP" by a provider. Do not switch between them just to make an error disappear.
-The [protocol reference](../protocol-support.md) lists compatibility details.
+The [protocol reference](protocol-reference.md) lists compatibility details.
 
 For step-by-step setup, see [FTP](ftp.md), [FTPS](ftps.md), [SFTP](sftp.md) or [WebDAV](webdav.md).
 

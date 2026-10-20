@@ -101,24 +101,60 @@ mod local_integration_tests {
         }
     }
 
+    #[tokio::test]
+    async fn explicit_ftps_connects_with_tls12_and_tls13() {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        for version in [&rustls::version::TLS12, &rustls::version::TLS13] {
+            let decode = |value| {
+                base64::engine::general_purpose::STANDARD
+                    .decode(value)
+                    .unwrap()
+            };
+            let (port, server) =
+                spawn_ftps_server_with_cert(decode(TEST_CERT_DER), decode(TEST_KEY_DER), version)
+                    .await;
+            let map = json!({
+                "protocol": "ftp", "host": "127.0.0.1", "port": port,
+                "user": "local", "password": "test", "secure": true,
+                "allowInvalidCert": true
+            })
+            .as_object()
+            .unwrap()
+            .clone();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
+            let mut backend = FtpBackend::new();
+            let result = backend.connect(&config).await;
+            server.abort();
+            result.unwrap();
+            assert!(backend.is_connected());
+            backend.disconnect().await.unwrap();
+        }
+    }
+
     async fn spawn_ftps_server() -> (u16, tokio::task::JoinHandle<()>) {
         let decode = |value| {
             base64::engine::general_purpose::STANDARD
                 .decode(value)
                 .unwrap()
         };
-        spawn_ftps_server_with_cert(decode(TEST_CERT_DER), decode(TEST_KEY_DER)).await
+        spawn_ftps_server_with_cert(
+            decode(TEST_CERT_DER),
+            decode(TEST_KEY_DER),
+            &rustls::version::TLS12,
+        )
+        .await
     }
 
     async fn spawn_ftps_server_with_cert(
         cert_der: Vec<u8>,
         key_der: Vec<u8>,
+        version: &'static rustls::SupportedProtocolVersion,
     ) -> (u16, tokio::task::JoinHandle<()>) {
         let cert = rustls_pki_types::CertificateDer::from(cert_der);
         let key = rustls_pki_types::PrivateKeyDer::Pkcs8(
             rustls_pki_types::PrivatePkcs8KeyDer::from(key_der),
         );
-        let tls = rustls::ServerConfig::builder_with_protocol_versions(&[&rustls::version::TLS12])
+        let tls = rustls::ServerConfig::builder_with_protocol_versions(&[version])
             .with_no_client_auth()
             .with_single_cert(vec![cert], key)
             .unwrap();
@@ -748,6 +784,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         let (port, server) = spawn_ftps_server_with_cert(
             decode(MATCHING_LEAF_CERT_DER),
             decode(MATCHING_LEAF_KEY_DER),
+            &rustls::version::TLS12,
         )
         .await;
         let dir =

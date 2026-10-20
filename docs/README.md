@@ -15,7 +15,7 @@
 ## Runtime behavior
 
 - [User guide](guide/index.md): first connection and transfer, everyday file tasks, saved connections and troubleshooting. Behavior statements are backed by checks ([manual checks](manual-checks.md) record the ones a person ran).
-- [Protocol support](protocol-support.md) and [networking](networking.md).
+- [Protocol reference](guide/protocol-reference.md) and [networking](networking.md).
 - [Storage](storage.md) and [transfer safety](transfer-safety.md).
 - [Resilience design](p2-resilience.md) and [lifecycle and resource budgets](optimization-lifecycle.md).
 

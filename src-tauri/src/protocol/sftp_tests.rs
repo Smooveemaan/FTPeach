@@ -4,6 +4,64 @@ use super::*;
 use crate::store::Store;
 
 #[test]
+fn ssh_algorithm_reference_matches_client_defaults() {
+    let preferred = client::Config::default().preferred;
+    let rows: [(&str, Vec<String>); 5] = [
+        (
+            "Key exchange",
+            preferred
+                .kex
+                .iter()
+                .map(|name| name.as_ref().to_owned())
+                .filter(|name| !name.starts_with("ext-info-") && !name.starts_with("kex-strict-"))
+                .collect(),
+        ),
+        (
+            "Host key",
+            preferred.key.iter().map(ToString::to_string).collect(),
+        ),
+        (
+            "Cipher",
+            preferred
+                .cipher
+                .iter()
+                .map(|name| name.as_ref().to_owned())
+                .collect(),
+        ),
+        (
+            "MAC",
+            preferred
+                .mac
+                .iter()
+                .map(|name| name.as_ref().to_owned())
+                .collect(),
+        ),
+        (
+            "Compression",
+            preferred
+                .compression
+                .iter()
+                .map(|name| name.as_ref().to_owned())
+                .collect(),
+        ),
+    ];
+    let reference = include_str!("../../../docs/guide/protocol-reference.md");
+    for (label, actual) in rows {
+        let prefix = format!("| {label} | ");
+        let row = reference
+            .lines()
+            .find(|line| line.starts_with(&prefix))
+            .expect("missing SSH reference row");
+        let documented: Vec<_> = row.split('`').skip(1).step_by(2).collect();
+        assert_eq!(
+            documented, actual,
+            "Update the {label} row after reviewing the SSH defaults"
+        );
+    }
+    assert!(preferred.host_key_certificates.is_empty());
+}
+
+#[test]
 fn openssh_private_keys_load_with_and_without_a_passphrase() {
     use russh::keys::ssh_key::{Algorithm, EcdsaCurve, LineEnding, PrivateKey};
 
@@ -848,6 +906,31 @@ mod local_integration_tests {
             }
         }
 
+        async fn auth_keyboard_interactive<'a>(
+            &mut self,
+            user: &str,
+            _submethods: &str,
+            response: Option<russh::server::Response<'a>>,
+        ) -> Result<Auth, Self::Error> {
+            if user != "interactive" {
+                return Ok(Auth::reject());
+            }
+            Ok(match response {
+                None => Auth::Partial {
+                    name: "".into(),
+                    instructions: "".into(),
+                    prompts: vec![("Password: ".into(), false)].into(),
+                },
+                Some(mut answers) => {
+                    if answers.next().as_deref() == Some(b"test") {
+                        Auth::Accept
+                    } else {
+                        Auth::reject()
+                    }
+                }
+            })
+        }
+
         async fn channel_open_session(
             &mut self,
             channel: Channel<Msg>,
@@ -977,6 +1060,36 @@ mod local_integration_tests {
             }
         });
         (port, key, handle)
+    }
+
+    #[tokio::test]
+    async fn password_login_falls_back_to_keyboard_interactive() {
+        let (port, _, server) = spawn_sftp_server().await;
+        let directory =
+            std::env::temp_dir().join(format!("ftpeach-interactive-{}", uuid::Uuid::new_v4()));
+        let store = Store::new_at(directory.clone());
+        for (password, accepted) in [("test", true), ("wrong", false)] {
+            let map = json!({
+                "protocol": "sftp", "host": "127.0.0.1", "port": port,
+                "user": "interactive", "password": password, "strictHostKeyCheck": false
+            })
+            .as_object()
+            .unwrap()
+            .clone();
+            let config = crate::protocol::config::ConnectionConfig::for_test(&map).unwrap();
+            let mut backend = SftpBackend::new(Arc::new(store.clone()));
+            assert_eq!(backend.connect(&config).await.is_ok(), accepted);
+            assert_eq!(backend.is_connected(), accepted);
+            if accepted {
+                backend.list("/").await.unwrap();
+                backend.disconnect().await.unwrap();
+            }
+        }
+        server.abort();
+        drop(store);
+        if directory.exists() {
+            std::fs::remove_dir_all(directory).unwrap();
+        }
     }
 
     #[tokio::test]

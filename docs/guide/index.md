@@ -65,4 +65,4 @@ or WebDAV. Use the one supplied by your provider; they are not interchangeable.
 See [connection details](connecting.md) for help choosing the right fields.
 
 For version changes, see the [changelog](../../CHANGELOG.md). For detailed
-compatibility and limitations, see the [protocol reference](../protocol-support.md).
+compatibility and limitations, see the [protocol reference](protocol-reference.md).

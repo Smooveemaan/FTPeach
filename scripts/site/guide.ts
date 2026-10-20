@@ -64,6 +64,11 @@ export const GUIDE_PAGES = [
       'Move FTPeach bookmarks and saved passwords between computers, and unlock with Windows Hello.',
   },
   {
+    slug: 'protocol-reference',
+    description:
+      'Check FTPeach protocol capabilities, authentication, TLS and SSH compatibility, resume checks and transfer limits.',
+  },
+  {
     slug: 'troubleshooting',
     description: 'Resolve connection and transfer errors, recover edits and check saved passwords.',
   },

@@ -25,6 +25,7 @@ export const DOC_LINKS: readonly DocLink[] = [
     code: /^src-tauri\/src\/protocol\//,
     docs: [
       'docs/protocol-support.md',
+      'docs/guide/protocol-reference.md',
       'docs/networking.md',
       'docs/guide/connecting.md',
       'docs/guide/ftp.md',

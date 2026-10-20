@@ -113,7 +113,7 @@ An interrupted download resumes only when the recorded server, account, path,
 size and version still match. A changed or unavailable size or version starts
 a new download. This compares the server's metadata, not the complete file
 contents: a same-size change with the same reported version can go unnoticed.
-See [resume limits](../protocol-support.md#limitations).
+See [resume limits](protocol-reference.md#limitations).
 
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->

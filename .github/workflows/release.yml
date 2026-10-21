@@ -205,7 +205,8 @@ jobs:
         run: |
           gh release upload "$GITHUB_REF_NAME" src-tauri/target/release/bundle/portable/*-portable.zip --clobber
           gh release download "$GITHUB_REF_NAME" --pattern latest.json --dir release --clobber
-          node --experimental-strip-types scripts/release/portable.ts feed release/latest.json
+          zip_url=$(gh release view "$GITHUB_REF_NAME" --json assets -q '.assets[] | select(.name | endswith("-portable.zip")) | .apiUrl')
+          node --experimental-strip-types scripts/release/portable.ts feed release/latest.json "$zip_url"
           gh release upload "$GITHUB_REF_NAME" release/latest.json --clobber
 
       - name: Attach SBOMs and the trust report to the draft release

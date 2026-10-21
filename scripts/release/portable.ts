@@ -2,7 +2,7 @@
 // people unpack and that a portable copy updates itself from.
 //
 //   portable.ts build [releaseDir]   assemble the folder and zip it
-//   portable.ts feed <latest.json>   add the signed zip to the update feed
+//   portable.ts feed <latest.json> <zipUrl>   add the signed zip to the update feed
 //
 // Signing happens between the two, with `tauri signer sign`, so the private
 // key is only ever handled by the Tauri CLI.
@@ -14,9 +14,6 @@ import { pathToFileURL } from 'node:url';
 
 /** The feed entry a portable copy asks for (`runtime/updater.rs`). */
 export const PORTABLE_TARGET = 'windows-x86_64-portable';
-/** The entry of the installer, whose download address the zip sits beside. */
-const INSTALLER_TARGET = 'windows-x86_64';
-
 export function portableZipName(version: string): string {
   return `FTPeach_${version}_x64-portable.zip`;
 }
@@ -27,18 +24,20 @@ interface Feed {
 }
 
 /**
- * `latest` with the portable zip added. Its address is the installer's with
- * the file name replaced, so both come from the same release.
+ * `latest` with the portable zip added. `url` is the zip's own asset address:
+ * the installer's is an API address by asset id, so a file name cannot be
+ * swapped into it (0.4.0 and 0.5.0 shipped such a 404).
  */
-export function withPortablePlatform(latest: Feed, zipName: string, signature: string): Feed {
-  const installer = latest.platforms?.[INSTALLER_TARGET]?.url;
-  if (!installer) throw new Error(`latest.json has no ${INSTALLER_TARGET} entry`);
+export function withPortablePlatform(latest: Feed, url: string, signature: string): Feed {
+  if (!/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/releases\/assets\/\d+$/.test(url)) {
+    throw new Error(`Not a release asset address: ${url}`);
+  }
   if (!signature.trim()) throw new Error('The portable zip has no signature');
   return {
     ...latest,
     platforms: {
       ...latest.platforms,
-      [PORTABLE_TARGET]: { signature: signature.trim(), url: new URL(zipName, installer).href },
+      [PORTABLE_TARGET]: { signature: signature.trim(), url },
     },
   };
 }
@@ -84,24 +83,25 @@ export function build(releaseDir: string, of = version()): string {
   return zip;
 }
 
-function feed(latestPath: string, releaseDir: string): void {
-  const zip = zipPath(releaseDir);
+function feed(latestPath: string, url: string, releaseDir: string): void {
   const latest = JSON.parse(readFileSync(latestPath, 'utf8')) as Feed;
-  const signature = readFileSync(`${zip}.sig`, 'utf8');
-  const patched = withPortablePlatform(latest, path.basename(zip), signature);
+  const signature = readFileSync(`${zipPath(releaseDir)}.sig`, 'utf8');
+  const patched = withPortablePlatform(latest, url, signature);
   writeFileSync(latestPath, `${JSON.stringify(patched, null, 2)}\n`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const [command, argument] = process.argv.slice(2);
+  const [command, argument, url] = process.argv.slice(2);
   const releaseDir = process.env.FTPEACH_RELEASE_DIR ?? 'src-tauri/target/release';
   if (command === 'build') {
     console.log(build(argument ?? releaseDir));
-  } else if (command === 'feed' && argument) {
-    feed(argument, releaseDir);
+  } else if (command === 'feed' && argument && url) {
+    feed(argument, url, releaseDir);
     console.log(`${argument}: added ${PORTABLE_TARGET}`);
   } else {
-    console.error('Usage: portable.ts build [releaseDir] | portable.ts feed <latest.json>');
+    console.error(
+      'Usage: portable.ts build [releaseDir] | portable.ts feed <latest.json> <zipUrl>',
+    );
     process.exit(1);
   }
 }

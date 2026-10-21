@@ -4,26 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Added
-
-- Compare FTPeach, FileZilla Client and WinSCP on a dedicated website page, with reasons to switch or stay and what moving your work involves.
-
-- The website's user guide covers everyday tasks, password protection and common problems,
-  with collapsible navigation, clear warnings and focused screenshots that enlarge on the page.
-- Protocol guides cover FTP data modes, FTPS certificates, SFTP keys, WebDAV setup and common connection errors.
-- The user guide includes a protocol reference with compatibility and transfer limits.
-
-### Changed
-
-- Guide warnings use concise emphasis in the text instead of large labeled panels.
-- The user guide explains how to finish deferred edits, recover files and collect help information, with clearer task navigation and links to its published source.
-- The website's user guide identifies the released app version it describes.
-- The website keeps its user guide within reach on small screens and respects reduced motion.
+## [0.5.1] - 2026-10-21
 
 ### Fixed
 
 - The portable version updates itself again.
-- Links to homepage sections preserve their address and work with the browser's Back button.
 - Bookmark names show the lower parts of letters such as `g` and `y` in Manage Bookmarks.
 - Letters such as `www` no longer join together in folder paths.
 

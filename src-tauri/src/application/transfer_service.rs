@@ -609,11 +609,34 @@ pub async fn transfer_remote_copy(
             "Invalid remote path",
         ));
     }
-    let reservation = Arc::new(
-        Reservation::acquire_remote(sessions, &target_connection_id, &target_path, Access::Write)
-            .await
-            .map_err(CommandError::from)?,
-    );
+    // Reading the source keeps other operations from deleting or replacing
+    // it under the copy, as a folder copy does. One owner for both, so a copy
+    // to a name that differs only in case does not keep itself out.
+    let owner = crate::local_fs::target_reservation::OWNER
+        .try_with(Clone::clone)
+        .unwrap_or_else(|_| uuid::Uuid::new_v4().to_string());
+    let (reservation, source_lease) = crate::local_fs::target_reservation::OWNER
+        .scope(owner, async {
+            anyhow::Ok((
+                Reservation::acquire_remote(
+                    sessions,
+                    &target_connection_id,
+                    &target_path,
+                    Access::Write,
+                )
+                .await?,
+                Reservation::acquire_remote(
+                    sessions,
+                    &source_connection_id,
+                    &source_path,
+                    Access::Read,
+                )
+                .await?,
+            ))
+        })
+        .await
+        .map_err(CommandError::from)?;
+    let reservation = Arc::new(reservation);
     let target_server = sessions.server_for(&target_connection_id).await;
     let Some(source_pool) = sessions.pool_for(&source_connection_id).await else {
         return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
@@ -684,7 +707,7 @@ pub async fn transfer_remote_copy(
     let sink_for_download = sink.clone();
     let src_task: TaskFn = Box::new(move |src_backend| {
         Box::pin(async move {
-            let _reservation = source_reservation;
+            let _reservation = (source_reservation, source_lease);
             let result = crate::transfer::relay::relay_download(
                 src_backend,
                 &source_path_for_task,

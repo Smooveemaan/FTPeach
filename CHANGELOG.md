@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Copying a folder or reading an SFTP key file no longer reports the wrong reason for an error because of a name in the path, such as "Authentication failed" for a folder named 2401.
 - A vault file that cannot be read or saved is no longer reported as a wrong master password, and no longer makes you wait before the next try.
 - Importing settings now applies all of them at once, including the log's date format and turning off writing the log to a file.
+- While a file is being copied from one server to another, FTPeach no longer lets you delete, rename or overwrite that file in another tab, as it already did for folders.
 
 ## [0.5.1] - 2026-10-21
 

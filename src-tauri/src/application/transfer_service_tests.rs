@@ -126,10 +126,16 @@ impl ProtocolBackend for Backend {
     }
     async fn download_to_writer(
         &mut self,
-        _: &str,
-        _: &mut (dyn AsyncWrite + Unpin + Send),
+        path: &str,
+        writer: &mut (dyn AsyncWrite + Unpin + Send),
     ) -> BackendResult<()> {
-        unreachable!()
+        self.remote.writing.notify_one();
+        if self.remote.stall {
+            std::future::pending::<()>().await;
+        }
+        let bytes = self.remote.files.lock().unwrap()[path].clone();
+        writer.write_all(&bytes).await?;
+        Ok(())
     }
     async fn upload_from_reader(
         &mut self,
@@ -385,6 +391,65 @@ async fn relay_does_not_commit_after_source_failure_or_disconnect() {
             assert_old(&remote);
         }
     }
+}
+
+/// Another operation may not delete or replace a file while it is copied to
+/// another server, as it may not with a folder; it may still read it.
+#[tokio::test]
+async fn a_file_copied_between_servers_keeps_writers_off_its_source() {
+    use crate::local_fs::target_reservation::{Access, Reservation};
+    let source = fixture(true, false);
+    source
+        .files
+        .lock()
+        .unwrap()
+        .insert("/source".into(), b"abc".to_vec());
+    let target = fixture(false, false);
+    let (source_pool, target_pool) = (one_connection_pool(&source), one_connection_pool(&target));
+    let sessions = sessions_with(&source, &source_pool).await;
+    *sessions.slot_for("target").lock().await = Some(crate::session::Session {
+        browse_client: backend(&target),
+        server: "target".into(),
+        origin_base: String::new(),
+        transfer_pool: target_pool.clone(),
+        browse_timeout_ms: 1000,
+    });
+    let progress = ProgressEmitter::for_tests(|_| {});
+    let copy = transfer_remote_copy(
+        &sessions,
+        &progress,
+        "test".into(),
+        "target".into(),
+        "copy".into(),
+        "/source".into(),
+        "/copied".into(),
+        None,
+    );
+    tokio::pin!(copy);
+    tokio::select! {
+        _ = &mut copy => panic!("the source stalls"),
+        _ = source.writing.notified() => {}
+    }
+    let writer = Reservation::acquire_remote(&sessions, "test", "/source", Access::Write).await;
+    assert_eq!(
+        CommandError::from_anyhow(&writer.err().unwrap()).code,
+        ErrorCode::Busy
+    );
+    assert!(
+        Reservation::acquire_remote(&sessions, "test", "/source", Access::Read)
+            .await
+            .is_ok()
+    );
+    source_pool.cancel("copy:src");
+    target_pool.cancel("copy:dst");
+    assert!(copy.await.is_err());
+    assert!(
+        Reservation::acquire_remote(&sessions, "test", "/source", Access::Write)
+            .await
+            .is_ok()
+    );
+    source_pool.destroy().await;
+    target_pool.destroy().await;
 }
 
 #[test]

@@ -486,7 +486,10 @@ pub fn validate_listing(entries: &[EntryInfo]) -> BackendResult<()> {
         if text_bytes > MAX_DIRECTORY_TEXT_BYTES {
             anyhow::bail!(crate::ipc::CommandError::new(
                 crate::ipc::ErrorCode::ResourceLimit,
-                "Remote directory listing exceeds the 8 MiB text limit",
+                format!(
+                    "Remote directory listing exceeds the {} MiB text limit",
+                    MAX_DIRECTORY_TEXT_BYTES >> 20
+                ),
             ));
         }
     }
@@ -589,6 +592,26 @@ impl From<&str> for LogText {
 #[cfg(test)]
 mod log_safety_tests {
     use super::*;
+
+    #[test]
+    fn a_listing_over_the_text_limit_names_the_real_limit() {
+        let entry = EntryInfo {
+            name: "x".repeat(1024),
+            is_directory: false,
+            size: 0,
+            modified_at: None,
+            permissions: None,
+            owner: None,
+            group: None,
+        };
+        let entries = vec![entry; MAX_DIRECTORY_TEXT_BYTES / 1024 + 1];
+        let error = crate::ipc::CommandError::from_anyhow(&validate_listing(&entries).unwrap_err());
+        assert_eq!(error.code, crate::ipc::ErrorCode::ResourceLimit);
+        assert_eq!(
+            error.message,
+            "Remote directory listing exceeds the 32 MiB text limit"
+        );
+    }
 
     #[test]
     fn remote_moves_reject_self_and_descendants_before_server_mutation() {

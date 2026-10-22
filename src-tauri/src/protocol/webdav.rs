@@ -21,6 +21,13 @@ mod response;
 
 pub const MAX_PROPFIND_RESPONSE_BYTES: usize = 8 * 1024 * 1024;
 
+fn too_large_message() -> String {
+    format!(
+        "WebDAV XML response exceeds the {} MiB limit",
+        MAX_PROPFIND_RESPONSE_BYTES >> 20
+    )
+}
+
 const PATH_SEGMENT: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b'-')
     .remove(b'_')
@@ -408,7 +415,7 @@ impl WebDavBackend {
         {
             bail!(crate::ipc::CommandError::new(
                 crate::ipc::ErrorCode::ResourceLimit,
-                "WebDAV XML response exceeds the 8 MiB limit",
+                too_large_message(),
             ));
         }
         let mut body = Vec::new();
@@ -420,7 +427,7 @@ impl WebDavBackend {
             if body.len().saturating_add(chunk.len()) > MAX_PROPFIND_RESPONSE_BYTES {
                 bail!(crate::ipc::CommandError::new(
                     crate::ipc::ErrorCode::ResourceLimit,
-                    "WebDAV XML response exceeds the 8 MiB limit",
+                    too_large_message(),
                 ));
             }
             body.extend_from_slice(&chunk);

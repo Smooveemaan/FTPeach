@@ -10,89 +10,27 @@ import { isolate } from '../../shared/bidi.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
-import type { TransferInput, TransferRow, TransferStatus } from './transferStore.ts';
+import type { TransferRow, TransferStatus } from './transferStore.ts';
 import {
   activeTransferForTarget,
   canPauseTransfer,
   canRetryTransfer,
   getTransfersSnapshot,
   getTransferRow,
-  hasTransferCapacity,
-  PENDING_TRANSFER_LIMIT,
   markConnectionDead,
   setTransfersStore,
   stopOpenTransferBatches,
-  subscribeTransfers,
   subscribeTransferStructure,
   transferTouchesConnection,
 } from './transferStore.ts';
 import { validateWindowsDownloadName } from './windowsDownloadName.ts';
+import { createTransferAttempts } from './transferAttempts.ts';
 import { useTransferNotifications } from './useTransferNotifications.ts';
 import { useTransferProgressAdapter } from './useTransferProgressAdapter.ts';
 
-export type RefreshCallback = () => unknown;
-
-let transferSequence = 0;
-
-// Keep manifests bounded while every selected folder already has a queue row.
-const recursiveSlots: Promise<unknown>[] = [Promise.resolve(), Promise.resolve()];
-let recursiveSlot = 0;
-function scheduleRecursive<T>(run: () => Promise<T>, signal: AbortSignal): Promise<T> {
-  const slot = recursiveSlot++ % recursiveSlots.length;
-  const result = recursiveSlots[slot]!.then(() => {
-    signal.throwIfAborted();
-    return run();
-  });
-  recursiveSlots[slot] = result.catch(() => {});
-  return new Promise<T>((resolve, reject) => {
-    const cancel = () => reject(new Error('Recursive transfer cancelled before dispatch'));
-    signal.addEventListener('abort', cancel, { once: true });
-    result.then(resolve, reject).finally(() => signal.removeEventListener('abort', cancel));
-  });
-}
-
-function nextTransferId() {
-  const transfers = getTransfersSnapshot();
-  let id: string;
-  do {
-    transferSequence += 1;
-    id = `t${transferSequence}`;
-  } while (id in transfers);
-  return id;
-}
-
-/** How often, at most, a running folder walk lists its target again. */
-const LANDED_REFRESH_INTERVAL_MS = 1000;
-
-/**
- * Lists a folder walk's target again whenever the walk reports putting more in
- * place there, so its folders and finished files show up while it runs rather
- * than only once it ends. Spaced out, or a folder of many small files would
- * list the target once per file. Returns what stops following.
- */
-function followLanded(id: string, attemptId: string, refresh: RefreshCallback | undefined) {
-  if (!refresh) return () => {};
-  let seen = getTransferRow(id)?.landed;
-  let lastRefresh = 0;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const unsubscribe = subscribeTransfers(() => {
-    const row = getTransferRow(id);
-    if (row?.attemptId !== attemptId || row.landed === undefined || row.landed === seen) return;
-    seen = row.landed;
-    timer ??= setTimeout(
-      () => {
-        timer = undefined;
-        lastRefresh = Date.now();
-        refresh();
-      },
-      Math.max(0, lastRefresh + LANDED_REFRESH_INTERVAL_MS - Date.now()),
-    );
-  });
-  return () => {
-    unsubscribe();
-    clearTimeout(timer);
-  };
-}
+import { followLanded, scheduleRecursive } from './recursiveSchedule.ts';
+import type { RefreshCallback } from './recursiveSchedule.ts';
+export type { RefreshCallback } from './recursiveSchedule.ts';
 
 /** Owns individual transfer state, retries, cancellation and queue-wide actions. */
 
@@ -192,104 +130,14 @@ export function useTransferLifecycle(
   useTransferNotifications(t);
   useTransferProgressAdapter(cancelIntentRef);
 
-  const startTransfer = (input: TransferInput) => {
-    if (!hasTransferCapacity())
-      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
-    const id = nextTransferId();
-    setTransfersStore((previous) => ({
-      ...previous,
-      [id]: {
-        id,
-        ...input,
-        bytes: 0,
-        status: 'queued',
-        startedAt: Date.now(),
-      },
-    }));
-    return id;
-  };
-
-  const beginAttempt = (id: string, overwrite?: boolean) => {
-    const attemptId = crypto.randomUUID();
-    setTransfersStore((previous) => ({
-      ...previous,
-      [id]: { ...previous[id]!, attemptId, ...(overwrite === undefined ? {} : { overwrite }) },
-    }));
-    return attemptId;
-  };
-
-  /**
-   * Puts an existing row back in the queue for a new attempt: admission
-   * against the queue limit, the old cancel intent and error dropped, and a
-   * fresh attempt id in the same update, so progress from the attempt before
-   * cannot land on this one. `keepBytes` is for a download or a paused
-   * upload that carries on where it stopped; anything else starts over.
-   */
-  const requeueAttempt = (
-    id: string,
-    { keepBytes, overwrite }: { keepBytes: boolean; overwrite?: boolean },
-  ) => {
-    if (!hasTransferCapacity(false))
-      throw new Error(t('transferQueue.capacity', { limit: PENDING_TRANSFER_LIMIT }));
-    delete cancelIntentRef.current[id];
-    const attemptId = crypto.randomUUID();
-    setTransfersStore((previous) => {
-      const row = previous[id];
-      if (!row) return previous;
-      return {
-        ...previous,
-        [id]: {
-          ...row,
-          attemptId,
-          status: 'queued',
-          bytes: keepBytes ? row.bytes : 0,
-          ...(overwrite === undefined ? {} : { overwrite }),
-          errorMessage: undefined,
-          errorCode: undefined,
-        },
-      };
+  const { startTransfer, beginAttempt, requeueAttempt, settleTransferResult } =
+    createTransferAttempts({
+      t,
+      cancelIntentRef,
+      shownErrors,
+      setErrorMessage,
+      withdrawErrorMessage,
     });
-    return attemptId;
-  };
-
-  const settleTransferResult = (
-    id: string,
-    result: CommandResult,
-    attemptId: string,
-    _target: TransferTarget,
-    /** Says more than the error code alone would. */
-    notice?: string,
-  ) => {
-    if (getTransferRow(id)?.attemptId !== attemptId) return false;
-    const intent = cancelIntentRef.current[id];
-    const message = result.ok
-      ? undefined
-      : (notice ?? (friendlyError(commandResultError(result)) || undefined));
-    if (!result.ok && !intent && result.errorCode !== 'cancelled') {
-      setErrorMessage(message);
-      if (message) shownErrors.current.set(id, message);
-    }
-    const shown = shownErrors.current.get(id);
-    if (result.ok && shown !== undefined) {
-      shownErrors.current.delete(id);
-      withdrawErrorMessage(shown);
-    }
-    setTransfersStore((previous) =>
-      previous[id]?.attemptId === attemptId
-        ? {
-            ...previous,
-            [id]: {
-              ...previous[id],
-              status: result.ok ? 'done' : intent || 'error',
-              errorCode: result.ok ? undefined : result.errorCode,
-              // A stopped row keeps the raw message: for `stagingLeft` it is the path.
-              errorMessage: intent && !result.ok ? result.error : message,
-            },
-          }
-        : previous,
-    );
-    return !!intent;
-  };
 
   const runLocalCopy: TransferLifecycleModel['runLocalCopy'] = async (
     source,

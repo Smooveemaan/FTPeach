@@ -84,6 +84,23 @@ fn already_exists(path: &str) -> anyhow::Error {
     )
 }
 
+/// A missing or locked key file keeps its I/O classification, anything else
+/// is an unreadable key. Classified before the path joins the text: a key in
+/// `C:\keys\2401` must not read as a failed login.
+fn key_file_error(error: russh::keys::Error, key_path: &str) -> anyhow::Error {
+    let details = format!("failed to read key file \"{key_path}\": {error}");
+    let mut typed = if matches!(error, russh::keys::Error::IO(_)) {
+        crate::ipc::CommandError::from_anyhow(&error.into())
+    } else {
+        crate::ipc::CommandError::new(
+            ErrorCode::KeyUnreadable,
+            "The key file could not be decrypted or parsed",
+        )
+    };
+    typed.details = Some(details);
+    typed.into()
+}
+
 /// Read ahead in bounded batches, restoring offset order before writing locally.
 /// Each request fills its own interval: a short DATA packet is not EOF.
 async fn read_pipelined(
@@ -747,20 +764,7 @@ impl ProtocolBackend for SftpBackend {
                     &key_path,
                     key_passphrase.as_ref().map(super::SensitiveString::expose),
                 )
-                .map_err(|error| {
-                    let io = matches!(error, russh::keys::Error::IO(_));
-                    let error = anyhow::Error::from(error)
-                        .context(format!("failed to read key file \"{key_path}\""));
-                    // A missing or locked file keeps its I/O classification.
-                    if io {
-                        error
-                    } else {
-                        error.context(crate::ipc::CommandError::new(
-                            ErrorCode::KeyUnreadable,
-                            "The key file could not be decrypted or parsed",
-                        ))
-                    }
-                })?;
+                .map_err(|error| key_file_error(error, &key_path))?;
                 // An RSA key signs with SHA-1 (ssh-rsa) unless told otherwise,
                 // and OpenSSH 8.8+ refuses that. A server that lists no
                 // server-sig-algs predates rsa-sha2, so SHA-1 stays for it.

@@ -62,6 +62,20 @@ fn ssh_algorithm_reference_matches_client_defaults() {
 }
 
 #[test]
+fn a_key_path_never_decides_what_kind_of_failure_it_was() {
+    let code = |error| {
+        crate::ipc::CommandError::from_anyhow(&key_file_error(error, r"C:\keys\2401\id")).code
+    };
+    let io = |kind| russh::keys::Error::IO(std::io::Error::from(kind));
+    assert_eq!(code(io(std::io::ErrorKind::Other)), ErrorCode::Internal);
+    assert_eq!(code(io(std::io::ErrorKind::NotFound)), ErrorCode::NotFound);
+    assert_eq!(
+        code(russh::keys::Error::KeyIsCorrupt),
+        ErrorCode::KeyUnreadable
+    );
+}
+
+#[test]
 fn openssh_private_keys_load_with_and_without_a_passphrase() {
     use russh::keys::ssh_key::{Algorithm, EcdsaCurve, LineEnding, PrivateKey};
 

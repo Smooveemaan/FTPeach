@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - WebDAV over plain HTTP no longer sends your user name when you create a folder that already exists, unless you allowed sign-in without encryption.
 
+### Fixed
+
+- If turning on the master password fails, for example on a full disk, you can try again without deleting files by hand.
+
 ## [0.5.1] - 2026-10-21
 
 ### Security

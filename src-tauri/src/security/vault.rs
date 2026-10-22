@@ -317,8 +317,16 @@ impl Vault {
         Ok(metadata)
     }
 
+    /// The temporary file keeps the full name (`vault.json.<pid>.tmp`) so it
+    /// never shares a name with the snapshot's (`vault.<pid>.tmp`).
+    fn temporary_path(path: &Path) -> PathBuf {
+        let mut name = path.as_os_str().to_owned();
+        name.push(format!(".{}.tmp", std::process::id()));
+        name.into()
+    }
+
     async fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
-        let tmp = path.with_extension(format!("{}.tmp", std::process::id()));
+        let tmp = Self::temporary_path(path);
         crate::store::write_synced(&tmp, bytes)
             .await
             .context("writing vault temporary file")?;
@@ -488,11 +496,17 @@ impl Vault {
             )
             .context("saving vault")?;
         Self::replace_file(&temporary_snapshot, &self.snapshot_path())?;
-        Self::atomic_write(
+        if let Err(error) = Self::atomic_write(
             &self.metadata_path(),
             &serde_json::to_vec_pretty(&metadata)?,
         )
-        .await?;
+        .await
+        {
+            // Without vault.json the snapshot can never be opened, and left
+            // behind it would block every later setup.
+            let _ = tokio::fs::remove_file(self.snapshot_path()).await;
+            return Err(error);
+        }
         *self.state.lock().await = Some(UnlockedVault {
             stronghold,
             data_key,

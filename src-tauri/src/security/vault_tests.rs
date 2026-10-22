@@ -54,6 +54,24 @@ async fn failed_snapshot_commit_rolls_back_in_memory_secrets() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+/// A setup that could not write vault.json takes its snapshot back, so the
+/// next attempt is not refused as "already configured".
+#[tokio::test]
+async fn failed_setup_leaves_nothing_that_blocks_the_next_one() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-vault-setup-{}", uuid::Uuid::new_v4()));
+    let vault = Vault::new(dir.clone());
+    let blocker = Vault::temporary_path(&vault.metadata_path());
+    std::fs::create_dir_all(&blocker).unwrap();
+    assert!(vault.setup("correct horse battery staple").await.is_err());
+    assert!(!vault.snapshot_path().exists());
+    assert!(!vault.is_unlocked().await);
+    std::fs::remove_dir(&blocker).unwrap();
+    vault.setup("correct horse battery staple").await.unwrap();
+    assert!(vault.is_configured());
+    vault.lock().await;
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
 #[tokio::test]
 async fn rejects_oversized_metadata_and_kdf_before_computation() {
     let dir = std::env::temp_dir().join(format!("ftpeach-kdf-budget-{}", uuid::Uuid::new_v4()));

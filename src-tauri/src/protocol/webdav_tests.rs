@@ -485,6 +485,11 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
                 }
                 let header = String::from_utf8(header).unwrap();
                 assert!(header.starts_with(method));
+                // Cleartext sign-in is not allowed, so neither request may name the user.
+                assert!(
+                    !header.to_ascii_lowercase().contains("authorization:"),
+                    "{header}"
+                );
                 let length = header
                     .lines()
                     .find_map(|line| {
@@ -511,6 +516,7 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
         let mut backend = WebDavBackend {
             client: Some(test_client()),
             base_url: format!("http://{address}"),
+            user: "u".into(),
             ..Default::default()
         };
         assert_eq!(backend.mkdir("/folder").await.is_ok(), collection);

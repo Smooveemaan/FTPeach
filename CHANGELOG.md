@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Security
+
+- WebDAV over plain HTTP no longer sends your user name when you create a folder that already exists, unless you allowed sign-in without encryption.
+
 ## [0.5.1] - 2026-10-21
 
 ### Security

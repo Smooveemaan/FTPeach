@@ -542,14 +542,9 @@ impl WebDavBackend {
         if res.status() == StatusCode::METHOD_NOT_ALLOWED {
             // 405 can also mean MKCOL is disabled or a regular file is in
             // the way. Only an existing collection satisfies mkdir.
-            let xml = Self::propfind(
-                self.client()?,
-                self.build_url(path),
-                0,
-                &self.user,
-                self.credentials().1,
-            )
-            .await?;
+            let (user, password) = self.credentials();
+            let xml =
+                Self::propfind(self.client()?, self.build_url(path), 0, user, password).await?;
             anyhow::ensure!(
                 parse_propfind(&xml)?
                     .first()

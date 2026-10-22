@@ -1779,7 +1779,7 @@ async fn rereading_a_corrupt_store_keeps_one_copy_and_a_bounded_history() {
 }
 
 /// A saved password reaches a new server only through the move the user
-/// confirmed (HF-39), checked against the bookmark as the save writes it.
+/// confirmed, checked against the bookmark as the save writes it.
 mod saved_password_recipient {
     use super::*;
     use crate::security::credential_scope::{SecretTransfer, site_save_transfer};
@@ -1956,7 +1956,7 @@ mod saved_password_recipient {
         std::fs::remove_dir_all(root).unwrap();
     }
 
-    /// HF-09 with HF-39: a new password that cannot be protected is not
+    /// A new password that cannot be protected is not
     /// saved, so the old one would go to the new server. The whole save is
     /// refused and the bookmark stays as it was.
     #[tokio::test]

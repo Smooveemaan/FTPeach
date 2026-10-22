@@ -189,7 +189,7 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'args: --bundles nsis'],
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every generated updater signature'],
-  // HF-52: approvals are read from GitHub, not inferred from `environment:`,
+  // Approvals are read from GitHub, not inferred from `environment:`,
   // and the report keeps updater signature, Authenticode and advisories apart.
   // The installer gate proves the matrix rows on upgrades, uninstalls and updates.
   [releaseWorkflow, 'release.yml', '    uses: ./.github/workflows/installer.yml'],

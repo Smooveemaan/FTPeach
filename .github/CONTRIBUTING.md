@@ -68,4 +68,10 @@ Describe protocol fixtures without credentials. Architectural boundaries are doc
 
 Ordinary comments should explain only a non-obvious current invariant, limitation, or design reason. Do not preserve migration history or descriptions of removed implementations in source code; Git history and `docs/` are the appropriate places for that information.
 
+- Start a module with a header of one to three lines (`//!` in Rust, a `/** ... */` block in TypeScript) when it says what the module is responsible for and its name does not. A small file whose name says it all needs none.
+- Mark code that works around a defect elsewhere, in a library, WebView2, Windows or a server, with `workaround: <reason>`, naming what it works around, so it can be found and removed once the cause is gone.
+- Write comments in English, and do not cite task, audit or plan numbers: a reader cannot look them up, so the reason goes into the comment itself.
+
+Existing files are brought in line one module at a time, together with other changes to that module, not in changes of their own.
+
 Document public Rust items with `///`. Use rustdoc links for available structures, traits, and functions, such as `[Store]` and [`Store::apply_layout`]. In React and TypeScript, use JSDoc (`/** ... */`) and links such as `{@link Application}` or `{@link normalizeCommandError}`. Single-line `//` comments do not replace public API documentation.

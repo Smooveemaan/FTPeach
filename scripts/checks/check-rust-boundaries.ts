@@ -71,7 +71,7 @@ export const ALLOWED: Record<string, readonly string[]> = {
   session: ['protocol', 'transfer'],
   native_drag: ['ipc', 'local_fs', 'security', 'transfer'],
   // `runtime::sleep_guard` keeps Windows awake while the pool runs a transfer:
-  // one process-wide switch, not a way into the runtime (HF-33).
+  // one process-wide switch, not a way into the runtime.
   transfer: ['ipc', 'protocol', 'runtime::sleep_guard'],
   protocol: ['domain', 'ipc', 'local_fs', 'security', 'store', 'transfer'],
   store: ['domain', 'ipc', 'protocol', 'security'],

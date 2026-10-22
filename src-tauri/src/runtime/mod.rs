@@ -21,5 +21,5 @@ pub(crate) mod window_scale;
 pub(crate) mod confirmation_window;
 #[cfg(feature = "smoke-test")]
 pub(crate) mod e2e_browser;
-pub(crate) mod save_dialog;
+pub(crate) mod file_dialog;
 pub(crate) mod startup;

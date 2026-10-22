@@ -46,7 +46,7 @@ lines and every frontend and CSS clone.
 | `commands/fs.rs` with itself, rename and copy prologues | 21 | **Defer**: copy already runs in `local_fs::staged_copy`; rename moves with its own change, since it carries the no-replace guarantee |
 | `protocol/ftp.rs` with itself: `upload`/`upload_from_reader`, `download`/`download_to_writer`, rustls `verify_tls12/13_signature` | 63 | **Keep**: file and stream transfer loops differ in their source and resume handling, and rustls requires both verifier methods |
 | `commands/session/browse.rs`, validate-and-reserve prologue of mkdir/create/delete | 24 | **Keep**: three lines of prologue per command; the reservation guard has to live in each command's own scope |
-| `commands/dialog.rs`, native picker boilerplate | 23 | **Defer**: a picker helper when another picker is added; the filters and what is approved differ per picker |
+| `commands/dialog.rs` ↔ `app_settings_transfer.rs`, native picker boilerplate | 23 | **Removed**: `picked` in `runtime/file_dialog.rs`; the filters and what is approved stay with each picker |
 | `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu | 12 | **Removed**: `siteMenuItems` in `features/sites` |
 | `useSettingsTransfer.ts` ↔ `platform/global.d.ts`, import/export result types | 12 | **Removed**: one contract in `platform/api/settings.ts` |
 | `useTransferLifecycle.ts` with itself, moving an attempt to queued | 12 | **Removed**: `requeueAttempt` |

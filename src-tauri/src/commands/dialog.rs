@@ -1,4 +1,5 @@
 use crate::local_fs::portable;
+use crate::runtime::file_dialog::picked;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 
@@ -32,20 +33,6 @@ fn is_rsa_private_key(path: &std::path::Path) -> bool {
     let mut prefix = String::new();
     let _ = file.take(4096).read_to_string(&mut prefix);
     prefix_identifies_rsa_private_key(&prefix)
-}
-
-type Picked = tokio::sync::oneshot::Sender<Option<tauri_plugin_dialog::FilePath>>;
-
-/// The path the user picks in the dialog `show` opens, `None` if cancelled.
-async fn picked(show: impl FnOnce(Picked)) -> Option<String> {
-    // The desktop tests answer for the user, since nothing can drive the native dialog.
-    #[cfg(feature = "smoke-test")]
-    if let Some(answer) = crate::runtime::e2e_browser::picked_path() {
-        return answer;
-    }
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    show(tx);
-    rx.await.ok().flatten().map(|p| p.to_string())
 }
 
 #[tauri::command]
@@ -132,15 +119,16 @@ pub async fn dialog_select_application(
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     store: tauri::State<'_, crate::store::Store>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-    app.dialog()
-        .file()
-        .add_filter("Applications", &["exe", "com", "bat", "cmd"])
-        .add_filter("All files", &["*"])
-        .pick_file(move |path| {
-            let _ = tx.send(path);
-        });
-    let selected = rx.await.ok().flatten().map(|p| p.to_string());
+    let selected = picked(|tx| {
+        app.dialog()
+            .file()
+            .add_filter("Applications", &["exe", "com", "bat", "cmd"])
+            .add_filter("All files", &["*"])
+            .pick_file(move |path| {
+                let _ = tx.send(path);
+            })
+    })
+    .await;
     if let Some(path) = selected.as_deref() {
         approved.approve_from_dialog(std::path::Path::new(path));
         if let Ok(program) = approved.canonical_application(std::path::Path::new(path))

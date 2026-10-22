@@ -234,7 +234,7 @@ pub async fn app_export_settings(
             "The export would exceed the 4 MiB an import accepts",
         ));
     }
-    let Some(path_str) = crate::runtime::save_dialog::save_path(
+    let Some(path_str) = crate::runtime::file_dialog::save_path(
         &app,
         "Export FTPeach settings",
         "ftpeach-settings.json".into(),
@@ -624,25 +624,16 @@ pub async fn app_import_preview(
     )?;
     // A new file replaces whatever was waiting.
     staged.0.lock().await.take();
-    // The desktop tests answer for the user, since nothing can drive the native dialog.
-    #[cfg(feature = "smoke-test")]
-    let answered = crate::runtime::e2e_browser::picked_path();
-    #[cfg(not(feature = "smoke-test"))]
-    let answered: Option<Option<String>> = None;
-    let picked = match answered {
-        Some(answer) => answer,
-        None => {
-            let (tx, rx) = tokio::sync::oneshot::channel();
-            app.dialog()
-                .file()
-                .set_title("Import FTPeach settings")
-                .add_filter("JSON", &["json"])
-                .pick_file(move |path| {
-                    let _ = tx.send(path);
-                });
-            rx.await.ok().flatten().map(|path| path.to_string())
-        }
-    };
+    let picked = crate::runtime::file_dialog::picked(|tx| {
+        app.dialog()
+            .file()
+            .set_title("Import FTPeach settings")
+            .add_filter("JSON", &["json"])
+            .pick_file(move |path| {
+                let _ = tx.send(path);
+            })
+    })
+    .await;
     let Some(path) = picked else {
         return Ok(PreviewResult::Canceled {
             ok: false,

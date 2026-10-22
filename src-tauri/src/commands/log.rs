@@ -50,7 +50,7 @@ pub enum LogSaveResult {
 pub async fn log_save(app: AppHandle, content: String) -> CommandResult<LogSaveResult> {
     validate_log_size(&content)?;
     let stamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
-    let Some(path_str) = crate::runtime::save_dialog::save_path(
+    let Some(path_str) = crate::runtime::file_dialog::save_path(
         &app,
         "Save log",
         format!("ftpeach-log-{stamp}.txt"),
@@ -96,7 +96,7 @@ pub async fn log_export_diagnostics(
     let serialized = serde_json::to_string_pretty(&bundle)
         .map_err(anyhow::Error::from)
         .map_err(CommandError::from)?;
-    let Some(path_str) = crate::runtime::save_dialog::save_path(
+    let Some(path_str) = crate::runtime::file_dialog::save_path(
         &app,
         "Export diagnostic bundle",
         format!("ftpeach-diagnostics-{stamp}.json"),

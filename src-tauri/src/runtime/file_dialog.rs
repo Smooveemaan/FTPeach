@@ -1,4 +1,5 @@
-//! The native Save dialog, for the commands that write a file the user names.
+//! The native file dialogs: the Save dialog, for the commands that write a
+//! file the user names, and the pickers that let the user choose one.
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 
@@ -25,4 +26,18 @@ pub(crate) async fn save_path(
             let _ = tx.send(path);
         });
     rx.await.ok().flatten().map(|path| path.to_string())
+}
+
+pub(crate) type Picked = tokio::sync::oneshot::Sender<Option<tauri_plugin_dialog::FilePath>>;
+
+/// The path the user picks in the dialog `show` opens, `None` if cancelled.
+pub(crate) async fn picked(show: impl FnOnce(Picked)) -> Option<String> {
+    // The desktop tests answer for the user, since nothing can drive the native dialog.
+    #[cfg(feature = "smoke-test")]
+    if let Some(answer) = super::e2e_browser::picked_path() {
+        return answer;
+    }
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    show(tx);
+    rx.await.ok().flatten().map(|p| p.to_string())
 }

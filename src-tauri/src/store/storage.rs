@@ -3,7 +3,7 @@
 //! a copy of its bytes is kept. Critical SSH trust reads use the separate
 //! fail-closed known-hosts contract.
 
-use super::Store;
+use super::{Store, secret_fields};
 use crate::ipc::{CommandError, ErrorCode};
 use anyhow::{Context, Result};
 use serde_json::{Value, json};
@@ -82,17 +82,6 @@ fn is_versioned_store(path: &Path) -> bool {
     )
 }
 
-/// Fields that hold a saved secret, protected or not.
-const SECRET_FIELDS: [&str; 6] = [
-    "enc",
-    "plain",
-    "keyEnc",
-    "keyPlain",
-    "proxyPasswordEnc",
-    "proxyPasswordPlain",
-];
-const PLAINTEXT_FIELDS: [&str; 3] = ["plain", "keyPlain", "proxyPasswordPlain"];
-
 /// `previous`, fit to be kept as a backup of a store that now holds `next`.
 /// A secret survives only where `next` holds the very same value, so a
 /// backup never keeps a secret the live file has moved into the vault,
@@ -100,8 +89,11 @@ const PLAINTEXT_FIELDS: [&str; 3] = ["plain", "keyPlain", "proxyPasswordPlain"];
 pub(super) fn backup_without_stale_secrets(previous: Value, next: &Value) -> Value {
     fn strip(mut record: Value, counterpart: Option<&Value>) -> Value {
         if let Value::Object(fields) = &mut record {
-            for field in SECRET_FIELDS {
-                let still_live = !PLAINTEXT_FIELDS.contains(&field)
+            for field in secret_fields::SITE_SAVED
+                .into_iter()
+                .chain(secret_fields::PROXY_SAVED)
+            {
+                let still_live = !secret_fields::PLAINTEXT.contains(&field)
                     && counterpart.and_then(|next| next.get(field)) == fields.get(field);
                 if !still_live {
                     fields.remove(field);

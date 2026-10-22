@@ -605,3 +605,30 @@ async fn an_import_file_another_program_holds_is_named_as_in_use() {
     );
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn every_secret_field_is_stripped_on_export_and_refused_on_import() {
+    let secret = || serde_json::Value::String("secret".into());
+    let site = JsonMap::from_iter(
+        SITE_INPUT
+            .into_iter()
+            .chain(SITE_SAVED)
+            .map(|key| (key.to_string(), secret())),
+    );
+    let exported = strip_site_secrets(site);
+    for key in SITE_INPUT.into_iter().chain(SITE_SAVED) {
+        assert!(!exported.contains_key(key), "exported site field {key}");
+        let record = JsonMap::from_iter([(key.to_string(), secret())]);
+        let refused = validate_import_site(&record, 0).unwrap_err();
+        assert!(refused.contains("secret fields"), "{key}: {refused}");
+    }
+
+    let settings = JsonMap::from_iter(proxy_secret_fields().map(|key| (key.to_string(), secret())));
+    let exported = strip_settings_secrets(settings);
+    for key in proxy_secret_fields() {
+        assert!(!exported.contains_key(key), "exported setting {key}");
+        let patch = JsonMap::from_iter([(key.to_string(), secret())]);
+        let refused = crate::store::validate_settings(&patch, false).unwrap_err();
+        assert!(refused.contains("secret fields"), "{key}: {refused}");
+    }
+}

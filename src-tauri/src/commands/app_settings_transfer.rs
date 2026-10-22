@@ -3,7 +3,8 @@ use crate::security::credential_scope::site_scope;
 use crate::security::export_secrets::{self, SealEntry, SecretsBlock};
 use crate::security::vault::Vault;
 use crate::store::{
-    ImportFailed, ImportedSecret, JsonMap, SitesImported, Store, is_local_scope_entry,
+    ImportFailed, ImportedSecret, JsonMap, SITE_INPUT, SITE_SAVED, SitesImported, Store,
+    is_local_scope_entry, proxy_secret_fields,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -51,29 +52,14 @@ pub enum ExportResult {
 }
 
 fn strip_settings_secrets(mut settings: JsonMap) -> JsonMap {
-    for key in [
-        "proxyPassword",
-        "proxyPasswordEnc",
-        "proxyPasswordPlain",
-        "removeProxyPassword",
-        "hasProxyPassword",
-    ] {
+    for key in proxy_secret_fields() {
         settings.remove(key);
     }
     settings
 }
 
 pub(crate) fn strip_site_secrets(mut site: JsonMap) -> JsonMap {
-    for key in [
-        "password",
-        "keyPassphrase",
-        "enc",
-        "plain",
-        "keyEnc",
-        "keyPlain",
-        "removePassword",
-        "removeKeyPassphrase",
-    ] {
+    for key in SITE_INPUT.into_iter().chain(SITE_SAVED) {
         site.remove(key);
     }
     site.insert("hasPassword".into(), serde_json::Value::Bool(false));
@@ -407,18 +393,8 @@ pub(crate) fn validate_import_site(record: &JsonMap, index: usize) -> Result<(),
         "hasPassword",
         "hasKeyPassphrase",
     ];
-    const SECRET: &[&str] = &[
-        "password",
-        "keyPassphrase",
-        "enc",
-        "plain",
-        "keyEnc",
-        "keyPlain",
-        "removePassword",
-        "removeKeyPassphrase",
-    ];
     for key in record.keys() {
-        if SECRET.contains(&key.as_str()) {
+        if SITE_INPUT.contains(&key.as_str()) || SITE_SAVED.contains(&key.as_str()) {
             return Err(format!(
                 "sites[{index}].{key}: secret fields cannot be imported"
             ));

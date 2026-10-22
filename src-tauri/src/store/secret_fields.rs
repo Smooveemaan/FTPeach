@@ -1,9 +1,11 @@
-//! Per-record secret encryption primitives shared by the sites domain (a
-//! saved site's password/key passphrase) and the settings domain (the
-//! global proxy password) — kept separate from both because neither file's
-//! shape is otherwise relevant here: every function below operates on a
-//! single `JsonMap` record and an `enc`/`plain` field-name pair the caller
-//! chooses.
+//! The fields that hold or name a saved secret, and the per-record
+//! encryption shared by the sites domain (a saved site's password/key
+//! passphrase) and the settings domain (the global proxy password). Every
+//! function below operates on a single `JsonMap` record and an
+//! `enc`/`plain` field-name pair the caller chooses.
+//!
+//! A new secret field goes into its group below; the export, the import and
+//! the backup filter each take the groups they need from here.
 
 use super::{JsonMap, Store};
 use crate::security::dpapi;
@@ -11,6 +13,33 @@ use anyhow::Result;
 use base64::Engine;
 use serde_json::Value;
 use zeroize::Zeroize;
+
+/// Where `sites.json` keeps a bookmark's password and key passphrase:
+/// DPAPI-protected, then legacy plaintext.
+pub(crate) const SITE_SAVED: [&str; 4] = ["enc", "plain", "keyEnc", "keyPlain"];
+/// What a bookmark edit sends to set or clear them.
+pub(crate) const SITE_INPUT: [&str; 4] = [
+    "password",
+    "keyPassphrase",
+    "removePassword",
+    "removeKeyPassphrase",
+];
+/// Where `settings.json` keeps the proxy password.
+pub(crate) const PROXY_SAVED: [&str; 2] = ["proxyPasswordEnc", "proxyPasswordPlain"];
+/// What a settings save sends to set or clear it.
+pub(crate) const PROXY_INPUT: [&str; 2] = ["proxyPassword", "removeProxyPassword"];
+/// That a proxy password exists: in the vault, and as the renderer is told.
+pub(crate) const PROXY_FLAGS: [&str; 2] = ["hasProxyPassword", "proxyPasswordSet"];
+/// The legacy plaintext fields among the saved ones.
+pub(crate) const PLAINTEXT: [&str; 3] = ["plain", "keyPlain", "proxyPasswordPlain"];
+
+/// Every field that holds or names the proxy password.
+pub(crate) fn proxy_secret_fields() -> impl Iterator<Item = &'static str> {
+    PROXY_INPUT
+        .into_iter()
+        .chain(PROXY_SAVED)
+        .chain(PROXY_FLAGS)
+}
 
 impl Store {
     pub(super) fn protect_secret(data: &[u8]) -> Result<Vec<u8>> {

@@ -1,5 +1,6 @@
 mod known_hosts;
 mod secret_fields;
+pub(crate) use secret_fields::{PROXY_SAVED, SITE_INPUT, SITE_SAVED, proxy_secret_fields};
 mod settings;
 pub use settings::ConnectionDefaults;
 mod settings_schema;

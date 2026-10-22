@@ -476,14 +476,7 @@ impl Store {
 fn check_merged(current: &JsonMap, patch: &JsonMap) -> Result<()> {
     let mut merged = current.clone();
     merged.extend(patch.clone());
-    for key in [
-        "proxyPassword",
-        "removeProxyPassword",
-        "proxyPasswordEnc",
-        "proxyPasswordPlain",
-        "proxyPasswordSet",
-        "hasProxyPassword",
-    ] {
+    for key in super::proxy_secret_fields() {
         merged.remove(key);
     }
     super::validate_settings(&merged, false)

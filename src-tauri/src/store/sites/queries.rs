@@ -107,7 +107,7 @@ impl Store {
             .into_iter()
             .find(|site| site.get("id").and_then(Value::as_str) == Some(id))?;
         let has_password = has_saved_password(&site);
-        for key in ["enc", "plain", "keyEnc", "keyPlain"] {
+        for key in crate::store::SITE_SAVED {
             site.remove(key);
         }
         Some((site, has_password))

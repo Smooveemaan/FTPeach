@@ -13,15 +13,7 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
             }
             return Err(format!("settings.{key}: invalid secret field"));
         }
-        if matches!(
-            key.as_str(),
-            "proxyPassword"
-                | "proxyPasswordEnc"
-                | "proxyPasswordPlain"
-                | "proxyPasswordSet"
-                | "hasProxyPassword"
-                | "removeProxyPassword"
-        ) {
+        if super::proxy_secret_fields().any(|field| field == key) {
             return Err(format!("settings.{key}: secret fields cannot be imported"));
         }
         let Some(expected) = schema.get(key) else {

@@ -244,7 +244,7 @@ pub fn proxy_transfer(current: &JsonMap, patch: &JsonMap) -> Option<SecretTransf
             next.insert(key.into(), value.clone());
         }
     }
-    let saved = ["proxyPasswordEnc", "proxyPasswordPlain"]
+    let saved = crate::store::PROXY_SAVED
         .iter()
         .any(|key| sets_secret(current, key))
         || flag(current, "hasProxyPassword");

@@ -146,7 +146,7 @@ Run these from the repository root:
 | `npm run rust:test` | Run the Rust tests; ignored ones, such as those that need Docker or live servers, do not run. |
 | `npm run rust:build:release` | Build the native release executable without packaging an installer. |
 | `npm run build:tauri` | Build the production installer and signed update artifacts; requires updater signing credentials. |
-| `npm run check` | Run the local validation suite, including coverage, browser tests, Clippy, licenses, and build checks. |
+| `npm run check` | Run every check CI runs, including coverage, browser tests, Clippy, licenses, and build checks. |
 | `npm run clean` | Remove generated output, reports, and native build caches; see [cleanup options](#clean-up-build-output). |
 
 For a local release executable, run `npm run build` followed by `npm run rust:build:release`. Installer builds require the signing setup described in [updater signing](docs/updater-signing.md); their output is under `%LOCALAPPDATA%\FTPeachBuild\target\release\bundle\nsis`.
@@ -168,10 +168,11 @@ To check a change locally, run:
 npm run check
 ```
 
-`npm run check` is the local baseline, not every CI check. Packaged smoke, the installer
-tests, the language layout audit, Rust coverage, the Linux build, Semgrep, `npm audit` and
-`cargo deny` run separately. The end-to-end and live-server suites are closed and run before
-each release; see [how releases are verified](docs/release-trust.md#how-releases-are-verified).
+`npm run check` runs every step of the CI checks, comparing coverage with `origin/master` as
+CI does: Rust coverage, Semgrep, `npm audit`, `cargo deny`, the Linux build (in Docker), the
+language layout audit and packaged smoke included. A whole run takes about an hour. The
+installer tests run separately. The end-to-end and live-server suites are closed and run
+before each release; see [how releases are verified](docs/release-trust.md#how-releases-are-verified).
 
 See the [test guide](test/README.md) for individual suites and the [contribution guide](.github/CONTRIBUTING.md) for review expectations.
 

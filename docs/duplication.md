@@ -36,28 +36,27 @@ not the figures below:
 ## Findings and decisions
 
 Decisions recorded with that historical measurement for groups of at least 20 duplicated
-lines and every frontend and CSS clone. IDs refer to that audit's hotfix plan; they are
-traceability labels, not a current list of outstanding changes.
+lines and every frontend and CSS clone.
 
 | Where | Lines | Decision |
 | --- | ---: | --- |
-| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, download preparation and completion (D-01) | 34 | **Removed** (HF-26): `DownloadTarget` and `LocalDownload` in `protocol/transfer_file.rs` |
+| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, download preparation and completion | 34 | **Removed**: `DownloadTarget` and `LocalDownload` in `protocol/transfer_file.rs` |
 | `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, upload completion, connect, listing, create-file | 184 | **Defer**: upload completion can follow the download lifecycle once its no-replace guarantees are settled; connect and listing differ in each protocol's handshake and reply parsing |
-| `commands/fs.rs` with itself, mkdir/create-file reservation and checks (D-02) | 40 | **Removed** (HF-27): `local_fs::local_create` owns both operations |
-| `commands/fs.rs` with itself, rename and copy prologues | 21 | **Defer**: copy already runs in `local_fs::staged_copy`; rename moves with its own change, since it carries the no-replace guarantee (HF-02) |
+| `commands/fs.rs` with itself, mkdir/create-file reservation and checks | 40 | **Removed**: `local_fs::local_create` owns both operations |
+| `commands/fs.rs` with itself, rename and copy prologues | 21 | **Defer**: copy already runs in `local_fs::staged_copy`; rename moves with its own change, since it carries the no-replace guarantee |
 | `protocol/ftp.rs` with itself: `upload`/`upload_from_reader`, `download`/`download_to_writer`, rustls `verify_tls12/13_signature` | 63 | **Keep**: file and stream transfer loops differ in their source and resume handling, and rustls requires both verifier methods |
 | `commands/session/browse.rs`, validate-and-reserve prologue of mkdir/create/delete | 24 | **Keep**: three lines of prologue per command; the reservation guard has to live in each command's own scope |
 | `commands/dialog.rs`, native picker boilerplate | 23 | **Defer**: a picker helper when another picker is added; the filters and what is approved differ per picker |
-| `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu (D-03) | 12 | **Removed** (HF-28): `siteMenuItems` in `features/sites` |
-| `useSettingsTransfer.ts` ↔ `platform/global.d.ts`, import/export result types (D-05) | 12 | **Removed** (HF-29): one contract in `platform/api/settings.ts` |
-| `useTransferLifecycle.ts` with itself, moving an attempt to queued (D-07) | 12 | **Removed** (HF-31): `requeueAttempt` |
-| `ToolbarOverflowMenu.tsx` ↔ `PaneSourceSwitcher.tsx`, overlay position (D-06) | 15 | **Removed** (HF-30): `placeBelowAnchor` in `hooks/useMenuPosition.ts` |
+| `sites/SiteSearchResults.tsx` ↔ `SiteTree.tsx`, site context menu | 12 | **Removed**: `siteMenuItems` in `features/sites` |
+| `useSettingsTransfer.ts` ↔ `platform/global.d.ts`, import/export result types | 12 | **Removed**: one contract in `platform/api/settings.ts` |
+| `useTransferLifecycle.ts` with itself, moving an attempt to queued | 12 | **Removed**: `requeueAttempt` |
+| `ToolbarOverflowMenu.tsx` ↔ `PaneSourceSwitcher.tsx`, overlay position | 15 | **Removed**: `placeBelowAnchor` in `hooks/useMenuPosition.ts` |
 | `ConnectionSettings.tsx` ↔ `ProxySettings.tsx`, props interface | 13 | **Keep**: the two sections take the same settings slice; the overlap is a type, not behaviour |
 | `SiteTreeRows.tsx`, `useColumnDragReorder.ts`, `useSiteDragController.ts`, `AppDialogs.tsx`, `createPaneSessionLifecycle.ts` with themselves | 44 | **Keep**: branches of one drag or dialog lifecycle that differ in the lines around the clone |
-| `panes.css` ↔ `transfers.css` (D-08) | 7 | **Keep**: two components that look alike without sharing a visual contract |
+| `panes.css` ↔ `transfers.css` | 7 | **Keep**: two components that look alike without sharing a visual contract |
 
 The remaining Rust production clones are under 20 lines each and are reviewed when their code
 changes. Rust test clones are fixtures and assertions that each test states on its own.
 
 jscpd does not see semantic copies whose names and strings differ. The import and export dialogs
-(D-04, HF-29) are the known example; code review keeps looking for that kind of repetition.
+are the known example; code review keeps looking for that kind of repetition.

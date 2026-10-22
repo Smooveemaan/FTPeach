@@ -59,7 +59,7 @@ composition root. Code is grouped by what the user would name:
 State lives with its owner and flows down as props. The transfer queue uses a
 module-level store read with `useSyncExternalStore`
 (`features/transfers/transferStore.ts`), with row subscriptions and bounded
-admission and history; [resilience](p2-resilience.md) describes its limits.
+admission and history; [resilience](resilience.md) describes its limits.
 Date-format preferences and the async-failure sink also have explicit shared
 owners, described in [frontend architecture](frontend-architecture.md#global-channels).
 
@@ -269,7 +269,7 @@ interrupted is stopped by dropping its worker, which the pool replaces.
 In the renderer, `features/transfers/` keeps one row per transfer in the
 external store, owns retry, pause and cancel, and asks for overwrite
 decisions before a transfer starts. [Transfer safety](transfer-safety.md) and
-[resilience](p2-resilience.md) list the guarantees and limits.
+[resilience](resilience.md) list the guarantees and limits.
 
 ## Persistence
 

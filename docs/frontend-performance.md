@@ -178,7 +178,7 @@ Recursive folder traversal runs in the backend, with one active child transfer p
 Renderer-side local file copies and moves, and drops into a local pane, use a fan-out limit of
 eight operations. Network file selections admit at most 64 items at a time as earlier ones settle,
 so a 10,000-file selection does not build its whole queue in the renderer first. Backend pools
-apply the connection and transfer limits independently; [resilience](p2-resilience.md) lists the
+apply the connection and transfer limits independently; [resilience](resilience.md) lists the
 queue's admission and history budgets.
 Selected entries are indexed by name once before routing, avoiding repeated linear scans of large
 directory listings.

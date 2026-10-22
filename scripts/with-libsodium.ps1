@@ -155,7 +155,7 @@ try {
         }
         'benchmark-listing' {
             New-Item -ItemType Directory -Force -Path '.local\benchmarks' | Out-Null
-            & cargo run --locked --manifest-path 'src-tauri\Cargo.toml' --example benchmark_listing -- '.local\benchmarks\stage-2-listing.json' 100001
+            & cargo run --locked --manifest-path 'src-tauri\Cargo.toml' --example benchmark_listing -- '.local\benchmarks\listing.json' 100001
         }
         'test-target' {
             if ([string]::IsNullOrWhiteSpace($Target)) {

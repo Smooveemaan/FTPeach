@@ -15,6 +15,7 @@
   },
   "rust": {
     "src-tauri/src/application/recursive_transfer/mod.rs": 85,
+    "src-tauri/src/application/recursive_transfer/stages.rs": 94,
     "src-tauri/src/commands/fs.rs": 46,
     "src-tauri/src/local_fs/filesystem_safety.rs": 92,
     "src-tauri/src/local_fs/local_create.rs": 96,

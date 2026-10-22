@@ -51,7 +51,7 @@ A pair of panes with their connections, opened and closed as one.
 _Avoid_: page, workspace
 
 **Bookmark**:
-A saved server: its address, protocol, account and settings, optionally with saved secrets, kept in the Bookmarks list and its folders. In code and in files on disk it is a _site_ (`ManagedSite`, `sites.json`), and only there.
+A saved server: its address, protocol, account and settings, optionally with saved secrets, kept in the Bookmarks list and its folders. In code and in files on disk the record is a _site_ (`ManagedSite`, `sites.json`); names that describe what the user sees or does, such as a test's name or the export's `includeBookmarks`, say bookmark.
 _Avoid_: site (in anything a user reads), saved connection, profile, favourite
 
 **Local path**:
@@ -59,7 +59,7 @@ A saved folder on this computer, kept beside the bookmarks and opened in a local
 _Avoid_: local bookmark, shortcut
 
 **Folder**:
-A directory, local or on a server. Protocol commands and replies keep their own word, such as "directory listing" in a server's reply.
+A directory, local or on a server. Protocol commands and replies keep their own word, such as "directory listing" in a server's reply, and code keeps the platform's (`is_dir`, `mkdir`).
 _Avoid_: directory, collection (except when naming WebDAV's)
 
 **Connection**:

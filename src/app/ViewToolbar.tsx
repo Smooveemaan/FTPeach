@@ -80,22 +80,22 @@ export default function ViewToolbar({
     { key: 'orientation', width: ITEM_WIDTH },
     { key: 'log', width: ITEM_WIDTH },
     { key: 'queue', width: ITEM_WIDTH },
-    { key: 'panelRight', width: ITEM_WIDTH },
+    { key: 'paneRight', width: ITEM_WIDTH },
     // Bundles the divider that would otherwise dangle alone once the whole
     // panel-toggle group (this item included) is gone.
-    { key: 'panelLeft', width: ITEM_WIDTH + DIVIDER_WIDTH },
+    { key: 'paneLeft', width: ITEM_WIDTH + DIVIDER_WIDTH },
   ];
   // Pinned: pause/resume, stop/retry (2 buttons; the divider between them
   // and the panel-toggle group is conditional, see showDivider below).
   const baseWidth = 2 * ITEM_WIDTH;
   const { foldedKeys, hasOverflow } = useOverflowFold({ containerRef, baseWidth, foldOrder });
 
-  // foldOrder folds a strict prefix ending in panelLeft — checking it alone
+  // foldOrder folds a strict prefix ending in paneLeft — checking it alone
   // is enough to know the whole panel-toggle group is empty.
-  const showDivider = !foldedKeys.has('panelLeft');
+  const showDivider = !foldedKeys.has('paneLeft');
 
   const overflowItems: MenuItem[] = [
-    ...(foldedKeys.has('panelLeft')
+    ...(foldedKeys.has('paneLeft')
       ? [
           {
             label: t('menu.view.leftPane'),
@@ -105,7 +105,7 @@ export default function ViewToolbar({
           },
         ]
       : []),
-    ...(foldedKeys.has('panelRight')
+    ...(foldedKeys.has('paneRight')
       ? [
           {
             label: t('menu.view.rightPane'),
@@ -151,7 +151,7 @@ export default function ViewToolbar({
 
   return (
     <div className="view-toolbar" data-tooltip-below ref={containerRef}>
-      {!foldedKeys.has('panelLeft') && (
+      {!foldedKeys.has('paneLeft') && (
         <button
           type="button"
           className={`btn btn-ghost btn-icon ${showLocalPane ? 'active' : ''}`}
@@ -163,7 +163,7 @@ export default function ViewToolbar({
           <Icon name="panelLeft" />
         </button>
       )}
-      {!foldedKeys.has('panelRight') && (
+      {!foldedKeys.has('paneRight') && (
         <button
           type="button"
           className={`btn btn-ghost btn-icon ${showRemotePane ? 'active' : ''}`}

@@ -40,6 +40,10 @@
         "message": "Wszystkie zapisane hasła i frazy hasła kluczy SSH zostaną trwale usunięte.",
         "approve": "Usuń sejf"
       },
+      "vaultStartOver": {
+        "message": "Haseł zapisanych w uszkodzonym sejfie nie można otworzyć. Pozostały plik zostanie odłożony na bok, a nie usunięty. Hasła w zakładkach trzeba będzie wpisać ponownie.",
+        "approve": "Zacznij od nowa"
+      },
       "executeLocalFile": {
         "message": "Uruchomić ten plik wykonywalny lub skrypt?"
       },
@@ -482,6 +486,8 @@
         "strong": "Silne hasło główne."
       },
       "reset": "Zresetuj sejf",
+      "damaged": "Sejf jest uszkodzony: brakuje jednego z jego dwóch plików, więc zapisanych w nim haseł nie można otworzyć. Zacznij od nowa, aby ponownie skonfigurować ochronę.",
+      "startOver": "Zacznij od nowa",
       "resetHint": "Usuwa sejf oraz wszystkie zapisane w nim hasła i frazy hasła kluczy SSH. Wzmocnioną ochronę trzeba będzie skonfigurować ponownie.",
       "resetWarning": "Spowoduje to trwałe usunięcie wszystkich zapisanych haseł i fraz hasła kluczy. Wprowadź aktualne hasło główne, aby kontynuować.",
       "confirmReset": "Usuń zapisane hasła",

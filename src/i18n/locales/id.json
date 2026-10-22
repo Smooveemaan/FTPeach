@@ -40,6 +40,10 @@
         "message": "Semua kata sandi tersimpan dan frasa sandi kunci SSH akan dihapus secara permanen.",
         "approve": "Hapus brankas"
       },
+      "vaultStartOver": {
+        "message": "Kata sandi yang tersimpan di brankas yang rusak tidak dapat dibuka. File yang tersisa akan disisihkan, tidak dihapus. Kata sandi di bookmark perlu dimasukkan lagi.",
+        "approve": "Mulai ulang"
+      },
       "executeLocalFile": {
         "message": "Jalankan file yang dapat dieksekusi atau skrip ini?"
       },
@@ -474,6 +478,8 @@
         "strong": "Kata sandi utama kuat."
       },
       "reset": "Atur ulang brankas",
+      "damaged": "Brankas rusak: salah satu dari dua filenya hilang, sehingga kata sandi yang tersimpan di dalamnya tidak dapat dibuka. Mulai ulang untuk menyiapkan perlindungan lagi.",
+      "startOver": "Mulai ulang",
       "resetHint": "Menghapus brankas serta semua kata sandi dan frasa sandi kunci SSH yang tersimpan di dalamnya. Perlindungan yang ditingkatkan perlu diatur ulang.",
       "resetWarning": "Tindakan ini menghapus permanen semua kata sandi dan frasa sandi kunci yang tersimpan. Masukkan kata sandi utama saat ini untuk melanjutkan.",
       "confirmReset": "Hapus kata sandi tersimpan",

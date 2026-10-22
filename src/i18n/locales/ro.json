@@ -40,6 +40,10 @@
         "message": "Toate parolele salvate și frazele de acces ale cheilor SSH vor fi șterse definitiv.",
         "approve": "Șterge seiful"
       },
+      "vaultStartOver": {
+        "message": "Parolele salvate în seiful deteriorat nu pot fi deschise. Fișierul rămas va fi pus deoparte, nu șters. Parolele din marcaje vor trebui introduse din nou.",
+        "approve": "Reîncepe"
+      },
       "executeLocalFile": {
         "message": "Rulați acest fișier executabil sau script?"
       },
@@ -478,6 +482,8 @@
         "strong": "Parolă principală puternică."
       },
       "reset": "Resetează seiful",
+      "damaged": "Seiful este deteriorat: lipsește unul dintre cele două fișiere ale sale, așa că parolele salvate în el nu pot fi deschise. Reîncepeți pentru a configura din nou protecția.",
+      "startOver": "Reîncepe",
       "resetHint": "Șterge seiful și toate parolele și frazele de acces pentru cheile SSH stocate în acesta. Protecția avansată va trebui configurată din nou.",
       "resetWarning": "Această acțiune șterge definitiv toate parolele și frazele de acces ale cheilor salvate. Introduceți parola principală curentă pentru a continua.",
       "confirmReset": "Șterge parolele salvate",

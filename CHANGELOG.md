@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - If turning on the master password fails, for example on a full disk, you can try again without deleting files by hand.
+- A damaged password vault no longer blocks Settings → Security: **Start over** sets its remaining file aside, and protection can be set up again.
 
 ## [0.5.1] - 2026-10-21
 

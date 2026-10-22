@@ -101,6 +101,7 @@ pub enum ConfirmationKind {
     RevealSiteSecret,
     RevealProxyPassword,
     VaultReset,
+    VaultStartOver,
     ExecuteLocalFile,
     ExecuteRemoteFile,
     OpenWithApplication,
@@ -799,7 +800,17 @@ pub async fn authorize_sensitive(
             plan
         }
         "session_trust_host_key" => plan_host_key(&target, locale)?,
-        _ => plan_operation(&operation, &target, vault.is_configured(), locale)?,
+        _ => {
+            let mut plan = plan_operation(&operation, &target, vault.is_configured(), locale)?;
+            // A damaged vault is set aside, not deleted, and says so.
+            if operation == "vault_reset"
+                && vault.is_damaged()
+                && let Some(prompt) = plan.prompt.as_mut()
+            {
+                prompt.kind = ConfirmationKind::VaultStartOver;
+            }
+            plan
+        }
     };
     let requires_reauthentication = plan
         .prompt

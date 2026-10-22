@@ -40,6 +40,10 @@
         "message": "Alle gespeicherten Passwörter und Passphrasen für SSH-Schlüssel werden unwiderruflich gelöscht.",
         "approve": "Tresor löschen"
       },
+      "vaultStartOver": {
+        "message": "Die im beschädigten Tresor gespeicherten Passwörter lassen sich nicht öffnen. Die verbliebene Datei wird beiseitegelegt, nicht gelöscht. Passwörter in Lesezeichen müssen erneut eingegeben werden.",
+        "approve": "Neu beginnen"
+      },
       "executeLocalFile": {
         "message": "Diese ausführbare Datei oder dieses Skript ausführen?"
       },
@@ -474,6 +478,8 @@
         "strong": "Starkes Master-Passwort."
       },
       "reset": "Tresor zurücksetzen",
+      "damaged": "Der Tresor ist beschädigt: Eine seiner beiden Dateien fehlt, daher lassen sich die darin gespeicherten Passwörter nicht öffnen. Mit „Neu beginnen“ lässt sich der Schutz erneut einrichten.",
+      "startOver": "Neu beginnen",
       "resetHint": "Löscht den Tresor sowie alle darin gespeicherten Passwörter und Passphrasen für SSH-Schlüssel. Der erweiterte Schutz muss erneut eingerichtet werden.",
       "resetWarning": "Dadurch werden alle gespeicherten Passwörter und Schlüssel-Passphrasen endgültig gelöscht. Geben Sie das aktuelle Master-Passwort ein, um fortzufahren.",
       "confirmReset": "Gespeicherte Passwörter löschen",

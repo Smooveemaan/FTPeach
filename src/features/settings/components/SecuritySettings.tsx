@@ -119,8 +119,21 @@ export default function SecuritySettings({
           </p>
         )}
       </div>
-      {!vaultStatus ? null : !vaultStatus.configured &&
-        !strongholdSetupArmed ? null : !vaultStatus.configured ? (
+      {!vaultStatus ? null : vaultStatus.damaged ? (
+        <div className="settings-danger-zone settings-option-group">
+          <p className="settings-hint settings-warning" role="alert">
+            {t('settings.security.damaged')}
+          </p>
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={handler(resetVault)}
+            disabled={vaultBusy}
+          >
+            {t('settings.security.startOver')}
+          </button>
+        </div>
+      ) : !vaultStatus.configured && !strongholdSetupArmed ? null : !vaultStatus.configured ? (
         <div className="settings-option-group">
           <p className="settings-hint settings-warning">{t('settings.security.noRecovery')}</p>
           <div className="vault-password-form">

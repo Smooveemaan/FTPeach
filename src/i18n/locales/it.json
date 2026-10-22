@@ -40,6 +40,10 @@
         "message": "Tutte le password salvate e le passphrase delle chiavi SSH verranno eliminate definitivamente.",
         "approve": "Elimina cassaforte"
       },
+      "vaultStartOver": {
+        "message": "Le password salvate nella cassaforte danneggiata non possono essere aperte. Il file rimasto verrà messo da parte, non eliminato. Le password dei segnalibri andranno inserite di nuovo.",
+        "approve": "Ricomincia"
+      },
       "executeLocalFile": {
         "message": "Eseguire questo file eseguibile o script?"
       },
@@ -478,6 +482,8 @@
         "strong": "Password principale sicura."
       },
       "reset": "Reimposta la cassaforte",
+      "damaged": "La cassaforte è danneggiata: manca uno dei suoi due file, quindi le password salvate al suo interno non possono essere aperte. Ricominciando si può configurare di nuovo la protezione.",
+      "startOver": "Ricomincia",
       "resetHint": "Elimina la cassaforte e tutte le password e le passphrase delle chiavi SSH in essa contenute. Sarà necessario configurare nuovamente la protezione avanzata.",
       "resetWarning": "Questa operazione cancella definitivamente tutte le password e le passphrase salvate. Inserisci la password principale attuale per continuare.",
       "confirmReset": "Elimina le password salvate",

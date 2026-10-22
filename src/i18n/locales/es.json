@@ -40,6 +40,10 @@
         "message": "Todas las contraseñas guardadas y las frases de acceso de las claves SSH se eliminarán permanentemente.",
         "approve": "Eliminar bóveda"
       },
+      "vaultStartOver": {
+        "message": "Las contraseñas guardadas en la bóveda dañada no se pueden abrir. El archivo restante se apartará, no se eliminará. Habrá que volver a escribir las contraseñas de los marcadores.",
+        "approve": "Empezar de nuevo"
+      },
       "executeLocalFile": {
         "message": "¿Ejecutar este archivo ejecutable o script?"
       },
@@ -478,6 +482,8 @@
         "strong": "Contraseña maestra segura."
       },
       "reset": "Restablecer la bóveda",
+      "damaged": "La bóveda está dañada: falta uno de sus dos archivos, por lo que no se pueden abrir las contraseñas guardadas en ella. Al empezar de nuevo se puede volver a configurar la protección.",
+      "startOver": "Empezar de nuevo",
       "resetHint": "Elimina la bóveda y todas las contraseñas y frases de acceso de claves SSH que contiene. Habrá que volver a configurar la protección reforzada.",
       "resetWarning": "Esto eliminará de forma definitiva todas las contraseñas y frases de acceso guardadas. Introduce la contraseña maestra actual para continuar.",
       "confirmReset": "Eliminar las contraseñas guardadas",

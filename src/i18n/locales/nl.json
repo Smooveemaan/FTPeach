@@ -40,6 +40,10 @@
         "message": "Alle opgeslagen wachtwoorden en wachtwoordzinnen van SSH-sleutels worden permanent verwijderd.",
         "approve": "Kluis verwijderen"
       },
+      "vaultStartOver": {
+        "message": "De wachtwoorden in de beschadigde kluis kunnen niet worden geopend. Het overgebleven bestand wordt apart gezet, niet verwijderd. Wachtwoorden in bladwijzers moeten opnieuw worden ingevoerd.",
+        "approve": "Opnieuw beginnen"
+      },
       "executeLocalFile": {
         "message": "Dit uitvoerbare bestand of script uitvoeren?"
       },
@@ -474,6 +478,8 @@
         "strong": "Sterk hoofdwachtwoord."
       },
       "reset": "Kluis resetten",
+      "damaged": "De kluis is beschadigd: een van de twee bestanden ontbreekt, dus de wachtwoorden die erin zijn opgeslagen kunnen niet worden geopend. Met Opnieuw beginnen kan de beveiliging opnieuw worden ingesteld.",
+      "startOver": "Opnieuw beginnen",
       "resetHint": "Verwijdert de kluis en alle wachtwoorden en wachtwoordzinnen van SSH-sleutels die erin staan. De uitgebreide beveiliging moet opnieuw worden ingesteld.",
       "resetWarning": "Hiermee worden alle opgeslagen wachtwoorden en wachtwoordzinnen van sleutels definitief verwijderd. Voer het huidige hoofdwachtwoord in om door te gaan.",
       "confirmReset": "Opgeslagen wachtwoorden verwijderen",

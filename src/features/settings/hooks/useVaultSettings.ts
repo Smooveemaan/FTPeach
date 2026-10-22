@@ -25,6 +25,7 @@ export interface VaultSettingsModel {
     locked: boolean;
     systemUnlockAvailable: boolean;
     systemUnlockEnabled: boolean;
+    damaged?: boolean;
     portable?: boolean;
   } | null;
   vaultMessage: string;

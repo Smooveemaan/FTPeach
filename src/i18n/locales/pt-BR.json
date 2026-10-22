@@ -40,6 +40,10 @@
         "message": "Todas as senhas salvas e frases secretas de chaves SSH serão excluídas permanentemente.",
         "approve": "Excluir cofre"
       },
+      "vaultStartOver": {
+        "message": "As senhas salvas no cofre danificado não podem ser abertas. O arquivo restante será guardado à parte, não excluído. As senhas dos favoritos precisarão ser digitadas novamente.",
+        "approve": "Recomeçar"
+      },
       "executeLocalFile": {
         "message": "Executar este arquivo executável ou script?"
       },
@@ -478,6 +482,8 @@
         "strong": "Senha mestra forte."
       },
       "reset": "Redefinir o cofre",
+      "damaged": "O cofre está danificado: falta um dos seus dois arquivos, por isso as senhas salvas nele não podem ser abertas. Recomeçar permite configurar a proteção novamente.",
+      "startOver": "Recomeçar",
       "resetHint": "Exclui o cofre e todas as senhas e frases secretas de chaves SSH nele armazenadas. Será necessário configurar novamente a proteção aprimorada.",
       "resetWarning": "Isso exclui definitivamente todas as senhas e frases secretas salvas. Digite a senha mestra atual para continuar.",
       "confirmReset": "Excluir senhas salvas",

@@ -40,6 +40,10 @@
         "message": "Tous les mots de passe enregistrés et les phrases secrètes des clés SSH seront définitivement supprimés.",
         "approve": "Supprimer le coffre-fort"
       },
+      "vaultStartOver": {
+        "message": "Les mots de passe enregistrés dans le coffre-fort endommagé ne peuvent pas être ouverts. Le fichier restant sera mis de côté, et non supprimé. Les mots de passe des signets devront être saisis à nouveau.",
+        "approve": "Recommencer"
+      },
       "executeLocalFile": {
         "message": "Exécuter ce fichier exécutable ou ce script ?"
       },
@@ -478,6 +482,8 @@
         "strong": "Mot de passe principal fort."
       },
       "reset": "Réinitialiser le coffre-fort",
+      "damaged": "Le coffre-fort est endommagé : l'un de ses deux fichiers manque, les mots de passe qui y sont enregistrés ne peuvent donc pas être ouverts. Recommencer permet de configurer à nouveau la protection.",
+      "startOver": "Recommencer",
       "resetHint": "Supprime le coffre-fort ainsi que tous les mots de passe et phrases secrètes de clés SSH qu'il contient. La protection renforcée devra être reconfigurée.",
       "resetWarning": "Cette opération supprime définitivement tous les mots de passe et phrases secrètes de clés enregistrés. Saisissez le mot de passe principal actuel pour continuer.",
       "confirmReset": "Supprimer les mots de passe enregistrés",

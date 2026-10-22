@@ -40,6 +40,10 @@
         "message": "Every saved password and SSH key passphrase will be permanently deleted.",
         "approve": "Delete vault"
       },
+      "vaultStartOver": {
+        "message": "The passwords saved in the damaged vault cannot be opened. Its remaining file will be set aside, not deleted. Passwords in bookmarks will need to be entered again.",
+        "approve": "Start over"
+      },
       "executeLocalFile": {
         "message": "Run this executable file or script?"
       },
@@ -474,6 +478,8 @@
         "strong": "Strong master password."
       },
       "reset": "Reset vault",
+      "damaged": "The vault is damaged: one of its two files is missing, so the passwords saved in it cannot be opened. Start over to set up protection again.",
+      "startOver": "Start over",
       "resetHint": "Deletes the vault and every password and SSH key passphrase stored in it. Enhanced protection will need to be set up again.",
       "resetWarning": "This permanently deletes every saved password and key passphrase. Enter the current master password to continue.",
       "confirmReset": "Delete saved secrets",

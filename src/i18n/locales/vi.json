@@ -40,6 +40,10 @@
         "message": "Tất cả mật khẩu đã lưu và cụm mật khẩu khóa SSH sẽ bị xóa vĩnh viễn.",
         "approve": "Xóa kho bảo mật"
       },
+      "vaultStartOver": {
+        "message": "Không thể mở các mật khẩu đã lưu trong kho bảo mật bị hỏng. Tệp còn lại sẽ được để riêng, không bị xóa. Mật khẩu trong dấu trang sẽ cần được nhập lại.",
+        "approve": "Bắt đầu lại"
+      },
       "executeLocalFile": {
         "message": "Chạy tệp thực thi hoặc tập lệnh này?"
       },
@@ -474,6 +478,8 @@
         "strong": "Mật khẩu chính mạnh."
       },
       "reset": "Đặt lại kho bảo mật",
+      "damaged": "Kho bảo mật bị hỏng: thiếu một trong hai tệp của nó nên không thể mở các mật khẩu đã lưu trong đó. Hãy bắt đầu lại để thiết lập lại tính năng bảo vệ.",
+      "startOver": "Bắt đầu lại",
       "resetHint": "Xóa kho bảo mật cùng tất cả mật khẩu và cụm mật khẩu khóa SSH lưu trong đó. Bạn sẽ cần thiết lập lại bảo vệ nâng cao.",
       "resetWarning": "Thao tác này sẽ xóa vĩnh viễn tất cả mật khẩu và cụm mật khẩu khóa đã lưu. Nhập mật khẩu chính hiện tại để tiếp tục.",
       "confirmReset": "Xóa mật khẩu đã lưu",

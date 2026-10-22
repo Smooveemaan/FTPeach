@@ -46,6 +46,7 @@ declare global {
           locked: boolean;
           systemUnlockAvailable: boolean;
           systemUnlockEnabled: boolean;
+          damaged?: boolean;
           portable?: boolean;
         }>;
         unlock: (masterPassword: string) => Promise<CommandResult>;

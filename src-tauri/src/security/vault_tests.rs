@@ -72,6 +72,34 @@ async fn failed_setup_leaves_nothing_that_blocks_the_next_one() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 
+/// Either file alone is a damaged vault: starting over sets it aside as
+/// `*.damaged`, replacing an older copy, and a new vault can then be set up.
+#[tokio::test]
+async fn a_damaged_vault_is_set_aside_and_a_new_one_can_be_made() {
+    for lone in ["vault.hold", "vault.json"] {
+        let dir =
+            std::env::temp_dir().join(format!("ftpeach-vault-damaged-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let vault = Vault::new(dir.clone());
+        std::fs::write(dir.join(lone), b"older").unwrap();
+        vault.reset().await.unwrap();
+        std::fs::write(dir.join(lone), b"newer").unwrap();
+        assert!(vault.status().await.damaged);
+        assert!(!vault.is_configured());
+        vault.reset().await.unwrap();
+        assert!(!dir.join(lone).exists());
+        assert_eq!(
+            std::fs::read(dir.join(format!("{lone}.damaged"))).unwrap(),
+            b"newer"
+        );
+        assert!(!vault.status().await.damaged);
+        vault.setup("correct horse battery staple").await.unwrap();
+        assert!(vault.is_configured());
+        vault.lock().await;
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
 #[tokio::test]
 async fn rejects_oversized_metadata_and_kdf_before_computation() {
     let dir = std::env::temp_dir().join(format!("ftpeach-kdf-budget-{}", uuid::Uuid::new_v4()));

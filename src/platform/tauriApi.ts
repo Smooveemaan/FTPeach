@@ -59,6 +59,8 @@ interface VaultStatus {
   locked: boolean;
   systemUnlockAvailable: boolean;
   systemUnlockEnabled: boolean;
+  /** Only one of the vault's two files is there; it can only be set aside. */
+  damaged?: boolean;
   /** This copy keeps its data beside the program. */
   portable?: boolean;
 }

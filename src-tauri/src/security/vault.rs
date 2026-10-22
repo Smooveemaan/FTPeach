@@ -40,6 +40,9 @@ pub struct VaultStatus {
     pub locked: bool,
     pub system_unlock_available: bool,
     pub system_unlock_enabled: bool,
+    /// Only one of the vault's two files is there, so it cannot be opened
+    /// and a new one cannot be set up until the user starts over.
+    pub damaged: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -183,6 +186,10 @@ impl Vault {
         self.snapshot_path().is_file() && self.metadata_path().is_file()
     }
 
+    pub fn is_damaged(&self) -> bool {
+        self.snapshot_path().is_file() != self.metadata_path().is_file()
+    }
+
     pub async fn is_unlocked(&self) -> bool {
         self.state.lock().await.is_some()
     }
@@ -201,6 +208,7 @@ impl Vault {
                 .read_metadata()
                 .await
                 .is_ok_and(|metadata| metadata.system_unlock_here(&*self.keys).is_some()),
+            damaged: self.is_damaged(),
         }
     }
 
@@ -709,6 +717,19 @@ impl Vault {
     }
 
     async fn remove_files(&self) -> Result<()> {
+        if self.is_damaged() {
+            // The other half may still turn up in a backup, so the file is
+            // set aside rather than deleted; one such copy is kept.
+            for path in [self.snapshot_path(), self.metadata_path()] {
+                if path.is_file() {
+                    let mut aside = path.as_os_str().to_owned();
+                    aside.push(".damaged");
+                    Self::replace_file(&path, Path::new(&aside))
+                        .context("setting the damaged vault aside")?;
+                }
+            }
+            return Ok(());
+        }
         // Best effort, and only this computer's keys can be reached at all.
         if let Ok(metadata) = self.read_metadata().await {
             for system in metadata.system_unlocks {

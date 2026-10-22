@@ -206,9 +206,12 @@ mod tests {
     #[tokio::test]
     async fn a_reset_that_fails_after_locking_is_still_announced() {
         let (root, vault) = open_vault().await;
-        // A directory where the snapshot was cannot be removed as a file.
-        std::fs::remove_file(root.join("vault.hold")).unwrap();
-        std::fs::create_dir(root.join("vault.hold")).unwrap();
+        // Directories where the files were cannot be removed as files; both,
+        // since one file alone would be a damaged vault, set aside instead.
+        for name in ["vault.hold", "vault.json"] {
+            std::fs::remove_file(root.join(name)).unwrap();
+            std::fs::create_dir(root.join(name)).unwrap();
+        }
         let app = tauri::test::mock_app();
         let heard = announcements(&app);
 

@@ -40,6 +40,10 @@
         "message": "Alle gemte adgangskoder og adgangssætninger til SSH-nøgler slettes permanent.",
         "approve": "Slet boks"
       },
+      "vaultStartOver": {
+        "message": "Adgangskoderne i den beskadigede boks kan ikke åbnes. Den resterende fil lægges til side og slettes ikke. Adgangskoder i bogmærker skal indtastes igen.",
+        "approve": "Start forfra"
+      },
       "executeLocalFile": {
         "message": "Kør denne eksekverbare fil eller dette script?"
       },
@@ -474,6 +478,8 @@
         "strong": "Stærk hovedadgangskode."
       },
       "reset": "Nulstil boksen",
+      "damaged": "Boksen er beskadiget: en af dens to filer mangler, så de adgangskoder, der er gemt i den, kan ikke åbnes. Start forfra for at konfigurere beskyttelsen igen.",
+      "startOver": "Start forfra",
       "resetHint": "Sletter boksen samt alle adgangskoder og adgangssætninger til SSH-nøgler, der er gemt i den. Den udvidede beskyttelse skal konfigureres på ny.",
       "resetWarning": "Dette sletter alle gemte adgangskoder og adgangssætninger til nøgler permanent. Indtast den aktuelle hovedadgangskode for at fortsætte.",
       "confirmReset": "Slet gemte adgangskoder",

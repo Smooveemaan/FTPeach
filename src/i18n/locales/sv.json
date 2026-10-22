@@ -40,6 +40,10 @@
         "message": "Alla sparade lösenord och lösenfraser för SSH-nycklar tas bort permanent.",
         "approve": "Ta bort valv"
       },
+      "vaultStartOver": {
+        "message": "Lösenorden i det skadade valvet kan inte öppnas. Den återstående filen läggs åt sidan, den tas inte bort. Lösenord i bokmärken måste anges igen.",
+        "approve": "Börja om"
+      },
       "executeLocalFile": {
         "message": "Köra den här körbara filen eller det här skriptet?"
       },
@@ -474,6 +478,8 @@
         "strong": "Starkt huvudlösenord."
       },
       "reset": "Återställ valvet",
+      "damaged": "Valvet är skadat: en av dess två filer saknas, så lösenorden som sparats i det kan inte öppnas. Börja om för att konfigurera skyddet igen.",
+      "startOver": "Börja om",
       "resetHint": "Tar bort valvet samt alla lösenord och lösenfraser för SSH-nycklar som finns lagrade i det. Det förstärkta skyddet måste konfigureras på nytt.",
       "resetWarning": "Detta raderar alla sparade lösenord och lösenfraser för nycklar permanent. Ange det aktuella huvudlösenordet för att fortsätta.",
       "confirmReset": "Ta bort sparade lösenord",

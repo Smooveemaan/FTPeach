@@ -550,6 +550,25 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await waitFor(() => expect(props.onVaultReset).toHaveBeenCalledOnce());
   });
 
+  test('a damaged vault offers only to start over, through the reset', async () => {
+    const user = userEvent.setup({ delay: null });
+    const reset = vi.fn(async () => ({ ok: true }));
+    Object.assign(window.api.vault, { reset });
+    vi.mocked(window.api.vault.status).mockResolvedValue({
+      configured: false,
+      locked: true,
+      systemUnlockAvailable: false,
+      systemUnlockEnabled: false,
+      damaged: true,
+    });
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'settings.categories.security' }));
+    expect(await screen.findByText('settings.security.damaged')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'settings.security.setup' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'settings.security.startOver' }));
+    await waitFor(() => expect(reset).toHaveBeenCalledOnce());
+  });
+
   test('Security walks from first setup through locking and changing the master password', async () => {
     const user = userEvent.setup({ delay: null });
     const status = {

@@ -40,6 +40,10 @@
         "message": "Všechna uložená hesla a přístupové fráze klíčů SSH budou trvale odstraněny.",
         "approve": "Odstranit trezor"
       },
+      "vaultStartOver": {
+        "message": "Hesla uložená v poškozeném trezoru nelze otevřít. Zbývající soubor bude odložen stranou, ne odstraněn. Hesla v záložkách bude nutné zadat znovu.",
+        "approve": "Začít znovu"
+      },
       "executeLocalFile": {
         "message": "Spustit tento spustitelný soubor nebo skript?"
       },
@@ -482,6 +486,8 @@
         "strong": "Silné hlavní heslo."
       },
       "reset": "Resetovat trezor",
+      "damaged": "Trezor je poškozený: jeden z jeho dvou souborů chybí, takže hesla v něm uložená nelze otevřít. Začněte znovu a ochranu nastavte znovu.",
+      "startOver": "Začít znovu",
       "resetHint": "Vymaže trezor a všechna hesla a přístupové fráze k SSH klíčům, které jsou v něm uloženy. Bude nutné znovu nastavit rozšířenou ochranu.",
       "resetWarning": "Tím se trvale odstraní všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
       "confirmReset": "Odstranit uložená hesla",

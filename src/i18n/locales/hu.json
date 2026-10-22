@@ -40,6 +40,10 @@
         "message": "Minden mentett jelszó és SSH-kulcs jelmondata véglegesen törlődik.",
         "approve": "Széf törlése"
       },
+      "vaultStartOver": {
+        "message": "A sérült széfben mentett jelszavak nem nyithatók meg. A megmaradt fájl félre lesz téve, nem törlődik. A könyvjelzők jelszavait újra meg kell adni.",
+        "approve": "Újrakezdés"
+      },
       "executeLocalFile": {
         "message": "Futtatja ezt a végrehajtható fájlt vagy parancsfájlt?"
       },
@@ -474,6 +478,8 @@
         "strong": "Erős fő jelszó."
       },
       "reset": "A széf visszaállítása",
+      "damaged": "A széf megsérült: hiányzik a két fájlja közül az egyik, ezért a benne mentett jelszavak nem nyithatók meg. Az újrakezdéssel a védelem ismét beállítható.",
+      "startOver": "Újrakezdés",
       "resetHint": "Törli a széfet, valamint az abban tárolt összes jelszót és SSH-kulcs jelmondatot. A fokozott védelmet újra be kell állítani.",
       "resetWarning": "Ez véglegesen törli az összes mentett jelszót és kulcsjelmondatot. A folytatáshoz írja be a jelenlegi fő jelszót.",
       "confirmReset": "Mentett jelszavak törlése",

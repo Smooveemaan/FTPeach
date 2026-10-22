@@ -13,6 +13,7 @@ type ConfirmationKind =
   | 'revealSiteSecret'
   | 'revealProxyPassword'
   | 'vaultReset'
+  | 'vaultStartOver'
   | 'executeLocalFile'
   | 'executeRemoteFile'
   | 'openWithApplication'
@@ -26,6 +27,7 @@ const OPERATION_TRANSLATION_KEYS: Record<ConfirmationKind, string> = {
   revealSiteSecret: 'securityConfirmation.operations.revealSiteSecret',
   revealProxyPassword: 'securityConfirmation.operations.revealProxyPassword',
   vaultReset: 'securityConfirmation.operations.vaultReset',
+  vaultStartOver: 'securityConfirmation.operations.vaultStartOver',
   executeLocalFile: 'securityConfirmation.operations.executeLocalFile',
   executeRemoteFile: 'securityConfirmation.operations.executeRemoteFile',
   openWithApplication: 'securityConfirmation.operations.openWithApplication',

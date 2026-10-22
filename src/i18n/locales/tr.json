@@ -40,6 +40,10 @@
         "message": "Kaydedilen tüm şifreler ve SSH anahtar parolaları kalıcı olarak silinecek.",
         "approve": "Kasayı sil"
       },
+      "vaultStartOver": {
+        "message": "Hasarlı kasaya kaydedilen parolalar açılamaz. Kalan dosya silinmez, kenara ayrılır. Yer imlerindeki parolaların yeniden girilmesi gerekecek.",
+        "approve": "Baştan başla"
+      },
       "executeLocalFile": {
         "message": "Bu yürütülebilir dosya veya betik çalıştırılsın mı?"
       },
@@ -474,6 +478,8 @@
         "strong": "Güçlü ana şifre."
       },
       "reset": "Kasayı sıfırla",
+      "damaged": "Kasa hasarlı: iki dosyasından biri eksik, bu nedenle içine kaydedilen parolalar açılamıyor. Korumayı yeniden kurmak için baştan başlayın.",
+      "startOver": "Baştan başla",
       "resetHint": "Kasayı ve içinde saklanan tüm şifreleri ve SSH anahtar parolalarını siler. Gelişmiş korumanın yeniden ayarlanması gerekecektir.",
       "resetWarning": "Bu işlem, kaydedilmiş tüm şifreleri ve anahtar parolalarını kalıcı olarak siler. Devam etmek için mevcut ana şifreyi girin.",
       "confirmReset": "Kaydedilmiş şifreleri sil",

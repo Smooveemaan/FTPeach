@@ -120,6 +120,16 @@
   background: color-mix(in srgb, var(--status-success) 22%, var(--bg-base));
 }
 
+/* Square like .connect-toggle-btn: .btn-icon's padding makes a 16px icon 28px
+   wide, and the password field beside it would squeeze it further. */
+.vault-lock-toggle,
+.vault-system-unlock {
+  flex: none;
+  width: var(--control-height);
+  min-width: var(--control-height);
+  padding: 0;
+}
+
 .vault-unlock-row {
   display: flex;
   width: 100%;

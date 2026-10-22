@@ -114,15 +114,20 @@ fn command_refused(error: &anyhow::Error) -> bool {
         matches!(
             cause.downcast_ref::<suppaftp::FtpError>(),
             Some(suppaftp::FtpError::UnexpectedResponse(response))
-                if matches!(
-                    response.status,
-                    Status::BadCommand
-                        | Status::BadArguments
-                        | Status::NotImplemented
-                        | Status::NotImplementedParameter
-                )
+                if unsupported_reply(response.status)
         )
     })
+}
+
+/// The replies a server gives a command it does not implement.
+fn unsupported_reply(status: Status) -> bool {
+    matches!(
+        status,
+        Status::BadCommand
+            | Status::BadArguments
+            | Status::NotImplemented
+            | Status::NotImplementedParameter
+    )
 }
 
 /// A greeting other than 220 turns the session away before any login (SFTPGo
@@ -229,18 +234,6 @@ impl FtpBackend {
         Self::default()
     }
 
-    fn log_kind(&self, line: impl Into<LogText>, kind: LogKind) {
-        self.logger.emit(line, kind);
-    }
-
-    /// Human-authored, translated log line — the frontend resolves `key` via
-    /// `i18next` (`log.{key}`) against `params`. Never used for literal
-    /// protocol wire text (commands, numeric-coded server replies), which
-    /// stays untranslated via `log`/`log_kind` — see `LogText`'s doc comment.
-    fn log_key(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.logger.event(key, params, kind);
-    }
-
     fn log_response_body(&self, body: &[u8]) {
         let text = String::from_utf8_lossy(body);
         for line in text
@@ -248,7 +241,7 @@ impl FtpBackend {
             .map(str::trim)
             .filter(|l| !l.is_empty())
         {
-            self.log_kind(line.to_string(), LogKind::Response);
+            self.logger.emit(line.to_string(), LogKind::Response);
         }
     }
 
@@ -259,14 +252,14 @@ impl FtpBackend {
         display: impl Into<LogText>,
         expected: &[Status],
     ) -> BackendResult<suppaftp::types::Response> {
-        self.log_kind(display, LogKind::Command);
+        self.logger.emit(display, LogKind::Command);
         match stream.custom_command(cmd, expected).await {
             Ok(resp) => {
                 self.log_response_body(&resp.body);
                 Ok(resp)
             }
             Err(err) => {
-                self.log_kind(format!("{err}"), LogKind::Error);
+                self.logger.emit(format!("{err}"), LogKind::Error);
                 Err(err.into())
             }
         }
@@ -278,36 +271,28 @@ impl FtpBackend {
         cmd: &str,
         expected: &[Status],
     ) {
-        self.log_kind(cmd.to_string(), LogKind::Command);
+        self.logger.emit(cmd.to_string(), LogKind::Command);
         match stream.custom_command(cmd.to_string(), expected).await {
             Ok(resp) => self.log_response_body(&resp.body),
             // Optional capability negotiation may be unsupported. Preserve
             // the wire reply without presenting it as a connection failure.
-            Err(suppaftp::FtpError::UnexpectedResponse(resp))
-                if matches!(
-                    resp.status,
-                    Status::BadCommand
-                        | Status::BadArguments
-                        | Status::NotImplemented
-                        | Status::NotImplementedParameter
-                ) =>
-            {
+            Err(suppaftp::FtpError::UnexpectedResponse(resp)) if unsupported_reply(resp.status) => {
                 self.log_response_body(&resp.body);
             }
-            Err(err) => self.log_kind(format!("{err}"), LogKind::Error),
+            Err(err) => self.logger.emit(format!("{err}"), LogKind::Error),
         }
     }
 
     /// Asks for the server's features, answering with whatever it listed.
     async fn logged_feat(&self, stream: &mut AsyncRustlsFtpStream) -> String {
-        self.log_kind("FEAT".to_string(), LogKind::Command);
+        self.logger.emit("FEAT".to_string(), LogKind::Command);
         match stream.custom_command("FEAT".to_string(), &[]).await {
             Ok(resp) | Err(suppaftp::FtpError::UnexpectedResponse(resp)) => {
                 self.log_response_body(&resp.body);
                 String::from_utf8_lossy(&resp.body).into_owned()
             }
             Err(err) => {
-                self.log_kind(format!("{err}"), LogKind::Error);
+                self.logger.emit(format!("{err}"), LogKind::Error);
                 String::new()
             }
         }
@@ -436,7 +421,7 @@ impl FtpBackend {
         // cost a reconnect. Other failures discard it conservatively.
         operation.reusable = result.is_ok() || result.as_ref().is_err_and(refused_by_server);
         if let Err(error) = &result {
-            self.log_kind(format!("{error:#}"), LogKind::Error);
+            self.logger.emit(format!("{error:#}"), LogKind::Error);
         }
         result
     }
@@ -482,7 +467,7 @@ impl ProtocolBackend for FtpBackend {
     }
 
     fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.log_key(key, params, kind);
+        self.logger.event(key, params, kind);
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
@@ -496,7 +481,7 @@ impl ProtocolBackend for FtpBackend {
     }
 
     async fn mkdir(&mut self, path: &str) -> BackendResult<()> {
-        self.log_kind(format!("MKD {path}"), LogKind::Command);
+        self.logger.emit(format!("MKD {path}"), LogKind::Command);
         let target = path.to_string();
         let made = self
             .with_stream(move |s| Box::pin(async move { Self::ensure_dir(s, &target).await }))
@@ -691,21 +676,8 @@ impl ProtocolBackend for FtpBackend {
         resume: bool,
         progress: ProgressSink,
     ) -> BackendResult<()> {
-        let local_size = tokio::fs::metadata(local_path)
-            .await
-            .map(|m| m.len())
-            .unwrap_or(0);
-        let remote_size = if resume {
-            self.known_size(remote_path).await.unwrap_or(0)
-        } else {
-            0
-        };
-        if remote_size > local_size {
-            return Err(super::fail(
-                ErrorCode::IntegrityMismatch,
-                "The remote partial file is larger than the local source",
-            ));
-        }
+        let (local_size, remote_size) =
+            super::upload_start(self, local_path, remote_path, resume).await?;
 
         let remote_path = remote_path.to_string();
         let remote_path_for_op = remote_path.clone();

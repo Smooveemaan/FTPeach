@@ -170,7 +170,7 @@ impl WebDavBackend {
 
     /// One MKCOL. A collection already at `path` counts as made.
     pub(super) async fn make_collection(&self, path: &str) -> BackendResult<()> {
-        self.log_kind(format!("MKCOL {path}"), LogKind::Command);
+        self.logger.emit(format!("MKCOL {path}"), LogKind::Command);
         let res = self
             .request_url(
                 Method::from_bytes(b"MKCOL").unwrap(),
@@ -197,34 +197,18 @@ impl WebDavBackend {
         Ok(())
     }
 
-    pub(super) async fn resource_exists(&self, path: &str) -> BackendResult<bool> {
+    /// What stands at `path`: `Some(true)` a collection, `Some(false)` a
+    /// file, `None` nothing.
+    pub(super) async fn resource_at(&self, path: &str) -> BackendResult<Option<bool>> {
         let client = self.client()?.clone();
         let url = self.build_url(path);
         let (user, password) = self.credentials();
         match Self::propfind(&client, url, 0, user, password).await {
-            Ok(xml) => Ok(!parse_propfind(&xml)?.is_empty()),
+            Ok(xml) => Ok(parse_propfind(&xml)?.first().map(|entry| entry.is_dir)),
             Err(error)
                 if crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::NotFound =>
             {
-                Ok(false)
-            }
-            Err(error) => Err(error),
-        }
-    }
-
-    /// Whether a file, rather than a collection, stands at `path`.
-    pub(super) async fn file_exists(&self, path: &str) -> BackendResult<bool> {
-        let client = self.client()?.clone();
-        let url = self.build_url(path);
-        let (user, password) = self.credentials();
-        match Self::propfind(&client, url, 0, user, password).await {
-            Ok(xml) => Ok(parse_propfind(&xml)?
-                .first()
-                .is_some_and(|entry| !entry.is_dir)),
-            Err(error)
-                if crate::ipc::CommandError::from_anyhow(&error).code == ErrorCode::NotFound =>
-            {
-                Ok(false)
+                Ok(None)
             }
             Err(error) => Err(error),
         }
@@ -236,7 +220,8 @@ impl WebDavBackend {
         new_path: &str,
         overwrite: bool,
     ) -> BackendResult<reqwest::Response> {
-        self.log_kind(format!("MOVE {old_path} -> {new_path}"), LogKind::Command);
+        self.logger
+            .emit(format!("MOVE {old_path} -> {new_path}"), LogKind::Command);
         self.request(Method::from_bytes(b"MOVE")?, old_path)?
             .header("Destination", self.build_url(new_path))
             .header("Overwrite", if overwrite { "T" } else { "F" })

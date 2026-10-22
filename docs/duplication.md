@@ -41,7 +41,7 @@ lines and every frontend and CSS clone.
 | Where | Lines | Decision |
 | --- | ---: | --- |
 | `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, download preparation and completion | 34 | **Removed**: `DownloadTarget` and `LocalDownload` in `protocol/transfer_file.rs` |
-| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, upload completion, connect, listing, create-file | 184 | **Defer**: upload completion can follow the download lifecycle once its no-replace guarantees are settled; connect and listing differ in each protocol's handshake and reply parsing |
+| `protocol/ftp.rs` ↔ `sftp.rs` ↔ `webdav.rs`, upload start and completion, connect, listing, create-file, log wrappers, tree removal | 184 | **Partly removed**: an upload's start is `protocol::upload_start` and the backends log through `BackendLogger` directly. **Keep** the rest: upload completion, connect and listing differ in each protocol's guarantees, handshake and reply parsing, and FTP's tree removal lists again past a server's listing cap |
 | `commands/fs.rs` with itself, mkdir/create-file reservation and checks | 40 | **Removed**: `local_fs::local_create` owns both operations |
 | `commands/fs.rs` with itself, rename and copy prologues | 21 | **Defer**: copy already runs in `local_fs::staged_copy`; rename moves with its own change, since it carries the no-replace guarantee |
 | `protocol/ftp.rs` with itself: `upload`/`upload_from_reader`, `download`/`download_to_writer`, rustls `verify_tls12/13_signature` | 63 | **Keep**: file and stream transfer loops differ in their source and resume handling, and rustls requires both verifier methods |

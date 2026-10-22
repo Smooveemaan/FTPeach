@@ -40,14 +40,15 @@ impl FtpBackend {
         let timeout_ms = config.common.timeout_ms;
 
         let addr = format!("{host}:{port}");
-        self.log_key(
+        self.logger.event(
             "connecting",
             serde_json::json!({ "addr": &addr }),
             LogKind::Status,
         );
         if config.active_mode && proxy.is_some() {
             // A proxy tunnel cannot take the server's connection back.
-            self.log_key("activeModeViaProxy", serde_json::json!({}), LogKind::Status);
+            self.logger
+                .event("activeModeViaProxy", serde_json::json!({}), LogKind::Status);
         }
 
         let this = &*self;
@@ -65,10 +66,11 @@ impl FtpBackend {
             let tls = if secure {
                 // The relay secures the connection before the greeting.
                 if encoding.is_some() {
-                    this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
+                    this.logger
+                        .event("tlsInit", serde_json::json!({}), LogKind::Status);
                 }
                 if allow_invalid_cert {
-                    this.log_kind(
+                    this.logger.emit(
                         "WARNING: TLS certificate verification is disabled for this connection (allowInvalidCert) — the server's identity is not being checked.".to_string(),
                         LogKind::Error,
                     );
@@ -128,7 +130,7 @@ impl FtpBackend {
             }
             if active_mode {
                 // suppaftp sends PORT/EPRT itself, out of sight of this log.
-                this.log_kind(
+                this.logger.emit(
                     "Active mode: the server connects back to this computer for each transfer (PORT/EPRT)",
                     LogKind::Status,
                 );
@@ -162,7 +164,8 @@ impl FtpBackend {
                         .context("TLS handshake failed")?;
                     }
                 } else {
-                    this.log_key("tlsInit", serde_json::json!({}), LogKind::Status);
+                    this.logger
+                        .event("tlsInit", serde_json::json!({}), LogKind::Status);
                     let connector: AsyncRustlsConnector =
                         tokio_rustls::TlsConnector::from(config.clone()).into();
                     stream = stream
@@ -170,7 +173,8 @@ impl FtpBackend {
                         .await
                         .context("TLS handshake failed")?;
                 }
-                this.log_key("tlsEstablished", serde_json::json!({}), LogKind::Response);
+                this.logger
+                    .event("tlsEstablished", serde_json::json!({}), LogKind::Response);
             }
             let user_cmd = format!("USER {user}");
             let user_resp = this
@@ -225,7 +229,7 @@ impl FtpBackend {
         let (stream, feat, data) = match outcome {
             Ok(connected) => connected,
             Err(err) => {
-                self.log_key(
+                self.logger.event(
                     "connectFailed",
                     serde_json::json!({ "error": format!("{err:#}") }),
                     LogKind::Error,
@@ -234,7 +238,8 @@ impl FtpBackend {
             }
         };
 
-        self.log_key("connected", serde_json::json!({}), LogKind::Response);
+        self.logger
+            .event("connected", serde_json::json!({}), LogKind::Response);
         self.mlsd = feat_offers_mlsd(&feat);
         self.data = Some(data);
         *self.stream.lock().await = Some(stream);

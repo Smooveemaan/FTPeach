@@ -12,12 +12,16 @@ pub struct BackendLogger {
 }
 
 impl BackendLogger {
+    /// A line as it is: protocol wire text (commands, numeric-coded server
+    /// replies) is never translated, see `LogText`.
     pub fn emit(&self, line: impl Into<LogText>, kind: LogKind) {
         if let Some(sink) = self.sink.read().unwrap().as_ref() {
             sink(line.into(), kind);
         }
     }
 
+    /// A human-authored line the frontend translates: it resolves `key` via
+    /// i18next (`log.{key}`) against `params`.
     pub fn event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
         self.emit(LogText::event(key, params), kind);
     }

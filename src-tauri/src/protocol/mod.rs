@@ -115,6 +115,33 @@ pub fn overwrite_allowed() -> bool {
     ALLOW_OVERWRITE.try_with(|value| *value).unwrap_or(false)
 }
 
+/// The local file's length and where an upload starts on the server: from
+/// the start, or for a resume from the length the server holds, which must
+/// not be longer than the local file.
+pub(crate) async fn upload_start<B: ProtocolBackend + ?Sized>(
+    backend: &mut B,
+    local_path: &Path,
+    remote_path: &str,
+    resume: bool,
+) -> BackendResult<(u64, u64)> {
+    let local_size = tokio::fs::metadata(local_path)
+        .await
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let remote_size = if resume {
+        backend.known_size(remote_path).await.unwrap_or(0)
+    } else {
+        0
+    };
+    if remote_size > local_size {
+        return Err(fail(
+            crate::ipc::ErrorCode::IntegrityMismatch,
+            "The remote partial file is larger than the local source",
+        ));
+    }
+    Ok((local_size, remote_size))
+}
+
 pub fn validate_listing(entries: &[EntryInfo]) -> BackendResult<()> {
     let mut text_bytes = 0usize;
     if entries.len() > MAX_DIRECTORY_ENTRIES {
@@ -165,7 +192,7 @@ pub enum LogKind {
 /// translation key + interpolation params for a human-authored sentence
 /// ("Connecting to...", "Received N entries"), resolved by the frontend via
 /// i18next (`log.{key}`). `From<String>`/`From<&str>` produce `Raw`, so every
-/// existing `self.log_kind(format!(...), kind)` call site needs no change.
+/// existing `self.logger.emit(format!(...), kind)` call site needs no change.
 #[derive(Clone)]
 pub enum LogText {
     Raw(String),

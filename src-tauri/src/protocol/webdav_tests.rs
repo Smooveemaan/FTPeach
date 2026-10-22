@@ -1,4 +1,5 @@
 use super::*;
+use crate::protocol::LogText;
 use std::sync::Arc;
 
 /// A client that dials the loopback test server itself. reqwest's default

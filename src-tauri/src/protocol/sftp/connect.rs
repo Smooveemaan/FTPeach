@@ -25,7 +25,7 @@ impl SftpBackend {
         let timeout_ms = config.common.timeout_ms;
         let proxy = config.common.proxy.clone();
 
-        self.log_key(
+        self.logger.event(
             "connecting",
             serde_json::json!({ "addr": format!("{host}:{port}") }),
             LogKind::Status,
@@ -152,7 +152,7 @@ impl SftpBackend {
             Ok(connected) => connected,
             Err(err) => {
                 if let Some(m) = mismatch.lock().unwrap().take() {
-                    self.log_key(
+                    self.logger.event(
                         "connectFailed",
                         serde_json::json!({ "error": format!("{m}") }),
                         LogKind::Error,
@@ -169,7 +169,7 @@ impl SftpBackend {
                         summary,
                     )));
                 }
-                self.log_key(
+                self.logger.event(
                     "connectFailed",
                     serde_json::json!({ "error": format!("{err:#}") }),
                     LogKind::Error,
@@ -178,7 +178,8 @@ impl SftpBackend {
             }
         };
 
-        self.log_key("connected", serde_json::json!({}), LogKind::Response);
+        self.logger
+            .event("connected", serde_json::json!({}), LogKind::Response);
         *self.session.lock().await = Some(session);
         *self.sftp.write().unwrap() = Some(Arc::new(raw));
         self.posix_rename = posix_rename;

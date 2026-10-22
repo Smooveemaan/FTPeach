@@ -19,7 +19,7 @@ impl WebDavBackend {
         let ca_cert_path = config.ca_cert_path.clone();
         let timeout_ms = config.common.timeout_ms;
 
-        self.log_key(
+        self.logger.event(
             "connecting",
             serde_json::json!({ "addr": &webdav_url }),
             LogKind::Status,
@@ -73,7 +73,7 @@ impl WebDavBackend {
         let upload_client = build_client(false)?;
         // Said once for the connection, and only where a certificate exists to check.
         let warn_unchecked_certificate = || {
-            self.log_kind(
+            self.logger.emit(
                 "WARNING: TLS certificate verification is disabled for this connection (allowInvalidCert) — the server's identity is not being checked.".to_string(),
                 LogKind::Error,
             );
@@ -82,7 +82,7 @@ impl WebDavBackend {
             warn_unchecked_certificate();
         }
 
-        self.log_kind("PROPFIND / (Depth: 0)", LogKind::Command);
+        self.logger.emit("PROPFIND / (Depth: 0)", LogKind::Command);
         let mut webdav_url = webdav_url;
         // An http:// address does not get the password on the strength of a
         // redirect that has not happened yet. The first request goes out
@@ -117,7 +117,8 @@ impl WebDavBackend {
                         .and_then(|redirect| https_upgrade(&webdav_url, &redirect.0))
                 });
                 if let Some(address) = upgrade.filter(|_| !upgraded) {
-                    self.log_kind(format!("Redirected to {address}"), LogKind::Status);
+                    self.logger
+                        .emit(format!("Redirected to {address}"), LogKind::Status);
                     webdav_url = address;
                     upgraded = true;
                     if allow_invalid_cert {
@@ -170,7 +171,7 @@ impl WebDavBackend {
             probe.await
         };
         if let Err(err) = outcome {
-            self.log_key(
+            self.logger.event(
                 "connectFailed",
                 serde_json::json!({ "error": format!("{err:#}") }),
                 LogKind::Error,
@@ -178,7 +179,8 @@ impl WebDavBackend {
             return Err(err);
         }
 
-        self.log_key("connected", serde_json::json!({}), LogKind::Response);
+        self.logger
+            .event("connected", serde_json::json!({}), LogKind::Response);
         self.client = Some(client);
         self.upload_client = Some(upload_client);
         self.idle_timeout = idle;

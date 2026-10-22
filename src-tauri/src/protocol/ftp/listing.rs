@@ -127,7 +127,7 @@ impl FtpBackend {
                     .map(|entry| format!("{parent}/{}", entry.name)),
             );
         }
-        self.log_key(
+        self.logger.event(
             "receivedEntries",
             serde_json::json!({ "count": entries.len() }),
             LogKind::Response,
@@ -171,7 +171,7 @@ impl FtpBackend {
         let raw_lines = match listing {
             Ok(lines) => lines,
             Err(err) => {
-                self.log_key(
+                self.logger.event(
                     "listFailed",
                     serde_json::json!({ "error": format!("{err:#}") }),
                     LogKind::Error,
@@ -201,7 +201,7 @@ impl FtpBackend {
                 continue;
             };
             if !is_safe_path_segment(&raw.name) {
-                self.log_key(
+                self.logger.event(
                     "skippedUnsafeEntry",
                     serde_json::json!({ "name": raw.name }),
                     LogKind::Status,
@@ -250,7 +250,8 @@ impl FtpBackend {
     /// The lines of `target`'s listing, by MLSD where the server offers it.
     pub(super) async fn fetch_listing(&self, target: &str) -> BackendResult<Vec<String>> {
         let command = if self.mlsd { "MLSD" } else { "LIST" };
-        self.log_kind(format!("{command} {target}"), LogKind::Command);
+        self.logger
+            .emit(format!("{command} {target}"), LogKind::Command);
         let target = target.to_owned();
         let data = self.data_channel()?;
         self.with_stream(move |s| {

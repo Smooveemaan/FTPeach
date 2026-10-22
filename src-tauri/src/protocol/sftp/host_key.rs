@@ -39,13 +39,7 @@ impl std::fmt::Display for HostKeyMismatchError {
 impl std::error::Error for HostKeyMismatchError {}
 
 pub(super) fn encode_hex(bytes: &[u8]) -> String {
-    const DIGITS: &[u8; 16] = b"0123456789abcdef";
-    let mut encoded = String::with_capacity(bytes.len() * 2);
-    for &byte in bytes {
-        encoded.push(DIGITS[(byte >> 4) as usize] as char);
-        encoded.push(DIGITS[(byte & 0x0f) as usize] as char);
-    }
-    encoded
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 pub(super) struct TofuHandler {

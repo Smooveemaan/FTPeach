@@ -60,7 +60,7 @@ impl FtpBackend {
             })
             .await?;
         if let Some(error) = &refusal {
-            self.log_kind(format!("{error}"), LogKind::Error);
+            self.logger.emit(format!("{error}"), LogKind::Error);
         }
         Ok(refusal)
     }

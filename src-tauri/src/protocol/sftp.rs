@@ -1,7 +1,5 @@
 use super::backend_logger::{BackendLogger, LogSink};
-use super::{
-    BackendResult, EntryInfo, LogKind, LogText, ProgressInfo, ProgressSink, ProtocolBackend,
-};
+use super::{BackendResult, EntryInfo, LogKind, ProgressInfo, ProgressSink, ProtocolBackend};
 use crate::ipc::ErrorCode;
 use crate::protocol::known_hosts::{HostKeyPinOutcome, KnownHostsStore};
 use crate::security::connection_guard::{
@@ -111,16 +109,6 @@ impl SftpBackend {
             origin_base: String::new(),
             posix_rename: false,
         }
-    }
-
-    fn log_kind(&self, line: impl Into<LogText>, kind: LogKind) {
-        self.logger.emit(line, kind);
-    }
-
-    // See ftp.rs's identical helper's doc comment — human-authored,
-    // translated log line vs. `log`/`log_kind`'s untranslated raw text.
-    fn log_key(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.logger.event(key, params, kind);
     }
 
     async fn download_file(
@@ -246,7 +234,8 @@ impl SftpBackend {
         } else {
             path.to_string()
         };
-        self.log_kind(format!("READDIR {target}"), LogKind::Command);
+        self.logger
+            .emit(format!("READDIR {target}"), LogKind::Command);
         let raw = self.sftp()?;
         if recursive {
             let attrs = raw.lstat(target.clone()).await?.attrs;
@@ -261,7 +250,7 @@ impl SftpBackend {
         let handle = match raw.opendir(target.clone()).await {
             Ok(dir) => dir.handle,
             Err(err) => {
-                self.log_key(
+                self.logger.event(
                     "listFailed",
                     serde_json::json!({ "error": format!("{err:#}") }),
                     LogKind::Error,
@@ -299,7 +288,7 @@ impl SftpBackend {
                 }
                 Err(err) => {
                     let _ = raw.close(handle.as_str()).await;
-                    self.log_key(
+                    self.logger.event(
                         "listFailed",
                         serde_json::json!({ "error": format!("{err:#}") }),
                         LogKind::Error,
@@ -316,7 +305,7 @@ impl SftpBackend {
                 continue;
             }
             if !is_safe_path_segment(&file.filename) {
-                self.log_key(
+                self.logger.event(
                     "skippedUnsafeEntry",
                     serde_json::json!({ "name": file.filename }),
                     LogKind::Status,
@@ -352,7 +341,7 @@ impl SftpBackend {
                 group,
             });
         }
-        self.log_key(
+        self.logger.event(
             "receivedEntries",
             serde_json::json!({ "count": entries.len() }),
             LogKind::Response,
@@ -424,7 +413,7 @@ impl ProtocolBackend for SftpBackend {
     }
 
     fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.log_key(key, params, kind);
+        self.logger.event(key, params, kind);
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
@@ -615,21 +604,8 @@ impl ProtocolBackend for SftpBackend {
                 return Err(err);
             }
         };
-        let local_size = tokio::fs::metadata(local_path)
-            .await
-            .map(|m| m.len())
-            .unwrap_or(0);
-        let remote_size = if resume {
-            self.known_size(remote_path).await.unwrap_or(0)
-        } else {
-            0
-        };
-        if remote_size > local_size {
-            return Err(super::fail(
-                ErrorCode::IntegrityMismatch,
-                "The remote partial file is larger than the local source",
-            ));
-        }
+        let (local_size, remote_size) =
+            super::upload_start(self, local_path, remote_path, resume).await?;
 
         let result: BackendResult<()> = async {
             let mut file = tokio::fs::File::open(local_path)

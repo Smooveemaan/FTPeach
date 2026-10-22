@@ -4,9 +4,7 @@ use self::response::{
 };
 use super::backend_logger::{BackendLogger, LogSink};
 use super::transfer_file;
-use super::{
-    BackendResult, EntryInfo, LogKind, LogText, ProgressInfo, ProgressSink, ProtocolBackend,
-};
+use super::{BackendResult, EntryInfo, LogKind, ProgressInfo, ProgressSink, ProtocolBackend};
 use crate::ipc::ErrorCode;
 use crate::security::connection_guard::is_safe_path_segment;
 use anyhow::{Context, bail};
@@ -159,16 +157,6 @@ impl WebDavBackend {
         Self::default()
     }
 
-    fn log_kind(&self, line: impl Into<LogText>, kind: LogKind) {
-        self.logger.emit(line, kind);
-    }
-
-    // See ftp.rs's identical helper's doc comment — human-authored,
-    // translated log line vs. `log`/`log_kind`'s untranslated raw text.
-    fn log_key(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.logger.event(key, params, kind);
-    }
-
     fn build_url(&self, path: &str) -> String {
         let encoded: Vec<String> = path
             .trim_start_matches('/')
@@ -225,7 +213,8 @@ impl WebDavBackend {
             } else {
                 String::new()
             };
-            self.log_kind(format!("GET {remote_path}{range_note}"), LogKind::Command);
+            self.logger
+                .emit(format!("GET {remote_path}{range_note}"), LogKind::Command);
             let mut req = self.request(Method::GET, remote_path)?;
             if start_at > 0 {
                 req = req.header("Range", format!("bytes={start_at}-"));
@@ -251,7 +240,7 @@ impl WebDavBackend {
             };
             let effective_start =
                 if resumed_response_start(res.status(), start_at)? == 0 && start_at > 0 {
-                    self.log_key(
+                    self.logger.event(
                         "davResumeUnsupportedServer",
                         serde_json::json!({ "expected": 206, "status": res.status().as_u16() }),
                         LogKind::Status,
@@ -404,7 +393,7 @@ impl ProtocolBackend for WebDavBackend {
     }
 
     fn log_event(&self, key: &'static str, params: serde_json::Value, kind: LogKind) {
-        self.log_key(key, params, kind);
+        self.logger.event(key, params, kind);
     }
 
     async fn list(&mut self, path: &str) -> BackendResult<Vec<EntryInfo>> {
@@ -413,7 +402,8 @@ impl ProtocolBackend for WebDavBackend {
         } else {
             path.to_string()
         };
-        self.log_kind(format!("PROPFIND {target} (Depth: 1)"), LogKind::Command);
+        self.logger
+            .emit(format!("PROPFIND {target} (Depth: 1)"), LogKind::Command);
         let client = self.client()?.clone();
         let url = self.build_url(&target);
         let (user, password) = {
@@ -423,7 +413,7 @@ impl ProtocolBackend for WebDavBackend {
         let xml = match Self::propfind(&client, url, 1, &user, &password).await {
             Ok(xml) => xml,
             Err(err) => {
-                self.log_key(
+                self.logger.event(
                     "listFailed",
                     serde_json::json!({ "error": format!("{err:#}") }),
                     LogKind::Error,
@@ -451,7 +441,7 @@ impl ProtocolBackend for WebDavBackend {
             }
             let name = href_basename(&decoded);
             if !is_safe_path_segment(&name) {
-                self.log_key(
+                self.logger.event(
                     "skippedUnsafeEntry",
                     serde_json::json!({ "name": name }),
                     LogKind::Status,
@@ -473,7 +463,7 @@ impl ProtocolBackend for WebDavBackend {
                 group: None,
             });
         }
-        self.log_key(
+        self.logger.event(
             "receivedEntries",
             serde_json::json!({ "count": entries.len() }),
             LogKind::Response,
@@ -511,7 +501,7 @@ impl ProtocolBackend for WebDavBackend {
     }
 
     async fn create_file(&mut self, path: &str) -> BackendResult<()> {
-        self.log_kind(
+        self.logger.emit(
             format!("PUT {path} (creating empty file)"),
             LogKind::Command,
         );
@@ -526,7 +516,7 @@ impl ProtocolBackend for WebDavBackend {
                 format!("\"{name}\" already exists"),
             )
         };
-        if self.resource_exists(path).await? {
+        if self.resource_at(path).await?.is_some() {
             return Err(already_exists());
         }
         let res = self
@@ -548,7 +538,7 @@ impl ProtocolBackend for WebDavBackend {
     }
 
     async fn remove(&mut self, path: &str, is_dir: bool) -> BackendResult<()> {
-        self.log_kind(format!("DELETE {path}"), LogKind::Command);
+        self.logger.emit(format!("DELETE {path}"), LogKind::Command);
         let url = if is_dir {
             self.collection_url(path)
         } else {
@@ -580,7 +570,9 @@ impl ProtocolBackend for WebDavBackend {
                 | StatusCode::NOT_IMPLEMENTED
         ) {
             drop(reply);
-            if self.file_exists(new_path).await? && self.resource_exists(old_path).await? {
+            if self.resource_at(new_path).await? == Some(false)
+                && self.resource_at(old_path).await?.is_some()
+            {
                 return super::replace_by_setting_aside(self, old_path, new_path).await;
             }
             return Err(response::status_error(status.as_u16(), "MOVE"));
@@ -626,7 +618,7 @@ impl ProtocolBackend for WebDavBackend {
         progress: ProgressSink,
     ) -> BackendResult<()> {
         if resume {
-            self.log_key(
+            self.logger.event(
                 "davResumeUnsupportedLocal",
                 serde_json::json!({}),
                 LogKind::Status,
@@ -643,7 +635,8 @@ impl ProtocolBackend for WebDavBackend {
                 .context("reading local file metadata")?
                 .len();
             progress(ProgressInfo::Progress { bytes: 0, total });
-            self.log_kind(format!("PUT {remote_path}"), LogKind::Command);
+            self.logger
+                .emit(format!("PUT {remote_path}"), LogKind::Command);
             let res = self
                 .send_upload(remote_path, &mut file, Some(total), progress.clone())
                 .await?;
@@ -661,10 +654,7 @@ impl ProtocolBackend for WebDavBackend {
         }
         .await;
 
-        match &result {
-            Ok(()) => progress(ProgressInfo::Done),
-            Err(err) => progress(ProgressInfo::failed(err)),
-        }
+        transfer_file::report_outcome(&result, &progress);
         result
     }
 
@@ -687,7 +677,8 @@ impl ProtocolBackend for WebDavBackend {
         remote_path: &str,
         writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
     ) -> BackendResult<()> {
-        self.log_kind(format!("GET {remote_path}"), LogKind::Command);
+        self.logger
+            .emit(format!("GET {remote_path}"), LogKind::Command);
         let res = self
             .request(Method::GET, remote_path)?
             .send()
@@ -712,7 +703,8 @@ impl ProtocolBackend for WebDavBackend {
         reader: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
         remote_path: &str,
     ) -> BackendResult<()> {
-        self.log_kind(format!("PUT {remote_path}"), LogKind::Command);
+        self.logger
+            .emit(format!("PUT {remote_path}"), LogKind::Command);
         let res = self
             .send_upload(remote_path, reader, None, std::sync::Arc::new(|_| {}))
             .await?;

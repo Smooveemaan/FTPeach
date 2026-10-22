@@ -12,4 +12,6 @@ pub mod transfer_service;
 pub(crate) mod upload_resume;
 
 #[cfg(test)]
+mod memory_backend;
+#[cfg(test)]
 mod site_compat_tests;

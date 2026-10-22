@@ -1,139 +1,10 @@
 use super::*;
-use crate::protocol::{BackendResult, EntryInfo, ProgressSink, ProtocolBackend};
+use crate::application::memory_backend::{MemoryBackend as Backend, Remote};
 use crate::session::Session;
 use crate::transfer::transfer_pool::{PoolSize, TransferPool};
 use crate::transfer::upload_staging::{MARK_CAP, discard_for_connection};
-use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use tokio::io::{AsyncRead, AsyncWrite};
-
-#[derive(Default)]
-struct Remote {
-    stall_read: std::sync::atomic::AtomicBool,
-    stall_cleanup: bool,
-    files: Mutex<HashMap<String, Vec<u8>>>,
-    /// Mirrors a protocol with no ranged read, which must never be resumed.
-    refuse_ranged_read: bool,
-    /// Translation keys this connection put in front of the user.
-    logged: Mutex<Vec<String>>,
-    /// Every byte range asked of the server, as `(offset, len)`. What a resume
-    /// costs the user is exactly what it reads back.
-    ranges: Mutex<Vec<(u64, usize)>>,
-}
-
-struct Backend {
-    remote: Arc<Remote>,
-}
-
-#[async_trait::async_trait]
-impl ProtocolBackend for Backend {
-    async fn connect(
-        &mut self,
-        _: &crate::protocol::config::ConnectionConfig,
-    ) -> BackendResult<()> {
-        Ok(())
-    }
-    async fn disconnect(&mut self) -> BackendResult<()> {
-        if self.remote.stall_cleanup {
-            std::future::pending::<()>().await;
-        }
-        Ok(())
-    }
-    fn is_connected(&self) -> bool {
-        true
-    }
-    fn set_log_sink(
-        &mut self,
-        _: Option<Arc<dyn Fn(crate::protocol::LogText, crate::protocol::LogKind) + Send + Sync>>,
-    ) {
-    }
-    fn log_event(&self, key: &'static str, _: serde_json::Value, _: crate::protocol::LogKind) {
-        self.remote.logged.lock().unwrap().push(key.to_string());
-    }
-    async fn list(&mut self, _: &str) -> BackendResult<Vec<EntryInfo>> {
-        Ok(vec![])
-    }
-    async fn mkdir(&mut self, _: &str) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn create_file(&mut self, _: &str) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn remove(&mut self, path: &str, _: bool) -> BackendResult<()> {
-        if self.remote.stall_cleanup {
-            std::future::pending::<()>().await;
-        }
-        self.remote.files.lock().unwrap().remove(path);
-        Ok(())
-    }
-    async fn rename(&mut self, _: &str, _: &str) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn known_size(&mut self, path: &str) -> Option<u64> {
-        Some(
-            self.remote
-                .files
-                .lock()
-                .unwrap()
-                .get(path)
-                .map_or(0, |bytes| bytes.len() as u64),
-        )
-    }
-    async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
-        self.remote.ranges.lock().unwrap().push((offset, len));
-        if self
-            .remote
-            .stall_read
-            .load(std::sync::atomic::Ordering::SeqCst)
-        {
-            std::future::pending::<()>().await;
-        }
-        if self.remote.refuse_ranged_read {
-            return Err(crate::protocol::fail(
-                crate::ipc::ErrorCode::InvalidInput,
-                "This protocol cannot read a byte range",
-            ));
-        }
-        let files = self.remote.files.lock().unwrap();
-        let bytes = files.get(path).cloned().unwrap_or_default();
-        let from = (offset as usize).min(bytes.len());
-        let to = (from + len).min(bytes.len());
-        Ok(bytes[from..to].to_vec())
-    }
-    async fn upload(
-        &mut self,
-        _: &std::path::Path,
-        _: &str,
-        _: bool,
-        _: ProgressSink,
-    ) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn download(
-        &mut self,
-        _: &str,
-        _: &std::path::Path,
-        _: bool,
-        _: ProgressSink,
-    ) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn download_to_writer(
-        &mut self,
-        _: &str,
-        _: &mut (dyn AsyncWrite + Unpin + Send),
-    ) -> BackendResult<()> {
-        unreachable!()
-    }
-    async fn upload_from_reader(
-        &mut self,
-        _: &mut (dyn AsyncRead + Unpin + Send),
-        _: &str,
-    ) -> BackendResult<()> {
-        unreachable!()
-    }
-}
+use std::sync::Arc;
 
 /// A live session over an in-memory server, reachable through `Sessions` the
 /// same way the real upload path reaches it.
@@ -145,7 +16,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
         Arc::new(move || {
             let remote = factory_remote.clone();
             Box::pin(async move {
-                Ok(Box::new(Backend { remote }) as crate::transfer::transfer_pool::BoxBackend)
+                Ok(Box::new(Backend::over(remote)) as crate::transfer::transfer_pool::BoxBackend)
             })
         }),
         PoolSize::Fixed(1),
@@ -153,9 +24,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
     let slot = sessions.slot_for(&connection_id);
     assert!(sessions.register_pool(&connection_id, &slot, pool.clone()));
     *slot.lock().await = Some(Session {
-        browse_client: Box::new(Backend {
-            remote: remote.clone(),
-        }),
+        browse_client: Box::new(Backend::over(remote.clone())),
         server: connection_id.clone(),
         origin_base: String::new(),
         transfer_pool: pool,
@@ -486,9 +355,7 @@ async fn discarding_a_destination_deletes_the_staging_it_held() {
 #[tokio::test]
 async fn tearing_down_a_connection_deletes_every_staging_it_held() {
     let fixture = Fixture::new(b"hello world", b"hello", false).await;
-    let mut browse = Backend {
-        remote: fixture.remote.clone(),
-    };
+    let mut browse = Backend::over(fixture.remote.clone());
 
     discard_for_connection(&mut browse, &fixture.key.connection_id).await;
 

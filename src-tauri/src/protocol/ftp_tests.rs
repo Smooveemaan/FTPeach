@@ -1321,6 +1321,8 @@ mod recursive_stop_tests {
         refuses_replacing_rename: bool,
         /// A file another client stores the moment APPE arrives.
         arrives_on_appe: Option<(String, Vec<u8>)>,
+        /// A file another client stores the moment RNFR arrives.
+        arrives_on_rnfr: Option<(String, Vec<u8>)>,
         refuses_appe: bool,
         /// APPE takes the data, then fails the transfer instead of 226.
         fails_appe_completion: bool,
@@ -1594,6 +1596,10 @@ mod recursive_stop_tests {
                     None => "550 No such file".to_string(),
                 },
                 "RNFR" => {
+                    let mut disk = disk.lock().unwrap();
+                    if let Some((name, bytes)) = disk.arrives_on_rnfr.take() {
+                        disk.files.insert(name, bytes);
+                    }
                     renaming = Some(path);
                     "350 Ready for RNTO".to_string()
                 }
@@ -1935,6 +1941,38 @@ mod recursive_stop_tests {
         assert_eq!(
             crate::ipc::CommandError::from_anyhow(&error).code,
             ErrorCode::AlreadyExists
+        );
+    }
+
+    /// Another client's file lands after the check: the refused RNTO must
+    /// not turn into our own replace, which would delete that file.
+    #[tokio::test]
+    async fn no_replace_never_sets_aside_a_file_that_raced_in() {
+        let disk = disk(|disk| {
+            disk.refuses_replacing_rename = true;
+            disk.files.insert("/staged.part".into(), b"ours".to_vec());
+            disk.arrives_on_rnfr = Some(("/taken.txt".into(), b"theirs".to_vec()));
+        });
+        let mut backend = FtpBackend::new();
+        backend
+            .connect(&config(spawn_server(disk.clone()).await))
+            .await
+            .unwrap();
+
+        let error = backend
+            .rename_no_replace("/staged.part", "/taken.txt")
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::AlreadyExists
+        );
+        assert_eq!(
+            disk.lock().unwrap().files,
+            BTreeMap::from([
+                ("/staged.part".to_owned(), b"ours".to_vec()),
+                ("/taken.txt".to_owned(), b"theirs".to_vec()),
+            ])
         );
     }
 

@@ -953,6 +953,36 @@ impl FtpBackend {
         self.listed(path).await
     }
 
+    /// One RNFR/RNTO. A refusal is returned rather than raised: it is the
+    /// server's whole reply, so the connection stays in step for the checks
+    /// the caller makes next instead of being thrown away.
+    async fn rename_once(
+        &mut self,
+        old_path: &str,
+        new_path: &str,
+    ) -> BackendResult<Option<suppaftp::FtpError>> {
+        let (from, to) = (old_path.to_string(), new_path.to_string());
+        let refusal = self
+            .with_stream(move |s| {
+                Box::pin(async move {
+                    match s.rename(&from, &to).await {
+                        Ok(()) => Ok(None),
+                        Err(error @ suppaftp::FtpError::UnexpectedResponse(_))
+                            if !matches!(&error, suppaftp::FtpError::UnexpectedResponse(response) if response.status == Status::NotAvailable) =>
+                        {
+                            Ok(Some(error))
+                        }
+                        Err(error) => Err(error.into()),
+                    }
+                })
+            })
+            .await?;
+        if let Some(error) = &refusal {
+            self.log_kind(format!("{error}"), LogKind::Error);
+        }
+        Ok(refusal)
+    }
+
     /// Whether the parent lists a name spelled exactly like `path`'s.
     async fn listed(&mut self, path: &str) -> BackendResult<bool> {
         let (parent, name) = path.rsplit_once('/').unwrap_or(("", path));
@@ -1736,28 +1766,9 @@ impl ProtocolBackend for FtpBackend {
     /// still standing, and the existing file is then set aside so the new one
     /// can take its name.
     async fn rename(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
-        let (from, to) = (old_path.to_string(), new_path.to_string());
-        // A refusal is the server's whole reply, so the connection stays in
-        // step for the checks below instead of being thrown away.
-        let refusal = self
-            .with_stream(move |s| {
-                Box::pin(async move {
-                    match s.rename(&from, &to).await {
-                        Ok(()) => Ok(None),
-                        Err(error @ suppaftp::FtpError::UnexpectedResponse(_))
-                            if !matches!(&error, suppaftp::FtpError::UnexpectedResponse(response) if response.status == Status::NotAvailable) =>
-                        {
-                            Ok(Some(error))
-                        }
-                        Err(error) => Err(error.into()),
-                    }
-                })
-            })
-            .await?;
-        let Some(error) = refusal else {
+        let Some(error) = self.rename_once(old_path, new_path).await? else {
             return Ok(());
         };
-        self.log_kind(format!("{error}"), LogKind::Error);
         // SIZE answers only for a file, so a folder in the way stays an error.
         if self.exists(new_path).await? && self.exists(old_path).await? {
             return super::replace_by_setting_aside(self, old_path, new_path).await;
@@ -1768,18 +1779,28 @@ impl ProtocolBackend for FtpBackend {
     /// FTP has no conditional rename, and RNTO replaces an existing file on
     /// most servers. Looking at the target right before RNFR leaves only the
     /// moment between the two for a racing file to be replaced in, instead of
-    /// the whole upload that staged it.
+    /// the whole upload that staged it. A refused RNTO is never retried as a
+    /// replace: the file in the way may be another client's.
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
+        let already_exists = || {
+            super::fail(
+                ErrorCode::AlreadyExists,
+                format!("{new_path} already exists on the server; it was not replaced"),
+            )
+        };
         // A server that ignores case (IIS) finds the file itself under its new
         // spelling; only a file listed under exactly that name is in the way.
         let case_only = old_path.to_lowercase() == new_path.to_lowercase();
         if self.exists(new_path).await? && (!case_only || self.listed(new_path).await?) {
-            return Err(super::fail(
-                ErrorCode::AlreadyExists,
-                format!("{new_path} already exists on the server; it was not replaced"),
-            ));
+            return Err(already_exists());
         }
-        self.rename(old_path, new_path).await
+        let Some(error) = self.rename_once(old_path, new_path).await? else {
+            return Ok(());
+        };
+        if !case_only && self.exists(new_path).await? {
+            return Err(already_exists());
+        }
+        Err(error.into())
     }
 
     async fn size(&mut self, path: &str) -> u64 {

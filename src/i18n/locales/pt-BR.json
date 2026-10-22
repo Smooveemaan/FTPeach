@@ -354,6 +354,7 @@
     "sourceChanged": "O arquivo mudou durante o envio, então a cópia no servidor foi mantida como estava. Envie-o novamente.",
     "storeNotWritable": "Não foi possível salvar as alterações em {{path}}: o FTPeach não tem permissão para gravar nesta pasta.",
     "moveBetweenEndpoints": "Só é possível mover arquivos dentro deste computador ou dentro da mesma conexão com o servidor. Copie-os em vez disso.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Não é possível ler uma senha salva neste computador. Digite-a novamente no favorito ou nas configurações de proxy.",
     "typeConflict": "Ignorado: {{name}}. Um arquivo e uma pasta não podem substituir um ao outro.",
     "invalidFileName": "O Windows não permite o nome “{{name}}”.",

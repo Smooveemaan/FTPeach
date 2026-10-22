@@ -106,6 +106,8 @@ test('friendlyError localizes every structured command error code', () => {
     fileInUse: 'The file is open in another program.',
     vaultLocked: 'Unlock vault',
     vaultAuthFailed: 'The master password was not accepted. Wait a moment before trying again.',
+    vaultUnreadable:
+      'The password vault could not be read or saved. Your master password was not counted as wrong.',
     savedSecretUnreadable:
       "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings.",
     alreadyExists: 'A file or folder with that name already exists.',

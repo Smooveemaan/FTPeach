@@ -44,6 +44,9 @@ pub enum ErrorCode {
     /// The vault refused to open: a wrong master password, too many attempts
     /// or a cancelled system prompt. One code for all of them on purpose.
     VaultAuthFailed,
+    /// The vault files could not be read or saved; the master password was
+    /// not what failed and is not counted as wrong.
+    VaultUnreadable,
     /// A password or passphrase saved for a site cannot be opened on this
     /// computer, so there is nothing to sign in with.
     SavedSecretUnreadable,
@@ -479,6 +482,7 @@ impl CommandError {
             ErrorCode::FileInUse => "The file is in use by another process",
             ErrorCode::VaultLocked => "Vault is locked",
             ErrorCode::VaultAuthFailed => "Vault authentication failed or temporarily unavailable",
+            ErrorCode::VaultUnreadable => "The password vault could not be read or saved",
             ErrorCode::SavedSecretUnreadable => "The saved password could not be read",
             ErrorCode::AlreadyExists => "A file or folder with that name already exists",
             ErrorCode::ReplaceUnsupported => {
@@ -549,6 +553,7 @@ mod tests {
             (ErrorCode::FileInUse, "fileInUse"),
             (ErrorCode::VaultLocked, "vaultLocked"),
             (ErrorCode::VaultAuthFailed, "vaultAuthFailed"),
+            (ErrorCode::VaultUnreadable, "vaultUnreadable"),
             (ErrorCode::SavedSecretUnreadable, "savedSecretUnreadable"),
             (ErrorCode::AlreadyExists, "alreadyExists"),
             (ErrorCode::ReplaceUnsupported, "replaceUnsupported"),

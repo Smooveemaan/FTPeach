@@ -350,6 +350,7 @@
     "sourceChanged": "A fájl feltöltés közben megváltozott, ezért a szerveren lévő példány változatlan maradt. Töltse fel újra.",
     "storeNotWritable": "Nem sikerült menteni a módosításokat ide: {{path}}. Az FTPeach nem írhat ebbe a mappába.",
     "moveBetweenEndpoints": "Fájlokat csak ezen a számítógépen belül vagy ugyanazon a szerverkapcsolaton belül lehet áthelyezni. Ehelyett másolja őket.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Egy mentett jelszó nem olvasható ezen a számítógépen. Adja meg újra a könyvjelzőben vagy a proxybeállításokban.",
     "typeConflict": "Kihagyva: {{name}}. Fájl és mappa nem helyettesítheti egymást.",
     "invalidFileName": "A Windows nem engedélyezi a(z) „{{name}}” nevet.",

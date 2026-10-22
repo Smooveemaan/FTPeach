@@ -358,6 +358,7 @@
     "sourceChanged": "Plik zmienił się podczas przesyłania, więc kopia na serwerze pozostała bez zmian. Prześlij go ponownie.",
     "storeNotWritable": "Nie udało się zapisać zmian w {{path}}: FTPeach nie ma uprawnień do zapisu w tym folderze.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Nie można odczytać zapisanego hasła na tym komputerze. Wprowadź je ponownie w zakładce lub w ustawieniach serwera proxy.",
     "typeConflict": "Pominięto: {{name}}. Plik i folder nie mogą się wzajemnie zastąpić.",
     "invalidFileName": "Windows nie dopuszcza nazwy „{{name}}”.",

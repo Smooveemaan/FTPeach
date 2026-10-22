@@ -25,7 +25,7 @@ fn answer(error: anyhow::Error) -> CommandError {
     if vault::is_refused(&error) {
         authentication_failed()
     } else {
-        CommandError::from_anyhow(&error)
+        vault::failure(&error)
     }
 }
 
@@ -411,9 +411,9 @@ mod attempt_tests {
         let saved = std::fs::read(&snapshot).unwrap();
         std::fs::write(&snapshot, b"damaged").unwrap();
         let failed = fixture.unlock("correct horse battery staple").await;
-        assert_ne!(
+        assert_eq!(
             failed.unwrap_err().code,
-            crate::ipc::ErrorCode::VaultAuthFailed
+            crate::ipc::ErrorCode::VaultUnreadable
         );
         std::fs::write(&snapshot, saved).unwrap();
         assert!(fixture.unlock("correct horse battery staple").await.is_ok());

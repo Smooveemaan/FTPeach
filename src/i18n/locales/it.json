@@ -354,6 +354,7 @@
     "sourceChanged": "Il file è cambiato durante il caricamento, quindi la copia sul server è rimasta com'era. Caricalo di nuovo.",
     "storeNotWritable": "Impossibile salvare le modifiche in {{path}}: FTPeach non ha il permesso di scrivere in questa cartella.",
     "moveBetweenEndpoints": "Puoi spostare i file solo all'interno di questo computer o della stessa connessione al server. Copiali invece di spostarli.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Impossibile leggere una password salvata su questo computer. Inseriscila di nuovo nel segnalibro o nelle impostazioni del proxy.",
     "typeConflict": "Saltato: {{name}}. Un file e una cartella non possono sostituirsi a vicenda.",
     "invalidFileName": "Windows non consente il nome \"{{name}}\".",

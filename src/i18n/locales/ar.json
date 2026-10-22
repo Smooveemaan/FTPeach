@@ -366,6 +366,7 @@
     "sourceChanged": "تغيّر الملف أثناء رفعه، لذا تُركت النسخة الموجودة على الخادم كما هي. ارفعه مرة أخرى.",
     "storeNotWritable": "تعذّر حفظ التغييرات في {{path}}: غير مسموح لـ FTPeach بالكتابة في هذا المجلد.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلًا من ذلك.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "تعذرت قراءة كلمة مرور محفوظة على هذا الكمبيوتر. أدخلها من جديد في الإشارة المرجعية أو في إعدادات الوكيل.",
     "typeConflict": "تم التخطي: {{name}}. لا يمكن لملف ومجلد أن يحل أحدهما محل الآخر.",
     "invalidFileName": "لا يسمح Windows بالاسم «{{name}}».",

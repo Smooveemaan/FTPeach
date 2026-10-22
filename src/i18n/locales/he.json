@@ -354,6 +354,7 @@
     "sourceChanged": "הקובץ השתנה בזמן ההעלאה, ולכן העותק בשרת נשאר כפי שהיה. העלה אותו שוב.",
     "storeNotWritable": "לא ניתן היה לשמור שינויים ב-{{path}}: ל-FTPeach אין הרשאה לכתוב בתיקייה זו.",
     "moveBetweenEndpoints": "ניתן להעביר קבצים רק בתוך המחשב הזה או בתוך אותו חיבור לשרת. העתק אותם במקום זאת.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "לא ניתן לקרוא סיסמה שמורה במחשב הזה. הזן אותה שוב בסימנייה או בהגדרות הפרוקסי.",
     "typeConflict": "דולג: {{name}}. קובץ ותיקייה אינם יכולים להחליף זה את זה.",
     "invalidFileName": "Windows אינו מתיר את השם \"{{name}}\".",

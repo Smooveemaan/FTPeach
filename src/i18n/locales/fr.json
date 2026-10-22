@@ -354,6 +354,7 @@
     "sourceChanged": "Le fichier a changé pendant son téléversement, la copie sur le serveur a donc été laissée telle quelle. Téléversez-le à nouveau.",
     "storeNotWritable": "Impossible d'enregistrer les modifications dans {{path}} : FTPeach n'est pas autorisé à écrire dans ce dossier.",
     "moveBetweenEndpoints": "Les fichiers ne peuvent être déplacés que sur cet ordinateur ou au sein d'une même connexion au serveur. Copiez-les plutôt.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Un mot de passe enregistré ne peut pas être lu sur cet ordinateur. Saisissez-le à nouveau dans le signet ou dans les paramètres du proxy.",
     "typeConflict": "Ignoré : {{name}}. Un fichier et un dossier ne peuvent pas se remplacer l'un l'autre.",
     "invalidFileName": "Windows n'autorise pas le nom « {{name}} ».",

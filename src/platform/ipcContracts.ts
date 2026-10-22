@@ -35,6 +35,7 @@ export const COMMAND_ERROR_CODES = [
   'fileInUse',
   'vaultLocked',
   'vaultAuthFailed',
+  'vaultUnreadable',
   'savedSecretUnreadable',
   'alreadyExists',
   'replaceUnsupported',

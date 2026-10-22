@@ -350,6 +350,7 @@
     "sourceChanged": "Tệp đã thay đổi trong khi tải lên, nên bản trên máy chủ được giữ nguyên. Hãy tải tệp lên lại.",
     "storeNotWritable": "Không thể lưu thay đổi trong {{path}}: FTPeach không được phép ghi vào thư mục này.",
     "moveBetweenEndpoints": "Chỉ có thể di chuyển tệp trong máy tính này hoặc trong cùng một kết nối máy chủ. Vui lòng sao chép tệp thay vì di chuyển.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Không đọc được mật khẩu đã lưu trên máy tính này. Hãy nhập lại trong dấu trang hoặc trong cài đặt proxy.",
     "typeConflict": "Đã bỏ qua: {{name}}. Tệp và thư mục không thể thay thế lẫn nhau.",
     "invalidFileName": "Windows không cho phép tên “{{name}}”.",

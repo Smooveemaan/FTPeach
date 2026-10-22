@@ -44,6 +44,17 @@ pub(crate) fn refused() -> anyhow::Error {
     .into()
 }
 
+/// A vault failure that is not a refused password, as the user sees it: a
+/// cause the system named stays, anything else is the vault files.
+pub(crate) fn failure(error: &anyhow::Error) -> crate::ipc::CommandError {
+    let mut typed = crate::ipc::CommandError::from_anyhow(error);
+    if typed.code == crate::ipc::ErrorCode::Internal {
+        typed.code = crate::ipc::ErrorCode::VaultUnreadable;
+        typed.message = "The password vault could not be read or saved".into();
+    }
+    typed
+}
+
 pub(crate) fn is_refused(error: &anyhow::Error) -> bool {
     error
         .downcast_ref::<crate::ipc::CommandError>()

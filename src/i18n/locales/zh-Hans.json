@@ -350,6 +350,7 @@
     "sourceChanged": "文件在上传期间发生了变化，因此服务器上的副本保持原样。请重新上传。",
     "storeNotWritable": "无法保存 {{path}} 中的更改：FTPeach 无权写入此文件夹。",
     "moveBetweenEndpoints": "只能在本计算机内或同一服务器连接内移动文件。请改为复制。",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "无法在此计算机上读取已保存的密码。请在书签或代理设置中重新输入。",
     "typeConflict": "已跳过：{{name}}。文件和文件夹不能相互替换。",
     "invalidFileName": "Windows 不允许使用名称“{{name}}”。",

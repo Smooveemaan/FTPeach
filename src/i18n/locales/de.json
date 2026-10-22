@@ -350,6 +350,7 @@
     "sourceChanged": "Die Datei hat sich während des Hochladens geändert, daher wurde die Kopie auf dem Server unverändert gelassen. Laden Sie sie erneut hoch.",
     "storeNotWritable": "Änderungen in {{path}} konnten nicht gespeichert werden: FTPeach darf in diesen Ordner nicht schreiben.",
     "moveBetweenEndpoints": "Dateien können nur auf diesem Computer oder innerhalb derselben Serververbindung verschoben werden. Kopieren Sie sie stattdessen.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Ein gespeichertes Passwort kann auf diesem Computer nicht gelesen werden. Geben Sie es im Lesezeichen oder in den Proxy-Einstellungen erneut ein.",
     "typeConflict": "Übersprungen: {{name}}. Eine Datei und ein Ordner können einander nicht ersetzen.",
     "invalidFileName": "Windows erlaubt den Namen „{{name}}“ nicht.",

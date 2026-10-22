@@ -350,6 +350,7 @@
     "sourceChanged": "File berubah saat sedang diunggah, jadi salinan di server dibiarkan seperti semula. Unggah lagi.",
     "storeNotWritable": "Tidak dapat menyimpan perubahan di {{path}}: FTPeach tidak diizinkan menulis ke folder ini.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Kata sandi tersimpan tidak dapat dibaca di komputer ini. Masukkan lagi di bookmark atau di pengaturan proxy.",
     "typeConflict": "Dilewati: {{name}}. File dan folder tidak dapat saling menggantikan.",
     "invalidFileName": "Windows tidak mengizinkan nama \"{{name}}\".",

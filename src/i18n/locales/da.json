@@ -350,6 +350,7 @@
     "sourceChanged": "Filen blev ændret under uploaden, så kopien på serveren blev ikke rørt. Upload den igen.",
     "storeNotWritable": "Ændringerne i {{path}} kunne ikke gemmes: FTPeach har ikke tilladelse til at skrive i denne mappe.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "En gemt adgangskode kan ikke læses på denne computer. Indtast den igen i bogmærket eller i proxyindstillingerne.",
     "typeConflict": "Sprunget over: {{name}}. En fil og en mappe kan ikke erstatte hinanden.",
     "invalidFileName": "Windows tillader ikke navnet »{{name}}«.",

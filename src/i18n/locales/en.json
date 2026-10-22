@@ -350,6 +350,7 @@
     "connectFailedPrefix": "Couldn't connect to the server. {{raw}}",
     "alreadyExists": "\"{{name}}\" already exists",
     "moveBetweenEndpoints": "Files can be moved only within this computer or within one server connection. Copy them instead.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings.",
     "typeConflict": "Skipped {{name}}: a file and a folder can't replace each other.",
     "invalidFileName": "Windows doesn't allow the name \"{{name}}\".",

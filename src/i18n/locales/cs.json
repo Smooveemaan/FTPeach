@@ -358,6 +358,7 @@
     "sourceChanged": "Soubor se během nahrávání změnil, proto kopie na serveru zůstala beze změny. Nahrajte ho znovu.",
     "storeNotWritable": "Změny v {{path}} se nepodařilo uložit: FTPeach nemá oprávnění zapisovat do této složky.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy.",
     "typeConflict": "Přeskočeno: {{name}}. Soubor a složka se nemohou navzájem nahradit.",
     "invalidFileName": "Windows nepovoluje název „{{name}}“.",

@@ -354,6 +354,7 @@
     "sourceChanged": "El archivo cambió mientras se subía, así que la copia del servidor se dejó como estaba. Vuelve a subirlo.",
     "storeNotWritable": "No se pudieron guardar los cambios en {{path}}: FTPeach no tiene permiso para escribir en esta carpeta.",
     "moveBetweenEndpoints": "Solo puedes mover archivos dentro de este equipo o dentro de una misma conexión con el servidor. Cópialos en su lugar.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "No se puede leer una contraseña guardada en este equipo. Vuelve a introducirla en el marcador o en la configuración del proxy.",
     "typeConflict": "Omitido: {{name}}. Un archivo y una carpeta no pueden reemplazarse entre sí.",
     "invalidFileName": "Windows no admite el nombre «{{name}}».",

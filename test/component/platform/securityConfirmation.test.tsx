@@ -207,12 +207,12 @@ test.each([
 });
 
 test('a vault that cannot be read is not reported as a wrong password', async () => {
-  mocks.respond.mockRejectedValueOnce({ code: 'internal', message: 'damaged vault' });
+  mocks.respond.mockRejectedValueOnce({ code: 'vaultUnreadable', message: 'damaged vault' });
   await open({ requiresReauthentication: true });
   const password = screen.getByLabelText('settings.security.masterPassword');
   fireEvent.change(password, { target: { value: 'correct' } });
   fireEvent.keyDown(password, { key: 'Enter' });
-  await screen.findByText('errors.internal');
+  await screen.findByText('errors.vaultUnreadable');
   expect(screen.queryByText('settings.security.unlockRefused')).toBeNull();
 });
 

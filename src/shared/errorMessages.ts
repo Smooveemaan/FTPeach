@@ -30,6 +30,7 @@ const ERROR_CODE_KEYS = {
   fileInUse: 'errors.fileBusy',
   vaultLocked: 'settings.security.unlockRequired',
   vaultAuthFailed: 'settings.security.unlockRefused',
+  vaultUnreadable: 'errors.vaultUnreadable',
   savedSecretUnreadable: 'errors.savedSecretUnreadable',
   alreadyExists: 'errors.fileOrFolderExists',
   replaceUnsupported: 'errors.replaceUnsupported',

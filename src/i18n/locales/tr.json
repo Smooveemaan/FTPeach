@@ -350,6 +350,7 @@
     "sourceChanged": "Dosya yüklenirken değişti, bu yüzden sunucudaki kopya olduğu gibi bırakıldı. Dosyayı yeniden yükleyin.",
     "storeNotWritable": "{{path}} konumundaki değişiklikler kaydedilemedi: FTPeach'in bu klasöre yazma izni yok.",
     "moveBetweenEndpoints": "Dosyalar yalnızca bu bilgisayar içinde veya aynı sunucu bağlantısı içinde taşınabilir. Bunun yerine dosyaları kopyalayın.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "Kaydedilmiş bir şifre bu bilgisayarda okunamıyor. Şifreyi yer iminde veya proxy ayarlarında yeniden girin.",
     "typeConflict": "Atlandı: {{name}}. Bir dosya ile bir klasör birbirinin yerini alamaz.",
     "invalidFileName": "Windows \"{{name}}\" adına izin vermiyor.",

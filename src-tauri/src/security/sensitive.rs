@@ -738,7 +738,7 @@ pub async fn respond_sensitive_confirmation(
             return Err(if crate::security::vault::is_refused(&error) {
                 denied("Authentication failed")
             } else {
-                CommandError::from_anyhow(&error)
+                crate::security::vault::failure(&error)
             });
         }
     }

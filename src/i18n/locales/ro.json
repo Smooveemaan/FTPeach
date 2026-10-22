@@ -354,6 +354,7 @@
     "sourceChanged": "Fișierul s-a schimbat în timpul încărcării, așa că copia de pe server a rămas neschimbată. Încărcați-l din nou.",
     "storeNotWritable": "Modificările din {{path}} nu au putut fi salvate: FTPeach nu are permisiunea de a scrie în acest folder.",
     "moveBetweenEndpoints": "Fișierele pot fi mutate doar în cadrul acestui computer sau al aceleiași conexiuni la server. Copiați-le în schimb.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "O parolă salvată nu poate fi citită pe acest computer. Introduceți-o din nou în marcaj sau în setările proxy.",
     "typeConflict": "Omis: {{name}}. Un fișier și un folder nu se pot înlocui unul pe altul.",
     "invalidFileName": "Windows nu permite numele „{{name}}”.",

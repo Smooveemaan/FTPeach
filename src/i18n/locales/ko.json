@@ -350,6 +350,7 @@
     "sourceChanged": "업로드하는 동안 파일이 바뀌어 서버의 사본은 그대로 두었습니다. 다시 업로드하세요.",
     "storeNotWritable": "{{path}}에 변경 내용을 저장하지 못했습니다. FTPeach에 이 폴더에 쓸 권한이 없습니다.",
     "moveBetweenEndpoints": "파일은 이 컴퓨터 안에서나 같은 서버 연결 안에서만 이동할 수 있습니다. 대신 복사해 주세요.",
+    "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",
     "savedSecretUnreadable": "저장된 비밀번호를 이 컴퓨터에서 읽을 수 없습니다. 북마크 또는 프록시 설정에서 다시 입력하세요.",
     "typeConflict": "건너뜀: {{name}}. 파일과 폴더는 서로 대체할 수 없습니다.",
     "invalidFileName": "Windows에서는 “{{name}}” 이름을 사용할 수 없습니다.",

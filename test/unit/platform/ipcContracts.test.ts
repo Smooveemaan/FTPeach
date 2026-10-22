@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
 import {
   isDragOutTransferStarted,
-  isPreviewProgress,
+  isOpenWithProgress,
   isTransferProgress,
   isUpdaterStatus,
   normalizeCommandError,
@@ -89,7 +89,7 @@ test('validates event contracts before state receives them', () => {
     false,
     'an unknown protocol must not reach the transfer store',
   );
-  assert.equal(isPreviewProgress({ id: '1', connectionId: 'c', bytes: 1, total: 2 }), true);
+  assert.equal(isOpenWithProgress({ id: '1', connectionId: 'c', bytes: 1, total: 2 }), true);
   assert.equal(isUpdaterStatus({ state: 'downloaded', version: '1.2.3' }), true);
   assert.equal(isUpdaterStatus({ state: 'available', version: '1.2.3' }), true);
   assert.equal(isUpdaterStatus({ state: 'available' }), false);

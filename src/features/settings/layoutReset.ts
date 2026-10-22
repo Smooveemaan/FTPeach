@@ -19,7 +19,7 @@ interface LayoutApi {
   resetLayout: () => Promise<CommandResult & { settings?: AppSettings }>;
 }
 
-export function applyLayoutResetSettings(settings: AppSettings, targets: LayoutResetTargets) {
+function applyLayoutResetSettings(settings: AppSettings, targets: LayoutResetTargets) {
   targets.updateLayout(normalizeLayoutSettings(settings));
   targets.hydrateSectionResizeFromSettings(settings);
 }

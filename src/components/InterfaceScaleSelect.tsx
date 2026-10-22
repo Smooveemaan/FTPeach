@@ -1,5 +1,5 @@
 import SelectMenu from './SelectMenu.tsx';
-export const INTERFACE_SCALE_OPTIONS = [80, 90, 100, 110, 125, 150] as const;
+const INTERFACE_SCALE_OPTIONS = [80, 90, 100, 110, 125, 150] as const;
 interface InterfaceScaleSelectProps {
   value: number;
   onChange: (value: number) => void;

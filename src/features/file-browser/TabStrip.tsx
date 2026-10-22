@@ -17,9 +17,7 @@ import { getInterfaceScale } from '../../platform/interfaceScale.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { PaneId, PaneStatus } from '../../shared/paneContracts.ts';
 import type { Translate } from '../../shared/translate.ts';
-import type { TabState } from './panes/paneModel.ts';
-
-const PANE_IDS: readonly PaneId[] = ['a', 'b'];
+import { PANE_IDS, type TabState } from './panes/paneModel.ts';
 
 // `ch` undershoots proportional fonts (e.g. "New Tab" > 8ch); measure the rename input's actual rendered width.
 let measureCanvas: HTMLCanvasElement | null = null;

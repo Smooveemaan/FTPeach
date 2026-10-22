@@ -2,7 +2,9 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::security::credential_scope::site_scope;
 use crate::security::export_secrets::{self, SealEntry, SecretsBlock};
 use crate::security::vault::Vault;
-use crate::store::{ImportFailed, ImportedSecret, JsonMap, SitesImported, Store};
+use crate::store::{
+    ImportFailed, ImportedSecret, JsonMap, SitesImported, Store, is_local_scope_entry,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -23,16 +25,6 @@ pub struct ExportSettingsOptions {
     /// instead of refusing the export.
     #[serde(default)]
     skip_unreadable: bool,
-}
-
-/// Mirrors `store::sites::is_local_scope_entry` — that module is private to
-/// `store`, so this is a small local copy rather than a shared export.
-fn is_local_paths_entry(site: &JsonMap) -> bool {
-    match site.get("kind").and_then(Value::as_str) {
-        Some("local") => true,
-        Some("folder") => site.get("managerScope").and_then(Value::as_str) == Some("localPaths"),
-        _ => false,
-    }
 }
 
 /// A server bookmark: what can have saved secrets.
@@ -211,7 +203,7 @@ pub async fn app_export_settings(
         let stripped: Vec<serde_json::Value> = sites
             .into_iter()
             .filter(|site| {
-                if is_local_paths_entry(site) {
+                if is_local_scope_entry(site) {
                     options.include_local_paths
                 } else {
                     options.include_bookmarks
@@ -595,7 +587,7 @@ fn stage(
     }
     if let Some(sites) = data.sites.as_mut() {
         sites.retain(|site| match site.as_object() {
-            Some(record) if is_local_paths_entry(record) => options.include_local_paths,
+            Some(record) if is_local_scope_entry(record) => options.include_local_paths,
             Some(_) => options.include_bookmarks,
             None => true, // malformed entry — let validation below report it
         });

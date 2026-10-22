@@ -11,7 +11,9 @@ pub use storage::{StorageIssue, StorageWarning};
 mod tabs;
 mod trusted_applications;
 
-pub(crate) use sites::{ImportFailed, ImportedSecret, SitesImported, validate_site_input};
+pub(crate) use sites::{
+    ImportFailed, ImportedSecret, SitesImported, is_local_scope_entry, validate_site_input,
+};
 
 use anyhow::{Context, Result};
 use serde_json::Map;

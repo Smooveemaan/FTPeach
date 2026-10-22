@@ -47,8 +47,6 @@ interface UsePanesOptions {
   stopTransfersForConnection: (connectionId: string) => Promise<unknown>;
 }
 
-export { PANE_IDS, otherPaneId } from './panes/paneModel.ts';
-
 export interface PanesModel {
   tabs: TabState[];
   activeTabId: string;

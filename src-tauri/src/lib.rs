@@ -49,7 +49,6 @@ use store::Store;
 #[cfg(feature = "smoke-test")]
 use tauri::Manager;
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     rustls::crypto::ring::default_provider()
         .install_default()
@@ -219,7 +218,9 @@ pub fn run() {
 /// split between the two would look like lost settings and passwords.
 fn open_store() -> Store {
     let Some(root) = local_fs::portable::root() else {
-        return Store::new().expect("failed to resolve %APPDATA%\\FTPeach");
+        return Store::new().unwrap_or_else(|error| {
+            fatal(&format!("FTPeach cannot find its data folder: {error:#}"))
+        });
     };
     let data = local_fs::portable::data_dir(root);
     if let Err(error) = local_fs::portable::prepare(&data) {

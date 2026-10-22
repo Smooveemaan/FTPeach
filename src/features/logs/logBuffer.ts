@@ -1,14 +1,12 @@
 import type { LogEntry } from '../../shared/logEntry.ts';
 
 /** As many lines as the backend keeps in memory. */
-export const MAX_LOG_LINES = 5000;
+const MAX_LOG_LINES = 5000;
 export const MAX_LOG_BYTES = 4 * 1024 * 1024;
 const sizes = new WeakMap<object, number>();
 
 /** Bounds serialized text as well as record count, including pending history batches. */
-export function boundLogBytes<Entry extends Sequenced>(
-  entries: readonly Entry[],
-): readonly Entry[] {
+function boundLogBytes<Entry extends Sequenced>(entries: readonly Entry[]): readonly Entry[] {
   let bytes = 0;
   let start = entries.length;
   while (start > 0) {

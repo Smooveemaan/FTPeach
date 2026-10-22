@@ -1,5 +1,5 @@
+use crate::local_fs::open_with::OpenWithSession;
 use crate::local_fs::open_with::OpenWithWatchers;
-use crate::local_fs::preview::PreviewPaths;
 use crate::runtime::tray;
 use crate::runtime::window_bounds::BoundsPersister;
 use crate::security::vault::Vault;
@@ -174,9 +174,7 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
-    let paths = app.state::<PreviewPaths>();
-    let open_with_dir = paths.open_with_dir.clone();
-    let preview_dir = paths.preview_dir.clone();
+    let open_with_dir = app.state::<OpenWithSession>().dir.clone();
     let recovery_root = crate::local_fs::edit_recovery::root(&app);
     let store = app.state::<Store>().inner().clone();
     let vault = app.state::<Vault>().inner().clone();
@@ -213,18 +211,9 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
                 }
             }
         };
-        let remove_session_temp = async {
-            let _ = tokio::fs::remove_dir_all(preview_dir).await;
-        };
         let lock_vault = vault.lock();
 
-        tokio::join!(
-            persist,
-            disconnect,
-            end_open_with,
-            remove_session_temp,
-            lock_vault
-        );
+        tokio::join!(persist, disconnect, end_open_with, lock_vault);
     };
 
     // A stuck network operation or locked temp file must never make the app

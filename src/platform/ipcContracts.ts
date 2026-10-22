@@ -132,7 +132,7 @@ export interface DragOutTransferStarted {
   remoteFile: string;
   total?: number;
 }
-export interface PreviewProgress {
+export interface OpenWithProgress {
   id: string;
   connectionId: string;
   bytes: number;
@@ -421,7 +421,7 @@ export function isDragOutTransferStarted(value: unknown): value is DragOutTransf
   );
 }
 
-export function isPreviewProgress(value: unknown): value is PreviewProgress {
+export function isOpenWithProgress(value: unknown): value is OpenWithProgress {
   return (
     isRecord(value) &&
     typeof value.id === 'string' &&

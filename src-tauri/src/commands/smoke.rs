@@ -178,9 +178,12 @@ async fn verify_editor_shutdown(
     app: &tauri::AppHandle,
     expected: Option<(usize, String)>,
 ) -> anyhow::Result<()> {
-    use crate::local_fs::{edit_recovery, open_with::OpenWithWatchers, preview::PreviewPaths};
-    let paths = app.state::<PreviewPaths>();
-    let folder = paths.open_with_dir.join("shutdown-fixture");
+    use crate::local_fs::{
+        edit_recovery,
+        open_with::{OpenWithSession, OpenWithWatchers},
+    };
+    let paths = app.state::<OpenWithSession>();
+    let folder = paths.dir.join("shutdown-fixture");
     fs::create_dir_all(&folder)?;
     let file = folder.join("edited.txt");
     fs::write(&file, b"server copy")?;

@@ -1032,10 +1032,6 @@ impl ProtocolBackend for WebDavBackend {
         Self::mutation_result(reply, "MOVE").await
     }
 
-    async fn size(&mut self, path: &str) -> u64 {
-        self.known_size(path).await.unwrap_or(0)
-    }
-
     async fn rename_no_replace(&mut self, old_path: &str, new_path: &str) -> BackendResult<()> {
         let response = self.send_move(old_path, new_path, false).await?;
         // Under Overwrite: F, 412 is the server saying the destination is taken.

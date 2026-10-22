@@ -50,7 +50,7 @@ export type TrayAction =
 
 const BARE_ACTIONS: ReadonlySet<string> = new Set(['pauseAll', 'resumeAll', 'cancelQuit']);
 
-export function isTrayAction(value: unknown): value is TrayAction {
+function isTrayAction(value: unknown): value is TrayAction {
   if (!isRecord(value) || typeof value.kind !== 'string') return false;
   switch (value.kind) {
     case 'quitRequested':

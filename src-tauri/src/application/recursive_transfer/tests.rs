@@ -777,13 +777,15 @@ impl crate::protocol::ProtocolBackend for FakeBackend {
         self.0.landed().await;
         Ok(())
     }
-    async fn size(&mut self, path: &str) -> u64 {
+    async fn known_size(&mut self, path: &str) -> Option<u64> {
         let written = self.0.written.lock().unwrap();
-        self.0
-            .files
-            .get(path)
-            .or_else(|| written.get(path))
-            .map_or(0, |bytes| bytes.len() as u64)
+        Some(
+            self.0
+                .files
+                .get(path)
+                .or_else(|| written.get(path))
+                .map_or(0, |bytes| bytes.len() as u64),
+        )
     }
     async fn read_range(
         &mut self,

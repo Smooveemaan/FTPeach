@@ -113,7 +113,6 @@ pub async fn vault_unlock(
     store: State<'_, Store>,
     master_password: SensitiveString,
 ) -> CommandResult<()> {
-    let started = std::time::Instant::now();
     let result = VaultAttempt {
         vault: &vault,
         guard: &guard,
@@ -123,14 +122,6 @@ pub async fn vault_unlock(
     .await;
     if result.is_ok() {
         crate::security::sensitive::announce_unlocked(&app);
-    }
-    // Debug-only — see vault.rs's identical `if cfg!(...)` for why this
-    // isn't a `#[cfg(debug_assertions)]` on the statement instead.
-    if cfg!(debug_assertions) {
-        eprintln!(
-            "FTPeach vault command timings: unlock and migration took {}ms",
-            started.elapsed().as_millis(),
-        );
     }
     result
 }

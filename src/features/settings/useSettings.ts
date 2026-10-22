@@ -205,7 +205,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function normalizeColumnsSetting(value: unknown, fallback: PaneColumns): PaneColumns {
+function normalizeColumnsSetting(value: unknown, fallback: PaneColumns): PaneColumns {
   if (Array.isArray(value)) return { a: value as string[], b: value as string[] };
   if (isRecord(value)) {
     return {
@@ -216,10 +216,7 @@ export function normalizeColumnsSetting(value: unknown, fallback: PaneColumns): 
   return fallback;
 }
 
-export function normalizeWidthsSetting(
-  value: unknown,
-  fallback: PaneColumnWidths,
-): PaneColumnWidths {
+function normalizeWidthsSetting(value: unknown, fallback: PaneColumnWidths): PaneColumnWidths {
   if (isRecord(value)) {
     if (isRecord(value.a) && isRecord(value.b)) {
       return { a: value.a as ColumnWidths, b: value.b as ColumnWidths };
@@ -229,7 +226,7 @@ export function normalizeWidthsSetting(
   return fallback;
 }
 
-export function normalizeStringArraySetting(value: unknown, fallback: string[]): string[] {
+function normalizeStringArraySetting(value: unknown, fallback: string[]): string[] {
   return Array.isArray(value) && value.every((entry) => typeof entry === 'string')
     ? value
     : fallback;

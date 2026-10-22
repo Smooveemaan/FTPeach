@@ -1037,10 +1037,6 @@ impl ProtocolBackend for SftpBackend {
         Err(error.into())
     }
 
-    async fn size(&mut self, path: &str) -> u64 {
-        self.known_size(path).await.unwrap_or(0)
-    }
-
     async fn known_size(&mut self, path: &str) -> Option<u64> {
         let Ok(raw) = self.sftp() else { return None };
         raw.stat(path.to_string())
@@ -1118,7 +1114,7 @@ impl ProtocolBackend for SftpBackend {
             .map(|m| m.len())
             .unwrap_or(0);
         let remote_size = if resume {
-            self.size(remote_path).await
+            self.known_size(remote_path).await.unwrap_or(0)
         } else {
             0
         };

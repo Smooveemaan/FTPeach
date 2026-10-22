@@ -29,7 +29,7 @@ export function transferRoute(row: TransferRow): TransferRoute {
  * Where a row's bytes come from and where they land. A drag-out's target is
  * null: Explorer picks a folder on this computer and never says which.
  */
-export function transferEndpoints(row: TransferRow): {
+function transferEndpoints(row: TransferRow): {
   source: RecursiveEndpoint;
   target: RecursiveEndpoint | null;
 } {

@@ -5,7 +5,7 @@ use super::{
 };
 #[cfg(feature = "smoke-test")]
 use crate::commands;
-use crate::local_fs::{self, preview::PreviewPaths};
+use crate::local_fs::{self, open_with::OpenWithSession};
 use crate::security::auto_lock::AutoLock;
 use crate::store::Store;
 use crate::transfer::progress::ProgressEmitter;
@@ -27,11 +27,11 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     main_window.build()?;
     let data_dir = local_fs::edit_recovery::data_dir(app.handle())
         .ok_or_else(|| std::io::Error::other("No local application data directory"))?;
-    let preview_paths = PreviewPaths::with_edit_root(&data_dir);
+    let open_with_session = OpenWithSession::under(&data_dir);
     app.manage(local_fs::open_with::OpenWithWatchers::new(
-        preview_paths.open_with_dir.clone(),
+        open_with_session.dir.clone(),
     ));
-    app.manage(preview_paths);
+    app.manage(open_with_session);
     #[cfg(feature = "smoke-test")]
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("backend-ready");
@@ -50,10 +50,6 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // icon that exists.
     notification::register_identity(app.handle());
     app.manage(ProgressEmitter::new(app.handle().clone()));
-    let preview_paths = app.state::<PreviewPaths>().inner().clone();
-    tauri::async_runtime::spawn(async move {
-        local_fs::preview::cleanup_stale_sessions(&preview_paths).await;
-    });
     let panel = app.handle().clone();
     app.manage(LogEmitter::start(logs_dir, move |batch| {
         let _ = panel.emit("protocol:log", batch);

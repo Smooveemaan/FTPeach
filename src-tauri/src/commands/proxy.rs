@@ -37,7 +37,7 @@ pub struct ProxyTestRequest {
 /// through it — that's the thing worth testing. Any failure (bad input,
 /// unreachable proxy, rejected handshake) surfaces the same way every
 /// other command's failure does — a rejected promise the shared
-/// `invoke()` wrapper (tauriApi.js) turns into `{ok:false, error, ...}` —
+/// `invoke()` wrapper (tauriApi.ts) turns into `{ok:false, error, ...}` —
 /// no bespoke result shape needed here.
 #[tauri::command]
 pub async fn proxy_test(request: ProxyTestRequest) -> CommandResult<()> {

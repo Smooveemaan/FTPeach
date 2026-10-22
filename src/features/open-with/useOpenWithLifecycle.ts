@@ -4,7 +4,7 @@ import { api } from '../../platform/api/index.ts';
 import type {
   CommandResult,
   OpenWithChange,
-  PreviewProgress,
+  OpenWithProgress,
 } from '../../platform/ipcContracts.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
@@ -45,7 +45,7 @@ interface OpenWithApi {
   stop: (id: string) => Promise<unknown>;
   markSynced: (id: string, revision: string) => Promise<CommandResult>;
   onChanged: (callback: (payload: OpenWithChange) => void) => () => void;
-  onProgress: (callback: (payload: PreviewProgress) => void) => () => void;
+  onProgress: (callback: (payload: OpenWithProgress) => void) => () => void;
   start: (
     connectionId: string,
     remotePath: string,

@@ -261,7 +261,7 @@ fn ensure_confirmed_move(
 }
 
 /// Whether `entry` belongs in `local_paths_file()` rather than `sites_file()`.
-pub(super) fn is_local_scope_entry(entry: &JsonMap) -> bool {
+pub(crate) fn is_local_scope_entry(entry: &JsonMap) -> bool {
     match entry.get("kind").and_then(Value::as_str) {
         Some("local") => true,
         Some("folder") => entry.get("managerScope").and_then(Value::as_str) == Some("localPaths"),

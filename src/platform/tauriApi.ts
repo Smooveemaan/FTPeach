@@ -23,7 +23,7 @@ import {
   isOpenWithChange,
   isRecoveredEditArray,
   isVaultLocked,
-  isPreviewProgress,
+  isOpenWithProgress,
   isRecord,
   isStringArray,
   normalizeCommandError,
@@ -310,7 +310,7 @@ export const tauriApi: Window['api'] = {
     revealRecoveredEdits: () => voidOutcome(invoke, 'open_with_reveal_recovered_edits'),
     discardRecoveredEdits: () => voidOutcome(invoke, 'open_with_discard_recovered_edits'),
     onChanged: onEvent('openWith:changed', isOpenWithChange),
-    onProgress: onEvent('preview:progress', isPreviewProgress),
+    onProgress: onEvent('openWith:progress', isOpenWithProgress),
   },
   dragOut: createDragOutApi(invoke),
   log: {

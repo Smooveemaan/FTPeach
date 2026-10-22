@@ -7,7 +7,6 @@ pub(crate) mod local_open;
 pub(crate) mod mutations;
 pub(crate) mod open_with;
 pub(crate) mod portable;
-pub(crate) mod preview;
 pub(crate) mod provenance;
 #[cfg(windows)]
 pub(crate) mod recycle_bin;

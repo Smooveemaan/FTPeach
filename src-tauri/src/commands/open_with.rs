@@ -1,8 +1,7 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::edit_recovery;
 use crate::local_fs::local_open::{ApprovedLocalPaths, OpenKind};
-use crate::local_fs::open_with::OpenWithWatchers;
-use crate::local_fs::preview::{self, PreviewPaths};
+use crate::local_fs::open_with::{self, OpenWithSession, OpenWithWatchers};
 use crate::security::open_with_intent::OpenWithIntent;
 use crate::session::Sessions;
 use crate::transfer::transfer_pool::TaskFn;
@@ -34,7 +33,7 @@ pub async fn open_with_start(
     approved_paths: State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     authorization_token: String,
     sessions: State<'_, Sessions>,
-    paths: State<'_, PreviewPaths>,
+    paths: State<'_, OpenWithSession>,
     watchers: State<'_, OpenWithWatchers>,
     connection_id: String,
     remote_path: String,
@@ -72,7 +71,7 @@ pub async fn open_with_start(
         });
     }
     let recovery = recovery_root(&app)?;
-    let session = paths.open_with_dir.clone();
+    let session = paths.dir.clone();
     let check_session = session.clone();
     let check_recovery = recovery.clone();
     tokio::task::spawn_blocking(move || {
@@ -84,13 +83,13 @@ pub async fn open_with_start(
     let Some(pool) = sessions.pool_for(&connection_id).await else {
         return Err(CommandError::new(ErrorCode::ConnectionLost, NO_SESSION));
     };
-    let dir = paths.open_with_dir.join(uuid::Uuid::new_v4().to_string());
+    let dir = paths.dir.join(uuid::Uuid::new_v4().to_string());
     if let Err(err) = tokio::fs::create_dir_all(&dir).await {
         return Err(CommandError::from(err));
     }
     let local_path = dir.join(&intent.local_name);
 
-    let sink = preview::make_preview_progress_sink(app.clone(), connection_id.clone(), id.clone());
+    let sink = open_with::progress_sink(app.clone(), connection_id.clone(), id.clone());
     let remote_path_task = remote_path.clone();
     let local_path_task = local_path.clone();
     let task: TaskFn = Box::new(move |backend| {
@@ -281,14 +280,14 @@ fn recovery_root(app: &AppHandle) -> Result<std::path::PathBuf, CommandError> {
 #[tauri::command]
 pub async fn open_with_recovered_edits(
     app: AppHandle,
-    paths: State<'_, PreviewPaths>,
+    paths: State<'_, OpenWithSession>,
 ) -> Result<Vec<edit_recovery::RecoveredEdit>, CommandError> {
     let root = recovery_root(&app)?;
-    let current = paths.open_with_dir.clone();
+    let current = paths.dir.clone();
     tokio::task::spawn_blocking(move || {
         edit_recovery::collect_abandoned(&current, &root);
         // Versions before persistent editor sessions used the OS temp dir.
-        // Recover those copies too; they are never age-deleted as previews.
+        // Recover those copies too.
         let legacy = std::env::temp_dir()
             .join("ftpeach-openwith")
             .join("current-placeholder");
@@ -321,8 +320,6 @@ pub async fn open_with_discard_recovered_edits(app: AppHandle) -> CommandResult<
     }
 }
 
-// See commands/preview.rs's serde_field_casing module for why this needs
-// its own per-variant rename_all and a test guarding it.
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -70,13 +70,15 @@ impl ProtocolBackend for Backend {
     async fn rename(&mut self, _: &str, _: &str) -> BackendResult<()> {
         unreachable!()
     }
-    async fn size(&mut self, path: &str) -> u64 {
-        self.remote
-            .files
-            .lock()
-            .unwrap()
-            .get(path)
-            .map_or(0, |bytes| bytes.len() as u64)
+    async fn known_size(&mut self, path: &str) -> Option<u64> {
+        Some(
+            self.remote
+                .files
+                .lock()
+                .unwrap()
+                .get(path)
+                .map_or(0, |bytes| bytes.len() as u64),
+        )
     }
     async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
         self.remote.ranges.lock().unwrap().push((offset, len));

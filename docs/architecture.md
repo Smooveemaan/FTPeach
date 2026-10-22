@@ -115,7 +115,7 @@ registration, its capability entry, and a wrapper in `platform/api/`.
 | `transfer:progress` | Batched progress, completion and failure for transfers. |
 | `transfer:dragOutStarted` | A download Explorer began pulling during a drag-out. |
 | `protocol:log` | Batches of protocol log lines. |
-| `preview:progress`, `openWith:changed` | Open-with downloads and edited copies. |
+| `openWith:progress`, `openWith:changed` | Open-with downloads and edited copies. |
 | `vault:locked` | A lock, a reset or a switch of protection has finished, with the reason. Listeners drop revealed values and read the vault state again. |
 | `vault:unlocked` | The vault was opened: by setup, by an unlock command, or by a confirmation window that asked for the master password. Listeners read the vault state again. |
 | `updater:status`, `tray:action` | Updater state; tray menu clicks. |

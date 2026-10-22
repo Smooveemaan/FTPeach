@@ -1,10 +1,4 @@
-export {
-  createDateFormatter,
-  createLogTimeFormatter,
-  setDateFormatPreference,
-  useDateFormatter,
-  useLogTimeFormatter,
-} from './dateFormat.ts';
+export { setDateFormatPreference, useDateFormatter, useLogTimeFormatter } from './dateFormat.ts';
 export type { DateFormatter, LogTimeFormatter } from './dateFormat.ts';
 export { resetLayoutFromApi } from './layoutReset.ts';
 export { useSettings } from './useSettings.ts';
@@ -16,5 +10,4 @@ export type {
   PaneOrientation,
   SettingsState,
   SettingsUpdaters,
-  SettingsValues,
 } from './useSettings.ts';

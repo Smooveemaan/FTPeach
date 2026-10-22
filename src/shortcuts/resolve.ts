@@ -19,7 +19,7 @@ export function effectiveBinding(
 
 // Map<actionId, binding> for every action in `scope`, honoring overrides.
 // Unbound actions (override === '') are omitted.
-export function effectiveBindingsByScope(
+function effectiveBindingsByScope(
   scope: ShortcutScope,
   overrides?: ShortcutOverrides | null,
 ): Map<string, string> {

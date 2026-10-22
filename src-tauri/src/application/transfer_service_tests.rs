@@ -77,13 +77,15 @@ impl ProtocolBackend for Backend {
         files.insert(new.into(), bytes);
         Ok(())
     }
-    async fn size(&mut self, path: &str) -> u64 {
-        self.remote
-            .files
-            .lock()
-            .unwrap()
-            .get(path)
-            .map_or(0, |bytes| bytes.len() as u64)
+    async fn known_size(&mut self, path: &str) -> Option<u64> {
+        Some(
+            self.remote
+                .files
+                .lock()
+                .unwrap()
+                .get(path)
+                .map_or(0, |bytes| bytes.len() as u64),
+        )
     }
     async fn upload(
         &mut self,

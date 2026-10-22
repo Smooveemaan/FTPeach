@@ -15,8 +15,67 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Emitter, Runtime};
 
+use crate::protocol::{ProgressInfo, ProgressSink};
+
 const POLL_INTERVAL: Duration = Duration::from_secs(1);
+const PROGRESS_THROTTLE: Duration = Duration::from_millis(100);
 pub(crate) const MANIFEST: &str = "copies.json";
+
+/// This process's open-with session directory. Each process gets its own, so
+/// shutdown never removes copies owned by another running FTPeach instance.
+/// It lives under the data directory: editor copies must survive OS
+/// temporary-file cleanup.
+#[derive(Clone)]
+pub struct OpenWithSession {
+    pub dir: PathBuf,
+}
+
+impl OpenWithSession {
+    pub fn under(data_dir: &Path) -> Self {
+        Self {
+            dir: data_dir
+                .join("edit-sessions")
+                .join(uuid::Uuid::new_v4().to_string()),
+        }
+    }
+}
+
+/// Reports an open-with download as `openWith:progress`, at most every 100 ms.
+pub fn progress_sink(app: AppHandle, connection_id: String, id: String) -> ProgressSink {
+    #[derive(Serialize, Clone)]
+    #[serde(rename_all = "camelCase")]
+    struct OpenWithProgress {
+        id: String,
+        connection_id: String,
+        bytes: u64,
+        total: u64,
+    }
+
+    let last_sent = Mutex::new(None::<std::time::Instant>);
+    Arc::new(move |info: ProgressInfo| {
+        let ProgressInfo::Progress { bytes, total } = info else {
+            return;
+        };
+        let mut guard = last_sent.lock().unwrap();
+        let now = std::time::Instant::now();
+        if let Some(prev) = *guard
+            && now.duration_since(prev) < PROGRESS_THROTTLE
+        {
+            return;
+        }
+        *guard = Some(now);
+        drop(guard);
+        let _ = app.emit(
+            "openWith:progress",
+            OpenWithProgress {
+                id: id.clone(),
+                connection_id: connection_id.clone(),
+                bytes,
+                total,
+            },
+        );
+    })
+}
 
 /// What identifies one revision of a copy on disk.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -272,6 +331,18 @@ impl OpenWithWatchers {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn each_process_gets_its_own_session_directory() {
+        let data = Path::new("data");
+        let first = OpenWithSession::under(data);
+        let second = OpenWithSession::under(data);
+        assert_ne!(first.dir, second.dir);
+        assert_eq!(
+            first.dir.parent(),
+            Some(data.join("edit-sessions").as_path())
+        );
+    }
 
     fn session() -> (PathBuf, OpenWithWatchers) {
         let dir = std::env::temp_dir().join(format!("ftpeach-open-with-{}", uuid::Uuid::new_v4()));

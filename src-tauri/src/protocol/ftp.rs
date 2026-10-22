@@ -1803,10 +1803,6 @@ impl ProtocolBackend for FtpBackend {
         Err(error.into())
     }
 
-    async fn size(&mut self, path: &str) -> u64 {
-        self.known_size(path).await.unwrap_or(0)
-    }
-
     async fn read_range(&mut self, path: &str, offset: u64, len: usize) -> BackendResult<Vec<u8>> {
         let path = path.to_string();
         let data = self.data_channel()?;
@@ -1894,7 +1890,7 @@ impl ProtocolBackend for FtpBackend {
             .map(|m| m.len())
             .unwrap_or(0);
         let remote_size = if resume {
-            self.size(remote_path).await
+            self.known_size(remote_path).await.unwrap_or(0)
         } else {
             0
         };

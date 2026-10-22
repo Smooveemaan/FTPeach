@@ -750,13 +750,9 @@ pub trait ProtocolBackend: Send {
     async fn chmod(&mut self, _path: &str, _mode: u32) -> BackendResult<()> {
         anyhow::bail!("Changing permissions is only supported for SFTP connections")
     }
-    async fn size(&mut self, path: &str) -> u64;
-
     /// Preserves the distinction between an unknown length and a real
     /// zero-byte file for transfer integrity checks.
-    async fn known_size(&mut self, path: &str) -> Option<u64> {
-        Some(self.size(path).await)
-    }
+    async fn known_size(&mut self, path: &str) -> Option<u64>;
 
     /// Reads at most `len` bytes at `offset`, returning fewer only at EOF.
     ///

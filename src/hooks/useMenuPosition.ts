@@ -33,7 +33,7 @@ export interface OverlayBox {
 
 type AnchorRect = Pick<DOMRect, 'left' | 'right' | 'bottom'>;
 
-export function readOverlayViewport(): OverlayViewport {
+function readOverlayViewport(): OverlayViewport {
   return {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -75,7 +75,7 @@ export function placeBelowAnchor(
  * window: an estimate falls short once the interface is scaled up or the
  * labels are long.
  */
-export function useAnchoredOverlay(
+function useAnchoredOverlay(
   open: boolean,
   trigger: RefObject<HTMLElement | null>,
   panel: RefObject<HTMLElement | null>,

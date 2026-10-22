@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import OpenWithDialog from '../../../src/features/open-with/OpenWithDialog.tsx';
-import type { PreviewProgress, CommandResult } from '../../../src/platform/ipcContracts.ts';
+import type { OpenWithProgress, CommandResult } from '../../../src/platform/ipcContracts.ts';
 import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
@@ -10,7 +10,7 @@ vi.mock('react-i18next', async (importOriginal) => ({
 }));
 
 function open() {
-  let emit!: (_progress: PreviewProgress) => void;
+  let emit!: (_progress: OpenWithProgress) => void;
   let finish!: (_result: CommandResult & { id?: string; localPath?: string }) => void;
   let reject!: (_error: Error) => void;
   const pending = new Promise<CommandResult & { id?: string; localPath?: string }>(
@@ -56,7 +56,7 @@ function open() {
     unsubscribe,
     finish,
     reject,
-    emit: (progress: PreviewProgress) => act(() => emit(progress)),
+    emit: (progress: OpenWithProgress) => act(() => emit(progress)),
   };
 }
 

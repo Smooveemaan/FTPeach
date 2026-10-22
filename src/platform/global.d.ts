@@ -18,7 +18,7 @@ import type {
 import type {
   CommandResult,
   OpenWithChange,
-  PreviewProgress,
+  OpenWithProgress,
   RecoveredEdit,
   Unsubscribe,
   VaultLocked,
@@ -133,7 +133,7 @@ declare global {
         revealRecoveredEdits: () => Promise<CommandResult>;
         discardRecoveredEdits: () => Promise<CommandResult>;
         onChanged: (callback: (payload: OpenWithChange) => void) => Unsubscribe;
-        onProgress: (callback: (payload: PreviewProgress) => void) => Unsubscribe;
+        onProgress: (callback: (payload: OpenWithProgress) => void) => Unsubscribe;
       };
       dragOut: {
         start: (

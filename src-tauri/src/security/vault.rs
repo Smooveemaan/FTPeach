@@ -557,11 +557,8 @@ impl Vault {
     }
 
     pub async fn unlock(&self, password: &str) -> Result<()> {
-        let started = std::time::Instant::now();
         let metadata = self.read_metadata().await?;
-        let metadata_loaded = started.elapsed();
         let data_key = Self::unwrap_data_key(password, &metadata).await?;
-        let key_derived = started.elapsed();
         let stronghold = Stronghold::default();
         let client = stronghold
             .load_client_from_snapshot(
@@ -570,7 +567,6 @@ impl Vault {
                 &SnapshotPath::from_path(self.snapshot_path()),
             )
             .map_err(|_| anyhow::anyhow!("Incorrect master password or damaged vault"))?;
-        let snapshot_loaded = started.elapsed();
         if client.store().get(CHECK_KEY).ok().flatten().as_deref() != Some(CHECK_VALUE) {
             bail!("damaged vault");
         }
@@ -580,15 +576,6 @@ impl Vault {
         };
         self.commit(&unlocked)?;
         *self.state.lock().await = Some(unlocked);
-        if cfg!(debug_assertions) {
-            eprintln!(
-                "FTPeach vault unlock timings: metadata={}ms, argon2={}ms, stronghold={}ms, total={}ms",
-                metadata_loaded.as_millis(),
-                key_derived.saturating_sub(metadata_loaded).as_millis(),
-                snapshot_loaded.saturating_sub(key_derived).as_millis(),
-                started.elapsed().as_millis(),
-            );
-        }
         Ok(())
     }
 

@@ -172,9 +172,6 @@ mod tests {
         async fn rename(&mut self, _old_path: &str, _new_path: &str) -> BackendResult<()> {
             unimplemented!()
         }
-        async fn size(&mut self, _path: &str) -> u64 {
-            self.data.lock().unwrap().len() as u64
-        }
         async fn known_size(&mut self, _path: &str) -> Option<u64> {
             Some(self.data.lock().unwrap().len() as u64)
         }

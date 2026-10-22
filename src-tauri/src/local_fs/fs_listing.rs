@@ -65,6 +65,8 @@ impl Drop for ListingRequest {
     }
 }
 
+// Not `security::connection_guard`'s copy: examples/benchmark_listing.rs
+// compiles this file on its own, without the rest of the crate.
 fn is_safe_path_segment(name: &str) -> bool {
     !name.is_empty() && name != "." && name != ".." && !name.contains(['\\', '/'])
 }

@@ -486,21 +486,20 @@ impl TransferPool {
     }
 
     /// Cancels a queued, active, or not-yet-queued task ("Stop"/"Pause").
-    pub fn cancel(&self, task_id: &str) -> bool {
+    pub fn cancel(&self, task_id: &str) {
         let mut state = self.state.lock().unwrap();
         if let Some(pos) = state.queue.iter().position(|item| item.task_id == task_id) {
             let item = state.queue.remove(pos).unwrap();
             let _ = item
                 .respond
                 .send(Err(fail(ErrorCode::Cancelled, "Canceled by user")));
-            return true;
+            return;
         }
         if let Some(entry) = state.active.get(task_id) {
             entry.token.cancel();
-            return true;
+            return;
         }
         state.mark_cancelled(task_id.to_string());
-        true
     }
 
     fn drain(&self) {
@@ -744,8 +743,8 @@ mod tests {
         async fn rename(&mut self, _old_path: &str, _new_path: &str) -> BackendResult<()> {
             Ok(())
         }
-        async fn size(&mut self, _path: &str) -> u64 {
-            0
+        async fn known_size(&mut self, _path: &str) -> Option<u64> {
+            Some(0)
         }
         async fn upload(
             &mut self,

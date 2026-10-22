@@ -1835,7 +1835,7 @@ mod local_integration_tests {
         tokio::time::timeout(Duration::from_secs(2), first_progress.notified())
             .await
             .expect("slow download should report initial progress");
-        assert!(pool.cancel("cancel-download"));
+        pool.cancel("cancel-download");
         let error = run.await.unwrap().unwrap_err();
         assert!(format!("{error:#}").contains("Canceled by user"));
         assert!(tokio::fs::metadata(&destination).await.is_err());

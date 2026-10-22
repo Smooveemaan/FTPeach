@@ -11,7 +11,7 @@ export const DATE_FORMAT_OPTIONS = [
   { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD' },
   { value: 'yyyy/MM/dd', label: 'YYYY/MM/DD' },
 ] as const;
-export const TIME_FORMAT_OPTIONS = [
+const TIME_FORMAT_OPTIONS = [
   { value: 'HH:mm', label: '24 h' },
   { value: 'hh:mm a', label: '12 h' },
 ] as const;

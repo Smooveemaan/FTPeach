@@ -97,7 +97,7 @@ for (const count of QUEUE_SIZES) {
     results.push({ scenario: 'directory-filter-sort', count, filterText, ...measurement });
   }
 }
-const output = resolve(process.argv[2] ?? '.local/benchmarks/stage-0.json');
+const output = resolve(process.argv[2] ?? '.local/benchmarks/baseline.json');
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(
   output,

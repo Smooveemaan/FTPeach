@@ -133,7 +133,7 @@ try {
           document.documentElement.dir = 'rtl';
           document.documentElement.style.zoom = '1.25';
         });
-        await page.screenshot({ path: '.local/benchmarks/stage3-queue-rtl.png' });
+        await page.screenshot({ path: '.local/benchmarks/queue-rtl.png' });
         if ((await page.locator('.transfer-item').count()) > 100)
           throw new Error('Narrow RTL virtualization failed');
       }
@@ -142,7 +142,7 @@ try {
   }
 } finally {
   writeFileSync(
-    `.local/benchmarks/stage3-ui-after.json`,
+    `.local/benchmarks/mixed-ui.json`,
     JSON.stringify(
       {
         commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),

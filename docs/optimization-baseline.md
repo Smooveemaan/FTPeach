@@ -1,6 +1,6 @@
 # Transfer store baseline and recursive-operation regressions
 
-Run `npm run benchmark:baseline -- .local/benchmarks/stage-0.json` on an idle machine, without tests or another benchmark running. Repeat the command into a second file before treating a difference as a regression. This is a measurement tool, not a timing assertion in ordinary CI. Keep Node version, hardware, power mode and fixture version fixed when comparing revisions.
+Run `npm run benchmark:baseline -- .local/benchmarks/baseline.json` on an idle machine, without tests or another benchmark running. Repeat the command into a second file before treating a difference as a regression. This is a measurement tool, not a timing assertion in ordinary CI. Keep Node version, hardware, power mode and fixture version fixed when comparing revisions.
 
 The JSON includes schema/fixture versions, commit and dirty flag, environment, all 40 samples after 5 warmups, nearest-rank p50/p95/p99, CPU usage and process memory. Memory is an end-of-scenario process snapshot (not an allocation count, peak, leak measurement or isolated retained heap). Forty samples do not establish a reliable tail SLA; p99 is descriptive. Fixtures use fixed IDs/times and synthetic paths only. The artifact contains no server credentials or file contents.
 
@@ -41,7 +41,7 @@ See [transfer safety](transfer-safety.md#recursive-operation-contracts) for supp
 
 ## Initial measurement (September 13, 2026)
 
-Measured on the working tree based on `e555ef0`; the machine-readable run is `.local/benchmarks/stage-0.json`. The new instrumentation and tests were uncommitted (`dirty: true`); application/store code was unchanged. No tests ran concurrently.
+Measured on the working tree based on `e555ef0`; the machine-readable run is `.local/benchmarks/baseline-2026-09-13.json`, named apart so a new run does not write over it. The new instrumentation and tests were uncommitted (`dirty: true`); application/store code was unchanged. No tests ran concurrently.
 
 | Input rows | Active attempts | Burst p50 ms | Burst p95 ms |
 | --- | --- | --- | --- |

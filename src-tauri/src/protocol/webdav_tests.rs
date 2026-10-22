@@ -55,11 +55,7 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
             }
         }
     });
-    let mut backend = WebDavBackend {
-        client: Some(test_client()),
-        base_url: format!("http://{address}"),
-        ..Default::default()
-    };
+    let mut backend = backend_at(address);
     let root = std::env::temp_dir().join(format!("webdav-oversize-{}", uuid::Uuid::new_v4()));
     tokio::fs::create_dir_all(&root).await.unwrap();
     let target = root.join("target");
@@ -81,13 +77,27 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
     tokio::fs::remove_dir_all(root).await.unwrap();
 }
 
-/// Reads one request, body included, and returns its header.
-async fn read_request(socket: &mut tokio::net::TcpStream) -> String {
+/// Reads one request's header, up to the blank line.
+async fn read_head(socket: &mut tokio::net::TcpStream) -> Vec<u8> {
     let mut header = Vec::new();
     while !header.ends_with(b"\r\n\r\n") {
         header.push(socket.read_u8().await.unwrap());
     }
-    let header = String::from_utf8(header).unwrap();
+    header
+}
+
+/// A backend that sends every request to the test server at `address`.
+fn backend_at(address: std::net::SocketAddr) -> WebDavBackend {
+    WebDavBackend {
+        client: Some(test_client()),
+        base_url: format!("http://{address}"),
+        ..Default::default()
+    }
+}
+
+/// Reads one request, body included, and returns its header.
+async fn read_request(socket: &mut tokio::net::TcpStream) -> String {
+    let header = String::from_utf8(read_head(socket).await).unwrap();
     let length = header
         .lines()
         .find_map(|line| {
@@ -480,10 +490,7 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
         let server = tokio::spawn(async move {
             for method in ["MKCOL", "PROPFIND"] {
                 let (mut socket, _) = listener.accept().await.unwrap();
-                let mut header = Vec::new();
-                while !header.ends_with(b"\r\n\r\n") {
-                    header.push(socket.read_u8().await.unwrap());
-                }
+                let header = read_head(&mut socket).await;
                 let header = String::from_utf8(header).unwrap();
                 assert!(header.starts_with(method));
                 // Cleartext sign-in is not allowed, so neither request may name the user.
@@ -515,10 +522,8 @@ async fn mkdir_accepts_405_only_for_an_existing_collection() {
             }
         });
         let mut backend = WebDavBackend {
-            client: Some(test_client()),
-            base_url: format!("http://{address}"),
             user: "u".into(),
-            ..Default::default()
+            ..backend_at(address)
         };
         assert_eq!(backend.mkdir("/folder").await.is_ok(), collection);
         server.await.unwrap();
@@ -540,10 +545,7 @@ async fn mkdir_makes_the_folder_in_one_request_and_walks_only_for_a_missing_pare
             let expected = if parent_missing { 4 } else { 1 };
             for _ in 0..expected {
                 let (mut socket, _) = listener.accept().await.unwrap();
-                let mut header = Vec::new();
-                while !header.ends_with(b"\r\n\r\n") {
-                    header.push(socket.read_u8().await.unwrap());
-                }
+                let header = read_head(&mut socket).await;
                 let line = String::from_utf8(header).unwrap();
                 let path = line
                     .split_whitespace()
@@ -570,11 +572,7 @@ async fn mkdir_makes_the_folder_in_one_request_and_walks_only_for_a_missing_pare
             }
             seen
         });
-        let mut backend = WebDavBackend {
-            client: Some(test_client()),
-            base_url: format!("http://{address}"),
-            ..Default::default()
-        };
+        let mut backend = backend_at(address);
         backend.mkdir("/a/b/c").await.unwrap();
         let seen = server.await.unwrap();
         if parent_missing {
@@ -638,10 +636,7 @@ async fn rejected_put_does_not_wait_for_a_stalled_source() {
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
-        let mut header = Vec::new();
-        while !header.ends_with(b"\r\n\r\n") {
-            header.push(socket.read_u8().await.unwrap());
-        }
+        read_head(&mut socket).await;
         socket
             .write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n")
             .await
@@ -649,10 +644,8 @@ async fn rejected_put_does_not_wait_for_a_stalled_source() {
         std::future::pending::<()>().await;
     });
     let backend = WebDavBackend {
-        client: Some(test_client()),
         idle_timeout: Duration::from_secs(60),
-        base_url: format!("http://{address}"),
-        ..Default::default()
+        ..backend_at(address)
     };
     let (_producer, mut reader) = tokio::io::duplex(1);
     let result = tokio::time::timeout(
@@ -674,10 +667,7 @@ async fn propfind_status_is_preserved_when_error_body_stalls() {
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
-        let mut header = Vec::new();
-        while !header.ends_with(b"\r\n\r\n") {
-            header.push(socket.read_u8().await.unwrap());
-        }
+        read_head(&mut socket).await;
         socket
             .write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 100\r\n\r\n")
             .await
@@ -752,10 +742,7 @@ async fn upload_bytes_are_paced_across_http_time_windows() {
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
-        let mut header = Vec::new();
-        while !header.ends_with(b"\r\n\r\n") {
-            header.push(socket.read_u8().await.unwrap());
-        }
+        read_head(&mut socket).await;
         let start = std::time::Instant::now();
         let mut windows = std::collections::BTreeMap::<u128, usize>::new();
         let mut received = 0;
@@ -775,11 +762,9 @@ async fn upload_bytes_are_paced_across_http_time_windows() {
         windows
     });
     let backend = WebDavBackend {
-        client: Some(test_client()),
         upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(5),
-        base_url: format!("http://{address}"),
-        ..Default::default()
+        ..backend_at(address)
     };
     let limiter = crate::transfer::rate_limiter::RateLimiter::new(length as u64);
     // Exclude the intentional one-second startup token bucket from steady-state pacing.
@@ -849,11 +834,9 @@ async fn concurrent_gigabyte_uploads_admit_only_sixteen_bounded_readers() {
         }
     });
     let backend = Arc::new(WebDavBackend {
-        client: Some(test_client()),
         upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(30),
-        base_url: format!("http://{address}"),
-        ..Default::default()
+        ..backend_at(address)
     });
     let (seen, mut reads) = tokio::sync::mpsc::unbounded_channel();
     let mut uploads = tokio::task::JoinSet::new();
@@ -899,10 +882,7 @@ async fn streaming_body_is_length_bounded_and_reports_incremental_progress() {
     let length = 256 * 1024;
     let server = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
-        let mut header = Vec::new();
-        while !header.ends_with(b"\r\n\r\n") {
-            header.push(socket.read_u8().await.unwrap());
-        }
+        let header = read_head(&mut socket).await;
         assert!(
             String::from_utf8(header)
                 .unwrap()
@@ -918,11 +898,9 @@ async fn streaming_body_is_length_bounded_and_reports_incremental_progress() {
             .unwrap();
     });
     let backend = WebDavBackend {
-        client: Some(test_client()),
         upload_client: Some(test_client()),
         idle_timeout: Duration::from_secs(5),
-        base_url: format!("http://{address}"),
-        ..Default::default()
+        ..backend_at(address)
     };
     let progress = Arc::new(std::sync::Mutex::new(Vec::new()));
     let observed = progress.clone();
@@ -1023,11 +1001,7 @@ async fn failed_propfind_never_attempts_empty_put() {
                 socket.write_all(format!("HTTP/1.1 {status} Error\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").as_bytes()).await.unwrap();
             }
         });
-        let mut backend = WebDavBackend {
-            client: Some(test_client()),
-            base_url: format!("http://{address}"),
-            ..Default::default()
-        };
+        let mut backend = backend_at(address);
         assert!(backend.create_file("/existing").await.is_err());
         assert_eq!(puts.load(Ordering::SeqCst), 0);
         server.abort();
@@ -1056,10 +1030,8 @@ async fn a_file_arriving_before_the_empty_put_is_reported_as_existing() {
         put
     });
     let mut backend = WebDavBackend {
-        client: Some(test_client()),
         idle_timeout: Duration::from_secs(60),
-        base_url: format!("http://{address}"),
-        ..Default::default()
+        ..backend_at(address)
     };
     let error = backend.create_file("/new.txt").await.unwrap_err();
     assert_eq!(
@@ -1371,6 +1343,44 @@ mod local_integration_tests {
         ))
     }
 
+    /// One whole request from a test client: its header and its body, or
+    /// `None` once the client has gone.
+    async fn read_whole_request(socket: &mut tokio::net::TcpStream) -> Option<(String, Vec<u8>)> {
+        let mut request = Vec::new();
+        let mut chunk = [0_u8; 4096];
+        let header_end = loop {
+            let read = socket
+                .read(&mut chunk)
+                .await
+                .ok()
+                .filter(|read| *read > 0)?;
+            request.extend_from_slice(&chunk[..read]);
+            if let Some(index) = request.windows(4).position(|part| part == b"\r\n\r\n") {
+                break index + 4;
+            }
+        };
+        let headers = String::from_utf8_lossy(&request[..header_end]).into_owned();
+        let content_length = headers
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case("content-length")
+                    .then(|| value.trim().parse::<usize>().ok())
+                    .flatten()
+            })
+            .unwrap_or(0);
+        while request.len() < header_end + content_length {
+            let read = socket
+                .read(&mut chunk)
+                .await
+                .ok()
+                .filter(|read| *read > 0)?;
+            request.extend_from_slice(&chunk[..read]);
+        }
+        let body = request[header_end..header_end + content_length].to_vec();
+        Some((headers, body))
+    }
+
     async fn spawn_stateful_webdav_server() -> (String, tokio::task::JoinHandle<()>) {
         spawn_stateful_webdav_server_with(false).await
     }
@@ -1392,40 +1402,9 @@ mod local_integration_tests {
                 };
                 let state = state.clone();
                 tokio::spawn(async move {
-                    let mut request = Vec::new();
-                    let mut chunk = [0_u8; 4096];
-                    let header_end = loop {
-                        let Ok(read) = socket.read(&mut chunk).await else {
-                            return;
-                        };
-                        if read == 0 {
-                            return;
-                        }
-                        request.extend_from_slice(&chunk[..read]);
-                        if let Some(index) = request.windows(4).position(|part| part == b"\r\n\r\n")
-                        {
-                            break index + 4;
-                        }
+                    let Some((headers, body)) = read_whole_request(&mut socket).await else {
+                        return;
                     };
-                    let headers = String::from_utf8_lossy(&request[..header_end]).into_owned();
-                    let content_length = headers
-                        .lines()
-                        .find_map(|line| {
-                            let (name, value) = line.split_once(':')?;
-                            name.eq_ignore_ascii_case("content-length")
-                                .then(|| value.trim().parse::<usize>().ok())
-                                .flatten()
-                        })
-                        .unwrap_or(0);
-                    while request.len() < header_end + content_length {
-                        let Ok(read) = socket.read(&mut chunk).await else {
-                            return;
-                        };
-                        if read == 0 {
-                            return;
-                        }
-                        request.extend_from_slice(&chunk[..read]);
-                    }
                     let mut request_parts = headers
                         .lines()
                         .next()
@@ -1443,7 +1422,7 @@ mod local_integration_tests {
                                 .then(|| value.trim().to_string())
                         })
                     };
-                    let body = &request[header_end..header_end + content_length];
+                    let body = &body[..];
                     let slow_response = method == "GET" && path.ends_with("/slow.bin");
 
                     let (status, extra_headers, response_body) = {
@@ -1563,39 +1542,9 @@ mod local_integration_tests {
                     break;
                 };
                 tokio::spawn(async move {
-                    let mut request = Vec::new();
-                    let mut chunk = [0_u8; 2048];
-                    let header_end = loop {
-                        let Ok(read) = socket.read(&mut chunk).await else {
-                            return;
-                        };
-                        if read == 0 {
-                            return;
-                        }
-                        request.extend_from_slice(&chunk[..read]);
-                        if let Some(index) = request.windows(4).position(|part| part == b"\r\n\r\n")
-                        {
-                            break index + 4;
-                        }
+                    let Some((headers, _)) = read_whole_request(&mut socket).await else {
+                        return;
                     };
-                    let headers = String::from_utf8_lossy(&request[..header_end]).into_owned();
-                    let content_length = headers
-                        .lines()
-                        .find_map(|line| {
-                            line.strip_prefix("content-length: ")
-                                .or_else(|| line.strip_prefix("Content-Length: "))
-                        })
-                        .and_then(|value| value.trim().parse::<usize>().ok())
-                        .unwrap_or(0);
-                    while request.len() < header_end + content_length {
-                        let Ok(read) = socket.read(&mut chunk).await else {
-                            return;
-                        };
-                        if read == 0 {
-                            return;
-                        }
-                        request.extend_from_slice(&chunk[..read]);
-                    }
                     let request_line = headers.lines().next().unwrap_or_default();
                     if !request_line.starts_with("PROPFIND /dav/") {
                         let _ = socket

@@ -11,6 +11,33 @@ async fn read_saved(store: &Store, id: &str) -> (ServerSettings, Credentials) {
     store.saved_server(id, &vault).await.unwrap()
 }
 
+/// A store in a fresh folder whose `sites.json` holds `sites`.
+async fn store_with_sites(sites: &str) -> (PathBuf, Store) {
+    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
+    tokio::fs::create_dir_all(&dir).await.unwrap();
+    tokio::fs::write(dir.join("sites.json"), sites)
+        .await
+        .unwrap();
+    (dir.clone(), Store::new_at(dir))
+}
+
+/// A store in a fresh folder named after `prefix`, with a vault set up.
+async fn store_with_vault(prefix: &str) -> (PathBuf, Store, Vault) {
+    let root = std::env::temp_dir().join(format!("{prefix}-{}", uuid::Uuid::new_v4()));
+    let vault = Vault::new(root.clone());
+    vault.setup("correct horse battery staple").await.unwrap();
+    (root.clone(), Store::new_at(root), vault)
+}
+
+/// How many temporary files a write left in `dir`.
+fn tmp_leftovers(dir: &Path) -> usize {
+    std::fs::read_dir(dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
+        .count()
+}
+
 fn window(timeout_ms: u64, active_mode: bool) -> WindowConnectionSettings {
     WindowConnectionSettings {
         timeout_ms,
@@ -77,10 +104,7 @@ async fn file_name_encoding_survives_site_storage() {
 #[tokio::test]
 async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {
     use std::os::windows::fs::OpenOptionsExt;
-    let root = std::env::temp_dir().join(format!("ftpeach-downgrade-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(root.clone());
-    let vault = Vault::new(root.clone());
-    vault.setup("correct horse battery staple").await.unwrap();
+    let (root, store, vault) = store_with_vault("ftpeach-downgrade").await;
     store
         .set_settings_with_vault(
             proxy_patch(json!({"proxyPassword": "proxy-secret"})),
@@ -139,10 +163,7 @@ async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {
 
 #[tokio::test]
 async fn a_new_bookmark_without_a_secret_is_saved_while_the_vault_is_locked() {
-    let root = std::env::temp_dir().join(format!("ftpeach-locked-copy-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(root.clone());
-    let vault = Vault::new(root.clone());
-    vault.setup("correct horse battery staple").await.unwrap();
+    let (root, store, vault) = store_with_vault("ftpeach-locked-copy").await;
     vault.lock().await;
     let site = |extra: Value| -> JsonMap {
         let mut site = json!({"name":"Copy", "protocol":"ftp", "host":"example.test"});
@@ -447,10 +468,7 @@ async fn proxy_password_moves_with_enhanced_protection() {
 #[cfg(windows)]
 #[tokio::test]
 async fn vault_reset_and_removal_forget_the_proxy_password() {
-    let root = std::env::temp_dir().join(format!("ftpeach-proxy-reset-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(root.clone());
-    let vault = Vault::new(root.clone());
-    vault.setup("correct horse battery staple").await.unwrap();
+    let (root, store, vault) = store_with_vault("ftpeach-proxy-reset").await;
     store
         .set_settings_with_vault(
             proxy_patch(json!({"proxyPassword": "reset-secret"})),
@@ -668,15 +686,10 @@ fn empty_secret_keeps_an_existing_encrypted_value() {
 
 #[tokio::test]
 async fn site_list_exposes_secret_flags_but_never_secret_values() {
-    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(dir.clone());
-    tokio::fs::create_dir_all(&dir).await.unwrap();
-    tokio::fs::write(
-        dir.join("sites.json"),
+    let (dir, store) = store_with_sites(
         r#"[{"id":"site-1","kind":"site","enc":"ciphertext","keyEnc":"key-ciphertext"}]"#,
     )
-    .await
-    .unwrap();
+    .await;
 
     let sites = store.list_sites().await.unwrap();
 
@@ -692,19 +705,14 @@ async fn site_list_exposes_secret_flags_but_never_secret_values() {
 
 #[tokio::test]
 async fn apply_layout_validates_parents_and_rejects_incomplete_or_unknown_ids() {
-    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(dir.clone());
-    tokio::fs::create_dir_all(&dir).await.unwrap();
-    tokio::fs::write(
-        dir.join("sites.json"),
+    let (dir, store) = store_with_sites(
         r#"[
             {"id":"folder-1","kind":"folder","name":"Folder","parentId":null},
             {"id":"site-1","kind":"site","name":"Site","parentId":null},
             {"id":"site-2","kind":"site","name":"Other","parentId":null}
         ]"#,
     )
-    .await
-    .unwrap();
+    .await;
 
     let entry = |id: &str, parent_id: Option<&str>| SiteLayoutEntry {
         id: id.to_string(),
@@ -809,18 +817,10 @@ async fn apply_layout_validates_parents_and_rejects_incomplete_or_unknown_ids() 
 
 #[tokio::test]
 async fn kind_mismatched_save_and_delete_operations_are_rejected() {
-    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(dir.clone());
-    tokio::fs::create_dir_all(&dir).await.unwrap();
-    tokio::fs::write(
-        dir.join("sites.json"),
-        r#"[
+    let (dir, store) = store_with_sites(r#"[
             {"id":"folder-1","kind":"folder","name":"Folder","parentId":null},
             {"id":"site-1","kind":"site","name":"Site","protocol":"ftp","host":"example.test","parentId":null}
-        ]"#,
-    )
-    .await
-    .unwrap();
+        ]"#).await;
 
     // sites_save must not silently turn an existing folder into a site.
     let mut site_over_folder = JsonMap::new();
@@ -1050,15 +1050,7 @@ async fn save_folder_preserves_local_path_manager_scope() {
 
 #[tokio::test]
 async fn explicit_remove_password_deletes_only_the_saved_secret() {
-    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(dir.clone());
-    tokio::fs::create_dir_all(&dir).await.unwrap();
-    tokio::fs::write(
-        dir.join("sites.json"),
-        r#"[{"id":"site-1","kind":"site","name":"Test","protocol":"ftp","host":"example.test","enc":"existing-ciphertext"}]"#,
-    )
-    .await
-    .unwrap();
+    let (dir, store) = store_with_sites(r#"[{"id":"site-1","kind":"site","name":"Test","protocol":"ftp","host":"example.test","enc":"existing-ciphertext"}]"#).await;
     let mut update = JsonMap::new();
     update.insert("id".into(), Value::String("site-1".into()));
     update.insert("name".into(), Value::String("Updated".into()));
@@ -1256,15 +1248,7 @@ async fn plaintext_secrets_are_migrated_only_after_successful_encryption() {
 
 #[tokio::test]
 async fn electron_era_ciphertext_is_flagged_and_replaced_by_a_new_secret() {
-    let dir = std::env::temp_dir().join(format!("ftpeach-store-test-{}", uuid::Uuid::new_v4()));
-    let store = Store::new_at(dir.clone());
-    tokio::fs::create_dir_all(&dir).await.unwrap();
-    tokio::fs::write(
-        dir.join("sites.json"),
-        r#"[{"id":"site-1","kind":"site","name":"Legacy","protocol":"ftp","host":"example.test","enc":"djExLWVsZWN0cm9uLWNpcGhlcnRleHQ="}]"#,
-    )
-    .await
-    .unwrap();
+    let (dir, store) = store_with_sites(r#"[{"id":"site-1","kind":"site","name":"Legacy","protocol":"ftp","host":"example.test","enc":"djExLWVsZWN0cm9uLWNpcGhlcnRleHQ="}]"#).await;
 
     assert!(store.has_undecryptable_secret().await);
     let mut replacement = JsonMap::new();
@@ -1462,12 +1446,7 @@ async fn concurrent_settings_updates_are_serialized_and_atomically_committed() {
         stored.get("paneOrientation").and_then(Value::as_str),
         Some("vertical")
     );
-    let leftovers = std::fs::read_dir(&dir)
-        .unwrap()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
-        .count();
-    assert_eq!(leftovers, 0);
+    assert_eq!(tmp_leftovers(&dir), 0);
 
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
@@ -1518,12 +1497,7 @@ async fn unreadable_target_fails_before_creating_a_temp_file() {
 
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("read-only"));
-    let leftovers = std::fs::read_dir(&dir)
-        .unwrap()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
-        .count();
-    assert_eq!(leftovers, 0);
+    assert_eq!(tmp_leftovers(&dir), 0);
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
 

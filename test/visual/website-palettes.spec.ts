@@ -57,7 +57,8 @@ for (const width of [320, 390, 768, 1440]) {
     await openSite(page);
     await expect(page.locator('.palette-options')).toHaveCount(0);
     const bounds = await page
-      .locator('#themes [data-mode], #themes [data-palette-step], .palette-preview')
+      // The appearance switch shows only the way to the other appearance.
+      .locator('#themes [data-mode]:visible, #themes [data-palette-step], .palette-preview')
       .evaluateAll((nodes) =>
         nodes.map((node) => {
           const r = node.getBoundingClientRect();
@@ -98,35 +99,31 @@ for (const mode of ['dark', 'light'] as const) {
   });
 }
 
-test('header controls both modes while preview controls only its own mode', async ({ page }) => {
+test('the header switch and the preview switch both change the whole site', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await openSite(page);
   await page.getByRole('button', { name: 'Next color scheme' }).click();
-  for (const appearance of ['light', 'dark']) {
+  for (const appearance of ['light', 'dark'] as const) {
+    const opposite = appearance === 'light' ? 'dark' : 'light';
     await page.getByRole('button', { name: 'Switch to ' + appearance + ' theme' }).click();
-    await expect(page.locator('.palette-modes [data-mode="' + appearance + '"]')).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(page.locator('html')).toHaveAttribute('data-theme', appearance);
     await expect(page.locator('.palette-preview > img').last()).toHaveAttribute(
       'src',
       'palettes/black-' + appearance + '.webp',
     );
-    const opposite = appearance === 'light' ? 'dark' : 'light';
+    // The preview offers only the other appearance, as the header does.
+    await expect(page.locator('.palette-modes [data-mode="' + appearance + '"]')).toBeHidden();
     await page.locator('.palette-modes [data-mode="' + opposite + '"]').click();
-    await expect(page.locator('.palette-modes [data-mode="' + opposite + '"]')).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    await expect(page.locator('html')).toHaveAttribute('data-theme', opposite);
+    await expect(page.locator('.palette-preview > img').last()).toHaveAttribute(
+      'src',
+      'palettes/black-' + opposite + '.webp',
     );
-    await expect(page.locator('html')).toHaveAttribute('data-theme', appearance);
     await expect(
-      page.getByRole('button', { name: 'Switch to ' + opposite + ' theme' }),
+      page.getByRole('button', { name: 'Switch to ' + appearance + ' theme' }),
     ).toBeVisible();
     await page.locator('.palette-modes [data-mode="' + appearance + '"]').click();
-    await expect(page.locator('.palette-modes [data-mode="' + appearance + '"]')).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(page.locator('html')).toHaveAttribute('data-theme', appearance);
   }
   await expect(page.locator('#palette-name')).toHaveText('Onyx');
 });
@@ -222,6 +219,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
       };
       Object.assign(window, { paletteTimings: timings });
     });
+    // The appearance switch changes the whole site at once; only the scheme cross-fades.
     await page.getByRole('button', { name: 'Light', exact: true }).click();
     await expect(page.locator('.palette-modes [data-mode="light"]')).toHaveAttribute(
       'aria-pressed',
@@ -231,43 +229,10 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await expect(page.locator('#palette-name')).toHaveText('Onyx');
     await expect(page.locator('.palette-preview > img')).toHaveCount(1);
     expect(await page.evaluate(() => Reflect.get(window, 'paletteTimings'))).toEqual(
-      reducedMotion === 'reduce' ? [] : [450, 450],
+      reducedMotion === 'reduce' ? [] : [450],
     );
   });
 }
-
-test('header transition waits for the preview and does not start a second fade', async ({
-  page,
-}) => {
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await openSite(page);
-  await expect(page.locator('.palette-preview > img')).toHaveCount(1);
-  await page.route('**/palettes/peach-light.webp', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    await route.fallback();
-  });
-  await page.evaluate(() => {
-    const start = document.startViewTransition.bind(document);
-    document.startViewTransition = (change) =>
-      start(async () => {
-        if (typeof change === 'function') await change();
-        const image = document.querySelector('.palette-preview > img:last-child');
-        Object.assign(window, {
-          previewAtTransition: {
-            src: image?.getAttribute('src'),
-            animations: image?.getAnimations().length,
-          },
-        });
-      });
-  });
-  await page.getByRole('button', { name: 'Switch to light theme' }).click();
-  await expect
-    .poll(() => page.evaluate(() => Reflect.get(window, 'previewAtTransition')))
-    .toEqual({
-      src: 'palettes/peach-light.webp',
-      animations: 0,
-    });
-});
 
 test('homepage sections keep their address and browser history without preloading unused screenshots', async ({
   page,
@@ -279,7 +244,7 @@ test('homepage sections keep their address and browser history without preloadin
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
   await page.addInitScript(() => localStorage.setItem('theme', 'light'));
   await openSite(page);
-  const header = page.locator('.site-header');
+  const header = page.locator('.site-header .jump');
   await header.locator('a[href="#features"]').click();
   await expect(page).toHaveURL('https://preview.test/#features');
   await expect(page.locator('#features')).toBeFocused();
@@ -298,39 +263,67 @@ test('homepage sections keep their address and browser history without preloadin
   expect(images.some((url) => url.endsWith('/ftpeach-light.png'))).toBe(true);
 });
 
-test('the mobile header keeps the guide visible and reduced motion skips scrolling and fades', async ({
+test('the header reaches every page at every width and reduced motion skips scrolling and fades', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openSite(page);
-  for (const width of [320, 359, 390, 479, 480, 599, 600, 768, 860, 979, 980, 1024, 1150, 1151]) {
+  const header = page.locator('.site-header');
+  for (const width of [
+    320, 359, 390, 479, 480, 599, 600, 768, 860, 979, 980, 1024, 1040, 1041, 1150, 1440,
+  ]) {
     await page.setViewportSize({ width, height: 844 });
     await page.evaluate(() => scrollTo(0, 0));
-    const guide = page.locator('.site-header').getByRole('link', { name: 'User guide' });
-    await expect(guide).toBeVisible();
-    await expect(page.locator('.site-header').getByRole('link', { name: 'Compare' })).toBeVisible();
-    const box = (await guide.boundingBox())!;
-    expect(box.y, `guide at ${width}px: ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(width);
-    expect(box.y + box.height).toBeLessThan(150);
+    // Wide screens show the page links in the bar; narrow ones fold them into the menu.
+    const links = width > 1040 ? header.locator('.nav') : header.locator('.menu');
+    if (width <= 1040) await header.getByRole('button', { name: 'Menu' }).click();
+    for (const name of ['User guide', 'Compare']) {
+      const link = links.getByRole('link', { name });
+      await expect(link).toBeVisible();
+      const box = (await link.boundingBox())!;
+      expect(box.x + box.width, `${name} at ${width}px`).toBeLessThanOrEqual(width);
+    }
+    if (width <= 1040) {
+      await page.keyboard.press('Escape');
+      await expect(header.locator('.menu')).toBeHidden();
+    }
+    const bar = await header
+      .locator('.top > .wrap, :scope > .wrap')
+      .first()
+      .evaluate((wrap) =>
+        [...wrap.children]
+          .map((child) => child.getBoundingClientRect())
+          .filter((box) => box.width > 0)
+          .map((box) => ({ left: box.left, right: box.right })),
+      );
+    for (const [index, box] of bar.entries()) {
+      expect(box.left, `header item at ${width}px`).toBeGreaterThanOrEqual(0);
+      expect(box.right, `header item at ${width}px`).toBeLessThanOrEqual(width);
+      for (const other of bar.slice(index + 1))
+        expect(box.right <= other.left || other.right <= box.left).toBe(true);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
     );
   }
   await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
   const scroll = await page.evaluate(() => {
-    (document.querySelector('.site-header a[href="#download"]') as HTMLElement).click();
+    (document.querySelector('.site-header .jump a[href="#download"]') as HTMLElement).click();
     return scrollY;
   });
   expect(scroll).toBeGreaterThan(0);
-  await page.evaluate(() => {
-    document.startViewTransition = () => {
-      throw new Error('Reduced motion started a transition');
-    };
-  });
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.getByRole('button', { name: 'Switch to light theme' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(errors).toEqual([]);
+});
+
+test('after a reload the page stays where it was read', async ({ page }) => {
+  await openSite(page);
+  await page.evaluate(() => scrollTo({ top: 2400, behavior: 'instant' }));
+  await page.reload();
+  expect(await page.evaluate(() => Math.round(scrollY))).toBe(2400);
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => Math.round(scrollY))).toBe(2400);
 });

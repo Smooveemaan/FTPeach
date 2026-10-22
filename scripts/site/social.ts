@@ -2,7 +2,7 @@
 // Draws the link previews: assets/images/og.jpg (1200x630), which the website
 // names as its Open Graph image, and github-social.jpg (1280x640), uploaded by
 // hand in the repository's Settings > Social preview. Both use the website's own
-// fonts and dark colours, using the site's shared stylesheet.
+// fonts and dark colours, using the site's shared stylesheet, and the app's own screenshot.
 // `npm run site:social` redraws them after the headline, fonts or icon change.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -20,36 +20,31 @@ const icon = (await readFile(path.join(root, 'src-tauri/icons/128x128@2x.png')))
 const grain =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
 
-// The page's dark theme: --paper, --card, --line, --ink, --muted, --peach and --peach-ink.
+const shot = (await readFile(path.join(root, 'assets/images/ftpeach-dark.png'))).toString('base64');
+
+// The home page's dark theme and first screen: the headline at the left, the app running off the right edge.
 const page = `<!doctype html><html><head><meta charset="utf-8"><style>
 ${fonts}
 * { margin: 0; box-sizing: border-box; }
 html, body { width: 100%; height: 100%; }
 body {
-  background: #131211; color: #f2f0ed; font-family: 'Figtree', sans-serif;
-  display: grid; place-content: center; justify-items: center; gap: 30px; text-align: center;
+  background: #12100e; color: #f2f0ed; font-family: 'Albert Sans', sans-serif;
   position: relative; overflow: hidden; -webkit-font-smoothing: antialiased;
-}
-body::before {
-  content: ''; position: absolute; inset: 0; z-index: -1;
-  background: radial-gradient(46% 62% at 50% 38%, color-mix(in oklab, #f0915f 18%, transparent), transparent 74%);
 }
 body::after {
   content: ''; position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: screen;
   background-image: url("${grain}");
 }
-.brand { display: flex; align-items: center; gap: 18px; font: 600 50px/1 'Fraunces', serif; letter-spacing: -0.02em; }
-.brand img { width: 76px; height: 76px; }
-h1 { font: 600 82px/1 'Fraunces', serif; letter-spacing: -0.035em; max-width: 15ch; }
-h1 em { color: #f6a77d; font-weight: 500; }
-ul { display: flex; gap: 12px; padding: 0; list-style: none; margin-top: 6px; }
-li { padding: 7px 16px; border-radius: 11px; border: 1.5px solid #33312e; background: #1c1b19; font: 500 22px/1.4 'IBM Plex Mono', monospace; }
-p { font-size: 24px; color: #aba6a0; margin-top: -8px; }
+.brand { position: absolute; top: 56px; left: 64px; display: flex; align-items: center; gap: 14px; font: 650 34px/1 'Albert Sans', sans-serif; letter-spacing: -0.01em; }
+.brand img { width: 52px; height: 52px; }
+h1 { position: absolute; left: 64px; top: 170px; width: 7.4em; font: 650 68px/0.98 'Albert Sans', sans-serif; letter-spacing: -0.05em; }
+p { position: absolute; left: 64px; bottom: 60px; font-size: 26px; line-height: 1.4; color: #aba6a0; }
+.app { position: absolute; left: 600px; top: 96px; width: 900px; }
 </style></head><body>
 <div class="brand"><img src="data:image/png;base64,${icon}" alt="">FTPeach</div>
-<h1>Drag files to your server <em>and back.</em></h1>
-<ul><li>FTP</li><li>FTPS</li><li>SFTP</li><li>WebDAV</li></ul>
-<p>Free and open source · Windows 10 and 11</p>
+<h1>Drag files to your server and back.</h1>
+<p>Free FTP, FTPS, SFTP and WebDAV<br>client for Windows</p>
+<img class="app" src="data:image/png;base64,${shot}" alt="">
 </body></html>`;
 
 const browser = await chromium.launch();

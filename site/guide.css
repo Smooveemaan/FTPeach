@@ -1,61 +1,640 @@
-.guide-layout { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 64px; padding-block: 56px 96px; }
-.guide-sidebar { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; max-height: calc(100dvh - var(--header-h) - 48px); overflow-y: auto; scrollbar-gutter: stable; }
-.guide-chapters summary, .guide-toc summary { padding: 10px 12px; font-weight: 600; cursor: pointer; border-radius: 8px; }
-.guide-chapters summary:hover, .guide-toc summary:hover { background: var(--soft); }
-.guide-chapters nav { padding-top: 8px; }
-.guide-sidebar a { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; }
-.guide-sidebar a[aria-current='page'] { background: var(--peach-wash); color: var(--peach-ink); font-weight: 600; }
-.guide-content { min-width: 0; overflow-wrap: anywhere; }
-.comparison { max-width: 1000px; padding-block: 56px 96px; }
-.comparison article > p, .comparison article > ul { max-width: 760px; }
-.comparison .comparison-meta, .comparison .comparison-sources { font-size: 15px; color: var(--muted); }
-.comparison-table { overflow-x: auto; margin-bottom: 24px; }
-.comparison-table table { display: table; min-width: 760px; width: 100%; margin-bottom: 0; }
-.comparison-table th, .comparison-table td { width: 25%; }
-.comparison-table caption { text-align: left; padding-bottom: 12px; font-weight: 600; }
-.guide-content article { font-size: 18px; line-height: 1.75; }
-.guide-content h1 { font: 500 clamp(36px, 5vw, 56px)/1.12 var(--font-display); letter-spacing: -.025em; margin-bottom: 32px; }
-.guide-content h2 { font: 500 30px/1.25 var(--font-display); margin: 48px 0 20px; }
-.guide-content h3 { font-size: 22px; margin: 32px 0 16px; }
-.guide-content p { margin-bottom: 20px; }
-.guide-content article ul, .guide-content article ol { padding-left: 24px; margin-bottom: 24px; }
-.guide-content article ul { list-style: disc; }
-.guide-content article ol { list-style: decimal; }
-.guide-content article li { margin-block: 8px; }
-.guide-content code { font: .85em var(--font-mono); background: var(--soft); border-radius: 4px; padding: 2px 5px; }
-.guide-content pre { overflow: auto; padding: 20px; background: var(--soft); border-radius: 12px; }
-.guide-content pre code { padding: 0; }
-.guide-content table { display: block; overflow-x: auto; overflow-wrap: normal; border-collapse: collapse; margin-bottom: 24px; }
-.guide-content th, .guide-content td { padding: 10px 16px; border: 1px solid var(--line); text-align: left; }
-.guide-content th { background: var(--soft); font-weight: 600; }
-.guide-content td { vertical-align: top; }
-.guide-content blockquote { margin: 24px 0; padding-left: 20px; border-left: 3px solid var(--peach); color: var(--muted); }
-.guide-callout { margin: 24px 0; }
-.guide-callout > :last-child { margin-bottom: 0; }
-.guide-content img { max-width: 100%; max-height: 480px; width: auto; height: auto; }
-.guide-content img, .guide-image-viewer img { border: 1px solid var(--line); border-radius: 10px; }
-.guide-content p:has(> a > img) { margin: 24px 0 8px; }
-.guide-content p:has(> a > img) + p { font-size: 15px; line-height: 1.6; color: var(--muted); }
-.guide-content a:has(> img) { cursor: zoom-in; }
-.guide-image-open { overflow: hidden; }
-.guide-image-viewer { margin: auto; padding: 56px 16px 16px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); border: 1px solid var(--line); border-radius: 16px; background: var(--paper); color: var(--ink); }
-.guide-image-viewer::backdrop { background: rgb(0 0 0 / .8); }
-.guide-image-viewer .icon-btn { position: absolute; top: 8px; right: 8px; font-size: 28px; }
-.guide-image-stage { overflow: auto; max-width: calc(100vw - 66px); max-height: calc(100dvh - 140px); }
-.guide-image-hint { display: none; }
-.guide-image-viewer img { display: block; max-width: calc(100vw - 66px); max-height: calc(100dvh - 140px); height: auto; object-fit: contain; }
-@media (max-width: 600px) {
-  .guide-image-viewer img { max-width: none; max-height: none; }
-  .guide-image-hint { display: block; margin-top: 8px; font-size: 13px; color: var(--muted); }
+/* The user guide: chapters at the left, one comfortable column of reading at the right. */
+.guide-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 720px);
+  gap: clamp(40px, 6vw, 96px);
+  padding-block: clamp(40px, 7vh, 72px) var(--section);
 }
-.guide-toc { border: 1px solid var(--line); border-radius: 10px; margin-block: 24px 32px; font-size: 16px; line-height: 1.5; }
-.guide-toc nav { padding: 0 16px 12px; }
-.guide-content .guide-toc ul { padding-left: 20px; margin: 0; }
-.guide-content .guide-toc li { margin: 0; padding-block: 4px; }
-.guide-toc a { text-underline-offset: 3px; }
-.guide-source { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 48px; font-size: 15px; color: var(--muted); }
+
+/* Chapters: a quiet list; the page being read is lit in peach. */
+.guide-sidebar {
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+  align-self: start;
+  max-height: calc(100dvh - var(--header-h) - 48px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.guide-chapters summary,
+.guide-toc summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.guide-chapters summary::-webkit-details-marker,
+.guide-toc summary::-webkit-details-marker {
+  display: none;
+}
+/* A small chevron that turns as the list opens. */
+.guide-chapters summary::after,
+.guide-toc summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.guide-chapters[open] summary::after,
+.guide-toc[open] summary::after {
+  rotate: 225deg;
+  translate: 0 2px;
+}
+.guide-chapters summary {
+  padding: 0 12px 12px;
+}
+.guide-sidebar ul {
+  display: grid;
+  gap: 2px;
+}
+.guide-sidebar a {
+  display: block;
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+  transition: color 0.15s, background-color 0.15s;
+}
+.guide-sidebar a:hover {
+  color: var(--ink);
+  background: var(--soft);
+}
+.guide-sidebar a[aria-current='page'] {
+  background: var(--peach-wash);
+  color: var(--peach-ink);
+  font-weight: 600;
+}
+
+/* Reading: full ink, a measured line, room between thoughts. */
+.guide-content {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.guide-content article {
+  font-size: 17px;
+  line-height: 1.7;
+}
+.guide-content h1 {
+  margin: 0 0 20px;
+  font: 650 clamp(36px, 4.6vw, 56px) / 1.04 var(--font-display);
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+/* The opening paragraph says what the page is for, one size up. */
+.guide-content h1 + p {
+  font-size: 20px;
+  line-height: 1.55;
+  margin-bottom: 28px;
+}
+.guide-content h2 {
+  margin: 64px 0 16px;
+  font: 650 clamp(24px, 2.6vw, 30px) / 1.2 var(--font-display);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.guide-content h3 {
+  margin: 36px 0 10px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.guide-content p {
+  margin: 0 0 18px;
+  text-wrap: pretty;
+}
+.guide-content strong {
+  font-weight: 650;
+}
+.guide-content article a,
+.guide-source a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  transition: text-decoration-color 0.15s;
+}
+.guide-content article a:hover,
+.guide-source a:hover {
+  text-decoration-color: currentColor;
+}
+.guide-content [id] {
+  scroll-margin-top: calc(var(--header-h) + 20px);
+}
+
+/* Lists: steps keep their numbers, the rest a small dot; markers stay quiet. */
+.guide-content article ul,
+.guide-content article ol {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding-left: 22px;
+}
+.guide-content article ul {
+  list-style: disc;
+}
+.guide-content article ol {
+  list-style: decimal;
+}
+.guide-content article li::marker {
+  color: var(--muted);
+}
+.guide-content article ol > li::marker {
+  font-weight: 650;
+}
+.guide-content article li > p {
+  margin-bottom: 8px;
+}
+
+/* On this page: a soft field under the opening, two columns where there is room. */
+.guide-toc {
+  margin: 8px 0 8px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: var(--raise);
+}
+.guide-toc nav {
+  padding-top: 12px;
+}
+.guide-content .guide-toc ul {
+  display: block;
+  columns: 2;
+  column-gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-content .guide-toc li {
+  break-inside: avoid;
+  padding: 4px 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.guide-content .guide-toc a {
+  text-decoration: none;
+  color: var(--ink);
+}
+.guide-content .guide-toc a:hover {
+  color: var(--peach-ink);
+}
+
+/* Tables: a soft card with hairline rows, a quiet header and the first column as the row's name. */
+.guide-content table {
+  display: block;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  margin: 8px 0 26px;
+  padding: 4px 22px;
+  border-collapse: collapse;
+  border-radius: 16px;
+  background: var(--raise);
+  font-size: 15.5px;
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+.guide-content th,
+.guide-content td {
+  padding: 13px 24px 13px 0;
+  border-bottom: 1px solid var(--edge);
+  text-align: left;
+  vertical-align: top;
+}
+.guide-content th:last-child,
+.guide-content td:last-child {
+  padding-right: 0;
+}
+.guide-content tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.guide-content thead th {
+  padding-top: 16px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.guide-content tbody td:first-child,
+.guide-content tbody th {
+  font-weight: 600;
+  min-width: 9em;
+}
+
+/* Notes and warnings: a field of their own with a small label. */
+.guide-callout {
+  margin: 8px 0 26px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: var(--raise);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.guide-callout::before {
+  content: attr(aria-label);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.guide-warning {
+  background: light-dark(#fbeadf, #2b201b);
+}
+.guide-warning::before {
+  color: var(--peach-ink);
+}
+.guide-callout > :last-child {
+  margin-bottom: 0;
+}
+.guide-content blockquote {
+  margin: 8px 0 26px;
+  padding: 2px 0 2px 20px;
+  border-left: 2px solid var(--peach);
+  color: var(--muted);
+}
+
+/* Code and keys. */
+.guide-content code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--soft);
+  font: 0.86em var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.guide-content pre {
+  overflow: auto;
+  margin: 8px 0 26px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: var(--raise);
+}
+.guide-content pre code {
+  padding: 0;
+  background: none;
+}
+
+/* Screenshots: framed lightly, a muted caption under them; a click enlarges. */
+.guide-content img {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  width: auto;
+  height: auto;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+.guide-content p:has(> a > img) {
+  margin: 28px 0 10px;
+}
+.guide-content p:has(> a > img) + p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.guide-content a:has(> img) {
+  cursor: zoom-in;
+}
+.guide-image-open {
+  overflow: hidden;
+}
+.guide-image-viewer {
+  margin: auto;
+  padding: 56px 16px 16px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.guide-image-viewer::backdrop {
+  background: rgb(0 0 0 / 0.8);
+}
+.guide-image-viewer .icon-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 28px;
+  cursor: pointer;
+}
+.guide-image-stage {
+  overflow: auto;
+  max-width: calc(100vw - 66px);
+  max-height: calc(100dvh - 140px);
+}
+.guide-image-hint {
+  display: none;
+}
+.guide-image-viewer img {
+  display: block;
+  max-width: calc(100vw - 66px);
+  max-height: calc(100dvh - 140px);
+  height: auto;
+  object-fit: contain;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+
+/* The page's end: where to read it on GitHub. */
+.guide-source {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--edge);
+  font-size: 14px;
+  color: var(--muted);
+}
+
 @media (max-width: 900px) {
-  .guide-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 20px; }
-  .guide-sidebar { position: static; max-height: none; overflow: visible; border: 1px solid var(--line); border-radius: 10px; }
-  .guide-sidebar nav { padding: 4px 8px 8px; }
+  .guide-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 24px;
+  }
+  .guide-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 16px 10px;
+    border-radius: 16px;
+    background: var(--raise);
+  }
+  .guide-chapters summary {
+    padding: 0 12px;
+  }
+  .guide-chapters[open] summary {
+    padding-bottom: 12px;
+  }
+  .guide-content .guide-toc ul {
+    columns: 1;
+  }
+}
+@media (max-width: 600px) {
+  .guide-content article {
+    font-size: 16.5px;
+  }
+  .guide-content h1 + p {
+    font-size: 18px;
+  }
+  .guide-content table {
+    padding: 2px 16px;
+    font-size: 15px;
+  }
+  .guide-content tbody td:first-child,
+  .guide-content tbody th {
+    min-width: 7.5em;
+  }
+  .guide-image-viewer img {
+    max-width: none;
+    max-height: none;
+  }
+  .guide-image-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+}
+
+/* Compare */
+/* One page, read top to bottom: the answer first, then the table, then what moving takes. */
+.compare {
+  padding-bottom: var(--section);
+}
+.compare h2 {
+  margin: 0 0 24px;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.compare a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--edge);
+}
+.compare a:hover {
+  text-decoration-color: currentColor;
+}
+.compare-head {
+  padding: clamp(48px, 9vh, 96px) 0 clamp(40px, 6vh, 64px);
+}
+.compare-head h1 {
+  max-width: 14ch;
+  font-size: clamp(40px, 6vw, 84px);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.compare-lead {
+  max-width: 36em;
+  margin-top: 28px;
+  font-size: 20px;
+  line-height: 1.45;
+}
+.compare-meta,
+.compare-note {
+  max-width: 48em;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+/* The answer: when to try FTPeach, when to stay. Two fields side by side, the first in peach. */
+.compare-fit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 24px);
+}
+.fit {
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: 18px;
+  background: var(--raise);
+}
+.fit-yes {
+  background: var(--peach-wash);
+}
+.fit h3 {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+.fit ul {
+  display: grid;
+  gap: 14px;
+}
+.fit li {
+  position: relative;
+  padding-left: 22px;
+  line-height: 1.5;
+}
+.fit li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.fit-yes li::before {
+  background: var(--peach);
+}
+.compare-table-section,
+.compare-move,
+.compare-sources {
+  padding-top: var(--section);
+}
+.compare-note {
+  margin: -8px 0 24px;
+}
+/* The table: plain rows, FTPeach's column on a faint wash; on a phone each row becomes a small card. */
+.comparison-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 20px 16px 0;
+  border-bottom: 1px solid var(--edge);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.45;
+}
+.comparison-table thead th {
+  padding-top: 0;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.comparison-table thead th:nth-child(2) {
+  color: var(--ink);
+}
+.comparison-table tbody th {
+  width: 22%;
+  font-weight: 650;
+}
+.comparison-table td {
+  width: 26%;
+}
+.comparison-table td:nth-child(2) {
+  color: var(--ink);
+}
+.comparison-table td:nth-child(n + 3) {
+  color: var(--muted);
+}
+.compare-move ul {
+  display: grid;
+  gap: 18px;
+  max-width: 44em;
+}
+.compare-move li {
+  line-height: 1.55;
+}
+.compare-move p,
+.compare-sources p {
+  max-width: 44em;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+.compare-sources h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.compare-sources h2 + p {
+  margin-top: 0;
+}
+.compare-sources p + h2 {
+  margin-top: 40px;
+}
+.compare-sources p {
+  color: var(--muted);
+}
+.compare-sources details {
+  margin-top: 24px;
+  max-width: 44em;
+  font-size: 14px;
+  color: var(--muted);
+}
+.compare-sources summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink);
+}
+.compare-sources details ul {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .compare-fit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .comparison-table thead {
+    display: none;
+  }
+  .comparison-table table,
+  .comparison-table tbody,
+  .comparison-table tr,
+  .comparison-table th,
+  .comparison-table td {
+    display: block;
+    width: auto;
+  }
+  .comparison-table tr {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--edge);
+  }
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0;
+    border: 0;
+  }
+  .comparison-table tbody th {
+    width: auto;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  .comparison-table td {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .comparison-table td::before {
+    content: attr(data-label);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+}
+/* The chevron turns only when the reader opens or closes a list, not when the page opens it on load. */
+.settled .guide-chapters summary::after,
+.settled .guide-toc summary::after {
+  transition: rotate 0.2s;
+}
+
+.compare .act a {
+  text-decoration: none;
+}
+.compare-move .act {
+  margin-top: 28px;
 }

@@ -40,28 +40,15 @@ The website tests serve their own files and do not build the application's visua
 harness. Pages always checks out `master`, including on a release event, so
 publishing an older app tag does not replace the website with an older design.
 
-The public guide describes the released application. `site/guide-review.json`
-records the reviewed release and a SHA-256 of every guide text and illustration.
+The public guide describes how to use FTPeach, not one particular version. Do not
+document features that are not in a released version yet; keep their
+instructions in the relevant development document until release. Small visual
+differences from the released app, such as a restyled button in a screenshot,
+are fine.
 Published source links and supporting technical documents point to the build's
 Git commit; the changelog and security policy intentionally point to `master`.
-Local previews with uncommitted edits still link to `HEAD`; commit the reviewed
-changes and rebuild before checking their source links.
-`site:build` refuses to publish if that release differs from the latest download,
-or if those sources changed. Editing text between app releases is allowed, but
-requires a fresh review against the same release. Do not document unreleased
-behavior as available in the public guide; keep its instructions in the relevant
-development document until release, and link that draft from the change.
-
-Before updating the review record, compare the affected instructions with the
-released code and their tests or recorded manual checks. Review screenshots too.
-Then obtain the source hash with
-`node --experimental-strip-types scripts/site/guide-review.ts` and update the
-record in the same commit. A hash proves which files were reviewed, not that their
-claims are true. Never refresh it automatically just to make publication pass.
-An unreviewed guide blocks the site deployment and leaves the previous site up;
-finish that review or keep future instructions outside `docs/guide/` to publish
-unrelated site changes. After an app release, review behavior changes and update
-the record before publishing the refreshed site and download links.
+Local previews with uncommitted edits still link to `HEAD`; commit the changes
+and rebuild before checking their source links.
 
 The comparison article lives separately in `site/compare.html`.
 When a feature changes, review the article's FTPeach claims too. For competitor

@@ -17,20 +17,26 @@ test('Compare stays readable, navigable and themed without a screenshot viewer',
   await expect(page.locator('h1')).toHaveText('FTPeach vs FileZilla vs WinSCP');
   for (const width of [320, 390, 768, 1000, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(page.locator('.site-header a[aria-current="page"]')).toBeVisible();
+    await expect(
+      page.locator(
+        width > 1040 ? '.site-header .nav a[aria-current="page"]' : '.site-header .burger',
+      ),
+    ).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
     );
     const table = page.getByRole('region', { name: 'Client capability comparison' });
-    if (width < 768)
-      expect(await table.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    // Every client's answer is readable without scrolling sideways; on a phone each row is a card.
+    expect(await table.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    for (const client of ['FTPeach', 'FileZilla Client', 'WinSCP'])
+      await expect(table.locator(`td[data-label="${client}"]`).first()).toBeVisible();
   }
   await page.getByRole('button', { name: 'Switch to light theme' }).click();
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 247, 245)');
-  await page.locator('.site-header a[href="guide/index.html"]').click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(245, 242, 238)');
+  await page.locator('.site-header .nav a[href="guide/index.html"]').click();
   await expect(page.locator('h1')).toBeVisible();
-  await page.locator('.site-header a[href="../compare.html"]').click();
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 247, 245)');
+  await page.locator('.site-header .nav a[href="../compare.html"]').click();
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(245, 242, 238)');
   expect(errors).toEqual([]);
 });
 
@@ -92,11 +98,11 @@ for (const colorScheme of ['light', 'dark'] as const) {
           ).toHaveAttribute('href', `${entry.slug}.html`);
           await expect(page.locator('body')).toHaveCSS(
             'background-color',
-            colorScheme === 'dark' ? 'rgb(19, 18, 17)' : 'rgb(248, 247, 245)',
+            colorScheme === 'dark' ? 'rgb(18, 16, 14)' : 'rgb(245, 242, 238)',
           );
           const layout = await page.evaluate(() => ({
             width: document.documentElement.scrollWidth,
-            fonts: document.fonts.check('18px Figtree') && document.fonts.check('36px Fraunces'),
+            fonts: document.fonts.check('18px "Albert Sans"'),
             boxes: [
               ...document.querySelectorAll('.site-header a, .guide-sidebar, .guide-content'),
             ].map((node) => {
@@ -155,7 +161,7 @@ test('mobile readers reach the introduction before expanding navigation', async 
   }
 });
 
-test('chapters can be opened without JavaScript and scrolled in a short desktop window', async ({
+test('chapters are open without JavaScript and scroll in a short desktop window', async ({
   browser,
 }) => {
   const context = await browser.newContext({
@@ -166,7 +172,8 @@ test('chapters can be opened without JavaScript and scrolled in a short desktop 
   try {
     await serveGuide(page);
     await page.goto('https://guide.test/guide/sftp.html');
-    await page.getByText('Guide chapters', { exact: true }).click();
+    // The lists arrive open, so nothing needs a script to be read.
+    await expect(page.locator('.guide-chapters')).toHaveAttribute('open');
     await page.evaluate(() => scrollTo(0, 1000));
     const sidebar = page.locator('.guide-sidebar');
     const box = (await sidebar.boundingBox())!;
@@ -184,10 +191,19 @@ test('the shared header keeps its actions reachable on narrow screens', async ({
   for (const width of [320, 375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     const header = page.locator('.site-header');
-    await expect(header.getByRole('link', { name: 'Support FTPeach on Ko-fi' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Donate' })).toBeVisible();
     await expect(header.getByRole('button', { name: 'Switch to light theme' })).toBeVisible();
-    await expect(header.getByRole('link', { name: 'Download' })).toBeVisible();
-    await expect(header.getByRole('link', { name: 'Compare' })).toBeVisible();
+    if (width > 1040)
+      await expect(header.locator('.nav').getByRole('link', { name: 'Compare' })).toBeVisible();
+    else {
+      // Narrow screens fold the page links into the menu.
+      await header.getByRole('button', { name: 'Menu' }).click();
+      const menu = header.locator('.menu');
+      for (const name of ['Home', 'Download', 'User guide', 'Compare'])
+        await expect(menu.getByRole('link', { name })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(menu).toBeHidden();
+    }
     const boxes = await header.locator('.wrap > *').evaluateAll((elements) =>
       elements
         .map((element) => element.getBoundingClientRect())

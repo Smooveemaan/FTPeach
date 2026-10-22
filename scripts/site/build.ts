@@ -7,7 +7,6 @@
 import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { buildGuide } from './guide.ts';
-import { verifyGuideReview } from './guide-review.ts';
 
 const palettes: Array<{ id: string; name: string; color: string }> = JSON.parse(
   await readFile(new URL('../../assets/images/palettes/index.json', import.meta.url), 'utf8'),
@@ -93,10 +92,11 @@ async function main() {
     github<{ stargazers_count: number }>(''),
   ]);
   const stats = { stars: repo.stargazers_count, downloads: countDownloads(releases) };
-  await verifyGuideReview(root, release.tag_name);
   await rm(out, { recursive: true, force: true });
   await mkdir(out);
   await writeFile(path.join(out, 'index.html'), fillPage(html, release, stats));
+  const compare = await readFile(path.join(root, 'site/compare.html'), 'utf8');
+  await writeFile(path.join(out, 'compare.html'), fillPage(compare, release, stats));
   await buildGuide(root, out);
   for (const image of [
     'ftpeach-dark.png',
@@ -116,7 +116,6 @@ async function main() {
   });
   await cp(path.join(root, 'site/fonts'), path.join(out, 'fonts'), { recursive: true });
   for (const file of [
-    'compare.html',
     'robots.txt',
     'palettes.js',
     'styles.css',

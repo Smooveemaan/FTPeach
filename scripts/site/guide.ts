@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -75,6 +76,13 @@ export const GUIDE_PAGES = [
   },
 ];
 
+/** A PNG's pixel size, from its header. */
+function pngSize(file: URL): { width: number; height: number } {
+  const header = readFileSync(file).subarray(0, 24);
+  if (header.toString('latin1', 12, 16) !== 'IHDR') throw new Error(`Not a PNG: ${file.pathname}`);
+  return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -125,6 +133,13 @@ export function renderGuide(markdown: string, slug: string, revision = 'master')
         : url.href;
     },
     renderer: {
+      // The screenshot's own size, so its space is kept while it loads and the text below never jumps.
+      image({ href, text, title }) {
+        const size = /^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(href)
+          ? pngSize(new URL(`../../site/${href.slice(3)}`, import.meta.url))
+          : undefined;
+        return `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}"${size ? ` width="${size.width}" height="${size.height}"` : ''}${title ? ` title="${escapeHtml(title)}"` : ''}>`;
+      },
       blockquote({ tokens }) {
         const body = this.parser.parse(tokens);
         const alert = /^<p>\[!(NOTE|WARNING)\](?:\n|<\/p>\n)/.exec(body);
@@ -161,7 +176,6 @@ export async function buildGuide(root: string, out: string): Promise<void> {
     encoding: 'utf8',
   }).trim();
   const template = await readFile(path.join(root, 'site/guide.html'), 'utf8');
-  const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
   const pages = [];
   for (const page of GUIDE_PAGES) {
     const markdown = await readFile(path.join(root, `docs/guide/${page.slug}.md`), 'utf8');
@@ -181,7 +195,8 @@ export async function buildGuide(root: string, out: string): Promise<void> {
       .join('\n');
     const toc =
       page.toc && page.slug !== 'index'
-        ? `<details class="guide-toc"><summary>On this page</summary><nav aria-label="On this page"><ul>${page.toc}</ul></nav></details>`
+        ? // Open from the first paint on wide screens; the script after it closes it on narrow ones before it shows.
+          `<details class="guide-toc" open><summary>On this page</summary><nav aria-label="On this page"><ul>${page.toc}</ul></nav></details><script>matchMedia('(min-width: 901px)').matches || (document.currentScript.previousElementSibling.open = false);</script>`
         : '';
     const values: Record<string, string> = {
       TITLE: escapeHtml(page.title),
@@ -190,7 +205,6 @@ export async function buildGuide(root: string, out: string): Promise<void> {
       CONTENT: page.content.replace('<h2', () => `${toc}<h2`),
       NAVIGATION: navigation,
       SOURCE: `${repositoryBase}${revision}/docs/guide/${page.slug}.md`,
-      RELEASE: escapeHtml(review.release),
     };
     const html = template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {
       if (!(key in values)) throw new Error(`Unknown guide placeholder: ${key}`);

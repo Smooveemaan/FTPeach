@@ -6,11 +6,10 @@ const options = JSON.parse(gallery.querySelector('#palette-data').textContent);
 const modes = [...gallery.querySelectorAll('[data-mode]')];
 const systemTheme = matchMedia('(prefers-color-scheme: dark)');
 let palette = 'peach';
-let mode;
 let revision = 0;
 let visible = false;
 const currentMode = () =>
-  mode ?? document.documentElement.dataset.theme ?? (systemTheme.matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme ?? (systemTheme.matches ? 'dark' : 'light');
 
 async function showPalette(animate = true) {
   if (!visible) return;
@@ -41,11 +40,6 @@ async function showPalette(animate = true) {
       .finished.catch(() => {});
   previous.remove();
 }
-for (const button of modes)
-  button.addEventListener('click', () => {
-    mode = button.dataset.mode;
-    showPalette();
-  });
 for (const button of gallery.querySelectorAll('[data-palette-step]')) {
   button.hidden = false;
   button.addEventListener('click', () => {
@@ -57,14 +51,14 @@ for (const button of gallery.querySelectorAll('[data-palette-step]')) {
 }
 systemTheme.addEventListener('change', showPalette);
 async function syncPaletteTheme() {
-  mode = undefined;
   await showPalette(false);
 }
 const observer = new IntersectionObserver(
   (entries) => {
     if (!entries.some((entry) => entry.isIntersecting)) return;
     visible = true;
-    showPalette();
+    // The first picture appears as it is; only a change of scheme cross-fades.
+    showPalette(false);
     observer.disconnect();
   },
   { rootMargin: '200px' },

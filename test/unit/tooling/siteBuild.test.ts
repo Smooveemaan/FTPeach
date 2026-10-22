@@ -68,7 +68,7 @@ test('a release with a portable copy offers both downloads', () => {
   const page = fillPage(html, release, stats);
   assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
   assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-portable\.zip"/);
-  assert.match(page, /v1\.2\.3(?:<\/span>)? · Windows/);
+  assert.match(page, /Version 1\.2\.3 for Windows/);
   assert.doesNotMatch(page, /Coming in the next release/);
   assert.match(page, /"downloadUrl": "[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
 });
@@ -126,10 +126,10 @@ test('the download count appears only once it is large enough', () => {
     assets: [download('FTPeach_1.2.3_x64-setup.exe')],
   };
   const few = fillPage(html, release, { stars: 10, downloads: DOWNLOADS_SHOWN_FROM - 1 });
-  assert.doesNotMatch(few, /downloads ·/);
-  assert.match(few, /64-bit ·\n/);
+  assert.doesNotMatch(few, /Downloaded/);
+  assert.match(few, /64-bit\. <a /);
   const many = fillPage(html, release, { stars: 10, downloads: 12_345 });
-  assert.match(many, /64-bit · 12\.3K downloads ·\n/);
+  assert.match(many, /64-bit\. Downloaded 12\.3K times\. <a /);
 });
 
 test('downloads count installers and portable copies, not updater checks', () => {

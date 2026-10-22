@@ -125,7 +125,6 @@ test('every built guide page has metadata, working navigation and matching sitem
       cwd: root,
       encoding: 'utf8',
     }).trim();
-    const review = JSON.parse(await readFile(path.join(root, 'site/guide-review.json'), 'utf8'));
     const home = new JSDOM(await readFile(path.join(root, 'site/index.html'), 'utf8')).window
       .document;
     const headerLinks = (document: Document) =>
@@ -133,19 +132,21 @@ test('every built guide page has metadata, working navigation and matching sitem
         label: link.textContent?.trim(),
         href: link.getAttribute('href'),
       }));
-    const expectedHeader = headerLinks(home)
-      .filter(({ href }) => !['#how', '#features', '#protocols'].includes(href ?? ''))
-      .map(({ label, href }) => ({
-        label: label === 'User guide' ? 'Home' : label,
-        href:
-          href === 'guide/index.html' || href === '#top'
-            ? '../index.html'
-            : href?.startsWith('#')
-              ? `../index.html${href}`
-              : href === 'compare.html'
-                ? '../compare.html'
-                : href,
-      }));
+    // The guide has the home page's page links, not its section links, and a menu for narrow screens.
+    assert.deepEqual(
+      [...home.querySelectorAll('.site-header .nav a')].map((link) => link.getAttribute('href')),
+      ['guide/index.html', 'compare.html'],
+    );
+    const expectedHeader = [
+      { label: 'FTPeach', href: '../index.html' },
+      { label: 'User guide', href: '../guide/index.html' },
+      { label: 'Compare', href: '../compare.html' },
+      { label: 'Donate', href: '../index.html#support' },
+      { label: 'Home', href: '../index.html' },
+      { label: 'Download', href: '../index.html#download' },
+      { label: 'User guide', href: '../guide/index.html' },
+      { label: 'Compare', href: '../compare.html' },
+    ];
     const sitemap = new JSDOM(await readFile(path.join(out, 'sitemap.xml'), 'utf8'), {
       contentType: 'text/xml',
     }).window.document;
@@ -171,11 +172,8 @@ test('every built guide page has metadata, working navigation and matching sitem
         document.querySelector('.guide-source a')?.getAttribute('href'),
         `https://github.com/Smooveemaan/ftpeach/blob/${revision}/docs/guide/${page.slug}.md`,
       );
-      assert.ok(
-        document
-          .querySelector('.guide-source')
-          ?.textContent?.includes(`For FTPeach ${review.release}`),
-      );
+      // No release number on the page: it would only fall out of date.
+      assert.doesNotMatch(document.querySelector('.guide-source')?.textContent ?? '', /\d+\.\d+/);
       const article = document.querySelector('article')!;
       const intro = article.querySelector('p')!;
       const toc = article.querySelector('.guide-toc');
@@ -189,7 +187,7 @@ test('every built guide page has metadata, working navigation and matching sitem
         'Overview',
       );
       assert.equal(
-        document.querySelector('a[aria-current="page"]')?.getAttribute('href'),
+        document.querySelector('.guide-sidebar a[aria-current="page"]')?.getAttribute('href'),
         `${page.slug}.html`,
       );
       assert.equal(

@@ -18,7 +18,33 @@ guideToggle.addEventListener('click', () => {
 });
 guideSystemDark.addEventListener('change', syncGuideTheme);
 syncGuideTheme();
-guideToggle.hidden = false;
+
+// The menu on narrow screens: a link, Esc, a tap outside or a wider window closes it.
+const guideHeader = document.querySelector('.site-header');
+const guideBurger = guideHeader.querySelector('.burger');
+const guideMenu = document.getElementById('menu');
+const showGuideMenu = (on) => {
+  guideBurger.setAttribute('aria-expanded', String(on));
+  guideMenu.hidden = !on;
+};
+guideBurger.hidden = false;
+guideBurger.addEventListener('click', () => showGuideMenu(guideMenu.hidden));
+guideMenu.addEventListener('click', (event) => event.target.closest('a') && showGuideMenu(false));
+addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape' || guideMenu.hidden) return;
+  showGuideMenu(false);
+  guideBurger.focus();
+});
+document.addEventListener('click', (event) => {
+  if (!guideMenu.hidden && !guideHeader.contains(event.target)) showGuideMenu(false);
+});
+matchMedia('(min-width: 1041px)').addEventListener('change', (event) => {
+  if (event.matches) showGuideMenu(false);
+});
+// The header's edge shows once the page moves under it.
+const markGuideHeader = () => guideHeader.classList.toggle('stuck', scrollY > 0);
+addEventListener('scroll', markGuideHeader, { passive: true });
+markGuideHeader();
 
 const guideWideScreen = matchMedia('(min-width: 901px)');
 function syncGuideNavigation() {
@@ -27,6 +53,7 @@ function syncGuideNavigation() {
 }
 guideWideScreen.addEventListener('change', syncGuideNavigation);
 syncGuideNavigation();
+requestAnimationFrame(() => requestAnimationFrame(() => guideRoot.classList.add('settled')));
 
 const imageViewer = document.querySelector('.guide-image-viewer');
 if (imageViewer) {
@@ -56,3 +83,20 @@ if (imageViewer) {
     imageOpener?.focus({ preventScroll: true });
   });
 }
+
+// After a reload, back to the same place exactly, once the chapters and contents are folded or open.
+// Text set in a font that arrives later can reflow above; then the place is set again, unless the
+// reader has scrolled in the meantime.
+try {
+  addEventListener('pagehide', () => sessionStorage.setItem('scroll', String(scrollY)));
+  const savedScroll = sessionStorage.getItem('scroll');
+  if (savedScroll !== null && performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+    const restore = () => scrollTo({ top: Number(savedScroll), behavior: 'instant' });
+    restore();
+    let moved = false;
+    const markMoved = () => (moved = true);
+    for (const type of ['wheel', 'touchmove', 'keydown'])
+      addEventListener(type, markMoved, { once: true, passive: true });
+    document.fonts.ready.then(() => moved || restore());
+  }
+} catch {}

@@ -223,6 +223,39 @@ fn resumed(previous: &Intent) -> Intent {
 }
 
 /// Every file under `root`, relative with '/' separators, sorted.
+/// A copy of two files, `a` and `b`, paused once the first has landed.
+async fn copy_paused_after_first_file() -> (std::path::PathBuf, Intent, Sessions) {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    for name in ["a", "b"] {
+        std::fs::write(root.join("source").join(name), b"original").unwrap();
+    }
+    let sessions = Sessions::default();
+    interrupt_after_first_file(&intent, CancelIntent::Pause);
+    assert!(run(&sessions, None, intent.clone()).await.paused);
+    (root, intent, sessions)
+}
+
+/// Resumes `intent`, answering with the report and the first byte count the
+/// resumed walk's row showed.
+async fn resume_noting_first_bytes(sessions: &Sessions, intent: &Intent) -> (Report, Option<u64>) {
+    let second = resumed(intent);
+    let walk_id = second.id.clone();
+    let first_shown = Arc::new(Mutex::new(None::<u64>));
+    let seen = first_shown.clone();
+    let progress = ProgressEmitter::for_tests(move |payload| {
+        if payload.id == walk_id
+            && payload.status == "progress"
+            && let Some(bytes) = payload.bytes
+        {
+            seen.lock().unwrap().get_or_insert(bytes);
+        }
+    });
+    let report = run(sessions, Some(&progress), second).await;
+    let shown = *first_shown.lock().unwrap();
+    (report, shown)
+}
+
 fn files_under(root: &Path) -> Vec<String> {
     let mut found = Vec::new();
     let mut pending = vec![root.to_path_buf()];
@@ -480,14 +513,7 @@ async fn a_paused_walk_resumes_past_what_it_already_delivered() {
 
 #[tokio::test]
 async fn resume_does_not_implicitly_authorize_overwriting_a_delivered_file() {
-    let (root, mut intent) = fixture();
-    intent.moving = false;
-    for name in ["a", "b"] {
-        std::fs::write(root.join("source").join(name), b"original").unwrap();
-    }
-    let sessions = Sessions::default();
-    interrupt_after_first_file(&intent, CancelIntent::Pause);
-    assert!(run(&sessions, None, intent.clone()).await.paused);
+    let (root, intent, sessions) = copy_paused_after_first_file().await;
     let relative = files_under(&root.join("target"))[0].clone();
     std::fs::write(root.join("source").join(&relative), b"changed source").unwrap();
     let report = run(&sessions, None, resumed(&intent)).await;
@@ -1408,26 +1434,11 @@ async fn a_paused_download_carries_on_from_its_partial() {
     let quiet = ProgressEmitter::for_tests(|_| {});
     let report = run(&sessions, Some(&quiet), intent.clone()).await;
     assert!(report.paused, "{:?}", report.errors);
-    let second = resumed(&intent);
-    let walk_id = second.id.clone();
-    let first_shown = Arc::new(Mutex::new(None::<u64>));
-    let seen = first_shown.clone();
-    let progress = ProgressEmitter::for_tests(move |payload| {
-        if payload.id == walk_id
-            && payload.status == "progress"
-            && let Some(bytes) = payload.bytes
-        {
-            seen.lock().unwrap().get_or_insert(bytes);
-        }
-    });
-    let report = run(&sessions, Some(&progress), second).await;
+    let (report, shown) = resume_noting_first_bytes(&sessions, &intent).await;
     assert!(report.ok, "{:?}", report.errors);
     // The row carries on from the partial too, rather than dropping back to
     // the one small file finished before it.
-    let shown = first_shown
-        .lock()
-        .unwrap()
-        .expect("the resumed walk reports progress");
+    let shown = shown.expect("the resumed walk reports progress");
     assert!(
         shown >= PAUSE_AT + 5,
         "the resumed row dropped back to {shown}"
@@ -1687,24 +1698,9 @@ async fn a_paused_upload_carries_on_from_its_staging_file() {
         landed_early.is_some_and(|count| count >= 2),
         "{landed_early:?}"
     );
-    let second = resumed(&intent);
-    let walk_id = second.id.clone();
-    let first_shown = Arc::new(Mutex::new(None::<u64>));
-    let seen = first_shown.clone();
-    let progress = ProgressEmitter::for_tests(move |payload| {
-        if payload.id == walk_id
-            && payload.status == "progress"
-            && let Some(bytes) = payload.bytes
-        {
-            seen.lock().unwrap().get_or_insert(bytes);
-        }
-    });
-    let report = run(&sessions, Some(&progress), second).await;
+    let (report, shown) = resume_noting_first_bytes(&sessions, &intent).await;
     assert!(report.ok, "{:?}", report.errors);
-    let shown = first_shown
-        .lock()
-        .unwrap()
-        .expect("the resumed walk reports progress");
+    let shown = shown.expect("the resumed walk reports progress");
     assert!(
         shown >= UPLOAD_PAUSE_AT + 5,
         "the resumed row dropped back to {shown}"
@@ -1858,14 +1854,7 @@ async fn resume_preserves_directory_replacement_even_with_overwrite_consent() {
 
 #[tokio::test]
 async fn stop_preserves_in_place_changes_and_reports_cleanup_details() {
-    let (root, mut intent) = fixture();
-    intent.moving = false;
-    for name in ["a", "b"] {
-        std::fs::write(root.join("source").join(name), b"original").unwrap();
-    }
-    let sessions = Sessions::default();
-    interrupt_after_first_file(&intent, CancelIntent::Pause);
-    assert!(run(&sessions, None, intent.clone()).await.paused);
+    let (root, intent, sessions) = copy_paused_after_first_file().await;
     let target = root
         .join("target")
         .join(&files_under(&root.join("target"))[0]);

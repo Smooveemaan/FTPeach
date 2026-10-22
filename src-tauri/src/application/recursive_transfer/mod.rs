@@ -251,15 +251,8 @@ fn file_notice(
     move || {
         if let Some(progress) = progress {
             progress.send(TransferProgressPayload {
-                id,
-                connection_id,
-                status,
-                bytes: None,
-                total: None,
-                error: None,
-                error_code: None,
-                landed: None,
                 file,
+                ..TransferProgressPayload::status(id, connection_id, status)
             });
         }
     }
@@ -456,15 +449,10 @@ async fn run_inner(
         // moment the target's folders are all in place.
         if let Some(progress) = progress {
             progress.send(TransferProgressPayload {
-                id: intent.id.clone(),
-                connection_id: intent.target.connection().into(),
-                status: "progress",
                 bytes: Some(completed_bytes.saturating_add(resumable)),
                 total: Some(total_bytes),
-                error: None,
-                error_code: None,
                 landed: Some(landed(&journal)),
-                file: None,
+                ..TransferProgressPayload::status(intent.id.clone(), intent.target.connection(), "progress")
             });
         }
         for (number, entry) in (1..).zip(manifest.entries.iter().filter(|e| !e.directory)) {
@@ -579,7 +567,7 @@ async fn run_inner(
                     if report.errors.len() < 100 { report.errors.push(CommandError::from_anyhow(&CommandError::at_path(error, intent.source.path(&entry.relative)))); }
                 }
             }
-            if let Some(progress) = progress { progress.send(TransferProgressPayload { id: intent.id.clone(), connection_id: intent.target.connection().into(), status: "progress", bytes: Some(completed_bytes), total: Some(total_bytes), error: None, error_code: None, landed: Some(landed(&journal)), file: None }); }
+            if let Some(progress) = progress { progress.send(TransferProgressPayload { bytes: Some(completed_bytes), total: Some(total_bytes), landed: Some(landed(&journal)), ..TransferProgressPayload::status(intent.id.clone(), intent.target.connection(), "progress") }); }
         }
         anyhow::ensure!(report.errors.is_empty(), "Recursive copy was incomplete; source retained");
         check_cancel(&token)?;
@@ -640,17 +628,11 @@ async fn run_inner(
     // with nothing left running to finish it. A terminal payload supersedes
     // the pending one and carries the final byte count across.
     if let Some(progress) = progress {
-        progress.send(TransferProgressPayload {
-            id: intent.id.clone(),
-            connection_id: intent.target.connection().into(),
-            status: if report.ok { "done" } else { "error" },
-            bytes: None,
-            total: None,
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
-        });
+        progress.send(TransferProgressPayload::status(
+            intent.id.clone(),
+            intent.target.connection(),
+            if report.ok { "done" } else { "error" },
+        ));
     }
     report
 }

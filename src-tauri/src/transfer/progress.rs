@@ -35,6 +35,28 @@ pub struct TransferProgressPayload {
     pub file: Option<FolderFile>,
 }
 
+impl TransferProgressPayload {
+    /// A notice of `status` without numbers, error or file; set the fields
+    /// a notice carries over this one.
+    pub fn status(
+        id: impl Into<String>,
+        connection_id: impl Into<String>,
+        status: &'static str,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            connection_id: connection_id.into(),
+            status,
+            bytes: None,
+            total: None,
+            error: None,
+            error_code: None,
+            landed: None,
+            file: None,
+        }
+    }
+}
+
 /// The file a folder walk is on: its place among the walk's files, from one,
 /// and its path inside the folder.
 #[derive(Serialize, Clone, Debug, PartialEq)]
@@ -85,9 +107,6 @@ impl AggregateIndex {
         }
         let aggregate = self.0.lock().unwrap().get(&payload.id).cloned()?;
         Some(TransferProgressPayload {
-            id: aggregate.parent_id,
-            connection_id: aggregate.connection_id,
-            status: "progress",
             // A child's notice that it has started carries no byte count. It
             // puts the parent to work and leaves its count alone: read as
             // nothing done, it would drop the parent back to its base just as
@@ -96,12 +115,15 @@ impl AggregateIndex {
                 .bytes
                 .map(|bytes| aggregate.base.saturating_add(bytes)),
             total: Some(aggregate.total),
-            error: None,
-            error_code: None,
             // Carried along, or a child's report overtaking the parent's own
             // in the flush window would lose the count the parent just sent.
             landed: Some(aggregate.landed),
             file: Some(aggregate.file),
+            ..TransferProgressPayload::status(
+                aggregate.parent_id,
+                aggregate.connection_id,
+                "progress",
+            )
         })
     }
 }
@@ -230,17 +252,7 @@ impl ProgressEmitter {
                 if queued_after.get(&id) == Some(&since) {
                     queued_after.remove(&id);
                     drop(queued_after);
-                    this.enqueue(TransferProgressPayload {
-                        id,
-                        connection_id,
-                        status: "queued",
-                        bytes: None,
-                        total: None,
-                        error: None,
-                        error_code: None,
-                        landed: None,
-                        file: None,
-                    });
+                    this.enqueue(TransferProgressPayload::status(id, connection_id, "queued"));
                 }
             }
         });
@@ -253,15 +265,9 @@ mod tests {
 
     fn payload(id: &str, status: &'static str, bytes: Option<u64>) -> TransferProgressPayload {
         TransferProgressPayload {
-            id: id.into(),
-            connection_id: "child-connection".into(),
-            status,
             bytes,
             total: Some(10),
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
+            ..TransferProgressPayload::status(id, "child-connection", status)
         }
     }
 

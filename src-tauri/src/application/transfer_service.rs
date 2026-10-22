@@ -183,37 +183,25 @@ fn make_progress_sink(
     Arc::new(move |info: ProgressInfo| {
         let payload = match info {
             ProgressInfo::Progress { bytes, total } => TransferProgressPayload {
-                id: transfer_id.clone(),
-                connection_id: connection_id.clone(),
-                status: "progress",
                 bytes: Some(bytes),
                 total: Some(total),
-                error: None,
-                error_code: None,
-                landed: None,
-                file: None,
+                ..TransferProgressPayload::status(
+                    transfer_id.clone(),
+                    connection_id.clone(),
+                    "progress",
+                )
             },
-            ProgressInfo::Done => TransferProgressPayload {
-                id: transfer_id.clone(),
-                connection_id: connection_id.clone(),
-                status: "done",
-                bytes: None,
-                total: None,
-                error: None,
-                error_code: None,
-                landed: None,
-                file: None,
-            },
+            ProgressInfo::Done => {
+                TransferProgressPayload::status(transfer_id.clone(), connection_id.clone(), "done")
+            }
             ProgressInfo::Error { error, code } => TransferProgressPayload {
-                id: transfer_id.clone(),
-                connection_id: connection_id.clone(),
-                status: "error",
-                bytes: None,
-                total: None,
                 error_code: Some(transfer_error_kind(code)),
                 error: Some(error),
-                landed: None,
-                file: None,
+                ..TransferProgressPayload::status(
+                    transfer_id.clone(),
+                    connection_id.clone(),
+                    "error",
+                )
             },
         };
         emitter.send(payload);
@@ -259,17 +247,11 @@ fn dispatch_notifier(
     transfer_id: String,
 ) -> impl FnOnce() + Send + 'static {
     move || {
-        emitter.send(TransferProgressPayload {
-            id: transfer_id,
+        emitter.send(TransferProgressPayload::status(
+            transfer_id,
             connection_id,
-            status: "progress",
-            bytes: None,
-            total: None,
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
-        });
+            "progress",
+        ));
     }
 }
 
@@ -667,17 +649,11 @@ pub async fn transfer_remote_copy(
         let transfer_id = transfer_id.clone();
         move || {
             if legs_dispatched.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1 == 2 {
-                emitter.send(TransferProgressPayload {
-                    id: transfer_id,
+                emitter.send(TransferProgressPayload::status(
+                    transfer_id,
                     connection_id,
-                    status: "progress",
-                    bytes: None,
-                    total: None,
-                    error: None,
-                    error_code: None,
-                    landed: None,
-                    file: None,
-                });
+                    "progress",
+                ));
             }
         }
     };

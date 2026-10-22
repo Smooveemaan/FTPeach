@@ -239,60 +239,40 @@ impl TransferReporter {
     /// its download waits for a connection or a free transfer slot,
     /// "progress" once it has them.
     fn status(&self, id: &str, status: &'static str) {
-        self.progress.send(TransferProgressPayload {
-            id: id.to_string(),
-            connection_id: self.connection_id.clone(),
+        self.progress.send(TransferProgressPayload::status(
+            id.to_string(),
+            self.connection_id.clone(),
             status,
-            bytes: None,
-            total: None,
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
-        });
+        ));
     }
 
     fn progress(&self, id: &str, bytes: u64, total: Option<u64>) {
         self.progress.send(TransferProgressPayload {
-            id: id.to_string(),
-            connection_id: self.connection_id.clone(),
-            status: "progress",
             bytes: Some(bytes),
             total,
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
+            ..TransferProgressPayload::status(
+                id.to_string(),
+                self.connection_id.clone(),
+                "progress",
+            )
         });
     }
 
     fn done(&self, id: &str, bytes: u64, total: Option<u64>) {
         self.progress.send(TransferProgressPayload {
-            id: id.to_string(),
-            connection_id: self.connection_id.clone(),
-            status: "done",
             bytes: Some(bytes),
             total,
-            error: None,
-            error_code: None,
-            landed: None,
-            file: None,
+            ..TransferProgressPayload::status(id.to_string(), self.connection_id.clone(), "done")
         });
     }
 
     fn error(&self, id: &str, failure: CommandError) {
         self.progress.send(TransferProgressPayload {
-            id: id.to_string(),
-            connection_id: self.connection_id.clone(),
-            status: "error",
-            bytes: None,
-            total: None,
             error_code: Some(transfer_error_kind(failure.code)),
             // The raw text when we have it (it names the server reply), the
             // safe sentence otherwise; the renderer localizes the code anyway.
             error: Some(failure.details.unwrap_or(failure.message)),
-            landed: None,
-            file: None,
+            ..TransferProgressPayload::status(id.to_string(), self.connection_id.clone(), "error")
         });
     }
 }

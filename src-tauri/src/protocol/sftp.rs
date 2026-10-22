@@ -85,20 +85,17 @@ fn already_exists(path: &str) -> anyhow::Error {
 }
 
 /// A missing or locked key file keeps its I/O classification, anything else
-/// is an unreadable key. Classified before the path joins the text: a key in
-/// `C:\keys\2401` must not read as a failed login.
+/// is an unreadable key.
 fn key_file_error(error: russh::keys::Error, key_path: &str) -> anyhow::Error {
-    let details = format!("failed to read key file \"{key_path}\": {error}");
-    let mut typed = if matches!(error, russh::keys::Error::IO(_)) {
-        crate::ipc::CommandError::from_anyhow(&error.into())
-    } else {
-        crate::ipc::CommandError::new(
+    let io = matches!(error, russh::keys::Error::IO(_));
+    let mut error = anyhow::Error::from(error);
+    if !io {
+        error = error.context(crate::ipc::CommandError::new(
             ErrorCode::KeyUnreadable,
             "The key file could not be decrypted or parsed",
-        )
-    };
-    typed.details = Some(details);
-    typed.into()
+        ));
+    }
+    crate::ipc::CommandError::at_path(error, format!("failed to read key file \"{key_path}\""))
 }
 
 /// Read ahead in bounded batches, restoring offset order before writing locally.

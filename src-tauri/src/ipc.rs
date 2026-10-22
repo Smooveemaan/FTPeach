@@ -157,6 +157,17 @@ impl CommandError {
         }
     }
 
+    /// Names the place a failure happened at, classified first: a path
+    /// such as `/photos/2401/` must not read as a failed login.
+    pub fn at_path(error: anyhow::Error, place: impl std::fmt::Display) -> anyhow::Error {
+        let mut typed = Self::from_anyhow(&error);
+        typed.details = Some(format!(
+            "{place}: {}",
+            typed.details.as_deref().unwrap_or(&typed.message)
+        ));
+        typed.into()
+    }
+
     pub fn from_anyhow(error: &anyhow::Error) -> Self {
         if error.chain().any(|source| {
             source

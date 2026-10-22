@@ -9,8 +9,8 @@ mod scan;
 use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp_local, stamps};
 use self::journal::{Journal, Paused};
 use self::manifest::Entry;
+use self::model::check_cancel;
 pub use self::model::{Endpoint, Intent, Report};
-use self::model::{at_path, check_cancel};
 use self::scan::scan;
 use crate::application::transfer_service::{self, CancelIntent};
 use crate::application::upload_resume;
@@ -415,7 +415,7 @@ async fn run_inner(
             if matches!(intent.target, Endpoint::Remote { .. }) { file_notice(progress, &intent, "queued", first_file.clone())(); }
             let parent = entry.relative.rsplit_once('/').map_or("", |(parent, _)| parent);
             let fresh_parent = !entry.relative.is_empty() && made_now.contains(parent);
-            let created = mkdir(sessions, &intent.target, &entry.relative, fresh_parent, &token, status_notice(progress, &intent, "progress")).await.map_err(|error| at_path(error, intent.target.path(&entry.relative)))?;
+            let created = mkdir(sessions, &intent.target, &entry.relative, fresh_parent, &token, status_notice(progress, &intent, "progress")).await.map_err(|error| CommandError::at_path(error, intent.target.path(&entry.relative)))?;
             wrote_target = true;
             if created {
                 made_now.insert(entry.relative.as_str());
@@ -576,7 +576,7 @@ async fn run_inner(
                     tests::after_file(&intent.id);
                 },
                 Err(error) => {
-                    if report.errors.len() < 100 { report.errors.push(CommandError::from_anyhow(&at_path(error, intent.source.path(&entry.relative)))); }
+                    if report.errors.len() < 100 { report.errors.push(CommandError::from_anyhow(&CommandError::at_path(error, intent.source.path(&entry.relative)))); }
                 }
             }
             if let Some(progress) = progress { progress.send(TransferProgressPayload { id: intent.id.clone(), connection_id: intent.target.connection().into(), status: "progress", bytes: Some(completed_bytes), total: Some(total_bytes), error: None, error_code: None, landed: Some(landed(&journal)), file: None }); }
@@ -604,7 +604,7 @@ async fn run_inner(
                     let path = intent.source.path(&entry.relative);
                     log::warn!("Move copied every file, but could not remove the original {path}: {error:#}");
                     report.source_not_removed = Some(path.clone());
-                    return Err(at_path(error, path));
+                    return Err(CommandError::at_path(error, path));
                 }
             }
         }

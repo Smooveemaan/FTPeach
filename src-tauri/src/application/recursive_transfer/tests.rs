@@ -66,17 +66,14 @@ fn a_path_never_decides_what_kind_of_failure_it_was() {
         "/cancellations.csv",
     ] {
         let error =
-            CommandError::from_anyhow(&model::at_path(anyhow::anyhow!("boom"), path.into()));
+            CommandError::from_anyhow(&CommandError::at_path(anyhow::anyhow!("boom"), path));
         assert_eq!(error.code, ErrorCode::Internal, "{path}");
         assert_eq!(
             error.details.as_deref(),
             Some(format!("{path}: boom").as_str())
         );
     }
-    let typed = model::at_path(
-        CommandError::new(ErrorCode::NotFound, "gone").into(),
-        "/a".into(),
-    );
+    let typed = CommandError::at_path(CommandError::new(ErrorCode::NotFound, "gone").into(), "/a");
     assert_eq!(CommandError::from_anyhow(&typed).code, ErrorCode::NotFound);
 }
 

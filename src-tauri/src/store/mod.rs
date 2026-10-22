@@ -6,6 +6,7 @@ mod settings_schema;
 pub(crate) use settings_schema::validate_settings;
 mod sites;
 mod storage;
+pub(crate) use storage::write_synced;
 pub use storage::{StorageIssue, StorageWarning};
 mod tabs;
 mod trusted_applications;

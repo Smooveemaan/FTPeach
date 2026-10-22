@@ -319,7 +319,7 @@ impl Vault {
 
     async fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
         let tmp = path.with_extension(format!("{}.tmp", std::process::id()));
-        tokio::fs::write(&tmp, bytes)
+        crate::store::write_synced(&tmp, bytes)
             .await
             .context("writing vault temporary file")?;
         Self::replace_file(&tmp, path).context("committing vault file")?;

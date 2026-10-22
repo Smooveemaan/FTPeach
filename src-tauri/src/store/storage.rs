@@ -130,7 +130,7 @@ pub(super) fn backup_without_stale_secrets(previous: Value, next: &Value) -> Val
 
 /// Writes `body` to `tmp` and flushes it to disk; a failed write leaves no
 /// `tmp` behind.
-async fn write_synced(tmp: &Path, body: &[u8]) -> std::io::Result<()> {
+pub(crate) async fn write_synced(tmp: &Path, body: &[u8]) -> std::io::Result<()> {
     let written = async {
         let mut file = tokio::fs::File::create(tmp).await?;
         file.write_all(body).await?;

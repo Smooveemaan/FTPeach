@@ -1,9 +1,9 @@
 //! Cooperative scanning builds a bounded manifest before any mutation.
 use super::io::listing;
 use super::manifest::{Entry, MAX_DEPTH, Manifest};
-use super::model::{Endpoint, check_cancel};
+use super::model::{Endpoint, at_path, check_cancel};
 use crate::session::Sessions;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use tokio_util::sync::CancellationToken;
 
 pub(super) async fn scan(
@@ -25,14 +25,15 @@ pub(super) async fn scan(
         let entry = &manifest.entries[index];
         if entry.directory {
             let parent = entry.relative.clone();
-            anyhow::ensure!(
-                parent.split('/').filter(|p| !p.is_empty()).count() <= MAX_DEPTH,
-                "{}: recursive depth exceeds budget",
-                source.path(&parent)
-            );
+            if parent.split('/').filter(|p| !p.is_empty()).count() > MAX_DEPTH {
+                return Err(at_path(
+                    anyhow::anyhow!("recursive depth exceeds budget"),
+                    source.path(&parent),
+                ));
+            }
             for child in listing(sessions, source, &parent, token)
                 .await
-                .with_context(|| source.path(&parent))?
+                .map_err(|error| at_path(error, source.path(&parent)))?
             {
                 check_cancel(token)?;
                 // Another transfer's working files, such as a paused upload's

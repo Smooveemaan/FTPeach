@@ -75,6 +75,17 @@ pub struct Report {
     pub source_not_removed: Option<String>,
 }
 
+/// Names the path a failure happened at, classified first: a path such as
+/// `/photos/2401/` must not read as a failed login.
+pub(super) fn at_path(error: anyhow::Error, path: String) -> anyhow::Error {
+    let mut typed = CommandError::from_anyhow(&error);
+    typed.details = Some(format!(
+        "{path}: {}",
+        typed.details.as_deref().unwrap_or(&typed.message)
+    ));
+    typed.into()
+}
+
 pub(super) fn check_cancel(token: &CancellationToken) -> Result<()> {
     if token.is_cancelled() {
         return Err(

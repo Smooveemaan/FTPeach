@@ -58,6 +58,28 @@ async fn move_rechecks_destination_immediately_before_source_deletion() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[test]
+fn a_path_never_decides_what_kind_of_failure_it_was() {
+    for path in [
+        "/photos/2401/a.jpg",
+        "/certificates/a",
+        "/cancellations.csv",
+    ] {
+        let error =
+            CommandError::from_anyhow(&model::at_path(anyhow::anyhow!("boom"), path.into()));
+        assert_eq!(error.code, ErrorCode::Internal, "{path}");
+        assert_eq!(
+            error.details.as_deref(),
+            Some(format!("{path}: boom").as_str())
+        );
+    }
+    let typed = model::at_path(
+        CommandError::new(ErrorCode::NotFound, "gone").into(),
+        "/a".into(),
+    );
+    assert_eq!(CommandError::from_anyhow(&typed).code, ErrorCode::NotFound);
+}
+
 #[cfg(windows)]
 #[test]
 fn protected_file_rejects_writes_and_replacement_until_handle_deletion() {

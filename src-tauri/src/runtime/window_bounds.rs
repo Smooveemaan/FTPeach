@@ -157,7 +157,7 @@ impl BoundsPersister {
         });
     }
 
-    pub async fn persist_now(&self, window: &WebviewWindow) {
+    pub async fn persist_now<R: tauri::Runtime>(&self, window: &WebviewWindow<R>) {
         let maximized = window.is_maximized().unwrap_or(false);
         let mut patch = JsonMap::new();
         patch.insert("windowMaximized".into(), Value::Bool(maximized));

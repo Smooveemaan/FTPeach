@@ -8,7 +8,7 @@ use crate::store::Store;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 /// How long the window has to show that it is asking about a quit before the
@@ -169,7 +169,7 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 /// saved, temporary copies removed (edited ones kept for recovery) and the
 /// vault locked. Installing an update needs the same tidy state before it
 /// hands over to the installer.
-pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
+pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) -> bool {
     let state_saved = flush_renderer(&app, SHUTDOWN_FLUSH_TIMEOUT).await;
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
@@ -225,7 +225,7 @@ pub async fn wind_down(app: AppHandle, window: WebviewWindow) -> bool {
     state_saved
 }
 
-async fn flush_renderer(app: &AppHandle, deadline: Duration) -> bool {
+async fn flush_renderer<R: Runtime>(app: &AppHandle<R>, deadline: Duration) -> bool {
     let coordinator = app.state::<ShutdownCoordinator>();
     let (request_id, receiver) = coordinator.request_flush();
     let emitted = app.emit_to(
@@ -288,6 +288,41 @@ mod tests {
         // because whatever the renderer still holds is gone afterwards.
         assert!(TRAY_FLUSH_TIMEOUT < SHUTDOWN_FLUSH_TIMEOUT / 4);
         assert!(TRAY_FLUSH_TIMEOUT >= Duration::from_millis(200));
+    }
+
+    /// Winding down waits for the renderer to say it saved, then saves the
+    /// window's size and place.
+    #[tokio::test]
+    async fn winding_down_waits_for_the_renderer_and_saves_the_window() {
+        use tauri::Listener;
+        let dir = std::env::temp_dir().join(format!("ftpeach-wind-down-{}", uuid::Uuid::new_v4()));
+        let app = tauri::test::mock_app();
+        let session = crate::local_fs::open_with::OpenWithSession {
+            dir: dir.join("session"),
+        };
+        app.manage(ShutdownCoordinator::default());
+        app.manage(ConnectingClients::default());
+        app.manage(Sessions::default());
+        app.manage(OpenWithWatchers::new(session.dir.clone()));
+        app.manage(session);
+        app.manage(Store::new_at(dir.join("store")));
+        app.manage(Vault::new(dir.join("store")));
+        let handle = app.handle().clone();
+        app.listen_any("app:flush-state", move |event| {
+            let request: serde_json::Value = serde_json::from_str(event.payload()).unwrap();
+            let id = request["requestId"].as_str().unwrap();
+            handle
+                .state::<ShutdownCoordinator>()
+                .state_flushed(id, true);
+        });
+        let window = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+            .build()
+            .unwrap();
+
+        assert!(wind_down(app.handle().clone(), window).await);
+        let settings = app.state::<Store>().get_settings().await;
+        assert!(settings.contains_key("windowMaximized"));
+        let _ = std::fs::remove_dir_all(dir);
     }
 
     #[tokio::test]

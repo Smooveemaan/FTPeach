@@ -948,8 +948,8 @@ pub async fn authorize_sensitive(
     issue_token(&state, &window, operation, target)
 }
 
-pub fn consume(
-    window: &tauri::WebviewWindow,
+pub fn consume<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
     state: &AuthorizationState,
     token: &str,
     operation: SensitiveOperation,

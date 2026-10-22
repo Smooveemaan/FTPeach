@@ -41,7 +41,11 @@ impl OpenWithSession {
 }
 
 /// Reports an open-with download as `openWith:progress`, at most every 100 ms.
-pub fn progress_sink(app: AppHandle, connection_id: String, id: String) -> ProgressSink {
+pub fn progress_sink<R: Runtime>(
+    app: AppHandle<R>,
+    connection_id: String,
+    id: String,
+) -> ProgressSink {
     #[derive(Serialize, Clone)]
     #[serde(rename_all = "camelCase")]
     struct OpenWithProgress {
@@ -427,6 +431,31 @@ mod tests {
         watchers.stop("a");
         assert_eq!(watchers.watched_copy("server", "/two.txt"), None);
         std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn a_download_reports_its_bytes_at_most_every_100_ms() {
+        use tauri::Listener;
+        let app = tauri::test::mock_app();
+        let seen = Arc::new(Mutex::new(Vec::new()));
+        let heard = seen.clone();
+        app.listen("openWith:progress", move |event| {
+            heard.lock().unwrap().push(event.payload().to_owned());
+        });
+        let sink = progress_sink(app.handle().clone(), "server".into(), "a".into());
+        sink(ProgressInfo::Progress {
+            bytes: 1,
+            total: 10,
+        });
+        sink(ProgressInfo::Progress {
+            bytes: 2,
+            total: 10,
+        });
+        sink(ProgressInfo::Done);
+        assert_eq!(
+            *seen.lock().unwrap(),
+            [r#"{"id":"a","connectionId":"server","bytes":1,"total":10}"#]
+        );
     }
 
     #[test]

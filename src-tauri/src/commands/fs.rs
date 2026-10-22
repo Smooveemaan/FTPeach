@@ -295,8 +295,8 @@ async fn fs_copy_file_checked(
 }
 
 #[tauri::command]
-pub async fn fs_delete(
-    window: tauri::WebviewWindow,
+pub async fn fs_delete<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     authorization: tauri::State<'_, crate::security::sensitive::AuthorizationState>,
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     authorization_token: String,
@@ -603,8 +603,8 @@ fn shell_targets(canonical: &Path) -> (String, String) {
     (shell, select)
 }
 
-async fn open_validated_path(
-    app: tauri::AppHandle,
+async fn open_validated_path<R: tauri::Runtime>(
+    app: tauri::AppHandle<R>,
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
     local_path: String,
     kind: crate::local_fs::local_open::OpenKind,
@@ -640,9 +640,9 @@ async fn open_validated_path(
 macro_rules! open_command {
     ($name:ident, $operation:ident, $kind:expr_2021) => {
         #[tauri::command]
-        pub async fn $name(
-            app: tauri::AppHandle,
-            window: tauri::WebviewWindow,
+        pub async fn $name<R: tauri::Runtime>(
+            app: tauri::AppHandle<R>,
+            window: tauri::WebviewWindow<R>,
             authorization: tauri::State<'_, crate::security::sensitive::AuthorizationState>,
             approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
             authorization_token: String,
@@ -676,6 +676,64 @@ open_command!(
     FsExecutePath,
     crate::local_fs::local_open::OpenKind::Execute
 );
+
+#[cfg(test)]
+mod grant_tests {
+    use super::*;
+    use tauri::Manager;
+
+    /// A file and a mock main window whose state holds no grant at all.
+    fn ungranted() -> (
+        tauri::App<tauri::test::MockRuntime>,
+        tauri::WebviewWindow<tauri::test::MockRuntime>,
+        String,
+    ) {
+        let app = tauri::test::mock_app();
+        app.manage(crate::security::sensitive::AuthorizationState::default());
+        app.manage(crate::local_fs::local_open::ApprovedLocalPaths::default());
+        let window = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+            .build()
+            .unwrap();
+        let file = std::env::temp_dir().join(format!("ftpeach-grant-{}.txt", uuid::Uuid::new_v4()));
+        std::fs::write(&file, b"keep").unwrap();
+        (app, window, file.to_string_lossy().into_owned())
+    }
+
+    #[tokio::test]
+    async fn a_delete_without_its_grant_is_refused_and_the_file_stays() {
+        let (app, window, file) = ungranted();
+        let error = fs_delete(
+            window,
+            app.state(),
+            app.state(),
+            "no grant".into(),
+            file.clone(),
+            true,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.code, ErrorCode::PermissionDenied);
+        assert!(Path::new(&file).exists());
+        std::fs::remove_file(file).unwrap();
+    }
+
+    #[tokio::test]
+    async fn opening_a_file_without_its_grant_is_refused() {
+        let (app, window, file) = ungranted();
+        let error = fs_open_document(
+            app.handle().clone(),
+            window,
+            app.state(),
+            app.state(),
+            "no grant".into(),
+            file.clone(),
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.code, ErrorCode::PermissionDenied);
+        std::fs::remove_file(file).unwrap();
+    }
+}
 
 #[cfg(all(test, windows))]
 mod drag_move_tests {

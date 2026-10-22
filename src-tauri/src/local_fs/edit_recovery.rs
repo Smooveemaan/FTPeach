@@ -90,7 +90,7 @@ pub struct RecoveredEdit {
 /// Where recovered edits live: beside the application's local data, outside
 /// the temporary directory that Windows may clean on its own. A portable copy
 /// keeps that data beside the program.
-pub fn data_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+pub fn data_dir<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Option<PathBuf> {
     if let Some(root) = super::portable::root() {
         return Some(super::portable::local_dir(root));
     }
@@ -109,7 +109,7 @@ pub fn data_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
     app.path().app_local_data_dir().ok()
 }
 
-pub fn root(app: &tauri::AppHandle) -> Option<PathBuf> {
+pub fn root<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Option<PathBuf> {
     data_dir(app).map(|dir| dir.join("recovered-edits"))
 }
 

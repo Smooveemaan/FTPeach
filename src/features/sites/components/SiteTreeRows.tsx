@@ -9,10 +9,10 @@ import TruncatedText from '../../../components/TruncatedText.tsx';
 import { isolate } from '../../../shared/bidi.ts';
 import type { ManagedSite } from '../../../shared/siteContracts.ts';
 import type { Translate } from '../../../shared/translate.ts';
-import { siteMeta } from '../siteMeta.ts';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import { ROOT } from '../siteDragModel.ts';
 import type { SiteDeleteTarget } from '../useSiteManagerDialogState.ts';
+import { RowRenameInput, SiteRowBody } from './SiteRowBody.tsx';
 
 export type SiteTreeRowNodeRef = (node: HTMLElement | null) => void;
 
@@ -147,71 +147,19 @@ export function SortableSiteRow({
         onConnect(site);
       }}
     >
-      <Icon
-        name={(site.icon || 'bookmark') as IconName}
-        size={14}
-        color={site.color || undefined}
+      <SiteRowBody
+        site={site}
+        isRenaming={isRenaming}
+        renameName={renameSiteName}
+        onRenameNameChange={onRenameNameChange}
+        onCommitRename={onCommitRename}
+        onCancelRename={onCancelRename}
+        onConnect={onConnect}
+        onEdit={onEdit}
+        onDuplicate={onDuplicate}
+        onRequestDelete={onRequestDelete}
+        t={t}
       />
-      {isRenaming ? (
-        <input
-          type="text"
-          autoFocus
-          className="folder-name-input"
-          aria-label={t('filePane.rename')}
-          value={renameSiteName}
-          onChange={(e) => onRenameNameChange(e.target.value)}
-          onBlur={onCommitRename}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') {
-              e.stopPropagation();
-              onCancelRename();
-            }
-          }}
-        />
-      ) : (
-        <div className="site-info" data-tooltip={siteMeta(site)}>
-          <TruncatedText as="div" className="site-name">
-            <bdi>{site.name}</bdi>
-          </TruncatedText>
-        </div>
-      )}
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon site-manage-row-btn"
-        aria-label={t('connectionBar.connectTooltip.connect')}
-        data-tooltip={t('connectionBar.connectTooltip.connect')}
-        onClick={() => onConnect(site)}
-      >
-        <Icon name="play" size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon site-manage-row-btn"
-        aria-label={t('siteManagerDialog.titleEdit')}
-        data-tooltip={t('siteManagerDialog.titleEdit')}
-        onClick={() => onEdit(site)}
-      >
-        <Icon name="pencil" size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon site-manage-row-btn"
-        aria-label={t('siteManagerDialog.duplicate')}
-        data-tooltip={t('siteManagerDialog.duplicate')}
-        onClick={() => onDuplicate(site)}
-      >
-        <Icon name="copy" size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon site-manage-row-btn site-manage-row-delete"
-        aria-label={t('paneMenu.delete')}
-        data-tooltip={t('paneMenu.delete')}
-        onClick={() => onRequestDelete({ kind: 'site', id: site.id, name: site.name })}
-      >
-        <Icon name="trash" size={14} />
-      </button>
     </div>
   );
 }
@@ -328,21 +276,12 @@ export function SortableFolderRow({
         </button>
         <Icon name="folder" size={14} />
         {isRenaming ? (
-          <input
-            type="text"
-            autoFocus
-            className="folder-name-input"
-            aria-label={t('siteManagerDialog.folderNamePlaceholder')}
+          <RowRenameInput
+            label={t('siteManagerDialog.folderNamePlaceholder')}
             value={renameFolderName}
-            onChange={(e) => onRenameChange(e.target.value)}
-            onBlur={onCommitRename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') e.currentTarget.blur();
-              if (e.key === 'Escape') {
-                e.stopPropagation();
-                onCancelRename();
-              }
-            }}
+            onChange={onRenameChange}
+            onCommit={onCommitRename}
+            onCancel={onCancelRename}
           />
         ) : (
           <div className="site-info">

@@ -2,10 +2,7 @@ import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import ContextMenu from '../../components/ContextMenu.tsx';
 import type { MenuItem } from '../../components/MenuItems.tsx';
-import Icon from '../../components/Icon.tsx';
-import type { IconName } from '../../components/Icon.tsx';
-import TruncatedText from '../../components/TruncatedText.tsx';
-import { siteMeta } from './siteMeta.ts';
+import { SiteRowBody } from './components/SiteRowBody.tsx';
 import { siteMenuItems } from './siteMenuItems.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { Translate } from '../../shared/translate.ts';
@@ -79,76 +76,20 @@ export default function SiteSearchResults({
                     onConnect(site);
                   }}
                 >
-                  <Icon
-                    name={(site.icon || 'bookmark') as IconName}
-                    size={14}
-                    color={site.color || undefined}
+                  <SiteRowBody
+                    site={site}
+                    detail={parent?.name}
+                    isRenaming={isRenaming}
+                    renameName={renameSiteName}
+                    onRenameNameChange={onRenameSiteNameChange}
+                    onCommitRename={() => onCommitRenameSite(site)}
+                    onCancelRename={onCancelRenameSite}
+                    onConnect={onConnect}
+                    onEdit={onEdit}
+                    onDuplicate={onDuplicate}
+                    onRequestDelete={onRequestDelete}
+                    t={t}
                   />
-                  {isRenaming ? (
-                    <input
-                      type="text"
-                      autoFocus
-                      className="folder-name-input"
-                      aria-label={t('filePane.rename')}
-                      value={renameSiteName}
-                      onChange={(e) => onRenameSiteNameChange(e.target.value)}
-                      onBlur={() => onCommitRenameSite(site)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') e.currentTarget.blur();
-                        if (e.key === 'Escape') {
-                          e.stopPropagation();
-                          onCancelRenameSite();
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="site-info" data-tooltip={siteMeta(site)}>
-                      <TruncatedText as="div" className="site-name">
-                        {site.name}
-                      </TruncatedText>
-                      {parent && (
-                        <TruncatedText as="div" className="site-search-parent">
-                          {parent.name}
-                        </TruncatedText>
-                      )}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon site-manage-row-btn"
-                    aria-label={t('connectionBar.connectTooltip.connect')}
-                    data-tooltip={t('connectionBar.connectTooltip.connect')}
-                    onClick={() => onConnect(site)}
-                  >
-                    <Icon name="play" size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon site-manage-row-btn"
-                    aria-label={t('siteManagerDialog.titleEdit')}
-                    data-tooltip={t('siteManagerDialog.titleEdit')}
-                    onClick={() => onEdit(site)}
-                  >
-                    <Icon name="pencil" size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon site-manage-row-btn"
-                    aria-label={t('siteManagerDialog.duplicate')}
-                    data-tooltip={t('siteManagerDialog.duplicate')}
-                    onClick={() => onDuplicate(site)}
-                  >
-                    <Icon name="copy" size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon site-manage-row-btn site-manage-row-delete"
-                    aria-label={t('paneMenu.delete')}
-                    data-tooltip={t('paneMenu.delete')}
-                    onClick={() => onRequestDelete({ kind: 'site', id: site.id, name: site.name })}
-                  >
-                    <Icon name="trash" size={14} />
-                  </button>
                 </div>
               );
             })

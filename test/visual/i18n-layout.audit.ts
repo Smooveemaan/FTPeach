@@ -324,6 +324,19 @@ const SCREENS: Record<
       await snap('settings-unsaved');
     },
   },
+  'vault-damaged': {
+    run: async ({ page, snap }) => {
+      // One of the vault's two files is missing: Security offers Start over.
+      await page.evaluate(() => {
+        const status = window.api.vault.status;
+        window.api.vault.status = async () => ({ ...(await status()), damaged: true });
+      });
+      await menuItem(page, MENU.edit, 0);
+      await page.locator('.settings-nav-item').nth(4).click();
+      await expect(dialog(page).locator('.settings-danger-zone [role="alert"]')).toBeVisible();
+      await snap('settings/vault-damaged');
+    },
+  },
   search: {
     run: async ({ page, t, snap }) => {
       await page

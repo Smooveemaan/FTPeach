@@ -33,6 +33,23 @@ const KDF_ITERATIONS: u32 = 1;
 const KDF_PARALLELISM: u32 = 1;
 const MIN_MASTER_PASSWORD_CHARS: usize = 12;
 
+/// The credential was checked and refused: the one failure that counts
+/// against the user. Anything else, such as a vault file that cannot be
+/// read or written, is reported as itself.
+pub(crate) fn refused() -> anyhow::Error {
+    crate::ipc::CommandError::new(
+        crate::ipc::ErrorCode::VaultAuthFailed,
+        "Incorrect master password",
+    )
+    .into()
+}
+
+pub(crate) fn is_refused(error: &anyhow::Error) -> bool {
+    error
+        .downcast_ref::<crate::ipc::CommandError>()
+        .is_some_and(|error| error.code == crate::ipc::ErrorCode::VaultAuthFailed)
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultStatus {
@@ -144,9 +161,15 @@ impl SecretUpdate<'_> {
 }
 
 impl Vault {
-    fn validate_new_password(password: &str) -> Result<()> {
+    pub(crate) fn validate_new_password(password: &str) -> Result<()> {
         if password.chars().count() < MIN_MASTER_PASSWORD_CHARS {
-            bail!("master password must contain at least {MIN_MASTER_PASSWORD_CHARS} characters");
+            return Err(crate::ipc::CommandError::new(
+                crate::ipc::ErrorCode::InvalidInput,
+                format!(
+                    "master password must contain at least {MIN_MASTER_PASSWORD_CHARS} characters"
+                ),
+            )
+            .into());
         }
         Ok(())
     }
@@ -263,7 +286,7 @@ impl Vault {
             .map_err(|_| anyhow::anyhow!("invalid wrapping key"))?;
         let plain = cipher
             .decrypt(&nonce, wrapped.as_ref())
-            .map_err(|_| anyhow::anyhow!("Incorrect master password"))?;
+            .map_err(|_| refused())?;
         if plain.len() != 32 {
             bail!("invalid vault key");
         }

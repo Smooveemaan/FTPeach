@@ -1,7 +1,7 @@
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::security::auto_lock::AutoLock;
 use crate::security::sensitive_string::SensitiveString;
-use crate::security::vault::{Vault, VaultStatus};
+use crate::security::vault::{self, Vault, VaultStatus};
 use crate::security::vault_guard::{AttemptOutcome, VaultGuard};
 use crate::store::Store;
 use std::future::Future;
@@ -19,6 +19,25 @@ fn authentication_failed() -> CommandError {
     )
 }
 
+/// Only a refused credential counts against the user and gets the neutral
+/// answer; any other failure, such as a vault file that cannot be read or
+/// written, neither counts nor clears the history and is reported as itself.
+fn judge(result: &anyhow::Result<()>) -> AttemptOutcome {
+    match result {
+        Ok(()) => AttemptOutcome::Accepted,
+        Err(error) if vault::is_refused(error) => AttemptOutcome::Rejected,
+        Err(_) => AttemptOutcome::Inconclusive,
+    }
+}
+
+fn answer(error: anyhow::Error) -> CommandError {
+    if vault::is_refused(&error) {
+        authentication_failed()
+    } else {
+        CommandError::from_anyhow(&error)
+    }
+}
+
 /// Everything a vault authentication needs, so the flow can be exercised
 /// without a Tauri window behind it.
 struct VaultAttempt<'a> {
@@ -30,10 +49,10 @@ struct VaultAttempt<'a> {
 impl VaultAttempt<'_> {
     /// Runs one authentication and records exactly what it proved.
     ///
-    /// `authenticate` is the only step whose failure is the user's
-    /// credential. Whatever follows it happens on an unlocked vault, so its
-    /// failure is reported as itself rather than as a rejected password, and
-    /// it neither counts against the rate limit nor clears it.
+    /// Inside `authenticate`, only a refused credential is the user's fault
+    /// (see [`judge`]). Whatever follows it happens on an unlocked vault, so
+    /// its failure is reported as itself rather than as a rejected password,
+    /// and it neither counts against the rate limit nor clears it.
     async fn run<F, Fut>(self, authenticate: F) -> CommandResult<()>
     where
         F: FnOnce() -> Fut,
@@ -45,17 +64,10 @@ impl VaultAttempt<'_> {
             return Err(authentication_failed());
         };
         let authenticated = authenticate().await;
-        let outcome = if authenticated.is_ok() {
-            AttemptOutcome::Accepted
-        } else {
-            AttemptOutcome::Rejected
-        };
         // Held until the outcome is on the books, so the next attempt cannot
         // be judged against a state that predates this one.
-        permit.finish(outcome).await;
-        if authenticated.is_err() {
-            return Err(authentication_failed());
-        }
+        permit.finish(judge(&authenticated)).await;
+        authenticated.map_err(answer)?;
         // The vault is unlocked; saying "authentication failed" here would
         // describe the wrong thing and hide a storage problem.
         self.store.migrate_secrets_to_vault(self.vault).await?;
@@ -178,7 +190,13 @@ pub async fn vault_unlock_system(
     // A cancelled Windows Hello prompt is a refusal by Windows, which is
     // what the user asking for the vault back looks like when they change
     // their mind. It counts like any other refused credential.
-    .run(|| async { vault.unlock_system(window_handle(&window)?).await })
+    .run(|| async {
+        let hwnd = window_handle(&window)?;
+        vault
+            .unlock_system(hwnd)
+            .await
+            .map_err(|_| vault::refused())
+    })
     .await;
     // Unlocked, or refused and the password asked for in the main window.
     refocus_main(window.app_handle());
@@ -200,20 +218,16 @@ pub async fn vault_change_password(
     old_password: SensitiveString,
     new_password: SensitiveString,
 ) -> CommandResult<()> {
+    // A new password too short is refused before the old one is tried.
+    Vault::validate_new_password(new_password.expose())?;
     let Ok(permit) = guard.acquire().await else {
         return Err(authentication_failed());
     };
     let result = vault
         .change_password(old_password.expose(), new_password.expose())
         .await;
-    permit
-        .finish(if result.is_ok() {
-            AttemptOutcome::Accepted
-        } else {
-            AttemptOutcome::Rejected
-        })
-        .await;
-    result.map_err(|_| authentication_failed())
+    permit.finish(judge(&result)).await;
+    result.map_err(answer)
 }
 
 #[tauri::command]
@@ -395,6 +409,23 @@ mod attempt_tests {
         assert_eq!(wrong, throttled.unwrap_err());
         // A code of its own, so the renderer can say it in the user's language.
         assert_eq!(wrong.code, crate::ipc::ErrorCode::VaultAuthFailed);
+    }
+
+    /// The right password over a vault file that cannot be read is not a
+    /// wrong password: it says what broke and leaves no wait behind.
+    #[tokio::test]
+    async fn a_storage_failure_is_reported_and_not_counted() {
+        let fixture = Fixture::new().await;
+        let snapshot = fixture._root.join("vault.hold");
+        let saved = std::fs::read(&snapshot).unwrap();
+        std::fs::write(&snapshot, b"damaged").unwrap();
+        let failed = fixture.unlock("correct horse battery staple").await;
+        assert_ne!(
+            failed.unwrap_err().code,
+            crate::ipc::ErrorCode::VaultAuthFailed
+        );
+        std::fs::write(&snapshot, saved).unwrap();
+        assert!(fixture.unlock("correct horse battery staple").await.is_ok());
     }
 
     /// A request the limiter refuses never reaches the password, so it must

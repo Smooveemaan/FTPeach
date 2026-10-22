@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { describeUnknown } from '../platform/ipcContracts.ts';
 import { setAsyncFailureSink } from '../shared/asyncFailure.ts';
 import { friendlyError } from '../shared/errorMessages.ts';
-import type { PaneStatus } from '../shared/paneContracts.ts';
 
 export interface ApplicationErrorModel {
   errorMessage: string;
@@ -38,22 +37,4 @@ export function useApplicationError(): ApplicationErrorModel {
   useEffect(() => setAsyncFailureSink(reportError, withdrawError), [reportError, withdrawError]);
 
   return { errorMessage, setErrorMessage, reportError, withdrawError, dismissError };
-}
-
-export function connectionVisualState(
-  status: PaneStatus,
-  hasActiveTransfers: boolean,
-  hasPausedTransfers: boolean,
-) {
-  if (status === 'connected') {
-    if (hasActiveTransfers) return 'transferring';
-    return hasPausedTransfers ? 'paused' : 'connected';
-  }
-  return status;
-}
-
-export function associatedApplication(path: string, associations: Record<string, string>) {
-  const name = path.split('/').pop() || '';
-  const extension = name.includes('.') ? (name.split('.').pop() ?? '').toLowerCase() : '';
-  return associations[extension] || null;
 }

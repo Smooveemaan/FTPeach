@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { PaneState } from '../features/file-browser/index.ts';
-import type { PaneId } from '../shared/paneContracts.ts';
+import type { PaneId, PaneStatus } from '../shared/paneContracts.ts';
 import type StatusBar from './StatusBar.tsx';
 import type TransferLogSection from './TransferLogSection.tsx';
 import type { WorkspaceProps } from './Workspace.tsx';
@@ -23,6 +23,18 @@ interface ApplicationWorkspaceModelOptions extends Omit<
     StatusBarProps,
     'leftCount' | 'rightCount' | 'leftSelectedCount' | 'rightSelectedCount' | 'logLineCount'
   >;
+}
+
+export function connectionVisualState(
+  status: PaneStatus,
+  hasActiveTransfers: boolean,
+  hasPausedTransfers: boolean,
+) {
+  if (status === 'connected') {
+    if (hasActiveTransfers) return 'transferring';
+    return hasPausedTransfers ? 'paused' : 'connected';
+  }
+  return status;
 }
 
 /** Builds the complete view contract consumed by Workspace. */

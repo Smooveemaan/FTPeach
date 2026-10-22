@@ -33,14 +33,17 @@ import AppDialogs from './AppDialogs.tsx';
 import { useApplicationSettings } from './useApplicationSettings.ts';
 import UpdateStatus from './UpdateStatus.tsx';
 import { useUpdateBanner } from './useUpdateBanner.ts';
-import { useResetLayout } from './useResetLayout.ts';
+import { createResetLayout } from './resetLayout.ts';
 import { useTrayBridge } from './tray/useTrayBridge.ts';
 import { useVaultState } from './useVaultState.ts';
 import QuitDialog from './quit/QuitDialog.tsx';
 import { useQuitWhenIdle } from './quit/useQuitWhenIdle.ts';
-import { connectionVisualState, useApplicationError } from './useApplicationController.ts';
+import { useApplicationError } from './useApplicationError.ts';
 import { useApplicationMenuCommands } from './useApplicationMenuCommands.ts';
-import { buildApplicationWorkspaceModel } from './applicationWorkspaceModel.ts';
+import {
+  buildApplicationWorkspaceModel,
+  connectionVisualState,
+} from './applicationWorkspaceModel.ts';
 import { buildApplicationDialogsModel } from './applicationDialogsModel.ts';
 import { handler, reportRejection } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
@@ -340,7 +343,7 @@ export default function Application() {
   const clipboard = useFileClipboard({ browser, transfers });
 
   const [transferLayoutVersion, setTransferLayoutVersion] = useState(0);
-  const resetLayout = useResetLayout({
+  const resetLayout = createResetLayout({
     onReset: () => setTransferLayoutVersion((version) => version + 1),
     confirm: requestConfirm,
     confirmMessage: t('confirm.resetLayout'),

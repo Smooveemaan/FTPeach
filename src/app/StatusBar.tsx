@@ -5,7 +5,7 @@ import NoticeText from '../components/NoticeText.tsx';
 import { useFitLevel } from '../hooks/useFitLevel.ts';
 import { subscribeTransfers } from '../features/transfers/index.ts';
 import type { PaneStatus } from '../shared/paneContracts.ts';
-import type { connectionVisualState } from './useApplicationController.ts';
+import type { connectionVisualState } from './applicationWorkspaceModel.ts';
 import { useNoticeSwap, type StatusNotice } from '../hooks/useStatusNotice.ts';
 
 type PaneOrientation = 'horizontal' | 'vertical';

@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  associatedApplication,
-  connectionVisualState,
-} from '../../../src/app/useApplicationController.ts';
+import { associatedApplication } from '../../../src/app/applicationDialogsModel.ts';
+import { connectionVisualState } from '../../../src/app/applicationWorkspaceModel.ts';
 
 test('connection visual state tells transfers, pauses and failures apart', () => {
   assert.equal(connectionVisualState('connected', false, false), 'connected');

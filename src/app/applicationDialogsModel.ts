@@ -1,6 +1,5 @@
 import { commandResultError } from '../shared/errorMessages.ts';
 import type { AppDialogsModel } from './AppDialogs.tsx';
-import { associatedApplication } from './useApplicationController.ts';
 import { api } from '../platform/api/index.ts';
 
 type ChmodTarget = Parameters<AppDialogsModel['paneActions']['chmod']>[0];
@@ -21,6 +20,12 @@ export interface ApplicationDialogsModelOptions extends Omit<
   openWith: Omit<AppDialogsModel['openWith'], 'applicationFor'>;
   openWithAssociations: Record<string, string>;
   services: ApplicationDialogsServices;
+}
+
+export function associatedApplication(path: string, associations: Record<string, string>) {
+  const name = path.split('/').pop() || '';
+  const extension = name.includes('.') ? (name.split('.').pop() ?? '').toLowerCase() : '';
+  return associations[extension] || null;
 }
 
 export async function applyPaneMode(

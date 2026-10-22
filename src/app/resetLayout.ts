@@ -14,7 +14,8 @@ interface ResetLayoutOptions {
   hydrateLayout: (settings: AppSettings) => void;
 }
 
-export function useResetLayout(options: ResetLayoutOptions): () => void {
+/** Reset Layout and Cache: asks first, then resets and redraws. */
+export function createResetLayout(options: ResetLayoutOptions): () => void {
   return () => {
     options.confirm(
       options.confirmMessage,

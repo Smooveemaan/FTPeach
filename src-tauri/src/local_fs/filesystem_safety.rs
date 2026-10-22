@@ -210,7 +210,14 @@ fn absolute_lexical(path: impl Into<PathBuf>) -> Option<PathBuf> {
     Some(normalized)
 }
 
-fn protected_paths() -> Vec<PathBuf> {
+/// Resolved once, like [`app_owned_paths`]: the profile, the data folder and
+/// the program folder stay put while the program runs.
+fn protected_paths() -> &'static [PathBuf] {
+    static PATHS: std::sync::OnceLock<Vec<PathBuf>> = std::sync::OnceLock::new();
+    PATHS.get_or_init(resolve_protected_paths)
+}
+
+fn resolve_protected_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
     if let Some(profile) = std::env::var_os("USERPROFILE").and_then(absolute_lexical) {
         paths.push(profile);
@@ -453,7 +460,7 @@ async fn validated_target(
     if is_filesystem_root(&canonical) {
         return Err(refused("Refusing to delete a filesystem root"));
     }
-    if target_contains_protected_path(&canonical, &protected_paths()) || is_app_owned(&canonical) {
+    if target_contains_protected_path(&canonical, protected_paths()) || is_app_owned(&canonical) {
         return Err(refused(
             "Refusing to delete a protected application or user directory",
         ));

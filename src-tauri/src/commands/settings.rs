@@ -1,9 +1,6 @@
 use crate::domain::AppSettings;
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
 use crate::runtime::log_emitter::LogEmitter;
-use crate::runtime::settings_apply::{
-    apply_log_date_format, apply_log_folder, apply_prevent_sleep, apply_transfer_limits,
-};
 use crate::runtime::vault_auto_lock::apply_idle_timeout;
 use crate::security::auto_lock::AutoLock;
 use crate::security::security_policy;
@@ -58,12 +55,6 @@ pub async fn settings_reveal_proxy_password(
     Ok(store.reveal_proxy_password(&vault).await?)
 }
 
-/// Whether a patch changes a limit running transfers must pick up. The
-/// window saves only the settings that changed, so either may come alone.
-fn changes_transfer_limits(patch: &JsonMap) -> bool {
-    patch.contains_key("concurrency") || patch.contains_key("transferSpeedLimitKBps")
-}
-
 #[tauri::command]
 pub async fn settings_set(
     store: State<'_, Store>,
@@ -82,23 +73,8 @@ pub async fn settings_set(
     if let Some(Value::String(folder)) = patch.get_mut("logFolder") {
         *folder = crate::local_fs::portable::stored_path(folder, crate::local_fs::portable::root());
     }
-    let had_transfer_limits = changes_transfer_limits(&patch);
-    let had_prevent_sleep = patch.contains_key("preventSleepDuringTransfers");
-    let had_date_format = patch.contains_key("dateFormat");
-    let had_log_folder = patch.contains_key("logFolder");
     let next = store.set_settings_with_vault(patch, &vault).await?;
-    if had_transfer_limits {
-        apply_transfer_limits(&next);
-    }
-    if had_prevent_sleep {
-        apply_prevent_sleep(&next);
-    }
-    if had_date_format {
-        apply_log_date_format(&next, &log_emitter);
-    }
-    if had_log_folder {
-        apply_log_folder(&next, &store, &log_emitter);
-    }
+    crate::runtime::settings_apply::apply(&next, &store, &log_emitter);
     Ok(AppSettings(strip_proxy_secret(next)))
 }
 
@@ -142,20 +118,6 @@ pub async fn settings_set_security(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn either_transfer_limit_saved_alone_is_applied() {
-        let patch = |value| serde_json::from_value::<JsonMap>(value).unwrap();
-        assert!(changes_transfer_limits(&patch(
-            serde_json::json!({"concurrency": 1})
-        )));
-        assert!(changes_transfer_limits(&patch(
-            serde_json::json!({"transferSpeedLimitKBps": 100})
-        )));
-        assert!(!changes_transfer_limits(&patch(
-            serde_json::json!({"theme": "dark"})
-        )));
-    }
 
     #[test]
     fn ordinary_settings_ipc_exposes_only_proxy_password_presence() {

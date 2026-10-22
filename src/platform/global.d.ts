@@ -77,7 +77,6 @@ declare global {
         onKeyDown: (callback: (event: KeyboardEvent) => void) => () => void;
       };
       log: {
-        setFileLogging: (enabled: boolean | undefined) => unknown;
         /** Opens the folder the log files are written to. */
         openFolder: (folder: string) => Promise<CommandResult>;
         /** The protocol log the backend still holds, oldest first; empty on failure. */

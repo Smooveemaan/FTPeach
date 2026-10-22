@@ -9,20 +9,6 @@ use tauri::{AppHandle, State};
 /// Largest renderer log the user can save to a file.
 const MAX_RENDERER_LOG_BYTES: usize = 2 * 1024 * 1024;
 
-#[derive(Serialize)]
-pub struct OkFlag {
-    ok: bool,
-}
-
-#[tauri::command]
-pub async fn log_set_file_logging(
-    emitter: State<'_, LogEmitter>,
-    enabled: bool,
-) -> CommandResult<OkFlag> {
-    emitter.set_file_logging_enabled(enabled);
-    Ok(OkFlag { ok: true })
-}
-
 /// Opens the folder the Logging settings show, `folder` as typed there and
 /// maybe not saved yet; empty is FTPeach's own logs folder. Saving the
 /// setting would point the log at it anyway, so this opens nothing new.

@@ -200,9 +200,6 @@ type SettingsApi = {
   set: (patch: SettingsPatch) => Promise<SettingsSetResult>;
   get: () => Promise<Record<string, unknown>>;
 };
-type LogApi = {
-  setFileLogging: (enabled: boolean | undefined) => unknown;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -423,8 +420,7 @@ export interface SettingsModel {
 
 export function useSettings({
   settingsApi = api.settings,
-  logApi = api.log,
-}: { settingsApi?: SettingsApi; logApi?: LogApi } = {}): SettingsModel {
+}: { settingsApi?: SettingsApi } = {}): SettingsModel {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
   // One updater per group, so a consumer that owns a group can change any
@@ -440,27 +436,20 @@ export function useSettings({
     [],
   );
 
-  const applySettings = useCallback(
-    (settings: AppSettings) => {
-      dispatch({ type: 'hydrate', settings });
-      if (settings.logToFile) logApi.setFileLogging(true);
-    },
-    [logApi],
-  );
+  // The backend applies what it saved itself, the log file included.
+  const applySettings = useCallback((settings: AppSettings) => {
+    dispatch({ type: 'hydrate', settings });
+  }, []);
 
-  const applySettingsDialogPatch = useCallback(
-    (patch: SettingsPatch) => {
-      const livePatch = Object.fromEntries(
-        Object.entries(patch).filter(
-          ([name]) =>
-            SETTING_NAMES.includes(name as keyof SettingsValues) && name !== 'proxyPasswordSet',
-        ),
-      );
-      dispatch({ type: 'patch', patch: livePatch });
-      if (typeof patch.logToFile === 'boolean') logApi.setFileLogging(patch.logToFile);
-    },
-    [logApi],
-  );
+  const applySettingsDialogPatch = useCallback((patch: SettingsPatch) => {
+    const livePatch = Object.fromEntries(
+      Object.entries(patch).filter(
+        ([name]) =>
+          SETTING_NAMES.includes(name as keyof SettingsValues) && name !== 'proxyPasswordSet',
+      ),
+    );
+    dispatch({ type: 'patch', patch: livePatch });
+  }, []);
 
   const persistSettingsDialogPatch = useCallback(
     (patch: SettingsPatch) =>

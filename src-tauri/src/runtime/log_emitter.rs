@@ -199,6 +199,15 @@ impl LogEmitter {
         self.file_logging.store(enabled, Ordering::Relaxed);
     }
 
+    #[cfg(test)]
+    pub(crate) fn settings_in_use(&self) -> (bool, String, PathBuf) {
+        (
+            self.file_logging.load(Ordering::Relaxed),
+            self.date_format.lock().unwrap().clone(),
+            self.log_dir.lock().unwrap().clone(),
+        )
+    }
+
     /// The folder the daily files go to; the next batch is written there.
     pub fn set_log_dir(&self, dir: PathBuf) {
         *self.log_dir.lock().unwrap() = dir;

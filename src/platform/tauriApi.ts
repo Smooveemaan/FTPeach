@@ -314,7 +314,6 @@ export const tauriApi: Window['api'] = {
   },
   dragOut: createDragOutApi(invoke),
   log: {
-    setFileLogging: (enabled: boolean | undefined) => invoke('log_set_file_logging', { enabled }),
     openFolder: (folder: string) => voidOutcome(invoke, 'log_open_folder', { folder }),
     recent: (): Promise<LogEntry[]> =>
       checkedResponse('log_recent', invoke('log_recent'), isLogEntryArray, (): LogEntry[] => []),

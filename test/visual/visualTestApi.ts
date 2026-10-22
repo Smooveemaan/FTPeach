@@ -294,7 +294,6 @@ export const visualTestApi = {
     onProgress: () => unsubscribe,
   },
   log: {
-    setFileLogging: () => resolved(ok),
     openFolder: () => resolved(ok),
     recent: () => resolved(logHistory()),
     save: () => resolved(ok),

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - An FTP upload set not to replace files no longer replaces a file another program saved under the same name at the last moment.
 - Copying a folder or reading an SFTP key file no longer reports the wrong reason for an error because of a name in the path, such as "Authentication failed" for a folder named 2401.
 - A vault file that cannot be read or saved is no longer reported as a wrong master password, and no longer makes you wait before the next try.
+- Importing settings now applies all of them at once, including the log's date format and turning off writing the log to a file.
 
 ## [0.5.1] - 2026-10-21
 

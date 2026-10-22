@@ -87,7 +87,6 @@ fn main() {
         "log_recent",
         "log_save",
         "log_export_diagnostics",
-        "log_set_file_logging",
         "log_open_folder",
         "notifications_transfers_complete",
         "session_connect",

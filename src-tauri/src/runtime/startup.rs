@@ -122,7 +122,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let log_emitter_for_apply = app.state::<LogEmitter>().inner().clone();
     let app_for_apply = app.handle().clone();
     tauri::async_runtime::spawn(async move {
-        settings_apply::apply_at_startup(&store, &log_emitter_for_apply).await;
+        settings_apply::apply(&store.get_settings().await, &store, &log_emitter_for_apply);
         vault_auto_lock::apply_at_startup(&store, app_for_apply.state::<AutoLock>().inner()).await;
         store.scrub_secret_backups().await;
     });

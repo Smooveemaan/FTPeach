@@ -165,7 +165,6 @@ pub fn run() {
             commands::log::log_recent,
             commands::log::log_save,
             commands::log::log_export_diagnostics,
-            commands::log::log_set_file_logging,
             commands::log::log_open_folder,
             commands::notifications::notifications_transfers_complete,
             commands::session::connection::session_connect,

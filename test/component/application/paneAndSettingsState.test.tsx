@@ -41,12 +41,10 @@ describe('pane and settings state', () => {
       set: vi.fn(async () => ({ proxyPasswordSet: true })),
       get: vi.fn(async () => ({ proxyPasswordSet: false, theme: 'light' })),
     };
-    const logApi = { setFileLogging: vi.fn() };
-    const { result } = renderHook(() => useSettings({ settingsApi, logApi }));
+    const { result } = renderHook(() => useSettings({ settingsApi }));
     act(() =>
       result.current.applySettingsDialogPatch({ theme: 'dark', logEnabled: true, unknown: 1 }),
     );
-    expect(logApi.setFileLogging).not.toHaveBeenCalled();
     expect(result.current.settings.interface.theme).toBe('dark');
     expect((result.current.settings as unknown as Record<string, unknown>).unknown).toBeUndefined();
     expect(settingsApi.set).not.toHaveBeenCalled();
@@ -66,9 +64,7 @@ describe('pane and settings state', () => {
   // menu, say) uses the previewed values, not the saved ones.
   test('a previewed timeout and FTP mode apply to connections before they are saved', () => {
     const settingsApi = { set: vi.fn(async () => ({})), get: vi.fn(async () => ({})) };
-    const { result } = renderHook(() =>
-      useSettings({ settingsApi, logApi: { setFileLogging: vi.fn() } }),
-    );
+    const { result } = renderHook(() => useSettings({ settingsApi }));
     act(() =>
       result.current.applySettingsDialogPatch({ connectTimeout: 5000, ftpActiveMode: true }),
     );

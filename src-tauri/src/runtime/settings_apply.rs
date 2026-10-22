@@ -1,36 +1,30 @@
-//! Pushing a saved setting into the running process: the shared rate
-//! limiter, the sleep guard, and the log emitter's date format.
+//! Pushing the saved settings into the running process: the shared rate
+//! limiter, the sleep guard, and the log's date format, folder and file.
 //!
-//! These are applied from three places -- at startup, when settings are
-//! saved, and when a settings import replaces them -- so they belong to the
-//! runtime rather than to whichever command module ran them first.
+//! [`apply`] is the one rule for all three places that need it: startup, a
+//! save and a settings import.
 
 use crate::runtime::log_emitter::LogEmitter;
 use crate::store::{JsonMap, Store};
 
-/// Brings the process in line with the saved settings once, at startup.
-///
-/// The same three settings are applied when the user saves them and when an
-/// import replaces them; doing it here as well keeps the startup path from
-/// spelling the rules out a fourth time inside `run()`.
-pub async fn apply_at_startup(store: &Store, log_emitter: &LogEmitter) {
-    let settings = store.get_settings().await;
-    apply_transfer_limits(&settings);
-    apply_prevent_sleep(&settings);
-    apply_log_date_format(&settings, log_emitter);
-    apply_log_folder(&settings, store, log_emitter);
-    if settings
-        .get("logToFile")
-        .and_then(|value| value.as_bool())
-        .unwrap_or(false)
-    {
-        log_emitter.set_file_logging_enabled(true);
-    }
+/// Brings the process in line with `settings`. Every setter is cheap and
+/// idempotent, so all of them run whatever changed.
+pub fn apply(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
+    apply_transfer_limits(settings);
+    apply_prevent_sleep(settings);
+    apply_log_date_format(settings, log_emitter);
+    apply_log_folder(settings, store, log_emitter);
+    log_emitter.set_file_logging_enabled(
+        settings
+            .get("logToFile")
+            .and_then(|value| value.as_bool())
+            .unwrap_or(false),
+    );
 }
 
 /// Where "Write log to file" writes: the chosen folder, or FTPeach's own
 /// logs folder when none is chosen.
-pub fn apply_log_folder(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
+fn apply_log_folder(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
     let folder = settings
         .get("logFolder")
         .and_then(|value| value.as_str())
@@ -61,7 +55,7 @@ fn chosen_log_folder(
         .filter(|folder| folder.is_absolute())
 }
 
-pub fn apply_log_date_format(settings: &JsonMap, log_emitter: &LogEmitter) {
+fn apply_log_date_format(settings: &JsonMap, log_emitter: &LogEmitter) {
     let format = settings
         .get("dateFormat")
         .and_then(|value| value.as_str())
@@ -69,7 +63,7 @@ pub fn apply_log_date_format(settings: &JsonMap, log_emitter: &LogEmitter) {
     log_emitter.set_date_format(format);
 }
 
-pub fn apply_transfer_limits(settings: &JsonMap) {
+fn apply_transfer_limits(settings: &JsonMap) {
     let concurrency = settings
         .get("concurrency")
         .and_then(|v| v.as_u64())
@@ -82,7 +76,7 @@ pub fn apply_transfer_limits(settings: &JsonMap) {
     crate::transfer::rate_limiter::shared().set_rate(kbps * 1024);
 }
 
-pub fn apply_prevent_sleep(settings: &JsonMap) {
+fn apply_prevent_sleep(settings: &JsonMap) {
     let enabled = settings
         .get("preventSleepDuringTransfers")
         .and_then(|v| v.as_bool())
@@ -93,6 +87,37 @@ pub fn apply_prevent_sleep(settings: &JsonMap) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// What a save or an import turns off is turned off too, not only what
+    /// it turns on.
+    #[tokio::test]
+    async fn every_log_setting_follows_the_settings_both_ways() {
+        let root = std::env::temp_dir().join(format!("ftpeach-apply-{}", uuid::Uuid::new_v4()));
+        let store = Store::new_at(root.clone());
+        let emitter = LogEmitter::start(root.join("logs"), |_| {});
+        let settings = |value| serde_json::from_value::<JsonMap>(value).unwrap();
+        apply(
+            &settings(serde_json::json!({
+                "logToFile": true, "dateFormat": "iso", "logFolder": r"D:\logs"
+            })),
+            &store,
+            &emitter,
+        );
+        assert_eq!(
+            emitter.settings_in_use(),
+            (true, "iso".into(), std::path::PathBuf::from(r"D:\logs"))
+        );
+        apply(
+            &settings(serde_json::json!({"logToFile": false})),
+            &store,
+            &emitter,
+        );
+        assert_eq!(
+            emitter.settings_in_use(),
+            (false, "locale".into(), store.logs_dir())
+        );
+        let _ = std::fs::remove_dir_all(root);
+    }
 
     #[test]
     fn the_log_folder_is_the_chosen_one_or_none() {

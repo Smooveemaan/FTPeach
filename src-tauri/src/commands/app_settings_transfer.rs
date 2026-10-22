@@ -847,9 +847,7 @@ pub async fn app_import_apply(
     slot.take();
     drop(slot);
     if let Some(next) = settings.as_ref() {
-        crate::runtime::settings_apply::apply_transfer_limits(next);
-        crate::runtime::settings_apply::apply_prevent_sleep(next);
-        crate::runtime::settings_apply::apply_log_folder(
+        crate::runtime::settings_apply::apply(
             next,
             &store,
             &tauri::Manager::state::<crate::runtime::log_emitter::LogEmitter>(&app),

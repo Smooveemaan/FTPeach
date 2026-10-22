@@ -85,6 +85,10 @@ pub(crate) struct FsEntry {
     pub(crate) size: u64,
     pub(crate) modified_at: Option<String>,
     pub(crate) created_at: Option<String>,
+    /// A link, a junction or another reparse point: approving it to be
+    /// opened needs its target resolved.
+    #[serde(skip)]
+    pub(crate) is_reparse_point: bool,
 }
 
 pub(crate) async fn list_directory(
@@ -183,6 +187,14 @@ fn list_with_metadata(
         };
         #[cfg(not(windows))]
         let is_hidden = name.starts_with('.');
+        #[cfg(windows)]
+        let is_reparse_point = {
+            use std::os::windows::fs::MetadataExt;
+            // FILE_ATTRIBUTE_REPARSE_POINT
+            meta.file_attributes() & 0x400 != 0
+        };
+        #[cfg(not(windows))]
+        let is_reparse_point = meta.file_type().is_symlink();
         entries.push(FsEntry {
             name,
             is_directory,
@@ -190,6 +202,7 @@ fn list_with_metadata(
             size,
             modified_at,
             created_at,
+            is_reparse_point,
         });
     }
     Ok(entries)

@@ -74,12 +74,13 @@ pub async fn fs_list(
                 let token = request.token.clone();
                 let entries = tokio::task::spawn_blocking(move || {
                     let _permit = permit;
-                    for entry in &entries {
-                        if token.is_cancelled() {
-                            break;
-                        }
-                        approvals.approve_from_listing(&approval_target.join(&entry.name));
-                    }
+                    approvals.approve_listed(
+                        &approval_target,
+                        entries
+                            .iter()
+                            .map(|entry| (entry.name.as_str(), entry.is_reparse_point)),
+                        || token.is_cancelled(),
+                    );
                     entries
                 })
                 .await
@@ -697,6 +698,34 @@ mod grant_tests {
         let file = std::env::temp_dir().join(format!("ftpeach-grant-{}.txt", uuid::Uuid::new_v4()));
         std::fs::write(&file, b"keep").unwrap();
         (app, window, file.to_string_lossy().into_owned())
+    }
+
+    #[tokio::test]
+    async fn a_listed_file_can_be_opened_and_one_made_after_cannot() {
+        let (app, _window, stray) = ungranted();
+        std::fs::remove_file(stray).unwrap();
+        let folder = std::env::temp_dir().join(format!("ftpeach-listed-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&folder).unwrap();
+        let file = folder.join("shown.txt");
+        std::fs::write(&file, b"x").unwrap();
+        let listed = fs_list(
+            app.state(),
+            Some(folder.to_string_lossy().into_owned()),
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(listed.entries.len(), 1);
+        let approved = app.state::<crate::local_fs::local_open::ApprovedLocalPaths>();
+        let open = crate::local_fs::local_open::OpenKind::Document;
+        assert!(approved.validate(&file, open).is_ok());
+        let later = folder.join("later.txt");
+        std::fs::write(&later, b"x").unwrap();
+        assert_eq!(
+            approved.validate(&later, open).unwrap_err().code,
+            ErrorCode::PermissionDenied
+        );
+        std::fs::remove_dir_all(folder).unwrap();
     }
 
     #[tokio::test]

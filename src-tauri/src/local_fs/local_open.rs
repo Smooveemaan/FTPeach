@@ -140,19 +140,53 @@ impl ApprovedLocalPaths {
             return;
         }
         if let Ok(canonical) = std::fs::canonicalize(path) {
-            if is_network_path(&canonical) {
-                let confirmed = self.network_paths.lock().ok().is_some_and(|paths| {
-                    paths
-                        .iter()
-                        .any(|root| canonical_key_is_within(&key(&canonical), root))
-                });
-                if !confirmed {
-                    return;
-                }
+            self.approve_canonical(&canonical);
+        }
+    }
+
+    /// Approves what a listing of `folder` showed. The folder is resolved
+    /// once, and an ordinary entry's canonical path is the folder's with its
+    /// name. A reparse point (a link, a junction, a cloud placeholder) is
+    /// resolved on its own, since its target is what opening it reaches. An
+    /// entry replaced by a link after the listing resolves elsewhere when it
+    /// is opened, so it is refused there.
+    pub fn approve_listed<'a>(
+        &self,
+        folder: &Path,
+        entries: impl IntoIterator<Item = (&'a str, bool)>,
+        stopped: impl Fn() -> bool,
+    ) {
+        if self.preflight(folder).is_err() {
+            return;
+        }
+        let Ok(canonical_folder) = std::fs::canonicalize(folder) else {
+            return;
+        };
+        for (name, reparse_point) in entries {
+            if stopped() {
+                break;
             }
-            if let Ok(mut paths) = self.paths.lock() {
-                paths.insert(key(&canonical));
+            if reparse_point {
+                self.approve_from_listing(&folder.join(name));
+            } else {
+                self.approve_canonical(&canonical_folder.join(name));
             }
+        }
+    }
+
+    fn approve_canonical(&self, canonical: &Path) {
+        if is_network_path(canonical) {
+            let confirmed = self.network_paths.lock().ok().is_some_and(|paths| {
+                paths
+                    .iter()
+                    .any(|root| canonical_key_is_within(&key(canonical), root))
+            });
+            if !confirmed {
+                return;
+            }
+        }
+        if let Ok(mut paths) = self.paths.lock() {
+            paths.insert(key(canonical));
         }
     }
 
@@ -413,6 +447,81 @@ mod tests {
             std::fs::canonicalize(target).unwrap()
         );
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[tokio::test]
+    async fn a_listing_approves_what_it_showed_and_nothing_else() {
+        let root = std::env::temp_dir().join(format!("ftpeach-listed-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("Sub")).unwrap();
+        std::fs::write(root.join("Report.TXT"), b"x").unwrap();
+        let entries = crate::local_fs::fs_listing::list_directory(
+            &root,
+            &tokio_util::sync::CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+        std::fs::write(root.join("later.txt"), b"x").unwrap();
+        let state = ApprovedLocalPaths::default();
+        state.approve_listed(
+            &root,
+            entries
+                .iter()
+                .map(|e| (e.name.as_str(), e.is_reparse_point)),
+            || false,
+        );
+        // Spelled as the user may type it: case and a `.` segment differ.
+        let typed = root.join(".").join("report.txt");
+        assert_eq!(
+            state.validate(&typed, OpenKind::Document).unwrap(),
+            std::fs::canonicalize(root.join("Report.TXT")).unwrap()
+        );
+        assert!(state.validate(&root.join("Sub"), OpenKind::Reveal).is_ok());
+        assert_eq!(
+            state
+                .validate(&root.join("later.txt"), OpenKind::Document)
+                .unwrap_err()
+                .code,
+            ErrorCode::PermissionDenied
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_listed_file_replaced_by_a_link_afterwards_is_refused() {
+        use std::os::windows::fs::symlink_file;
+
+        let root = std::env::temp_dir().join(format!("ftpeach-swap-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let listed = root.join("listed.txt");
+        let elsewhere = root.join("elsewhere.txt");
+        std::fs::write(&listed, b"x").unwrap();
+        std::fs::write(&elsewhere, b"secret").unwrap();
+        let state = ApprovedLocalPaths::default();
+        state.approve_listed(&root, [("listed.txt", false)], || false);
+        std::fs::remove_file(&listed).unwrap();
+        if let Err(error) = symlink_file(&elsewhere, &listed) {
+            if error.raw_os_error() == Some(1314) {
+                // CI runs elevated, where a skip would hide a broken fixture.
+                assert!(
+                    std::env::var_os("CI").is_none(),
+                    "CI could not create a symlink: {error}"
+                );
+                eprintln!("skipping symlink assertion: Windows symlink privilege is unavailable");
+                std::fs::remove_dir_all(root).unwrap();
+                return;
+            }
+            panic!("creating test symlink failed: {error}");
+        }
+        assert_eq!(
+            state
+                .validate(&listed, OpenKind::Document)
+                .unwrap_err()
+                .code,
+            ErrorCode::PermissionDenied
+        );
+        std::fs::remove_file(&listed).unwrap();
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(windows)]

@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Saved servers are called bookmarks in every message, in every language, not sites or saved servers.
+- A local folder with many thousands of files opens faster.
 
 ### Security
 

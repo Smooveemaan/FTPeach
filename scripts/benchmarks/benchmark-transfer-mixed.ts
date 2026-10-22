@@ -91,7 +91,7 @@ for (const count of [1000, 10_000, 100_000]) {
 }
 mkdirSync('.local/benchmarks', { recursive: true });
 writeFileSync(
-  '.local/benchmarks/stage3-mixed-store.json',
+  '.local/benchmarks/mixed-store.json',
   JSON.stringify(
     {
       commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),

@@ -35,4 +35,4 @@ const result = {
 };
 console.log(JSON.stringify(result));
 mkdirSync('.local/benchmarks', { recursive: true });
-writeFileSync('.local/benchmarks/stage3-file-filter.json', JSON.stringify(result, null, 2));
+writeFileSync('.local/benchmarks/file-filter.json', JSON.stringify(result, null, 2));

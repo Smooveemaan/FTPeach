@@ -12,6 +12,11 @@ The JSON includes schema/fixture versions, commit and dirty flag, environment, a
 
 The older `benchmark:frontend`, `benchmark:transfer-history` and `benchmark:transfer-ui` commands remain available. Their completed-history and Chromium results are separate scenarios, not interchangeable with the mixed-queue baseline.
 
+Two more each time the current code against the slower one it replaced, which the script models itself. Run them on an idle machine after changing the code they measure, to see that the change kept its advantage:
+
+- `npm run benchmark:transfer-mixed` times a progress update to 1, 8 or 32 active rows in queues of 1,000, 10,000 and 100,000 rows, through `transferStore.ts`, against rescanning and reindexing the whole queue on every update. It writes `.local/benchmarks/mixed-store.json`.
+- `npm run benchmark:file-filter` times filtering 100,000 entries, already sorted once, by name as the file pane does (`useFilePaneSorting.ts`), against filtering and sorting them again for each filter text. It fails if the two disagree on the order and writes `.local/benchmarks/file-filter.json`.
+
 ## Recursive-operation acceptance matrix
 
 All tests below are in `src-tauri/src/application/recursive_transfer/tests.rs` and run with `npm run rust:test`. Local files are created only under unique temporary roots; remote cases use the in-memory `Server`, never a user's server. Hooks interrupt after a delivered file or inject a mutation after the final scan, without timing-dependent sleeps.

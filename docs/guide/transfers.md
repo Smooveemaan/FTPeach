@@ -120,8 +120,8 @@ over. This does not restore the old queue automatically. Check the new row's
 result before opening the downloaded file.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a real (non-user-initiated) transfer failure reports the error and marks the row -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_download_lifecycle_writes_resumes_and_commits_once -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_download_lifecycle_writes_resumes_and_commits_once -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 
 ### When an upload is interrupted
 
@@ -154,18 +154,18 @@ a new download. This compares the server's metadata, not the complete file
 contents: a same-size change with the same reported version can go unnoticed.
 See [resume limits](protocol-reference.md#limitations).
 
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
 
 If a download does not finish, a file you already had under that name is kept
 unchanged.
 
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
 
 A download that fails before receiving anything, such as one of a file deleted
 on the server, leaves nothing beside the destination.
 
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_download_that_gets_nothing_leaves_nothing_behind -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_download_that_gets_nothing_leaves_nothing_behind -->
 
 ## Downloaded files
 

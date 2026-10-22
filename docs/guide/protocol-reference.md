@@ -105,10 +105,10 @@ unknown source information starts a fresh download. The partial replaces the
 destination only after its size is verified; a short download keeps the previous
 destination intact.
 
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::partial_is_a_sibling_with_stable_suffix -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::partial_is_a_sibling_with_stable_suffix -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
 
 WebDAV resumes with a Range request and validates the returned range. If the
 server ignores Range, the download restarts. A version read in the same second
@@ -136,7 +136,7 @@ one-second time resolution. Replacing a file with different content of the
 same size within that second can escape this check. If a file is being rewritten,
 download it again from the start instead of resuming it.
 
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 
 FTP active mode needs the server to connect back to your computer and is
 disabled when using a proxy. SOCKS4/4a cannot address IPv6 destinations;

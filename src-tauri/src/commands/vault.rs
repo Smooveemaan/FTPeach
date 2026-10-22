@@ -225,7 +225,7 @@ pub async fn vault_reset(
         &window,
         &authorization,
         &authorization_token,
-        "vault_reset",
+        crate::security::sensitive::SensitiveOperation::VaultReset,
         "vault",
     )?;
     authorized_reset(window.app_handle(), &vault, &guard, &store).await
@@ -280,7 +280,7 @@ pub async fn vault_use_system_protection(
         &window,
         &authorization,
         &authorization_token,
-        "vault_use_system_protection",
+        crate::security::sensitive::SensitiveOperation::VaultUseSystemProtection,
         "vault",
     )?;
     authorized_system_protection(window.app_handle(), &vault, &store).await

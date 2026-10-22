@@ -1,11 +1,17 @@
 use super::*;
 
-fn grant(state: &AuthorizationState, token: &str, operation: &str, target: &str, expires: Instant) {
+fn grant(
+    state: &AuthorizationState,
+    token: &str,
+    operation: SensitiveOperation,
+    target: &str,
+    expires: Instant,
+) {
     state.grants.lock().unwrap().insert(
         token.into(),
         Grant {
             window: "main".into(),
-            operation: operation.into(),
+            operation,
             target: target.into(),
             expires,
             vault_epoch: state.vault_epoch(),
@@ -19,7 +25,7 @@ fn missing_token_is_permission_denied() {
         "main",
         &AuthorizationState::default(),
         "missing",
-        "vault_reset",
+        Op::VaultReset,
         "vault",
     )
     .unwrap_err();
@@ -29,15 +35,15 @@ fn missing_token_is_permission_denied() {
 #[test]
 fn token_is_bound_to_window_operation_and_target_and_is_one_time() {
     for (window, operation, target) in [
-        ("other", "vault_reset", "vault"),
-        ("main", "fs_open_document", "vault"),
-        ("main", "vault_reset", "other"),
+        ("other", Op::VaultReset, "vault"),
+        ("main", Op::FsOpenDocument, "vault"),
+        ("main", Op::VaultReset, "other"),
     ] {
         let state = AuthorizationState::default();
         grant(
             &state,
             "token",
-            "vault_reset",
+            Op::VaultReset,
             "vault",
             Instant::now() + TOKEN_TTL,
         );
@@ -47,12 +53,12 @@ fn token_is_bound_to_window_operation_and_target_and_is_one_time() {
     grant(
         &state,
         "token",
-        "vault_reset",
+        Op::VaultReset,
         "vault",
         Instant::now() + TOKEN_TTL,
     );
-    assert!(consume_for_label("main", &state, "token", "vault_reset", "vault").is_ok());
-    assert!(consume_for_label("main", &state, "token", "vault_reset", "vault").is_err());
+    assert!(consume_for_label("main", &state, "token", Op::VaultReset, "vault").is_ok());
+    assert!(consume_for_label("main", &state, "token", Op::VaultReset, "vault").is_err());
 }
 
 #[test]
@@ -61,17 +67,17 @@ fn expired_token_is_permission_denied() {
     grant(
         &state,
         "token",
-        "vault_reset",
+        Op::VaultReset,
         "vault",
         Instant::now() - Duration::from_secs(1),
     );
-    assert!(consume_for_label("main", &state, "token", "vault_reset", "vault").is_err());
+    assert!(consume_for_label("main", &state, "token", Op::VaultReset, "vault").is_err());
 }
 
 #[test]
 fn secret_confirmation_does_not_expose_internal_identifiers() {
     let prompt = confirmation_prompt(
-        "sites_reveal_secret",
+        Op::SitesRevealSecret,
         "7f2d1eb0-cc22-4135-b186-2b0018326fdd:password",
         "ru".into(),
         true,
@@ -86,22 +92,22 @@ fn secret_confirmation_does_not_expose_internal_identifiers() {
 #[test]
 fn confirmation_is_reserved_for_secrets_reset_and_executables() {
     for operation in [
-        "sites_reveal_secret",
-        "settings_reveal_proxy_password",
-        "vault_reset",
-        "fs_execute_path",
+        Op::SitesRevealSecret,
+        Op::SettingsRevealProxyPassword,
+        Op::VaultReset,
+        Op::FsExecutePath,
     ] {
         assert!(requires_confirmation(operation));
     }
 
     for operation in [
-        "fs_delete",
-        "fs_reveal_path",
-        "fs_open_document",
-        "app_export_settings",
-        "app_import_preview",
-        "app_import_apply",
-        "app_import_discard",
+        Op::FsDelete,
+        Op::FsRevealPath,
+        Op::FsOpenDocument,
+        Op::AppExportSettings,
+        Op::AppImportPreview,
+        Op::AppImportApply,
+        Op::AppImportDiscard,
     ] {
         assert!(!requires_confirmation(operation));
     }
@@ -110,7 +116,7 @@ fn confirmation_is_reserved_for_secrets_reset_and_executables() {
 #[test]
 fn an_export_names_whether_it_carries_the_saved_passwords() {
     let plain = plan_operation(
-        "app_export_settings",
+        Op::AppExportSettings,
         "native-dialog",
         true,
         false,
@@ -124,7 +130,7 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
     // and with a vault behind the master password or Windows Hello.
     for vault_configured in [true, false] {
         let plan = plan_operation(
-            "app_export_settings",
+            Op::AppExportSettings,
             "secrets",
             vault_configured,
             false,
@@ -137,13 +143,13 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
         assert_eq!(prompt.kind, ConfirmationKind::ExportSecrets);
         assert_eq!(prompt.requires_reauthentication, vault_configured);
     }
-    assert!(plan_operation("app_export_settings", "anything", true, false, "en".into()).is_err());
+    assert!(plan_operation(Op::AppExportSettings, "anything", true, false, "en".into()).is_err());
 }
 
 #[test]
 fn a_damaged_vault_is_started_over_not_reset() {
     let kind = |damaged| {
-        plan_operation("vault_reset", "", false, damaged, "en".into())
+        plan_operation(Op::VaultReset, "", false, damaged, "en".into())
             .unwrap()
             .prompt
             .unwrap()
@@ -223,7 +229,7 @@ fn open_with_grant_rejects_another_connection_program_or_path() {
         grant(
             &state,
             "token",
-            "open_with_start",
+            Op::OpenWithStart,
             &approved.grant_target(),
             Instant::now() + TOKEN_TTL,
         );
@@ -232,7 +238,7 @@ fn open_with_grant_rejects_another_connection_program_or_path() {
                 "main",
                 &state,
                 "token",
-                "open_with_start",
+                Op::OpenWithStart,
                 &other.grant_target()
             )
             .is_err()
@@ -242,7 +248,7 @@ fn open_with_grant_rejects_another_connection_program_or_path() {
     grant(
         &state,
         "token",
-        "open_with_start",
+        Op::OpenWithStart,
         &approved.grant_target(),
         Instant::now() + TOKEN_TTL,
     );
@@ -251,7 +257,7 @@ fn open_with_grant_rejects_another_connection_program_or_path() {
             "main",
             &state,
             "token",
-            "open_with_start",
+            Op::OpenWithStart,
             &approved.grant_target()
         )
         .is_ok()
@@ -260,7 +266,7 @@ fn open_with_grant_rejects_another_connection_program_or_path() {
 
 #[test]
 fn vault_reset_requires_typed_confirmation() {
-    let prompt = confirmation_prompt("vault_reset", "vault", "en".into(), false).unwrap();
+    let prompt = confirmation_prompt(Op::VaultReset, "vault", "en".into(), false).unwrap();
     assert_eq!(prompt.kind, ConfirmationKind::VaultReset);
     assert_eq!(prompt.confirmation_phrase.as_deref(), Some("RESET"));
     assert_eq!(prompt.target, None);
@@ -269,7 +275,7 @@ fn vault_reset_requires_typed_confirmation() {
 #[test]
 fn executable_confirmation_exposes_only_the_canonical_target() {
     let prompt =
-        confirmation_prompt("fs_execute_path", "C:\\safe\\tool.exe", "en".into(), false).unwrap();
+        confirmation_prompt(Op::FsExecutePath, "C:\\safe\\tool.exe", "en".into(), false).unwrap();
     assert_eq!(prompt.kind, ConfirmationKind::ExecuteLocalFile);
     assert_eq!(prompt.target.as_deref(), Some("C:\\safe\\tool.exe"));
 }
@@ -277,7 +283,7 @@ fn executable_confirmation_exposes_only_the_canonical_target() {
 #[test]
 fn executable_confirmation_shows_the_path_without_the_verbatim_prefix() {
     let prompt = confirmation_prompt(
-        "fs_execute_path",
+        Op::FsExecutePath,
         "\\\\?\\C:\\safe\\tool.exe",
         "en".into(),
         false,
@@ -288,35 +294,35 @@ fn executable_confirmation_shows_the_path_without_the_verbatim_prefix() {
 
 #[test]
 fn disabled_confirmations_never_suppress_vault_reset() {
-    assert!(should_show_confirmation("vault_reset", true, false));
+    assert!(should_show_confirmation(Op::VaultReset, true, false));
     assert!(!should_show_confirmation(
-        "sites_reveal_secret",
+        Op::SitesRevealSecret,
         true,
         false
     ));
-    assert!(!should_show_confirmation("fs_execute_path", true, false));
-    assert!(should_show_confirmation("fs_execute_path", true, true));
-    assert!(!should_show_confirmation("fs_open_document", false, true));
+    assert!(!should_show_confirmation(Op::FsExecutePath, true, false));
+    assert!(should_show_confirmation(Op::FsExecutePath, true, true));
+    assert!(!should_show_confirmation(Op::FsOpenDocument, false, true));
 }
 
 #[test]
 fn enhanced_secret_reveal_always_prompts_for_reauthentication() {
-    for operation in ["sites_reveal_secret", "settings_reveal_proxy_password"] {
+    for operation in [Op::SitesRevealSecret, Op::SettingsRevealProxyPassword] {
         assert!(should_prompt(operation, true, false, true));
         assert!(should_prompt(operation, true, true, true));
     }
-    assert!(!should_prompt("sites_reveal_secret", true, false, false));
+    assert!(!should_prompt(Op::SitesRevealSecret, true, false, false));
 }
 
 #[test]
 fn relaxing_security_settings_is_confirmed_even_with_confirmations_off() {
     assert!(should_show_confirmation(
-        "settings_set_security",
+        Op::SettingsSetSecurity,
         true,
         false
     ));
     assert!(!should_show_confirmation(
-        "settings_set_security",
+        Op::SettingsSetSecurity,
         false,
         false
     ));
@@ -386,7 +392,7 @@ fn moving_the_proxy_password_is_confirmed_without_reauthentication() {
     )
     .unwrap();
     assert!(!replaced.required);
-    assert!(should_show_confirmation("sites_save", true, false));
+    assert!(should_show_confirmation(Op::SitesSave, true, false));
 }
 
 #[test]
@@ -395,12 +401,12 @@ fn a_policy_change_withdraws_unused_grants() {
     grant(
         &state,
         "token",
-        "vault_reset",
+        Op::VaultReset,
         "vault",
         Instant::now() + TOKEN_TTL,
     );
     state.revoke_all();
-    assert!(consume_for_label("main", &state, "token", "vault_reset", "vault").is_err());
+    assert!(consume_for_label("main", &state, "token", Op::VaultReset, "vault").is_err());
 }
 
 #[tokio::test]
@@ -408,23 +414,23 @@ async fn locking_the_vault_withdraws_grants_issued_before() {
     let dir = std::env::temp_dir().join(format!("ftpeach-grants-{}", uuid::Uuid::new_v4()));
     let vault = Vault::new(dir);
     let state = AuthorizationState::new(vault.clone());
-    let before = issue(&state, "vault_reset", Instant::now());
+    let before = issue(&state, Op::VaultReset, Instant::now());
     vault.lock().await;
-    let after = issue(&state, "vault_reset", Instant::now());
-    assert!(consume_for_label("main", &state, &before, "vault_reset", "vault").is_err());
-    assert!(consume_for_label("main", &state, &after, "vault_reset", "vault").is_ok());
+    let after = issue(&state, Op::VaultReset, Instant::now());
+    assert!(consume_for_label("main", &state, &before, Op::VaultReset, "vault").is_err());
+    assert!(consume_for_label("main", &state, &after, Op::VaultReset, "vault").is_ok());
 }
 
 #[test]
 fn switching_off_enhanced_protection_is_always_confirmed() {
-    assert!(requires_confirmation("vault_use_system_protection"));
+    assert!(requires_confirmation(Op::VaultUseSystemProtection));
     assert!(should_show_confirmation(
-        "vault_use_system_protection",
+        Op::VaultUseSystemProtection,
         true,
         false
     ));
     let prompt =
-        confirmation_prompt("vault_use_system_protection", "vault", "en".into(), true).unwrap();
+        confirmation_prompt(Op::VaultUseSystemProtection, "vault", "en".into(), true).unwrap();
     assert_eq!(prompt.kind, ConfirmationKind::UseSystemProtection);
     assert!(prompt.requires_reauthentication);
 }
@@ -455,10 +461,10 @@ fn the_prompt_follows_the_language_the_main_window_is_showing() {
 #[test]
 fn trusting_a_host_key_is_always_confirmed_for_exactly_the_keys_shown() {
     let shown = r#"{"host":"sftp.example","port":22,"expected":"aa11","actual":"bb22"}"#;
-    assert!(requires_confirmation("session_trust_host_key"));
+    assert!(requires_confirmation(Op::SessionTrustHostKey));
     // Turning confirmations off does not turn this one off.
     assert!(should_show_confirmation(
-        "session_trust_host_key",
+        Op::SessionTrustHostKey,
         true,
         false
     ));
@@ -484,12 +490,12 @@ fn trusting_a_host_key_is_always_confirmed_for_exactly_the_keys_shown() {
         grant(
             &state,
             "token",
-            "session_trust_host_key",
+            Op::SessionTrustHostKey,
             shown,
             Instant::now() + TOKEN_TTL,
         );
         assert!(
-            consume_for_label("main", &state, "token", "session_trust_host_key", other).is_err(),
+            consume_for_label("main", &state, "token", Op::SessionTrustHostKey, other).is_err(),
             "{other}"
         );
     }
@@ -597,8 +603,8 @@ fn a_password_move_asks_for_the_vault_before_the_confirmation() {
     assert!(unlock_before_moving_password(false, true).is_ok());
 }
 
-fn issue(state: &AuthorizationState, operation: &str, now: Instant) -> String {
-    issue_token_for_label(state, "main", operation.into(), "vault".into(), now)
+fn issue(state: &AuthorizationState, operation: SensitiveOperation, now: Instant) -> String {
+    issue_token_for_label(state, "main", operation, "vault".into(), now)
         .unwrap()
         .token
 }
@@ -606,25 +612,25 @@ fn issue(state: &AuthorizationState, operation: &str, now: Instant) -> String {
 #[test]
 fn an_issued_grant_is_accepted_once_for_what_it_was_issued_for() {
     let state = AuthorizationState::default();
-    let token = issue(&state, "vault_reset", Instant::now());
-    assert!(consume_for_label("main", &state, &token, "vault_reset", "other").is_err());
-    let token = issue(&state, "vault_reset", Instant::now());
-    assert!(consume_for_label("main", &state, &token, "vault_reset", "vault").is_ok());
-    assert!(consume_for_label("main", &state, &token, "vault_reset", "vault").is_err());
+    let token = issue(&state, Op::VaultReset, Instant::now());
+    assert!(consume_for_label("main", &state, &token, Op::VaultReset, "other").is_err());
+    let token = issue(&state, Op::VaultReset, Instant::now());
+    assert!(consume_for_label("main", &state, &token, Op::VaultReset, "vault").is_ok());
+    assert!(consume_for_label("main", &state, &token, Op::VaultReset, "vault").is_err());
 }
 
 #[test]
 fn a_grant_lives_as_long_as_its_operation_allows() {
     let now = Instant::now();
     for (operation, ttl) in [
-        ("vault_reset", TOKEN_TTL),
-        ("sites_reveal_secret", TOKEN_TTL),
-        ("settings_set_security", SETTINGS_TOKEN_TTL),
+        (Op::VaultReset, TOKEN_TTL),
+        (Op::SitesRevealSecret, TOKEN_TTL),
+        (Op::SettingsSetSecurity, SETTINGS_TOKEN_TTL),
     ] {
         let state = AuthorizationState::default();
         let token = issue(&state, operation, now);
         let expires = state.grants.lock().unwrap()[&token].expires;
-        assert_eq!(expires, now + ttl, "{operation} grant lifetime");
+        assert_eq!(expires, now + ttl, "{operation:?} grant lifetime");
     }
 }
 
@@ -633,13 +639,13 @@ fn grants_are_capped_until_old_ones_expire() {
     let state = AuthorizationState::default();
     let now = Instant::now();
     for _ in 0..MAX_GRANTS {
-        issue(&state, "vault_reset", now);
+        issue(&state, Op::VaultReset, now);
     }
-    let error = issue_token_for_label(&state, "main", "vault_reset".into(), "vault".into(), now)
+    let error = issue_token_for_label(&state, "main", Op::VaultReset, "vault".into(), now)
         .err()
         .expect("one grant past the cap");
     assert_eq!(error.code, ErrorCode::ResourceLimit);
-    issue(&state, "vault_reset", now + TOKEN_TTL);
+    issue(&state, Op::VaultReset, now + TOKEN_TTL);
     assert_eq!(
         state.grants.lock().unwrap().len(),
         1,
@@ -666,7 +672,7 @@ fn try_waiting(
         request_id,
         PendingConfirmation {
             window: window.into(),
-            prompt: confirmation_prompt("vault_reset", "vault", "en".into(), false).unwrap(),
+            prompt: confirmation_prompt(Op::VaultReset, "vault", "en".into(), false).unwrap(),
             response,
         },
     )?;
@@ -724,4 +730,24 @@ fn a_rejected_confirmation_answers_no_and_is_forgotten() {
         "a rejected request is forgotten"
     );
     reject_pending(&state, "request");
+}
+
+#[test]
+fn an_operation_is_named_by_its_command_and_nothing_else_parses() {
+    for operation in SensitiveOperation::ALL {
+        assert_eq!(SensitiveOperation::parse(operation.name()), Some(operation));
+    }
+    assert_eq!(SensitiveOperation::parse("sites_list"), None);
+    assert_eq!(SensitiveOperation::parse(""), None);
+}
+
+#[test]
+fn every_operation_is_a_command_of_the_sensitive_plugin() {
+    let build = include_str!("../../build.rs");
+    let manifest = &build[build.find("SENSITIVE_COMMANDS").unwrap()..];
+    let manifest = &manifest[..manifest.find("];").unwrap()];
+    for operation in SensitiveOperation::ALL {
+        let name = operation.name();
+        assert!(manifest.contains(&format!("\"{name}\"")), "{name}");
+    }
 }

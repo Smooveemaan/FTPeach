@@ -59,7 +59,7 @@ pub async fn sites_reveal_secret(
         &window,
         &authorization,
         &authorization_token,
-        "sites_reveal_secret",
+        crate::security::sensitive::SensitiveOperation::SitesRevealSecret,
         &format!("{id}:{field}"),
     )?;
     let result = if vault.is_configured() {
@@ -93,7 +93,7 @@ pub async fn sites_save(
         &window,
         &authorization,
         &authorization_token,
-        "sites_save",
+        crate::security::sensitive::SensitiveOperation::SitesSave,
         &crate::security::credential_scope::site_save_target(&site.0, transfer.as_ref()),
     )?;
     // The store checks the move again under its write lock, against the

@@ -55,7 +55,7 @@ pub async fn open_with_start(
         &window,
         &authorization,
         &authorization_token,
-        "open_with_start",
+        crate::security::sensitive::SensitiveOperation::OpenWithStart,
         &intent.grant_target(),
     )?;
     let _admission = OPEN_ADMISSION.lock().await;

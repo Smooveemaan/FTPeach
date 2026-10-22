@@ -127,7 +127,9 @@ the backend derives the exact target from the request, shows the
 confirmation window when the operation needs one, and returns a one-time
 token bound to the window, the operation, that target and the vault session.
 The command then consumes the token against the target it computes itself.
-The renderer never states what it is authorized to do; it can only ask.
+The renderer never states what it is authorized to do; it can only ask. The
+operations are one enum, `SensitiveOperation` in `security/sensitive.rs`,
+named by the commands they authorize; any other name is refused.
 
 ### Command failures
 

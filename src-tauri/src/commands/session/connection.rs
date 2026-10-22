@@ -145,7 +145,7 @@ pub async fn session_trust_host_key(
         &window,
         &authorization,
         &authorization_token,
-        "session_trust_host_key",
+        crate::security::sensitive::SensitiveOperation::SessionTrustHostKey,
         &request,
     )?;
     Ok(store

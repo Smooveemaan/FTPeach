@@ -158,7 +158,7 @@ pub async fn app_export_settings(
         &window,
         &authorization,
         &authorization_token,
-        "app_export_settings",
+        crate::security::sensitive::SensitiveOperation::AppExportSettings,
         export_target(options.include_secrets),
     )?;
     let export_password = zeroize::Zeroizing::new(export_password.unwrap_or_default());
@@ -619,7 +619,7 @@ pub async fn app_import_preview(
         &window,
         &authorization,
         &authorization_token,
-        "app_import_preview",
+        crate::security::sensitive::SensitiveOperation::AppImportPreview,
         "native-dialog",
     )?;
     // A new file replaces whatever was waiting.
@@ -754,7 +754,7 @@ pub async fn app_import_apply(
         &window,
         &authorization,
         &authorization_token,
-        "app_import_apply",
+        crate::security::sensitive::SensitiveOperation::AppImportApply,
         "staged-import",
     )?;
     let password = password.map(zeroize::Zeroizing::new);
@@ -846,7 +846,7 @@ pub async fn app_import_discard(
         &window,
         &authorization,
         &authorization_token,
-        "app_import_discard",
+        crate::security::sensitive::SensitiveOperation::AppImportDiscard,
         "staged-import",
     )?;
     let mut slot = staged.0.lock().await;

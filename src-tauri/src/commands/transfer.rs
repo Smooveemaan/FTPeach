@@ -20,7 +20,7 @@ pub async fn transfer_recursive(
             &window,
             &authorization,
             authorization_token.as_deref().unwrap_or(""),
-            "fs_delete",
+            crate::security::sensitive::SensitiveOperation::FsDelete,
             path,
         )?;
     }

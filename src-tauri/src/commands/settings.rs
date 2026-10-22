@@ -49,7 +49,7 @@ pub async fn settings_reveal_proxy_password(
         &window,
         &authorization,
         &authorization_token,
-        "settings_reveal_proxy_password",
+        crate::security::sensitive::SensitiveOperation::SettingsRevealProxyPassword,
         "proxy",
     )?;
     Ok(store.reveal_proxy_password(&vault).await?)
@@ -101,7 +101,7 @@ pub async fn settings_set_security(
         &window,
         &authorization,
         &authorization_token,
-        "settings_set_security",
+        crate::security::sensitive::SensitiveOperation::SettingsSetSecurity,
         &security_policy::grant_target(&current, &patch),
     )?;
     let changed = patch

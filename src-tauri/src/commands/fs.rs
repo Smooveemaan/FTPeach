@@ -311,7 +311,7 @@ pub async fn fs_delete(
         &window,
         &authorization,
         &authorization_token,
-        "fs_delete",
+        crate::security::sensitive::SensitiveOperation::FsDelete,
         &local_path,
     )?;
     fs_delete_authorized(local_path, permanent).await
@@ -638,7 +638,7 @@ async fn open_validated_path(
 }
 
 macro_rules! open_command {
-    ($name:ident, $operation:literal, $kind:expr_2021) => {
+    ($name:ident, $operation:ident, $kind:expr_2021) => {
         #[tauri::command]
         pub async fn $name(
             app: tauri::AppHandle,
@@ -653,7 +653,7 @@ macro_rules! open_command {
                 &window,
                 &authorization,
                 &authorization_token,
-                $operation,
+                crate::security::sensitive::SensitiveOperation::$operation,
                 &local_path,
             )?;
             open_validated_path(app, approved_paths, local_path, $kind).await
@@ -663,17 +663,17 @@ macro_rules! open_command {
 
 open_command!(
     fs_reveal_path,
-    "fs_reveal_path",
+    FsRevealPath,
     crate::local_fs::local_open::OpenKind::Reveal
 );
 open_command!(
     fs_open_document,
-    "fs_open_document",
+    FsOpenDocument,
     crate::local_fs::local_open::OpenKind::Document
 );
 open_command!(
     fs_execute_path,
-    "fs_execute_path",
+    FsExecutePath,
     crate::local_fs::local_open::OpenKind::Execute
 );
 

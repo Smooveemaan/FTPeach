@@ -20,6 +20,79 @@ use std::{
 use tauri::{Manager, State, WindowEvent};
 use zeroize::Zeroize;
 
+/// Every operation a sensitive grant can be issued for. The renderer names
+/// one by the command it authorizes; a name not listed here is refused.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SensitiveOperation {
+    SitesRevealSecret,
+    SettingsRevealProxyPassword,
+    VaultReset,
+    FsDelete,
+    FsRevealPath,
+    FsOpenDocument,
+    FsExecutePath,
+    OpenWithStart,
+    AppExportSettings,
+    AppImportPreview,
+    AppImportApply,
+    AppImportDiscard,
+    SettingsSetSecurity,
+    VaultUseSystemProtection,
+    SitesSave,
+    SessionTrustHostKey,
+}
+
+use SensitiveOperation as Op;
+
+impl SensitiveOperation {
+    const ALL: [Self; 16] = [
+        Op::SitesRevealSecret,
+        Op::SettingsRevealProxyPassword,
+        Op::VaultReset,
+        Op::FsDelete,
+        Op::FsRevealPath,
+        Op::FsOpenDocument,
+        Op::FsExecutePath,
+        Op::OpenWithStart,
+        Op::AppExportSettings,
+        Op::AppImportPreview,
+        Op::AppImportApply,
+        Op::AppImportDiscard,
+        Op::SettingsSetSecurity,
+        Op::VaultUseSystemProtection,
+        Op::SitesSave,
+        Op::SessionTrustHostKey,
+    ];
+
+    /// The command this operation authorizes, as the renderer names it.
+    fn name(self) -> &'static str {
+        match self {
+            Op::SitesRevealSecret => "sites_reveal_secret",
+            Op::SettingsRevealProxyPassword => "settings_reveal_proxy_password",
+            Op::VaultReset => "vault_reset",
+            Op::FsDelete => "fs_delete",
+            Op::FsRevealPath => "fs_reveal_path",
+            Op::FsOpenDocument => "fs_open_document",
+            Op::FsExecutePath => "fs_execute_path",
+            Op::OpenWithStart => "open_with_start",
+            Op::AppExportSettings => "app_export_settings",
+            Op::AppImportPreview => "app_import_preview",
+            Op::AppImportApply => "app_import_apply",
+            Op::AppImportDiscard => "app_import_discard",
+            Op::SettingsSetSecurity => "settings_set_security",
+            Op::VaultUseSystemProtection => "vault_use_system_protection",
+            Op::SitesSave => "sites_save",
+            Op::SessionTrustHostKey => "session_trust_host_key",
+        }
+    }
+
+    fn parse(name: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|operation| operation.name() == name)
+    }
+}
+
 const TOKEN_TTL: Duration = Duration::from_secs(30);
 /// How many unused grants may exist at once.
 ///
@@ -39,8 +112,8 @@ const MAX_PENDING_CONFIRMATIONS: usize = 4;
 /// patch and the same vault session as any other, and is still one-time.
 const SETTINGS_TOKEN_TTL: Duration = Duration::from_secs(15 * 60);
 
-fn token_ttl(operation: &str) -> Duration {
-    if operation == "settings_set_security" {
+fn token_ttl(operation: SensitiveOperation) -> Duration {
+    if operation == Op::SettingsSetSecurity {
         SETTINGS_TOKEN_TTL
     } else {
         TOKEN_TTL
@@ -49,7 +122,7 @@ fn token_ttl(operation: &str) -> Duration {
 
 struct Grant {
     window: String,
-    operation: String,
+    operation: SensitiveOperation,
     target: String,
     expires: Instant,
     vault_epoch: u64,
@@ -147,10 +220,10 @@ fn denied(message: &str) -> CommandError {
     CommandError::new(ErrorCode::PermissionDenied, message)
 }
 
-fn normalized_target(operation: &str, target: &str) -> CommandResult<String> {
+fn normalized_target(operation: SensitiveOperation, target: &str) -> CommandResult<String> {
     if matches!(
         operation,
-        "fs_delete" | "fs_reveal_path" | "fs_open_document" | "fs_execute_path"
+        Op::FsDelete | Op::FsRevealPath | Op::FsOpenDocument | Op::FsExecutePath
     ) {
         return std::fs::canonicalize(Path::new(target))
             .map(|p| p.to_string_lossy().into_owned())
@@ -159,15 +232,15 @@ fn normalized_target(operation: &str, target: &str) -> CommandResult<String> {
     Ok(target.to_owned())
 }
 
-fn requires_confirmation(operation: &str) -> bool {
+fn requires_confirmation(operation: SensitiveOperation) -> bool {
     matches!(
         operation,
-        "sites_reveal_secret"
-            | "settings_reveal_proxy_password"
-            | "vault_reset"
-            | "vault_use_system_protection"
-            | "fs_execute_path"
-            | "session_trust_host_key"
+        Op::SitesRevealSecret
+            | Op::SettingsRevealProxyPassword
+            | Op::VaultReset
+            | Op::VaultUseSystemProtection
+            | Op::FsExecutePath
+            | Op::SessionTrustHostKey
     )
 }
 
@@ -179,20 +252,20 @@ fn open_with_requires_confirmation(intent: &OpenWithIntent, application_trusted:
 
 /// Removing or downgrading the vault, and weakening the settings that
 /// decide about prompts, are confirmed whatever those settings say.
-fn should_show_confirmation(operation: &str, required: bool, enabled: bool) -> bool {
+fn should_show_confirmation(operation: SensitiveOperation, required: bool, enabled: bool) -> bool {
     required
         && (matches!(
             operation,
-            "vault_reset"
-                | "vault_use_system_protection"
-                | "settings_set_security"
-                | "sites_save"
-                | "session_trust_host_key"
+            Op::VaultReset
+                | Op::VaultUseSystemProtection
+                | Op::SettingsSetSecurity
+                | Op::SitesSave
+                | Op::SessionTrustHostKey
         ) || enabled)
 }
 
 fn should_prompt(
-    operation: &str,
+    operation: SensitiveOperation,
     required: bool,
     confirmations_enabled: bool,
     requires_reauthentication: bool,
@@ -204,7 +277,7 @@ fn should_prompt(
 fn issue_token(
     state: &AuthorizationState,
     window: &tauri::WebviewWindow,
-    operation: String,
+    operation: SensitiveOperation,
     target: String,
 ) -> CommandResult<AuthorizationToken> {
     issue_token_for_label(state, window.label(), operation, target, Instant::now())
@@ -213,11 +286,11 @@ fn issue_token(
 fn issue_token_for_label(
     state: &AuthorizationState,
     window_label: &str,
-    operation: String,
+    operation: SensitiveOperation,
     target: String,
     now: Instant,
 ) -> CommandResult<AuthorizationToken> {
-    let ttl = token_ttl(&operation);
+    let ttl = token_ttl(operation);
     let token = uuid::Uuid::new_v4().to_string();
     let mut grants = state
         .grants
@@ -271,18 +344,18 @@ fn prompt_locale(requested: Option<&str>, settings: &JsonMap) -> String {
 }
 
 fn confirmation_prompt(
-    operation: &str,
+    operation: SensitiveOperation,
     target: &str,
     locale: String,
     requires_reauthentication: bool,
 ) -> CommandResult<ConfirmationPrompt> {
     let (kind, include_target) = match operation {
-        "sites_reveal_secret" => (ConfirmationKind::RevealSiteSecret, false),
-        "settings_reveal_proxy_password" => (ConfirmationKind::RevealProxyPassword, false),
-        "vault_reset" => (ConfirmationKind::VaultReset, false),
-        "vault_use_system_protection" => (ConfirmationKind::UseSystemProtection, false),
-        "fs_execute_path" => (ConfirmationKind::ExecuteLocalFile, true),
-        "app_export_settings" => (ConfirmationKind::ExportSecrets, false),
+        Op::SitesRevealSecret => (ConfirmationKind::RevealSiteSecret, false),
+        Op::SettingsRevealProxyPassword => (ConfirmationKind::RevealProxyPassword, false),
+        Op::VaultReset => (ConfirmationKind::VaultReset, false),
+        Op::VaultUseSystemProtection => (ConfirmationKind::UseSystemProtection, false),
+        Op::FsExecutePath => (ConfirmationKind::ExecuteLocalFile, true),
+        Op::AppExportSettings => (ConfirmationKind::ExportSecrets, false),
         _ => return Err(denied("Unsupported confirmation operation")),
     };
     Ok(ConfirmationPrompt {
@@ -389,7 +462,7 @@ struct Plan {
 }
 
 fn plan_operation(
-    operation: &str,
+    operation: SensitiveOperation,
     target: &str,
     vault_configured: bool,
     vault_damaged: bool,
@@ -398,8 +471,8 @@ fn plan_operation(
     let target = normalized_target(operation, target)?;
     // An export that carries the saved passwords has a grant of its own,
     // asked for as a saved password is shown.
-    let exports_secrets = operation == "app_export_settings" && target == "secrets";
-    if operation == "app_export_settings" && !exports_secrets && target != "native-dialog" {
+    let exports_secrets = operation == Op::AppExportSettings && target == "secrets";
+    if operation == Op::AppExportSettings && !exports_secrets && target != "native-dialog" {
         return Err(denied("Invalid export request"));
     }
     let required = requires_confirmation(operation) || exports_secrets;
@@ -407,15 +480,15 @@ fn plan_operation(
         && (exports_secrets
             || matches!(
                 operation,
-                "sites_reveal_secret"
-                    | "settings_reveal_proxy_password"
-                    | "vault_use_system_protection"
+                Op::SitesRevealSecret
+                    | Op::SettingsRevealProxyPassword
+                    | Op::VaultUseSystemProtection
             ));
     let mut prompt = (required || requires_reauthentication)
         .then(|| confirmation_prompt(operation, &target, locale, requires_reauthentication))
         .transpose()?;
     // A damaged vault is set aside, not deleted, and says so.
-    if operation == "vault_reset"
+    if operation == Op::VaultReset
         && vault_damaged
         && let Some(prompt) = prompt.as_mut()
     {
@@ -767,41 +840,21 @@ pub async fn authorize_sensitive(
     target: String,
     locale: Option<String>,
 ) -> CommandResult<AuthorizationToken> {
-    const ALLOWED: &[&str] = &[
-        "sites_reveal_secret",
-        "settings_reveal_proxy_password",
-        "vault_reset",
-        "fs_delete",
-        "fs_reveal_path",
-        "fs_open_document",
-        "fs_execute_path",
-        "open_with_start",
-        "app_export_settings",
-        "app_import_preview",
-        "app_import_apply",
-        "app_import_discard",
-        "settings_set_security",
-        "vault_use_system_protection",
-        "sites_save",
-        "session_trust_host_key",
-    ];
-    if window.label() != "main" || !ALLOWED.contains(&operation.as_str()) {
-        return Err(denied(
-            "Sensitive operation is not permitted for this window",
-        ));
-    }
+    let operation = SensitiveOperation::parse(&operation)
+        .filter(|_| window.label() == "main")
+        .ok_or_else(|| denied("Sensitive operation is not permitted for this window"))?;
     let settings = store.get_settings().await;
     let confirmations_enabled = settings
         .get(security_policy::CONFIRMATIONS)
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
     let locale = prompt_locale(locale.as_deref(), &settings);
-    let plan = match operation.as_str() {
-        "open_with_start" => plan_open_with(&store, &approved_paths, &target, locale).await?,
-        "settings_set_security" => {
+    let plan = match operation {
+        Op::OpenWithStart => plan_open_with(&store, &approved_paths, &target, locale).await?,
+        Op::SettingsSetSecurity => {
             plan_protected_settings(&settings, vault.is_configured(), &target, locale)?
         }
-        "sites_save" => {
+        Op::SitesSave => {
             let plan = plan_site_save(&store, &target, locale).await?;
             unlock_before_moving_password(
                 plan.required,
@@ -809,9 +862,9 @@ pub async fn authorize_sensitive(
             )?;
             plan
         }
-        "session_trust_host_key" => plan_host_key(&target, locale)?,
+        Op::SessionTrustHostKey => plan_host_key(&target, locale)?,
         _ => plan_operation(
-            &operation,
+            operation,
             &target,
             vault.is_configured(),
             vault.is_damaged(),
@@ -823,7 +876,7 @@ pub async fn authorize_sensitive(
         .as_ref()
         .is_some_and(|prompt| prompt.requires_reauthentication);
     if !should_prompt(
-        &operation,
+        operation,
         plan.required,
         confirmations_enabled,
         requires_reauthentication,
@@ -899,7 +952,7 @@ pub fn consume(
     window: &tauri::WebviewWindow,
     state: &AuthorizationState,
     token: &str,
-    operation: &str,
+    operation: SensitiveOperation,
     target: &str,
 ) -> CommandResult<()> {
     consume_for_label(window.label(), state, token, operation, target)
@@ -909,7 +962,7 @@ fn consume_for_label(
     window_label: &str,
     state: &AuthorizationState,
     token: &str,
-    operation: &str,
+    operation: SensitiveOperation,
     target: &str,
 ) -> CommandResult<()> {
     if window_label != "main" {

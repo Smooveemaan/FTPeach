@@ -1,0 +1,3 @@
+# Two dependencies are vendored with fixes
+
+FTPeach builds `wry` 0.57.0 and `suppaftp` 12.1.1 from copies in `src-tauri/vendor/`, each with a `FTPEACH-PATCH.md` that lists every change. The `wry` copy reports the copy effect on a drop instead of a move, so Explorer never deletes a file FTPeach failed to copy, stops repeated hovers from flooding the window, and lets the cursor say where a drop is taken. The `suppaftp` copy flushes each command after writing it, without which `PROT P` never reached IIS over FTPS, and binds active mode to the control connection's address. The price is upkeep: a Tauri update that moves to another `wry` drops the patch without a build error, so the copy is checked on every Tauri bump, and each copy goes once a release carries its fixes.

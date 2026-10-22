@@ -91,6 +91,6 @@ Copies you did not change are removed when the editing session is cleaned up.
 Changed copies are kept, including after an unexpected exit; use
 [Recover unfinished edits](#recover-unfinished-edits) to inspect them.
 
-<!-- verified-by: pr src-tauri/src/local_fs/edit_recovery.rs::edited_copies_are_kept_and_untouched_ones_removed -->
-<!-- verified-by: pr src-tauri/src/local_fs/edit_recovery.rs::a_crashed_session_is_collected_at_the_next_start -->
+<!-- verified-by: pr src-tauri/src/local_fs/edit_recovery_tests.rs::edited_copies_are_kept_and_untouched_ones_removed -->
+<!-- verified-by: pr src-tauri/src/local_fs/edit_recovery_tests.rs::a_crashed_session_is_collected_at_the_next_start -->
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::recovered edits are offered at start and stay unless deleted -->

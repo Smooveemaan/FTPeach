@@ -10,7 +10,7 @@ import { isolate } from '../../shared/bidi.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
 import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
-import type { TransferInput, TransferStatus } from './transferStore.ts';
+import type { TransferInput, TransferRow, TransferStatus } from './transferStore.ts';
 import {
   activeTransferForTarget,
   canPauseTransfer,
@@ -329,74 +329,88 @@ export function useTransferLifecycle(
     return result;
   };
 
+  /**
+   * What one file upload, download or server-to-server copy does around its
+   * command: refuse a second run to the same target, ask about replacing it,
+   * put an earlier row for the same file back in the queue once its attempt
+   * has settled (`reuse`, keeping its bytes when `keepBytes`), run the
+   * attempt and settle its row.
+   */
+  const runFileTransfer = async ({
+    target,
+    targetKey,
+    overwriteApproved,
+    reuse,
+    keepBytes = false,
+    start,
+    run,
+  }: {
+    target: TransferTarget;
+    targetKey: string;
+    overwriteApproved: boolean;
+    reuse?: (row: TransferRow) => boolean;
+    keepBytes?: boolean;
+    start: () => string;
+    run: (attemptId: string, overwrite: boolean) => Promise<CommandResult>;
+  }) => {
+    if (activeTransferForTarget(targetKey)) return { ok: false, alreadyRunning: true };
+    const overwrite = overwriteApproved ? true : await approveTarget(target);
+    if (overwrite === null) return { ok: false, skipped: true };
+    const existing = reuse
+      ? Object.values(getTransfersSnapshot()).find((row) => row.status !== 'done' && reuse(row))
+      : undefined;
+    if (
+      existing?.status === 'progress' ||
+      existing?.status === 'queued' ||
+      existing?.status === 'cancelling'
+    ) {
+      // Keep the row attached to its running backend attempt.
+      return { ok: false, alreadyRunning: true };
+    }
+    const id = existing?.id || start();
+    const attemptId = existing
+      ? requeueAttempt(id, { keepBytes, overwrite })
+      : beginAttempt(id, overwrite);
+    const result = await run(attemptId, overwrite);
+    const cancelled = settleTransferResult(id, result, attemptId, target);
+    return { ...result, cancelled };
+  };
+
   const runUpload = async (
     connectionId: string,
     protocol: SiteProtocol,
     localFile: string,
     name: string,
     remoteTargetDir: string,
-    _localSize?: number,
+    localSize?: number,
     overwriteApproved = false,
   ) => {
     const remoteTarget = joinRemotePath(remoteTargetDir, name);
-    if (activeTransferForTarget(`remote:${connectionId}:${remoteTarget}`))
-      return { ok: false, alreadyRunning: true };
-    const overwrite = overwriteApproved
-      ? true
-      : await approveTarget({
-          kind: 'remote',
+    return runFileTransfer({
+      target: { kind: 'remote', connectionId, path: remoteTarget },
+      targetKey: `remote:${connectionId}:${remoteTarget}`,
+      overwriteApproved,
+      reuse: (row) =>
+        row.direction === 'up' &&
+        row.connectionId === connectionId &&
+        row.localFile === localFile &&
+        row.remoteTarget === remoteTarget,
+      start: () =>
+        startTransfer({
+          direction: 'up',
+          name,
+          protocol,
+          localFile,
+          remoteTarget,
           connectionId,
-          path: remoteTarget,
-        });
-    if (overwrite === null) return { ok: false, skipped: true };
-    const existing = Object.values(getTransfersSnapshot()).find(
-      (item) =>
-        item.direction === 'up' &&
-        item.connectionId === connectionId &&
-        item.localFile === localFile &&
-        item.remoteTarget === remoteTarget &&
-        item.status !== 'done',
-    );
-    if (
-      existing?.status === 'progress' ||
-      existing?.status === 'queued' ||
-      existing?.status === 'cancelling'
-    ) {
-      // Reuse the queue row only after its current upload has settled.
-      return { ok: false, alreadyRunning: true };
-    }
-    // Starting an upload always stages fresh, superseding anything a previous
-    // paused attempt left for this destination. Resuming is retryTransfer's.
-    const resume = false;
-
-    const id =
-      existing?.id ||
-      startTransfer({
-        direction: 'up',
-        name,
-        protocol,
-        localFile,
-        remoteTarget,
-        connectionId,
-        total: _localSize,
-      });
-    const attemptId = existing
-      ? requeueAttempt(id, { keepBytes: false, overwrite })
-      : beginAttempt(id, overwrite);
-    const result = await api.transfer.upload(
-      connectionId,
-      attemptId,
-      localFile,
-      remoteTarget,
-      resume,
-      overwrite,
-    );
-    const cancelled = settleTransferResult(id, result, attemptId, {
-      kind: 'remote',
-      connectionId,
-      path: remoteTarget,
+          total: localSize,
+        }),
+      // Starting an upload always stages fresh, superseding anything a
+      // previous paused attempt left for this destination. Resuming is
+      // retryTransfer's.
+      run: (attemptId, overwrite) =>
+        api.transfer.upload(connectionId, attemptId, localFile, remoteTarget, false, overwrite),
     });
-    return { ...result, cancelled };
   };
 
   const runDownload = async (
@@ -410,50 +424,23 @@ export function useTransferLifecycle(
   ) => {
     validateWindowsDownloadName(name);
     const localTarget = joinLocalPath(localTargetDir, name);
-    if (activeTransferForTarget(`local:${localTarget.replaceAll('/', '\\').toLowerCase()}`))
-      return { ok: false, alreadyRunning: true };
-    const overwrite = overwriteApproved
-      ? true
-      : await approveTarget({ kind: 'local', path: localTarget });
-    if (overwrite === null) return { ok: false, skipped: true };
-    const existing = Object.values(getTransfersSnapshot()).find(
-      (item) =>
-        item.direction === 'down' &&
-        !item.dragOut &&
-        item.connectionId === connectionId &&
-        item.remoteFile === remoteFile &&
-        item.localTarget === localTarget &&
-        item.status !== 'done',
-    );
-    if (
-      existing?.status === 'progress' ||
-      existing?.status === 'queued' ||
-      existing?.status === 'cancelling'
-    ) {
-      // Keep this row attached to its running backend attempt.
-      return { ok: false, alreadyRunning: true };
-    }
-
-    const id =
-      existing?.id ||
-      startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId });
-    // A download carries on from its partial, so the bytes it has stay counted.
-    const attemptId = existing
-      ? requeueAttempt(id, { keepBytes: true, overwrite })
-      : beginAttempt(id, overwrite);
-    const result = await api.transfer.download(
-      connectionId,
-      attemptId,
-      remoteFile,
-      localTarget,
-      resume,
-      overwrite,
-    );
-    const cancelled = settleTransferResult(id, result, attemptId, {
-      kind: 'local',
-      path: localTarget,
+    return runFileTransfer({
+      target: { kind: 'local', path: localTarget },
+      targetKey: `local:${localTarget.replaceAll('/', '\\').toLowerCase()}`,
+      overwriteApproved,
+      reuse: (row) =>
+        row.direction === 'down' &&
+        !row.dragOut &&
+        row.connectionId === connectionId &&
+        row.remoteFile === remoteFile &&
+        row.localTarget === localTarget,
+      // A download carries on from its partial, so the bytes it has stay counted.
+      keepBytes: true,
+      start: () =>
+        startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId }),
+      run: (attemptId, overwrite) =>
+        api.transfer.download(connectionId, attemptId, remoteFile, localTarget, resume, overwrite),
     });
-    return { ...result, cancelled };
   };
 
   const runRemoteCopy = async (
@@ -466,40 +453,30 @@ export function useTransferLifecycle(
     overwriteApproved = false,
   ) => {
     const targetPath = joinRemotePath(targetTargetDir, name);
-    if (activeTransferForTarget(`remote:${targetConnectionId}:${targetPath}`))
-      return { ok: false, alreadyRunning: true };
-    const overwrite = overwriteApproved
-      ? true
-      : await approveTarget({
-          kind: 'remote',
-          connectionId: targetConnectionId,
-          path: targetPath,
-        });
-    if (overwrite === null) return { ok: false, skipped: true };
-    const id = startTransfer({
-      direction: 'copy',
-      name,
-      protocol: targetProtocol,
-      sourceConnectionId,
-      sourcePath,
-      targetConnectionId,
-      remoteTarget: targetPath,
+    return runFileTransfer({
+      target: { kind: 'remote', connectionId: targetConnectionId, path: targetPath },
+      targetKey: `remote:${targetConnectionId}:${targetPath}`,
+      overwriteApproved,
+      start: () =>
+        startTransfer({
+          direction: 'copy',
+          name,
+          protocol: targetProtocol,
+          sourceConnectionId,
+          sourcePath,
+          targetConnectionId,
+          remoteTarget: targetPath,
+        }),
+      run: (attemptId, overwrite) =>
+        api.transfer.remoteCopy(
+          sourceConnectionId,
+          targetConnectionId,
+          attemptId,
+          sourcePath,
+          targetPath,
+          overwrite,
+        ),
     });
-    const attemptId = beginAttempt(id, overwrite);
-    const result = await api.transfer.remoteCopy(
-      sourceConnectionId,
-      targetConnectionId,
-      attemptId,
-      sourcePath,
-      targetPath,
-      overwrite,
-    );
-    const cancelled = settleTransferResult(id, result, attemptId, {
-      kind: 'remote',
-      connectionId: targetConnectionId,
-      path: targetPath,
-    });
-    return { ...result, cancelled };
   };
 
   const runRecursive = async (

@@ -169,7 +169,7 @@
     "message": "無法讀取部分已儲存伺服器的密碼——請在「管理書籤」中重新輸入。"
   },
   "plaintextSecretNotice": {
-    "message": "由於無法使用 Windows 資料保護，已儲存伺服器的密碼或密語無法加密，因此以純文字儲存。"
+    "message": "由於無法使用 Windows 資料保護，書籤的密碼或密語無法加密，因此以純文字儲存。"
   },
   "secretNotPersistedNotice": {
     "message": "密碼或金鑰密語無法加密，因此未儲存。現有連線可持續使用到中斷為止；下次請重新輸入。"
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "自動更新",
     "autoCheckUpdatesHint": "在啟動時及每天檢查一次更新，並在背景下載。已下載的更新會在下次啟動 FTPeach 時靜默安裝，也可以從狀態列立即安裝。",
     "autoReconnectTabs": "啟動時重新連線已還原的分頁",
-    "autoReconnectTabsHint": "預設為關閉。啟用後，連結已儲存伺服器的已還原分頁會自動連線。",
+    "autoReconnectTabsHint": "預設為關閉。啟用後，連結書籤的已還原分頁會自動連線。",
     "saveSessionOnExit": "結束時儲存工作階段",
     "saveSessionOnExitHint": "下次啟動時還原開啟的分頁、窗格類型和路徑。關閉此選項會清除已儲存的工作階段。",
     "checkNow": "立即檢查",
@@ -706,7 +706,7 @@
     "receivedEntries_one": "已收到 {{count}} 個項目",
     "receivedEntries_other": "已收到 {{count}} 個項目",
     "skippedUnsafeEntry": "跳過了名稱不安全的清單項目：{{name}}",
-    "listFailed": "目錄列出失敗：{{error}}",
+    "listFailed": "資料夾列出失敗：{{error}}",
     "tlsInit": "正在初始化 TLS…",
     "tlsEstablished": "TLS 連線已建立。",
     "davResumeUnsupportedLocal": "WebDAV 不支援續傳上傳——檔案將從頭重新傳送。",
@@ -755,8 +755,8 @@
     "updateDownloaded": "已下載更新 v{{version}}——現在即可安裝。"
   },
   "siteManager": {
-    "emptyList": "尚未儲存任何伺服器",
-    "confirmDeleteSite": "要刪除伺服器「{{name}}」嗎？"
+    "emptyList": "尚無書籤",
+    "confirmDeleteSite": "要刪除書籤「{{name}}」嗎？"
   },
   "siteManagerDialog": {
     "titleNew": "新增書籤",

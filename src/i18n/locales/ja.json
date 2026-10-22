@@ -169,7 +169,7 @@
     "message": "保存済みの一部サーバーのパスワードを読み込めませんでした。ブックマークの管理で再入力してください。"
   },
   "plaintextSecretNotice": {
-    "message": "Windows のデータ保護を利用できないため、保存済みサーバーのパスワードまたはパスフレーズを暗号化できず、平文で保存しました。"
+    "message": "Windows のデータ保護を利用できないため、ブックマークのパスワードまたはパスフレーズを暗号化できず、平文で保存しました。"
   },
   "secretNotPersistedNotice": {
     "message": "パスワードまたは鍵のパスフレーズを暗号化できなかったため、保存されませんでした。現在の接続は切断されるまで使えます。次回はもう一度入力してください。"
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "自動的にアップデートする",
     "autoCheckUpdatesHint": "起動時と 1 日 1 回アップデートを確認し、バックグラウンドでダウンロードします。ダウンロードしたアップデートは、次回 FTPeach の起動時に自動でインストールされます。ステータスバーからすぐにインストールすることもできます。",
     "autoReconnectTabs": "起動時に復元されたタブを再接続する",
-    "autoReconnectTabsHint": "既定ではオフです。オンにすると、保存済みサーバーのタブが復元時に自動で接続されます。",
+    "autoReconnectTabsHint": "既定ではオフです。オンにすると、ブックマークのタブが復元時に自動で接続されます。",
     "saveSessionOnExit": "終了時にセッションを保存する",
     "saveSessionOnExitHint": "次回起動時に、開いていたタブ、ペインの種類、パスを復元します。オフにすると保存済みのセッションは消去されます。",
     "checkNow": "今すぐ確認",
@@ -755,8 +755,8 @@
     "updateDownloaded": "アップデート v{{version}} をダウンロードしました。今すぐインストールできます。"
   },
   "siteManager": {
-    "emptyList": "保存済みのサーバーはまだありません",
-    "confirmDeleteSite": "サーバー「{{name}}」を削除しますか？"
+    "emptyList": "ブックマークはまだありません",
+    "confirmDeleteSite": "ブックマーク「{{name}}」を削除しますか？"
   },
   "siteManagerDialog": {
     "titleNew": "新しいブックマーク",

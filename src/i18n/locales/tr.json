@@ -169,7 +169,7 @@
     "message": "Kaydedilmiş bazı sunucuların şifreleri okunamadı — lütfen bunları yer imi yöneticisinde yeniden girin."
   },
   "plaintextSecretNotice": {
-    "message": "Kaydedilmiş bir sunucunun şifresi veya anahtar parolası, Windows veri koruması kullanılamadığı için şifrelenemedi ve düz metin olarak kaydedildi."
+    "message": "Bir yer iminin şifresi veya anahtar parolası, Windows veri koruması kullanılamadığı için şifrelenemedi ve düz metin olarak kaydedildi."
   },
   "secretNotPersistedNotice": {
     "message": "Şifre veya anahtar parolası şifrelenemediği için kaydedilmedi. Mevcut bağlantı kesilene kadar sürebilir; bir dahaki sefere yeniden girin."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Otomatik olarak güncelle",
     "autoCheckUpdatesHint": "Başlangıçta ve günde bir kez güncellemeleri denetler ve arka planda indirir. İndirilen güncelleme, FTPeach bir sonraki açılışında sessizce yüklenir ya da durum çubuğundan hemen yüklenebilir.",
     "autoReconnectTabs": "Başlangıçta geri yüklenen sekmeleri yeniden bağla",
-    "autoReconnectTabsHint": "Varsayılan olarak kapalıdır. Etkinleştirildiğinde, kaydedilmiş sunuculara ait geri yüklenen sekmeler otomatik olarak bağlanır.",
+    "autoReconnectTabsHint": "Varsayılan olarak kapalıdır. Etkinleştirildiğinde, yer imlerine ait geri yüklenen sekmeler otomatik olarak bağlanır.",
     "saveSessionOnExit": "Çıkışta oturumu kaydet",
     "saveSessionOnExitHint": "Bir sonraki başlatmada açık sekmeleri, bölme türlerini ve yolları geri yükler. Bu seçeneği devre dışı bırakmak, kaydedilmiş oturumu siler.",
     "checkNow": "Şimdi kontrol et",
@@ -755,8 +755,8 @@
     "updateDownloaded": "v{{version}} güncellemesi indirildi — şimdi yükleyebilirsiniz."
   },
   "siteManager": {
-    "emptyList": "Henüz kaydedilmiş sunucu yok",
-    "confirmDeleteSite": "\"{{name}}\" sunucusu silinsin mi?"
+    "emptyList": "Henüz yer imi yok",
+    "confirmDeleteSite": "\"{{name}}\" yer imi silinsin mi?"
   },
   "siteManagerDialog": {
     "titleNew": "Yeni Yer İmi",

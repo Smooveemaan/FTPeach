@@ -169,7 +169,7 @@
     "message": "Passwords for some saved servers couldn't be read — please re-enter them in Manage Bookmarks."
   },
   "plaintextSecretNotice": {
-    "message": "A saved site's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."
+    "message": "A bookmark's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."
   },
   "secretNotPersistedNotice": {
     "message": "The password or key passphrase couldn't be encrypted and was not saved. An existing connection can continue until it is disconnected; otherwise, enter the secret again next time."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Update automatically",
     "autoCheckUpdatesHint": "Checks for updates at startup and once a day, and downloads them in the background. A downloaded update installs silently the next time FTPeach starts, or right away from the status bar.",
     "autoReconnectTabs": "Reconnect restored tabs on startup",
-    "autoReconnectTabsHint": "Off by default. When enabled, restored saved sites are connected automatically.",
+    "autoReconnectTabsHint": "Off by default. When enabled, restored bookmarks are connected automatically.",
     "saveSessionOnExit": "Save the session on exit",
     "saveSessionOnExitHint": "Restores open tabs, pane types and paths on the next launch. Turning this off clears the saved session.",
     "checkNow": "Check Now",
@@ -706,7 +706,7 @@
     "receivedEntries_one": "Received {{count}} entry",
     "receivedEntries_other": "Received {{count}} entries",
     "skippedUnsafeEntry": "Skipped a listing entry with an unsafe name: {{name}}",
-    "listFailed": "Directory listing failed: {{error}}",
+    "listFailed": "Folder listing failed: {{error}}",
     "tlsInit": "Initializing TLS...",
     "tlsEstablished": "TLS connection established.",
     "davResumeUnsupportedLocal": "WebDAV doesn't support upload resume — the file will be sent again from the start.",
@@ -755,8 +755,8 @@
     "updateDownloaded": "Update v{{version}} has been downloaded — you can install it now."
   },
   "siteManager": {
-    "emptyList": "No saved sites yet",
-    "confirmDeleteSite": "Delete site \"{{name}}\"?"
+    "emptyList": "No bookmarks yet",
+    "confirmDeleteSite": "Delete bookmark \"{{name}}\"?"
   },
   "siteManagerDialog": {
     "titleNew": "New Bookmark",
@@ -871,7 +871,7 @@
     },
     "maxConnectionsChanged": "Applies after reconnecting.",
     "footerFolders": "Folders: {{count}}",
-    "footerSites": "Sites: {{count}}",
+    "footerSites": "Bookmarks: {{count}}",
     "footerPaths": "Paths: {{count}}"
   },
   "connectionBar": {
@@ -1003,7 +1003,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "No recent connections",
-    "noSavedConnectionsBody": "Fill in the server address above, or add a site for one-click access.",
+    "noSavedConnectionsBody": "Fill in the server address above, or add a bookmark for one-click access.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Manage Bookmarks",
     "quicklistLabel": "Recent connections"

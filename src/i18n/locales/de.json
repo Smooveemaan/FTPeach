@@ -169,7 +169,7 @@
     "message": "Die Passwörter einiger gespeicherter Server konnten nicht gelesen werden – bitte geben Sie sie in der Lesezeichenverwaltung erneut ein."
   },
   "plaintextSecretNotice": {
-    "message": "Das Passwort oder die Passphrase eines gespeicherten Servers konnte nicht verschlüsselt werden, weil der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."
+    "message": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."
   },
   "secretNotPersistedNotice": {
     "message": "Das Passwort oder die Schlüssel-Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung bleibt bis zum Trennen bestehen; geben Sie es sonst beim nächsten Mal erneut ein."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Automatisch aktualisieren",
     "autoCheckUpdatesHint": "Sucht beim Start und einmal täglich nach Updates und lädt sie im Hintergrund herunter. Ein heruntergeladenes Update wird beim nächsten Start von FTPeach unbemerkt installiert – oder sofort über die Statusleiste.",
     "autoReconnectTabs": "Wiederhergestellte Tabs beim Start verbinden",
-    "autoReconnectTabsHint": "Standardmäßig aus. Wenn aktiviert, werden wiederhergestellte Tabs mit gespeicherten Servern automatisch verbunden.",
+    "autoReconnectTabsHint": "Standardmäßig aus. Wenn aktiviert, werden wiederhergestellte Tabs aus Lesezeichen automatisch verbunden.",
     "saveSessionOnExit": "Sitzung beim Beenden speichern",
     "saveSessionOnExitHint": "Stellt beim nächsten Start die geöffneten Tabs, Bereichstypen und Pfade wieder her. Wenn Sie die Option deaktivieren, wird die gespeicherte Sitzung gelöscht.",
     "checkNow": "Jetzt prüfen",
@@ -706,7 +706,7 @@
     "receivedEntries_one": "{{count}} Eintrag empfangen",
     "receivedEntries_other": "{{count}} Einträge empfangen",
     "skippedUnsafeEntry": "Ein Listeneintrag mit unsicherem Namen wurde übersprungen: {{name}}",
-    "listFailed": "Verzeichnisauflistung fehlgeschlagen: {{error}}",
+    "listFailed": "Ordnerauflistung fehlgeschlagen: {{error}}",
     "tlsInit": "TLS wird initialisiert...",
     "tlsEstablished": "TLS-Verbindung hergestellt.",
     "davResumeUnsupportedLocal": "WebDAV unterstützt keine Wiederaufnahme von Uploads – die Datei wird erneut von Anfang an übertragen.",
@@ -755,8 +755,8 @@
     "updateDownloaded": "Das Update v{{version}} wurde heruntergeladen – Sie können es jetzt installieren."
   },
   "siteManager": {
-    "emptyList": "Noch keine gespeicherten Server",
-    "confirmDeleteSite": "Server „{{name}}“ löschen?"
+    "emptyList": "Noch keine Lesezeichen",
+    "confirmDeleteSite": "Lesezeichen „{{name}}“ löschen?"
   },
   "siteManagerDialog": {
     "titleNew": "Neues Lesezeichen",

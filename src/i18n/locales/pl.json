@@ -173,7 +173,7 @@
     "message": "Nie udało się odczytać haseł niektórych zapisanych serwerów — wprowadź je ponownie w menedżerze zakładek."
   },
   "plaintextSecretNotice": {
-    "message": "Nie udało się zaszyfrować hasła lub frazy hasła zapisanego serwera, ponieważ ochrona danych systemu Windows jest niedostępna, dlatego zapisano je jako zwykły tekst."
+    "message": "Nie udało się zaszyfrować hasła lub frazy hasła zakładki, ponieważ ochrona danych systemu Windows jest niedostępna, dlatego zapisano je jako zwykły tekst."
   },
   "secretNotPersistedNotice": {
     "message": "Nie udało się zaszyfrować hasła lub frazy hasła klucza, więc nie zostało zapisane. Istniejące połączenie działa do rozłączenia; następnym razem wprowadź je ponownie."
@@ -560,7 +560,7 @@
     "autoCheckUpdates": "Aktualizuj automatycznie",
     "autoCheckUpdatesHint": "Sprawdza dostępność aktualizacji przy uruchomieniu i raz dziennie oraz pobiera je w tle. Pobrana aktualizacja instaluje się po cichu przy następnym uruchomieniu FTPeach albo od razu z paska stanu.",
     "autoReconnectTabs": "Łącz ponownie przywrócone karty przy uruchomieniu",
-    "autoReconnectTabsHint": "Domyślnie wyłączone. Po włączeniu przywrócone karty z zapisanymi serwerami łączą się automatycznie.",
+    "autoReconnectTabsHint": "Domyślnie wyłączone. Po włączeniu przywrócone karty z zakładek łączą się automatycznie.",
     "saveSessionOnExit": "Zapisuj sesję przy zamykaniu",
     "saveSessionOnExitHint": "Przy następnym uruchomieniu przywraca otwarte karty, typy paneli i ścieżki. Wyłączenie tej opcji powoduje wyczyszczenie zapisanej sesji.",
     "checkNow": "Sprawdź teraz",
@@ -771,8 +771,8 @@
     "updateDownloaded": "Pobrano aktualizację w wersji {{version}} — można ją teraz zainstalować."
   },
   "siteManager": {
-    "emptyList": "Nie ma jeszcze zapisanych serwerów",
-    "confirmDeleteSite": "Usunąć serwer „{{name}}”?"
+    "emptyList": "Nie ma jeszcze zakładek",
+    "confirmDeleteSite": "Usunąć zakładkę „{{name}}”?"
   },
   "siteManagerDialog": {
     "titleNew": "Nowa zakładka",

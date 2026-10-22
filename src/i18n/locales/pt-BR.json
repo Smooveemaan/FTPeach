@@ -171,7 +171,7 @@
     "message": "As senhas de alguns servidores salvos não puderam ser lidas — digite-as novamente no gerenciador de favoritos."
   },
   "plaintextSecretNotice": {
-    "message": "Não foi possível criptografar a senha ou a frase secreta de um site salvo porque a proteção de dados do Windows não está disponível; por isso, ela foi armazenada em texto simples."
+    "message": "Não foi possível criptografar a senha ou a frase secreta de um favorito porque a proteção de dados do Windows não está disponível; por isso, ela foi armazenada em texto simples."
   },
   "secretNotPersistedNotice": {
     "message": "A senha ou a frase secreta da chave não pôde ser criptografada e não foi salva. Uma conexão já estabelecida pode continuar até ser desconectada; caso contrário, digite-a novamente na próxima vez."
@@ -556,7 +556,7 @@
     "autoCheckUpdates": "Atualizar automaticamente",
     "autoCheckUpdatesHint": "Verifica se há atualizações na inicialização e uma vez por dia, e as baixa em segundo plano. Uma atualização baixada é instalada silenciosamente na próxima vez que o FTPeach for iniciado, ou imediatamente pela barra de status.",
     "autoReconnectTabs": "Reconectar as abas restauradas ao iniciar",
-    "autoReconnectTabsHint": "Desativado por padrão. Quando ativado, as abas restauradas com sites salvos são conectadas automaticamente.",
+    "autoReconnectTabsHint": "Desativado por padrão. Quando ativado, as abas restauradas de favoritos são conectadas automaticamente.",
     "saveSessionOnExit": "Salvar a sessão ao sair",
     "saveSessionOnExitHint": "Restaura as abas abertas, os tipos de painéis e os caminhos na próxima inicialização. Desativar essa opção apaga a sessão salva.",
     "checkNow": "Verificar agora",
@@ -763,8 +763,8 @@
     "updateDownloaded": "A atualização v{{version}} foi baixada — você pode instalá-la agora."
   },
   "siteManager": {
-    "emptyList": "Ainda não há sites salvos",
-    "confirmDeleteSite": "Excluir o site “{{name}}”?"
+    "emptyList": "Ainda não há favoritos",
+    "confirmDeleteSite": "Excluir o favorito “{{name}}”?"
   },
   "siteManagerDialog": {
     "titleNew": "Novo favorito",
@@ -1011,7 +1011,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Nenhuma conexão recente",
-    "noSavedConnectionsBody": "Preencha o endereço do servidor acima ou adicione um site para acesso com um clique.",
+    "noSavedConnectionsBody": "Preencha o endereço do servidor acima ou adicione um favorito para acesso com um clique.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Gerenciar favoritos",
     "quicklistLabel": "Conexões recentes"

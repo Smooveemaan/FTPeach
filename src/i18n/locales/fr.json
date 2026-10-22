@@ -171,7 +171,7 @@
     "message": "Les mots de passe de certains serveurs enregistrés n'ont pas pu être lus ; saisissez-les à nouveau dans le gestionnaire de signets."
   },
   "plaintextSecretNotice": {
-    "message": "Le mot de passe ou la phrase secrète d'un site enregistré n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
+    "message": "Le mot de passe ou la phrase secrète d'un signet n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
   },
   "secretNotPersistedNotice": {
     "message": "Le mot de passe ou la phrase secrète de la clé n'a pas pu être chiffré et n'a pas été enregistré. Une connexion existante peut continuer jusqu'à la déconnexion ; sinon, saisissez-le à nouveau la prochaine fois."
@@ -556,7 +556,7 @@
     "autoCheckUpdates": "Mettre à jour automatiquement",
     "autoCheckUpdatesHint": "Recherche les mises à jour au démarrage et une fois par jour, et les télécharge en arrière-plan. Une mise à jour téléchargée s'installe silencieusement au prochain démarrage de FTPeach, ou immédiatement depuis la barre d'état.",
     "autoReconnectTabs": "Reconnecter les onglets restaurés au démarrage",
-    "autoReconnectTabsHint": "Désactivé par défaut. Si activé, les onglets restaurés liés à des sites enregistrés se connectent automatiquement.",
+    "autoReconnectTabsHint": "Désactivé par défaut. Si activé, les onglets restaurés liés à des signets se connectent automatiquement.",
     "saveSessionOnExit": "Enregistrer la session à la fermeture",
     "saveSessionOnExitHint": "Restaure les onglets ouverts, les types de volets et les chemins au prochain démarrage. Désactiver cette option efface la session enregistrée.",
     "checkNow": "Vérifier maintenant",
@@ -763,8 +763,8 @@
     "updateDownloaded": "La mise à jour v{{version}} a été téléchargée — vous pouvez l'installer dès maintenant."
   },
   "siteManager": {
-    "emptyList": "Aucun site enregistré pour l'instant",
-    "confirmDeleteSite": "Supprimer le site « {{name}} » ?"
+    "emptyList": "Aucun signet pour l'instant",
+    "confirmDeleteSite": "Supprimer le signet « {{name}} » ?"
   },
   "siteManagerDialog": {
     "titleNew": "Nouveau signet",
@@ -1011,7 +1011,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Aucune connexion récente",
-    "noSavedConnectionsBody": "Saisissez l'adresse du serveur ci-dessus ou ajoutez un site pour y accéder en un clic.",
+    "noSavedConnectionsBody": "Saisissez l'adresse du serveur ci-dessus ou ajoutez un signet pour y accéder en un clic.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Gérer les signets",
     "quicklistLabel": "Connexions récentes"

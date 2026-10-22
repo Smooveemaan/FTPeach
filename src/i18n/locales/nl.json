@@ -169,7 +169,7 @@
     "message": "De wachtwoorden van sommige opgeslagen servers konden niet worden gelezen — voer ze opnieuw in via Bladwijzers beheren."
   },
   "plaintextSecretNotice": {
-    "message": "Het wachtwoord of de wachtwoordzin van een opgeslagen server kon niet worden versleuteld omdat de gegevensbeveiliging van Windows niet beschikbaar is, en is daarom als leesbare tekst opgeslagen."
+    "message": "Het wachtwoord of de wachtwoordzin van een bladwijzer kon niet worden versleuteld omdat de gegevensbeveiliging van Windows niet beschikbaar is, en is daarom als leesbare tekst opgeslagen."
   },
   "secretNotPersistedNotice": {
     "message": "Het wachtwoord of de wachtwoordzin van de sleutel kon niet worden versleuteld en is niet opgeslagen. Een bestaande verbinding blijft werken tot die wordt verbroken; voer het anders de volgende keer opnieuw in."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Automatisch bijwerken",
     "autoCheckUpdatesHint": "Controleert bij het opstarten en eenmaal per dag op updates en downloadt ze op de achtergrond. Een gedownloade update wordt stil geïnstalleerd wanneer FTPeach de volgende keer start, of meteen via de statusbalk.",
     "autoReconnectTabs": "Herstelde tabbladen bij het opstarten opnieuw verbinden",
-    "autoReconnectTabsHint": "Standaard uitgeschakeld. Indien ingeschakeld, maken herstelde tabbladen met opgeslagen servers automatisch verbinding.",
+    "autoReconnectTabsHint": "Standaard uitgeschakeld. Indien ingeschakeld, maken herstelde tabbladen van bladwijzers automatisch verbinding.",
     "saveSessionOnExit": "Sessie opslaan bij afsluiten",
     "saveSessionOnExitHint": "Hiermee worden geopende tabbladen, paneeltypen en paden bij de volgende start hersteld. Als je deze optie uitschakelt, wordt de opgeslagen sessie gewist.",
     "checkNow": "Nu controleren",
@@ -755,8 +755,8 @@
     "updateDownloaded": "De update v{{version}} is gedownload — je kunt deze nu installeren."
   },
   "siteManager": {
-    "emptyList": "Er zijn nog geen servers opgeslagen",
-    "confirmDeleteSite": "Server \"{{name}}\" verwijderen?"
+    "emptyList": "Er zijn nog geen bladwijzers",
+    "confirmDeleteSite": "Bladwijzer \"{{name}}\" verwijderen?"
   },
   "siteManagerDialog": {
     "titleNew": "Nieuwe bladwijzer",

@@ -169,7 +169,7 @@
     "message": "Kata sandi beberapa server yang tersimpan tidak dapat dibaca — masukkan kembali di pengelola bookmark."
   },
   "plaintextSecretNotice": {
-    "message": "Kata sandi atau frasa sandi server yang tersimpan tidak dapat dienkripsi karena perlindungan data Windows tidak tersedia, sehingga disimpan sebagai teks biasa."
+    "message": "Kata sandi atau frasa sandi bookmark tidak dapat dienkripsi karena perlindungan data Windows tidak tersedia, sehingga disimpan sebagai teks biasa."
   },
   "secretNotPersistedNotice": {
     "message": "Kata sandi atau frasa sandi kunci tidak dapat dienkripsi dan tidak disimpan. Koneksi yang sudah ada dapat berlanjut hingga terputus; lain kali masukkan lagi."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Perbarui secara otomatis",
     "autoCheckUpdatesHint": "Memeriksa pembaruan saat aplikasi dimulai dan sekali sehari, lalu mengunduhnya di latar belakang. Pembaruan yang telah diunduh diinstal secara diam-diam saat FTPeach dijalankan berikutnya, atau langsung dari bilah status.",
     "autoReconnectTabs": "Hubungkan kembali tab yang telah dipulihkan saat aplikasi dimulai",
-    "autoReconnectTabsHint": "Nonaktif secara default. Jika diaktifkan, tab yang dipulihkan dengan server tersimpan akan terhubung otomatis.",
+    "autoReconnectTabsHint": "Nonaktif secara default. Jika diaktifkan, tab yang dipulihkan dari bookmark akan terhubung otomatis.",
     "saveSessionOnExit": "Simpan sesi saat keluar",
     "saveSessionOnExitHint": "Mengembalikan tab yang terbuka, jenis panel, dan jalur pada saat aplikasi diluncurkan kembali. Menonaktifkan opsi ini akan menghapus sesi yang tersimpan.",
     "checkNow": "Periksa Sekarang",
@@ -755,8 +755,8 @@
     "updateDownloaded": "Pembaruan v{{version}} telah diunduh — Anda dapat menginstalnya sekarang."
   },
   "siteManager": {
-    "emptyList": "Belum ada server yang disimpan",
-    "confirmDeleteSite": "Hapus server \"{{name}}\"?"
+    "emptyList": "Belum ada bookmark",
+    "confirmDeleteSite": "Hapus bookmark \"{{name}}\"?"
   },
   "siteManagerDialog": {
     "titleNew": "Bookmark Baru",

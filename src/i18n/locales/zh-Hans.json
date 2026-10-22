@@ -169,7 +169,7 @@
     "message": "部分已保存服务器的密码无法读取——请在“管理书签”中重新输入。"
   },
   "plaintextSecretNotice": {
-    "message": "由于 Windows 数据保护不可用，已保存服务器的密码或密码短语未能加密，已以明文形式存储。"
+    "message": "由于 Windows 数据保护不可用，书签的密码或密码短语未能加密，已以明文形式存储。"
   },
   "secretNotPersistedNotice": {
     "message": "密码或密钥密码短语未能加密，因此没有保存。现有连接可以一直使用到断开为止；下次请重新输入。"
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "自动更新",
     "autoCheckUpdatesHint": "在启动时以及每天检查一次更新，并在后台下载。已下载的更新会在下次启动 FTPeach 时静默安装，也可以从状态栏立即安装。",
     "autoReconnectTabs": "启动时重新连接已恢复的标签页",
-    "autoReconnectTabsHint": "默认关闭。启用后，关联已保存服务器的已恢复标签页将自动连接。",
+    "autoReconnectTabsHint": "默认关闭。启用后，关联书签的已恢复标签页将自动连接。",
     "saveSessionOnExit": "退出时保存会话",
     "saveSessionOnExitHint": "在下一次启动时恢复已打开的标签页、窗格类型和路径。关闭此选项将清除已保存的会话。",
     "checkNow": "立即检查",
@@ -706,7 +706,7 @@
     "receivedEntries_one": "已接收 {{count}} 条记录",
     "receivedEntries_other": "已接收 {{count}} 条记录",
     "skippedUnsafeEntry": "跳过了一个名称不安全的列表条目：{{name}}",
-    "listFailed": "列出目录失败：{{error}}",
+    "listFailed": "列出文件夹失败：{{error}}",
     "tlsInit": "正在初始化 TLS...",
     "tlsEstablished": "TLS 连接已建立。",
     "davResumeUnsupportedLocal": "WebDAV 不支持上传续传——文件将从头开始重新发送。",
@@ -755,8 +755,8 @@
     "updateDownloaded": "已下载更新 v{{version}}——现在即可安装。"
   },
   "siteManager": {
-    "emptyList": "尚未保存任何服务器",
-    "confirmDeleteSite": "删除服务器“{{name}}”？"
+    "emptyList": "尚无书签",
+    "confirmDeleteSite": "删除书签“{{name}}”？"
   },
   "siteManagerDialog": {
     "titleNew": "新建书签",

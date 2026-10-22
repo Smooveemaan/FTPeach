@@ -169,7 +169,7 @@
     "message": "저장된 일부 서버의 비밀번호를 읽을 수 없습니다. 북마크 관리에서 비밀번호를 다시 입력하세요."
   },
   "plaintextSecretNotice": {
-    "message": "Windows 데이터 보호를 사용할 수 없어 저장된 서버의 비밀번호 또는 암호 문구를 암호화하지 못했고, 일반 텍스트로 저장했습니다."
+    "message": "Windows 데이터 보호를 사용할 수 없어 북마크의 비밀번호 또는 암호 문구를 암호화하지 못했고, 일반 텍스트로 저장했습니다."
   },
   "secretNotPersistedNotice": {
     "message": "비밀번호 또는 키 암호 문구를 암호화할 수 없어 저장하지 않았습니다. 현재 연결은 끊어질 때까지 유지되며, 다음에는 다시 입력해야 합니다."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "자동으로 업데이트",
     "autoCheckUpdatesHint": "시작할 때와 하루에 한 번 업데이트를 확인하고 백그라운드에서 다운로드합니다. 다운로드한 업데이트는 다음에 FTPeach를 시작할 때 조용히 설치되며, 상태 표시줄에서 바로 설치할 수도 있습니다.",
     "autoReconnectTabs": "시작 시 복원된 탭 다시 연결하기",
-    "autoReconnectTabsHint": "기본값은 꺼짐입니다. 켜면 저장된 서버의 복원된 탭이 자동으로 연결됩니다.",
+    "autoReconnectTabsHint": "기본값은 꺼짐입니다. 켜면 북마크의 복원된 탭이 자동으로 연결됩니다.",
     "saveSessionOnExit": "종료 시 세션 저장",
     "saveSessionOnExitHint": "다음에 프로그램을 실행할 때 열려 있던 탭, 창 유형 및 경로를 복원합니다. 이 기능을 비활성화하면 저장된 세션이 삭제됩니다.",
     "checkNow": "지금 확인",
@@ -755,8 +755,8 @@
     "updateDownloaded": "v{{version}} 업데이트를 다운로드했습니다. 지금 설치할 수 있습니다."
   },
   "siteManager": {
-    "emptyList": "아직 저장된 서버가 없습니다",
-    "confirmDeleteSite": "“{{name}}” 서버를 삭제하시겠습니까?"
+    "emptyList": "아직 북마크가 없습니다",
+    "confirmDeleteSite": "“{{name}}” 북마크를 삭제하시겠습니까?"
   },
   "siteManagerDialog": {
     "titleNew": "새 북마크",

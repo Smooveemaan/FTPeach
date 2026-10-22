@@ -169,7 +169,7 @@
     "message": "Lösenorden för vissa sparade servrar gick inte att läsa – ange dem på nytt i bokmärkeshanteraren."
   },
   "plaintextSecretNotice": {
-    "message": "Lösenordet eller lösenfrasen för en sparad server kunde inte krypteras eftersom Windows dataskydd inte är tillgängligt, och lagrades därför i klartext."
+    "message": "Lösenordet eller lösenfrasen för ett bokmärke kunde inte krypteras eftersom Windows dataskydd inte är tillgängligt, och lagrades därför i klartext."
   },
   "secretNotPersistedNotice": {
     "message": "Lösenordet eller lösenfrasen kunde inte krypteras och sparades inte. En befintlig anslutning kan fortsätta tills den bryts; i annat fall måste du ange lösenordet igen nästa gång."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Uppdatera automatiskt",
     "autoCheckUpdatesHint": "Söker efter uppdateringar vid uppstart och en gång om dagen och laddar ner dem i bakgrunden. En nedladdad uppdatering installeras tyst nästa gång FTPeach startar, eller direkt från statusfältet.",
     "autoReconnectTabs": "Återanslut återställda flikar vid uppstart",
-    "autoReconnectTabsHint": "Avstängt som standard. När det är aktiverat ansluts återställda flikar med sparade servrar automatiskt.",
+    "autoReconnectTabsHint": "Avstängt som standard. När det är aktiverat ansluts återställda flikar från bokmärken automatiskt.",
     "saveSessionOnExit": "Spara sessionen vid avslut",
     "saveSessionOnExitHint": "Återställer öppna flikar, paneltyper och sökvägar vid nästa start. Om du stänger av det här raderas den sparade sessionen.",
     "checkNow": "Sök nu",
@@ -755,8 +755,8 @@
     "updateDownloaded": "Uppdateringen v{{version}} har laddats ner – du kan installera den nu."
   },
   "siteManager": {
-    "emptyList": "Inga sparade servrar ännu",
-    "confirmDeleteSite": "Ta bort servern ”{{name}}”?"
+    "emptyList": "Inga bokmärken ännu",
+    "confirmDeleteSite": "Ta bort bokmärket ”{{name}}”?"
   },
   "siteManagerDialog": {
     "titleNew": "Nytt bokmärke",

@@ -173,7 +173,7 @@
     "message": "Hesla k některým uloženým serverům se nepodařilo načíst – zadejte je prosím znovu ve správci záložek."
   },
   "plaintextSecretNotice": {
-    "message": "Heslo nebo přístupovou frázi uloženého serveru nebylo možné zašifrovat, protože ochrana dat systému Windows není k dispozici, a byly proto uloženy jako prostý text."
+    "message": "Heslo nebo přístupovou frázi záložky nebylo možné zašifrovat, protože ochrana dat systému Windows není k dispozici, a byly proto uloženy jako prostý text."
   },
   "secretNotPersistedNotice": {
     "message": "Heslo nebo přístupovou frázi klíče se nepodařilo zašifrovat, a proto nebyly uloženy. Stávající připojení vydrží do odpojení; příště je zadejte znovu."
@@ -560,7 +560,7 @@
     "autoCheckUpdates": "Aktualizovat automaticky",
     "autoCheckUpdatesHint": "Kontroluje aktualizace při spuštění a jednou denně a stahuje je na pozadí. Stažená aktualizace se tiše nainstaluje při příštím spuštění FTPeach nebo hned ze stavového řádku.",
     "autoReconnectTabs": "Při spuštění znovu připojit obnovené karty",
-    "autoReconnectTabsHint": "Ve výchozím nastavení vypnuto. Je-li zapnuto, obnovené karty s uloženými servery se připojí automaticky.",
+    "autoReconnectTabsHint": "Ve výchozím nastavení vypnuto. Je-li zapnuto, obnovené karty ze záložek se připojí automaticky.",
     "saveSessionOnExit": "Ukládat relaci při ukončení",
     "saveSessionOnExitHint": "Při příštím spuštění obnoví otevřené karty, typy panelů a cesty. Vypnutím této funkce dojde k vymazání uložené relace.",
     "checkNow": "Zkontrolovat nyní",
@@ -771,8 +771,8 @@
     "updateDownloaded": "Byla stažena aktualizace v{{version}}. Nyní ji můžete nainstalovat."
   },
   "siteManager": {
-    "emptyList": "Zatím nejsou uloženy žádné servery",
-    "confirmDeleteSite": "Odstranit server „{{name}}“?"
+    "emptyList": "Zatím nejsou žádné záložky",
+    "confirmDeleteSite": "Odstranit záložku „{{name}}“?"
   },
   "siteManagerDialog": {
     "titleNew": "Nová záložka",

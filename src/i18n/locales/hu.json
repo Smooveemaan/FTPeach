@@ -169,7 +169,7 @@
     "message": "Néhány mentett szerver jelszavát nem sikerült beolvasni – írja be őket újra a könyvjelzőkezelőben."
   },
   "plaintextSecretNotice": {
-    "message": "Egy mentett szerver jelszavát vagy jelmondatát nem sikerült titkosítani, mert a Windows adatvédelme nem érhető el, ezért egyszerű szövegként lett tárolva."
+    "message": "Egy könyvjelző jelszavát vagy jelmondatát nem sikerült titkosítani, mert a Windows adatvédelme nem érhető el, ezért egyszerű szövegként lett tárolva."
   },
   "secretNotPersistedNotice": {
     "message": "A jelszót vagy a kulcs jelmondatát nem sikerült titkosítani, ezért nem lett mentve. A meglévő kapcsolat a bontásig működik; legközelebb adja meg újra."
@@ -552,7 +552,7 @@
     "autoCheckUpdates": "Automatikus frissítés",
     "autoCheckUpdatesHint": "Indításkor és naponta egyszer frissítéseket keres, és a háttérben letölti őket. A letöltött frissítés csendben települ az FTPeach következő indításakor, vagy azonnal az állapotsorról.",
     "autoReconnectTabs": "Visszaállított lapok újracsatlakoztatása indításkor",
-    "autoReconnectTabsHint": "Alapértelmezés szerint kikapcsolva. Bekapcsolva a mentett szerverekhez tartozó visszaállított lapok automatikusan csatlakoznak.",
+    "autoReconnectTabsHint": "Alapértelmezés szerint kikapcsolva. Bekapcsolva a könyvjelzőkhöz tartozó visszaállított lapok automatikusan csatlakoznak.",
     "saveSessionOnExit": "A munkamenet mentése kilépéskor",
     "saveSessionOnExitHint": "A következő indításkor visszaállítja a megnyitott lapokat, a paneltípusokat és az útvonalakat. Kikapcsolásakor a mentett munkamenet törlődik.",
     "checkNow": "Ellenőrzés most",
@@ -755,8 +755,8 @@
     "updateDownloaded": "A v{{version}}-es frissítés letöltődött – most már telepítheti."
   },
   "siteManager": {
-    "emptyList": "Még nincsenek mentett szerverek",
-    "confirmDeleteSite": "Törli a(z) „{{name}}” szervert?"
+    "emptyList": "Még nincsenek könyvjelzők",
+    "confirmDeleteSite": "Törli a(z) „{{name}}” könyvjelzőt?"
   },
   "siteManagerDialog": {
     "titleNew": "Új könyvjelző",

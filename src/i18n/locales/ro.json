@@ -171,7 +171,7 @@
     "message": "Parolele unor servere salvate nu au putut fi citite — introduceți-le din nou în gestionarul de marcaje."
   },
   "plaintextSecretNotice": {
-    "message": "Parola sau fraza de acces a unui server salvat nu a putut fi criptată deoarece protecția datelor din Windows nu este disponibilă, așa că a fost stocată ca text simplu."
+    "message": "Parola sau fraza de acces a unui marcaj nu a putut fi criptată deoarece protecția datelor din Windows nu este disponibilă, așa că a fost stocată ca text simplu."
   },
   "secretNotPersistedNotice": {
     "message": "Parola sau fraza de acces a cheii nu a putut fi criptată, așa că nu a fost salvată. O conexiune existentă poate continua până la deconectare; data viitoare introduceți-o din nou."
@@ -556,7 +556,7 @@
     "autoCheckUpdates": "Actualizează automat",
     "autoCheckUpdatesHint": "Verifică actualizările la pornire și o dată pe zi și le descarcă în fundal. O actualizare descărcată se instalează silențios la următoarea pornire a FTPeach sau imediat din bara de stare.",
     "autoReconnectTabs": "Reconectează filele restaurate la pornire",
-    "autoReconnectTabsHint": "Dezactivat implicit. Când este activat, filele restaurate cu servere salvate se conectează automat.",
+    "autoReconnectTabsHint": "Dezactivat implicit. Când este activat, filele restaurate din marcaje se conectează automat.",
     "saveSessionOnExit": "Salvează sesiunea la ieșire",
     "saveSessionOnExitHint": "Restaurează filele deschise, tipurile de panouri și căile la următoarea pornire. Dezactivarea acestei opțiuni șterge sesiunea salvată.",
     "checkNow": "Verifică acum",
@@ -763,8 +763,8 @@
     "updateDownloaded": "S-a descărcat actualizarea v{{version}} — o puteți instala acum."
   },
   "siteManager": {
-    "emptyList": "Nu există încă servere salvate",
-    "confirmDeleteSite": "Ștergeți serverul „{{name}}”?"
+    "emptyList": "Nu există încă marcaje",
+    "confirmDeleteSite": "Ștergeți marcajul „{{name}}”?"
   },
   "siteManagerDialog": {
     "titleNew": "Marcaj nou",

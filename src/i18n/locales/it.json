@@ -171,7 +171,7 @@
     "message": "Non è stato possibile leggere le password di alcuni server salvati: inseriscile di nuovo nel gestore dei segnalibri."
   },
   "plaintextSecretNotice": {
-    "message": "Non è stato possibile crittografare la password o la passphrase di un sito salvato poiché la protezione dei dati di Windows non è disponibile; pertanto, è stata memorizzata in chiaro."
+    "message": "Non è stato possibile crittografare la password o la passphrase di un segnalibro poiché la protezione dei dati di Windows non è disponibile; pertanto, è stata memorizzata in chiaro."
   },
   "secretNotPersistedNotice": {
     "message": "Non è stato possibile crittografare la password o la passphrase della chiave, quindi non è stata salvata. Una connessione già aperta può continuare fino alla disconnessione; altrimenti, inseriscila di nuovo la prossima volta."
@@ -556,7 +556,7 @@
     "autoCheckUpdates": "Aggiorna automaticamente",
     "autoCheckUpdatesHint": "Cerca aggiornamenti all'avvio e una volta al giorno e li scarica in background. Un aggiornamento scaricato viene installato in modo silenzioso al prossimo avvio di FTPeach, oppure subito dalla barra di stato.",
     "autoReconnectTabs": "Riconnetti le schede ripristinate all'avvio",
-    "autoReconnectTabsHint": "Disattivata per impostazione predefinita. Se attiva, le schede ripristinate con siti salvati si connettono automaticamente.",
+    "autoReconnectTabsHint": "Disattivata per impostazione predefinita. Se attiva, le schede ripristinate dai segnalibri si connettono automaticamente.",
     "saveSessionOnExit": "Salva la sessione all'uscita",
     "saveSessionOnExitHint": "Ripristina le schede aperte, i tipi di riquadro e i percorsi al prossimo avvio. Disattivando questa opzione, la sessione salvata viene cancellata.",
     "checkNow": "Verifica ora",
@@ -763,8 +763,8 @@
     "updateDownloaded": "L'aggiornamento v{{version}} è stato scaricato: ora puoi installarlo."
   },
   "siteManager": {
-    "emptyList": "Non ci sono ancora siti salvati",
-    "confirmDeleteSite": "Eliminare il sito \"{{name}}\"?"
+    "emptyList": "Non ci sono ancora segnalibri",
+    "confirmDeleteSite": "Eliminare il segnalibro \"{{name}}\"?"
   },
   "siteManagerDialog": {
     "titleNew": "Nuovo segnalibro",
@@ -1011,7 +1011,7 @@
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Nessuna connessione recente",
-    "noSavedConnectionsBody": "Inserisci l'indirizzo del server qui sopra oppure aggiungi un sito per accedervi con un solo clic.",
+    "noSavedConnectionsBody": "Inserisci l'indirizzo del server qui sopra oppure aggiungi un segnalibro per accedervi con un solo clic.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Gestisci i segnalibri",
     "quicklistLabel": "Connessioni recenti"

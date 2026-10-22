@@ -1196,44 +1196,12 @@ mod live_tests {
             .clone();
             let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
 
-            backend
-                .connect(&config)
-                .await
-                .expect("connect should succeed");
-            assert!(backend.is_connected());
-
-            let entries = backend.list("/").await.expect("list should succeed");
-            assert!(!entries.is_empty(), "rebex demo root should have entries");
-            let readme = entries
-                .iter()
-                .find(|e| e.name.eq_ignore_ascii_case("readme.txt"));
-            assert!(
-                readme.is_some(),
-                "expected readme.txt in rebex demo root, got: {:?}",
-                entries.iter().map(|e| &e.name).collect::<Vec<_>>()
-            );
-
-            let tmp = std::env::temp_dir().join("ftpeach-live-test-sftp-readme.txt");
-            let _ = tokio::fs::remove_file(&tmp).await;
-            let progress: ProgressSink = Arc::new(|_info| {});
-            backend
-                .download("/readme.txt", &tmp, false, progress)
-                .await
-                .expect("download should succeed");
-            let downloaded = tokio::fs::read(&tmp)
-                .await
-                .expect("downloaded file should exist");
-            assert!(
-                !downloaded.is_empty(),
-                "downloaded readme.txt should not be empty"
-            );
-            let _ = tokio::fs::remove_file(&tmp).await;
-
-            backend
-                .disconnect()
-                .await
-                .expect("disconnect should succeed");
-            assert!(!backend.is_connected());
+            crate::protocol::rebex_round_trip(
+                &mut backend,
+                &config,
+                "ftpeach-live-test-sftp-readme.txt",
+            )
+            .await;
         };
         tokio::time::timeout(Duration::from_secs(30), body)
             .await

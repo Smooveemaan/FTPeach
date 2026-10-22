@@ -142,6 +142,55 @@ pub(crate) async fn upload_start<B: ProtocolBackend + ?Sized>(
     Ok((local_size, remote_size))
 }
 
+/// What the live tests against the public Rebex demo check over each
+/// protocol: connect, find readme.txt at the root, download it into `scratch`
+/// under the temporary folder, and disconnect.
+#[cfg(test)]
+pub(crate) async fn rebex_round_trip(
+    backend: &mut dyn ProtocolBackend,
+    config: &config::ConnectionConfig,
+    scratch: &str,
+) {
+    backend
+        .connect(config)
+        .await
+        .expect("connect should succeed");
+    assert!(backend.is_connected());
+
+    let entries = backend.list("/").await.expect("list should succeed");
+    assert!(!entries.is_empty(), "rebex demo root should have entries");
+    let readme = entries
+        .iter()
+        .find(|e| e.name.eq_ignore_ascii_case("readme.txt"));
+    assert!(
+        readme.is_some(),
+        "expected readme.txt in rebex demo root, got: {:?}",
+        entries.iter().map(|e| &e.name).collect::<Vec<_>>()
+    );
+
+    let tmp = std::env::temp_dir().join(scratch);
+    let _ = tokio::fs::remove_file(&tmp).await;
+    let progress: ProgressSink = Arc::new(|_info| {});
+    backend
+        .download("/readme.txt", &tmp, false, progress)
+        .await
+        .expect("download should succeed");
+    let downloaded = tokio::fs::read(&tmp)
+        .await
+        .expect("downloaded file should exist");
+    assert!(
+        !downloaded.is_empty(),
+        "downloaded readme.txt should not be empty"
+    );
+    let _ = tokio::fs::remove_file(&tmp).await;
+
+    backend
+        .disconnect()
+        .await
+        .expect("disconnect should succeed");
+    assert!(!backend.is_connected());
+}
+
 pub fn validate_listing(entries: &[EntryInfo]) -> BackendResult<()> {
     let mut text_bytes = 0usize;
     if entries.len() > MAX_DIRECTORY_ENTRIES {

@@ -29,10 +29,13 @@ the last scheme fades back to Peach. They use the same artwork and palette notic
 It also exports unlabelled WebP previews with the palette-specific window border, and their names and colors to
 `assets/images/palettes/` for the website's on-demand theme picker.
 
-`assets/images/support.png` is the Ko-fi support button from Ko-fi's official
-press kit. It is Ko-fi's trademark, used only to link to the project's Ko-fi
-page from the README and the release notes; it is not shipped in the application
-and is not licensed under FTPeach's Apache License.
+`assets/images/kofi-*.png` and `assets/images/patreon-*.png` are the Ko-fi logo
+from Ko-fi's official press kit and the horizontal Patreon logo from Patreon's
+official brand assets, rendered for GitHub's light theme and, with the dark ink
+turned white, for its dark theme. They are Ko-fi's and Patreon's trademarks, used
+only to link to the project's pages there from the README and the release notes;
+they are not shipped in the application and are not licensed under FTPeach's
+Apache License.
 
 ## Community color palettes
 

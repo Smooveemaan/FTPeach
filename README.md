@@ -19,9 +19,7 @@ Browse local and remote folders side by side, copy files between servers, and ke
   <img alt="FTPeach showing local and remote file panes, connection tabs, and the transfer queue." src="assets/images/ftpeach-dark.png">
 </picture>
 
-If FTPeach is useful to you, you can also support its development:
-
-<a href="https://ko-fi.com/smooveemaan"><img src="assets/images/support.png" alt="Support FTPeach on Ko-fi" width="160"></a>
+Support FTPeach:&emsp;<a href="https://ko-fi.com/smooveemaan"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/images/kofi-dark.png"><img src="assets/images/kofi-light.png" alt="Support FTPeach on Ko-fi" height="24" align="absmiddle"></picture></a>&emsp;<a href="https://www.patreon.com/Smooveemaan"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/images/patreon-dark.png"><img src="assets/images/patreon-light.png" alt="Support FTPeach on Patreon" height="24" align="absmiddle"></picture></a>
 
 ## Get started
 

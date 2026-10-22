@@ -24,8 +24,11 @@ const repository = process.env.GITHUB_REPOSITORY;
 assert.ok(repository, 'GITHUB_REPOSITORY must be set (this script runs as a GitHub Actions step)');
 const ref = process.env.GITHUB_REF_NAME;
 assert.ok(ref, 'GITHUB_REF_NAME must be set (this script runs as a GitHub Actions step)');
-const supportBadgeUrl = `https://raw.githubusercontent.com/${repository}/${ref}/assets/images/support.png`;
-const body = `${notes}\n\n---\n\nIf FTPeach is useful to you, you can also support its development:\n\n<a href="https://ko-fi.com/smooveemaan"><img src="${supportBadgeUrl}" alt="Support FTPeach on Ko-fi" width="160"></a>`;
+const images = `https://raw.githubusercontent.com/${repository}/${ref}/assets/images`;
+// A logo for each theme: GitHub picks the one that matches the reader's.
+const logo = (href: string, name: string, alt: string) =>
+  `<a href="${href}"><picture><source media="(prefers-color-scheme: dark)" srcset="${images}/${name}-dark.png"><img src="${images}/${name}-light.png" alt="${alt}" height="24" align="absmiddle"></picture></a>`;
+const body = `${notes}\n\n---\n\nSupport FTPeach:&emsp;${logo('https://ko-fi.com/smooveemaan', 'kofi', 'Support FTPeach on Ko-fi')}&emsp;${logo('https://www.patreon.com/Smooveemaan', 'patreon', 'Support FTPeach on Patreon')}`;
 
 const githubOutputPath = process.env.GITHUB_OUTPUT;
 assert.ok(

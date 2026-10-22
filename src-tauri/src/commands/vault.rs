@@ -19,17 +19,8 @@ fn authentication_failed() -> CommandError {
     )
 }
 
-/// Only a refused credential counts against the user and gets the neutral
-/// answer; any other failure, such as a vault file that cannot be read or
-/// written, neither counts nor clears the history and is reported as itself.
-fn judge(result: &anyhow::Result<()>) -> AttemptOutcome {
-    match result {
-        Ok(()) => AttemptOutcome::Accepted,
-        Err(error) if vault::is_refused(error) => AttemptOutcome::Rejected,
-        Err(_) => AttemptOutcome::Inconclusive,
-    }
-}
-
+/// Only a refused credential gets the neutral answer; any other failure is
+/// reported as itself.
 fn answer(error: anyhow::Error) -> CommandError {
     if vault::is_refused(&error) {
         authentication_failed()
@@ -50,7 +41,7 @@ impl VaultAttempt<'_> {
     /// Runs one authentication and records exactly what it proved.
     ///
     /// Inside `authenticate`, only a refused credential is the user's fault
-    /// (see [`judge`]). Whatever follows it happens on an unlocked vault, so
+    /// (see [`AttemptOutcome::of`]). Whatever follows it happens on an unlocked vault, so
     /// its failure is reported as itself rather than as a rejected password,
     /// and it neither counts against the rate limit nor clears it.
     async fn run<F, Fut>(self, authenticate: F) -> CommandResult<()>
@@ -66,7 +57,7 @@ impl VaultAttempt<'_> {
         let authenticated = authenticate().await;
         // Held until the outcome is on the books, so the next attempt cannot
         // be judged against a state that predates this one.
-        permit.finish(judge(&authenticated)).await;
+        permit.finish(AttemptOutcome::of(&authenticated)).await;
         authenticated.map_err(answer)?;
         // The vault is unlocked; saying "authentication failed" here would
         // describe the wrong thing and hide a storage problem.
@@ -226,7 +217,7 @@ pub async fn vault_change_password(
     let result = vault
         .change_password(old_password.expose(), new_password.expose())
         .await;
-    permit.finish(judge(&result)).await;
+    permit.finish(AttemptOutcome::of(&result)).await;
     result.map_err(answer)
 }
 

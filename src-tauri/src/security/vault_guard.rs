@@ -34,6 +34,19 @@ pub(crate) enum AttemptOutcome {
     Inconclusive,
 }
 
+impl AttemptOutcome {
+    /// Only a refused credential counts against the user; any other failure,
+    /// such as a vault file that cannot be read or written, neither counts
+    /// nor clears the history.
+    pub(crate) fn of(result: &anyhow::Result<()>) -> Self {
+        match result {
+            Ok(()) => Self::Accepted,
+            Err(error) if crate::security::vault::is_refused(error) => Self::Rejected,
+            Err(_) => Self::Inconclusive,
+        }
+    }
+}
+
 /// Rate-limits authentication attempts and serializes vault commands.
 /// The separate KDF executor retains its own slot until blocking work exits,
 /// even when cancellation releases this command permit.

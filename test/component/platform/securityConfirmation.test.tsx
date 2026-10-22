@@ -17,6 +17,7 @@ vi.mock('@tauri-apps/api/window', () => ({
 vi.mock('../../../src/i18n/index.ts', () => ({
   matchSupportedLanguage: (locale: string) => (locale === 'en' ? locale : null),
   changeLanguage: mocks.language,
+  default: { t: (key: string) => key },
 }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -203,6 +204,16 @@ test.each([
   await waitFor(() =>
     expect(mocks.respond).toHaveBeenCalledWith(expect.objectContaining({ useSystemUnlock: true })),
   );
+});
+
+test('a vault that cannot be read is not reported as a wrong password', async () => {
+  mocks.respond.mockRejectedValueOnce({ code: 'internal', message: 'damaged vault' });
+  await open({ requiresReauthentication: true });
+  const password = screen.getByLabelText('settings.security.masterPassword');
+  fireEvent.change(password, { target: { value: 'correct' } });
+  fireEvent.keyDown(password, { key: 'Enter' });
+  await screen.findByText('errors.internal');
+  expect(screen.queryByText('settings.security.unlockRefused')).toBeNull();
 });
 
 test('failed reauthentication clears the password and allows a corrected retry', async () => {

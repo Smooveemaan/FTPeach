@@ -7,6 +7,7 @@ import { changeLanguage, matchSupportedLanguage } from '../i18n/index.ts';
 import { useTruncated } from '../hooks/useTruncated.ts';
 import Icon from '../components/Icon.tsx';
 import { useTooltip } from '../hooks/useTooltip.ts';
+import { friendlyError } from '../shared/errorMessages.ts';
 import '../styles/security-confirmation.css';
 
 type ConfirmationKind =
@@ -83,7 +84,8 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
   const [confirmation, setConfirmation] = useState('');
   const [busy, setBusy] = useState(false);
   const [masterPassword, setMasterPassword] = useState('');
-  const [authenticationError, setAuthenticationError] = useState(false);
+  // What the last password attempt ran into: a refusal, or a vault that could not be read.
+  const [authenticationError, setAuthenticationError] = useState<string | null>(null);
   // Windows Hello is asked first; the master password field appears when it
   // was cancelled or failed.
   const [helloFailed, setHelloFailed] = useState(false);
@@ -185,6 +187,16 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
     (!!prompt.confirmationPhrase && confirmation !== prompt.confirmationPhrase) ||
     (prompt.requiresReauthentication && !masterPassword && !useHello);
 
+  // A refusal reads the same whatever caused it; any other failure says what broke.
+  const attemptFailure = (error: unknown) => {
+    const code = (error as { code?: unknown } | null)?.code;
+    const message = (error as { message?: unknown } | null)?.message;
+    return typeof code === 'string' && code !== 'permissionDenied'
+      ? friendlyError({ code, message: typeof message === 'string' ? message : undefined }) ||
+          t('settings.security.unlockRefused')
+      : t('settings.security.unlockRefused');
+  };
+
   const respond = async (approved: boolean) => {
     if (busy || (approved && approvalBlocked)) return;
     setBusy(true);
@@ -196,12 +208,12 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
         useSystemUnlock: approved && useHello,
       });
       setMasterPassword('');
-    } catch {
+    } catch (error) {
       if (approved && prompt?.requiresReauthentication) {
         setMasterPassword('');
         setAttempt((n) => n + 1);
         if (useHello) setHelloFailed(true);
-        else setAuthenticationError(true);
+        else setAuthenticationError(attemptFailure(error));
         setBusy(false);
         return;
       }
@@ -215,7 +227,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
     if (busy || (!!prompt?.confirmationPhrase && confirmation !== prompt.confirmationPhrase))
       return;
     setBusy(true);
-    setAuthenticationError(false);
+    setAuthenticationError(null);
     try {
       await invoke('plugin:sensitive|respond_sensitive_confirmation', {
         requestId,
@@ -383,10 +395,10 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
                   value={masterPassword}
                   autoComplete="current-password"
                   autoFocus
-                  aria-invalid={authenticationError}
+                  aria-invalid={!!authenticationError}
                   onChange={(event) => {
                     setMasterPassword(event.target.value);
-                    setAuthenticationError(false);
+                    setAuthenticationError(null);
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' && masterPassword) void respond(true);
@@ -401,9 +413,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
                 className="settings-hint settings-warning vault-unlock-error"
                 role="status"
               >
-                {authenticationError
-                  ? t('settings.security.unlockRefused')
-                  : t('securityConfirmation.systemUnlockFailed')}
+                {authenticationError ?? t('securityConfirmation.systemUnlockFailed')}
               </p>
             )}
           </div>

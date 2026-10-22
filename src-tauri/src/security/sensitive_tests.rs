@@ -109,7 +109,14 @@ fn confirmation_is_reserved_for_secrets_reset_and_executables() {
 
 #[test]
 fn an_export_names_whether_it_carries_the_saved_passwords() {
-    let plain = plan_operation("app_export_settings", "native-dialog", true, "en".into()).unwrap();
+    let plain = plan_operation(
+        "app_export_settings",
+        "native-dialog",
+        true,
+        false,
+        "en".into(),
+    )
+    .unwrap();
     assert!(!plain.required);
     assert!(plain.prompt.is_none());
     assert_eq!(plain.target, "native-dialog");
@@ -120,6 +127,7 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
             "app_export_settings",
             "secrets",
             vault_configured,
+            false,
             "en".into(),
         )
         .unwrap();
@@ -129,7 +137,20 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
         assert_eq!(prompt.kind, ConfirmationKind::ExportSecrets);
         assert_eq!(prompt.requires_reauthentication, vault_configured);
     }
-    assert!(plan_operation("app_export_settings", "anything", true, "en".into()).is_err());
+    assert!(plan_operation("app_export_settings", "anything", true, false, "en".into()).is_err());
+}
+
+#[test]
+fn a_damaged_vault_is_started_over_not_reset() {
+    let kind = |damaged| {
+        plan_operation("vault_reset", "", false, damaged, "en".into())
+            .unwrap()
+            .prompt
+            .unwrap()
+            .kind
+    };
+    assert_eq!(kind(false), ConfirmationKind::VaultReset);
+    assert_eq!(kind(true), ConfirmationKind::VaultStartOver);
 }
 
 fn open_with(remote_path: &str, application: Option<&str>) -> OpenWithIntent {
@@ -542,14 +563,29 @@ async fn a_confirmation_that_unlocks_the_vault_says_so_once() {
         sink.fetch_add(1, Ordering::SeqCst);
     });
 
-    assert!(reauthenticate(app.handle(), &vault, &store, PASSWORD).await);
+    assert!(
+        reauthenticate(app.handle(), &vault, &store, PASSWORD)
+            .await
+            .is_ok()
+    );
     vault.lock().await;
-    assert!(!reauthenticate(app.handle(), &vault, &store, "wrong").await);
+    let wrong = reauthenticate(app.handle(), &vault, &store, "wrong").await;
+    assert!(crate::security::vault::is_refused(&wrong.unwrap_err()));
     assert_eq!(heard.load(Ordering::SeqCst), 0);
 
-    assert!(reauthenticate(app.handle(), &vault, &store, PASSWORD).await);
+    assert!(
+        reauthenticate(app.handle(), &vault, &store, PASSWORD)
+            .await
+            .is_ok()
+    );
     assert!(vault.is_unlocked().await);
     assert_eq!(heard.load(Ordering::SeqCst), 1);
+
+    // The right password over a vault that cannot be read is not refused.
+    vault.lock().await;
+    std::fs::write(root.join("vault.hold"), b"damaged").unwrap();
+    let broken = reauthenticate(app.handle(), &vault, &store, PASSWORD).await;
+    assert!(!crate::security::vault::is_refused(&broken.unwrap_err()));
     let _ = std::fs::remove_dir_all(&root);
 }
 

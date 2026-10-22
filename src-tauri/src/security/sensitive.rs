@@ -392,6 +392,7 @@ fn plan_operation(
     operation: &str,
     target: &str,
     vault_configured: bool,
+    vault_damaged: bool,
     locale: String,
 ) -> CommandResult<Plan> {
     let target = normalized_target(operation, target)?;
@@ -410,9 +411,16 @@ fn plan_operation(
                     | "settings_reveal_proxy_password"
                     | "vault_use_system_protection"
             ));
-    let prompt = (required || requires_reauthentication)
+    let mut prompt = (required || requires_reauthentication)
         .then(|| confirmation_prompt(operation, &target, locale, requires_reauthentication))
         .transpose()?;
+    // A damaged vault is set aside, not deleted, and says so.
+    if operation == "vault_reset"
+        && vault_damaged
+        && let Some(prompt) = prompt.as_mut()
+    {
+        prompt.kind = ConfirmationKind::VaultStartOver;
+    }
     Ok(Plan {
         target,
         required,
@@ -634,20 +642,18 @@ pub(crate) async fn reauthenticate<R: tauri::Runtime>(
     vault: &Vault,
     store: &Store,
     password: &str,
-) -> bool {
+) -> anyhow::Result<()> {
     if vault.is_unlocked().await {
-        return vault.verify_password(password).await.is_ok();
+        return vault.verify_password(password).await;
     }
-    if vault.unlock(password).await.is_err() {
-        return false;
-    }
+    vault.unlock(password).await?;
     // The password was accepted; what it was asked for goes ahead even if
     // a leftover secret could not be moved. The next unlock tries again.
     if let Err(error) = store.migrate_secrets_to_vault(vault).await {
         log::warn!("Could not move saved secrets into the vault after unlocking: {error:#}");
     }
     announce_unlocked(app);
-    true
+    Ok(())
 }
 
 /// Windows Hello in place of the master password, alone over the main
@@ -710,7 +716,10 @@ pub async fn respond_sensitive_confirmation(
             .await
             .map_err(|_| denied("Authentication failed"))?;
         let verified = if use_system_unlock == Some(true) {
-            reauthenticate_with_system(&window, &vault, &window.state::<Store>()).await
+            reauthenticate_with_system(&window, &vault, &window.state::<Store>())
+                .await
+                .then_some(())
+                .ok_or_else(crate::security::vault::refused)
         } else {
             reauthenticate(
                 window.app_handle(),
@@ -722,14 +731,15 @@ pub async fn respond_sensitive_confirmation(
         };
         password.zeroize();
         permit
-            .finish(if verified {
-                crate::security::vault_guard::AttemptOutcome::Accepted
-            } else {
-                crate::security::vault_guard::AttemptOutcome::Rejected
-            })
+            .finish(crate::security::vault_guard::AttemptOutcome::of(&verified))
             .await;
-        if !verified {
-            return Err(denied("Authentication failed"));
+        // A vault that could not be read is said as such, not as a wrong password.
+        if let Err(error) = verified {
+            return Err(if crate::security::vault::is_refused(&error) {
+                denied("Authentication failed")
+            } else {
+                CommandError::from_anyhow(&error)
+            });
         }
     }
     let request = state
@@ -800,17 +810,13 @@ pub async fn authorize_sensitive(
             plan
         }
         "session_trust_host_key" => plan_host_key(&target, locale)?,
-        _ => {
-            let mut plan = plan_operation(&operation, &target, vault.is_configured(), locale)?;
-            // A damaged vault is set aside, not deleted, and says so.
-            if operation == "vault_reset"
-                && vault.is_damaged()
-                && let Some(prompt) = plan.prompt.as_mut()
-            {
-                prompt.kind = ConfirmationKind::VaultStartOver;
-            }
-            plan
-        }
+        _ => plan_operation(
+            &operation,
+            &target,
+            vault.is_configured(),
+            vault.is_damaged(),
+            locale,
+        )?,
     };
     let requires_reauthentication = plan
         .prompt

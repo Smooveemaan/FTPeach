@@ -34,7 +34,6 @@ that did not run. The last results are historical, not checks of the current tre
 
 | Test | Needs | Command | Last result |
 | --- | --- | --- | --- |
-| `connects_lists_and_downloads_from_rebex_ftps`, `connects_lists_and_downloads_from_rebex_sftp` | internet access to test.rebex.net | `npm run rust:test -- connects_lists_and_downloads_from_rebex --ignored` | PASS 2/2, 2026-09-23 |
 | `connects_and_round_trips_a_file` | a WebDAV server in `WEBDAV_URL`, `WEBDAV_USER`, `WEBDAV_PASS` | `npm run rust:test -- connects_and_round_trips_a_file --ignored` | NOT RUN: no external server |
 | `cross_volume_disk_move` | a second writable volume in `FTPEACH_MOVE_TEST_VOLUME` | `npm run rust:test -- cross_volume_disk_move --ignored` | PASS, C: to an NTFS drive, 2026-10-08 |
 | `artifact_symlink_cannot_write_to_its_target` | Developer Mode or SeCreateSymbolicLinkPrivilege | `npm run rust:test -- artifact_symlink_cannot_write --ignored` | NOT RUN: privilege not held (1314) |

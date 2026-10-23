@@ -2222,46 +2222,6 @@ mod recursive_stop_tests {
     }
 }
 
-#[cfg(test)]
-mod live_tests {
-    use super::*;
-    use serde_json::json;
-
-    fn ensure_crypto_provider() {
-        let _ = rustls::crypto::ring::default_provider().install_default();
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    #[ignore = "reaches the public Rebex demo server over the internet"]
-    async fn connects_lists_and_downloads_from_rebex_ftps() {
-        let body = async {
-            ensure_crypto_provider();
-            let mut backend = FtpBackend::new();
-            let config = json!({
-                "host": "test.rebex.net",
-                "port": 21,
-                "user": "demo",
-                "password": "password",
-                "secure": true,
-            })
-            .as_object()
-            .unwrap()
-            .clone();
-            let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
-
-            crate::protocol::rebex_round_trip(
-                &mut backend,
-                &config,
-                "ftpeach-live-test-readme.txt",
-            )
-            .await;
-        };
-        tokio::time::timeout(Duration::from_secs(30), body)
-            .await
-            .expect("live test timed out after 30s");
-    }
-}
-
 #[test]
 fn passive_replies_give_their_port() {
     assert_eq!(

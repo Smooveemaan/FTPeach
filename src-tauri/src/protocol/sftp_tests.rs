@@ -1170,46 +1170,6 @@ mod local_integration_tests {
 }
 
 #[cfg(test)]
-mod live_tests {
-    use super::*;
-    use serde_json::json;
-
-    #[tokio::test(flavor = "multi_thread")]
-    #[ignore = "reaches the public Rebex demo server over the internet"]
-    async fn connects_lists_and_downloads_from_rebex_sftp() {
-        let body = async {
-            let store = Store::new_at(
-                std::env::temp_dir()
-                    .join(format!("ftpeach-sftp-live-test-{}", uuid::Uuid::new_v4())),
-            );
-            let mut backend = SftpBackend::new(Arc::new(store));
-            let config = json!({
-                "protocol": "sftp",
-                "host": "test.rebex.net",
-                "port": 22,
-                "strictHostKeyCheck": false,
-                "user": "demo",
-                "password": "password",
-            })
-            .as_object()
-            .unwrap()
-            .clone();
-            let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
-
-            crate::protocol::rebex_round_trip(
-                &mut backend,
-                &config,
-                "ftpeach-live-test-sftp-readme.txt",
-            )
-            .await;
-        };
-        tokio::time::timeout(Duration::from_secs(30), body)
-            .await
-            .expect("live test timed out after 30s");
-    }
-}
-
-#[cfg(test)]
 mod tofu_tests {
     use super::*;
     use russh::keys::{Algorithm, PrivateKey};

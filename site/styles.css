@@ -29,6 +29,20 @@
   --on-peach: #2a1206;
   --font: 'Albert Sans', 'Segoe UI', system-ui, sans-serif;
   --wrap: min(1320px, 100% - 2 * clamp(20px, 3vw, 40px));
+  /* One speed for every theme switch and every palette preview change. */
+  --fade: 320ms;
+}
+/* A theme switch cross-fades the whole page at once (switchTheme in theme-init.js): no element runs
+   its own colour transition meanwhile, so none of them lags or flashes. */
+.theme-switch *,
+.theme-switch *::before,
+.theme-switch *::after {
+  transition: none !important;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--fade);
+  animation-timing-function: ease;
 }
 :root[data-theme='light'] {
   color-scheme: light;
@@ -728,12 +742,21 @@ section[id] {
 }
 @media (max-width: 1040px) {
   .features-head,
-  .languages,
-  .shown {
+  .languages {
     grid-template-columns: minmax(0, 1fr);
   }
   .feature-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* A phone: one column, every point the same distance from the next. */
+@media (max-width: 760px) {
+  .shown {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .feature-list {
+    gap: 32px clamp(20px, 2.4vw, 32px);
   }
 }
 @media (max-width: 600px) {
@@ -1037,6 +1060,7 @@ section[id] {
   line-height: 1.7;
 }
 .reqs a {
+  white-space: nowrap;
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1084,6 +1108,11 @@ section[id] {
   .choices,
   .notes {
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* One card above the other: each download is the card's full width, an easy target for a thumb. */
+  .choice .btn {
+    align-self: stretch;
+    justify-content: center;
   }
 }
 
@@ -1368,6 +1397,11 @@ section[id] {
     max-width: 60ch;
   }
 }
+@media (max-width: 640px) {
+  .steps p {
+    font-size: 17px;
+  }
+}
 @media (max-width: 600px) {
   .proto th,
   .proto td {
@@ -1433,6 +1467,13 @@ section[id] {
   .stage,
   .give-heart {
     animation: none;
+  }
+  /* Play and Stop trade places at once; their icons and the demo still fade. */
+  .play {
+    transition: opacity 0.25s;
+  }
+  .play svg {
+    transition: opacity 0.3s;
   }
 }
 

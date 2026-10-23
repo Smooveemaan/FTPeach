@@ -7,3 +7,21 @@ try {
   const saved = localStorage.getItem('theme');
   if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
 } catch {}
+
+/* exported switchTheme */
+// The whole page changes theme as one cross-fade at one speed (--fade), pictures included: `change`
+// may return a promise that holds the new look back until its pictures are decoded, so nothing
+// appears late. Elements' own colour transitions are off meanwhile, so none lags behind the rest.
+function switchTheme(change) {
+  const root = document.documentElement;
+  root.classList.add('theme-switch');
+  const done = () => root.classList.remove('theme-switch');
+  if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    Promise.resolve(change()).finally(() => {
+      void root.offsetWidth;
+      requestAnimationFrame(done);
+    });
+    return;
+  }
+  document.startViewTransition(change).finished.finally(done);
+}

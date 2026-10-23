@@ -19,7 +19,8 @@ const html = fillPage(
   { stars: 10, downloads: 0 },
 );
 
-async function openSite(page: Page) {
+/** `routes` adds the test's own routes before the page opens; Playwright tries the latest route first. */
+async function openSite(page: Page, routes?: () => Promise<unknown>) {
   await page.route('https://preview.test/**', async (route) => {
     const name = new URL(route.request().url()).pathname.slice(1);
     const file =
@@ -46,6 +47,7 @@ async function openSite(page: Page) {
         : { contentType: type, body: await readFile(path.join(root, file)) },
     );
   });
+  await routes?.();
   await page.goto('https://preview.test/');
   await page.locator('#themes').scrollIntoViewIfNeeded();
   await expect(page.locator('.palette-preview > img')).toBeVisible();
@@ -129,11 +131,12 @@ test('the header switch and the preview switch both change the whole site', asyn
 });
 
 test('a slow earlier preview cannot overwrite the latest selection', async ({ page }) => {
-  await openSite(page);
-  await page.route('**/palettes/rose-dark.webp', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    await route.fallback();
-  });
+  await openSite(page, () =>
+    page.route('**/palettes/rose-dark.webp', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await route.fallback();
+    }),
+  );
   await page.getByRole('button', { name: 'Previous color scheme' }).click();
   await page.getByRole('button', { name: 'Previous color scheme' }).click();
   await expect(page.locator('#palette-name')).toHaveText('Burgundy');
@@ -143,8 +146,8 @@ test('a slow earlier preview cannot overwrite the latest selection', async ({ pa
 });
 
 test('a failed preview keeps the previous image and can be retried', async ({ page }) => {
-  await openSite(page);
-  await page.route('**/palettes/rose-dark.webp', (route) => route.abort());
+  // Aborted from the start: the fetch ahead fails as well, and the click tries again.
+  await openSite(page, () => page.route('**/palettes/rose-dark.webp', (route) => route.abort()));
   await page.getByRole('button', { name: 'Previous color scheme' }).click();
   await expect(page.locator('.palette-error')).toBeVisible();
   await expect(page.locator('#palette-name')).toHaveText('Peach');
@@ -155,17 +158,23 @@ test('a failed preview keeps the previous image and can be retried', async ({ pa
   await expect(page.locator('.palette-error')).toBeHidden();
 });
 
-test('palette previews are loaded on demand', async ({ page }) => {
+test('only the shown preview, its neighbours and its other appearance are fetched ahead', async ({
+  page,
+}) => {
   const requested = new Set<string>();
   page.on('request', (request) => {
     if (request.url().includes('/palettes/') && request.url().endsWith('.webp'))
-      requested.add(request.url());
+      requested.add(new URL(request.url()).pathname.slice('/palettes/'.length));
   });
+  await page.emulateMedia({ colorScheme: 'dark' });
   await openSite(page);
-  expect([...requested].every((url) => url.includes('/peach-'))).toBe(true);
+  await expect
+    .poll(() => [...requested].sort())
+    .toEqual(['black-dark.webp', 'peach-dark.webp', 'peach-light.webp', 'rose-dark.webp']);
   await page.getByRole('button', { name: 'Previous color scheme' }).click();
   await expect(page.locator('#palette-name')).toHaveText('Rose');
-  expect([...requested].every((url) => /\/(peach|rose)-/.test(url))).toBe(true);
+  await expect.poll(() => requested.has('burgundy-dark.webp')).toBe(true);
+  expect(requested.size).toBe(6);
 });
 
 test.describe('touch preview', () => {
@@ -229,12 +238,12 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await expect(page.locator('#palette-name')).toHaveText('Onyx');
     await expect(page.locator('.palette-preview > img')).toHaveCount(1);
     expect(await page.evaluate(() => Reflect.get(window, 'paletteTimings'))).toEqual(
-      reducedMotion === 'reduce' ? [] : [450],
+      reducedMotion === 'reduce' ? [] : [320],
     );
   });
 }
 
-test('homepage sections keep their address and browser history without preloading unused screenshots', async ({
+test('homepage sections keep their address and browser history, the other screenshot waiting for the load', async ({
   page,
 }) => {
   const images: string[] = [];
@@ -259,8 +268,56 @@ test('homepage sections keep their address and browser history without preloadin
     'href',
     'guide/protocol-reference.html',
   );
-  expect(images.some((url) => url.endsWith('/ftpeach-dark.png'))).toBe(false);
   expect(images.some((url) => url.endsWith('/ftpeach-light.png'))).toBe(true);
+  // The dark screenshot is fetched ahead for a switch, only once the page has loaded.
+  const timing = await page.evaluate(() => {
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const dark = performance
+      .getEntriesByType('resource')
+      .find((entry) => entry.name.endsWith('/ftpeach-dark.png'));
+    return { load: navigation.loadEventStart, dark: dark?.startTime };
+  });
+  expect(timing.dark).toBeGreaterThanOrEqual(timing.load);
+});
+
+test('a theme switch after the load downloads nothing and fades the page as one', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await openSite(page);
+  await page.waitForLoadState('load');
+  // Everything the switch needs is fetched ahead; wait until it has been.
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        ['/ftpeach-light.png', '/palettes/peach-light.webp'].every((name) =>
+          performance.getEntriesByType('resource').some((entry) => entry.name.endsWith(name)),
+        ),
+      ),
+    )
+    .toBe(true);
+  const late: string[] = [];
+  page.on('request', (request) => late.push(request.url()));
+  const during = await page.evaluate(() => {
+    document.getElementById('theme')!.click();
+    const button = document.querySelector('.choice .btn')!;
+    return {
+      switching: document.documentElement.classList.contains('theme-switch'),
+      transition: getComputedStyle(button).transitionDuration,
+    };
+  });
+  expect(during).toEqual({ switching: true, transition: '0s' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('.palette-preview > img').last()).toHaveAttribute(
+    'src',
+    'palettes/peach-light.webp',
+  );
+  await expect(page.locator('html')).not.toHaveClass(/theme-switch/);
+  // After the switch only the next pictures ahead are fetched: the neighbours in the light appearance.
+  expect(late.map((url) => new URL(url).pathname).sort()).toEqual([
+    '/palettes/black-light.webp',
+    '/palettes/rose-light.webp',
+  ]);
 });
 
 test('the header reaches every page at every width and reduced motion skips scrolling and fades', async ({

@@ -259,7 +259,7 @@ test('screenshots enlarge without leaving the guide and restore reading position
           .evaluate((node) => node.scrollHeight <= node.clientHeight),
       ).toBe(true);
       expect((await viewer.locator('img').boundingBox())!.width).toBeGreaterThan(
-        (await thumbnail.locator('img').boundingBox())!.width,
+        (await thumbnail.locator('img:visible').boundingBox())!.width,
       );
     }
     await page.keyboard.press('Escape');
@@ -276,6 +276,17 @@ test('screenshots enlarge without leaving the guide and restore reading position
     expect(page.url()).toBe(url);
     expect(await page.evaluate(() => scrollY)).toBe(position);
   }
+  // The light theme shows and enlarges the light screenshot, which loaded with the page.
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
+  await expect(thumbnail.locator('img:visible')).toHaveAttribute('src', /connection-light\.png$/);
+  expect(
+    await thumbnail.locator('img:visible').evaluate((img: HTMLImageElement) => img.complete),
+  ).toBe(true);
+  await thumbnail.click();
+  await expect(viewer.locator('img')).toHaveAttribute(
+    'src',
+    /images\/guide\/connection-light\.png$/,
+  );
 });
 
 test('theme choice persists between guide pages and keyboard links reach sections', async ({

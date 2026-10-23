@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -134,11 +134,20 @@ export function renderGuide(markdown: string, slug: string, revision = 'master')
     },
     renderer: {
       // The screenshot's own size, so its space is kept while it loads and the text below never jumps.
+      // A guide screenshot comes in both themes (name.png dark, name-light.png light); both load with
+      // the page and CSS shows the reader's, so a theme switch never waits for a download.
       image({ href, text, title }) {
-        const size = /^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(href)
-          ? pngSize(new URL(`../../site/${href.slice(3)}`, import.meta.url))
-          : undefined;
-        return `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}"${size ? ` width="${size.width}" height="${size.height}"` : ''}${title ? ` title="${escapeHtml(title)}"` : ''}>`;
+        const img = (src: string, extra: string) => {
+          const size = /^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(src)
+            ? pngSize(new URL(`../../site/${src.slice(3)}`, import.meta.url))
+            : undefined;
+          return `<img${extra} src="${escapeHtml(src)}" alt="${escapeHtml(text)}"${size ? ` width="${size.width}" height="${size.height}"` : ''}${title ? ` title="${escapeHtml(title)}"` : ''}>`;
+        };
+        if (!/^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(href)) return img(href, '');
+        const light = href.replace(/\.png$/, '-light.png');
+        if (!existsSync(new URL(`../../site/${light.slice(3)}`, import.meta.url)))
+          throw new Error(`${href} has no light screenshot ${light}`);
+        return img(href, ' class="shot-dark"') + img(light, ' class="shot-light"');
       },
       blockquote({ tokens }) {
         const body = this.parser.parse(tokens);

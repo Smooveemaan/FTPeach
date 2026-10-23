@@ -290,6 +290,21 @@
   border: 1px solid var(--edge);
   border-radius: 12px;
 }
+/* Each screenshot in the reader's theme; the other one has loaded too, so a switch never waits. */
+:root[data-theme='dark'] .shot-light,
+:root[data-theme='light'] .shot-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .shot-light {
+    display: none;
+  }
+}
+@media not (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .shot-dark {
+    display: none;
+  }
+}
 .guide-content p:has(> a > img) {
   margin: 28px 0 10px;
 }

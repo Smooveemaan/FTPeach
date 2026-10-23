@@ -1,5 +1,5 @@
 /* exported syncPaletteTheme */
-/* global document, matchMedia, Image, IntersectionObserver */
+/* global document, matchMedia, Image, IntersectionObserver, getComputedStyle */
 const gallery = document.getElementById('themes');
 const preview = gallery.querySelector('.palette-preview');
 const options = JSON.parse(gallery.querySelector('#palette-data').textContent);
@@ -11,21 +11,49 @@ let visible = false;
 const currentMode = () =>
   document.documentElement.dataset.theme ?? (systemTheme.matches ? 'dark' : 'light');
 
+// Previews fetched and decoded ahead: the shown scheme's neighbours and its other appearance, and a
+// swatch under the pointer, so choosing one shows it at once. A failed one is fetched again next time.
+const fetched = new Map();
+function fetchPreview(id, appearance) {
+  const src = `palettes/${id}-${appearance}.webp`;
+  if (!fetched.has(src)) {
+    const image = new Image();
+    image.src = src;
+    fetched.set(
+      src,
+      image.decode().catch((error) => {
+        fetched.delete(src);
+        throw error;
+      }),
+    );
+  }
+  return fetched.get(src);
+}
+function fetchAround() {
+  const index = options.findIndex((option) => option.id === palette);
+  for (const step of [-1, 1])
+    fetchPreview(options[(index + step + options.length) % options.length].id, currentMode()).catch(
+      () => {},
+    );
+  fetchPreview(palette, currentMode() === 'dark' ? 'light' : 'dark').catch(() => {});
+}
+
 async function showPalette(animate = true) {
   if (!visible) return;
   const request = ++revision;
   const selected = options.find((button) => button.id === palette);
   const appearance = currentMode();
-  const next = new Image();
-  next.src = `palettes/${palette}-${appearance}.webp`;
-  next.alt = `FTPeach in ${selected.name}, ${appearance} mode`;
   gallery.querySelector('.palette-error').hidden = true;
   try {
-    await next.decode();
+    await fetchPreview(palette, appearance);
   } catch {
     if (request === revision) gallery.querySelector('.palette-error').hidden = false;
     return;
   }
+  const next = new Image();
+  next.src = `palettes/${palette}-${appearance}.webp`;
+  next.alt = `FTPeach in ${selected.name}, ${appearance} mode`;
+  await next.decode().catch(() => {});
   // A slower earlier request must never replace the visitor's latest choice.
   if (request !== revision) return;
   const previous = preview.lastElementChild;
@@ -34,10 +62,15 @@ async function showPalette(animate = true) {
     button.setAttribute('aria-pressed', String(button.dataset.mode === appearance));
   gallery.querySelector('#palette-name').textContent = selected.name;
   gallery.querySelector('#palette-dot').style.setProperty('--swatch', selected.color);
-  if (animate && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+  fetchAround();
+  if (animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const duration = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--fade'),
+    );
     await next
-      .animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease' })
+      .animate([{ opacity: 0 }, { opacity: 1 }], { duration, easing: 'ease' })
       .finished.catch(() => {});
+  }
   previous.remove();
 }
 for (const button of gallery.querySelectorAll('[data-palette-step]')) {

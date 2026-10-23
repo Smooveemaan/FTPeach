@@ -328,13 +328,27 @@
         toggle.dataset.mode = dark ? 'dark' : 'light';
         toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
       }
+      // The other theme's screenshot is fetched and decoded once the page has loaded, so a switch shows it at once.
+      const shots = {};
+      const shot = (theme) => {
+        if (!shots[theme]) {
+          const image = new Image();
+          image.src = `ftpeach-${theme}.png`;
+          shots[theme] = { image, ready: image.decode().catch(() => {}) };
+        }
+        return shots[theme].ready;
+      };
+      addEventListener('load', () => shot(isDark() ? 'light' : 'dark'), { once: true });
       toggle.addEventListener('click', () => {
-        root.dataset.theme = isDark() ? 'light' : 'dark';
-        try {
-          localStorage.setItem('theme', root.dataset.theme);
-        } catch {}
-        sync();
-        if (typeof syncPaletteTheme === 'function') syncPaletteTheme();
+        const theme = isDark() ? 'light' : 'dark';
+        switchTheme(() => {
+          root.dataset.theme = theme;
+          try {
+            localStorage.setItem('theme', theme);
+          } catch {}
+          sync();
+          return Promise.all([shot(theme), demoInStep(), typeof syncPaletteTheme === 'function' && syncPaletteTheme()]);
+        });
       });
       systemDark.addEventListener('change', sync);
       sync();
@@ -379,6 +393,19 @@
         else other.playbackRate = Math.min(1.25, Math.max(0.75, 1 + lag * 2));
       }
       for (const demo of demos) demo.addEventListener('timeupdate', follow);
+      // On a theme switch during the demo, the video coming into view starts from the frame the other one shows.
+      function demoInStep() {
+        if (!frame.hasAttribute('data-demo')) return;
+        const next = shown();
+        const prev = demos.find((demo) => demo !== next);
+        if (next.paused) run(next);
+        if (next.readyState >= 2 && Math.abs(next.currentTime - prev.currentTime) < 0.15) return;
+        next.currentTime = prev.currentTime;
+        return new Promise((resolve) => {
+          next.addEventListener('seeked', resolve, { once: true });
+          setTimeout(resolve, 1500);
+        });
+      }
       play.hidden = false;
       // After a reload, back to the same place at once (the browser's own restore lands off, then glides back).
       // Before the header and the rising sections below work out where they stand.
@@ -409,8 +436,11 @@
           links.forEach((a, i) => a.setAttribute('aria-current', String(i === current)));
         };
         // The support band opens to the full width as its top comes up from the bottom of the screen to the header.
+        // Under reduced motion it is open from the start.
         const give = document.getElementById('support');
+        const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
         const open = () => {
+          if (still) return;
           const t = give.getBoundingClientRect().top - top.offsetHeight;
           give.style.setProperty('--shut', Math.min(1, Math.max(0, t / (innerHeight * 0.7))).toFixed(3));
         };
@@ -498,12 +528,15 @@
       const markSwatch = () => {
         for (const b of swatchButtons) b.setAttribute('aria-pressed', String(b.dataset.palette === palette));
       };
-      for (const b of swatchButtons)
+      for (const b of swatchButtons) {
+        // Fetched while the pointer or the focus rests on it, so the click shows it at once.
+        for (const type of ['pointerenter', 'focus']) b.addEventListener(type, () => fetchPreview(b.dataset.palette, currentMode()).catch(() => {}));
         b.addEventListener('click', () => {
           palette = b.dataset.palette;
           markSwatch();
           showPalette();
         });
+      }
       for (const b of document.querySelectorAll('[data-palette-step]')) b.addEventListener('click', markSwatch);
       // Sun and moon switch the whole site, the same as the header's switch.
       for (const b of document.querySelectorAll('.palette-modes [data-mode]'))

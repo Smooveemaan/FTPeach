@@ -10,11 +10,16 @@ function syncGuideTheme() {
 }
 guideToggle.addEventListener('click', () => {
   const theme = guideIsDark() ? 'light' : 'dark';
-  guideRoot.dataset.theme = theme;
-  try {
-    localStorage.setItem('theme', theme);
-  } catch {}
-  syncGuideTheme();
+  switchTheme(() => {
+    guideRoot.dataset.theme = theme;
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {}
+    syncGuideTheme();
+    return Promise.all(
+      [...document.querySelectorAll(`.shot-${theme}`)].map((img) => img.decode().catch(() => {})),
+    );
+  });
 });
 guideSystemDark.addEventListener('change', syncGuideTheme);
 syncGuideTheme();
@@ -64,9 +69,12 @@ if (imageViewer) {
     link.addEventListener('click', (event) => {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
-      const thumbnail = link.querySelector('img');
+      // The screenshot in the theme being read, not always the dark one the link points to.
+      const thumbnail =
+        [...link.querySelectorAll('img')].find((img) => img.offsetParent) ??
+        link.querySelector('img');
       imageOpener = link;
-      enlargedImage.src = link.href;
+      enlargedImage.src = thumbnail.classList.contains('shot-light') ? thumbnail.src : link.href;
       enlargedImage.alt = thumbnail.alt;
       enlargedImage.style.width = `${Math.max(thumbnail.naturalWidth, thumbnail.width * 2)}px`;
       imageViewer.showModal();

@@ -111,6 +111,8 @@ const sites: ManagedSite[] = [
  * `i18n.dir`, the document's `dir`) from this setting, so a spec asks for an
  * RTL render the same way a user would: by choosing the language. */
 const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
+/** `?theme=light`: the light appearance, for the guide's light screenshots. */
+const requestedTheme = new URLSearchParams(window.location.search).get('theme');
 
 const settings = {
   ...defaults,
@@ -119,6 +121,7 @@ const settings = {
   legacyPasswordNoticeShown: true,
   plaintextSecretNoticeShown: true,
   ...(requestedLanguage ? { language: requestedLanguage } : {}),
+  ...(requestedTheme ? { theme: requestedTheme } : {}),
 };
 
 const resolved = <T>(value: T) => Promise.resolve(value);

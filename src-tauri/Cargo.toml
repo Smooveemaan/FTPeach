@@ -53,7 +53,9 @@ serde = { version = "1.0.229", features = ["derive"] }
 log = "0.4.34"
 tauri = { version = "2.12.1", features = ["tray-icon"] }
 tauri-plugin-log = "2.10.0"
-tauri-plugin-updater = "2.13.1"
+# Without `zip`: FTPeach never calls the plugin's install, which is all that
+# unpacks a zip (and needs zip 4); update_staging.rs unpacks the portable zip.
+tauri-plugin-updater = { version = "2.13.1", default-features = false, features = ["rustls-tls", "system-proxy"] }
 tauri-plugin-dialog = "2.8.1"
 tauri-plugin-notification = "2.5.1"
 tauri-plugin-opener = "2.7.0"
@@ -91,9 +93,9 @@ hmac = "=0.13.0"
 # (runtime/update_staging.rs); examples/verify_updater.rs uses it as well.
 minisign-verify = "0.2.5"
 semver = "1.0.28"
-# A portable copy updates itself from a zip (runtime/update_staging.rs). The
-# version tauri-plugin-updater already links, with the one codec it needs.
-zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+# A portable copy updates itself from a zip (runtime/update_staging.rs), with
+# the one codec it needs.
+zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 
 # Windows-only: kept out of the default [dependencies] table so the crate
 # and its integration tests still compile on Linux runners.

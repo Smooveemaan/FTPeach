@@ -18,9 +18,6 @@ and patched ranges are review signals, not proof of constant-time RSA signing.
 | Advisory | Kind | Owner | Added | Review by | Current status | Compensating control |
 | --- | --- | --- | --- | --- | --- | --- |
 | RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
-| RUSTSEC-2026-0367 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | `zip` 4.6.1 (FTPeach, `tauri-plugin-updater` 2.13.1; 2.14.0 still requires `^4`); fixed in 9.0.0 | See [zip extraction](#zip-extraction-2026-10-18). |
-| RUSTSEC-2026-0368 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | as RUSTSEC-2026-0367 | See [zip extraction](#zip-extraction-2026-10-18). |
-| RUSTSEC-2026-0369 | vulnerability | @Smooveemaan | 2026-10-18 | 2026-12-31 | as RUSTSEC-2026-0367 | See [zip extraction](#zip-extraction-2026-10-18). |
 
 The dependency review found no compatible direct upgrade that removes these
 transitive packages as of 2026-10-02. Remove an ignore as soon as a compatible
@@ -35,21 +32,10 @@ The `paste` (RUSTSEC-2024-0436) and `bincode` (RUSTSEC-2025-0141) exceptions wer
 on 2026-10-23: both came only through Stronghold, which FTPeach no longer uses. The vault
 of 0.5 and earlier is read by FTPeach's own code once, to move it to the current format.
 
-## Zip extraction, 2026-10-18
-
-All three advisories are in `ZipArchive::extract` and `ZipStreamReader::extract`: they keep
-SUID/SGID bits, create symbolic links that point out of the destination, and apply Unix
-permissions through such links. FTPeach does not reach them:
-
-- FTPeach's own reading of the portable update (`runtime/update_staging.rs`) never calls
-  `extract`. It takes each entry through `enclosed_name`, refuses symbolic links and anything
-  under `data`, and writes plain files with a bounded size.
-- Of `tauri-plugin-updater`, FTPeach uses only the signed download. It verifies the stored
-  package against the release key again and starts the installer, or unpacks the portable zip
-  as above, itself; the plugin's `install`, whose Windows path calls `extract` on a zip, is never
-  called.
-Remove the exceptions once `tauri-plugin-updater` allows `zip` 9. Until 2026-10-23 `zip` 8.6.0
-was here too, as a build dependency of `libsodium-sys-stable`; it left with Stronghold.
+The three `zip` exceptions (RUSTSEC-2026-0367, -0368 and -0369, all in `extract`) were
+removed on 2026-10-23. `tauri-plugin-updater` needed `zip` 4 only for its `install`, which
+FTPeach never calls: it is built without its `zip` feature, and FTPeach's own unpacking of
+the portable update (`runtime/update_staging.rs`) uses `zip` 9.
 
 ## Reachability review, 2026-09-07
 

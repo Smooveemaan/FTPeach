@@ -5,7 +5,7 @@ targets = ["x86_64-pc-windows-msvc"]
 version = 2
 yanked = "deny"
 ignore = [
-  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; the rsa crate has no patched release. Reassess when russh adopts a constant-time implementation. Review by 2026-11-30; see docs/rust-advisories.md." },]
+  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; the rsa crate has no patched release. Reassess when russh adopts a constant-time implementation. Review by 2027-01-23; see docs/rust-advisories.md." },]
 
 [licenses]
 version = 2

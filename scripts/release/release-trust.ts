@@ -17,7 +17,7 @@ export interface AdvisoryException {
   id: string;
   kind: string;
   owner: string;
-  added: string;
+  reviewed: string;
   reviewBy: string;
   status: string;
   control: string;
@@ -28,12 +28,19 @@ export function parseAdvisoryRegister(markdown: string): Map<string, AdvisoryExc
   const rows = new Map<string, AdvisoryException>();
   for (const line of markdown.split(/\r?\n/)) {
     if (!/^\| (RUSTSEC-|[\w-]+@\d)/.test(line)) continue;
-    const [id = '', kind = '', owner = '', added = '', reviewBy = '', status = '', control = ''] =
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim());
-    rows.set(id, { id, kind, owner, added, reviewBy, status, control });
+    const [
+      id = '',
+      kind = '',
+      owner = '',
+      reviewed = '',
+      reviewBy = '',
+      status = '',
+      control = '',
+    ] = line
+      .split('|')
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    rows.set(id, { id, kind, owner, reviewed, reviewBy, status, control });
   }
   return rows;
 }

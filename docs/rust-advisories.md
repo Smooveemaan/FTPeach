@@ -15,12 +15,15 @@ for every ignored advisory in the job summary. Fetch failures fail that step;
 stale or missing evidence is not treated as "no fix available". New versions
 and patched ranges are review signals, not proof of constant-time RSA signing.
 
-| Advisory | Kind | Owner | Added | Review by | Current status | Compensating control |
+The 120-day window runs from the last review, so a deadline moves only with a new
+dated review section below.
+
+| Advisory | Kind | Owner | Reviewed | Review by | Current status | Compensating control |
 | --- | --- | --- | --- | --- | --- | --- |
-| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-08-30 | 2026-11-30 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
+| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-10-23 | 2027-01-23 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
 
 The dependency review found no compatible direct upgrade that removes these
-transitive packages as of 2026-10-02. Remove an ignore as soon as a compatible
+transitive packages as of 2026-10-23. Remove an ignore as soon as a compatible
 fix is available; extending a deadline requires a fresh security review.
 
 The five `rust-unic` exceptions (RUSTSEC-2025-0075, -0080, -0081, -0098 and
@@ -36,6 +39,26 @@ The three `zip` exceptions (RUSTSEC-2026-0367, -0368 and -0369, all in `extract`
 removed on 2026-10-23. `tauri-plugin-updater` needed `zip` 4 only for its `install`, which
 FTPeach never calls: it is built without its `zip` feature, and FTPeach's own unpacking of
 the portable update (`runtime/update_staging.rs`) uses `zip` 9.
+
+## RSA review, 2026-10-23
+
+RUSTSEC-2023-0071 was first accepted on 2026-08-30. This review extends it to 2027-01-23.
+
+- RustSec still lists `patched = []` and names rsa 0.9.10 and 0.10.0-rc.18 as affected.
+- The newest `rsa` is 0.10.0-rc.19, but it does not reach FTPeach: russh 0.63.3, and
+  also the newest russh 0.64.1, pin `rsa` to `=0.10.0-rc.18` and `ssh-key` to
+  `=0.7.0-rc.11`. `cargo update -p rsa` changes nothing, and moving to 0.64 would not
+  remove the advisory.
+- The reachability found on 2026-09-07 still holds. `protocol/sftp/connect.rs` loads
+  the selected key and signs with it only for key authentication; password
+  authentication never takes that path.
+- The control is still in place. When the picked key file is RSA (OpenSSH, PKCS#1 PEM
+  or PuTTY), `commands/dialog.rs` marks it, and the connection bar and the site editor
+  show the Ed25519 advice. The prefix detection has unit tests.
+- `cargo deny check advisories` passes with this one exception.
+
+Next review: before 2027-01-23, or as soon as RustSec lists a patched release or russh
+moves off the `rsa` crate.
 
 ## Reachability review, 2026-09-07
 

@@ -20,7 +20,7 @@ for (const advisory of ignored) {
     problems.push(`${advisory}: missing review-register entry`);
     continue;
   }
-  const { kind, owner, added, reviewBy, status, control } = row;
+  const { kind, owner, reviewed, reviewBy, status, control } = row;
   const exception = denyLines.find((line) => line.includes(`"${advisory}"`));
   if (!exception?.includes(`Review by ${reviewBy};`)) {
     problems.push(`${advisory}: deny.toml review date must match the register`);
@@ -33,17 +33,17 @@ for (const advisory of ignored) {
   } else if (!(advisoryKinds as readonly string[]).includes(kind)) {
     problems.push(`${advisory}: kind must be one of ${advisoryKinds.join(', ')}`);
   }
-  if (!owner || !added || !reviewBy || !status || !control) {
+  if (!owner || !reviewed || !reviewBy || !status || !control) {
     problems.push(`${advisory}: owner, dates, status, and compensating control are required`);
     continue;
   }
-  const addedAt = Date.parse(`${added}T00:00:00Z`);
+  const reviewedAt = Date.parse(`${reviewed}T00:00:00Z`);
   const reviewAt = Date.parse(`${reviewBy}T23:59:59Z`);
-  if (!Number.isFinite(addedAt) || !Number.isFinite(reviewAt)) {
+  if (!Number.isFinite(reviewedAt) || !Number.isFinite(reviewAt)) {
     problems.push(`${advisory}: dates must use YYYY-MM-DD`);
   } else {
     if (reviewAt < Date.now()) problems.push(`${advisory}: review deadline has expired`);
-    if (reviewAt - addedAt > 120 * 86_400_000) {
+    if (reviewAt - reviewedAt > 120 * 86_400_000) {
       problems.push(`${advisory}: review window exceeds 120 days`);
     }
   }

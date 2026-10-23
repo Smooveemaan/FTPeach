@@ -352,6 +352,7 @@
     "storeNewer": "Estes dados foram salvos por uma versão mais recente do FTPeach, então a alteração não pode ser salva.",
     "storeUnreadable": "Não é possível ler o arquivo que guarda estes dados, então a alteração não pode ser salva.",
     "sourceChanged": "O arquivo mudou durante o envio, então a cópia no servidor foi mantida como estava. Envie-o novamente.",
+    "remoteChanged": "O arquivo no servidor mudou durante o download, então o arquivo neste computador foi mantido como estava. Baixe-o novamente.",
     "storeNotWritable": "Não foi possível salvar as alterações em {{path}}: o FTPeach não tem permissão para gravar nesta pasta.",
     "moveBetweenEndpoints": "Só é possível mover arquivos dentro deste computador ou dentro da mesma conexão com o servidor. Copie-os em vez disso.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

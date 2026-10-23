@@ -251,6 +251,8 @@ mod local_integration_tests {
         let mut lines = BufReader::new(reader).lines();
         let mut passive_listener: Option<TcpListener> = None;
         let mut renaming: Option<String> = None;
+        // `/saved` is saved again, keeping its length, while it is retrieved.
+        let mut saved = false;
         // How many requests for a passive port this connection still refuses.
         let mut busy_passive = if server.has("/busy-passive") {
             usize::MAX
@@ -364,6 +366,9 @@ mod local_integration_tests {
                     };
                     writer.write_all(reply).await.unwrap();
                 }
+                "MDTM" if saved && argument == "/saved" => {
+                    writer.write_all(b"213 20260911000001\r\n").await.unwrap()
+                }
                 "MDTM" => writer.write_all(b"213 20260911000000\r\n").await.unwrap(),
                 "RETR" => {
                     writer
@@ -377,6 +382,7 @@ mod local_integration_tests {
                         let _ = data.write_all(b"!").await;
                     }
                     let _ = data.shutdown().await;
+                    saved |= argument == "/saved";
                     let _ = writer.write_all(b"226 Transfer complete\r\n").await;
                 }
                 "RNFR" => {
@@ -533,6 +539,37 @@ mod local_integration_tests {
         );
         assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
         assert!(!backend.is_connected());
+        backend.disconnect().await.unwrap();
+        server.abort();
+        tokio::fs::remove_dir_all(root).await.unwrap();
+    }
+
+    /// A save on the server while the file was read, even one that keeps its
+    /// length, leaves the local file as it was.
+    #[tokio::test]
+    async fn a_file_saved_on_the_server_during_the_download_is_not_put_in_place() {
+        let (port, server) = spawn_ftp_server(TestServer::holding(&["/saved"], true)).await;
+        let mut backend = FtpBackend::new();
+        backend.connect(&local_config(port)).await.unwrap();
+        let root = std::env::temp_dir().join(format!("ftp-saved-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&root).await.unwrap();
+        let target = root.join("target");
+        tokio::fs::write(&target, b"original").await.unwrap();
+        // Allowed to replace it, so only the check keeps the old file.
+        let error = crate::protocol::ALLOW_OVERWRITE
+            .scope(
+                true,
+                backend.download("/saved", &target, true, Arc::new(|_| {})),
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::RemoteChanged
+        );
+        assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+        // Nothing to resume from: the partial and its record are gone.
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
         backend.disconnect().await.unwrap();
         server.abort();
         tokio::fs::remove_dir_all(root).await.unwrap();

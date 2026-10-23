@@ -348,6 +348,7 @@
     "storeNewer": "Disse data blev gemt af en nyere version af FTPeach, så ændringen kan ikke gemmes.",
     "storeUnreadable": "Filen med disse data kan ikke læses, så ændringen kan ikke gemmes.",
     "sourceChanged": "Filen blev ændret under uploaden, så kopien på serveren blev ikke rørt. Upload den igen.",
+    "remoteChanged": "Filen på serveren blev ændret under downloaden, så filen på denne computer blev ikke rørt. Download den igen.",
     "storeNotWritable": "Ændringerne i {{path}} kunne ikke gemmes: FTPeach har ikke tilladelse til at skrive i denne mappe.",
     "moveBetweenEndpoints": "Filer kan kun flyttes på denne computer eller inden for den samme serverforbindelse. Kopiér dem i stedet.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

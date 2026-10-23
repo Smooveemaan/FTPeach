@@ -49,6 +49,7 @@ export const COMMAND_ERROR_CODES = [
   'storeUnreadable',
   'storeNotWritable',
   'sourceChanged',
+  'remoteChanged',
   'invalidFileName',
   'insideSource',
   'webdavRedirect',

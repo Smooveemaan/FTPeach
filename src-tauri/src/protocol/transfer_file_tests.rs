@@ -658,3 +658,46 @@ fn generated_resume_records_resume_only_their_own_partial() {
     }
     std::fs::remove_dir_all(root).unwrap();
 }
+
+/// Only a whole read, or one of the wrong length, asks the server again; a
+/// version is compared when both answers have one, the size always.
+#[tokio::test]
+async fn a_read_is_kept_only_while_the_server_still_describes_the_same_file() {
+    let code =
+        |result: Result<u64>| crate::ipc::CommandError::from_anyhow(&result.unwrap_err()).code;
+    let before = identity(Some(5), Some("v1"));
+    let same = || async { identity(Some(5), Some("v1")) };
+    let never = || async { unreachable!("a failed read does not ask the server again") };
+    assert_eq!(unless_changed(Ok(5), &before, same).await.unwrap(), 5);
+    let saved = || async { identity(Some(5), Some("v2")) };
+    assert_eq!(
+        code(unless_changed(Ok(5), &before, saved).await),
+        ErrorCode::RemoteChanged
+    );
+    let size_only = || async { identity(Some(6), None) };
+    assert_eq!(
+        code(unless_changed(Ok(5), &before, size_only).await),
+        ErrorCode::RemoteChanged
+    );
+    let lost = || Err(fail(ErrorCode::ConnectionLost, "lost"));
+    assert_eq!(
+        code(unless_changed(lost(), &before, never).await),
+        ErrorCode::ConnectionLost
+    );
+    let short = || Err(fail(ErrorCode::IntegrityMismatch, "short"));
+    let silent = || async { identity(None, None) };
+    assert_eq!(
+        code(unless_changed(short(), &before, silent).await),
+        ErrorCode::IntegrityMismatch
+    );
+    assert_eq!(
+        code(unless_changed(short(), &before, size_only).await),
+        ErrorCode::RemoteChanged
+    );
+    assert_eq!(
+        unless_changed(Ok(5), &identity(None, None), never)
+            .await
+            .unwrap(),
+        5
+    );
+}

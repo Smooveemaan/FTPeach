@@ -176,6 +176,24 @@ impl WebDavBackend {
         })
     }
 
+    /// What the server says about the file: its size and a strong ETag or
+    /// a modification time.
+    async fn source_identity(&mut self, remote_path: &str) -> transfer_file::SourceIdentity {
+        let remote_size = self.known_size(remote_path).await;
+        let version = match self.request(Method::HEAD, remote_path) {
+            Ok(request) => request.send().await.ok(),
+            Err(_) => None,
+        }
+        .filter(|response| response.status().is_success())
+        .and_then(|response| resume_version(response.headers()));
+        transfer_file::SourceIdentity {
+            endpoint: serde_json::json!(["webdav", self.base_url, self.user]).to_string(),
+            remote_path: remote_path.to_string(),
+            size: remote_size,
+            version,
+        }
+    }
+
     async fn download_file(
         &mut self,
         remote_path: &str,
@@ -184,22 +202,12 @@ impl WebDavBackend {
         progress: &ProgressSink,
     ) -> BackendResult<()> {
         let target = transfer_file::DownloadTarget::reserve(local_path).await?;
-        let remote_size = self.known_size(remote_path).await;
-        let version = self
-            .request(Method::HEAD, remote_path)?
-            .send()
-            .await
-            .ok()
-            .filter(|response| response.status().is_success())
-            .and_then(|response| resume_version(response.headers()));
-        let source = transfer_file::SourceIdentity {
-            endpoint: serde_json::json!(["webdav", self.base_url, self.user]).to_string(),
-            remote_path: remote_path.to_string(),
-            size: remote_size,
-            version: version.clone(),
-        };
+        // Not connected: say so, rather than read a file the server has nothing about.
+        self.client()?;
+        let source = self.source_identity(remote_path).await;
+        let (remote_size, version) = (source.size, source.version.clone());
         let origin = crate::local_fs::provenance::Origin::for_url(&self.base_url, remote_path);
-        let Some(download) = target.prepare(resume, source, origin).await? else {
+        let Some(download) = target.prepare(resume, source.clone(), origin).await? else {
             return Ok(());
         };
 
@@ -285,6 +293,9 @@ impl WebDavBackend {
             Ok(transferred)
         }
         .await;
+        let written =
+            transfer_file::unless_changed(written, &source, || self.source_identity(remote_path))
+                .await;
         download.finish(written, expected_length).await
     }
 

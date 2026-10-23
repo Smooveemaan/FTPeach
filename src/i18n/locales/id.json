@@ -348,6 +348,7 @@
     "storeNewer": "Data ini disimpan oleh versi FTPeach yang lebih baru, jadi perubahan tidak dapat disimpan.",
     "storeUnreadable": "File yang menyimpan data ini tidak dapat dibaca, jadi perubahan tidak dapat disimpan.",
     "sourceChanged": "File berubah saat sedang diunggah, jadi salinan di server dibiarkan seperti semula. Unggah lagi.",
+    "remoteChanged": "File di server berubah saat sedang diunduh, jadi file di komputer ini dibiarkan seperti semula. Unduh lagi.",
     "storeNotWritable": "Tidak dapat menyimpan perubahan di {{path}}: FTPeach tidak diizinkan menulis ke folder ini.",
     "moveBetweenEndpoints": "File hanya dapat dipindahkan di dalam komputer ini atau di dalam satu koneksi server yang sama. Salin file tersebut sebagai gantinya.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

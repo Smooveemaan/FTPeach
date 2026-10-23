@@ -348,6 +348,7 @@
     "storeNewer": "這些資料是由較新版本的 FTPeach 儲存，因此無法儲存變更。",
     "storeUnreadable": "無法讀取儲存這些資料的檔案，因此無法儲存變更。",
     "sourceChanged": "檔案在上傳期間有所變更，因此伺服器上的複本保持原樣。請重新上傳。",
+    "remoteChanged": "伺服器上的檔案在下載期間有所變更，因此此電腦上的檔案保持原樣。請重新下載。",
     "storeNotWritable": "無法儲存 {{path}} 中的變更：FTPeach 無權寫入此資料夾。",
     "moveBetweenEndpoints": "只能在這台電腦內或同一個伺服器連線內移動檔案。請改用複製。",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

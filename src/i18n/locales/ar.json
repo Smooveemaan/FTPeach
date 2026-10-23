@@ -364,6 +364,7 @@
     "storeNewer": "حُفظت هذه البيانات بإصدار أحدث من FTPeach، لذا لا يمكن حفظ التغيير.",
     "storeUnreadable": "تتعذّر قراءة الملف الذي يحفظ هذه البيانات، لذا لا يمكن حفظ التغيير.",
     "sourceChanged": "تغيّر الملف أثناء رفعه، لذا تُركت النسخة الموجودة على الخادم كما هي. ارفعه مرة أخرى.",
+    "remoteChanged": "تغيّر الملف على الخادم أثناء تنزيله، لذا تُرك الملف الموجود على هذا الكمبيوتر كما هو. نزّله مرة أخرى.",
     "storeNotWritable": "تعذّر حفظ التغييرات في {{path}}: غير مسموح لـ FTPeach بالكتابة في هذا المجلد.",
     "moveBetweenEndpoints": "لا يمكن نقل الملفات إلا داخل هذا الكمبيوتر أو ضمن اتصال واحد بالخادم. يرجى نسخها بدلًا من ذلك.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

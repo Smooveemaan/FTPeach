@@ -117,14 +117,11 @@ impl FtpBackend {
         error.context(crate::ipc::CommandError::new(code, message))
     }
 
-    pub(super) async fn download_file(
+    /// What the server says about the file: its size and MDTM.
+    async fn source_identity(
         &mut self,
         remote_path: &str,
-        local_path: &Path,
-        resume: bool,
-        progress: &ProgressSink,
-    ) -> BackendResult<()> {
-        let target = crate::protocol::transfer_file::DownloadTarget::reserve(local_path).await?;
+    ) -> crate::protocol::transfer_file::SourceIdentity {
         let remote_size = self.known_size(remote_path).await;
         let version_path = remote_path.to_string();
         let version = self
@@ -144,14 +141,26 @@ impl FtpBackend {
             .await
             .ok()
             .flatten();
-        let source = crate::protocol::transfer_file::SourceIdentity {
+        crate::protocol::transfer_file::SourceIdentity {
             endpoint: self.endpoint.clone(),
             remote_path: remote_path.to_string(),
             size: remote_size,
             version,
-        };
+        }
+    }
+
+    pub(super) async fn download_file(
+        &mut self,
+        remote_path: &str,
+        local_path: &Path,
+        resume: bool,
+        progress: &ProgressSink,
+    ) -> BackendResult<()> {
+        let target = crate::protocol::transfer_file::DownloadTarget::reserve(local_path).await?;
+        let source = self.source_identity(remote_path).await;
+        let remote_size = source.size;
         let origin = crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path);
-        let Some(download) = target.prepare(resume, source, origin).await? else {
+        let Some(download) = target.prepare(resume, source.clone(), origin).await? else {
             return Ok(());
         };
 
@@ -216,6 +225,10 @@ impl FtpBackend {
             Err(error) => Err(self.explain_refusal(remote_path, error).await),
             done => done,
         };
+        let written = crate::protocol::transfer_file::unless_changed(written, &source, || {
+            self.source_identity(remote_path)
+        })
+        .await;
         download.finish(written, remote_size).await
     }
 

@@ -44,6 +44,7 @@ const ERROR_CODE_KEYS = {
   storeUnreadable: 'errors.storeUnreadable',
   storeNotWritable: 'errors.storeNotWritable',
   sourceChanged: 'errors.sourceChanged',
+  remoteChanged: 'errors.remoteChanged',
   invalidFileName: 'errors.invalidFileName',
   insideSource: 'errors.insideSource',
   webdavRedirect: 'errors.webdavRedirect',

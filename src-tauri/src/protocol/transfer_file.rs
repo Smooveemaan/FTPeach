@@ -370,7 +370,13 @@ impl LocalDownload {
             },
             Err(error) => Err(error),
         };
-        if result.is_err() {
+        if let Err(error) = &result {
+            // Bytes of two versions: nothing to resume from.
+            if crate::ipc::CommandError::from_anyhow(error).code == ErrorCode::RemoteChanged
+                && let Err(error) = remove_artifact(&self.partial)
+            {
+                log::warn!("A download of a changed file left its partial: {error:#}");
+            }
             remove_empty_new_partial(&self.partial, self.start).await;
             // Gone, the partial has nothing to resume; its record would only
             // be litter beside the destination.
@@ -403,6 +409,46 @@ pub fn validate_resume_offset(start: u64, expected: Option<u64>) -> Result<()> {
         ));
     }
     Ok(())
+}
+
+/// The transport's outcome, or a `RemoteChanged` failure when the file on the
+/// server is no longer the one `before` described. Only a whole read and a
+/// read of the wrong length can hide a change, so only they ask the server
+/// again; a failed read is believed only when the server answered.
+pub async fn unless_changed<F: Future<Output = SourceIdentity>>(
+    written: Result<u64>,
+    before: &SourceIdentity,
+    after: impl FnOnce() -> F,
+) -> Result<u64> {
+    let may_have_changed = match &written {
+        Ok(_) => true,
+        Err(error) => {
+            crate::ipc::CommandError::from_anyhow(error).code == ErrorCode::IntegrityMismatch
+        }
+    };
+    if !may_have_changed || before.size.is_none() && before.version.is_none() {
+        return written;
+    }
+    let after = after().await;
+    if written.is_err() && after.size.is_none() || same_file(before, &after) {
+        return written;
+    }
+    Err(fail(
+        ErrorCode::RemoteChanged,
+        "The file on the server changed while it was downloading",
+    ))
+}
+
+fn same_file(before: &SourceIdentity, after: &SourceIdentity) -> bool {
+    if before.version.is_none() || after.version.is_none() {
+        log::warn!(
+            "{}: the server gives no version, so only the size shows it did not change during the download",
+            before.remote_path
+        );
+    } else if before.version != after.version {
+        return false;
+    }
+    before.size == after.size
 }
 
 pub fn validate_length(actual: u64, expected: Option<u64>) -> Result<()> {

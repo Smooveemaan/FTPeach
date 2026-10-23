@@ -356,6 +356,7 @@
     "storeNewer": "Te dane zostały zapisane przez nowszą wersję FTPeach, więc nie można zapisać zmiany.",
     "storeUnreadable": "Nie można odczytać pliku z tymi danymi, więc nie można zapisać zmiany.",
     "sourceChanged": "Plik zmienił się podczas przesyłania, więc kopia na serwerze pozostała bez zmian. Prześlij go ponownie.",
+    "remoteChanged": "Plik na serwerze zmienił się podczas pobierania, więc plik na tym komputerze pozostał bez zmian. Pobierz go ponownie.",
     "storeNotWritable": "Nie udało się zapisać zmian w {{path}}: FTPeach nie ma uprawnień do zapisu w tym folderze.",
     "moveBetweenEndpoints": "Pliki można przenosić tylko w obrębie tego komputera lub jednego połączenia z serwerem. Zamiast tego je skopiuj.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

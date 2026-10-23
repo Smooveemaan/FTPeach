@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A vault file that cannot be read or saved is no longer reported as a wrong master password, and no longer makes you wait before the next try.
 - Importing settings now applies all of them at once, including the log's date format and turning off writing the log to a file.
 - While a file is being copied from one server to another, FTPeach no longer lets you delete, rename or overwrite that file in another tab, as it already did for folders.
+- A file that changes on the server while it is downloading no longer replaces your copy with a mix of the two versions: FTPeach says the file changed and keeps the one you had.
 
 ## [0.5.1] - 2026-10-21
 

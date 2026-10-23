@@ -128,6 +128,8 @@ test('friendlyError localizes every structured command error code', () => {
       "Couldn't save changes in unlocalized backend fallback: FTPeach isn't allowed to write to this folder.",
     sourceChanged:
       "The file changed while it was uploading, so the server's copy was left as it was. Upload it again.",
+    remoteChanged:
+      'The file on the server changed while it was downloading, so the file on this computer was left as it was. Download it again.',
     invalidFileName: 'Windows doesn\'t allow the name "unlocalized backend fallback".',
     insideSource: "A folder can't be copied or moved into itself.",
     webdavRedirect: 'The server redirects to another address: unlocalized backend fallback',

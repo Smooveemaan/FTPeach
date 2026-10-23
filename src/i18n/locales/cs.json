@@ -356,6 +356,7 @@
     "storeNewer": "Tato data uložila novější verze FTPeach, proto změnu nelze uložit.",
     "storeUnreadable": "Soubor s těmito daty nelze přečíst, proto změnu nelze uložit.",
     "sourceChanged": "Soubor se během nahrávání změnil, proto kopie na serveru zůstala beze změny. Nahrajte ho znovu.",
+    "remoteChanged": "Soubor na serveru se během stahování změnil, proto soubor v tomto počítači zůstal beze změny. Stáhněte ho znovu.",
     "storeNotWritable": "Změny v {{path}} se nepodařilo uložit: FTPeach nemá oprávnění zapisovat do této složky.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
     "vaultUnreadable": "The password vault could not be read or saved. Your master password was not counted as wrong.",

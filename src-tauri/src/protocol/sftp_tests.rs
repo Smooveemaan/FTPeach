@@ -322,6 +322,10 @@ mod transfer_tests {
         /// Sources whose rename the server refuses, by the start of their path.
         refused_sources: Vec<String>,
         removed: Vec<String>,
+        /// Another program saves the file, keeping its length, as the
+        /// download closes it; `saved` once it has.
+        save_on_close: bool,
+        saved: bool,
     }
     struct Server(Arc<StdMutex<Disk>>);
     fn ok(id: u32) -> Status {
@@ -461,7 +465,7 @@ mod transfer_tests {
                 id,
                 attrs: FileAttributes {
                     size: Some(disk.bytes.len() as u64),
-                    mtime: Some(42),
+                    mtime: Some(if disk.saved { 43 } else { 42 }),
                     ..Default::default()
                 },
             })
@@ -469,6 +473,7 @@ mod transfer_tests {
         async fn close(&mut self, id: u32, _: String) -> Result<Status, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             disk.closes += 1;
+            disk.saved |= disk.save_on_close;
             if disk.fail_close {
                 Err(StatusCode::Failure)
             } else {
@@ -858,7 +863,44 @@ mod transfer_tests {
             .await
             .unwrap();
         assert_eq!(tokio::fs::read(target).await.unwrap(), expected);
-        assert_eq!(disk.lock().unwrap().stats, 1);
+        // One before the read, one after it to see the file did not change.
+        assert_eq!(disk.lock().unwrap().stats, 2);
+        tokio::fs::remove_dir_all(root).await.unwrap();
+    }
+
+    /// A save on the server while the file was read, even one that keeps its
+    /// length, leaves the local file as it was and nothing to resume from.
+    #[tokio::test]
+    async fn a_file_saved_on_the_server_during_the_download_is_not_put_in_place() {
+        let disk = Arc::new(StdMutex::new(Disk {
+            bytes: data(),
+            save_on_close: true,
+            ..Default::default()
+        }));
+        let mut backend = backend(disk).await;
+        let root = std::env::temp_dir().join(format!("sftp-changed-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&root).await.unwrap();
+        let target = root.join("target");
+        tokio::fs::write(&target, b"original").await.unwrap();
+        // Allowed to replace it, so only the check keeps the old file.
+        let error = crate::protocol::ALLOW_OVERWRITE
+            .scope(
+                true,
+                backend.download("/file", &target, true, Arc::new(|_| {})),
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::RemoteChanged
+        );
+        assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+        let mut left = tokio::fs::read_dir(&root).await.unwrap();
+        let mut names = Vec::new();
+        while let Some(entry) = left.next_entry().await.unwrap() {
+            names.push(entry.file_name());
+        }
+        assert_eq!(names, ["target"]);
         tokio::fs::remove_dir_all(root).await.unwrap();
     }
 }

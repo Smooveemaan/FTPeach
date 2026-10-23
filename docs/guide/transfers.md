@@ -162,6 +162,17 @@ unchanged.
 
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_short_download_or_a_refused_commit_keeps_the_old_file -->
 
+Before a downloaded file takes its name, FTPeach asks the server again for its
+size and version. If they changed while the file was downloading, it reports
+that, keeps the file you had and starts the next try from the beginning. When
+the server gives no version, only the size is compared, and a change of the
+same size can go unnoticed.
+
+<!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::a_file_saved_on_the_server_during_the_download_is_not_put_in_place -->
+<!-- verified-by: pr src-tauri/src/protocol/sftp_tests.rs::a_file_saved_on_the_server_during_the_download_is_not_put_in_place -->
+<!-- verified-by: pr src-tauri/src/protocol/webdav_tests.rs::a_file_saved_on_the_server_during_the_download_is_not_put_in_place -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_read_is_kept_only_while_the_server_still_describes_the_same_file -->
+
 A download that fails before receiving anything, such as one of a file deleted
 on the server, leaves nothing beside the destination.
 

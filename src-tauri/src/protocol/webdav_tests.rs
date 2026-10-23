@@ -39,7 +39,8 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {
-        for method in ["PROPFIND", "HEAD", "GET"] {
+        // A read of the wrong length asks again whether the file changed.
+        for method in ["PROPFIND", "HEAD", "GET", "PROPFIND", "HEAD"] {
             let (mut socket, _) = listener.accept().await.unwrap();
             assert!(read_request(&mut socket).await.starts_with(method));
             match method {
@@ -50,7 +51,11 @@ async fn oversized_chunked_download_stops_before_eof_and_preserves_destination()
                 "HEAD" => socket.write_all(b"HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await.unwrap(),
                 _ => {
                     socket.write_all(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n4\r\nabcd\r\n").await.unwrap();
-                    std::future::pending::<()>().await;
+                    // Never ends the body: the excess alone must stop the read.
+                    tokio::spawn(async move {
+                        let _socket = socket;
+                        std::future::pending::<()>().await;
+                    });
                 }
             }
         }
@@ -1512,6 +1517,13 @@ mod local_integration_tests {
                             _ => ("405 Method Not Allowed", String::new(), Vec::new()),
                         }
                     };
+                    // Saved again, longer, once its bytes are on their way.
+                    if method == "GET"
+                        && path.ends_with("/grows.bin")
+                        && let Some(contents) = state.lock().unwrap().files.get_mut(path)
+                    {
+                        contents.push(b'!');
+                    }
                     let response = format!(
                         "HTTP/1.1 {status}\r\n{extra_headers}Content-Length: {}\r\nConnection: close\r\n\r\n",
                         response_body.len()
@@ -1656,6 +1668,48 @@ mod local_integration_tests {
         backend.disconnect().await.unwrap();
 
         tokio::fs::remove_dir_all(&temp_dir).await.unwrap();
+        server.abort();
+    }
+
+    /// This server gives no version, so the size alone shows the save made
+    /// while the file was read; the local file stays as it was.
+    #[tokio::test]
+    async fn a_file_saved_on_the_server_during_the_download_is_not_put_in_place() {
+        let (url, server) = spawn_stateful_webdav_server().await;
+        let config = json!({ "protocol": "webdav", "webdavUrl": url })
+            .as_object()
+            .unwrap()
+            .clone();
+        let config = crate::protocol::config::ConnectionConfig::for_test(&config).unwrap();
+        let mut backend = WebDavBackend::new();
+        let root = std::env::temp_dir().join(format!("ftpeach-webdav-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir(&root).await.unwrap();
+        let source = root.join("source");
+        tokio::fs::write(&source, b"first version").await.unwrap();
+        let target = root.join("target");
+        tokio::fs::write(&target, b"original").await.unwrap();
+        backend.connect(&config).await.unwrap();
+        backend
+            .upload(&source, "/grows.bin", false, Arc::new(|_| {}))
+            .await
+            .unwrap();
+        // Allowed to replace it, so only the check keeps the old file.
+        let error = crate::protocol::ALLOW_OVERWRITE
+            .scope(
+                true,
+                backend.download("/grows.bin", &target, true, Arc::new(|_| {})),
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            ErrorCode::RemoteChanged
+        );
+        assert_eq!(tokio::fs::read(&target).await.unwrap(), b"original");
+        // Nothing to resume from: the partial and its record are gone.
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
+        backend.disconnect().await.unwrap();
+        tokio::fs::remove_dir_all(&root).await.unwrap();
         server.abort();
     }
 

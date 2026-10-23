@@ -85,6 +85,9 @@ pub enum ErrorCode {
     /// The local file changed while it was being uploaded; nothing was put in
     /// place on the server.
     SourceChanged,
+    /// The file on the server changed while it was being downloaded; nothing
+    /// was put in place on this computer.
+    RemoteChanged,
     /// A name Windows cannot hold; the message is that name.
     InvalidFileName,
     /// A folder copied or moved into itself or into a folder inside it.
@@ -501,6 +504,7 @@ impl CommandError {
             ErrorCode::StoreUnreadable => "The data file cannot be read, so it is not overwritten",
             ErrorCode::StoreNotWritable => "The data folder cannot be written",
             ErrorCode::SourceChanged => "The file changed while it was uploading",
+            ErrorCode::RemoteChanged => "The file on the server changed while it was downloading",
             ErrorCode::InvalidFileName => "Windows doesn't allow this name",
             ErrorCode::InsideSource => "A folder can't be copied or moved into itself",
             ErrorCode::WebdavRedirect => "The server redirects to another address",
@@ -567,6 +571,7 @@ mod tests {
             (ErrorCode::StoreUnreadable, "storeUnreadable"),
             (ErrorCode::StoreNotWritable, "storeNotWritable"),
             (ErrorCode::SourceChanged, "sourceChanged"),
+            (ErrorCode::RemoteChanged, "remoteChanged"),
             (ErrorCode::InvalidFileName, "invalidFileName"),
             (ErrorCode::InsideSource, "insideSource"),
             (ErrorCode::WebdavRedirect, "webdavRedirect"),

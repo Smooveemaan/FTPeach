@@ -111,15 +111,12 @@ impl SftpBackend {
         }
     }
 
-    async fn download_file(
+    /// What the server says about the file: its size and modification time.
+    async fn source_identity(
         &self,
+        raw: &RawSftpSession,
         remote_path: &str,
-        local_path: &Path,
-        resume: bool,
-        progress: &ProgressSink,
-    ) -> BackendResult<()> {
-        let target = super::transfer_file::DownloadTarget::reserve(local_path).await?;
-        let raw = self.sftp()?;
+    ) -> super::transfer_file::SourceIdentity {
         let attrs = raw
             .stat(remote_path.to_string())
             .await
@@ -130,14 +127,27 @@ impl SftpBackend {
             .as_ref()
             .and_then(|a| a.mtime)
             .map(|mtime| mtime.to_string());
-        let source = super::transfer_file::SourceIdentity {
+        super::transfer_file::SourceIdentity {
             endpoint: self.endpoint.clone(),
             remote_path: remote_path.to_string(),
             size: remote_size,
             version,
-        };
+        }
+    }
+
+    async fn download_file(
+        &self,
+        remote_path: &str,
+        local_path: &Path,
+        resume: bool,
+        progress: &ProgressSink,
+    ) -> BackendResult<()> {
+        let target = super::transfer_file::DownloadTarget::reserve(local_path).await?;
+        let raw = self.sftp()?;
+        let source = self.source_identity(&raw, remote_path).await;
+        let remote_size = source.size;
         let origin = crate::local_fs::provenance::Origin::for_url(&self.origin_base, remote_path);
-        let Some(download) = target.prepare(resume, source, origin).await? else {
+        let Some(download) = target.prepare(resume, source.clone(), origin).await? else {
             return Ok(());
         };
 
@@ -162,6 +172,10 @@ impl SftpBackend {
             file.flush().await.context("flushing local file")?;
             Ok(offset)
         }
+        .await;
+        let written = super::transfer_file::unless_changed(written, &source, || {
+            self.source_identity(&raw, remote_path)
+        })
         .await;
         download.finish(written, remote_size).await
     }

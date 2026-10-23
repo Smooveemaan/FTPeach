@@ -1518,13 +1518,10 @@ async fn stronghold_migration_and_new_writes_fail_closed() {
     .unwrap();
     vault.setup("correct horse battery staple").await.unwrap();
 
-    // SAFETY: on Windows (the only supported target) `set_var`/`remove_var`
-    // go through SetEnvironmentVariableW, which the OS synchronizes with
-    // concurrent reads — the POSIX `environ` data race that makes these
-    // functions unsafe cannot occur here.
-    unsafe { std::env::set_var("FTPEACH_SIMULATE_DPAPI_FAILURE", "1") };
-    assert!(store.migrate_secrets_to_vault(&vault).await.is_err());
-    unsafe { std::env::remove_var("FTPEACH_SIMULATE_DPAPI_FAILURE") };
+    super::secret_fields::SIMULATE_DPAPI_FAILURE.set(true);
+    let migrated = store.migrate_secrets_to_vault(&vault).await;
+    super::secret_fields::SIMULATE_DPAPI_FAILURE.set(false);
+    assert!(migrated.is_err());
     let raw = tokio::fs::read_to_string(dir.join("sites.json"))
         .await
         .unwrap();

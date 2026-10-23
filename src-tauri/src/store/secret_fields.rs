@@ -41,12 +41,23 @@ pub(crate) fn proxy_secret_fields() -> impl Iterator<Item = &'static str> {
         .chain(PROXY_FLAGS)
 }
 
+#[cfg(test)]
+thread_local! {
+    pub(super) static SIMULATE_DPAPI_FAILURE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 impl Store {
     pub(super) fn protect_secret(data: &[u8]) -> Result<Vec<u8>> {
         // Manual UI test hook. It is compiled only for debug builds, so an
         // environment variable can never disable DPAPI in a packaged release.
         #[cfg(debug_assertions)]
         if std::env::var_os("FTPEACH_SIMULATE_DPAPI_FAILURE").is_some() {
+            anyhow::bail!("simulated DPAPI failure");
+        }
+        // Tests fail DPAPI on their own thread only: the environment variable
+        // would fail it for every test running in parallel.
+        #[cfg(test)]
+        if SIMULATE_DPAPI_FAILURE.get() {
             anyhow::bail!("simulated DPAPI failure");
         }
 

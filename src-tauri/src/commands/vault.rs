@@ -398,7 +398,7 @@ mod attempt_tests {
     #[tokio::test]
     async fn a_storage_failure_is_reported_and_not_counted() {
         let fixture = Fixture::new().await;
-        let snapshot = fixture._root.join("vault.hold");
+        let snapshot = fixture._root.join("vault.dat");
         let saved = std::fs::read(&snapshot).unwrap();
         std::fs::write(&snapshot, b"damaged").unwrap();
         let failed = fixture.unlock("correct horse battery staple").await;

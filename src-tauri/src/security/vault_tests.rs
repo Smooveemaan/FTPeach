@@ -18,7 +18,7 @@ async fn failed_snapshot_commit_rolls_back_in_memory_secrets() {
     let deny_replace = std::fs::OpenOptions::new()
         .read(true)
         .share_mode(1)
-        .open(vault.snapshot_path())
+        .open(vault.data_path())
         .unwrap();
     assert!(
         vault
@@ -63,7 +63,7 @@ async fn failed_setup_leaves_nothing_that_blocks_the_next_one() {
     let blocker = Vault::temporary_path(&vault.metadata_path());
     std::fs::create_dir_all(&blocker).unwrap();
     assert!(vault.setup("correct horse battery staple").await.is_err());
-    assert!(!vault.snapshot_path().exists());
+    assert!(!vault.data_path().exists());
     assert!(!vault.is_unlocked().await);
     std::fs::remove_dir(&blocker).unwrap();
     vault.setup("correct horse battery staple").await.unwrap();
@@ -76,7 +76,7 @@ async fn failed_setup_leaves_nothing_that_blocks_the_next_one() {
 /// `*.damaged`, replacing an older copy, and a new vault can then be set up.
 #[tokio::test]
 async fn a_damaged_vault_is_set_aside_and_a_new_one_can_be_made() {
-    for lone in ["vault.hold", "vault.json"] {
+    for lone in ["vault.dat", "vault.hold", "vault.json"] {
         let dir =
             std::env::temp_dir().join(format!("ftpeach-vault-damaged-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
@@ -203,14 +203,12 @@ async fn setup_lock_unlock_and_password_change_preserve_secrets() {
     );
 
     vault.lock().await;
-    let snapshot = tokio::fs::read(vault.snapshot_path()).await.unwrap();
-    tokio::fs::write(vault.snapshot_path(), b"corrupt snapshot")
+    let snapshot = tokio::fs::read(vault.data_path()).await.unwrap();
+    tokio::fs::write(vault.data_path(), b"corrupt snapshot")
         .await
         .unwrap();
     assert!(vault.unlock("a different strong password").await.is_err());
-    tokio::fs::write(vault.snapshot_path(), snapshot)
-        .await
-        .unwrap();
+    tokio::fs::write(vault.data_path(), snapshot).await.unwrap();
     vault.unlock("a different strong password").await.unwrap();
 
     vault.reset().await.unwrap();
@@ -366,6 +364,172 @@ async fn the_single_credential_of_earlier_versions_is_still_read() {
     assert!(file.get("systemUnlock").is_none());
     assert_eq!(file["systemUnlocks"].as_array().unwrap().len(), 1);
     vault.reset().await.unwrap();
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// A vault FTPeach 0.5.1 wrote with Stronghold 2.1 (test KDF parameters),
+/// copied to a fresh folder, and the computer whose Windows Hello it knows.
+/// `credential.txt` names that computer's key.
+fn vault_of_0_5() -> (PathBuf, Vault, Arc<ComputerKeys>) {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/security/testdata/vault-0.5.1");
+    let dir = std::env::temp_dir().join(format!("ftpeach-vault-0.5-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    for name in ["vault.hold", "vault.json"] {
+        std::fs::copy(fixture.join(name), dir.join(name)).unwrap();
+    }
+    let (vault, keys) = computer(&dir);
+    let credential = std::fs::read_to_string(fixture.join("credential.txt")).unwrap();
+    keys.0.lock().unwrap().insert(credential.trim().to_owned());
+    (dir, vault, keys)
+}
+
+/// What the 0.5.1 fixture holds: 80 incompressible kilobyte keys, which take
+/// the snapshot past one 64 KiB age chunk, and a few short secrets.
+async fn holds_what_0_5_saved(vault: &Vault) {
+    for i in 0..80u32 {
+        let mut expected = vec![0u8; 1000];
+        let mut x = i.wrapping_mul(2654435761).wrapping_add(1);
+        for byte in &mut expected {
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            *byte = x as u8;
+        }
+        let site = format!("site-{i}");
+        let value = vault.get_secret(&site, "privateKey").await.unwrap();
+        assert_eq!(value.as_deref(), Some(&expected), "{site}");
+    }
+    let secret = |site: &'static str| async move {
+        vault
+            .get_secret(site, "password")
+            .await
+            .unwrap()
+            .unwrap()
+            .to_vec()
+    };
+    assert_eq!(
+        secret("site-1").await,
+        "\u{43f}\u{430}\u{440}\u{43e}\u{43b}\u{44c}-secret-value".as_bytes()
+    );
+    assert_eq!(secret("site-2").await, [b'a'; 300]);
+    assert_eq!(secret("site-3").await, b"");
+    assert_eq!(
+        vault
+            .get_proxy_password()
+            .await
+            .unwrap()
+            .unwrap()
+            .as_slice(),
+        b"proxy-secret"
+    );
+    assert!(
+        vault
+            .get_secret("site-1", "keyPassphrase")
+            .await
+            .unwrap()
+            .is_none()
+    );
+}
+
+#[tokio::test]
+async fn a_vault_of_0_5_moves_to_the_new_file_on_its_first_unlock() {
+    let (dir, vault, _keys) = vault_of_0_5();
+    let snapshot = std::fs::read(dir.join("vault.hold")).unwrap();
+    assert!(vault.is_configured() && !vault.is_damaged());
+    assert!(vault.status().await.system_unlock_enabled);
+    assert!(vault.unlock("wrong password").await.is_err());
+    assert!(
+        !vault.data_path().exists(),
+        "a refused password moves nothing"
+    );
+
+    vault.unlock(PASSWORD).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+    assert!(vault.data_path().is_file());
+    assert!(!dir.join("vault.hold").exists());
+    assert_eq!(
+        std::fs::read(dir.join("vault.hold.backup")).unwrap(),
+        snapshot
+    );
+    assert!(vault.is_configured() && !vault.is_damaged());
+
+    // From the new file now, by password and by Windows Hello alike.
+    vault.lock().await;
+    vault.unlock(PASSWORD).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+    vault.lock().await;
+    vault.unlock_system(0).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+
+    // Starting over removes the backup with the rest.
+    vault.reset().await.unwrap();
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 0);
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[tokio::test]
+async fn windows_hello_alone_moves_a_vault_of_0_5() {
+    let (dir, vault, _keys) = vault_of_0_5();
+    vault.unlock_system(0).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+    assert!(vault.data_path().is_file());
+    assert!(dir.join("vault.hold.backup").is_file());
+    vault.lock().await;
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// A move cut short after `vault.dat` was written: the new file is the
+/// vault, and the snapshot left beside it is set aside at the next unlock.
+#[tokio::test]
+async fn a_move_cut_short_keeps_the_new_file_and_finishes() {
+    let (dir, vault, _keys) = vault_of_0_5();
+    let snapshot = std::fs::read(dir.join("vault.hold")).unwrap();
+    vault.unlock(PASSWORD).await.unwrap();
+    vault
+        .apply_secret_updates(&[SecretUpdate::Set {
+            site_id: "site-1",
+            field: "password",
+            value: b"changed after the move",
+        }])
+        .await
+        .unwrap();
+    vault.lock().await;
+    std::fs::write(dir.join("vault.hold"), &snapshot).unwrap();
+    std::fs::remove_file(dir.join("vault.hold.backup")).unwrap();
+
+    vault.unlock(PASSWORD).await.unwrap();
+    assert_eq!(
+        vault
+            .get_secret("site-1", "password")
+            .await
+            .unwrap()
+            .unwrap()
+            .as_slice(),
+        b"changed after the move"
+    );
+    assert!(!dir.join("vault.hold").exists());
+    assert!(dir.join("vault.hold.backup").is_file());
+    vault.lock().await;
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// A damaged 0.5 snapshot does not open, is not a wrong password, and is
+/// left exactly as it was, with nothing written beside it.
+#[tokio::test]
+async fn a_damaged_vault_of_0_5_fails_closed_and_stays_as_it_was() {
+    let (dir, vault, _keys) = vault_of_0_5();
+    let mut snapshot = std::fs::read(dir.join("vault.hold")).unwrap();
+    let middle = snapshot.len() / 2;
+    snapshot[middle] ^= 1;
+    std::fs::write(dir.join("vault.hold"), &snapshot).unwrap();
+
+    let error = vault.unlock(PASSWORD).await.unwrap_err();
+    assert!(!is_refused(&error));
+    assert!(vault.unlock_system(0).await.is_err());
+    assert!(!vault.is_unlocked().await);
+    assert!(!vault.data_path().exists());
+    assert!(!dir.join("vault.hold.backup").exists());
+    assert_eq!(std::fs::read(dir.join("vault.hold")).unwrap(), snapshot);
     let _ = std::fs::remove_dir_all(dir);
 }
 

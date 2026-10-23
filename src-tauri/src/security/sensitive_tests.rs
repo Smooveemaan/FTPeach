@@ -589,7 +589,7 @@ async fn a_confirmation_that_unlocks_the_vault_says_so_once() {
 
     // The right password over a vault that cannot be read is not refused.
     vault.lock().await;
-    std::fs::write(root.join("vault.hold"), b"damaged").unwrap();
+    std::fs::write(root.join("vault.dat"), b"damaged").unwrap();
     let broken = reauthenticate(app.handle(), &vault, &store, PASSWORD).await;
     assert!(!crate::security::vault::is_refused(&broken.unwrap_err()));
     let _ = std::fs::remove_dir_all(&root);

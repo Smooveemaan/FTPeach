@@ -128,14 +128,6 @@ jobs:
       - name: Generate npm and Cargo CycloneDX SBOMs
         run: npm run sbom:generate
 
-      - name: Download pinned libsodium archive
-        shell: powershell
-        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
-
-      - name: Prepare verified libsodium CRT and symbols
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -EnvironmentFile "$env:GITHUB_ENV" -Command prepare
-
       - name: Build release notes from CHANGELOG.md
         id: release-notes
         run: node --experimental-strip-types scripts/release/build-release-notes.ts

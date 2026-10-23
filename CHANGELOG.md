@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Saved servers are called bookmarks in every message, in every language, not sites or saved servers.
 - A local folder with many thousands of files opens faster.
+- The password vault is kept in a new file. Your saved passwords move there the first time you unlock it; after that FTPeach 0.5 cannot open it.
 
 ### Security
 

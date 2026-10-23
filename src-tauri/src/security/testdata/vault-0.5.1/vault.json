@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kdf": {
+    "algorithm": "argon2id",
+    "version": 1,
+    "memoryKib": 1024,
+    "iterations": 1,
+    "parallelism": 1,
+    "salt": "Ava931tTINpT493lbmpjLw=="
+  },
+  "wrappedKey": "OX0DZr8F9GvWkeaqVXf+C9CzuHpu1SvaXuzWIoxYw1GePVLGNpn0jDXLV5YXqbG0",
+  "nonce": "R3pl7KNYGHRDEyVZjicVDGbQVuOEzfY3",
+  "systemUnlocks": [
+    {
+      "scheme": "windows-hello-v1",
+      "credential": "FTPeach-vault-ecfe6c11-211f-498c-a127-894e15e52a05",
+      "wrappedKey": "4nCBkxWNWJsL/EOmsnsslu0TDObe7HylFWdyZxQALZE="
+    }
+  ]
+}

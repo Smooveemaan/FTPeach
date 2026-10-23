@@ -65,6 +65,16 @@ password**, then select **Change password**. The new password must have at least
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Security walks from first setup through locking and changing the master password -->
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::setup_lock_unlock_and_password_change_preserve_secrets -->
 
+## After updating from FTPeach 0.5
+
+FTPeach 0.6 keeps the vault in a new file. The first time you unlock it after the
+update, with the master password or Windows Hello, FTPeach moves your saved
+secrets there; the password and Windows Hello stay as they were. FTPeach 0.5
+cannot open the vault after that, so do not go back to it.
+
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::a_vault_of_0_5_moves_to_the_new_file_on_its_first_unlock -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::windows_hello_alone_moves_a_vault_of_0_5 -->
+
 ## If you forget the master password
 
 If **Allow system unlock** was already enabled on this computer, try Windows

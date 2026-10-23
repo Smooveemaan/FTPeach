@@ -7,7 +7,7 @@ npm run build:packaged-smoke
 npm run test:packaged-smoke
 ```
 
-The build helper prepares verified libsodium and builds the smoke feature into .tools/smoke-target/debug/app.exe using dist assets. The harness launches that executable with isolated APPDATA/LOCALAPPDATA, waits up to 30 seconds for its result and successful process exit, then removes the temporary data. TAURI_DRIVER_DEBUG=1 exposes process output.
+The build helper builds the smoke feature into .tools/smoke-target/debug/app.exe using dist assets. The harness launches that executable with isolated APPDATA/LOCALAPPDATA, waits up to 30 seconds for its result and successful process exit, then removes the temporary data. TAURI_DRIVER_DEBUG=1 exposes process output.
 
 A second run copies the executable into a folder of its own with the `FTPeach.portable` marker. It passes only if `settings.json`, `tabs.json`, `local` and `webview` end up in `data` beside that copy and the isolated profile is still empty. The harness also compares FTPeach-named entries in the real APPDATA and LOCALAPPDATA
 folders before and after the portable run, because Windows' known-folder API ignores

@@ -18,7 +18,7 @@ _Avoid_: Stronghold mode, protected mode
 
 **Vault**:
 The master-password-encrypted store that holds saved secrets under enhanced protection. It is either locked or unlocked.
-_Avoid_: protected storage, Stronghold (except when naming the library)
+_Avoid_: protected storage, Stronghold (the library versions up to 0.5 kept it in; see ADR 0008)
 
 **Saved secret**:
 A password or passphrase FTPeach keeps between launches: a saved site's password, an SSH-key passphrase, or the proxy password. Passwords typed for an unsaved connection are not saved secrets.

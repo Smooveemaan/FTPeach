@@ -1,3 +1,4 @@
+use super::{stronghold_snapshot, stronghold_snapshot::Secrets, vault_file};
 use crate::security::system_unlock::Keys;
 use anyhow::{Context, Result, bail};
 use argon2::{Algorithm, Argon2, Params, Version};
@@ -6,7 +7,6 @@ use chacha20poly1305::{
     XChaCha20Poly1305, XNonce,
     aead::{Aead, KeyInit},
 };
-use iota_stronghold::{KeyProvider, SnapshotPath, Stronghold};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -16,9 +16,10 @@ use std::{
     },
 };
 use tokio::sync::Mutex;
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
-const CLIENT: &[u8] = b"ftpeach-vault-v1";
+/// The entry a Stronghold snapshot carried to tell a right key from a wrong
+/// one; the current file's authentication does that, so it is not moved.
 const CHECK_KEY: &[u8] = b"vault-format";
 const CHECK_VALUE: &[u8] = b"ftpeach-v1";
 const PROXY_PASSWORD_KEY: &[u8] = b"settings:proxyPassword";
@@ -128,7 +129,7 @@ struct KdfMetadata {
 }
 
 struct UnlockedVault {
-    stronghold: Stronghold,
+    secrets: Secrets,
     data_key: Zeroizing<Vec<u8>>,
 }
 
@@ -190,8 +191,6 @@ impl Vault {
     }
 
     fn with_keys(dir: PathBuf, keys: Arc<dyn Keys>) -> Self {
-        iota_stronghold::engine::snapshot::try_set_encrypt_work_factor(0)
-            .expect("Stronghold must accept work factor 0 for a random snapshot key");
         Self {
             dir,
             state: Arc::new(Mutex::new(None)),
@@ -205,8 +204,17 @@ impl Vault {
         self.lock_epoch.load(Ordering::SeqCst)
     }
 
-    fn snapshot_path(&self) -> PathBuf {
+    fn data_path(&self) -> PathBuf {
+        self.dir.join("vault.dat")
+    }
+    /// The Stronghold snapshot of 0.5 and earlier, until the first unlock
+    /// moves its secrets into `vault.dat`.
+    fn legacy_path(&self) -> PathBuf {
         self.dir.join("vault.hold")
+    }
+    /// Where the moved snapshot stays, opened by the same key, in case.
+    fn legacy_backup_path(&self) -> PathBuf {
+        self.dir.join("vault.hold.backup")
     }
     fn metadata_path(&self) -> PathBuf {
         self.dir.join("vault.json")
@@ -216,12 +224,16 @@ impl Vault {
         format!("site:{site_id}:{field}").into_bytes()
     }
 
+    fn has_secrets_file(&self) -> bool {
+        self.data_path().is_file() || self.legacy_path().is_file()
+    }
+
     pub fn is_configured(&self) -> bool {
-        self.snapshot_path().is_file() && self.metadata_path().is_file()
+        self.has_secrets_file() && self.metadata_path().is_file()
     }
 
     pub fn is_damaged(&self) -> bool {
-        self.snapshot_path().is_file() != self.metadata_path().is_file()
+        self.has_secrets_file() != self.metadata_path().is_file()
     }
 
     pub async fn is_unlocked(&self) -> bool {
@@ -359,8 +371,8 @@ impl Vault {
         Ok(metadata)
     }
 
-    /// The temporary file keeps the full name (`vault.json.<pid>.tmp`) so it
-    /// never shares a name with the snapshot's (`vault.<pid>.tmp`).
+    /// The temporary file keeps the full name (`vault.json.<pid>.tmp`) so the
+    /// two vault files never share one.
     fn temporary_path(path: &Path) -> PathBuf {
         let mut name = path.as_os_str().to_owned();
         name.push(format!(".{}.tmp", std::process::id()));
@@ -406,24 +418,42 @@ impl Vault {
         std::fs::rename(source, destination).context("replacing file")
     }
 
-    fn commit(&self, unlocked: &UnlockedVault) -> Result<()> {
-        unlocked
-            .stronghold
-            .write_client(CLIENT)
-            .context("staging vault")?;
-        let key = KeyProvider::try_from(Zeroizing::new(unlocked.data_key.to_vec()))
-            .context("vault key")?;
-        let snapshot_path = self.snapshot_path();
-        let temporary_path = snapshot_path.with_extension(format!("{}.tmp", std::process::id()));
-        let result = unlocked
-            .stronghold
-            .commit_with_keyprovider(&SnapshotPath::from_path(&temporary_path), &key)
-            .context("saving vault temporary snapshot")
-            .and_then(|_| Self::replace_file(&temporary_path, &snapshot_path));
+    async fn commit(&self, secrets: &Secrets, data_key: &[u8]) -> Result<()> {
+        let path = self.data_path();
+        let result = Self::atomic_write(&path, &vault_file::seal(secrets, data_key)?).await;
         if result.is_err() {
-            let _ = std::fs::remove_file(temporary_path);
+            let _ = std::fs::remove_file(Self::temporary_path(&path));
         }
         result
+    }
+
+    /// The secrets the data key opens. The first time after 0.5 they are
+    /// read from the Stronghold snapshot and written to `vault.dat`, and the
+    /// snapshot is then set aside; a move cut short is finished here too.
+    async fn load(&self, data_key: &[u8]) -> Result<Secrets> {
+        let secrets = match tokio::fs::read(self.data_path()).await {
+            Ok(file) => vault_file::open(&file, data_key)?,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                let old = tokio::fs::read(self.legacy_path())
+                    .await
+                    .context("reading vault")?;
+                let mut secrets = stronghold_snapshot::read(&old, data_key)
+                    .context("reading the vault of an earlier version")?;
+                anyhow::ensure!(
+                    secrets.remove(CHECK_KEY).as_deref().map(Vec::as_slice) == Some(CHECK_VALUE),
+                    "damaged vault"
+                );
+                self.commit(&secrets, data_key).await?;
+                secrets
+            }
+            Err(error) => return Err(error).context("reading vault"),
+        };
+        if self.legacy_path().is_file() {
+            // vault.dat is the vault from here on: a snapshot left in place
+            // is retried at the next unlock and changes nothing meanwhile.
+            let _ = Self::replace_file(&self.legacy_path(), &self.legacy_backup_path());
+        }
+        Ok(secrets)
     }
 
     pub async fn get_secret(
@@ -441,75 +471,32 @@ impl Vault {
     async fn get_key(&self, key: &[u8]) -> Result<Option<Zeroizing<Vec<u8>>>> {
         let state = self.state.lock().await;
         let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
-        let client = unlocked
-            .stronghold
-            .get_client(CLIENT)
-            .context("opening vault client")?;
-        Ok(client
-            .store()
-            .get(key)
-            .context("reading vault secret")?
-            .map(Zeroizing::new))
+        Ok(unlocked.secrets.get(key).cloned())
     }
 
     pub async fn apply_secret_updates(&self, updates: &[SecretUpdate<'_>]) -> Result<()> {
-        let state = self.state.lock().await;
-        let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
-        let client = unlocked
-            .stronghold
-            .get_client(CLIENT)
-            .context("opening vault client")?;
-        let store = client.store();
-        let mut previous = std::collections::HashMap::new();
+        let mut state = self.state.lock().await;
+        let unlocked = state.as_mut().ok_or_else(crate::ipc::vault_locked)?;
+        // Applied to a copy: a commit that fails leaves memory as the file is.
+        let mut secrets = unlocked.secrets.clone();
         for update in updates {
-            let key = update.key();
-            if let std::collections::hash_map::Entry::Vacant(entry) = previous.entry(key) {
-                let value = store.get(entry.key())?.map(Zeroizing::new);
-                entry.insert(value);
-            }
-        }
-        let result = (|| -> Result<()> {
-            for update in updates {
-                match update {
-                    SecretUpdate::Set { value, .. } | SecretUpdate::SetProxyPassword { value } => {
-                        store
-                            .insert(update.key(), value.to_vec(), None)
-                            .context("writing vault secret")?;
-                    }
-                    SecretUpdate::Delete { .. } | SecretUpdate::DeleteProxyPassword => {
-                        store
-                            .delete(&update.key())
-                            .context("deleting vault secret")?;
-                    }
+            match update {
+                SecretUpdate::Set { value, .. } | SecretUpdate::SetProxyPassword { value } => {
+                    secrets.insert(update.key(), Zeroizing::new(value.to_vec()));
+                }
+                SecretUpdate::Delete { .. } | SecretUpdate::DeleteProxyPassword => {
+                    secrets.remove(&update.key());
                 }
             }
-            self.commit(unlocked)
-        })();
-        if let Err(error) = result {
-            // The old on-disk snapshot was preserved by atomic replacement.
-            // Restore memory as well so a later commit cannot persist failed updates.
-            for (key, value) in previous {
-                match value {
-                    Some(value) => {
-                        store.insert(key, value.to_vec(), None).with_context(|| {
-                            format!("Vault update failed ({error:#}); in-memory rollback failed")
-                        })?;
-                    }
-                    None => {
-                        store.delete(&key).with_context(|| {
-                            format!("Vault update failed ({error:#}); in-memory rollback failed")
-                        })?;
-                    }
-                }
-            }
-            return Err(error);
         }
+        self.commit(&secrets, &unlocked.data_key).await?;
+        unlocked.secrets = secrets;
         Ok(())
     }
 
     pub async fn setup(&self, password: &str) -> Result<()> {
         Self::validate_new_password(password)?;
-        if self.metadata_path().exists() || self.snapshot_path().exists() {
+        if self.metadata_path().exists() || self.has_secrets_file() {
             bail!("vault is already configured");
         }
         tokio::fs::create_dir_all(&self.dir)
@@ -519,63 +506,30 @@ impl Vault {
         getrandom::fill(&mut raw_key).context("generating vault key")?;
         let data_key = Zeroizing::new(raw_key);
         let metadata = Self::make_metadata(password, &data_key).await?;
-        let stronghold = Stronghold::default();
-        let client = stronghold
-            .create_client(CLIENT)
-            .context("creating Stronghold client")?;
-        client
-            .store()
-            .insert(CHECK_KEY.to_vec(), CHECK_VALUE.to_vec(), None)
-            .context("initializing vault")?;
-        stronghold.write_client(CLIENT).context("staging vault")?;
-        let temporary_snapshot = self
-            .snapshot_path()
-            .with_extension(format!("{}.tmp", std::process::id()));
-        stronghold
-            .commit_with_keyprovider(
-                &SnapshotPath::from_path(&temporary_snapshot),
-                &KeyProvider::try_from(Zeroizing::new(data_key.to_vec())).context("vault key")?,
-            )
+        let secrets = Secrets::new();
+        self.commit(&secrets, &data_key)
+            .await
             .context("saving vault")?;
-        Self::replace_file(&temporary_snapshot, &self.snapshot_path())?;
         if let Err(error) = Self::atomic_write(
             &self.metadata_path(),
             &serde_json::to_vec_pretty(&metadata)?,
         )
         .await
         {
-            // Without vault.json the snapshot can never be opened, and left
-            // behind it would block every later setup.
-            let _ = tokio::fs::remove_file(self.snapshot_path()).await;
+            // Without vault.json the secrets file can never be opened, and
+            // left behind it would block every later setup.
+            let _ = tokio::fs::remove_file(self.data_path()).await;
             return Err(error);
         }
-        *self.state.lock().await = Some(UnlockedVault {
-            stronghold,
-            data_key,
-        });
+        *self.state.lock().await = Some(UnlockedVault { secrets, data_key });
         Ok(())
     }
 
     pub async fn unlock(&self, password: &str) -> Result<()> {
         let metadata = self.read_metadata().await?;
         let data_key = Self::unwrap_data_key(password, &metadata).await?;
-        let stronghold = Stronghold::default();
-        let client = stronghold
-            .load_client_from_snapshot(
-                CLIENT,
-                &KeyProvider::try_from(Zeroizing::new(data_key.to_vec())).context("vault key")?,
-                &SnapshotPath::from_path(self.snapshot_path()),
-            )
-            .map_err(|_| anyhow::anyhow!("Incorrect master password or damaged vault"))?;
-        if client.store().get(CHECK_KEY).ok().flatten().as_deref() != Some(CHECK_VALUE) {
-            bail!("damaged vault");
-        }
-        let unlocked = UnlockedVault {
-            stronghold,
-            data_key,
-        };
-        self.commit(&unlocked)?;
-        *self.state.lock().await = Some(unlocked);
+        let secrets = self.load(&data_key).await?;
+        *self.state.lock().await = Some(UnlockedVault { secrets, data_key });
         Ok(())
     }
 
@@ -591,25 +545,11 @@ impl Vault {
         if data_key.len() != 32 {
             bail!("invalid system vault key");
         }
-        let stronghold = Stronghold::default();
-        let client = stronghold
-            .load_client_from_snapshot(
-                CLIENT,
-                &KeyProvider::try_from(Zeroizing::new(data_key.to_vec())).context("vault key")?,
-                &SnapshotPath::from_path(self.snapshot_path()),
-            )
-            .map_err(|_| {
-                anyhow::anyhow!(
-                    "system credential changed or vault is damaged; use the master password"
-                )
-            })?;
-        if client.store().get(CHECK_KEY).ok().flatten().as_deref() != Some(CHECK_VALUE) {
-            bail!("damaged vault");
-        }
-        *self.state.lock().await = Some(UnlockedVault {
-            stronghold,
-            data_key,
-        });
+        let secrets = self
+            .load(&data_key)
+            .await
+            .context("system credential changed or vault is damaged; use the master password")?;
+        *self.state.lock().await = Some(UnlockedVault { secrets, data_key });
         Ok(())
     }
 
@@ -709,10 +649,8 @@ impl Vault {
 
     pub async fn lock(&self) {
         self.lock_epoch.fetch_add(1, Ordering::SeqCst);
-        if let Some(mut unlocked) = self.state.lock().await.take() {
-            let _ = unlocked.stronghold.clear();
-            unlocked.data_key.zeroize();
-        }
+        // Every secret and the key are Zeroizing: dropping them wipes them.
+        drop(self.state.lock().await.take());
     }
 
     pub async fn change_password(&self, old_password: &str, new_password: &str) -> Result<()> {
@@ -741,7 +679,9 @@ impl Vault {
         if self.is_damaged() {
             // The other half may still turn up in a backup, so the file is
             // set aside rather than deleted; one such copy is kept.
-            for path in [self.snapshot_path(), self.metadata_path()] {
+            // A backup of an earlier version's snapshot stays: with vault.json
+            // gone it is what is left to recover from.
+            for path in [self.data_path(), self.legacy_path(), self.metadata_path()] {
                 if path.is_file() {
                     let mut aside = path.as_os_str().to_owned();
                     aside.push(".damaged");
@@ -757,7 +697,12 @@ impl Vault {
                 let _ = self.keys.revoke(&system.credential);
             }
         }
-        for path in [self.snapshot_path(), self.metadata_path()] {
+        for path in [
+            self.data_path(),
+            self.legacy_path(),
+            self.legacy_backup_path(),
+            self.metadata_path(),
+        ] {
             match tokio::fs::remove_file(path).await {
                 Ok(()) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}

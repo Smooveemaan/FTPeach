@@ -285,7 +285,7 @@ beside a portable program:
 | `tabs.json` | Restored tabs and panes. No connection state, listings or secrets. |
 | `known_hosts.json` | Pinned SSH host-key fingerprints. |
 | `trusted_applications.json` | Applications the user allowed for "Open with". |
-| `vault.json`, `vault.hold` | Vault metadata and the encrypted Stronghold snapshot under enhanced protection. |
+| `vault.json`, `vault.dat` | Vault metadata and the encrypted secrets under enhanced protection. `vault.hold.backup` is the Stronghold snapshot of 0.5 and earlier, kept after its move. |
 
 JSON store writes go through `store/storage.rs`: one lock per file, a temporary
 sibling, then an atomic replace. Supported legacy formats are read with their

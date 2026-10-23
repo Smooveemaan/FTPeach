@@ -14,3 +14,6 @@ test/fixtures/updater/spike.key.pub binary
 
 # Fuzz inputs (including FTP CRLF replies and minimized crashes) are exact bytes.
 src-tauri/fuzz/corpus/** binary
+
+# The vault of FTPeach 0.5.1 the migration tests read: encrypted bytes.
+src-tauri/src/security/testdata/** binary

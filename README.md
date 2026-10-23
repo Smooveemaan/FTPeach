@@ -111,22 +111,13 @@ cd ftpeach
 npm ci
 ```
 
-For the native build, download `libsodium-1.0.22-msvc.zip` from the official libsodium releases page. Initialize the verified local copy once, replacing the example path with your downloaded archive:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 `
-  -ArchivePath "C:\path\to\libsodium-1.0.22-msvc.zip" -Command check
-```
-
-The wrapper checks the archive against a pinned SHA-256 and prepares the matching native library and debug symbols in `.tools/`. Subsequent commands reuse that copy.
-
 Start the desktop app with hot reload:
 
 ```powershell
 npm run dev
 ```
 
-Use the npm wrapper commands for native builds and tests on Windows. Raw Cargo or Tauri build commands bypass the required libsodium preparation and may attempt a network download.
+The npm commands below are plain Cargo and Tauri commands; a few that need their own target directory or more than one step go through [scripts/cargo.ts](scripts/cargo.ts).
 
 ### Everyday commands
 

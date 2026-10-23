@@ -248,21 +248,14 @@ jobs:
         with:
           workspaces: src-tauri
 
-      - name: Download pinned libsodium archive
-        shell: powershell
-        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
-
       - run: cargo fmt --all --manifest-path src-tauri/Cargo.toml -- --check
       # The features the application ships with; the steps below turn on more.
-      - name: Check with default features (verified libsodium CRT)
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command check
-      - name: Clippy (verified libsodium CRT)
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command clippy
-      - name: Test (verified libsodium CRT)
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -Command test
+      - name: Check with default features
+        run: npm run rust:check
+      - name: Clippy
+        run: npm run rust:clippy
+      - name: Test
+        run: npm run rust:test
       # Check both valid and damaged updater artifacts.
       - name: Verify valid and damaged updater fixtures independently
         run: npm run test:updater-fixtures
@@ -296,13 +289,6 @@ jobs:
           rustup component add llvm-tools-preview
           cargo install cargo-llvm-cov --locked --version 0.9.1
 
-      - name: Download pinned libsodium archive
-        shell: powershell
-        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
-
-      - name: Prepare verified libsodium
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
       - run: npm run rust:coverage
       - name: Keep the Rust coverage report
         if: ${{ always() }}
@@ -385,10 +371,5 @@ jobs:
           cache-directories: .tools/smoke-target
 
       - run: npm ci
-      - name: Download pinned libsodium archive
-        shell: powershell
-        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
-      - name: Build packaged smoke target (verified libsodium CRT)
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command smoke-build
+      - run: npm run build:packaged-smoke
       - run: npm run test:packaged-smoke

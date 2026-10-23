@@ -13,3 +13,5 @@ pub(crate) mod vault;
 pub(crate) mod vault_guard;
 
 mod kdf_executor;
+mod stronghold_snapshot;
+mod vault_file;

@@ -626,7 +626,7 @@ mod tests {
         assert!(!within(
             local.join(r"edit-sessions\..\updates\pending.json")
         ));
-        assert!(!within(root.join(r"data\vault.hold")));
+        assert!(!within(root.join(r"data\vault.dat")));
         assert!(!within(root.join("FTPeach.exe")));
         assert!(!is_portable_working_copy(
             &local.join(r"edit-sessions\run\notes.txt"),

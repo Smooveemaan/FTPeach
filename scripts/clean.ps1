@@ -11,21 +11,19 @@ $workspacePrefix = [System.IO.Path]::GetFullPath($workspace).TrimEnd('\') + '\'
 $releaseTarget = [System.IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'FTPeachBuild'))
 
 # Every path below is a build cache or generated output that the next build
-# recreates; scripts/with-libsodium.ps1 decides which Cargo target directory a
-# given command uses. Deliberately kept: .tools\libsodium-1.0.22-msvc (the
-# verified archive copy that with-libsodium.ps1 initializes once and every
-# Rust command depends on), .local, and node_modules.
+# recreates; scripts/cargo.ts decides which Cargo target directory a given
+# command uses. Deliberately kept: .local and node_modules.
 $targets = [ordered]@{
     # Default Cargo target directory (dev, check, test, clippy).
     'src-tauri\target'          = Join-Path $workspace 'src-tauri\target'
     'src-tauri\fuzz\target'     = Join-Path $workspace 'src-tauri\fuzz\target'
-    # Cargo target directory of `smoke-build` (with-libsodium.ps1).
+    # Cargo target directory of `smoke-build` (scripts/cargo.ts).
     '.tools\smoke-target'       = Join-Path $workspace '.tools\smoke-target'
-    # Cargo target directory of `test-installers` (with-libsodium.ps1).
+    # Cargo target directory of `test-installers` (scripts/cargo.ts).
     '.tools\installer-target'   = Join-Path $workspace '.tools\installer-target'
     # Signed test installers of scripts/release/test-installers.ts.
     '.tools\installer-test'     = Join-Path $workspace '.tools\installer-test'
-    # Cargo target directory of `build`: with-libsodium.ps1 redirects release
+    # Cargo target directory of `build`: scripts/cargo.ts redirects release
     # artifacts to this ASCII path because WiX 3 light.exe fails on Cyrillic
     # output paths.
     '%LOCALAPPDATA%\FTPeachBuild' = $releaseTarget

@@ -12,8 +12,7 @@ rustflags = [
 # two files drifting out of sync produces link failures whose cause is hard
 # to trace back here.
 #
-# The official static libsodium archive uses /MT. Keep Rust and C/C++ build
-# scripts on that same CRT model with `+crt-static`; `/NODEFAULTLIB` is not an
-# equivalent fix because it can leave native dependencies with unresolved CRT
-# symbols. LNK4098 and LNK4099 are errors so CRT or symbol drift cannot enter a
-# release unnoticed. `scripts/with-libsodium.ps1` supplies the matching PDB.
+# `+crt-static` links the C runtime into the executable, so installing FTPeach
+# needs no Visual C++ Redistributable; C code built by dependencies' build
+# scripts follows the same model. LNK4098 and LNK4099 are errors so CRT or
+# symbol drift cannot enter a release unnoticed.

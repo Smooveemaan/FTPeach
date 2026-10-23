@@ -50,15 +50,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Download pinned libsodium archive
-        shell: powershell
-        run: Invoke-WebRequest -Uri 'https://github.com/jedisct1/libsodium/releases/download/1.0.22-RELEASE/libsodium-1.0.22-msvc.zip' -OutFile "$env:RUNNER_TEMP\libsodium.zip"
-
-      # Extracts libsodium into .tools, where every later build finds it.
-      - name: Prepare libsodium
-        shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/with-libsodium.ps1 -ArchivePath "$env:RUNNER_TEMP\libsodium.zip" -Command prepare
-
       # The profiles the tests put in place name the IIS FTP account and the
       # OpenSSH server.
       - name: Install IIS FTP and WebDAV test sites

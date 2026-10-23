@@ -12,7 +12,7 @@ Run commands from the repository root. TypeScript entry points run with Node's
 | `manual-tests/` | Manual file-type icon fixtures | [Instructions](manual-tests/README.md) |
 | `test-servers/` | The IIS FTP and WebDAV sites and the OpenSSH server the installer tests connect to, on the Windows host | `iis.ps1 install`, then `openssh.ps1 install`, in an elevated PowerShell |
 | `site/` | Builds the website for GitHub Pages and draws its link previews | `npm run site:build`, `npm run site:social` |
-| `with-libsodium.ps1` | Verified native library setup and Cargo/Tauri commands | `npm run rust:check`, `npm run build:tauri` |
+| `cargo.ts` | Cargo and Tauri commands that need their own target directory or more than one step | `npm run build:tauri`, `npm run rust:coverage` |
 | `clean.ps1` | Build output and cache cleanup | `npm run clean` |
 
 Checks report failures with a nonzero exit code. The boundary checkers also export

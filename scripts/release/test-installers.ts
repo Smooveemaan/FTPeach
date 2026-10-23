@@ -6,7 +6,7 @@
 // feature, so the tests can drive them over DevTools; without its variables
 // they run as the released program, updater included.
 //
-// Run through `npm run build:test-installers` (scripts/with-libsodium.ps1),
+// Run through `npm run build:test-installers` (scripts/cargo.ts),
 // which builds into .tools/installer-target. Writes .tools/installer-test:
 // build.json, the key, and per version the installer and the portable zip,
 // each with its signature.

@@ -40,15 +40,17 @@ the schema and SSH trust exceptions above still apply.
 
 For manual recovery, close FTPeach, copy the complete `%APPDATA%\FTPeach`
 directory, and inspect the newest `*.corrupt-*.bak` and `*.last-good.bak`.
-Restore a JSON file only from its matching last-good backup. Keep `vault.hold`
-and `vault.json` together; a vault snapshot or forgotten master password cannot
-be reconstructed from `sites.json`.
+Restore a JSON file only from its matching last-good backup. Keep `vault.dat`
+and `vault.json` together; a vault file or forgotten master password cannot
+be reconstructed from `sites.json`. `vault.hold.backup`, the vault of 0.5 and
+earlier, opens with the same `vault.json`: renamed back to `vault.hold` with
+`vault.dat` removed, it is moved again at the next unlock, as it stood then.
 
 When Windows Hello system unlock is enabled, `vault.json` also contains, for
 each computer it was enabled on, the wrapped vault data key and an identifier
 for a persisted key in the Microsoft Platform Crypto Provider. It contains no
 Windows PIN or biometric material. The persisted private key remains under
-that Windows user's platform provider; copying `vault.json` and `vault.hold`
+that Windows user's platform provider; copying `vault.json` and `vault.dat`
 to another account or machine does not copy that key. System unlock therefore
 counts as enabled only where the key can be opened: elsewhere the master
 password unlocks the vault and Windows Hello can be enabled again for that

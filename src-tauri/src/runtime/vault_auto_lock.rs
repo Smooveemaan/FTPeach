@@ -208,7 +208,7 @@ mod tests {
         let (root, vault) = open_vault().await;
         // Directories where the files were cannot be removed as files; both,
         // since one file alone would be a damaged vault, set aside instead.
-        for name in ["vault.hold", "vault.json"] {
+        for name in ["vault.dat", "vault.json"] {
             std::fs::remove_file(root.join(name)).unwrap();
             std::fs::create_dir(root.join(name)).unwrap();
         }

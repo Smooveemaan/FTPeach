@@ -3,6 +3,7 @@
 // tests share.
 import { expect, type Page } from '@playwright/test';
 import type { RunningApp } from './app.ts';
+import { confirmationsShown } from './windows.ts';
 
 export type Answer = { ok: true; value: unknown } | { ok: false; error: unknown };
 
@@ -95,6 +96,7 @@ export async function openConfirmations(app: RunningApp, count: number, text: st
   for (const confirmation of pages) {
     await expect(confirmation.locator('body')).toContainText(text, { timeout: 15_000 });
   }
+  await confirmationsShown(app.pid(), count);
   return pages;
 }
 

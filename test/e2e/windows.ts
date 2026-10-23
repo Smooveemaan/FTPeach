@@ -2,6 +2,7 @@
 // close message Alt+F4 sends, for what a page cannot see or do about itself.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { expect } from '@playwright/test';
 
 export interface NativeWindow {
   handle: number;
@@ -28,6 +29,18 @@ export const nativeWindows = (pid: number): NativeWindow[] =>
     .split(/\r?\n/)
     .filter(Boolean)
     .map((line) => JSON.parse(line) as NativeWindow);
+
+/**
+ * Waits until `count` confirmation windows are on screen. Until then a window
+ * is still being sized to its question, and a click can land beside the
+ * button it aimed at; a person cannot click it before it shows.
+ */
+export const confirmationsShown = (pid: number, count = 1) =>
+  expect
+    .poll(() => nativeWindows(pid).filter((window) => window.owned && window.visible).length, {
+      timeout: 15_000,
+    })
+    .toBeGreaterThanOrEqual(count);
 
 /** Asks a window to close, as Alt+F4 would. */
 export const closeWindow = (pid: number, handle: number) => {

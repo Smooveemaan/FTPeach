@@ -19,6 +19,7 @@ import { createServer, connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { chromium, test as base, type Browser, type Page } from '@playwright/test';
+import { confirmationsShown } from './windows.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 export const APP_PATH =
@@ -45,7 +46,7 @@ export interface RunningApp {
   savedDir: string;
   /** How the test build answers the next Choose folder dialogs and key or certificate pickers: that path, or `null` to cancel. */
   pick: (_picked: string | null) => void;
-  /** The next window the application opens besides the main one, such as a security confirmation. */
+  /** The next window the application opens besides the main one, a security confirmation, once it is on screen. */
   otherWindow: () => Promise<Page>;
   /** Whether the application process is still alive. */
   running: () => boolean;
@@ -418,16 +419,19 @@ export async function launchApp(
     exe,
     savedDir,
     pick: (picked) => writeFileSync(pickFile, picked ?? ''),
-    otherWindow: () =>
-      waitFor(
+    otherWindow: async () => {
+      const other = await waitFor(
         'another window',
         async () =>
           run
             .browser!.contexts()
             .flatMap((context) => context.pages())
-            .find((other) => other !== app.page),
+            .find((page) => page !== app.page),
         30,
-      ),
+      );
+      await confirmationsShown(run.child!.pid!);
+      return other;
+    },
     running: () => run.child?.exitCode === null,
     pid: () => run.child!.pid!,
     log: () => appLogs(base, 200_000),

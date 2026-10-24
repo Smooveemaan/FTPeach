@@ -137,17 +137,16 @@ export function renderGuide(markdown: string, slug: string, revision = 'master')
       // A guide screenshot comes in both themes (name.png dark, name-light.png light); both load with
       // the page and CSS shows the reader's, so a theme switch never waits for a download.
       image({ href, text, title }) {
-        const img = (src: string, extra: string) => {
-          const size = /^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(src)
-            ? pngSize(new URL(`../../site/${src.slice(3)}`, import.meta.url))
-            : undefined;
-          return `<img${extra} src="${escapeHtml(src)}" alt="${escapeHtml(text)}"${size ? ` width="${size.width}" height="${size.height}"` : ''}${title ? ` title="${escapeHtml(title)}"` : ''}>`;
-        };
-        if (!/^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(href)) return img(href, '');
+        const img = (src: string, extra = '', size?: { width: number; height: number }) =>
+          `<img${extra} src="${escapeHtml(src)}" alt="${escapeHtml(text)}"${size ? ` width="${size.width}" height="${size.height}"` : ''}${title ? ` title="${escapeHtml(title)}"` : ''}>`;
+        if (!/^\.\.\/images\/guide\/[a-z0-9-]+\.png$/.test(href)) return img(href);
+        const file = (src: string) => new URL(`../../site/${src.slice(3)}`, import.meta.url);
         const light = href.replace(/\.png$/, '-light.png');
-        if (!existsSync(new URL(`../../site/${light.slice(3)}`, import.meta.url)))
-          throw new Error(`${href} has no light screenshot ${light}`);
-        return img(href, ' class="shot-dark"') + img(light, ' class="shot-light"');
+        if (!existsSync(file(light))) throw new Error(`${href} has no light screenshot ${light}`);
+        return (
+          img(href, ' class="shot-dark"', pngSize(file(href))) +
+          img(light, ' class="shot-light"', pngSize(file(light)))
+        );
       },
       blockquote({ tokens }) {
         const body = this.parser.parse(tokens);

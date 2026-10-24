@@ -92,6 +92,26 @@ again and re-enter or import the credentials you still need.
 <!-- verified-by: pr src-tauri/src/security/sensitive_tests.rs::vault_reset_requires_typed_confirmation -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a vault reset tells the owner that the saved secrets are gone -->
 
+## If FTPeach says the vault is damaged
+
+The vault keeps saved passwords in two files. If one of them goes missing, for
+example when a backup brought back only part of the FTPeach folder or a cleanup
+program removed a file, the passwords saved in the vault cannot be opened.
+**Settings > Security** then says the vault is damaged and offers **Start over**
+instead of the usual controls. This is how FTPeach handles a missing file safely.
+
+[![Security settings saying the vault is damaged, with the Start over button.](../../site/images/guide/vault-damaged.png)](../../site/images/guide/vault-damaged.png)
+
+1. Select **Start over** and confirm. The remaining vault file is set aside
+   with `.damaged` added to its name, not deleted, in case the missing file
+   turns up in a backup.
+2. Set up protection again, as in [Set up a master password](#set-up-a-master-password).
+3. Enter the passwords of your bookmarks again, or import them from a
+   password-protected export.
+
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a damaged vault offers only to start over, through the reset -->
+<!-- verified-by: pr src-tauri/src/security/vault_tests.rs::a_damaged_vault_is_set_aside_and_a_new_one_can_be_made -->
+
 ## Moving bookmarks and passwords to another computer
 
 1. On the old computer, open **File > Export Settings** or **Export** in

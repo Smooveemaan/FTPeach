@@ -450,6 +450,26 @@ mod tests {
         assert_eq!(line, format!("{UNENCODABLE_REPLY}\r\n"));
     }
 
+    #[tokio::test]
+    async fn a_server_that_hangs_up_ends_the_relayed_connection() {
+        let server = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = server.local_addr().unwrap();
+        let fake = tokio::spawn(async move {
+            let (mut stream, _) = server.accept().await.unwrap();
+            stream.write_all(b"220 bye\r\n").await.unwrap();
+        });
+        let tcp = TcpStream::connect(address).await.unwrap();
+        let mut client = start(tcp, encoding_rs::WINDOWS_1251, None).await.unwrap();
+        fake.await.unwrap();
+        // The client sends nothing, so only the server's side can end it.
+        let mut seen = Vec::new();
+        tokio::time::timeout(Duration::from_secs(5), client.read_to_end(&mut seen))
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(seen, b"220 bye\r\n");
+    }
+
     #[test]
     fn iac_doubles_and_undoubles() {
         assert_eq!(double_iac(b"a\xffb\xff"), b"a\xff\xffb\xff\xff");

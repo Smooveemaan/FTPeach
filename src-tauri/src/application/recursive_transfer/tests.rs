@@ -1961,6 +1961,40 @@ async fn a_walk_says_queued_while_its_next_step_waits_for_a_transfer_connection(
     std::fs::remove_dir_all(root).unwrap();
 }
 
+/// A pause cannot soften a stop under way, and an id that is no walk's is ignored.
+#[test]
+fn a_pause_after_a_stop_keeps_it_a_stop() {
+    let id = uuid::Uuid::new_v4().to_string();
+    let control = Control::default();
+    OPERATIONS
+        .lock()
+        .unwrap()
+        .insert(id.clone(), control.clone());
+    cancel(&id, CancelIntent::Stop);
+    cancel(&id, CancelIntent::Pause);
+    OPERATIONS.lock().unwrap().remove(&id);
+    assert!(control.token.is_cancelled());
+    assert!(!control.pause.load(Ordering::SeqCst));
+
+    cancel("not an operation id", CancelIntent::Stop);
+    assert!(
+        !CANCELLED_BEFORE_START
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|(id, _)| id == "not an operation id")
+    );
+}
+
+/// Without a paused walk's journal nothing can be taken back, and the stop says so.
+#[tokio::test]
+async fn discarding_a_walk_with_no_journal_says_the_results_may_remain() {
+    let error = discard(&Sessions::default(), &uuid::Uuid::new_v4().to_string())
+        .await
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::CleanupIncomplete);
+}
+
 /// A closed connection stops, not pauses, the walks that use it, and only them.
 #[test]
 fn closing_a_connection_stops_only_the_walks_on_it() {

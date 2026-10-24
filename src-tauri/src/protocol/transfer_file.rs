@@ -442,15 +442,12 @@ pub async fn unless_changed<F: Future<Output = SourceIdentity>>(
         ));
     }
     if written.is_ok() && versions.is_none() {
-        log::warn!(
-            "{}: {}",
-            before.remote_path,
-            if sizes.is_some() {
-                "the server gives no version, so only the size shows it did not change during the download"
-            } else {
-                "the server did not answer after the download, so it is not known whether the file changed meanwhile"
-            }
-        );
+        let why = if sizes.is_some() {
+            "the server gives no version, so only the size shows it did not change during the download"
+        } else {
+            "the server did not answer after the download, so it is not known whether the file changed meanwhile"
+        };
+        log::warn!("{}: {why}", before.remote_path);
     }
     written
 }

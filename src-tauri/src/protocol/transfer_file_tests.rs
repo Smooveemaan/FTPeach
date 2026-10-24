@@ -696,6 +696,8 @@ async fn a_read_is_kept_only_while_the_server_still_describes_the_same_file() {
     );
     // No answer the second time, or only part of it: a whole read is kept.
     assert_eq!(unless_changed(Ok(5), &before, silent).await.unwrap(), 5);
+    let same_size = || async { identity(Some(5), None) };
+    assert_eq!(unless_changed(Ok(5), &before, same_size).await.unwrap(), 5);
     let version_only = || async { identity(None, Some("v1")) };
     assert_eq!(
         unless_changed(Ok(5), &before, version_only).await.unwrap(),

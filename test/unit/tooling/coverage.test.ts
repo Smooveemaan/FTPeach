@@ -37,6 +37,17 @@ test('changed-line floor catches an untested addition hidden by whole-file cover
   assert.match(checkFloors(changed, floors)[0]!, /0\.00% below its floor of 98%/);
 });
 
+test('a local margin fails a file that only just meets its floor', () => {
+  const file = 'src/shared/lang.ts';
+  const report = parseLcov(`SF:${file}\nLF:1000\nLH:855\nend_of_record\n`);
+  assert.deepEqual(checkFloors(report, { [file]: 85 }), []);
+  assert.match(
+    checkFloors(report, { [file]: 85 }, 1)[0]!,
+    /85\.50% below its floor of 85% plus the local margin of 1/,
+  );
+  assert.deepEqual(checkFloors(report, { [file]: 84 }, 1), []);
+});
+
 test('code only the tests compile is left out of changed Rust lines', () => {
   const source = [
     'pub fn shipped() -> u8 {', // 1

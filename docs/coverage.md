@@ -49,6 +49,11 @@ never loaded with zero lines, which must not pass as 100%), so a rename has to m
 below. The JSON file records the current floors: slack for a harmless refactor, not for a lost test. There is deliberately no floor for the
 whole project and no 100% target.
 
+Off CI every floor, whole-file and changed-line, needs one point more than it says. A line that
+runs only when two parallel tests happen to overlap can run on one machine and not on another, so
+CI's runner may measure a little less than a local run; a file just at its floor then fails
+locally first rather than after a push. CI checks the floors as written.
+
 A line percentage does not prove a guarantee. The scenarios that do — no-replace, keeping the old
 target, checking the source before delete, recovering a dirty file, failed envelopes, cancellation
 and settling — are checked by the end-to-end and server suites a release waits for

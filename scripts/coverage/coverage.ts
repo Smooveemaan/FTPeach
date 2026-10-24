@@ -114,9 +114,9 @@ const shown = (counts: Counts) =>
  * Floor failures: a listed file missing from its report, with no measured lines, or below its
  * line floor. No measured lines is a failure, not 100%: the unit report lists every production
  * file the Node suite never loaded with zero lines, and a floored module that stops being
- * loaded must not pass as fully covered.
+ * loaded must not pass as fully covered. `margin` points are asked on top of each floor.
  */
-export function checkFloors(report: Report, floors: Record<string, number>): string[] {
+export function checkFloors(report: Report, floors: Record<string, number>, margin = 0): string[] {
   const problems: string[] = [];
   for (const [file, floor] of Object.entries(floors)) {
     const coverage = report.get(file);
@@ -124,9 +124,10 @@ export function checkFloors(report: Report, floors: Record<string, number>): str
       problems.push(`${file}: not in the report (renamed, deleted or no longer loaded?)`);
     else if (coverage.lines.found === 0)
       problems.push(`${file}: no measured lines (no longer loaded by this suite?)`);
-    else if (percent(coverage.lines) < floor)
+    else if (percent(coverage.lines) < floor + margin)
       problems.push(
-        `${file}: lines ${percent(coverage.lines).toFixed(2)}% below its floor of ${floor}%`,
+        `${file}: lines ${percent(coverage.lines).toFixed(2)}% below its floor of ${floor}%` +
+          (margin ? ` plus the local margin of ${margin}` : ''),
       );
   }
   return problems;
@@ -241,6 +242,9 @@ function main(): void {
   );
   const sections: string[] = [];
   const problems: string[] = [];
+  // Off CI every floor needs a point of headroom: a file just at its floor fails here, not on CI's
+  // runner, whose timing can leave a line or two unrun that ran here (docs/coverage.md).
+  const margin = process.env.CI ? 0 : 1;
   // Off CI, the last pushed master: what CI compares a push with.
   const base = process.env.COVERAGE_DIFF_BASE?.trim() || (process.env.CI ? '' : 'origin/master');
   // Resolve before running tests. An unavailable base must fail, never skip the gate.
@@ -314,7 +318,9 @@ function main(): void {
       ].join('\n'),
     );
     problems.push(
-      ...checkFloors(changed, changedFloors).map((problem) => `${suite} changed lines: ${problem}`),
+      ...checkFloors(changed, changedFloors, margin).map(
+        (problem) => `${suite} changed lines: ${problem}`,
+      ),
     );
   }
 
@@ -342,7 +348,7 @@ function main(): void {
         `${ignored} \`#[ignore]\` tests (live servers, second volume, privileges) do not run here; docs/coverage.md lists them and how to run each.`,
       ]),
     );
-    problems.push(...checkFloors(report, floors.rust));
+    problems.push(...checkFloors(report, floors.rust, margin));
     checkChanged('rust', report);
   } else {
     fs.rmSync(path.join(out, 'unit'), { recursive: true, force: true });
@@ -381,7 +387,7 @@ function main(): void {
         `Skipped or todo tests: ${junit.match(/<skipped/g)?.length ?? 0}.`,
       ]),
     );
-    problems.push(...checkFloors(unit, floors.unit));
+    problems.push(...checkFloors(unit, floors.unit, margin));
     checkChanged('unit', unit);
 
     const component = parseIstanbulSummary(
@@ -399,7 +405,7 @@ function main(): void {
         `Skipped or todo tests: ${results.numPendingTests + results.numTodoTests}.`,
       ]),
     );
-    problems.push(...checkFloors(component, floors.component));
+    problems.push(...checkFloors(component, floors.component, margin));
     if (baseCommit)
       checkChanged(
         'component',

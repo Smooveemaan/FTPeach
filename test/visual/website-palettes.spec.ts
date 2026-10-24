@@ -320,6 +320,24 @@ test('a theme switch after the load downloads nothing and fades the page as one'
   ]);
 });
 
+test('a theme switch before the other screenshot arrives waits for it only briefly', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  // Never answered: a phone on a slow network that clicks before the picture came.
+  await openSite(page, () => page.route('**/ftpeach-light.png', () => {}));
+  const took = await page.evaluate(async () => {
+    const started = performance.now();
+    document.getElementById('theme')!.click();
+    while (document.documentElement.classList.contains('theme-switch'))
+      await new Promise(requestAnimationFrame);
+    return performance.now() - started;
+  });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  // Half a second of waiting and the fade, far from the 4 s Chrome holds a transition.
+  expect(took).toBeLessThan(1500);
+});
+
 test('the header reaches every page at every width and reduced motion skips scrolling and fades', async ({
   page,
 }) => {

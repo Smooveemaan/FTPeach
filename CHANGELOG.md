@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- A bookmark that signs in with a password no longer fails with "The key or certificate file was not found" because of a key or certificate file chosen once and deleted since.
 - If turning on the master password fails, for example on a full disk, you can try again without deleting files by hand.
 - A damaged password vault no longer blocks Settings → Security: **Start over** sets its remaining file aside, and protection can be set up again.
 - An FTP upload set not to replace files no longer replaces a file another program saved under the same name at the last moment.

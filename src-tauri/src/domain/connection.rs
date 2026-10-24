@@ -145,6 +145,22 @@ impl ServerSettings {
         ])
     }
 
+    /// The files a connection reads: the private key of an SFTP key login,
+    /// the CA bundle of a verified FTPS or WebDAV connection. A path still
+    /// saved for an option that is off is not read, so it is not listed.
+    pub fn files_read(&self) -> impl Iterator<Item = &str> {
+        let key = self.protocol == Protocol::Sftp && self.use_key_auth;
+        let ca =
+            matches!(self.protocol, Protocol::Ftps | Protocol::Webdav) && !self.allow_invalid_cert;
+        [
+            (key, self.key_path.as_str()),
+            (ca, self.ca_cert_path.as_str()),
+        ]
+        .into_iter()
+        .filter(|&(read, path)| read && !path.is_empty())
+        .map(|(_, path)| path)
+    }
+
     /// The keys [`Self::to_json`] writes.
     pub const KEYS: [&str; 14] = [
         "protocol",
@@ -259,6 +275,29 @@ mod tests {
 
     fn read(value: Value) -> Result<ServerSettings> {
         ServerSettings::from_json(value.as_object().unwrap())
+    }
+
+    #[test]
+    fn only_the_files_a_connection_reads_are_listed() {
+        let files = |value: Value| {
+            let mut value = value;
+            value["keyPath"] = json!("C:/key");
+            value["caCertPath"] = json!("C:/ca.pem");
+            let server = read(value).unwrap();
+            server.files_read().map(str::to_owned).collect::<Vec<_>>()
+        };
+        assert_eq!(
+            files(json!({"protocol": "sftp", "useKeyAuth": true})),
+            ["C:/key"]
+        );
+        // A key or CA path left from an option switched off since.
+        assert!(files(json!({"protocol": "sftp"})).is_empty());
+        assert!(files(json!({"protocol": "ftp"})).is_empty());
+        assert!(files(json!({"protocol": "ftps", "allowInvalidCert": true})).is_empty());
+        assert_eq!(files(json!({"protocol": "ftps"})), ["C:/ca.pem"]);
+        assert_eq!(files(json!({"protocol": "webdav"})), ["C:/ca.pem"]);
+        let no_key = read(json!({"protocol": "sftp", "useKeyAuth": true})).unwrap();
+        assert_eq!(no_key.files_read().count(), 0);
     }
 
     #[test]

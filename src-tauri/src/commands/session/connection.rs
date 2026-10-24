@@ -69,17 +69,11 @@ pub async fn session_connect(
     // A private key or a CA bundle is read from disk by the protocol backend,
     // which has no way to ask about provenance. An address on a share the
     // user never chose is refused here, before the file is opened.
-    for path in [&server.key_path, &server.ca_cert_path] {
-        if !path.is_empty() {
-            approved_paths.preflight(std::path::Path::new(path))?;
-            if std::fs::metadata(path)
-                .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
-            {
-                return Err(CommandError::new(
-                    ErrorCode::CredentialFileMissing,
-                    path.as_str(),
-                ));
-            }
+    for path in server.files_read() {
+        approved_paths.preflight(std::path::Path::new(path))?;
+        if std::fs::metadata(path).is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+        {
+            return Err(CommandError::new(ErrorCode::CredentialFileMissing, path));
         }
     }
     let outcome = session_service::connect(

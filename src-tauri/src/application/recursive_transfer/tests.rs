@@ -1960,3 +1960,29 @@ async fn a_walk_says_queued_while_its_next_step_waits_for_a_transfer_connection(
     assert!(report.ok, "{:?}", report.errors);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+/// A closed connection stops, not pauses, the walks that use it, and only them.
+#[test]
+fn closing_a_connection_stops_only_the_walks_on_it() {
+    let closed = uuid::Uuid::new_v4().to_string();
+    let control = |connection: &str| Control {
+        pause: Arc::new(AtomicBool::new(true)),
+        connections: vec![connection.to_owned()],
+        ..Control::default()
+    };
+    let (on_it, elsewhere) = (control(&closed), control(&uuid::Uuid::new_v4().to_string()));
+    let ids = [uuid::Uuid::new_v4(), uuid::Uuid::new_v4()].map(|id| id.to_string());
+    {
+        let mut operations = OPERATIONS.lock().unwrap();
+        operations.insert(ids[0].clone(), on_it.clone());
+        operations.insert(ids[1].clone(), elsewhere.clone());
+    }
+    close_connection(&closed);
+    for id in &ids {
+        OPERATIONS.lock().unwrap().remove(id);
+    }
+    assert!(on_it.token.is_cancelled());
+    assert!(!on_it.pause.load(Ordering::SeqCst));
+    assert!(!elsewhere.token.is_cancelled());
+    assert!(elsewhere.pause.load(Ordering::SeqCst));
+}

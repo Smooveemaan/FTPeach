@@ -694,6 +694,13 @@ async fn a_read_is_kept_only_while_the_server_still_describes_the_same_file() {
         code(unless_changed(short(), &before, size_only).await),
         ErrorCode::RemoteChanged
     );
+    // No answer the second time, or only part of it: a whole read is kept.
+    assert_eq!(unless_changed(Ok(5), &before, silent).await.unwrap(), 5);
+    let version_only = || async { identity(None, Some("v1")) };
+    assert_eq!(
+        unless_changed(Ok(5), &before, version_only).await.unwrap(),
+        5
+    );
     assert_eq!(
         unless_changed(Ok(5), &identity(None, None), never)
             .await

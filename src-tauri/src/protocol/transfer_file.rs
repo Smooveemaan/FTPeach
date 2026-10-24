@@ -414,7 +414,8 @@ pub fn validate_resume_offset(start: u64, expected: Option<u64>) -> Result<()> {
 /// The transport's outcome, or a `RemoteChanged` failure when the file on the
 /// server is no longer the one `before` described. Only a whole read and a
 /// read of the wrong length can hide a change, so only they ask the server
-/// again; a failed read is believed only when the server answered.
+/// again. A change is reported only from what the server answered both
+/// times: an answer missing the second time keeps the outcome as it is.
 pub async fn unless_changed<F: Future<Output = SourceIdentity>>(
     written: Result<u64>,
     before: &SourceIdentity,
@@ -430,25 +431,28 @@ pub async fn unless_changed<F: Future<Output = SourceIdentity>>(
         return written;
     }
     let after = after().await;
-    if written.is_err() && after.size.is_none() || same_file(before, &after) {
-        return written;
+    let versions = before.version.as_ref().zip(after.version.as_ref());
+    let sizes = before.size.zip(after.size);
+    if versions.is_some_and(|(before, after)| before != after)
+        || sizes.is_some_and(|(before, after)| before != after)
+    {
+        return Err(fail(
+            ErrorCode::RemoteChanged,
+            "The file on the server changed while it was downloading",
+        ));
     }
-    Err(fail(
-        ErrorCode::RemoteChanged,
-        "The file on the server changed while it was downloading",
-    ))
-}
-
-fn same_file(before: &SourceIdentity, after: &SourceIdentity) -> bool {
-    if before.version.is_none() || after.version.is_none() {
+    if written.is_ok() && versions.is_none() {
         log::warn!(
-            "{}: the server gives no version, so only the size shows it did not change during the download",
-            before.remote_path
+            "{}: {}",
+            before.remote_path,
+            if sizes.is_some() {
+                "the server gives no version, so only the size shows it did not change during the download"
+            } else {
+                "the server did not answer after the download, so it is not known whether the file changed meanwhile"
+            }
         );
-    } else if before.version != after.version {
-        return false;
     }
-    before.size == after.size
+    written
 }
 
 pub fn validate_length(actual: u64, expected: Option<u64>) -> Result<()> {

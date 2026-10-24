@@ -166,7 +166,8 @@ Before a downloaded file takes its name, FTPeach asks the server again for its
 size and version. If they changed while the file was downloading, it reports
 that, keeps the file you had and starts the next try from the beginning. When
 the server gives no version, only the size is compared, and a change of the
-same size can go unnoticed.
+same size can go unnoticed. If the server does not answer the second time,
+the downloaded file is kept and the log says the check could not be made.
 
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::a_file_saved_on_the_server_during_the_download_is_not_put_in_place -->
 <!-- verified-by: pr src-tauri/src/protocol/sftp_tests.rs::a_file_saved_on_the_server_during_the_download_is_not_put_in_place -->

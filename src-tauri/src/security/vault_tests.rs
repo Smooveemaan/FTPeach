@@ -369,7 +369,7 @@ async fn the_single_credential_of_earlier_versions_is_still_read() {
 
 /// A vault FTPeach 0.5.1 wrote with Stronghold 2.1 (test KDF parameters),
 /// copied to a fresh folder, and the computer whose Windows Hello it knows.
-/// `credential.txt` names that computer's key.
+/// `hello-key-name.txt` names that computer's key.
 fn vault_of_0_5() -> (PathBuf, Vault, Arc<ComputerKeys>) {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/security/testdata/vault-0.5.1");
     let dir = std::env::temp_dir().join(format!("ftpeach-vault-0.5-{}", uuid::Uuid::new_v4()));
@@ -378,7 +378,7 @@ fn vault_of_0_5() -> (PathBuf, Vault, Arc<ComputerKeys>) {
         std::fs::copy(fixture.join(name), dir.join(name)).unwrap();
     }
     let (vault, keys) = computer(&dir);
-    let credential = std::fs::read_to_string(fixture.join("credential.txt")).unwrap();
+    let credential = std::fs::read_to_string(fixture.join("hello-key-name.txt")).unwrap();
     keys.0.lock().unwrap().insert(credential.trim().to_owned());
     (dir, vault, keys)
 }

@@ -432,19 +432,15 @@ impl Vault {
     /// snapshot is then set aside; a move cut short is finished here too.
     async fn load(&self, data_key: &[u8]) -> Result<Secrets> {
         let secrets = match tokio::fs::read(self.data_path()).await {
-            Ok(file) => vault_file::open(&file, data_key)?,
+            Ok(file) => match vault_file::open(&file, data_key) {
+                Ok(secrets) => secrets,
+                // A vault.dat of an earlier 0.6 run beside a vault 0.5 set up
+                // again after a downgrade: the snapshot is the vault now.
+                Err(_) if self.legacy_path().is_file() => self.move_legacy(data_key).await?,
+                Err(error) => return Err(error),
+            },
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                let old = tokio::fs::read(self.legacy_path())
-                    .await
-                    .context("reading vault")?;
-                let mut secrets = stronghold_snapshot::read(&old, data_key)
-                    .context("reading the vault of an earlier version")?;
-                anyhow::ensure!(
-                    secrets.remove(CHECK_KEY).as_deref().map(Vec::as_slice) == Some(CHECK_VALUE),
-                    "damaged vault"
-                );
-                self.commit(&secrets, data_key).await?;
-                secrets
+                self.move_legacy(data_key).await?
             }
             Err(error) => return Err(error).context("reading vault"),
         };
@@ -453,6 +449,21 @@ impl Vault {
             // is retried at the next unlock and changes nothing meanwhile.
             let _ = Self::replace_file(&self.legacy_path(), &self.legacy_backup_path());
         }
+        Ok(secrets)
+    }
+
+    /// The Stronghold snapshot's secrets, written to `vault.dat`.
+    async fn move_legacy(&self, data_key: &[u8]) -> Result<Secrets> {
+        let old = tokio::fs::read(self.legacy_path())
+            .await
+            .context("reading vault")?;
+        let mut secrets = stronghold_snapshot::read(&old, data_key)
+            .context("reading the vault of an earlier version")?;
+        anyhow::ensure!(
+            secrets.remove(CHECK_KEY).as_deref().map(Vec::as_slice) == Some(CHECK_VALUE),
+            "damaged vault"
+        );
+        self.commit(&secrets, data_key).await?;
         Ok(secrets)
     }
 

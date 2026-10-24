@@ -513,6 +513,33 @@ async fn a_move_cut_short_keeps_the_new_file_and_finishes() {
     let _ = std::fs::remove_dir_all(dir);
 }
 
+/// 0.6 moved the vault, 0.5 came back and set one up anew, then 0.6 again:
+/// the old vault.dat does not open with the new key, the new snapshot does.
+#[tokio::test]
+async fn a_vault_set_up_again_by_0_5_replaces_a_stale_new_file() {
+    let (dir, vault, _keys) = vault_of_0_5();
+    let mut stale = Secrets::new();
+    stale.insert(
+        b"site:site-1:password".to_vec(),
+        zeroize::Zeroizing::new(b"stale".to_vec()),
+    );
+    std::fs::write(
+        vault.data_path(),
+        crate::security::vault_file::seal(&stale, &[7; 32]).unwrap(),
+    )
+    .unwrap();
+
+    vault.unlock(PASSWORD).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+    assert!(!dir.join("vault.hold").exists());
+    assert!(dir.join("vault.hold.backup").is_file());
+    vault.lock().await;
+    vault.unlock(PASSWORD).await.unwrap();
+    holds_what_0_5_saved(&vault).await;
+    vault.lock().await;
+    let _ = std::fs::remove_dir_all(dir);
+}
+
 /// A damaged 0.5 snapshot does not open, is not a wrong password, and is
 /// left exactly as it was, with nothing written beside it.
 #[tokio::test]

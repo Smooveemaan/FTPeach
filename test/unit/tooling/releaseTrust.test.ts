@@ -118,7 +118,7 @@ test('register rows and deny.toml ids are read by column', () => {
     id: 'RUSTSEC-2023-0071',
     kind: 'vulnerability',
     owner: '@o',
-    added: '2026-08-30',
+    reviewed: '2026-08-30',
     reviewBy: '2026-11-30',
     status: 's',
     control: 'c',

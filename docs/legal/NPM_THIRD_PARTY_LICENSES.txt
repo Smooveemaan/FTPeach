@@ -2,7 +2,7 @@ FTPeach npm runtime dependency licenses
 ========================================
 
 Generated from package-lock.json. Do not edit manually.
-package-lock.json SHA-256: 0f3c7b445d681ae372d6ebe2af5aaed7b351fedc0a28d05afb1eadb6a6117133
+package-lock.json SHA-256: 60274e6004ed0b68adbaa4f9384606c7da19f61ddcc738569c89f8c8daab4764
 
 @babel/runtime 7.29.7
 =====================

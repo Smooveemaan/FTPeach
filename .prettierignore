@@ -9,7 +9,10 @@ vendor/
 .cursor/
 .windsurf/
 .aider/
+.taste-skill/
 .vs/
+# Files as an earlier FTPeach wrote them, kept byte for byte.
+src-tauri/src/security/testdata/
 .tmp/
 .local/
 target/

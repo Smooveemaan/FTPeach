@@ -181,6 +181,16 @@ test.describe('touch preview', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   test('a phone can select a palette and its light appearance', async ({ page }, info) => {
     await openSite(page);
+    // The section rises as it is scrolled to, so arrows a tap scrolls to are
+    // still moving; Playwright then tries other scroll positions, one with the
+    // arrows under the sticky header. Scrolled to the section, it has risen.
+    const themes = page.locator('#themes');
+    await themes.evaluate((el) => el.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    await expect
+      .poll(() =>
+        themes.evaluate((el) => Math.abs(new DOMMatrix(getComputedStyle(el).transform).m42)),
+      )
+      .toBe(0);
     await page.getByRole('button', { name: 'Previous color scheme' }).tap();
     await expect(page.locator('#palette-name')).toHaveText('Rose');
     await page.getByRole('button', { name: 'Light', exact: true }).tap();

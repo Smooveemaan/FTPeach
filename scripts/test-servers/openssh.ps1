@@ -54,6 +54,11 @@ $Capability = 'OpenSSH.Server~~~~0.0.1.0'
 $Sshd = Join-Path $env:WINDIR 'System32\OpenSSH\sshd.exe'
 $SshKeygen = Join-Path $env:WINDIR 'System32\OpenSSH\ssh-keygen.exe'
 
+function Test-Listening {
+  $client = New-Object Net.Sockets.TcpClient
+  try { $client.Connect('127.0.0.1', $Port); $true } catch { $false } finally { $client.Close() }
+}
+
 function Assert-Administrator {
   $principal = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
   if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -156,7 +161,9 @@ LogLevel VERBOSE
   try {
     Restart-Service $Service
     $deadline = (Get-Date).AddSeconds(15)
-    while (-not (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)) {
+    # A connection, not the TCP table: on some Windows 11 builds the table
+    # shows a listening socket in no state for a while.
+    while (-not (Test-Listening)) {
       if ((Get-Date) -gt $deadline) { throw "sshd is not listening on $Port" }
       Start-Sleep -Milliseconds 200
     }

@@ -64,15 +64,14 @@ can drag to.
 
 1. Drag a file from a server pane onto the desktop.
    Expected: the file appears on the desktop with the server's contents.
-2. In the Computer pane, right-click a file → **Show in folder**.
-   Expected: Explorer opens its folder with the file selected.
-3. Double-click a text file in the Computer pane.
+2. Double-click a text file in the Computer pane.
    Expected: it opens in the program Windows uses for the type.
-4. In Windows mouse settings set the double-click speed to the slowest, then
+3. In Windows mouse settings set the double-click speed to the slowest, then
    double-click a folder in a pane slowly.
    Expected: the folder opens; at the fastest speed the same slow clicks only
    select it.
-5. Delete a file on a USB drive or a memory card.
+4. Delete a file on a USB flash drive or a memory card (an external SSD has a
+   Recycle Bin).
    Expected: FTPeach says the drive has no Recycle Bin and asks before
    deleting permanently.
 

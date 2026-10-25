@@ -1,7 +1,7 @@
 // Commands invoked from a window the way its own page script would, and the
 // confirmation windows the backend opens for them: what the security and vault
 // tests share.
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import type { RunningApp } from './app.ts';
 import { confirmationsShown } from './windows.ts';
 
@@ -99,6 +99,16 @@ export async function openConfirmations(app: RunningApp, count: number, text: st
   await confirmationsShown(app.pid(), count);
   return pages;
 }
+
+/**
+ * Clicks a button that answers a confirmation. Answering closes the window,
+ * which can be gone before the click returns (seen on a slow VM); a page the
+ * click closed is then the answer, not a failure.
+ */
+export const clickAnswer = (button: Locator) =>
+  button.click().catch((error: unknown) => {
+    if (!button.page().isClosed()) throw error;
+  });
 
 export const RESET_MESSAGE =
   'Every saved password and SSH key passphrase will be permanently deleted.';

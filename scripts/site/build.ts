@@ -115,16 +115,20 @@ async function main() {
     recursive: true,
   });
   await cp(path.join(root, 'site/fonts'), path.join(out, 'fonts'), { recursive: true });
-  for (const file of [
-    'robots.txt',
-    'palettes.js',
-    'styles.css',
-    'guide.css',
-    'theme-init.js',
-    'guide.js',
-  ]) {
+  for (const file of ['robots.txt', 'palettes.js', 'guide.css', 'theme-init.js', 'guide.js']) {
     await copyFile(path.join(root, 'site', file), path.join(out, file));
   }
+  // The main font rides inside the stylesheet, so no reload ever draws the page in a stand-in font first.
+  const font = "url('fonts/albert-sans-latin.woff2')";
+  const styles = await readFile(path.join(root, 'site/styles.css'), 'utf8');
+  if (!styles.includes(font)) throw new Error(`site/styles.css no longer loads ${font}`);
+  const data = (await readFile(path.join(root, 'site/fonts/albert-sans-latin.woff2'))).toString(
+    'base64',
+  );
+  await writeFile(
+    path.join(out, 'styles.css'),
+    styles.replace(font, `url(data:font/woff2;base64,${data})`),
+  );
   console.log(
     `Built dist-site for ${release.tag_name}: ${stats.stars} stars, ${stats.downloads} downloads`,
   );

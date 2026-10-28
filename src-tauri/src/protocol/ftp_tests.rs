@@ -1235,6 +1235,21 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         }
     }
 
+    /// An address of this machine other than 127.0.0.1. macOS answers only
+    /// 127.0.0.1 on loopback, so there it is the machine's own network
+    /// address; a UDP `connect` picks it without sending anything.
+    fn foreign_source() -> std::net::SocketAddr {
+        if cfg!(target_os = "macos") {
+            let probe = std::net::UdpSocket::bind("0.0.0.0:0").unwrap();
+            probe
+                .connect("192.0.2.1:9")
+                .expect("macOS needs a network address for this test");
+            std::net::SocketAddr::new(probe.local_addr().unwrap().ip(), 0)
+        } else {
+            "127.0.0.2:0".parse().unwrap()
+        }
+    }
+
     /// Active mode: the listener is open to anyone, so a data connection
     /// from another address must be ignored, not taken for the server's.
     #[tokio::test]
@@ -1273,7 +1288,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                         let target = data.unwrap();
                         // Someone else answers first, from another address.
                         let foreign = tokio::net::TcpSocket::new_v4().unwrap();
-                        foreign.bind("127.0.0.2:0".parse().unwrap()).unwrap();
+                        foreign.bind(foreign_source()).unwrap();
                         if let Ok(mut stream) = foreign.connect(target).await {
                             let _ = stream
                                 .write_all(b"-rw-r--r-- 1 o g 5 Nov 05 2018 evil.txt\r\n")

@@ -641,8 +641,13 @@ mod tests {
     fn the_update_staging_folder_is_protected_but_not_the_rest_of_local_data() {
         let local = std::env::temp_dir().join(format!("ftpeach-local-{}", uuid::Uuid::new_v4()));
         let paths = app_owned_paths_for(None, Some(local.clone()), None);
-        let staging = local.join("com.smooveemaan.ftpeach/updates/FTPeach-9.9.9-setup.exe");
-        let recovered = local.join("com.smooveemaan.ftpeach/recovered-edits/a/notes.txt");
+        // Callers resolve the path first; on macOS that turns /var into /private/var.
+        let staging =
+            resolved_path(&local.join("com.smooveemaan.ftpeach/updates/FTPeach-9.9.9-setup.exe"))
+                .unwrap();
+        let recovered =
+            resolved_path(&local.join("com.smooveemaan.ftpeach/recovered-edits/a/notes.txt"))
+                .unwrap();
         assert!(paths.iter().any(|root| path_is_within(&staging, root)));
         assert!(!paths.iter().any(|root| path_is_within(&recovered, root)));
     }

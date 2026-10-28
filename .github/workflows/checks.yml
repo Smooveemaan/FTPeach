@@ -93,8 +93,12 @@ jobs:
   sast:
     # Blocking from the start: findings and scanner errors fail Checks.
     # Repository branch protection must require this check to enforce merge blocking.
+    # It scans the code, so a push that changes neither side skips it (a skipped
+    # job satisfies a required check); a rule change under .semgrep/ counts as both.
     permissions:
       contents: read
+    needs: changes
+    if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:

@@ -27,22 +27,43 @@ test('each side of the repository runs its own half', () => {
     rust: true,
     frontend: false,
   });
+  for (const path of ['rust-toolchain.toml', '.cargo/config.toml', 'scripts/cargo.ts']) {
+    assert.deepEqual(classifyChanges([path]), { rust: true, frontend: false }, path);
+  }
+  assert.deepEqual(classifyChanges(['public/favicon.ico']), { rust: false, frontend: true });
 });
 
-test('documentation runs neither half, and an unknown owner runs both', () => {
-  assert.deepEqual(classifyChanges(['README.md', 'docs/security.md', 'LICENSE', '.gitignore']), {
-    rust: false,
-    frontend: false,
-  });
-  assert.deepEqual(
-    classifyChanges([
-      'site/index.html',
-      'scripts/site/build.ts',
-      'test/unit/tooling/siteBuild.test.ts',
-    ]),
-    { rust: false, frontend: false },
-  );
-  for (const path of ['package.json', '.github/workflows/checks.yml', 'scripts/checks/x.ts']) {
+test('what only the always-run jobs read runs neither half, and an unknown owner runs both', () => {
+  for (const path of [
+    'README.md',
+    'docs/security.md',
+    'LICENSE',
+    '.gitignore',
+    'site/index.html',
+    'scripts/site/build.ts',
+    'test/unit/tooling/siteBuild.test.ts',
+    'test/component/transfers/useTransfers.test.tsx',
+    'test/e2e/install.vm.ts',
+    'vitest.config.ts',
+    'eslint.config.ts',
+    '.prettierrc.json',
+    'assets/images/ftpeach.png',
+    '.github/ISSUE_TEMPLATE/bug.yml',
+    '.github/dependabot.yml',
+    'scripts/release/portable.ts',
+    'scripts/test-servers/iis.ps1',
+  ]) {
+    assert.deepEqual(classifyChanges([path]), { rust: false, frontend: false }, path);
+  }
+  for (const path of [
+    'package.json',
+    'package-lock.json',
+    '.github/workflows/checks.yml',
+    'scripts/checks/x.ts',
+    'scripts/packaged-smoke/run.ts',
+    'test/fixtures/updater/latest.json',
+    '.semgrep/security.yml',
+  ]) {
     assert.deepEqual(classifyChanges([path]), { rust: true, frontend: true }, path);
   }
 });

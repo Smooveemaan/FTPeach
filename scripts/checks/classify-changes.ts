@@ -24,14 +24,28 @@ export const CROSS_LANGUAGE_SOURCES: readonly string[] = [
 ];
 
 /**
- * Paths that drive neither build. The website (`site/`, its build script and their
- * unit tests) has its own workflow, and lint-test-build runs those tests anyway.
+ * Paths that drive neither build: only lint-test-build, which runs on every push,
+ * reads them. Documentation; the website, which pages.yml checks; the unit and
+ * component tests and their tools' configs; images for the README and the site;
+ * GitHub settings other than workflows; scripts no CI job runs (test/e2e runs
+ * with a release, in installer.yml).
  */
-const DOCUMENTATION =
-  /(?:^|\/)[^/]+\.md$|^LICENSE$|^\.gitattributes$|^\.gitignore$|^\.editorconfig$|^site\/|^scripts\/site\/|^test\/unit\/tooling\/site[^/]*\.test\.ts$/;
+const NO_BUILD = new RegExp(
+  [
+    String.raw`(?:^|/)[^/]+\.md$`,
+    String.raw`^(?:LICENSE|\.gitattributes|\.gitignore|\.editorconfig)$`,
+    String.raw`^(?:site|scripts/site|assets|test/unit|test/component|test/e2e)/`,
+    String.raw`^(?:vitest|eslint)\.config\.ts$|^\.prettierrc\.json$|^\.prettierignore$`,
+    String.raw`^\.github/(?!workflows/)`,
+    String.raw`^scripts/(?:benchmarks|manual-tests|test-servers|release)/|^scripts/clean\.ps1$`,
+  ].join('|'),
+);
+
+const RUST_ONLY =
+  /^src-tauri\/|^\.cargo\/|^rust-toolchain\.toml$|^scripts\/cargo\.ts$|^scripts\/coverage\//;
 
 const FRONTEND_ONLY =
-  /^src\/|^index\.html$|^vite\.config\.ts$|^tsconfig[^/]*\.json$|^playwright\.config\.ts$|^test\/visual\//;
+  /^src\/|^public\/|^index\.html$|^vite\.config\.ts$|^tsconfig[^/]*\.json$|^playwright\.config\.ts$|^test\/visual\//;
 
 /**
  * Classifies changed repository paths, as they come out of
@@ -49,7 +63,7 @@ export function classifyChanges(paths: Iterable<string>): ChangeClassification {
       result.frontend = true;
       continue;
     }
-    if (path.startsWith('src-tauri/')) {
+    if (RUST_ONLY.test(path)) {
       result.rust = true;
       continue;
     }
@@ -57,9 +71,9 @@ export function classifyChanges(paths: Iterable<string>): ChangeClassification {
       result.frontend = true;
       continue;
     }
-    if (DOCUMENTATION.test(path)) continue;
-    // Workflows, scripts, manifests, lockfiles: an unrecognised owner counts as
-    // both rather than as neither.
+    if (NO_BUILD.test(path)) continue;
+    // Workflows, check scripts, manifests, lockfiles, test fixtures: an
+    // unrecognised owner counts as both rather than as neither.
     result.rust = true;
     result.frontend = true;
   }

@@ -3,7 +3,7 @@
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
 | `ci.yml` | Push to `master`, pull request | Calls the shared verification suite; a newer push to a pull request cancels its older run, while every push to `master` runs to the end. |
-| `checks.yml` | Reusable workflow | Supply-chain checks, SAST, lint, tests and builds. Rust, visual and packaged smoke jobs use changed paths; releases force every job. |
+| `checks.yml` | Reusable workflow | Supply-chain checks, SAST, lint, tests and builds. SAST, Rust, visual and packaged smoke jobs use changed paths; releases force every job. |
 | `release.yml` | Push of a `v*` tag; manual run on a tag only to skip the closed suites with a reason | Runs all checks and installer tests, requires a green `private-suites` status on the tagged commit ([How releases are verified](../docs/release-trust.md#how-releases-are-verified)), checks that the `release` environment requires approval, then builds signed Windows artifacts, SBOMs, a provenance attestation and a trust report in a draft release ([release-trust.md](../docs/release-trust.md)). |
 | `pages.yml` | Push to `master` touching site inputs, guide Markdown, npm dependencies or its workflow, a published release, daily at 04:17 UTC, manual run | Builds the home page and `docs/guide/` with shared styles and fonts, the latest release's download links and public counts, then deploys them to GitHub Pages. |
 | `security-audit.yml` | Monday at 04:17 UTC, manual run | Reviews Rust advisories and fuzzes protocol parsers. |

@@ -51,7 +51,7 @@
       <article>
         <header class="compare-head wrap">
           <h1>FTPeach vs FileZilla vs WinSCP</h1>
-          <p class="compare-lead">All three are free and move files over FTP, FTPS and SFTP. They differ in how you work with servers, what each one leaves out, and how they look.</p>
+          <p class="compare-lead">All three are free and move files over FTP, FTPS and SFTP. They differ in whether you can open two servers side by side, who has scripts and a built-in editor, and how they look.</p>
           <p class="compare-meta">Written by the developer of FTPeach. Checked against each project's own documentation on <time datetime="2026-10-20">20 October 2026</time>. This is not an independent review or a speed test.</p>
         </header>
 
@@ -61,8 +61,8 @@
             <h3>Try FTPeach if you want</h3>
             <ul>
               <li>Two servers open at once, one in each pane, both visible while you copy between them.</li>
-              <li>WebDAV for free. In FileZilla it is part of the paid Pro edition.</li>
-              <li>A modern, minimal interface that is easy to understand, with 20 color schemes in light and dark.</li>
+              <li>WebDAV without paying for it. FileZilla keeps it for the Pro edition; WinSCP has it too.</li>
+              <li>A modern, minimal design, with 20 color schemes in light and dark and an adjustable interface size.</li>
               <li>Saved passwords encrypted for your Windows account even without a master password, and Windows Hello to unlock them.</li>
             </ul>
           </div>
@@ -105,9 +105,10 @@
           <ul>
             <li><strong>Add your servers again.</strong> FTPeach cannot import FileZilla or WinSCP connections. Keep the addresses and logins at hand and <a href="guide/connecting.html#save-a-connection-you-will-use-again">save each one as a bookmark</a>.</li>
             <li><strong>Pick an editor.</strong> Edited files go back to the server only after you confirm. See <a href="guide/editing.html">editing</a>.</li>
-            <li><strong>Keep your old tool for automation.</strong> Scripts, schedules and folder sync still need it. Finish important transfers before you close FTPeach.</li>
+            <li><strong>Keep your old tool for automation.</strong> Scripts, schedules and folder sync still need it.</li>
+            <li><strong>Finish transfers before quitting.</strong> The queue does not survive a restart.</li>
           </ul>
-          <p>Try one real folder and one edit on a test location first. If none of the differences above solves a problem you have, there is little reason to switch.</p>
+          <p>Before moving everything, copy one real folder and edit one file on a test server. If none of the differences above solves a problem you have, there is little reason to switch.</p>
           <div class="act">
             <a class="btn" href="index.html#download">
               Download for Windows
@@ -121,11 +122,11 @@
           <h2 id="editions">FileZilla Pro and CLI</h2>
           <p><a href="https://filezillapro.com/filezilla-pro/">FileZilla Pro</a> adds WebDAV and cloud storage. <a href="https://filezillapro.com/cli/">FileZilla CLI and Pro CLI</a> are paid command-line products for automation. The table above covers only the free client.</p>
           <h2 id="limits">How this was checked</h2>
-          <p>Covers FTPeach 0.5.0, FileZilla Client 3.x and WinSCP 6.7. FileZilla and WinSCP were checked against their official documentation, not by running them side by side. FTPeach's own claims come from its tested <a href="guide/index.html">user guide</a> and source. We have not measured speed, memory use or reliability against the others. Something out of date? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
+          <p>Covers FTPeach 0.6.0, FileZilla Client 3.x and WinSCP 6.7. FileZilla and WinSCP were checked against their official documentation, not by running them side by side. FTPeach's own claims come from its tested <a href="guide/index.html">user guide</a> and source. I have not measured speed, memory use or reliability against the others. Something out of date? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
           <details>
             <summary>Sources</summary>
             <ul>
-              <li><strong>FTPeach:</strong> <a href="guide/interface.html#appearance">appearance</a>, <a href="guide/protocol-reference.html">protocols</a>, <a href="guide/interface.html">panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/passwords.html">passwords</a>, <a href="guide/transfers.html#before-a-full-exit-or-restart">transfers after exit</a>, <a href="guide/portable.html">portable</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/src-tauri/src/commands/app_settings_transfer.rs">settings import</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.5.0/LICENSE">license</a>.</li>
+              <li><strong>FTPeach:</strong> <a href="guide/interface.html#appearance">appearance</a>, <a href="guide/protocol-reference.html">protocols</a>, <a href="guide/interface.html">panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/passwords.html">passwords</a>, <a href="guide/transfers.html#before-a-full-exit-or-restart">transfers after exit</a>, <a href="guide/portable.html">portable</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.6.0/src-tauri/src/commands/app_settings_transfer.rs">settings import</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.6.0/LICENSE">license</a>.</li>
               <li><strong>FileZilla:</strong> <a href="https://filezillapro.com/docs/v3/faq/change-the-icon-set/">icon sets</a>, <a href="https://filezillapro.com/docs/v3/advanced/change-layout/">layouts</a>, <a href="https://wiki.filezilla-project.org/Client_Installation">platforms and portable</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">features, tabs and editing</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">directory comparison</a>, <a href="https://filezillapro.com/docs/v3/advanced/master-password/">passwords</a>, <a href="https://filezillapro.com/docs/v3/advanced/repeat-file-transfers/">retry</a>, <a href="https://filezillapro.com/docs/v3/advanced/export-import-transferqueue/">queue export</a>, <a href="https://filezillapro.com/docs/v3/basic-usage-instructions/speed-up-file-transfers/">resume</a>, <a href="https://filezillapro.com/docs/v3/filezilla-product-comparisons/filezilla-pro-vs-filezilla-pro-cli-ui-based-transfers-vs-command-line-automation/">editions</a>.</li>
               <li><strong>WinSCP:</strong> <a href="https://winscp.net/eng/docs/ui_pref_interface">theme</a>, <a href="https://winscp.net/eng/docs/introduction">platform</a>, <a href="https://winscp.net/eng/docs/protocols">protocols</a>, <a href="https://winscp.net/eng/docs/ui_commander">panes</a>, <a href="https://winscp.net/eng/docs/task_move_duplicate">copying between servers</a>, <a href="https://winscp.net/eng/docs/task_edit">editing</a>, <a href="https://winscp.net/eng/docs/scripting">scripting</a>, <a href="https://winscp.net/eng/docs/task_synchronize">sync</a>, <a href="https://winscp.net/eng/docs/master_password">passwords</a>, <a href="https://winscp.net/eng/docs/resume">resume</a>, <a href="https://winscp.net/eng/docs/portable">portable</a>, <a href="https://winscp.net/eng/docs/license">license</a>, <a href="https://winscp.net/updatenews.php">version</a>.</li>
             </ul>

@@ -2,7 +2,9 @@
 @font-face {
   font-family: 'Albert Sans';
   font-weight: 400 700;
-  font-display: swap;
+  /* Preloaded, so the page waits a moment for it instead of drawing a stand-in font and swapping on every reload.
+     On a connection too slow for that moment the stand-in stays for this visit. */
+  font-display: optional;
   src: url('fonts/albert-sans-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -31,6 +33,8 @@
   --wrap: min(1320px, 100% - 2 * clamp(20px, 3vw, 40px));
   /* One speed for every theme switch and every palette preview change. */
   --fade: 320ms;
+  /* Everything that moves slows down softly before it stops. */
+  --settle: cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* A theme switch cross-fades the whole page at once (switchTheme in theme-init.js): no element runs
    its own colour transition meanwhile, so none of them lags or flashes. */
@@ -283,7 +287,7 @@ section[id] {
   height: 22px;
 }
 .burger path {
-  transition: translate 0.2s, rotate 0.2s;
+  transition: translate 0.2s var(--settle), rotate 0.2s var(--settle);
   transform-origin: 12px 12px;
 }
 .burger[aria-expanded='true'] .b1 {
@@ -369,11 +373,11 @@ section[id] {
   color: var(--on-peach);
   font-weight: 600;
   font-size: 16px;
-  transition: transform 0.15s, filter 0.15s;
+  transition: transform 0.15s var(--settle), filter 0.15s;
 }
 /* Hover turns the pill inside out: dark with a peach ring in the dark theme, a deeper peach in the light one. */
 .btn {
-  transition: transform 0.15s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: transform 0.15s var(--settle), background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .btn:hover {
   background: var(--bg);
@@ -513,16 +517,20 @@ section[id] {
   background: var(--peach);
   cursor: pointer;
   transition:
-    top 0.6s cubic-bezier(0.65, 0, 0.35, 1),
-    left 0.6s cubic-bezier(0.65, 0, 0.35, 1),
-    translate 0.6s cubic-bezier(0.65, 0, 0.35, 1),
-    width 0.6s cubic-bezier(0.65, 0, 0.35, 1),
-    height 0.6s cubic-bezier(0.65, 0, 0.35, 1),
-    scale 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 0.25s;
+    top 0.6s var(--settle),
+    left 0.6s var(--settle),
+    translate 0.6s var(--settle),
+    width 0.6s var(--settle),
+    height 0.6s var(--settle),
+    scale 0.2s var(--settle),
+    opacity 0.4s;
 }
 .play[hidden] {
   display: none;
+}
+/* Faded while the pointer is away from the picture; a keyboard visitor still sees it. */
+.stage[data-idle] .play:not(:focus-visible) {
+  opacity: 0;
 }
 .play:hover {
   scale: 1.06;
@@ -533,7 +541,7 @@ section[id] {
   width: 40%;
   height: 40%;
   margin: auto;
-  transition: opacity 0.3s, scale 0.3s;
+  transition: opacity 0.3s, scale 0.3s var(--settle);
 }
 .play .i-play {
   translate: 6% 0;
@@ -801,7 +809,7 @@ section[id] {
   border-radius: 8px;
   background: var(--swatch);
   cursor: pointer;
-  transition: scale 0.15s;
+  transition: scale 0.15s var(--settle);
 }
 .swatch:hover {
   scale: 1.1;
@@ -1053,6 +1061,69 @@ section[id] {
   box-shadow: inset 0 0 0 1px var(--edge);
   cursor: default;
 }
+.thanks {
+  max-width: 920px;
+  margin: 24px auto 0;
+  text-wrap: pretty;
+  color: var(--muted);
+  /* The row grows from nothing, so the blocks below slide down while the line drops in from above. */
+  display: grid;
+  overflow: hidden;
+  animation: thanks-open 0.8s var(--settle);
+}
+.thanks:empty {
+  display: none;
+}
+.thanks > span {
+  min-height: 0;
+  animation: thanks-drop 0.8s var(--settle);
+}
+.thanks strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.thanks a {
+  color: var(--peach-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@keyframes thanks-open {
+  from {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+@keyframes thanks-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+/* Folding away runs the same way backwards: the line rises out and the blocks below move up. */
+.thanks.leaving {
+  animation: thanks-close 0.8s var(--settle) forwards;
+}
+.thanks.leaving > span {
+  animation: thanks-lift 0.8s var(--settle) forwards;
+}
+@keyframes thanks-close {
+  from {
+    grid-template-rows: 1fr;
+  }
+  to {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+  }
+}
+@keyframes thanks-lift {
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
 .reqs {
   margin-top: 24px;
   color: var(--muted);
@@ -1239,6 +1310,18 @@ section[id] {
   height: 36px;
   padding: 0 16px;
   font-size: 14px;
+}
+.give .per {
+  margin-left: 6px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+.give .give-free {
+  font-size: 16px;
+}
+.give-free a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* The sheet: its own ground, above Features, with a soft shadow along its lower edge. */
@@ -1453,7 +1536,7 @@ section[id] {
 .hero h1,
 .row,
 .stage {
-  animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rise 0.8s var(--settle) both;
 }
 .row {
   animation-delay: 0.08s;

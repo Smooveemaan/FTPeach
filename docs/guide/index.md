@@ -55,7 +55,7 @@ The illustrations throughout this guide use example connections and files.
 **Local** means on your computer; **remote** means on a server. An **upload**
 copies a local file to a server. A **download** copies a server file to your
 computer. The **source** is where the file comes from; the **destination** is
-where the copy goes. Check both before starting a transfer.
+where the copy goes.
 
 FTPeach shows two file lists, called **panes**. Either can be the source or the
 destination. A **bookmark** saves the connection details so you can open a

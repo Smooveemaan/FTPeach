@@ -37,7 +37,7 @@ See [Editing server files in another program](guide/editing.md#editing-server-fi
 
 ## The portable copy
 
-See [The portable copy](guide/portable.md#the-portable-copy).
+See [Key and certificate files](guide/portable.md#key-and-certificate-files).
 
 ## Moving bookmarks and passwords to another computer
 

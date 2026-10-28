@@ -43,8 +43,7 @@ Before sending files with names already at the destination, check
 **Edit > Settings > Transfers > On name conflict**:
 **Ask** requests your decision, **Overwrite** allows replacement without that
 question, and **Skip** leaves matching files alone. Start with **Ask** if you
-need to review replacements, and keep a separate backup of anything important.
-See [Everyday settings](interface.md#everyday-settings) to change the policy.
+want to review replacements. See [Everyday settings](interface.md#everyday-settings) to change the policy.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Ask confirms an existing file while Overwrite and Skip do not ask -->
@@ -56,10 +55,8 @@ See [Everyday settings](interface.md#everyday-settings) to change the policy.
 Example jobs with some columns hidden. **Pause** (two bars) and **Stop** (a square)
 are at the right of an active row.
 
-Use **Pause** when you intend to continue in the current session and that action is available.
-Use **Stop** when you want to cancel the job. Resume a paused job to continue;
-retry a stopped job only when you intend to start it again. The details below
-explain when partial data can be reused.
+**Pause** keeps what has arrived so far, and **Resume** carries the job on later in
+this session. **Stop** cancels the job; **Retry** on a stopped job starts it over.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::retryTransfer resumes paused uploads and downloads, but restarts stopped ones -->
 
@@ -67,9 +64,8 @@ If a transfer reports an error, read it before retrying: wrong permissions,
 insufficient space or a changed source need attention first. See
 [Troubleshooting](troubleshooting.md#my-transfer-did-not-finish).
 
-**Pause** keeps the partial data for a later attempt. A paused FTP, FTPS or SFTP
-upload resumes when the source and the retained server data pass verification;
-otherwise it starts again. WebDAV uploads, including folder uploads, do not
+A paused FTP, FTPS or SFTP upload resumes when FTPeach confirms that neither the source nor the part already
+on the server has changed; otherwise it starts again. WebDAV uploads, including folder uploads, do not
 offer Pause because they cannot continue a partly uploaded file.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::retryTransfer resumes paused uploads and downloads, but restarts stopped ones -->
@@ -84,10 +80,6 @@ Resuming a paused transfer does not ask again whether to replace the file
 there: it keeps the answer given when the transfer started.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::resuming a paused transfer reuses its overwrite answer instead of asking again -->
-
-**Stop** cancels the transfer. Retrying a stopped upload starts it over.
-
-<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
 
 When the connection to a server is lost, the transfers it cut off can be retried once the
 pane is connected again to the same server with the same account. Until then their Retry button
@@ -105,23 +97,14 @@ a full application exit, not just a hidden window.
 Finish important transfers before exiting FTPeach or restarting Windows.
 The transfer queue does not return in a fresh application process. A paused
 upload is not a saved job for the next launch: keep its server connection open
-if you intend to resume it. After exiting, select the source again and start
-a new upload.
+if you want to resume it. After exiting, select the source again and start
+a new upload. A download can carry on after an exit; see
+[Interrupted downloads](#interrupted-downloads).
 
 <!-- verified-by: pr test/unit/transfers/transferStore.test.ts::a fresh process starts without the previous transfer queue -->
 <!-- verified-by: pr test/component/application/quitWhenIdle.test.tsx::paused and failed transfers do not hold the quit up -->
 <!-- verified-by: pr src-tauri/src/application/upload_resume_tests.rs::tearing_down_a_connection_deletes_every_staging_it_held -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an upload asks to resume only after a pause, never after a stop -->
-
-For an interrupted download, reconnect, select the same server file and download
-to the same local folder and filename. FTPeach can reuse retained partial data
-only after checking that it still belongs to this source; otherwise it starts
-over. This does not restore the old queue automatically. Check the new row's
-result before opening the downloaded file.
-
-<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a real (non-user-initiated) transfer failure reports the error and marks the row -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_download_lifecycle_writes_resumes_and_commits_once -->
-<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 
 ### When an upload is interrupted
 
@@ -148,12 +131,16 @@ cleanup or cannot be reached can leave that temporary file behind.
 
 ## Interrupted downloads
 
-An interrupted download resumes only when the recorded server, account, path,
-size and version still match. A changed or unavailable size or version starts
-a new download. This compares the server's metadata, not the complete file
+To finish an interrupted download, even after exiting FTPeach, reconnect, select
+the same server file and download it to the same local folder and filename. It
+carries on from where it stopped only when the server, account, path, size and
+version still match. A changed or unavailable size or version starts a new
+download. This compares the server's metadata, not the complete file
 contents: a same-size change with the same reported version can go unnoticed.
 See [resume limits](protocol-reference.md#limitations).
 
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a real (non-user-initiated) transfer failure reports the error and marks the row -->
+<!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::a_download_lifecycle_writes_resumes_and_commits_once -->
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 <!-- verified-by: pr src-tauri/src/protocol/transfer_file_tests.rs::an_unknown_size_or_changed_source_starts_over_and_is_never_treated_as_zero -->
 
@@ -184,8 +171,8 @@ on the server, leaves nothing beside the destination.
 On NTFS, FTPeach writes a Windows origin mark to downloaded files. It identifies
 local-network servers as intranet and other servers as internet. The mark
 records the server address without your user name or password and stays with
-the file when it is renamed. Writing it is best effort; filesystems without
-alternate data streams cannot keep it. See [download security limits](../security.md#rust-and-remote-servers).
+the file when it is renamed. A drive formatted as FAT32 or exFAT, as many USB
+sticks are, cannot keep this mark. See [download security limits](../security.md#rust-and-remote-servers).
 
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::a_host_that_cannot_be_reached_from_outside_is_the_intranet -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::anything_else_is_the_internet -->
@@ -202,7 +189,7 @@ folder first, right-click empty space and choose **New Folder**, or press **F7**
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::F7/Shift+F7 create a new folder/file and F8 copies the selection to the other pane -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+C/Ctrl+X mark the selection for the clipboard and Ctrl+V pastes it -->
 
-Local file copies appear in Transfers while running and retain their final result.
+Local file copies appear in Transfers while running and keep their final result.
 A failed copy can be retried from its row.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::local copies appear in Transfers while running and keep their final result -->

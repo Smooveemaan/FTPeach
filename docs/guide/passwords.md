@@ -21,27 +21,22 @@ have not created a bookmark yet.
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::setup_lock_unlock_and_password_change_preserve_secrets -->
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
 
-Do not change a server password to solve a vault-unlock prompt, or assume that
-your master password is the password for an exported file. Read which operation
-is asking before entering a secret.
-
 [![Security settings with Enhanced protection selected and Windows Hello unlock enabled.](../../site/images/guide/security.png)](../../site/images/guide/security.png)
 
 **Edit > Settings > Security** contains password protection and unlock settings.
-This example already has a master password; your choices may differ.
 
 ## Set up a master password
 
 Open **Edit > Settings > Security**. **System protection** encrypts saved secrets
 for your Windows account. **Enhanced protection** uses a master password to
 unlock them, including when you carry a [portable copy](portable.md) to another
-computer. Choose the mode that fits how you will use the application.
+computer.
 
 1. Select **Enhanced protection**.
 2. Enter at least 12 characters in **Master password**, then repeat it in
    **Confirm master password**. Keep a safe record outside FTPeach.
 3. Select **Protect saved passwords**. Wait for the status to say the vault is
-   secured and unlocked. If an error appears, resolve it before relying on the vault.
+   secured and unlocked.
 
 > [!WARNING]
 > **A forgotten master password cannot be recovered.** Resetting the vault deletes
@@ -79,11 +74,10 @@ cannot open the vault after that, so do not go back to it.
 
 If **Allow system unlock** was already enabled on this computer, try Windows
 Hello. If Hello is unavailable or refused, FTPeach asks for the master password.
-Do not confuse it with a server password or an export file password.
 
 <!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::a refused Windows Hello asks for the password, ready to type -->
 
-Before starting over, make sure you can obtain your server credentials again
+Before starting over, make sure you can get your server credentials again
 from their providers, or have a usable password-protected export. When you are
 ready to discard the stored secrets, use **Settings > Security > Reset vault**.
 Read the confirmation, type `RESET` and choose **Delete vault**. Set up protection
@@ -98,7 +92,7 @@ The vault keeps saved passwords in two files. If one of them goes missing, for
 example when a backup brought back only part of the FTPeach folder or a cleanup
 program removed a file, the passwords saved in the vault cannot be opened.
 **Settings > Security** then says the vault is damaged and offers **Start over**
-instead of the usual controls. This is how FTPeach handles a missing file safely.
+instead of the usual controls.
 
 [![Security settings saying the vault is damaged, with the Start over button.](../../site/images/guide/vault-damaged.png)](../../site/images/guide/vault-damaged.png)
 
@@ -130,9 +124,6 @@ instead of the usual controls. This is how FTPeach handles a missing file safely
 > SSH key files are not included: move key files separately and check their paths.
 
 [![Export Settings with Bookmarks and Include saved passwords selected, and empty file-password fields.](../../site/images/guide/export-settings.png)](../../site/images/guide/export-settings.png)
-
-Select **Bookmarks** before **Include saved passwords**, then enter and confirm
-the export file's password. This example has no saved secrets to include.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->

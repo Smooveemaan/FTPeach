@@ -1,9 +1,8 @@
 # Find your way around
 
-Think of the window as two locations and a record of work between them. Before
-copying anything, identify the source pane, the destination pane and the folder
-open in each. "Other pane" in a command means the destination on the opposite
-side, not a fixed upload or download folder.
+The window has two file panes, with **Transfers** below them. "Other pane" in a
+command means the folder open on the opposite side, not a fixed upload or
+download folder.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::the menus follow the order of the Explorer menu -->
 
@@ -42,7 +41,7 @@ and **New Folder**.
 
 [![Two highlighted files selected together in the computer pane.](../../site/images/guide/selection.png)](../../site/images/guide/selection.png)
 
-Highlighted rows are the selection. Check it before copying or deleting files.
+Highlighted rows are the selection.
 
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+click toggles against the current selection, not the one from before the last re-render -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+A selects every file even while a descendant control (not .pane itself) has focus -->
@@ -135,7 +134,7 @@ Open **Edit > Settings**, select the category, make your changes and choose
 <!-- verified-by: pr test/component/application/paneAndSettingsState.test.tsx::previews settings locally and persists only on explicit save -->
 
 For proxy troubleshooting, **Test proxy** checks the proxy against the host and
-port in **Test against**. Read the result before reconnecting.
+port in **Test against**.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a proxy test error fades once a tested field changes -->
 

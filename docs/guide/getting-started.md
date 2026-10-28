@@ -31,17 +31,13 @@ menu to switch a pane back to **Computer**.
 
 [![The Computer source menu, with Server above Computer.](../../site/images/guide/source-menu.png)](../../site/images/guide/source-menu.png)
 
-Choose **Server** in this menu.
-
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 
-In the connection form, choose the supplied protocol and enter **Address**, **Port**,
-**Username** and **Password**, as applicable. Select **Connect**, the power-symbol
-button next to **Server**.
+In the connection form, choose the protocol you were given and enter the **Address**,
+**Port**, **Username** and **Password** your server uses. Select **Connect**, the
+power-symbol button next to **Server**.
 
 [![SFTP connection form with address, port, username and password fields.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
-
-Example SFTP form. Replace the sample address and username with your own details.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::blank addresses disable connecting and saving until filled -->
 
@@ -59,9 +55,9 @@ to transfer a file.
 
 ## 2. Open the source and destination folders
 
-In the computer pane, locate your test file. In the server pane, open the folder
+In the computer pane, find your test file. In the server pane, open the folder
 your provider told you to use. Double-click a folder to open it. Check the
-destination path before proceeding: connecting to the right server is not the
+destination path before you go on: connecting to the right server is not the
 same as choosing the right folder on it.
 
 <!-- verified-by: pr test/component/file-browser/paneWiring.test.tsx::a folder opens in the pane and a server file opens with its program -->
@@ -77,8 +73,7 @@ listing's background uses the currently open destination folder.
 <!-- verified-by: pr test/component/file-browser/paneWiring.test.tsx::a drop on the listing itself has no target folder -->
 
 If asked about an existing file, check its name and destination before allowing
-replacement. For your first transfer, choosing a different test filename avoids
-changing anything already on the server.
+replacement.
 
 ## 4. Check the result
 
@@ -88,14 +83,13 @@ error and follow [Troubleshooting](troubleshooting.md).
 
 [![A completed release-notes.md upload with its route, 100% progress and Done status.](../../site/images/guide/transfer-done.png)](../../site/images/guide/transfer-done.png)
 
-This example has finished: **Done** confirms completion. Some columns are hidden
-to keep the result readable; check your own file and destination route.
+Some columns are hidden in this example.
 
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::direction arrow is pinned before Route and File, while Status stays sortable -->
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::queue order puts running and paused rows first, newest within each status, and completed rows last -->
 
-Inspect the destination listing. For a practice run, download the result to a
-different local folder and open it to check that it is the file you intended.
+Look for the file in the server pane. To be sure it arrived as you meant, download
+it to another folder on your computer and open it.
 
 ## Download a file instead
 

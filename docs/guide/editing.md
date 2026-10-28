@@ -11,21 +11,18 @@ saving in the editor and sending that revision to the server are separate steps.
 ## Open, edit and upload a change
 
 Before editing an important file, download a backup to a separate local folder.
-Check that you have permission to replace the server copy.
 
-1. Connect to the server and locate the file.
+1. Connect to the server and find the file.
 2. Right-click it and choose **Open** to use its usual program, or **Open with**
    to choose another program.
 3. Make the change and save it in the editor.
 4. Return to FTPeach. When it asks whether to upload the changed file, choose
-   **Upload** to send that revision to the server. **Later** dismisses this
-   question without uploading; do not treat a local save as a completed server update.
-5. Check the upload result and, where appropriate, check the file in the system
-   that uses it, such as the website or application you are updating.
+   **Upload** to send that revision to the server. **Later** closes the question
+   without uploading.
+5. Once the upload is done, check the result where the file is used, such as on
+   the website you are updating.
 
 [![Open and Open with in the server file menu.](../../site/images/guide/remote-file-menu.png)](../../site/images/guide/remote-file-menu.png)
-
-Use **Open** for the usual application, or **Open with** to choose a program.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Open on a remote file opens it with the default program, without asking -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::SFTP permissions and open-with retain the entry and its original session -->
@@ -42,16 +39,14 @@ folder. Check the filename and destination before approving replacement.
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::a folder, and a whole selection, can be sent to the other pane from the menu -->
 
 If you save again while an upload is running, FTPeach asks about the newer save
-after that upload finishes. Keep track of the last revision you approved.
+after that upload finishes.
 
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::a save made while an upload runs is asked about after it, not during -->
 
 ## Recover unfinished edits
 
-If FTPeach offers recovered edits at startup, inspect them before deleting them.
-Keep a separate copy of work you still need, reconnect to the intended server
-and check its current file before replacing it. Recovery preserves your local
-work; it does not mean that those changes already reached the server.
+Edits that never reached the server stay on your computer, and FTPeach lists them
+at startup. To send one:
 
 [![Edits that were not uploaded dialog listing recovered files, with Show files, Later and Delete actions.](../../site/images/guide/recovered-edits.png)](../../site/images/guide/recovered-edits.png)
 
@@ -65,13 +60,10 @@ work; it does not mean that those changes already reached the server.
    Use the original filename; if your backup copy has a different name, rename
    it before uploading. Follow [Your first transfer](getting-started.md#3-upload-the-file)
    for the upload steps.
-5. Wait for **Done** in **Transfers** and check the server result. Keep your
-   separate copy until you are satisfied. Only then discard the recovered
-   copy you no longer need.
+5. Wait for **Done** in **Transfers** and check the server result. Once you are
+   satisfied, you can delete the recovered copy.
 
-If you cannot identify the original server or folder, keep the copy and confirm
-the destination before uploading. **Show files** does not send anything to the
-server, and **Delete** discards the recovered work.
+**Show files** sends nothing to the server; **Delete** discards the recovered work.
 
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::recovered edits are offered at start and stay unless deleted -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::a folder, and a whole selection, can be sent to the other pane from the menu -->
@@ -89,7 +81,7 @@ connection that opened it closes, the next open downloads the file again.
 
 Copies you did not change are removed when the editing session is cleaned up.
 Changed copies are kept, including after an unexpected exit; use
-[Recover unfinished edits](#recover-unfinished-edits) to inspect them.
+[Recover unfinished edits](#recover-unfinished-edits) to send them.
 
 <!-- verified-by: pr src-tauri/src/local_fs/edit_recovery_tests.rs::edited_copies_are_kept_and_untouched_ones_removed -->
 <!-- verified-by: pr src-tauri/src/local_fs/edit_recovery_tests.rs::a_crashed_session_is_collected_at_the_next_start -->

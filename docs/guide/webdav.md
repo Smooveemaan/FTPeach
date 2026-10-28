@@ -12,12 +12,12 @@ a WebDAV endpoint.
 
 Ask your provider for the full WebDAV URL, the username and the password to use
 with a file client. Include the provider's folder path, not just its hostname.
-If the service requires an application-specific password, obtain that from the
-provider before connecting.
+Some services want a separate app password for file clients; get it from the
+provider first.
 
 | Example | What to enter |
 | --- | --- |
-| `https://files.example.com/dav/` | A full HTTPS address, including the WebDAV folder. Replace this example with the provider's URL. |
+| `https://files.example.com/dav/` | A full HTTPS address, including the WebDAV folder. |
 | `https://files.example.com:8443/dav/` | Include a custom port in the URL when the provider specifies one. |
 | `files.example.com` | Incomplete: add the scheme and the actual WebDAV path supplied by the provider. |
 
@@ -42,8 +42,7 @@ endpoint rather than deleting pieces of the link and guessing.
 
 [![WebDAV connection form showing a full HTTPS URL, username, password and Verify certificate enabled.](../../site/images/guide/webdav-connection.png)](../../site/images/guide/webdav-connection.png)
 
-The path belongs in the address field. Use your provider's URL and account
-details in place of this example.
+The path belongs in the address field.
 
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::WebDAV accepts an absolute URL with a custom port -->
@@ -51,8 +50,8 @@ details in place of this example.
 
 FTPeach signs in with **HTTP Basic authentication**; HTTPS protects the
 connection carrying those credentials. A server that accepts only **Digest
-authentication** is unsupported and fails sign-in. Ask the administrator for a
-compatible endpoint rather than repeatedly changing a working password.
+authentication** is unsupported and fails sign-in. Ask the administrator for an
+address that accepts Basic authentication.
 
 <!-- verified-by: pr src-tauri/src/protocol/webdav_tests.rs::basic_login_succeeds_but_a_digest_only_server_is_refused -->
 
@@ -62,8 +61,8 @@ For repeat visits, [save a bookmark](connecting.md#save-a-connection-you-will-us
 
 Keep **Verify certificate** enabled for HTTPS. If the provider uses a private
 certificate authority, the **CA certificate** button lets you select its trusted
-certificate file. Get the file through a trusted channel and confirm the server
-hostname with the administrator. Turning verification off allows invalid
+certificate file. Get the file and the server's hostname from the administrator.
+Turning verification off allows invalid
 certificates; it is not a repair for an incorrectly configured server.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::WebDAV distinguishes HTTP authentication permission from certificate validation -->
@@ -112,10 +111,10 @@ an operation is refused.
 | Message or symptom | Next step |
 | --- | --- |
 | Enter the full WebDAV address, starting with http:// or https://. | Use the provider's complete WebDAV URL, including the scheme and folder path. |
-| A WebDAV address can't contain ? or # | Obtain a WebDAV endpoint rather than a browser-sharing or sign-in link. Enter credentials in their own fields. |
+| A WebDAV address can't contain ? or # | Ask for a WebDAV address rather than a browser-sharing or sign-in link. Enter credentials in their own fields. |
 | Incorrect username or password. | Confirm the WebDAV account details, any application-specific password requirement and the authentication method. Digest-only services are unsupported. |
 | The server asks for a password over an unencrypted connection | Ask for HTTPS. Use Allow unencrypted sign-in only if you accept the exposure described above. |
-| The server's certificate isn't valid. | Check the hostname and certificate with the provider; obtain the correct trusted CA file if needed. |
+| The server's certificate isn't valid. | Check the hostname and certificate with the provider, and ask for their CA file if they use their own. |
 | The URL works in a browser, but FTPeach cannot list files | Confirm that it is a WebDAV endpoint, not an HTML sign-in page or shared download link. |
 | You don't have permission for this operation. | Check this folder's permissions with the provider, even if signing in succeeded. |
 

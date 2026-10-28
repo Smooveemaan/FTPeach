@@ -13,7 +13,8 @@ Ask your provider or server administrator for:
 
 - The server hostname or IP address and its SSH port.
 - Your username and whether the account uses a password or a key.
-- The server's expected host-key fingerprint, through a channel you already trust.
+- The server's expected host-key fingerprint, given to you some other way than
+  over this connection.
 - The folder you should work in and whether you may upload or replace files there.
 
 Three different secrets or identities can be involved:
@@ -41,8 +42,6 @@ Three different secrets or identities can be involved:
 5. Select **Connect**, then [verify the server](#verify-the-server) if prompted.
 
 [![SFTP selected in the connection form, with address, port, username and password fields.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
-
-Use your provider's details in place of this example address and username.
 
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::switching protocol empties a default port and keeps a custom one -->
@@ -78,8 +77,8 @@ An OpenSSH private-key file starts with `-----BEGIN OPENSSH PRIVATE KEY-----`.
 <!-- verified-by: pr src-tauri/src/protocol/sftp_tests.rs::openssh_private_keys_load_with_and_without_a_passphrase -->
 
 For a new key, prefer Ed25519 when your administrator supports it. FTPeach
-shows a warning when it recognizes a selected RSA private key because of a
-known timing-side-channel risk. The warning is not a rejection of the key.
+shows a warning when it recognizes a selected RSA private key because RSA
+signing has a known timing weakness. The warning is not a rejection of the key.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->
 
@@ -109,16 +108,13 @@ fingerprint independently before choosing **Trust the new key**.
 
 ## When SFTP does not connect
 
-Start with the exact message. These checks suggest what to investigate; a
-message alone may not identify the cause.
-
 | Message | What to check |
 | --- | --- |
 | Incorrect username or password | Confirm the username and whether the account expects a password or a key. For key login, ask whether the matching public key is authorized for that account. |
 | Couldn't read the key — the file is corrupted or the passphrase is incorrect. | Select the private file again, check its format and use its passphrase rather than the account password. |
 | The key or certificate file was not found | The file may have moved or its drive may be unavailable. Select it again from its current location. |
 | The server's host key has changed, so FTPeach didn't connect. | Follow the fingerprint checks above before trusting a replacement key. |
-| The server and FTPeach have no SSH algorithm in common. | Ask the administrator to check the server's SSH configuration and compatibility. Changing your password does not resolve an algorithm mismatch. |
+| The server and FTPeach have no SSH algorithm in common. | Ask the administrator to check the server's SSH configuration and compatibility. |
 | Connection refused / Server is not responding | Confirm the SSH port, server availability and any VPN or network access requirements. See the [connection checklist](troubleshooting.md#i-cannot-connect). |
 
 <!-- verified-by: pr test/unit/platform/errorMessages.test.ts::friendlyError localizes every structured command error code -->
@@ -132,5 +128,5 @@ operation is denied, check the folder and account permissions with the
 administrator; signing in does not mean you can write to every folder.
 
 For repeat connections, [save a bookmark](connecting.md#save-a-connection-you-will-use-again).
-If you carry keys on a removable drive, read about [portable key files](portable.md#the-portable-copy).
+If you carry keys on a removable drive, read about [portable key files](portable.md#key-and-certificate-files).
 For editing files directly from a server pane, see [Editing remote files](editing.md).

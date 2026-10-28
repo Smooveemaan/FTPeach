@@ -15,7 +15,7 @@ supported protocol. Changing a port number alone does not change the server's mo
 
 Ask your provider for the FTPS hostname, port, username, password and destination
 folder. If the service uses a private certificate authority, ask for its CA
-certificate through a trusted channel too.
+certificate too.
 
 1. Open the source menu at the top of a pane and choose **Server**.
 2. Choose **FTPS**, then enter **Address**. Use the hostname your provider gave
@@ -43,20 +43,19 @@ with the provider, rather than immediately disabling verification.
 
 For a private certificate authority:
 
-1. Obtain the trusted CA certificate in PEM format from the administrator.
+1. Get the CA certificate in PEM format from the administrator.
    This is a certificate, not a private key or an account password.
 2. Keep **Verify certificate** enabled and select **CA certificate** in the
    connection form. Choose the file you received.
 3. Connect again. If verification still fails, ask the administrator to check
-   the certificate chain, hostname and validity dates. Adding an unrelated CA
-   does not make the server trusted.
+   the certificate chain, hostname and validity dates.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::FTPS defaults to port 21 and keeps a custom CA behind certificate verification -->
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::local_ftps_server_accepts_a_matching_custom_ca_and_rejects_a_mismatched_one -->
 
 Unchecking **Verify certificate** allows invalid certificates and disables the
 CA-file button. The connection still uses TLS, but that is no substitute for
-checking the server's identity. Leave verification enabled for normal use.
+checking the server's identity.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::FTPS defaults to port 21 and keeps a custom CA behind certificate verification -->
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::an_unchecked_ftps_certificate_is_warned_about_once_and_only_over_tls -->

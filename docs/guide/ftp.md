@@ -21,7 +21,7 @@ provider. The address of your public website may not be its FTP hostname.
 
 [![FTP connection form with the unencrypted-connection warning beside the protocol selector.](../../site/images/guide/ftp-connection.png)](../../site/images/guide/ftp-connection.png)
 
-The warning marks plain FTP. These are example connection details, not a public server.
+The warning marks plain FTP.
 
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::blank addresses disable connecting and saving until filled -->
@@ -57,8 +57,7 @@ while a proxy is enabled; keep passive mode for proxy connections.
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::a typed-in FTPS server is sent as it is, and becomes connected only after its first listing -->
 
 Active mode is not a general cure for a blocked transfer: it needs an incoming
-connection to your computer. Check the server and network requirements before
-changing it. See the [networking reference](../networking.md#ftp-passive-and-active-modes)
+connection to your computer. See the [networking reference](../networking.md#ftp-passive-and-active-modes)
 for deployment details.
 
 ## When FTP does not connect or list files

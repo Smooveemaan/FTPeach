@@ -35,14 +35,12 @@ For step-by-step setup, see [FTP](ftp.md), [FTPS](ftps.md), [SFTP](sftp.md) or [
 
 [![SFTP connection form showing where to enter server and account details.](../../site/images/guide/connection.png)](../../site/images/guide/connection.png)
 
-Example connection details; use the values from your provider.
-
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::blank addresses disable connecting and saving until filled -->
 <!-- verified-by: pr test/component/file-browser/paneSourceSwitcher.test.tsx::the source selector opens a server form and returns to the computer -->
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::a typed-in FTPS server is sent as it is, and becomes connected only after its first listing -->
 
 For WebDAV, use an absolute URL such as `https://files.example.com/dav/`,
-not just a hostname. The example is a placeholder; use your provider's URL.
+not just a hostname.
 
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::invalid WebDAV addresses stay in the pane without starting a session -->
 
@@ -70,7 +68,7 @@ opens **New Bookmark**; hover over a row to find its edit action.
 
 [![Edit Bookmark showing its name, SFTP address, account and default folder.](../../site/images/guide/bookmark-editor.png)](../../site/images/guide/bookmark-editor.png)
 
-An existing bookmark's editor. Check the server and account, then choose **Save**.
+An existing bookmark's editor.
 
 <!-- verified-by: pr test/component/sites/siteManager.test.tsx::creates and edits a bookmark through the form -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->

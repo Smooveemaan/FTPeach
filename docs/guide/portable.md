@@ -1,8 +1,7 @@
 # Portable version
 
 Choose the portable download when you want to keep FTPeach and its settings in
-one folder, for example on a removable drive. Plan how you will unlock saved
-passwords on another computer before relying on it while travelling.
+one folder, for example on a removable drive.
 
 ## Start and carry a portable copy
 
@@ -19,15 +18,15 @@ passwords on another computer before relying on it while travelling.
 <!-- verified-by: pr src-tauri/src/local_fs/portable.rs::only_the_marker_makes_a_folder_portable -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
 
-Keep a backup of the folder before moving it. If you want to bring connections
-into a different installation instead, use [export and import](passwords.md#moving-bookmarks-and-passwords-to-another-computer).
-
-## The portable copy
-
 [![Security settings showing Enhanced protection with a master password already configured.](../../site/images/guide/security.png)](../../site/images/guide/security.png)
 
-Before carrying saved passwords to another computer, check **Settings > Security**.
-This example shows master-password protection already configured.
+A master password, set in **Settings > Security**, is what lets saved passwords
+travel with the copy.
+
+To bring connections into a different installation instead, use
+[export and import](passwords.md#moving-bookmarks-and-passwords-to-another-computer).
+
+## Key and certificate files
 
 A key or certificate file chosen from inside the program's folder is found
 again after the folder is moved or its drive gets another letter. A file kept

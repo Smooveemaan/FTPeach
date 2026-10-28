@@ -1,8 +1,7 @@
 # Troubleshooting
 
-Start with the operation that failed and the exact error message. Check the
-server, account and folder involved before trying again. The same symptom can
-have several causes; the checks below help narrow them down.
+Start with the operation that failed and the exact error message, then find the
+message below.
 
 ## I cannot connect
 
@@ -31,8 +30,8 @@ If FTP or FTPS signs in but does not list files, check [the data-connection mode
 
 A certificate error or changed SSH host key is a reason to verify the server's
 identity with its administrator. Ask whether the server was replaced or its
-certificate or key was changed, and obtain the expected identity through a
-trusted channel. Do not disable verification just to dismiss the message.
+certificate or key was changed, and get the expected certificate or key from them
+some other way than this connection, such as by phone or from their website. Do not disable verification just to dismiss the message.
 
 FTPeach refuses a changed SSH host key. For a first connection, follow
 [Connecting safely](connecting.md#connecting-safely) before accepting the key.
@@ -77,7 +76,7 @@ Verify the destination before deciding whether to delete the originals.
 
 Saving in the editor changes the edit copy on your computer. Check that you approved its
 upload in FTPeach and that the upload succeeded. If the app closed before you
-finished, inspect the recovered edits it offers on startup. Follow
+finished, look at the recovered edits it offers on startup. Follow
 [Editing remote files](editing.md) to finish the work.
 
 <!-- verified-by: pr test/component/open-with/openWithRecovery.test.tsx::only an uploaded revision is marked synced, and a failed upload asks again -->
@@ -118,7 +117,7 @@ open **Help > About** and note the version beside the application name.
 [![The Log panel filtered to a Permission denied error.](../../site/images/guide/connection-log.png)](../../site/images/guide/connection-log.png)
 
 Use the log's search field to find the relevant message. This example filters
-for "Permission denied"; it is not a diagnosis of your connection.
+for "Permission denied".
 
 <!-- verified-by: pr test/component/logs/logPanel.test.tsx::search shows only the lines that contain the text, and Escape clears it -->
 

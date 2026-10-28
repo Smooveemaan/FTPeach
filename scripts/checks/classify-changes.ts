@@ -41,8 +41,10 @@ const NO_BUILD = new RegExp(
   ].join('|'),
 );
 
+// protocol-reference.md: a Rust test checks its SSH algorithm table against the
+// library's defaults (test/unit/tooling/classifyChanges.test.ts finds every such file).
 const RUST_ONLY =
-  /^src-tauri\/|^\.cargo\/|^rust-toolchain\.toml$|^scripts\/cargo\.ts$|^scripts\/coverage\//;
+  /^src-tauri\/|^\.cargo\/|^rust-toolchain\.toml$|^scripts\/cargo\.ts$|^scripts\/coverage\/|^docs\/guide\/protocol-reference\.md$/;
 
 const FRONTEND_ONLY =
   /^src\/|^public\/|^index\.html$|^vite\.config\.ts$|^tsconfig[^/]*\.json$|^playwright\.config\.ts$|^test\/visual\//;

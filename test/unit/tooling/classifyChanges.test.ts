@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   CROSS_LANGUAGE_SOURCES,
   classifyChanges,
@@ -103,5 +105,24 @@ test('the listed crossings are the ones the crate actually compiles', async () =
   for (const path of CROSS_LANGUAGE_SOURCES) {
     const name = path.slice(path.lastIndexOf('/') + 1);
     assert.ok(included.includes(name), `${path} is no longer compiled into the crate`);
+  }
+});
+
+test('every file outside src-tauri that the crate compiles in runs the Rust half', async () => {
+  const crate = fileURLToPath(new URL('../../../src-tauri/', import.meta.url));
+  const root = path.resolve(crate, '..');
+  const found: string[] = [];
+  for (const entry of await readdir(path.join(crate, 'src'), { recursive: true })) {
+    if (!entry.endsWith('.rs')) continue;
+    const file = path.join(crate, 'src', entry);
+    const text = await readFile(file, 'utf8');
+    for (const match of text.matchAll(/include_(?:str|bytes)!\(\s*"([^"]+)"/g)) {
+      const target = path.relative(root, path.resolve(path.dirname(file), match[1]!));
+      if (!target.startsWith('src-tauri')) found.push(target.split(path.sep).join('/'));
+    }
+  }
+  assert.ok(found.includes('docs/guide/protocol-reference.md'), 'the scan finds no includes');
+  for (const target of found) {
+    assert.equal(classifyChanges([target]).rust, true, target);
   }
 });

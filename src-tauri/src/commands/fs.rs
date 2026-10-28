@@ -385,14 +385,21 @@ mod tests {
         const FIXTURE: &str = "FTPEACH_P0_GUARD_FIXTURE";
         if let Some(root) = std::env::var_os(FIXTURE) {
             let root = PathBuf::from(root);
-            let app = root.join("roaming/FTPeach");
+            // The data folder of this OS, under the profile set below.
+            let app = crate::store::Store::default_dir().unwrap();
+            assert!(app.starts_with(&root), "{}", app.display());
+            std::fs::create_dir_all(app.join("nested")).unwrap();
+            std::fs::write(app.join("secret"), b"keep").unwrap();
             let outside = root.join("outside.txt");
             let mut directories = vec![
                 app.clone(),
                 std::fs::canonicalize(&app).unwrap(),
-                PathBuf::from(app.to_string_lossy().to_uppercase()),
                 app.join("nested/.."),
             ];
+            // Linux volumes tell names apart by case.
+            if !cfg!(target_os = "linux") {
+                directories.push(PathBuf::from(app.to_string_lossy().to_uppercase()));
+            }
             let text = app.to_string_lossy();
             let unc = PathBuf::from(format!(r"\\localhost\{}${}", &text[..1], &text[2..]));
             if std::env::var_os("FTPEACH_REQUIRE_UNC_FIXTURES").is_some() {
@@ -445,7 +452,7 @@ mod tests {
                 assert_eq!(std::fs::read(app.join("secret")).unwrap(), b"keep");
             }
             assert!(
-                (fs_delete_authorized(root.join("roaming").to_string_lossy().into_owned(), true)
+                (fs_delete_authorized(app.parent().unwrap().to_string_lossy().into_owned(), true)
                     .await)
                     .is_err()
             );
@@ -453,8 +460,7 @@ mod tests {
             return;
         }
         let root = std::env::temp_dir().join(format!("ftpeach-guard-{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(root.join("roaming/FTPeach/nested")).unwrap();
-        std::fs::write(root.join("roaming/FTPeach/secret"), b"keep").unwrap();
+        std::fs::create_dir_all(&root).unwrap();
         let output = std::process::Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
@@ -464,6 +470,8 @@ mod tests {
             .env(FIXTURE, &root)
             .env("APPDATA", root.join("roaming"))
             .env("USERPROFILE", &root)
+            .env("HOME", &root)
+            .env_remove("XDG_DATA_HOME")
             .output()
             .unwrap();
         std::fs::remove_dir_all(root).unwrap();

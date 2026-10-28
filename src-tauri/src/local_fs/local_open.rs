@@ -469,8 +469,14 @@ mod tests {
                 .map(|e| (e.name.as_str(), e.is_reparse_point)),
             || false,
         );
-        // Spelled as the user may type it: case and a `.` segment differ.
-        let typed = root.join(".").join("report.txt");
+        // Spelled as the user may type it: case (not on Linux, where it names
+        // another file) and a `.` segment differ.
+        let name = if cfg!(target_os = "linux") {
+            "Report.TXT"
+        } else {
+            "report.txt"
+        };
+        let typed = root.join(".").join(name);
         assert_eq!(
             state.validate(&typed, OpenKind::Document).unwrap(),
             std::fs::canonicalize(root.join("Report.TXT")).unwrap()

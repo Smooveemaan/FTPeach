@@ -83,7 +83,16 @@ pub(crate) fn path_starts_with(path: &Path, base: &Path) -> bool {
                 // SAFETY: both slices remain alive and carry their explicit lengths.
                 unsafe { CompareStringOrdinal(&actual, &expected, true) == CSTR_EQUAL }
             }
-            #[cfg(not(windows))]
+            // shortcut: macOS volumes are usually case-insensitive, so case is
+            // ignored on every one there; a case-sensitive volume gets an extra
+            // refusal, never a missed one. Ask the volume if that matters.
+            #[cfg(target_os = "macos")]
+            {
+                actual == expected
+                    || actual.as_os_str().to_string_lossy().to_lowercase()
+                        == expected.as_os_str().to_string_lossy().to_lowercase()
+            }
+            #[cfg(not(any(windows, target_os = "macos")))]
             {
                 actual == expected
             }
@@ -218,25 +227,46 @@ fn protected_paths() -> &'static [PathBuf] {
     PATHS.get_or_init(resolve_protected_paths)
 }
 
+/// The system's own folders: deleting one, or a folder holding one, is refused
+/// like deleting the profile. `/` is a filesystem root and refused as such.
+#[cfg(not(windows))]
+const SYSTEM_DIRS: &[&str] = &[
+    "/System", "/usr", "/bin", "/etc", "/Library", "/proc", "/sys", "/dev",
+];
+#[cfg(windows)]
+const SYSTEM_DIRS: &[&str] = &[];
+
 fn resolve_protected_paths() -> Vec<PathBuf> {
-    let mut paths = Vec::new();
-    if let Some(profile) = std::env::var_os("USERPROFILE").and_then(absolute_lexical) {
-        paths.push(profile);
-    }
-    if let Some(app_data) = std::env::var_os("APPDATA")
-        && let Some(data_dir) = absolute_lexical(PathBuf::from(app_data).join("FTPeach"))
-    {
-        paths.push(data_dir);
-    }
-    if let Ok(exe) = std::env::current_exe()
-        && let Some(app_dir) = exe.parent().and_then(absolute_lexical)
-    {
-        paths.push(app_dir);
-    }
-    paths
+    let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" });
+    [home.and_then(absolute_lexical), data_dir(), app_dir()]
         .into_iter()
+        .flatten()
+        .chain(SYSTEM_DIRS.iter().map(PathBuf::from))
         .map(|path| resolved_path(&path).unwrap_or(path))
         .collect()
+}
+
+/// `Store::default_dir`, which this module may not name; the public-command
+/// test in `commands::fs` keeps the two the same.
+fn data_dir() -> Option<PathBuf> {
+    #[cfg(windows)]
+    let dir = PathBuf::from(std::env::var_os("APPDATA")?).join("FTPeach");
+    #[cfg(not(windows))]
+    let dir = dirs::data_dir()?.join("com.smooveemaan.ftpeach");
+    absolute_lexical(dir)
+}
+
+/// The program's folder; on macOS the whole `.app` bundle, not only the
+/// `Contents/MacOS` folder that holds the executable.
+fn app_dir() -> Option<PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let dir = exe.parent()?;
+    #[cfg(target_os = "macos")]
+    let dir = dir
+        .ancestors()
+        .find(|folder| folder.extension().is_some_and(|ext| ext == "app"))
+        .unwrap_or(dir);
+    absolute_lexical(dir)
 }
 
 /// Resolved once: they stay put while the program runs, and resolving them
@@ -244,13 +274,11 @@ fn resolve_protected_paths() -> Vec<PathBuf> {
 fn app_owned_paths() -> &'static [PathBuf] {
     static PATHS: std::sync::OnceLock<Vec<PathBuf>> = std::sync::OnceLock::new();
     PATHS.get_or_init(|| {
-        app_owned_paths_for(
-            std::env::var_os("APPDATA").map(PathBuf::from),
-            std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
-            std::env::current_exe()
-                .ok()
-                .and_then(|exe| exe.parent().map(Path::to_path_buf)),
-        )
+        // Outside Windows the staged update sits in the data folder.
+        let staging = std::env::var_os("LOCALAPPDATA")
+            .filter(|_| cfg!(windows))
+            .map(|local| PathBuf::from(local).join(UPDATE_STAGING));
+        app_owned_paths_for(data_dir(), staging, app_dir())
     })
 }
 
@@ -259,51 +287,51 @@ fn app_owned_paths() -> &'static [PathBuf] {
 const UPDATE_STAGING: &str = "com.smooveemaan.ftpeach/updates";
 
 fn app_owned_paths_for(
-    app_data: Option<PathBuf>,
-    local_app_data: Option<PathBuf>,
+    data_dir: Option<PathBuf>,
+    staging: Option<PathBuf>,
     app_dir: Option<PathBuf>,
 ) -> Vec<PathBuf> {
-    let mut paths = Vec::new();
-    if let Some(app_data) = app_data
-        && let Some(data_dir) = absolute_lexical(app_data.join("FTPeach"))
-    {
-        paths.push(data_dir);
-    }
-    if let Some(local_app_data) = local_app_data
-        && let Some(staging) = absolute_lexical(local_app_data.join(UPDATE_STAGING))
-    {
-        paths.push(staging);
-    }
-    if let Some(app_dir) = app_dir
-        && let Some(app_dir) = absolute_lexical(app_dir)
-    {
-        paths.push(app_dir);
-    }
-    paths
+    [data_dir, staging, app_dir]
         .into_iter()
+        .flatten()
+        .filter_map(absolute_lexical)
         .map(|path| resolved_path(&path).unwrap_or(path))
         .collect()
 }
 
-/// The folders of a portable copy's `data\local` that hold the user's own
-/// files: copies opened in an editor and edits recovered from one.
-const PORTABLE_WORKING_FOLDERS: [&str; 2] = ["edit-sessions", "recovered-edits"];
+/// The folders of the local data that hold the user's own files: copies
+/// opened in an editor and edits recovered from one.
+const WORKING_FOLDERS: [&str; 2] = ["edit-sessions", "recovered-edits"];
 
 fn is_app_owned(path: &Path) -> bool {
     app_owned_paths()
         .iter()
         .any(|protected| path_is_within(path, protected))
-        && !is_portable_working_copy(path, super::portable::root())
+        && !is_working_copy(path, working_local_dir())
 }
 
-/// A portable copy keeps editor copies inside the program's folder, which is
-/// protected as a whole. They are downloaded, edited and uploaded like any
-/// other file, so they are let through; the staged update beside them is not.
-fn is_portable_working_copy(path: &Path, portable_root: Option<&Path>) -> bool {
-    portable_root.is_some_and(|root| {
-        let local = super::portable::local_dir(root);
-        let local = resolved_path(&local).unwrap_or(local);
-        PORTABLE_WORKING_FOLDERS
+/// The local data inside a protected folder: a portable copy's `data\local`
+/// beside the program, and outside Windows the data folder, which is also
+/// Tauri's local data folder.
+fn working_local_dir() -> Option<&'static Path> {
+    static DIR: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
+    DIR.get_or_init(|| working_local_dir_for(super::portable::root()))
+        .as_deref()
+}
+
+fn working_local_dir_for(portable_root: Option<&Path>) -> Option<PathBuf> {
+    let local = match portable_root {
+        Some(root) => super::portable::local_dir(root),
+        None => data_dir().filter(|_| !cfg!(windows))?,
+    };
+    Some(resolved_path(&local).unwrap_or(local))
+}
+
+/// Editor copies are downloaded, edited and uploaded like any other file, so
+/// they are let through; the staged update and the data beside them are not.
+fn is_working_copy(path: &Path, local: Option<&Path>) -> bool {
+    local.is_some_and(|local| {
+        WORKING_FOLDERS
             .iter()
             .any(|folder| path_is_within(path, &local.join(folder)))
     })
@@ -530,8 +558,8 @@ mod tests {
             source.join("missing/deep/child"),
             source.join("existing/../child"),
         ];
-        // shortcut: case-insensitive only on Windows; macOS volumes usually are too (A-4).
-        if cfg!(windows) {
+        // Linux volumes tell names apart by case.
+        if cfg!(any(windows, target_os = "macos")) {
             targets.push(PathBuf::from(source.to_string_lossy().to_uppercase()).join("child"));
         }
         for target in targets {
@@ -632,7 +660,7 @@ mod tests {
             .join("FTPeach");
         assert!(!protected.exists());
 
-        let paths = app_owned_paths_for(Some(roaming), None, None);
+        let paths = app_owned_paths_for(Some(roaming.join("FTPeach")), None, None);
 
         assert_eq!(paths, vec![protected]);
     }
@@ -640,7 +668,7 @@ mod tests {
     #[test]
     fn the_update_staging_folder_is_protected_but_not_the_rest_of_local_data() {
         let local = std::env::temp_dir().join(format!("ftpeach-local-{}", uuid::Uuid::new_v4()));
-        let paths = app_owned_paths_for(None, Some(local.clone()), None);
+        let paths = app_owned_paths_for(None, Some(local.join(UPDATE_STAGING)), None);
         // Callers resolve the path first; on macOS that turns /var into /private/var.
         let staging =
             resolved_path(&local.join("com.smooveemaan.ftpeach/updates/FTPeach-9.9.9-setup.exe"))
@@ -656,9 +684,14 @@ mod tests {
     fn a_portable_copy_lets_editor_copies_through_and_nothing_else() {
         let root = std::env::temp_dir().join(format!("ftpeach-portable-{}", uuid::Uuid::new_v4()));
         let local = super::super::portable::local_dir(&root);
+        let resolved_local = working_local_dir_for(Some(&root)).unwrap();
+        assert_eq!(resolved_local, resolved_path(&local).unwrap());
+        // An installed copy keeps editor copies in its data folder only
+        // outside Windows; on Windows that folder holds no editor copies.
+        assert_eq!(working_local_dir_for(None).is_some(), !cfg!(windows));
         let within = |path: PathBuf| {
             let path = resolved_path(&path).unwrap();
-            is_portable_working_copy(&path, Some(&root))
+            is_working_copy(&path, Some(&resolved_local))
         };
         assert!(within(local.join("edit-sessions/run/file/notes.txt")));
         assert!(within(local.join("recovered-edits/a/file/notes.txt")));
@@ -666,10 +699,29 @@ mod tests {
         assert!(!within(local.join("edit-sessions/../updates/pending.json")));
         assert!(!within(root.join("data/vault.dat")));
         assert!(!within(root.join("FTPeach.exe")));
-        assert!(!is_portable_working_copy(
+        assert!(!is_working_copy(
             &local.join("edit-sessions/run/notes.txt"),
             None
         ));
+    }
+
+    #[cfg(not(windows))]
+    #[tokio::test]
+    async fn system_folders_and_the_home_folder_are_not_deleted() {
+        // Not `/etc`: on macOS it is a link and refused as one.
+        for folder in ["/usr", "/dev"]
+            .into_iter()
+            .map(PathBuf::from)
+            .chain(std::env::var_os("HOME").map(PathBuf::from))
+        {
+            let error = validated_delete_target(&folder).await.unwrap_err();
+            assert_eq!(
+                crate::ipc::CommandError::from_anyhow(&error).code,
+                crate::ipc::ErrorCode::PermissionDenied,
+                "{}",
+                folder.display()
+            );
+        }
     }
 
     #[cfg(windows)]

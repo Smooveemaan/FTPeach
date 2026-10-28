@@ -1240,7 +1240,8 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
     /// machine's network address (a UDP `connect` picks it without sending
     /// anything) and the other one is 127.0.0.1: the client listens on the
     /// address it reached the server from, and macOS does not route a
-    /// network source to a loopback listener.
+    /// network source to a loopback listener. With a VPN on, the picked
+    /// address is the tunnel's and the test's own connections break.
     fn server_and_foreign_ips() -> (std::net::IpAddr, std::net::IpAddr) {
         let loopback = std::net::Ipv4Addr::LOCALHOST.into();
         if cfg!(target_os = "macos") {
@@ -1324,7 +1325,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         let tcp = TcpStream::connect((server_ip, port)).await.unwrap();
         let mut stream = AsyncRustlsFtpStream::connect_with_stream(tcp)
             .await
-            .unwrap();
+            .expect("the test server must answer; on macOS a VPN takes the network address");
         stream.set_mode(suppaftp::types::Mode::Active);
         let listing = tokio::time::timeout(Duration::from_secs(20), stream.list(None))
             .await

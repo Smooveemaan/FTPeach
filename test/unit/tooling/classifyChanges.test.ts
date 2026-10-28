@@ -34,7 +34,14 @@ test('documentation runs neither half, and an unknown owner runs both', () => {
     rust: false,
     frontend: false,
   });
-  assert.deepEqual(classifyChanges(['site/index.html']), { rust: false, frontend: false });
+  assert.deepEqual(
+    classifyChanges([
+      'site/index.html',
+      'scripts/site/build.ts',
+      'test/unit/tooling/siteBuild.test.ts',
+    ]),
+    { rust: false, frontend: false },
+  );
   for (const path of ['package.json', '.github/workflows/checks.yml', 'scripts/checks/x.ts']) {
     assert.deepEqual(classifyChanges([path]), { rust: true, frontend: true }, path);
   }

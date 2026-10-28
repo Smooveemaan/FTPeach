@@ -23,9 +23,12 @@ export const CROSS_LANGUAGE_SOURCES: readonly string[] = [
   'src/i18n/locales/en.json',
 ];
 
-/** Paths that drive neither build. The website in `site/` has its own workflow. */
+/**
+ * Paths that drive neither build. The website (`site/`, its build script and their
+ * unit tests) has its own workflow, and lint-test-build runs those tests anyway.
+ */
 const DOCUMENTATION =
-  /(?:^|\/)[^/]+\.md$|^LICENSE$|^\.gitattributes$|^\.gitignore$|^\.editorconfig$|^site\//;
+  /(?:^|\/)[^/]+\.md$|^LICENSE$|^\.gitattributes$|^\.gitignore$|^\.editorconfig$|^site\/|^scripts\/site\/|^test\/unit\/tooling\/site[^/]*\.test\.ts$/;
 
 const FRONTEND_ONLY =
   /^src\/|^index\.html$|^vite\.config\.ts$|^tsconfig[^/]*\.json$|^playwright\.config\.ts$|^test\/visual\//;

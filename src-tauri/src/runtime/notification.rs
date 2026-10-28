@@ -25,6 +25,7 @@ use tauri::AppHandle;
 /// identity is derived from that field, and a toast sent under any other id is
 /// one Windows cannot tie back to FTPeach. `notification_tests` holds the two
 /// together.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 
 /// The icon Windows puts on the toast, as it is named among the bundle
@@ -36,6 +37,7 @@ pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 /// the difference between a crisp icon and a smeared one. Windows draws this
 /// at roughly 16-24 px; handed a single 256 px bitmap it shrinks the image
 /// itself, and that reduction breaks the peach's thin outline into speckles.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub const ICON_RESOURCE: &str = "icons/app-icon.ico";
 
 /// Teaches Windows who [`APP_USER_MODEL_ID`] is, so the toast carries

@@ -260,6 +260,15 @@ fn is_newer(error: &anyhow::Error) -> bool {
     CommandError::from_anyhow(error).code == ErrorCode::StoreNewer
 }
 
+/// No file there. Under a parent that is a file, Unix says "not a directory"
+/// where Windows says "not found"; creating the folder then tells the user why.
+fn is_missing(error: &std::io::Error) -> bool {
+    matches!(
+        error.kind(),
+        std::io::ErrorKind::NotFound | std::io::ErrorKind::NotADirectory
+    )
+}
+
 impl Store {
     /// Brings backups in line with the live stores, for installs that wrote
     /// them before backups followed the live file's protection: rewrites
@@ -386,7 +395,7 @@ impl Store {
                     }
                 }
             }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) if is_missing(&error) => {}
             Err(error) => {
                 anyhow::bail!(CommandError::new(
                     ErrorCode::StoreUnreadable,
@@ -448,7 +457,7 @@ impl Store {
                 }
             },
             Err(error) => {
-                if error.kind() != std::io::ErrorKind::NotFound {
+                if !is_missing(&error) {
                     self.storage_issue(path, StorageIssue::Unreadable, error.to_string());
                 } else {
                     let backup = path.with_extension("last-good.bak");
@@ -480,7 +489,7 @@ impl Store {
                                 ),
                             }
                         }
-                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                        Err(error) if is_missing(&error) => {}
                         Err(error) => {
                             self.storage_issue(path, StorageIssue::Replaced, error.to_string())
                         }

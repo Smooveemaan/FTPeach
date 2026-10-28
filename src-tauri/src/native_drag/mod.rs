@@ -22,6 +22,8 @@ use serde::Deserialize;
 /// anything security-relevant.
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+// Only the Windows drag reads it so far (B-10, C-6).
+#[cfg_attr(not(windows), allow(dead_code))]
 pub struct DragOutFile {
     pub remote_path: String,
     pub name: String,

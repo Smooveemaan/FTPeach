@@ -88,6 +88,18 @@ fn apply_prevent_sleep(settings: &JsonMap) {
 mod tests {
     use super::*;
 
+    /// Absolute folders on this system.
+    const LOGS: &str = if cfg!(windows) {
+        r"D:\logs"
+    } else {
+        "/var/log/ftpeach"
+    };
+    const PORTABLE: &str = if cfg!(windows) {
+        r"E:\FTPeach"
+    } else {
+        "/media/usb/FTPeach"
+    };
+
     /// What a save or an import turns off is turned off too, not only what
     /// it turns on.
     #[tokio::test]
@@ -98,14 +110,14 @@ mod tests {
         let settings = |value| serde_json::from_value::<JsonMap>(value).unwrap();
         apply(
             &settings(serde_json::json!({
-                "logToFile": true, "dateFormat": "iso", "logFolder": r"D:\logs"
+                "logToFile": true, "dateFormat": "iso", "logFolder": LOGS
             })),
             &store,
             &emitter,
         );
         assert_eq!(
             emitter.settings_in_use(),
-            (true, "iso".into(), std::path::PathBuf::from(r"D:\logs"))
+            (true, "iso".into(), std::path::PathBuf::from(LOGS))
         );
         apply(
             &settings(serde_json::json!({"logToFile": false})),
@@ -125,10 +137,10 @@ mod tests {
         assert_eq!(chosen_log_folder("  ", None), None);
         assert_eq!(chosen_log_folder("logs", None), None);
         assert_eq!(
-            chosen_log_folder(r"D:\logs", None),
-            Some(std::path::PathBuf::from(r"D:\logs"))
+            chosen_log_folder(LOGS, None),
+            Some(std::path::PathBuf::from(LOGS))
         );
-        let root = std::path::Path::new(r"E:\FTPeach");
+        let root = std::path::Path::new(PORTABLE);
         assert_eq!(
             chosen_log_folder("logs", Some(root)),
             Some(root.join("logs"))

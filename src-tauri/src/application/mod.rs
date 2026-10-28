@@ -13,5 +13,6 @@ pub(crate) mod upload_resume;
 
 #[cfg(test)]
 mod memory_backend;
-#[cfg(test)]
+// Its goldens hold DPAPI-protected passwords, which only Windows reads (A-11).
+#[cfg(all(test, windows))]
 mod site_compat_tests;

@@ -553,7 +553,6 @@ fn read_fixture(name: &str) -> Value {
     serde_json::from_str(&std::fs::read_to_string(fixture(name)).unwrap()).unwrap()
 }
 
-#[cfg(windows)]
 #[tokio::test]
 async fn saved_sites_and_connections_match_their_goldens() {
     let actual = outcome().await;

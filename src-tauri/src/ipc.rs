@@ -352,6 +352,22 @@ impl CommandError {
             Some(11001 | 11004) => return Some(ErrorCode::HostNotFound),
             _ => {}
         }
+        // getaddrinfo's failures carry no OS code there, only its text for
+        // EAI_NONAME (glibc, then macOS) and EAI_NODATA.
+        #[cfg(unix)]
+        if error.raw_os_error().is_none() {
+            let text = error.to_string();
+            if [
+                "Name or service not known",
+                "nodename nor servname provided",
+                "No address associated with hostname",
+            ]
+            .iter()
+            .any(|known| text.contains(known))
+            {
+                return Some(ErrorCode::HostNotFound);
+            }
+        }
         Some(match error.kind() {
             ErrorKind::TimedOut => ErrorCode::TimedOut,
             ErrorKind::ConnectionRefused => ErrorCode::ConnectionRefused,
@@ -760,8 +776,7 @@ mod tests {
         assert_eq!(CommandError::from_anyhow(&text).code, ErrorCode::Internal);
     }
 
-    /// A name that does not resolve, as the Windows resolver really reports it.
-    #[cfg(windows)]
+    /// A name that does not resolve, as the system's resolver really reports it.
     #[tokio::test]
     async fn an_unresolvable_host_name_is_reported_as_such() {
         let Err(error) = tokio::net::lookup_host("nonexistent.invalid:21").await else {

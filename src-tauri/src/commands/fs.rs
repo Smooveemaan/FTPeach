@@ -625,6 +625,8 @@ async fn open_validated_path<R: tauri::Runtime>(
         #[cfg(not(windows))]
         let result = {
             use tauri_plugin_opener::OpenerExt;
+            // Explorer's argument; here the parent folder opens instead (B-9, C-5).
+            let _ = select;
             let parent = canonical.parent().unwrap_or(&canonical);
             app.opener()
                 .open_path(parent.to_string_lossy().into_owned(), None::<String>)

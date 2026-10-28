@@ -486,7 +486,7 @@ fn generated_import_files_never_stage_a_secret_or_an_entry_that_fails_its_checks
         "sites": [
             site("a", "a.test"),
             {"id": "f", "kind": "folder", "name": "Folder"},
-            {"id": "l", "kind": "local", "name": "Here", "localPath": "C:\\Users"},
+            {"id": "l", "kind": "local", "name": "Here", "localPath": if cfg!(windows) { "C:\\Users" } else { "/home" }},
             {"id": "w", "kind": "site", "name": "Dav", "protocol": "webdav", "webdavUrl": "https://dav.test/x"},
         ],
     });

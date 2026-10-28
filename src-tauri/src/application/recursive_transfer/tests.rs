@@ -1956,6 +1956,8 @@ async fn a_walk_says_queued_while_its_next_step_waits_for_a_transfer_connection(
         report = run(&sessions, Some(&progress), intent) => report,
         () = told => unreachable!(),
     };
+    // A walk that ended before its wait never let the busy transfer go.
+    release.notify_one();
     busy.await.unwrap().unwrap();
     assert!(report.ok, "{:?}", report.errors);
     std::fs::remove_dir_all(root).unwrap();

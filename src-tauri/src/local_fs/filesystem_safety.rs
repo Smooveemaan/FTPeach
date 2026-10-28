@@ -24,6 +24,7 @@ fn link_refused() -> anyhow::Error {
     .into()
 }
 
+#[cfg(windows)]
 const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
 
 pub(crate) fn is_filesystem_root(path: &Path) -> bool {
@@ -255,7 +256,7 @@ fn app_owned_paths() -> &'static [PathBuf] {
 
 /// The downloaded update waits under the local app data; file operations
 /// must not be able to replace it between its check and its start.
-const UPDATE_STAGING: &str = r"com.smooveemaan.ftpeach\updates";
+const UPDATE_STAGING: &str = "com.smooveemaan.ftpeach/updates";
 
 fn app_owned_paths_for(
     app_data: Option<PathBuf>,
@@ -475,6 +476,7 @@ async fn validated_target(
 mod tests {
     use super::*;
 
+    #[cfg(windows)]
     #[test]
     fn windows_prefix_and_case_comparisons_preserve_component_boundaries() {
         for (path, base) in [
@@ -503,13 +505,17 @@ mod tests {
         let source = root.join("source");
         std::fs::create_dir_all(source.join("existing")).unwrap();
         std::fs::write(source.join("existing/keep"), b"keep").unwrap();
-        for target in [
+        let mut targets = vec![
             source.clone(),
             source.join("child"),
             source.join("missing/deep/child"),
             source.join("existing/../child"),
-            PathBuf::from(source.to_string_lossy().to_uppercase()).join("child"),
-        ] {
+        ];
+        // shortcut: case-insensitive only on Windows; macOS volumes usually are too (A-4).
+        if cfg!(windows) {
+            targets.push(PathBuf::from(source.to_string_lossy().to_uppercase()).join("child"));
+        }
+        for target in targets {
             assert!(
                 validate_copy_relationship(&source, &target).is_err(),
                 "{}",
@@ -525,29 +531,39 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 
+    /// An absolute path on this system, written with `/`.
+    fn absolute(path: &str) -> PathBuf {
+        if cfg!(windows) {
+            PathBuf::from(format!("C:{path}"))
+        } else {
+            PathBuf::from(path)
+        }
+    }
+
     #[test]
-    fn recognizes_windows_drive_roots_but_not_children() {
-        assert!(is_filesystem_root(Path::new(r"C:\")));
-        assert!(!is_filesystem_root(Path::new(r"C:\Users")));
+    fn recognizes_drive_roots_but_not_children() {
+        assert!(is_filesystem_root(&absolute("/")));
+        assert!(!is_filesystem_root(&absolute("/Users")));
     }
 
     #[test]
     fn protects_exact_directories_and_all_of_their_ancestors() {
-        let protected = vec![PathBuf::from(r"C:\Users\Alice\AppData\Roaming\FTPeach")];
+        let protected = vec![absolute("/Users/Alice/AppData/Roaming/FTPeach")];
         assert!(target_contains_protected_path(
-            Path::new(r"C:\Users\Alice\AppData\Roaming\FTPeach"),
+            &absolute("/Users/Alice/AppData/Roaming/FTPeach"),
             &protected
         ));
         assert!(target_contains_protected_path(
-            Path::new(r"C:\Users\Alice"),
+            &absolute("/Users/Alice"),
             &protected
         ));
         assert!(!target_contains_protected_path(
-            Path::new(r"C:\Users\Alice\Downloads"),
+            &absolute("/Users/Alice/Downloads"),
             &protected
         ));
     }
 
+    #[cfg(windows)]
     #[test]
     fn reparse_attribute_is_the_windows_junction_and_symlink_boundary() {
         assert_ne!(FILE_ATTRIBUTE_REPARSE_POINT & 0x400, 0);
@@ -606,8 +622,8 @@ mod tests {
     fn the_update_staging_folder_is_protected_but_not_the_rest_of_local_data() {
         let local = std::env::temp_dir().join(format!("ftpeach-local-{}", uuid::Uuid::new_v4()));
         let paths = app_owned_paths_for(None, Some(local.clone()), None);
-        let staging = local.join(r"com.smooveemaan.ftpeach\updates\FTPeach-9.9.9-setup.exe");
-        let recovered = local.join(r"com.smooveemaan.ftpeach\recovered-edits\a\notes.txt");
+        let staging = local.join("com.smooveemaan.ftpeach/updates/FTPeach-9.9.9-setup.exe");
+        let recovered = local.join("com.smooveemaan.ftpeach/recovered-edits/a/notes.txt");
         assert!(paths.iter().any(|root| path_is_within(&staging, root)));
         assert!(!paths.iter().any(|root| path_is_within(&recovered, root)));
     }
@@ -620,16 +636,14 @@ mod tests {
             let path = resolved_path(&path).unwrap();
             is_portable_working_copy(&path, Some(&root))
         };
-        assert!(within(local.join(r"edit-sessions\run\file\notes.txt")));
-        assert!(within(local.join(r"recovered-edits\a\file\notes.txt")));
-        assert!(!within(local.join(r"updates\FTPeach-9.9.9-portable.zip")));
-        assert!(!within(
-            local.join(r"edit-sessions\..\updates\pending.json")
-        ));
-        assert!(!within(root.join(r"data\vault.dat")));
+        assert!(within(local.join("edit-sessions/run/file/notes.txt")));
+        assert!(within(local.join("recovered-edits/a/file/notes.txt")));
+        assert!(!within(local.join("updates/FTPeach-9.9.9-portable.zip")));
+        assert!(!within(local.join("edit-sessions/../updates/pending.json")));
+        assert!(!within(root.join("data/vault.dat")));
         assert!(!within(root.join("FTPeach.exe")));
         assert!(!is_portable_working_copy(
-            &local.join(r"edit-sessions\run\notes.txt"),
+            &local.join("edit-sessions/run/notes.txt"),
             None
         ));
     }

@@ -1135,6 +1135,7 @@ fn a_backup_keeps_only_secrets_the_live_file_still_holds() {
 }
 
 /// Every file the store writes, other than the vault's own.
+#[cfg(windows)]
 fn store_files_text(dir: &std::path::Path) -> Vec<(String, String)> {
     std::fs::read_dir(dir)
         .unwrap()
@@ -1471,11 +1472,10 @@ async fn unavailable_data_directory_surfaces_a_write_error() {
     assert!(result.is_err());
     // The blocked path is the store directory itself, so the failure has to name
     // that -- not the tmp file whose creation fails only as a consequence.
+    let error = result.unwrap_err().to_string();
     assert!(
-        result
-            .unwrap_err()
-            .to_string()
-            .contains("creating the settings store directory")
+        error.contains("creating the settings store directory"),
+        "{error}"
     );
     let _ = tokio::fs::remove_dir_all(parent).await;
 }

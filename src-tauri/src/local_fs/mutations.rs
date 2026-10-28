@@ -40,16 +40,15 @@ mod tests {
             "LPT9",
         ] {
             assert!(
-                validate_download_name(&std::path::Path::new("C:/downloads").join(name)).is_err(),
+                validate_download_name(&std::path::Path::new("/downloads").join(name)).is_err(),
                 "{name:?}"
             );
         }
-        assert!(validate_download_name(std::path::Path::new("C:/downloads/normal.txt")).is_ok());
+        assert!(validate_download_name(std::path::Path::new("/downloads/normal.txt")).is_ok());
     }
     #[test]
     fn a_refused_download_name_reports_the_name() {
-        let error =
-            validate_download_name(std::path::Path::new("C:/downloads/CON.txt")).unwrap_err();
+        let error = validate_download_name(std::path::Path::new("/downloads/CON.txt")).unwrap_err();
         let error = crate::ipc::CommandError::from_anyhow(&error);
         assert_eq!(error.code, crate::ipc::ErrorCode::InvalidFileName);
         assert_eq!(error.message, "CON.txt");

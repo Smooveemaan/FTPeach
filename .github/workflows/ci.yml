@@ -8,8 +8,10 @@ on:
     branches: [master]
   pull_request:
 
+# A newer push to a pull request replaces its older run; every push to master runs
+# to the end, so a later push never hides an earlier one's results.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 jobs:

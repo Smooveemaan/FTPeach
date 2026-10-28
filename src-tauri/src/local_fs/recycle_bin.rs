@@ -12,7 +12,7 @@ use crate::local_fs::filesystem_safety::{
 };
 #[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 #[cfg(windows)]
 use windows::Win32::Storage::FileSystem::{GetDriveTypeW, GetVolumePathNameW};
 #[cfg(windows)]
@@ -20,14 +20,16 @@ use windows::Win32::UI::Shell::{SHFILEOPSTRUCTW, SHFileOperationW};
 #[cfg(windows)]
 use windows::core::PCWSTR;
 
-#[cfg(windows)]
 pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> CommandResult<()> {
-    let target = match validated_delete_target(Path::new(&local_path)).await {
-        Ok(Some((target, _))) => target,
-        Ok(None) => return Ok(()),
-        Err(error) => return Err(error.into()),
-    };
+    match validated_delete_target(Path::new(&local_path)).await {
+        Ok(Some((target, _))) => move_to_bin(target).await,
+        Ok(None) => Ok(()),
+        Err(error) => Err(error.into()),
+    }
+}
 
+#[cfg(windows)]
+async fn move_to_bin(target: PathBuf) -> CommandResult<()> {
     let mut source: Vec<u16> = target.as_os_str().encode_wide().collect();
     if source.starts_with(&[b'\\' as u16, b'\\' as u16, b'?' as u16, b'\\' as u16]) {
         if source.get(4..8) == Some(&[b'U' as u16, b'N' as u16, b'C' as u16, b'\\' as u16]) {
@@ -71,13 +73,7 @@ pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> CommandResult<
 }
 
 #[cfg(not(windows))]
-pub(crate) async fn fs_move_to_recycle_bin(local_path: String) -> CommandResult<()> {
-    let target = match validated_delete_target(Path::new(&local_path)).await {
-        Ok(Some((target, _))) => target,
-        Ok(None) => return Ok(()),
-        Err(error) => return Err(error.into()),
-    };
-
+async fn move_to_bin(target: PathBuf) -> CommandResult<()> {
     let result = tokio::task::spawn_blocking(move || {
         ensure_path_no_reparse_points_now(&target)?;
         let no_bin = || {

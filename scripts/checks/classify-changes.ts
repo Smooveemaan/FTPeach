@@ -37,7 +37,7 @@ const NO_BUILD = new RegExp(
     String.raw`^(?:site|scripts/site|assets|test/unit|test/component|test/e2e)/`,
     String.raw`^(?:vitest|eslint)\.config\.ts$|^\.prettierrc\.json$|^\.prettierignore$`,
     String.raw`^\.github/(?!workflows/)`,
-    String.raw`^scripts/(?:benchmarks|manual-tests|test-servers|release)/|^scripts/clean\.ps1$`,
+    String.raw`^scripts/(?:benchmarks|manual-tests|test-servers|release)/|^scripts/clean\.ts$`,
   ].join('|'),
 );
 

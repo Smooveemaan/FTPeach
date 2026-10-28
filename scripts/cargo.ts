@@ -2,7 +2,8 @@
 //   node --experimental-strip-types scripts/cargo.ts <command> [arguments...]
 // The plain ones (rust:test, rust:clippy, dev...) are in package.json.
 //
-//   build              release installers, into an ASCII target directory
+//   build              release installers, on Windows into an ASCII target directory
+//   dev-simulate-dpapi-failure  `npm run dev` with DPAPI failing on purpose
 //   smoke-build        the packaged smoke target, into .tools/smoke-target
 //   test-installers    the installer tests' installers, into .tools/installer-target
 //   coverage           rust:test instrumented, from a clean llvm-cov folder
@@ -42,10 +43,25 @@ function main(): number {
   switch (command) {
     case 'build': {
       // WiX 3 light.exe fails while finishing its CAB when the MSI output path
-      // contains Cyrillic characters, so release artifacts go to an ASCII path.
-      const target = path.join(process.env.LOCALAPPDATA ?? tmpdir(), 'FTPeachBuild', 'target');
-      return run('npm', ['run', 'build:tauri:raw'], { CARGO_TARGET_DIR: target });
+      // contains Cyrillic characters, so Windows release artifacts go to an ASCII path.
+      const localAppData = process.env.LOCALAPPDATA;
+      const env =
+        process.platform === 'win32' && localAppData
+          ? { CARGO_TARGET_DIR: path.join(localAppData, 'FTPeachBuild', 'target') }
+          : {};
+      return run('npm', ['run', 'build:tauri:raw'], env);
     }
+    case 'dev-simulate-dpapi-failure':
+      return run(
+        process.execPath,
+        [
+          'node_modules/@tauri-apps/cli/tauri.js',
+          'dev',
+          '--config',
+          'src-tauri/tauri.dev.conf.json',
+        ],
+        { FTPEACH_SIMULATE_DPAPI_FAILURE: '1' },
+      );
     case 'smoke-build': {
       const env = { CARGO_TARGET_DIR: path.join(root, '.tools', 'smoke-target') };
       return (

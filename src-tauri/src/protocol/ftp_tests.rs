@@ -1289,12 +1289,15 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                         // Someone else answers first, from another address.
                         let foreign = tokio::net::TcpSocket::new_v4().unwrap();
                         foreign.bind(foreign_source()).unwrap();
-                        if let Ok(mut stream) = foreign.connect(target).await {
-                            let _ = stream
-                                .write_all(b"-rw-r--r-- 1 o g 5 Nov 05 2018 evil.txt\r\n")
-                                .await;
-                            let _ = stream.shutdown().await;
-                        }
+                        // A connect that fails would let the test pass without the attack.
+                        let mut stream = foreign
+                            .connect(target)
+                            .await
+                            .expect("the foreign connection must reach the client");
+                        let _ = stream
+                            .write_all(b"-rw-r--r-- 1 o g 5 Nov 05 2018 evil.txt\r\n")
+                            .await;
+                        let _ = stream.shutdown().await;
                         writer.write_all(b"150 Opening\r\n").await.unwrap();
                         let mut stream = TcpStream::connect(target).await.unwrap();
                         stream

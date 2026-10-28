@@ -361,7 +361,7 @@ pub(crate) fn ensure_path_no_reparse_points_now(path: &Path) -> anyhow::Result<(
             continue;
         }
         match component_metadata_no_follow(&current) {
-            Ok(metadata) if is_reparse_point(&metadata) => {
+            Ok(metadata) if is_reparse_point(&metadata) && !is_system_link(&current, &metadata) => {
                 return Err(crate::ipc::CommandError::new(
                     crate::ipc::ErrorCode::LinkNotFollowed,
                     "Refusing to traverse a symbolic link, junction, or reparse point",
@@ -408,6 +408,25 @@ pub(crate) fn is_reparse_point(metadata: &std::fs::Metadata) -> bool {
 #[cfg(not(windows))]
 pub(crate) fn is_reparse_point(metadata: &std::fs::Metadata) -> bool {
     metadata.file_type().is_symlink()
+}
+
+/// A link the system keeps, such as macOS's `/var` -> `/private/var` or
+/// `/bin` -> `usr/bin` on Linux: root's own, in a folder only root can
+/// change, so it cannot be swapped between a check and its use. The parent
+/// was already checked, so following it here is safe.
+#[cfg(not(windows))]
+fn is_system_link(path: &Path, metadata: &std::fs::Metadata) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    metadata.uid() == 0
+        && path
+            .parent()
+            .and_then(|parent| std::fs::metadata(parent).ok())
+            .is_some_and(|parent| parent.uid() == 0 && parent.mode() & 0o022 == 0)
+}
+
+#[cfg(windows)]
+fn is_system_link(_path: &Path, _metadata: &std::fs::Metadata) -> bool {
+    false
 }
 
 pub(crate) async fn ensure_tree_has_no_reparse_points(root: &Path) -> anyhow::Result<()> {
@@ -793,5 +812,32 @@ mod tests {
         assert!(external.join("file.txt").exists());
 
         let _ = tokio::fs::remove_dir_all(base).await;
+    }
+
+    /// The links the system keeps (macOS `/var`, `/tmp`; `/bin`, `/lib` on
+    /// most Linux systems) are crossed; a link anyone else made is not.
+    #[cfg(not(windows))]
+    #[test]
+    fn system_links_are_crossed_and_other_links_are_not() {
+        let system: Vec<_> = ["/var", "/tmp", "/etc", "/bin", "/lib"]
+            .into_iter()
+            .filter(|path| {
+                std::fs::symlink_metadata(path).is_ok_and(|meta| meta.file_type().is_symlink())
+            })
+            .collect();
+        assert!(!system.is_empty(), "no system link to try on this machine");
+        for link in system {
+            ensure_path_no_reparse_points_now(&Path::new(link).join("child")).unwrap();
+        }
+
+        let root = std::env::temp_dir().join(format!("ftpeach-link-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("real")).unwrap();
+        std::os::unix::fs::symlink(root.join("real"), root.join("link")).unwrap();
+        let error = ensure_path_no_reparse_points_now(&root.join("link/file")).unwrap_err();
+        assert_eq!(
+            crate::ipc::CommandError::from_anyhow(&error).code,
+            crate::ipc::ErrorCode::LinkNotFollowed
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

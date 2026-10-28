@@ -3,28 +3,28 @@
   "minTokens": 60,
   "areas": {
     "frontend-ts": {
-      "sources": 212,
-      "lines": 32082,
-      "duplicatedLines": 57,
-      "clones": 6
+      "sources": 220,
+      "lines": 33896,
+      "duplicatedLines": 30,
+      "clones": 4
     },
     "css": {
-      "sources": 23,
-      "lines": 4918,
+      "sources": 24,
+      "lines": 5840,
       "duplicatedLines": 7,
       "clones": 1
     },
     "rust-production": {
-      "sources": 124,
-      "lines": 28106,
-      "duplicatedLines": 403,
-      "clones": 38
+      "sources": 152,
+      "lines": 32936,
+      "duplicatedLines": 352,
+      "clones": 33
     },
     "rust-tests": {
-      "sources": 94,
-      "lines": 23898,
-      "duplicatedLines": 941,
-      "clones": 91
+      "sources": 100,
+      "lines": 23631,
+      "duplicatedLines": 467,
+      "clones": 54
     }
   }
 }

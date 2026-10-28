@@ -652,18 +652,7 @@ impl ProtocolBackend for SftpBackend {
         .await;
 
         let result = self.lost_if_closed(result).await;
-        let result = match result {
-            Ok(()) => {
-                let actual = self.known_size(remote_path).await;
-                super::transfer_file::validate_length(
-                    actual.unwrap_or(local_size),
-                    Some(local_size),
-                )
-            }
-            Err(err) => Err(err),
-        };
-        super::transfer_file::report_outcome(&result, &progress);
-        result
+        super::upload_finish(self, remote_path, local_size, result, &progress).await
     }
 
     async fn download(

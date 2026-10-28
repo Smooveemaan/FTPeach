@@ -136,17 +136,7 @@ impl SftpBackend {
             Ok::<_, anyhow::Error>((session, raw, posix_rename))
         };
 
-        let outcome = if timeout_ms > 0 {
-            match tokio::time::timeout(Duration::from_millis(timeout_ms), connect_fut).await {
-                Ok(inner) => inner,
-                Err(_) => Err(crate::protocol::fail(
-                    ErrorCode::TimedOut,
-                    "Connection attempt timed out",
-                )),
-            }
-        } else {
-            connect_fut.await
-        };
+        let outcome = crate::protocol::with_connect_timeout(timeout_ms, connect_fut).await;
 
         let (session, raw, posix_rename) = match outcome {
             Ok(connected) => connected,

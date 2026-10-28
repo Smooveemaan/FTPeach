@@ -54,12 +54,7 @@ pub(crate) async fn start_local_drag(
     window.run_on_main_thread(move || {
         let result = (|| -> anyhow::Result<()> {
             init_ole().map_err(|e| anyhow::anyhow!("OleInitialize failed: {e}"))?;
-            let data_object = local_paths_data_object(&paths)?;
-            let drop_source: IDropSource = DropSource.into();
-            let mut out_effect = DROPEFFECT::default();
-            unsafe { DoDragDrop(&data_object, &drop_source, DROPEFFECT_COPY, &mut out_effect) }
-                .ok()
-                .map_err(|e| anyhow::anyhow!("DoDragDrop failed: {e}"))
+            copy_drag(&local_paths_data_object(&paths)?)
         })();
         let _ = tx.send(result);
     })?;

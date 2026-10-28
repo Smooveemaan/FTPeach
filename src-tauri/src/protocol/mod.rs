@@ -142,6 +142,45 @@ pub(crate) async fn upload_start<B: ProtocolBackend + ?Sized>(
     Ok((local_size, remote_size))
 }
 
+/// Ends an upload: a finished one must have the local file's length on the
+/// server (a server that cannot tell is trusted), and the outcome goes to
+/// the progress sink.
+pub(crate) async fn upload_finish<B: ProtocolBackend + ?Sized>(
+    backend: &mut B,
+    remote_path: &str,
+    local_size: u64,
+    result: BackendResult<()>,
+    progress: &ProgressSink,
+) -> BackendResult<()> {
+    let result = match result {
+        Ok(()) => {
+            let actual = backend.known_size(remote_path).await;
+            transfer_file::validate_length(actual.unwrap_or(local_size), Some(local_size))
+        }
+        Err(err) => Err(err),
+    };
+    transfer_file::report_outcome(&result, progress);
+    result
+}
+
+/// Runs a connection attempt under the site's timeout; 0 means no limit.
+pub(crate) async fn with_connect_timeout<T>(
+    timeout_ms: u64,
+    connect: impl std::future::Future<Output = BackendResult<T>>,
+) -> BackendResult<T> {
+    if timeout_ms == 0 {
+        return connect.await;
+    }
+    tokio::time::timeout(std::time::Duration::from_millis(timeout_ms), connect)
+        .await
+        .unwrap_or_else(|_| {
+            Err(fail(
+                crate::ipc::ErrorCode::TimedOut,
+                "Connection attempt timed out",
+            ))
+        })
+}
+
 pub fn validate_listing(entries: &[EntryInfo]) -> BackendResult<()> {
     let mut text_bytes = 0usize;
     if entries.len() > MAX_DIRECTORY_ENTRIES {

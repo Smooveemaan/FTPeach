@@ -174,6 +174,20 @@ async fn upload_refusal(
     }
 }
 
+/// The answer to a command a server may not support (SIZE, MDTM): a refusal
+/// is no answer, while a 421 or a broken connection stays an error.
+fn optional_reply<T>(reply: Result<T, suppaftp::FtpError>) -> BackendResult<Option<T>> {
+    match reply {
+        Ok(value) => Ok(Some(value)),
+        Err(suppaftp::FtpError::UnexpectedResponse(response))
+            if response.status != Status::NotAvailable =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error.into()),
+    }
+}
+
 /// Whether the error ends in the server's own refusal: a complete negative
 /// reply, after which the control connection is ready for the next command.
 /// A 421 is the server closing the connection, so it does not count.
@@ -652,17 +666,9 @@ impl ProtocolBackend for FtpBackend {
     async fn known_size(&mut self, path: &str) -> Option<u64> {
         let path = path.to_string();
         self.with_stream(move |s| {
-            Box::pin(async move {
-                match s.size(&path).await {
-                    Ok(size) => Ok(Some(size as u64)),
-                    Err(suppaftp::FtpError::UnexpectedResponse(response))
-                        if response.status != Status::NotAvailable =>
-                    {
-                        Ok(None)
-                    }
-                    Err(error) => Err(error.into()),
-                }
-            })
+            Box::pin(
+                async move { Ok(optional_reply(s.size(&path).await)?.map(|size| size as u64)) },
+            )
         })
         .await
         .ok()
@@ -741,18 +747,7 @@ impl ProtocolBackend for FtpBackend {
             })
             .await;
 
-        let result = match result {
-            Ok(()) => {
-                let actual = self.known_size(&remote_path).await;
-                super::transfer_file::validate_length(
-                    actual.unwrap_or(local_size),
-                    Some(local_size),
-                )
-            }
-            Err(err) => Err(err),
-        };
-        super::transfer_file::report_outcome(&result, &progress);
-        result
+        super::upload_finish(self, &remote_path, local_size, result, &progress).await
     }
 
     async fn download(

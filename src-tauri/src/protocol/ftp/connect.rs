@@ -215,17 +215,7 @@ impl FtpBackend {
             Ok::<_, anyhow::Error>((stream, feat, data))
         };
 
-        let outcome = if timeout_ms > 0 {
-            match tokio::time::timeout(Duration::from_millis(timeout_ms), connect_fut).await {
-                Ok(inner) => inner,
-                Err(_) => Err(crate::protocol::fail(
-                    ErrorCode::TimedOut,
-                    "Connection attempt timed out",
-                )),
-            }
-        } else {
-            connect_fut.await
-        };
+        let outcome = crate::protocol::with_connect_timeout(timeout_ms, connect_fut).await;
         let (stream, feat, data) = match outcome {
             Ok(connected) => connected,
             Err(err) => {

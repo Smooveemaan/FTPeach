@@ -127,15 +127,7 @@ impl FtpBackend {
         let version = self
             .with_stream(move |s| {
                 Box::pin(async move {
-                    match s.mdtm(&version_path).await {
-                        Ok(date) => Ok(Some(date.to_string())),
-                        Err(suppaftp::FtpError::UnexpectedResponse(response))
-                            if response.status != Status::NotAvailable =>
-                        {
-                            Ok(None)
-                        }
-                        Err(error) => Err(error.into()),
-                    }
+                    Ok(optional_reply(s.mdtm(&version_path).await)?.map(|date| date.to_string()))
                 })
             })
             .await

@@ -159,17 +159,7 @@ impl WebDavBackend {
                 return Ok::<(), anyhow::Error>(());
             }
         };
-        let outcome = if timeout_ms > 0 {
-            match tokio::time::timeout(Duration::from_millis(timeout_ms), probe).await {
-                Ok(inner) => inner,
-                Err(_) => Err(crate::protocol::fail(
-                    ErrorCode::TimedOut,
-                    "Connection attempt timed out",
-                )),
-            }
-        } else {
-            probe.await
-        };
+        let outcome = crate::protocol::with_connect_timeout(timeout_ms, probe).await;
         if let Err(err) = outcome {
             self.logger.event(
                 "connectFailed",

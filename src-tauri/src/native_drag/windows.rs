@@ -106,6 +106,16 @@ fn init_ole() -> windows::core::Result<()> {
     }
 }
 
+/// Runs `DoDragDrop` on the main thread, copy only, until the user drops or
+/// cancels.
+fn copy_drag(data_object: &IDataObject) -> anyhow::Result<()> {
+    let drop_source: IDropSource = DropSource.into();
+    let mut out_effect = DROPEFFECT::default();
+    unsafe { DoDragDrop(data_object, &drop_source, DROPEFFECT_COPY, &mut out_effect) }
+        .ok()
+        .map_err(|e| anyhow::anyhow!("DoDragDrop failed: {e}"))
+}
+
 fn utf16_name(name: &str) -> [u16; 260] {
     let mut buf = [0u16; 260];
     let encoded: Vec<u16> = name.encode_utf16().take(259).collect();
@@ -689,11 +699,7 @@ pub async fn start_drag(
             // `CoGetInterfaceAndReleaseStream` has already released the
             // stream, so it must not be released a second time on drop.
             std::mem::forget(stream);
-            let drop_source: IDropSource = DropSource.into();
-            let mut out_effect = DROPEFFECT::default();
-            unsafe { DoDragDrop(&data_object, &drop_source, DROPEFFECT_COPY, &mut out_effect) }
-                .ok()
-                .map_err(|e| anyhow::anyhow!("DoDragDrop failed: {e}"))
+            copy_drag(&data_object)
         })();
         let _ = tx.send(result);
     })?;

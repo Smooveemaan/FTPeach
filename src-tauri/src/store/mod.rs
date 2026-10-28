@@ -38,9 +38,19 @@ impl Store {
         &self.dir
     }
 
+    #[cfg(windows)]
     pub fn new() -> Result<Self> {
         let appdata = std::env::var("APPDATA").context("%APPDATA% is not set")?;
         Ok(Self::new_at(PathBuf::from(appdata).join("FTPeach")))
+    }
+
+    /// Tauri's app data folder, computed the way Tauri does: the store is
+    /// opened before the app exists.
+    #[cfg(not(windows))]
+    pub fn new() -> Result<Self> {
+        let data =
+            dirs::data_dir().context("the user's data folder is unknown ($HOME is not set)")?;
+        Ok(Self::new_at(data.join("com.smooveemaan.ftpeach")))
     }
 
     pub fn new_at(dir: PathBuf) -> Self {

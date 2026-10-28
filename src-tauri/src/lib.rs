@@ -214,7 +214,8 @@ pub fn run() {
         });
 }
 /// Where this copy keeps its data: `data\` beside a portable program,
-/// `%APPDATA%\FTPeach` otherwise. One or the other, never a fallback: data
+/// `%APPDATA%\FTPeach` otherwise (Tauri's app data folder outside Windows).
+/// One or the other, never a fallback: data
 /// split between the two would look like lost settings and passwords.
 fn open_store() -> Store {
     let Some(root) = local_fs::portable::root() else {

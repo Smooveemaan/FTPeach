@@ -1235,18 +1235,22 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         }
     }
 
-    /// An address of this machine other than 127.0.0.1. macOS answers only
-    /// 127.0.0.1 on loopback, so there it is the machine's own network
-    /// address; a UDP `connect` picks it without sending anything.
-    fn foreign_source() -> std::net::SocketAddr {
+    /// Two addresses of this machine: the server's and another one. macOS
+    /// answers only 127.0.0.1 on loopback, so there the server takes the
+    /// machine's network address (a UDP `connect` picks it without sending
+    /// anything) and the other one is 127.0.0.1: the client listens on the
+    /// address it reached the server from, and macOS does not route a
+    /// network source to a loopback listener.
+    fn server_and_foreign_ips() -> (std::net::IpAddr, std::net::IpAddr) {
+        let loopback = std::net::Ipv4Addr::LOCALHOST.into();
         if cfg!(target_os = "macos") {
             let probe = std::net::UdpSocket::bind("0.0.0.0:0").unwrap();
             probe
                 .connect("192.0.2.1:9")
                 .expect("macOS needs a network address for this test");
-            std::net::SocketAddr::new(probe.local_addr().unwrap().ip(), 0)
+            (probe.local_addr().unwrap().ip(), loopback)
         } else {
-            "127.0.0.2:0".parse().unwrap()
+            (loopback, std::net::Ipv4Addr::new(127, 0, 0, 2).into())
         }
     }
 
@@ -1254,7 +1258,8 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
     /// from another address must be ignored, not taken for the server's.
     #[tokio::test]
     async fn an_active_data_connection_is_taken_only_from_the_server() {
-        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let (server_ip, foreign_ip) = server_and_foreign_ips();
+        let listener = TcpListener::bind((server_ip, 0)).await.unwrap();
         let port = listener.local_addr().unwrap().port();
         let server = tokio::spawn(async move {
             let (socket, _) = listener.accept().await.unwrap();
@@ -1288,7 +1293,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
                         let target = data.unwrap();
                         // Someone else answers first, from another address.
                         let foreign = tokio::net::TcpSocket::new_v4().unwrap();
-                        foreign.bind(foreign_source()).unwrap();
+                        foreign.bind((foreign_ip, 0).into()).unwrap();
                         // A connect that fails would let the test pass without the attack.
                         let mut stream = foreign
                             .connect(target)
@@ -1316,7 +1321,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
             }
         });
 
-        let tcp = TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+        let tcp = TcpStream::connect((server_ip, port)).await.unwrap();
         let mut stream = AsyncRustlsFtpStream::connect_with_stream(tcp)
             .await
             .unwrap();

@@ -328,15 +328,7 @@ async fn fs_delete_authorized(local_path: String, permanent: bool) -> CommandRes
         return crate::local_fs::fs_delete::fs_delete_permanently(local_path).await;
     }
 
-    #[cfg(windows)]
-    {
-        crate::local_fs::recycle_bin::fs_move_to_recycle_bin(local_path).await
-    }
-
-    #[cfg(not(windows))]
-    {
-        crate::local_fs::fs_delete::fs_delete_permanently(local_path).await
-    }
+    crate::local_fs::recycle_bin::fs_move_to_recycle_bin(local_path).await
 }
 
 #[cfg(test)]

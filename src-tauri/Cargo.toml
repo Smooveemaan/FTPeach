@@ -119,6 +119,19 @@ wry = { version = "0.57.0", default-features = false }
 # Already in the tree through Tauri; named here so the data folder is Tauri's
 # app data folder before the app exists (store/mod.rs).
 dirs = "7.0.0"
+# "To the Trash" on macOS and Linux (local_fs/recycle_bin.rs); Windows keeps
+# its own SHFileOperationW path, which refuses drives with no Recycle Bin.
+trash = "5.2.9"
+
+# Already in the tree through `trash`: getuid for the volume's Trash folder
+# (local_fs/recycle_bin.rs).
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+libc = "0.2.189"
+
+# Already in the tree through `trash`: whether a volume has a Trash
+# (local_fs/recycle_bin.rs).
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSString", "NSURL"] }
 
 [dev-dependencies]
 rand = "0.10.2"

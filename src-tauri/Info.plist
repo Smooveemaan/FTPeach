@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Tauri merges this file into the app's Info.plist on macOS. -->
+	<key>NSAppleEventsUsageDescription</key>
+	<string>FTPeach asks Finder to move deleted files to the Trash, so that Put Back can restore them.</string>
+</dict>
+</plist>

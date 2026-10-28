@@ -49,6 +49,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // launch so a moved or reinstalled FTPeach still points Windows at an
     // icon that exists.
     notification::register_identity(app.handle());
+    #[cfg(target_os = "macos")]
+    local_fs::recycle_bin::ask_for_finder_access();
     app.manage(ProgressEmitter::new(app.handle().clone()));
     let panel = app.handle().clone();
     app.manage(LogEmitter::start(logs_dir, move |batch| {

@@ -1,24 +1,44 @@
 //! Cross-volume file Move. Both objects stay protected through verification
-//! and source disposition; destination publication renames the open handle.
+//! and source disposition on Windows. Unix rechecks descriptor identity and
+//! version before unlinkat; concurrent writers cannot be excluded there.
 use anyhow::{Context, Result};
 use sha2::{Digest, Sha256};
+#[cfg(windows)]
+use std::os::windows::{ffi::OsStrExt, fs::OpenOptionsExt, io::AsRawHandle};
 use std::{
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
-    os::windows::{ffi::OsStrExt, fs::OpenOptionsExt, io::AsRawHandle},
     path::Path,
 };
+#[cfg(windows)]
 use windows::Win32::{Foundation::HANDLE, Storage::FileSystem::*};
 
 pub(crate) fn is_cross_volume(error: &anyhow::Error) -> bool {
     error.chain().any(|e| {
-        e.downcast_ref::<std::io::Error>()
-            .is_some_and(|e| e.raw_os_error() == Some(17))
-            || e.downcast_ref::<windows::core::Error>()
-                .is_some_and(|e| e.code().0 as u32 == 0x80070011)
+        if e.downcast_ref::<std::io::Error>()
+            .is_some_and(is_cross_volume_io)
+        {
+            return true;
+        }
+        #[cfg(windows)]
+        if e.downcast_ref::<windows::core::Error>()
+            .is_some_and(|e| e.code().0 as u32 == 0x80070011)
+        {
+            return true;
+        }
+        false
     })
 }
 
+pub(crate) fn is_cross_volume_io(error: &std::io::Error) -> bool {
+    #[cfg(unix)]
+    let code = libc::EXDEV;
+    #[cfg(windows)]
+    let code = 17;
+    error.raw_os_error() == Some(code)
+}
+
+#[cfg(windows)]
 pub(crate) fn disposition(file: &File) -> Result<()> {
     let info = FILE_DISPOSITION_INFO { DeleteFile: true };
     // SAFETY: a live DELETE-capable handle and a correctly sized input buffer.
@@ -33,6 +53,7 @@ pub(crate) fn disposition(file: &File) -> Result<()> {
     Ok(())
 }
 
+#[cfg(windows)]
 fn publish(file: &File, destination: &Path, overwrite: bool) -> Result<()> {
     let name: Vec<u16> = super::long_path(destination)?
         .as_os_str()
@@ -91,12 +112,15 @@ fn copy_with_hook(
     ensure_path_no_reparse_points_now(source)?;
     ensure_path_no_reparse_points_now(destination)?;
     // READ + DELETE; deny external writes, rename and deletion for the entire operation.
+    #[cfg(windows)]
     let mut input = OpenOptions::new()
         .read(true)
         .access_mode(0x80010000)
         .share_mode(1)
         .custom_flags(0x00200000)
         .open(source)?;
+    #[cfg(unix)]
+    let mut input = super::unix_file::open(source)?;
     let metadata = input.metadata()?;
     anyhow::ensure!(
         metadata.is_file(),
@@ -104,14 +128,21 @@ fn copy_with_hook(
     );
     let parent = destination.parent().context("Destination has no parent")?;
     let stage = parent.join(format!(".ftpeach-move-{}.part", uuid::Uuid::new_v4()));
-    let mut output = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create_new(true)
+    let mut options = OpenOptions::new();
+    options.read(true).write(true).create_new(true);
+    #[cfg(windows)]
+    options
         .access_mode(0xc0010000)
         .share_mode(1)
-        .custom_flags(0x00200000)
-        .open(&stage)?;
+        .custom_flags(0x00200000);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NOFOLLOW).mode(0o600);
+    }
+    let mut output = options.open(&stage)?;
+    #[cfg(unix)]
+    let stage_metadata = output.metadata()?;
     let mut published = false;
     let operation = (|| -> Result<()> {
         let mut digest = Sha256::new();
@@ -141,17 +172,69 @@ fn copy_with_hook(
         if let Ok(modified) = metadata.modified() {
             output.set_modified(modified)?;
         }
+        #[cfg(unix)]
+        output.set_permissions(metadata.permissions())?;
         output.sync_all()?;
         ensure_path_no_reparse_points_now(destination)?;
+        #[cfg(windows)]
         publish(&output, destination, overwrite)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+            let staged = super::unix_file::open(&stage)?.metadata()?;
+            let source_now = super::unix_file::open(source)?.metadata()?;
+            anyhow::ensure!(
+                staged.dev() == stage_metadata.dev() && staged.ino() == stage_metadata.ino(),
+                "Temporary copy replaced; source retained"
+            );
+            anyhow::ensure!(
+                metadata.dev() == source_now.dev()
+                    && metadata.ino() == source_now.ino()
+                    && metadata.ctime() == source_now.ctime()
+                    && metadata.ctime_nsec() == source_now.ctime_nsec()
+                    && metadata.mtime() == source_now.mtime()
+                    && metadata.mtime_nsec() == source_now.mtime_nsec()
+                    && metadata.len() == source_now.len(),
+                "Source changed; source retained"
+            );
+            if overwrite {
+                std::fs::rename(&stage, destination)?;
+            } else {
+                std::fs::hard_link(&stage, destination)?;
+                // Publication succeeded even if removing the extra name fails.
+                published = true;
+                super::unix_file::remove(&stage, &output, &output.metadata()?)?;
+            }
+        }
         published = true;
-        // The published destination is still the same open, protected object.
+        // Windows keeps the published destination protected by its open handle.
+        #[cfg(windows)]
         disposition(&input).context("Verified copy retained, but source deletion failed")?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+            let target = super::unix_file::open(destination)?;
+            let actual = target.metadata()?;
+            let expected = output.metadata()?;
+            anyhow::ensure!(
+                actual.dev() == expected.dev()
+                    && actual.ino() == expected.ino()
+                    && hash(&mut output)? == copied,
+                "Destination changed; source retained"
+            );
+            super::unix_file::remove(source, &input, &metadata)
+                .context("Verified copy retained, but source deletion failed")?;
+        }
         Ok(())
     })();
     if let Err(error) = operation {
         if !published {
-            if let Err(cleanup) = disposition(&output) {
+            #[cfg(windows)]
+            let cleanup = disposition(&output);
+            #[cfg(unix)]
+            let cleanup = super::unix_file::remove(&stage, &output, &output.metadata()?)
+                .map_err(anyhow::Error::from);
+            if let Err(cleanup) = cleanup {
                 return Err(error.context(format!(
                     "Source retained; temporary file retained at {}: {cleanup}",
                     stage.display()
@@ -190,8 +273,11 @@ mod tests {
             let bytes = vec![42; size];
             std::fs::write(&source, &bytes).unwrap();
             copy_with_hook(&source, &target, false, |_, _| {
-                assert!(OpenOptions::new().write(true).open(&source).is_err());
-                assert!(std::fs::remove_file(&source).is_err());
+                #[cfg(windows)]
+                {
+                    assert!(OpenOptions::new().write(true).open(&source).is_err());
+                    assert!(std::fs::remove_file(&source).is_err());
+                }
                 Ok(())
             })
             .unwrap();
@@ -220,11 +306,18 @@ mod tests {
     }
     #[test]
     fn fallback_only_accepts_cross_volume_errors() {
+        #[cfg(windows)]
+        {
+            assert!(is_cross_volume(
+                &std::io::Error::from_raw_os_error(17).into()
+            ));
+            assert!(is_cross_volume(
+                &windows::core::Error::from(windows::core::HRESULT(0x80070011u32 as i32)).into()
+            ));
+        }
+        #[cfg(unix)]
         assert!(is_cross_volume(
-            &std::io::Error::from_raw_os_error(17).into()
-        ));
-        assert!(is_cross_volume(
-            &windows::core::Error::from(windows::core::HRESULT(0x80070011u32 as i32)).into()
+            &std::io::Error::from_raw_os_error(libc::EXDEV).into()
         ));
         for code in [5, 32, 80, 112, 183] {
             assert!(!is_cross_volume(
@@ -244,5 +337,28 @@ mod tests {
         assert!(!source.exists());
         assert_eq!(std::fs::read(&target).unwrap(), b"source");
         cleanup(&root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_source_changed_or_replaced_during_move_is_retained() {
+        for replacement in [false, true] {
+            let (root, source, target) = fixture();
+            std::fs::write(&source, b"source").unwrap();
+            std::fs::write(&target, b"target").unwrap();
+            assert!(
+                copy_with_hook(&source, &target, true, |_, _| {
+                    if replacement {
+                        std::fs::rename(&source, root.join("old-source"))?;
+                    }
+                    std::fs::write(&source, b"external changes")?;
+                    Ok(())
+                })
+                .is_err()
+            );
+            assert_eq!(std::fs::read(&source).unwrap(), b"external changes");
+            assert_eq!(std::fs::read(&target).unwrap(), b"target");
+            cleanup(&root);
+        }
     }
 }

@@ -13,7 +13,8 @@ pub(crate) mod staged_copy;
 
 pub(crate) mod target_reservation;
 
-#[cfg(windows)]
+#[cfg(unix)]
+pub(crate) mod unix_file;
 pub(crate) mod verified_move;
 pub(crate) mod windows_names;
 

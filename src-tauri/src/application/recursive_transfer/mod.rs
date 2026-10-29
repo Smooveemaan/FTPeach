@@ -360,8 +360,8 @@ async fn run_inner(
                 return Ok(());
             }
         }
-        anyhow::ensure!(!intent.moving || (cfg!(windows) && matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. }))),
-            CommandError::new(ErrorCode::IntegrityMismatch, "Verified copy/delete Move requires exclusive local handles; use Copy instead. Remote rename remains supported."));
+        anyhow::ensure!(!intent.moving || matches!((&intent.source, &intent.target), (Endpoint::Local { .. }, Endpoint::Local { .. })),
+            CommandError::new(ErrorCode::IntegrityMismatch, "Verified copy/delete Move requires local endpoints; use Copy instead. Remote rename remains supported."));
         leases.push(reserve(sessions, &intent.target, Access::Write).await?);
         // Any number of walks may send the same source at once; only a move,
         // which takes the source away, needs it to itself.

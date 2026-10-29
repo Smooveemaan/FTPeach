@@ -87,7 +87,7 @@ fn protected_file_rejects_writes_and_replacement_until_handle_deletion() {
     let protected = identity::protect(&path, &expected, true).unwrap();
     assert!(std::fs::write(&path, b"external").is_err());
     assert!(std::fs::remove_file(&path).is_err());
-    identity::delete(&protected).unwrap();
+    identity::delete(&protected, &path, &expected).unwrap();
     drop(protected);
     assert!(!path.exists());
     std::fs::remove_dir_all(root).unwrap();

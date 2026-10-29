@@ -225,7 +225,6 @@ async fn fs_rename_checked(
     } else {
         crate::protocol::transfer_file::rename_no_replace(&old_path, Path::new(&new_path)).await
     };
-    #[cfg(windows)]
     let result = match result {
         Err(error) if crate::local_fs::verified_move::is_cross_volume(&error) => {
             tokio::task::spawn_blocking(move || {
@@ -766,10 +765,11 @@ mod grant_tests {
     }
 }
 
-#[cfg(all(test, windows))]
+#[cfg(test)]
 mod drag_move_tests {
     use super::*;
 
+    #[cfg(windows)]
     #[tokio::test]
     async fn case_only_rename_keeps_contents_and_respects_other_owners() {
         let dir = std::env::temp_dir().join(format!("ftpeach-case-{}", uuid::Uuid::new_v4()));
@@ -847,7 +847,7 @@ mod drag_move_tests {
         std::fs::write(&probe, b"probe").unwrap();
         let error = std::fs::rename(&probe, target_dir.join("volume-probe"))
             .expect_err("the fixture must use two genuinely different volumes");
-        assert_eq!(error.raw_os_error(), Some(17));
+        assert!(crate::local_fs::verified_move::is_cross_volume_io(&error));
         std::fs::remove_file(probe).unwrap();
         for overwrite in [false, true] {
             let source = source_dir.join("file.bin");

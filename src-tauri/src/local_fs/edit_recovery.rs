@@ -171,17 +171,16 @@ fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::R
         .and_then(|()| std::fs::create_dir(folder.join(PAYLOAD)))
         .and_then(|()| {
             let result = std::fs::rename(file, &destination);
-            #[cfg(windows)]
             if result
                 .as_ref()
-                .is_err_and(|error| error.raw_os_error() == Some(17))
+                .is_err_and(super::verified_move::is_cross_volume_io)
             {
                 return super::verified_move::copy_verify_delete(file, &destination, false)
                     .map_err(std::io::Error::other);
             }
             result
         });
-    if saved.is_err() {
+    if saved.is_err() && !destination.exists() {
         let _ = std::fs::remove_dir_all(&folder);
     }
     saved
@@ -216,12 +215,24 @@ fn remove_if_clean(copy: &super::open_with::CopyRecord) -> std::io::Result<bool>
     Ok(true)
 }
 
-#[cfg(not(windows))]
+#[cfg(unix)]
 fn remove_if_clean(copy: &super::open_with::CopyRecord) -> std::io::Result<bool> {
-    // Without the native exclusion contract, retain even a seemingly clean copy.
-    Ok(
-        matches!(std::fs::metadata(&copy.local_path), Err(error) if error.kind() == std::io::ErrorKind::NotFound),
-    )
+    super::filesystem_safety::ensure_path_no_reparse_points_now(&copy.local_path)
+        .map_err(std::io::Error::other)?;
+    let file = match super::unix_file::open(&copy.local_path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+        Err(error) => return Err(error),
+    };
+    let metadata = file.metadata()?;
+    if !metadata.is_file() {
+        return Err(std::io::Error::other("not a regular editor copy"));
+    }
+    if copy.synced != Some(super::open_with::Signature::from_metadata(&metadata)) {
+        return Ok(false);
+    }
+    super::unix_file::remove(&copy.local_path, &file, &metadata)?;
+    Ok(true)
 }
 
 /// Ends one open-with session directory: edited copies move to `root`, and

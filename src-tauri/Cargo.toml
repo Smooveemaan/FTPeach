@@ -123,9 +123,8 @@ dirs = "7.0.0"
 # its own SHFileOperationW path, which refuses drives with no Recycle Bin.
 trash = "5.2.9"
 
-# Already in the tree through `trash`: getuid for the volume's Trash folder
-# (local_fs/recycle_bin.rs).
-[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+# Descriptor-relative verified deletion and the volume's Trash folder.
+[target.'cfg(unix)'.dependencies]
 libc = "0.2.189"
 
 # Already in the tree through `trash`: whether a volume has a Trash

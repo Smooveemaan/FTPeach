@@ -424,5 +424,5 @@ pub(super) async fn remove_local(
         "Object type changed; retained"
     );
     let file = super::identity::protect(&path, expected, true)?;
-    super::identity::delete(&file)
+    super::identity::delete(&file, &path, expected)
 }

@@ -98,11 +98,12 @@ pub(super) fn open(path: &Path, deleting: bool, exclusive: bool) -> Result<File>
             .share_mode(if exclusive { 1 } else { 7 })
             .custom_flags(0x0200_0000 | 0x0020_0000);
     }
-    #[cfg(not(windows))]
-    anyhow::ensure!(
-        !deleting && !exclusive,
-        "Exclusive verified deletion is unavailable; source retained"
-    );
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        let _ = (deleting, exclusive);
+        options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK);
+    }
     options
         .open(path)
         .with_context(|| format!("Cannot protect {} from external changes", path.display()))
@@ -113,6 +114,10 @@ pub(super) fn receipt(file: &File) -> Result<Receipt> {
     anyhow::ensure!(
         !metadata.file_type().is_symlink(),
         "Object was replaced by a link"
+    );
+    anyhow::ensure!(
+        metadata.is_file() || metadata.is_dir(),
+        "Not a regular file or directory"
     );
     #[cfg(windows)]
     {
@@ -196,9 +201,10 @@ pub(super) fn protect(path: &Path, expected: &Receipt, deleting: bool) -> Result
     Ok(file)
 }
 
-pub(super) fn delete(file: &File) -> Result<()> {
+pub(super) fn delete(file: &File, path: &Path, expected: &Receipt) -> Result<()> {
     #[cfg(windows)]
     {
+        let _ = (path, expected);
         use std::os::windows::io::AsRawHandle;
         use windows::Win32::{Foundation::HANDLE, Storage::FileSystem::*};
         let disposition = FILE_DISPOSITION_INFO { DeleteFile: true };
@@ -218,7 +224,24 @@ pub(super) fn delete(file: &File) -> Result<()> {
         .map_err(|error| std::io::Error::from_raw_os_error(error.code().0 & 0xFFFF))?;
         Ok(())
     }
-    #[cfg(not(windows))]
+    #[cfg(unix)]
+    {
+        let actual = receipt(file)?;
+        anyhow::ensure!(
+            if expected.directory {
+                actual.directory && expected.identity == actual.identity
+            } else {
+                expected == &actual
+            },
+            "Object changed; retained"
+        );
+        Ok(crate::local_fs::unix_file::remove(
+            path,
+            file,
+            &file.metadata()?,
+        )?)
+    }
+    #[cfg(not(any(windows, unix)))]
     {
         let _ = file;
         anyhow::bail!("Verified deletion unavailable; object retained")

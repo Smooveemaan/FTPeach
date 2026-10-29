@@ -14,7 +14,7 @@ the one policy for drag and drop, paste after Cut and transfer routing.
 | Commit of an upload or download | Download: verified UUID partial, no-replace commit by the OS | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row | Upload: UUID staging, then the rename row |
 | New empty file | Exclusive create | Checks the target, then an empty `APPE`: a file created in between keeps its content; an existing name is `alreadyExists`; 502/504 is `createUnsupported` | Exclusive open (`EXCLUDE`); a taken name is `alreadyExists` | PROPFIND, then `PUT` with `If-None-Match: *`; a taken name is `alreadyExists` |
 | Recursive copy | Each file commits as above; declining or skipping one keeps the source folder | same | same | same |
-| Move of a folder | Verified copy, then handle-based deletion of each unchanged source file | Same-session server rename only | Same-session server rename only | Same-session `MOVE` only |
+| Move of a folder | Verified copy, then verified deletion of each unchanged source file | Same-session server rename only | Same-session server rename only | Same-session `MOVE` only |
 
 Approved replacement of an upload renames a server's refusal aside to `.ftpeach-<uuid>.old`,
 publishes the staging file and deletes the old file only afterwards; a failed publication puts it
@@ -78,14 +78,18 @@ fault tests use controlled backends, so they do not replace the real server comp
 | Stop | Only a newly created local object with a matching identity can be removed. Files require the recorded version too; directories must still have their identity and must be empty at the native delete operation. Overwritten destinations are retained. Changed or unverifiable local objects are retained and reported using the structured `cleanupIncomplete` code. On a server, everything already delivered is retained without a report: the user stopped the copy, and a stopped copy keeps what it made. |
 | Staging | Journals record the operation ID and exact retained staging paths. Recursive Stop never infers ownership from `.ftpeach-<UUID>.part`, never sweeps a folder for matching names and never follows a sidecar to delete its contents. A stopped upload's staging file is removed only when the staging registry still holds that exact path for that destination, the same authority a stopped single upload uses; a failed removal is logged. Unverified local partials are retained with diagnostics. |
 | Remote rollback | Remote files and collections are retained because the adapters do not expose conditional object deletion. In particular, there is no WebDAV LIST-then-recursive-DELETE fallback; a file appearing in that interval cannot be deleted by rollback. |
-| Move | Copy/delete Move is enabled only between local endpoints on Windows. After the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is then opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. A conflict preserves the current source file and already delivered targets. A source the filesystem refuses to delete, such as a read-only file, ends the deletion there with its own error code: the report names it, the app log records it, and the sources not yet deleted stay. Same-session remote server Rename remains available; other moves are refused before any write, and the user can copy instead. |
+| Move | Copy/delete Move is enabled only between local endpoints. On Windows, after the final source manifest check, each file's destination is opened with write/delete sharing denied and verified. Its source is opened with the same sharing restriction plus DELETE access, verified against the saved receipt and deleted through that handle with `SetFileInformationByHandle`. The destination handle stays open until the source handle closes. On Unix, no-follow descriptors supply device/inode identity, change and modification times, length and the bounded digest; deletion rechecks the file and its name through an open parent directory and uses `unlinkat`. Nonempty directories are refused. A conflict preserves the current source file and already delivered targets. A source the filesystem refuses to delete ends the deletion there with its own error code: the report names it, the app log records it, and the sources not yet deleted stay. Same-session remote server Rename remains available; other moves are refused before any write, and the user can copy instead. |
 
 The source-deletion phase is irreversible and its journal never rolls back the destination,
 including after a later cancellation. This change does not claim protection against malicious
 metadata forgery, existing writable memory mappings, replacement of ancestor directories,
 filesystem-specific durability failures or physical power loss. Local handle deletion fails
-closed when the filesystem refuses the required sharing/access semantics. Non-Windows
-copy/delete Move and automatic rollback are unavailable rather than falling back to path deletion.
+closed when the filesystem refuses the required sharing/access semantics. Unix cannot exclude
+concurrent writers or atomically unlink by file identity: a short race remains between the final
+descriptor/name check and `unlinkat`, including during automatic rollback and clean editor-copy
+removal. Destination descriptors also cannot prevent external writes after verification. These
+are accepted limits of the Unix port, not Windows sharing guarantees. The descriptor-relative
+operation follows [unlinkat](https://man7.org/linux/man-pages/man2/unlink.2.html).
 
 Windows reads the per-file journal revision with
 [FSCTL_READ_FILE_USN_DATA](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_read_file_usn_data).
@@ -216,5 +220,15 @@ Local single-file moves use filesystem rename with explicit overwrite approval, 
 Rename and single-file copy request replacement only when the caller passes `overwrite: true`, after the user resolves a detected conflict (MoveTo, paste, drag or remote F2). A missing or `false` flag selects the no-replace path locally and in `session_rename`, subject to the remote protocol limitations above. Remote F2, including a change of letter case, first requests no-replace and retries with overwrite only after confirmation of an `alreadyExists` response. A successful rename to a free name needs no extra confirmation.
 
 `fs_copy_file` uses the same staged copy as recursive local copies: bytes go to a unique hidden sibling, the source must keep its length and modification time, the sibling is synced and only then committed under the overwrite policy. A failure before commit removes only that sibling; an existing target keeps its old content and a new target never appears partially written.
+
+On Unix, the cross-volume fallback uses the same length and SHA-256 checks. It preserves the
+source permissions and modification time, publishes by rename (approved replacement) or hard
+link (no replacement), and rechecks the published object's identity and digest before verified
+source deletion. Only `EXDEV` activates it. The no-replacement hard-link fallback still requires
+a filesystem supporting hard links. Editor recovery uses the same cross-volume path and retains
+an already published recovery copy if source deletion fails. Unchanged editor copies are removed
+only after their saved signature matches descriptor metadata and the final name/version check.
+Tests: `verified_move::tests`, `unix_file::tests`, `edit_recovery::tests` and the explicitly
+configured two-volume `commands::fs::drag_move_tests::cross_volume_disk_move`.
 
 Address breadcrumbs explicitly opt back into pointer events during drag; the browser regression uses real mouse movement with production CSS. Windows handle publication follows [FILE_RENAME_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info).

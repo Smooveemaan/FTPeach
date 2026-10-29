@@ -116,3 +116,23 @@ test.each([
     expect(drag.modifier!({ ...args, transform: { ...args.transform, x: -20 } }).x).toBe(-20);
   },
 );
+for (const os of ['Macintosh; Intel Mac OS X', 'X11; Linux x86_64']) {
+  test(`local tab labels preserve backslashes on ${os}`, () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(os);
+    const tab = makeTab('unix');
+    tab.panes.a.kind = 'local';
+    tab.panes.b.kind = 'local';
+    tab.panes.a.path = '/home/back\\slash';
+    render(
+      <TabStrip
+        tabs={[tab]}
+        activeTabId={tab.id}
+        onSelect={vi.fn()}
+        onClose={vi.fn()}
+        onNew={vi.fn()}
+        onRename={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('tab').textContent).toContain('back\\slash');
+  });
+}

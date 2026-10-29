@@ -1,5 +1,24 @@
 use super::*;
 
+#[cfg(unix)]
+#[tokio::test]
+async fn unix_copy_preserves_names_that_windows_rejects() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    for name in ["CON.txt", "name:stream", "name.", "name "] {
+        std::fs::write(root.join("source").join(name), b"contents").unwrap();
+    }
+    let report = run(&Sessions::default(), None, intent).await;
+    assert!(report.ok, "{:?}", report.errors);
+    for name in ["CON.txt", "name:stream", "name.", "name "] {
+        assert_eq!(
+            std::fs::read(root.join("target").join(name)).unwrap(),
+            b"contents"
+        );
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 type DeleteHook = Box<dyn FnOnce() + Send>;
 static BEFORE_DELETE: LazyLock<Mutex<HashMap<String, DeleteHook>>> =
     LazyLock::new(Default::default);

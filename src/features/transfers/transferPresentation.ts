@@ -3,6 +3,7 @@ import type { IconName } from '../../components/Icon.tsx';
 import type { RecursiveEndpoint } from '../../platform/api/transfers.ts';
 import type { Translate } from '../../shared/translate.ts';
 import { isolate } from '../../shared/bidi.ts';
+import { localSeparator } from '../../platform/os.ts';
 
 /**
  * Which way a row's bytes actually travel, read from its endpoints. The row's
@@ -59,22 +60,24 @@ function transferEndpoints(row: TransferRow): {
   }
 }
 
-function routeParent(path: string): string {
-  const trimmed = path.replace(/[\\/]+$/, '');
-  const index = Math.max(trimmed.lastIndexOf('/'), trimmed.lastIndexOf('\\'));
+function routeParent(path: string, separator: string): string {
+  const trimmed = path.replace(separator === '\\' ? /[\\/]+$/ : /\/+$/, '');
+  const index =
+    separator === '\\'
+      ? Math.max(trimmed.lastIndexOf('/'), trimmed.lastIndexOf('\\'))
+      : trimmed.lastIndexOf('/');
   if (index < 0) return path;
   return trimmed.slice(0, index === 0 || (index === 2 && trimmed[1] === ':') ? index + 1 : index);
 }
 
-function routeFolder(path: string): string {
-  const parent = routeParent(path);
-  return (
-    parent
-      .replace(/[\\/]+$/, '')
-      .split(/[\\/]/)
-      .pop()
-      ?.replace(/^([A-Za-z]):$/, '$1:\\') || parent
-  );
+function routeFolder(end: RecursiveEndpoint): string {
+  const separator = end.kind === 'local' ? localSeparator() : '/';
+  const parent = routeParent(end.path, separator);
+  const label = parent
+    .replace(separator === '\\' ? /[\\/]+$/ : /\/+$/, '')
+    .split(separator === '\\' ? /[\\/]/ : /\//)
+    .pop();
+  return (separator === '\\' ? label?.replace(/^([A-Za-z]):$/, '$1:\\') : label) || parent;
 }
 
 /** Both endpoints stay visible; full paths are reserved for the tooltip. */
@@ -90,9 +93,9 @@ export function transferRoutePlaces(
     source.connectionId === target.connectionId;
   const place = (end: RecursiveEndpoint | null) => {
     if (!end) return t('tabStrip.localComputer');
-    if (end.kind === 'local') return routeFolder(end.path);
+    if (end.kind === 'local') return routeFolder(end);
     return sameServer
-      ? `${labelOf(end.connectionId)}: ${routeFolder(end.path)}`
+      ? `${labelOf(end.connectionId)}: ${routeFolder(end)}`
       : labelOf(end.connectionId);
   };
   return [place(source), place(target)];
@@ -179,10 +182,11 @@ export function transferFilePath(item: TransferRow): string {
 export function transferDisplayName(item: TransferRow): string {
   const isDirectory = item.direction === 'recursive' || (item.dragOut && item.isDirectory);
   const fullPath = transferFilePath(item);
+  const windows = transferEndpoints(item).source.kind === 'local' && localSeparator() === '\\';
   return isDirectory
     ? fullPath
-        .replace(/[\\/]+$/, '')
-        .split(/[\\/]/)
+        .replace(windows ? /[\\/]+$/ : /\/+$/, '')
+        .split(windows ? /[\\/]/ : /\//)
         .pop() || fullPath
     : item.name;
 }

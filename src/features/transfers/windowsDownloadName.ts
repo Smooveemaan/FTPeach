@@ -1,9 +1,11 @@
 import i18n from '../../i18n/index.ts';
+import { hostPlatform } from '../../platform/os.ts';
 
 // Refuses a download the backend would refuse, before its row is queued. The
 // authority is src-tauri/src/local_fs/windows_names.rs; test/fixtures/windows-names.json
 // holds the two to the same verdicts.
 export function validateWindowsDownloadName(relativePath: string): void {
+  if (hostPlatform() !== 'windows') return;
   for (const name of relativePath.split(/[\\/]/)) {
     const stem = name.split('.')[0]!.toUpperCase();
     if (

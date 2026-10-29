@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { localPathParts } from '../../shared/paths.ts';
 import type {
   CSSProperties,
   HTMLAttributes,
@@ -71,7 +72,7 @@ interface TabStripProps {
 
 // Last segment of a local path, e.g. "C:\Users\foo\Documents" -> "Documents".
 function localFolderLabel(path: string): string {
-  const parts = path.split(/[\\/]/).filter(Boolean);
+  const parts = localPathParts(path);
   return parts[parts.length - 1] || path;
 }
 

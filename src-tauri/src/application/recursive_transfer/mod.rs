@@ -391,6 +391,7 @@ async fn run_inner(
             if matches!(intent.target, Endpoint::Local { .. }) {
                 // Each listed name on its own first: joined to the target, one
                 // that starts with a drive (`d:name`) would leave the folder.
+                #[cfg(windows)]
                 for name in entry.relative.split('/').filter(|name| !name.is_empty()) { crate::local_fs::windows_names::validate_file_name(name)?; }
                 mutations::validate_download_name(Path::new(&intent.target.path(&entry.relative)))?;
             }

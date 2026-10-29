@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
+import { currentLocalRoot } from '../../shared/paths.ts';
 import type { MenuItem as ShellMenuItem } from '../../components/MenuItems.tsx';
 import { api } from '../../platform/api/index.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
@@ -375,14 +376,17 @@ export function usePaneActions({
     }
     const rect = event.currentTarget.getBoundingClientRect();
     const drives = await api.fsLocal.drives();
-    const currentPath = (panes[id].path || '').toUpperCase();
+    const currentRoot = currentLocalRoot(
+      panes[id].path || '',
+      drives.map((drive) => drive.path),
+    );
     setDriveMenu({
       id,
       x: document.documentElement.dir === 'rtl' ? rect.right : rect.left,
       y: rect.bottom,
       items: drives.map((drive) => ({
         label: drive.label,
-        checked: currentPath.startsWith(drive.path.toUpperCase()),
+        checked: currentRoot === drive.path,
         radio: true,
         onClick: () => navigatePane(id, drive.path),
       })),

@@ -1,4 +1,4 @@
-import { dropDestinationPath } from '../../../shared/paths.ts';
+import { dropDestinationPath, normalizeLocalPath } from '../../../shared/paths.ts';
 import { canMoveBetween } from '../../../shared/movePolicy.ts';
 import { paneJoin } from '../panes/paneBackend.ts';
 import type { PaneState } from '../panes/paneModel.ts';
@@ -26,9 +26,7 @@ export function resolveDropAction(
     return 'invalid';
   const same = canMoveBetween(source, target);
   const normalize = (path: string) =>
-    source.kind === 'local'
-      ? path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
-      : path.replace(/\/+$/, '');
+    source.kind === 'local' ? normalizeLocalPath(path) : path.replace(/\/+$/, '');
   const destination = normalize(dropDestinationPath(target.kind, target.path, folder));
   if (same) {
     if (destination === normalize(source.path)) return 'invalid';
@@ -41,7 +39,7 @@ export function resolveDropAction(
     }
   }
   // Like Explorer: with no modifier, a drop onto another disk copies. Shift still moves there.
-  // ponytail: drive letter or UNC share only; mount points, subst and junctions count as their host volume
+  // shortcut: mount points count as their host volume; use filesystem IDs when cross-volume defaults are needed
   const volume = (path: string) => /^([a-z]:|\/\/[^/]+\/[^/]+)/.exec(path)?.[1] ?? '';
   const sameVolume =
     source.kind !== 'local' || volume(normalize(source.path)) === volume(destination);

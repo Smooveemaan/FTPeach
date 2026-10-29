@@ -9,9 +9,9 @@ pub(crate) fn guard() -> &'static tokio::sync::RwLock<()> {
     GUARD.get_or_init(|| tokio::sync::RwLock::new(()))
 }
 
-/// Validate each destination component without applying Windows naming rules
-/// to operations that stay entirely on a remote filesystem.
+/// Apply the host filesystem naming rules to local download destinations.
 pub(crate) fn validate_download_name(path: &std::path::Path) -> anyhow::Result<()> {
+    #[cfg(windows)]
     for part in path.components() {
         if let std::path::Component::Normal(name) = part {
             let name = name
@@ -20,12 +20,15 @@ pub(crate) fn validate_download_name(path: &std::path::Path) -> anyhow::Result<(
             super::windows_names::validate_file_name(name)?;
         }
     }
+    #[cfg(not(windows))]
+    let _ = path;
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(windows)]
     #[test]
     fn rejects_windows_devices_ads_controls_and_lossy_names() {
         for name in [
@@ -46,12 +49,27 @@ mod tests {
         }
         assert!(validate_download_name(std::path::Path::new("/downloads/normal.txt")).is_ok());
     }
+    #[cfg(windows)]
     #[test]
     fn a_refused_download_name_reports_the_name() {
         let error = validate_download_name(std::path::Path::new("/downloads/CON.txt")).unwrap_err();
         let error = crate::ipc::CommandError::from_anyhow(&error);
         assert_eq!(error.code, crate::ipc::ErrorCode::InvalidFileName);
         assert_eq!(error.message, "CON.txt");
+    }
+    #[cfg(unix)]
+    #[test]
+    fn unix_download_names_preserve_characters_allowed_by_the_filesystem() {
+        for name in [
+            "CON",
+            "name:stream",
+            "name.",
+            "name ",
+            "name\n",
+            "back\\slash",
+        ] {
+            assert!(validate_download_name(&std::path::Path::new("/downloads").join(name)).is_ok());
+        }
     }
     #[tokio::test]
     async fn mutations_wait_until_the_download_releases_its_guard() {

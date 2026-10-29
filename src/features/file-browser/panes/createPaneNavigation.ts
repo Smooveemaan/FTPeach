@@ -1,4 +1,10 @@
-import { joinLocalPath, joinRemotePath } from '../../../shared/paths.ts';
+import {
+  joinLocalPath,
+  joinRemotePath,
+  localPathParts,
+  normalizeLocalPath,
+} from '../../../shared/paths.ts';
+import { hostPlatform, localSeparator } from '../../../platform/os.ts';
 import { parentRemotePath, remoteCrumbs } from '../remotePath.ts';
 import { paneJoin } from './paneBackend.ts';
 import { reportRejection } from '../../../shared/asyncFailure.ts';
@@ -51,6 +57,16 @@ export function createPaneNavigation({
 }: PaneNavigationOptions) {
   const localCrumbsFor = (path: string): PathCrumb[] => {
     if (!path) return [{ label: '…', path }];
+    if (hostPlatform() !== 'windows') {
+      let acc = '';
+      return [
+        { label: '/', path: '/' },
+        ...localPathParts(path).map((label) => {
+          acc += `/${label}`;
+          return { label, path: acc };
+        }),
+      ];
+    }
     const isUnc = path.startsWith('\\\\');
     const parts = path.split('\\').filter(Boolean);
     const crumbs: PathCrumb[] = [];
@@ -76,8 +92,7 @@ export function createPaneNavigation({
   const crumbsFor = (pane: PaneState): PathCrumb[] =>
     pane.kind === 'local' ? localCrumbsFor(pane.path) : remoteCrumbs(pane.path);
 
-  // The single "Up" implementation for both pane kinds: Windows path math
-  // for local panes, parentRemotePath for remote ones.
+  // Local roots stay in place; remote paths always use Unix separators.
   const paneParent = (id: PaneId) => {
     const pane = panes[id];
     if (pane.kind === 'remote') {
@@ -85,6 +100,10 @@ export function createPaneNavigation({
       return;
     }
     if (!pane.path) return;
+    if (hostPlatform() !== 'windows') {
+      if (pane.path !== '/') reportRejection(navigatePane(id, parentRemotePath(pane.path)));
+      return;
+    }
     const isUnc = pane.path.startsWith('\\\\');
     const parts = pane.path.split('\\').filter(Boolean);
     if (parts.length <= (isUnc ? 2 : 1)) return; // already at a drive root / UNC share root
@@ -114,22 +133,28 @@ export function createPaneNavigation({
     const targetId = otherPaneId(sourceId);
     const sourcePane = panes[sourceId];
     const targetPane = panes[targetId];
-    const sourceSep = sourcePane.kind === 'local' ? '\\' : '/';
+    const sourceSep = sourcePane.kind === 'local' ? localSeparator() : '/';
     const anchors = syncAnchorsRef.current[tabId] || { a: '', b: '' };
     const anchorSource = anchors[sourceId];
     const anchorTarget = anchors[targetId];
     const normalizedAnchor = anchorSource.endsWith(sourceSep)
       ? anchorSource
       : anchorSource + sourceSep;
-    if (newPath !== anchorSource && !newPath.startsWith(normalizedAnchor)) return;
+    const normalize =
+      sourcePane.kind === 'local' ? normalizeLocalPath : (path: string) => path.replace(/\/+$/, '');
+    if (
+      normalize(newPath) !== normalize(anchorSource) &&
+      !normalize(newPath).startsWith(normalize(anchorSource) + '/')
+    )
+      return;
     const suffix =
-      newPath === anchorSource
+      normalize(newPath) === normalize(anchorSource)
         ? []
         : newPath.slice(normalizedAnchor.length).split(sourceSep).filter(Boolean);
     const target =
       targetPane.kind === 'local'
         ? suffix.length
-          ? `${anchorTarget}${anchorTarget.endsWith('\\') ? '' : '\\'}${suffix.join('\\')}`
+          ? suffix.reduce((acc, seg) => joinLocalPath(acc, seg), anchorTarget)
           : anchorTarget
         : suffix.reduce((acc, seg) => joinRemotePath(acc, seg), anchorTarget);
     reportRejection(refreshPane(targetId, target, undefined, tabId));

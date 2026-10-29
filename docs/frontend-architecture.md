@@ -225,3 +225,23 @@ Connecting uses yellow throughout; the disconnected Connect button and pane dot 
 `focusMenuItem` prevents native focus recentering and reveals only the hidden edge
 of a row in its nearest menu scroller. Scrollable select menus keep their padding
 outside the scrolling content so keyboard highlights never touch the frame.
+
+## Local paths in the cross-platform build
+
+The renderer reads the host OS from the WebView user agent in `src/platform/os.ts`.
+Local navigation, breadcrumbs, tab names and transfer labels use Windows separators
+and drive/UNC roots on Windows, and `/` on macOS and Linux. Remote paths always
+use `/`; a backslash in a Unix filename remains part of its name.
+
+Local path comparisons ignore case on Windows and preserve case on macOS and
+Linux. The root menu selects the longest matching root on a segment boundary,
+so a home directory takes precedence over `/`. This is an OS-level comparison,
+not a probe of each volume's case sensitivity. The default drag action identifies
+Windows volumes by drive letter or UNC share; Unix mount boundaries are not
+queried, so Shift and Ctrl remain the explicit move and copy choices.
+
+Download prechecks and the backend apply Windows device-name and character
+restrictions only on Windows; Unix filesystem operations enforce their own naming
+rules. These behaviors are covered by the local-path component tests and the
+backend download-name tests. This is development behavior for the forthcoming
+macOS/Linux builds; the published guide continues to describe the released app.

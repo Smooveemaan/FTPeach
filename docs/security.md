@@ -84,6 +84,17 @@ A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates` un
 
 A portable copy asks the feed for its own entry, `windows-x86_64-portable`, so neither kind of copy can take the other's artifact, and `pending.json` may name only `FTPeach-<version>-portable.zip`. The zip waits in `data\local\updates` under the same checks: the release key signed it, it is pinned while it is checked and unpacked, and the `FTPeach.exe` inside it carries the announced version, newer than the running build. In addition every entry must stay inside the program's folder and outside `data\`, links are refused, and the unpacked size is bounded by what actually comes out, not by what the zip declares. The files are unpacked into the staging folder first and moved into place with the program last; a new program that cannot be put in place or started gives way to the old one.
 
+The unreleased Unix updater accepts Mac app tarballs, AppImages and Debian
+packages, selected by the installed bundle type. It rechecks the release
+signature and reads the version inside those signed bytes before handing that
+same memory buffer to the plugin's installer. A file changed after the read
+cannot change what is installed. Symbolic links and non-regular staged files
+are refused. A fresh server offer must still name the saved version and
+signature; an unavailable server leaves the download waiting. This is an
+availability check, not a cryptographic revocation protocol: the embedded
+public key remains the trust anchor. Package formats, bounds and target-OS
+acceptance requirements are described in [updater signing](updater-signing.md#unix-packages-in-development).
+
 A portable copy's `data\` folder holds what `%APPDATA%\FTPeach` holds, so whoever can copy the folder gets the same files. Under system protection that includes DPAPI blobs only the saving Windows account can open; no key file is written beside them to make them travel, since it would be the passwords in plain text for anyone holding the folder.
 
 ### FTPeach and external applications

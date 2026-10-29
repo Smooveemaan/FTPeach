@@ -75,6 +75,189 @@ fn a_newer_signed_update_is_ready_to_install() {
 }
 
 #[test]
+fn unix_install_uses_the_verified_snapshot_even_if_the_file_changes() {
+    let dir = staging_dir();
+    let staged = stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::AppImage).unwrap();
+    let installed = install_bytes_with(
+        &dir,
+        &current(),
+        Package::AppImage,
+        ("0.2.0", SIGNATURE),
+        &signature_only,
+        &|bytes| {
+            std::fs::write(&staged.installer, b"replaced after verification")?;
+            assert_eq!(bytes, ARTIFACT);
+            assert!(read_manifest(&dir)?.unwrap().attempted);
+            Ok(())
+        },
+    )
+    .unwrap();
+    assert_eq!(installed, "0.2.0");
+}
+
+#[test]
+fn a_withdrawn_or_changed_unix_offer_never_installs_or_marks_an_attempt() {
+    for offer in [("0.3.0", SIGNATURE), ("0.2.0", "another signature")] {
+        let dir = staging_dir();
+        stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Deb).unwrap();
+        assert!(!matches_offer(&dir, offer.0, offer.1).unwrap());
+        assert!(
+            install_bytes_with(
+                &dir,
+                &current(),
+                Package::Deb,
+                offer,
+                &signature_only,
+                &|_| panic!("a changed offer must not install")
+            )
+            .is_err()
+        );
+        assert!(!read_manifest(&dir).unwrap().unwrap().attempted);
+        assert!(dir.exists());
+    }
+}
+
+#[test]
+fn unix_install_rejects_tampering_and_remembers_an_installer_failure() {
+    let dir = staging_dir();
+    let staged = stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Deb).unwrap();
+    std::fs::write(&staged.installer, b"tampered").unwrap();
+    assert!(
+        install_bytes_with(
+            &dir,
+            &current(),
+            Package::Deb,
+            ("0.2.0", SIGNATURE),
+            &signature_only,
+            &|_| panic!("bad signature must not install")
+        )
+        .is_err()
+    );
+    assert!(!read_manifest(&dir).unwrap().unwrap().attempted);
+    stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Deb).unwrap();
+    assert!(
+        install_bytes_with(
+            &dir,
+            &current(),
+            Package::Deb,
+            ("0.2.0", SIGNATURE),
+            &signature_only,
+            &|_| anyhow::bail!("installer failed")
+        )
+        .is_err()
+    );
+    assert!(ready_with(&dir, &current(), Package::Deb, &signature_only).is_none());
+    assert_eq!(
+        failed_version(&dir, &current()).unwrap(),
+        semver::Version::new(0, 2, 0)
+    );
+}
+
+#[test]
+fn unix_release_checks_do_not_trust_an_installer_shaped_file() {
+    for package in [Package::MacApp, Package::AppImage, Package::Deb] {
+        let dir = staging_dir();
+        stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, package).unwrap();
+        assert!(
+            install_unix(
+                &dir,
+                &current(),
+                PUBKEY,
+                package,
+                ("0.2.0", SIGNATURE),
+                &|_| panic!("a package without a version must not install")
+            )
+            .is_err()
+        );
+        assert!(!read_manifest(&dir).unwrap().unwrap().attempted);
+    }
+}
+
+#[test]
+fn signed_unix_packages_install_only_the_announced_newer_version() {
+    let key = include_str!("../../../test/fixtures/updater/unix/test.key.pub");
+    let fixtures: [(Package, &[u8], &str); 3] = [
+        (
+            Package::MacApp,
+            include_bytes!("../../../test/fixtures/updater/unix/mac.app.tar.gz"),
+            include_str!("../../../test/fixtures/updater/unix/mac.app.tar.gz.sig"),
+        ),
+        (
+            Package::Deb,
+            include_bytes!("../../../test/fixtures/updater/unix/linux.deb"),
+            include_str!("../../../test/fixtures/updater/unix/linux.deb.sig"),
+        ),
+        (
+            Package::AppImage,
+            include_bytes!("../../../test/fixtures/updater/unix/linux.AppImage"),
+            include_str!("../../../test/fixtures/updater/unix/linux.AppImage.sig"),
+        ),
+    ];
+    for (package, bytes, signature) in fixtures {
+        let dir = staging_dir();
+        let staged = stage(&dir, "0.2.0", signature, bytes, package).unwrap();
+        assert_eq!(
+            ready_to_install(&dir, &current(), key, package),
+            Some(staged)
+        );
+        assert_eq!(
+            install_unix(
+                &dir,
+                &current(),
+                key,
+                package,
+                ("0.2.0", signature),
+                &|verified| {
+                    assert_eq!(verified, bytes);
+                    Ok(())
+                }
+            )
+            .unwrap(),
+            "0.2.0"
+        );
+        // The signature is genuine, but the unsigned announcement lies.
+        stage(&dir, "0.9.0", signature, bytes, package).unwrap();
+        assert!(
+            install_unix(
+                &dir,
+                &current(),
+                key,
+                package,
+                ("0.9.0", signature),
+                &|_| panic!("a replay must not install")
+            )
+            .is_err()
+        );
+        stage(&dir, "0.2.0", signature, bytes, package).unwrap();
+        assert!(
+            install_unix(
+                &dir,
+                &semver::Version::new(0, 3, 0),
+                key,
+                package,
+                ("0.2.0", signature),
+                &|_| panic!("a downgrade must not install")
+            )
+            .is_err()
+        );
+        let mut changed = bytes.to_vec();
+        changed.push(0);
+        stage(&dir, "0.2.0", signature, &changed, package).unwrap();
+        assert!(
+            install_unix(
+                &dir,
+                &current(),
+                key,
+                package,
+                ("0.2.0", signature),
+                &|_| panic!("tampering must not install")
+            )
+            .is_err()
+        );
+    }
+}
+
+#[test]
 fn the_release_checks_refuse_an_installer_without_a_version() {
     let dir = staging_dir();
     stage(&dir, "0.2.0", SIGNATURE, ARTIFACT, Package::Installer).unwrap();

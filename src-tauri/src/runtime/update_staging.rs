@@ -3,7 +3,7 @@
 //! The updater downloads in the background and leaves the installer here, so
 //! the next launch can install it silently before any window appears -- or the
 //! status bar can install it sooner. Sitting in this directory earns the file
-//! no trust. Right before it runs, the installer is opened so that nothing can
+//! no trust. On Windows, right before it runs, the installer is opened so nothing can
 //! write, replace or rename it or the directories above it, the bytes read
 //! through that handle are checked against the release key, and the version
 //! the installer itself carries must be the one the manifest names and newer
@@ -13,6 +13,10 @@
 //! A portable copy has no installer. What waits here for it is the release's
 //! zip, held to the same checks, and installing it means unpacking it beside
 //! this folder's own files and swapping them for the program's.
+//!
+//! Unix installation uses a verified memory buffer, not the path checked
+//! earlier: the plugin receives exactly the bytes whose signature and version
+//! were checked, even if the file on disk is replaced meanwhile.
 
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use minisign_verify::{PublicKey, Signature};
@@ -20,6 +24,10 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+
+#[cfg(any(unix, test))]
+#[path = "update_package.rs"]
+pub(crate) mod update_package;
 
 const MANIFEST: &str = "pending.json";
 /// Far above any real manifest; it is read whole before parsing.
@@ -45,12 +53,17 @@ pub struct StagedUpdate {
     pub installer: PathBuf,
 }
 
-/// What is staged: the installer an installed copy runs, or the zip a
-/// portable copy unpacks over its own folder.
+/// The package format accepted by this installed or portable copy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Package {
     Installer,
     PortableZip,
+    #[cfg(any(unix, test))]
+    MacApp,
+    #[cfg(any(unix, test))]
+    AppImage,
+    #[cfg(any(unix, test))]
+    Deb,
 }
 
 impl Package {
@@ -58,6 +71,12 @@ impl Package {
         match self {
             Self::Installer => format!("FTPeach-{version}-setup.exe"),
             Self::PortableZip => format!("FTPeach-{version}-portable.zip"),
+            #[cfg(any(unix, test))]
+            Self::MacApp => format!("FTPeach-{version}.app.tar.gz"),
+            #[cfg(any(unix, test))]
+            Self::AppImage => format!("FTPeach-{version}.AppImage"),
+            #[cfg(any(unix, test))]
+            Self::Deb => format!("FTPeach-{version}.deb"),
         }
     }
 }
@@ -117,6 +136,10 @@ fn release_checks<'a>(
         match package {
             Package::Installer => check_embedded_version(bytes, &manifest.version, current),
             Package::PortableZip => check_portable_zip(bytes, &manifest.version, current),
+            #[cfg(any(unix, test))]
+            Package::MacApp | Package::AppImage | Package::Deb => {
+                update_package::check(bytes, package, &manifest.version, current)
+            }
         }
     }
 }
@@ -243,10 +266,13 @@ fn failed_record(dir: &Path) -> PathBuf {
     dir.with_file_name("update-failed")
 }
 
-fn remember_failed(dir: &Path, version: &semver::Version) {
+/// Prevents a failed automatic install from being retried at each launch.
+pub(super) fn remember_failed(dir: &Path, version: &semver::Version) -> bool {
     if let Err(error) = std::fs::write(failed_record(dir), version.to_string()) {
         log::warn!("could not remember that the update to {version} failed: {error}");
+        return false;
     }
+    true
 }
 
 /// The version whose installer was started and did not install it, while it
@@ -270,6 +296,7 @@ pub fn failed_version(dir: &Path, current: &semver::Version) -> Option<semver::V
 /// `/UPDATE` leaves shortcuts and user data alone, and `/R` starts the new
 /// version once the files are in place. The update is marked as attempted
 /// first, so an install that fails is not retried on every launch.
+#[cfg(windows)]
 pub fn install(dir: &Path, current: &semver::Version, pubkey: &str) -> anyhow::Result<String> {
     let package = Package::Installer;
     let check = release_checks(current, pubkey, package);
@@ -281,10 +308,59 @@ pub fn install(dir: &Path, current: &semver::Version, pubkey: &str) -> anyhow::R
     })
 }
 
+/// Whether a fresh offer still names the staged version and its signature.
+#[cfg(any(unix, test))]
+pub fn matches_offer(dir: &Path, version: &str, signature: &str) -> anyhow::Result<bool> {
+    Ok(read_manifest(dir)?.is_some_and(|manifest| {
+        manifest.version == version && manifest.signature.trim() == signature.trim()
+    }))
+}
+
+/// Rechecks a Unix package and gives the installer the verified memory buffer.
+/// Changes to the file after it was read cannot change what gets installed.
+#[cfg(any(unix, test))]
+pub fn install_unix(
+    dir: &Path,
+    current: &semver::Version,
+    pubkey: &str,
+    package: Package,
+    offer: (&str, &str),
+    install: &dyn Fn(&[u8]) -> anyhow::Result<()>,
+) -> anyhow::Result<String> {
+    let check = release_checks(current, pubkey, package);
+    install_bytes_with(dir, current, package, offer, &check, install)
+}
+
+#[cfg(any(unix, test))]
+fn install_bytes_with(
+    dir: &Path,
+    current: &semver::Version,
+    package: Package,
+    offer: (&str, &str),
+    check: Checker,
+    install: &dyn Fn(&[u8]) -> anyhow::Result<()>,
+) -> anyhow::Result<String> {
+    let mut manifest = read_manifest(dir)?.ok_or_else(|| anyhow::anyhow!("No staged update"))?;
+    anyhow::ensure!(
+        is_newer(dir, &manifest, current)?,
+        "the staged update is not newer than {current}"
+    );
+    anyhow::ensure!(
+        manifest.version == offer.0 && manifest.signature.trim() == offer.1.trim(),
+        "the server no longer offers the staged update"
+    );
+    let bytes = Pinned::open(dir, &manifest, package)?.checked_bytes(&manifest, check)?;
+    manifest.attempted = true;
+    write_manifest(dir, &manifest)?;
+    install(&bytes)?;
+    Ok(manifest.version)
+}
+
 /// Installs the staged zip over the portable copy whose program is `exe`,
 /// then hands the new program to `start`. The same checks and the same
-/// "attempted" mark as [`install`]; the zip stays pinned while it is
+/// "attempted" mark as the Windows installer; the zip stays pinned while it is
 /// unpacked, so what is unpacked is what was checked.
+#[cfg(any(windows, test))]
 pub fn install_portable(
     dir: &Path,
     current: &semver::Version,
@@ -303,6 +379,7 @@ pub fn install_portable(
 /// with the program itself last, and starts the new program. Until the
 /// program is swapped nothing the old one needs is gone; if the new one
 /// cannot be put in place or started, the old one is put back.
+#[cfg(any(windows, test))]
 fn replace_program(
     zip: &Path,
     unpacked: &Path,
@@ -330,6 +407,8 @@ fn replace_program(
     started
 }
 
+// The separate fuzz crate also drives this parser on Unix.
+#[cfg_attr(not(any(windows, test)), allow(dead_code))]
 pub(crate) fn unpack(zip: &Path, destination: &Path) -> std::io::Result<()> {
     let mut archive = zip::ZipArchive::new(File::open(zip)?)?;
     let mut budget = MAX_UNPACKED_BYTES;
@@ -357,6 +436,7 @@ pub(crate) fn unpack(zip: &Path, destination: &Path) -> std::io::Result<()> {
 
 /// Moves every file under `from` to the same place under `to`, replacing
 /// what is there. `skip` is left where it is.
+#[cfg(any(windows, test))]
 fn move_tree(from: &Path, to: &Path, skip: &Path) -> std::io::Result<()> {
     for entry in std::fs::read_dir(from)? {
         let entry = entry?;
@@ -371,6 +451,7 @@ fn move_tree(from: &Path, to: &Path, skip: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+#[cfg(any(windows, test))]
 fn replaced_name(exe: &Path) -> PathBuf {
     let mut name = exe.as_os_str().to_owned();
     name.push(".old");
@@ -379,10 +460,12 @@ fn replaced_name(exe: &Path) -> PathBuf {
 
 /// Removes the program a portable update replaced. Best effort: it may still
 /// be exiting, and the next launch tries again.
+#[cfg(any(windows, test))]
 pub fn remove_replaced(exe: &Path) {
     let _ = std::fs::remove_file(replaced_name(exe));
 }
 
+#[cfg(any(windows, test))]
 fn install_with(
     dir: &Path,
     current: &semver::Version,
@@ -462,15 +545,27 @@ mod pin {
 
 #[cfg(not(windows))]
 mod pin {
-    use std::fs::File;
+    use std::fs::{File, OpenOptions};
+    use std::os::unix::fs::OpenOptionsExt;
     use std::path::Path;
 
     pub fn directory(path: &Path) -> anyhow::Result<File> {
-        Ok(File::open(path)?)
+        Ok(OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW)
+            .open(path)?)
     }
 
     pub fn file(path: &Path) -> anyhow::Result<File> {
-        Ok(File::open(path)?)
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(path)?;
+        anyhow::ensure!(
+            file.metadata()?.is_file(),
+            "the staged update is not a regular file"
+        );
+        Ok(file)
     }
 }
 
@@ -495,6 +590,10 @@ impl Pinned {
     }
 
     fn check(&self, manifest: &Manifest, check: Checker) -> anyhow::Result<()> {
+        self.checked_bytes(manifest, check).map(drop)
+    }
+
+    fn checked_bytes(&self, manifest: &Manifest, check: Checker) -> anyhow::Result<Vec<u8>> {
         let mut bytes = Vec::new();
         (&self.file)
             .take(MAX_INSTALLER_BYTES + 1)
@@ -502,7 +601,8 @@ impl Pinned {
         if bytes.len() as u64 > MAX_INSTALLER_BYTES {
             anyhow::bail!("the staged installer is larger than any FTPeach installer");
         }
-        check(&bytes, manifest)
+        check(&bytes, manifest)?;
+        Ok(bytes)
     }
 
     fn staged(&self, manifest: &Manifest) -> StagedUpdate {

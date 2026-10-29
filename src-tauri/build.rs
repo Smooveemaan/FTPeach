@@ -1,4 +1,11 @@
 fn main() {
+    // The AppImage updater reads this resource from the signed filesystem.
+    std::fs::create_dir_all("gen").expect("create generated resources directory");
+    let version = env!("CARGO_PKG_VERSION").as_bytes();
+    if std::fs::read("gen/ftpeach-update-version").ok().as_deref() != Some(version) {
+        std::fs::write("gen/ftpeach-update-version", version)
+            .expect("write updater version resource");
+    }
     // Commands the sensitive plugin registers. They are permissioned per
     // window through the `sensitive:` prefix.
     const SENSITIVE_COMMANDS: &[&str] = &[

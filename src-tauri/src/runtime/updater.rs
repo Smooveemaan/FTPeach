@@ -18,6 +18,10 @@ use tokio::sync::Mutex as AsyncMutex;
 
 const DOWNLOAD_DEADLINE: std::time::Duration = std::time::Duration::from_secs(30 * 60);
 
+#[cfg(unix)]
+#[path = "updater_unix.rs"]
+mod unix;
+
 #[derive(Default)]
 pub struct UpdaterState {
     /// A check or download is running. A second request does not start
@@ -75,10 +79,30 @@ pub enum UpdaterStatus {
 /// Updates need a packaged build: a development build has no installer to
 /// replace, and a smoke-test instance must not install over the real one.
 pub fn updates_enabled() -> bool {
-    !cfg!(debug_assertions) && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
+    !cfg!(debug_assertions)
+        && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
+        && supported_package()
 }
 
-fn send(app: &AppHandle, status: UpdaterStatus) {
+fn supported_package() -> bool {
+    #[cfg(unix)]
+    return unix_package(std::env::consts::OS, tauri::utils::platform::bundle_type()).is_some();
+    #[cfg(not(unix))]
+    true
+}
+
+#[cfg(any(unix, test))]
+fn unix_package(os: &str, bundle: Option<tauri::utils::config::BundleType>) -> Option<Package> {
+    use tauri::utils::config::BundleType;
+    match (os, bundle) {
+        ("macos", _) => Some(Package::MacApp),
+        ("linux", Some(BundleType::AppImage)) => Some(Package::AppImage),
+        ("linux", Some(BundleType::Deb)) => Some(Package::Deb),
+        _ => None,
+    }
+}
+
+fn send<R: tauri::Runtime>(app: &AppHandle<R>, status: UpdaterStatus) {
     if let Ok(mut last) = app.state::<UpdaterState>().status.lock() {
         *last = Some(status.clone());
     }
@@ -115,6 +139,11 @@ fn staging_dir(app: &AppHandle) -> anyhow::Result<PathBuf> {
 const PORTABLE_TARGET: &str = "windows-x86_64-portable";
 
 fn package() -> Package {
+    #[cfg(unix)]
+    if let Some(package) = unix_package(std::env::consts::OS, tauri::utils::platform::bundle_type())
+    {
+        return package;
+    }
     if portable::root().is_some() {
         Package::PortableZip
     } else {
@@ -124,6 +153,7 @@ fn package() -> Package {
 
 /// Starts the staged update: the installer, or for a portable copy the swap
 /// of its own files followed by the new program.
+#[cfg(windows)]
 fn start_staged(
     app: &AppHandle,
     dir: &Path,
@@ -171,6 +201,7 @@ async fn auto_update_enabled(app: &AppHandle) -> bool {
 /// Runs the installer a previous session downloaded, before this session
 /// shows anything. When it starts, this process ends here and the installer
 /// launches the new version once it is done.
+#[cfg(windows)]
 pub fn install_staged_at_startup(app: &AppHandle) {
     if !updates_enabled() {
         return;
@@ -211,6 +242,15 @@ pub fn check_at_startup(app: &AppHandle) {
     }
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
+        #[cfg(unix)]
+        match unix::resume_at_startup(&app).await {
+            Ok(true) => return,
+            Ok(false) => {}
+            Err(error) => {
+                log::warn!("the staged update will wait: {error:#}");
+                return;
+            }
+        }
         if auto_update_enabled(&app).await {
             // The outcome reaches the status bar through `updater:status`;
             // a background check that fails is not worth an error of its own.
@@ -371,9 +411,16 @@ async fn download_and_stage(app: &AppHandle, update: &Update) -> anyhow::Result<
     .await?
 }
 
-/// Installs the downloaded update straight away: the same silent install the
-/// next launch would run, after the orderly shutdown closing the window does.
+/// Installs the downloaded update after the orderly shutdown closing the window does.
 pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
+    #[cfg(unix)]
+    return unix::install_now(app).await;
+    #[cfg(not(unix))]
+    install_windows_now(app).await
+}
+
+#[cfg(not(unix))]
+async fn install_windows_now(app: &AppHandle) -> anyhow::Result<()> {
     let dir = staging_dir(app)?;
     let pubkey = release_pubkey(app)
         .ok_or_else(|| anyhow::anyhow!("Updater public key is not configured"))?;
@@ -424,6 +471,22 @@ fn state_after_lost_download(app: &AppHandle) {
 #[cfg(test)]
 mod serde_field_casing {
     use super::*;
+
+    #[test]
+    fn unix_packages_follow_the_installed_bundle_and_refuse_bare_linux_binaries() {
+        use tauri::utils::config::BundleType;
+        assert_eq!(unix_package("macos", None), Some(Package::MacApp));
+        assert_eq!(
+            unix_package("linux", Some(BundleType::AppImage)),
+            Some(Package::AppImage)
+        );
+        assert_eq!(
+            unix_package("linux", Some(BundleType::Deb)),
+            Some(Package::Deb)
+        );
+        assert_eq!(unix_package("linux", None), None);
+        assert_eq!(unix_package("linux", Some(BundleType::Rpm)), None);
+    }
 
     #[test]
     fn only_a_missing_target_reads_as_no_update() {

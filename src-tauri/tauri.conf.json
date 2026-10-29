@@ -43,6 +43,7 @@
     "license": "Apache-2.0",
     "licenseFile": "../LICENSE",
     "resources": {
+      "gen/ftpeach-update-version": "ftpeach-update-version",
       "../NOTICE": "NOTICE",
       "icons/icon.ico": "icons/app-icon.ico",
       "../docs/legal/ASSET_PROVENANCE.md": "licenses/ASSET_PROVENANCE.md",

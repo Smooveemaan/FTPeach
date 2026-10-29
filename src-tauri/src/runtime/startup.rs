@@ -41,9 +41,9 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // can leave a record.
     app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
     app_log::record_panics();
-    // Ahead of the tray, the window and everything else the user could see:
-    // an update downloaded last session installs now, and when its installer
-    // starts this process ends here and the new version opens instead.
+    // Windows installs ahead of the tray and visible window. Unix checks the
+    // saved update asynchronously so an unavailable server cannot block startup.
+    #[cfg(windows)]
     updater::install_staged_at_startup(app.handle());
     // Before anything can finish and ask for a toast. Re-registered every
     // launch so a moved or reinstalled FTPeach still points Windows at an

@@ -81,6 +81,19 @@ pub fn names(data: &[u8]) {
 /// A staged portable update: its checks never panic, and unpacking it writes
 /// only inside the program's folder and never under `data`.
 pub fn update(data: &[u8]) {
+    #[cfg(any(unix, test))]
+    for package in [
+        update_staging::Package::MacApp,
+        update_staging::Package::AppImage,
+        update_staging::Package::Deb,
+    ] {
+        let _ = update_staging::update_package::check(
+            data,
+            package,
+            "999.0.0",
+            &semver::Version::new(0, 0, 1),
+        );
+    }
     let _ = update_staging::embedded_version(data);
     let _ = update_staging::check_portable_zip(data, "999.0.0", &semver::Version::new(0, 0, 1));
     if !data.starts_with(b"PK") {

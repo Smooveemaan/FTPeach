@@ -87,9 +87,12 @@ const INSTALLED_COPY_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Uni
 /// Set once a portable update has started the new version: that process
 /// registers the identity for itself, and this one must not take it away
 /// while exiting.
+#[cfg(windows)]
 static IDENTITY_HANDED_OVER: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
+/// Leaves the portable notification identity registered for its new process.
+#[cfg(windows)]
 pub fn hand_identity_over() {
     IDENTITY_HANDED_OVER.store(true, std::sync::atomic::Ordering::SeqCst);
 }

@@ -53,8 +53,8 @@ serde = { version = "1.0.229", features = ["derive"] }
 log = "0.4.34"
 tauri = { version = "2.12.1", features = ["tray-icon"] }
 tauri-plugin-log = "2.10.0"
-# Without `zip`: FTPeach never calls the plugin's install, which is all that
-# unpacks a zip (and needs zip 4); update_staging.rs unpacks the portable zip.
+# Without `zip`: Unix updates use native packages, and update_staging.rs
+# unpacks the Windows portable zip itself.
 tauri-plugin-updater = { version = "2.13.1", default-features = false, features = ["rustls-tls", "system-proxy"] }
 tauri-plugin-dialog = "2.8.1"
 tauri-plugin-notification = "2.5.1"
@@ -128,6 +128,12 @@ trash = "5.2.9"
 # Descriptor-relative verified deletion and the volume's Trash folder.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.189"
+# Read signed package metadata without executing or extracting the update.
+tar = "0.4.46"
+flate2 = "1.1.10"
+plist = "1.10.1"
+backhand = { version = "=0.25.5", default-features = false, features = ["gzip", "xz"] }
+zstd = { version = "=0.14.3", default-features = false }
 
 # Already in the tree through `trash`: whether a volume has a Trash
 # (local_fs/recycle_bin.rs).
@@ -135,6 +141,11 @@ libc = "0.2.189"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSString", "NSURL"] }
 
 [dev-dependencies]
+tar = "0.4.46"
+flate2 = "1.1.10"
+plist = "1.10.1"
+backhand = { version = "=0.25.5", default-features = false, features = ["gzip", "xz"] }
+zstd = { version = "=0.14.3", default-features = false }
 keyring = { version = "3.6.3", default-features = false }
 rand = "0.10.2"
 # The mock runtime, for the vault-lock event (runtime/vault_auto_lock.rs).

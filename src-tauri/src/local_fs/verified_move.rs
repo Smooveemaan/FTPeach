@@ -200,10 +200,7 @@ fn copy_with_hook(
             if overwrite {
                 std::fs::rename(&stage, destination)?;
             } else {
-                std::fs::hard_link(&stage, destination)?;
-                // Publication succeeded even if removing the extra name fails.
-                published = true;
-                super::unix_file::remove(&stage, &output, &output.metadata()?)?;
+                super::unix_file::rename_no_replace(&stage, destination)?;
             }
         }
         published = true;

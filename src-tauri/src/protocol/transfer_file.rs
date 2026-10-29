@@ -138,10 +138,9 @@ pub(crate) async fn rename_no_replace(source: &Path, destination: &Path) -> Resu
         // reported as that instead of as an unexpected failure.
         .map_err(|error| std::io::Error::from_raw_os_error(error.code().0 & 0xFFFF))?;
     }
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     {
-        tokio::fs::hard_link(source, destination).await?;
-        tokio::fs::remove_file(source).await?;
+        crate::local_fs::unix_file::rename_no_replace(source, destination)?;
     }
     Ok(())
 }

@@ -223,12 +223,25 @@ Rename and single-file copy request replacement only when the caller passes `ove
 
 On Unix, the cross-volume fallback uses the same length and SHA-256 checks. It preserves the
 source permissions and modification time, publishes by rename (approved replacement) or hard
-link (no replacement), and rechecks the published object's identity and digest before verified
-source deletion. Only `EXDEV` activates it. The no-replacement hard-link fallback still requires
-a filesystem supporting hard links. Editor recovery uses the same cross-volume path and retains
+exclusive rename (no replacement), and rechecks the published object's identity and digest before
+verified source deletion. Only `EXDEV` activates it. Editor recovery uses the same cross-volume path and retains
 an already published recovery copy if source deletion fails. Unchanged editor copies are removed
 only after their saved signature matches descriptor metadata and the final name/version check.
 Tests: `verified_move::tests`, `unix_file::tests`, `edit_recovery::tests` and the explicitly
 configured two-volume `commands::fs::drag_move_tests::cross_volume_disk_move`.
+
+Unix no-replace publication and local rename use Linux `renameat2(RENAME_NOREPLACE)` or macOS
+`renamex_np(RENAME_EXCL)`, including for directories and filesystems without hard links such as
+FAT. Only an unsupported-operation error enables the regular-file hard-link fallback; collisions,
+permissions, missing paths, full disks and `EXDEV` are returned unchanged. The fallback verifies
+the source entry before unlinking it; directories are refused if exclusive rename is unavailable.
+An existing destination, including an empty directory or a dangling link, is never replaced.
+Tests: `no_replace_rename_moves_files_and_folders_but_keeps_taken_names`,
+`unix_file::tests::concurrent_no_replace_renames_publish_only_one_source` and
+`unix_file::tests::hard_link_fallback_is_only_used_for_unsupported_exclusive_rename`.
+CI's blocking `rust-linux` job runs `no_replace_on_fat_needs_no_hard_links` on a mounted FAT32
+image: file/directory collisions, a download including its resume record, and verified Move.
+Native guarantees follow [Linux renameat2](https://man7.org/linux/man-pages/man2/rename.2.html)
+and [Apple renamex_np](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/man/man2/rename.2).
 
 Address breadcrumbs explicitly opt back into pointer events during drag; the browser regression uses real mouse movement with production CSS. Windows handle publication follows [FILE_RENAME_INFO](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info).

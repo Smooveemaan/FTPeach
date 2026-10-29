@@ -36,6 +36,7 @@ that did not run. The last results are historical, not checks of the current tre
 | --- | --- | --- | --- |
 | `connects_and_round_trips_a_file` | a WebDAV server in `WEBDAV_URL`, `WEBDAV_USER`, `WEBDAV_PASS` | `npm run rust:test -- connects_and_round_trips_a_file --ignored` | NOT RUN: no external server |
 | `cross_volume_disk_move` | a second writable volume in `FTPEACH_MOVE_TEST_VOLUME` | `npm run rust:test -- cross_volume_disk_move --ignored` | PASS, C: to an NTFS drive, 2026-10-08 |
+| `no_replace_on_fat_needs_no_hard_links` | Linux, a writable FAT mount in `FTPEACH_FAT_TEST_ROOT` | `npm run rust:test -- no_replace_on_fat_needs_no_hard_links --ignored`; CI's `rust-linux` mounts its own FAT32 image | PASS, mounted FAT32 image in WSL, 2026-10-29 |
 | `artifact_symlink_cannot_write_to_its_target` | Developer Mode or SeCreateSymbolicLinkPrivilege | `npm run rust:test -- artifact_symlink_cannot_write --ignored` | NOT RUN: privilege not held (1314) |
 | `connect_without_proxy_supports_ipv6_when_loopback_is_available` | the firewall allowing IPv6 loopback connects | `npm run rust:test -- connect_without_proxy_supports_ipv6 --ignored` | NOT RUN: connect to ::1 refused (EACCES) |
 | `endless_reply_under_a_memory_cap` | nothing; its parent test runs it under a 128 MiB cap | runs inside `an_endless_reply_fits_in_a_process_with_a_hard_memory_cap` | PASS through the parent |

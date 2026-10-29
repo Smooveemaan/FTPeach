@@ -458,6 +458,79 @@ async fn no_replace_commit_preserves_a_target_created_after_preflight() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+async fn check_no_replace_renames(root: &Path) {
+    let source = root.join("source");
+    let target = root.join("target");
+    std::fs::write(&source, b"source").unwrap();
+    std::fs::write(&target, b"external").unwrap();
+    let error = rename_no_replace(&source, &target).await.unwrap_err();
+    assert_eq!(
+        error.downcast_ref::<std::io::Error>().unwrap().kind(),
+        std::io::ErrorKind::AlreadyExists
+    );
+    assert_eq!(std::fs::read(&source).unwrap(), b"source");
+    assert_eq!(std::fs::read(&target).unwrap(), b"external");
+    std::fs::remove_file(&target).unwrap();
+    rename_no_replace(&source, &target).await.unwrap();
+    assert!(!source.exists());
+    assert_eq!(std::fs::read(&target).unwrap(), b"source");
+
+    let source = root.join("source-dir");
+    let target = root.join("target-dir");
+    std::fs::create_dir(&source).unwrap();
+    std::fs::write(source.join("child"), b"nested").unwrap();
+    std::fs::create_dir(&target).unwrap();
+    assert!(rename_no_replace(&source, &target).await.is_err());
+    assert!(target.read_dir().unwrap().next().is_none());
+    std::fs::write(target.join("external"), b"keep").unwrap();
+    assert!(rename_no_replace(&source, &target).await.is_err());
+    assert_eq!(std::fs::read(target.join("external")).unwrap(), b"keep");
+    assert_eq!(std::fs::read(source.join("child")).unwrap(), b"nested");
+    std::fs::remove_dir_all(&target).unwrap();
+    rename_no_replace(&source, &target).await.unwrap();
+    assert!(!source.exists());
+    assert_eq!(std::fs::read(target.join("child")).unwrap(), b"nested");
+}
+
+#[tokio::test]
+async fn no_replace_rename_moves_files_and_folders_but_keeps_taken_names() {
+    let (root, _) = scratch();
+    check_no_replace_renames(&root).await;
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+#[ignore = "requires a writable FAT mount in FTPEACH_FAT_TEST_ROOT; Linux CI mounts its own image"]
+async fn no_replace_on_fat_needs_no_hard_links() {
+    let mount = std::env::var_os("FTPEACH_FAT_TEST_ROOT").expect("Set the FAT mount path");
+    let root = PathBuf::from(mount).join(format!("ftpeach-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir(&root).unwrap();
+    // A successful test on a hard-link-capable fixture would miss the regression.
+    let probe = root.join("probe");
+    std::fs::write(&probe, b"probe").unwrap();
+    assert!(std::fs::hard_link(&probe, root.join("linked")).is_err());
+    check_no_replace_renames(&root).await;
+
+    let destination = root.join("download.bin");
+    let (partial, _) = prepare(&destination, false, identity(Some(8), None), test_origin())
+        .await
+        .unwrap();
+    std::fs::write(&partial, b"complete").unwrap();
+    commit(&partial, &destination).await.unwrap();
+    assert_eq!(std::fs::read(&destination).unwrap(), b"complete");
+    assert!(!partial.exists());
+    assert!(!sidecar(&destination).exists());
+
+    let source = root.join("move-source");
+    let target = root.join("move-target");
+    std::fs::write(&source, b"verified").unwrap();
+    crate::local_fs::verified_move::copy_verify_delete(&source, &target, false).unwrap();
+    assert!(!source.exists());
+    assert_eq!(std::fs::read(&target).unwrap(), b"verified");
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[tokio::test]
 async fn interrupted_before_commit_leaves_old_destination_and_recoverable_partial() {
     const FIXTURE: &str = "FTPEACH_P0_COMMIT_FIXTURE";

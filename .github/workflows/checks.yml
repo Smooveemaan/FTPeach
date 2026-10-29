@@ -213,13 +213,25 @@ jobs:
       - name: Install Linux build dependencies
         run: >-
           sudo apt-get update && sudo apt-get install --yes
-          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev dosfstools
       - name: Install pinned Rust toolchain
         run: rustup show
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: src-tauri
       - run: cargo check --locked --all-targets --manifest-path src-tauri/Cargo.toml
+      - name: No-replace operations on FAT
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture=$(mktemp -d "$RUNNER_TEMP/ftpeach-fat.XXXXXX")
+          mount_dir="$fixture/mount"
+          mkdir "$mount_dir"
+          truncate -s 64M "$fixture/disk.img"
+          mkfs.vfat -F 32 "$fixture/disk.img"
+          sudo mount -t vfat -o "loop,uid=$(id -u),gid=$(id -g)" "$fixture/disk.img" "$mount_dir"
+          trap 'sudo umount "$mount_dir"' EXIT
+          FTPEACH_FAT_TEST_ROOT="$mount_dir" cargo test --locked --manifest-path src-tauri/Cargo.toml --features test-utils --lib no_replace_on_fat_needs_no_hard_links -- --ignored
 
   rust-test:
     permissions:

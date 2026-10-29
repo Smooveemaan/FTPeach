@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - When a password cannot be saved, the message explains how to set up master-password protection.
 
+### Fixed
+
+- On Windows, sleep prevention is released when transfers finish or the setting is turned off.
+
 ## [0.6.0] - 2026-10-25
 
 ### Changed

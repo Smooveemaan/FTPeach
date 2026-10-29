@@ -61,6 +61,7 @@ tauri-plugin-notification = "2.5.1"
 tauri-plugin-opener = "2.7.0"
 tauri-plugin-single-instance = "2.5.2"
 raw-window-handle = "0.6.2"
+keepawake = "0.6.1"
 base64 = "0.23.1"
 tokio = { version = "1.54.1", features = ["fs", "sync", "rt", "rt-multi-thread", "macros", "net", "io-util", "time"] }
 uuid = { version = "1.26.0", features = ["v4"] }
@@ -107,7 +108,7 @@ zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2
 # for the platforms where its path is the right one.
 tauri-winrt-notification = "0.8.1"
 windows-registry = "0.6.1"
-windows = { version = "0.62.2", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Power", "Win32_System_RemoteDesktop", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging", "Win32_System_WinRT", "Security_Credentials_UI"] }
+windows = { version = "0.62.2", features = ["Foundation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_RemoteDesktop", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Com", "Win32_System_Com_Marshal", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemServices", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging", "Win32_System_WinRT", "Security_Credentials_UI"] }
 windows-core = "0.62"
 windows-future = "0.3.2"
 webview2-com = "0.39.1"

@@ -9,6 +9,7 @@ pub(crate) mod open_with;
 pub(crate) mod portable;
 pub(crate) mod provenance;
 pub(crate) mod recycle_bin;
+pub(crate) mod roots;
 pub(crate) mod staged_copy;
 
 pub(crate) mod target_reservation;

@@ -93,6 +93,24 @@ anything two of them need lives with its owner. `npm run check:rust-boundaries`
 enforces the table of allowed edges in `scripts/checks/check-rust-boundaries.ts`
 and rejects cycles.
 
+### Local roots in the Unix port
+
+`local_fs::roots` supplies the home directory to both `fs_homedir` and the
+default `fs_list` target. Windows retains its drive-letter menu. The Unix
+backend supplies `/` and the home directory, followed by sorted directory
+entries under `/Volumes` on macOS, or `/media/$USER`, `/run/media/$USER` and
+`/mnt` on Linux. Missing or unreadable mount parents, files and broken links
+are skipped; duplicate paths appear once. These are navigation shortcuts,
+not an inventory of mounted filesystems. Frontend Unix path handling remains
+separate port work.
+
+`fs_listing` marks dot-prefixed names as hidden on every platform, also
+respecting the Windows hidden attribute and macOS `UF_HIDDEN`. Tests in
+`roots.rs` cover navigation roots, mount folders and deduplication;
+`hidden_entries_include_dot_names_and_platform_attributes` in `fs_listing.rs`
+checks actual filesystem attributes on the platform running it. The public
+user guide continues to describe the released Windows application.
+
 ## IPC
 
 The renderer reaches the backend only through `src/platform`. Features import

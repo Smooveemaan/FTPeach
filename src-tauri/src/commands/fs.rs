@@ -5,6 +5,7 @@ use crate::local_fs::filesystem_safety::{
 };
 use crate::local_fs::fs_listing::{self, FsEntry};
 use crate::local_fs::mutations::guard as mutation_guard;
+use crate::local_fs::roots::{self, Drive};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
@@ -51,7 +52,7 @@ pub async fn fs_list(
             .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?;
         let target = match local_path.filter(|s| !s.is_empty()) {
             Some(p) => PathBuf::from(p),
-            None => match dirs_home() {
+            None => match roots::home() {
                 Some(h) => h,
                 None => {
                     return Err(CommandError::new(
@@ -100,10 +101,6 @@ pub async fn fs_list(
     }
 }
 
-fn dirs_home() -> Option<PathBuf> {
-    std::env::var_os("USERPROFILE").map(PathBuf::from)
-}
-
 #[tauri::command]
 pub fn fs_cancel_list(request_key: String) {
     fs_listing::ListingRequest::cancel(&request_key);
@@ -111,31 +108,14 @@ pub fn fs_cancel_list(request_key: String) {
 
 #[tauri::command]
 pub fn fs_homedir() -> String {
-    dirs_home()
+    roots::home()
         .map(|p| p.to_string_lossy().into_owned())
         .unwrap_or_default()
 }
 
-#[derive(Serialize)]
-pub struct Drive {
-    path: String,
-    label: String,
-}
-
 #[tauri::command]
 pub async fn fs_drives() -> Vec<Drive> {
-    let mut drives = Vec::new();
-    for letter in b'A'..=b'Z' {
-        let letter = letter as char;
-        let path = format!("{letter}:\\");
-        if tokio::fs::metadata(&path).await.is_ok() {
-            drives.push(Drive {
-                path,
-                label: format!("{letter}:"),
-            });
-        }
-    }
-    drives
+    roots::drives().await
 }
 
 #[tauri::command]
@@ -333,6 +313,29 @@ async fn fs_delete_authorized(local_path: String, permanent: bool) -> CommandRes
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn home_command_uses_the_operating_system_home() {
+        let expected = std::env::home_dir().unwrap();
+        assert!(expected.is_absolute());
+        assert_eq!(fs_homedir(), expected.to_string_lossy().into_owned());
+    }
+
+    #[tokio::test]
+    async fn drive_command_returns_labeled_navigation_paths() {
+        let drives = serde_json::to_value(fs_drives().await).unwrap();
+        let drives = drives.as_array().unwrap();
+        let current = std::env::current_dir().unwrap();
+        assert!(
+            drives
+                .iter()
+                .any(|drive| { current.starts_with(drive["path"].as_str().unwrap()) })
+        );
+        assert!(drives.iter().all(|drive| {
+            Path::new(drive["path"].as_str().unwrap()).is_absolute()
+                && !drive["label"].as_str().unwrap().is_empty()
+        }));
+    }
 
     #[test]
     fn explorer_and_programs_get_the_path_without_the_verbatim_prefix() {

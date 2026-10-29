@@ -185,7 +185,12 @@ fn list_with_metadata(
             use std::os::windows::fs::MetadataExt;
             meta.file_attributes() & 0x2 != 0 || name.starts_with('.')
         };
-        #[cfg(not(windows))]
+        #[cfg(target_os = "macos")]
+        let is_hidden = {
+            use std::os::macos::fs::MetadataExt;
+            name.starts_with('.') || meta.st_flags() & libc::UF_HIDDEN != 0
+        };
+        #[cfg(not(any(windows, target_os = "macos")))]
         let is_hidden = name.starts_with('.');
         #[cfg(windows)]
         let is_reparse_point = {
@@ -211,6 +216,46 @@ fn list_with_metadata(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_entries_include_dot_names_and_platform_attributes() {
+        let root = std::env::temp_dir().join(format!("ftpeach-hidden-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join(".folder")).unwrap();
+        for name in [".file", "visible", "flagged"] {
+            std::fs::write(root.join(name), b"fixture").unwrap();
+        }
+        #[cfg(target_os = "macos")]
+        assert!(
+            std::process::Command::new("chflags")
+                .arg("hidden")
+                .arg(root.join("flagged"))
+                .status()
+                .unwrap()
+                .success()
+        );
+        #[cfg(windows)]
+        assert!(
+            std::process::Command::new("attrib")
+                .arg("+H")
+                .arg(root.join("flagged"))
+                .status()
+                .unwrap()
+                .success()
+        );
+        let entries =
+            list_bounded(&root, MAX_ENTRIES, MAX_BYTES, &CancellationToken::new()).unwrap();
+        assert_eq!(entries.len(), 4);
+        for entry in entries {
+            assert_eq!(
+                entry.is_hidden,
+                entry.name.starts_with('.')
+                    || (cfg!(any(windows, target_os = "macos")) && entry.name == "flagged"),
+                "{}",
+                entry.name
+            );
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn metadata_failure_and_mid_listing_cancellation_never_publish_partial_rows() {

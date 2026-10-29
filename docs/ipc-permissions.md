@@ -26,7 +26,9 @@ permission to call it.
 lists and both capability files, so a new command cannot ship until someone
 decides which window class may call it. The packaged smoke test then asks a live
 confirmation window which commands it can still reach, and fails if it reaches
-any. Application commands are grouped as follows:
+any. It also checks that the confirmation stays enabled while the main window
+is disabled, and that closing the confirmation restores the main window's input.
+Application commands are grouped as follows:
 
 - Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `fs_is_executable`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,

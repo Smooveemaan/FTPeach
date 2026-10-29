@@ -105,7 +105,7 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
     center_over_parent(&parent, window);
     // Modal, as Windows Hello is: the main window ignores the pointer and the
     // keyboard until the question is answered.
-    enable_main(&parent, false);
+    enable_main(&parent, false).map_err(|_| "Parent window could not be disabled")?;
     // Centred over a main window that sits off screen; it must not take the
     // focus from whoever works at the desktop either.
     #[cfg(feature = "smoke-test")]
@@ -157,21 +157,25 @@ pub(crate) fn center_over_parent(parent: &tauri::WebviewWindow, child: &tauri::W
 }
 
 /// Turns the main window's input on or off; a disabled window drops clicks
-/// and keys, and the taskbar brings its confirmation forward instead.
-#[cfg(windows)]
-fn enable_main(main: &tauri::WebviewWindow, enabled: bool) {
-    use windows::Win32::{Foundation::HWND, UI::Input::KeyboardAndMouse::EnableWindow};
-    let Ok(hwnd) = window_handle(main) else {
-        return;
-    };
-    // SAFETY: hwnd is the live main window; EnableWindow only changes its state.
-    unsafe {
-        let _ = EnableWindow(HWND(hwnd as *mut std::ffi::c_void), enabled);
-    }
+/// and keys until the last confirmation closes.
+fn enable_main(main: &tauri::WebviewWindow, enabled: bool) -> tauri::Result<()> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    let window = main.clone();
+    main.run_on_main_thread(move || {
+        // Check and change together: concurrent prompts must not attach two
+        // blocking sheets on macOS, or leave input disabled after closing.
+        let result = window.is_enabled().and_then(|current| {
+            if current != enabled {
+                window.set_enabled(enabled)
+            } else {
+                Ok(())
+            }
+        });
+        let _ = tx.send(result);
+    })?;
+    rx.recv()
+        .map_err(|_| tauri::Error::FailedToReceiveMessage)?
 }
-
-#[cfg(not(windows))]
-fn enable_main(_: &tauri::WebviewWindow, _: bool) {}
 
 #[cfg(windows)]
 fn enable_native_rounding(window: &tauri::WebviewWindow) {
@@ -305,6 +309,9 @@ pub(crate) fn create(
     label: &str,
     request_id: &str,
 ) -> tauri::Result<tauri::WebviewWindow> {
+    let main = app
+        .get_webview_window("main")
+        .ok_or(tauri::Error::WindowNotFound)?;
     let state = app.state::<AppearanceState>();
     let appearance = state
         .0
@@ -337,11 +344,8 @@ pub(crate) fn create(
     if let Some(args) = super::e2e_browser::args() {
         builder = builder.additional_browser_args(&args);
     }
-    let main = app.get_webview_window("main");
-    // Owned by the main window, so it gets no taskbar button of its own.
-    if let Some(main) = &main {
-        builder = builder.parent(main)?;
-    }
+    // Owned on Windows, a child on macOS, transient on Linux.
+    builder = builder.parent(&main)?;
     let window = builder.build()?;
     enable_native_rounding(&window);
     // F5 or Ctrl+R would reload the question away, Ctrl+P print it. Left on
@@ -352,9 +356,7 @@ pub(crate) fn create(
     }
     // Moved over the main window before its page loads, so it has taken that
     // monitor's scale by the time it sizes itself to its content.
-    if let Some(main) = &main {
-        center_over_parent(main, &window);
-    }
+    center_over_parent(&main, &window);
     // Its zoom no longer follows the monitor by itself once the interface
     // scale is applied.
     let rescaled = window.clone();
@@ -371,8 +373,10 @@ pub(crate) fn create(
                 .webview_windows()
                 .into_keys()
                 .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
-            if let (false, Some(main)) = (others, app.get_webview_window("main")) {
-                enable_main(&main, true);
+            if let (false, Some(main)) = (others, app.get_webview_window("main"))
+                && let Err(error) = enable_main(&main, true)
+            {
+                log::error!("Could not restore main window input: {error}");
             }
         }
         _ => {}

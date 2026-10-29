@@ -78,7 +78,8 @@ pub fn record_acl_probe(result: &str) {
 /// Asks a live confirmation window which application commands it can still
 /// call. The window class is the point of the test: its capability file grants
 /// it only the three confirmation commands, so everything else has to be
-/// rejected by the ACL before it reaches any backend code.
+/// rejected by the ACL before it reaches any backend code. Also verifies that
+/// the visible confirmation blocks its parent and closing it restores input.
 #[tauri::command]
 pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<String, String> {
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
@@ -95,16 +96,35 @@ pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<Strin
     })
     .await
     .ok_or("no confirmation window opened")?;
-    // The window can already exist while its document is still loading, and a
-    // script evaluated into a document that is about to be replaced is lost.
-    // The probe is written to be re-entrant so it can simply be offered again.
-    let verdict = wait_for(Duration::from_secs(20), || {
-        let _ = window.eval(include_str!("../../assets/acl_probe.js"));
-        ACL_PROBE.lock().ok().and_then(|slot| slot.clone())
-    })
+    let main = app.get_webview_window("main").ok_or("no main window")?;
+    let result = async {
+        wait_for(Duration::from_secs(10), || {
+            (window.is_visible().ok()? && !main.is_enabled().ok()?).then_some(())
+        })
+        .await
+        .ok_or("confirmation did not appear and block the main window")?;
+        if !window.is_enabled().map_err(|error| error.to_string())? {
+            return Err("confirmation itself is disabled".to_string());
+        }
+        // Ready can be sent again after resizing or a failed password attempt.
+        crate::runtime::confirmation_window::show(&window)?;
+        // A script evaluated into a document about to be replaced is lost;
+        // the probe is re-entrant so it can simply be offered again.
+        wait_for(Duration::from_secs(20), || {
+            let _ = window.eval(include_str!("../../assets/acl_probe.js"));
+            ACL_PROBE.lock().ok().and_then(|slot| slot.clone())
+        })
+        .await
+        .ok_or_else(|| "confirmation window never reported its ACL probe".to_string())
+    }
     .await;
-    let _ = window.close();
-    verdict.ok_or_else(|| "confirmation window never reported its ACL probe".to_string())
+    window.close().map_err(|error| error.to_string())?;
+    wait_for(Duration::from_secs(10), || {
+        (app.get_webview_window(window.label()).is_none() && main.is_enabled().ok()?).then_some(())
+    })
+    .await
+    .ok_or("closing the confirmation did not restore main window input")?;
+    result
 }
 
 async fn wait_for<T>(timeout: Duration, mut attempt: impl FnMut() -> Option<T>) -> Option<T> {

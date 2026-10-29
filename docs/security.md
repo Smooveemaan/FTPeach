@@ -27,6 +27,15 @@ Sensitive file, reset, secret-reveal, and import/export operations are registere
 
 The production CSP is defined only in `tauri.conf.json`. Scripts are restricted to `self`, without `unsafe-eval` or external script sources. `npm run check:release-config` rejects broad `*:default` permissions, a duplicate HTML CSP, or a weakened script policy.
 
+Confirmation windows require the main window as their native parent (an owner
+on Windows, a child relationship on macOS, a transient parent on Linux). Before
+showing a confirmation, the backend disables the main window's input through
+Tauri; it restores input when the last confirmation closes or is destroyed.
+Repeated readiness notifications do not disable an already disabled window
+again, since macOS implements this through an attached blocking sheet.
+This controls native interaction, not IPC authorization: the main renderer's
+permissions remain as described above.
+
 `sites_list` does not return saved passwords. The renderer sees only `hasPassword` and `hasKeyPassphrase` and supplies a `siteId` when connecting. The backend loads the associated configuration, preventing the renderer from redirecting one site's password to an arbitrary host.
 
 Normal listing and editing IPC returns only presence flags. An explicit reveal uses a short-lived one-use token; the vault additionally requires reauthentication before that token is issued: the master password, or Windows Hello where it is enabled on this computer, whose returned key must match the open vault's. The renderer clears a revealed value on blur, hide, vault lock, dialog close, and unmount.

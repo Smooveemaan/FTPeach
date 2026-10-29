@@ -4,6 +4,11 @@ Tests are grouped first by runtime, then by the area they cover. Keep new cases
 with their feature's existing suite. Shared setup and test adapters belong in
 the owning runtime's `helpers/` directory.
 
+The component suite's shared fixtures use Windows paths, so `vitest.config.ts`
+sets a Windows user agent independently of the host running jsdom. Tests of
+platform-specific behavior override `navigator.userAgent` for each OS explicitly;
+the runner's OS must not choose the meaning of a fixture's paths.
+
 ```text
 test/
   unit/                  Node tests: pure logic and injected services

@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    // Shared fixtures use Windows paths; OS-specific tests override the user agent.
+    environmentOptions: { jsdom: { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } },
     setupFiles: ['./test/component/helpers/setup.ts'],
     // Node tests live in test/unit; each runner owns a separate directory.
     include: ['test/component/**/*.test.{ts,tsx}'],

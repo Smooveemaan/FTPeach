@@ -172,7 +172,7 @@
     "message": "Lösenordet eller lösenfrasen för ett bokmärke kunde inte krypteras eftersom Windows dataskydd inte är tillgängligt, och lagrades därför i klartext."
   },
   "secretNotPersistedNotice": {
-    "message": "Lösenordet eller lösenfrasen kunde inte krypteras och sparades inte. En befintlig anslutning kan fortsätta tills den bryts; i annat fall måste du ange lösenordet igen nästa gång."
+    "message": "Lösenordet eller lösenfrasen kunde inte krypteras och sparades inte. En befintlig anslutning kan fortsätta tills den bryts; i annat fall måste du ange lösenordet igen nästa gång. Ställ in ett huvudlösenord under Inställningar > Säkerhet för att spara lösenord."
   },
   "resize": {
     "paneSize": "Dra för att ändra storlek på panelerna (dubbelklicka för att återställa)",
@@ -361,7 +361,7 @@
     "editsRetained": "Ändringar som inte laddades upp tar mer än 1 GB eller är äldre än 30 dagar. Ladda upp eller ta bort dem först.",
     "resumeExpired": "Den här pausade överföringen kan inte återupptas. Starta den igen.",
     "programUnavailable": "Programmet hittades inte eller kan inte köras.",
-    "secretNotProtected": "Lösenordet kunde inte krypteras, så ändringen sparades inte.",
+    "secretNotProtected": "Lösenordet kunde inte krypteras, så ändringen sparades inte. Ställ in ett huvudlösenord under Inställningar > Säkerhet för att spara lösenord.",
     "serverRefused": "Servern avvisade åtgärden: {{reply}}",
     "importRefused": "Filen kan inte importeras."
   },

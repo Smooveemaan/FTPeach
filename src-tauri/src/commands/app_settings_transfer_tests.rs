@@ -331,6 +331,97 @@ async fn sealed_for(sites: &[serde_json::Value], password: &str) -> serde_json::
     serde_json::to_value(export_secrets::seal(password, &entries).await.unwrap()).unwrap()
 }
 
+/// The fixture is a Windows DPAPI profile exported through `seal_secrets`.
+/// Re-record on Windows with FTPEACH_RECORD_WINDOWS_EXPORT=1.
+#[tokio::test]
+async fn a_windows_export_imports_passwords_into_the_destination_protection() {
+    use base64::Engine;
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../test/fixtures/settings-transfer/windows-secrets.json");
+    let root = std::env::temp_dir().join(format!("ftpeach-cross-os-{}", uuid::Uuid::new_v4()));
+    let password = "cross-platform export password";
+    #[cfg(windows)]
+    if std::env::var_os("FTPEACH_RECORD_WINDOWS_EXPORT").is_some() {
+        let store = Store::new_at(root.join("windows"));
+        let vault = Vault::new(root.join("windows-vault"));
+        let input = serde_json::json!({
+            "id": "windows", "kind": "site", "name": "Windows export", "protocol": "sftp",
+            "host": "export.example.test", "user": "alice",
+            "password": "fixture server password", "keyPassphrase": "fixture key passphrase"
+        });
+        assert!(
+            !store
+                .save_site(input.as_object().unwrap().clone())
+                .await
+                .unwrap()
+                .secret_not_persisted
+        );
+        let sites: Vec<Value> = store
+            .list_sites()
+            .await
+            .unwrap()
+            .into_iter()
+            .map(strip_site_secrets)
+            .map(Value::Object)
+            .collect();
+        let (secrets, count) = seal_secrets(&store, &vault, &sites, password, false)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(count, 2);
+        std::fs::create_dir_all(fixture.parent().unwrap()).unwrap();
+        std::fs::write(
+            &fixture,
+            serde_json::to_vec_pretty(&serde_json::json!({
+                "formatVersion": 2, "sites": sites, "secrets": secrets
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    }
+    for enhanced in [false, true] {
+        let store = Store::new_at(root.join(if enhanced { "vault" } else { "system" }));
+        let vault = Vault::new(store.data_dir().to_path_buf());
+        if enhanced {
+            vault.setup("destination master password").await.unwrap();
+        }
+        let file: ImportDocument =
+            serde_json::from_slice(&std::fs::read(&fixture).unwrap()).unwrap();
+        let staged = stage(file, &options(), "main").unwrap();
+        let secrets = open_secrets(&staged, Some(password)).await.unwrap();
+        let (outcome, kept) = match store.import_sites(&vault, &staged.sites, secrets).await {
+            Ok(result) => result,
+            Err(failed) => panic!("{:#}", failed.error),
+        };
+        drop(kept);
+        assert_eq!((outcome.added, outcome.secrets_saved), (1, 2));
+        let sites = store.list_sites().await.unwrap();
+        let id = sites[0]["id"].as_str().unwrap();
+        let (_, credentials) = store.saved_server(id, &vault).await.unwrap();
+        assert_eq!(credentials.password.expose(), "fixture server password");
+        assert_eq!(
+            credentials.key_passphrase.unwrap().expose(),
+            "fixture key passphrase"
+        );
+        let raw = std::fs::read_to_string(store.data_dir().join("sites.json")).unwrap();
+        assert!(!raw.contains("fixture server password"));
+        assert!(!raw.contains("fixture key passphrase"));
+        if !enhanced {
+            let raw: Value = serde_json::from_str(&raw).unwrap();
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(raw["data"][0]["enc"].as_str().unwrap())
+                .unwrap();
+            #[cfg(not(windows))]
+            assert!(bytes.starts_with(b"FTPS\x01"));
+            assert_eq!(
+                crate::security::system_protection::unprotect(&bytes).unwrap(),
+                b"fixture server password"
+            );
+        }
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[test]
 fn a_file_with_repeated_ids_or_a_future_format_is_refused() {
     let repeated =

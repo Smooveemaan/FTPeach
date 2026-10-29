@@ -174,7 +174,7 @@
     "message": "Não foi possível criptografar a senha ou a frase secreta de um favorito porque a proteção de dados do Windows não está disponível; por isso, ela foi armazenada em texto simples."
   },
   "secretNotPersistedNotice": {
-    "message": "A senha ou a frase secreta da chave não pôde ser criptografada e não foi salva. Uma conexão já estabelecida pode continuar até ser desconectada; caso contrário, digite-a novamente na próxima vez."
+    "message": "A senha ou a frase secreta da chave não pôde ser criptografada e não foi salva. Uma conexão já estabelecida pode continuar até ser desconectada; caso contrário, digite-a novamente na próxima vez. Para salvar senhas, defina uma senha mestra em Configurações > Segurança."
   },
   "resize": {
     "paneSize": "Arraste para redimensionar os painéis (clique duas vezes para redefinir)",
@@ -365,7 +365,7 @@
     "editsRetained": "As alterações não enviadas ocupam mais de 1 GB ou têm mais de 30 dias. Envie-as ou exclua-as primeiro.",
     "resumeExpired": "Esta transferência pausada não pode ser retomada. Inicie-a novamente.",
     "programUnavailable": "O programa não foi encontrado ou não pode ser executado.",
-    "secretNotProtected": "Não foi possível criptografar a senha, então a alteração não foi salva.",
+    "secretNotProtected": "Não foi possível criptografar a senha, então a alteração não foi salva. Para salvar senhas, defina uma senha mestra em Configurações > Segurança.",
     "serverRefused": "O servidor recusou a operação: {{reply}}",
     "importRefused": "O arquivo não pode ser importado."
   },

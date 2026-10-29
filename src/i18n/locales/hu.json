@@ -172,7 +172,7 @@
     "message": "Egy könyvjelző jelszavát vagy jelmondatát nem sikerült titkosítani, mert a Windows adatvédelme nem érhető el, ezért egyszerű szövegként lett tárolva."
   },
   "secretNotPersistedNotice": {
-    "message": "A jelszót vagy a kulcs jelmondatát nem sikerült titkosítani, ezért nem lett mentve. A meglévő kapcsolat a bontásig működik; legközelebb adja meg újra."
+    "message": "A jelszót vagy a kulcs jelmondatát nem sikerült titkosítani, ezért nem lett mentve. A meglévő kapcsolat a bontásig működik; legközelebb adja meg újra. A jelszavak mentéséhez állítson be mesterjelszót a Beállítások > Biztonság részen."
   },
   "resize": {
     "paneSize": "Húzza a panelek átméretezéséhez (dupla kattintás: alapérték)",
@@ -361,7 +361,7 @@
     "editsRetained": "A fel nem töltött módosítások több mint 1 GB-ot foglalnak, vagy 30 napnál régebbiek. Előbb töltse fel vagy törölje őket.",
     "resumeExpired": "Ez a szüneteltetett átvitel nem folytatható. Indítsa újra.",
     "programUnavailable": "A program nem található, vagy nem futtatható.",
-    "secretNotProtected": "A jelszót nem sikerült titkosítani, ezért a módosítás nem lett mentve.",
+    "secretNotProtected": "A jelszót nem sikerült titkosítani, ezért a módosítás nem lett mentve. A jelszavak mentéséhez állítson be mesterjelszót a Beállítások > Biztonság részen.",
     "serverRefused": "A szerver elutasította a műveletet: {{reply}}",
     "importRefused": "A fájl nem importálható."
   },

@@ -1,3 +1,4 @@
+#![cfg(windows)]
 //! Secret encryption for saved-site passwords/passphrases.
 //!
 //! Deliberately a fresh DPAPI scheme (`CryptProtectData`/`CryptUnprotectData`
@@ -12,16 +13,6 @@
 //! saved" (see its comment) rather than a hard error.
 
 use anyhow::Result;
-
-#[cfg(not(windows))]
-pub fn protect(_data: &[u8]) -> Result<Vec<u8>> {
-    anyhow::bail!("DPAPI is only available on Windows")
-}
-
-#[cfg(not(windows))]
-pub fn unprotect(_data: &[u8]) -> Result<Vec<u8>> {
-    anyhow::bail!("DPAPI is only available on Windows")
-}
 
 #[cfg(windows)]
 use anyhow::Context as _;

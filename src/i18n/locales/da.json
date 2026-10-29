@@ -172,7 +172,7 @@
     "message": "Adgangskoden eller adgangssætningen til et bogmærke kunne ikke krypteres, da Windows' databeskyttelse ikke er tilgængelig, og blev derfor gemt som almindelig tekst."
   },
   "secretNotPersistedNotice": {
-    "message": "Adgangskoden eller adgangssætningen kunne ikke krypteres og blev ikke gemt. En eksisterende forbindelse kan fortsætte, indtil den afbrydes; ellers skal du indtaste adgangskoden igen næste gang."
+    "message": "Adgangskoden eller adgangssætningen kunne ikke krypteres og blev ikke gemt. En eksisterende forbindelse kan fortsætte, indtil den afbrydes; ellers skal du indtaste adgangskoden igen næste gang. Opret en hovedadgangskode under Indstillinger > Sikkerhed for at gemme adgangskoder."
   },
   "resize": {
     "paneSize": "Træk for at ændre størrelsen på ruder (dobbeltklik for at nulstille)",
@@ -361,7 +361,7 @@
     "editsRetained": "Ændringer, der ikke blev uploadet, fylder over 1 GB eller er ældre end 30 dage. Upload eller slet dem først.",
     "resumeExpired": "Denne pausede overførsel kan ikke genoptages. Start den igen.",
     "programUnavailable": "Programmet blev ikke fundet eller kan ikke køres.",
-    "secretNotProtected": "Adgangskoden kunne ikke krypteres, så ændringen blev ikke gemt.",
+    "secretNotProtected": "Adgangskoden kunne ikke krypteres, så ændringen blev ikke gemt. Opret en hovedadgangskode under Indstillinger > Sikkerhed for at gemme adgangskoder.",
     "serverRefused": "Serveren afviste handlingen: {{reply}}",
     "importRefused": "Filen kan ikke importeres."
   },

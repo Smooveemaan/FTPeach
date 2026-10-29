@@ -174,7 +174,7 @@
     "message": "No se ha podido cifrar la contraseña o frase de acceso de un marcador porque la protección de datos de Windows no está disponible, por lo que se ha almacenado en texto sin cifrar."
   },
   "secretNotPersistedNotice": {
-    "message": "No se ha podido cifrar la contraseña o la frase de acceso de la clave, por lo que no se ha guardado. Una conexión ya establecida puede continuar hasta que se desconecte; si no, vuelve a introducirla la próxima vez."
+    "message": "No se ha podido cifrar la contraseña o la frase de acceso de la clave, por lo que no se ha guardado. Una conexión ya establecida puede continuar hasta que se desconecte; si no, vuelve a introducirla la próxima vez. Para guardar contraseñas, configura una contraseña maestra en Configuración > Seguridad."
   },
   "resize": {
     "paneSize": "Arrastra para cambiar el tamaño de los paneles (haz doble clic para restablecerlos)",
@@ -365,7 +365,7 @@
     "editsRetained": "Los cambios que no se subieron ocupan más de 1 GB o tienen más de 30 días. Súbelos o elimínalos primero.",
     "resumeExpired": "Esta transferencia en pausa no se puede reanudar. Vuelve a iniciarla.",
     "programUnavailable": "No se encontró el programa o no se puede ejecutar.",
-    "secretNotProtected": "No se pudo cifrar la contraseña, así que no se guardó el cambio.",
+    "secretNotProtected": "No se pudo cifrar la contraseña, así que no se guardó el cambio. Para guardar contraseñas, configura una contraseña maestra en Configuración > Seguridad.",
     "serverRefused": "El servidor rechazó la operación: {{reply}}",
     "importRefused": "El archivo no se puede importar."
   },

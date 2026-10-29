@@ -172,7 +172,7 @@
     "message": "Het wachtwoord of de wachtwoordzin van een bladwijzer kon niet worden versleuteld omdat de gegevensbeveiliging van Windows niet beschikbaar is, en is daarom als leesbare tekst opgeslagen."
   },
   "secretNotPersistedNotice": {
-    "message": "Het wachtwoord of de wachtwoordzin van de sleutel kon niet worden versleuteld en is niet opgeslagen. Een bestaande verbinding blijft werken tot die wordt verbroken; voer het anders de volgende keer opnieuw in."
+    "message": "Het wachtwoord of de wachtwoordzin van de sleutel kon niet worden versleuteld en is niet opgeslagen. Een bestaande verbinding blijft werken tot die wordt verbroken; voer het anders de volgende keer opnieuw in. Stel een hoofdwachtwoord in bij Instellingen > Beveiliging om wachtwoorden op te slaan."
   },
   "resize": {
     "paneSize": "Sleep om de grootte van de panelen aan te passen (dubbelklik om terug te zetten)",
@@ -361,7 +361,7 @@
     "editsRetained": "Niet-geüploade wijzigingen nemen meer dan 1 GB in beslag of zijn ouder dan 30 dagen. Upload of verwijder ze eerst.",
     "resumeExpired": "Deze gepauzeerde overdracht kan niet worden hervat. Start hem opnieuw.",
     "programUnavailable": "Het programma is niet gevonden of kan niet worden uitgevoerd.",
-    "secretNotProtected": "Het wachtwoord kon niet worden versleuteld, dus de wijziging is niet opgeslagen.",
+    "secretNotProtected": "Het wachtwoord kon niet worden versleuteld, dus de wijziging is niet opgeslagen. Stel een hoofdwachtwoord in bij Instellingen > Beveiliging om wachtwoorden op te slaan.",
     "serverRefused": "De server heeft de bewerking geweigerd: {{reply}}",
     "importRefused": "Het bestand kan niet worden geïmporteerd."
   },

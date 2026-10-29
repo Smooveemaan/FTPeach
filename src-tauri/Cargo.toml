@@ -116,6 +116,7 @@ webview2-com = "0.39.1"
 wry = { version = "0.57.0", default-features = false }
 
 [target.'cfg(not(windows))'.dependencies]
+keyring = { version = "3.6.3", default-features = false, features = ["apple-native", "sync-secret-service", "crypto-rust"] }
 # Already in the tree through Tauri; named here so the data folder is Tauri's
 # app data folder before the app exists (store/mod.rs).
 dirs = "7.0.0"
@@ -133,6 +134,7 @@ libc = "0.2.189"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSString", "NSURL"] }
 
 [dev-dependencies]
+keyring = { version = "3.6.3", default-features = false }
 rand = "0.10.2"
 # The mock runtime, for the vault-lock event (runtime/vault_auto_lock.rs).
 tauri = { version = "2.12.1", features = ["test"] }

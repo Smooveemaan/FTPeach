@@ -8,6 +8,7 @@ pub(crate) mod redaction;
 pub(crate) mod security_policy;
 pub(crate) mod sensitive;
 pub(crate) mod sensitive_string;
+pub(crate) mod system_protection;
 pub(crate) mod system_unlock;
 pub(crate) mod vault;
 pub(crate) mod vault_guard;

@@ -174,7 +174,7 @@
     "message": "Parola sau fraza de acces a unui marcaj nu a putut fi criptată deoarece protecția datelor din Windows nu este disponibilă, așa că a fost stocată ca text simplu."
   },
   "secretNotPersistedNotice": {
-    "message": "Parola sau fraza de acces a cheii nu a putut fi criptată, așa că nu a fost salvată. O conexiune existentă poate continua până la deconectare; data viitoare introduceți-o din nou."
+    "message": "Parola sau fraza de acces a cheii nu a putut fi criptată, așa că nu a fost salvată. O conexiune existentă poate continua până la deconectare; data viitoare introduceți-o din nou. Pentru a salva parolele, configurați o parolă principală în Setări > Securitate."
   },
   "resize": {
     "paneSize": "Trageți pentru a redimensiona panourile (dublu clic pentru resetare)",
@@ -365,7 +365,7 @@
     "editsRetained": "Modificările neîncărcate ocupă peste 1 GB sau sunt mai vechi de 30 de zile. Încărcați-le sau ștergeți-le mai întâi.",
     "resumeExpired": "Acest transfer în pauză nu poate fi reluat. Porniți-l din nou.",
     "programUnavailable": "Programul nu a fost găsit sau nu poate fi rulat.",
-    "secretNotProtected": "Parola nu a putut fi criptată, așa că modificarea nu a fost salvată.",
+    "secretNotProtected": "Parola nu a putut fi criptată, așa că modificarea nu a fost salvată. Pentru a salva parolele, configurați o parolă principală în Setări > Securitate.",
     "serverRefused": "Serverul a refuzat operația: {{reply}}",
     "importRefused": "Fișierul nu poate fi importat."
   },

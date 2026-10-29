@@ -172,7 +172,7 @@
     "message": "A bookmark's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."
   },
   "secretNotPersistedNotice": {
-    "message": "The password or key passphrase couldn't be encrypted and was not saved. An existing connection can continue until it is disconnected; otherwise, enter the secret again next time."
+    "message": "The password or key passphrase couldn't be encrypted and was not saved. An existing connection can continue until it is disconnected; otherwise, enter the secret again next time. To save passwords, set up a master password in Settings > Security."
   },
   "resize": {
     "paneSize": "Drag to resize the panes (double-click to reset)",
@@ -361,7 +361,7 @@
     "editsRetained": "Edits that were not uploaded take over 1 GB or are over 30 days old. Upload or delete them first.",
     "resumeExpired": "This paused transfer can't be resumed. Start it again.",
     "programUnavailable": "The program wasn't found or can't be run.",
-    "secretNotProtected": "The password couldn't be encrypted, so the change wasn't saved.",
+    "secretNotProtected": "The password couldn't be encrypted, so the change wasn't saved. To save passwords, set up a master password in Settings > Security.",
     "serverRefused": "The server refused: {{reply}}",
     "importRefused": "The file can't be imported."
   },

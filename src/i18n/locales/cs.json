@@ -176,7 +176,7 @@
     "message": "Heslo nebo přístupovou frázi záložky nebylo možné zašifrovat, protože ochrana dat systému Windows není k dispozici, a byly proto uloženy jako prostý text."
   },
   "secretNotPersistedNotice": {
-    "message": "Heslo nebo přístupovou frázi klíče se nepodařilo zašifrovat, a proto nebyly uloženy. Stávající připojení vydrží do odpojení; příště je zadejte znovu."
+    "message": "Heslo nebo přístupovou frázi klíče se nepodařilo zašifrovat, a proto nebyly uloženy. Stávající připojení vydrží do odpojení; příště je zadejte znovu. Chcete-li ukládat hesla, nastavte hlavní heslo v Nastavení > Zabezpečení."
   },
   "resize": {
     "paneSize": "Přetažením změníte velikost panelů (dvojklik obnoví výchozí)",
@@ -369,7 +369,7 @@
     "editsRetained": "Neodeslané úpravy zabírají více než 1 GB nebo jsou starší než 30 dní. Nejprve je nahrajte nebo odstraňte.",
     "resumeExpired": "Tento pozastavený přenos nelze obnovit. Spusťte ho znovu.",
     "programUnavailable": "Program nebyl nalezen nebo ho nelze spustit.",
-    "secretNotProtected": "Heslo se nepodařilo zašifrovat, proto změna nebyla uložena.",
+    "secretNotProtected": "Heslo se nepodařilo zašifrovat, proto změna nebyla uložena. Chcete-li ukládat hesla, nastavte hlavní heslo v Nastavení > Zabezpečení.",
     "serverRefused": "Server operaci odmítl: {{reply}}",
     "importRefused": "Soubor nelze importovat."
   },

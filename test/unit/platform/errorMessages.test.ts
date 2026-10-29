@@ -139,7 +139,8 @@ test('friendlyError localizes every structured command error code', () => {
       'Edits that were not uploaded take over 1 GB or are over 30 days old. Upload or delete them first.',
     resumeExpired: "This paused transfer can't be resumed. Start it again.",
     programUnavailable: "The program wasn't found or can't be run.",
-    secretNotProtected: "The password couldn't be encrypted, so the change wasn't saved.",
+    secretNotProtected:
+      "The password couldn't be encrypted, so the change wasn't saved. To save passwords, set up a master password in Settings > Security.",
     serverRefused: 'The server refused: unlocalized backend fallback',
     internal: 'An unexpected error occurred.',
   } satisfies Record<CommandErrorCode, string>;

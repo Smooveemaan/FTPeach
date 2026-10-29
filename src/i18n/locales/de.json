@@ -172,7 +172,7 @@
     "message": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."
   },
   "secretNotPersistedNotice": {
-    "message": "Das Passwort oder die Schlüssel-Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung bleibt bis zum Trennen bestehen; geben Sie es sonst beim nächsten Mal erneut ein."
+    "message": "Das Passwort oder die Schlüssel-Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung bleibt bis zum Trennen bestehen; geben Sie es sonst beim nächsten Mal erneut ein. Um Passwörter zu speichern, richten Sie unter Einstellungen > Sicherheit ein Master-Passwort ein."
   },
   "resize": {
     "paneSize": "Ziehen, um die Größe der Bereiche zu ändern (Doppelklick zum Zurücksetzen)",
@@ -361,7 +361,7 @@
     "editsRetained": "Nicht hochgeladene Änderungen belegen mehr als 1 GB oder sind älter als 30 Tage. Laden Sie sie zuerst hoch oder löschen Sie sie.",
     "resumeExpired": "Diese pausierte Übertragung kann nicht fortgesetzt werden. Starten Sie sie neu.",
     "programUnavailable": "Das Programm wurde nicht gefunden oder kann nicht ausgeführt werden.",
-    "secretNotProtected": "Das Passwort konnte nicht verschlüsselt werden, daher wurde die Änderung nicht gespeichert.",
+    "secretNotProtected": "Das Passwort konnte nicht verschlüsselt werden, daher wurde die Änderung nicht gespeichert. Um Passwörter zu speichern, richten Sie unter Einstellungen > Sicherheit ein Master-Passwort ein.",
     "serverRefused": "Der Server hat den Vorgang abgelehnt: {{reply}}",
     "importRefused": "Die Datei kann nicht importiert werden."
   },

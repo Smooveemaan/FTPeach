@@ -92,6 +92,42 @@ In both modes the renderer never receives a secret on ordinary IPC: it supplies 
 
 Switching modes moves every saved secret. Turning on enhanced protection moves DPAPI and plaintext values into the vault. A value still left in DPAPI, for example after an interrupted migration, moves at the next unlock; saving a new secret while the vault is locked is refused rather than written to DPAPI. Turning it off copies every vault secret back to DPAPI before the vault is removed, so a failure leaves the vault intact: sites and settings are put back as they were, with no DPAPI copy left behind. It goes through the sensitive `vault_use_system_protection` command, whose backend confirmation window always asks for the master password, even when the vault is already unlocked; the renderer cannot supply or skip it. The switch is serialized with other vault updates, and removing the vault locks it, which withdraws every token issued before. Connections that are already open keep the credentials they authenticated with.
 
+## System protection in the upcoming Unix builds
+
+Windows keeps its existing DPAPI format. On macOS, a random 32-byte key lives
+in the signed-in user's Keychain; on Linux it lives in the desktop's Secret
+Service. The `keyring` entry uses service `com.smooveemaan.ftpeach` and account
+`system-protection-v1`. Linux uses the synchronous Secret Service backend with
+encrypted D-Bus transport, without a kernel-keyring or file fallback. The key
+is shared by this user's FTPeach profiles and is never saved beside their data.
+An application acting as that user may be able to read it; this is account
+protection, not master-password protection.
+
+Saved passwords, SSH key passphrases and the global proxy password use the
+same field envelope: `FTPS`, version byte `1`, a fresh random 24-byte nonce,
+then XChaCha20-Poly1305 ciphertext and tag. The five-byte header is authenticated
+as associated data. The JSON fields keep their existing base64 representation.
+Unknown versions, damaged ciphertext, a missing key or a refused keychain read
+fail closed. Reading never creates a replacement key. A process mutex and an
+account-wide file lock serialize key access across desktop sessions; the lock
+file contains no key or secret. A new key is read back before any
+ciphertext is returned. Keys and decrypted working buffers are zeroized.
+
+Without an available keychain, a new secret is not saved in plaintext; the
+existing saved value is retained, and the message suggests setting up a master
+password in Settings > Security. Enhanced protection works without Keychain or
+Secret Service. Switching back to system protection must protect every secret
+successfully before removing the vault.
+
+Moving between operating systems uses the password-protected settings export,
+not copies of account-bound ciphertext. Import decrypts the export and saves
+its secrets under the destination's system protection or unlocked vault.
+The regression fixture is exported from a Windows DPAPI profile and imported
+by the same test on every target; its KDF parameters are the unit-test profile.
+Unit tests use an in-memory credential entry and do not touch a real keychain.
+Real Keychain prompts and desktop Secret Service availability need native
+acceptance runs.
+
 ## The vault and the master password
 
 Under enhanced protection, saved site passwords, private SSH-key passphrases, and the proxy password are stored in `%APPDATA%\FTPeach\vault.dat`. After migration, `sites.json` contains only non-secret parameters and `hasPassword`/`hasKeyPassphrase` flags, and `settings.json` holds only a `hasProxyPassword` flag. Saving or removing a secret, connecting with one, and revealing one all require an unlocked vault; a locked vault opens the unlock dialog, including for an unsaved connection that goes through a password-protected proxy.

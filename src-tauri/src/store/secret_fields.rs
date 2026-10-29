@@ -8,7 +8,7 @@
 //! the backup filter each take the groups they need from here.
 
 use super::{JsonMap, Store};
-use crate::security::dpapi;
+use crate::security::system_protection;
 use anyhow::Result;
 use base64::Engine;
 use serde_json::Value;
@@ -61,7 +61,7 @@ impl Store {
             anyhow::bail!("simulated DPAPI failure");
         }
 
-        dpapi::protect(data)
+        system_protection::protect(data)
     }
 
     // ---------- secrets ----------
@@ -70,7 +70,7 @@ impl Store {
         if let Some(Value::String(enc)) = site.get(field_enc) {
             let decoded = base64::engine::general_purpose::STANDARD.decode(enc);
             if let Ok(bytes) = decoded
-                && let Ok(mut plain) = dpapi::unprotect(&bytes)
+                && let Ok(mut plain) = system_protection::unprotect(&bytes)
             {
                 let secret = String::from_utf8_lossy(&plain).into_owned();
                 plain.zeroize();
@@ -99,7 +99,7 @@ impl Store {
             return false;
         };
         match base64::engine::general_purpose::STANDARD.decode(enc) {
-            Ok(bytes) => match dpapi::unprotect(&bytes) {
+            Ok(bytes) => match system_protection::unprotect(&bytes) {
                 Ok(mut plain) => {
                     plain.zeroize();
                     false

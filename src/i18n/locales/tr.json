@@ -172,7 +172,7 @@
     "message": "Bir yer iminin şifresi veya anahtar parolası, Windows veri koruması kullanılamadığı için şifrelenemedi ve düz metin olarak kaydedildi."
   },
   "secretNotPersistedNotice": {
-    "message": "Şifre veya anahtar parolası şifrelenemediği için kaydedilmedi. Mevcut bağlantı kesilene kadar sürebilir; bir dahaki sefere yeniden girin."
+    "message": "Şifre veya anahtar parolası şifrelenemediği için kaydedilmedi. Mevcut bağlantı kesilene kadar sürebilir; bir dahaki sefere yeniden girin. Şifreleri kaydetmek için Ayarlar > Güvenlik bölümünde bir ana şifre belirleyin."
   },
   "resize": {
     "paneSize": "Bölmeleri yeniden boyutlandırmak için sürükleyin (sıfırlamak için çift tıklayın)",
@@ -361,7 +361,7 @@
     "editsRetained": "Yüklenmeyen değişiklikler 1 GB'tan fazla yer kaplıyor veya 30 günden eski. Önce bunları yükleyin ya da silin.",
     "resumeExpired": "Duraklatılan bu aktarım sürdürülemez. Yeniden başlatın.",
     "programUnavailable": "Program bulunamadı veya çalıştırılamıyor.",
-    "secretNotProtected": "Parola şifrelenemedi, bu nedenle değişiklik kaydedilmedi.",
+    "secretNotProtected": "Parola şifrelenemedi, bu nedenle değişiklik kaydedilmedi. Şifreleri kaydetmek için Ayarlar > Güvenlik bölümünde bir ana şifre belirleyin.",
     "serverRefused": "Sunucu işlemi reddetti: {{reply}}",
     "importRefused": "Dosya içe aktarılamıyor."
   },

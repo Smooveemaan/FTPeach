@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- When a password cannot be saved, the message explains how to set up master-password protection.
+
 ## [0.6.0] - 2026-10-25
 
 ### Changed

@@ -176,7 +176,7 @@
     "message": "Nie udało się zaszyfrować hasła lub frazy hasła zakładki, ponieważ ochrona danych systemu Windows jest niedostępna, dlatego zapisano je jako zwykły tekst."
   },
   "secretNotPersistedNotice": {
-    "message": "Nie udało się zaszyfrować hasła lub frazy hasła klucza, więc nie zostało zapisane. Istniejące połączenie działa do rozłączenia; następnym razem wprowadź je ponownie."
+    "message": "Nie udało się zaszyfrować hasła lub frazy hasła klucza, więc nie zostało zapisane. Istniejące połączenie działa do rozłączenia; następnym razem wprowadź je ponownie. Aby zapisywać hasła, ustaw hasło główne w Ustawienia > Bezpieczeństwo."
   },
   "resize": {
     "paneSize": "Przeciągnij, aby zmienić rozmiar paneli (dwuklik przywraca domyślne)",
@@ -369,7 +369,7 @@
     "editsRetained": "Nieprzesłane zmiany zajmują ponad 1 GB lub są starsze niż 30 dni. Najpierw je prześlij lub usuń.",
     "resumeExpired": "Tego wstrzymanego przesyłania nie można wznowić. Uruchom je ponownie.",
     "programUnavailable": "Nie znaleziono programu lub nie można go uruchomić.",
-    "secretNotProtected": "Nie udało się zaszyfrować hasła, więc zmiana nie została zapisana.",
+    "secretNotProtected": "Nie udało się zaszyfrować hasła, więc zmiana nie została zapisana. Aby zapisywać hasła, ustaw hasło główne w Ustawienia > Bezpieczeństwo.",
     "serverRefused": "Serwer odrzucił operację: {{reply}}",
     "importRefused": "Nie można zaimportować pliku."
   },

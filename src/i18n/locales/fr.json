@@ -174,7 +174,7 @@
     "message": "Le mot de passe ou la phrase secrète d'un signet n'a pas pu être chiffré, car la protection des données de Windows n'est pas disponible ; il a donc été stocké en clair."
   },
   "secretNotPersistedNotice": {
-    "message": "Le mot de passe ou la phrase secrète de la clé n'a pas pu être chiffré et n'a pas été enregistré. Une connexion existante peut continuer jusqu'à la déconnexion ; sinon, saisissez-le à nouveau la prochaine fois."
+    "message": "Le mot de passe ou la phrase secrète de la clé n'a pas pu être chiffré et n'a pas été enregistré. Une connexion existante peut continuer jusqu'à la déconnexion ; sinon, saisissez-le à nouveau la prochaine fois. Pour enregistrer les mots de passe, définissez un mot de passe principal dans Paramètres > Sécurité."
   },
   "resize": {
     "paneSize": "Faites glisser pour redimensionner les volets (double-cliquez pour réinitialiser)",
@@ -365,7 +365,7 @@
     "editsRetained": "Les modifications non téléversées occupent plus de 1 Go ou datent de plus de 30 jours. Téléversez-les ou supprimez-les d'abord.",
     "resumeExpired": "Ce transfert en pause ne peut pas être repris. Relancez-le.",
     "programUnavailable": "Le programme est introuvable ou ne peut pas être exécuté.",
-    "secretNotProtected": "Le mot de passe n'a pas pu être chiffré, la modification n'a donc pas été enregistrée.",
+    "secretNotProtected": "Le mot de passe n'a pas pu être chiffré, la modification n'a donc pas été enregistrée. Pour enregistrer les mots de passe, définissez un mot de passe principal dans Paramètres > Sécurité.",
     "serverRefused": "Le serveur a refusé l'opération : {{reply}}",
     "importRefused": "Le fichier ne peut pas être importé."
   },

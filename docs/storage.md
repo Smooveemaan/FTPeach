@@ -2,6 +2,17 @@
 
 ## Files and backups
 
+For the upcoming macOS/Linux builds, the data directories are described in
+[architecture](architecture.md). The existing `enc`, `keyEnc` and
+`proxyPasswordEnc` fields hold versioned, authenticated ciphertext whose key
+stays in Keychain or Secret Service; see
+[Unix system protection](security.md#system-protection-in-the-upcoming-unix-builds)
+for its format and failure behavior. `system-protection.lock` in the default
+data directory coordinates key access across processes; it contains no secret.
+There is no key file to copy with the data.
+Transfer saved passwords between operating systems through a password-protected
+settings export, or move the master-password vault files together.
+
 An installed Windows copy stores `settings.json`, `sites.json`, `local-paths.json`,
 `known_hosts.json`, and `tabs.json` under `%APPDATA%\FTPeach`. A
 [portable copy](#portable-mode) uses `data\` beside the program. These JSON

@@ -255,7 +255,6 @@ async fn sites_commit_failure_restores_vault_secrets_for_save_and_delete() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
-#[cfg(windows)]
 fn proxy_patch(extra: Value) -> JsonMap {
     let mut patch: JsonMap = serde_json::from_value(
         json!({"proxyEnabled": true, "proxyType": "socks5", "proxyHost": "proxy.test", "proxyPort": 1080}),
@@ -265,7 +264,6 @@ fn proxy_patch(extra: Value) -> JsonMap {
     patch
 }
 
-#[cfg(windows)]
 async fn connect_proxy_password(store: &Store, vault: &Vault) -> Option<String> {
     store
         .connection_defaults(vault, window(0, false))
@@ -348,7 +346,6 @@ async fn a_connect_takes_host_key_policy_and_proxy_from_the_saved_settings() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
-#[cfg(windows)]
 #[tokio::test]
 async fn proxy_password_moves_with_enhanced_protection() {
     let root = std::env::temp_dir().join(format!("ftpeach-proxy-vault-{}", uuid::Uuid::new_v4()));
@@ -465,7 +462,6 @@ async fn proxy_password_moves_with_enhanced_protection() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
-#[cfg(windows)]
 #[tokio::test]
 async fn vault_reset_and_removal_forget_the_proxy_password() {
     let (root, store, vault) = store_with_vault("ftpeach-proxy-reset").await;
@@ -1135,7 +1131,6 @@ fn a_backup_keeps_only_secrets_the_live_file_still_holds() {
 }
 
 /// Every file the store writes, other than the vault's own.
-#[cfg(windows)]
 fn store_files_text(dir: &std::path::Path) -> Vec<(String, String)> {
     std::fs::read_dir(dir)
         .unwrap()
@@ -1150,7 +1145,6 @@ fn store_files_text(dir: &std::path::Path) -> Vec<(String, String)> {
         .collect()
 }
 
-#[cfg(windows)]
 #[tokio::test]
 async fn no_backup_keeps_a_secret_weaker_than_the_live_protection() {
     let root = std::env::temp_dir().join(format!("ftpeach-backups-{}", uuid::Uuid::new_v4()));
@@ -1300,7 +1294,6 @@ async fn plaintext_migration_keeps_secrets_when_encryption_fails() {
     let _ = tokio::fs::remove_dir_all(dir).await;
 }
 
-#[cfg(windows)]
 #[tokio::test]
 async fn a_secret_that_cannot_be_encrypted_is_not_reported_as_saved() {
     let root = std::env::temp_dir().join(format!("ftpeach-secret-fail-{}", uuid::Uuid::new_v4()));
@@ -1915,7 +1908,6 @@ mod saved_password_recipient {
         std::fs::remove_dir_all(root).unwrap();
     }
 
-    #[cfg(windows)]
     #[tokio::test]
     async fn with_the_vault() {
         let root =
@@ -1986,7 +1978,6 @@ fn a_site_is_saved_only_within_the_limits_a_connect_accepts() {
 /// A saved secret that cannot be opened is not sent as an empty one, which a
 /// server answers as a wrong password. The secret the sign-in does not use
 /// is no obstacle.
-#[cfg(windows)]
 #[tokio::test]
 async fn a_saved_secret_that_cannot_be_opened_refuses_the_connect_that_needs_it() {
     let root = std::env::temp_dir().join(format!("ftpeach-unreadable-{}", uuid::Uuid::new_v4()));

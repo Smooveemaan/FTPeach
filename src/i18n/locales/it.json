@@ -174,7 +174,7 @@
     "message": "Non è stato possibile crittografare la password o la passphrase di un segnalibro poiché la protezione dei dati di Windows non è disponibile; pertanto, è stata memorizzata in chiaro."
   },
   "secretNotPersistedNotice": {
-    "message": "Non è stato possibile crittografare la password o la passphrase della chiave, quindi non è stata salvata. Una connessione già aperta può continuare fino alla disconnessione; altrimenti, inseriscila di nuovo la prossima volta."
+    "message": "Non è stato possibile crittografare la password o la passphrase della chiave, quindi non è stata salvata. Una connessione già aperta può continuare fino alla disconnessione; altrimenti, inseriscila di nuovo la prossima volta. Per salvare le password, imposta una password principale in Impostazioni > Sicurezza."
   },
   "resize": {
     "paneSize": "Trascina per ridimensionare i riquadri (doppio clic per ripristinare)",
@@ -365,7 +365,7 @@
     "editsRetained": "Le modifiche non caricate occupano più di 1 GB o hanno più di 30 giorni. Prima caricale o eliminale.",
     "resumeExpired": "Questo trasferimento in pausa non può essere ripreso. Avvialo di nuovo.",
     "programUnavailable": "Il programma non è stato trovato o non può essere eseguito.",
-    "secretNotProtected": "Impossibile cifrare la password, quindi la modifica non è stata salvata.",
+    "secretNotProtected": "Impossibile cifrare la password, quindi la modifica non è stata salvata. Per salvare le password, imposta una password principale in Impostazioni > Sicurezza.",
     "serverRefused": "Il server ha rifiutato l'operazione: {{reply}}",
     "importRefused": "Il file non può essere importato."
   },

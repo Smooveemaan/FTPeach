@@ -172,7 +172,7 @@
     "message": "Không thể mã hóa mật khẩu hoặc cụm mật khẩu của một dấu trang vì tính năng bảo vệ dữ liệu của Windows không khả dụng, nên nó đã được lưu dưới dạng văn bản thuần."
   },
   "secretNotPersistedNotice": {
-    "message": "Không thể mã hóa mật khẩu hoặc cụm mật khẩu khóa nên chúng không được lưu. Kết nối hiện tại vẫn hoạt động cho đến khi ngắt; lần sau hãy nhập lại."
+    "message": "Không thể mã hóa mật khẩu hoặc cụm mật khẩu khóa nên chúng không được lưu. Kết nối hiện tại vẫn hoạt động cho đến khi ngắt; lần sau hãy nhập lại. Để lưu mật khẩu, hãy đặt mật khẩu chính trong Cài đặt > Bảo mật."
   },
   "resize": {
     "paneSize": "Kéo để thay đổi kích thước các khung (nhấp đúp để đặt lại)",
@@ -361,7 +361,7 @@
     "editsRetained": "Các thay đổi chưa được tải lên chiếm hơn 1 GB hoặc đã quá 30 ngày. Hãy tải lên hoặc xóa chúng trước.",
     "resumeExpired": "Không thể tiếp tục quá trình truyền đã tạm dừng này. Hãy bắt đầu lại.",
     "programUnavailable": "Không tìm thấy chương trình hoặc không thể chạy chương trình.",
-    "secretNotProtected": "Không thể mã hóa mật khẩu nên thay đổi chưa được lưu.",
+    "secretNotProtected": "Không thể mã hóa mật khẩu nên thay đổi chưa được lưu. Để lưu mật khẩu, hãy đặt mật khẩu chính trong Cài đặt > Bảo mật.",
     "serverRefused": "Máy chủ đã từ chối thao tác: {{reply}}",
     "importRefused": "Không thể nhập tệp này."
   },

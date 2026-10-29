@@ -172,7 +172,7 @@
     "message": "由於無法使用 Windows 資料保護，書籤的密碼或密語無法加密，因此以純文字儲存。"
   },
   "secretNotPersistedNotice": {
-    "message": "密碼或金鑰密語無法加密，因此未儲存。現有連線可持續使用到中斷為止；下次請重新輸入。"
+    "message": "密碼或金鑰密語無法加密，因此未儲存。現有連線可持續使用到中斷為止；下次請重新輸入。 若要儲存密碼，請在設定 > 安全性中設定主密碼。"
   },
   "resize": {
     "paneSize": "拖曳以調整窗格大小（按兩下以重設）",
@@ -361,7 +361,7 @@
     "editsRetained": "未上傳的變更超過 1 GB 或已超過 30 天。請先上傳或刪除。",
     "resumeExpired": "這個已暫停的傳輸無法繼續。請重新開始。",
     "programUnavailable": "找不到程式或無法執行。",
-    "secretNotProtected": "無法加密密碼，因此未儲存變更。",
+    "secretNotProtected": "無法加密密碼，因此未儲存變更。 若要儲存密碼，請在設定 > 安全性中設定主密碼。",
     "serverRefused": "伺服器拒絕了此操作：{{reply}}",
     "importRefused": "無法匯入此檔案。"
   },

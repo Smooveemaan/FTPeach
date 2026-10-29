@@ -406,19 +406,22 @@ test('a write that answers with nothing is a success, and a refusal stays one', 
   assert.equal(clearRefused.errorCode, 'storageFull');
 });
 
-test('opening a local path runs programs and scripts only through the execute command', async () => {
+test('opening a local path follows backend classification including extensionless programs', async () => {
   const commands: string[] = [];
-  const api = createFilesystemApi(async (command) => {
+  const executablePaths = new Set(['/usr/bin/editor', '/Downloads/setup.AppImage', '/notes.txt']);
+  const api = createFilesystemApi(async <T>(command: string, args?: InvokeArgs) => {
+    if (command === 'fs_is_executable')
+      return executablePaths.has(String(args?.localPath)) as InvokeResult<T>;
     commands.push(command);
     return { ok: true };
   });
   for (const path of [
-    'C:\\a.exe',
-    'C:\\a.PS1',
-    'C:\\setup.appref-ms',
-    'C:\\a.pdf',
-    'C:\\README',
-    'C:\\dir.exe\\README',
+    '/usr/bin/editor',
+    '/Downloads/setup.AppImage',
+    '/notes.txt',
+    '/report.pdf',
+    '/README',
+    '/dir.AppImage/README',
   ])
     await api.openPath(path);
   assert.deepEqual(commands, [
@@ -431,15 +434,15 @@ test('opening a local path runs programs and scripts only through the execute co
   ]);
 });
 
-test('a program is recognized by its extension under a Turkish locale too', async (t) => {
-  // On a Turkish system the default locale lowercases "I" to a dotless "ı",
-  // so "INF" no longer reads as "inf".
-  t.mock.method(String.prototype, 'toLocaleLowerCase', () => 'ınf');
-  const commands: string[] = [];
-  const api = createFilesystemApi(async (command) => {
-    commands.push(command);
-    return { ok: true };
-  });
-  for (const path of ['C:\\a.INF', 'C:\\a.MSI', 'C:\\a.ISO']) await api.openPath(path);
-  assert.deepEqual(commands, ['fs_execute_path', 'fs_execute_path', 'fs_execute_path']);
+test('failed or malformed executable classification never launches a path', async () => {
+  for (const response of [{ ok: false, errorCode: 'permissionDenied' }, null, 'true', {}]) {
+    const commands: string[] = [];
+    const api = createFilesystemApi(async <T>(command: string) => {
+      commands.push(command);
+      return response as InvokeResult<T>;
+    });
+    const result = await api.openPath('/unapproved');
+    assert.equal(result.ok, false);
+    assert.deepEqual(commands, ['fs_is_executable']);
+  }
 });

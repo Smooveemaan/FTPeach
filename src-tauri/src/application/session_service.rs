@@ -162,6 +162,7 @@ pub(crate) async fn connect(
     let browse_timeout_ms = typed_config.common().timeout_ms;
     let server = typed_config.server();
     let server_label = typed_config.log_label();
+    #[cfg(windows)]
     let origin_base = server_label.clone();
 
     let token = connecting.start(connection_id);
@@ -231,6 +232,7 @@ pub(crate) async fn connect(
     *guard = Some(Session {
         browse_client,
         server,
+        #[cfg(windows)]
         origin_base,
         transfer_pool,
         browse_timeout_ms,

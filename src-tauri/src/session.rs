@@ -12,6 +12,7 @@ pub struct Session {
     pub server: String,
     /// The same server as an address without the account, which is what a
     /// downloaded file's Mark of the Web may record.
+    #[cfg(windows)]
     pub origin_base: String,
     pub transfer_pool: TransferPool,
     pub browse_timeout_ms: u64,
@@ -138,6 +139,7 @@ impl Sessions {
     /// The address a live session downloads from, without its account.
     /// Empty when there is no session, which marks nothing rather than
     /// guessing an origin.
+    #[cfg(windows)]
     pub async fn origin_base_for(&self, connection_id: &str) -> String {
         let slot = self.lookup_slot(connection_id);
         let guard = slot.lock().await;

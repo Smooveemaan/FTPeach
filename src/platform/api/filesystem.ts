@@ -10,7 +10,6 @@ import type { InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
-import executableExtensions from '../../shared/executableExtensions.json' with { type: 'json' };
 
 export interface FilesystemListResult extends CommandResult {
   path: string;
@@ -89,10 +88,6 @@ function isSelectedSshKey(value: unknown): value is SelectedSshKey {
   return isRecord(value) && typeof value.path === 'string' && typeof value.isRsa === 'boolean';
 }
 
-// The backend refuses the wrong one of the two commands, so both sides read
-// the same list: src-tauri/src/local_fs/local_open.rs.
-const EXECUTABLE_EXTENSIONS: ReadonlySet<string> = new Set(executableExtensions);
-
 const isOptionalPath = (value: unknown): value is string | null =>
   value === null || typeof value === 'string';
 
@@ -161,14 +156,18 @@ export function createFilesystemApi(invoke: InvokeFn) {
       voidOutcome(invoke, 'fs_delete', { localPath, permanent }),
     createFile: (localPath: string) => voidOutcome(invoke, 'fs_create_file', { localPath }),
     revealPath: (localPath: string) => voidOutcome(invoke, 'fs_reveal_path', { localPath }),
-    openPath: (localPath: string) =>
-      voidOutcome(
-        invoke,
-        EXECUTABLE_EXTENSIONS.has(localPath.split('.').pop()?.toLowerCase() ?? '')
-          ? 'fs_execute_path'
-          : 'fs_open_document',
-        { localPath },
-      ),
+    openPath: async (localPath: string): Promise<CommandResult> => {
+      const executable = await checkedResponse(
+        'fs_is_executable',
+        invoke('fs_is_executable', { localPath }),
+        (value): value is boolean => typeof value === 'boolean',
+        (raw) => commandFailure('fs_is_executable', raw),
+      );
+      if (typeof executable !== 'boolean') return executable;
+      return voidOutcome(invoke, executable ? 'fs_execute_path' : 'fs_open_document', {
+        localPath,
+      });
+    },
     selectDir: () => selection('dialog_select_local_dir'),
     selectKeyFile: (): Promise<SelectedSshKey | null> =>
       checkedResponse(

@@ -325,6 +325,7 @@ function answer(target: Case, wire: Wire, authorize: Wire = resolve({ token: 'gr
   rawInvoke.mockImplementation(async (command) => {
     const reply = (next: Wire) => ('reject' in next ? Promise.reject(next.reject) : next.resolve);
     if (command === 'plugin:sensitive|authorize_sensitive') return reply(authorize);
+    if (command === 'fs_is_executable') return target.command === 'fs_execute_path';
     const expected = target.sensitive ? `plugin:sensitive|${target.command}` : target.command;
     if (command !== expected) throw new Error(`unexpected command ${command}`);
     return reply(wire);

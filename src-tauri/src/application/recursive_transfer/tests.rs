@@ -1016,6 +1016,7 @@ async fn serve_limited(
     *sessions.slot_for(&connection_id).lock().await = Some(crate::session::Session {
         browse_client: Box::new(FakeBackend(server.clone())),
         server: connection_id.clone(),
+        #[cfg(windows)]
         origin_base: String::new(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,

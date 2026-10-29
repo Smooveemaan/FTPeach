@@ -38,6 +38,7 @@ async fn sessions_with(remote: &Arc<Remote>, pool: &TransferPool) -> Sessions {
     *sessions.slot_for("test").lock().await = Some(crate::session::Session {
         browse_client: backend(remote),
         server: "test".into(),
+        #[cfg(windows)]
         origin_base: String::new(),
         transfer_pool: pool.clone(),
         browse_timeout_ms: 1000,
@@ -263,6 +264,7 @@ async fn a_file_copied_between_servers_keeps_writers_off_its_source() {
     *sessions.slot_for("target").lock().await = Some(crate::session::Session {
         browse_client: backend(&target),
         server: "target".into(),
+        #[cfg(windows)]
         origin_base: String::new(),
         transfer_pool: target_pool.clone(),
         browse_timeout_ms: 1000,

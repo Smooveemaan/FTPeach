@@ -44,6 +44,7 @@
     "allow-fs-validate-copy",
     "allow-fs-create-file",
     "allow-fs-is-dir",
+    "allow-fs-is-executable",
     "allow-dialog-select-local-dir",
     "allow-dialog-select-key-file",
     "allow-dialog-select-ca-cert-file",

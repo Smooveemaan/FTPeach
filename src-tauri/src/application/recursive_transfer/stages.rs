@@ -62,6 +62,15 @@ pub(super) async fn make_directories(
         )
         .await
         .map_err(|error| CommandError::at_path(error, intent.target.path(&entry.relative)))?;
+        #[cfg(target_os = "macos")]
+        if matches!(
+            (&intent.source, &intent.target),
+            (Endpoint::Remote { .. }, Endpoint::Local { .. })
+        ) {
+            crate::local_fs::provenance::mark_quarantine(Path::new(
+                &intent.target.path(&entry.relative),
+            ));
+        }
         *wrote_target = true;
         if created {
             made_now.insert(entry.relative.as_str());

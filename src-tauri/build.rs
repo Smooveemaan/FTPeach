@@ -46,6 +46,7 @@ fn main() {
         "fs_validate_copy",
         "fs_create_file",
         "fs_is_dir",
+        "fs_is_executable",
         "dialog_select_local_dir",
         "dialog_select_key_file",
         "dialog_select_ca_cert_file",

@@ -1897,6 +1897,7 @@ mod recursive_stop_tests {
         *sessions.slot_for(&connection_id).lock().await = Some(Session {
             browse_client: browse,
             server: config.server(),
+            #[cfg(windows)]
             origin_base: String::new(),
             transfer_pool: TransferPool::new(factory, size),
             browse_timeout_ms: 20_000,

@@ -28,7 +28,7 @@ decides which window class may call it. The packaged smoke test then asks a live
 confirmation window which commands it can still reach, and fails if it reaches
 any. Application commands are grouped as follows:
 
-- Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `sites_list`,
+- Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `fs_is_executable`, `sites_list`,
   `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
   `vault_status`, `app_version`, `app_double_click_time`, `app_system_hour_cycle`, `session_list`, `log_recent`,
   `updater_status`, `updater_check`.

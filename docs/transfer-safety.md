@@ -8,6 +8,9 @@ it. Every IPC entry point defaults to no replacement: only an explicit `overwrit
 Move between different endpoints does not exist: `canMoveBetween` in `src/shared/movePolicy.ts` is
 the one policy for drag and drop, paste after Cut and transfer routing.
 
+Download provenance metadata and its filesystem limits are described in
+[security](security.md#rust-and-remote-servers).
+
 | Operation | Local | FTP / FTPS | SFTP | WebDAV |
 | --- | --- | --- | --- | --- |
 | Rename, same-endpoint Move of one entry | No-replace rename by the OS; atomic | Checks the target, then RNFR/RNTO: a file created in between is replaced | `lstat`, then v3 RENAME, which refuses an existing target; a server that replaces anyway (SFTPGo) races the same way as FTP | `MOVE` with `Overwrite: F`; the server refuses atomically |

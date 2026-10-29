@@ -606,6 +606,19 @@ fn shell_targets(canonical: &Path) -> (String, String) {
     (shell, select)
 }
 
+/// Classifies a selected path; launch commands recheck it after authorization.
+#[tauri::command]
+pub fn fs_is_executable(
+    approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
+    local_path: String,
+) -> CommandResult<bool> {
+    let canonical = approved_paths.validate(
+        Path::new(&local_path),
+        crate::local_fs::local_open::OpenKind::Reveal,
+    )?;
+    Ok(crate::local_fs::local_open::is_executable(&canonical))
+}
+
 async fn open_validated_path<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     approved_paths: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
@@ -723,8 +736,15 @@ mod grant_tests {
         let approved = app.state::<crate::local_fs::local_open::ApprovedLocalPaths>();
         let open = crate::local_fs::local_open::OpenKind::Document;
         assert!(approved.validate(&file, open).is_ok());
+        assert!(!fs_is_executable(app.state(), file.to_string_lossy().into_owned()).unwrap());
         let later = folder.join("later.txt");
         std::fs::write(&later, b"x").unwrap();
+        assert_eq!(
+            fs_is_executable(app.state(), later.to_string_lossy().into_owned())
+                .unwrap_err()
+                .code,
+            ErrorCode::PermissionDenied
+        );
         assert_eq!(
             approved.validate(&later, open).unwrap_err().code,
             ErrorCode::PermissionDenied

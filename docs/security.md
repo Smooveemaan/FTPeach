@@ -45,6 +45,18 @@ FTPS and WebDAV verify TLS certificates by default. SFTP pins the server's key i
 
 A downloaded file is marked with where it came from: Windows' `Zone.Identifier` alternate data stream, the Mark of the Web, which SmartScreen, Office Protected View and the script hosts read. FTPeach's own extension checks decide whether to hand a file to a program; this decides how that program then treats it. The mark is written to the download artifact the moment it exists, so committing it under its final name carries the stream along and a resumed download keeps the one it has. It records the scheme, host and remote path and never a user name, a password or a query string, because it is a file attribute any program can read and it travels with the file. A host that cannot be routed off the local network — a private or loopback address, or a single-label name — is marked as the intranet; everything else, including a name FTPeach cannot classify, as the internet.
 
+The macOS implementation under development marks downloaded artifacts with
+`com.apple.quarantine` before writing their contents. Recursive downloads mark
+their directories too, including the root of a downloaded `.app` bundle.
+The attribute records a download flag, timestamp and FTPeach as the agent;
+it contains no server address
+or credentials. A resume preserves an existing attribute, and a same-volume
+rename carries it to the final name. Marking is best effort: an unsupported
+filesystem or a write failure is logged without failing the transfer. This is
+metadata for macOS security policy, not an antivirus scan or a guarantee that
+Gatekeeper will refuse every unsafe file. Linux has no equivalent download mark
+in this implementation.
+
 Two limits are real rather than theoretical. The stream needs NTFS: on FAT32, exFAT or a share that does not carry alternate data streams there is nowhere to put it, and nothing is promised. And a virtual-file drag-out never passes through FTPeach's filesystem at all — the drop target writes the file, so only it can mark one. The data object offers the `ZoneIdentifier` clipboard format, which is how the shell is told what mark to write; a target that ignores it writes an unmarked file and nothing on this side can change that. `IAttachmentExecute`, which would also run the configured antivirus, is deliberately not used: that scan blocks once per file on a path that already carries a transfer's latency, and its policy hooks belong to the shell at open time.
 
 Before any of that, a path is checked for the network namespace from its text alone. Resolving a UNC path is itself network access: `canonicalize` and `metadata` make Windows contact the server, and on a default configuration that hands it an authentication attempt, so a check that runs after resolution runs too late. `ApprovedLocalPaths::preflight` compares the requested spelling against the shares a native dialog confirmed, normalizing `\\?\UNC\server\share` and `\\server\share` to the same key, and refuses an unconfirmed one before any syscall. It runs first in `fs_list`, `fs_is_dir`, `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `fs_validate_copy`, the reveal/open/execute trio and `fs_delete` — ahead of the authorization token, whose target normalization would otherwise canonicalize the path — and in `session_connect` for a private key or CA bundle the protocol backend would otherwise open itself. The canonical check stays behind it for a path that only becomes a share once resolved, such as a local symlink pointing at one. A wedged share leaves its call blocked inside Windows and a timeout does not take that OS worker back, so what is bounded is how many such probes may be in flight: four, in `fs_list` and in `fs_is_dir`.
@@ -159,6 +171,24 @@ Under enhanced protection, DPAPI fields migrate into the vault only while it is 
 The backend distinguishes three operations: reveal a path in Explorer, open a non-executable document with its registered application, and execute executable/script content. A path must first come from a backend directory listing or native file dialog, is canonicalized immediately before use, and cannot be a Windows device path. UNC/network paths require native-dialog confirmation; merely appearing in a listing is insufficient. A listing resolves its folder once and approves each ordinary entry as that canonical folder plus the entry's name; a reparse point (a link, a junction, a cloud placeholder) is resolved to its target. An entry replaced by a link after the listing resolves elsewhere when opened, so it is refused.
 
 Executable classification is extension-based and includes Windows programs, installers, shortcuts, scripts, control-panel/registry/help/disk-image formats, and other shell-active types such as `.exe`, `.com`, `.bat`, `.cmd`, `.ps1`, `.msi`, `.lnk`, `.url`, `.hta`, `.js`, `.vbs`, `.scr`, `.cpl`, `.reg`, `.chm`, and `.iso`. Such a path is rejected by the ordinary document command and must use the separate execute command. Remote **Open with** downloads to an isolated temporary path and applies the same classification.
+
+For the Unix ports under development, macOS also guards `.app`, `.command`,
+`.tool`, `.sh`, `.pkg`, `.mpkg`, `.terminal`, `.workflow` and `.scpt`; Linux adds
+`.desktop`, `.AppImage`, `.sh` and `.run`. Matching is ASCII case-insensitive;
+Windows shell-active formats, including `.jar`, remain guarded on every host.
+On Unix, any execute permission bit on a regular local file also requires the
+execute command, even without a recognized extension. A directory's search bits
+alone do not make it executable; macOS `.app` bundles are classified by name and
+are accepted as configured applications. Remote **Open with** classifies its
+final download name without inspecting a local file of the same name, then
+rechecks the actual saved file before launch.
+
+The renderer asks `fs_is_executable` which launch command to use. This read
+requires the same listed/native-dialog path provenance as opening the file and
+grants no launch authority. A failed or malformed classification stops the open;
+the selected command still requires its own token and repeats the canonical path
+and executable checks, so a permission change after classification cannot bypass
+execution authorization.
 
 An **Open with** token covers the whole request: the connection, the remote path, the local file name the download is saved under, its classification, and the canonical program that opens it. The classification comes from that final local name, not the remote one, so `report.cmd.` (saved as `report.cmd`) is confirmed as a script; the confirmation shows the local name when it differs. A request that differs in any field after the token was issued is refused, and the saved file and program are checked again immediately before launch. Appearing in a directory listing does not make a program acceptable: a program joins the backend's trusted list (`trusted_applications.json`, which no renderer command writes) only when picked in the native **Browse** dialog or approved in a confirmation window; until then, opening even a document with it asks first.
 

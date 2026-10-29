@@ -26,6 +26,7 @@ async fn session_for(remote: &Arc<Remote>) -> (Sessions, String) {
     *slot.lock().await = Some(Session {
         browse_client: Box::new(Backend::over(remote.clone())),
         server: connection_id.clone(),
+        #[cfg(windows)]
         origin_base: String::new(),
         transfer_pool: pool,
         browse_timeout_ms: 1_000,

@@ -18,7 +18,7 @@ pub enum OpenKind {
     Execute,
 }
 
-/// Shared with the renderer, which picks the open or execute command from it.
+/// Shell-active Windows formats remain guarded on every host.
 static EXECUTABLE_EXTENSIONS: std::sync::LazyLock<Vec<String>> = std::sync::LazyLock::new(|| {
     serde_json::from_str(include_str!(
         "../../../src/shared/executableExtensions.json"
@@ -92,10 +92,51 @@ pub fn shell_path(path: &Path) -> String {
     }
 }
 
+/// Classifies a local target; unavailable Unix metadata requires execution authorization.
 pub fn is_executable(path: &Path) -> bool {
-    path.extension()
+    if is_executable_name(path) {
+        return true;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::metadata(path).map_or(true, |metadata| {
+            metadata.is_file() && metadata.permissions().mode() & 0o111 != 0
+        })
+    }
+    #[cfg(not(unix))]
+    false
+}
+
+/// Classifies a remote download's final name without inspecting a local namesake.
+pub fn is_executable_name(path: &Path) -> bool {
+    let extension = path
+        .extension()
         .and_then(|value| value.to_str())
-        .is_some_and(|ext| EXECUTABLE_EXTENSIONS.contains(&ext.to_ascii_lowercase()))
+        .map(str::to_ascii_lowercase);
+    if extension
+        .as_ref()
+        .is_some_and(|ext| EXECUTABLE_EXTENSIONS.contains(ext))
+    {
+        return true;
+    }
+    #[cfg(target_os = "macos")]
+    if extension.as_deref().is_some_and(|ext| {
+        [
+            "app", "command", "tool", "sh", "pkg", "mpkg", "terminal", "workflow", "scpt", "jar",
+        ]
+        .contains(&ext)
+    }) {
+        return true;
+    }
+    #[cfg(target_os = "linux")]
+    if extension
+        .as_deref()
+        .is_some_and(|ext| ["desktop", "appimage", "sh", "run"].contains(&ext))
+    {
+        return true;
+    }
+    false
 }
 
 fn canonicalize_user_path(path: &Path) -> CommandResult<PathBuf> {
@@ -225,7 +266,12 @@ impl ApprovedLocalPaths {
             )
         };
         let canonical = std::fs::canonicalize(path).map_err(|_| not_found())?;
-        if !canonical.is_file() || !is_executable(&canonical) {
+        let application_bundle = cfg!(target_os = "macos")
+            && canonical.is_dir()
+            && canonical
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("app"));
+        if !(canonical.is_file() || application_bundle) || !is_executable(&canonical) {
             return Err(not_found());
         }
         if is_network_path(&canonical) {
@@ -296,6 +342,76 @@ fn canonical_key_is_within(path: &str, root: &str) -> bool {
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
+    #[test]
+    fn unix_execute_bits_require_execution_authorization_and_are_rechecked() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = std::env::temp_dir().join(format!("ftpeach-execute-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let file = root.join("report.txt");
+        std::fs::write(&file, b"test").unwrap();
+        let state = ApprovedLocalPaths::default();
+        state.approve_from_listing(&file);
+        for mode in [0o100, 0o010, 0o001] {
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(mode | 0o600)).unwrap();
+            assert!(is_executable(&file));
+            assert!(!is_executable_name(&file));
+            assert_eq!(
+                state.validate(&file, OpenKind::Document).unwrap_err().code,
+                ErrorCode::PermissionDenied
+            );
+            assert!(state.validate(&file, OpenKind::Execute).is_ok());
+            assert!(state.canonical_application(&file).is_ok());
+        }
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o600)).unwrap();
+        assert!(state.validate(&file, OpenKind::Document).is_ok());
+        assert!(state.validate(&file, OpenKind::Execute).is_err());
+        assert!(state.canonical_application(&file).is_err());
+        assert!(
+            !is_executable(&root),
+            "search permission on a folder is not execution"
+        );
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[test]
+    fn host_shell_formats_are_classified_without_a_local_file() {
+        #[cfg(target_os = "macos")]
+        let extensions = [
+            "app", "command", "tool", "sh", "pkg", "mpkg", "terminal", "workflow", "scpt", "jar",
+        ];
+        #[cfg(target_os = "linux")]
+        let extensions = ["desktop", "AppImage", "sh", "run"];
+        for extension in extensions {
+            let name = format!("program.{}", extension.to_ascii_uppercase());
+            assert!(is_executable_name(Path::new(&name)), "{name}");
+            let intent = crate::security::open_with_intent::OpenWithIntent::resolve(
+                "c1",
+                &format!("/remote/{name}"),
+                None,
+                &ApprovedLocalPaths::default(),
+            )
+            .unwrap();
+            assert!(intent.executable, "{name}");
+        }
+        assert!(!is_executable_name(Path::new("notes.txt")));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn application_bundles_require_execution_authorization() {
+        let root = std::env::temp_dir().join(format!("ftpeach-bundle-{}", uuid::Uuid::new_v4()));
+        let bundle = root.join("Editor.APP");
+        std::fs::create_dir_all(&bundle).unwrap();
+        let state = ApprovedLocalPaths::default();
+        state.approve_from_listing(&bundle);
+        assert!(state.validate(&bundle, OpenKind::Document).is_err());
+        assert!(state.validate(&bundle, OpenKind::Execute).is_ok());
+        assert!(state.canonical_application(&bundle).is_ok());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn executable_and_script_extensions_are_classified_case_insensitively() {
         for name in [
@@ -303,7 +419,7 @@ mod tests {
         ] {
             assert!(is_executable(Path::new(name)), "{name}");
         }
-        assert!(!is_executable(Path::new("report.pdf")));
+        assert!(!is_executable_name(Path::new("report.pdf")));
     }
 
     #[test]
@@ -365,7 +481,7 @@ mod tests {
             .insert(key(Path::new(r"\\server\share")));
         assert_eq!(
             state
-                .validate_canonical(path.clone(), OpenKind::Document)
+                .validate_canonical(path.clone(), OpenKind::Reveal)
                 .unwrap(),
             path
         );

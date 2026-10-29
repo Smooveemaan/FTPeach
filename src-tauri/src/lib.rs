@@ -123,6 +123,7 @@ pub fn run() {
             commands::fs::fs_validate_copy,
             commands::fs::fs_create_file,
             commands::fs::fs_is_dir,
+            commands::fs::fs_is_executable,
             commands::dialog::dialog_select_local_dir,
             commands::dialog::dialog_select_key_file,
             commands::dialog::dialog_select_ca_cert_file,

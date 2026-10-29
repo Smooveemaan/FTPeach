@@ -8,7 +8,7 @@
 //! issued for opening a document cannot launch another server's file or be
 //! handed to a different program.
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
-use crate::local_fs::local_open::{ApprovedLocalPaths, is_executable};
+use crate::local_fs::local_open::{ApprovedLocalPaths, is_executable_name};
 use crate::security::connection_guard::safe_temp_name;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
@@ -20,7 +20,7 @@ pub struct OpenWithIntent {
     pub remote_path: String,
     /// The file name the download is written under.
     pub local_name: String,
-    /// Whether Windows treats `local_name` as a program or script.
+    /// Whether the host treats `local_name` as a program or script.
     pub executable: bool,
     /// The canonical program, or `None` for the file's default handler.
     pub application: Option<PathBuf>,
@@ -71,7 +71,7 @@ impl OpenWithIntent {
         Ok(Self {
             connection_id: connection_id.to_owned(),
             remote_path: remote_path.to_owned(),
-            executable: is_executable(Path::new(&local_name)),
+            executable: is_executable_name(Path::new(&local_name)),
             local_name,
             application,
         })

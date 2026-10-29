@@ -1,22 +1,6 @@
-//! Marking a downloaded file as having come from somewhere else.
-//!
-//! Windows keeps that fact in a `Zone.Identifier` alternate data stream next
-//! to the file — the Mark of the Web. SmartScreen reads it before running a
-//! program, Office opens a document that carries one in Protected View, and
-//! script hosts and archive tools consult it too. Without it a file that
-//! arrived from a server is indistinguishable from one the user wrote, and
-//! FTPeach's own extension checks are no substitute: they decide whether to
-//! hand the file to a program, not how that program then treats it.
-//!
-//! What this is not: `IAttachmentExecute`, the COM API that also runs the
-//! configured antivirus and can prompt. That scan blocks, once per file, on
-//! a path that already has a transfer's worth of latency, and its policy
-//! hooks are the shell's to apply when the file is opened. This writes the
-//! metadata that mechanism stores and that those consumers read.
-//!
-//! The mark lives in an alternate data stream, so it needs NTFS. On FAT32,
-//! exFAT, a network share that does not carry streams, or any non-Windows
-//! filesystem there is nowhere to put it and nothing is promised.
+//! Download provenance: Windows' Mark of the Web and macOS quarantine.
+//! Marks are best effort on filesystems that support their metadata; Linux
+//! has no corresponding mark here.
 
 use std::path::Path;
 
@@ -73,6 +57,7 @@ impl Origin {
 
     /// The mark itself, as both the alternate data stream and the
     /// `ZoneIdentifier` clipboard format spell it.
+    #[cfg(any(windows, test))]
     pub fn zone_identifier(&self) -> String {
         // A URL cannot contain a newline once parsed, but the value arrives
         // from a server-side path, so the line is ended rather than trusted.
@@ -145,15 +130,100 @@ pub fn mark(path: &Path, origin: &Origin) {
             );
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        let _ = origin;
+        mark_quarantine(path);
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = (path, origin);
     }
 }
 
+/// Marks downloaded files and folders, including the root of an application bundle.
+#[cfg(target_os = "macos")]
+pub(crate) fn mark_quarantine(path: &Path) {
+    if let Err(error) = quarantine(path) {
+        log::debug!("This filesystem could not keep the download quarantine mark: {error}");
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn quarantine(path: &Path) -> std::io::Result<()> {
+    use std::os::unix::ffi::OsStrExt;
+    let path = std::ffi::CString::new(path.as_os_str().as_bytes())?;
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let value = format!("0081;{timestamp:x};FTPeach;");
+    // CREATE preserves a resumed artifact's mark; NOFOLLOW never marks a link's target.
+    let result = unsafe {
+        libc::setxattr(
+            path.as_ptr(),
+            c"com.apple.quarantine".as_ptr(),
+            value.as_ptr().cast(),
+            value.len(),
+            0,
+            libc::XATTR_CREATE | libc::XATTR_NOFOLLOW,
+        )
+    };
+    if result == 0 {
+        return Ok(());
+    }
+    let error = std::io::Error::last_os_error();
+    if error.raw_os_error() == Some(libc::EEXIST) {
+        return Ok(());
+    }
+    Err(error)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn quarantine_survives_resume_and_commit_without_changing_contents() {
+        use std::os::unix::ffi::OsStrExt;
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-quarantine-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let partial = root.join("download.part");
+        std::fs::write(&partial, b"contents").unwrap();
+        let read = |path: &Path| {
+            let path = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
+            let mut value = [0u8; 256];
+            let size = unsafe {
+                libc::getxattr(
+                    path.as_ptr(),
+                    c"com.apple.quarantine".as_ptr(),
+                    value.as_mut_ptr().cast(),
+                    value.len(),
+                    0,
+                    libc::XATTR_NOFOLLOW,
+                )
+            };
+            assert!(size > 0, "{}", std::io::Error::last_os_error());
+            String::from_utf8(value[..size as usize].to_vec()).unwrap()
+        };
+        let origin = Origin::for_url("sftp://files.example.com", "/report.txt");
+        mark_quarantine(&root);
+        assert!(read(&root).starts_with("0081;"));
+        mark(&partial, &origin);
+        let mark_before_resume = read(&partial);
+        assert!(mark_before_resume.starts_with("0081;"));
+        assert!(mark_before_resume.ends_with(";FTPeach;"));
+        quarantine(&partial).unwrap();
+        assert_eq!(read(&partial), mark_before_resume);
+        let committed = root.join("report.txt");
+        std::fs::rename(&partial, &committed).unwrap();
+        assert_eq!(read(&committed), mark_before_resume);
+        assert_eq!(std::fs::read(&committed).unwrap(), b"contents");
+        assert!(quarantine(&partial).is_err());
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn a_host_that_cannot_be_reached_from_outside_is_the_intranet() {

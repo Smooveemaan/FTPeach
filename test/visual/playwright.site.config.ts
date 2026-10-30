@@ -10,4 +10,5 @@ export default defineConfig({
   testDir: import.meta.dirname,
   testMatch: /website-.*\.spec\.ts$/,
   outputDir: '../../test-results/site',
+  projects: visualConfig.projects!.map((project) => ({ ...project, testIgnore: [] })),
 });

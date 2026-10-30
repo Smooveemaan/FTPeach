@@ -962,6 +962,7 @@ section[id] {
 }
 .proto th,
 .proto td {
+  overflow-wrap: anywhere;
   padding: 14px 16px 14px 0;
   border-bottom: 1px solid var(--edge);
   text-align: left;
